@@ -13,7 +13,7 @@
     xsp-session:create-session="true"
 >
     <xsl:variable name="namespace-uri">http://exist-db.org/xmldb/1.0</xsl:variable>
-    <xsl:variable name="namespace-prefix">xmldb</xsl:variable>
+    <xsl:variable name="namespace-prefix">xdb</xsl:variable>
 	
     <xsl:template match="xsp:page">
         <xsp:page>

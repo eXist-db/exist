@@ -9,12 +9,12 @@
   xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns:x="http://exist.sourceforge.net/dc-ext"
   xmlns:java="http://xml.apache.org/xslt/java"
-  xmlns:xmldb="http://exist-db.org/transformer/1.0"
+  xmlns:xdb="http://exist-db.org/transformer/1.0"
   version="1.0">	
 	
   <xsl:include href="context://stylesheets/doc2html-2.xsl"/>
   
-  <xsl:template match="xmldb:result-set">
+  <xsl:template match="xdb:result-set">
   	<p>
   		Query: <xsl:value-of select="@xpath"/>.
   	</p>
@@ -104,7 +104,7 @@
 		<xsl:apply-templates/>
 	</xsl:template>
 	
-  <xsl:template match="xmldb:result">
+  <xsl:template match="xdb:result">
 
   </xsl:template>
   

@@ -8,7 +8,7 @@
 	 is shown first.
 -->
 <xsp:page
-  xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+  xmlns:xdb="http://exist-db.org/xmldb/1.0"
   xmlns:xsp="http://apache.org/xsp"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   >
@@ -59,22 +59,22 @@
             <p></p>
             
         <!-- connect to the server -->
-        <xmldb:driver class="org.exist.xmldb.DatabaseImpl"/>
+        <xdb:driver class="org.exist.xmldb.DatabaseImpl"/>
         <!--<xmldb:driver class="org.exist.xmldb.DatabaseImpl"/>-->
 
-        <xmldb:collection uri="xmldb:exist:///db" user="guest" password="guest">
-            <xmldb:execute>
-                <xmldb:xpath>query</xmldb:xpath>
+        <xdb:collection uri="xmldb:exist:///db" user="guest" password="guest">
+            <xdb:execute>
+                <xdb:xpath>query</xdb:xpath>
                 
                     <xsp:logic>
-                        hits = <xmldb:get-hit-count/>;
+                        hits = <xdb:get-hit-count/>;
                         if(hits &gt; 0) {
                             if(summarize) {
                                 <section title="Summary of hits">
                                 
                                 <!-- print a summary of hits per document -->                     
-                                <p>Found <xmldb:get-hit-count/> hits in
-                                <xmldb:get-query-time/> ms.</p>
+                                <p>Found <xdb:get-hit-count/> hits in
+                                <xdb:get-query-time/> ms.</p>
                                 
                                 <p>The table below shows which documents
                                 matched your query.  Click on a document's
@@ -85,19 +85,19 @@
                                     <xsp:logic>
                                         String docLink = response.encodeURL(request.getRequestURI()) + "?count=" +
                                             count + "&amp;query=" + URLEncoder.encode(query);
-                                        <xmldb:result-summary>
+                                        <xdb:result-summary>
                                             <table bgcolor="#0B88E8" cellspacing="0" cellpadding="0" 
                                                    border="0" width="100%">
                                                 <tr style="border: 1px solid black">
                                                     <th align="left" colspan="3">
-                                                        <font color="#FFFFFF"><xmldb:collection-name/></font>
+                                                        <font color="#FFFFFF"><xdb:collection-name/></font>
                                                     </th>
                                                 </tr>
-                                                <xmldb:documents>
+                                                <xdb:documents>
                                                     <tr bgcolor="#D0DFEC">
                                                         <xsp:logic>
-                                                            String collectionName = <xmldb:collection-name/>;
-                                                            String docName = collectionName + '/' + <xmldb:document-name/>;
+                                                            String collectionName = <xdb:collection-name/>;
+                                                            String docName = collectionName + '/' + <xdb:document-name/>;
                                                             String newQuery = docLink + "&amp;doc=" +
                                                                 docName;
                                                             <td width="5%"></td>
@@ -107,12 +107,12 @@
                                                                     <xsp:expr>docName</xsp:expr>
                                                                 </link>
                                                             </td>
-                                                            <td align="right"><xmldb:document-hit-count/></td>
+                                                            <td align="right"><xdb:document-hit-count/></td>
                                                         </xsp:logic>
                                                     </tr>
-                                                </xmldb:documents>
+                                                </xdb:documents>
                                             </table>
-                                        </xmldb:result-summary>
+                                        </xdb:result-summary>
                                     </xsp:logic>
                                 </table>
                                 
@@ -122,10 +122,10 @@
                                 String doc = request.getParameter("doc");
                                 if(doc != null) {
                                     hits = 
-                                        <xmldb:get-hit-count>
-                                            <xmldb:document>doc.substring(doc.lastIndexOf('/') + 1)</xmldb:document>
-                                            <xmldb:collection>doc.substring(0, doc.lastIndexOf('/'))</xmldb:collection>
-                                        </xmldb:get-hit-count>;
+                                        <xdb:get-hit-count>
+                                            <xdb:document>doc.substring(doc.lastIndexOf('/') + 1)</xdb:document>
+                                            <xdb:collection>doc.substring(0, doc.lastIndexOf('/'))</xdb:collection>
+                                        </xdb:get-hit-count>;
                                 }
                                 // generate links for previous/next and summary page
                                 String temp = response.encodeURL(request.getRequestURI()) + '?';
@@ -186,11 +186,11 @@
                                     <xsp:logic>
                                         int pos = 0;
                                         if(doc != null) {
-                                            <xmldb:results>
-                                                <xmldb:position>start</xmldb:position>
-                                                <xmldb:count>count</xmldb:count>
-                                                <xmldb:document>doc.substring(doc.lastIndexOf('/') + 1)</xmldb:document>
-                                                <xmldb:collection>doc.substring(0, doc.lastIndexOf('/'))</xmldb:collection>
+                                            <xdb:results>
+                                                <xdb:position>start</xdb:position>
+                                                <xdb:count>count</xdb:count>
+                                                <xdb:document>doc.substring(doc.lastIndexOf('/') + 1)</xdb:document>
+                                                <xdb:collection>doc.substring(0, doc.lastIndexOf('/'))</xdb:collection>
                                                 <tr>
                                                     <td colspan="4">
                                                         <xsp:logic>
@@ -202,18 +202,18 @@
                                                         </xsp:logic>
                                                 
                                                         <xml-source>
-                                                            <xmldb:get-xml as="xml"/>
+                                                            <xdb:get-xml as="xml"/>
                                                         </xml-source>
                                                     </td>
                                                 </tr>
-                                                <xmldb:error>
-                                                    <p><xmldb:get-error/></p>
-                                                </xmldb:error>
-                                            </xmldb:results>
+                                                <xdb:error>
+                                                    <p><xdb:get-error/></p>
+                                                </xdb:error>
+                                            </xdb:results>
                                         } else {
-                                            <xmldb:results>
-                                                <xmldb:position>start</xmldb:position>
-                                                <xmldb:count>count</xmldb:count>
+                                            <xdb:results>
+                                                <xdb:position>start</xdb:position>
+                                                <xdb:count>count</xdb:count>
                                                 <tr>
                                                     <td colspan="4">
                                                         <xsp:logic>
@@ -225,14 +225,14 @@
                                                         </xsp:logic>
                                                 
                                                         <xml-source>
-                                                            <xmldb:get-xml as="xml"/>
+                                                            <xdb:get-xml as="xml"/>
                                                         </xml-source>
                                                     </td>
                                                 </tr>
-                                                <xmldb:error>
-                                                    <p><xmldb:get-error/></p>
-                                                </xmldb:error>
-                                            </xmldb:results>
+                                                <xdb:error>
+                                                    <p><xdb:get-error/></p>
+                                                </xdb:error>
+                                            </xdb:results>
                                         }
                                     </xsp:logic>
                                     <!-- bottom link menu -->
@@ -280,17 +280,17 @@
                     }
                 </xsp:logic>
                 
-                <xmldb:error>
+                <xdb:error>
                     <p>An error occurred while executing query:</p>
-                    <p><tt><xmldb:get-error/></tt></p>
-                    <p><xmldb:get-error-description/></p>
-                </xmldb:error>
-            </xmldb:execute>
+                    <p><tt><xdb:get-error/></tt></p>
+                    <p><xdb:get-error-description/></p>
+                </xdb:error>
+            </xdb:execute>
             
-            <xmldb:error>
-                <p><tt><xmldb:get-error/></tt></p>
-            </xmldb:error>
-        </xmldb:collection>
+            <xdb:error>
+                <p><tt><xdb:get-error/></tt></p>
+            </xdb:error>
+        </xdb:collection>
     </xsp:logic>
         
     </section>

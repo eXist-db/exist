@@ -24,7 +24,9 @@ package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
 import org.exist.xpath.value.DoubleValue;
+import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
+import org.exist.xpath.value.NumericValue;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
 
@@ -52,15 +54,11 @@ public class UnaryExpr extends PathExpr {
 			contextSequence = contextItem.toSequence();
 		if(getLength() == 0)
 			throw new XPathException("unary expression requires an operand");
-		DoubleValue value = (DoubleValue)
-			getExpression(0).eval(docs, contextSequence).convertTo(Type.DECIMAL);
-		switch(mode) {
-			case Constants.MINUS :
-				value.setValue(-value.getDouble());
-				break;
-			case Constants.PLUS :
-				value.setValue(+value.getDouble());
-		}
-		return value;
+		NumericValue value = (NumericValue)
+			getExpression(0).eval(docs, contextSequence).convertTo(Type.NUMBER);
+		if(mode == Constants.MINUS)
+			return value.negate();
+		else
+			return value;
 	}
 }

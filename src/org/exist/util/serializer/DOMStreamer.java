@@ -67,6 +67,14 @@ public class DOMStreamer {
 		lexicalHandler = handler;
 	}
 
+	public void reset() {
+		nsSupport.reset();
+		namespaceDecls.clear();
+		stack.clear();
+		contentHandler = null;
+		lexicalHandler = null;
+	}
+	
     public void serialize(Node node) throws SAXException {
         serialize(node, false);
     }

@@ -207,6 +207,11 @@ itemType
 	( "item" LPAREN ) => "item"^ LPAREN! RPAREN! | ( . LPAREN ) => kindTest | atomicType
 	;
 
+singleType
+:
+	atomicType ( QUESTION )?
+	;
+	
 atomicType
 { String name= null; }
 :
@@ -291,9 +296,14 @@ orExpr
 
 andExpr
 :
-	comparisonExpr ( "and"^ comparisonExpr )*
+	castExpr ( "and"^ castExpr )*
 	;
 
+castExpr
+:
+	comparisonExpr ( "cast"^ "as"! singleType )?
+	;
+	
 comparisonExpr
 :
 	rangeExpr ( ( ( EQ^ | NEQ^ | GT^ | GTEQ^ | LT^ | LTEQ^ ) rangeExpr ) | ( ( ANDEQ^ | OREQ^ ) rangeExpr ) )?
@@ -311,7 +321,7 @@ additiveExpr
 
 multiplicativeExpr
 :
-	unaryExpr ( ( STAR^ | "div"^ | "mod"^ ) unaryExpr )*
+	unaryExpr ( ( STAR^ | "div"^ | "idiv"^ | "mod"^ ) unaryExpr )*
 	;
 
 unaryExpr
@@ -1055,6 +1065,27 @@ throws PermissionDeniedException, EXistException, XPathException
 { Expression step= null; }
 :
 	#(
+		"cast"
+		{
+			PathExpr expr = new PathExpr(context);
+			int cardinality = Cardinality.EXACTLY_ONE;
+		}
+		expr[expr]
+		t:ATOMIC_TYPE
+		( QUESTION
+			{
+				cardinality = Cardinality.ZERO_OR_ONE;
+			}
+		)?
+		{
+			QName qn= QName.parse(context, t.getText());
+			int code= Type.getType(qn);
+			CastExpression castExpr = new CastExpression(context, expr, code, cardinality);
+			path.add(castExpr);
+		}
+	)
+	|
+	#(
 		COMMA
 		{
 			PathExpr left= new PathExpr(context);
@@ -1141,6 +1172,11 @@ throws PermissionDeniedException, EXistException, XPathException
 			)
 		)+
 		(
+			"where"
+			{ whereExpr= new PathExpr(context); }
+			expr [whereExpr]
+		)?
+		(
 			#(
 				ORDER_BY { orderBy= new ArrayList(3); }
 				(
@@ -1176,11 +1212,6 @@ throws PermissionDeniedException, EXistException, XPathException
 					)?
 				)+
 			)
-		)?
-		(
-			"where"
-			{ whereExpr= new PathExpr(context); }
-			expr [whereExpr]
 		)?
 		expr [(PathExpr) action]
 		{
@@ -1519,6 +1550,13 @@ throws PermissionDeniedException, EXistException, XPathException
 	#( "div" expr [left] expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.DIV);
+		path.addPath(op);
+		step= op;
+	}
+	|
+	#( "idiv" expr [left] expr [right] )
+	{
+		OpNumeric op= new OpNumeric(context, left, right, Constants.IDIV);
 		path.addPath(op);
 		step= op;
 	}

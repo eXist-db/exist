@@ -162,6 +162,7 @@ public class Backup {
 			// write resource to contentSerializer
 			contentSerializer = new SAXSerializer(writer, null);
 			resource.getContentAsSAX(contentSerializer);
+            //writer.write((String)resource.getContent());
 			writer.close();
 			// store permissions
 			attr.clear();

@@ -69,12 +69,13 @@ public abstract class NumericValue extends AtomicValue {
 		}
 	}
 	
+	public abstract NumericValue negate();
 	public abstract NumericValue ceiling();
 	public abstract NumericValue floor();
 	public abstract NumericValue round();
-	public abstract NumericValue minus(NumericValue other);
-	public abstract NumericValue plus(NumericValue other);
-	public abstract NumericValue mult(NumericValue other);
+	public abstract NumericValue minus(NumericValue other) throws XPathException;
+	public abstract NumericValue plus(NumericValue other) throws XPathException;
+	public abstract NumericValue mult(NumericValue other) throws XPathException;
 	public abstract NumericValue div(NumericValue other) throws XPathException;
-	public abstract NumericValue mod(NumericValue other);
+	public abstract NumericValue mod(NumericValue other) throws XPathException;
 }

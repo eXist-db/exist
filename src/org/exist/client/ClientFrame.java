@@ -1,7 +1,24 @@
 /*
- * ClientFrame.java - Mar 31, 2003
- * 
- * @author wolf
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
  */
 package org.exist.client;
 
@@ -71,7 +88,6 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Keymap;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 import javax.swing.text.TextAction;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -86,11 +102,12 @@ import org.exist.security.Permission;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XMLResourceImpl;
+import org.jedit.syntax.JEditTextArea;
+import org.jedit.syntax.XMLTokenMarker;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XMLResource;
 
 public class ClientFrame extends JFrame {
 
@@ -677,7 +694,7 @@ public class ClientFrame extends JFrame {
 
 	private void findAction(ActionEvent ev) {
 		Collection collection = client.getCollection();
-		QueryDialog dialog = new QueryDialog(collection, properties);
+		QueryDialog dialog = new QueryDialog(client, collection, properties);
 		dialog.show();
 	}
 
@@ -735,6 +752,7 @@ public class ClientFrame extends JFrame {
 	}
 
 	private void close() {
+        client.writeQueryHistory();
 		setVisible(false);
 		dispose();
 		process.terminate();
@@ -793,13 +811,11 @@ public class ClientFrame extends JFrame {
 					display(command + "\n");
 					process.setAction(command);
 				} else {
-					final DocumentView view = new DocumentView(parent);
-					view.setSize(new Dimension(400, 300));
-					view.setVisible(true);
 					try {
-						//final StringWriter writer = new StringWriter();
-						//transformer.setResult(new StreamResult(writer));
 						final Resource res = client.retrieve(resource.toString(), "yes");
+						DocumentView view = new DocumentView(parent, client.getCollection(), res);
+						view.setSize(new Dimension(400, 500));
+						view.setVisible(true);
 						if(res.getResourceType().equals("XMLResource"))
 							view.setText((String) res.getContent());
 						else
@@ -970,25 +986,6 @@ public class ClientFrame extends JFrame {
 		}
 	}
 
-	class DocumentView extends JDialog {
-
-		JTextArea text;
-		
-		public DocumentView(JFrame owner) {
-			super(owner, "View Document", false);
-			DefaultStyledDocument doc = new DefaultStyledDocument();
-			text = new JTextArea();
-			text.setFont(new Font("Monospaced", Font.PLAIN, 12));
-			JScrollPane scroll = new JScrollPane(text);
-			getContentPane().add(scroll);
-			pack();
-		}
-
-		public void setText(String content) {
-			text.setText(content);
-		}
-	}
-
 	protected static String[] getLoginData(String defaultUser) {
 		LoginPanel login = new LoginPanel(defaultUser);
 		if (JOptionPane
@@ -1094,14 +1091,16 @@ class ErrorPanel extends JPanel {
 		text = new JLabel(message);
 		add(text, BorderLayout.NORTH);
 
-		StringWriter out = new StringWriter();
-		PrintWriter writer = new PrintWriter(out);
-		t.printStackTrace(writer);
-		stacktrace = new JTextArea(out.toString(), 10, 50);
-		stacktrace.setEditable(false);
-		JScrollPane scroll = new JScrollPane(stacktrace);
-		scroll.setPreferredSize(new Dimension(200, 100));
-		add(scroll, BorderLayout.CENTER);
+		if(t != null) {
+			StringWriter out = new StringWriter();
+			PrintWriter writer = new PrintWriter(out);
+			t.printStackTrace(writer);
+			stacktrace = new JTextArea(out.toString(), 10, 50);
+			stacktrace.setEditable(false);
+			JScrollPane scroll = new JScrollPane(stacktrace);
+			scroll.setPreferredSize(new Dimension(200, 100));
+			add(scroll, BorderLayout.CENTER);
+		}
 	}
 }
 

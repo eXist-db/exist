@@ -109,121 +109,121 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST imaginaryTokenDefinitions_AST = null;
 		
-		AST tmp79_AST = null;
-		tmp79_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp79_AST);
-		match(QNAME);
-		AST tmp80_AST = null;
-		tmp80_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp80_AST);
-		match(PREDICATE);
-		AST tmp81_AST = null;
-		tmp81_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp81_AST);
-		match(FLWOR);
 		AST tmp82_AST = null;
 		tmp82_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp82_AST);
-		match(PARENTHESIZED);
+		match(QNAME);
 		AST tmp83_AST = null;
 		tmp83_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp83_AST);
-		match(ABSOLUTE_SLASH);
+		match(PREDICATE);
 		AST tmp84_AST = null;
 		tmp84_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp84_AST);
-		match(ABSOLUTE_DSLASH);
+		match(FLWOR);
 		AST tmp85_AST = null;
 		tmp85_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp85_AST);
-		match(WILDCARD);
+		match(PARENTHESIZED);
 		AST tmp86_AST = null;
 		tmp86_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp86_AST);
-		match(PREFIX_WILDCARD);
+		match(ABSOLUTE_SLASH);
 		AST tmp87_AST = null;
 		tmp87_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp87_AST);
-		match(FUNCTION);
+		match(ABSOLUTE_DSLASH);
 		AST tmp88_AST = null;
 		tmp88_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp88_AST);
-		match(UNARY_MINUS);
+		match(WILDCARD);
 		AST tmp89_AST = null;
 		tmp89_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp89_AST);
-		match(UNARY_PLUS);
+		match(PREFIX_WILDCARD);
 		AST tmp90_AST = null;
 		tmp90_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp90_AST);
-		match(XPOINTER);
+		match(FUNCTION);
 		AST tmp91_AST = null;
 		tmp91_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp91_AST);
-		match(XPOINTER_ID);
+		match(UNARY_MINUS);
 		AST tmp92_AST = null;
 		tmp92_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp92_AST);
-		match(VARIABLE_REF);
+		match(UNARY_PLUS);
 		AST tmp93_AST = null;
 		tmp93_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp93_AST);
-		match(VARIABLE_BINDING);
+		match(XPOINTER);
 		AST tmp94_AST = null;
 		tmp94_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp94_AST);
-		match(ELEMENT);
+		match(XPOINTER_ID);
 		AST tmp95_AST = null;
 		tmp95_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp95_AST);
-		match(ATTRIBUTE);
+		match(VARIABLE_REF);
 		AST tmp96_AST = null;
 		tmp96_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp96_AST);
-		match(TEXT);
+		match(VARIABLE_BINDING);
 		AST tmp97_AST = null;
 		tmp97_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp97_AST);
-		match(VERSION_DECL);
+		match(ELEMENT);
 		AST tmp98_AST = null;
 		tmp98_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp98_AST);
-		match(NAMESPACE_DECL);
+		match(ATTRIBUTE);
 		AST tmp99_AST = null;
 		tmp99_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp99_AST);
-		match(DEF_NAMESPACE_DECL);
+		match(TEXT);
 		AST tmp100_AST = null;
 		tmp100_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp100_AST);
-		match(DEF_FUNCTION_NS_DECL);
+		match(VERSION_DECL);
 		AST tmp101_AST = null;
 		tmp101_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp101_AST);
-		match(GLOBAL_VAR);
+		match(NAMESPACE_DECL);
 		AST tmp102_AST = null;
 		tmp102_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp102_AST);
-		match(FUNCTION_DECL);
+		match(DEF_NAMESPACE_DECL);
 		AST tmp103_AST = null;
 		tmp103_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp103_AST);
-		match(PROLOG);
+		match(DEF_FUNCTION_NS_DECL);
 		AST tmp104_AST = null;
 		tmp104_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp104_AST);
-		match(ATOMIC_TYPE);
+		match(GLOBAL_VAR);
 		AST tmp105_AST = null;
 		tmp105_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp105_AST);
-		match(MODULE);
+		match(FUNCTION_DECL);
 		AST tmp106_AST = null;
 		tmp106_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp106_AST);
-		match(ORDER_BY);
+		match(PROLOG);
 		AST tmp107_AST = null;
 		tmp107_AST = astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp107_AST);
+		match(ATOMIC_TYPE);
+		AST tmp108_AST = null;
+		tmp108_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp108_AST);
+		match(MODULE);
+		AST tmp109_AST = null;
+		tmp109_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp109_AST);
+		match(ORDER_BY);
+		AST tmp110_AST = null;
+		tmp110_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp110_AST);
 		match(POSITIONAL_VAR);
 		imaginaryTokenDefinitions_AST = (AST)currentAST.root;
 		returnAST = imaginaryTokenDefinitions_AST;
@@ -241,9 +241,9 @@ public XPathParser2(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_xpointer:
 		{
-			AST tmp108_AST = null;
-			tmp108_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp108_AST);
+			AST tmp111_AST = null;
+			tmp111_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp111_AST);
 			match(LITERAL_xpointer);
 			match(LPAREN);
 			expr();
@@ -295,18 +295,18 @@ public XPathParser2(ParserSharedInputState state) {
 		exprSingle();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop52:
+		_loop54:
 		do {
 			if ((LA(1)==COMMA)) {
-				AST tmp111_AST = null;
-				tmp111_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp111_AST);
+				AST tmp114_AST = null;
+				tmp114_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp114_AST);
 				match(COMMA);
 				exprSingle();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop52;
+				break _loop54;
 			}
 			
 		} while (true);
@@ -363,18 +363,18 @@ public XPathParser2(ParserSharedInputState state) {
 			case LITERAL_self:
 			case LITERAL_attribute:
 			case LITERAL_descendant:
-			case 102:
-			case 103:
+			case 104:
+			case 105:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 106:
-			case 107:
+			case 108:
+			case 109:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
 			case LITERAL_comment:
-			case 112:
-			case 113:
+			case 114:
+			case 115:
 			case XML_PI:
 			case LITERAL_document:
 			case LITERAL_collection:
@@ -393,9 +393,9 @@ public XPathParser2(ParserSharedInputState state) {
 			}
 			}
 			}
-			AST tmp112_AST = null;
-			tmp112_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp112_AST);
+			AST tmp115_AST = null;
+			tmp115_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp115_AST);
 			match(Token.EOF_TYPE);
 			xpath_AST = (AST)currentAST.root;
 		}
@@ -608,13 +608,13 @@ public XPathParser2(ParserSharedInputState state) {
 		Token  v = null;
 		AST v_AST = null;
 		
-		AST tmp115_AST = null;
-		tmp115_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp115_AST);
+		AST tmp118_AST = null;
+		tmp118_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp118_AST);
 		match(XQUERY);
-		AST tmp116_AST = null;
-		tmp116_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp116_AST);
+		AST tmp119_AST = null;
+		tmp119_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp119_AST);
 		match(VERSION);
 		v = LT(1);
 		v_AST = astFactory.create(v);
@@ -642,13 +642,13 @@ public XPathParser2(ParserSharedInputState state) {
 		Token  uri = null;
 		AST uri_AST = null;
 		
-		AST tmp117_AST = null;
-		tmp117_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp117_AST);
+		AST tmp120_AST = null;
+		tmp120_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp120_AST);
 		match(LITERAL_declare);
-		AST tmp118_AST = null;
-		tmp118_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp118_AST);
+		AST tmp121_AST = null;
+		tmp121_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp121_AST);
 		match(LITERAL_namespace);
 		prefix = LT(1);
 		prefix_AST = astFactory.create(prefix);
@@ -681,25 +681,25 @@ public XPathParser2(ParserSharedInputState state) {
 		Token  deff = null;
 		AST deff_AST = null;
 		
-		AST tmp120_AST = null;
-		tmp120_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp120_AST);
+		AST tmp123_AST = null;
+		tmp123_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp123_AST);
 		match(LITERAL_declare);
-		AST tmp121_AST = null;
-		tmp121_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp121_AST);
+		AST tmp124_AST = null;
+		tmp124_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp124_AST);
 		match(LITERAL_default);
 		{
 		switch ( LA(1)) {
 		case LITERAL_element:
 		{
-			AST tmp122_AST = null;
-			tmp122_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp122_AST);
+			AST tmp125_AST = null;
+			tmp125_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp125_AST);
 			match(LITERAL_element);
-			AST tmp123_AST = null;
-			tmp123_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp123_AST);
+			AST tmp126_AST = null;
+			tmp126_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp126_AST);
 			match(LITERAL_namespace);
 			defu = LT(1);
 			defu_AST = astFactory.create(defu);
@@ -717,13 +717,13 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_function:
 		{
-			AST tmp124_AST = null;
-			tmp124_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp124_AST);
+			AST tmp127_AST = null;
+			tmp127_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp127_AST);
 			match(LITERAL_function);
-			AST tmp125_AST = null;
-			tmp125_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp125_AST);
+			AST tmp128_AST = null;
+			tmp128_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp128_AST);
 			match(LITERAL_namespace);
 			deff = LT(1);
 			deff_AST = astFactory.create(deff);
@@ -819,27 +819,27 @@ public XPathParser2(ParserSharedInputState state) {
 		AST ex_AST = null;
 		String varName= null;
 		
-		AST tmp130_AST = null;
-		tmp130_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp130_AST);
+		AST tmp133_AST = null;
+		tmp133_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp133_AST);
 		match(LITERAL_declare);
-		AST tmp131_AST = null;
-		tmp131_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp131_AST);
+		AST tmp134_AST = null;
+		tmp134_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp134_AST);
 		match(LITERAL_variable);
 		match(DOLLAR);
 		varName=qName();
 		astFactory.addASTChild(currentAST, returnAST);
-		AST tmp133_AST = null;
-		tmp133_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp133_AST);
+		AST tmp136_AST = null;
+		tmp136_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp136_AST);
 		match(LCURLY);
 		expr();
 		ex_AST = (AST)returnAST;
 		astFactory.addASTChild(currentAST, returnAST);
-		AST tmp134_AST = null;
-		tmp134_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp134_AST);
+		AST tmp137_AST = null;
+		tmp137_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp137_AST);
 		match(RCURLY);
 		if ( inputState.guessing==0 ) {
 			varDecl_AST = (AST)currentAST.root;
@@ -864,10 +864,10 @@ public XPathParser2(ParserSharedInputState state) {
 			String name2;
 		
 		
-		boolean synPredMatched172 = false;
+		boolean synPredMatched176 = false;
 		if (((_tokenSet_1.member(LA(1))))) {
-			int _m172 = mark();
-			synPredMatched172 = true;
+			int _m176 = mark();
+			synPredMatched176 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -877,17 +877,17 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched172 = false;
+				synPredMatched176 = false;
 			}
-			rewind(_m172);
+			rewind(_m176);
 			inputState.guessing--;
 		}
-		if ( synPredMatched172 ) {
+		if ( synPredMatched176 ) {
 			name=ncnameOrKeyword();
 			astFactory.addASTChild(currentAST, returnAST);
-			AST tmp135_AST = null;
-			tmp135_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp135_AST);
+			AST tmp138_AST = null;
+			tmp138_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp138_AST);
 			match(COLON);
 			name2=ncnameOrKeyword();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -943,9 +943,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST returnType_AST = null;
 		
-		AST tmp137_AST = null;
-		tmp137_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp137_AST);
+		AST tmp140_AST = null;
+		tmp140_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp140_AST);
 		match(LITERAL_as);
 		sequenceType();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -960,9 +960,9 @@ public XPathParser2(ParserSharedInputState state) {
 		AST functionBody_AST = null;
 		AST e_AST = null;
 		
-		AST tmp138_AST = null;
-		tmp138_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp138_AST);
+		AST tmp141_AST = null;
+		tmp141_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp141_AST);
 		match(LCURLY);
 		expr();
 		e_AST = (AST)returnAST;
@@ -996,9 +996,9 @@ public XPathParser2(ParserSharedInputState state) {
 			inputState.guessing--;
 		}
 		if ( synPredMatched40 ) {
-			AST tmp140_AST = null;
-			tmp140_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp140_AST);
+			AST tmp143_AST = null;
+			tmp143_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp143_AST);
 			match(LITERAL_empty);
 			match(LPAREN);
 			match(RPAREN);
@@ -1087,9 +1087,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST typeDeclaration_AST = null;
 		
-		AST tmp144_AST = null;
-		tmp144_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp144_AST);
+		AST tmp147_AST = null;
+		tmp147_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp147_AST);
 		match(LITERAL_as);
 		sequenceType();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -1121,9 +1121,9 @@ public XPathParser2(ParserSharedInputState state) {
 			inputState.guessing--;
 		}
 		if ( synPredMatched45 ) {
-			AST tmp145_AST = null;
-			tmp145_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp145_AST);
+			AST tmp148_AST = null;
+			tmp148_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp148_AST);
 			match(LITERAL_item);
 			match(LPAREN);
 			match(RPAREN);
@@ -1173,27 +1173,27 @@ public XPathParser2(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case QUESTION:
 		{
-			AST tmp148_AST = null;
-			tmp148_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp148_AST);
+			AST tmp151_AST = null;
+			tmp151_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp151_AST);
 			match(QUESTION);
 			occurrenceIndicator_AST = (AST)currentAST.root;
 			break;
 		}
 		case STAR:
 		{
-			AST tmp149_AST = null;
-			tmp149_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp149_AST);
+			AST tmp152_AST = null;
+			tmp152_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp152_AST);
 			match(STAR);
 			occurrenceIndicator_AST = (AST)currentAST.root;
 			break;
 		}
 		case PLUS:
 		{
-			AST tmp150_AST = null;
-			tmp150_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp150_AST);
+			AST tmp153_AST = null;
+			tmp153_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp153_AST);
 			match(PLUS);
 			occurrenceIndicator_AST = (AST)currentAST.root;
 			break;
@@ -1248,14 +1248,14 @@ public XPathParser2(ParserSharedInputState state) {
 			kindTest_AST = (AST)currentAST.root;
 			break;
 		}
-		case 112:
+		case 114:
 		{
 			piTest();
 			astFactory.addASTChild(currentAST, returnAST);
 			kindTest_AST = (AST)currentAST.root;
 			break;
 		}
-		case 113:
+		case 115:
 		{
 			documentTest();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -1291,16 +1291,63 @@ public XPathParser2(ParserSharedInputState state) {
 		returnAST = atomicType_AST;
 	}
 	
+	public final void singleType() throws RecognitionException, TokenStreamException {
+		
+		returnAST = null;
+		ASTPair currentAST = new ASTPair();
+		AST singleType_AST = null;
+		
+		atomicType();
+		astFactory.addASTChild(currentAST, returnAST);
+		{
+		switch ( LA(1)) {
+		case QUESTION:
+		{
+			AST tmp154_AST = null;
+			tmp154_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp154_AST);
+			match(QUESTION);
+			break;
+		}
+		case EOF:
+		case RPAREN:
+		case RCURLY:
+		case COMMA:
+		case LITERAL_empty:
+		case LITERAL_for:
+		case LITERAL_let:
+		case LITERAL_where:
+		case LITERAL_return:
+		case LITERAL_order:
+		case LITERAL_ascending:
+		case LITERAL_descending:
+		case LITERAL_else:
+		case LITERAL_or:
+		case LITERAL_and:
+		case RPPAREN:
+		{
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		}
+		singleType_AST = (AST)currentAST.root;
+		returnAST = singleType_AST;
+	}
+	
 	public final void exprSingle() throws RecognitionException, TokenStreamException {
 		
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
 		AST exprSingle_AST = null;
 		
-		boolean synPredMatched56 = false;
+		boolean synPredMatched58 = false;
 		if (((LA(1)==LITERAL_for||LA(1)==LITERAL_let))) {
-			int _m56 = mark();
-			synPredMatched56 = true;
+			int _m58 = mark();
+			synPredMatched58 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -1326,21 +1373,21 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched56 = false;
+				synPredMatched58 = false;
 			}
-			rewind(_m56);
+			rewind(_m58);
 			inputState.guessing--;
 		}
-		if ( synPredMatched56 ) {
+		if ( synPredMatched58 ) {
 			flworExpr();
 			astFactory.addASTChild(currentAST, returnAST);
 			exprSingle_AST = (AST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched58 = false;
+			boolean synPredMatched60 = false;
 			if (((LA(1)==LITERAL_if))) {
-				int _m58 = mark();
-				synPredMatched58 = true;
+				int _m60 = mark();
+				synPredMatched60 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -1349,12 +1396,12 @@ public XPathParser2(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched58 = false;
+					synPredMatched60 = false;
 				}
-				rewind(_m58);
+				rewind(_m60);
 				inputState.guessing--;
 			}
-			if ( synPredMatched58 ) {
+			if ( synPredMatched60 ) {
 				ifExpr();
 				astFactory.addASTChild(currentAST, returnAST);
 				exprSingle_AST = (AST)currentAST.root;
@@ -1378,8 +1425,8 @@ public XPathParser2(ParserSharedInputState state) {
 		AST flworExpr_AST = null;
 		
 		{
-		int _cnt61=0;
-		_loop61:
+		int _cnt63=0;
+		_loop63:
 		do {
 			switch ( LA(1)) {
 			case LITERAL_for:
@@ -1396,19 +1443,19 @@ public XPathParser2(ParserSharedInputState state) {
 			}
 			default:
 			{
-				if ( _cnt61>=1 ) { break _loop61; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt63>=1 ) { break _loop63; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			}
-			_cnt61++;
+			_cnt63++;
 		} while (true);
 		}
 		{
 		switch ( LA(1)) {
 		case LITERAL_where:
 		{
-			AST tmp151_AST = null;
-			tmp151_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp151_AST);
+			AST tmp155_AST = null;
+			tmp155_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp155_AST);
 			match(LITERAL_where);
 			expr();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -1443,9 +1490,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		}
 		}
-		AST tmp152_AST = null;
-		tmp152_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp152_AST);
+		AST tmp156_AST = null;
+		tmp156_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp156_AST);
 		match(LITERAL_return);
 		exprSingle();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -1459,9 +1506,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST ifExpr_AST = null;
 		
-		AST tmp153_AST = null;
-		tmp153_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp153_AST);
+		AST tmp157_AST = null;
+		tmp157_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp157_AST);
 		match(LITERAL_if);
 		match(LPAREN);
 		expr();
@@ -1486,18 +1533,18 @@ public XPathParser2(ParserSharedInputState state) {
 		andExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop86:
+		_loop88:
 		do {
 			if ((LA(1)==LITERAL_or)) {
-				AST tmp158_AST = null;
-				tmp158_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp158_AST);
+				AST tmp162_AST = null;
+				tmp162_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp162_AST);
 				match(LITERAL_or);
 				andExpr();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop86;
+				break _loop88;
 			}
 			
 		} while (true);
@@ -1512,14 +1559,14 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST forClause_AST = null;
 		
-		AST tmp159_AST = null;
-		tmp159_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp159_AST);
+		AST tmp163_AST = null;
+		tmp163_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp163_AST);
 		match(LITERAL_for);
 		inVarBinding();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop66:
+		_loop68:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -1527,7 +1574,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop66;
+				break _loop68;
 			}
 			
 		} while (true);
@@ -1542,14 +1589,14 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST letClause_AST = null;
 		
-		AST tmp161_AST = null;
-		tmp161_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp161_AST);
+		AST tmp165_AST = null;
+		tmp165_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp165_AST);
 		match(LITERAL_let);
 		letVarBinding();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop69:
+		_loop71:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -1557,7 +1604,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop69;
+				break _loop71;
 			}
 			
 		} while (true);
@@ -1665,9 +1712,9 @@ public XPathParser2(ParserSharedInputState state) {
 		AST positionalVar_AST = null;
 		String varName;
 		
-		AST tmp170_AST = null;
-		tmp170_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp170_AST);
+		AST tmp174_AST = null;
+		tmp174_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp174_AST);
 		match(LITERAL_at);
 		match(DOLLAR);
 		varName=qName();
@@ -1695,7 +1742,7 @@ public XPathParser2(ParserSharedInputState state) {
 		orderSpec();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop77:
+		_loop79:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -1703,7 +1750,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop77;
+				break _loop79;
 			}
 			
 		} while (true);
@@ -1736,17 +1783,17 @@ public XPathParser2(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_ascending:
 		{
-			AST tmp173_AST = null;
-			tmp173_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp173_AST);
+			AST tmp177_AST = null;
+			tmp177_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp177_AST);
 			match(LITERAL_ascending);
 			break;
 		}
 		case LITERAL_descending:
 		{
-			AST tmp174_AST = null;
-			tmp174_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp174_AST);
+			AST tmp178_AST = null;
+			tmp178_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp178_AST);
 			match(LITERAL_descending);
 			break;
 		}
@@ -1766,25 +1813,25 @@ public XPathParser2(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_empty:
 		{
-			AST tmp175_AST = null;
-			tmp175_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp175_AST);
+			AST tmp179_AST = null;
+			tmp179_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp179_AST);
 			match(LITERAL_empty);
 			{
 			switch ( LA(1)) {
 			case LITERAL_greatest:
 			{
-				AST tmp176_AST = null;
-				tmp176_AST = astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp176_AST);
+				AST tmp180_AST = null;
+				tmp180_AST = astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp180_AST);
 				match(LITERAL_greatest);
 				break;
 			}
 			case LITERAL_least:
 			{
-				AST tmp177_AST = null;
-				tmp177_AST = astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp177_AST);
+				AST tmp181_AST = null;
+				tmp181_AST = astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp181_AST);
 				match(LITERAL_least);
 				break;
 			}
@@ -1817,27 +1864,77 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST andExpr_AST = null;
 		
-		comparisonExpr();
+		castExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop89:
+		_loop91:
 		do {
 			if ((LA(1)==LITERAL_and)) {
-				AST tmp178_AST = null;
-				tmp178_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp178_AST);
+				AST tmp182_AST = null;
+				tmp182_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp182_AST);
 				match(LITERAL_and);
-				comparisonExpr();
+				castExpr();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop89;
+				break _loop91;
 			}
 			
 		} while (true);
 		}
 		andExpr_AST = (AST)currentAST.root;
 		returnAST = andExpr_AST;
+	}
+	
+	public final void castExpr() throws RecognitionException, TokenStreamException {
+		
+		returnAST = null;
+		ASTPair currentAST = new ASTPair();
+		AST castExpr_AST = null;
+		
+		comparisonExpr();
+		astFactory.addASTChild(currentAST, returnAST);
+		{
+		switch ( LA(1)) {
+		case LITERAL_cast:
+		{
+			AST tmp183_AST = null;
+			tmp183_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp183_AST);
+			match(LITERAL_cast);
+			match(LITERAL_as);
+			singleType();
+			astFactory.addASTChild(currentAST, returnAST);
+			break;
+		}
+		case EOF:
+		case RPAREN:
+		case RCURLY:
+		case COMMA:
+		case LITERAL_empty:
+		case LITERAL_for:
+		case LITERAL_let:
+		case LITERAL_where:
+		case LITERAL_return:
+		case LITERAL_order:
+		case LITERAL_ascending:
+		case LITERAL_descending:
+		case LITERAL_else:
+		case LITERAL_or:
+		case LITERAL_and:
+		case RPPAREN:
+		{
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		}
+		castExpr_AST = (AST)currentAST.root;
+		returnAST = castExpr_AST;
 	}
 	
 	public final void comparisonExpr() throws RecognitionException, TokenStreamException {
@@ -1862,49 +1959,49 @@ public XPathParser2(ParserSharedInputState state) {
 			switch ( LA(1)) {
 			case EQ:
 			{
-				AST tmp179_AST = null;
-				tmp179_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp179_AST);
+				AST tmp185_AST = null;
+				tmp185_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp185_AST);
 				match(EQ);
 				break;
 			}
 			case NEQ:
 			{
-				AST tmp180_AST = null;
-				tmp180_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp180_AST);
+				AST tmp186_AST = null;
+				tmp186_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp186_AST);
 				match(NEQ);
 				break;
 			}
 			case GT:
 			{
-				AST tmp181_AST = null;
-				tmp181_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp181_AST);
+				AST tmp187_AST = null;
+				tmp187_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp187_AST);
 				match(GT);
 				break;
 			}
 			case GTEQ:
 			{
-				AST tmp182_AST = null;
-				tmp182_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp182_AST);
+				AST tmp188_AST = null;
+				tmp188_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp188_AST);
 				match(GTEQ);
 				break;
 			}
 			case LT:
 			{
-				AST tmp183_AST = null;
-				tmp183_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp183_AST);
+				AST tmp189_AST = null;
+				tmp189_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp189_AST);
 				match(LT);
 				break;
 			}
 			case LTEQ:
 			{
-				AST tmp184_AST = null;
-				tmp184_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp184_AST);
+				AST tmp190_AST = null;
+				tmp190_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp190_AST);
 				match(LTEQ);
 				break;
 			}
@@ -1927,17 +2024,17 @@ public XPathParser2(ParserSharedInputState state) {
 			switch ( LA(1)) {
 			case ANDEQ:
 			{
-				AST tmp185_AST = null;
-				tmp185_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp185_AST);
+				AST tmp191_AST = null;
+				tmp191_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp191_AST);
 				match(ANDEQ);
 				break;
 			}
 			case OREQ:
 			{
-				AST tmp186_AST = null;
-				tmp186_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp186_AST);
+				AST tmp192_AST = null;
+				tmp192_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp192_AST);
 				match(OREQ);
 				break;
 			}
@@ -1967,6 +2064,7 @@ public XPathParser2(ParserSharedInputState state) {
 		case LITERAL_else:
 		case LITERAL_or:
 		case LITERAL_and:
+		case LITERAL_cast:
 		case RPPAREN:
 		{
 			break;
@@ -1993,9 +2091,9 @@ public XPathParser2(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_to:
 		{
-			AST tmp187_AST = null;
-			tmp187_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp187_AST);
+			AST tmp193_AST = null;
+			tmp193_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp193_AST);
 			match(LITERAL_to);
 			additiveExpr();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -2017,6 +2115,7 @@ public XPathParser2(ParserSharedInputState state) {
 		case LITERAL_else:
 		case LITERAL_or:
 		case LITERAL_and:
+		case LITERAL_cast:
 		case NEQ:
 		case GT:
 		case GTEQ:
@@ -2047,24 +2146,24 @@ public XPathParser2(ParserSharedInputState state) {
 		multiplicativeExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop101:
+		_loop105:
 		do {
 			if ((LA(1)==PLUS||LA(1)==MINUS)) {
 				{
 				switch ( LA(1)) {
 				case PLUS:
 				{
-					AST tmp188_AST = null;
-					tmp188_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp188_AST);
+					AST tmp194_AST = null;
+					tmp194_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp194_AST);
 					match(PLUS);
 					break;
 				}
 				case MINUS:
 				{
-					AST tmp189_AST = null;
-					tmp189_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp189_AST);
+					AST tmp195_AST = null;
+					tmp195_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp195_AST);
 					match(MINUS);
 					break;
 				}
@@ -2078,7 +2177,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop101;
+				break _loop105;
 			}
 			
 		} while (true);
@@ -2096,32 +2195,40 @@ public XPathParser2(ParserSharedInputState state) {
 		unaryExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop105:
+		_loop109:
 		do {
-			if ((LA(1)==STAR||LA(1)==LITERAL_div||LA(1)==LITERAL_mod)) {
+			if ((_tokenSet_5.member(LA(1)))) {
 				{
 				switch ( LA(1)) {
 				case STAR:
 				{
-					AST tmp190_AST = null;
-					tmp190_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp190_AST);
+					AST tmp196_AST = null;
+					tmp196_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp196_AST);
 					match(STAR);
 					break;
 				}
 				case LITERAL_div:
 				{
-					AST tmp191_AST = null;
-					tmp191_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp191_AST);
+					AST tmp197_AST = null;
+					tmp197_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp197_AST);
 					match(LITERAL_div);
+					break;
+				}
+				case LITERAL_idiv:
+				{
+					AST tmp198_AST = null;
+					tmp198_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp198_AST);
+					match(LITERAL_idiv);
 					break;
 				}
 				case LITERAL_mod:
 				{
-					AST tmp192_AST = null;
-					tmp192_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp192_AST);
+					AST tmp199_AST = null;
+					tmp199_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp199_AST);
 					match(LITERAL_mod);
 					break;
 				}
@@ -2135,7 +2242,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop105;
+				break _loop109;
 			}
 			
 		} while (true);
@@ -2155,9 +2262,9 @@ public XPathParser2(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case MINUS:
 		{
-			AST tmp193_AST = null;
-			tmp193_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp193_AST);
+			AST tmp200_AST = null;
+			tmp200_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp200_AST);
 			match(MINUS);
 			unionExpr();
 			expr_AST = (AST)returnAST;
@@ -2175,9 +2282,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case PLUS:
 		{
-			AST tmp194_AST = null;
-			tmp194_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp194_AST);
+			AST tmp201_AST = null;
+			tmp201_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp201_AST);
 			match(PLUS);
 			unionExpr();
 			expr2_AST = (AST)returnAST;
@@ -2229,18 +2336,18 @@ public XPathParser2(ParserSharedInputState state) {
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 102:
-		case 103:
+		case 104:
+		case 105:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 106:
-		case 107:
+		case 108:
+		case 109:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_comment:
-		case 112:
-		case 113:
+		case 114:
+		case 115:
 		case XML_PI:
 		case LITERAL_document:
 		case LITERAL_collection:
@@ -2270,9 +2377,9 @@ public XPathParser2(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case UNION:
 		{
-			AST tmp195_AST = null;
-			tmp195_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp195_AST);
+			AST tmp202_AST = null;
+			tmp202_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp202_AST);
 			match(UNION);
 			pathExpr();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -2296,6 +2403,7 @@ public XPathParser2(ParserSharedInputState state) {
 		case LITERAL_else:
 		case LITERAL_or:
 		case LITERAL_and:
+		case LITERAL_cast:
 		case NEQ:
 		case GT:
 		case GTEQ:
@@ -2306,6 +2414,7 @@ public XPathParser2(ParserSharedInputState state) {
 		case LITERAL_to:
 		case MINUS:
 		case LITERAL_div:
+		case LITERAL_idiv:
 		case LITERAL_mod:
 		case RPPAREN:
 		{
@@ -2364,18 +2473,18 @@ public XPathParser2(ParserSharedInputState state) {
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 102:
-		case 103:
+		case 104:
+		case 105:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 106:
-		case 107:
+		case 108:
+		case 109:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_comment:
-		case 112:
-		case 113:
+		case 114:
+		case 115:
 		case XML_PI:
 		case LITERAL_document:
 		case LITERAL_collection:
@@ -2387,9 +2496,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case DSLASH:
 		{
-			AST tmp196_AST = null;
-			tmp196_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp196_AST);
+			AST tmp203_AST = null;
+			tmp203_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp203_AST);
 			match(DSLASH);
 			relativePathExpr();
 			relPath2_AST = (AST)returnAST;
@@ -2406,10 +2515,10 @@ public XPathParser2(ParserSharedInputState state) {
 			break;
 		}
 		default:
-			boolean synPredMatched111 = false;
+			boolean synPredMatched115 = false;
 			if (((LA(1)==SLASH))) {
-				int _m111 = mark();
-				synPredMatched111 = true;
+				int _m115 = mark();
+				synPredMatched115 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -2418,15 +2527,15 @@ public XPathParser2(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched111 = false;
+					synPredMatched115 = false;
 				}
-				rewind(_m111);
+				rewind(_m115);
 				inputState.guessing--;
 			}
-			if ( synPredMatched111 ) {
-				AST tmp197_AST = null;
-				tmp197_AST = astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp197_AST);
+			if ( synPredMatched115 ) {
+				AST tmp204_AST = null;
+				tmp204_AST = astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp204_AST);
 				match(SLASH);
 				relativePathExpr();
 				relPath_AST = (AST)returnAST;
@@ -2442,9 +2551,9 @@ public XPathParser2(ParserSharedInputState state) {
 				pathExpr_AST = (AST)currentAST.root;
 			}
 			else if ((LA(1)==SLASH)) {
-				AST tmp198_AST = null;
-				tmp198_AST = astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp198_AST);
+				AST tmp205_AST = null;
+				tmp205_AST = astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp205_AST);
 				match(SLASH);
 				if ( inputState.guessing==0 ) {
 					pathExpr_AST = (AST)currentAST.root;
@@ -2472,24 +2581,24 @@ public XPathParser2(ParserSharedInputState state) {
 		stepExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop115:
+		_loop119:
 		do {
 			if ((LA(1)==SLASH||LA(1)==DSLASH)) {
 				{
 				switch ( LA(1)) {
 				case SLASH:
 				{
-					AST tmp199_AST = null;
-					tmp199_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp199_AST);
+					AST tmp206_AST = null;
+					tmp206_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp206_AST);
 					match(SLASH);
 					break;
 				}
 				case DSLASH:
 				{
-					AST tmp200_AST = null;
-					tmp200_AST = astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp200_AST);
+					AST tmp207_AST = null;
+					tmp207_AST = astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp207_AST);
 					match(DSLASH);
 					break;
 				}
@@ -2503,7 +2612,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop115;
+				break _loop119;
 			}
 			
 		} while (true);
@@ -2518,10 +2627,10 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST stepExpr_AST = null;
 		
-		boolean synPredMatched119 = false;
-		if (((_tokenSet_5.member(LA(1))))) {
-			int _m119 = mark();
-			synPredMatched119 = true;
+		boolean synPredMatched123 = false;
+		if (((_tokenSet_6.member(LA(1))))) {
+			int _m123 = mark();
+			synPredMatched123 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -2552,21 +2661,21 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched119 = false;
+				synPredMatched123 = false;
 			}
-			rewind(_m119);
+			rewind(_m123);
 			inputState.guessing--;
 		}
-		if ( synPredMatched119 ) {
+		if ( synPredMatched123 ) {
 			axisStep();
 			astFactory.addASTChild(currentAST, returnAST);
 			stepExpr_AST = (AST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched122 = false;
-			if (((_tokenSet_6.member(LA(1))))) {
-				int _m122 = mark();
-				synPredMatched122 = true;
+			boolean synPredMatched126 = false;
+			if (((_tokenSet_7.member(LA(1))))) {
+				int _m126 = mark();
+				synPredMatched126 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -2600,12 +2709,12 @@ public XPathParser2(ParserSharedInputState state) {
 					case LITERAL_self:
 					case LITERAL_attribute:
 					case LITERAL_descendant:
-					case 102:
-					case 103:
+					case 104:
+					case 105:
 					case LITERAL_parent:
 					case LITERAL_ancestor:
-					case 106:
-					case 107:
+					case 108:
+					case 109:
 					case LITERAL_comment:
 					case LITERAL_document:
 					case LITERAL_collection:
@@ -2652,17 +2761,17 @@ public XPathParser2(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched122 = false;
+					synPredMatched126 = false;
 				}
-				rewind(_m122);
+				rewind(_m126);
 				inputState.guessing--;
 			}
-			if ( synPredMatched122 ) {
+			if ( synPredMatched126 ) {
 				filterStep();
 				astFactory.addASTChild(currentAST, returnAST);
 				stepExpr_AST = (AST)currentAST.root;
 			}
-			else if ((_tokenSet_5.member(LA(1)))) {
+			else if ((_tokenSet_6.member(LA(1)))) {
 				axisStep();
 				astFactory.addASTChild(currentAST, returnAST);
 				stepExpr_AST = (AST)currentAST.root;
@@ -2699,9 +2808,9 @@ public XPathParser2(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case STRING_LITERAL:
 		{
-			AST tmp201_AST = null;
-			tmp201_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp201_AST);
+			AST tmp208_AST = null;
+			tmp208_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp208_AST);
 			match(STRING_LITERAL);
 			literal_AST = (AST)currentAST.root;
 			break;
@@ -2743,10 +2852,10 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST forwardOrReverseStep_AST = null;
 		
-		boolean synPredMatched131 = false;
-		if ((((LA(1) >= LITERAL_child && LA(1) <= 103)))) {
-			int _m131 = mark();
-			synPredMatched131 = true;
+		boolean synPredMatched135 = false;
+		if ((((LA(1) >= LITERAL_child && LA(1) <= 105)))) {
+			int _m135 = mark();
+			synPredMatched135 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -2755,12 +2864,12 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched131 = false;
+				synPredMatched135 = false;
 			}
-			rewind(_m131);
+			rewind(_m135);
 			inputState.guessing--;
 		}
-		if ( synPredMatched131 ) {
+		if ( synPredMatched135 ) {
 			forwardAxis();
 			astFactory.addASTChild(currentAST, returnAST);
 			nodeTest();
@@ -2768,10 +2877,10 @@ public XPathParser2(ParserSharedInputState state) {
 			forwardOrReverseStep_AST = (AST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched133 = false;
-			if ((((LA(1) >= LITERAL_parent && LA(1) <= 107)))) {
-				int _m133 = mark();
-				synPredMatched133 = true;
+			boolean synPredMatched137 = false;
+			if ((((LA(1) >= LITERAL_parent && LA(1) <= 109)))) {
+				int _m137 = mark();
+				synPredMatched137 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -2780,19 +2889,19 @@ public XPathParser2(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched133 = false;
+					synPredMatched137 = false;
 				}
-				rewind(_m133);
+				rewind(_m137);
 				inputState.guessing--;
 			}
-			if ( synPredMatched133 ) {
+			if ( synPredMatched137 ) {
 				reverseAxis();
 				astFactory.addASTChild(currentAST, returnAST);
 				nodeTest();
 				astFactory.addASTChild(currentAST, returnAST);
 				forwardOrReverseStep_AST = (AST)currentAST.root;
 			}
-			else if ((_tokenSet_5.member(LA(1)))) {
+			else if ((_tokenSet_6.member(LA(1)))) {
 				abbrevStep();
 				astFactory.addASTChild(currentAST, returnAST);
 				forwardOrReverseStep_AST = (AST)currentAST.root;
@@ -2811,14 +2920,14 @@ public XPathParser2(ParserSharedInputState state) {
 		AST predicates_AST = null;
 		
 		{
-		_loop127:
+		_loop131:
 		do {
 			if ((LA(1)==LPPAREN)) {
 				predicate();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop127;
+				break _loop131;
 			}
 			
 		} while (true);
@@ -2860,55 +2969,55 @@ public XPathParser2(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_child:
 		{
-			AST tmp204_AST = null;
-			tmp204_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp204_AST);
+			AST tmp211_AST = null;
+			tmp211_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp211_AST);
 			match(LITERAL_child);
 			forwardAxisSpecifier_AST = (AST)currentAST.root;
 			break;
 		}
 		case LITERAL_self:
 		{
-			AST tmp205_AST = null;
-			tmp205_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp205_AST);
+			AST tmp212_AST = null;
+			tmp212_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp212_AST);
 			match(LITERAL_self);
 			forwardAxisSpecifier_AST = (AST)currentAST.root;
 			break;
 		}
 		case LITERAL_attribute:
 		{
-			AST tmp206_AST = null;
-			tmp206_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp206_AST);
+			AST tmp213_AST = null;
+			tmp213_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp213_AST);
 			match(LITERAL_attribute);
 			forwardAxisSpecifier_AST = (AST)currentAST.root;
 			break;
 		}
 		case LITERAL_descendant:
 		{
-			AST tmp207_AST = null;
-			tmp207_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp207_AST);
+			AST tmp214_AST = null;
+			tmp214_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp214_AST);
 			match(LITERAL_descendant);
 			forwardAxisSpecifier_AST = (AST)currentAST.root;
 			break;
 		}
-		case 102:
+		case 104:
 		{
-			AST tmp208_AST = null;
-			tmp208_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp208_AST);
-			match(102);
+			AST tmp215_AST = null;
+			tmp215_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp215_AST);
+			match(104);
 			forwardAxisSpecifier_AST = (AST)currentAST.root;
 			break;
 		}
-		case 103:
+		case 105:
 		{
-			AST tmp209_AST = null;
-			tmp209_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp209_AST);
-			match(103);
+			AST tmp216_AST = null;
+			tmp216_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp216_AST);
+			match(105);
 			forwardAxisSpecifier_AST = (AST)currentAST.root;
 			break;
 		}
@@ -2940,10 +3049,10 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST nodeTest_AST = null;
 		
-		boolean synPredMatched142 = false;
+		boolean synPredMatched146 = false;
 		if (((_tokenSet_3.member(LA(1))))) {
-			int _m142 = mark();
-			synPredMatched142 = true;
+			int _m146 = mark();
+			synPredMatched146 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -2952,17 +3061,17 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched142 = false;
+				synPredMatched146 = false;
 			}
-			rewind(_m142);
+			rewind(_m146);
 			inputState.guessing--;
 		}
-		if ( synPredMatched142 ) {
+		if ( synPredMatched146 ) {
 			kindTest();
 			astFactory.addASTChild(currentAST, returnAST);
 			nodeTest_AST = (AST)currentAST.root;
 		}
-		else if ((_tokenSet_7.member(LA(1)))) {
+		else if ((_tokenSet_8.member(LA(1)))) {
 			nameTest();
 			astFactory.addASTChild(currentAST, returnAST);
 			nodeTest_AST = (AST)currentAST.root;
@@ -2983,37 +3092,37 @@ public XPathParser2(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_parent:
 		{
-			AST tmp212_AST = null;
-			tmp212_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp212_AST);
+			AST tmp219_AST = null;
+			tmp219_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp219_AST);
 			match(LITERAL_parent);
 			reverseAxisSpecifier_AST = (AST)currentAST.root;
 			break;
 		}
 		case LITERAL_ancestor:
 		{
-			AST tmp213_AST = null;
-			tmp213_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp213_AST);
+			AST tmp220_AST = null;
+			tmp220_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp220_AST);
 			match(LITERAL_ancestor);
 			reverseAxisSpecifier_AST = (AST)currentAST.root;
 			break;
 		}
-		case 106:
+		case 108:
 		{
-			AST tmp214_AST = null;
-			tmp214_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp214_AST);
-			match(106);
+			AST tmp221_AST = null;
+			tmp221_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp221_AST);
+			match(108);
 			reverseAxisSpecifier_AST = (AST)currentAST.root;
 			break;
 		}
-		case 107:
+		case 109:
 		{
-			AST tmp215_AST = null;
-			tmp215_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp215_AST);
-			match(107);
+			AST tmp222_AST = null;
+			tmp222_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp222_AST);
+			match(109);
 			reverseAxisSpecifier_AST = (AST)currentAST.root;
 			break;
 		}
@@ -3073,15 +3182,15 @@ public XPathParser2(ParserSharedInputState state) {
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 102:
-		case 103:
+		case 104:
+		case 105:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 106:
-		case 107:
+		case 108:
+		case 109:
 		case LITERAL_comment:
-		case 112:
-		case 113:
+		case 114:
+		case 115:
 		case LITERAL_document:
 		case LITERAL_collection:
 		{
@@ -3089,9 +3198,9 @@ public XPathParser2(ParserSharedInputState state) {
 			switch ( LA(1)) {
 			case AT:
 			{
-				AST tmp218_AST = null;
-				tmp218_AST = astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp218_AST);
+				AST tmp225_AST = null;
+				tmp225_AST = astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp225_AST);
 				match(AT);
 				break;
 			}
@@ -3121,15 +3230,15 @@ public XPathParser2(ParserSharedInputState state) {
 			case LITERAL_self:
 			case LITERAL_attribute:
 			case LITERAL_descendant:
-			case 102:
-			case 103:
+			case 104:
+			case 105:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 106:
-			case 107:
+			case 108:
+			case 109:
 			case LITERAL_comment:
-			case 112:
-			case 113:
+			case 114:
+			case 115:
 			case LITERAL_document:
 			case LITERAL_collection:
 			{
@@ -3148,9 +3257,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case PARENT:
 		{
-			AST tmp219_AST = null;
-			tmp219_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp219_AST);
+			AST tmp226_AST = null;
+			tmp226_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp226_AST);
 			match(PARENT);
 			abbrevStep_AST = (AST)currentAST.root;
 			break;
@@ -3170,10 +3279,10 @@ public XPathParser2(ParserSharedInputState state) {
 		AST nameTest_AST = null;
 		String name= null;
 		
-		boolean synPredMatched146 = false;
+		boolean synPredMatched150 = false;
 		if (((LA(1)==NCNAME||LA(1)==STAR))) {
-			int _m146 = mark();
-			synPredMatched146 = true;
+			int _m150 = mark();
+			synPredMatched150 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -3200,12 +3309,12 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched146 = false;
+				synPredMatched150 = false;
 			}
-			rewind(_m146);
+			rewind(_m150);
 			inputState.guessing--;
 		}
-		if ( synPredMatched146 ) {
+		if ( synPredMatched150 ) {
 			wildcard();
 			astFactory.addASTChild(currentAST, returnAST);
 			nameTest_AST = (AST)currentAST.root;
@@ -3240,10 +3349,10 @@ public XPathParser2(ParserSharedInputState state) {
 		Token  nc2 = null;
 		AST nc2_AST = null;
 		
-		boolean synPredMatched149 = false;
+		boolean synPredMatched153 = false;
 		if (((LA(1)==STAR))) {
-			int _m149 = mark();
-			synPredMatched149 = true;
+			int _m153 = mark();
+			synPredMatched153 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -3252,12 +3361,12 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched149 = false;
+				synPredMatched153 = false;
 			}
-			rewind(_m149);
+			rewind(_m153);
 			inputState.guessing--;
 		}
-		if ( synPredMatched149 ) {
+		if ( synPredMatched153 ) {
 			match(STAR);
 			match(COLON);
 			nc1 = LT(1);
@@ -3292,9 +3401,9 @@ public XPathParser2(ParserSharedInputState state) {
 			wildcard_AST = (AST)currentAST.root;
 		}
 		else if ((LA(1)==STAR)) {
-			AST tmp224_AST = null;
-			tmp224_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp224_AST);
+			AST tmp231_AST = null;
+			tmp231_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp231_AST);
 			match(STAR);
 			if ( inputState.guessing==0 ) {
 				wildcard_AST = (AST)currentAST.root;
@@ -3348,12 +3457,12 @@ public XPathParser2(ParserSharedInputState state) {
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 102:
-		case 103:
+		case 104:
+		case 105:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 106:
-		case 107:
+		case 108:
+		case 109:
 		case LITERAL_comment:
 		case LITERAL_document:
 		case LITERAL_collection:
@@ -3479,18 +3588,18 @@ public XPathParser2(ParserSharedInputState state) {
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 102:
-		case 103:
+		case 104:
+		case 105:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 106:
-		case 107:
+		case 108:
+		case 109:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_comment:
-		case 112:
-		case 113:
+		case 114:
+		case 115:
 		case XML_PI:
 		case LITERAL_document:
 		case LITERAL_collection:
@@ -3529,9 +3638,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST contextItemExpr_AST = null;
 		
-		AST tmp228_AST = null;
-		tmp228_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp228_AST);
+		AST tmp235_AST = null;
+		tmp235_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp235_AST);
 		match(SELF);
 		contextItemExpr_AST = (AST)currentAST.root;
 		returnAST = contextItemExpr_AST;
@@ -3585,18 +3694,18 @@ public XPathParser2(ParserSharedInputState state) {
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 102:
-		case 103:
+		case 104:
+		case 105:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 106:
-		case 107:
+		case 108:
+		case 109:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_comment:
-		case 112:
-		case 113:
+		case 114:
+		case 115:
 		case XML_PI:
 		case LITERAL_document:
 		case LITERAL_collection:
@@ -3674,27 +3783,27 @@ public XPathParser2(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case DOUBLE_LITERAL:
 		{
-			AST tmp231_AST = null;
-			tmp231_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp231_AST);
+			AST tmp238_AST = null;
+			tmp238_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp238_AST);
 			match(DOUBLE_LITERAL);
 			numericLiteral_AST = (AST)currentAST.root;
 			break;
 		}
 		case DECIMAL_LITERAL:
 		{
-			AST tmp232_AST = null;
-			tmp232_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp232_AST);
+			AST tmp239_AST = null;
+			tmp239_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp239_AST);
 			match(DECIMAL_LITERAL);
 			numericLiteral_AST = (AST)currentAST.root;
 			break;
 		}
 		case INTEGER_LITERAL:
 		{
-			AST tmp233_AST = null;
-			tmp233_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp233_AST);
+			AST tmp240_AST = null;
+			tmp240_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp240_AST);
 			match(INTEGER_LITERAL);
 			numericLiteral_AST = (AST)currentAST.root;
 			break;
@@ -3716,7 +3825,7 @@ public XPathParser2(ParserSharedInputState state) {
 		exprSingle();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop160:
+		_loop164:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -3724,7 +3833,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop160;
+				break _loop164;
 			}
 			
 		} while (true);
@@ -3739,9 +3848,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST textTest_AST = null;
 		
-		AST tmp235_AST = null;
-		tmp235_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp235_AST);
+		AST tmp242_AST = null;
+		tmp242_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp242_AST);
 		match(LITERAL_text);
 		match(LPAREN);
 		match(RPAREN);
@@ -3755,9 +3864,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST anyKindTest_AST = null;
 		
-		AST tmp238_AST = null;
-		tmp238_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp238_AST);
+		AST tmp245_AST = null;
+		tmp245_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp245_AST);
 		match(LITERAL_node);
 		match(LPAREN);
 		match(RPAREN);
@@ -3771,9 +3880,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST elementTest_AST = null;
 		
-		AST tmp241_AST = null;
-		tmp241_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp241_AST);
+		AST tmp248_AST = null;
+		tmp248_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp248_AST);
 		match(LITERAL_element);
 		match(LPAREN);
 		match(RPAREN);
@@ -3787,9 +3896,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST attributeTest_AST = null;
 		
-		AST tmp244_AST = null;
-		tmp244_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp244_AST);
+		AST tmp251_AST = null;
+		tmp251_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp251_AST);
 		match(LITERAL_attribute);
 		match(LPAREN);
 		match(RPAREN);
@@ -3803,9 +3912,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST commentTest_AST = null;
 		
-		AST tmp247_AST = null;
-		tmp247_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp247_AST);
+		AST tmp254_AST = null;
+		tmp254_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp254_AST);
 		match(LITERAL_comment);
 		match(LPAREN);
 		match(RPAREN);
@@ -3819,10 +3928,10 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST piTest_AST = null;
 		
-		AST tmp250_AST = null;
-		tmp250_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp250_AST);
-		match(112);
+		AST tmp257_AST = null;
+		tmp257_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp257_AST);
+		match(114);
 		match(LPAREN);
 		match(RPAREN);
 		piTest_AST = (AST)currentAST.root;
@@ -3835,10 +3944,10 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST documentTest_AST = null;
 		
-		AST tmp253_AST = null;
-		tmp253_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp253_AST);
-		match(113);
+		AST tmp260_AST = null;
+		tmp260_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp260_AST);
+		match(115);
 		match(LPAREN);
 		match(RPAREN);
 		documentTest_AST = (AST)currentAST.root;
@@ -3891,12 +4000,12 @@ public XPathParser2(ParserSharedInputState state) {
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 102:
-		case 103:
+		case 104:
+		case 105:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 106:
-		case 107:
+		case 108:
+		case 109:
 		case LITERAL_comment:
 		case LITERAL_document:
 		case LITERAL_collection:
@@ -3925,10 +4034,10 @@ public XPathParser2(ParserSharedInputState state) {
 			lexer.wsExplicit= true;
 		
 		
-		boolean synPredMatched176 = false;
+		boolean synPredMatched180 = false;
 		if (((LA(1)==LT))) {
-			int _m176 = mark();
-			synPredMatched176 = true;
+			int _m180 = mark();
+			synPredMatched180 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -3938,12 +4047,12 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched176 = false;
+				synPredMatched180 = false;
 			}
-			rewind(_m176);
+			rewind(_m180);
 			inputState.guessing--;
 		}
-		if ( synPredMatched176 ) {
+		if ( synPredMatched180 ) {
 			elementWithAttributes();
 			astFactory.addASTChild(currentAST, returnAST);
 			elementConstructor_AST = (AST)currentAST.root;
@@ -3966,9 +4075,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST xmlComment_AST = null;
 		
-		AST tmp256_AST = null;
-		tmp256_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp256_AST);
+		AST tmp263_AST = null;
+		tmp263_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp263_AST);
 		match(XML_COMMENT);
 		match(XML_COMMENT_END);
 		xmlComment_AST = (AST)currentAST.root;
@@ -3981,9 +4090,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST xmlPI_AST = null;
 		
-		AST tmp258_AST = null;
-		tmp258_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp258_AST);
+		AST tmp265_AST = null;
+		tmp265_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp265_AST);
 		match(XML_PI);
 		match(XML_PI_END);
 		xmlPI_AST = (AST)currentAST.root;
@@ -4085,9 +4194,9 @@ public XPathParser2(ParserSharedInputState state) {
 		AST content_AST = null;
 		String name= null;
 		
-		AST tmp266_AST = null;
-		tmp266_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp266_AST);
+		AST tmp273_AST = null;
+		tmp273_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp273_AST);
 		match(LT);
 		name=qName();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -4170,14 +4279,14 @@ public XPathParser2(ParserSharedInputState state) {
 		AST mixedElementContent_AST = null;
 		
 		{
-		_loop194:
+		_loop198:
 		do {
-			if ((_tokenSet_8.member(LA(1)))) {
+			if ((_tokenSet_9.member(LA(1)))) {
 				elementContent();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop194;
+				break _loop198;
 			}
 			
 		} while (true);
@@ -4193,18 +4302,18 @@ public XPathParser2(ParserSharedInputState state) {
 		AST attributeList_AST = null;
 		
 		{
-		int _cnt187=0;
-		_loop187:
+		int _cnt191=0;
+		_loop191:
 		do {
 			if ((LA(1)==WS)) {
 				attributeDef();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				if ( _cnt187>=1 ) { break _loop187; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt191>=1 ) { break _loop191; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			
-			_cnt187++;
+			_cnt191++;
 		} while (true);
 		}
 		attributeList_AST = (AST)currentAST.root;
@@ -4258,15 +4367,15 @@ public XPathParser2(ParserSharedInputState state) {
 		AST attributeValue_AST = null;
 		
 		{
-		int _cnt191=0;
-		_loop191:
+		int _cnt195=0;
+		_loop195:
 		do {
 			switch ( LA(1)) {
 			case ATTRIBUTE_CONTENT:
 			{
-				AST tmp276_AST = null;
-				tmp276_AST = astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp276_AST);
+				AST tmp283_AST = null;
+				tmp283_AST = astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp283_AST);
 				match(ATTRIBUTE_CONTENT);
 				break;
 			}
@@ -4278,10 +4387,10 @@ public XPathParser2(ParserSharedInputState state) {
 			}
 			default:
 			{
-				if ( _cnt191>=1 ) { break _loop191; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt195>=1 ) { break _loop195; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			}
-			_cnt191++;
+			_cnt195++;
 		} while (true);
 		}
 		attributeValue_AST = (AST)currentAST.root;
@@ -4294,9 +4403,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST attributeEnclosedExpr_AST = null;
 		
-		AST tmp277_AST = null;
-		tmp277_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp277_AST);
+		AST tmp284_AST = null;
+		tmp284_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp284_AST);
 		match(LCURLY);
 		if ( inputState.guessing==0 ) {
 			
@@ -4385,9 +4494,9 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST enclosedExpr_AST = null;
 		
-		AST tmp279_AST = null;
-		tmp279_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp279_AST);
+		AST tmp286_AST = null;
+		tmp286_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp286_AST);
 		match(LCURLY);
 		if ( inputState.guessing==0 ) {
 			
@@ -4422,9 +4531,9 @@ public XPathParser2(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_div:
 		{
-			AST tmp281_AST = null;
-			tmp281_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp281_AST);
+			AST tmp288_AST = null;
+			tmp288_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp288_AST);
 			match(LITERAL_div);
 			if ( inputState.guessing==0 ) {
 				name= "div";
@@ -4434,9 +4543,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_mod:
 		{
-			AST tmp282_AST = null;
-			tmp282_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp282_AST);
+			AST tmp289_AST = null;
+			tmp289_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp289_AST);
 			match(LITERAL_mod);
 			if ( inputState.guessing==0 ) {
 				name= "mod";
@@ -4446,9 +4555,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_text:
 		{
-			AST tmp283_AST = null;
-			tmp283_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp283_AST);
+			AST tmp290_AST = null;
+			tmp290_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp290_AST);
 			match(LITERAL_text);
 			if ( inputState.guessing==0 ) {
 				name= "text";
@@ -4458,9 +4567,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_node:
 		{
-			AST tmp284_AST = null;
-			tmp284_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp284_AST);
+			AST tmp291_AST = null;
+			tmp291_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp291_AST);
 			match(LITERAL_node);
 			if ( inputState.guessing==0 ) {
 				name= "node";
@@ -4470,9 +4579,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_or:
 		{
-			AST tmp285_AST = null;
-			tmp285_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp285_AST);
+			AST tmp292_AST = null;
+			tmp292_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp292_AST);
 			match(LITERAL_or);
 			if ( inputState.guessing==0 ) {
 				name= "or";
@@ -4482,9 +4591,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_and:
 		{
-			AST tmp286_AST = null;
-			tmp286_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp286_AST);
+			AST tmp293_AST = null;
+			tmp293_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp293_AST);
 			match(LITERAL_and);
 			if ( inputState.guessing==0 ) {
 				name= "and";
@@ -4494,9 +4603,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_child:
 		{
-			AST tmp287_AST = null;
-			tmp287_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp287_AST);
+			AST tmp294_AST = null;
+			tmp294_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp294_AST);
 			match(LITERAL_child);
 			if ( inputState.guessing==0 ) {
 				name= "child";
@@ -4506,9 +4615,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_parent:
 		{
-			AST tmp288_AST = null;
-			tmp288_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp288_AST);
+			AST tmp295_AST = null;
+			tmp295_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp295_AST);
 			match(LITERAL_parent);
 			if ( inputState.guessing==0 ) {
 				name= "parent";
@@ -4518,9 +4627,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_self:
 		{
-			AST tmp289_AST = null;
-			tmp289_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp289_AST);
+			AST tmp296_AST = null;
+			tmp296_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp296_AST);
 			match(LITERAL_self);
 			if ( inputState.guessing==0 ) {
 				name= "self";
@@ -4530,9 +4639,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_attribute:
 		{
-			AST tmp290_AST = null;
-			tmp290_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp290_AST);
+			AST tmp297_AST = null;
+			tmp297_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp297_AST);
 			match(LITERAL_attribute);
 			if ( inputState.guessing==0 ) {
 				name= "attribute";
@@ -4542,9 +4651,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_comment:
 		{
-			AST tmp291_AST = null;
-			tmp291_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp291_AST);
+			AST tmp298_AST = null;
+			tmp298_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp298_AST);
 			match(LITERAL_comment);
 			if ( inputState.guessing==0 ) {
 				name= "comment";
@@ -4554,9 +4663,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_document:
 		{
-			AST tmp292_AST = null;
-			tmp292_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp292_AST);
+			AST tmp299_AST = null;
+			tmp299_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp299_AST);
 			match(LITERAL_document);
 			if ( inputState.guessing==0 ) {
 				name= "document";
@@ -4566,9 +4675,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_collection:
 		{
-			AST tmp293_AST = null;
-			tmp293_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp293_AST);
+			AST tmp300_AST = null;
+			tmp300_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp300_AST);
 			match(LITERAL_collection);
 			if ( inputState.guessing==0 ) {
 				name= "collection";
@@ -4578,9 +4687,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_ancestor:
 		{
-			AST tmp294_AST = null;
-			tmp294_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp294_AST);
+			AST tmp301_AST = null;
+			tmp301_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp301_AST);
 			match(LITERAL_ancestor);
 			if ( inputState.guessing==0 ) {
 				name= "ancestor";
@@ -4590,9 +4699,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_descendant:
 		{
-			AST tmp295_AST = null;
-			tmp295_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp295_AST);
+			AST tmp302_AST = null;
+			tmp302_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp302_AST);
 			match(LITERAL_descendant);
 			if ( inputState.guessing==0 ) {
 				name= "descendant";
@@ -4600,48 +4709,48 @@ public XPathParser2(ParserSharedInputState state) {
 			reservedKeywords_AST = (AST)currentAST.root;
 			break;
 		}
-		case 102:
+		case 104:
 		{
-			AST tmp296_AST = null;
-			tmp296_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp296_AST);
-			match(102);
+			AST tmp303_AST = null;
+			tmp303_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp303_AST);
+			match(104);
 			if ( inputState.guessing==0 ) {
 				name= "descendant-or-self";
 			}
 			reservedKeywords_AST = (AST)currentAST.root;
 			break;
 		}
-		case 106:
+		case 108:
 		{
-			AST tmp297_AST = null;
-			tmp297_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp297_AST);
-			match(106);
+			AST tmp304_AST = null;
+			tmp304_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp304_AST);
+			match(108);
 			if ( inputState.guessing==0 ) {
 				name= "ancestor-or-self";
 			}
 			reservedKeywords_AST = (AST)currentAST.root;
 			break;
 		}
-		case 107:
+		case 109:
 		{
-			AST tmp298_AST = null;
-			tmp298_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp298_AST);
-			match(107);
+			AST tmp305_AST = null;
+			tmp305_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp305_AST);
+			match(109);
 			if ( inputState.guessing==0 ) {
 				name= "preceding-sibling";
 			}
 			reservedKeywords_AST = (AST)currentAST.root;
 			break;
 		}
-		case 103:
+		case 105:
 		{
-			AST tmp299_AST = null;
-			tmp299_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp299_AST);
-			match(103);
+			AST tmp306_AST = null;
+			tmp306_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp306_AST);
+			match(105);
 			if ( inputState.guessing==0 ) {
 				name= "following-sibling";
 			}
@@ -4650,9 +4759,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_item:
 		{
-			AST tmp300_AST = null;
-			tmp300_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp300_AST);
+			AST tmp307_AST = null;
+			tmp307_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp307_AST);
 			match(LITERAL_item);
 			if ( inputState.guessing==0 ) {
 				name= "item";
@@ -4662,9 +4771,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_empty:
 		{
-			AST tmp301_AST = null;
-			tmp301_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp301_AST);
+			AST tmp308_AST = null;
+			tmp308_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp308_AST);
 			match(LITERAL_empty);
 			if ( inputState.guessing==0 ) {
 				name= "empty";
@@ -4674,9 +4783,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case VERSION:
 		{
-			AST tmp302_AST = null;
-			tmp302_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp302_AST);
+			AST tmp309_AST = null;
+			tmp309_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp309_AST);
 			match(VERSION);
 			if ( inputState.guessing==0 ) {
 				name= "version";
@@ -4686,9 +4795,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case XQUERY:
 		{
-			AST tmp303_AST = null;
-			tmp303_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp303_AST);
+			AST tmp310_AST = null;
+			tmp310_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp310_AST);
 			match(XQUERY);
 			if ( inputState.guessing==0 ) {
 				name= "xquery";
@@ -4698,9 +4807,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_variable:
 		{
-			AST tmp304_AST = null;
-			tmp304_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp304_AST);
+			AST tmp311_AST = null;
+			tmp311_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp311_AST);
 			match(LITERAL_variable);
 			if ( inputState.guessing==0 ) {
 				name= "variable";
@@ -4710,9 +4819,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_namespace:
 		{
-			AST tmp305_AST = null;
-			tmp305_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp305_AST);
+			AST tmp312_AST = null;
+			tmp312_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp312_AST);
 			match(LITERAL_namespace);
 			if ( inputState.guessing==0 ) {
 				name= "namespace";
@@ -4722,9 +4831,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_if:
 		{
-			AST tmp306_AST = null;
-			tmp306_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp306_AST);
+			AST tmp313_AST = null;
+			tmp313_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp313_AST);
 			match(LITERAL_if);
 			if ( inputState.guessing==0 ) {
 				name= "if";
@@ -4734,9 +4843,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_then:
 		{
-			AST tmp307_AST = null;
-			tmp307_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp307_AST);
+			AST tmp314_AST = null;
+			tmp314_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp314_AST);
 			match(LITERAL_then);
 			if ( inputState.guessing==0 ) {
 				name= "then";
@@ -4746,9 +4855,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_else:
 		{
-			AST tmp308_AST = null;
-			tmp308_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp308_AST);
+			AST tmp315_AST = null;
+			tmp315_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp315_AST);
 			match(LITERAL_else);
 			if ( inputState.guessing==0 ) {
 				name= "else";
@@ -4758,9 +4867,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_for:
 		{
-			AST tmp309_AST = null;
-			tmp309_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp309_AST);
+			AST tmp316_AST = null;
+			tmp316_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp316_AST);
 			match(LITERAL_for);
 			if ( inputState.guessing==0 ) {
 				name= "for";
@@ -4770,9 +4879,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_let:
 		{
-			AST tmp310_AST = null;
-			tmp310_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp310_AST);
+			AST tmp317_AST = null;
+			tmp317_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp317_AST);
 			match(LITERAL_let);
 			if ( inputState.guessing==0 ) {
 				name= "let";
@@ -4782,9 +4891,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_default:
 		{
-			AST tmp311_AST = null;
-			tmp311_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp311_AST);
+			AST tmp318_AST = null;
+			tmp318_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp318_AST);
 			match(LITERAL_default);
 			if ( inputState.guessing==0 ) {
 				name= "default";
@@ -4794,9 +4903,9 @@ public XPathParser2(ParserSharedInputState state) {
 		}
 		case LITERAL_function:
 		{
-			AST tmp312_AST = null;
-			tmp312_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp312_AST);
+			AST tmp319_AST = null;
+			tmp319_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp319_AST);
 			match(LITERAL_function);
 			if ( inputState.guessing==0 ) {
 				name= "function";
@@ -4891,6 +5000,7 @@ public XPathParser2(ParserSharedInputState state) {
 		"\"else\"",
 		"\"or\"",
 		"\"and\"",
+		"\"cast\"",
 		"NEQ",
 		"GT",
 		"GTEQ",
@@ -4901,6 +5011,7 @@ public XPathParser2(ParserSharedInputState state) {
 		"\"to\"",
 		"MINUS",
 		"\"div\"",
+		"\"idiv\"",
 		"\"mod\"",
 		"UNION",
 		"SLASH",
@@ -4962,49 +5073,54 @@ public XPathParser2(ParserSharedInputState state) {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { 2279313391363293184L, 937874619169279744L, 0L, 0L};
+		long[] data = { 2279313391363293184L, 3751498476670750464L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { 2170768486777749504L, 864849441157287680L, 0L, 0L};
+		long[] data = { 2170768486777749504L, 3459397764624944896L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
-		long[] data = { 2170909224266104832L, 865693866087419648L, 0L, 0L};
+		long[] data = { 2170909224266104832L, 3462775464345472768L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
-		long[] data = { 140737488355328L, 985231339290624L, 0L, 0L};
+		long[] data = { 140737488355328L, 3940925357162496L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
 	private static final long[] mk_tokenSet_4() {
-		long[] data = { 2279312291851665408L, 937874619169279744L, 0L, 0L};
+		long[] data = { 2279312291851665408L, 3751498476670750464L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
 	private static final long[] mk_tokenSet_5() {
-		long[] data = { 2206938021285068800L, 865693878972321536L, 0L, 0L};
+		long[] data = { 36028797018963968L, 29360128L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
 	private static final long[] mk_tokenSet_6() {
-		long[] data = { 2171085163306418176L, 937030181302865664L, 0L, 0L};
+		long[] data = { 2206938021285068800L, 3462775515885080320L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	private static final long[] mk_tokenSet_7() {
-		long[] data = { 2206797283796713472L, 864849441157287680L, 0L, 0L};
+		long[] data = { 2171085163306418176L, 3748120725207191296L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
 	private static final long[] mk_tokenSet_8() {
-		long[] data = { 562949953421312L, 90071993084313600L, 0L, 0L};
+		long[] data = { 2206797283796713472L, 3459397764624944896L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
+	private static final long[] mk_tokenSet_9() {
+		long[] data = { 562949953421312L, 360287972337188864L, 0L, 0L};
+		return data;
+	}
+	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
 	
 	}

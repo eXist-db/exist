@@ -3,7 +3,7 @@
 <!-- Author: Wolfgang Meier "meier@ifs.tu-darmstadt.de" -->
 
 <xsp:page language="java"
-    xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+    xmlns:xdb="http://exist-db.org/xmldb/1.0"
     xmlns:xsp="http://apache.org/xsp">
    
 	<document xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -66,18 +66,18 @@
 							'"' + term + "\"]";
 						
 						<!-- connect to the server -->
-                        <xmldb:driver class="org.exist.xmldb.DatabaseImpl"/>
+                        <xdb:driver class="org.exist.xmldb.DatabaseImpl"/>
     
     					<entries>
-	                        <xmldb:collection uri="xmldb:exist:///db" user="guest" password="guest">
-	                        	<xmldb:execute>
-	                        		<xmldb:namespace prefix="">http://www.xml-acronym-demystifier.org</xmldb:namespace>
-	                        		<xmldb:xpath>query</xmldb:xpath>
-									<xmldb:results position="1" count="1000">
-	                        				<xmldb:get-xml as="xml"/>
-	                        		</xmldb:results>
-	                        	</xmldb:execute>
-	                        </xmldb:collection>
+	                        <xdb:collection uri="xmldb:exist:///db" user="guest" password="guest">
+	                        	<xdb:execute>
+	                        		<xdb:namespace prefix="">http://www.xml-acronym-demystifier.org</xdb:namespace>
+	                        		<xdb:xpath>query</xdb:xpath>
+									<xdb:results position="1" count="1000">
+	                        				<xdb:get-xml as="xml"/>
+	                        		</xdb:results>
+	                        	</xdb:execute>
+	                        </xdb:collection>
 	                    </entries>
                     }
                 </xsp:logic>

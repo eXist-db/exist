@@ -79,6 +79,7 @@ public interface Constants {
 	public final static int MULT = 10;
 	public final static int DIV = 11;
 	public final static int MOD = 12;
+	public final static int IDIV = 13;
 
 	public final static String[] OPS = 
 	{ "<", ">", ">=", "<=", "=", "!=", "IN" , "=~", "+", 

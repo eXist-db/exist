@@ -65,7 +65,19 @@ public class Type {
 	public final static int FLOAT = 32;
 	public final static int DOUBLE = 33;
 	public final static int INTEGER = 34;
-
+	public final static int NON_POSITIVE_INTEGER = 35;
+	public final static int NEGATIVE_INTEGER = 36;
+	public final static int LONG = 37;
+	public final static int INT = 38;
+	public final static int SHORT = 39;
+	public final static int BYTE = 40;
+	public final static int NON_NEGATIVE_INTEGER = 41;
+	public final static int UNSIGNED_LONG = 42;
+	public final static int UNSIGNED_INT = 43;
+	public final static int UNSIGNED_SHORT = 44;
+	public final static int UNSIGNED_BYTE = 45;
+	public final static int POSITIVE_INTEGER = 46;
+	
 	public final static int JAVA_OBJECT = 100;
 
 	private final static Int2ObjectHashMap typeHierarchy = new Int2ObjectHashMap();
@@ -92,6 +104,22 @@ public class Type {
 		defineSubType(NUMBER, DOUBLE);
 
 		defineSubType(DECIMAL, INTEGER);
+		
+		defineSubType(INTEGER, NON_POSITIVE_INTEGER);
+		defineSubType(NON_POSITIVE_INTEGER, NEGATIVE_INTEGER);
+		
+		defineSubType(INTEGER, LONG);
+		defineSubType(LONG, INT);
+		defineSubType(INT, SHORT);
+		defineSubType(SHORT, BYTE);
+		
+		defineSubType(INTEGER, NON_NEGATIVE_INTEGER);
+		defineSubType(NON_NEGATIVE_INTEGER, POSITIVE_INTEGER);
+		
+		defineSubType(NON_NEGATIVE_INTEGER, UNSIGNED_LONG);
+		defineSubType(UNSIGNED_LONG, UNSIGNED_INT);
+		defineSubType(UNSIGNED_INT, UNSIGNED_SHORT);
+		defineSubType(UNSIGNED_SHORT, UNSIGNED_BYTE);
 	}
 
 	private final static Int2ObjectHashMap typeNames = new Int2ObjectHashMap(100);
@@ -121,7 +149,21 @@ public class Type {
 		defineBuiltInType(DECIMAL, "xs:decimal");
 		defineBuiltInType(FLOAT, "xs:float");
 		defineBuiltInType(DOUBLE, "xs:double");
+		
 		defineBuiltInType(INTEGER, "xs:integer");
+		defineBuiltInType(NON_POSITIVE_INTEGER, "xs:nonPositiveInteger");
+		defineBuiltInType(NEGATIVE_INTEGER, "xs:negativeInteger");
+		defineBuiltInType(LONG, "xs:long");
+		defineBuiltInType(INT, "xs:int");
+		defineBuiltInType(SHORT, "xs:short");
+		defineBuiltInType(BYTE, "xs:byte");
+		defineBuiltInType(NON_NEGATIVE_INTEGER, "xs:nonNegativeInteger");
+		defineBuiltInType(UNSIGNED_LONG, "xs:unsignedLong");
+		defineBuiltInType(UNSIGNED_INT, "xs:unsignedInt");
+		defineBuiltInType(UNSIGNED_SHORT, "xs:unsignedShort");
+		defineBuiltInType(UNSIGNED_BYTE, "xs:unsignedByte");
+		defineBuiltInType(POSITIVE_INTEGER, "xs:positiveInteger");
+		
 		defineBuiltInType(STRING, "xs:string");
 		defineBuiltInType(QNAME, "xs:QName");
 	}
@@ -168,7 +210,8 @@ public class Type {
 		if (!typeHierarchy.containsKey(subtype))
 			throw new IllegalArgumentException(
 				"type " + subtype + " is not a valid type");
-		return subTypeOf(((Integer)typeHierarchy.get(subtype)).intValue(), supertype);
+		subtype = ((Integer)typeHierarchy.get(subtype)).intValue();
+		return subTypeOf(subtype, supertype);
 	}
 
 	public final static int getSuperType(int subtype) {

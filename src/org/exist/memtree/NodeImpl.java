@@ -25,6 +25,7 @@ package org.exist.memtree;
 import org.exist.dom.NodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.DOMStreamer;
+import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.Item;
@@ -419,7 +420,13 @@ public class NodeImpl implements Node, Item, Sequence {
 	 * @see org.exist.xpath.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
 	 */
 	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException {
-		DOMStreamer streamer = new DOMStreamer(handler, null);
-		streamer.serialize(this, false);
+		try {
+			DOMStreamer streamer = DOMStreamerPool.getInstance().borrowDOMStreamer();
+			streamer.setContentHandler(handler);
+			streamer.serialize(this, false);
+			DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
+		} catch (Exception e) {
+			throw new SAXException(e);
+		}
 	}
 }
