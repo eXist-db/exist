@@ -158,9 +158,7 @@ public abstract class BindingExpression extends AbstractExpression {
 			return result;
 		} else if (contextSequence == null) {
 			Sequence innerSeq = whereExpr.eval(null);
-			BooleanValue val =  innerSeq.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
-			LOG.debug(val.getStringValue());
-			return val;
+			return innerSeq.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		} else {
 			// general where clause: just check the effective boolean value
 			ValueSequence result = new ValueSequence();
