@@ -14,7 +14,7 @@
                         <link rel="stylesheet" type="text/css" href="{bookinfo/style/@href}"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <link rel="stylesheet" type="text/css" href="default.css"/>
+                        <link rel="stylesheet" type="text/css" href="styles/default-style.css"/>
                     </xsl:otherwise>
                 </xsl:choose>
                 <title><xsl:value-of select="bookinfo/title/text()"/></title>
@@ -22,23 +22,10 @@
     
             <body bgcolor="#FFFFFF">
                 <xsl:apply-templates select="bookinfo"/>
-                <xsl:choose>
-                    <xsl:when test="sidebar:sidebar">
-                        <table border="0" width="100%" cellspacing="7">
-                            <tr>
-                                <td valign="top" width="15%">
-                                    <xsl:apply-templates select="sidebar:sidebar"/>
-                                </td>
-                                <td valign="top" width="85%">
-                                    <xsl:apply-templates select="chapter"/>
-                                </td>
-                            </tr>
-                        </table>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:apply-templates select="chapter"/>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:apply-templates select="sidebar:sidebar"/>
+                <div id="content2col">
+                    <xsl:apply-templates select="chapter"/>
+                </div>
             </body>
         </html>
     </xsl:template>
@@ -146,8 +133,15 @@
     </xsl:template>
     
     <xsl:template match="bookinfo">
-        <xsl:apply-templates select="graphic"/><br/>
-        <p class="header"><xsl:value-of select="title"/></p>
+        <div id="top">
+            <img src="logo.jpg" title="eXist"/>
+            <table id="menubar">
+                <tr>
+                    <td id="header"><xsl:value-of select="title"/></td>
+                    <xsl:apply-templates select="../sidebar:sidebar/sidebar:toolbar"/>
+                </tr>
+            </table>
+        </div>
     </xsl:template>
     
     <xsl:template match="graphic">
@@ -185,7 +179,7 @@
     <xsl:template match="example">
         <div class="example">
             <div class="example_title">Example: <xsl:value-of select="title"/></div>
-            <xsl:apply-templates/>
+            <xsl:apply-templates select="*[name(.)!='title']"/>
         </div>
     </xsl:template>
     
@@ -217,6 +211,7 @@
     </xsl:template>
     
     <xsl:template match="title">
+        <span id="header"><xsl:value-of select="."/></span>
     </xsl:template>
     
     <xsl:template match="ulink|sidebar:link">
@@ -305,55 +300,43 @@
        </xsl:choose>
   </xsl:template>
   
-  <!-- templates for the sidebar -->
-
   <xsl:template match="sidebar:sidebar">
-    <div class="sidebar:sidebar">
-        <xsl:apply-templates select="sidebar:group"/>
-        <!--div class="xmlsrc">
-            <a href="?cocoon-view=pretty-content"><img src="resources/xml.gif" border="0" alt="view source"/></a><br/>
-        </div-->
-        <xsl:apply-templates select="sidebar:banner"/>
-        <xsl:apply-templates select="../bookinfo//author"/>
-    </div>
-  </xsl:template>
-  
-  <xsl:template match="sidebar:group">
-        <xsl:choose> 
-            <xsl:when test="@href">
-              <a class="group" href="{@href}">
-                <div class="group"><xsl:value-of select="@name"/></div>
-              </a>
+        <div id="sidebar">
+            <xsl:apply-templates select="sidebar:group"/>
+            <xsl:apply-templates select="sidebar:banner"/>
+        </div>
+    </xsl:template>
+
+    <xsl:template match="sidebar:toolbar">
+        <td align="right">
+            <xsl:apply-templates/>
+        </td>
+    </xsl:template>
+    
+    <xsl:template match="sidebar:group">
+        <div class="block">
+            <h3><xsl:value-of select="@name"/></h3>
+            <ul><xsl:apply-templates/></ul>
+        </div>
+    </xsl:template>
+
+    <xsl:template match="sidebar:item">
+        <xsl:choose>
+            <xsl:when test="../@empty">
+                <xsl:apply-templates/>
             </xsl:when>
             <xsl:otherwise>
-              <div class="group"><xsl:value-of select="@name"/></div>
-                  <xsl:choose>
-                    <xsl:when test="@empty">
-                      <br/><xsl:apply-templates/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:apply-templates/>
-                    </xsl:otherwise>
-                  </xsl:choose>
+                <li>
+                    <xsl:apply-templates/>
+                </li>
             </xsl:otherwise>
         </xsl:choose>
-  </xsl:template>
+    </xsl:template>
 
-  <xsl:template match="sidebar:item">
-    <xsl:choose>
-      <xsl:when test="../@empty">
-        <xsl:apply-templates/>
-      </xsl:when>
-      <xsl:otherwise>
-        <div class="item">
-          <xsl:apply-templates/>
-        </div>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
     <xsl:template match="sidebar:banner">
-        <div class="banner"><xsl:apply-templates/></div>
+        <div class="banner">
+            <xsl:apply-templates/>
+        </div>
     </xsl:template>
 
   <xsl:include href="xmlsource.xsl"/>
