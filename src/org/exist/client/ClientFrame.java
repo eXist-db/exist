@@ -499,9 +499,9 @@ public class ClientFrame extends JFrame
 		group.add(item);
 
 		String next;
-		for (Enumeration enum = properties.propertyNames(); enum
+		for (Enumeration e = properties.propertyNames(); e
 				.hasMoreElements(); ) {
-			next = (String) enum.nextElement();
+			next = (String) e.nextElement();
 			if (next.startsWith("alternate_uri_")) {
 				final String uri = properties.getProperty(next);
 				if (uri.equals(properties.getProperty("uri")))
@@ -1053,7 +1053,7 @@ public class ClientFrame extends JFrame
 			UserManagementService service = (UserManagementService) collection
 					.getService("UserManagementService", "1.0");
 			UserDialog dialog = new UserDialog(service, "Edit Users", client);
-			dialog.show();
+			dialog.setVisible(true);
 		} catch (XMLDBException e) {
 			showErrorMessage("Failed to retrieve UserManagementService", e);
 			e.printStackTrace();
@@ -1063,7 +1063,7 @@ public class ClientFrame extends JFrame
 	private void findAction(ActionEvent ev) {
 		Collection collection = client.getCollection();
 		QueryDialog dialog = new QueryDialog(client, collection, properties);
-		dialog.show();
+		dialog.setVisible(true);
 	}
 
 	private void setPermAction(ActionEvent ev) {
@@ -1098,7 +1098,7 @@ public class ClientFrame extends JFrame
 			}
 			ResourcePropertyDialog dialog = new ResourcePropertyDialog(this,
 					service, name, perm, created, modified);
-			dialog.show();
+			dialog.setVisible(true);
 			if (dialog.getResult() == ResourcePropertyDialog.APPLY_OPTION) {
 				int rows[] = fileman.getSelectedRows();
 				for (int i = 0; i < rows.length; i++) {
@@ -1399,7 +1399,7 @@ public class ClientFrame extends JFrame
 		JDialog dialog = optionPane.createDialog(null, "Error");
 		dialog.setResizable(true);
 		dialog.pack();
-		dialog.show();
+		dialog.setVisible(true);
 		return;
 	}
 

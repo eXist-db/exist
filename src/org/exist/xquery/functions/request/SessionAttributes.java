@@ -81,11 +81,11 @@ public class SessionAttributes extends BasicFunction {
 			throw new XPathException("No session available");
 		else if (value.getObject() instanceof SessionWrapper) {
 			ValueSequence result = new ValueSequence();
-			for (Enumeration enum =
+			for (Enumeration e =
 				((SessionWrapper) value.getObject()).getAttributeNames();
-				enum.hasMoreElements();
+				e.hasMoreElements();
 				) {
-				String param = (String) enum.nextElement();
+				String param = (String) e.nextElement();
 				result.add(new StringValue(param));
 			}
 			return result;
