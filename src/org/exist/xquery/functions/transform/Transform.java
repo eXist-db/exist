@@ -37,15 +37,20 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
+import org.exist.collections.Collection;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.Receiver;
+import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -191,6 +196,9 @@ public class Transform extends BasicFunction {
 	
 	private Templates getSource(SAXTransformerFactory factory, NodeValue stylesheetRoot)
 	throws XPathException, TransformerConfigurationException {
+		if(stylesheetRoot.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+			factory.setURIResolver(new DatabaseResolver(((NodeProxy)stylesheetRoot).doc));
+		}
 		TemplatesHandler handler = factory.newTemplatesHandler();
 		try {
 			handler.startDocument();
@@ -214,7 +222,7 @@ public class Transform extends BasicFunction {
 		throws TransformerConfigurationException, IOException {
 			this.factory = factory;
 			this.url = url;
-			factory.setURIResolver(new Resolver(baseURI));
+			factory.setURIResolver(new ExternalResolver(baseURI));
 			getTemplates();
 		}
 		
@@ -230,14 +238,13 @@ public class Transform extends BasicFunction {
 		}
 	}
 	
-	private class Resolver implements URIResolver {
+	private class ExternalResolver implements URIResolver {
 		
 		private String baseURI;
 		
-		public Resolver(String base) {
+		public ExternalResolver(String base) {
 			this.baseURI = base;
 		}
-		
 		
 		/* (non-Javadoc)
 		 * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
@@ -254,6 +261,42 @@ public class Transform extends BasicFunction {
 			} catch (IOException e) {
 				return null;
 			}
+		}
+	}
+	
+	private class DatabaseResolver implements URIResolver {
+		
+		DocumentImpl doc;
+		
+		public DatabaseResolver(DocumentImpl myDoc) {
+			this.doc = myDoc;
+		}
+		
+		
+		/* (non-Javadoc)
+		 * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
+		 */
+		public Source resolve(String href, String base)
+			throws TransformerException {
+			Collection collection = doc.getCollection();
+			String path;
+			if(href.startsWith("/"))
+				path = href;
+			else
+				path = collection.getName() + '/' + href;
+			DocumentImpl xslDoc;
+			try {
+				xslDoc = (DocumentImpl)
+					context.getBroker().getDocument(path);
+			} catch (PermissionDeniedException e) {
+				throw new TransformerException(e.getMessage(), e);
+			}
+			if(xslDoc == null) {
+				LOG.debug("Document " + href + " not found in collection " + collection.getName());
+				return null;
+			}
+			DOMSource source = new DOMSource(xslDoc);
+			return source;
 		}
 	}
 }

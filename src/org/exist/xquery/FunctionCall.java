@@ -106,9 +106,15 @@ public class FunctionCall extends Function {
 		functionDef.setArguments(seq);
 		
 		context.pushLocalContext(true);
-		Sequence returnSeq = expression.eval(contextSequence, contextItem);
-		context.popLocalContext();
-		return returnSeq;
+		try {
+			Sequence returnSeq = expression.eval(contextSequence, contextItem);
+			return returnSeq;
+		} catch(XPathException e) {
+			e.setASTNode(getASTNode());
+			throw e;
+		} finally {
+			context.popLocalContext();
+		}
 	}
 
 	 /* (non-Javadoc)

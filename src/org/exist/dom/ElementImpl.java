@@ -595,18 +595,10 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.w3c.dom.Node#getFirstChild()
 	 */
 	public Node getFirstChild() {
-		if (!hasChildNodes())
+		if (!hasChildNodes() || getChildCount() == getAttributesCount())
 			return null;
 		long first = firstChildID() + getAttributesCount();
 		return ownerDocument.getNode(first);
-		/*
-		 *  long last = first + children + 1;
-		 *  Node n = ownerDocument.getNode(first);
-		 *  while(n.getNodeType() == Node.ATTRIBUTE_NODE &&
-		 *  first <= last)
-		 *  n = ownerDocument.getNode(++first);
-		 *  return  first == last ? null : n;
-		 */
 	}
 
 	/**
@@ -698,16 +690,9 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.w3c.dom.Node#hasChildNodes()
 	 */
 	public boolean hasChildNodes() {
-		if (children > 0)
-			return true;
-		return false;
+		return children > 0;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public long lastChildID() {
 		if (!hasChildNodes())
 			return -1;
