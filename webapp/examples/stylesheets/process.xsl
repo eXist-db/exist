@@ -2,7 +2,7 @@
 
 <xsl:stylesheet 
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:xmldb="http://exist-db/transformer/1.0"
+  xmlns:xmldb="http://exist-db.org/transformer/1.0"
   version="1.0">
   
   	<xsl:param name="context"/>
