@@ -25,7 +25,6 @@ package org.exist.xpath;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 
@@ -49,6 +48,10 @@ public class StaticContext {
 	
 	private HashMap namespaces;
 	private HashMap inScopeNamespaces = new HashMap();
+	
+	private HashMap prefixes;
+	private HashMap inScopePrefixes = new HashMap();
+	
 	private Stack namespaceStack = new Stack();
 	
 	private TreeMap builtinFunctions;
@@ -71,6 +74,8 @@ public class StaticContext {
 	 */
 	private boolean backwardsCompatible = true;
 
+	private boolean stripWhitespace = true;
+	
 	/**
 	 * The position of the currently processed item in the context 
 	 * sequence. This field has to be set on demand, for example,
@@ -105,6 +110,7 @@ public class StaticContext {
 		if (prefix == null || uri == null)
 			throw new IllegalArgumentException("null argument passed to declareNamespace");
 		namespaces.put(prefix, uri);
+		prefixes.put(uri, prefix);
 	}
 
 	/**
@@ -154,19 +160,11 @@ public class StaticContext {
 	}
 	
 	public String getPrefixForURI(String uri) {
-		for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
-			Map.Entry entry = (Map.Entry)i.next();
-			if(entry.getValue().equals(uri))
-				return (String)entry.getKey();
-		}
-		if(inScopeNamespaces != null) {
-			for(Iterator i = inScopeNamespaces.entrySet().iterator(); i.hasNext(); ) {
-				Map.Entry entry = (Map.Entry)i.next();
-				if(entry.getValue().equals(uri))
-					return (String)entry.getKey();
-			}
-		}
-		return null;
+		String prefix = (String)prefixes.get(uri);
+		if(prefix == null)
+			return inScopePrefixes == null ? null : (String) inScopeNamespaces.get(uri);
+		else
+			return prefix;
 	}
 
 	/**
@@ -176,12 +174,14 @@ public class StaticContext {
 	 * @param uri
 	 */
 	public void removeNamespace(String uri) {
+		prefixes.remove(uri);
 		for (Iterator i = namespaces.values().iterator(); i.hasNext();) {
 			if (((String) i.next()).equals(uri)) {
 				i.remove();
 				return;
 			}
 		}
+		inScopePrefixes.remove(uri);
 		if (inScopeNamespaces != null) {
 			for (Iterator i = inScopeNamespaces.values().iterator();
 				i.hasNext();
@@ -200,8 +200,11 @@ public class StaticContext {
 	 */
 	public void clearNamespaces() {
 		namespaces.clear();
-		if (inScopeNamespaces != null)
+		prefixes.clear();
+		if (inScopeNamespaces != null) {
 			inScopeNamespaces.clear();
+			inScopePrefixes.clear();
+		}
 		loadDefaults();
 	}
 
@@ -211,6 +214,10 @@ public class StaticContext {
 	
 	public DocumentSet getStaticallyKnownDocuments() {
 		return staticDocuments;
+	}
+	
+	public boolean stripWhitespace() {
+		return stripWhitespace;
 	}
 	
 	/**
@@ -444,10 +451,14 @@ public class StaticContext {
 	 */
 	private void loadDefaults() {
 		SymbolTable syms = DBBroker.getSymbols();
-		String[] prefixes = syms.defaultPrefixList();
-		namespaces = new HashMap(prefixes.length);
-		for (int i = 0; i < prefixes.length; i++) {
-			namespaces.put(prefixes[i], syms.getDefaultNamespace(prefixes[i]));
+		String[] pfx = syms.defaultPrefixList();
+		namespaces = new HashMap(pfx.length);
+		prefixes = new HashMap(pfx.length);
+		String sym;
+		for (int i = 0; i < pfx.length; i++) {
+			sym = syms.getDefaultNamespace(pfx[i]);
+			namespaces.put(pfx[i], sym);
+			prefixes.put(sym, pfx[i]);
 		}
 		
 		// default namespaces

@@ -90,7 +90,6 @@ public class MemTreeBuilder {
 		String prefix = null;
 		if(context != null) {
 			prefix = context.getPrefixForURI(namespaceURI);
-			System.out.println(prefix + " = " + namespaceURI);
 		}
 		if(prefix == null)
 			prefix = p > -1 ? qname.substring(0, p) : "";
@@ -151,6 +150,16 @@ public class MemTreeBuilder {
 		--level;
 	}
 
+	public void addAttribute(QName qname, String value) {
+		int lastNode = doc.getLastNode();
+		if(doc.nodeKind[lastNode] != Node.ELEMENT_NODE) {
+			System.out.println("appending attribute as text; last = " + doc.nodeKind[lastNode]);
+			characters(value);
+		} else {
+			doc.addAttribute(lastNode, qname, value);
+		}
+	}
+	
 	/**
 	 * Create a new text node.
 	 * 

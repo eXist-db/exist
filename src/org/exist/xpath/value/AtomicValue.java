@@ -21,15 +21,16 @@
 package org.exist.xpath.value;
 
 import org.exist.dom.NodeSet;
+import org.exist.memtree.Receiver;
 import org.exist.storage.DBBroker;
 import org.exist.xpath.XPathException;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-public abstract class AtomicValue implements Item, Sequence  {
+public abstract class AtomicValue implements Item, Sequence {
 
 	public final static AtomicValue EMPTY_VALUE = new EmptyValue();
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Item#getType()
 	 */
@@ -43,43 +44,44 @@ public abstract class AtomicValue implements Item, Sequence  {
 	public abstract String getStringValue() throws XPathException;
 
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
-	
-	public abstract boolean compareTo(int operator, AtomicValue other) throws XPathException;
-	
+
+	public abstract boolean compareTo(int operator, AtomicValue other)
+		throws XPathException;
+
 	public abstract int compareTo(AtomicValue other) throws XPathException;
-	
+
 	public abstract AtomicValue max(AtomicValue other) throws XPathException;
-	
+
 	public abstract AtomicValue min(AtomicValue other) throws XPathException;
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#getLength()
 	 */
 	public int getLength() {
 		return 1;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#iterate()
 	 */
 	public SequenceIterator iterate() {
 		return new SingleItemIterator(this);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#getItemType()
 	 */
 	public int getItemType() {
 		return getType();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#itemAt(int)
 	 */
 	public Item itemAt(int pos) {
 		return pos > 0 ? null : this;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Item#toSequence()
 	 */
@@ -90,46 +92,55 @@ public abstract class AtomicValue implements Item, Sequence  {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
 	 */
-	public void toSAX(DBBroker broker, ContentHandler handler)
-		throws SAXException {
-		String s;
+	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException {
 		try {
-			s = getStringValue();
+			final String s = getStringValue();
 			handler.characters(s.toCharArray(), 0, s.length());
 		} catch (XPathException e) {
 			throw new SAXException(e);
 		}
 	}
-		
+
+	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException {
+		try {
+			final String s = getStringValue();
+			receiver.characters(s);
+		} catch (XPathException e) {
+			throw new SAXException(e);
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
 	 */
 	public void add(Item item) throws XPathException {
 	}
-	
+
 	public void addAll(Sequence other) throws XPathException {
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Item#atomize()
 	 */
 	public AtomicValue atomize() throws XPathException {
 		return this;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Item#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
 		return getStringValue().length() > 0;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
-		throw new XPathException("cannot convert value of type " +
-			Type.getTypeName(getType()) + " to a node set");
+		throw new XPathException(
+			"cannot convert value of type "
+				+ Type.getTypeName(getType())
+				+ " to a node set");
 	}
 
 	public String pprint() {
@@ -139,16 +150,16 @@ public abstract class AtomicValue implements Item, Sequence  {
 			return "";
 		}
 	}
-	
+
 	private final static class EmptyValue extends AtomicValue {
-		
+
 		/* (non-Javadoc)
 		 * @see org.exist.xpath.value.AtomicValue#getStringValue()
 		 */
 		public String getStringValue() {
 			return "";
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see org.exist.xpath.value.AtomicValue#convertTo(int)
 		 */
@@ -160,19 +171,19 @@ public abstract class AtomicValue implements Item, Sequence  {
 		 * @see org.exist.xpath.value.AtomicValue#compareTo(java.lang.Object)
 		 */
 		public int compareTo(AtomicValue other) throws XPathException {
-			if(other instanceof EmptyValue)
+			if (other instanceof EmptyValue)
 				return 0;
 			else
 				return -1;
 		}
-				
+
 		/* (non-Javadoc)
 		 * @see org.exist.xpath.value.AtomicValue#itemAt(int)
 		 */
 		public Item itemAt(int pos) {
 			return null;
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see org.exist.xpath.value.Item#toSequence()
 		 */
@@ -186,18 +197,17 @@ public abstract class AtomicValue implements Item, Sequence  {
 		public AtomicValue max(AtomicValue other) throws XPathException {
 			return this;
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
 		 */
 		public void add(Item item) throws XPathException {
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
 		 */
-		public boolean compareTo(int operator, AtomicValue other)
-			throws XPathException {
+		public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 			throw new XPathException("Cannot compare operand to empty value");
 		}
 

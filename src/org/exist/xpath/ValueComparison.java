@@ -62,8 +62,6 @@ public class ValueComparison extends GeneralComparison {
 	}
 
 	protected BooleanValue genericCompare(
-		StaticContext context,
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -73,14 +71,13 @@ public class ValueComparison extends GeneralComparison {
 		if (ls.getLength() == 1 && rs.getLength() == 1) {
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
-			return new BooleanValue(compareValues(context, lv, rv));
+			return new BooleanValue(compareValues(lv, rv));
 		} else
 			throw new XPathException("Type error: sequence with less or more than one item is not allowed here");
 	}
 
 	protected Sequence nodeSetCompare(
 		NodeSet nodes,
-		DocumentSet docs,
 		Sequence contextSequence)
 		throws XPathException {
 		System.out.println("node set compare");
@@ -97,7 +94,7 @@ public class ValueComparison extends GeneralComparison {
 				rs = getRight().eval(c.getNode().toSequence());
 				if(rs.getLength() != 1)
 					throw new XPathException("Type error: sequence with less or more than one item is not allowed here");
-				if(compareValues(context, lv, rs.itemAt(0).atomize()))
+				if(compareValues(lv, rs.itemAt(0).atomize()))
 					result.add(current);
 			} while ((c = c.getNextItem()) != null);
 		}

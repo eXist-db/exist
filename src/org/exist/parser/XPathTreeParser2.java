@@ -1457,17 +1457,16 @@ public XPathTreeParser2() {
 								expr.setWhereExpression(whereExpr);
 								whereExpr= null;
 							}
-							if (orderBy != null) {
-								OrderSpec orderSpecs[]= new OrderSpec[orderBy.size()];
-								int k= 0;
-								for (Iterator j= orderBy.iterator(); j.hasNext(); k++) {
-									OrderSpec orderSpec= (OrderSpec) j.next();
-									orderSpecs[k]= orderSpec;
-								}
-								expr.setOrderSpecs(orderSpecs);
-								orderBy = null;
-							}
 							action= expr;
+						}
+						if (orderBy != null) {
+							OrderSpec orderSpecs[]= new OrderSpec[orderBy.size()];
+							int k= 0;
+							for (Iterator j= orderBy.iterator(); j.hasNext(); k++) {
+								OrderSpec orderSpec= (OrderSpec) j.next();
+								orderSpecs[k]= orderSpec;
+							}
+							((BindingExpression)action).setOrderSpecs(orderSpecs);
 						}
 						path.add(action);
 						step = action;

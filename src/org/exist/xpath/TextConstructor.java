@@ -36,10 +36,16 @@ import org.exist.xpath.value.Sequence;
 public class TextConstructor extends NodeConstructor {
 
 	private String text = null;
+	private boolean isWhitespaceOnly = true;
 	
 	public TextConstructor(StaticContext context, String text) {
 		super(context);
 		this.text = text;
+		for(int i = 0; i < text.length(); i++)
+			if(!isWhiteSpace(text.charAt(i))) {
+				isWhitespaceOnly = false;
+				break;
+			}
 	}
 	
 	/* (non-Javadoc)
@@ -49,6 +55,8 @@ public class TextConstructor extends NodeConstructor {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
+		if(isWhitespaceOnly && context.stripWhitespace())
+			return Sequence.EMPTY_SEQUENCE;
 		MemTreeBuilder builder = context.getDocumentBuilder();
 		int nodeNr = builder.characters(text);
 		NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
@@ -62,4 +70,7 @@ public class TextConstructor extends NodeConstructor {
 		return text;
 	}
 
+	protected final static boolean isWhiteSpace(char ch) {
+		return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
+	}
 }

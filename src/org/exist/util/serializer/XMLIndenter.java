@@ -22,17 +22,23 @@ package org.exist.util.serializer;
 import java.io.Writer;
 import java.util.Properties;
 
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
 import org.exist.storage.serializers.EXistOutputKeys;
 
 public class XMLIndenter extends XMLWriter {
 
+	private boolean indent = false;
 	private int indentAmount = 4;
 	private String indentChars = "                                                                                           ";
 	private int level = 0;
 	private boolean afterTag = false;
 	private boolean sameline = false;
+	
+	public XMLIndenter() {
+		super();
+	}
 	
 	/**
 	 * @param writer
@@ -69,14 +75,14 @@ public class XMLIndenter extends XMLWriter {
 	 */
 	public void characters(CharSequence chars) throws TransformerException {
 		int start = 0, length = chars.length();
-		while (length > 0 && isWhiteSpace(chars.charAt(start))) {
-			--length;
-			if(length > 0)
-				++start;
-		}
-		while (length > 0 && isWhiteSpace(chars.charAt(start + length - 1))) {
-			--length;
-		}
+//		while (length > 0 && isWhiteSpace(chars.charAt(start))) {
+//			--length;
+//			if(length > 0)
+//				++start;
+//		}
+//		while (length > 0 && isWhiteSpace(chars.charAt(start + length - 1))) {
+//			--length;
+//		}
 		if(length == 0)
 			return;	// whitespace only: skip
 		if(start > 0 || length < chars.length()) {
@@ -112,14 +118,17 @@ public class XMLIndenter extends XMLWriter {
 	 */
 	public void setOutputProperties(Properties outputProperties) {
 		super.setOutputProperties(outputProperties);
-		String indentOpt = outputProperties.getProperty(EXistOutputKeys.INDENT_SPACES, "4");
+		String option = outputProperties.getProperty(EXistOutputKeys.INDENT_SPACES, "4");
 		try {
-			indentAmount = Integer.parseInt(indentOpt);
+			indentAmount = Integer.parseInt(option);
 		} catch(NumberFormatException e) {
 		}
+		indent = outputProperties.getProperty(OutputKeys.INDENT, "no").equals("yes");
 	}
 	
 	protected void indent() throws TransformerException {
+		if(!indent)
+			return;
 		int spaces = indentAmount * level;
 		while(spaces >= indentChars.length())
 			indentChars += indentChars;

@@ -94,6 +94,8 @@ public final class SystemFunctions {
 		"org.exist.xpath.functions.FunCurrentDate",
 		"org.exist.xpath.functions.FunCurrentTime",
 		"org.exist.xpath.functions.FunGetSecondsFromDayTimeDuration",
+		"org.exist.xpath.functions.FunGetMonthFromDate",
+		"org.exist.xpath.functions.FunGetYearFromDate",
 		"org.exist.xpath.functions.xmldb.XMLDBCollection",
 		"org.exist.xpath.functions.xmldb.XMLDBStore",
 		"org.exist.xpath.functions.xmldb.XMLDBRegisterDatabase",

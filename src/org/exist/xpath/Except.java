@@ -32,9 +32,6 @@ import org.exist.xpath.value.Type;
  */
 public class Except extends CombiningExpression {
 	
-	/**
-	 * 
-	 */
 	public Except(StaticContext context, PathExpr left, PathExpr right) {
 		super(context, left, right);
 	}
@@ -48,7 +45,7 @@ public class Except extends CombiningExpression {
 		Sequence rval = right.eval(contextSequence, contextItem);
 		if(lval.getItemType() != Type.NODE || rval.getItemType() != Type.NODE)
 			throw new XPathException("except operand is not a node sequence");
-		NodeSet result = ((NodeSet)lval).intersection((NodeSet)rval);
+		NodeSet result = lval.toNodeSet().except(rval.toNodeSet());
 		return result;
 	}
 	

@@ -466,4 +466,8 @@ public class NodeImpl implements Node, NodeValue, Sequence {
 			throw new SAXException(e);
 		}
 	}
+	
+	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException {
+		toSAX(broker, receiver);
+	}
 }

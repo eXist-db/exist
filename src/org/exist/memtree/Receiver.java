@@ -22,6 +22,7 @@
  */
 package org.exist.memtree;
 
+import org.exist.dom.QName;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -118,6 +119,10 @@ public class Receiver implements ContentHandler {
 		builder.characters(ch, start, len);
 	}
 
+	public void attribute(QName qname, String value) throws SAXException {
+		builder.addAttribute(qname, value);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
 	 */

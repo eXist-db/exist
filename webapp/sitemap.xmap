@@ -91,14 +91,14 @@
                 <use-cookie-parameters>false</use-cookie-parameters>
                 <xslt-processor-role>xalan</xslt-processor-role>
             </map:transformer>
-
-			<map:transformer logger="sitemap.transformer.saxon" name="saxon" pool-grow="2" pool-max="32" pool-min="8" src="org.apache.cocoon.transformation.TraxTransformer">
+			
+            <map:transformer logger="sitemap.transformer.saxon" name="saxon" pool-grow="2" pool-max="32" pool-min="8" src="org.apache.cocoon.transformation.TraxTransformer">
                 <use-request-parameters>false</use-request-parameters>
                 <use-session-parameters>false</use-session-parameters>
                 <use-cookie-parameters>false</use-cookie-parameters>
                 <xslt-processor-role>saxon</xslt-processor-role>
             </map:transformer>
-            
+
             <map:transformer logger="sitemap.transformer.xinclude" name="xinclude" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.transformation.XIncludeTransformer"/>
             <map:transformer logger="sitemap.transformer.cinclude" name="cinclude" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.transformation.CIncludeTransformer"/>
             <map:transformer logger="sitemap.transformer.encodeURL" name="encodeURL" src="org.apache.cocoon.transformation.EncodeURLTransformer"/>
@@ -114,7 +114,7 @@
             <!--#######################################################-->
             <!-- eXist's XMLDBTransformer                                                                   -->
             <!--#######################################################-->
-   	  		<map:transformer name="xmldb" src="org.exist.cocoon.XMLDBTransformer"/>
+            <map:transformer name="xmldb" src="org.exist.cocoon.XMLDBTransformer"/>
         </map:transformers>
 
   <!--+
@@ -284,9 +284,9 @@
             <!--#######################################################-->
             <!-- Register eXist's XMLDBSessionLoginAction                                           -->
             <!--#######################################################-->
-			<map:action logger="sitemap.action.xmldb.login" name="xmldb-login" src="org.exist.cocoon.XMLDBSessionLoginAction"/>
-			<map:action logger="sitemap.action.xmldb.shutdown" 
-				name="xmldb-shutdown" src="org.exist.cocoon.ShutdownAction"/>
+            <map:action logger="sitemap.action.xmldb.login" name="xmldb-login" src="org.exist.cocoon.XMLDBSessionLoginAction"/>
+            <map:action logger="sitemap.action.xmldb.shutdown"
+                    name="xmldb-shutdown" src="org.exist.cocoon.ShutdownAction"/>
         </map:actions>
 
   <!--+
@@ -421,277 +421,277 @@
 
   <!-- main pipeline -->
 
-            <map:pipeline>
+        <map:pipeline>
              <!-- jmv - WWBKB - "automount" setup
                CAUTION: jmv: must be before other catch-all matches like **.xml ,
                otherwise xse/foo.xml will not be passed to xse/ subsitemap.
              -->
-                <map:match pattern="xse/**">
-                    <map:mount check-reload="yes" src="xse/" uri-prefix="xse"/>
-                </map:match>
+            <map:match pattern="xse/**">
+                <map:mount check-reload="yes" src="xse/" uri-prefix="xse"/>
+            </map:match>
  
                <!-- This causes directories added under "mount"
                (even with Cocoon already running) to be activated automagically
                if they contain a sitemap.xmap, without having to modify the main
                sitemap.xmap
              -->
-                <map:match pattern="mount/*/**">
-                    <map:mount check-reload="yes" src="mount/{1}/" uri-prefix="mount/{1}"/>
-                </map:match>
-            </map:pipeline>
+            <map:match pattern="mount/*/**">
+                <map:mount check-reload="yes" src="mount/{1}/" uri-prefix="mount/{1}"/>
+            </map:match>
+        </map:pipeline>
 
-            <map:pipeline>
+        <map:pipeline>
             <!-- graphics etc. -->
-                <map:match pattern="**.css">
-                    <map:read mime-type="text/css" src="{1}.css"/>
-                </map:match>
-                <map:match pattern="**.jpg">
-                    <map:read mime-type="text/jpg" src="{1}.jpg"/>
-                </map:match>
-                <map:match pattern="**.gif">
-                    <map:read mime-type="text/gif" src="{1}.gif"/>
-                </map:match>
-                <map:match pattern="**.png">
-                    <map:read mime-type="text/png" src="{1}.png"/>
-                </map:match>
-                <map:match pattern="**.dtd">
-                    <map:read mime-type="text/text" src="{1}.dtd"/>
-				</map:match>
-				<map:match pattern="**.js">
-					<map:read mime-type="text/javascript" src="{1}.js"/>
-				</map:match>
-                <map:match pattern="**.html">
-                    <map:read src="{1}.html" mime-type="text/html"/>
-                </map:match>
+            <map:match pattern="**.css">
+                <map:read mime-type="text/css" src="{1}.css"/>
+            </map:match>
+            <map:match pattern="**.jpg">
+                <map:read mime-type="text/jpg" src="{1}.jpg"/>
+            </map:match>
+            <map:match pattern="**.gif">
+                <map:read mime-type="text/gif" src="{1}.gif"/>
+            </map:match>
+            <map:match pattern="**.png">
+                <map:read mime-type="text/png" src="{1}.png"/>
+            </map:match>
+            <map:match pattern="**.dtd">
+                <map:read mime-type="text/text" src="{1}.dtd"/>
+            </map:match>
+            <map:match pattern="**.js">
+                <map:read mime-type="text/javascript" src="{1}.js"/>
+            </map:match>
+            <map:match pattern="**.html">
+                <map:read src="{1}.html" mime-type="text/html"/>
+            </map:match>
             
             <!-- pipelines using the xmldb:// pseudo-protocol -->
 
-                <map:match pattern="xmldb/db/xinclude/**.xml">
-                    <map:generate src="xmldb:exist:///db/xinclude/{1}.xml"/>
-                    <map:transform src="stylesheets/db2html.xsl"/>
-                    <map:serialize type="html"/>
-                </map:match>
+            <map:match pattern="xmldb/db/xinclude/**.xml">
+                <map:generate src="xmldb:exist:///db/xinclude/{1}.xml"/>
+                <map:transform src="stylesheets/db2html.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
             
             <!-- apply stylesheet shakes.xsl to all XML documents -->
             <!-- in xmldb-collection /db/shakespeare/plays -->
-                <map:match pattern="xmldb/db/shakespeare/plays/**.xml">
-                    <map:match pattern="xpath" type="request-parameter">
+            <map:match pattern="xmldb/db/shakespeare/plays/**.xml">
+                <map:match pattern="xpath" type="request-parameter">
                     <!-- check if an xpath query has been passed in the request -->
-                        <map:generate src="xmldb:exist:///db/shakespeare/plays/{../1}.xml#{1}"/>
-                        <map:act type="request">
+                    <map:generate src="xmldb:exist:///db/shakespeare/plays/{../1}.xml#{1}"/>
+                    <map:act type="request">
                         <!-- convert request parameters into sitemap parameters -->
-                            <map:parameter name="parameters" value="true"/>
-                            <map:parameter name="default.howmany" value="10"/>
-                            <map:parameter name="default.start" value="1"/>
+                        <map:parameter name="parameters" value="true"/>
+                        <map:parameter name="default.howmany" value="10"/>
+                        <map:parameter name="default.start" value="1"/>
                         <!-- we don't want to display all results on one page,
                      so we use the filter-transformer to filter out 
                      everything except the block we would like to see.
                  -->
-                            <map:transform type="filter">
-                                <map:parameter name="element-name" value="result"/>
-                                <map:parameter name="count" value="{howmany}"/>
-                                <map:parameter name="blocknr" value="{start}"/>
-                            </map:transform>
-                            <map:transform src="stylesheets/xmldb-query.xsl">
-                                <map:parameter name="block" value="{start}"/>
-                                <map:parameter name="collection" value="/db/shakespeare/plays"/>
-                                <map:parameter name="resource" value="{../../1}.xml"/>
-                            </map:transform>
-                        </map:act>
-                        <map:serialize type="html"/>
-                    </map:match>
-                    <map:generate src="xmldb:exist:///db/shakespeare/plays/{1}.xml"/>
-                    <map:transform src="xmldb:exist:///db/shakespeare/plays/shakes.xsl"/>
+                        <map:transform type="filter">
+                            <map:parameter name="element-name" value="result"/>
+                            <map:parameter name="count" value="{howmany}"/>
+                            <map:parameter name="blocknr" value="{start}"/>
+                        </map:transform>
+                        <map:transform src="stylesheets/xmldb-query.xsl">
+                            <map:parameter name="block" value="{start}"/>
+                            <map:parameter name="collection" value="/db/shakespeare/plays"/>
+                            <map:parameter name="resource" value="{../../1}.xml"/>
+                        </map:transform>
+                    </map:act>
                     <map:serialize type="html"/>
                 </map:match>
+                <map:generate src="xmldb:exist:///db/shakespeare/plays/{1}.xml"/>
+                <map:transform src="xmldb:exist:///db/shakespeare/plays/shakes.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
             
             <!-- browse collections -->
-                <map:match pattern="xmldb/**/">
+            <map:match pattern="xmldb/**/">
                 <!-- check if an xpath query has been passed in the request -->
-                    <map:match pattern="xpath" type="request-parameter">
-                        <map:generate src="xmldb:exist:///{../1}/#{1}"/>
-                        <map:act type="request">
+                <map:match pattern="xpath" type="request-parameter">
+                    <map:generate src="xmldb:exist:///{../1}/#{1}"/>
+                    <map:act type="request">
                         <!-- convert request parameters into sitemap parameters -->
-                            <map:parameter name="parameters" value="true"/>
-                            <map:parameter name="default.howmany" value="10"/>
-                            <map:parameter name="default.start" value="1"/>
+                        <map:parameter name="parameters" value="true"/>
+                        <map:parameter name="default.howmany" value="10"/>
+                        <map:parameter name="default.start" value="1"/>
                         <!-- we don't want to display all results on one page,
                      so we use the filter-transformer to filter out 
                      everything except the block we would like to see.
                  -->
-                            <map:transform type="filter">
-                                <map:parameter name="element-name" value="result"/>
-                                <map:parameter name="count" value="{howmany}"/>
-                                <map:parameter name="blocknr" value="{start}"/>
-                            </map:transform>
-                            <map:transform src="stylesheets/xmldb-query.xsl">
-                                <map:parameter name="block" value="{start}"/>
-                                <map:parameter name="collection" value="{../../1}"/>
-                            </map:transform>
-                        </map:act>
-                        <map:serialize type="html"/>
-                    </map:match>
-                <!-- no xpath query has been specified: display collection contents -->
-                    <map:generate src="xmldb:exist:///{1}/"/>
-                    <map:transform src="stylesheets/xmldb-collection.xsl">
-                        <map:parameter name="collection" value="{1}"/>
-                    </map:transform>
+                        <map:transform type="filter">
+                            <map:parameter name="element-name" value="result"/>
+                            <map:parameter name="count" value="{howmany}"/>
+                            <map:parameter name="blocknr" value="{start}"/>
+                        </map:transform>
+                        <map:transform src="stylesheets/xmldb-query.xsl">
+                            <map:parameter name="block" value="{start}"/>
+                            <map:parameter name="collection" value="{../../1}"/>
+                        </map:transform>
+                    </map:act>
                     <map:serialize type="html"/>
                 </map:match>
+                <!-- no xpath query has been specified: display collection contents -->
+                <map:generate src="xmldb:exist:///{1}/"/>
+                <map:transform src="stylesheets/xmldb-collection.xsl">
+                    <map:parameter name="collection" value="{1}"/>
+                </map:transform>
+                <map:serialize type="html"/>
+            </map:match>
             
             <!-- display source XML for other resources -->
-                <map:match pattern="xmldb/**">
-                    <map:match pattern="xpath" type="request-parameter">
+            <map:match pattern="xmldb/**">
+                <map:match pattern="xpath" type="request-parameter">
                     <!-- check if an xpath query has been passed in the request -->
-                        <map:generate src="xmldb:exist:///{../1}#{1}"/>
-                        <map:act type="request">
+                    <map:generate src="xmldb:exist:///{../1}#{1}"/>
+                    <map:act type="request">
                         <!-- convert request parameters into sitemap parameters -->
-                            <map:parameter name="parameters" value="true"/>
-                            <map:parameter name="default.howmany" value="10"/>
-                            <map:parameter name="default.start" value="1"/>
+                        <map:parameter name="parameters" value="true"/>
+                        <map:parameter name="default.howmany" value="10"/>
+                        <map:parameter name="default.start" value="1"/>
                         <!-- we don't want to display all results on one page,
                      so we use the filter-transformer to filter out 
                      everything except the block we would like to see.
                  -->
-                            <map:transform type="filter">
-                                <map:parameter name="element-name" value="result"/>
-                                <map:parameter name="count" value="{howmany}"/>
-                                <map:parameter name="blocknr" value="{start}"/>
-                            </map:transform>
-                            <map:transform src="stylesheets/xmldb-query.xsl">
-                                <map:parameter name="block" value="{start}"/>
-                                <map:parameter name="collection" value="{../../1}"/>
-                            </map:transform>
-                        </map:act>
+                        <map:transform type="filter">
+                            <map:parameter name="element-name" value="result"/>
+                            <map:parameter name="count" value="{howmany}"/>
+                            <map:parameter name="blocknr" value="{start}"/>
+                        </map:transform>
+                        <map:transform src="stylesheets/xmldb-query.xsl">
+                            <map:parameter name="block" value="{start}"/>
+                            <map:parameter name="collection" value="{../../1}"/>
+                        </map:transform>
+                    </map:act>
+                    <map:serialize type="html"/>
+                </map:match>
+                <map:generate src="xmldb:exist:///{1}"/>
+                <map:select type="browser">
+                    <map:when test="explorer">
+                        <map:serialize type="xml"/>
+                    </map:when>
+                    <map:otherwise>
+                        <map:transform src="stylesheets/system/xml2html.xslt"/>
                         <map:serialize type="html"/>
-                    </map:match>
-                    <map:generate src="xmldb:exist:///{1}"/>
-                    <map:select type="browser">
-                        <map:when test="explorer">
-                            <map:serialize type="xml"/>
-                        </map:when>
-                        <map:otherwise>
-                            <map:transform src="stylesheets/system/xml2html.xslt"/>
-                            <map:serialize type="html"/>
-                        </map:otherwise>
-                    </map:select>
-                </map:match>
+                    </map:otherwise>
+                </map:select>
+            </map:match>
 
-                <map:match pattern="**.xmap">
-                    <map:generate src="{1}.xmap"/>
-                    <map:transform src="stylesheets/sitemap/simple-sitemap2html.xsl"/>
-                    <map:serialize type="html"/>
-                </map:match>
-			
-                <map:match pattern="">
-					<map:redirect-to uri="/exist/index.xml"/>
-                </map:match>
+            <map:match pattern="**.xmap">
+                <map:generate src="{1}.xmap"/>
+                <map:transform src="stylesheets/sitemap/simple-sitemap2html.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
 
-                <map:match pattern="index.xml">
-                    <map:generate src="index.xml"/>
-                    <map:transform type="xinclude"/>
-                    <map:transform src="stylesheets/doc2html-2.xsl"/>
-					<map:serialize type="html"/>
-                </map:match>
+            <map:match pattern="">
+                <map:redirect-to uri="/exist/index.xml"/>
+            </map:match>
 
-                <map:match pattern="library/**">
-                    <map:mount check-reload="yes" src="library/sitemap.xmap" uri-prefix="library"/>
-                </map:match>
-           	
-                <map:match pattern="simple/**">
-                    <map:mount check-reload="yes" src="simple/sitemap.xmap" uri-prefix="simple"/>
-                </map:match>
-           	
-                <map:match pattern="examples/**">
-                    <map:mount check-reload="yes" src="examples/sitemap.xmap" uri-prefix="examples"/>
-                </map:match>
+            <map:match pattern="index.xml">
+                <map:generate src="index.xml"/>
+                <map:transform type="xinclude"/>
+                <map:transform src="stylesheets/doc2html-2.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
 
-				<map:match pattern="acronyms/**">
-					<map:mount check-reload="yes" src="acronyms/sitemap.xmap" uri-prefix="acronyms"/>
-				</map:match>
+            <map:match pattern="library/**">
+                <map:mount check-reload="yes" src="library/sitemap.xmap" uri-prefix="library"/>
+            </map:match>
 
-				<map:match pattern="xquery/**">
-					<map:mount check-reload="yes" src="xquery/sitemap.xmap"
-						uri-prefix="xquery"/>
-				</map:match>
+            <map:match pattern="simple/**">
+                <map:mount check-reload="yes" src="simple/sitemap.xmap" uri-prefix="simple"/>
+            </map:match>
+
+            <map:match pattern="examples/**">
+                <map:mount check-reload="yes" src="examples/sitemap.xmap" uri-prefix="examples"/>
+            </map:match>
 				
-                <map:match pattern="status">
-                    <map:generate type="exist-status"/>
-                    <map:transform src="stylesheets/status.xsl">
-						<map:parameter name="use-request-parameters" 
-							value="true"/>
-                    </map:transform>
-                    <map:serialize type="html"/>
-                </map:match>
-
-				<map:match pattern="shutdown">
-					<map:act type="xmldb-shutdown">
-						<map:redirect-to uri="status"/>
-					</map:act>
-					<map:redirect-to uri="status"/>
-				</map:match>
+            <map:match pattern="acronyms/**">
+                <map:mount check-reload="yes" src="acronyms/sitemap.xmap" uri-prefix="acronyms"/>
+            </map:match>
 				
-                <map:match pattern="changes.xml">
-                    <map:generate src="changes.xml"/>
-                    <map:transform src="stylesheets/changes.xsl"/>
-                    <map:serialize type="html"/>
-                </map:match>
+            <map:match pattern="xquery/**">
+                <map:mount check-reload="yes" src="xquery/sitemap.xmap"
+                        uri-prefix="xquery"/>
+            </map:match>
+
+            <map:match pattern="status">
+                <map:generate type="exist-status"/>
+                <map:transform src="stylesheets/status.xsl">
+                    <map:parameter name="use-request-parameters"
+                            value="true"/>
+                </map:transform>
+                <map:serialize type="html"/>
+            </map:match>
+				
+            <map:match pattern="shutdown">
+                <map:act type="xmldb-shutdown">
+                    <map:redirect-to uri="status"/>
+                </map:act>
+                <map:redirect-to uri="status"/>
+            </map:match>
+
+            <map:match pattern="changes.xml">
+                <map:generate src="changes.xml"/>
+                <map:transform src="stylesheets/changes.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
             
             <!-- the login-form for the database admin servlet -->
-                <map:match pattern="adminLogin.xml">
-                    <map:generate src="adminLogin.xml"/>
-                    <map:transform type="encodeURL"/>
-                    <map:serialize type="html"/>
-                </map:match>
+            <map:match pattern="adminLogin.xml">
+                <map:generate src="adminLogin.xml"/>
+                <map:transform type="encodeURL"/>
+                <map:serialize type="html"/>
+            </map:match>
             
             <!-- this is a protected resource: it uses the xmldb-login action
             to authenticate a user against the database -->
-                <map:match pattern="xadmin.xsp">
-                    <map:act src="xmldb:exist:///db" type="xmldb-login">
-                        <map:generate src="xadmin.xsp" type="serverpages"/>
-						<map:transform type="xinclude">
-                            <map:parameter name="use-request-parameters" value="true"/>
-                        </map:transform>
-                        <map:transform src="stylesheets/doc2html-2.xsl">
-                            <map:parameter name="use-request-parameters" value="true"/>
-                        </map:transform>
-                        <map:serialize encoding="UTF-8" type="html"/>
-                    </map:act>
+            <map:match pattern="xadmin.xsp">
+                <map:act src="xmldb:exist:///db" type="xmldb-login">
+                    <map:generate src="xadmin.xsp" type="serverpages"/>
+                    <map:transform type="xinclude">
+                        <map:parameter name="use-request-parameters" value="true"/>
+                    </map:transform>
+                    <map:transform src="stylesheets/doc2html-2.xsl">
+                        <map:parameter name="use-request-parameters" value="true"/>
+                    </map:transform>
+                    <map:serialize encoding="UTF-8" type="html"/>
+                </map:act>
                 <!-- no session found: display login form -->
-                    <map:generate src="login.xml"/>
-					<map:transform type="xinclude"/>
-                    <map:transform src="stylesheets/doc2html-2.xsl"/>
-                    <map:serialize type="html"/>
-                </map:match>
-
-				<map:match pattern="request.xml">
-                	<map:generate type="request">
+                <map:generate src="login.xml"/>
+                <map:transform type="xinclude"/>
+                <map:transform src="stylesheets/doc2html-2.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
+				
+            <map:match pattern="request.xml">
+                <map:generate type="request">
                 		<!--map:parameter name="container-encoding" value="ISO-8859-1"/-->
-                		<map:parameter name="form-encoding" value="UTF-8"/>
-                	</map:generate>
-                	<map:serialize type="xml"/>
-                </map:match>
-                
-                <map:match pattern="**.xsp">
-                    <map:generate src="{1}.xsp" type="serverpages"/>
-                    <map:transform type="cinclude"/>
-                    <map:transform src="stylesheets/doc2html-2.xsl"/>
-					<map:serialize encoding="UTF-8" type="html"/>
-                </map:match>
+                    <map:parameter name="form-encoding" value="UTF-8"/>
+                </map:generate>
+                <map:serialize type="xml"/>
+            </map:match>
+
+            <map:match pattern="**.xsp">
+                <map:generate src="{1}.xsp" type="serverpages"/>
+                <map:transform type="cinclude"/>
+                <map:transform src="stylesheets/doc2html-2.xsl"/>
+                <map:serialize encoding="UTF-8" type="html"/>
+            </map:match>
             
             <!-- Documentation -->
-                <map:match pattern="**.xml">
-                    <map:generate src="{1}.xml"/>
-                    <map:transform type="cinclude"/>
-                    <map:transform src="stylesheets/db2html.xsl"/>
-                    <map:serialize type="html"/>
-                </map:match>
+            <map:match pattern="**.xml">
+                <map:generate src="{1}.xml"/>
+                <map:transform type="cinclude"/>
+                <map:transform src="stylesheets/db2html.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
 
-                <map:match pattern="**/">
-                    <map:generate src="{1}" type="directory"/>
-                    <map:transform src="stylesheets/system/directory2html.xsl"/>
-                    <map:serialize/>
-                </map:match>
+            <map:match pattern="**/">
+                <map:generate src="{1}" type="directory"/>
+                <map:transform src="stylesheets/system/directory2html.xsl"/>
+                <map:serialize/>
+            </map:match>
             
     <!--+
         | At the very end of a pipeline, you can catch the errors triggered
@@ -705,36 +705,36 @@
         | error to be displayed on screen. The "exception" selector can help
         | you to define different screens for different error types.
         +-->
-                <map:handle-errors>
-                    <map:select type="exception">
+            <map:handle-errors>
+                <map:select type="exception">
 
-                        <map:when test="not-found">
-                            <map:generate type="notifying"/>
-                            <map:transform src="stylesheets/system/error2html.xslt">
-                                <map:parameter name="contextPath" value="{request:contextPath}"/>
-                                <map:parameter name="pageTitle" value="Resource not found"/>
-                            </map:transform>
-                        </map:when>
+                    <map:when test="not-found">
+                        <map:generate type="notifying"/>
+                        <map:transform src="stylesheets/system/error2html.xslt">
+                            <map:parameter name="contextPath" value="{request:contextPath}"/>
+                            <map:parameter name="pageTitle" value="Resource not found"/>
+                        </map:transform>
+                    </map:when>
 
-                        <map:when test="invalid-continuation">
-                            <map:generate src="not-found.xml"/>
-                            <map:transform src="welcome.xslt">
-                                <map:parameter name="contextPath" value="{request:contextPath}"/>
-                            </map:transform>
-                        </map:when>
+                    <map:when test="invalid-continuation">
+                        <map:generate src="not-found.xml"/>
+                        <map:transform src="welcome.xslt">
+                            <map:parameter name="contextPath" value="{request:contextPath}"/>
+                        </map:transform>
+                    </map:when>
 
-                        <map:otherwise>
-                            <map:generate type="notifying"/>
-                            <map:transform src="stylesheets/system/error2html.xslt">
-                                <map:parameter name="contextPath" value="{request:contextPath}"/>
-                            </map:transform>
-                        </map:otherwise>
-                    </map:select>
+                    <map:otherwise>
+                        <map:generate type="notifying"/>
+                        <map:transform src="stylesheets/system/error2html.xslt">
+                            <map:parameter name="contextPath" value="{request:contextPath}"/>
+                        </map:transform>
+                    </map:otherwise>
+                </map:select>
 
-                    <map:serialize/>
-                </map:handle-errors>
+                <map:serialize/>
+            </map:handle-errors>
 
-            </map:pipeline>
-        </map:pipelines>
+        </map:pipeline>
+    </map:pipelines>
 
-    </map:sitemap>
+</map:sitemap>

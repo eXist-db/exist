@@ -104,8 +104,9 @@ public class GeneralComparison extends BinaryOp {
 			// and does not depend on the context item
 			{
 			return Dependency.CONTEXT_SET;
-		} else
+		} else {
 			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+		}
 	}
 
 	/* (non-Javadoc)
@@ -126,9 +127,8 @@ public class GeneralComparison extends BinaryOp {
 		 * This works only inside a predicate.
 		 */
 		if (inPredicate) {
-			int rightDeps = getRight().getDependencies();
 			if((getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
-				if ((rightDeps & Dependency.CONTEXT_ITEM) == 0
+				if ((getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0
 					&& (Type.subTypeOf(getRight().returnsType(), Type.STRING)
 						|| Type.subTypeOf(getRight().returnsType(), Type.NODE))
 					&& (getRight().getCardinality() & Cardinality.MANY) == 0) {
@@ -140,11 +140,10 @@ public class GeneralComparison extends BinaryOp {
 			}
 		}
 		// Fall back to the generic compare process
-		return genericCompare(context, contextSequence, contextItem);
+		return genericCompare(contextSequence, contextItem);
 	}
 
 	protected BooleanValue genericCompare(
-		StaticContext context,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -154,17 +153,17 @@ public class GeneralComparison extends BinaryOp {
 		if (ls.getLength() == 1 && rs.getLength() == 1) {
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
-			return new BooleanValue(compareValues(context, lv, rv));
+			return new BooleanValue(compareValues(lv, rv));
 		} else {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				lv = i1.nextItem().atomize();
 				if (rs.getLength() == 1
-					&& compareValues(context, lv, rs.itemAt(0).atomize()))
+					&& compareValues(lv, rs.itemAt(0).atomize()))
 					return BooleanValue.TRUE;
 				else {
 					for (SequenceIterator i2 = rs.iterate(); i2.hasNext();) {
 						rv = i2.nextItem().atomize();
-						if (compareValues(context, lv, rv))
+						if (compareValues(lv, rv))
 							return BooleanValue.TRUE;
 					}
 				}
@@ -201,7 +200,7 @@ public class GeneralComparison extends BinaryOp {
 				lv = current.atomize();
 				rs = getRight().eval(c.getNode().toSequence());
 				for (SequenceIterator si = rs.iterate(); si.hasNext();) {
-					if (compareValues(context, lv, si.nextItem().atomize())) {
+					if (compareValues(lv, si.nextItem().atomize())) {
 						result.add(current);
 					}
 				}
@@ -258,8 +257,7 @@ public class GeneralComparison extends BinaryOp {
 			cmp = cmpCopy;
 		}
 		// now compare the input node set to the search expression
-		NodeSet r = context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp);
-		return r;
+		return context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp);
 	}
 
 	/**
@@ -267,7 +265,6 @@ public class GeneralComparison extends BinaryOp {
 	 * and compare them.
 	 */
 	protected boolean compareValues(
-		StaticContext context,
 		AtomicValue lv,
 		AtomicValue rv)
 		throws XPathException {

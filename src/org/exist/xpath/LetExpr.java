@@ -27,6 +27,7 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.OrderedValueSequence;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
+import org.exist.xpath.value.ValueSequence;
 
 /**
  * Implements an XQuery let-expression.
@@ -42,7 +43,7 @@ public class LetExpr extends BindingExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
+	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence)
 		throws XPathException {
 		context.pushLocalContext(false);
 		Variable var = new Variable(QName.parse(context, varName));
@@ -57,25 +58,30 @@ public class LetExpr extends BindingExpression {
 		Sequence filtered = null;
 		if (whereExpr != null) {
 			filtered = applyWhereExpression(null);
+			// TODO: don't use returnsType here
 			if (whereExpr.returnsType() == Type.BOOLEAN) {
 				if (!filtered.effectiveBooleanValue())
 					return Sequence.EMPTY_SEQUENCE;
 			} else if (filtered.getLength() == 0)
 				return Sequence.EMPTY_SEQUENCE;
 		}
-		Sequence returnSeq = null;
-		if (orderSpecs == null)
-			returnSeq = returnExpr.eval(filtered, null);
-		else {
-			if (filtered != null)
-				val = filtered;
-			OrderedValueSequence ordered =
-				new OrderedValueSequence(orderSpecs, val.getLength());
-			ordered.addAll(val);
-			returnSeq = returnExpr.eval(ordered, null);
+		if(resultSequence == null) {
+			if(orderSpecs != null)
+				resultSequence = new OrderedValueSequence(orderSpecs, val.getLength());
+			else
+				resultSequence = new ValueSequence();
 		}
+		
+		if(returnExpr instanceof BindingExpression) {
+			((BindingExpression)returnExpr).eval(null, null, resultSequence);
+		} else {
+			val = returnExpr.eval(null);
+			resultSequence.addAll(val);
+		}
+		if(orderSpecs != null)
+			((OrderedValueSequence)resultSequence).sort();
 		context.popLocalContext();
-		return returnSeq;
+		return resultSequence;
 	}
 
 	/* (non-Javadoc)
@@ -83,7 +89,7 @@ public class LetExpr extends BindingExpression {
 	 */
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
-		buf.append("let ");
+		buf.append("(let ");
 		buf.append(varName);
 		if (sequenceType != null) {
 			buf.append(" as ");
@@ -101,6 +107,7 @@ public class LetExpr extends BindingExpression {
 		}
 		buf.append(" return ");
 		buf.append(returnExpr.pprint());
+		buf.append(')');
 		return buf.toString();
 	}
 

@@ -61,7 +61,7 @@
 	   if found in documents?
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
-  <serializer enable-xinclude="yes" enable-xsl="false"
+  <serializer enable-xinclude="no" enable-xsl="false"
 	  indent="yes" add-exist-id="no" match-tagging-elements="true"
 	  match-tagging-attributes="false"/>
   

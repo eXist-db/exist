@@ -23,7 +23,6 @@
 package org.exist.xpath.functions;
 
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.exist.dom.QName;
@@ -49,10 +48,9 @@ public class FunDistinctValues extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("distinct-values", BUILTIN_FUNCTION_NS),
-			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE) },
-			new SequenceType(Type.ATOMIC, Cardinality.ONE)
-		);
-		
+			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
+			new SequenceType(Type.ATOMIC, Cardinality.ONE));
+
 	public FunDistinctValues(StaticContext context) {
 		super(context, signature);
 	}
@@ -69,46 +67,48 @@ public class FunDistinctValues extends Function {
 	 */
 	public int getDependencies() {
 		int deps = Dependency.CONTEXT_SET;
-		if(getArgumentCount() == 1)
+		if (getArgumentCount() == 1)
 			deps |= getArgument(0).getDependencies();
-		return deps; 
+		return deps;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
+	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
-		if(contextItem != null)
+		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		long start = System.currentTimeMillis();
 		Sequence values = getArgument(0).eval(contextSequence);
-		TreeSet set = new TreeSet(new Comparator() {
-			public int compare(Object o1, Object o2) {
-				try {
-					return ((AtomicValue)o1).compareTo((AtomicValue)o2);
-				} catch (XPathException e) {
-					throw new IllegalArgumentException("cannot compare values");
-				}
-			}
-		});
-		AtomicValue value;
-		for(SequenceIterator i = values.iterate(); i.hasNext(); ) {
-			value = (AtomicValue)i.nextItem();
-			if(!set.contains(value))
-				set.add(value);
-		}
+		TreeSet set = new TreeSet(new ValueComparator());
 		ValueSequence result = new ValueSequence();
-		for(Iterator i = set.iterator(); i.hasNext(); ) {
-			value = (AtomicValue)i.next();
-			//LOG.debug("value: " + value.getStringValue());
-			result.add(value);
+		AtomicValue value;
+		for (SequenceIterator i = values.iterate(); i.hasNext();) {
+			value = (AtomicValue) i.nextItem();
+			if (!set.contains(value)) {
+				set.add(value);
+				result.add(value);
+			}
 		}
-		LOG.debug("distinct-values found " + result.getLength() + 
-			" in " + (System.currentTimeMillis() - start));
+		LOG.debug(
+			"distinct-values found "
+				+ result.getLength()
+				+ " in "
+				+ (System.currentTimeMillis() - start));
 		return result;
 	}
 
+	private final static class ValueComparator implements Comparator {
+		/* (non-Javadoc)
+		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+		 */
+		public int compare(Object o1, Object o2) {
+			try {
+				return ((AtomicValue) o1).compareTo((AtomicValue) o2);
+			} catch (XPathException e) {
+				throw new IllegalArgumentException("cannot compare values");
+			}
+		}
+	}
 }

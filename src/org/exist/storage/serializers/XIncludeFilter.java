@@ -138,7 +138,6 @@ public class XIncludeFilter implements ContentHandler {
 	public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
 		throws SAXException {
 		if (namespaceURI != null && namespaceURI.equals(XINCLUDE_NS)) {
-			LOG.debug("found xinclude element");
 			if (localName.equals("include")) {
 				LOG.debug("processing include ...");
 				processXInclude(atts);
@@ -225,7 +224,6 @@ public class XIncludeFilter implements ContentHandler {
 					}
 
 					AST ast = parser.getAST();
-					LOG.debug("generated AST: " + ast.toStringTree());
 
 					PathExpr expr = new PathExpr(context);
 					treeParser.xpointer(ast, expr);

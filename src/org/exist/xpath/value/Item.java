@@ -20,6 +20,7 @@
  */
 package org.exist.xpath.value;
 
+import org.exist.memtree.Receiver;
 import org.exist.storage.DBBroker;
 import org.exist.xpath.XPathException;
 import org.xml.sax.ContentHandler;
@@ -72,4 +73,5 @@ public interface Item {
 	
 	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException;
 
+	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException;
 }

@@ -251,7 +251,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				if (test.matches(docElemProxy))
 					result.add(docElemProxy);
 				if (axis == Constants.DESCENDANT_AXIS
-					|| axis == Constants.DESCENDANT_SELF_AXIS) {
+					|| axis == Constants.DESCENDANT_SELF_AXIS
+					|| axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
 					domIter = docElemProxy.doc.getBroker().getNodeIterator(docElemProxy);
 					NodeImpl node = (NodeImpl) domIter.next();
 					node.setOwnerDocument(docElemProxy.doc);
@@ -290,30 +291,26 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				p.setInternalAddress(child.internalAddress);
 				p.match = contextNode.match;
 				if (test.matches(child)) {
-					if ((axis == Constants.CHILD_AXIS
+					if (((axis == Constants.CHILD_AXIS
 						|| axis == Constants.ATTRIBUTE_AXIS)
-						&& recursions == 0) {
-						result.add(p);
-						p.copyContext(contextNode);
-						if (useSelfAsContext && inPredicate) {
-							p.addContextNode(p);
-						} else if (inPredicate)
-							p.addContextNode(contextNode);
-					} else if (
+						&& recursions == 0) ||
 						(axis == Constants.DESCENDANT_AXIS
-							|| axis == Constants.DESCENDANT_SELF_AXIS)) {
+						|| axis == Constants.DESCENDANT_SELF_AXIS
+						|| axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
 						result.add(p);
 						p.copyContext(contextNode);
 						if (useSelfAsContext && inPredicate) {
 							p.addContextNode(p);
 						} else if (inPredicate)
 							p.addContextNode(contextNode);
-					} else if (axis == Constants.ATTRIBUTE_AXIS)
-						return;
+					}
 				}
 				addChildren(contextNode, result, child, iter, recursions + 1);
 			}
 		} else if (test.matches(node)) {
+			if((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS)
+				&& recursions > 0)
+				return;
 			NodeProxy p = new NodeProxy(node.ownerDocument, node.gid, node.getNodeType());
 			p.setInternalAddress(node.internalAddress);
 			p.match = contextNode.match;
@@ -327,8 +324,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	}
 
 	private final void realize() {
-		if (realSet != null)
-			return;
+		//if (realSet != null)
+		//	return;
 		realSet = getNodes();
 	}
 

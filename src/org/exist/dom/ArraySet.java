@@ -22,20 +22,12 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
 import org.exist.util.FastQSort;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.SequenceIterator;
 import org.w3c.dom.Node;
 
 public class ArraySet extends AbstractNodeSet {
-
-	public final static int ANCESTOR = 0;
-	public final static int DESCENDANT = 1;
-
-	public final static int CHOOSE_TOP_DOWN_MAX = 10;
-
-	private final static Logger LOG = Logger.getLogger(ArraySet.class);
 
 	protected int counter = 0;
 	protected int length;
@@ -581,7 +573,7 @@ public class ArraySet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#iterate()
 	 */
 	public SequenceIterator iterate() {
-		sort();
+		sortInDocumentOrder();
 		return new ArraySequenceIterator();
 	}
 
@@ -634,12 +626,19 @@ public class ArraySet extends AbstractNodeSet {
 	public void sort() {
 		if (this.sorted || counter < 2)
 			return;
-		//Arrays.sort(nodes, 0, counter - 1);
 		FastQSort.sort(nodes, 0, counter - 1);
 		removeDuplicates();
 		this.sorted = true;
 	}
 
+	public void sortInDocumentOrder() {
+		if (counter < 2)
+			return;
+		FastQSort.sort(nodes, new DocumentOrderComparator(), 0, counter - 1);
+		removeDuplicates();
+		this.sorted = false;
+	}
+	
 	private final void removeDuplicates() {
 		int j = 0;
 		for (int i = 1; i < counter; i++) {

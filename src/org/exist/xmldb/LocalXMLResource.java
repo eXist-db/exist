@@ -19,6 +19,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.DOMSerializer;
+import org.exist.util.serializer.DOMSerializerPool;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.util.serializer.SAXSerializer;
@@ -103,13 +104,17 @@ public class LocalXMLResource implements XMLResourceImpl {
 		if (content != null)
 			return content;
 		else if (root != null) {
+			DOMSerializer serializer = DOMSerializerPool.getInstance().borrowDOMSerializer();
 			try {
 				StringWriter writer = new StringWriter();
-				DOMSerializer serializer = new DOMSerializer(writer, parent.properties);
+				serializer.setOutputProperties(parent.properties);
+				serializer.setWriter(writer);
 				serializer.serialize(root);
 				content = writer.toString();
 			} catch (TransformerException e) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
+			} finally {
+				DOMSerializerPool.getInstance().returnDOMSerializer(serializer);
 			}
 			return content;
 		} else if (value != null) {

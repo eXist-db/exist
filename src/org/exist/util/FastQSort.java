@@ -1,6 +1,7 @@
 package org.exist.util;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.exist.dom.NodeProxy;
@@ -41,6 +42,43 @@ public final class FastQSort {
 
 			QuickSort(a, l, j);
 			QuickSort(a, i + 1, r);
+		}
+	}
+
+	private final static void QuickSort(Object a[], Comparator comp, int l, int r)
+	//----------------------------------------------------
+	{
+		int M = 4;
+		int i;
+		int j;
+		Object v;
+
+		if ((r - l) > M) {
+			// 26july00: following [.][1] -> [.][0]
+			i = (r + l) / 2;
+			if (comp.compare(a[l], a[i]) > 0)
+				swap(a, l, i); // Tri-Median Methode!
+			if (comp.compare(a[l], a[r]) > 0)
+				swap(a, l, r);
+			if (comp.compare(a[i], a[r]) > 0)
+				swap(a, i, r);
+
+			j = r - 1;
+			swap(a, i, j);
+			i = l;
+
+			v = a[j];
+			for (;;) {
+				while (comp.compare(a[++i], v) < 0);
+				while (comp.compare(a[--j], v) > 0);
+				if (j < i)
+					break;
+				swap(a, i, j);
+			}
+			swap(a, i, r - 1);
+
+			QuickSort(a, comp, l, j);
+			QuickSort(a, comp, i + 1, r);
 		}
 	}
 
@@ -235,10 +273,7 @@ public final class FastQSort {
 		a[j] = T;
 	}
 
-	private final static void InsertionSortByNodeId(
-		NodeProxy[] a,
-		int lo0,
-		int hi0)
+	private final static void InsertionSortByNodeId(NodeProxy[] a, int lo0, int hi0)
 	//------------------------------------------------------------
 	{
 		int i, j;
@@ -276,6 +311,25 @@ public final class FastQSort {
 		}
 	}
 
+	private final static void InsertionSort(Object[] a, Comparator comp, int lo0, int hi0)
+		//------------------------------------------------------------
+		{
+			int i, j;
+			Object temp = null;
+
+			for (i = lo0 + 1; i <= hi0; i++) {
+				temp = a[i]; // the column we're sorting on
+				j = i;
+
+				while ((j > lo0) && (comp.compare(a[j - 1], temp) > 0)) {
+					a[j] = a[j - 1];
+					j--;
+				}
+
+				a[j] = temp;
+			}
+		}
+		
 	private final static void InsertionSort(List a, int lo0, int hi0)
 	//------------------------------------------------------------
 	{
@@ -286,8 +340,7 @@ public final class FastQSort {
 			temp = a.get(i); // the column we're sorting on
 			j = i;
 
-			while ((j > lo0)
-				&& (((Comparable) a.get(j - 1)).compareTo(temp) > 0)) {
+			while ((j > lo0) && (((Comparable) a.get(j - 1)).compareTo(temp) > 0)) {
 				a.set(j, a.get(j - 1));
 				j--;
 			}
@@ -296,11 +349,7 @@ public final class FastQSort {
 		}
 	}
 
-	private final static void InsertionSort(
-		long a[],
-		int lo0,
-		int hi0,
-		Object b[])
+	private final static void InsertionSort(long a[], int lo0, int hi0, Object b[])
 	//------------------------------------------------------------
 	{
 		int i, j;
@@ -325,31 +374,16 @@ public final class FastQSort {
 		}
 	}
 
-	public final static void shellSort(NodeProxy a[], int length) {
-		if (length == 1)
-			return;
-		int h = 1;
-		while (h < length) {
-			h = 3 * h + 1;
-		}
-		do {
-			h = h / 3;
-			for (int i = h - 1; i < length; i++) {
-				NodeProxy B = a[i];
-				int j = i;
-				for (j = i;(j >= h) && ((a[j - h].compareTo(B) > 0)); j -= h) {
-					a[j] = a[j - h];
-				}
-				a[j] = B;
-			}
-		} while (h > 1);
-	}
-
 	public static void sort(Comparable[] a, int lo, int hi) {
 		QuickSort(a, lo, hi);
 		InsertionSort(a, lo, hi);
 	}
 
+	public static void sort(Object[] a, Comparator c, int lo, int hi) {
+		QuickSort(a, c, lo, hi);
+		InsertionSort(a, c, lo, hi);
+	}
+	
 	public static void sort(List a, int lo, int hi) {
 		QuickSort(a, lo, hi);
 		InsertionSort(a, lo, hi);
@@ -364,7 +398,7 @@ public final class FastQSort {
 		QuickSortByNodeId(a, lo, hi);
 		InsertionSortByNodeId(a, lo, hi);
 	}
-	
+
 	public static void sort(long[] a, int lo, int hi, Object b[]) {
 		QuickSort(a, lo, hi, b);
 		InsertionSort(a, lo, hi, b);

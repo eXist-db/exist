@@ -34,26 +34,50 @@ import org.exist.xpath.XPathException;
  */
 public abstract class AbstractDateTimeValue extends ComputableValue {
 
+	public final static int YEAR = 0;
+	public final static int MONTH = 1;
+	public final static int DAY = 2;
+	public final static int HOUR = 3;
+	public final static int MINUTE = 4;
+	public final static int SECOND = 5;
+	public final static int MILLISECOND = 6;
+
 	protected GregorianCalendar calendar;
 	protected int tzOffset = 0;
 	protected boolean explicitTimeZone = false;
 	protected Date date;
-	
+
 	public AbstractDateTimeValue() {
-		calendar = new GregorianCalendar();
-		tzOffset =
-		(calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET))
-		/ 60000;
-		date = calendar.getTime();
 	}
-	
+
 	public abstract String getStringValue() throws XPathException;
 
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 
 	public abstract boolean compareTo(int operator, AtomicValue other)
 		throws XPathException;
-	
+
+	public int getPart(int part) {
+		switch (part) {
+			case YEAR :
+				return calendar.get(Calendar.YEAR);
+			case MONTH :
+				return calendar.get(Calendar.MONTH) + 1;
+			case DAY :
+				return calendar.get(Calendar.DATE);
+			case HOUR :
+				return calendar.get(Calendar.HOUR);
+			case MINUTE :
+				return calendar.get(Calendar.MINUTE);
+			case SECOND :
+				return calendar.get(Calendar.SECOND);
+			case MILLISECOND :
+				return calendar.get(Calendar.MILLISECOND);
+			default :
+				throw new IllegalArgumentException("Invalid argument to method getPart");
+		}
+	}
+
 	protected void formatString(StringBuffer buf, int value, int size) {
 		String s = "000" + value;
 		buf.append(s.substring(s.length() - size));

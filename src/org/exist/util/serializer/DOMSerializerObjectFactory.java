@@ -22,30 +22,29 @@
  */
 package org.exist.util.serializer;
 
-import org.apache.commons.pool.PoolableObjectFactory;
-import org.apache.commons.pool.impl.StackObjectPool;
+import org.apache.commons.pool.BasePoolableObjectFactory;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class DOMStreamerPool extends StackObjectPool {
+public class DOMSerializerObjectFactory extends BasePoolableObjectFactory {
 
-	private final static DOMStreamerPool instance =
-		new DOMStreamerPool(new DOMStreamerObjectFactory(), 10, 2);
-	
-	public final static DOMStreamerPool getInstance() {
-		return instance;
-	}
-	
-	protected DOMStreamerPool(PoolableObjectFactory factory, int maxIdle, int initIdleCapacity) {
-		super(factory, maxIdle, initIdleCapacity);
+	public DOMSerializerObjectFactory() {
+		super();
 	}
 
-	public DOMStreamer borrowDOMStreamer() throws Exception {
-		return (DOMStreamer)borrowObject();
+	/* (non-Javadoc)
+	 * @see org.apache.commons.pool.PoolableObjectFactory#makeObject()
+	 */
+	public Object makeObject() throws Exception {
+		return new DOMSerializer();
 	}
 	
-	public void returnDOMStreamer(DOMStreamer streamer) throws Exception {
-		returnObject(streamer);
+	/* (non-Javadoc)
+	 * @see org.apache.commons.pool.BasePoolableObjectFactory#activateObject(java.lang.Object)
+	 */
+	public void activateObject(Object obj) throws Exception {
+		((DOMSerializer)obj).reset();
 	}
+
 }

@@ -18,7 +18,7 @@ public interface Constants {
 					    "preceding",
 					    "preceding-sibling",
 					    "self",
-					    "attribute"
+					    "attribute-descendant"
 	};
 					    
     public final static int ANCESTOR_AXIS = 0;

@@ -43,10 +43,10 @@ public class NodeComparison extends BinaryOp {
 	public NodeComparison(StaticContext context, Expression left, Expression right, int relation) {
 		super(context);
 		this.relation = relation;
-		//add(new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, left));
-		//add(new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, right));
-		add(left);
-		add(right);
+		add(new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, left));
+		add(new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, right));
+		//add(left);
+		//add(right);
 	}
 
 	/* (non-Javadoc)
@@ -79,26 +79,37 @@ public class NodeComparison extends BinaryOp {
 			contextSequence = contextItem.toSequence();
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
 		Sequence rs = getRight().eval(contextSequence, contextItem);
-		if(ls.getLength() == 0 || rs.getLength() == 0)
+		if(ls.getLength() == 0) {
 			return Sequence.EMPTY_SEQUENCE;
+		}
+		if(rs.getLength() == 0) {
+			return Sequence.EMPTY_SEQUENCE;
+		}
 		NodeValue sv = (NodeValue)ls.itemAt(0);
 		NodeValue rv = (NodeValue)rs.itemAt(0);
 		if(sv.getImplementationType() != rv.getImplementationType()) {
 			// different implementations
 			return BooleanValue.FALSE;
 		}
+		BooleanValue result;
 		switch(relation) {
 			case Constants.IS:
-				return sv.equals(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				result = sv.equals(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				break;
 			case Constants.ISNOT:
-				return sv.equals(rv) ? BooleanValue.FALSE : BooleanValue.TRUE;
+				result = sv.equals(rv) ? BooleanValue.FALSE : BooleanValue.TRUE;
+				break;
 			case Constants.BEFORE:
-				return sv.before(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				result = sv.before(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				break;
 			case Constants.AFTER:
-				return sv.after(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				result = sv.after(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+				break;
 			default:
 				throw new XPathException("Illegal argument: unknown relation");
 		}
+		System.out.println("result: " + result.getStringValue());
+		return result;
 	}
 
 	/* (non-Javadoc)

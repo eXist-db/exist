@@ -90,11 +90,20 @@ public abstract class BindingExpression extends AbstractExpression {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#eval(org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 */
+	public Sequence eval(Sequence contextSequence, Item contextItem)
+		throws XPathException {
+		return eval(contextSequence, contextItem, null);
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public abstract Sequence eval(
 		Sequence contextSequence,
-		Item contextItem)
+		Item contextItem,
+		Sequence resultSequence)
 		throws XPathException;
 
 	protected Sequence applyWhereExpression(

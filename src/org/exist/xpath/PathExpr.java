@@ -154,7 +154,8 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
     public int returnsType() {
     	if( steps.size() == 0 )
     		return Type.NODE;
-    	return ((Expression) steps.getLast()).returnsType();
+    	int rtype = ((Expression) steps.getLast()).returnsType();
+    	return rtype;
     }
 
 	/* (non-Javadoc)
