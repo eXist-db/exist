@@ -9,6 +9,7 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -58,6 +59,7 @@ import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
@@ -321,15 +323,20 @@ public class RpcConnection extends Thread {
 		}
 	}
 
+
 	public String getDocument(
 		User user,
 		String name,
-		boolean prettyPrint,
-		String encoding,
-		String stylesheet)
+		Hashtable parametri)
 		throws Exception {
 		long start = System.currentTimeMillis();
 		DBBroker broker = null;
+		
+		String prettyPrint = "no";
+		String stylesheet = null;
+		String encoding = "UTF-8";
+		Hashtable styleparam = null;
+		
 		try {
 			broker = brokerPool.get(user);
 			DocumentImpl doc = (DocumentImpl) broker.getDocument(name);
@@ -338,9 +345,40 @@ public class RpcConnection extends Thread {
 				throw new EXistException("document not found");
 			}
 			Serializer serializer = broker.getSerializer();
-			serializer.setProperty(
-				OutputKeys.INDENT,
-				prettyPrint ? "yes" : "no");
+
+		if (parametri != null) {
+			
+				  for (Enumeration en=parametri.keys(); en.hasMoreElements();) {
+            
+                  String param = (String)en.nextElement();
+                  String paramvalue = parametri.get(param).toString();                      
+
+if (param.equals(EXistOutputKeys.EXPAND_XINCLUDES)){
+	serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, paramvalue);
+	}
+	
+if (param.equals(OutputKeys.INDENT)){
+	prettyPrint= paramvalue;
+	}
+
+if (param.equals(OutputKeys.ENCODING)){
+	encoding= paramvalue;
+	}
+
+if (param.equals(EXistOutputKeys.STYLESHEET)){
+	stylesheet= paramvalue;
+	}
+
+if (param.equals(EXistOutputKeys.STYLESHEET_PARAM)){
+	 styleparam = (Hashtable)parametri.get(param);
+	}
+
+				  }
+			
+				  }	
+
+		    serializer.setProperty(OutputKeys.ENCODING, encoding);
+			serializer.setProperty(OutputKeys.INDENT, prettyPrint);
 
 			if (stylesheet != null) {
 				if (!stylesheet.startsWith("/")) {
@@ -359,6 +397,18 @@ public class RpcConnection extends Thread {
 							: collection + '/' + stylesheet);
 				}
 				serializer.setStylesheet(stylesheet);
+				
+	            // set stylesheet param if presents
+	 			if (styleparam != null) {
+				for (Enumeration en1=styleparam.keys(); en1.hasMoreElements();) {            
+			                  String param1 = (String)en1.nextElement();
+			                  String paramvalue1 = styleparam.get(param1).toString();  
+				              // System.out.println("-->"+param1+"--"+paramvalue1);
+				              serializer.setStylesheetParamameter(param1, paramvalue1);				
+				}
+		     	}
+			
+			
 			}
 			String xml = serializer.serialize(doc);
 
