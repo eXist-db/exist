@@ -82,11 +82,12 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		NodeListImpl nl = new NodeListImpl();
 		short level = (short)(document.treeLevel[nodeNumber] + 1);
 		int nextNode = nodeNumber;
-		while (++nextNode < document.size && document.next[nextNode] > nodeNumber) {
+		while (++nextNode < document.size) {
 			if(document.treeLevel[nextNode] == level) {
 				Node n = document.getNode(nextNode);
 				nl.add(n);
 			}
+			if (document.next[nextNode] <= nodeNumber) break;
 		}
 		return nl;
 	}
@@ -220,12 +221,13 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		NodeListImpl nl = new NodeListImpl();
 		short level = (short)(document.treeLevel[nodeNumber] + 1);
 		int nextNode = nodeNumber;
-		while (++nextNode < document.size && document.next[nextNode] > nodeNumber) {
+		while (++nextNode < document.size) {
 			if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
     			QName qn = (QName) document.namePool.get(document.nodeName[nextNode]);
     			if(qn.toString().equals(name))
     				nl.add(document.getNode(nextNode));
     		}
+			if (document.next[nextNode] <= nodeNumber) break;
 		}
 		return nl;
 	}
@@ -302,12 +304,13 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		NodeListImpl nl = new NodeListImpl();
 		short level = (short)(document.treeLevel[nodeNumber] + 1);
 		int nextNode = nodeNumber;
-		while (++nextNode < document.size && document.next[nextNode] > nodeNumber) {
+		while (++nextNode < document.size) {
 			if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
     			QName qn = (QName) document.namePool.get(document.nodeName[nextNode]);
     			if(qname.compareTo(qn) == 0)
     				nl.add(document.getNode(nextNode));
     		}
+			if (document.next[nextNode] <= nodeNumber) break;
 		}
 		return nl;
 	}

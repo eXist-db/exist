@@ -274,7 +274,10 @@ public class YearMonthDurationValue extends DurationValue {
 				int tzOffset = ((AbstractDateTimeValue) other).tzOffset;
 				GregorianCalendar ncal = (GregorianCalendar) ((AbstractDateTimeValue) other).calendar.clone();
 				ncal.add(Calendar.MONTH, getValue());
-				return other.getType() == Type.DATE ? new DateValue(ncal, tzOffset) : new DateTimeValue(ncal, tzOffset);
+				if(other.getType() == Type.DATE) 
+					return new DateValue(ncal, tzOffset);
+				else
+					new DateTimeValue(ncal, tzOffset);
 			default:
 				throw new XPathException(
 					"Operand to plus should be of type xdt:yearMonthDuration, xs:date, "
