@@ -17,7 +17,7 @@
     	<section title="Query results">
 	    	<xml-source>
 				<xmldb:collection 
-					xmlns:xmldb="http://exist-db/transformer/1.0"
+					xmlns:xmldb="http://exist-db.org/transformer/1.0"
 					uri="xmldb:exist:///db">
 					<!-- iterate through all rdf:Description elements 
 						containing "computer" -->
