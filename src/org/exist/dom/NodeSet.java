@@ -252,6 +252,14 @@ public abstract class NodeSet implements NodeList {
 		return parents;
 	}
 
+	public boolean hasIndex() {
+		for(Iterator i = iterator(); i.hasNext(); ) {
+			if(!((NodeProxy)i.next()).hasIndex())
+				return false;
+		}
+		return true;
+	}
+	
 	public NodeSet getRange(DocumentImpl doc, long lower, long upper) {
 		NodeProxy p;
 		ArraySet result = new ArraySet(5);

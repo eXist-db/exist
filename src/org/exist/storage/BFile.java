@@ -88,7 +88,7 @@ public class BFile extends BTree {
 	protected BFileHeader fileHeader;
 	protected int minFree;
 	protected ClockPageBuffer pages;
-	protected Lock lock = new ReentrantReadWriteLock();
+	protected Lock lock = null;
 	public int fixedKeyLen = -1;
 
 	/**  Constructor for the BFile object */
@@ -109,6 +109,7 @@ public class BFile extends BTree {
 		//		pages = new LRUPageBuffer();
 		pages = new ClockPageBuffer();
 		minFree = PAGE_MIN_FREE;
+		lock = new ReentrantReadWriteLock(file.getName());
 	}
 
 	/**
@@ -123,6 +124,7 @@ public class BFile extends BTree {
 		//		pages = new LRUPageBuffer(buffers / 2);
 		pages = new ClockPageBuffer(buffers);
 		minFree = PAGE_MIN_FREE;
+		lock = new ReentrantReadWriteLock(file.getName());
 	}
 
 	/**
@@ -138,6 +140,7 @@ public class BFile extends BTree {
 		//		pages = new LRUPageBuffer(dataBuffers);
 		pages = new ClockPageBuffer(dataBuffers);
 		minFree = PAGE_MIN_FREE;
+		lock = new ReentrantReadWriteLock(file.getName());
 	}
 
 	private final static long createPointer(int page, int offset) {

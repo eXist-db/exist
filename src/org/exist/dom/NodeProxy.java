@@ -286,6 +286,15 @@ public final class NodeProxy implements Comparable, Cloneable {
         this.internalAddress = internalAddress;
     }
 
+	public void setHasIndex(boolean hasIndex) {
+		internalAddress = (hasIndex ? internalAddress | 0x10000L :
+			internalAddress & (~ 0x10000L));
+	}
+	
+	public boolean hasIndex() {
+		return (internalAddress & 0x10000L) > 0;
+	}
+	
     /**
      * Sets the nodeType.
      * @param nodeType The nodeType to set

@@ -24,11 +24,16 @@ package org.exist.util;
 **/
 
 public class ReentrantReadWriteLock implements Lock {
- 
+
+	protected String id_ = null;
 	protected Thread owner_ = null;
 	protected long holds_ = 0;
 	protected int mode_ = Lock.READ_LOCK;
 	private long timeOut_ = 60000L;
+
+	public ReentrantReadWriteLock(String id) {
+		id_ = id;
+	}
 	
 	public boolean acquire() throws LockException {
 		return acquire(Lock.READ_LOCK);
@@ -42,11 +47,14 @@ public class ReentrantReadWriteLock implements Lock {
 			if (caller == owner_) {
 				++holds_;
 				mode_ = mode;
+//				System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
+//					"; locks held = " + holds_);
 				return true;
 			} else if (owner_ == null) {
 				owner_ = caller;
 				holds_ = 1;
 				mode_ = mode;
+//				System.out.println("thread " + caller.getName() + " acquired lock on " + id_);
 				return true;
 			} else {
 				long waitTime = timeOut_;
@@ -57,20 +65,27 @@ public class ReentrantReadWriteLock implements Lock {
 						if (caller == owner_) {
 							++holds_;
 							mode_ = mode;
+//							System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
+//								"; locks held = " + holds_);
 							return true;
 						} else if (owner_ == null) {
 							owner_ = caller;
 							holds_ = 1;
 							mode_ = mode;
+//							System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
+//								"; locks held = " + holds_);
 							return true;
 						} else {
 							waitTime = timeOut_ - (System.currentTimeMillis() - start);
 							if (waitTime <= 0) {
 								// blocking thread found: if the lock is read only, remove it
-								if(mode_ == Lock.READ_LOCK) {
+								if (mode_ == Lock.READ_LOCK) {
+									System.out.println("releasing blocking thread " + owner_.getName());
 									owner_ = caller;
 									holds_ = 1;
 									mode_ = mode;
+//									System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
+//										"; locks held = " + holds_);
 									return true;
 								} else
 									throw new LockException("time out while acquiring a lock");
@@ -91,9 +106,12 @@ public class ReentrantReadWriteLock implements Lock {
 	 **/
 	public synchronized void release() {
 		if (Thread.currentThread() != owner_)
-			throw new Error("Illegal Lock usage");
+			throw new Error("Illegal lock usage. Thread " + 
+				Thread.currentThread() + " tried to release lock on " + id_);
 
 		if (--holds_ == 0) {
+//			System.out.println("thread " + owner_.getName() + " released lock on " + id_ +
+//				"; locks held = " + holds_);
 			owner_ = null;
 			mode_ = Lock.READ_LOCK;
 			notify();

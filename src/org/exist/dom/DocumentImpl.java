@@ -32,6 +32,7 @@ import org.exist.security.User;
 
 import org.exist.storage.*;
 import org.w3c.dom.*;
+import org.exist.util.StorageAddress;
 import org.exist.util.SyntaxException;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
@@ -744,7 +745,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		docId = istream.readInt();
 		fileName = collection.getName() + '/' + istream.readUTF();
 		children = istream.readInt();
-		address = DOMFile.createPointer(istream.readInt(), istream.readInt());
+		address = StorageAddress.createPointer(istream.readInt(), istream.readShort());
 		maxDepth = istream.readInt();
 		treeLevelOrder = new int[maxDepth + 1];
 		for (int i = 0; i < maxDepth; i++) {
@@ -873,8 +874,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		ostream.writeInt(docId);
 		ostream.writeUTF(fileName.substring(collection.getName().length() + 1));
 		ostream.writeInt(children);
-		ostream.writeInt(DOMFile.pageFromPointer(address));
-		ostream.writeInt(DOMFile.tidFromPointer(address));
+		ostream.writeInt(StorageAddress.pageFromPointer(address));
+		ostream.writeShort(StorageAddress.tidFromPointer(address));
 		//System.out.println("doc = " + docId + "address = " + DOMFile.tidFromPointer(address));
 		//Thread.dumpStack();
 		ostream.writeInt(maxDepth);

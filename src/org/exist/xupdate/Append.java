@@ -2,6 +2,7 @@ package org.exist.xupdate;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.exist.EXistException;
 import org.exist.dom.Collection;
@@ -32,7 +33,7 @@ public class Append extends Modification {
 	 * @see org.exist.xupdate.Modification#process()
 	 */
 	public long process() throws PermissionDeniedException, EXistException {
-		ArrayList qr = select(docs);
+		NodeImpl[] qr = select(docs);
 		NodeList children = content.getChildNodes();
 		if (qr == null || children.getLength() == 0)
 			return 0;
@@ -41,8 +42,8 @@ public class Append extends Modification {
 		DocumentImpl doc = null;
 		Collection collection = null, prevCollection = null;
 		int len = children.getLength();
-		for (Iterator i = qr.iterator(); i.hasNext();) {
-			node = (NodeImpl) i.next();
+		for(int i = 0; i < qr.length; i++) {
+			node = qr[i];
 			doc = (DocumentImpl) node.getOwnerDocument();
 			doc.setIndexListener(listener);
 			collection = doc.getCollection();
@@ -56,7 +57,7 @@ public class Append extends Modification {
 		}
 		if (doc != null)
 			doc.getBroker().saveCollection(collection);
-		return qr.size();
+		return qr.length;
 	}
 
 	public String getName() {

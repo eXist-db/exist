@@ -2,7 +2,10 @@ package org.exist.xupdate;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -57,7 +60,7 @@ public abstract class Modification {
 		content = node;
 	}
 
-	protected ArrayList select(DocumentSet docs) throws PermissionDeniedException, EXistException {
+	protected NodeImpl[] select(DocumentSet docs) throws PermissionDeniedException, EXistException {
 		try {
 			XPathLexer lexer = new XPathLexer(new StringReader(selectStmt));
 			XPathParser parser = new XPathParser(pool, user, lexer);
@@ -78,12 +81,14 @@ public abstract class Modification {
                 throw new EXistException("select expression should evaluate to a" +
                     "node-set");
             NodeList set = resultValue.getNodeList();
-            ArrayList out = new ArrayList(set.getLength());
+            TreeSet out = new TreeSet(new NodeComparator());
             for(int i = 0; i < set.getLength(); i++) {
             	out.add(set.item(i));
             }
             LOG.info("found " + out.size() + " for select");
-            return out;
+            NodeImpl result[] = new NodeImpl[out.size()];
+			out.toArray(result);
+            return result;
 		} catch (RecognitionException e) {
             LOG.warn("error while parsing select expression", e);
             throw new EXistException(e);
@@ -109,9 +114,9 @@ public abstract class Modification {
 
 	final static class IndexListener implements NodeIndexListener {
 		
-		ArrayList nodes;
+		NodeImpl[] nodes;
 		
-		public IndexListener(ArrayList nodes) {
+		public IndexListener(NodeImpl[] nodes) {
 			this.nodes = nodes;
 		}
 		
@@ -121,15 +126,31 @@ public abstract class Modification {
 		 */
 		public void nodeChanged(NodeImpl node) {
 			final long address = node.getInternalAddress();
-			for(Iterator i = nodes.iterator(); i.hasNext(); ) {
-				NodeImpl current = (NodeImpl)i.next();
-				if(current.getInternalAddress() == address) {
+			for(int i = 0; i < nodes.length; i++) {
+				if(nodes[i].getInternalAddress() == address) {
 //					System.out.println("setting " + current.getGID() +
 //						" -> " + node.getGID());
-					current.setGID(node.getGID());
+					nodes[i].setGID(node.getGID());
 				}
 			}
 		}
 	
+	}
+	
+	final static class NodeComparator implements Comparator {
+		
+			/* (non-Javadoc)
+		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+		 */
+		public int compare(Object o1, Object o2) {
+			NodeImpl n1 = (NodeImpl)o1;
+			NodeImpl n2 = (NodeImpl)o2;
+			if(n1.getInternalAddress() == n2.getInternalAddress())
+				return 0;
+			else if(n1.getInternalAddress() < n2.getInternalAddress())
+				return -1;
+			else
+				return 1;
+		}
 	}
 }
