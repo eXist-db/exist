@@ -57,6 +57,8 @@ public class XMLDBQueryTask extends AbstractXMLDBTask {
 		}
 		if (query == null)
 			throw new BuildException("you have to specify a query");
+        
+        log("XQuery is:\n"+query, org.apache.tools.ant.Project.MSG_DEBUG);
 		
 		registerDatabase();
 		try {
