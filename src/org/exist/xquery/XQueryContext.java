@@ -953,6 +953,8 @@ public class XQueryContext {
 	 * @param uri
 	 */
 	public void setBaseURI(String uri) {
+		if (uri == null)
+			baseURI = "";
 		baseURI = uri;
 	}
 

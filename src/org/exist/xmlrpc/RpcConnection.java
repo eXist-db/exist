@@ -245,7 +245,6 @@ public class RpcConnection extends Thread {
 	protected QueryResult doQuery(User user, DBBroker broker, String xpath,
 			NodeSet contextSet, Hashtable parameters)
 			throws Exception {
-		String baseURI = (String) parameters.get(RpcAPI.BASE_URI);
 		Source source = new StringSource(xpath);
 		XQuery xquery = broker.getXQueryService();
 		XQueryPool pool = xquery.getXQueryPool();
@@ -255,7 +254,8 @@ public class RpcConnection extends Thread {
 		    context = xquery.newContext();
 		else
 		    context = compiled.getContext();
-		context.setBaseURI(baseURI);
+		context.setBaseURI((String) parameters.get(RpcAPI.BASE_URI));
+		context.setBaseCollection((String) parameters.get(RpcAPI.BASE_COLLECTION));
 		Hashtable namespaces = (Hashtable)parameters.get(RpcAPI.NAMESPACES);
 		if(namespaces != null && namespaces.size() > 0) {
 			context.declareNamespaces(namespaces);
