@@ -72,6 +72,7 @@ public class Predicate extends PathExpr {
      */
     public void analyze(Expression parent, int flags) throws XPathException {
         flags |= IN_PREDICATE; // set flag to signal subexpression that we are in a predicate
+        flags &= ~ IN_WHERE_CLAUSE;	// remove where clause flag
         Expression inner = getExpression(0);
         if(inner == null)
             return;
