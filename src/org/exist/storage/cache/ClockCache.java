@@ -43,7 +43,10 @@ public class ClockCache implements Cache {
 	private int size;
 	private int count = 0;
 	private int hits = 0, fails = 0;
-
+	
+	private long lastSync = System.currentTimeMillis();
+	private long syncPeriod = 10000;
+	
 	public ClockCache(int size) {
 		this.size = size;
 		items = new Cacheable[size];
@@ -72,6 +75,8 @@ public class ClockCache implements Cache {
 			} else
 				removeOne(item);
 		}
+		if(System.currentTimeMillis() - lastSync > syncPeriod)
+			flush();
 	}
 
 	private final void removeOne(Cacheable item) {
@@ -144,6 +149,7 @@ public class ClockCache implements Cache {
 		for(int i = 0; i < count; i++)
 			if(items[i] != null)
 				items[i].sync();
+		lastSync = System.currentTimeMillis();
 	}
 
 	/* (non-Javadoc)

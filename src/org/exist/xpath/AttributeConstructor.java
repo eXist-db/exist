@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.exist.dom.DocumentSet;
 import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;

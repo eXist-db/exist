@@ -56,7 +56,7 @@ public class LetExpr extends BindingExpression {
 
 		Sequence filtered = null;
 		if (whereExpr != null) {
-			filtered = applyWhereExpression(context, null);
+			filtered = applyWhereExpression(null);
 			if(whereExpr.returnsType() == Type.BOOLEAN) {
 				if(!filtered.effectiveBooleanValue())
 					return Sequence.EMPTY_SEQUENCE;

@@ -3,3 +3,6 @@ PUBLIC "-//PLAY//EN"
        "entities/play.dtd"
 OVERRIDE YES
 SYSTEM "play.dtd" "entities/play.dtd"
+
+OVERRIDE YES
+SYSTEM "teixlite.dtd" "entities/teixlite.dtd"

@@ -81,6 +81,9 @@ public class LRDCache extends GClockCache {
 			cleanup();
 		else if (totalReferences > nextCleanup)
 			ageReferences();
+		if(System.currentTimeMillis() - lastSync > syncPeriod) {
+			flush();
+		}
 	}
 
 	/* (non-Javadoc)

@@ -26,7 +26,7 @@
 	   buffer settings for elements_buffers and words_buffers if you have
 	   some more memory to waste. -->
 	   <db-connection database="native" files="data"
-		   pageSize="4096" cacheSize="64M" free_mem_min="10">
+		   pageSize="4096" cacheSize="32M" free_mem_min="10">
 	   <!--db-connection database="native" files="webapp/WEB-INF/data" 
 		   buffers="1024" words_buffers="4096" collection_buffers="256" 
 		   elements_buffers="1024" free_mem_min="10" 

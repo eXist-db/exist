@@ -4,7 +4,6 @@
 <!-- ======================================================================= -->
 <project basedir="." default="all" name="exist">
 
-    <property name="antlr-home" value="/home/wolf/Java/antlr-2.7.2"/>
     <property name="jetty.dir" value="Jetty-4.1.4"/>
     <property name="src" value="./src"/>
 	<property name="samples" value="./samples"/>
@@ -71,11 +70,9 @@
 	<taskdef name="axis-admin" classname="org.apache.axis.tools.ant.axis.AdminClientTask">
 		<classpath refid="classpath.core"/>
 	</taskdef>
-	
-    
-    <path id="antlr">
-        <pathelement path="${antlr-home}"/>
-    </path>
+
+	<taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
+		classname="com.izforge.izpack.ant.IzPackTask"/>
     
     <!-- =================================================================== -->
     <!-- Prepare the build                                                   -->
@@ -83,6 +80,7 @@
     <target name="prepare">
         <echo message="eXist ${build.version} build"/>
         <echo message="----------------------------"/>
+		<echo message="basedir=${basedir}"/>
         <mkdir dir="${build}"/>
         <mkdir dir="${build.classes}"/>
         <uptodate property="parser_uptodate" targetfile="src/org/exist/parser/XPathParser.g">
@@ -191,6 +189,7 @@
     <!-- needs antlr distribution-directory in the classpath				   -->
     <!-- =================================================================== -->
     <target depends="prepare" name="antlr">
+		<echo message="Running ANTLR to generate XQuery parser"/>
 		<delete failonerror="false">
 			<fileset dir="${src}/org/exist/parser">
 				<include name="*.java"/>
@@ -199,7 +198,9 @@
 		</delete>
 		<antlr target="${src}/org/exist/parser/XPathParser2.g"
 			outputdirectory="${src}/org/exist/parser"
-			traceparser="${antlr.traceParser}"/>
+			traceparser="${antlr.traceParser}">
+			<classpath><path refid="classpath.core"/></classpath>
+		</antlr>
     </target>
     
     <target depends="antlr,jar" name="xquery"/>
@@ -539,6 +540,17 @@
         <delete file="${dist}/${dist.name}.tar"/>
     </target>
     
+	<!-- ================================================================== -->
+	<!-- Build installer                                                    -->
+	<!-- ================================================================== -->
+	<target depends="all" name="installer">
+		<echo message="Calling IzPack to create installer ..."/>
+		<izpack input="installer/install.xml"
+			output="installer/${project.name}-${build.version}.jar"
+			basedir="." izPackDir="${izpack.dir}"
+			installerType="standard-kunststoff"/>
+	</target>
+	
     <!-- ================================================================== -->
     <!-- Create HTML files for docs on http://exist-db.org                  -->
     <!-- ================================================================== -->

@@ -33,7 +33,6 @@ import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.SequenceIterator;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)

@@ -225,7 +225,10 @@ expr
 
 exprSingle
 :
-	( ( "for" | "let" ) DOLLAR ) => flworExpr | ( "if" LPAREN ) => ifExpr | orExpr
+	( ( "for" | "let" ) DOLLAR ) => flworExpr
+	| ( "some" DOLLAR ) => quantifiedExpr
+	| ( "if" LPAREN ) => ifExpr 
+	| orExpr
 	;
 
 flworExpr
@@ -285,6 +288,17 @@ orderModifier
 	( "ascending" | "descending" )? ( "empty" ( "greatest" | "least" ) )?
 	;
 
+quantifiedExpr:
+	"some"^ quantifiedInVarBinding ( COMMA! quantifiedInVarBinding )*
+	"satisfies"! exprSingle
+	;
+
+quantifiedInVarBinding
+{ String varName; }:
+	DOLLAR! varName=qName! ( typeDeclaration )? "in"! exprSingle
+	{ #quantifiedInVarBinding = #(#[VARIABLE_BINDING, varName], #quantifiedInVarBinding); }
+	;
+	
 ifExpr : "if"^ LPAREN! expr RPAREN! "then"! exprSingle "else"! exprSingle ;
 
 orExpr
@@ -1158,6 +1172,51 @@ throws PermissionDeniedException, EXistException, XPathException
 			ConditionalExpression cond= new ConditionalExpression(context, testExpr, thenExpr, elseExpr);
 			path.add(cond);
 			step = cond;
+		}
+	)
+	|
+	#(
+		"some"
+		{
+			List clauses= new ArrayList();
+			PathExpr satisfiesExpr = new PathExpr(context);
+		}
+		(
+			#(
+				someVarName:VARIABLE_BINDING
+				{
+					ForLetClause clause= new ForLetClause();
+					PathExpr inputSequence = new PathExpr(context);
+				}
+				(
+					#(
+						"as"
+						sequenceType[clause.sequenceType]
+					)
+				)?
+				step=expr[inputSequence]
+				{
+					clause.varName= someVarName.getText();
+					clause.inputSequence= inputSequence;
+					clauses.add(clause);
+				}
+			)
+		)*
+		step=expr[satisfiesExpr]
+		{
+			Expression action = satisfiesExpr;
+			for (int i= clauses.size() - 1; i >= 0; i--) {
+				ForLetClause clause= (ForLetClause) clauses.get(i);
+				BindingExpression expr = new QuantifiedExpression(context);
+				expr.setVariable(clause.varName);
+				expr.setSequenceType(clause.sequenceType);
+				expr.setInputSequence(clause.inputSequence);
+				expr.setReturnExpression(action);
+				satisfiesExpr= null;
+				action= expr;
+			}
+			path.add(action);
+			step = action;
 		}
 	)
 	|

@@ -28,10 +28,6 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.exist.util.hashtable.Int2ObjectHashMap;
-import org.exist.util.hashtable.Long2ObjectHashMap;
-import org.exist.util.hashtable.Object2IntHashMap;
-import org.exist.util.hashtable.Object2LongHashMap;
-import org.exist.util.hashtable.Object2LongIdentityHashMap;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
