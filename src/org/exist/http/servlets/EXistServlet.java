@@ -29,6 +29,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.security.Principal;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +51,7 @@ import org.exist.http.Response;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
+import org.exist.security.XmldbPrincipal;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -286,6 +288,27 @@ public class EXistServlet extends HttpServlet {
     }
     
 	private User authenticate(HttpServletRequest request) {
+		// First try to validate the principial if passed from the servlet engine
+		Principal principal = request.getUserPrincipal();
+		
+		if(principal instanceof XmldbPrincipal){
+			String username = ((XmldbPrincipal)principal).getName();
+			String password = ((XmldbPrincipal)principal).getPassword();
+			
+			this.log("Validating Principle: " + principal.getName());
+			User user = pool.getSecurityManager().getUser(username);
+			
+			if (user != null){
+				if (password.equalsIgnoreCase(user.getPassword())){
+					this.log("Valid User: " + user.getName());
+					return user;
+				}else{
+					this.log( "Password invalid for user: " + username );
+				}
+				this.log("User not found: " + principal.getName());
+			}	
+		}
+		
 		String auth = request.getHeader("Authorization");
 		if(auth == null)
 			return defaultUser;
