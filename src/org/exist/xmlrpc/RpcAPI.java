@@ -748,6 +748,6 @@ public interface RpcAPI {
 	boolean reindexCollection(User user, String name)
 	throws EXistException, PermissionDeniedException;
 	
-	boolean dataBackup(User user, String dest);
+	boolean dataBackup(User user, String dest) throws PermissionDeniedException;
 
 }
