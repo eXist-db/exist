@@ -75,7 +75,7 @@ public class LocalUserManagementService implements UserManagementService {
 		try {
 			coll.setPermissions(modeStr);
 		} catch (SyntaxException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 		DBBroker broker = null;
 		try {
@@ -84,11 +84,11 @@ public class LocalUserManagementService implements UserManagementService {
 			broker.flush();
 			//broker.sync();
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
-				e.getMessage());
+				e.getMessage(),e);
 		} finally {
 			pool.release(broker);
 		}
@@ -109,9 +109,9 @@ public class LocalUserManagementService implements UserManagementService {
 			document.setPermissions(mode);
 			broker.saveCollection(collection.getCollection());
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED);
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,e);
 		} finally {
 			pool.release(broker);
 		}
@@ -131,11 +131,11 @@ public class LocalUserManagementService implements UserManagementService {
 			broker.saveCollection(coll);
 			broker.flush();
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
-				e.getMessage());
+				e.getMessage(),e);
 		} finally {
 			pool.release(broker);
 		}
@@ -164,11 +164,11 @@ public class LocalUserManagementService implements UserManagementService {
 			document.setPermissions(modeStr);
 			broker.saveCollection(collection.getCollection());
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (SyntaxException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED);
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,e);
 		} finally {
 			pool.release(broker);
 		}
@@ -197,11 +197,12 @@ public class LocalUserManagementService implements UserManagementService {
 			broker.flush();
 			//broker.sync();
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
-				e.getMessage());
+				e.getMessage(),
+				e);
 		} finally {
 			pool.release(broker);
 		}
@@ -235,11 +236,13 @@ public class LocalUserManagementService implements UserManagementService {
 			} catch (EXistException e) {
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					e.getMessage());
+					e.getMessage(),
+					e);
 			} catch (PermissionDeniedException e) {
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
-					e.getMessage());
+					e.getMessage(),
+					e);
 			} finally {
 				pool.release(broker);
 			}
@@ -325,7 +328,7 @@ public class LocalUserManagementService implements UserManagementService {
 			}
 			return perms;
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} finally {
 			pool.release(broker);
 		}

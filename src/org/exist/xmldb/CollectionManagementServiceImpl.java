@@ -31,10 +31,12 @@ public class CollectionManagementServiceImpl extends CollectionManager implement
             client.execute( "createCollection", params );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                xre.getMessage() );
+                xre.getMessage(),
+                xre );
         } catch ( IOException ioe ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage() );
+                ioe.getMessage(),
+                ioe );
         }
         CollectionImpl collection =
             new CollectionImpl( client, (CollectionImpl) parent, null, name );
@@ -80,10 +82,12 @@ public class CollectionManagementServiceImpl extends CollectionManager implement
             client.execute( "removeCollection", params );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                xre.getMessage() );
+                xre.getMessage(),
+                xre );
         } catch ( IOException ioe ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage() );
+                ioe.getMessage(),
+                ioe);
         }
         parent.removeChildCollection( collName );
     }

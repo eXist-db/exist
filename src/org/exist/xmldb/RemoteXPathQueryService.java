@@ -40,9 +40,9 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
             Vector result = (Vector) collection.getClient().execute( "query", params );
             return new ResourceSetImpl( collection, result, indentXML, encoding );
         } catch ( XmlRpcException xre ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage() );
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
         } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, ioe.getMessage() );
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe );
         }
     }
 
@@ -64,9 +64,9 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
             System.out.println("found: " + result.size());
             return new ResourceSetImpl( collection, result, indentXML, encoding );
         } catch ( XmlRpcException xre ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage() );
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
         } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, ioe.getMessage() );
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe );
         }
     }
     

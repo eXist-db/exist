@@ -44,9 +44,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 			params.addElement(groups);
 			parent.getClient().execute("setUser", params);
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		}
 	}
 
@@ -68,9 +68,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 			params.addElement(mode);
 			parent.getClient().execute("setPermissions", params);
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -88,9 +88,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 			params.addElement(new Integer(mode));
 			parent.getClient().execute("setPermissions", params);
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -107,9 +107,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 			params.addElement(mode);
 			parent.getClient().execute("setPermissions", params);
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -123,9 +123,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 			params.addElement(new Integer(mode));
 			parent.getClient().execute("setPermissions", params);
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -145,9 +145,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 			params.addElement("");
 			parent.getClient().execute("setPermissions", params);
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -173,9 +173,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 			params.addElement("");
 			parent.getClient().execute("setPermissions", params);
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -217,9 +217,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 				((Integer) result.get("permissions")).intValue());
 			return perm;
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -254,9 +254,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 				((Integer) result.get("permissions")).intValue());
 			return perm;
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -279,9 +279,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 			}
 			return perm;
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -304,9 +304,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 			}
 			return perm;
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -340,9 +340,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 				u.addGroup((String) i.next());
 			return u;
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -366,9 +366,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 			}
 			return u;
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -393,9 +393,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 			params.addElement(name);
 			parent.getClient().execute("removeUser", params);
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -437,9 +437,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 			params.addElement(groups);
 			parent.getClient().execute("setUser", params);
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
 

@@ -20,8 +20,6 @@
  */
 package org.exist.xmldb;
 
-import org.w3c.dom.*;
-import org.xml.sax.*;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 import java.util.Vector;
@@ -77,9 +75,9 @@ public class ResourceIteratorImpl implements ResourceIterator {
                 res.setContent((Object)new String(data, encoding));
                 return res;
             } catch(XmlRpcException xre) {
-                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage());
+                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
             } catch(IOException ioe) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage());
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
             }
         } else {
             // value

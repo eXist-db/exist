@@ -36,10 +36,12 @@ public class DatabaseInstanceManagerImpl implements DatabaseInstanceManager {
 			client.execute("shutdown", new Vector());
 		} catch(XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, 
-				"shutdown failed");
+				"shutdown failed",
+				e);
 		} catch(IOException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, 
-							"shutdown failed");
+							"shutdown failed",
+							e);
 		}
 		
 	}

@@ -56,10 +56,10 @@ public class LocalCollectionManagementService extends CollectionManager {
             //broker.sync();
         } catch ( EXistException e ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to create collection " + collName );
+                "failed to create collection " + collName, e);
         } catch ( PermissionDeniedException e ) {
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                "not allowed to create collection" );
+                "not allowed to create collection", e );
         } finally {
             brokerPool.release( broker );
         }
@@ -136,10 +136,10 @@ public class LocalCollectionManagementService extends CollectionManager {
         } catch ( EXistException e ) {
         	e.printStackTrace();
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to remove collection " + collName );
+                "failed to remove collection " + collName, e );
         } catch ( PermissionDeniedException e ) {
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                e.getMessage() );
+                e.getMessage(), e );
         } finally {
             brokerPool.release( broker );
         }

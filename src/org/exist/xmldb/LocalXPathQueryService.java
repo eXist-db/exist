@@ -131,13 +131,13 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
                 createContainerElements );
             return result;
         } catch ( antlr.RecognitionException re ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, re.getMessage() );
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, re.getMessage(), re );
         } catch ( antlr.TokenStreamException te ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, te.getMessage() );
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, te.getMessage(), te );
         } catch ( PermissionDeniedException e ) {
-            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED, e.getMessage() );
+            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED, e.getMessage(), e );
         } catch( EXistException e ) {
-	    throw new XMLDBException( ErrorCodes.VENDOR_ERROR, e.getMessage() );
+	    throw new XMLDBException( ErrorCodes.VENDOR_ERROR, e.getMessage(), e );
 	}
     }
 

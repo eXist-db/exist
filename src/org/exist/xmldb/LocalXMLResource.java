@@ -125,7 +125,8 @@ public class LocalXMLResource implements XMLResource {
 			} catch (IOException e) {
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					"error while reading resource contents");
+					"error while reading resource contents",
+					e);
 			}
 		} else {
 			DBBroker broker = null;
@@ -155,16 +156,19 @@ public class LocalXMLResource implements XMLResource {
 				saxe.printStackTrace();
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					saxe.getMessage());
+					saxe.getMessage(),
+					saxe);
 			} catch (EXistException e) {
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					e.getMessage());
+					e.getMessage(),
+					e);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					e.getMessage());
+					e.getMessage(),
+					e);
 			} finally {
 				brokerPool.release(broker);
 			}
@@ -186,7 +190,7 @@ public class LocalXMLResource implements XMLResource {
 			else
 				return document.getNode(id);
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -221,10 +225,11 @@ public class LocalXMLResource implements XMLResource {
 				saxe.printStackTrace();
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					saxe.getMessage());
+					saxe.getMessage(),
+					saxe);
 			}
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -246,7 +251,7 @@ public class LocalXMLResource implements XMLResource {
 			if (document == null)
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE);
 		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED);
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,e);
 		}
 	}
 
@@ -321,7 +326,7 @@ public class LocalXMLResource implements XMLResource {
                         "argument should be an Element, Document or DocumentFragment");
             }
 		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}
 	}
 

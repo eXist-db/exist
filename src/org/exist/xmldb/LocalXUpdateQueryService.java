@@ -73,17 +73,17 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
             broker.sync();
 			return mods;
 		} catch (ParserConfigurationException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (SAXException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				e.getMessage());
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} finally {
 			pool.release(broker);
 		}
