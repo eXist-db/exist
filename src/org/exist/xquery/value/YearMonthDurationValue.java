@@ -48,6 +48,7 @@ public class YearMonthDurationValue extends DurationValue {
 		this.year = other.year;
 		this.month = other.month;
 		this.negative = other.negative;
+		normalize();
 	}
 
 	public YearMonthDurationValue(String str) throws XPathException {
@@ -140,6 +141,14 @@ public class YearMonthDurationValue extends DurationValue {
 					break;
 			}
 			p++;
+		}
+		normalize();
+	}
+	
+	public void normalize() {
+		if (month >= 12) {
+			month %= 12;
+			year += month / 12;
 		}
 	}
 
