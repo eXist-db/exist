@@ -40,7 +40,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
- * xpath-library function: string(object)
+ * Implements the library function fn:concat().
  *
  */
 public class FunConcat extends Function {
@@ -48,8 +48,11 @@ public class FunConcat extends Function {
 	public final static FunctionSignature signature =
 			new FunctionSignature(
 				new QName("concat", Module.BUILTIN_FUNCTION_NS),
-				null,
-				new SequenceType(Type.STRING, Cardinality.ONE)
+				new SequenceType[] {
+						new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
+				},
+				new SequenceType(Type.STRING, Cardinality.ONE),
+				true
 			);
 			
 	public FunConcat(XQueryContext context) {
