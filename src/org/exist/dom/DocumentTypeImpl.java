@@ -36,12 +36,12 @@ public class DocumentTypeImpl extends NodeImpl implements DocumentType {
     }
 
     public DocumentTypeImpl(String name) {
-        super(Node.DOCUMENT_TYPE_NODE, QName.DOCTYPE_QNAME);
+        super(Node.DOCUMENT_TYPE_NODE);
         this.name = name;
     }
 
     public DocumentTypeImpl(String name, String publicId, String systemId) {
-        super(Node.DOCUMENT_TYPE_NODE, QName.DOCTYPE_QNAME);
+        super(Node.DOCUMENT_TYPE_NODE);
         this.name = name;
         this.publicId = publicId;
         this.systemId = systemId;

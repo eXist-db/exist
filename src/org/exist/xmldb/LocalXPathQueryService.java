@@ -278,7 +278,15 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			throw new XMLDBException(
 				ErrorCodes.INVALID_RESOURCE,
 				"resource " + resource + " not found");
-		docs.add(res.getDocument());
+		DBBroker broker = null;
+		try {
+		    broker = brokerPool.get(user);
+		    docs.add(res.getDocument(broker, false));
+		} catch (EXistException e) {
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
+        } finally {
+		    brokerPool.release(broker);
+		}	
 		return doQuery(query, docs, null, null);
 	}
 

@@ -22,17 +22,14 @@
  */
 package org.exist.storage;
 
-import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Observer;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -54,7 +51,6 @@ import org.exist.dom.AttrImpl;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeListImpl;
@@ -66,7 +62,6 @@ import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.serializers.NativeSerializer;
@@ -77,18 +72,14 @@ import org.exist.storage.store.DOMFile;
 import org.exist.storage.store.DOMFileIterator;
 import org.exist.storage.store.DOMTransaction;
 import org.exist.storage.store.NodeIterator;
-import org.exist.storage.store.StorageAddress;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
-import org.exist.util.Occurrences;
 import org.exist.util.ReadOnlyException;
 import org.exist.xquery.Constants;
-import org.exist.xquery.NodeSelector;
 import org.exist.xquery.TerminatedException;
-import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
@@ -312,176 +303,8 @@ public class NativeBroker extends DBBroker {
 		// never reached
 	}
 
-	public Occurrences[] scanIndexedElements(Collection collection, boolean inclusive)
-		throws PermissionDeniedException {
-		if (!collection.getPermissions().validate(user, Permission.READ))
-			throw new PermissionDeniedException(
-				"you don't have the permission"
-					+ " to read collection "
-					+ collection.getName());
-		List collections =
-			inclusive ? collection.getDescendants(this, user) : new ArrayList();
-		collections.add(collection);
-		TreeMap map = new TreeMap();
-		VariableByteArrayInput is;
-		int docId;
-		int len;
-		// required for namespace lookups
-		XQueryContext context = new XQueryContext(this);
-		final Lock lock = elementsDb.getLock();
-		for (Iterator i = collections.iterator(); i.hasNext();) {
-			Collection current = (Collection) i.next();
-			short collectionId = current.getId();
-
-			ElementValue ref = new ElementValue(ElementValue.ELEMENT, collectionId);
-			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-			try {
-				lock.acquire();
-				ArrayList values = elementsDb.findEntries(query);
-				for (Iterator j = values.iterator(); j.hasNext();) {
-					Value val[] = (Value[]) j.next();
-					short elementId = ByteConversion.byteToShort(val[0].getData(), 3);
-					short nsSymbol = ByteConversion.byteToShort(val[0].getData(), 5);
-
-					String name = getSymbols().getName(elementId);
-					String namespace = nsSymbol == 0 ? "" : getSymbols().getNamespace(nsSymbol);
-					QName qname = new QName(name, namespace);
-					Occurrences oc = (Occurrences) map.get(qname);
-					if (oc == null) {
-						qname.setPrefix(context.getPrefixForURI(namespace));
-						oc = new Occurrences(qname);
-						map.put(qname, oc);
-					}
-
-					is =
-						new VariableByteArrayInput(
-							val[1].data(),
-							val[1].start(),
-							val[1].getLength());
-					try {
-						while (is.available() > 0) {
-							docId = is.readInt();
-							len = is.readInt();
-							oc.addOccurrences(len);
-							is.skip(len * 4);
-						}
-					} catch (EOFException e) {
-					} catch (IOException e) {
-						LOG.warn("unexpected exception", e);
-					}
-				}
-			} catch (BTreeException e) {
-				LOG.warn("exception while reading element index", e);
-			} catch (IOException e) {
-				LOG.warn("exception while reading element index", e);
-			} catch (LockException e) {
-				LOG.warn("failed to acquire lock", e);
-			} catch (TerminatedException e) {
-                LOG.warn("Method terminated", e);
-            } finally {
-				lock.release();
-			}
-		}
-		Occurrences[] result = new Occurrences[map.size()];
-		return (Occurrences[]) map.values().toArray(result);
-	}
-
-	/**
-	 *  Find elements by their tag name. This method is comparable to the DOM's
-	 *  method call getElementsByTagName. All elements matching tagName and
-	 *  belonging to one of the documents in the DocumentSet docs are returned.
-	 *
-	 *@param  docs     Description of the Parameter
-	 *@param  tagName  Description of the Parameter
-	 *@return
-	 */
-	public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname,
-		NodeSelector selector) {
-//		final long start = System.currentTimeMillis();
-		final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
-		DocumentImpl doc;
-		int docId;
-		int len;
-		short collectionId;
-		long gid;
-		VariableByteInput is = null;
-		ElementValue ref;
-		short sym, nsSym;
-		Collection collection;
-		NodeProxy p;
-		final short nodeType =
-			(type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
-		final Lock lock = elementsDb.getLock();
-		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-		    collection = (Collection) i.next();
-		    collectionId = collection.getId();
-		    if (type == ElementValue.ATTRIBUTE_ID) {
-		        ref = new ElementValue((byte) type, collectionId, qname.getLocalName());
-		    } else {
-		        sym = getSymbols().getSymbol(qname.getLocalName());
-		        nsSym = getSymbols().getNSSymbol(qname.getNamespaceURI());
-		        ref = new ElementValue((byte) type, collectionId, sym, nsSym);
-		    }
-		    boolean exceptionOcurred = false;
-		    try {
-		        lock.acquire(Lock.READ_LOCK);
-		        is = elementsDb.getAsStream(ref);
-		    } catch (LockException e) {
-		        LOG.warn(
-		                "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
-		                + "failed to acquire lock",
-		                e);
-		        // jmv: dis = null;
-		        exceptionOcurred = true;
-		    } catch (IOException e) {
-		        LOG.warn(
-		                "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
-		                + "io exception while reading elements for "
-		                + qname,
-		                e);
-		        // jmv: dis = null;
-		        exceptionOcurred = true;
-		    } finally {
-		        lock.release();
-		    }
-		    // jmv: if (dis == null)
-		    // wolf: dis == null if no matching element has been found in the index
-		    if (is == null || exceptionOcurred)
-		        continue;
-		    try {
-		        while (is.available() > 0) {
-		            docId = is.readInt();
-		            len = is.readInt();
-		            if ((doc = docs.getDoc(docId)) == null) {
-		                is.skip(len * 4);
-		                continue;
-		            }
-		            gid = 0;
-		            for (int k = 0; k < len; k++) {
-		                gid = gid + is.readLong();
-		                p = new NodeProxy(doc, gid, nodeType, StorageAddress.read(is));
-		                if(selector == null || selector.match(p))
-		                    result.add(p, len);
-		            }
-		        }
-		    } catch (EOFException e) {
-		    } catch (IOException e) {
-		        LOG.warn(
-		                "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
-		                + "unexpected io error",
-		                e);
-		    }
-		}
-//		result.sort();
-//				LOG.debug(
-//					"found "
-//						+ qname
-//						+ ": "
-//						+ result.getLength()
-//						+ " in "
-//						+ (System.currentTimeMillis() - start)
-//						+ "ms.");
-		return result;
+	public ElementIndex getElementIndex() {
+	    return elementIndex;
 	}
 
 	public void flush() {
@@ -523,20 +346,6 @@ public class NativeBroker extends DBBroker {
                 + "ms.");
         }
 		return docs;
-	}
-
-	/**
-	 *  Attributes are stored in the element-index (with a leading "@" in the
-	 *  name). So simply call findElementsByTagName()
-	 *
-	 *@param  docs  Description of the Parameter
-	 *@param  name  Description of the Parameter
-	 *@return       The attributesByName value
-	 */
-	public NodeSet getAttributesByName(DocumentSet docs, QName qname) {
-		qname.setLocalName(qname.getLocalName());
-		NodeSet result = findElementsByTagName(ElementValue.ATTRIBUTE, docs, qname, null);
-		return result;
 	}
 
 	public Collection getCollection(String name) {
@@ -612,6 +421,44 @@ public class NativeBroker extends DBBroker {
 		return collection;
 	}
 
+	public void reloadCollection(Collection collection) {
+		Value key = null;
+		if (collection.getAddress() == -1)
+			try {
+				key = new Value(collection.getName().getBytes("UTF-8"));
+			} catch (UnsupportedEncodingException uee) {
+				key = new Value(collection.getName().getBytes());
+			}
+		VariableByteInput is = null;
+		Lock lock = collectionsDb.getLock();
+		try {
+			lock.acquire(Lock.READ_LOCK);
+			try {
+				if (collection.getAddress() == -1) {
+					is = collectionsDb.getAsStream(key);
+				} else {
+					is = collectionsDb.getAsStream(collection.getAddress());
+				}
+			} catch (IOException ioe) {
+				LOG.warn(ioe.getMessage(), ioe);
+			}
+			if (is == null) {
+				LOG.warn("Collection data not found for collection " + collection.getName());
+			    return;
+			}
+			
+			try {
+				collection.read(this, is);
+			} catch (IOException ioe) {
+				LOG.warn(ioe);
+			}
+		} catch (LockException e) {
+			LOG.warn("failed to acquire lock on collections.dbx");
+		} finally {
+			lock.release();
+		}
+	}
+	
 	public Iterator getDOMIterator(NodeProxy proxy) {
 		try {
 			return new DOMFileIterator(this, domDb, proxy);
@@ -647,9 +494,13 @@ public class NativeBroker extends DBBroker {
 	public Document getDocument(String fileName) throws PermissionDeniedException {
 		if (!fileName.startsWith("/"))
 			fileName = '/' + fileName;
+		if (!fileName.startsWith("/db"))
+		    fileName = "/db" + fileName;
 
 		int pos = fileName.lastIndexOf('/');
-		String collName = (pos > 0) ? fileName.substring(0, pos) : "/";
+		String collName = fileName.substring(0, pos);
+		String docName = fileName.substring(pos + 1);
+		
 		Collection collection = getCollection(collName);
 		if (collection == null) {
 			LOG.debug("collection " + collName + " not found!");
@@ -657,7 +508,7 @@ public class NativeBroker extends DBBroker {
 		}
 		if (!collection.getPermissions().validate(user, Permission.READ))
 			throw new PermissionDeniedException("permission denied to read collection");
-		DocumentImpl doc = collection.getDocument(fileName);
+		DocumentImpl doc = collection.getDocument(this, docName);
 		if (doc == null) {
 			LOG.debug("document " + fileName + " not found!");
 			return null;
@@ -1401,7 +1252,8 @@ public class NativeBroker extends DBBroker {
 			public Object start() {
 				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
 				if (val == null) {
-					LOG.debug("node " + gid + " not found!");
+				    if(LOG.isDebugEnabled())
+				        LOG.debug("node " + gid + " not found in document " + ((DocumentImpl)doc).getDocId());
 					//throw new RuntimeException("node " + gid + " not found");
 					return null;
 				}
@@ -1456,7 +1308,7 @@ public class NativeBroker extends DBBroker {
 	    textEngine.dropIndex(collection);
 	    elementIndex.dropIndex(collection);
 	    
-	    for (Iterator i = collection.iterator(); i.hasNext();) {
+	    for (Iterator i = collection.iterator(this); i.hasNext();) {
 	        final DocumentImpl doc = (DocumentImpl) i.next();
 	        LOG.debug("Dropping index for document " + doc.getFileName());
 	        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -1488,7 +1340,7 @@ public class NativeBroker extends DBBroker {
 	        throw new PermissionDeniedException("insufficient privileges on collection " + collection.getName());
 	    LOG.debug("Reindexing collection " + collection.getName());
 	    dropIndex(collection);
-	    for(Iterator i = collection.iterator(); i.hasNext(); ) {
+	    for(Iterator i = collection.iterator(this); i.hasNext(); ) {
 	        DocumentImpl next = (DocumentImpl)i.next();
 	        reindex(next);
 	    }
@@ -1576,7 +1428,7 @@ public class NativeBroker extends DBBroker {
 	    elementIndex.dropIndex(collection);
 	    
 	    LOG.debug("removing dom nodes ...");
-	    for (Iterator i = collection.iterator(); i.hasNext();) {
+	    for (Iterator i = collection.iterator(this); i.hasNext();) {
 	        final DocumentImpl doc = (DocumentImpl) i.next();
 	        LOG.debug("removing document " + doc.getFileName());
 	        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -1618,7 +1470,7 @@ public class NativeBroker extends DBBroker {
 	    return true;
 	}
 
-	public void removeDocument(String docName) throws PermissionDeniedException {
+	public void removeDocument(String docName, boolean freeDocId) throws PermissionDeniedException {
 		if (readOnly)
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 		try {
@@ -1627,8 +1479,7 @@ public class NativeBroker extends DBBroker {
 			final DocumentImpl doc = (DocumentImpl) getDocument(docName);
 			if (doc == null) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("removeDocument(String) - end - "
-                        + "document "
+                    LOG.debug("removeDocument(String) - end - document "
                         + docName
                         + " not found");
                 }
@@ -1644,7 +1495,7 @@ public class NativeBroker extends DBBroker {
 			elementIndex.dropIndex(doc);
 			textEngine.removeDocument(doc);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("removeDocument() - " + "removing dom");
+                LOG.debug("removeDocument() - removing dom");
             }
 			new DOMTransaction(this, domDb) {
 				public Object start() {
@@ -1675,7 +1526,8 @@ public class NativeBroker extends DBBroker {
 				}
 			}
 			.run();
-			freeDocument(doc.getDocId());
+			if(freeDocId)
+			    freeDocument(doc.getDocId());
 		} catch (ReadOnlyException e) {
             LOG.warn("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
 		}
@@ -1834,7 +1686,7 @@ public class NativeBroker extends DBBroker {
 	        // check if the move would overwrite a collection
 	        if(getCollection(destination.getName() + '/' + newName) != null)
 	            throw new PermissionDeniedException("A resource can not replace an existing collection");
-	        DocumentImpl oldDoc = destination.getDocument(newName);
+	        DocumentImpl oldDoc = destination.getDocument(this, newName);
 	        if(oldDoc != null) {
 	            if(!destination.getPermissions().validate(user, Permission.UPDATE))
 	                throw new PermissionDeniedException("Resource with same name exists in target " +
@@ -1852,7 +1704,7 @@ public class NativeBroker extends DBBroker {
 			textEngine.removeDocument(doc);
 			saveCollection(collection);
 			
-			doc.setFileName(destination.getName() + '/' + newName);
+			doc.setFileName(newName);
 			destination.addDocument(this, doc);
 	        doc.setCollection(destination);
 
@@ -1911,7 +1763,6 @@ public class NativeBroker extends DBBroker {
 			
 		    collection.setName(destination.getName() + '/' + newName);
 		    collection.setCreationTime(System.currentTimeMillis());
-		    collection.correctResourcePaths();
 		    
 		    destination.addCollection(collection);
 		    if(parent != null)

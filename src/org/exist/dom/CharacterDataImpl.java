@@ -36,25 +36,25 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
     protected XMLString cdata = null;
     
     public CharacterDataImpl( short nodeType ) {
-        super( nodeType, QName.TEXT_QNAME );
+        super( nodeType );
     }
     
     public CharacterDataImpl( short nodeType, long gid ) {
-        super( nodeType, QName.TEXT_QNAME, gid );
+        super( nodeType, gid );
     }
 
     public CharacterDataImpl( short nodeType, long gid, String data ) {
-        super( nodeType, QName.TEXT_QNAME, gid );
+        super( nodeType, gid );
         cdata = new XMLString(data.toCharArray());
     }
 
     public CharacterDataImpl( short nodeType, String data ) {
-        super( nodeType, QName.TEXT_QNAME );
+        super( nodeType );
 		cdata = new XMLString(data.toCharArray());
     }
 
     public CharacterDataImpl( short nodeType, char[] data, int start, int howmany ) {
-        super( nodeType, QName.TEXT_QNAME );
+        super( nodeType );
         cdata = new XMLString(data, start, howmany);
     }
 

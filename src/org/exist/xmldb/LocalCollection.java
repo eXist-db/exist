@@ -264,20 +264,32 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"not allowed to read collection");
-		String name = collection.getName() + '/' + id;
-		DocumentImpl document = collection.getDocument(name);
-		if (document == null)
-			return null;
-		Resource r;
-		if (document.getResourceType() == DocumentImpl.XML_FILE)
-			r = new LocalXMLResource(user, brokerPool, this, document, -1);
-		else if (document.getResourceType() == DocumentImpl.BINARY_FILE)
-			r = new LocalBinaryResource(user, brokerPool, this, (BinaryDocument) document);
-		else
-			throw new XMLDBException(
-				ErrorCodes.INVALID_RESOURCE,
-				"unknown resource type");
-		return r;
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			DocumentImpl document = collection.getDocument(broker, id);
+			if (document == null) {
+			    LOG.warn("Resource " + id + " not found");
+				return null;
+			}
+			Resource r;
+			if (document.getResourceType() == DocumentImpl.XML_FILE)
+				r = new LocalXMLResource(user, brokerPool, this, id, -1);
+			else if (document.getResourceType() == DocumentImpl.BINARY_FILE)
+				r = new LocalBinaryResource(user, brokerPool, this, (BinaryDocument) document);
+			else
+				throw new XMLDBException(
+					ErrorCodes.INVALID_RESOURCE,
+					"unknown resource type");
+			return r;
+		} catch (EXistException e) {
+		    throw new XMLDBException(
+					ErrorCodes.UNKNOWN_ERROR,
+					"error while retrieving resource: " + e.getMessage(),
+					e);
+        } finally {
+		    brokerPool.release(broker);
+		}
 	}
 
 	public int getResourceCount() throws XMLDBException {
@@ -348,18 +360,27 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	    Collection collection = getCollection();
 		if (!collection.getPermissions().validate(user, Permission.READ))
 			return new String[0];
-		String[] resources = new String[collection.getDocumentCount()];
-		int j = 0;
-		int p;
-		DocumentImpl doc;
-		String resource;
-		for (Iterator i = collection.iterator(); i.hasNext(); j++) {
-			doc = (DocumentImpl) i.next();
-			resource = doc.getFileName();
-			p = resource.lastIndexOf('/');
-			resources[j] = (p < 0 ? resource : resource.substring(p + 1));
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			String[] resources = new String[collection.getDocumentCount()];
+			int j = 0;
+			int p;
+			DocumentImpl doc;
+			String resource;
+			for (Iterator i = collection.iterator(broker); i.hasNext(); j++) {
+				doc = (DocumentImpl) i.next();
+				resources[j] = doc.getFileName();
+			}
+			return resources;
+		} catch (EXistException e) {
+		    throw new XMLDBException(
+					ErrorCodes.UNKNOWN_ERROR,
+					"error while retrieving resource: " + e.getMessage(),
+					e);
+        } finally {
+		    brokerPool.release(broker);
 		}
-		return resources;
 	}
 	
 	public String[] getResources() throws XMLDBException {
@@ -376,15 +397,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		Collection collection = getCollection();
 		String name = res.getId();
 		LOG.debug("removing " + name);
-		String path = collection.getName() + '/' + name;
-		DocumentImpl doc = collection.getDocument(path);
-		if (doc == null)
-			throw new XMLDBException(
-				ErrorCodes.INVALID_RESOURCE,
-				"resource " + name + " not found");
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
+			DocumentImpl doc = collection.getDocument(broker, name);
+			if (doc == null)
+				throw new XMLDBException(
+					ErrorCodes.INVALID_RESOURCE,
+					"resource " + name + " not found");
 			if (res.getResourceType().equals("XMLResource"))
 				collection.removeDocument(broker, name);
 			else
@@ -467,7 +487,6 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				newDoc = collection.addDocument(broker, name, res.root);
 			else
 				newDoc = collection.addDocument(broker, name, res.content);
-			res.document = newDoc;
 			//broker.flush();
 		} catch (Exception e) {
 			e.printStackTrace();

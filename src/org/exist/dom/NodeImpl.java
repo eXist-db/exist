@@ -45,12 +45,10 @@ import org.xml.sax.ext.LexicalHandler;
  */
 public class NodeImpl implements Node {
 	
-	private final static Logger LOG = Logger.getLogger(NodeImpl.class);
+	protected final static Logger LOG = Logger.getLogger(NodeImpl.class);
 
-	protected short attributes = 0;
 	protected long gid;
 	protected long internalAddress = -1;
-	protected QName nodeName = null;
 	protected short nodeType = 0;
 	protected DocumentImpl ownerDocument = null;
 
@@ -58,39 +56,20 @@ public class NodeImpl implements Node {
 	}
 
 	public NodeImpl(short nodeType) {
-		this(nodeType, null, 0);
+		this(nodeType, 0);
 	}
 
 	public NodeImpl(Node n) {
-		this(n.getNodeType(), ((NodeImpl) n).getQName(), 0);
+		this(n.getNodeType(), 0);
 		ownerDocument = (DocumentImpl) n.getOwnerDocument();
 	}
 
 	public NodeImpl(long gid) {
-		this((short) 0, new QName("", "", null), gid);
+		this((short) 0, gid);
 	}
 
 	public NodeImpl(short nodeType, long gid) {
-		this(nodeType, new QName("", "", null), gid);
-	}
-
-	public NodeImpl(short nodeType, QName nodeName) {
-		this(nodeType, nodeName, 0);
-	}
-
-	public NodeImpl(short nodeType, QName nodeName, long gid) {
 		this.nodeType = nodeType;
-		this.nodeName = nodeName;
-		if (nodeName == null) {
-			switch (nodeType) {
-				case Node.TEXT_NODE :
-					nodeName = QName.TEXT_QNAME;
-					break;
-				case Node.COMMENT_NODE :
-					nodeName = QName.COMMENT_QNAME;
-					break;
-			}
-		}
 		this.gid = gid;
 	}
 
@@ -148,10 +127,8 @@ public class NodeImpl implements Node {
 	 * parser to be able to reuse node objects.
 	 */
 	public void clear() {
-		attributes = 0;
 		gid = 0;
 		internalAddress = -1;
-		nodeName = null;
 		ownerDocument = null;
 	}
 
@@ -196,7 +173,7 @@ public class NodeImpl implements Node {
 	}
 
 	public short getAttributesCount() {
-		return attributes;
+		return 0;
 	}
 
 	/**
@@ -252,30 +229,33 @@ public class NodeImpl implements Node {
 	 * @see org.w3c.dom.Node#getLocalName()
 	 */
 	public String getLocalName() {
+	    QName nodeName = getQName();
 		if (nodeName != null)
 			return nodeName.getLocalName();
 		return "";
-		//		if (nodeName != null && nodeName.indexOf(':') > -1)
-		//			return nodeName.substring(nodeName.indexOf(':') + 1);
-		//		return nodeName;
 	}
 
 	public QName getQName() {
-		return nodeName;
+		switch(nodeType) {
+			case Node.DOCUMENT_NODE:
+			    return QName.DOCUMENT_QNAME;
+			case Node.TEXT_NODE:
+			    return QName.TEXT_QNAME;
+			case Node.COMMENT_NODE:
+			    return QName.COMMENT_QNAME;
+			case Node.DOCUMENT_TYPE_NODE:
+			    return QName.DOCTYPE_QNAME;
+		}
+		return null;
 	}
 
 	/**
 	 * @see org.w3c.dom.Node#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {
+	    QName nodeName = getQName();
 		if (nodeName != null)
 			return nodeName.getNamespaceURI();
-		//		if (nodeName != null && nodeName.indexOf(':') > -1) {
-		//			String prefix = nodeName.substring(0, nodeName.indexOf(':'));
-		//			if (!prefix.equals("xml")) {
-		//				return ownerDocument.broker.getNamespaceURI(prefix);
-		//			}
-		//		}
 		return "";
 	}
 
@@ -283,7 +263,10 @@ public class NodeImpl implements Node {
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
 	public String getNodeName() {
-		return nodeName.toString();
+	    QName nodeName = getQName();
+	    if(nodeName != null)
+	        return nodeName.toString();
+	    return "";
 	}
 
 	/**
@@ -342,6 +325,7 @@ public class NodeImpl implements Node {
 	 * @see org.w3c.dom.Node#getPrefix()
 	 */
 	public String getPrefix() {
+	    QName nodeName = getQName();
 		if (nodeName != null) {
 		    final String prefix = nodeName.getPrefix();
 		    return prefix == null ? "" : prefix;
@@ -468,7 +452,6 @@ public class NodeImpl implements Node {
 	 *@param  attribNum  The new attributes value
 	 */
 	public void setAttributes(short attribNum) {
-		attributes = attribNum;
 	}
 
 	/**
@@ -477,7 +460,6 @@ public class NodeImpl implements Node {
 	 *@param  count  The new childCount value
 	 */
 	protected void setChildCount(int count) {
-		return;
 	}
 
 	/**
@@ -504,7 +486,6 @@ public class NodeImpl implements Node {
 	 *@param  name  The new nodeName value
 	 */
 	public void setNodeName(QName name) {
-		nodeName = name;
 	}
 
 	/**
@@ -532,6 +513,7 @@ public class NodeImpl implements Node {
 	 *@exception  DOMException  Description of the Exception
 	 */
 	public void setPrefix(String prefix) throws DOMException {
+	    QName nodeName = getQName();
 		if (nodeName != null)
 			nodeName.setPrefix(prefix);
 	}
@@ -563,7 +545,7 @@ public class NodeImpl implements Node {
 		StringBuffer buf = new StringBuffer();
 		buf.append(Long.toString(gid));
 		buf.append('\t');
-		buf.append(nodeName);
+		buf.append(getQName());
 		return buf.toString();
 	}
 

@@ -115,8 +115,7 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 //			    if(doc.isLockedForWrite())
 //			        continue;
 			    put(doc.getDocId(), doc);
-			} else
-			    put(doc.getDocId(), doc);
+			}
 		}
 	}
 

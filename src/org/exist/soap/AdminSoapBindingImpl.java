@@ -121,7 +121,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			if (collection == null)
 				throw new EXistException(
 					"Collection " + collectionName + " not found");
-			DocumentImpl doc = collection.getDocument(path);
+			DocumentImpl doc = collection.getDocument(broker, docName);
 			if(doc == null)
 				throw new EXistException("Document " + docName + " not found");
 			if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
@@ -157,7 +157,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			if (collection == null)
 				throw new EXistException("Collection " + collectionName + " not found");
 			if(!replace) {
-				DocumentImpl old = collection.getDocument(path);
+				DocumentImpl old = collection.getDocument(broker, path);
 				if(old != null)
 					throw new RemoteException("Document exists and overwrite is not allowed");
 			}

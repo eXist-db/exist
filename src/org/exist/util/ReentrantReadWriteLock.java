@@ -27,7 +27,7 @@ public class ReentrantReadWriteLock implements Lock {
 	protected Thread owner_ = null;
 	protected long holds_ = 0;
 	protected int mode_ = Lock.READ_LOCK;
-	private long timeOut_ = 60000L;
+	private long timeOut_ = 240000L;
 
 	public ReentrantReadWriteLock(String id) {
 		id_ = id;

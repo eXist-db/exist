@@ -313,7 +313,7 @@ public class RpcConnection extends Thread {
 				DocumentImpl doc;
 				Hashtable hash;
 				Permission perms;
-				for (Iterator i = collection.iterator(); i.hasNext(); ) {
+				for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
 					doc = (DocumentImpl) i.next();
 					perms = doc.getPermissions();
 					hash = new Hashtable(4);
@@ -362,7 +362,7 @@ public class RpcConnection extends Thread {
 			Vector collections = new Vector();
 			Permission perms = doc.getPermissions();
 			Hashtable hash = new Hashtable(5);
-			hash.put("name", doc.getFileName());
+			hash.put("name", resourceName);
 			hash.put("owner", perms.getOwner());
 			hash.put("group", perms.getOwnerGroup());
 			hash
@@ -418,6 +418,8 @@ public class RpcConnection extends Thread {
 		String processXSL = "yes";
 		Hashtable styleparam = null;
 
+		Collection collection = null;
+		DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get(user);
 			Configuration config = broker.getConfiguration();
@@ -426,7 +428,16 @@ public class RpcConnection extends Thread {
 			String prettyPrint = (String) config
 					.getProperty("serialization.indent");
 
-			DocumentImpl doc = (DocumentImpl) broker.getDocument(name);
+			int pos = name.lastIndexOf('/');
+			String collName = name.substring(0, pos);
+			String docName = name.substring(pos + 1);
+			
+			collection = broker.getCollection(collName);
+			if (collection == null) {
+				LOG.debug("collection " + collName + " not found!");
+				return null;
+			}
+			doc = collection.getDocumentWithLock(broker, docName);
 			if (doc == null) {
 				LOG.debug("document " + name + " not found!");
 				throw new EXistException("document not found");
@@ -486,17 +497,7 @@ public class RpcConnection extends Thread {
 				if (stylesheet.indexOf(":") < 0) {
 					if (!stylesheet.startsWith("/")) {
 						// make path relative to current collection
-						String collection;
-						if (doc.getCollection() != null)
-							collection = doc.getCollection().getName();
-						else {
-							int cp = doc.getFileName().lastIndexOf("/");
-							collection = (cp > 0) ? doc.getFileName()
-									.substring(0, cp) : "/";
-						}
-						stylesheet = (collection.equals("/")
-								? '/' + stylesheet
-								: collection + '/' + stylesheet);
+						stylesheet = collection.getName() + '/' + stylesheet;
 					}
 
 				}
@@ -521,6 +522,8 @@ public class RpcConnection extends Thread {
 			nsme.printStackTrace();
 			return null;
 		} finally {
+		    if(collection != null)
+		        collection.releaseDocument(doc);
 			brokerPool.release(broker);
 		}
 	}
@@ -668,7 +671,7 @@ public class RpcConnection extends Thread {
 			}
 			String resource;
 			int p;
-			for (Iterator i = collection.iterator(); i.hasNext(); ) {
+			for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
 				resource = ((DocumentImpl) i.next()).getFileName();
 				p = resource.lastIndexOf('/');
 				vec.addElement(p < 0 ? resource : resource.substring(p + 1));
@@ -745,15 +748,14 @@ public class RpcConnection extends Thread {
 			Permission perm;
 			Vector tmp;
 			String docName;
-			for (Iterator i = collection.iterator(); i.hasNext(); ) {
+			for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
 				doc = (DocumentImpl) i.next();
 				perm = doc.getPermissions();
 				tmp = new Vector(3);
 				tmp.addElement(perm.getOwner());
 				tmp.addElement(perm.getOwnerGroup());
 				tmp.addElement(new Integer(perm.getPermissions()));
-				docName = doc.getFileName().substring(
-						doc.getFileName().lastIndexOf('/') + 1);
+				docName = doc.getFileName();
 				result.put(docName, tmp);
 			}
 			return result;
@@ -948,7 +950,7 @@ public class RpcConnection extends Thread {
 				throw new EXistException("Collection " + collectionName
 						+ " not found");
 			if (!replace) {
-				DocumentImpl old = collection.getDocument(path);
+				DocumentImpl old = collection.getDocument(broker, docName);
 				if (old != null)
 					throw new PermissionDeniedException(
 							"Document exists and overwrite is not allowed");
@@ -999,7 +1001,7 @@ public class RpcConnection extends Thread {
 				throw new EXistException("Collection " + collectionName
 						+ " not found");
 			if (!replace) {
-				DocumentImpl old = collection.getDocument(docName);
+				DocumentImpl old = collection.getDocument(broker, docName);
 				if (old != null)
 					throw new PermissionDeniedException(
 							"Old document exists and overwrite is not allowed");
@@ -1035,7 +1037,7 @@ public class RpcConnection extends Thread {
 				throw new EXistException("Collection " + collectionName
 						+ " not found");
 			if (!replace) {
-				DocumentImpl old = collection.getDocument(docName);
+				DocumentImpl old = collection.getDocument(broker, docName);
 				if (old != null)
 					throw new PermissionDeniedException(
 							"Old document exists and overwrite is not allowed");
@@ -1186,7 +1188,7 @@ public class RpcConnection extends Thread {
 							entry = new Vector();
 							if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
 								p = (NodeProxy) next;
-								entry.addElement(p.doc.getFileName());
+								entry.addElement(p.doc.getCollection().getName() + '/' + p.doc.getFileName());
 								entry.addElement(Long.toString(p.getGID()));
 							} else {
 								entry.addElement("temp_xquery/"
@@ -1221,22 +1223,22 @@ public class RpcConnection extends Thread {
 		LOG.debug("removed query result with handle " + handle);
 	}
 
-	public void remove(User user, String docName) throws Exception {
+	public void remove(User user, String docPath) throws Exception {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			int p = docName.lastIndexOf('/');
-			if (p < 0 || p == docName.length() - 1)
+			int p = docPath.lastIndexOf('/');
+			if (p < 0 || p == docPath.length() - 1)
 				throw new EXistException("Illegal document path");
-			String collectionName = docName.substring(0, p);
+			String collectionName = docPath.substring(0, p);
+			String docName = docPath.substring(p + 1);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
 				throw new EXistException("Collection " + collectionName
 						+ " not found");
-			DocumentImpl doc = collection.getDocument(docName);
+			DocumentImpl doc = collection.getDocument(broker, docName);
 			if(doc == null)
-				throw new EXistException("Document " + docName + " not found");
-			docName = docName.substring(p + 1);
+				throw new EXistException("Document " + docPath + " not found");
 			if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
 				collection.removeBinaryResource(broker, doc);
 			else
@@ -1621,7 +1623,7 @@ public class RpcConnection extends Thread {
 			DoctypeCount doctypeCounter;
 			for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
 				p = (NodeProxy) i.next();
-				docName = p.doc.getFileName();
+				docName = p.doc.getCollection().getName() + '/' + p.doc.getFileName();
 				doctype = p.doc.getDoctype();
 				if (map.containsKey(docName)) {
 					counter = (NodeCount) map.get(docName);
@@ -1708,7 +1710,7 @@ public class RpcConnection extends Thread {
 			DoctypeCount doctypeCounter;
 			for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
 				p = (NodeProxy) i.next();
-				docName = p.doc.getFileName();
+				docName = p.doc.getCollection().getName() + '/' + p.doc.getFileName();
 				doctype = p.doc.getDoctype();
 				if (map.containsKey(docName)) {
 					counter = (NodeCount) map.get(docName);
@@ -1766,7 +1768,7 @@ public class RpcConnection extends Thread {
 			if (collection == null)
 				throw new EXistException("collection " + collectionName
 						+ " not found");
-			Occurrences occurrences[] = broker.scanIndexedElements(collection,
+			Occurrences occurrences[] = broker.getElementIndex().scanIndexedElements(collection,
 					inclusive);
 			Vector result = new Vector(occurrences.length);
 			for (int i = 0; i < occurrences.length; i++) {
@@ -1926,11 +1928,12 @@ public class RpcConnection extends Thread {
 			if (p < 0 || p == docPath.length() - 1)
 				throw new EXistException("Illegal document path");
 			String collectionName = docPath.substring(0, p);
+			String docName = docPath.substring(p + 1);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
 				throw new EXistException("Collection " + collectionName
 						+ " not found");
-			DocumentImpl doc = collection.getDocument(docPath);
+			DocumentImpl doc = collection.getDocument(broker, docName);
 			if(doc == null)
 				throw new EXistException("Document " + docPath + " not found");
 			

@@ -66,13 +66,10 @@ public class Delete implements WebDAVMethod {
 			if(resource == null) {
 				broker.removeCollection(collection.getName());
 			} else {
-				String path = resource.getFileName();
-				int p = path.lastIndexOf('/');
-				String docName = path.substring(p + 1);
 				if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
-					resource.getCollection().removeBinaryResource(broker, docName);
+					resource.getCollection().removeBinaryResource(broker, resource.getFileName());
 				else
-					resource.getCollection().removeDocument(broker, docName);
+					resource.getCollection().removeDocument(broker, resource.getFileName());
 			}
 		} catch (EXistException e) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());

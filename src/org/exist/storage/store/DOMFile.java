@@ -131,14 +131,15 @@ public class DOMFile extends BTree implements Lockable {
         
         Runnable syncAction = new Runnable() {
             public void run() {
-                try {
-//                    LOG.debug("Triggering cache sync");
-                    lock.acquire(Lock.WRITE_LOCK);
-                    dataCache.flush();
-                } catch (LockException e) {
-                    LOG.warn("Failed to acquire lock on dom.dbx");
-                } finally {
-                    lock.release();
+                if(dataCache.hasDirtyItems()) {
+	                try {
+	                    lock.acquire(Lock.WRITE_LOCK);
+	                    dataCache.flush();
+	                } catch (LockException e) {
+	                    LOG.warn("Failed to acquire lock on dom.dbx");
+	                } finally {
+	                    lock.release();
+	                }
                 }
             }
         };

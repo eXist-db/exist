@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 
@@ -43,15 +44,16 @@ public class ChildSelector implements NodeSelector {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.NodeProxy)
 	 */
-	public boolean match(NodeProxy node) {
+	public NodeProxy match(DocumentImpl doc, long gid) {
 		NodeProxy p;
-		if((p = context.parentWithChild(node.doc, node.gid, true, false, -1)) != null) {
+		if((p = context.parentWithChild(doc, gid, true, false, -1)) != null) {
+		    NodeProxy newNode = new NodeProxy(doc, gid);
 			if (rememberContext)
-				node.addContextNode(p);
+				newNode.addContextNode(p);
 			else
-				node.copyContext(p);
-			return true;
+				newNode.copyContext(p);
+			return newNode;
 		}
-		return false;
+		return null;
 	}
 }

@@ -83,7 +83,6 @@ public class RemoteResourceSet implements ResourceSet {
             String doc = (String) v.elementAt( 0 );
             String s_id = (String) v.elementAt( 1 );
 			String path = doc.substring(0, doc.lastIndexOf('/'));
-			System.out.println("Processing " + doc);
 			RemoteCollection parent = 
 				new RemoteCollection(collection.getClient(), null, path);
 			parent.properties = outputProperties;

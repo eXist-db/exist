@@ -434,6 +434,12 @@ public interface RpcAPI {
 	String upload(User user, String file, byte[] chunk, int length)
 		throws EXistException, PermissionDeniedException;
 
+	String uploadCompressed(User user, byte[] data, int length)
+		throws EXistException, PermissionDeniedException;
+	
+	String uploadCompressed(User user, String file, byte[] data, int length)
+    	throws EXistException, PermissionDeniedException;
+	
 	/**
 	 * Parse a file previously uploaded with upload.
 	 * 
