@@ -270,7 +270,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 *  
 	 * @param docs
 	 */
-	public void getDocuments(DocumentSet docs) {
+	public DocumentSet getDocuments(DocumentSet docs) {
 		Lock lock = db.getLock();
 		try {
 			lock.acquire(Lock.READ_LOCK);
@@ -281,6 +281,7 @@ implements Comparable, EntityResolver, Cacheable {
 		} finally {
 			lock.release();
 		}
+		return docs;
 	}
 
 	/**
@@ -457,7 +458,8 @@ implements Comparable, EntityResolver, Cacheable {
 	 *@return
 	 */
 	public Iterator iterator() {
-		return documents.values().iterator();
+		return getDocuments(new DocumentSet()).iterator();
+		//return documents.values().iterator();
 	}
 
 	/**
