@@ -174,7 +174,13 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
         return cdata.toString();
     }
 
-
+    public String getLowerCaseData() throws DOMException {
+        StringBuffer buf = cdata.getString();
+        for(int i = 0; i < buf.length(); i++)
+            buf.setCharAt(i, Character.toLowerCase(buf.charAt(i)));
+        return buf.toString();
+    }
+    
     /**
      *  Gets the length attribute of the CharacterDataImpl object
      *

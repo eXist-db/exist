@@ -148,19 +148,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
     public void deleteData( int offset, int count ) throws DOMException {
         super.deleteData( offset, count );
     }
-
-
-    /**
-     *  Gets the data attribute of the TextImpl object
-     *
-     *@return                   The data value
-     *@exception  DOMException  Description of the Exception
-     */
-    public String getData() throws DOMException {
-        return super.getData();
-    }
-
-
+    
     /**
      *  Gets the length attribute of the TextImpl object
      *
