@@ -5,6 +5,13 @@
 -->
 <example-queries>
     <query>
+        <description>eXist-version</description>
+        <code><![CDATA[(: return the eXist version :)
+declare namespace util="http://exist-db.org/xquery/util";
+<result>{util:eXist-version()}</result>
+]]></code>
+    </query>
+    <query>
         <description>Simple fulltext query on Shakespeare plays</description>
         <code><![CDATA[for $speech in //SPEECH[LINE &= 'love']
 return $speech]]></code>
