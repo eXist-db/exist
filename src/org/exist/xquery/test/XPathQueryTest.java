@@ -47,6 +47,13 @@ public class XPathQueryTest extends TestCase {
 			+ "<string value='Hello World!'/>"
 			+ "<string>Hello</string>"
 			+ "</test>";
+	
+	private final static String nested2 =
+		"<RootElement>" +
+        "<ChildA>" +
+        "<ChildB id=\"2\"/>" +
+        "</ChildA>" +
+		"</RootElement>";
 
 	private Collection testCollection;
 
@@ -113,6 +120,19 @@ public class XPathQueryTest extends TestCase {
 
 		} catch (XMLDBException e) {
 			System.out.println("testStarAxis(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testParentSelfAxis() {
+		try {
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService("nested2.xml", nested2);
+			
+			queryResource(service, "nested2.xml", "/RootElement/descendant::*/parent::ChildA", 1);
+			queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildB]/parent::RootElement", 0);
+			queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildA]/parent::RootElement", 1);
+		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}
 	}

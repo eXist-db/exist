@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-04,  Wolfgang M. Meier (wolfgang@exist-db.org)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -43,8 +43,11 @@ header {
 }
 
 /**
- * The XQuery parser: generates an AST which is then passed to the tree parser for analysis
- * and code generation.
+ * The XQuery parser. eXist uses two steps to parse an XQuery expression:
+ * in the first step, the XQueryParser generates an abstract syntax tree (AST),
+ * which is - in the second step - passed to {@link XQueryTreeParser} for
+ * analysis. XQueryTreeParser finally creates an internal representation of
+ * the query.
  */
 class XQueryParser extends Parser;
 
@@ -53,6 +56,7 @@ options {
 	k= 1;
 	buildAST= true;
 	ASTLabelType = org.exist.xquery.parser.XQueryAST;
+	exportVocab=XQuery;
 }
 
 {
@@ -87,16 +91,52 @@ options {
 	}
 }
 
+/* The following tokens are assigned by the parser (not the lexer)
+ * and have to be exported (so the tree parser can see them).
+ */
 imaginaryTokenDefinitions
 :
-	QNAME PREDICATE FLWOR PARENTHESIZED ABSOLUTE_SLASH ABSOLUTE_DSLASH WILDCARD 
-	PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER XPOINTER_ID VARIABLE_REF 
-	VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT VERSION_DECL NAMESPACE_DECL 
-	DEF_NAMESPACE_DECL DEF_COLLATION_DECL
-	DEF_FUNCTION_NS_DECL GLOBAL_VAR FUNCTION_DECL PROLOG ATOMIC_TYPE MODULE ORDER_BY 
-	POSITIONAL_VAR BEFORE AFTER MODULE_DECL ATTRIBUTE_TEST COMP_ELEM_CONSTRUCTOR
-	COMP_ATTR_CONSTRUCTOR COMP_TEXT_CONSTRUCTOR COMP_COMMENT_CONSTRUCTOR
-	COMP_PI_CONSTRUCTOR COMP_NS_CONSTRUCTOR
+	QNAME
+	PREDICATE 
+	FLWOR 
+	PARENTHESIZED 
+	ABSOLUTE_SLASH 
+	ABSOLUTE_DSLASH 
+	WILDCARD 
+	PREFIX_WILDCARD 
+	FUNCTION 
+	UNARY_MINUS
+	UNARY_PLUS
+	XPOINTER
+	XPOINTER_ID
+	VARIABLE_REF 
+	VARIABLE_BINDING
+	ELEMENT
+	ATTRIBUTE 
+	TEXT 
+	VERSION_DECL 
+	NAMESPACE_DECL 
+	DEF_NAMESPACE_DECL 
+	DEF_COLLATION_DECL
+	DEF_FUNCTION_NS_DECL 
+	GLOBAL_VAR 
+	FUNCTION_DECL 
+	PROLOG 
+	ATOMIC_TYPE 
+	MODULE 
+	ORDER_BY 
+	POSITIONAL_VAR 
+	BEFORE 
+	AFTER 
+	MODULE_DECL 
+	ATTRIBUTE_TEST 
+	COMP_ELEM_CONSTRUCTOR
+	COMP_ATTR_CONSTRUCTOR 
+	COMP_TEXT_CONSTRUCTOR 
+	COMP_COMMENT_CONSTRUCTOR
+	COMP_PI_CONSTRUCTOR 
+	COMP_NS_CONSTRUCTOR
+	COMP_DOC_CONSTRUCTOR
 	;
 
 xpointer
@@ -145,6 +185,9 @@ prolog
 			( "declare" "variable" )
 			=> varDecl
 			|
+			( "declare" "xmlspace" )
+			=> xmlSpaceDecl
+			|
 			moduleImport
 		)
 		SEMICOLON!
@@ -188,6 +231,10 @@ varDecl
     }
 	;
 
+xmlSpaceDecl:
+	"declare"! "xmlspace"^ ( "preserve" | "strip" )
+	;
+	
 moduleImport
 :
 	"import"^ "module"! ( "namespace"! NCNAME EQ! )? STRING_LITERAL ( "at"! STRING_LITERAL )?
@@ -344,7 +391,12 @@ andExpr
 
 instanceofExpr
 :
-	castExpr ( "instance"^ "of"! sequenceType )?
+	castableExpr ( "instance"^ "of"! sequenceType )?
+	;
+
+castableExpr
+:
+	castExpr ( "castable"^ "as"! singleType )?
 	;
 	
 castExpr
@@ -621,10 +673,26 @@ textTest : "text"^ LPAREN! RPAREN! ;
 
 anyKindTest : "node"^ LPAREN! RPAREN! ;
 
-elementTest : "element"^ LPAREN! RPAREN! ;
+elementTest : "element"^ LPAREN! ( elementNameOrWildcard )? RPAREN! ;
 
-attributeTest : "attribute"^ LPAREN! RPAREN! { #attributeTest= #[ATTRIBUTE_TEST, "attribute()"]; };
+elementNameOrWildcard 
+{ String qn = null; }:
+	STAR { #elementNameOrWildcard = #[WILDCARD, "*"]; }
+	|
+	qn=qName { #elementNameOrWildcard = #[QNAME, qn]; }
+	;
 
+attributeTest : "attribute"! LPAREN! ( attributeNameOrWildcard ) ? RPAREN! 
+	{ #attributeTest= #(#[ATTRIBUTE_TEST, "attribute()"], #attributeTest); }
+	;
+
+attributeNameOrWildcard
+{ String qn = null; }:
+	STAR { #attributeNameOrWildcard = #[WILDCARD, "*"]; }
+	|
+	qn=qName { #attributeNameOrWildcard = #[QNAME, qn]; }
+	;
+	
 commentTest : "comment"^ LPAREN! RPAREN! ;
 
 piTest : "processing-instruction"^ LPAREN! RPAREN! ;
@@ -853,13 +921,21 @@ attributeDef
 	name=q:qName! EQ! 
 	( 
 		QUOT!
-		{ lexer.inAttributeContent= true; }
+		{ lexer.inAttributeContent= true; System.out.println("in attribute..."); }
 		attributeValue { lexer.inAttributeContent= false; }
-		QUOT! { lexer.parseStringLiterals= true; }
+		QUOT!
+		{ 
+			lexer.parseStringLiterals= true;
+			lexer.inAttributeContent= false;
+		}
 		| 
 		APOS! { lexer.inAttributeContent= true; }
-		attributeValue { lexer.inAttributeContent= false; }
-		APOS! { lexer.parseStringLiterals= true; }
+		attributeValue
+		APOS! 
+		{ 
+			lexer.parseStringLiterals= true;
+			lexer.inAttributeContent= false;
+		}
 	)
 	{ 
 		#attributeDef= #(#[ATTRIBUTE, name], #attributeDef);
@@ -917,13 +993,13 @@ attributeEnclosedExpr
 	LCURLY^
 	{
 		lexer.inAttributeContent= false;
-        lexer.parseStringLiterals = true;
+		lexer.parseStringLiterals = true;
 		//lexer.wsExplicit= false;
 	}
 	expr RCURLY!
 	{
 		lexer.inAttributeContent= true;
-        lexer.parseStringLiterals = false;
+		lexer.parseStringLiterals = false;
 		//lexer.wsExplicit= true;
 	}
 	;
@@ -945,8 +1021,8 @@ reservedKeywords returns [String name]
 :
 	"element" { name = "element"; }
 	|
-    "to" { name = "to"; }
-    |
+	"to" { name = "to"; }
+	|
 	"div" { name= "div"; }
 	|
 	"mod" { name= "mod"; }
@@ -986,10 +1062,10 @@ reservedKeywords returns [String name]
 	"preceding-sibling" { name= "preceding-sibling"; }
 	|
 	"following-sibling" { name= "following-sibling"; }
-    |
-    "following" { name = "following"; }
-    |
-    "preceding" { name = "preceding"; }
+	|
+	"following" { name = "following"; }
+	|
+	"preceding" { name = "preceding"; }
 	|
 	"item" { name= "item"; }
 	|
@@ -1042,8 +1118,8 @@ reservedKeywords returns [String name]
 	"import" { name = "import"; }
 	|
 	"at" { name = "at"; }
-    |
-    "cast" { name = "cast"; }
+	|
+	"cast" { name = "cast"; }
 	|
 	"return" { name = "return"; }
 	|
@@ -1054,1567 +1130,12 @@ reservedKeywords returns [String name]
 	"declare" { name = "declare"; }
 	|
 	"collation" { name = "collation"; }
-	;
-
-/**
- * The tree parser: walks the AST created by the parser to generate
- * XQuery expression objects.
- */
-
-class XQueryTreeParser extends TreeParser;
-
-options {
-	k= 1;
-	defaultErrorHandler = false;
-    ASTLabelType = org.exist.xquery.parser.XQueryAST;
-}
-
-{
-	private XQueryContext context;
-	private ExternalModule myModule = null;
-	protected ArrayList exceptions= new ArrayList(2);
-	protected boolean foundError= false;
-
-	public XQueryTreeParser(XQueryContext context) {
-		this();
-		this.context= context;
-	}
-
-	public ExternalModule getModule() {
-		return myModule;
-	}
-	
-	public boolean foundErrors() {
-		return foundError;
-	}
-
-	public String getErrorMessage() {
-		StringBuffer buf= new StringBuffer();
-		for (Iterator i= exceptions.iterator(); i.hasNext();) {
-			buf.append(((Exception) i.next()).toString());
-			buf.append('\n');
-		}
-		return buf.toString();
-	}
-
-	public Exception getLastException() {
-		return (Exception) exceptions.get(exceptions.size() - 1);
-	}
-
-	protected void handleException(Exception e) {
-		foundError= true;
-		exceptions.add(e);
-	}
-
-	private static class ForLetClause {
-		String varName;
-		SequenceType sequenceType= null;
-		String posVar= null;
-		Expression inputSequence;
-		Expression action;
-		boolean isForClause= true;
-	}
-
-	private static class FunctionParameter {
-		String varName;
-		SequenceType type= FunctionSignature.DEFAULT_TYPE;
-
-		public FunctionParameter(String name) {
-			this.varName= name;
-		}
-	}
-}
-
-xpointer [PathExpr path]
-throws XPathException
-{ Expression step = null; }:
-	#( XPOINTER step=expr [path] )
 	|
-	#( XPOINTER_ID nc:NCNAME )
-	{
-		Function fun= new FunId(context);
-		List params= new ArrayList(1);
-		params.add(new LiteralValue(context, new StringValue(nc.getText())));
-		fun.setArguments(params);
-		path.addPath(fun);
-	}
-	;
-//	exception catch [RecognitionException e]
-//	{ handleException(e); }
-	exception catch [EXistException e]
-	{ handleException(e); }
-	catch [PermissionDeniedException e]
-	{ handleException(e); }
-//	catch [XPathException e]
-//	{ handleException(e); }
-
-xpath [PathExpr path]
-throws XPathException
-{ context.setRootExpression(path); }
-:
-	module [path]
-	{
-		context.resolveForwardReferences();
-	}
-	;
-	exception catch [RecognitionException e]
-	{ handleException(e); }
-	catch [EXistException e]
-	{ handleException(e); }
-	catch [PermissionDeniedException e]
-	{ handleException(e); }
-//	catch [XPathException e]
-//	{ handleException(e); }
-
-module [PathExpr path]
-throws PermissionDeniedException, EXistException, XPathException
-{ Expression step = null; }:
-	#(
-		m:MODULE_DECL uri:STRING_LITERAL
-		{
-			myModule = new ExternalModuleImpl(uri.getText(), m.getText());
-			context.declareNamespace(m.getText(), uri.getText());
-		}
-	)
-	prolog [path]
+	"xmlspace" { name = "xmlspace"; }
 	|
-	prolog [path] step=expr [path]
-	;
-
-prolog [PathExpr path]
-throws PermissionDeniedException, EXistException, XPathException
-{ Expression step = null; }:
-	(
-		#(
-			v:VERSION_DECL
-			{
-				if (!v.getText().equals("1.0"))
-					throw new XPathException(v, "Wrong XQuery version: require 1.0");
-			}
-		)
-	)?
-	(
-		#(
-			prefix:NAMESPACE_DECL uri:STRING_LITERAL
-			{ context.declareNamespace(prefix.getText(), uri.getText()); }
-		)
-		|
-		#(
-			DEF_NAMESPACE_DECL defu:STRING_LITERAL
-			{ context.declareNamespace("", defu.getText()); }
-		)
-		|
-		#(
-			DEF_FUNCTION_NS_DECL deff:STRING_LITERAL
-			{ context.setDefaultFunctionNamespace(deff.getText()); }
-		)
-		|
-		#(
-			DEF_COLLATION_DECL defc:STRING_LITERAL
-			{ context.setDefaultCollation(defc.getText()); }
-		)
-		|
-		#(
-			qname:GLOBAL_VAR
-			{
-				PathExpr enclosed= new PathExpr(context);
-				SequenceType type= null;
-			}
-			(
-				#(
-					"as"
-					{ type= new SequenceType(); }
-					sequenceType [type]
-				)
-			)?
-			step=e:expr [enclosed]
-			{
-				VariableDeclaration decl= new VariableDeclaration(context, qname.getText(), enclosed);
-				decl.setSequenceType(type);
-				decl.setASTNode(e);
-				path.add(decl);
-				if(myModule != null) {
-					QName qn = QName.parse(context, qname.getText());
-					myModule.declareVariable(qn, decl);
-				}
-			}
-		)
-		|
-		functionDecl [path]
-		|
-		#(
-			i:"import" 
-			{ 
-				String modulePrefix = null;
-				String location = null;
-			}
-			( pfx:NCNAME { modulePrefix = pfx.getText(); } )? 
-			moduleURI:STRING_LITERAL 
-			( at:STRING_LITERAL { location = at.getText(); } )?
-			{
-                try {
-				    context.importModule(moduleURI.getText(), modulePrefix, location);
-                } catch(XPathException xpe) {
-                    xpe.setASTNode(i);
-                    throw xpe;
-                }
-			}
-		)
-	)*
-	;
-
-functionDecl [PathExpr path]
-throws PermissionDeniedException, EXistException, XPathException
-{ Expression step = null; }:
-	#(
-		name:FUNCTION_DECL { PathExpr body= new PathExpr(context); }
-		{
-			QName qn= QName.parse(context, name.getText());
-			FunctionSignature signature= new FunctionSignature(qn);
-			UserDefinedFunction func= new UserDefinedFunction(context, signature);
-            func.setASTNode(name);
-			List varList= new ArrayList(3);
-		}
-		( paramList [varList] )?
-		{
-			SequenceType[] types= new SequenceType[varList.size()];
-			int j= 0;
-			for (Iterator i= varList.iterator(); i.hasNext(); j++) {
-				FunctionParameter param= (FunctionParameter) i.next();
-				types[j]= param.type;
-				func.addVariable(param.varName);
-			}
-			signature.setArgumentTypes(types);
-			context.declareFunction(func);
-			if(myModule != null)
-				myModule.declareFunction(func);
-		}
-		(
-			#(
-				"as"
-				{ SequenceType type= new SequenceType(); }
-				sequenceType [type]
-				{ signature.setReturnType(type); }
-			)
-		)?
-		#(
-			LCURLY step=expr [body]
-			{ func.setFunctionBody(body); }
-		)
-	)
-	;
-
-paramList [List vars]
-throws XPathException
-:
-	param [vars] ( param [vars] )*
-	;
-
-param [List vars]
-throws XPathException
-:
-	#(
-		varname:VARIABLE_BINDING
-		{
-			FunctionParameter var= new FunctionParameter(varname.getText());
-			vars.add(var);
-		}
-		(
-			#(
-				"as"
-				{ SequenceType type= new SequenceType(); }
-				sequenceType [type]
-			)
-			{ var.type= type; }
-		)?
-	)
-	;
-
-sequenceType [SequenceType type]
-throws XPathException
-:
-	(
-		#(
-			t:ATOMIC_TYPE
-			{
-				QName qn= QName.parse(context, t.getText());
-				int code= Type.getType(qn);
-				type.setPrimaryType(code);
-			}
-		)
-		|
-		#(
-			"empty"
-			{
-				type.setPrimaryType(Type.EMPTY);
-				type.setCardinality(Cardinality.EMPTY);
-			}
-		)
-		|
-		#(
-			"item" { type.setPrimaryType(Type.ITEM); }
-		)
-		|
-		#(
-			"node" { type.setPrimaryType(Type.NODE); }
-		)
-		|
-		#(
-			"element" { type.setPrimaryType(Type.ELEMENT); }
-		)
-		|
-		#(
-			"attribute" { type.setPrimaryType(Type.ATTRIBUTE); }
-		)
-		|
-		#(
-			"text" { type.setPrimaryType(Type.ITEM); }
-		)
-		|
-		#(
-			"processing-instruction" { type.setPrimaryType(Type.PROCESSING_INSTRUCTION); }
-		)
-		|
-		#(
-			"comment" { type.setPrimaryType(Type.COMMENT); }
-		)
-		|
-		#(
-			"document-node" { type.setPrimaryType(Type.DOCUMENT); }
-		)
-	)
-	(
-		STAR { type.setCardinality(Cardinality.ZERO_OR_MORE); }
-		|
-		PLUS { type.setCardinality(Cardinality.ONE_OR_MORE); }
-		|
-		QUESTION { type.setCardinality(Cardinality.ZERO_OR_ONE); }
-	)?
-	;
-
-expr [PathExpr path]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{ 
-	step= null;
-}
-:
-	#(
-		castAST:"cast"
-		{
-			PathExpr expr= new PathExpr(context);
-			int cardinality= Cardinality.EXACTLY_ONE;
-		}
-		step=expr [expr]
-		t:ATOMIC_TYPE
-		(
-			QUESTION
-			{ cardinality= Cardinality.ZERO_OR_ONE; }
-		)?
-		{
-			QName qn= QName.parse(context, t.getText());
-			int code= Type.getType(qn);
-			CastExpression castExpr= new CastExpression(context, expr, code, cardinality);
-            castExpr.setASTNode(castAST);
-			path.add(castExpr);
-			step = castExpr;
-		}
-	)
+	"preserve" { name = "preserve"; }
 	|
-	#(
-		COMMA
-		{
-			PathExpr left= new PathExpr(context);
-			PathExpr right= new PathExpr(context);
-		}
-		step=expr [left]
-		step=expr [right]
-		{
-			SequenceConstructor sc= new SequenceConstructor(context);
-			sc.addPath(left);
-			sc.addPath(right);
-			path.addPath(sc);
-			step = sc;
-		}
-	)
-	|
-	#(
-		"if"
-		{
-			PathExpr testExpr= new PathExpr(context);
-			PathExpr thenExpr= new PathExpr(context);
-			PathExpr elseExpr= new PathExpr(context);
-		}
-		step=expr [testExpr]
-		step=expr [thenExpr]
-		step=expr [elseExpr]
-		{
-			ConditionalExpression cond= new ConditionalExpression(context, testExpr, thenExpr, elseExpr);
-			path.add(cond);
-			step = cond;
-		}
-	)
-	|
-	#(
-		"some"
-		{
-			List clauses= new ArrayList();
-			PathExpr satisfiesExpr = new PathExpr(context);
-		}
-		(
-			#(
-				someVarName:VARIABLE_BINDING
-				{
-					ForLetClause clause= new ForLetClause();
-					PathExpr inputSequence = new PathExpr(context);
-				}
-				(
-					#(
-						"as"
-						sequenceType[clause.sequenceType]
-					)
-				)?
-				step=expr[inputSequence]
-				{
-					clause.varName= someVarName.getText();
-					clause.inputSequence= inputSequence;
-					clauses.add(clause);
-				}
-			)
-		)*
-		step=expr[satisfiesExpr]
-		{
-			Expression action = satisfiesExpr;
-			for (int i= clauses.size() - 1; i >= 0; i--) {
-				ForLetClause clause= (ForLetClause) clauses.get(i);
-				BindingExpression expr = new QuantifiedExpression(context, QuantifiedExpression.SOME);
-				expr.setVariable(clause.varName);
-				expr.setSequenceType(clause.sequenceType);
-				expr.setInputSequence(clause.inputSequence);
-				expr.setReturnExpression(action);
-				satisfiesExpr= null;
-				action= expr;
-			}
-			path.add(action);
-			step = action;
-		}
-	)
-	|
-	#(
-		"every"
-		{
-			List clauses= new ArrayList();
-			PathExpr satisfiesExpr = new PathExpr(context);
-		}
-		(
-			#(
-				everyVarName:VARIABLE_BINDING
-				{
-					ForLetClause clause= new ForLetClause();
-					PathExpr inputSequence = new PathExpr(context);
-				}
-				(
-					#(
-						"as"
-						sequenceType[clause.sequenceType]
-					)
-				)?
-				step=expr[inputSequence]
-				{
-					clause.varName= everyVarName.getText();
-					clause.inputSequence= inputSequence;
-					clauses.add(clause);
-				}
-			)
-		)*
-		step=expr[satisfiesExpr]
-		{
-			Expression action = satisfiesExpr;
-			for (int i= clauses.size() - 1; i >= 0; i--) {
-				ForLetClause clause= (ForLetClause) clauses.get(i);
-				BindingExpression expr = new QuantifiedExpression(context, QuantifiedExpression.EVERY);
-				expr.setVariable(clause.varName);
-				expr.setSequenceType(clause.sequenceType);
-				expr.setInputSequence(clause.inputSequence);
-				expr.setReturnExpression(action);
-				satisfiesExpr= null;
-				action= expr;
-			}
-			path.add(action);
-			step = action;
-		}
-	)
-	|
-	#(
-		"return"
-		{
-			List clauses= new ArrayList();
-			Expression action= new PathExpr(context);
-			PathExpr whereExpr= null;
-			List orderBy= null;
-		}
-		(
-			#(
-				"for"
-				(
-					#(
-						varName:VARIABLE_BINDING
-						{
-							ForLetClause clause= new ForLetClause();
-							PathExpr inputSequence= new PathExpr(context);
-						}
-						(
-							#(
-								"as"
-								{ clause.sequenceType= new SequenceType(); }
-								sequenceType [clause.sequenceType]
-							)
-						)?
-						(
-							posVar:POSITIONAL_VAR
-							{ clause.posVar= posVar.getText(); }
-						)?
-						step=expr [inputSequence]
-						{
-							clause.varName= varName.getText();
-							clause.inputSequence= inputSequence;
-							clauses.add(clause);
-						}
-					)
-				)+
-			)
-			|
-			#(
-				"let"
-				(
-					#(
-						letVarName:VARIABLE_BINDING
-						{
-							ForLetClause clause= new ForLetClause();
-							clause.isForClause= false;
-							PathExpr inputSequence= new PathExpr(context);
-						}
-						(
-							#(
-								"as"
-								{ clause.sequenceType= new SequenceType(); }
-								sequenceType [clause.sequenceType]
-							)
-						)?
-						step=expr [inputSequence]
-						{
-							clause.varName= letVarName.getText();
-							clause.inputSequence= inputSequence;
-							clauses.add(clause);
-						}
-					)
-				)+
-			)
-		)+
-		(
-			"where"
-			{ whereExpr= new PathExpr(context); }
-			step=expr [whereExpr]
-		)?
-		(
-			#(
-				ORDER_BY { orderBy= new ArrayList(3); }
-				(
-					{ PathExpr orderSpecExpr= new PathExpr(context); }
-					step=expr [orderSpecExpr]
-					{
-						OrderSpec orderSpec= new OrderSpec(context, orderSpecExpr);
-						int modifiers= 0;
-						orderBy.add(orderSpec);
-					}
-					(
-						(
-							"ascending"
-							|
-							"descending"
-							{
-								modifiers= OrderSpec.DESCENDING_ORDER;
-								orderSpec.setModifiers(modifiers);
-							}
-						)
-					)?
-					(
-						"empty"
-						(
-							"greatest"
-							|
-							"least"
-							{
-								modifiers |= OrderSpec.EMPTY_LEAST;
-								orderSpec.setModifiers(modifiers);
-							}
-						)
-					)?
-					(
-						"collation" collURI:STRING_LITERAL
-						{
-							orderSpec.setCollation(collURI.getText());
-						}
-					)?
-				)+
-			)
-		)?
-		step=expr [(PathExpr) action]
-		{
-			for (int i= clauses.size() - 1; i >= 0; i--) {
-				ForLetClause clause= (ForLetClause) clauses.get(i);
-				BindingExpression expr;
-				if (clause.isForClause)
-					expr= new ForExpr(context);
-				else
-					expr= new LetExpr(context);
-				expr.setVariable(clause.varName);
-				expr.setSequenceType(clause.sequenceType);
-				expr.setInputSequence(clause.inputSequence);
-				expr.setReturnExpression(action);
-				if (clause.isForClause)
-					 ((ForExpr) expr).setPositionalVariable(clause.posVar);
-				if (whereExpr != null) {
-					expr.setWhereExpression(whereExpr);
-					whereExpr= null;
-				}
-				action= expr;
-			}
-			if (orderBy != null) {
-				OrderSpec orderSpecs[]= new OrderSpec[orderBy.size()];
-				int k= 0;
-				for (Iterator j= orderBy.iterator(); j.hasNext(); k++) {
-					OrderSpec orderSpec= (OrderSpec) j.next();
-					orderSpecs[k]= orderSpec;
-				}
-				((BindingExpression)action).setOrderSpecs(orderSpecs);
-			}
-			path.add(action);
-			step = action;
-		}
-	)
-	|
-	#(
-		"instance"
-		{ 
-			PathExpr expr = new PathExpr(context);
-			SequenceType type= new SequenceType(); 
-		}
-		step=expr [expr]
-		sequenceType [type]
-		{ 
-			step = new InstanceOfExpression(context, expr, type); 
-			path.add(step);
-		}
-	)
-	|
-	#(
-		"or"
-		{
-			PathExpr left= new PathExpr(context);
-			PathExpr right= new PathExpr(context);
-		}
-		step=expr [left]
-		step=expr [right]
-	)
-	{
-		OpOr or= new OpOr(context);
-		or.addPath(left);
-		or.addPath(right);
-		path.addPath(or);
-		step = or;
-	}
-	|
-	#(
-		"and"
-		{
-			PathExpr left= new PathExpr(context);
-			PathExpr right= new PathExpr(context);
-		}
-		step=expr [left]
-		step=expr [right]
-	)
-	{
-		OpAnd and= new OpAnd(context);
-		and.addPath(left);
-		and.addPath(right);
-		path.addPath(and);
-		step = and;
-	}
-	|
-	#(
-		UNION
-		{
-			PathExpr left= new PathExpr(context);
-			PathExpr right= new PathExpr(context);
-		}
-		step=expr [left]
-		step=expr [right]
-	)
-	{
-		Union union= new Union(context, left, right);
-		path.add(union);
-		step = union;
-	}
-	|
-	#( "intersect"
-		{
-			PathExpr left = new PathExpr(context);
-			PathExpr right = new PathExpr(context);
-		}
-		step=expr [left]
-		step=expr [right]
-	)
-	{
-		Intersection intersect = new Intersection(context, left, right);
-		path.add(intersect);
-		step = intersect;
-	}
-	|
-	#( "except"
-		{
-			PathExpr left = new PathExpr(context);
-			PathExpr right = new PathExpr(context);
-		}
-		step=expr [left]
-		step=expr [right]
-	)
-	{
-		Except intersect = new Except(context, left, right);
-		path.add(intersect);
-		step = intersect;
-	}
-	|
-	#(
-		ABSOLUTE_SLASH
-		{
-			RootNode root= new RootNode(context);
-			path.add(root);
-		}
-		( step=expr [path] )?
-	)
-	|
-	#(
-		ABSOLUTE_DSLASH
-		{
-			RootNode root= new RootNode(context);
-			path.add(root);
-		}
-		(
-			step=expr [path]
-			{
-				if (step instanceof LocationStep) {
-					LocationStep s= (LocationStep) step;
-					if (s.getAxis() == Constants.ATTRIBUTE_AXIS)
-						// combines descendant-or-self::node()/attribute:*
-						s.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
-					else
-						s.setAxis(Constants.DESCENDANT_SELF_AXIS);
-				} else
-					step.setPrimaryAxis(Constants.DESCENDANT_SELF_AXIS);
-			}
-		)?
-	)
-	|
-	#(
-		"to"
-		{
-			PathExpr start= new PathExpr(context);
-			PathExpr end= new PathExpr(context);
-			List args= new ArrayList(2);
-			args.add(start);
-			args.add(end);
-		}
-		step=expr [start]
-		step=expr [end]
-		{
-			RangeExpression range= new RangeExpression(context);
-			range.setArguments(args);
-			path.addPath(range);
-			step = range;
-		}
-	)
-	|
-	step=generalComp [path]
-	|
-	step=valueComp [path]
-	|
-	step=nodeComp [path]
-	|
-	step=fulltextComp [path]
-	|
-	step=primaryExpr [path]
-	|
-	step=pathExpr [path]
-	|
-	step=numericExpr [path]
-	;
-
-primaryExpr [PathExpr path]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{
-	step = null;
-}:
-	step=constructor [path]
-	step=predicates [step]
-	{
-		path.add(step);
-	}
-	|
-	#(
-		PARENTHESIZED
-		{ PathExpr pathExpr= new PathExpr(context); }
-		( step=expr [pathExpr] )?
-	)
-	step=predicates [pathExpr]
-	{ path.add(step); }
-	|
-	step=literalExpr [path]
-	step=predicates [step]
-	{ path.add(step); }
-	|
-	v:VARIABLE_REF
-	{ 
-        step= new VariableReference(context, v.getText());
-        step.setASTNode(v);
-    }
-	step=predicates [step]
-	{ path.add(step); }
-	|
-	step=functionCall [path]
-	step=predicates [step]
-	{ path.add(step); }
-	;
-	
-pathExpr [PathExpr path]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{
-	Expression rightStep= null;
-	step= null;
-	int axis= Constants.CHILD_AXIS;
-}
-:
-	( axis=forwardAxis )?
-	{ NodeTest test; }
-	(
-		qn:QNAME
-		{
-			QName qname= QName.parse(context, qn.getText());
-			test= new NameTest(Type.ELEMENT, qname);
-		}
-		|
-		#( PREFIX_WILDCARD nc1:NCNAME )
-		{
-			QName qname= new QName(nc1.getText(), null, null);
-			test= new NameTest(Type.ELEMENT, qname);
-		}
-		|
-		#( nc:NCNAME WILDCARD )
-		{
-			String namespaceURI= context.getURIForPrefix(nc.getText());
-			QName qname= new QName(null, namespaceURI, null);
-			test= new NameTest(Type.ELEMENT, qname);
-		}
-		|
-		WILDCARD
-		{ test= new TypeTest(Type.ELEMENT); }
-		|
-		"node"
-		{ test= new AnyNodeTest(); }
-		|
-		"text"
-		{ test= new TypeTest(Type.TEXT); }
-		|
-		"element"
-		{ test= new TypeTest(Type.ELEMENT); }
-		|
-		"comment"
-		{ test= new TypeTest(Type.COMMENT); }
-		|
-		ATTRIBUTE_TEST
-		{ test= new TypeTest(Type.ATTRIBUTE); }
-		|
-		"document-node"
-		{ test= new TypeTest(Type.DOCUMENT); }
-	)
-	{
-		step= new LocationStep(context, axis, test);
-		path.add(step);
-	}
-	( predicate [(LocationStep) step] )*
-	|
-	AT
-	{ QName qname= null; }
-	(
-		attr:QNAME
-		{ qname= QName.parse(context, attr.getText(), null); }
-		|
-		WILDCARD
-		|
-		#( PREFIX_WILDCARD nc2:NCNAME )
-		{ qname= new QName(nc2.getText(), null, null); }
-		|
-		#( nc3:NCNAME WILDCARD )
-		{
-			String namespaceURI= context.getURIForPrefix(nc3.getText());
-			if (namespaceURI == null)
-				throw new EXistException("No namespace defined for prefix " + nc3.getText());
-			qname= new QName(null, namespaceURI, null);
-		}
-	)
-	{
-		NodeTest test= qname == null ? new TypeTest(Type.ATTRIBUTE) : new NameTest(Type.ATTRIBUTE, qname);
-		step= new LocationStep(context, Constants.ATTRIBUTE_AXIS, test);
-		path.add(step);
-	}
-	( predicate [(LocationStep) step] )*
-	|
-	SELF
-	{
-		step= new LocationStep(context, Constants.SELF_AXIS, new TypeTest(Type.NODE));
-		path.add(step);
-	}
-	( predicate [(LocationStep) step] )*
-	|
-	PARENT
-	{
-		step= new LocationStep(context, Constants.PARENT_AXIS, new TypeTest(Type.NODE));
-		path.add(step);
-	}
-	( predicate [(LocationStep) step] )*
-	|
-	#(
-		SLASH step=expr [path]
-		(
-			rightStep=expr [path]
-			{
-				if (rightStep instanceof LocationStep) {
-					if(((LocationStep) rightStep).getAxis() == -1)
-						((LocationStep) rightStep).setAxis(Constants.CHILD_AXIS);
-				} else {
-					//rightStep = new SimpleStep(context, Constants.CHILD_AXIS, rightStep);
-					rightStep.setPrimaryAxis(Constants.CHILD_AXIS);
-					//path.replaceLastExpression(rightStep);
-				}
-			}
-		)?
-	)
-	{
-		if (step instanceof LocationStep && ((LocationStep) step).getAxis() == -1)
-			 ((LocationStep) step).setAxis(Constants.CHILD_AXIS);
-	}
-	|
-	#(
-		DSLASH step=expr [path]
-		(
-			rightStep=expr [path]
-			{
-				if (rightStep instanceof LocationStep) {
-					LocationStep rs= (LocationStep) rightStep;
-					if (rs.getAxis() == Constants.ATTRIBUTE_AXIS)
-						rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
-					else
-						rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
-				} else {
-					rightStep.setPrimaryAxis(Constants.DESCENDANT_SELF_AXIS);
-				}
-			}
-		)?
-	)
-	{
-		if (step instanceof LocationStep && ((LocationStep) step).getAxis() == -1)
-			 ((LocationStep) step).setAxis(Constants.DESCENDANT_SELF_AXIS);
-	}
-	;
-
-literalExpr [PathExpr path]
-returns [Expression step]
-throws XPathException
-{ step= null; }
-:
-	c:STRING_LITERAL
-	{ 
-		StringValue val = new StringValue(c.getText());
-		val.expand();
-        step= new LiteralValue(context, val);
-        step.setASTNode(c);
-    }
-	|
-	i:INTEGER_LITERAL
-	{ 
-        step= new LiteralValue(context, new IntegerValue(i.getText()));
-        step.setASTNode(i);
-    }
-	|
-	(
-		dec:DECIMAL_LITERAL
-		{ 
-            step= new LiteralValue(context, new DecimalValue(dec.getText()));
-            step.setASTNode(dec);
-        }
-		|
-		dbl:DOUBLE_LITERAL
-		{ 
-            step= new LiteralValue(context, 
-                new DoubleValue(Double.parseDouble(dbl.getText())));
-            step.setASTNode(dbl);
-        }
-	)
-	;
-
-numericExpr [PathExpr path]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{
-	step= null;
-	PathExpr left= new PathExpr(context);
-	PathExpr right= new PathExpr(context);
-}
-:
-	#( plus:PLUS step=expr [left] step=expr [right] )
-	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.PLUS);
-        op.setASTNode(plus);
-		path.addPath(op);
-		step= op;
-	}
-	|
-	#( minus:MINUS step=expr [left] step=expr [right] )
-	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.MINUS);
-        op.setASTNode(minus);
-		path.addPath(op);
-		step= op;
-	}
-	|
-	#( uminus:UNARY_MINUS step=expr [left] )
-	{
-		UnaryExpr unary= new UnaryExpr(context, Constants.MINUS);
-        unary.setASTNode(uminus);
-		unary.add(left);
-		path.addPath(unary);
-		step= unary;
-	}
-	|
-	#( uplus:UNARY_PLUS step=expr [left] )
-	{
-		UnaryExpr unary= new UnaryExpr(context, Constants.PLUS);
-        unary.setASTNode(uplus);
-		unary.add(left);
-		path.addPath(unary);
-		step= unary;
-	}
-	|
-	#( div:"div" step=expr [left] step=expr [right] )
-	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.DIV);
-        op.setASTNode(div);
-		path.addPath(op);
-		step= op;
-	}
-	|
-	#( idiv:"idiv" step=expr [left] step=expr [right] )
-	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.IDIV);
-        op.setASTNode(idiv);
-		path.addPath(op);
-		step= op;
-	}
-	|
-	#( mod:"mod" step=expr [left] step=expr [right] )
-	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.MOD);
-        op.setASTNode(mod);
-		path.addPath(op);
-		step= op;
-	}
-	|
-	#( mult:STAR step=expr [left] step=expr [right] )
-	{
-		OpNumeric op= new OpNumeric(context, left, right, Constants.MULT);
-        op.setASTNode(mult);
-		path.addPath(op);
-		step= op;
-	}
-	;
-
-predicates [Expression expression]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{
-	FilteredExpression filter= null;
-	step= expression;
-}
-:
-	(
-		#(
-			PREDICATE
-			{
-				if (filter == null) {
-					filter= new FilteredExpression(context, step);
-					step= filter;
-				}
-				Predicate predicateExpr= new Predicate(context);
-			}
-			expr [predicateExpr]
-			{
-				filter.addPredicate(predicateExpr);
-			}
-		)
-	)*
-	;
-
-predicate [LocationStep step]
-throws PermissionDeniedException, EXistException, XPathException
-:
-	#(
-		PREDICATE
-		{ Predicate predicateExpr= new Predicate(context); }
-		expr [predicateExpr]
-		{ step.addPredicate(predicateExpr); }
-	)
-	;
-
-functionCall [PathExpr path]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{
-	PathExpr pathExpr;
-	step= null;
-}
-:
-	#(
-		fn:FUNCTION
-		{ List params= new ArrayList(2); }
-		(
-			{ pathExpr= new PathExpr(context); }
-			expr [pathExpr]
-			{ params.add(pathExpr); }
-		)*
-	)
-	{ step= FunctionFactory.createFunction(context, fn, path, params); }
-	;
-
-forwardAxis returns [int axis]
-throws PermissionDeniedException, EXistException
-{ axis= -1; }
-:
-	"child" { axis= Constants.CHILD_AXIS; }
-	|
-	"attribute" { axis= Constants.ATTRIBUTE_AXIS; }
-	|
-	"self" { axis= Constants.SELF_AXIS; }
-	|
-	"parent" { axis= Constants.PARENT_AXIS; }
-	|
-	"descendant" { axis= Constants.DESCENDANT_AXIS; }
-	|
-	"descendant-or-self" { axis= Constants.DESCENDANT_SELF_AXIS; }
-	|
-	"following-sibling" { axis= Constants.FOLLOWING_SIBLING_AXIS; }
-    |
-    "following" { axis= Constants.FOLLOWING_AXIS; }
-    |
-	"preceding-sibling" { axis= Constants.PRECEDING_SIBLING_AXIS; }
-    |
-    "preceding" { axis= Constants.PRECEDING_AXIS; }
-	|
-	"ancestor" { axis= Constants.ANCESTOR_AXIS; }
-	|
-	"ancestor-or-self" { axis= Constants.ANCESTOR_SELF_AXIS; }
-	;
-
-fulltextComp [PathExpr path]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{
-	step= null;
-	PathExpr nodes= new PathExpr(context);
-	PathExpr query= new PathExpr(context);
-}
-:
-	#( ANDEQ step=expr [nodes] step=expr [query] )
-	{
-		ExtFulltext exprCont= new ExtFulltext(context, Constants.FULLTEXT_AND);
-		exprCont.setPath(nodes);
-		exprCont.addTerm(query);
-		path.addPath(exprCont);
-	}
-	|
-	#( OREQ step=expr [nodes] step=expr [query] )
-	{
-		ExtFulltext exprCont= new ExtFulltext(context, Constants.FULLTEXT_OR);
-		exprCont.setPath(nodes);
-		exprCont.addTerm(query);
-		path.addPath(exprCont);
-	}
-	;
-
-valueComp [PathExpr path]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{
-	step= null;
-	PathExpr left= new PathExpr(context);
-	PathExpr right= new PathExpr(context);
-}
-:
-	#(
-		eq:"eq" step=expr [left]
-		step=expr [right]
-		{
-			step= new ValueComparison(context, left, right, Constants.EQ);
-            step.setASTNode(eq);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		ne:"ne" step=expr [left]
-		step=expr [right]
-		{
-			step= new ValueComparison(context, left, right, Constants.NEQ);
-            step.setASTNode(ne);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		lt:"lt" step=expr [left]
-		step=expr [right]
-		{
-			step= new ValueComparison(context, left, right, Constants.LT);
-            step.setASTNode(lt);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		le:"le" step=expr [left]
-		step=expr [right]
-		{
-			step= new ValueComparison(context, left, right, Constants.LTEQ);
-            step.setASTNode(le);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		gt:"gt" step=expr [left]
-		step=expr [right]
-		{
-			step= new ValueComparison(context, left, right, Constants.GT);
-            step.setASTNode(gt);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		ge:"ge" step=expr [left]
-		step=expr [right]
-		{
-			step= new ValueComparison(context, left, right, Constants.GTEQ);
-            step.setASTNode(ge);
-			path.add(step);
-		}
-	)
-	;
-	
-generalComp [PathExpr path]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{
-	step= null;
-	PathExpr left= new PathExpr(context);
-	PathExpr right= new PathExpr(context);
-}
-:
-	#(
-		eq:EQ step=expr [left]
-		step=expr [right]
-		{
-			step= new GeneralComparison(context, left, right, Constants.EQ);
-            step.setASTNode(eq);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		neq:NEQ step=expr [left]
-		step=expr [right]
-		{
-			step= new GeneralComparison(context, left, right, Constants.NEQ);
-            step.setASTNode(neq);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		lt:LT step=expr [left]
-		step=expr [right]
-		{
-			step= new GeneralComparison(context, left, right, Constants.LT);
-            step.setASTNode(lt);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		lteq:LTEQ step=expr [left]
-		step=expr [right]
-		{
-			step= new GeneralComparison(context, left, right, Constants.LTEQ);
-            step.setASTNode(lteq);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		gt:GT step=expr [left]
-		step=expr [right]
-		{
-			step= new GeneralComparison(context, left, right, Constants.GT);
-            step.setASTNode(gt);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		gteq:GTEQ step=expr [left]
-		step=expr [right]
-		{
-			step= new GeneralComparison(context, left, right, Constants.GTEQ);
-            step.setASTNode(gteq);
-			path.add(step);
-		}
-	)
-	;
-
-nodeComp [PathExpr path]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{
-	step= null;
-	PathExpr left= new PathExpr(context);
-	PathExpr right= new PathExpr(context);
-}
-:
-	#(
-		is:"is" step=expr [left] step=expr [right]
-		{
-			step = new NodeComparison(context, left, right, Constants.IS);
-            step.setASTNode(is);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		isnot:"isnot" step=expr[left] step=expr[right]
-		{
-			step = new NodeComparison(context, left, right, Constants.ISNOT);
-            step.setASTNode(isnot);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		before:BEFORE step=expr[left] step=expr[right]
-		{
-			step = new NodeComparison(context, left, right, Constants.BEFORE);
-            step.setASTNode(before);
-			path.add(step);
-		}
-	)
-	|
-	#(
-		after:AFTER step=expr[left] step=expr[right]
-		{
-			step = new NodeComparison(context, left, right, Constants.AFTER);
-            step.setASTNode(after);
-			path.add(step);
-		}
-	)
-	;
-	
-constructor [PathExpr path]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{
-	step= null;
-	PathExpr elementContent= null;
-	Expression contentExpr= null;
-	Expression qnameExpr = null;
-}
-:
-	// computed element constructor
-	#(
-		qn:COMP_ELEM_CONSTRUCTOR
-		{
-			ElementConstructor c= new ElementConstructor(context);
-			c.setASTNode(qn);
-			step= c;
-			SequenceConstructor construct = new SequenceConstructor(context);
-			EnclosedExpr enclosed = new EnclosedExpr(context);
-			enclosed.addPath(construct);
-			c.setContent(enclosed);
-			PathExpr qnamePathExpr = new PathExpr(context);
-			c.setNameExpr(qnamePathExpr);
-		}
-		
-		qnameExpr=expr [qnamePathExpr]
-		(
-			#( prefix:COMP_NS_CONSTRUCTOR uri:STRING_LITERAL )
-			{
-				c.addNamespaceDecl(prefix.getText(), uri.getText());
-			}
-			|
-			{ elementContent = new PathExpr(context); }
-			contentExpr=expr[elementContent]
-			{ construct.addPath(elementContent); }
-		)*
-	)
-	|
-	#(
-		attr:COMP_ATTR_CONSTRUCTOR
-		{
-			DynamicAttributeConstructor a= new DynamicAttributeConstructor(context);
-            a.setASTNode(attr);
-            step = a;
-            PathExpr qnamePathExpr = new PathExpr(context);
-            a.setNameExpr(qnamePathExpr);
-            elementContent = new PathExpr(context);
-            a.setContentExpr(elementContent);
-		}
-		qnameExpr=expr [qnamePathExpr]
-		contentExpr=expr [elementContent]
-	)
-	|
-	#(
-		pid:COMP_PI_CONSTRUCTOR
-		{
-			DynamicPIConstructor pd= new DynamicPIConstructor(context);
-            pd.setASTNode(pid);
-            step = pd;
-            PathExpr qnamePathExpr = new PathExpr(context);
-            pd.setNameExpr(qnamePathExpr);
-            elementContent = new PathExpr(context);
-            pd.setContentExpr(elementContent);
-		}
-		qnameExpr=expr [qnamePathExpr]
-		contentExpr=expr [elementContent]
-	)
-	|
-	// direct element constructor
-	#(
-		e:ELEMENT
-		{
-			ElementConstructor c= new ElementConstructor(context, e.getText());
-			c.setASTNode(e);
-			step= c;
-		}
-		(
-			#(
-				attrName:ATTRIBUTE
-				{
-					AttributeConstructor attrib= new AttributeConstructor(context, attrName.getText());
-                    attrib.setASTNode(attrName);
-				}
-				(
-					attrVal:ATTRIBUTE_CONTENT
-					{ attrib.addValue(attrVal.getText()); }
-					|
-					#(
-						LCURLY { PathExpr enclosed= new PathExpr(context); }
-						expr [enclosed]
-						{ attrib.addEnclosedExpr(enclosed); }
-					)
-				)+
-				{ c.addAttribute(attrib); }
-			)
-		)*
-		(
-			{
-				if (elementContent == null) {
-					elementContent= new PathExpr(context);
-					c.setContent(elementContent);
-				}
-			}
-			contentExpr=constructor [elementContent]
-			{ elementContent.add(contentExpr); }
-		)*
-	)
-	|
-	#(
-		pcdata:TEXT
-		{
-			TextConstructor text= new TextConstructor(context, pcdata.getText());
-            text.setASTNode(pcdata);
-			step= text;
-		}
-	)
-	|
-	#(
-		t:COMP_TEXT_CONSTRUCTOR
-		{ 
-			elementContent = new PathExpr(context);
-			DynamicTextConstructor text = new DynamicTextConstructor(context, elementContent);
-			text.setASTNode(t);
-			step= text;
-		}
-		contentExpr=expr [elementContent]
-	)
-	|
-	#(
-		tc:COMP_COMMENT_CONSTRUCTOR
-		{
-			elementContent = new PathExpr(context);
-			DynamicCommentConstructor comment = new DynamicCommentConstructor(context, elementContent);
-			comment.setASTNode(t);
-			step= comment;
-		}
-		contentExpr=expr [elementContent]
-	)
-	|
-	#(
-		d:COMP_DOC_CONSTRUCTOR
-		{
-			elementContent = new PathExpr(context);
-			DocumentConstructor doc = new DocumentConstructor(context, elementContent);
-			doc.setASTNode(d);
-			step= doc;
-		}
-		contentExpr=expr [elementContent]
-	)
-	|
-	#(
-		cdata:XML_COMMENT
-		{
-			CommentConstructor comment= new CommentConstructor(context, cdata.getText());
-            comment.setASTNode(cdata);
-			step= comment;
-		}
-	)
-	|
-	#(
-		p:XML_PI
-		{
-			PIConstructor pi= new PIConstructor(context, p.getText());
-            pi.setASTNode(p);
-			step= pi;
-		}
-	)
-	|
-	// enclosed expression within element content
-	#(
-		l:LCURLY { 
-            EnclosedExpr subexpr= new EnclosedExpr(context); 
-            subexpr.setASTNode(l);
-        }
-		step=expr [subexpr]
-		{ step= subexpr; }
-	)
+	"strip" { name = "strip"; }
 	;
 
 /**
@@ -2627,6 +1148,7 @@ options {
 	testLiterals = false;
 	charVocabulary = '\u0003'..'\uffff';
 	codeGenBitsetTestThreshold = 20;
+	exportVocab=XQuery;
 }
 
 tokens {
@@ -2890,7 +1412,7 @@ options {
 	RCURLY { $setType(RCURLY); }
 	|
 	{ inAttributeContent }?
-	attr:ATTRIBUTE_CONTENT
+	ATTRIBUTE_CONTENT
 	{ $setType(ATTRIBUTE_CONTENT); }
 	|
 	{ !(parseStringLiterals || inElementContent) }?

@@ -457,6 +457,10 @@ public class XQueryContext {
 	public boolean stripWhitespace() {
 		return stripWhitespace;
 	}
+	
+	public void setStripWhitespace(boolean strip) {
+		this.stripWhitespace = strip;
+	}
 
 	/**
 	 * Return an iterator over all built-in modules currently
