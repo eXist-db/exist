@@ -46,6 +46,7 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask {
 		if (resource == null && collection == null)
 			throw new BuildException("Missing parameter: either resource or collection should " +
 				"be specified");
+        registerDatabase();
 		try {
 			Collection base = DatabaseManager.getCollection(uri, user, password);
 			if(resource != null) {
@@ -61,6 +62,7 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask {
 				service.removeCollection(collection);
 			}
 		} catch(XMLDBException e) {
+            e.printStackTrace();
 			throw new BuildException("XMLDB exception during remove: " + e.getMessage(), e);
 		}
 	}
