@@ -3,8 +3,8 @@
 
 <book xmlns:xi="http://www.w3.org/2001/XInclude">
     <bookinfo>
-        <graphic fileref="/exist/logo.jpg"/>
-        <style href="/exist/styles/default-style.css"/>
+        <graphic fileref="logo.jpg"/>
+        <style href="default-style.css"/>
         <title>Open Source XML Database</title>
         <author>
             <firstname>Wolfgang M.</firstname>
@@ -53,7 +53,7 @@
             
             <para>By the way, this page also demonstrates some of the possibilities of eXist's REST
             interface. All the files required to render this page reside in the database and are
-            read from there, including the two XSLT stylesheets used for the formatting.</para>
+            read from there, including the logo and the two XSLT stylesheets used for the formatting.</para>
         </section>
         
         <section>
