@@ -391,6 +391,7 @@ public class ClientFrame extends JFrame
 		});
 		fileMenu.add(item);
 
+		fileMenu.addSeparator();
 		item = new JMenuItem("Quit", KeyEvent.VK_Q);
 		item.setAccelerator(KeyStroke.getKeyStroke("control Q"));
 		item.addActionListener(new ActionListener() {
@@ -550,6 +551,19 @@ public class ClientFrame extends JFrame
 			}
 		});
 		optionsMenu.add(item);
+		
+		JMenu HelpMenu = new JMenu("Help");
+		HelpMenu.setMnemonic(KeyEvent.VK_H);
+		menubar.add(HelpMenu);
+		
+		item = new JMenuItem("About", KeyEvent.VK_A);		
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				AboutAction();
+			}
+		});
+		HelpMenu.add(item);
+		
 		return menubar;
 	}
 
@@ -1135,6 +1149,16 @@ public class ClientFrame extends JFrame
 		displayPrompt();
 	}
 
+	private void AboutAction() {
+		JOptionPane.showMessageDialog(this, "eXist version 1.0, Copyright (C) 2004 Wolfgang Meier\n"
+		        + "eXist comes with ABSOLUTELY NO WARRANTY.\n"
+		        + "This is free software, and you are welcome to\n"
+				+ "redistribute it under certain conditions;\n"
+				+ "for details read the license file."
+		);
+        return;
+	}
+	
 	class TableMouseListener extends MouseAdapter {
 
 		public void mouseClicked(MouseEvent e) {
