@@ -35,8 +35,8 @@
     exceptions on machines with limited memory (256MB). Increase the
     buffer settings for elements_buffers and words_buffers if you have
     some more memory to waste. -->
-    <db-connection database="native" files="webapp/WEB-INF/data"
-		pageSize="4096" cacheSize="48M" free_mem_min="10">
+	<db-connection database="native" files="webapp/WEB-INF/data"
+		pageSize="4096" cacheSize="48M" free_mem_min="5">
     
         <!-- Settings for the database connection pool:
             - sync-period
@@ -49,7 +49,7 @@
         -->
 		<pool min="1" max="20" sync-period="300000"/>
 
-		<watchdog query-timeout="30000" output-size-limit="10000"/>
+		<watchdog query-timeout="-1" output-size-limit="10000"/>
     </db-connection>
 	   
     <!-- Default settings for the serializer. Most of these can be changed
@@ -89,7 +89,7 @@
 	Increase the setting to have less reindex runs. However, you have to
 	be aware that leaving spare ids also limits the maximum size of a 
 	document that can be indexed. -->
-	<xupdate growth-factor="20"/>
+	<xupdate growth-factor="20" allowed-fragmentation="10"/>
 
     <!-- 
         Settings for the indexer:
