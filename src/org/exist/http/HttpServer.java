@@ -112,7 +112,7 @@ public class HttpServer extends Thread {
             sock = new ServerSocket( port );
             sock.setSoTimeout( 500 );
             LOG.debug( "listening at port " + port );
-            while ( !stop )
+            while ( !stop ) {
                 try {
                     Socket s = sock.accept();
                     LOG.info( "connection from " +
@@ -121,7 +121,9 @@ public class HttpServer extends Thread {
                     con.process( s );
                 } catch ( InterruptedIOException ie ) {
                 }
-
+            }
+            LOG.info("Shutting down ...");
+            sock.close();
         } catch ( IOException io ) {
             LOG.error( io );
         } catch ( SecurityException sec ) {
