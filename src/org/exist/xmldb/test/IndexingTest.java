@@ -18,12 +18,11 @@ import junit.framework.TestCase;
 import org.xml.sax.*;
 import org.w3c.dom.*;
 
-/** Try to reproduce the EXistException "the document is too complex/irregularily structured
+/** Reproduce the EXistException "the document is too complex/irregularily structured
  * to be mapped into eXist's numbering scheme"
- * raised in {@link org/exist/dom/DocumentImpl} , but didn't succed yet ;-) .
- * It creates with DOM a simple document having 10000 elements 
- * connected to the root, and the first element having a sub-tree of large depth, etc.
- * It uses reproductible randomness.
+ * raised in {@link org/exist/dom/DocumentImpl} .
+ * It creates with DOM a simple document having a branch of 16 elements depth
+ * connected to the root, with width (arity) of 16 at each level.
  *  */
 public class IndexingTest extends TestCase {
 	
@@ -42,14 +41,18 @@ public class IndexingTest extends TestCase {
 	private int effectiveSiblingCount;
 	private int effectiveDepth;
 	private long startTime;
+	private int arity;
+	private boolean randomSizes;
 
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		siblingCount = 10000;
-		depth = 1000;
+		siblingCount = 2;
+		depth = 16;
+		arity = 16;
+		randomSizes = false;
 		random = new Random(1234);
 	}
 	/**
@@ -189,14 +192,27 @@ public class IndexingTest extends TestCase {
 			computedElementCount );
 
 		assertEquals("siblingCount", effectiveSiblingCount, computedSiblingCount );
-		assertEquals("depth", effectiveDepth, computedDepth );
+		assertEquals("depth", depth*arity + depth, computedDepth );
 
 		System.out.println("TEST> assertions PASSED");
 		printTime();
 		// dumpCatabaseContent(n);
 	}
 
+	/** This one provokes the Exception */
 	private int populate(Document doc) {
+		int childrenCount = addChildren (doc, siblingCount);
+		
+		// Add a long fat branch at root's first child :
+		deepBranch = doc.getDocumentElement().getFirstChild();
+		effectiveDepth = addFatBranch( doc, deepBranch, depth, null);
+
+		System.out.println("TEST> populate() done.");
+		return childrenCount;
+		}
+	
+	/** This one doesn't provoke the Exception */
+	private int populateOK(Document doc) {
 		int childrenCount = addChildren (doc, siblingCount);
 		
 		// Add large branches at root's first and last children :
@@ -220,7 +236,7 @@ public class IndexingTest extends TestCase {
 		{
 			Node current = documentElement.getFirstChild();
 			for (int j = 0; j < firstLevelWidth - 1; j++) {
-				addChildren (current, 30, doc);
+				addChildren (current, arity, doc);
 				current = current.getNextSibling();
 			}
 		}
@@ -235,9 +251,33 @@ public class IndexingTest extends TestCase {
 			if ( elementName == null || elementName == "" )
 				elementName = "element";
 			
-			rdepth = random.nextInt(depth);
+			if ( randomSizes )
+				rdepth = random.nextInt(depth);
+			else
+				rdepth  = depth;
 			for (int j = 0; j < rdepth; j++) {
 				Element el = doc.createElement(elementName);
+				current.appendChild(el);
+				current = el;
+			}
+		}
+		return rdepth;
+	}
+
+	private int addFatBranch( Document doc, Node branchNode, int depth, String elementName ) {
+		int rdepth = 0;
+		if ( branchNode != null ) {
+			Node current = branchNode;
+			if ( elementName == null || elementName == "" )
+				elementName = "element";
+			
+			if ( randomSizes )
+				rdepth = random.nextInt(depth);
+			else
+				rdepth  = depth;
+			for (int j = 0; j < rdepth; j++) {
+				Element el = doc.createElement(elementName);
+				addChildren( el,  arity, doc );
 				current.appendChild(el);
 				current = el;
 			}
@@ -258,7 +298,10 @@ public class IndexingTest extends TestCase {
 	private int addChildren( Node rootElem, int length, Document doc) {
 		int rlength = 0;
 		if ( rootElem != null ) {
-			rlength = random.nextInt(length);
+			if ( randomSizes )
+				rlength = random.nextInt(length);
+			else
+				rlength = length;
 			for (int j = 0; j < rlength; j++) {
 				Element el = doc.createElement("element");
 				rootElem.appendChild(el);			
