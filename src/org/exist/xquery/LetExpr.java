@@ -58,6 +58,7 @@ public class LetExpr extends BindingExpression {
 			sequenceType.checkType(in.getItemType());
 			sequenceType.checkCardinality(in);
 		}
+		clearContext(in);
 		var.setValue(in);
 		Sequence filtered = null;
 		if (whereExpr != null) {
