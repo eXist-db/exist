@@ -13,6 +13,7 @@ public class LocalTests {
 //		suite.addTest(new TestSuite(ResourceSetTest.class));
 		suite.addTest(new TestSuite(TestEXistXMLSerialize.class));
 		suite.addTest(new TestSuite(CopyMoveTest.class));
+        suite.addTest(new TestSuite(ContentAsDOMTest.class));
 		//$JUnit-END$
 		return suite;
 	}
