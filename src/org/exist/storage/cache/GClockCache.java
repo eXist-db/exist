@@ -47,14 +47,13 @@ public class GClockCache implements Cache {
 	protected Long2ObjectHashMap map;
 	protected int hits = 0, fails = 0;
 
-	protected long syncPeriod = 30000;
+	protected long syncPeriod = 20000;
 	protected long lastSync = System.currentTimeMillis();
 	
 	public GClockCache(int size) {
 		this.size = size;
 		this.items = new Cacheable[size];
 		this.map = new Long2ObjectHashMap(size);
-		//this.map = new Long2ObjectOpenHashMap(size);
 	}
 
 	public void add(Cacheable item) {

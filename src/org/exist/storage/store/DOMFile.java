@@ -68,6 +68,8 @@ import org.w3c.dom.Node;
  */
 public class DOMFile extends BTree implements Lockable {
 
+	public final static short FILE_FORMAT_VERSION_ID = 1;
+	
 	// page types
 	public final static byte LOB = 21;
 	public final static byte RECORD = 20;
@@ -116,6 +118,13 @@ public class DOMFile extends BTree implements Lockable {
 		return dataCache;
 	}
 
+	/**
+	 * @return
+	 */
+	public short getFileVersion() {
+		return FILE_FORMAT_VERSION_ID;
+	}
+	
 	/**
 	 *  Append a value to the current page 
 	 *
@@ -750,7 +759,7 @@ public class DOMFile extends BTree implements Lockable {
 	 *@exception  DBException  Description of the Exception
 	 */
 	public boolean open() throws DBException {
-		if (super.open())
+		if (super.open(FILE_FORMAT_VERSION_ID))
 			return true;
 		else
 			return false;
@@ -1073,10 +1082,8 @@ public class DOMFile extends BTree implements Lockable {
 		while (pageNr > -1) {
 			page = getCurrentPage(pageNr);
 			dataCache.add(page);
-			pos = 0;
 			dlen = page.getPageHeader().getDataLength();
-			//System.out.println(pos + " < " + dlen);
-			while (pos < dlen) {
+			for (pos = 0; pos < dlen; ) {
 				//System.out.println(current + " = " + tid);
 				if (ByteConversion.byteToShort(page.data, pos) == tid)
 					return new RecordPos(pos + 2, page);
@@ -1088,16 +1095,15 @@ public class DOMFile extends BTree implements Lockable {
 				LOG.debug("illegal link to next page");
 				return null;
 			}
-			/*LOG.debug(
-				owner.toString()
-					+ ": tid "
-					+ tid
-					+ " not found on "
-					+ page.page.getPageInfo()
-					+ ". Loading "
-					+ pageNr);*/
+//			LOG.debug(
+//				owner.toString()
+//					+ ": tid "
+//					+ tid
+//					+ " not found on "
+//					+ page.page.getPageInfo()
+//					+ ". Loading "
+//					+ pageNr);
 		}
-		Thread.dumpStack();
 		LOG.debug("tid " + tid + " not found.");
 		return null;
 	}

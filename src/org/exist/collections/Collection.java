@@ -64,7 +64,7 @@ import org.exist.util.LockException;
 import org.exist.util.SyntaxException;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
-import org.exist.util.hashtable.Object2LongHashMap;
+import org.exist.util.hashtable.ObjectHashSet;
 import org.w3c.dom.Node;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -107,7 +107,7 @@ implements Comparable, EntityResolver, Cacheable {
 	private Permission permissions = new Permission(0755);
 
 	// stores child-collections with their storage address
-	private Object2LongHashMap subcollections = new Object2LongHashMap(19);
+	private ObjectHashSet subcollections = new ObjectHashSet(19);
 
 	// temporary field for the storage address
 	private long address = -1;
@@ -141,8 +141,8 @@ implements Comparable, EntityResolver, Cacheable {
 	public void addCollection(Collection child) {
 		final int p = child.name.lastIndexOf('/') + 1;
 		final String childName = child.name.substring(p);
-		if (!subcollections.containsKey(childName))
-			subcollections.put(childName, child.address);
+		if (!subcollections.contains(childName))
+			subcollections.add(childName);
 	}
 
 	/**
@@ -154,7 +154,7 @@ implements Comparable, EntityResolver, Cacheable {
 		final int p = child.name.lastIndexOf('/') + 1;
 		final String childName = child.name.substring(p);
 		subcollections.remove(childName);
-		subcollections.put(childName, child.address);
+		subcollections.add(childName);
 	}
 
 	/**
@@ -246,12 +246,10 @@ implements Comparable, EntityResolver, Cacheable {
 			long addr;
 			for (Iterator i = subcollections.iterator(); i.hasNext(); ) {
 				childName = (String) i.next();
-				addr = subcollections.get(childName);
-				if (addr < 0)
-					child = broker.getCollection(name + '/' + childName);
-				else
-					child = broker.getCollection(name + '/' + childName, addr);
-				if (permissions.validate(broker.getUser(), Permission.READ)) {
+				child = broker.getCollection(name + '/' + childName);
+				if(child == null) {
+					LOG.warn("child collection " + childName + " not found. Skipping ...");
+				} else if (permissions.validate(broker.getUser(), Permission.READ)) {
 					child.getDocuments(docs);
 					if (child.getChildCollectionCount() > 0)
 						child.allDocs(broker, docs);
@@ -443,10 +441,10 @@ implements Comparable, EntityResolver, Cacheable {
 		Lock lock = db.getLock();
 		try {
 			lock.acquire(Lock.READ_LOCK);
-			return subcollections.containsKey(name);
+			return subcollections.contains(name);
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
-			return subcollections.containsKey(name);
+			return subcollections.contains(name);
 		} finally {
 			lock.release();
 		}
@@ -473,9 +471,9 @@ implements Comparable, EntityResolver, Cacheable {
 		collectionId = istream.readShort();
 		final int collLen = istream.readInt();
 		String sub;
-		subcollections = new Object2LongHashMap(collLen);
+		subcollections = new ObjectHashSet(collLen);
 		for (int i = 0; i < collLen; i++)
-			subcollections.put(istream.readUTF(), istream.readLong());
+			subcollections.add(istream.readUTF());
 
 		final SecurityManager secman = broker.getBrokerPool()
 				.getSecurityManager();
@@ -1229,7 +1227,6 @@ implements Comparable, EntityResolver, Cacheable {
 		for (Iterator i = subcollections.iterator(); i.hasNext(); ) {
 			childColl = (String) i.next();
 			ostream.writeUTF(childColl);
-			ostream.writeLong(subcollections.get(childColl));
 		}
 		org.exist.security.SecurityManager secman = broker.getBrokerPool()
 				.getSecurityManager();
@@ -1282,6 +1279,10 @@ implements Comparable, EntityResolver, Cacheable {
 		this.address = addr;
 	}
 
+	public long getAddress() {
+		return this.address;
+	}
+	
 	public void setCreationTime(long ms) {
 		created = ms;
 	}
