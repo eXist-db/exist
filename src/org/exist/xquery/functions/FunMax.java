@@ -50,7 +50,7 @@ public class FunMax extends Function {
 			"input sequence.",
 			new SequenceType[] {
 				 new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
-			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE), true /* overloaded=true jmv */ );
 					
 	/**
 	 * @param context
