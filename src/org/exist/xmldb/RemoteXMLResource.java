@@ -45,10 +45,9 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	private final static Properties emptyProperties = new Properties();
 	
 	/**
-	 *  if this class is used from Cocoon, use the Cocoon parser component
-	 *  instead of JAXP
+	 *  Use external XMLReader to parse XML.
 	 */
-	private org.apache.excalibur.xml.sax.SAXParser cocoonParser = null;
+	private XMLReader xmlReader = null;
 	
 	protected String id;
 	protected String documentName;
@@ -184,33 +183,36 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 		//		content can be a file
 		if (file != null)
 			getData();
-		if (cocoonParser == null) {
+        
+        XMLReader reader = null;
+		if (xmlReader == null) {
 			SAXParserFactory saxFactory = SAXParserFactory.newInstance();
 			saxFactory.setNamespaceAware(true);
 			saxFactory.setValidating(false);
-			try {
-				SAXParser sax = saxFactory.newSAXParser();
-				XMLReader reader = sax.getXMLReader();
-				reader.setContentHandler(handler);
-				if(lexicalHandler != null)
-					reader.setProperty("http://xml.org/sax/properties/lexical-handler", lexicalHandler);
-				reader.parse(new InputSource(new StringReader(content)));
-			} catch (SAXException saxe) {
-				saxe.printStackTrace();
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
-			} catch (ParserConfigurationException pce) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage(), pce);
-			} catch (IOException ioe) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-			}
-		} else
-			try {
-				cocoonParser.parse(new InputSource(new StringReader(content)), handler, lexicalHandler);
-			} catch (SAXException saxe) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
-			} catch (IOException ioe) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-			}
+            try {
+                SAXParser sax = saxFactory.newSAXParser();
+                reader = sax.getXMLReader();
+            } catch (ParserConfigurationException pce) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage(), pce);
+            } catch (SAXException saxe) {
+                saxe.printStackTrace();
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
+            }
+        } else {
+            reader = xmlReader;
+        }
+		try {
+			reader.setContentHandler(handler);
+			if(lexicalHandler != null) {
+                reader.setProperty("http://xml.org/sax/properties/lexical-handler", lexicalHandler);
+            }
+			reader.parse(new InputSource(new StringReader(content)));
+        } catch (SAXException saxe) {
+            saxe.printStackTrace();
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
+        } catch (IOException ioe) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+        }
 	}
 
 	public String getDocumentId() throws XMLDBException {
@@ -232,12 +234,12 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	}
 
 	/**
-	 *  Sets the cocoonParser to be used.
+	 * Sets the external XMLReader to use.
 	 *
-	 *@param  parser  The new cocoonParser value
+	 * @param xmlReader the XMLReader
 	 */
-	public void setCocoonParser(org.apache.excalibur.xml.sax.SAXParser parser) {
-		this.cocoonParser = parser;
+	public void setXMLReader(XMLReader xmlReader) {
+		this.xmlReader = xmlReader;
 	}
 
 	public void setContent(Object value) throws XMLDBException {
