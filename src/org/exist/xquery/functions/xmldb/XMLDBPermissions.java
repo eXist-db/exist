@@ -45,7 +45,9 @@ public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("get-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the permissions assigned to the specified collection.",
+			"Returns the permissions assigned to the collection. " +
+			"The collection can be specified as a simple collection path, " +
+			"an XMLDB URI or a collection object.",
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 			},
@@ -53,8 +55,9 @@ public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 		),
 		new FunctionSignature(
 			new QName("get-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the permissions assigned to the resource specified in $b which is a child of the collection " +
-			"$a.",
+			"Returns the permissions assigned to the resource specified in $b " +
+			"which is a child of the collection $a. The collection can be specified " +
+			"as a simple collection path, an XMLDB URI or a collection object.",
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)

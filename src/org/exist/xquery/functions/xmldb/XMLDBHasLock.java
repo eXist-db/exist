@@ -45,8 +45,10 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("document-has-lock", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the name of the user that holds a write lock on the document of the " +
-			"specified node. If no lock is in place, the empty sequence is returned.",
+			"Returns the name of the user that holds a write lock on the resource specified in $b in the collection $a.  " +
+			"If no lock is in place, the empty sequence is returned. " +
+			"The collection can be passed as a simple collection " +
+			"path, an XMLDB URI or a collection object (obtained from the collection function).",
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)

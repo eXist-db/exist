@@ -21,17 +21,18 @@ import org.exist.xquery.value.Type;
 
 /**
  * @author wolf
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 public class XMLDBPermissionsToString extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("permissions-to-string", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the name of the user that holds a write lock on the document of the " +
-			"specified node. If no lock is in place, the empty sequence is returned.",
+			"Format the resource or collection permissions passed as an integer " +
+			"value into a string. The returned string shows the permissions following " +
+			"the usual Unix conventions, i.e. all permissions set is returned as " +
+			"rwurwurwu, where the first three chars are for user permissions, " +
+			"followed by group and world. 'r' denotes read, 'w' write and 'u' update " +
+			"permissions",
 			new SequenceType[] {
 					new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
 			},
