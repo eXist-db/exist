@@ -98,6 +98,7 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunTrue.signature, FunTrue.class),
 		new FunctionDef(FunUpperCase.signature, FunUpperCase.class),
 		new FunctionDef(FunZeroOrOne.signature, FunZeroOrOne.class),
+		new FunctionDef(FunUnordered.signature, FunUnordered.class),
 		new FunctionDef(ExtCollection.signature, ExtCollection.class),
 		new FunctionDef(ExtXCollection.signature, ExtXCollection.class),
 		new FunctionDef(ExtDoctype.signature, ExtDoctype.class),
