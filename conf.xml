@@ -129,7 +129,7 @@
   -->
   <indexer batchLoad="true" tmpDir="tmp"
 	  stemming="false" controls="ctl" caseSensitive="false"
-	  suppress-whitespace="both" index-depth="1"
+	  suppress-whitespace="both" index-depth="3"
 	  tokenizer="org.exist.storage.analysis.SimpleTokenizer"
 	  validation="false">
 
@@ -177,8 +177,8 @@
 	<index doctype="PLAY" default="all">
 	</index>
 
-	<index attributes="true" alphanum="false" doctype="movie" default="all">
-		<exclude path="//@id"/>
+	<index attributes="true" alphanum="true" doctype="movie" default="all">
+		<!--exclude path="//@id"/-->
 	</index>
 
 	<index attributes="false" doctype="species" default="all" alphanum="true"/>

@@ -68,6 +68,8 @@ public class Rename extends Modification {
 					parent.updateChild(node, node);
 					modificationCount++;
 					break;
+				default :
+					throw new EXistException("unsupported node-type");
 			}
 			doc.clearIndexListener();
 		}

@@ -1009,9 +1009,11 @@ public class NativeTextEngine extends TextSearchEngine {
 					notifyObservers(progress);
 				}
 			}
-			progress.finish();
-			setChanged();
-			notifyObservers(progress);
+			if(words.size() > 100) {
+				progress.finish();
+				setChanged();
+				notifyObservers(progress);
+			}
 			words.clear();
 		}
 

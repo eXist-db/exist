@@ -278,7 +278,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @return Node
 	 * @throws DOMException
 	 */
-	private Node appendChildren(long gid, NodeImpl last, NodeList nodes, boolean index)
+	protected Node appendChildren(long gid, NodeImpl last, NodeList nodes, boolean index)
 		throws DOMException {
 		try {
 			checkTree(nodes.getLength());

@@ -68,7 +68,6 @@ import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
-import org.exist.util.CollectionCache;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -98,13 +97,10 @@ public class NativeBroker extends DBBroker {
 	// check available memory after storing MEM_LIMIT_CHECK nodes
 	protected static int MEM_LIMIT_CHECK = 10000;
 
-	// size of the internal buffer for collection objects
-	protected static int COLLECTION_BUFFER_SIZE = 64000;
-
 	private static Category LOG = Category.getInstance(NativeBroker.class.getName());
 
 	protected static RelationalBroker.TableLock writeLock = new RelationalBroker.TableLock();
-	protected BFile collectionsDb = null;
+	protected CollectionStore collectionsDb = null;
 	protected DOMFile domDb = null;
 	protected NativeElementIndex elementIndex;
 	protected ElementPool elementPool = new ElementPool(50);
@@ -120,7 +116,6 @@ public class NativeBroker extends DBBroker {
 	protected boolean readOnly = false;
 	protected int memMinFree;
 	protected int nodesCount = 0;
-	protected CollectionCache collections;
 	private final Runtime run = Runtime.getRuntime();
 
 	/**
@@ -206,7 +201,7 @@ public class NativeBroker extends DBBroker {
 				if (!readOnly)
 					readOnly = domDb.isReadOnly();
 			}
-			if ((collectionsDb = (BFile) config.getProperty("db-connection.collections"))
+			if ((collectionsDb = (CollectionStore) config.getProperty("db-connection.collections"))
 				== null) {
 				int collectionBuffers;
 				if ((collectionBuffers = config.getInteger("db-connection.collections.buffers"))
@@ -214,7 +209,7 @@ public class NativeBroker extends DBBroker {
 					collectionBuffers = buffers * 2;
 				LOG.debug("collections index buffer size: " + collectionBuffers);
 				collectionsDb =
-					new BFile(
+					new CollectionStore(
 						new File(dataDir + pathSep + "collections.dbx"),
 						collectionBuffers / 2,
 						collectionBuffers);
@@ -231,11 +226,6 @@ public class NativeBroker extends DBBroker {
 			}
 			if (readOnly)
 				LOG.info("database runs in read-only mode");
-			collections = (CollectionCache) config.getProperty("db-connection.collection-cache");
-			if (collections == null) {
-				collections = new CollectionCache(COLLECTION_BUFFER_SIZE);
-				config.setProperty("db-connection.collection-cache", collections);
-			}
 			idxPathMap = (Map) config.getProperty("indexer.map");
 			textEngine = new NativeTextEngine(this, config);
 			xmlSerializer = new NativeSerializer(this, config);
@@ -517,23 +507,17 @@ public class NativeBroker extends DBBroker {
 				key = new Value(name.getBytes());
 			}
 		Collection collection = null;
-		synchronized (collections) {
-			collection = collections.get(name);
-			if (collection != null) {
-				return collection;
-			}
-		}
-		collection = new Collection(this, name);
-		//Value val = null;
 		InputStream dis = null;
 		Lock lock = collectionsDb.getLock();
 		try {
 			lock.acquire(Lock.READ_LOCK);
+			collection = collectionsDb.getCollectionCache().get(name);
+			if (collection != null)
+				return collection;
+			collection = new Collection(this, name);
 			if (addr < 0) {
-				//val = collectionsDb.get(key);
 				dis = collectionsDb.getAsStream(key);
 			} else {
-				//val = collectionsDb.get(addr);
 				dis = collectionsDb.getAsStream(addr);
 			}
 		} catch (LockException e) {
@@ -542,10 +526,8 @@ public class NativeBroker extends DBBroker {
 		} finally {
 			lock.release();
 		}
-		//if (val == null)
 		if (dis == null)
 			return null;
-		//final byte[] data = val.getData();
 		VariableByteInputStream istream = new VariableByteInputStream(dis);
 		try {
 			collection.read(istream);
@@ -553,8 +535,14 @@ public class NativeBroker extends DBBroker {
 			LOG.warn(ioe);
 			return null;
 		}
-		synchronized (collections) {
-			collections.add(collection);
+		try {
+			lock.acquire();
+			collectionsDb.getCollectionCache().add(collection);
+		} catch (LockException e) {
+			LOG.warn("failed to acquire lock on collection store");
+			return null;
+		} finally {
+			lock.release();
 		}
 		//			LOG.debug(
 		//				"loading collection "
@@ -1103,49 +1091,53 @@ public class NativeBroker extends DBBroker {
 		if (name.endsWith("/") && name.length() > 1)
 			name = name.substring(0, name.length() - 1);
 
-		synchronized (collections) {
-			Collection current;
-			try {
-				StringTokenizer tok = new StringTokenizer(name, "/");
-				String temp = tok.nextToken();
-				String path = "/db";
-				Collection sub;
-				current = getCollection("/db");
-				if (current == null) {
-					LOG.debug("creating root collection /db");
-					current = new Collection(this, "/db");
-					current.getPermissions().setPermissions(0777);
-					current.getPermissions().setOwner(user);
-					current.getPermissions().setGroup(user.getPrimaryGroup());
-					current.setId(getNextCollectionId());
-					saveCollection(current);
-				}
-				while (tok.hasMoreTokens()) {
-					temp = tok.nextToken();
-					path = path + "/" + temp;
-					if (current.hasSubcollection(temp))
-						current = getCollection(path);
-					else {
-						if (!current.getPermissions().validate(user, Permission.WRITE))
-							throw new PermissionDeniedException("not allowed to write to collection");
-						LOG.debug("creating collection " + path);
-						sub = new Collection(this, path);
-						sub.getPermissions().setOwner(user);
-						sub.getPermissions().setGroup(user.getPrimaryGroup());
-						sub.setId(getNextCollectionId());
-						current.addCollection(sub);
-						saveCollection(current);
-						current = sub;
-					}
-				}
-			} catch (ReadOnlyException e) {
-				LOG.debug("database read-only");
-				return null;
+		Collection current = null;
+		Lock lock = collectionsDb.getLock();
+		try {
+			lock.acquire();
+			StringTokenizer tok = new StringTokenizer(name, "/");
+			String temp = tok.nextToken();
+			String path = "/db";
+			Collection sub;
+			current = getCollection("/db");
+			if (current == null) {
+				LOG.debug("creating root collection /db");
+				current = new Collection(this, "/db");
+				current.getPermissions().setPermissions(0777);
+				current.getPermissions().setOwner(user);
+				current.getPermissions().setGroup(user.getPrimaryGroup());
+				current.setId(getNextCollectionId());
+				saveCollection(current);
 			}
-			//			LOG.debug("getOrCreateCollection took " + 
-			//				(System.currentTimeMillis() - start) + "ms.");
-			return current;
+			while (tok.hasMoreTokens()) {
+				temp = tok.nextToken();
+				path = path + "/" + temp;
+				if (current.hasSubcollection(temp))
+					current = getCollection(path);
+				else {
+					if (!current.getPermissions().validate(user, Permission.WRITE))
+						throw new PermissionDeniedException("not allowed to write to collection");
+					LOG.debug("creating collection " + path);
+					sub = new Collection(this, path);
+					sub.getPermissions().setOwner(user);
+					sub.getPermissions().setGroup(user.getPrimaryGroup());
+					sub.setId(getNextCollectionId());
+					current.addCollection(sub);
+					saveCollection(current);
+					current = sub;
+				}
+			}
+		} catch (ReadOnlyException e) {
+			LOG.debug("database read-only");
+			return null;
+		} catch (LockException e) {
+			LOG.warn("failed to acquire lock on collections store");
+		} finally {
+			lock.release();
 		}
+		//			LOG.debug("getOrCreateCollection took " + 
+		//				(System.currentTimeMillis() - start) + "ms.");
+		return current;
 	}
 
 	/**
@@ -1183,6 +1175,7 @@ public class NativeBroker extends DBBroker {
 				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
 				if (val == null) {
 					LOG.debug("node " + gid + " not found!");
+					Thread.dumpStack();
 					return null;
 				}
 				NodeImpl node =
@@ -1288,9 +1281,11 @@ public class NativeBroker extends DBBroker {
 					lock.release();
 				}
 			}
-			synchronized (collections) {
+			Lock lock = collectionsDb.getLock();
+			try {
+				lock.acquire();
 				if (!name.equals("/db"))
-					collections.remove(name);
+					collectionsDb.getCollectionCache().remove(name);
 				Collection parent = collection.getParent();
 				if (parent != null) {
 					parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
@@ -1298,6 +1293,10 @@ public class NativeBroker extends DBBroker {
 					for (Iterator i = parent.collectionIterator(); i.hasNext();)
 						System.out.println(i.next());
 				}
+			} catch (LockException e) {
+				LOG.warn("failed to acquire lock on collections store", e);
+			} finally {
+				lock.release();
 			}
 			((NativeTextEngine) textEngine).removeCollection(collection);
 
@@ -1306,7 +1305,7 @@ public class NativeBroker extends DBBroker {
 
 			Value ref = new ElementValue(collectionId);
 			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-			Lock lock = elementsDb.getLock();
+			lock = elementsDb.getLock();
 			try {
 				lock.acquire(Lock.WRITE_LOCK);
 				elementsDb.removeAll(query);
@@ -1386,7 +1385,6 @@ public class NativeBroker extends DBBroker {
 				throw new PermissionDeniedException("permission to remove document denied");
 			LOG.info("removing document " + doc.getDocId() + "...");
 			// remove document
-			synchronized (collections) {
 				Lock lock = collectionsDb.getLock();
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
@@ -1399,13 +1397,12 @@ public class NativeBroker extends DBBroker {
 				} finally {
 					lock.release();
 				}
-			}
 
 			// drop element-index
 			short collectionId = doc.getCollection().getId();
 			Value ref = new ElementValue(collectionId);
 			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-			Lock lock = elementsDb.getLock();
+			lock = elementsDb.getLock();
 			try {
 				lock.acquire(Lock.WRITE_LOCK);
 				ArrayList elements = elementsDb.findKeys(query);
@@ -1651,6 +1648,7 @@ public class NativeBroker extends DBBroker {
 						parent.update(collection);
 						saveCollection(parent);
 					}
+					collectionsDb.getCollectionCache().add(collection);
 				} catch (LockException e) {
 					LOG.warn("could not acquire lock for collections store", e);
 				} finally {
@@ -1663,7 +1661,6 @@ public class NativeBroker extends DBBroker {
 		} catch (ReadOnlyException e) {
 			LOG.warn("database is read-only");
 		}
-		collections.add(collection);
 	}
 
 	public static void saveSymbols(BFile namespacesDb) {

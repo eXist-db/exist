@@ -46,6 +46,8 @@ import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import javax.swing.JOptionPane;
+
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
@@ -938,7 +940,10 @@ public class InteractiveClient {
 			return true;
 		} catch (XMLDBException xde) {
 			xde.printStackTrace();
-			System.err.println("XMLDBException: " + xde.getMessage() + " [" + xde.errorCode + "]");
+			if(startGUI)
+				frame.showErrorMessage("XMLDBException: " + xde.getMessage(), xde);
+			else
+				System.err.println("XMLDBException: " + xde.getMessage() + " [" + xde.errorCode + "]");
 			return true;
 		}
 	}
@@ -1614,38 +1619,41 @@ public class InteractiveClient {
 		}
 		if (optionGet != null) {
 			try {
-				System.out.println(retrieve(optionGet));
+				XMLResource res = retrieve(optionGet);
+				if(res != null)
+					System.out.println(res.getContent());
 			} catch (XMLDBException e) {
 				System.err.println(
 					"XMLDBException while trying to retrieve document: " + e.getMessage());
 				e.printStackTrace();
 			}
-			return;
+			interactive = false;
 		} else if (optionRemove != null) {
 			if (!foundCollection) {
 				System.err.println("Please specify target collection with --collection");
-				return;
-			}
+			} else {
 			try {
 				remove(optionRemove);
 			} catch (XMLDBException e) {
 				System.out.println("XMLDBException during parse: " + e.getMessage());
 				e.printStackTrace();
 			}
+			}
+			interactive = false;
 			return;
 		} else if (doParse) {
 			if (!foundCollection) {
 				System.err.println("Please specify target collection with --collection");
-				return;
+			} else {
+				for (Iterator i = optionalArgs.iterator(); i.hasNext();)
+					try {
+						parse((String) i.next());
+					} catch (XMLDBException e) {
+						System.out.println("XMLDBException during parse: " + e.getMessage());
+						e.printStackTrace();
+					}
 			}
-			for (Iterator i = optionalArgs.iterator(); i.hasNext();)
-				try {
-					parse((String) i.next());
-				} catch (XMLDBException e) {
-					System.out.println("XMLDBException during parse: " + e.getMessage());
-					e.printStackTrace();
-				}
-			return;
+			interactive = false;
 		} else if (optionXpath != null) {
 			// if no argument has been found, read query from stdin
 			if (optionXpath.equals("stdin")) {
@@ -1654,9 +1662,10 @@ public class InteractiveClient {
 					optionXpath = stdin.readLine();
 				} catch (IOException e) {
 					System.err.println("failed to read query from stdin");
-					return;
+					optionXpath = null;
 				}
 			}
+			if(optionXpath != null) {
 			try {
 				ResourceSet result = find(optionXpath);
 				for (int i = 0; i < maxResults && i < result.getSize(); i++)
@@ -1665,7 +1674,8 @@ public class InteractiveClient {
 				System.err.println("XMLDBException during query: " + e.getMessage());
 				e.printStackTrace();
 			}
-			return;
+			}
+			interactive = false;
 		} else if (optionQueryFile != null) {
 			testQuery(optionQueryFile);
 		} else if (optionXUpdate != null) {
@@ -1676,8 +1686,10 @@ public class InteractiveClient {
 			} catch (IOException e) {
 				System.err.println("IOException during xupdate: " + e.getMessage());
 			}
+			interactive = false;
 		}
 
+		if(interactive) {
 		// enter interactive mode
 		try {
 			getResources();
@@ -1685,12 +1697,18 @@ public class InteractiveClient {
 			System.out.println(
 				"XMLDBException while retrieving collection " + "contents: " + e1.getMessage());
 			e1.getCause().printStackTrace();
+			frame.showErrorMessage("XMLDBException occurred while retrieving collection: " +
+				e1.getMessage(), e1);
+			frame.setVisible(false);
+			System.exit(0);
 		}
 		messageln("\ntype help or ? for help.");
 		if (!startGUI)
 			readlineInputLoop(home, history);
 		else
 			frame.displayPrompt();
+		} else
+			shutdown(false);
 	}
 
 	public void readlineInputLoop(String home, File history) {

@@ -22,18 +22,17 @@
 package org.exist.storage;
 
 import org.exist.util.*;
-import org.exist.storage.*;
 import org.exist.*;
 
 public class BrokerFactory {
 
-    public static DBBroker getInstance(BrokerPool pool, Configuration conf) throws EXistException {
-	String dbName = (String)conf.getProperty("database");
-	if(dbName == null)
-	    throw new RuntimeException("no database defined");
-	if(dbName.equalsIgnoreCase("NATIVE"))
-	    return new NativeBroker(pool, conf);
-	else
-	    return new RelationalBroker(pool, conf);
-    }
+	public static DBBroker getInstance(BrokerPool pool, Configuration conf) throws EXistException {
+		String dbName = (String) conf.getProperty("database");
+		if (dbName == null)
+			throw new RuntimeException("no database defined");
+		if (dbName.equalsIgnoreCase("NATIVE"))
+			return new NativeBroker(pool, conf);
+		else
+			return new RelationalBroker(pool, conf);
+	}
 }

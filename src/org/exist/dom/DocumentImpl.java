@@ -88,7 +88,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	// has document-metadata been loaded?
 	private boolean complete = true;
-
+	
 	/**
 	 *  Constructor for the DocumentImpl object
 	 *
@@ -258,10 +258,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	private void checkRange(int level) throws EXistException {
-		if(treeLevelStartPoints[level] < 0 || treeLevelStartPoints[level + 1] < 0)
+		if (treeLevelStartPoints[level] < 0 || treeLevelStartPoints[level + 1] < 0)
 			throw new EXistException("index out of range");
 	}
-	
+
 	/**
 	 *  Description of the Method
 	 *
@@ -432,45 +432,21 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return children;
 	}
 
-	/*
-	 *  methods of NodeImpl
-	 */
-	/**
-	 *  Gets the childNodes attribute of the DocumentImpl object
-	 *
-	 *@return    The childNodes value
-	 */
 	public NodeList getChildNodes() {
 		NodeListImpl list = new NodeListImpl();
 		for (int i = 1; i <= children; i++)
 			list.add(getNode(i));
-
 		return list;
 	}
 
-	/**
-	 *  Gets the collection attribute of the DocumentImpl object
-	 *
-	 *@return    The collection value
-	 */
 	public Collection getCollection() {
 		return collection;
 	}
 
-	/**
-	 *  Gets the docId attribute of the DocumentImpl object
-	 *
-	 *@return    The docId value
-	 */
 	public int getDocId() {
 		return docId;
 	}
 
-	/**
-	 *  Gets the doctype attribute of the DocumentImpl object
-	 *
-	 *@return    The doctype value
-	 */
 	public DocumentType getDoctype() {
 		checkAvail();
 		return docType;
@@ -479,11 +455,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	/*
 	 *  W3C Document-Methods
 	 */
-	/**
-	 *  Gets the documentElement attribute of the DocumentImpl object
-	 *
-	 *@return    The documentElement value
-	 */
+
 	public Element getDocumentElement() {
 		checkAvail();
 		if (-1 < documentRootId)
@@ -602,7 +574,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public Node getNode(NodeProxy p) {
 		return broker.objectWith(p);
 	}
-	
+
 	public Permission getPermissions() {
 		return permissions;
 	}
@@ -951,4 +923,157 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		broker.flush();
 	}
 
+	/*
+	 * @see org.exist.dom.NodeImpl#insertBefore(org.w3c.dom.NodeList, org.w3c.dom.Node)
+	 */
+	public Node insertBefore(NodeList nodes, Node refChild) throws DOMException {
+		if (!(refChild instanceof NodeImpl))
+			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
+		if (refChild != null && refChild.getNodeType() == Node.ELEMENT_NODE) {
+			for (int i = 0; i < nodes.getLength(); i++)
+				switch (nodes.item(i).getNodeType()) {
+					case Node.ELEMENT_NODE :
+					case Node.DOCUMENT_NODE :
+					case Node.ATTRIBUTE_NODE :
+						throw new DOMException(
+							DOMException.INVALID_MODIFICATION_ERR,
+							"inserting the node at this position is not allowed");
+				}
+		}
+		NodeImpl ref = (NodeImpl)refChild;
+		NodeImpl root = (NodeImpl)getDocumentElement();
+		// copy document
+		DocumentImpl prevDoc = new DocumentImpl(this);
+		NodeImpl last = this;
+		if(refChild != null) {
+			NodeImpl prev = (NodeImpl)refChild.getPreviousSibling();
+			if(prev != null)
+				last = getLastNode(prev);
+		}
+		System.out.println("appending to " + ((NodeImpl)refChild).gid);
+		Node result = appendChildren(((NodeImpl)refChild).gid, last, nodes);
+		reindex = 0;
+		broker.reindex(prevDoc, this, root);
+		broker.flush();
+		return result;
+	}
+
+	/**
+		 * Internal append.
+		 * 
+		 * @param last
+		 * @param child
+		 * @return Node
+		 * @throws DOMException
+		 */
+		private Node appendChildren(long gid, NodeImpl last, NodeList nodes)
+			throws DOMException {
+			try {
+				checkTree(nodes.getLength());
+			} catch (EXistException e) {
+				throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
+					e.getMessage());
+			}
+			children += nodes.getLength();
+			Node child;
+			for (int i = 0; i < nodes.getLength(); i++) {
+				child = nodes.item(i);
+				last = (NodeImpl) appendChild(gid + i, last, child);
+			}
+			return last;
+		}
+
+		private Node appendChild(long gid, NodeImpl last, 
+			Node child)
+			throws DOMException {
+			String ns, prefix;
+			Attr attr;
+			switch (child.getNodeType()) {
+				case Node.ELEMENT_NODE :
+					// create new element
+					final ElementImpl elem = new ElementImpl(((Element) child).getTagName());
+					elem.setGID(gid);
+					elem.setOwnerDocument(this);
+					// handle namespaces
+					ns = child.getNamespaceURI();
+					if (ns != null && ns.length() > 0) {
+						prefix = broker.getNamespacePrefix(ns);
+						if (prefix == null) {
+							prefix = child.getPrefix() != null ? child.getPrefix() : '#' + ns;
+							broker.registerNamespace(ns, prefix);
+						}
+						elem.setNodeName(prefix + ':' + child.getLocalName());
+						elem.addPrefix(prefix);
+					}
+					// add attributes to list of child nodes
+					final NodeListImpl ch = new NodeListImpl();
+					final NamedNodeMap attribs = child.getAttributes();
+					for (int i = 0; i < attribs.getLength(); i++) {
+						attr = (Attr)attribs.item(i);
+						// register namespace prefixes
+						ns = attr.getNamespaceURI();
+						if(ns != null && ns.length() > 0) {
+							prefix = broker.getNamespacePrefix(ns);
+							if (prefix == null) {
+								prefix = attr.getPrefix() != null ? attr.getPrefix() : '#' + ns;
+								broker.registerNamespace(ns, prefix);
+							}
+							elem.addPrefix(prefix);
+						}
+						ch.add(attr);
+					}
+					ch.addAll(child.getChildNodes());
+					elem.setChildCount(ch.getLength());
+					// insert the node
+					broker.insertAfter(last, elem);
+					broker.index(elem);
+					elem.setChildCount(0);
+					// process child nodes
+					last = (NodeImpl) elem.appendChildren(elem.firstChildID(), elem, ch, false);
+					return last;
+				case Node.TEXT_NODE :
+					final TextImpl text = new TextImpl(((Text) child).getData());
+					text.setGID(gid);
+					text.setOwnerDocument(this);
+					// insert the node
+					broker.insertAfter(last, text);
+					return text;
+				case Node.ATTRIBUTE_NODE :
+					attr = (Attr) child;
+					final AttrImpl attrib = new AttrImpl(attr.getName(), attr.getValue());
+					attrib.setGID(gid);
+					attrib.setOwnerDocument(this);
+					// handle namespaces
+					ns = child.getNamespaceURI();
+					if (ns != null && ns.length() > 0) {
+						prefix = broker.getNamespacePrefix(ns);
+						attrib.setNodeName(prefix + ':' + child.getLocalName());
+					}
+					// insert the node
+					broker.insertAfter(last, attrib);
+					return attrib;
+				case Node.PROCESSING_INSTRUCTION_NODE :
+					LOG.debug("new pi at " + gid);
+					final ProcessingInstructionImpl pi = 
+						new ProcessingInstructionImpl(gid);
+					pi.setTarget(((ProcessingInstruction)child).getTarget());
+					pi.setData(((ProcessingInstruction)child).getData());
+					pi.setOwnerDocument(this);
+					//insert the node
+					broker.insertAfter(last, pi);
+					broker.index(pi);
+				default :
+					return null;
+			}
+		}
+		
+	private void checkTree(int size) throws EXistException {
+			// check if the tree structure needs to be changed
+			System.out.println(treeLevelOrder[0]);
+			if (treeLevelOrder[0] < children + size) {
+				// recompute the order of the tree
+				treeLevelOrder[0] = children + size;
+				calculateTreeLevelStartPoints();
+			}
+		}
 }
