@@ -119,6 +119,7 @@ public class WebDAV {
 		Collection collection = null;
 		WebDAVMethod method = null;
 		DBBroker broker = null;
+		boolean collectionLocked = false;
 		try {
 			broker = pool.get(user);
 			
@@ -133,7 +134,8 @@ public class WebDAV {
 				resource = (DocumentImpl)broker.openDocument(path, Lock.READ_LOCK);
 				if(resource != null)
 					collection = resource.getCollection();
-			}
+			} else
+				collectionLocked = true;
 		} catch (EXistException e) {
 			throw new ServletException("An error occurred while retrieving resource: " + e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
@@ -144,7 +146,7 @@ public class WebDAV {
 		try {
 			method.process(user, request, response, collection, resource);
 		} finally {
-			if(collection != null)
+			if(collection != null && collectionLocked)
 				collection.release();
 			if(resource != null)
 				resource.getUpdateLock().release();
