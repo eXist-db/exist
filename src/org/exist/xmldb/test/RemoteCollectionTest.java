@@ -26,6 +26,9 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class RemoteCollectionTest extends RemoteDBTest {
 
+	private final static String XML_CONTENT = "<xml/>";
+	private final static String BINARY_CONTENT = "TEXT";
+	
 	/**
 	 * @param name
 	 */
@@ -39,7 +42,6 @@ public class RemoteCollectionTest extends RemoteDBTest {
 
   	protected void tearDown() throws Exception {
 	    removeCollection();
-	    stopServer(getCollection());
 	}
 
     public void testIndexQueryService() {
@@ -85,9 +87,9 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	}
 	
 	public void testGetNonExistentResource() throws XMLDBException {
-		System.out.println("Retrieving non-existing resource -----------------");
+		System.out.println("Retrieving non-existing resource");
 		Collection collection = getCollection();
-		Resource resource = collection.getResource("12345.xml");
+		Resource resource = collection.getResource("unknown.xml");
 		assertNull(resource);
 	}
 	
@@ -104,8 +106,8 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	    createResources(binaryNames, "BinaryResource");
 
 	    String[] actualContents = getCollection().listResources();
+	    System.out.println("Resources found: " + actualContents.length);
 	    for (int i = 0; i < actualContents.length; i++) {
-	    	System.out.println("---------------------->" + actualContents[i]);
 	        xmlNames.remove(actualContents[i]);
 	        binaryNames.remove(actualContents[i]);
 	    }
@@ -119,8 +121,14 @@ public class RemoteCollectionTest extends RemoteDBTest {
      * @param string
      */
     private void createResources(ArrayList names, String type) throws XMLDBException {
-        for (Iterator i = names.iterator(); i.hasNext(); )
-            getCollection().createResource((String) i.next(), type);        
+        for (Iterator i = names.iterator(); i.hasNext(); ) {
+            Resource res = getCollection().createResource((String) i.next(), type);
+            if(type.equals("XMLResource"))
+            	res.setContent(XML_CONTENT);
+            else
+            	res.setContent(BINARY_CONTENT);
+            getCollection().storeResource(res);
+        }
     }
 
     public static void main(String[] args) {
