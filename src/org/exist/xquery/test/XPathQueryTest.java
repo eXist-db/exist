@@ -71,6 +71,9 @@ public class XPathQueryTest extends TestCase {
 	    "<b id=\"id1\"><name>one</name></b>" +
 	    "</test>";
 	
+	private final static String quotes =
+		"<test><title>&quot;Hello&quot;</title></test>";
+	
 	private Collection testCollection;
 	
 	public XPathQueryTest(String name) {
@@ -112,7 +115,7 @@ public class XPathQueryTest extends TestCase {
 	public void testStarAxis() {
 		ResourceSet result;
 		try {
-			XPathQueryService service = 
+			XQueryService service = 
 				storeXMLStringAndGetQueryService("numbers.xml", numbers);
 
 			result = service.queryResource(
@@ -142,7 +145,7 @@ public class XPathQueryTest extends TestCase {
 	
 	public void testParentSelfAxis() {
 		try {
-			XPathQueryService service = 
+			XQueryService service = 
 				storeXMLStringAndGetQueryService("nested2.xml", nested2);
 			
 			queryResource(service, "nested2.xml", "/RootElement/descendant::*/parent::ChildA", 1);
@@ -155,7 +158,7 @@ public class XPathQueryTest extends TestCase {
 	
 	public void testNumbers() {
 		try {
-			XPathQueryService service = 
+			XQueryService service = 
 				storeXMLStringAndGetQueryService("numbers.xml", numbers);
 			
 			ResourceSet result = queryResource(service, "numbers.xml", "sum(/test/item/price)", 1);
@@ -181,7 +184,7 @@ public class XPathQueryTest extends TestCase {
 
 	public void testStrings() {
 		try {
-			XPathQueryService service = 
+			XQueryService service = 
 				storeXMLStringAndGetQueryService("strings.xml", strings);
 			
 			ResourceSet result = queryResource(service, "strings.xml", "substring(/test/string[1], 1, 5)", 1);
@@ -198,11 +201,26 @@ public class XPathQueryTest extends TestCase {
 		}
 	}
 
+	public void testQuotes() {
+		try {
+			XQueryService service = 
+				storeXMLStringAndGetQueryService("quotes.xml", quotes);
+			
+			ResourceSet result = queryResource(service, "quotes.xml", "/test[title = '&quot;Hello&quot;']", 1);
+
+			service.declareVariable("content", "&quot;Hello&quot;");
+			result = queryResource(service, "quotes.xml", "/test[title = $content]", 1);
+		} catch (XMLDBException e) {
+			System.out.println("testQuotes(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}
+	
 	public void testBoolean() {
 		try {
 			System.out.println("Testing effective boolean value of expressions ...");
 			
-			XPathQueryService service =
+			XQueryService service =
 				storeXMLStringAndGetQueryService("numbers.xml", numbers);
 			
 			ResourceSet result = queryResource(service, "numbers.xml", "boolean(1.0)", 1);
@@ -269,7 +287,7 @@ public class XPathQueryTest extends TestCase {
 
 	public void testNot() {
 		try {
-			XPathQueryService service = 
+			XQueryService service = 
 				storeXMLStringAndGetQueryService("strings.xml", strings);
 			
 			queryResource(service, "strings.xml", "/test/string[not(@value)]", 2);
@@ -300,7 +318,7 @@ public class XPathQueryTest extends TestCase {
 	
 	public void testIds() {
 		try {
-			XPathQueryService service = 
+			XQueryService service = 
 				storeXMLStringAndGetQueryService("ids.xml", ids);
 			
 			queryResource(service, "ids.xml", "//a/id(@ref)", 1);
@@ -366,7 +384,7 @@ public class XPathQueryTest extends TestCase {
 		}
 	}
 	
-	private ResourceSet queryResource(XPathQueryService service, String resource, String query, 
+	private ResourceSet queryResource(XQueryService service, String resource, String query, 
 		int expected) throws XMLDBException {
 		return queryResource(service, resource, query, expected, null);
 	}
@@ -375,7 +393,7 @@ public class XPathQueryTest extends TestCase {
 	 * @param service
 	 * @throws XMLDBException
 	 */
-	private ResourceSet queryResource(XPathQueryService service, String resource, String query, 
+	private ResourceSet queryResource(XQueryService service, String resource, String query, 
 		int expected, String message) throws XMLDBException {
 		ResourceSet result = service.queryResource(resource, query);
 		if(message == null)
@@ -389,15 +407,15 @@ public class XPathQueryTest extends TestCase {
 	 * @return
 	 * @throws XMLDBException
 	 */
-	private XPathQueryService storeXMLStringAndGetQueryService(String documentName,
+	private XQueryService storeXMLStringAndGetQueryService(String documentName,
 			String content) throws XMLDBException {
 		XMLResource doc =
 			(XMLResource) testCollection.createResource(
 					documentName, "XMLResource" );
 		doc.setContent(content);
 		testCollection.storeResource(doc);
-		XPathQueryService service =
-			(XPathQueryService) testCollection.getService(
+		XQueryService service =
+			(XQueryService) testCollection.getService(
 				"XPathQueryService",
 				"1.0");
 		return service;
@@ -405,10 +423,11 @@ public class XPathQueryTest extends TestCase {
 	
 	public void testNamespaces() {
 		try {
-			XPathQueryService service = 
+			XQueryService service = 
 				storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
 
 			service.setNamespace("t", "http://www.foo.com");
+			service.setNamespace("c", "http://www.other.com");
 			ResourceSet result =
 				service.queryResource("namespaces.xml", "//t:section");
 			assertEquals(1, result.getSize());
@@ -433,7 +452,7 @@ public class XPathQueryTest extends TestCase {
 
 	public void testNestedElements() {
 		try {
-			XPathQueryService service = 
+			XQueryService service = 
 				storeXMLStringAndGetQueryService("nested.xml", nested);
 			
 			ResourceSet result = service.queryResource("nested.xml", "//c");
@@ -503,7 +522,7 @@ public class XPathQueryTest extends TestCase {
 //					"XPathQueryService",
 //					"1.0");
 //			ResourceSet result = service.query("//SPEECH[LINE &= 'marriage']");
-			XPathQueryService service = 
+			XQueryService service = 
 				storeXMLStringAndGetQueryService("numbers.xml", numbers);
 			ResourceSet result = service.query("//item/price");
 		
