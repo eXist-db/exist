@@ -16,6 +16,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 package org.exist.xpath;
 
@@ -25,24 +27,21 @@ import java.util.Iterator;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.BrokerPool;
 
 public abstract class Step extends AbstractExpression {
 
     protected int axis = -1;
-    protected BrokerPool pool = null;
     protected ArrayList predicates = new ArrayList();
     protected NodeTest test;
 	protected boolean inPredicate = false;
 	
-    public Step( BrokerPool pool, int axis ) {
+    public Step( int axis ) {
         super();
         this.axis = axis;
-        this.pool = pool;
     }
 
-    public Step( BrokerPool pool, int axis, NodeTest test ) {
-        this( pool, axis );
+    public Step( int axis, NodeTest test ) {
+        this( axis );
         this.test = test;
     }
 
@@ -76,11 +75,11 @@ public abstract class Step extends AbstractExpression {
         return buf.toString();
     }
 
-    public DocumentSet preselect( DocumentSet in_docs ) throws XPathException {
+    public DocumentSet preselect( DocumentSet in_docs, StaticContext context ) throws XPathException {
         DocumentSet out_docs = in_docs;
         if ( predicates.size() > 0 )
             for ( Iterator i = predicates.iterator(); i.hasNext();  )
-                out_docs = ( (Predicate) i.next() ).preselect( out_docs );
+                out_docs = ( (Predicate) i.next() ).preselect( out_docs, context );
 
         return out_docs;
     }

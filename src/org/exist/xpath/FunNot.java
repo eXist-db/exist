@@ -20,33 +20,29 @@ package org.exist.xpath;
 
 import java.util.Iterator;
 
-import org.apache.log4j.Category;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeIDSet;
+import org.exist.dom.TreeNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.BrokerPool;
 import org.exist.util.LongLinkedList;
 
 public class FunNot extends Function {
 
-    private static Category LOG = Category.getInstance(FunNot.class.getName());
-
-    public FunNot(BrokerPool pool) {
-        super(pool, "not");
+    public FunNot() {
+        super("not");
     }
 
     public int returnsType() {
         return Constants.TYPE_NODELIST;
     }
 
-    public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-        return getArgument(0).preselect(in_docs);
+    public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
+        return getArgument(0).preselect(in_docs, context);
     }
 
     public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
     	NodeProxy contextNode) throws XPathException {
-        NodeSet result = new NodeIDSet();
+        NodeSet result = new TreeNodeSet();
         Expression path = getArgument(0);
         result.addAll(contextSet);
         NodeProxy current;

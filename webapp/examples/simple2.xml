@@ -18,11 +18,14 @@
 	    	<xml-source>
 				<xmldb:collection 
 					xmlns:xmldb="http://exist-db.org/transformer/1.0"
-					uri="xmldb:exist:///db">
+					uri="xmldb:exist:///db/test">
 					<!-- iterate through all rdf:Description elements 
-						containing "computer" -->
-					<xmldb:for-each query="//rdf:Description[dc:title &amp;= 'histor*']"
-						from="0" to="9" sort-by="/dc:title">
+					containing "computer" -->
+					<!--xmldb:for-each 
+						query="//rdf:Description[dc:title &amp;= 'histor*']"
+						from="0" to="9" sort-by="/dc:title"-->
+					<xmldb:for-each
+						query="/" from="0" to="9">
 						<!-- output a book element -->
 						<book>
 							<!-- extract the title. There's only one title, so we use

@@ -140,7 +140,8 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		DBBroker broker = null;
 		try {
 			broker = pool.get();
-			DocumentImpl document = (DocumentImpl) broker.getDocument(session.getUser(), name);
+			broker.setUser(session.getUser());
+			DocumentImpl document = (DocumentImpl) broker.getDocument(name);
 			if (document == null)
 				throw new RemoteException("resource " + name + " not found");
 			Serializer serializer = broker.getSerializer();
@@ -234,11 +235,13 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 
 		QueryResponse resp = new QueryResponse();
 		resp.setHits(0);
+		DBBroker broker = null;
 		try {
-			StaticContext context = new StaticContext(session.getUser());
+			broker = pool.get(session.getUser());
+			StaticContext context = new StaticContext(broker);
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
 			XPathParser2 parser = new XPathParser2(lexer);
-			XPathTreeParser2 treeParser = new XPathTreeParser2(pool, context);
+			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
 			parser.xpath();
 			if (parser.foundErrors()) {
 				throw new RemoteException(parser.getErrorMessage());
@@ -247,14 +250,14 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			AST ast = parser.getAST();
 			LOG.debug("generated AST: " + ast.toStringTree());
 
-			PathExpr expr = new PathExpr(pool);
+			PathExpr expr = new PathExpr();
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
 				throw new EXistException(treeParser.getErrorMessage());
 			}
 			LOG.info("query: " + expr.pprint());
 			long start = System.currentTimeMillis();
-			DocumentSet ndocs = expr.preselect();
+			DocumentSet ndocs = expr.preselect( context );
 			if (ndocs.getLength() == 0)
 				return resp;
 			Value value = expr.eval(context, ndocs, null, null);
@@ -268,6 +271,8 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			resp.setQueryTime(System.currentTimeMillis() - start);
 		} catch (Exception e) {
 			throw new RemoteException("query execution failed: " + e.getMessage());
+		} finally {
+			pool.release(broker);
 		}
 		return resp;
 	}

@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- * $Id:
+ * $Id$
  */
 package org.exist.xpath;
 
@@ -23,20 +23,19 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
-import org.exist.storage.BrokerPool;
 
 public class FunFloor extends Function {
 
-	public FunFloor(BrokerPool pool) {
-		super(pool, "floor");
+	public FunFloor() {
+		super("floor");
 	}
 
 	public int returnsType() {
 		return Constants.TYPE_NUM;
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-		return getArgument(0).preselect(in_docs);
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
+		return getArgument(0).preselect(in_docs, context);
 	}
 
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,

@@ -214,6 +214,7 @@ public class NativeBroker extends DBBroker {
 			textEngine = new NativeTextEngine(this, config);
 			xmlSerializer = new NativeSerializer(this, config);
 			elementIndex = new NativeElementIndex(this, config, elementsDb);
+			user = new User("admin", null, "dba");
 			getOrCreateCollection("/db");
 		} catch (Exception e) {
 			LOG.debug(e);
@@ -262,7 +263,7 @@ public class NativeBroker extends DBBroker {
 		// never reached
 	}
 
-	public Occurrences[] scanIndexedElements(User user, Collection collection, boolean inclusive)
+	public Occurrences[] scanIndexedElements(Collection collection, boolean inclusive)
 		throws PermissionDeniedException {
 		if (!collection.getPermissions().validate(user, Permission.READ))
 			throw new PermissionDeniedException(
@@ -428,10 +429,10 @@ public class NativeBroker extends DBBroker {
 	 *@param  user  Description of the Parameter
 	 *@return       The allDocuments value
 	 */
-	public DocumentSet getAllDocuments(User user) {
+	public DocumentSet getAllDocuments() {
 		long start = System.currentTimeMillis();
 		Collection root = getCollection("/db");
-		DocumentSet docs = root.allDocs(this, user, true);
+		DocumentSet docs = root.allDocs(this, true);
 		LOG.debug(
 			"loading "
 				+ docs.getLength()
@@ -568,7 +569,7 @@ public class NativeBroker extends DBBroker {
 	 *@return                                The document value
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public Document getDocument(User user, String fileName) throws PermissionDeniedException {
+	public Document getDocument(String fileName) throws PermissionDeniedException {
 		if (!fileName.startsWith("/"))
 			fileName = '/' + fileName;
 
@@ -591,12 +592,12 @@ public class NativeBroker extends DBBroker {
 		return doc;
 	}
 
-	public DocumentSet getDocumentsByCollection(User user, String collection)
+	public DocumentSet getDocumentsByCollection(String collection)
 		throws PermissionDeniedException {
-		return getDocumentsByCollection(user, collection, true);
+		return getDocumentsByCollection(collection, true);
 	}
 
-	public DocumentSet getDocumentsByCollection(User user, String collection, boolean inclusive)
+	public DocumentSet getDocumentsByCollection(String collection, boolean inclusive)
 		throws PermissionDeniedException {
 		DocumentSet docs = new DocumentSet();
 		long start = System.currentTimeMillis();
@@ -611,7 +612,7 @@ public class NativeBroker extends DBBroker {
 			LOG.debug("collection " + collection + " not found");
 			return docs;
 		}
-		docs = root.allDocs(this, user, inclusive);
+		docs = root.allDocs(this, inclusive);
 		LOG.debug(
 			"loading "
 				+ docs.getLength()
@@ -631,8 +632,8 @@ public class NativeBroker extends DBBroker {
 	 *@param  user         Description of the Parameter
 	 *@return              The documentsByDoctype value
 	 */
-	public DocumentSet getDocumentsByDoctype(User user, String doctypeName) {
-		DocumentSet docs = getAllDocuments(user);
+	public DocumentSet getDocumentsByDoctype(String doctypeName) {
+		DocumentSet docs = getAllDocuments();
 		DocumentSet result = new DocumentSet();
 		DocumentImpl doc;
 		DocumentType doctype;
@@ -1011,7 +1012,7 @@ public class NativeBroker extends DBBroker {
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 *@author=@author
 	 */
-	public Collection getOrCreateCollection(User user, String name)
+	public Collection getOrCreateCollection(String name)
 		throws PermissionDeniedException {
 		//		final long start = System.currentTimeMillis();
 		name = normalizeCollectionName(name);
@@ -1146,7 +1147,7 @@ public class NativeBroker extends DBBroker {
 		.run();
 	}
 
-	public boolean removeCollection(User user, String name) throws PermissionDeniedException {
+	public boolean removeCollection(String name) throws PermissionDeniedException {
 		if (readOnly)
 			throw new PermissionDeniedException("database is read-only");
 		try {
@@ -1274,7 +1275,7 @@ public class NativeBroker extends DBBroker {
 		return false;
 	}
 
-	public void removeDocument(User user, String docName) throws PermissionDeniedException {
+	public void removeDocument(String docName) throws PermissionDeniedException {
 		if (readOnly)
 			throw new PermissionDeniedException("database is read-only");
 		try {
@@ -1291,25 +1292,12 @@ public class NativeBroker extends DBBroker {
 			if (!doc.getPermissions().validate(user, Permission.WRITE))
 				throw new PermissionDeniedException("permission to remove document denied");
 			LOG.info("removing document " + doc.getDocId() + "...");
-			// remove document
-			Lock lock = collectionsDb.getLock();
-			try {
-				lock.acquire(Lock.WRITE_LOCK);
-				Collection collection = doc.getCollection();
-				collection.removeDocument(docName);
-				saveCollection(collection);
-				collectionsDb.flush();
-			} catch (LockException e) {
-				LOG.warn("failed to acquire lock on collections store", e);
-			} finally {
-				lock.release();
-			}
 
 			// drop element-index
 			short collectionId = doc.getCollection().getId();
 			Value ref = new ElementValue(collectionId);
 			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-			lock = elementsDb.getLock();
+			Lock lock = elementsDb.getLock();
 			try {
 				lock.acquire(Lock.WRITE_LOCK);
 				ArrayList elements = elementsDb.findKeys(query);
@@ -1413,8 +1401,6 @@ public class NativeBroker extends DBBroker {
 		} catch (BTreeException bte) {
 			bte.printStackTrace();
 			LOG.warn(bte);
-		} catch (DBException dbe) {
-			LOG.warn(dbe);
 		} catch (ReadOnlyException e) {
 			LOG.warn("database is read-only");
 		}

@@ -7,6 +7,8 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
+import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.SingleItemIterator;
 import org.w3c.dom.Node;
 
 /**
@@ -33,6 +35,13 @@ public class SingleNodeSet extends ArraySet {
 		return new SingleNodeSetIterator();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#iterate()
+	 */
+	public SequenceIterator iterate() {
+		return new SingleItemIterator(nodes[0]);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.DocumentImpl, long)
 	 */

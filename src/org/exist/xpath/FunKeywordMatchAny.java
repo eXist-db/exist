@@ -17,10 +17,10 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ * $Id$
  */
 package org.exist.xpath;
-
-import org.exist.storage.BrokerPool;
 
 /**
  *  Description of the Class
@@ -31,8 +31,8 @@ import org.exist.storage.BrokerPool;
 public class FunKeywordMatchAny extends FunKeywordMatchAll {
 
     /**  Constructor for the FunKeywordMatchAny object */
-    public FunKeywordMatchAny(BrokerPool pool) {
-        super( pool, "match-any" );
+    public FunKeywordMatchAny() {
+        super( "match-any" );
     }
 
 

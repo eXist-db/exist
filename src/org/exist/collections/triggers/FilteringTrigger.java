@@ -21,11 +21,13 @@
  * $Id$
  *
  */
-package org.exist.collections;
+package org.exist.collections.triggers;
 
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.storage.DBBroker;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
@@ -35,6 +37,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
+ * Abstract default implementation of a Trigger. This implementation just forwards
+ * all SAX events to the output content handler.
+ *  
  * @author wolf
  */
 public abstract class FilteringTrigger implements Trigger {
@@ -45,13 +50,20 @@ public abstract class FilteringTrigger implements Trigger {
 	// forwarded
 	protected ContentHandler outputHandler = null;
 	protected LexicalHandler lexicalOutputHandler = null;
-	
+	protected Collection collection = null;
 	protected boolean validating = true;
 	
-	public abstract void configure(Map parameters) throws CollectionConfigurationException;
+	/**
+	 * Configure the trigger. The default implementation just stores the parent collection
+	 * reference into the field {@link #collection collection}. Use method {@link #getCollection() getCollection}
+	 * to later retrieve the collection. 
+	 */
+	public void configure(DBBroker broker, Collection parent, Map parameters) 
+    throws CollectionConfigurationException {
+    	this.collection = parent;
+    }
 	
-	public abstract void prepare(DBBroker broker, Collection collection, String documentName,
-		Document existingDocument) throws TriggerException;
+	public abstract void prepare(int event, DBBroker broker, String documentName, Document existingDocument) throws TriggerException;
 
 	public void setValidating(boolean validating) {
 		this.validating = validating;
@@ -59,6 +71,10 @@ public abstract class FilteringTrigger implements Trigger {
 	
 	public boolean isValidating() {
 		return validating;
+	}
+	
+	public Collection getCollection() {
+		return collection;
 	}
 	
 	public ContentHandler getInputHandler() {
@@ -78,7 +94,6 @@ public abstract class FilteringTrigger implements Trigger {
 	}
 	
 	public void setOutputHandler(ContentHandler handler) {
-		getLogger().debug("output handler = " + handler);
 		outputHandler = handler;
 	}
 
@@ -91,7 +106,6 @@ public abstract class FilteringTrigger implements Trigger {
 	}
 	
 	public void setDocumentLocator(Locator locator) {
-		System.out.println("setting document locator");
 		outputHandler.setDocumentLocator(locator);
 	}
 

@@ -24,7 +24,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
-import org.exist.storage.BrokerPool;
 import org.w3c.dom.Node;
 
 /**
@@ -33,8 +32,8 @@ import org.w3c.dom.Node;
  */
 public class FunLocalName extends Function {
 
-    public FunLocalName(BrokerPool pool) {
-        super(pool, "local-name");
+    public FunLocalName() {
+        super("local-name");
     }
 	
     public int returnsType() {

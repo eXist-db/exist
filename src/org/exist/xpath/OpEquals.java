@@ -16,22 +16,20 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 package org.exist.xpath;
 
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Category;
-import org.exist.EXistException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 import org.exist.storage.IndexPaths;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.TextToken;
@@ -45,8 +43,6 @@ import org.exist.util.Configuration;
  */
 public class OpEquals extends BinaryOp {
 
-	private static Category LOG = Category.getInstance(OpEquals.class.getName());
-
 	protected int relation = Constants.EQ;
 	protected NodeSet temp = null;
 
@@ -58,8 +54,8 @@ public class OpEquals extends BinaryOp {
 	 *
 	 *@param  relation  Description of the Parameter
 	 */
-	public OpEquals(BrokerPool pool, int relation) {
-		super(pool);
+	public OpEquals(int relation) {
+		super();
 		this.relation = relation;
 	}
 
@@ -70,8 +66,8 @@ public class OpEquals extends BinaryOp {
 	 *@param  right     Description of the Parameter
 	 *@param  relation  Description of the Parameter
 	 */
-	public OpEquals(BrokerPool pool, Expression left, Expression right, int relation) {
-		super(pool);
+	public OpEquals(Expression left, Expression right, int relation) {
+		super();
 		this.relation = relation;
 		if (left instanceof PathExpr && ((PathExpr) left).getLength() == 1)
 			add(((PathExpr) left).getExpression(0));
@@ -257,7 +253,7 @@ public class OpEquals extends BinaryOp {
 				String term;
 				boolean foundNumeric = false;
 				// setup up an &= expression using the fulltext index
-				containsExpr = new ExtFulltext(pool, Constants.FULLTEXT_AND);
+				containsExpr = new ExtFulltext(Constants.FULLTEXT_AND);
 				for (int i = 0; i < 5 && (token = tokenizer.nextToken(true)) != null; i++) {
 					// remember if we find an alphanumeric token
 					if(token.getType() == TextToken.ALPHANUM)
@@ -267,7 +263,7 @@ public class OpEquals extends BinaryOp {
 				// check if all elements are indexed. If not, we can't use the
 				// fulltext index.
 				if(foundNumeric)
-					foundNumeric = checkArgumentTypes(docs);
+					foundNumeric = checkArgumentTypes(context, docs);
 				if((!foundNumeric) && containsExpr.countTerms() > 0) {
 					// all elements are indexed: use the fulltext index
 					Value temp = containsExpr.eval(context, docs, nodes, null);
@@ -276,15 +272,7 @@ public class OpEquals extends BinaryOp {
 				cmp = cmpCopy;
 			}
 			// now compare the input node set to the search expression
-			DBBroker broker = null;
-			try {
-				broker = pool.get();
-				result = broker.getNodesEqualTo(nodes, docs, relation, cmp);
-			} catch (EXistException e) {
-				throw new XPathException("An error occurred while processing expression", e);
-			} finally {
-				pool.release(broker);
-			}
+				result = context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp);
 		} else if (right.returnsType() == Constants.TYPE_NUM) {
 			double rvalue;
 			double lvalue;
@@ -354,11 +342,8 @@ public class OpEquals extends BinaryOp {
 		}
 		return buf.toString();
 	}
-	private boolean checkArgumentTypes(DocumentSet docs) throws XPathException {
-		DBBroker broker = null;
-		try {
-			broker = pool.get();
-			Configuration config = broker.getConfiguration();
+	private boolean checkArgumentTypes(StaticContext context, DocumentSet docs) throws XPathException {
+			Configuration config = context.getBroker().getConfiguration();
 			Map idxPathMap = (Map) config.getProperty("indexer.map");
 			DocumentImpl doc;
 			IndexPaths idx;
@@ -370,12 +355,6 @@ public class OpEquals extends BinaryOp {
 				if(idx != null && (!idx.getIncludeAlphaNum()))
 					return true;
 			}
-		} catch(EXistException e) {
-			LOG.warn("Exception while processing expression", e);
-			throw new XPathException("An error occurred while processing expression", e);
-		} finally {
-			pool.release(broker);
-		}
 		return false;
 	}
 	
@@ -432,7 +411,7 @@ public class OpEquals extends BinaryOp {
 	 *@param  in_docs  Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	public DocumentSet preselect(DocumentSet in_docs) {
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) {
 		return in_docs;
 	}
 

@@ -387,14 +387,12 @@ options {
 	defaultErrorHandler = false;
 }
 {
-	private BrokerPool pool;
 	private StaticContext context;
 	protected ArrayList exceptions = new ArrayList(2);
 	protected boolean foundError = false;
 	
-	public XPathTreeParser2(BrokerPool pool, StaticContext context) {
+	public XPathTreeParser2(StaticContext context) {
 		this();
-		this.pool = pool;
 		this.context = context;
 	}
 	
@@ -421,7 +419,7 @@ xpointer [PathExpr path ] :
 	#(XPOINTER expr[path])
 	| #(XPOINTER_ID nc:NCNAME) 
 		{
-			Function fun = new FunId(pool);
+			Function fun = new FunId();
 			fun.addArgument(new Literal(nc.getText()));
 			path.addPath(fun);
 		}
@@ -458,13 +456,13 @@ throws PermissionDeniedException, EXistException
 }:
 	#( "or" 
 		{
-			PathExpr left = new PathExpr(pool);
-			PathExpr right = new PathExpr(pool);
+			PathExpr left = new PathExpr();
+			PathExpr right = new PathExpr();
 		}
 		expr[left] expr[right]
 	)
 		{
-			OpOr or = new OpOr(pool);
+			OpOr or = new OpOr();
 			or.add(left);
 			or.add(right);
 			path.addPath(or);
@@ -472,13 +470,13 @@ throws PermissionDeniedException, EXistException
 		
 	| #( "and"
 		{
-			PathExpr left = new PathExpr(pool);
-			PathExpr right = new PathExpr(pool);
+			PathExpr left = new PathExpr();
+			PathExpr right = new PathExpr();
 		}
 		expr[left] expr[right]
 	)
 		{
-			OpAnd and = new OpAnd(pool);
+			OpAnd and = new OpAnd();
 			and.add(left);
 			and.add(right);
 			path.addPath(and);
@@ -486,7 +484,7 @@ throws PermissionDeniedException, EXistException
 		
 	| #( PARENTHESIZED
 		{
-			PathExpr expr = new PathExpr(pool);
+			PathExpr expr = new PathExpr();
 			path.addPath(expr);
 		}
 		expr[expr]
@@ -494,18 +492,18 @@ throws PermissionDeniedException, EXistException
 	
 	| #(UNION 
 			{
-				PathExpr left = new PathExpr(pool);
-				PathExpr right = new PathExpr(pool);
+				PathExpr left = new PathExpr();
+				PathExpr right = new PathExpr();
 			}
 		expr[left] expr[right])
 			{
-				Union union = new Union(pool, left, right);
+				Union union = new Union(left, right);
 				path.addPath(union);
 			}
 			
 	| #(ABSOLUTE_SLASH 
 			{
-				RootNode root = new RootNode(pool);
+				RootNode root = new RootNode();
 				path.add(root);
 			}
 		( expr[path] )? 
@@ -513,7 +511,7 @@ throws PermissionDeniedException, EXistException
 	
 	| #(ABSOLUTE_DSLASH 
 			{
-				RootNode root = new RootNode(pool);
+				RootNode root = new RootNode();
 				path.add(root);
 			}
 		( step=pathExpr[path]
@@ -608,7 +606,7 @@ throws PermissionDeniedException, EXistException
 			}
 		)
 			{
-				step = new LocationStep(pool, axis, test);
+				step = new LocationStep(axis, test);
 				path.add(step);
 			}
 		( predicate[(LocationStep)step] )*
@@ -635,7 +633,7 @@ throws PermissionDeniedException, EXistException
 		)
 		{	
 			step = 
-				new LocationStep(pool, Constants.ATTRIBUTE_AXIS, 
+				new LocationStep(Constants.ATTRIBUTE_AXIS, 
 					new NameTest(Constants.ATTRIBUTE_NODE, qname));
 			path.add(step);
 		}
@@ -644,7 +642,7 @@ throws PermissionDeniedException, EXistException
 	| SELF
 		{
 			step = 
-				new LocationStep(pool, Constants.SELF_AXIS, new TypeTest(Constants.NODE_TYPE));
+				new LocationStep(Constants.SELF_AXIS, new TypeTest(Constants.NODE_TYPE));
 			path.add(step);
 		}
 		( predicate[(LocationStep)step] )*
@@ -652,7 +650,7 @@ throws PermissionDeniedException, EXistException
 	| PARENT
 		{
 			step =
-				new LocationStep(pool, Constants.PARENT_AXIS, new TypeTest(Constants.NODE_TYPE));
+				new LocationStep(Constants.PARENT_AXIS, new TypeTest(Constants.NODE_TYPE));
 			path.add(step);
 		}
 		( predicate[(LocationStep)step] )*
@@ -694,50 +692,50 @@ returns [Expression step]
 throws PermissionDeniedException, EXistException
 {
 	step = null;
-	PathExpr left = new PathExpr(pool);
-	PathExpr right = new PathExpr(pool);
+	PathExpr left = new PathExpr();
+	PathExpr right = new PathExpr();
 }:
 	#( PLUS expr[left] expr[right] )
 		{
-			OpNumeric op = new OpNumeric(pool, left, right, Constants.PLUS);
+			OpNumeric op = new OpNumeric(left, right, Constants.PLUS);
 			path.addPath(op);
 			step = op;
 		}
 	| #( MINUS expr[left] expr[right] )
 		{
-			OpNumeric op = new OpNumeric(pool, left, right, Constants.MINUS);
+			OpNumeric op = new OpNumeric(left, right, Constants.MINUS);
 			path.addPath(op);
 			step = op;
 		}
 	| #( UNARY_MINUS expr[left] )
 		{
-			UnaryExpr unary = new UnaryExpr(pool, Constants.MINUS);
+			UnaryExpr unary = new UnaryExpr(Constants.MINUS);
 			unary.add(left);
 			path.addPath(unary);
 			step = unary;
 		}
 	| #( UNARY_PLUS expr[left] )
 		{
-			UnaryExpr unary = new UnaryExpr(pool, Constants.PLUS);
+			UnaryExpr unary = new UnaryExpr(Constants.PLUS);
 			unary.add(left);
 			path.addPath(unary);
 			step = unary;
 		}
 	| #( "div" expr[left] expr[right] )
 		{
-			OpNumeric op = new OpNumeric(pool, left, right, Constants.DIV);
+			OpNumeric op = new OpNumeric(left, right, Constants.DIV);
 			path.addPath(op);
 			step = op;
 		}
 	| #( "mod" expr[left] expr[right] )
 		{
-			OpNumeric op = new OpNumeric(pool, left, right, Constants.MOD);
+			OpNumeric op = new OpNumeric(left, right, Constants.MOD);
 			path.addPath(op);
 			step = op;
 		}
 	| #( STAR expr[left] expr[right] )
 		{
-			OpNumeric op = new OpNumeric(pool, left, right, Constants.MULT);
+			OpNumeric op = new OpNumeric(left, right, Constants.MULT);
 			path.addPath(op);
 			step = op;
 		}
@@ -747,7 +745,7 @@ predicate [LocationStep step]
 throws PermissionDeniedException, EXistException:
 	#( 
 			PREDICATE
-				{ Predicate predicateExpr = new Predicate(pool); }
+				{ Predicate predicateExpr = new Predicate(); }
 			expr[predicateExpr]
 				{ 
 					step.addPredicate(predicateExpr); 
@@ -768,7 +766,7 @@ throws PermissionDeniedException, EXistException
 			}
 		(
 			{ 
-				pathExpr = new PathExpr(pool); 
+				pathExpr = new PathExpr(); 
 			}
 			expr[pathExpr]
 			{
@@ -777,7 +775,7 @@ throws PermissionDeniedException, EXistException
 		)*
 	)
 		{
-			step = Util.createFunction(pool, context, path, fn.getText(), params);
+			step = Util.createFunction(context, path, fn.getText(), params);
 		}
 	;
 	
@@ -803,20 +801,20 @@ returns [Expression step]
 throws PermissionDeniedException, EXistException
 {
 	step = null;
-	PathExpr left = new PathExpr(pool);
+	PathExpr left = new PathExpr();
 }:
 	#( ANDEQ expr[left] c:STRING_LITERAL )
 		{
-			ExtFulltext exprCont = new ExtFulltext(pool, Constants.FULLTEXT_AND);
+			ExtFulltext exprCont = new ExtFulltext(Constants.FULLTEXT_AND);
 	   	  	exprCont.setPath(left);
-	   	  	exprCont.addTerms(c.getText());
+	   	  	exprCont.addTerms(context, c.getText());
 			path.addPath(exprCont);
 		}
 	| #( OREQ expr[left] c2:STRING_LITERAL )
 		{
-			ExtFulltext exprCont = new ExtFulltext(pool, Constants.FULLTEXT_OR);
+			ExtFulltext exprCont = new ExtFulltext(Constants.FULLTEXT_OR);
 	   	  	exprCont.setPath(left);
-			exprCont.addTerms(c2.getText());
+			exprCont.addTerms(context, c2.getText());
 			path.addPath(exprCont);
 		}
 	;
@@ -826,42 +824,42 @@ returns [Expression step]
 throws PermissionDeniedException, EXistException
 {
 	step = null;
-	PathExpr left = new PathExpr(pool);
-	PathExpr right = new PathExpr(pool);
+	PathExpr left = new PathExpr();
+	PathExpr right = new PathExpr();
 }:
 	#( EQ expr[left] expr[right]
 		{
-			step = new OpEquals(pool, left, right, Constants.EQ);
+			step = new OpEquals(left, right, Constants.EQ);
 			path.add(step);
 		}
 	)
 	| #( NEQ expr[left] expr[right]
 		{
-			step = new OpEquals(pool, left, right, Constants.NEQ);
+			step = new OpEquals(left, right, Constants.NEQ);
 			path.add(step);
 		}
 	)
 	| #( LT expr[left] expr[right]
 		{
-			step = new OpEquals(pool, left, right, Constants.LT);
+			step = new OpEquals(left, right, Constants.LT);
 			path.add(step);
 		}
 	)
 	| #( LTEQ expr[left] expr[right]
 		{
-			step = new OpEquals(pool, left, right, Constants.LTEQ);
+			step = new OpEquals(left, right, Constants.LTEQ);
 			path.add(step);
 		}
 	)
 	| #( GT expr[left] expr[right]
 		{
-			step = new OpEquals(pool, left, right, Constants.GT);
+			step = new OpEquals(left, right, Constants.GT);
 			path.add(step);
 		}
 	)
 	| #( GTEQ expr[left] expr[right]
 		{
-			step = new OpEquals(pool, left, right, Constants.GTEQ);
+			step = new OpEquals(left, right, Constants.GTEQ);
 			path.add(step);
 		}
 	)

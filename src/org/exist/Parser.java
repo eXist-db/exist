@@ -574,6 +574,7 @@ public class Parser
 			throw new IOException("no input source");
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("database is read-only");
+		broker.setUser(user);
 		this.fileName = xmlFileName;
 		parser.setContentHandler(this);
 		parser.setErrorHandler(this);
@@ -596,7 +597,7 @@ public class Parser
 			fileName = fileName.substring(pos + 1);
 
 		if (collection == null || (!collection.getName().equals(collName))) {
-			collection = broker.getOrCreateCollection(user, collName);
+			collection = broker.getOrCreateCollection(collName);
 			broker.saveCollection(collection);
 		}
 		DocumentImpl oldDoc = null;
@@ -694,6 +695,7 @@ public class Parser
 		this.fileName = xmlFileName;
 		parser.setContentHandler(this);
 		parser.setErrorHandler(this);
+		broker.setUser(user);
 		validate = true;
 		int p;
 		if (fileName == null)
@@ -709,7 +711,7 @@ public class Parser
 		if (pos > 0)
 			fileName = fileName.substring(pos + 1);
 		if (collection == null || (!collection.getName().equals(collName))) {
-			collection = broker.getOrCreateCollection(user, collName);
+			collection = broker.getOrCreateCollection(collName);
 			broker.saveCollection(collection);
 		}
 		DocumentImpl oldDoc = null;

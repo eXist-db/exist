@@ -21,8 +21,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.parser.XPathLexer2;
 import org.exist.parser.XPathParser2;
 import org.exist.parser.XPathTreeParser2;
-import org.exist.security.User;
-import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.util.FastStringBuffer;
 import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
@@ -73,8 +72,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	private DocumentFragment fragment = null;
 	private Stack stack = new Stack();
 	private Node currentNode = null;
-	private BrokerPool pool;
-	private User user;
+	private DBBroker broker;
 	private DocumentSet documentSet;
 	private List modifications = new ArrayList();
 	private FastStringBuffer charBuf = new FastStringBuffer(6, 15, 5);
@@ -84,14 +82,13 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	/**
 	 * Constructor for XUpdateProcessor.
 	 */
-	public XUpdateProcessor(BrokerPool pool, User user, DocumentSet docs)
+	public XUpdateProcessor(DBBroker broker, DocumentSet docs)
 		throws ParserConfigurationException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 		factory.setValidating(false);
 		builder = factory.newDocumentBuilder();
-		this.pool = pool;
-		this.user = user;
+		this.broker = broker;
 		this.documentSet = docs;
 	}
 
@@ -235,29 +232,19 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 
 			// start a new modification section
 			if (localName.equals("append"))
-				modification = new Append(pool, user, documentSet, select);
+				modification = new Append(broker, documentSet, select);
 			else if (localName.equals("update"))
-				modification = new Update(pool, user, documentSet, select);
+				modification = new Update(broker, documentSet, select);
 			else if (localName.equals("insert-before"))
 				modification =
-					new Insert(
-						pool,
-						user,
-						documentSet,
-						select,
-						Insert.INSERT_BEFORE);
+					new Insert(broker, documentSet, select, Insert.INSERT_BEFORE);
 			else if (localName.equals("insert-after"))
 				modification =
-					new Insert(
-						pool,
-						user,
-						documentSet,
-						select,
-						Insert.INSERT_AFTER);
+					new Insert(broker, documentSet, select, Insert.INSERT_AFTER);
 			else if (localName.equals("remove"))
-				modification = new Remove(pool, user, documentSet, select);
+				modification = new Remove(broker, documentSet, select);
 			else if (localName.equals("rename"))
-				modification = new Rename(pool, user, documentSet, select);
+				modification = new Rename(broker, documentSet, select);
 
 			// process commands for node creation
 			else if (localName.equals("element")) {
@@ -463,7 +450,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 
 	private List processQuery(String select) throws SAXException {
 		try {
-			StaticContext context = new StaticContext(user);
+			StaticContext context = new StaticContext(broker);
 			Map.Entry entry;
 			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
 				entry = (Map.Entry) i.next();
@@ -473,7 +460,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			}
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(select));
 			XPathParser2 parser = new XPathParser2(lexer);
-			XPathTreeParser2 treeParser = new XPathTreeParser2(pool, context);
+			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
 			parser.xpath();
 			if (parser.foundErrors()) {
 				throw new SAXException(parser.getErrorMessage());
@@ -482,12 +469,12 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			AST ast = parser.getAST();
 			LOG.debug("generated AST: " + ast.toStringTree());
 
-			PathExpr expr = new PathExpr(pool);
+			PathExpr expr = new PathExpr();
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
 				throw new SAXException(treeParser.getErrorMessage());
 			}
-			DocumentSet ndocs = expr.preselect(documentSet);
+			DocumentSet ndocs = expr.preselect(documentSet, context);
 			if (ndocs.getLength() == 0)
 				return new ArrayList(1);
 

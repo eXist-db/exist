@@ -1,6 +1,6 @@
 
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000-01,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -16,15 +16,19 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- * $Id:
+ * $Id$
  */
 package org.exist.dom;
 
+import java.util.Iterator;
+
 import org.exist.util.LongLinkedList;
 import org.exist.util.XMLUtil;
-import java.util.Iterator;
-import org.w3c.dom.NodeList;
+import org.exist.xpath.value.AbstractSequence;
+import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Base class for all node set implementations returned by most
@@ -38,7 +42,7 @@ import org.w3c.dom.Node;
  * on a HashSet. VirtualNodeSet is specifically used for steps like
  * descendant::* etc..
  */
-public abstract class NodeSet implements NodeList {
+public abstract class NodeSet extends AbstractSequence implements NodeList {
 
 	public final static int ANCESTOR = 0;
 	public final static int DESCENDANT = 1;
@@ -48,6 +52,19 @@ public abstract class NodeSet implements NodeList {
 	public static NodeSet EMPTY_SET = new EmptyNodeSet();
 
 	public abstract Iterator iterator();
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#iterate()
+	 */
+	public abstract SequenceIterator iterate();
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#getItemType()
+	 */
+	public int getItemType() {
+		return Type.NODE;
+	}
+
 	public abstract boolean contains(DocumentImpl doc, long nodeId);
 	public abstract boolean contains(NodeProxy proxy);
 
@@ -90,7 +107,10 @@ public abstract class NodeSet implements NodeList {
 		return nodeHasParent(p.doc, p.gid, directParent, false);
 	}
 
-	public NodeProxy nodeHasParent(NodeProxy p, boolean directParent, boolean includeSelf) {
+	public NodeProxy nodeHasParent(
+		NodeProxy p,
+		boolean directParent,
+		boolean includeSelf) {
 		return nodeHasParent(p.doc, p.gid, directParent, includeSelf);
 	}
 
@@ -133,14 +153,22 @@ public abstract class NodeSet implements NodeList {
 		else if (directParent)
 			return null;
 		else
-			return nodeHasParent(doc, pid, directParent, includeSelf, level - 1);
+			return nodeHasParent(
+				doc,
+				pid,
+				directParent,
+				includeSelf,
+				level - 1);
 	}
 
 	public ArraySet getChildren(NodeSet al, int mode) {
 		return getChildren(al, mode, false);
 	}
 
-	public ArraySet getChildren(NodeSet al, int mode, boolean rememberContext) {
+	public ArraySet getChildren(
+		NodeSet al,
+		int mode,
+		boolean rememberContext) {
 		NodeProxy n, p;
 		long start = System.currentTimeMillis();
 		ArraySet result = new ArraySet(getLength());
@@ -237,20 +265,23 @@ public abstract class NodeSet implements NodeList {
 		 * nodes should be returned. Possible values are ANCESTOR or DESCENDANT.
 		 *@return
 		 */
-	public NodeSet getAncestors(NodeSet al, boolean includeSelf, boolean rememberContext) {
+	public NodeSet getAncestors(
+		NodeSet al,
+		boolean includeSelf,
+		boolean rememberContext) {
 		NodeProxy n, p, temp;
 		ArraySet result = new ArraySet(al.getLength());
 		for (Iterator i = iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
 			p = al.parentWithChild(n.doc, n.gid, false);
-			if (p != null) { 
-				if((temp = result.get(p)) == null) {
+			if (p != null) {
+				if ((temp = result.get(p)) == null) {
 					if (rememberContext)
 						p.addContextNode(n);
 					else
 						p.copyContext(n);
 					result.add(p);
-				} else if(rememberContext)
+				} else if (rememberContext)
 					temp.addContextNode(n);
 			}
 		}
@@ -335,7 +366,10 @@ public abstract class NodeSet implements NodeList {
 	 * ancestor of the argument node.
 	 * If directParent is true, only immediate ancestors are considered.
 	 */
-	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent) {
+	public NodeProxy parentWithChild(
+		DocumentImpl doc,
+		long gid,
+		boolean directParent) {
 		return parentWithChild(doc, gid, directParent, false, -1);
 	}
 
@@ -374,11 +408,24 @@ public abstract class NodeSet implements NodeList {
 		else if (directParent)
 			return null;
 		else
-			return parentWithChild(doc, pid, directParent, includeSelf, level - 1);
+			return parentWithChild(
+				doc,
+				pid,
+				directParent,
+				includeSelf,
+				level - 1);
 	}
 
-	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf) {
-		return parentWithChild(proxy.doc, proxy.gid, directParent, includeSelf, -1);
+	public NodeProxy parentWithChild(
+		NodeProxy proxy,
+		boolean directParent,
+		boolean includeSelf) {
+		return parentWithChild(
+			proxy.doc,
+			proxy.gid,
+			directParent,
+			includeSelf,
+			-1);
 	}
 
 	public NodeSet getParents() {
@@ -416,7 +463,7 @@ public abstract class NodeSet implements NodeList {
 
 	public NodeSet intersection(NodeSet other) {
 		long start = System.currentTimeMillis();
-		NodeIDSet r = new NodeIDSet();
+		TreeNodeSet r = new TreeNodeSet();
 		NodeProxy l, p;
 		for (Iterator i = iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
@@ -452,20 +499,22 @@ public abstract class NodeSet implements NodeList {
 		return result;
 	}
 
-	public NodeSet getContextNodes(NodeSet contextNodes, boolean rememberContext) {
+	public NodeSet getContextNodes(
+		NodeSet contextNodes,
+		boolean rememberContext) {
 		NodeSet result = new ArraySet(getLength());
 		NodeProxy current, context;
 		LongLinkedList contextList;
 		LongLinkedList.ListItem item;
-		for(Iterator i = iterator(); i.hasNext(); ) {
-			current = (NodeProxy)i.next();
+		for (Iterator i = iterator(); i.hasNext();) {
+			current = (NodeProxy) i.next();
 			contextList = current.getContext();
-			for(Iterator j = contextList.iterator(); j.hasNext(); ) {
-				item = (LongLinkedList.ListItem)j.next();
+			for (Iterator j = contextList.iterator(); j.hasNext();) {
+				item = (LongLinkedList.ListItem) j.next();
 				context = contextNodes.get(current.doc, item.l);
-				if(context != null) {
-					if(!result.contains(context)) {
-						if(rememberContext) {
+				if (context != null) {
+					if (!result.contains(context)) {
+						if (rememberContext) {
 							context.addContextNode(context);
 						}
 						result.add(context);

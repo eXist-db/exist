@@ -233,7 +233,7 @@ public class HttpServerConnection extends Thread {
                     data = printCollection( name, names );
                 } else {
                     DocumentImpl d =
-                        (DocumentImpl) broker.getDocument( user, name );
+                        (DocumentImpl) broker.getDocument( name );
 
                     if ( d == null )
                         data =
@@ -1067,6 +1067,7 @@ public class HttpServerConnection extends Thread {
 
                 try {
                     broker = brokerPool.get(  );
+                    broker.setUser(user);
                 } catch ( EXistException e ) {
                     throw new RuntimeException( e.getMessage(  ) );
                 }
@@ -1143,10 +1144,10 @@ public class HttpServerConnection extends Thread {
         String result = null;
 
         try {
-        	StaticContext context = new StaticContext(user);
+        	StaticContext context = new StaticContext(broker);
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
 			XPathParser2 parser = new XPathParser2(lexer);
-			XPathTreeParser2 treeParser = new XPathTreeParser2(broker.getBrokerPool(), context);
+			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
 			parser.xpath();
 						if(parser.foundErrors()) {
 							return formatErrorMsg( parser.getErrorMessage(  ), SYNTAX_ERROR );
@@ -1155,7 +1156,7 @@ public class HttpServerConnection extends Thread {
 						AST ast = parser.getAST();
 						HttpServer.LOG.debug("generated AST: " + ast.toStringTree());
 			
-						PathExpr expr = new PathExpr(broker.getBrokerPool());
+						PathExpr expr = new PathExpr();
 						treeParser.xpath(ast, expr);
 						if(treeParser.foundErrors()) {
 								return formatErrorMsg( treeParser.getErrorMessage(  ), SYNTAX_ERROR );
@@ -1167,7 +1168,7 @@ public class HttpServerConnection extends Thread {
                 return formatErrorMsg( parser.getErrorMessage(  ), SYNTAX_ERROR );
 
             long startTime = System.currentTimeMillis(  );
-            DocumentSet ndocs = expr.preselect(  );
+            DocumentSet ndocs = expr.preselect( context );
 
             if ( ndocs.getLength(  ) == 0 )
                 result = formatErrorMsg( "nothing found", OK );

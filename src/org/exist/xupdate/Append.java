@@ -7,8 +7,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
-import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.xpath.XPathException;
 import org.w3c.dom.NodeList;
 
@@ -23,8 +22,8 @@ public class Append extends Modification {
 	 * Constructor for Append.
 	 * @param selectStmt
 	 */
-	public Append(BrokerPool pool, User user, DocumentSet docs, String selectStmt) {
-		super(pool, user, docs, selectStmt);
+	public Append(DBBroker broker, DocumentSet docs, String selectStmt) {
+		super(broker, docs, selectStmt);
 	}
 	/**
 	 * @see org.exist.xupdate.Modification#process()
@@ -46,7 +45,7 @@ public class Append extends Modification {
 			collection = doc.getCollection();
 			if (prevCollection != null && collection != prevCollection)
 				doc.getBroker().saveCollection(prevCollection);
-			if (!doc.getPermissions().validate(user, Permission.UPDATE))
+			if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 				throw new PermissionDeniedException("permission to update document denied");
 			node.appendChildren(children);
 			doc.clearIndexListener();

@@ -15,7 +15,6 @@ import org.exist.parser.XPathLexer2;
 import org.exist.parser.XPathParser2;
 import org.exist.parser.XPathTreeParser2;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.BrokerPool;
 import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
@@ -209,8 +208,7 @@ public class XIncludeFilter implements ContentHandler {
 						docs = new DocumentSet();
 						docs.add(doc);
 					}
-					BrokerPool pool = serializer.broker.getBrokerPool();
-					StaticContext context = new StaticContext(serializer.getUser());
+					StaticContext context = new StaticContext(serializer.broker);
 					xpointer = checkNamespaces(context, xpointer);
 					Map.Entry entry;
 					for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
@@ -219,7 +217,7 @@ public class XIncludeFilter implements ContentHandler {
 					}
 					XPathLexer2 lexer = new XPathLexer2(new StringReader(xpointer));
 					XPathParser2 parser = new XPathParser2(lexer);
-					XPathTreeParser2 treeParser = new XPathTreeParser2(pool, context);
+					XPathTreeParser2 treeParser = new XPathTreeParser2(context);
 					parser.xpointer();
 					if (parser.foundErrors()) {
 						throw new SAXException(parser.getErrorMessage());
@@ -228,14 +226,14 @@ public class XIncludeFilter implements ContentHandler {
 					AST ast = parser.getAST();
 					LOG.debug("generated AST: " + ast.toStringTree());
 
-					PathExpr expr = new PathExpr(pool);
+					PathExpr expr = new PathExpr();
 					treeParser.xpointer(ast, expr);
 					if (treeParser.foundErrors()) {
 						throw new SAXException(treeParser.getErrorMessage());
 					}
 					LOG.info("xpointer query: " + expr.pprint());
 					long start = System.currentTimeMillis();
-					docs = expr.preselect(docs);
+					docs = expr.preselect(docs, context);
 					if (docs.getLength() == 0)
 						return;
 					Value resultValue = expr.eval(context, docs, null, null);

@@ -17,17 +17,17 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ * $Id$
  */
 package org.exist.xpath;
 
 import java.util.Iterator;
 
-import org.exist.EXistException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
 /**
@@ -42,8 +42,8 @@ public class FunKeywordMatchAll extends Function {
 	protected NodeSet[][] hits = null;
 
 	/**  Constructor for the FunKeywordMatchAll object */
-	public FunKeywordMatchAll(BrokerPool pool) {
-		super(pool, "match-all");
+	public FunKeywordMatchAll() {
+		super("match-all");
 	}
 
 	/**
@@ -51,8 +51,8 @@ public class FunKeywordMatchAll extends Function {
 	 *
 	 *@param  name  Description of the Parameter
 	 */
-	public FunKeywordMatchAll(BrokerPool pool, String name) {
-		super(pool, name);
+	public FunKeywordMatchAll(String name) {
+		super(name);
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class FunKeywordMatchAll extends Function {
 		NodeSet nodes = (NodeSet) path.eval(context, docs, contextSet, contextNode).getNodeList();
 
 		if (hits == null)
-			processQuery(docs);
+			processQuery(context, docs);
 		long pid;
 		NodeProxy current;
 		NodeProxy parent;
@@ -146,9 +146,9 @@ public class FunKeywordMatchAll extends Function {
 	 *@param  in_docs  Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
 		int j = 0;
-		processQuery(in_docs);
+		processQuery(context, in_docs);
 		NodeProxy p;
 		DocumentSet ndocs = new DocumentSet();
 		Iterator i;
@@ -174,13 +174,10 @@ public class FunKeywordMatchAll extends Function {
 		return null;
 	}
 
-	protected void processQuery(DocumentSet in_docs) throws XPathException {
+	protected void processQuery(StaticContext context, DocumentSet in_docs) throws XPathException {
 		terms = new String[getArgumentCount() - 1];
 		for (int i = 1; i < getArgumentCount(); i++)
 			terms[i - 1] = getLiteral(getArgument(i)).literalValue;
-		DBBroker broker = null;
-		try {
-			broker = pool.get();
 			if (terms == null)
 				throw new XPathException("no search terms");
 			//in_docs = path.preselect(in_docs);
@@ -189,16 +186,11 @@ public class FunKeywordMatchAll extends Function {
 			for (int j = 0; j < terms.length; j++) {
 				String t[] = { terms[j] };
 				hits[j] =
-					broker.getNodesContaining(
+					context.getBroker().getNodesContaining(
 						in_docs,
 						t,
 						DBBroker.MATCH_REGEXP);
 			}
-		} catch (EXistException e) {
-			throw new XPathException("An error occurred while evaluating expression", e);
-		} finally {
-			pool.release(broker);
-		}
 	}
 
 	/**

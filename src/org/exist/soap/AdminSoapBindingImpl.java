@@ -50,7 +50,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
 	}
 
-	public String connect(String user, String password) throws java.rmi.RemoteException {
+	public String connect(String user, String password)
+		throws java.rmi.RemoteException {
 		User u = pool.getSecurityManager().getUser(user);
 		if (u == null)
 			throw new RemoteException("user " + user + " does not exist");
@@ -69,14 +70,16 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
 	}
 
-	public boolean createCollection(String sessionId, String collection) throws RemoteException {
+	public boolean createCollection(String sessionId, String collection)
+		throws RemoteException {
 		Session session = SessionManager.getInstance().getSession(sessionId);
 		DBBroker broker = null;
 		try {
 			broker = pool.get();
+			broker.setUser(session.getUser());
 			LOG.debug("creating collection " + collection);
 			org.exist.collections.Collection coll =
-				broker.getOrCreateCollection(session.getUser(), collection);
+				broker.getOrCreateCollection(collection);
 			if (coll == null) {
 				LOG.debug("failed to create collection");
 				return false;
@@ -93,14 +96,15 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
 	}
 
-	public boolean removeCollection(String sessionId, String collection) throws RemoteException {
+	public boolean removeCollection(String sessionId, String collection)
+		throws RemoteException {
 		Session session = SessionManager.getInstance().getSession(sessionId);
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(session.getUser());
 			if (broker.getCollection(collection) == null)
 				return false;
-			return broker.removeCollection(session.getUser(), collection);
+			return broker.removeCollection(collection);
 		} catch (Exception e) {
 			LOG.debug(e.getMessage(), e);
 			throw new RemoteException(e.getMessage(), e);
@@ -116,14 +120,22 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 	 *@return                      Description of the Return Value
 	 *@exception  RemoteException  Description of the Exception
 	 */
-	public boolean removeDocument(String sessionId, String path) throws RemoteException {
+	public boolean removeDocument(String sessionId, String path)
+		throws RemoteException {
 		Session session = SessionManager.getInstance().getSession(sessionId);
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
-			if (broker.getDocument(session.getUser(), path) == null)
-				return false;
-			broker.removeDocument(session.getUser(), path);
+			broker = pool.get(session.getUser());
+			int p = path.lastIndexOf('/');
+			if (p < 0 || p == path.length() - 1)
+				throw new EXistException("Illegal document path");
+			String collectionName = path.substring(0, p);
+			path = path.substring(p + 1);
+			Collection collection = broker.getCollection(collectionName);
+			if (collection == null)
+				throw new EXistException(
+					"Collection " + collectionName + " not found");
+            collection.removeDocument(broker, path);
 			return true;
 		} catch (Exception e) {
 			LOG.debug(e.getMessage(), e);
@@ -152,11 +164,13 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		Session session = SessionManager.getInstance().getSession(sessionId);
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
-			if (broker.getDocument(session.getUser(), path) != null) {
+			broker = pool.get(session.getUser());
+			if (broker.getDocument(path) != null) {
 				if (!replace)
 					throw new RemoteException(
-						"document " + path + " exists and parameter replace is set to false.");
+						"document "
+							+ path
+							+ " exists and parameter replace is set to false.");
 			}
 			String xml;
 			try {
@@ -170,7 +184,11 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			LOG.debug("flushing data files");
 			broker.flush();
 			LOG.debug(
-				"parsing " + path + " took " + (System.currentTimeMillis() - startTime) + "ms.");
+				"parsing "
+					+ path
+					+ " took "
+					+ (System.currentTimeMillis() - startTime)
+					+ "ms.");
 		} catch (Exception e) {
 			LOG.debug(e);
 			throw new RemoteException(e.getMessage(), e);
@@ -182,7 +200,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 	private Session getSession(String id) throws java.rmi.RemoteException {
 		Session session = SessionManager.getInstance().getSession(id);
 		if (session == null)
-			throw new java.rmi.RemoteException("Session is invalid or timed out");
+			throw new java.rmi.RemoteException(
+				"Session is invalid or timed out");
 		return session;
 	}
 
@@ -194,12 +213,15 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		DBBroker broker = null;
 		Session session = getSession(sessionId);
 		try {
-			broker = pool.get();
+			broker = pool.get(session.getUser());
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
-				throw new RemoteException("collection " + collectionName + " not found");
-			DocumentSet docs = collection.allDocs(broker, session.getUser(), true);
-			XUpdateProcessor processor = new XUpdateProcessor(pool, session.getUser(), docs);
+				throw new RemoteException(
+					"collection " + collectionName + " not found");
+			DocumentSet docs =
+				collection.allDocs(broker, true);
+			XUpdateProcessor processor =
+				new XUpdateProcessor(broker, docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;
@@ -228,7 +250,10 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 	/* (non-Javadoc)
 		 * @see org.exist.soap.Admin#xupdate(java.lang.String, java.lang.String)
 		 */
-	public int xupdateResource(String sessionId, String documentName, String xupdate)
+	public int xupdateResource(
+		String sessionId,
+		String documentName,
+		String xupdate)
 		throws RemoteException {
 		DBBroker broker = null;
 		Session session = getSession(sessionId);
@@ -236,10 +261,12 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			broker = pool.get();
 			Document doc = broker.getDocument(documentName);
 			if (doc == null)
-				throw new RemoteException("document " + documentName + " not found");
+				throw new RemoteException(
+					"document " + documentName + " not found");
 			DocumentSet docs = new DocumentSet();
 			docs.add(doc);
-			XUpdateProcessor processor = new XUpdateProcessor(pool, session.getUser(), docs);
+			XUpdateProcessor processor =
+				new XUpdateProcessor(broker, docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;

@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 
 package org.exist.xpath;
@@ -22,7 +24,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
-import org.exist.storage.BrokerPool;
 
 /**
  * xpath-library function: string-length(string?)
@@ -30,8 +31,8 @@ import org.exist.storage.BrokerPool;
  */
 public class FunStrLength extends Function {
 
-	public FunStrLength(BrokerPool pool) {
-		super(pool, "string-length");
+	public FunStrLength() {
+		super("string-length");
 	}
 
 	public int returnsType() {

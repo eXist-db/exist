@@ -83,31 +83,27 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 	 * @see org.xmldb.api.base.Service#getName()
 	 */
 	public String getName() throws XMLDBException {
-		// TODO Auto-generated method stub
-		return null;
+		return "XUpdateQueryService";
 	}
 
 	/* (non-Javadoc)
 	 * @see org.xmldb.api.base.Service#getVersion()
 	 */
 	public String getVersion() throws XMLDBException {
-		// TODO Auto-generated method stub
-		return null;
+		return "1.0";
 	}
 
 	/* (non-Javadoc)
 	 * @see org.xmldb.api.base.Service#setCollection(org.xmldb.api.base.Collection)
 	 */
 	public void setCollection(Collection col) throws XMLDBException {
-		// TODO Auto-generated method stub
-
+		parent = (RemoteCollection)col;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.xmldb.api.base.Configurable#getProperty(java.lang.String)
 	 */
 	public String getProperty(String name) throws XMLDBException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -115,8 +111,6 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 	 * @see org.xmldb.api.base.Configurable#setProperty(java.lang.String, java.lang.String)
 	 */
 	public void setProperty(String name, String value) throws XMLDBException {
-		// TODO Auto-generated method stub
-
 	}
 
 }

@@ -74,7 +74,7 @@
     		equality comparisons.
   -->
   <indexer stemming="false" caseSensitive="false"
-	  suppress-whitespace="both" index-depth="3"
+	  suppress-whitespace="none" index-depth="3"
 	  tokenizer="org.exist.storage.analysis.SimpleTokenizer"
 	  validation="false">
 
@@ -106,7 +106,7 @@
 	    		defines the maximum nesting depth of nodes which will be indexed
 	    		in the DOM index. Nodes below the specified nesting depth will
 	    		not be indexed in the DOM file. This has only an effect when 
-	    		retrieving query results or for some types of XPath subexpressions, like
+	    		retrieving queryb results or for some types of XPath subexpressions, like
 	    		equality comparisons.
 	-->
 	<index doctype="users" default="none" attributes="false">

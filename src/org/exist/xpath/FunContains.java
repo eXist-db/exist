@@ -9,12 +9,11 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
-import org.exist.storage.BrokerPool;
 
 public class FunContains extends Function {
 
-	public FunContains(BrokerPool pool) {
-		super(pool, "contains");
+	public FunContains() {
+		super("contains");
 	}
 	
 	public int returnsType() {

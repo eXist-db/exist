@@ -31,13 +31,10 @@ import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.PatternCompiler;
 import org.apache.oro.text.regex.PatternMatcher;
 import org.apache.oro.text.regex.Perl5Matcher;
-import org.exist.EXistException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.analysis.Tokenizer;
 /**
@@ -52,15 +49,22 @@ public class ExtNear extends ExtFulltext {
 	private int max_distance = 1;
 	private PatternCompiler globCompiler = new GlobCompiler();
 
-	public ExtNear(BrokerPool pool) {
-		super(pool, Constants.FULLTEXT_AND);
+	public ExtNear() {
+		super(Constants.FULLTEXT_AND);
 	}
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) throws XPathException {
-		NodeSet nodes = (NodeSet) path.eval(context, docs, contextSet, contextNode).getNodeList();
+	public Value eval(
+		StaticContext context,
+		DocumentSet docs,
+		NodeSet contextSet,
+		NodeProxy contextNode)
+		throws XPathException {
+		NodeSet nodes =
+			(NodeSet) path
+				.eval(context, docs, contextSet, contextNode)
+				.getNodeList();
 		if (hits == null)
-			processQuery(docs);
+			processQuery(context, docs);
 
 		long pid;
 		NodeProxy current;
@@ -122,57 +126,49 @@ public class ExtNear extends ExtFulltext {
 		String word;
 		TextToken token;
 		ArraySet result = new ArraySet(100);
-		DBBroker broker = null;
 		PatternMatcher matcher = new Perl5Matcher();
-		try {
-			broker = pool.get();
-			Tokenizer tok = broker.getTextEngine().getTokenizer();
-			int j;
-			int distance;
-			for (Iterator i = t0.iterator(); i.hasNext();) {
-				current = (NodeProxy) i.next();
-				value = broker.getNodeValue(current);
-				tok.setText(value);
-				j = 0;
-				if (j < terms.length)
+		Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
+		int j;
+		int distance;
+		for (Iterator i = t0.iterator(); i.hasNext();) {
+			current = (NodeProxy) i.next();
+			value = context.getBroker().getNodeValue(current);
+			tok.setText(value);
+			j = 0;
+			if (j < terms.length)
+				term = terms[j];
+			else
+				break;
+			distance = -1;
+			while ((token = tok.nextToken()) != null) {
+				word = token.getText().toLowerCase();
+				if (distance > max_distance) {
+					// reset
+					j = 0;
 					term = terms[j];
-				else
-					break;
-				distance = -1;
-				while ((token = tok.nextToken()) != null) {
-					word = token.getText().toLowerCase();
-					if (distance > max_distance) {
-						// reset
-						j = 0;
-						term = terms[j];
-						distance = -1;
-						continue;
-					}
-					if (matcher.matches(word, term)) {
-						distance = 0;
-						j++;
-						if (j == terms.length) {
-							// all terms found
-							result.add(current);
-							break;
-						} else
-							term = terms[j];
-
-					} else if (j > 0 && matcher.matches(word, terms[0])) {
-						// first search term found: start again
-						j = 0;
-						term = terms[j];
-						distance = -1;
-						continue;
-					} else if (-1 < distance)
-						++distance;
-
+					distance = -1;
+					continue;
 				}
+				if (matcher.matches(word, term)) {
+					distance = 0;
+					j++;
+					if (j == terms.length) {
+						// all terms found
+						result.add(current);
+						break;
+					} else
+						term = terms[j];
+
+				} else if (j > 0 && matcher.matches(word, terms[0])) {
+					// first search term found: start again
+					j = 0;
+					term = terms[j];
+					distance = -1;
+					continue;
+				} else if (-1 < distance)
+					++distance;
+
 			}
-		} catch (EXistException e) {
-			e.printStackTrace();
-		} finally {
-			pool.release(broker);
 		}
 		return new ValueNodeSet(result);
 	}

@@ -27,7 +27,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.BrokerPool;
 
 /**
  *  Description of the Class
@@ -37,42 +36,42 @@ import org.exist.storage.BrokerPool;
  */
 public class RootNode extends Step {
 
-    /**  Constructor for the RootNode object */
-    public RootNode(BrokerPool pool) {
-        super( pool, Constants.SELF_AXIS );
-    }
+	/**  Constructor for the RootNode object */
+	public RootNode() {
+		super(Constants.SELF_AXIS);
+	}
 
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  docs     Description of the Parameter
+	 *@param  context  Description of the Parameter
+	 *@param  node     Description of the Parameter
+	 *@return          Description of the Return Value
+	 */
+	public Value eval(
+		StaticContext context,
+		DocumentSet docs,
+		NodeSet contextSet,
+		NodeProxy contextNode) {
+		ArraySet result = new ArraySet(docs.getLength());
+		DocumentImpl doc;
+		NodeProxy n;
+		for (Iterator i = docs.iterator(); i.hasNext();) {
+			doc = (DocumentImpl) i.next();
+			n = new NodeProxy(doc, -1);
+			//n = new NodeProxy( doc, doc.getDocumentElementId() );
+			result.add(n);
+		}
+		return new ValueNodeSet(result);
+	}
 
-    /**
-     *  Description of the Method
-     *
-     *@param  docs     Description of the Parameter
-     *@param  context  Description of the Parameter
-     *@param  node     Description of the Parameter
-     *@return          Description of the Return Value
-     */
-    public Value eval( StaticContext context, DocumentSet docs, NodeSet contextSet, 
-    	NodeProxy contextNode ) {
-        ArraySet result = new ArraySet( docs.getLength() );
-        DocumentImpl doc;
-        NodeProxy n;
-		for(Iterator i = docs.iterator(); i.hasNext(); ) {
-            doc = (DocumentImpl) i.next();
-            n = new NodeProxy( doc, -1 );
-            //n = new NodeProxy( doc, doc.getDocumentElementId() );
-            result.add( n );
-        }
-        return new ValueNodeSet( result );
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
-    public String pprint() {
-        return "ROOT";
-    }
+	/**
+	 *  Description of the Method
+	 *
+	 *@return    Description of the Return Value
+	 */
+	public String pprint() {
+		return "ROOT";
+	}
 }
-

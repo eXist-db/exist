@@ -25,7 +25,7 @@ public abstract class AbstractExpression implements Expression {
 	public abstract Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
 		NodeProxy contextNode) throws XPathException;
 		
-	public abstract DocumentSet preselect(DocumentSet in_docs) throws XPathException;
+	public abstract DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException;
 	
 	public abstract String pprint();
 	

@@ -17,13 +17,15 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.dom;
 
 import java.util.Comparator;
 
 import org.exist.util.LongLinkedList;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
 
 /**
@@ -37,7 +39,7 @@ import org.w3c.dom.Node;
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  *@created    22. Juli 2002
  */
-public final class NodeProxy implements Comparable, Cloneable {
+public final class NodeProxy implements Item, Comparable, Cloneable {
 
 	public DocumentImpl doc = null;
 	public long gid = 0;
@@ -367,5 +369,34 @@ public final class NodeProxy implements Comparable, Cloneable {
 
 	public LongLinkedList getContext() {
 		return contextNodes;
+	}
+
+	// methods of interface Item
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#getType()
+	 */
+	public int getType() {
+		switch(nodeType) {
+			case Node.ELEMENT_NODE:
+				return Type.ELEMENT;
+			case Node.ATTRIBUTE_NODE:
+				return Type.ATTRIBUTE;
+			case Node.TEXT_NODE:
+				return Type.TEXT;
+			case Node.PROCESSING_INSTRUCTION_NODE:
+				return Type.PROCESSING_INSTRUCTION;
+			case Node.COMMENT_NODE:
+				return Type.COMMENT;
+			default:
+				return Type.NODE;	// unknown type
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#getStringValue()
+	 */
+	public String getStringValue() {
+		return getNodeValue();
 	}
 }

@@ -57,9 +57,9 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 		DocumentSet docs = null;
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(user);
 			if (resource == null) {
-				docs = parent.collection.allDocs(broker, user, true);
+				docs = parent.collection.allDocs(broker, true);
 			} else {
 				docs = new DocumentSet();
 				String id = parent.getName() + '/' + resource;
@@ -68,7 +68,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				docs.add(doc);
 			}
 			LOG.debug(xupdate);
-			XUpdateProcessor processor = new XUpdateProcessor(pool, user, docs);
+			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;

@@ -215,6 +215,7 @@
     <!-- Create samples                                                     -->
     <!-- ================================================================== -->
     <target depends="prepare" name="samples">
+		<delete failonerror="false" dir="${build}/examples"/>
         <mkdir dir="${build}/examples"/>
 		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
 			destdir="${build}/examples" srcdir="${samples}" encoding="UTF-8">
@@ -279,7 +280,6 @@
     <!-- ================================================================== -->
     <target name="test" depends="jar">
         <delete failonerror="false">
-		<fileset dir="data" includes="*.dbx"/>
 		<fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
         <junit haltonfailure="yes" printsummary="yes" 

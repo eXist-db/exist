@@ -15,30 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 
 package org.exist.xpath;
 
-import org.apache.log4j.Category;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.BrokerPool;
 
 public class OpAnd extends BinaryOp {
 
-	private static Category LOG = Category.getInstance(OpAnd.class.getName());
-
-	public OpAnd(BrokerPool pool) {
-		super(pool);
+	public OpAnd() {
+		super();
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
 		if (getLength() == 0)
 			return in_docs;
-		DocumentSet out_docs = getExpression(0).preselect(in_docs);
+		DocumentSet out_docs = getExpression(0).preselect(in_docs, context);
 		for (int i = 1; i < getLength(); i++)
-			out_docs = out_docs.intersection(getExpression(i).preselect(out_docs));
+			out_docs = out_docs.intersection(getExpression(i).preselect(out_docs, context));
 		return out_docs;
 	}
 

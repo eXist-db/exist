@@ -26,7 +26,7 @@ import org.apache.xml.serialize.XMLSerializer;
 import org.exist.EXistException;
 import org.exist.Parser;
 import org.exist.collections.Collection;
-import org.exist.collections.TriggerException;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -111,9 +111,11 @@ public class RpcConnection extends Thread {
 	 */
 	public void createCollection(User user, String name)
 		throws Exception, PermissionDeniedException {
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = null;
 		try {
-			Collection current = broker.getOrCreateCollection(user, name);
+			broker = brokerPool.get();
+			broker.setUser(user);
+			Collection current = broker.getOrCreateCollection(name);
 			LOG.debug("creating collection " + name);
 			broker.saveCollection(current);
 			broker.flush();
@@ -172,12 +174,13 @@ public class RpcConnection extends Thread {
 	 */
 	protected Value doQuery(
 		User user,
+		DBBroker broker,
 		String xpath,
 		DocumentSet docs,
 		NodeSet contextSet,
 		Hashtable namespaces)
 		throws Exception {
-		StaticContext context = new StaticContext(user);
+		StaticContext context = new StaticContext(broker);
 		Map.Entry entry;
 		for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
 			entry = (Map.Entry) i.next();
@@ -187,7 +190,7 @@ public class RpcConnection extends Thread {
 		}
 		XPathLexer2 lexer = new XPathLexer2(new StringReader(xpath));
 		XPathParser2 parser = new XPathParser2(lexer);
-		XPathTreeParser2 treeParser = new XPathTreeParser2(brokerPool, context);
+		XPathTreeParser2 treeParser = new XPathTreeParser2(context);
 		parser.xpath();
 		if (parser.foundErrors()) {
 			throw new EXistException(parser.getErrorMessage());
@@ -196,7 +199,7 @@ public class RpcConnection extends Thread {
 		AST ast = parser.getAST();
 		LOG.debug("generated AST: " + ast.toStringTree());
 
-		PathExpr expr = new PathExpr(brokerPool);
+		PathExpr expr = new PathExpr();
 		treeParser.xpath(ast, expr);
 		if (treeParser.foundErrors()) {
 			throw new EXistException(treeParser.getErrorMessage());
@@ -204,7 +207,9 @@ public class RpcConnection extends Thread {
 		LOG.info("query: " + xpath);
 		long start = System.currentTimeMillis();
 		DocumentSet ndocs =
-			(docs == null ? expr.preselect() : expr.preselect(docs));
+			(docs == null
+				? expr.preselect(context)
+				: expr.preselect(docs, context));
 		if (ndocs.getLength() == 0)
 			return null;
 		LOG.info(
@@ -218,13 +223,20 @@ public class RpcConnection extends Thread {
 		throws Exception {
 		long startTime = System.currentTimeMillis();
 		LOG.debug("query: " + xpath);
-		Value resultValue = doQuery(user, xpath, null, null, namespaces);
-		QueryResult qr =
-			new QueryResult(
-				resultValue,
-				(System.currentTimeMillis() - startTime));
-		connectionPool.resultSets.put(qr.hashCode(), qr);
-		return qr.hashCode();
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			Value resultValue =
+				doQuery(user, broker, xpath, null, null, namespaces);
+			QueryResult qr =
+				new QueryResult(
+					resultValue,
+					(System.currentTimeMillis() - startTime));
+			connectionPool.resultSets.put(qr.hashCode(), qr);
+			return qr.hashCode();
+		} finally {
+			brokerPool.release(broker);
+		}
 	}
 
 	/**
@@ -309,9 +321,11 @@ public class RpcConnection extends Thread {
 		String stylesheet)
 		throws Exception {
 		long start = System.currentTimeMillis();
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = null;
 		try {
-			DocumentImpl doc = (DocumentImpl) broker.getDocument(user, name);
+			broker = brokerPool.get();
+			broker.setUser(user);
+			DocumentImpl doc = (DocumentImpl) broker.getDocument(name);
 			if (doc == null) {
 				LOG.debug("document " + name + " not found!");
 				throw new EXistException("document not found");
@@ -361,14 +375,14 @@ public class RpcConnection extends Thread {
 			XPathException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
 				throw new EXistException(
 					"collection " + collectionName + " not found");
-			DocumentSet docs = collection.allDocs(broker, user, true);
+			DocumentSet docs = collection.allDocs(broker, true);
 			XUpdateProcessor processor =
-				new XUpdateProcessor(brokerPool, user, docs);
+				new XUpdateProcessor(broker, docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;
@@ -392,15 +406,16 @@ public class RpcConnection extends Thread {
 			PermissionDeniedException,
 			EXistException,
 			XPathException {
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = null;
 		try {
+			broker = brokerPool.get(user);
 			Document doc = broker.getDocument(resource);
 			if (doc == null)
 				throw new EXistException("document " + resource + " not found");
 			DocumentSet docs = new DocumentSet();
 			docs.add(doc);
 			XUpdateProcessor processor =
-				new XUpdateProcessor(brokerPool, user, docs);
+				new XUpdateProcessor(broker, docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;
@@ -600,6 +615,7 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get();
+			broker.setUser(user);
 			if (!name.startsWith("/"))
 				name = '/' + name;
 			if (!name.startsWith("/db"))
@@ -607,8 +623,7 @@ public class RpcConnection extends Thread {
 			Collection collection = broker.getCollection(name);
 			Permission perm = null;
 			if (collection == null) {
-				DocumentImpl doc =
-					(DocumentImpl) broker.getDocument(user, name);
+				DocumentImpl doc = (DocumentImpl) broker.getDocument(name);
 				if (doc == null)
 					throw new EXistException(
 						"document or collection " + name + " not found");
@@ -650,12 +665,12 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get();
+			broker.setUser(user);
 			if (!documentPath.startsWith("/"))
 				documentPath = '/' + documentPath;
 			if (!documentPath.startsWith("/db"))
 				documentPath = "/db" + documentPath;
-			DocumentImpl doc =
-				(DocumentImpl) broker.getDocument(user, documentPath);
+			DocumentImpl doc = (DocumentImpl) broker.getDocument(documentPath);
 			if (doc == null) {
 				LOG.debug("document " + documentPath + " not found!");
 				throw new EXistException("document not found");
@@ -738,6 +753,7 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get();
+			broker.setUser(user);
 			int p = docName.lastIndexOf('/');
 			if (p < 0 || p == docName.length() - 1)
 				throw new EXistException("Illegal document path");
@@ -751,7 +767,6 @@ public class RpcConnection extends Thread {
 			DocumentImpl doc =
 				collection.addDocument(
 					broker,
-					user,
 					docName,
 					new InputSource(new ByteArrayInputStream(xml)));
 			LOG.debug(
@@ -784,7 +799,11 @@ public class RpcConnection extends Thread {
 		String localFile,
 		String docName,
 		boolean replace)
-		throws EXistException, PermissionDeniedException, SAXException, TriggerException {
+		throws
+			EXistException,
+			PermissionDeniedException,
+			SAXException,
+			TriggerException {
 		File file = new File(localFile);
 		if (!file.canRead())
 			throw new EXistException("unable to read file " + localFile);
@@ -792,6 +811,7 @@ public class RpcConnection extends Thread {
 		DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get();
+			broker.setUser(user);
 			int p = docName.lastIndexOf('/');
 			if (p < 0 || p == docName.length() - 1)
 				throw new EXistException("Illegal document path");
@@ -803,7 +823,6 @@ public class RpcConnection extends Thread {
 					"Collection " + collectionName + " not found");
 			collection.addDocument(
 				broker,
-				user,
 				docName,
 				new InputSource(file.getAbsolutePath()));
 		} finally {
@@ -968,15 +987,17 @@ public class RpcConnection extends Thread {
 		String sortExpr)
 		throws Exception {
 		long startTime = System.currentTimeMillis();
-		Value resultValue = doQuery(user, xpath, null, null, namespaces);
-		if (resultValue == null)
-			return "<?xml version=\"1.0\"?>\n"
-				+ "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
-				+ "hitCount=\"0\"/>";
 		String result;
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
+			Value resultValue =
+				doQuery(user, broker, xpath, null, null, namespaces);
+			if (resultValue == null)
+				return "<?xml version=\"1.0\"?>\n"
+					+ "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
+					+ "hitCount=\"0\"/>";
+
 			switch (resultValue.getType()) {
 				case Value.isNodeList :
 					NodeList resultSet = resultValue.getNodeList();
@@ -1016,51 +1037,51 @@ public class RpcConnection extends Thread {
 		Vector result = new Vector();
 		NodeSet nodes = null;
 		DocumentSet docs = null;
-		if (docName != null && s_id != null) {
-			long id = Long.parseLong(s_id);
-			DocumentImpl doc;
-			if (!documentCache.containsKey(docName)) {
-				DBBroker broker = null;
-				try {
-					broker = brokerPool.get();
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			if (docName != null && s_id != null) {
+				long id = Long.parseLong(s_id);
+				DocumentImpl doc;
+				if (!documentCache.containsKey(docName)) {
 					doc = (DocumentImpl) broker.getDocument(docName);
 					documentCache.put(docName, doc);
-				} finally {
-					brokerPool.release(broker);
-				}
-			} else
-				doc = (DocumentImpl) documentCache.get(docName);
-			NodeProxy node = new NodeProxy(doc, id);
-			nodes = new ArraySet(1);
-			nodes.add(node);
-			docs = new DocumentSet();
-			docs.add(node.doc);
-		}
-		Value resultValue = doQuery(user, xpath, docs, nodes, null);
-		if (resultValue == null)
-			return result;
-		switch (resultValue.getType()) {
-			case Value.isNodeList :
-				NodeList resultSet = resultValue.getNodeList();
-				NodeProxy p;
-				Vector entry;
-				for (Iterator i = ((NodeSet) resultSet).iterator();
-					i.hasNext();
-					) {
-					p = (NodeProxy) i.next();
-					entry = new Vector();
-					entry.addElement(p.doc.getFileName());
-					entry.addElement(Long.toString(p.getGID()));
-					result.addElement(entry);
-				}
-				break;
-			default :
-				ValueSet valueSet = resultValue.getValueSet();
-				Value val;
-				for (int i = 0; i < valueSet.getLength(); i++) {
-					val = valueSet.get(i);
-					result.addElement(val.getStringValue());
-				}
+				} else
+					doc = (DocumentImpl) documentCache.get(docName);
+				NodeProxy node = new NodeProxy(doc, id);
+				nodes = new ArraySet(1);
+				nodes.add(node);
+				docs = new DocumentSet();
+				docs.add(node.doc);
+			}
+			Value resultValue = doQuery(user, broker, xpath, docs, nodes, null);
+			if (resultValue == null)
+				return result;
+			switch (resultValue.getType()) {
+				case Value.isNodeList :
+					NodeList resultSet = resultValue.getNodeList();
+					NodeProxy p;
+					Vector entry;
+					for (Iterator i = ((NodeSet) resultSet).iterator();
+						i.hasNext();
+						) {
+						p = (NodeProxy) i.next();
+						entry = new Vector();
+						entry.addElement(p.doc.getFileName());
+						entry.addElement(Long.toString(p.getGID()));
+						result.addElement(entry);
+					}
+					break;
+				default :
+					ValueSet valueSet = resultValue.getValueSet();
+					Value val;
+					for (int i = 0; i < valueSet.getLength(); i++) {
+						val = valueSet.get(i);
+						result.addElement(val.getStringValue());
+					}
+			}
+		} finally {
+			brokerPool.release(broker);
 		}
 		return result;
 	}
@@ -1078,58 +1099,59 @@ public class RpcConnection extends Thread {
 		Vector result = new Vector();
 		NodeSet nodes = null;
 		DocumentSet docs = null;
-		if (docName != null && s_id != null) {
-			long id = Long.parseLong(s_id);
-			DocumentImpl doc;
-			if (!documentCache.containsKey(docName)) {
-				DBBroker broker = null;
-				try {
-					broker = brokerPool.get();
+		Value resultValue = null;
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			if (docName != null && s_id != null) {
+				long id = Long.parseLong(s_id);
+				DocumentImpl doc;
+				if (!documentCache.containsKey(docName)) {
 					doc = (DocumentImpl) broker.getDocument(docName);
 					documentCache.put(docName, doc);
-				} finally {
-					brokerPool.release(broker);
-				}
-			} else
-				doc = (DocumentImpl) documentCache.get(docName);
-			NodeProxy node = new NodeProxy(doc, id);
-			nodes = new ArraySet(1);
-			nodes.add(node);
-			docs = new DocumentSet();
-			docs.add(node.doc);
-		}
-		Value resultValue = doQuery(user, xpath, docs, nodes, namespaces);
-		if (resultValue == null)
-			return ret;
-		switch (resultValue.getType()) {
-			case Value.isNodeList :
-				NodeSet resultSet = (NodeSet) resultValue.getNodeList();
-				if (sortBy != null) {
-					SortedNodeSet sorted =
-						new SortedNodeSet(brokerPool, user, sortBy);
-					sorted.addAll(resultSet);
-					resultSet = sorted;
-					resultValue = new ValueNodeSet(sorted);
-				}
-				NodeProxy p;
-				Vector entry;
-				for (Iterator i = ((NodeSet) resultSet).iterator();
-					i.hasNext();
-					) {
-					p = (NodeProxy) i.next();
-					entry = new Vector();
-					entry.addElement(p.doc.getFileName());
-					entry.addElement(Long.toString(p.getGID()));
-					result.addElement(entry);
-				}
-				break;
-			default :
-				ValueSet valueSet = resultValue.getValueSet();
-				Value val;
-				for (int i = 0; i < valueSet.getLength(); i++) {
-					val = valueSet.get(i);
-					result.addElement(val.getStringValue());
-				}
+				} else
+					doc = (DocumentImpl) documentCache.get(docName);
+				NodeProxy node = new NodeProxy(doc, id);
+				nodes = new ArraySet(1);
+				nodes.add(node);
+				docs = new DocumentSet();
+				docs.add(node.doc);
+			}
+			resultValue = doQuery(user, broker, xpath, docs, nodes, namespaces);
+			if (resultValue == null)
+				return ret;
+			switch (resultValue.getType()) {
+				case Value.isNodeList :
+					NodeSet resultSet = (NodeSet) resultValue.getNodeList();
+					if (sortBy != null) {
+						SortedNodeSet sorted =
+							new SortedNodeSet(brokerPool, user, sortBy);
+						sorted.addAll(resultSet);
+						resultSet = sorted;
+						resultValue = new ValueNodeSet(sorted);
+					}
+					NodeProxy p;
+					Vector entry;
+					for (Iterator i = ((NodeSet) resultSet).iterator();
+						i.hasNext();
+						) {
+						p = (NodeProxy) i.next();
+						entry = new Vector();
+						entry.addElement(p.doc.getFileName());
+						entry.addElement(Long.toString(p.getGID()));
+						result.addElement(entry);
+					}
+					break;
+				default :
+					ValueSet valueSet = resultValue.getValueSet();
+					Value val;
+					for (int i = 0; i < valueSet.getLength(); i++) {
+						val = valueSet.get(i);
+						result.addElement(val.getStringValue());
+					}
+			}
+		} finally {
+			brokerPool.release(broker);
 		}
 		QueryResult qr =
 			new QueryResult(
@@ -1147,26 +1169,35 @@ public class RpcConnection extends Thread {
 	}
 
 	public void remove(User user, String docName) throws Exception {
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = null;
 		try {
-			if (broker.getDocument(user, docName) == null)
+			broker = brokerPool.get();
+			broker.setUser(user);
+			int p = docName.lastIndexOf('/');
+			if (p < 0 || p == docName.length() - 1)
+				throw new EXistException("Illegal document path");
+			String collectionName = docName.substring(0, p);
+			docName = docName.substring(p + 1);
+			Collection collection = broker.getCollection(collectionName);
+			if (collection == null)
 				throw new EXistException(
-					"document [" + docName + "] not found!");
-			broker.removeDocument(user, docName);
+					"Collection " + collectionName + " not found");
+			collection.removeDocument(broker, docName);
 		} finally {
 			brokerPool.release(broker);
 		}
 	}
 
 	public boolean removeCollection(User user, String name) throws Exception {
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = null;
 		try {
+			broker = brokerPool.get(user);
 			if (broker.getCollection(name) == null)
 				return false;
 			LOG.debug("removing collection " + name);
 			if (parser != null)
 				parser.collection = null;
-			return broker.removeCollection(user, name);
+			return broker.removeCollection(name);
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -1295,12 +1326,12 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get();
+			broker.setUser(user);
 			org.exist.security.SecurityManager manager =
 				brokerPool.getSecurityManager();
 			Collection collection = broker.getCollection(resource);
 			if (collection == null) {
-				DocumentImpl doc =
-					(DocumentImpl) broker.getDocument(user, resource);
+				DocumentImpl doc = (DocumentImpl) broker.getDocument(resource);
 				if (doc == null)
 					throw new EXistException(
 						"document or collection " + resource + " not found");
@@ -1355,12 +1386,12 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get();
+			broker.setUser(user);
 			org.exist.security.SecurityManager manager =
 				brokerPool.getSecurityManager();
 			Collection collection = broker.getCollection(resource);
 			if (collection == null) {
-				DocumentImpl doc =
-					(DocumentImpl) broker.getDocument(user, resource);
+				DocumentImpl doc = (DocumentImpl) broker.getDocument(resource);
 				if (doc == null)
 					throw new EXistException(
 						"document or collection " + resource + " not found");
@@ -1456,66 +1487,73 @@ public class RpcConnection extends Thread {
 	 */
 	public Hashtable summary(User user, String xpath) throws Exception {
 		long startTime = System.currentTimeMillis();
-		Value resultValue = doQuery(user, xpath, null, null, null);
-		if (resultValue == null)
-			return new Hashtable();
-		NodeList resultSet = resultValue.getNodeList();
-		HashMap map = new HashMap();
-		HashMap doctypes = new HashMap();
-		NodeProxy p;
-		String docName;
-		DocumentType doctype;
-		NodeCount counter;
-		DoctypeCount doctypeCounter;
-		for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
-			p = (NodeProxy) i.next();
-			docName = p.doc.getFileName();
-			doctype = p.doc.getDoctype();
-			if (map.containsKey(docName)) {
-				counter = (NodeCount) map.get(docName);
-				counter.inc();
-			} else {
-				counter = new NodeCount(p.doc);
-				map.put(docName, counter);
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			Value resultValue = doQuery(user, broker, xpath, null, null, null);
+			if (resultValue == null)
+				return new Hashtable();
+			NodeList resultSet = resultValue.getNodeList();
+			HashMap map = new HashMap();
+			HashMap doctypes = new HashMap();
+			NodeProxy p;
+			String docName;
+			DocumentType doctype;
+			NodeCount counter;
+			DoctypeCount doctypeCounter;
+			for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
+				p = (NodeProxy) i.next();
+				docName = p.doc.getFileName();
+				doctype = p.doc.getDoctype();
+				if (map.containsKey(docName)) {
+					counter = (NodeCount) map.get(docName);
+					counter.inc();
+				} else {
+					counter = new NodeCount(p.doc);
+					map.put(docName, counter);
+				}
+				if (doctype == null)
+					continue;
+				if (doctypes.containsKey(doctype.getName())) {
+					doctypeCounter =
+						(DoctypeCount) doctypes.get(doctype.getName());
+					doctypeCounter.inc();
+				} else {
+					doctypeCounter = new DoctypeCount(doctype);
+					doctypes.put(doctype.getName(), doctypeCounter);
+				}
 			}
-			if (doctype == null)
-				continue;
-			if (doctypes.containsKey(doctype.getName())) {
-				doctypeCounter = (DoctypeCount) doctypes.get(doctype.getName());
-				doctypeCounter.inc();
-			} else {
-				doctypeCounter = new DoctypeCount(doctype);
-				doctypes.put(doctype.getName(), doctypeCounter);
+			Hashtable result = new Hashtable();
+			result.put(
+				"queryTime",
+				new Integer((int) (System.currentTimeMillis() - startTime)));
+			result.put("hits", new Integer(resultSet.getLength()));
+			Vector documents = new Vector();
+			Vector hitsByDoc;
+			for (Iterator i = map.values().iterator(); i.hasNext();) {
+				counter = (NodeCount) i.next();
+				hitsByDoc = new Vector();
+				hitsByDoc.addElement(counter.doc.getFileName());
+				hitsByDoc.addElement(new Integer(counter.doc.getDocId()));
+				hitsByDoc.addElement(new Integer(counter.count));
+				documents.addElement(hitsByDoc);
 			}
+			result.put("documents", documents);
+			Vector dtypes = new Vector();
+			Vector hitsByType;
+			DoctypeCount docTemp;
+			for (Iterator i = doctypes.values().iterator(); i.hasNext();) {
+				docTemp = (DoctypeCount) i.next();
+				hitsByType = new Vector();
+				hitsByType.addElement(docTemp.doctype.getName());
+				hitsByType.addElement(new Integer(docTemp.count));
+				dtypes.addElement(hitsByType);
+			}
+			result.put("doctypes", dtypes);
+			return result;
+		} finally {
+			brokerPool.release(broker);
 		}
-		Hashtable result = new Hashtable();
-		result.put(
-			"queryTime",
-			new Integer((int) (System.currentTimeMillis() - startTime)));
-		result.put("hits", new Integer(resultSet.getLength()));
-		Vector documents = new Vector();
-		Vector hitsByDoc;
-		for (Iterator i = map.values().iterator(); i.hasNext();) {
-			counter = (NodeCount) i.next();
-			hitsByDoc = new Vector();
-			hitsByDoc.addElement(counter.doc.getFileName());
-			hitsByDoc.addElement(new Integer(counter.doc.getDocId()));
-			hitsByDoc.addElement(new Integer(counter.count));
-			documents.addElement(hitsByDoc);
-		}
-		result.put("documents", documents);
-		Vector dtypes = new Vector();
-		Vector hitsByType;
-		DoctypeCount docTemp;
-		for (Iterator i = doctypes.values().iterator(); i.hasNext();) {
-			docTemp = (DoctypeCount) i.next();
-			hitsByType = new Vector();
-			hitsByType.addElement(docTemp.doctype.getName());
-			hitsByType.addElement(new Integer(docTemp.count));
-			dtypes.addElement(hitsByType);
-		}
-		result.put("doctypes", dtypes);
-		return result;
 	}
 
 	/**
@@ -1605,13 +1643,13 @@ public class RpcConnection extends Thread {
 		throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
 				throw new EXistException(
 					"collection " + collectionName + " not found");
 			Occurrences occurrences[] =
-				broker.scanIndexedElements(user, collection, inclusive);
+				broker.scanIndexedElements(collection, inclusive);
 			Vector result = new Vector(occurrences.length);
 			Vector temp;
 			for (int i = 0; i < occurrences.length; i++) {

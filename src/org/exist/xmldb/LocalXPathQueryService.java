@@ -44,7 +44,16 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 		this.user = user;
 		this.collection = collection;
 		this.brokerPool = pool;
-		context = new StaticContext(user);
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			context = new StaticContext(broker);
+		} catch (EXistException e) {
+			LOG.warn(e.getMessage(), e);
+		} finally {
+			brokerPool.release(broker);
+		}
+		
 	}
 
 	public void clearNamespaces() throws XMLDBException {
@@ -82,8 +91,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			query.startsWith("xcollection("))) {
 			DBBroker broker = null;
 			try {
-				broker = brokerPool.get();
-				docs = collection.collection.allDocs(broker, user, true);
+				broker = brokerPool.get(user);
+				docs = collection.collection.allDocs(broker, true);
 			} catch (EXistException e) {
 				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
 					"error while loading documents: " + e.getMessage(), e);
@@ -111,10 +120,13 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	protected ResourceSet doQuery(String query, DocumentSet docs, 
 		NodeSet contextSet, String sortExpr)
 		throws XMLDBException {
+		DBBroker broker = null;
 		try {
+			broker = brokerPool.get(user);
+			context.setBroker(broker);
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
 			XPathParser2 parser = new XPathParser2(lexer);
-			XPathTreeParser2 treeParser = new XPathTreeParser2(brokerPool, context);
+			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
 			
 			parser.xpath();
 			if(parser.foundErrors()) {
@@ -125,7 +137,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			AST ast = parser.getAST();
 			LOG.debug("generated AST: " + ast.toStringTree());
 			
-			PathExpr expr = new PathExpr(brokerPool);
+			PathExpr expr = new PathExpr();
 			treeParser.xpath(ast, expr);
 			if(treeParser.foundErrors()) {
 				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
@@ -137,7 +149,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			//if (parser.foundErrors())
 			//	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, parser.getErrorMsg());
 			Value resultValue = null;
-			docs = (docs == null ? expr.preselect() : expr.preselect(docs));
+			docs = (docs == null ? expr.preselect(context) : expr.preselect(docs, context));
 			if (docs.getLength() == 0)
 				resultValue = new ValueNodeSet(NodeSet.EMPTY_SET);
 			else 
@@ -166,6 +178,10 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (XPathException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} finally {
+			brokerPool.release(broker);
 		}
 	}
  

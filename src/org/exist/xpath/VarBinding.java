@@ -21,21 +21,20 @@ package org.exist.xpath;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.BrokerPool;
 
 public class VarBinding extends Step {
 
   protected String name;
   protected Expression binding = null;
 
-  public VarBinding(BrokerPool pool, String name, Expression binding) {
-    super(pool, 0, null);
+  public VarBinding(String name, Expression binding) {
+    super(0, null);
     this.name = name;
     this.binding = binding;
   }
 
-  public VarBinding(BrokerPool pool, String name) {
-    super(pool, 0, null);
+  public VarBinding(String name) {
+    super(0, null);
     this.name = name;
   }
 
