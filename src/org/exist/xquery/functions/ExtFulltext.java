@@ -204,7 +204,6 @@ public class ExtFulltext extends Function {
 		NodeSet contextSet) {
 		if (terms == null)
 			throw new RuntimeException("no search terms");
-//		if(contextSet instanceof VirtualNodeSet) {
 			NodeSet hits[] = new NodeSet[terms.length];
 			for (int k = 0; k < terms.length; k++) {
 				hits[k] =
@@ -223,25 +222,6 @@ public class ExtFulltext extends Function {
 				return result;
 			} else
 				return NodeSet.EMPTY_SET;
-//		} else {
-//			NodeSet result = null, hits;
-//			for (int k = 0; k < terms.length; k++) {
-//				hits =
-//					context.getBroker().getTextEngine().getNodesContaining(
-//						contextSet.getDocumentSet(),
-//						contextSet,
-//						terms[k]);
-//				if(hits != null) {
-//					if(result == null)
-//						result = hits;
-//					else if(type == Constants.FULLTEXT_AND)
-//						result = result.intersection(hits);
-//					else
-//						result.addAll(hits);
-//				}
-//			}
-//			return result == null ? NodeSet.EMPTY_SET : result;
-//		}
 	}
 
 	public int returnsType() {
