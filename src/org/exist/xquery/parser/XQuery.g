@@ -112,7 +112,8 @@ imaginaryTokenDefinitions
 	VARIABLE_REF 
 	VARIABLE_BINDING
 	ELEMENT
-	ATTRIBUTE 
+	ATTRIBUTE
+	ATTRIBUTE_CONTENT
 	TEXT 
 	VERSION_DECL 
 	NAMESPACE_DECL 
@@ -277,6 +278,11 @@ functionDecl throws XPathException
 	{ 
 		#functionDecl= #(#[FUNCTION_DECL, name], #functionDecl); 
 		#functionDecl.copyLexInfo(#lp);
+	}
+	exception catch [RecognitionException e]
+	{ 
+		throw new XPathException(#lp, "Syntax error in declaration of function " + 
+			name + ": " + e.getMessage());
 	}
 	;
 
@@ -883,7 +889,6 @@ localNamespaceDecl
 elementConstructor throws XPathException
 {
 	String name= null;
-	//lexer.wsExplicit= false;
 }
 :
 	( LT qName ~( GT | SLASH ) ) => elementWithAttributes | elementWithoutAttributes
@@ -913,7 +918,7 @@ elementWithoutAttributes throws XPathException
 			content:mixedElementContent END_TAG_START! name=qn:qName! GT!
 			{
 				if (elementStack.isEmpty())
-					throw new XPathException(#qn, "found wrong closing tag: " + name);
+					throw new XPathException(#qn, "found additional closing tag: " + name);
 				String prev= (String) elementStack.pop();
 				if (!prev.equals(name))
 					throw new XPathException(#qn, "found closing tag: " + name + "; expected: " + prev);
@@ -938,7 +943,6 @@ elementWithAttributes throws XPathException
 			{
 				if (!elementStack.isEmpty())
 					lexer.inElementContent= true;
-				//lexer.wsExplicit= false;
 				#elementWithAttributes= #(#[ELEMENT, name], #attrs);
 			}
 		)
@@ -948,7 +952,6 @@ elementWithAttributes throws XPathException
 			{
 				elementStack.push(name);
 				lexer.inElementContent= true;
-				//lexer.wsExplicit= false;
 			}
 			content:mixedElementContent END_TAG_START! name=qn:qName! GT!
 			{
@@ -960,7 +963,6 @@ elementWithAttributes throws XPathException
 				#elementWithAttributes= #(#[ELEMENT, name], #attrs);
 				if (!elementStack.isEmpty()) {
 					lexer.inElementContent= true;
-					//lexer.wsExplicit= false;
 				}
 			}
 		)
@@ -980,24 +982,7 @@ attributeDef throws XPathException
 }
 :
 	name=q:qName! EQ! 
-	( 
-		QUOT!
-		{ lexer.inAttributeContent= true; }
-		attributeValue { lexer.inAttributeContent= false; }
-		QUOT!
-		{ 
-			lexer.parseStringLiterals= true;
-			lexer.inAttributeContent= false;
-		}
-		| 
-		APOS! { lexer.inAttributeContent= true; }
-		attributeValue
-		APOS! 
-		{ 
-			lexer.parseStringLiterals= true;
-			lexer.inAttributeContent= false;
-		}
-	)
+	attributeValue
 	{ 
 		#attributeDef= #(#[ATTRIBUTE, name], #attributeDef);
 		#attributeDef.copyLexInfo(#q);
@@ -1006,24 +991,59 @@ attributeDef throws XPathException
 
 attributeValue throws XPathException
 :
-	( attributeValueContent )+
+	QUOT!
+	{ 
+		lexer.inAttributeContent= true;
+		lexer.attrDelimChar = '"';
+	}
+	( quotAttrValueContent )*
+	QUOT!
+	{
+		lexer.parseStringLiterals= true;
+		lexer.inAttributeContent= false;
+	}
+	|
+	APOS!
+	{ 
+		lexer.inAttributeContent= true;
+		lexer.attrDelimChar = '\'';
+	}
+	( aposAttrValueContent )*
+	APOS!
+	{
+		lexer.parseStringLiterals= true;
+		lexer.inAttributeContent= false;
+	}
 	;
 
-attributeValueContent throws XPathException
+quotAttrValueContent throws XPathException:
+	c:QUOT_ATTRIBUTE_CONTENT
+	{ #quotAttrValueContent = #[ATTRIBUTE_CONTENT, c.getText()]; }
+	|
+	attrCommonContent
+	;
+	
+aposAttrValueContent throws XPathException
+:
+	c:APOS_ATTRIBUTE_CONTENT
+	{ #aposAttrValueContent = #[ATTRIBUTE_CONTENT, c.getText()]; }
+	|
+	attrCommonContent
+	;
+	
+attrCommonContent throws XPathException
 :
 	( LCURLY LCURLY )=> LCURLY LCURLY
 	{ 	
 		lexer.inAttributeContent= true;
 		lexer.parseStringLiterals = false;
-		#attributeValueContent= #[ATTRIBUTE_CONTENT, "{"]; 
+		#attrCommonContent= #[ATTRIBUTE_CONTENT, "{"]; 
 	}
 	|
 	RCURLY RCURLY
-	{ #attributeValueContent= #[ATTRIBUTE_CONTENT, "}"]; }
+	{ #attrCommonContent= #[ATTRIBUTE_CONTENT, "}"]; }
 	|
 	attributeEnclosedExpr
-	|
-	ATTRIBUTE_CONTENT
 	;
 	
 mixedElementContent throws XPathException
@@ -1253,6 +1273,7 @@ options {
 	protected boolean parseStringLiterals= true;
 	protected boolean inElementContent= false;
 	protected boolean inAttributeContent= false;
+	protected char attrDelimChar = '"';
 	protected boolean inComment= false;
 	
 	protected XQueryContext context = null;
@@ -1263,35 +1284,35 @@ options {
 	}
 }
 
-protected SLASH : '/' ;
-protected DSLASH : '/' '/' ;
+protected SLASH options { paraphrase="single slash '/'"; }: '/' ;
+protected DSLASH options { paraphrase="double slash '//'"; }: '/' '/' ;
 protected COLON : ':' ;
 protected COMMA : ',' ;
-protected SEMICOLON : ';' ;
-protected STAR : '*' ;
-protected QUESTION : '?' ;
-protected PLUS : '+' ;
-protected MINUS : '-' ;
+protected SEMICOLON options { paraphrase="semicolon ';'"; }: ';' ;
+protected STAR options { paraphrase="wildcard '*'"; }: '*';
+protected QUESTION options { paraphrase="question mark '?'"; }: '?' ;
+protected PLUS options { paraphrase="+"; }: '+' ;
+protected MINUS options { paraphrase="-"; }: '-' ;
 protected LPPAREN options { paraphrase="opening brace '['"; }: '[' ;
 protected RPPAREN options { paraphrase="closing brace ']'"; }: ']' ;
 protected LPAREN options { paraphrase="opening parenthesis '('"; } : '(' ;
 protected RPAREN options { paraphrase="closing parenthesis ')'"; } : ')' ;
-protected SELF : '.' ;
-protected PARENT : ".." ;
-protected UNION : '|' ;
-protected AT : '@' ;
-protected DOLLAR : '$' ;
-protected ANDEQ : "&=" ;
-protected OREQ : "|=" ;
-protected EQ : '=' ;
-protected NEQ : "!=" ;
-protected GT : '>' ;
-protected GTEQ : ">=" ;
-protected QUOT : '"' ;
-protected APOS : "'";
-protected LTEQ : "<=" ;
+protected SELF options { paraphrase="."; }: '.' ;
+protected PARENT options { paraphrase=".."; }: ".." ;
+protected UNION options { paraphrase="union"; }: '|' ;
+protected AT options { paraphrase="@ char"; }: '@' ;
+protected DOLLAR options { paraphrase="dollar sign '$'"; }: '$' ;
+protected ANDEQ options { paraphrase="fulltext operator '&='"; }: "&=" ;
+protected OREQ options { paraphrase="fulltext operator '|='"; }: "|=" ;
+protected EQ options { paraphrase="="; }: '=' ;
+protected NEQ options { paraphrase="!="; }: "!=" ;
+protected GT options { paraphrase=">"; }: '>' ;
+protected GTEQ options { paraphrase=">="; }: ">=" ;
+protected QUOT options { paraphrase="double quote '\"'"; }: '"' ;
+protected APOS options { paraphrase="single quote '"; }: "'";
+protected LTEQ options { paraphrase="<="; }: "<=" ;
 
-protected LT : '<' ;
+protected LT options { paraphrase="<"; }: '<' ;
 protected END_TAG_START 
 options { paraphrase="XML end tag"; }: "</" ;
 
@@ -1299,9 +1320,9 @@ protected LCURLY options { paraphrase="opening curly brace '{'"; }: '{' ;
 protected RCURLY options { paraphrase="closing curly brace '{'"; }: '}' ;
 
 protected XML_COMMENT_END options { paraphrase="end of XML comment"; }: "-->" ;
-protected XML_PI_START : "<?" ;
+protected XML_PI_START options { paraphrase="start of processing instruction"; }: "<?" ;
 protected XML_PI_END options { paraphrase="end of processing instruction"; }: "?>" ;
-protected XML_CDATA_START : "<![CDATA[";
+protected XML_CDATA_START options { paraphrase="CDATA section start"; }: "<![CDATA[";
 protected XML_CDATA_END options { paraphrase="end of CDATA section"; }: "]]>";
 
 protected LETTER
@@ -1332,6 +1353,7 @@ protected NMCHAR
 protected NCNAME
 options {
 	testLiterals=true;
+	paraphrase="name";
 }
 :
 	NMSTART ( NMCHAR )*
@@ -1353,6 +1375,7 @@ protected WS
 protected EXPR_COMMENT
 options {
 	testLiterals=false;
+	paraphrase="XQuery comment";
 }
 :
 	"(:" ( CHAR | ( ':' ~( ')' ) ) => ':' )* ":)"
@@ -1361,6 +1384,7 @@ options {
 protected PRAGMA
 options {
 	testLiterals=false;
+	paraphrase="XQuery pragma";
 }
 { String content = null; }:
 	"(::" "pragma"
@@ -1388,7 +1412,7 @@ protected PRAGMA_QNAME
 	NCNAME ( ':' NCNAME )?
 	;
 	
-protected INTEGER_LITERAL : 
+protected INTEGER_LITERAL :
 	{ !(inElementContent || inAttributeContent) }? DIGITS ;
 
 protected DOUBLE_LITERAL
@@ -1416,6 +1440,7 @@ protected CHAR_REF
 protected STRING_LITERAL
 options {
 	testLiterals = false;
+	paraphrase="string literal";
 }
 :
 	'"'! ( PREDEFINED_ENTITY_REF | CHAR_REF | ( '"'! '"' ) | ~ ( '"' | '&' ) )*
@@ -1424,33 +1449,35 @@ options {
 	'\''! ( PREDEFINED_ENTITY_REF | CHAR_REF | ( '\''! '\'' ) | ~ ( '\'' | '&' ) )*
 	'\''!
 	;
-
-protected ATTRIBUTE_CONTENT
+	
+protected QUOT_ATTRIBUTE_CONTENT
 options {
 	testLiterals=false;
 }
 :
-	(
-		'\t'
-		|
-		'\r'
-		|
-		'\n' { newline(); }
-		|
-		'\u0020'
-		|
-		'\u0021'
-		|
-		'\u0023'..'\u003b'
-		|
-		'\u003d'..'\u007a'
-		|
-		'\u007c'
-		|
-		'\u007e'..'\uFFFD'
-	)+
+	( ~( '"' | '{' | '}' | '<' ) )+
 	;
 
+/**
+ * The following definition differs from the spec by allowing the
+ * '&' character, which is handled by the constructor classes.
+ *
+ * TODO: Allow escaped quotes in attribute content. Doesn't work.
+ */
+protected APOS_ATTRIBUTE_CONTENT
+options {
+	testLiterals=false;
+}
+:
+	( ~( '\'' | '{' | '}' | '<' ) )+
+	;
+
+/**
+ * The following definition differs from the spec by allowing the
+ * '&' character, which is handled by the constructor classes.
+ *
+ * TODO: Allow escaped quotes in attribute content. Doesn't work.
+ */	
 protected ELEMENT_CONTENT
 :
 	( '\t' | '\r' | '\n' { newline(); } | '\u0020'..'\u003b' | '\u003d'..'\u007a' | '\u007c' | '\u007e'..'\uFFFD' )+
@@ -1459,6 +1486,7 @@ protected ELEMENT_CONTENT
 protected XML_COMMENT
 options {
 	testLiterals=false;
+	paraphrase="XML comment";
 }
 :
 	"<!--"! ( ~ ( '-' ) | ( '-' ~ ( '-' ) ) => '-' )+
@@ -1467,6 +1495,7 @@ options {
 protected XML_PI
 options {
 	testLiterals=false;
+	paraphrase="processing instruction";
 }
 :
 	XML_PI_START! NCNAME ' ' ( ~ ( '?' ) | ( '?' ~ ( '>' ) ) => '?' )+
@@ -1475,7 +1504,7 @@ options {
 protected XML_CDATA
 options {
 	testLiterals=false;
-	paraphrase="CDATA";
+	paraphrase="CDATA section";
 }:
 	XML_CDATA_START!  
 	( ~ ( ']' ) | ( ']' ~ ( ']' ) ) => ']' | ( ']' ']' ~ ( '>' ) ) => ( ']' ']' ) )* 
@@ -1523,15 +1552,19 @@ options {
 	|
 	RCURLY { $setType(RCURLY); }
 	|
-	{ inAttributeContent }?
-	ATTRIBUTE_CONTENT
-	{ 
-		System.out.println("ATTRIB");
-		$setType(ATTRIBUTE_CONTENT); }
+	{ inAttributeContent && attrDelimChar == '"' }?
+	QUOT_ATTRIBUTE_CONTENT
+	{ $setType(QUOT_ATTRIBUTE_CONTENT); }
+	|
+	{ inAttributeContent && attrDelimChar == '\'' }?
+	APOS_ATTRIBUTE_CONTENT
+	{ $setType(APOS_ATTRIBUTE_CONTENT); }
 	|
 	{ !(parseStringLiterals || inElementContent) }?
-	QUOT
-	{ $setType(QUOT); }
+	QUOT { $setType(QUOT); }
+	|
+	{ !(parseStringLiterals || inElementContent) }?
+	APOS { $setType(APOS); System.out.println("APOS"); }
 	|
 	{ inElementContent }?
 	ELEMENT_CONTENT
