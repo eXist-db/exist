@@ -39,6 +39,8 @@ import org.exist.xpath.value.Type;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
+ * Describe a built-in function identified by its QName.
+ * 
  * @author wolf
  */
 public class DescribeFunction extends Function {
@@ -46,6 +48,8 @@ public class DescribeFunction extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("describe-function", UTIL_FUNCTION_NS, "util"),
+			"Describes a built-in function. Returns an element describing the " +
+			"function signature.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 			},
@@ -68,7 +72,7 @@ public class DescribeFunction extends Function {
 		String uri = qname.getNamespaceURI();
 		FunctionSignature signature;
 		if(uri.equals(Function.BUILTIN_FUNCTION_NS) || uri.equals(Function.UTIL_FUNCTION_NS) |
-			uri.equals(Function.XMLDB_FUNCTION_NS)) {
+			uri.equals(Function.XMLDB_FUNCTION_NS) || uri.equals(Function.REQUEST_FUNCTION_NS)) {
 			Class clazz = context.getClassForFunction(qname);
 			if (clazz == null)
 				throw new XPathException("function " + qname.toString() + " ( namespace-uri = " + 
@@ -82,8 +86,14 @@ public class DescribeFunction extends Function {
 		MemTreeBuilder builder = context.getDocumentBuilder();
 		AttributesImpl attribs = new AttributesImpl();
 		attribs.addAttribute("", "name", "name", "CDATA", signature.getName().toString());
+		attribs.addAttribute("", "module", "module", "CDATA", signature.getName().getNamespaceURI());
 		int nodeNr = builder.startElement("", "function", "function", attribs);
 		attribs.clear();
+		if(signature.getDescription() != null) {
+			builder.startElement("", "description", "description", attribs);
+			builder.characters(signature.getDescription());
+			builder.endElement();
+		}
 		builder.startElement("", "signature", "signature", attribs);
 		builder.characters(signature.toString());
 		builder.endElement();

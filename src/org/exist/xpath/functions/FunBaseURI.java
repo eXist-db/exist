@@ -42,6 +42,11 @@ public class FunBaseURI extends Function {
 	public final static FunctionSignature signature =
 			new FunctionSignature(
 				new QName("base-uri", BUILTIN_FUNCTION_NS),
+                "Returns the value of the base-uri property for the argument. " +
+                "Document, element and processing-instruction nodes have a " +
+                "base-uri property. If that property is non-empty, its value " +
+                "is returned. The base-uri of all other node types is the empty " +
+                "sequence.",
 				null,
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 			);

@@ -46,6 +46,11 @@ public class XMLDBCollection extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("collection", XMLDB_FUNCTION_NS, "xmldb"),
+			"Get a reference to a collection identified by the XMLDB URI passed " +
+			"as first argument. The second argument should specify the name of " +
+			"a valid user, the third is the password. The method returns a Java object " +
+			"type, which can then be used as argument to the create-collection or store " +
+			"functions.",
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),

@@ -40,8 +40,6 @@ import org.dbxml.core.indexer.IndexQuery;
 import org.exist.storage.BufferStats;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
-import org.exist.storage.cache.ClockCache;
-import org.exist.storage.cache.GClockCache;
 import org.exist.storage.cache.LRDCache;
 import org.exist.util.ByteArray;
 import org.exist.util.ByteConversion;
@@ -1307,9 +1305,9 @@ public class BFile extends BTree {
 					nextPage.setData(new byte[fileHeader.getWorkSize()]);
 					page.getPageHeader().setNextInChain(nextPage.getPageNum());
 					page.setDirty(true);
-					page.write();
+					//page.write();
 					
-					//dataCache.add(page);
+					dataCache.add(page);
 					page = nextPage;
 					if (remaining < chunkSize)
 						chunkSize = remaining;

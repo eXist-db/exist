@@ -38,6 +38,8 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 
 /**
+ * Register an XMLDB driver with the XMLDB DatabaseManager.
+ * 
  * @author wolf
  */
 public class XMLDBRegisterDatabase extends Function {
@@ -45,6 +47,9 @@ public class XMLDBRegisterDatabase extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("register-database", XMLDB_FUNCTION_NS, "xmldb"),
+			"Register an XMLDB driver class with the XMLDB Database Manager. " +
+			"This is only required if you want to access a database instance different " +
+			"from the one that executes the XQuery.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)},

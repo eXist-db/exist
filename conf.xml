@@ -21,10 +21,10 @@
 				  file system page size.
        -->
        
-	   <db-connection database="native" files="webapp/WEB-INF/data" 
+	   <!--db-connection database="native" files="webapp/WEB-INF/data" 
 		   buffers="1024" words_buffers="4096" collection_buffers="256" 
 		   elements_buffers="1024" free_mem_min="10" 
-		   pageSize="4096">
+		   pageSize="4096"-->
 
 		   <!-- Settings for the database connection pool
 
@@ -36,15 +36,15 @@
 				- min: minimum number of connections to keep alive.
 				- max: maximum number of connections allowed.
 		   -->
-		   <pool min="1" max="30" sync-period="300000"/>
-   		</db-connection>
+		   <!--pool min="1" max="30" sync-period="300000"/>
+   		</db-connection-->
   
-		<!--db-connection database="native" files="/var/xml/data" 
-			buffers="1024" words_buffers="32768" collection_buffers="2048" 
-			elements_buffers="8192" free_mem_min="10" 
+		<db-connection database="native" files="webapp/WEB-INF/data" 
+			buffers="1024" words_buffers="8192" collection_buffers="256" 
+			elements_buffers="2048" free_mem_min="10" 
 		   pageSize="4096">
 		   <pool min="1" max="15" sync-period="300000"/>
-	   </db-connection-->
+	   </db-connection>
 	   
   <!-- settings for the serializer
 
@@ -54,7 +54,7 @@
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
   <serializer enable-xinclude="yes" enable-xsl="false"
-	  indent="yes" add-exist-id="element" match-tagging-elements="true"
+	  indent="yes" add-exist-id="no" match-tagging-elements="true"
 	  match-tagging-attributes="false"/>
   
   <!-- settings for the indexer
@@ -115,8 +115,12 @@
 	<index doctype="PLAY" default="all">
 	</index>
 
-	<index attributes="true" alphanum="true" doctype="movie" default="all">
-		<!--exclude path="//@id"/-->
+	<index doctype="dblp" attributes="true" alphanum="true" default="all">
+		<exclude path="//@mdate"/>
+		<exclude path="//ee"/>
+		<exclude path="//volume"/>
+		<exclude path="//cdrom"/>
+		<exclude path="//url"/>
 	</index>
 
 	<index attributes="false" doctype="species" default="all" alphanum="true"/>

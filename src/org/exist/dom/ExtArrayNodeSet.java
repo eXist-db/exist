@@ -51,7 +51,7 @@ import org.w3c.dom.Node;
  * @author Wolfgang <wolfgang@exist-db.org>
  * @since 0.9.3
  */
-public class ExtArrayNodeSet extends NodeSet {
+public class ExtArrayNodeSet extends AbstractNodeSet {
 
 	private Int2ObjectAVLTreeMap map = new Int2ObjectAVLTreeMap();
 	private int initalSize = 128;

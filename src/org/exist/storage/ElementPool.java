@@ -31,7 +31,7 @@ public class ElementPool {
         String elementName;
         
         public CachedElementSet(DocumentSet documents, 
-				NodeSet nodes, String name) {
+			NodeSet nodes, String name) {
             this.documents = documents;
             this.nodes = nodes;
             this.elementName = name;

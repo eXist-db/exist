@@ -43,20 +43,10 @@ import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
-import org.exist.util.StorageAddress;
+//import org.exist.util.StorageAddress;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
 
-/**
- *  ElementIndex collects all element occurrences. It uses the name of the
- *  element and the current doc_id as keys and stores all occurrences of this
- *  element in a blob. This means that the blob just contains an array of gid's
- *  which may be compressed if useCompression is true. Storing all occurrences
- *  in one large blob is much faster than storing each of them in a single table
- *  row.
- *
- *@author     Wolfgang Meier (meier@ifs.tu-darmstadt.de)
- */
 public class NativeElementIndex extends ElementIndex {
 
 	private static Category LOG = Category.getInstance(NativeElementIndex.class.getName());
@@ -148,7 +138,8 @@ public class NativeElementIndex extends ElementIndex {
 									delta = is.readLong();
 									gid = last + delta;
 									last = gid;
-									address = StorageAddress.read(is);
+									address = is.readFixedLong();
+									//address = StorageAddress.read(is);
 									if (node == null
 										&& oldDoc.getTreeLevel(gid) < oldDoc.reindexRequired()) {
 										idList.add(new NodeProxy(oldDoc, gid, address));
@@ -179,7 +170,8 @@ public class NativeElementIndex extends ElementIndex {
 					delta = p.gid - last;
 					last = p.gid;
 					os.writeLong(delta);
-					StorageAddress.write(p.getInternalAddress(), os);
+					//StorageAddress.write(p.getInternalAddress(), os);
+					os.writeFixedLong(p.getInternalAddress());
 				}
 				//data = os.toByteArray();
 				try {
@@ -267,9 +259,9 @@ public class NativeElementIndex extends ElementIndex {
 									delta = is.readLong();
 									gid = last + delta;
 									last = gid;
-									address = StorageAddress.read(is);
+									//address = StorageAddress.read(is);
+									address = is.readFixedLong();
 									if(!containsNode(idList, gid)) {
-										//address = DOMFile.createPointer(page, tid);
 										newList.add(new NodeProxy(doc, gid, address));
 									}
 								}
@@ -292,7 +284,8 @@ public class NativeElementIndex extends ElementIndex {
 					delta = p.gid - last;
 					last = p.gid;
 					os.writeLong(delta);
-					StorageAddress.write(p.getInternalAddress(), os);
+					//StorageAddress.write(p.getInternalAddress(), os);
+					os.writeFixedLong(p.getInternalAddress());
 				}
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
@@ -355,7 +348,8 @@ public class NativeElementIndex extends ElementIndex {
 					cid = proxy.gid - prevId;
 					prevId = proxy.gid;
 					os.writeLong(cid);
-					StorageAddress.write(proxy.getInternalAddress(), os);
+					os.writeFixedLong(proxy.getInternalAddress());
+					//StorageAddress.write(proxy.getInternalAddress(), os);
 				}
 				if(qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
 					short sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());

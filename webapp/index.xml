@@ -7,6 +7,15 @@
     <body>
         <section title="News">
 			<definitionlist>
+                <definition>
+                    <term>
+                        <b>November 21, 2003</b>
+                    </term>
+                    <def>I have put up a few <link href="xquery/index.xml">XQuery examples</link>
+                    to demonstrate some of the new features available in the current development 
+                    version. XQuery support is still far from being complete, but you can already
+                    do a lot of fascinating things.</def>
+                </definition>
 				<definition>
 					<term>
 						<b>August 11, 2003</b>

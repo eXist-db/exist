@@ -109,9 +109,6 @@
             <map:transformer logger="sitemap.transformer.readDOMsession" name="readDOMsession" src="org.apache.cocoon.transformation.ReadDOMSessionTransformer"/>
             <map:transformer logger="sitemap.transformer.log" name="log" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.transformation.LogTransformer"/>
 
-            <map:transformer logger="xmlform.sitemap.transformer" name="xmlform" src="org.apache.cocoon.transformation.XMLFormTransformer"/>
-
-
             <map:transformer logger="sitemap.transformer.sql" name="sql" src="org.apache.cocoon.transformation.SQLTransformer"/>
 
             <!--#######################################################-->

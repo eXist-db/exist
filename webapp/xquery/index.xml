@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
+	
+	<xi:include href="cocoon://header.xml"/>
+	<xi:include href="sidebar.xml"/>
+
+	<body>
+		<section title="XQuery Examples">
+        
+            <p>The examples here demonstrate eXist's new XQuery
+            processing features. XQuery support is still under development. 
+            You have to check out the 
+            <a href="http://sourceforge.net/cvs/?group_id=17691">latest CVS 
+            sources</a> if you want to play with it.</p>
+            
+            <p>All examples are written in XQuery, using eXist's XQueryGenerator 
+            for Cocoon and some XSL stylesheets for display.</p>
+            
+            <table border="0" width="100%" cellspacing="10">
+                <tr>
+                    <td width="30%" valign="top">
+                        <link href="table.xq">Simple Example 1</link>
+                    </td>
+                    <td width="70%">
+                        Prints a table in HTML with 10x10 cells.
+                    </td>
+                </tr>
+                <tr>
+                    <td width="30%" valign="top">
+                        <link href="fibo.xq">Fibonacci</link>
+                    </td>
+                    <td width="70%">
+                        Calculates the first 10 Fibonacci numbers.
+                    </td>
+                </tr>
+                <tr>
+                    <td width="30%" valign="top">
+                        <link href="functions.xq">Built-in functions</link>
+                    </td>
+                    <td width="70%">
+                        Prints a table showing the signatures of all functions
+                        registered within the current XQuery context.
+                    </td>
+                </tr>
+                <tr>
+                    <td width="30%" valign="top">
+                        <link href="acronyms.xq">XML Acronyms</link>
+                    </td>
+                    <td width="70%">
+                        Another version of the <a href="http://www.xml-acronym-demystifier.org/">
+                        XML Acronym Demystifier</a>, entirely implemented in XQuery.
+                    </td>
+                </tr>
+            </table>
+            
+        </section>
+    </body>
+</document>

@@ -28,7 +28,7 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.SequenceIterator;
 import org.w3c.dom.Node;
 
-public class ArraySet extends NodeSet {
+public class ArraySet extends AbstractNodeSet {
 
 	public final static int ANCESTOR = 0;
 	public final static int DESCENDANT = 1;

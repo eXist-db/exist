@@ -55,6 +55,10 @@ public class IntegerValue extends NumericValue {
 		return value;
 	}
 	
+	public void setValue(long value) {
+		this.value = value;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Item#getStringValue()
 	 */

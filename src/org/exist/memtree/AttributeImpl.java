@@ -87,6 +87,13 @@ public class AttributeImpl extends NodeImpl implements Attr {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.w3c.dom.Node#getNodeValue()
+	 */
+	public String getNodeValue() throws DOMException {
+		return document.attrValue[nodeNumber];
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.w3c.dom.Attr#setValue(java.lang.String)
 	 */
 	public void setValue(String arg0) throws DOMException {

@@ -44,13 +44,23 @@ public class FunctionSignature {
 	private SequenceType[] arguments;
 	private SequenceType returnType;
 	private boolean isOverloaded = false;
+	private String description = null;
 	
 	public FunctionSignature(QName name) {
 		this(name, null, DEFAULT_TYPE, false);
 	}
 	
 	public FunctionSignature(QName name, SequenceType[] arguments, SequenceType returnType) {
-		this(name, arguments, returnType, false);	
+		this(name, null, arguments, returnType);
+	}
+	
+	public FunctionSignature(QName name, SequenceType[] arguments, SequenceType returnType,
+		boolean overloaded) {
+		this(name, null, arguments, returnType, overloaded);
+	}
+		
+	public FunctionSignature(QName name, String description, SequenceType[] arguments, SequenceType returnType) {
+		this(name, description, arguments, returnType, false);	
 	}
 	
 	/**
@@ -61,12 +71,13 @@ public class FunctionSignature {
 	 * @param returnType the sequence type returned by the function
 	 * @param overloaded set to true if the function may expect additional parameters
 	 */		
-	public FunctionSignature(QName name, SequenceType[] arguments, SequenceType returnType,
+	public FunctionSignature(QName name, String description, SequenceType[] arguments, SequenceType returnType,
 		boolean overloaded) {
 		this.name = name;
 		this.arguments = arguments;
 		this.returnType = returnType;
 		this.isOverloaded = overloaded;
+		this.description = description;
 	}
 	
 	public QName getName() {
@@ -93,6 +104,10 @@ public class FunctionSignature {
 		this.arguments = types;
 	}
 	
+	public String getDescription() {
+		return description;
+	}
+	
 	public boolean isOverloaded() {
 		return isOverloaded;
 	}
@@ -102,11 +117,17 @@ public class FunctionSignature {
 		buf.append(name.toString());
 		buf.append('(');
 		if(arguments != null) {
+            char var = 'a';
 			for(int i = 0; i < arguments.length; i++) {
 				if(i > 0)
 					buf.append(", ");
+                buf.append('$');
+                buf.append((char)(var + i));
+                buf.append(" as ");
 				buf.append(arguments[i].toString());
 			}
+            if(isOverloaded)
+                buf.append(", ...");
 		}
 		buf.append(") ");
 		buf.append(returnType.toString());

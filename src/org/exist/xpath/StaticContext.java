@@ -36,6 +36,7 @@ import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.xpath.functions.UserDefinedFunction;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 public class StaticContext {
 
@@ -53,7 +54,7 @@ public class StaticContext {
 	private TreeMap builtinFunctions;
 	private TreeMap declaredFunctions = new TreeMap();
 
-	/** TODO: don't put global variables here */
+	private TreeMap globalVariables = new TreeMap();
 	private TreeMap variables = new TreeMap();
 	private Stack variableStack = new Stack();
 	
@@ -245,7 +246,7 @@ public class StaticContext {
 		QName qn = QName.parse(this, qname);
 		Variable var = new Variable(qn);
 		var.setValue(val);
-		variables.put(qn, var);
+		globalVariables.put(qn, var);
 		return var;
 	}
 
@@ -259,6 +260,9 @@ public class StaticContext {
 	public Variable resolveVariable(String qname) throws XPathException {
 		QName qn = QName.parse(this, qname);
 		Variable var = (Variable) variables.get(qn);
+		if(var == null) {
+			var = (Variable) globalVariables.get(qn);
+		}
 		if (var == null)
 			throw new XPathException("variable " + qname + " is not bound");
 		return var;
@@ -408,6 +412,7 @@ public class StaticContext {
 		declareNamespace("fn", Function.BUILTIN_FUNCTION_NS);
 		declareNamespace("util", Function.UTIL_FUNCTION_NS);
 		declareNamespace("xmldb", Function.XMLDB_FUNCTION_NS);
+		declareNamespace("request", Function.REQUEST_FUNCTION_NS);
 		
 		builtinFunctions = new TreeMap();
 		for (int i = 0; i < SystemFunctions.internalFunctions.length; i++) {

@@ -47,6 +47,8 @@ public class Cardinality {
 	
 	public final static String display(int cardinality) {
 		switch(cardinality) {
+			case EMPTY:
+				return "empty()";
 			case EXACTLY_ONE:
 				return ""; 
 			case ONE_OR_MORE:

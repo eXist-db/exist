@@ -47,7 +47,7 @@ import org.w3c.dom.NodeList;
  * @author Wolfgang Meier
  * @author Timo Boehme
  */
-public class VirtualNodeSet extends NodeSet {
+public class VirtualNodeSet extends AbstractNodeSet {
 
 	protected int axis = -1;
 	protected NodeTest test;
@@ -190,8 +190,8 @@ public class VirtualNodeSet extends NodeSet {
 		if (realSet == null)
 			realSet = new ExtArrayNodeSet(100);
 
-		if (!realSet.contains(p))
-			realSet.add(p);
+		//if (!realSet.contains(p))
+		realSet.add(p);
 	}
 
 	public NodeProxy parentWithChild(

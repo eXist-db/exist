@@ -31,9 +31,12 @@ import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.DoubleValue;
 import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
+import org.exist.xpath.value.JavaObjectValue;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.StringValue;
+import org.exist.xpath.value.Type;
 import org.exist.xpath.value.ValueSequence;
+import org.w3c.dom.Node;
 
 public class XPathUtil {
 
@@ -74,6 +77,26 @@ public class XPathUtil {
 			}
 			return seq;
 		} else
-			throw new XPathException("unable to convert the Java object to an XPath value");
+			return new JavaObjectValue(obj);
+	}
+	
+	public final static int javaClassToXPath(Class clazz) {
+		if(clazz == String.class)
+			return Type.STRING;
+		else if(clazz == Boolean.class || clazz == boolean.class)
+			return Type.BOOLEAN;
+		else if(clazz == Integer.class || clazz == int.class
+			|| clazz == Long.class || clazz == long.class
+			|| clazz == Short.class || clazz == short.class
+			|| clazz == Byte.class || clazz == byte.class)
+			return Type.INTEGER;
+		else if(clazz == Double.class || clazz == double.class)
+			return Type.DOUBLE;
+		else if(clazz == Float.class || clazz == float.class)
+			return Type.FLOAT;
+		else if(clazz.isAssignableFrom(Node.class))
+			return Type.NODE;
+		else
+			return Type.JAVA_OBJECT;
 	}
 }

@@ -35,12 +35,16 @@ import org.exist.xpath.value.Type;
 public class ExtXCollection extends ExtCollection {
 
 	public final static FunctionSignature signature =
-			new FunctionSignature(
-				new QName("xcollection", BUILTIN_FUNCTION_NS),
-				new SequenceType[] {
-					 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-				true);
+        new FunctionSignature(
+            new QName("xcollection", BUILTIN_FUNCTION_NS),
+            "Works like fn:collection, but does not include documents " +
+            "found in subcollections of the specified collections. This " +
+            "function is specific to eXist and will be moved into a seperate " +
+            "module in the near future.",
+            new SequenceType[] {
+                 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+            true);
 				
 	/**
 	 * @param context

@@ -46,6 +46,9 @@ public class XMLDBCreateCollection extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("create-collection", XMLDB_FUNCTION_NS, "xmldb"),
+			"Create a new collection as a child of the collection object passed as " +
+			"first argument. The second argument specifies the name of the new " +
+			"collection.",
 			new SequenceType[] {
 				new SequenceType(Type.JAVA_OBJECT, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},

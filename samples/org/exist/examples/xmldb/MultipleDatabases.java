@@ -29,9 +29,9 @@ public class MultipleDatabases {
 		// initialize database drivers
 		Class cl = Class.forName(driver);
 		// create the default database
-		Database database = (Database) cl.newInstance();
-		database.setProperty("create-database", "true");
-		DatabaseManager.registerDatabase(database);
+		//Database database = (Database) cl.newInstance();
+		//database.setProperty("create-database", "true");
+		//DatabaseManager.registerDatabase(database);
 
 		// create a second database called "test", configured by
 		// configuration file "testConf.xml"
@@ -42,12 +42,12 @@ public class MultipleDatabases {
 
 		DatabaseManager.registerDatabase(database2);
 
-		Collection collection1 = DatabaseManager.getCollection(URI_DB1, "admin", null);
-		loadFile(collection1, "samples/shakespeare/hamlet.xml");
+		//Collection collection1 = DatabaseManager.getCollection(URI_DB1, "admin", null);
+		//loadFile(collection1, "samples/shakespeare/hamlet.xml");
 		Collection collection2 = DatabaseManager.getCollection(URI_DB2, "admin", null);
 		loadFile(collection2, "samples/shakespeare/r_and_j.xml");
 		
-		shutdown(collection1);
+		//shutdown(collection1);
 		shutdown(collection2);
 	}
 

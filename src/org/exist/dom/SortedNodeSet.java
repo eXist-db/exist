@@ -23,7 +23,7 @@ import org.w3c.dom.NodeList;
 
 import antlr.collections.AST;
 
-public class SortedNodeSet extends NodeSet {
+public class SortedNodeSet extends AbstractNodeSet {
 
 	private static Category LOG = Category.getInstance(SortedNodeSet.class.getName());
 

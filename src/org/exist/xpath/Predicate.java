@@ -23,7 +23,6 @@ package org.exist.xpath;
 
 import java.util.Iterator;
 
-import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.ArraySet;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentImpl;

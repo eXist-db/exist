@@ -28,14 +28,6 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.util.Configuration;
 
-/**
-* ElementIndex collects all element occurrences. It uses the name of the
-* element and the current doc_id as keys and stores all occurrences
-* of this element in a blob. This means that the blob just contains
-* an array of gid's which may be compressed if useCompression is true.
-* Storing all occurrences in one large blob is much faster than storing
-* each of them in a single table row.
-*/
 public abstract class ElementIndex extends Observable {
 
     protected DBBroker broker;

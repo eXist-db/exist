@@ -67,6 +67,9 @@ public abstract class Function extends PathExpr {
 	public final static String UTIL_FUNCTION_NS =
 		"http://exist-db.org/xquery/util";
 	
+	public final static String REQUEST_FUNCTION_NS =
+		"http://exist-db.org/xquery/request";
+		
 	// The signature of the function.	
 	private FunctionSignature mySignature;
 	
