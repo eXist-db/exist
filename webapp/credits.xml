@@ -62,36 +62,39 @@
         <section>
             <title>Credits</title>
             
-            <para>The following people have contributed to eXist or are active
+            <para>The following people have contributed to eXist (by writing code or supplying patches) or are active
             committers (in strict alphabetical order):</para>
             
             <unorderedlist>
                 <listitem>
-                    <para>Timo Boehme</para>
+                    <para>Timo Boehme (patches)</para>
                 </listitem>
                 <listitem>
-                    <para>Sebastian Bossung</para>
+                    <para>Sebastian Bossung (schema service)</para>
+                </listitem>
+				<listitem>
+					<para>Mark R. Diggory (tomcat realm)</para>
+				</listitem>
+                <listitem>
+                    <para>Igor Abade V. Leite (patches)</para>
                 </listitem>
                 <listitem>
-                    <para>Igor Abade V. Leite</para>
+                    <para>Piotr Kaminski (patches)</para>
                 </listitem>
                 <listitem>
-                    <para>Piotr Kaminski</para>
+                    <para>Stephan Körnig (hashtables)</para>
                 </listitem>
                 <listitem>
-                    <para>Stephan Körnig</para>
+                    <para>Wolfgang Meier (main developer)</para>
                 </listitem>
                 <listitem>
-                    <para>Wolfgang Meier</para>
+                    <para>Per Nyfelt (JBoss integration)</para>
                 </listitem>
                 <listitem>
-                    <para>Per Nyfelt</para>
+                    <para>Giulio Valentino (developer)</para>
                 </listitem>
                 <listitem>
-                    <para>Giulio Valentino</para>
-                </listitem>
-                <listitem>
-                    <para>Jean-Marc Vanel</para>
+                    <para>Jean-Marc Vanel (developer)</para>
                 </listitem>
             </unorderedlist>
             
