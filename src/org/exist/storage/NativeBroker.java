@@ -929,7 +929,6 @@ public class NativeBroker extends DBBroker {
 				    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 				    if(spec != null) {
 				        indexType = spec.getIndexType();
-				        LOG.debug("Index for " + gid + ": " + indexType);
 				    }
 				}
 				if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
@@ -969,8 +968,6 @@ public class NativeBroker extends DBBroker {
 				    } else
 				        indexAttribs = false;
 				}
-				if(indexAttribs)
-					textEngine.storeAttribute(ftIdx, (AttrImpl) node);
 				if (idxSpec != null) {
 				    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 				    if(spec != null) {
@@ -979,6 +976,8 @@ public class NativeBroker extends DBBroker {
 				        valueIndex.storeAttribute(spec, (AttrImpl) node, tempProxy);
 				    }
 				}
+				if(indexAttribs)
+					textEngine.storeAttribute(ftIdx, (AttrImpl) node);
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
 				if (((AttrImpl) node).getType() == AttrImpl.ID) {
@@ -989,6 +988,14 @@ public class NativeBroker extends DBBroker {
 			    currentPath.removeLastComponent();
 				break;
 			case Node.TEXT_NODE :
+				if (idxSpec != null) {
+				    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+				    if(spec != null) {
+				        tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
+				        valueIndex.setDocument(doc);
+				        valueIndex.storeText(spec, (TextImpl) node, tempProxy);
+				    }
+				}
 				// check if this textual content should be fulltext-indexed
 				// by calling IndexPaths.match(path)
 			    boolean indexText = true;
@@ -997,14 +1004,6 @@ public class NativeBroker extends DBBroker {
                 boolean valore = (ftIdx == null || currentPath == null ? false : ftIdx.preserveContent(currentPath));
                 if(indexText)
                     textEngine.storeText(ftIdx, (TextImpl) node, valore);
-                if (idxSpec != null) {
-				    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-				    if(spec != null) {
-				        tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
-				        valueIndex.setDocument(doc);
-				        valueIndex.storeText(spec, (TextImpl) node, tempProxy);
-				    }
-				}
 				break;
 		}
 		if (nodeType == Node.ELEMENT_NODE && level <= depth) {
@@ -1183,6 +1182,14 @@ public class NativeBroker extends DBBroker {
 							node.getPrefix());
 					qname.setNameType(ElementValue.ATTRIBUTE);
 					elementIndex.addRow(qname, tempProxy);
+					if (idxSpec != null) {
+					    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+					    if(spec != null) {
+					        tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
+					        valueIndex.setDocument(doc);
+					        valueIndex.storeAttribute(spec, (AttrImpl) node, tempProxy);
+					    }
+					}
 					// check if attribute value should be fulltext-indexed
 					// by calling IndexPaths.match(path) 
 					boolean indexAttribs = true;
@@ -1194,14 +1201,6 @@ public class NativeBroker extends DBBroker {
 					}
 					if (indexAttribs)
 						textEngine.storeAttribute(ftIdx, (AttrImpl) node);
-					if (idxSpec != null) {
-					    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-					    if(spec != null) {
-					        tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
-					        valueIndex.setDocument(doc);
-					        valueIndex.storeAttribute(spec, (AttrImpl) node, tempProxy);
-					    }
-					}
 					// if the attribute has type ID, store the ID-value
 					// to the element index as well
 					if (((AttrImpl) node).getType() == AttrImpl.ID) {
@@ -1212,12 +1211,6 @@ public class NativeBroker extends DBBroker {
 					currentPath.removeLastComponent();
 					break;
 				case Node.TEXT_NODE :
-					// check if this textual content should be fulltext-indexed
-					// by calling IndexPaths.match(path)
-					if (ftIdx == null || ftIdx.match(currentPath)) {     
-		                boolean valore = (ftIdx == null ? false : ftIdx.preserveContent(currentPath));
-						textEngine.storeText(ftIdx, (TextImpl) node, valore);
-					}
 					if (idxSpec != null) {
 					    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 					    if(spec != null) {
@@ -1225,6 +1218,12 @@ public class NativeBroker extends DBBroker {
 					        valueIndex.setDocument(doc);
 					        valueIndex.storeText(spec, (TextImpl) node, tempProxy);
 					    }
+					}
+					// check if this textual content should be fulltext-indexed
+					// by calling IndexPaths.match(path)
+					if (ftIdx == null || ftIdx.match(currentPath)) {     
+		                boolean valore = (ftIdx == null ? false : ftIdx.preserveContent(currentPath));
+						textEngine.storeText(ftIdx, (TextImpl) node, valore);
 					}
 					break;
 			}
@@ -2614,8 +2613,6 @@ public class NativeBroker extends DBBroker {
 				    } else
 				        indexAttribs = false;
 				}
-				if(indexAttribs && !isTemp)
-					textEngine.storeAttribute(ftIdx, (AttrImpl) node);
 				if (idxSpec != null) {
 				    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 				    if(spec != null) {
@@ -2624,6 +2621,8 @@ public class NativeBroker extends DBBroker {
 				        valueIndex.storeAttribute(spec, (AttrImpl) node, tempProxy);
 				    }
 				}
+				if(indexAttribs && !isTemp)
+					textEngine.storeAttribute(ftIdx, (AttrImpl) node);
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
 				if (((AttrImpl) node).getType() == AttrImpl.ID) {
@@ -2638,10 +2637,6 @@ public class NativeBroker extends DBBroker {
 				// check if this textual content should be fulltext-indexed
 				// by calling IndexPaths.match(path)
 				if (!isTemp && index) {
-					if (ftIdx == null || ftIdx.match(currentPath)) {     
-		                boolean valore = (ftIdx == null ? false : ftIdx.preserveContent(currentPath));
-						textEngine.storeText(ftIdx, (TextImpl) node, valore);
-					}
 					if (idxSpec != null) {
 					    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 					    if(spec != null) {
@@ -2649,6 +2644,10 @@ public class NativeBroker extends DBBroker {
 					        valueIndex.setDocument(doc);
 					        valueIndex.storeText(spec, (TextImpl) node, tempProxy);
 					    }
+					}
+					if (ftIdx == null || ftIdx.match(currentPath)) {     
+		                boolean valore = (ftIdx == null ? false : ftIdx.preserveContent(currentPath));
+						textEngine.storeText(ftIdx, (TextImpl) node, valore);
 					}
 				}
 				break;

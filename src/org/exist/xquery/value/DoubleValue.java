@@ -388,14 +388,6 @@ public class DoubleValue extends NumericValue implements Indexable {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.storage.Indexable#deserialize(byte[])
-     */
-    public void deserialize(byte[] data) {
-        final long bits = ByteConversion.byteToLong(data, 3) ^ 0x8000000000000000L;
-        value = Double.longBitsToDouble(bits);
-    }
-
-    /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     public int compareTo(Object o) {

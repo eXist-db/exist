@@ -190,13 +190,6 @@ public class BooleanValue extends AtomicValue implements Indexable {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.storage.Indexable#deserialize(byte[])
-     */
-    public void deserialize(byte[] data) {
-        value = data[3] == 0 ? false : true;
-    }
-
-    /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     public int compareTo(Object o) {

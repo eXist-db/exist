@@ -473,15 +473,6 @@ public class IntegerValue extends NumericValue implements Indexable {
 		ByteConversion.longToByte(l, data, 3);
 		return data;
     }
-
-    /* (non-Javadoc)
-     * @see org.exist.storage.Indexable#deserialize(byte[])
-     */
-    public void deserialize(byte[] data) {
-        long l = ByteConversion.byteToLong(data, 3) ^ 0x8000000000000000L;
-        type = data[2];
-        value = BigInteger.valueOf(l);
-    }
     
     /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
