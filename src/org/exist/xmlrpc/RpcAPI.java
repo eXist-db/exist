@@ -83,6 +83,24 @@ public interface RpcAPI {
 	 */
 	byte[] getDocument(User user, String name, String encoding, int prettyPrint, String stylesheet)
 		throws EXistException, PermissionDeniedException;
+	
+     /**
+	 *  Retrieve document by name. XML content is indented if prettyPrint is set
+	 *  to >=0. Use supplied encoding for output and apply the specified stylesheet. 
+	 * 
+	 *  This method is provided to retrieve a document with encodings other than UTF-8. Since the data is
+	 *  handled as binary data, character encodings are preserved. byte[]-values
+	 *  are automatically BASE64-encoded by the XMLRPC library.
+	 *
+	 *@param  name                           the document's name.
+	 *@param  parametri                      Hashtable of parameter.
+	 *@return                                The document value
+	 *@exception  EXistException             Description of the Exception
+	 *@exception  PermissionDeniedException  Description of the Exception
+	 */		
+	byte[] getDocument(User user, String name, Hashtable parametri)
+			throws EXistException, PermissionDeniedException;	
+		
 
 	String getDocumentAsString(User user, String name, int prettyPrint)
 			throws EXistException, PermissionDeniedException;

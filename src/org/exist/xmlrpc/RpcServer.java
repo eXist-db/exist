@@ -39,6 +39,9 @@ import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.xml.sax.SAXException;
 
+import javax.xml.transform.OutputKeys;
+import org.exist.storage.serializers.EXistOutputKeys;
+
 /**
  *  Handler class for XMLRPC calls. <p>
  *
@@ -224,7 +227,20 @@ public class RpcServer implements RpcAPI {
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		try {
-			String xml = con.getDocument(user, name, (prettyPrint > 0), encoding, null);
+			Hashtable parametri = new Hashtable();
+			
+			if (prettyPrint > 0) {
+			parametri.put(OutputKeys.INDENT, "yes");
+			} else {
+			parametri.put(OutputKeys.INDENT, "no");
+		    }
+		    
+		    parametri.put(OutputKeys.ENCODING, encoding);
+
+			
+		//	String xml = con.getDocument(user, name, (prettyPrint > 0), encoding, null);
+			String xml = con.getDocument(user, name, parametri);
+			
 			if (xml == null)
 				throw new EXistException("document " + name + " not found!");
 			try {
@@ -264,7 +280,21 @@ public class RpcServer implements RpcAPI {
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		try {
-			String xml = con.getDocument(user, name, (prettyPrint > 0), encoding, stylesheet);
+
+			Hashtable parametri = new Hashtable();
+			
+			if (prettyPrint > 0) {
+			parametri.put(OutputKeys.INDENT, "yes");
+			} else {
+			parametri.put(OutputKeys.INDENT, "no");
+		    }
+		    
+		    parametri.put(EXistOutputKeys.STYLESHEET, stylesheet);
+		    
+		    parametri.put(OutputKeys.ENCODING, encoding);
+
+			//String xml = con.getDocument(user, name, (prettyPrint > 0), encoding, stylesheet);
+			String xml = con.getDocument(user, name, parametri);
 			if (xml == null)
 				throw new EXistException("document " + name + " not found!");
 			try {
@@ -279,6 +309,7 @@ public class RpcServer implements RpcAPI {
 			pool.release(con);
 		}
 	}
+	
 
 	/**
 	 * Retrieve a document. The document data is returned as a string.
@@ -295,7 +326,20 @@ public class RpcServer implements RpcAPI {
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		try {
-			String xml = con.getDocument(user, name, (prettyPrint > 0), "UTF-8", stylesheet);
+			//String xml = con.getDocument(user, name, (prettyPrint > 0), "UTF-8", stylesheet);
+			Hashtable parametri = new Hashtable();
+			
+			if (prettyPrint > 0) {
+			parametri.put(OutputKeys.INDENT, "yes");
+			} else {
+			parametri.put(OutputKeys.INDENT, "no");
+		    }
+		    
+		    parametri.put(EXistOutputKeys.STYLESHEET, stylesheet);
+		    
+			String xml = con.getDocument(user, name, parametri);
+			
+			
 			if (xml == null)
 				throw new EXistException("document " + name + " not found!");
 			else
@@ -307,6 +351,56 @@ public class RpcServer implements RpcAPI {
 			pool.release(con);
 		}
 	}
+
+
+	/**
+	 *  This method is provided to retrieve a document with encodings other than
+	 *  UTF-8. Since the data is handled as binary data, character encodings are
+	 *  preserved. byte[]-values are automatically BASE64-encoded by the XMLRPC
+	 *  library.
+	 *
+	 *@param  name                           Description of the Parameter
+	 *@param  parametri                       Description of the Parameter
+	 *@param  user                           Description of the Parameter
+	 *@return                                The document value
+	 *@exception  EXistException             Description of the Exception
+	 *@exception  PermissionDeniedException  Description of the Exception
+	 */
+	public byte[] getDocument(
+		User user,
+		String name,
+		Hashtable parametri)
+		throws EXistException, PermissionDeniedException {
+		
+		String encoding = "UTF-8";
+		
+		if (((String) parametri.get("encoding")) == null){
+			encoding ="UTF-8";
+		} else	{
+		    encoding=(String)parametri.get("encoding");
+		}
+		
+		RpcConnection con = pool.get();
+		try {
+			String xml = con.getDocument(user, name, parametri);
+			if (xml == null)
+				throw new EXistException("document " + name + " not found!");
+			try {
+				return xml.getBytes(encoding);
+			} catch (UnsupportedEncodingException uee) {
+				return xml.getBytes();
+			}
+		} catch (Exception e) {
+			handleException(e);
+			return null;
+		} finally {
+			pool.release(con);
+		}
+	}
+
+
+
+
 	/**
 	 *  get a list of all documents contained in the repository.
 	 *
