@@ -115,13 +115,7 @@ public abstract class Modification {
 			XQueryContext context = new XQueryContext(broker);
 			context.setExclusiveMode(true);
 			context.setStaticallyKnownDocuments(docs);
-			Map.Entry entry;
-			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
-				entry = (Map.Entry) i.next();
-				context.declareNamespace(
-					(String) entry.getKey(),
-					(String) entry.getValue());
-			}
+			declareNamespaces(context);
 			XQueryLexer lexer = new XQueryLexer(context, new StringReader(selectStmt));
 			XQueryParser parser = new XQueryParser(lexer);
 			XQueryTreeParser treeParser = new XQueryTreeParser(context);
@@ -151,6 +145,19 @@ public abstract class Modification {
 		} catch (TokenStreamException e) {
 			LOG.warn("error while parsing select expression", e);
 			throw new EXistException(e);
+		}
+	}
+
+	/**
+	 * @param context
+	 */
+	protected void declareNamespaces(XQueryContext context) {
+		Map.Entry entry;
+		for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
+			entry = (Map.Entry) i.next();
+			context.declareNamespace(
+				(String) entry.getKey(),
+				(String) entry.getValue());
 		}
 	}
 

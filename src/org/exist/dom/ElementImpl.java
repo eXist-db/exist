@@ -275,12 +275,12 @@ public class ElementImpl
             throws DOMException {
         DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
         Node node = null;
+        NodeImpl lastAttrib = checkDupAttributes(attribs);
         if (children == 0) {
             // no children: append a new child
             node = appendChildren(firstChildID(), this, getPath(), attribs, true);
         }
         else {
-            NodeImpl lastAttrib = getLastAttribute();
             if (lastAttrib != null && lastAttrib.gid == lastChildID())
                 node = appendChildren(lastChildID() + 1, lastAttrib, getPath(), attribs, true);
             else
@@ -317,6 +317,7 @@ public class ElementImpl
 
     public Node appendChildren(NodeList nodes, int child)
             throws DOMException {
+    	// attributes are handled differently. Call checkForAttributes to extract them.
         nodes = checkForAttributes(nodes);
         if (nodes == null || nodes.getLength() == 0)
             return null;
@@ -565,18 +566,45 @@ public class ElementImpl
         return null;
     }
 
-    private AttrImpl getLastAttribute() {
+    /**
+     * Check if an attribute is already present in the node's attribute list. Throws a
+     * DOMException if yes. Otherwise, returns the last attribute in the attribute list.
+     * 
+     * @param attrs
+     * @return
+     * @throws DOMException
+     */
+    private AttrImpl checkDupAttributes(NodeList attrs) throws DOMException {
         long start = firstChildID();
         AttrImpl attr = null;
         for (long i = start; i < start + children; i++) {
             Node child = ownerDocument.getNode(i);
-            if (child != null
-                    && child.getNodeType() == Node.ATTRIBUTE_NODE)
-                attr = (AttrImpl) child;
+            checkAttribute(child, attrs);
+            if (child != null) {
+            	if(child.getNodeType() == Node.ATTRIBUTE_NODE)
+            		attr = (AttrImpl) child;
+            } else
+            	break;
         }
         return attr;
     }
 
+    private void checkAttribute(Node child, NodeList attrs) throws DOMException {
+    	String childNS = child.getNamespaceURI();
+    	if(childNS == null)
+    		childNS = "";
+    	for(int i = 0; i < attrs.getLength(); i++) {
+    		Attr current = (Attr) attrs.item(i);
+    		String currentNS = current.getNamespaceURI();
+    		if(currentNS == null)
+    			currentNS = "";
+    		if(child.getLocalName().equals(current.getLocalName()) &&
+    				childNS.equals(currentNS))
+    			throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
+    					"Attribute " + child.getNodeName() + " is already present.");
+    	}
+    }
+    
     /**
      * @see org.w3c.dom.Element#getAttributeNodeNS(java.lang.String, java.lang.String)
      */
@@ -1286,7 +1314,7 @@ public class ElementImpl
 			if (children == 0) {
 			   appendChildren(firstChildID(), this, getPath(), appendList, true);
 			} else {
-			    NodeImpl lastAttrib = getLastAttribute();
+			    NodeImpl lastAttrib = checkDupAttributes(appendList);
 			    if (lastAttrib != null && lastAttrib.gid == lastChildID())
 			        appendChildren(lastChildID() + 1, lastAttrib, getPath(), appendList, true);
 			    else

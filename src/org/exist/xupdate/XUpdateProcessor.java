@@ -28,14 +28,16 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 import org.xml.sax.Attributes;
@@ -66,15 +68,21 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	
 	private boolean inModification = false;
 	private boolean inAttribute = false;
+	
 	private Modification modification = null;
 	private DocumentBuilder builder;
 	private Document doc;
+	
 	private Stack stack = new Stack();
 	private Node currentNode = null;
 	private DBBroker broker;
 	private DocumentSet documentSet;
+	
 	private List modifications = new ArrayList();
+	private Stack conditionals = new Stack();
+	
 	private FastStringBuffer charBuf = new FastStringBuffer(6, 15, 5);
+	
 	private Map variables = new TreeMap();
 	private Map namespaces = new HashMap(10);
 
@@ -190,39 +198,30 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		}
 		if (namespaceURI.equals(XUPDATE_NS)) {
 			if (localName.equals("modifications")) {
-				String version = atts.getValue("version");
-				if (version == null)
-					throw new SAXException(
-						"version attribute is required for "
-							+ "element modifications");
-				if (!version.equals("1.0"))
-					throw new SAXException(
-						"Version "
-							+ version
-							+ " of XUpdate "
-							+ "not supported.");
+				startModifications(atts);
 				return;
 			}
-			String select = null;
 
 			// variable declaration
 			if (localName.equals("variable")) {
-				select = atts.getValue("select");
-				if (select == null)
-					throw new SAXException("variable declaration requires a select attribute");
-				String name = atts.getValue("name");
-				if (name == null)
-					throw new SAXException("variable declarations requires a name attribute");
-				createVariable(name, select);
+				startVariableDecl(atts);
 				return;
 			}
-
-			if (localName.equals("append")
-				|| localName.equals("insert-before")
-				|| localName.equals("insert-after")
-				|| localName.equals("remove")
-				|| localName.equals("rename")
-				|| localName.equals("update")) {
+			
+			String select = null;
+			if ("if".equals(localName)) {
+				if (inModification)
+					throw new SAXException("xupdate:if is not allowed inside a modification");
+				select = atts.getValue("test");
+				Conditional cond = new Conditional(broker, documentSet, select, namespaces);
+				conditionals.push(cond);
+				return;
+			} else if ("append".equals(localName)
+				|| "insert-before".equals(localName)
+				|| "insert-after".equals(localName)
+				|| "remove".equals(localName)
+				|| "rename".equals(localName)
+				|| "update".equals(localName)) {
 				if (inModification)
 					throw new SAXException("nested modifications are not allowed");
 				select = atts.getValue("select");
@@ -233,35 +232,35 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				contents = new NodeListImpl();
 				inModification = true;
 			} else if (
-				(localName.equals("element")
-					|| localName.equals("attribute")
-					|| localName.equals("text")
-					|| localName.equals("processing-instruction")
-					|| localName.equals("comment"))
+				("element".equals(localName)
+					|| "attribute".equals(localName)
+					|| "text".equals(localName)
+					|| "processing-instruction".equals(localName)
+					|| "comment".equals(localName))
 					&& (!inModification))
 				throw new SAXException(
 					"creation elements are only allowed inside "
 						+ "a modification");
 
 			// start a new modification section
-			if (localName.equals("append")) {
+			if ("append".equals(localName)) {
 			    String child = atts.getValue("child");
 				modification = new Append(broker, documentSet, select, child, namespaces);
-			} else if (localName.equals("update"))
+			} else if ("update".equals(localName))
 				modification = new Update(broker, documentSet, select, namespaces);
-			else if (localName.equals("insert-before"))
+			else if ("insert-before".equals(localName))
 				modification =
 					new Insert(broker, documentSet, select, Insert.INSERT_BEFORE, namespaces);
-			else if (localName.equals("insert-after"))
+			else if ("insert-after".equals(localName))
 				modification =
 					new Insert(broker, documentSet, select, Insert.INSERT_AFTER, namespaces);
-			else if (localName.equals("remove"))
+			else if ("remove".equals(localName))
 				modification = new Remove(broker, documentSet, select, namespaces);
-			else if (localName.equals("rename"))
+			else if ("rename".equals(localName))
 				modification = new Rename(broker, documentSet, select, namespaces);
 
 			// process commands for node creation
-			else if (localName.equals("element")) {
+			else if ("element".equals(localName)) {
 				String name = atts.getValue("name");
 				if (name == null)
 					throw new SAXException("element requires a name attribute");
@@ -289,7 +288,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					last.appendChild(elem);
 				}
 				stack.push(elem);
-			} else if (localName.equals("attribute")) {
+			} else if ("attribute".equals(localName)) {
 				String name = atts.getValue("name");
 				if (name == null)
 					throw new SAXException("attribute requires a name attribute");
@@ -307,37 +306,52 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 							"no namespace defined for prefix " + prefix);
 				}
 				Attr attrib = doc.createAttributeNS(namespace, name);
-				if (stack.isEmpty())
+				if (stack.isEmpty()) {
+					for(int i = 0; i < contents.getLength(); i++) {
+						Node n = contents.item(i);
+						String ns = n.getNamespaceURI();
+						if(ns == null) ns = "";
+						if(n.getNodeType() == Node.ATTRIBUTE_NODE &&
+								n.getLocalName().equals(name) &&
+								ns.equals(namespace))
+							throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified twice");
+					}
 					contents.add(attrib);
-				else {
+				} else {
 					Element last = (Element) stack.peek();
+					if(last.getAttributeNS(namespace, name) != null)
+						throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified " +
+								"twice on the same element");
 					last.setAttributeNode(attrib);
 				}
 				inAttribute = true;
 				currentNode = attrib;
 
 				// process value-of
-			} else if (localName.equals("value-of")) {
+			} else if ("value-of".equals(localName)) {
 				select = atts.getValue("select");
 				if (select == null)
 					throw new SAXException("value-of requires a select attribute");
-				List nodes;
-				if (select.startsWith("$")) {
-					nodes = (List) variables.get(select);
-					if (nodes == null)
-						throw new SAXException(
-							"variable " + select + " not found");
-				} else
-					nodes = processQuery(select);
-				LOG.debug("found " + nodes.size() + " nodes for value-of");
-				Node node;
-				for (Iterator i = nodes.iterator(); i.hasNext();) {
-					node = XMLUtil.copyNode(doc, (Node) i.next());
-					if (stack.isEmpty())
-						contents.add(node);
-					else {
-						Element last = (Element) stack.peek();
-						last.appendChild(node);
+				Sequence seq = processQuery(select);
+				LOG.debug("Found " + seq.getLength() + " items for value-of");
+				Item item;
+				for (SequenceIterator i = seq.iterate(); i.hasNext();) {
+					item = i.nextItem();
+					if(Type.subTypeOf(item.getType(), Type.NODE)) { 
+						Node node = XMLUtil.copyNode(doc, ((NodeValue)item).getNode());
+						if (stack.isEmpty())
+							contents.add(node);
+						else {
+							Element last = (Element) stack.peek();
+							last.appendChild(node);
+						}
+					} else {
+						try {
+							String value = item.getStringValue();
+							characters(value.toCharArray(), 0, value.length());
+						} catch(XPathException e) {
+							throw new SAXException(e.getMessage(), e);
+						}
 					}
 				}
 			}
@@ -359,6 +373,30 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		}
 	}
 
+	private void startVariableDecl(Attributes atts) throws SAXException {
+		String select = atts.getValue("select");
+		if (select == null)
+			throw new SAXException("variable declaration requires a select attribute");
+		String name = atts.getValue("name");
+		if (name == null)
+			throw new SAXException("variable declarations requires a name attribute");
+		createVariable(name, select);
+	}
+
+	private void startModifications(Attributes atts) throws SAXException {
+		String version = atts.getValue("version");
+		if (version == null)
+			throw new SAXException(
+				"version attribute is required for "
+					+ "element modifications");
+		if (!version.equals("1.0"))
+			throw new SAXException(
+				"Version "
+					+ version
+					+ " of XUpdate "
+					+ "not supported.");
+	}
+
 	/**
 	 * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
 	 */
@@ -378,12 +416,15 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			}
 			charBuf.setLength(0);
 		}
-		if (namespaceURI.equals(XUPDATE_NS)) {
-			if (localName.equals("element")) {
+		if (XUPDATE_NS.equals(namespaceURI)) {
+			if ("if".equals(localName)) {
+				Conditional cond = (Conditional) conditionals.pop();
+				modifications.add(cond);
+			} else if (localName.equals("element")) {
 				stack.pop();
-			} else if (localName.equals("attribute"))
+			} else if (localName.equals("attribute")) {
 				inAttribute = false;
-			if (localName.equals("append")
+			} else if (localName.equals("append")
 				|| localName.equals("update")
 				|| localName.equals("remove")
 				|| localName.equals("rename")
@@ -391,7 +432,12 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				|| localName.equals("insert-after")) {
 				inModification = false;
 				modification.setContent(contents);
-				modifications.add(modification);
+				if(!conditionals.isEmpty()) {
+					Conditional cond = (Conditional) conditionals.peek();
+					cond.addModification(modification);
+				} else {
+					modifications.add(modification);
+				}
 				modification = null;
 			}
 		} else if (inModification)
@@ -466,12 +512,12 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	private void createVariable(String name, String select)
 		throws SAXException {
 		LOG.debug("creating variable " + name + " as " + select);
-		List result = processQuery(select);
-		LOG.debug("found " + result.size() + " for variable " + name);
-		variables.put('$' + name, result);
+		Sequence result = processQuery(select);
+		LOG.debug("found " + result.getLength() + " for variable " + name);
+		variables.put(name, result);
 	}
 
-	private List processQuery(String select) throws SAXException {
+	private Sequence processQuery(String select) throws SAXException {
 		try {
 			XQueryContext context = new XQueryContext(broker);
 			context.setStaticallyKnownDocuments(documentSet);
@@ -481,6 +527,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				context.declareNamespace(
 					(String) entry.getKey(),
 					(String) entry.getValue());
+			}
+			for (Iterator i = variables.entrySet().iterator(); i.hasNext(); ) {
+				entry = (Map.Entry) i.next();
+				context.declareVariable(entry.getKey().toString(), entry.getValue());
 			}
 			XQueryLexer lexer = new XQueryLexer(context, new StringReader(select));
 			XQueryParser parser = new XQueryParser(lexer);
@@ -500,15 +550,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			}
 
 			Sequence seq = expr.eval(null, null);
-			if (!(seq.getItemType() == Type.NODE))
-				throw new SAXException(
-					"select expression should evaluate to a" + "node-set");
-			NodeList set = (NodeList)seq;
-			ArrayList out = new ArrayList(set.getLength());
-			for (int i = 0; i < set.getLength(); i++) {
-				out.add(set.item(i));
-			}
-			return out;
+			return seq;
 		} catch (RecognitionException e) {
 			LOG.warn("error while creating variable", e);
 			throw new SAXException(e);
