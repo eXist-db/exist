@@ -55,7 +55,11 @@ declare function setup:importLocal() as element()+ {
                 setup:store-files("/db/library", $dir, "*.rdf", "text/xml"),
                 setup:create-collection("/db", "mods"),
                 setup:store-files("/db/mods", $dir, "mods/*.xml", "text/xml"),
-                setup:store-files("/db", $dir, "*.xml", "text/xml")
+                setup:store-files("/db", $dir, "*.xml", "text/xml"),
+				setup:create-collection("/db/system/config", "db"),
+				setup:create-collection("/db/system/config/db", "mondial"),
+				setup:store-files("/db/system/config/db/mondial", $dir,
+					"mondial.xconf", "text/xml")
             }
             </ul>
         </div>
