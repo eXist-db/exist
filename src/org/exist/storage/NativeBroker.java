@@ -585,7 +585,8 @@ public class NativeBroker extends DBBroker {
 		} catch (LockException e) {
 			LOG.warn("Could not acquire lock on document " + docPath, e);
 		} finally {
-			collection.release();
+			if(collection != null)
+				collection.release();
 		}
 		return null;
 	}

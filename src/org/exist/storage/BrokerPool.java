@@ -213,6 +213,11 @@ public class BrokerPool {
 	private SyncDaemon syncDaemon;
 	
 	/**
+	 * A task waiting to be processed.
+	 */
+	private SystemTask waitingTask = null;
+	
+	/**
 	 * ShutdownListener will be notified when the database instance shuts down.
 	 */
 	private ShutdownListener shutdownListener = null;
@@ -415,18 +420,23 @@ public class BrokerPool {
 		LOG.debug("database engine " + instanceId + " initialized.");
 	}
 
+	/**
+	 * Returns true while the database is initializing
+	 * the database files and the security manager.
+	 * 
+	 * @return
+	 */
 	protected boolean isInitializing() {
 		return initializing;
 	}
 	
 	/**
-	 *  Release a DBBroker instance into the pool.
-	 *	If all active instances are in the pool (i.e.
-	 * 	the database is currently not used), release
-	 *  will call sync() to flush unwritten buffers 
-	 *  to the disk. 
+	 * Release a DBBroker instance into the pool.
 	 * 
-	 *@param  broker  Description of the Parameter
+	 * If there are pending system maintenance tasks,
+	 * the method will block until these tasks have finished. 
+	 * 
+	 *@param  broker  the DBBroker object to release
 	 */
 	public void release(DBBroker broker) {
 		if (broker == null)
@@ -439,11 +449,30 @@ public class BrokerPool {
 		synchronized (this) {
 		    threads.remove(Thread.currentThread());
 			pool.push(broker);
-			if (syncRequired && threads.size() == 0) {
-				sync(broker, syncEvent);
-				syncRequired = false;
+			if(threads.size() == 0) {
+				if (syncRequired) {
+					sync(broker, syncEvent);
+					syncRequired = false;
+				}
+				if (waitingTask != null) {
+					runSystemTask();
+				}
 			}
 			this.notifyAll();
+		}
+	}
+
+	/**
+	 * Executes a waiting maintenance task. The database will be stopped
+	 * during its execution.
+	 */
+	private void runSystemTask() {
+		try {
+			waitingTask.execute(this);
+		} catch(EXistException e) {
+			LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
+		} finally {
+			waitingTask = null;
 		}
 	}
 
@@ -522,6 +551,13 @@ public class BrokerPool {
 		return conf != null;
 	}
 
+	/**
+	 * Trigger a synchronize event. If the database is idle,
+	 * the sync will be run immediately. Otherwise, we wait
+	 * until all running threads have returned.
+	 * 
+	 * @param event
+	 */
 	public void triggerSync(int event) {
 		synchronized (this) {
 			if(pool.size() == 0)
@@ -537,6 +573,25 @@ public class BrokerPool {
 		}
 	}
 
+	/**
+	 * Schedule a system maintenance task for execution.
+	 * The task will be executed immediately if the database
+	 * is currently idle. Otherwise, the task will be registered
+	 * and called by {@link #release(DBBroker)} once all running 
+	 * threads have returned.
+	 * 
+	 * @param task
+	 */
+	public void triggerSystemTask(SystemTask task) {
+		synchronized(this) {
+			if(pool.size() == 0)
+				return;
+			waitingTask = task;
+			if(pool.size() == brokers)
+				runSystemTask();
+		}
+	}
+	
 	public void registerShutdownListener(ShutdownListener listener) {
 		shutdownListener = listener;
 	}
