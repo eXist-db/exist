@@ -165,6 +165,16 @@
                             The response echoes all the names entered since database creation.
                         </td>
                     </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/call.xql">First-class functions example</link>
+                        </td>
+                        <td width="70%">
+                            Demonstrates the use of first-class functions. First-class functions
+                            are supported through the eXist-specific extension functions: util:function
+                            and util:call.
+                        </td>
+                    </tr>                    
                 </table>
                 
             </section>
