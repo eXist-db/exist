@@ -77,13 +77,18 @@ public class XMLDBDeleteUser extends BasicFunction {
 
         String user = args[0].getStringValue();
         
+        Collection collection = null;
 		try {
-            Collection collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), "/db");
+            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), "/db");
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
             User userObj = ums.getUser(user);
-			ums.removeUser(userObj);
+            if (null != userObj)
+                ums.removeUser(userObj);
 		} catch (XMLDBException xe) {
-			throw new XPathException(getASTNode(), "Failed to create new user " + user, xe);
+			throw new XPathException(getASTNode(), "Failed to remove user " + user, xe);
+        } finally {
+            if (null != collection)
+                try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
 		}
         return Sequence.EMPTY_SEQUENCE;
 	}

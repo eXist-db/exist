@@ -75,6 +75,9 @@ public class XMLDBCollectionExists extends BasicFunction {
 		    LOG.debug(e.getMessage(), e);
 			throw new XPathException(getASTNode(), 
 				"exception while retrieving collection: " + e.getMessage(), e);
+        } finally {
+            if (null != collection)
+                try { collection.close(); } catch (Exception e) { throw new XPathException(getASTNode(), "Unable to close collection", e); }
 		}
 		return (null == collection) ? BooleanValue.FALSE : BooleanValue.TRUE;
 	}
