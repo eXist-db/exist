@@ -368,7 +368,7 @@ public class XQueryContext {
 				declareNamespace(module.getDefaultPrefix(), module.getNamespaceURI());
 
 			modules.put(module.getNamespaceURI(), module);
-			LOG.debug("module " + module.getNamespaceURI() + " loaded successfully.");
+			//LOG.debug("module " + module.getNamespaceURI() + " loaded successfully.");
 		} catch (ClassNotFoundException e) {
 			LOG.warn("module class " + moduleClass + " not found. Skipping...");
 		} catch (InstantiationException e) {

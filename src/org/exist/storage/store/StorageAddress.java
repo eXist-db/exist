@@ -1,8 +1,3 @@
-/*
- * StorageAddress.java - May 25, 2003
- * 
- * @author wolf
- */
 package org.exist.storage.store;
 
 import java.io.EOFException;

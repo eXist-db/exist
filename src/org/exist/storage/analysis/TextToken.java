@@ -1,11 +1,6 @@
+
 package org.exist.storage.analysis;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    10. Oktober 2002
- */
 public class TextToken {
 	
     public final static int ALPHA = 1;
@@ -24,7 +19,6 @@ public class TextToken {
     public final static TextToken WS_TOKEN = new TextToken(WS);
     public final static TextToken EOF_TOKEN = new TextToken(EOF);
 	
-    /**  Description of the Field */
     public final static String[] types = {"letter", "digit",
         "whitespace", "number",
         "alpha", "alphanum",
@@ -97,27 +91,18 @@ public class TextToken {
 		return tokenType == ALPHA;
 	}
 	
-    /**  Description of the Method */
+    /**
+     * Consume the next character in the current buffer by incrementing
+     * the end offset.
+     */
     public void consumeNext() {
         end++;
     }
 
-
-    /**
-     *  Gets the char attribute of the Token object
-     *
-     *@return    The char value
-     */
     public char getChar() {
         return tokenText.charAt( start );
     }
 
-
-    /**
-     *  Gets the text attribute of the Token object
-     *
-     *@return    The text value
-     */
     public String getText() {
         if(start >= tokenText.length() || end > tokenText.length())
             throw new StringIndexOutOfBoundsException("start: " + start +
@@ -125,26 +110,14 @@ public class TextToken {
         return tokenText.subSequence( start, end ).toString();
     }
 
-
-    /**
-     *  Gets the type attribute of the Token object
-     *
-     *@return    The type value
-     */
     public int getType() {
         return tokenType;
     }
-
 
 	public void setType( int type ) {
 		tokenType = type;
 	}
 	
-    /**
-     *  Sets the text attribute of the Token object
-     *
-     *@param  text  The new text value
-     */
     public void setText( String text ) {
         tokenText = text;
     }

@@ -12,7 +12,7 @@ import org.exist.xquery.XPathException;
 import org.w3c.dom.NodeList;
 
 /**
- * Append.java
+ * Implements an XUpate append statement.
  * 
  * @author Wolfgang Meier
  */
@@ -25,6 +25,7 @@ public class Append extends Modification {
 	public Append(DBBroker broker, DocumentSet docs, String selectStmt) {
 		super(broker, docs, selectStmt);
 	}
+	
 	/**
 	 * @see org.exist.xupdate.Modification#process()
 	 */

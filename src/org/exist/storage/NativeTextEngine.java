@@ -779,7 +779,6 @@ public class NativeTextEngine extends TextSearchEngine {
 	final class InvertedIndex {
 
 		private DocumentImpl doc = null;
-		private boolean flushed = false;
 		private Map words[] = new TreeMap[2];
 		private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
@@ -1097,14 +1096,11 @@ public class NativeTextEngine extends TextSearchEngine {
 		private void flushWord(short collectionId, String word, ByteArray data) {
 			if (data.size() == 0)
 				return;
-			// if data has already been written to the table,
-			// we may need to do updates.
-			final WordRef ref = new WordRef(collectionId, word);
 			Lock lock = dbWords.getLock();
 			try {
 				lock.acquire(Lock.WRITE_LOCK);
 				try {
-					dbWords.append(ref, data);
+					dbWords.append(new WordRef(collectionId, word), data);
 				} catch (ReadOnlyException e) {
 				} catch (IOException ioe) {
 					LOG.warn("io error while writing '" + word + "'", ioe);

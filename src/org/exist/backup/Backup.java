@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001 Wolfgang M. Meier
+ *  Copyright (C) 2001-04 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -175,16 +175,22 @@ public class Backup {
 				os.write(bdata);
 				os.close();
 			} else {
-				writer =
-					new BufferedWriter(
-						new OutputStreamWriter(os, "UTF-8"));
-				// write resource to contentSerializer
-				contentSerializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
-				contentSerializer.setWriter(writer);
-				contentSerializer.setOutputProperties(defaultOutputProperties);
-				((XMLResource)resource).getContentAsSAX(contentSerializer);
-				SAXSerializerPool.getInstance().returnSAXSerializer(contentSerializer);
-				writer.close();
+			    try {
+					writer =
+						new BufferedWriter(
+							new OutputStreamWriter(os, "UTF-8"));
+					// write resource to contentSerializer
+					contentSerializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
+					contentSerializer.setWriter(writer);
+					contentSerializer.setOutputProperties(defaultOutputProperties);
+					((XMLResource)resource).getContentAsSAX(contentSerializer);
+					SAXSerializerPool.getInstance().returnSAXSerializer(contentSerializer);
+					writer.close();
+			    } catch(Exception e) {
+			        System.err.println("An exception occurred while writing the resource: " + e.getMessage());
+			        e.printStackTrace();
+			        continue;
+			    }
 			}
 			
 			// store permissions

@@ -1844,7 +1844,6 @@ public class InteractiveClient {
 					e.printStackTrace();
 				}
 			}
-			return;
 		} else if (doParse) {
 			if (!foundCollection) {
 				System.err

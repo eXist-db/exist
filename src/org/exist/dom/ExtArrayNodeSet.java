@@ -138,7 +138,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	 */
 	public Iterator iterator() {
 		sort();
-		return new ExtArrayIterator();
+		return new ExtArrayIterator(map);
 	}
 
 	/*
@@ -148,7 +148,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	 */
 	public SequenceIterator iterate() {
 		sortInDocumentOrder();
-		return new ExtArrayIterator();
+		return new ExtArrayIterator(map);
 	}
 
 	/*
@@ -158,7 +158,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	 */
 	public SequenceIterator unorderedIterator() {
 		sort();
-		return new ExtArrayIterator();
+		return new ExtArrayIterator(map);
 	}
 
 	/*
@@ -617,14 +617,14 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 			}
 		}
 	}
-	private class ExtArrayIterator implements Iterator, SequenceIterator {
+	private static class ExtArrayIterator implements Iterator, SequenceIterator {
 
 		Iterator docsIterator;
 		Part currentPart = null;
 		int pos = 0;
 		NodeProxy next = null;
 
-		ExtArrayIterator() {
+		ExtArrayIterator(Int2ObjectHashMap map) {
 			docsIterator = map.valueIterator();
 			if (docsIterator.hasNext())
 				currentPart = (Part) docsIterator.next();

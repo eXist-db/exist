@@ -174,7 +174,7 @@ public class SecurityManager {
 		if(user != null)
 			LOG.debug("user " + user.getName() + " removed");
 		else
-			LOG.debug("user "+ user.getName() + " not found");
+			LOG.debug("user not found");
 		DBBroker broker = null;
 		try {
 			broker = pool.get();

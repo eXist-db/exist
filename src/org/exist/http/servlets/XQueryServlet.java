@@ -278,13 +278,18 @@ public class XQueryServlet extends HttpServlet {
 	}
 	
 	private String readQuery(File source) throws IOException {
-		Reader reader = new InputStreamReader(new FileInputStream(source), encoding);
-		char[] chars = new char[1024];
-		StringBuffer buf = new StringBuffer();
-		int read;
-		while((read = reader.read(chars)) > -1)
-			buf.append(chars, 0, read);
-		return buf.toString();
+		FileInputStream is = new FileInputStream(source);
+		try {
+			Reader reader = new InputStreamReader(is, encoding);
+			char[] chars = new char[1024];
+			StringBuffer buf = new StringBuffer();
+			int read;
+			while((read = reader.read(chars)) > -1)
+				buf.append(chars, 0, read);
+			return buf.toString();
+		} finally {
+			is.close();
+		}
 	}
 	
 	private static final class CachedQuery {
