@@ -280,10 +280,10 @@ public class ElementImpl extends NamedNode implements Element {
 		    node = appendChildren(firstChildID(), this, getPath(), attribs, true);
 		} else {
 		    NodeImpl lastAttrib = getLastAttribute();
-		    if(lastAttrib.gid == lastChildID())
+		    if(lastAttrib != null && lastAttrib.gid == lastChildID())
 		        node = appendChildren(lastChildID() + 1, lastAttrib, getPath(), attribs, true);
 		    else
-		        node = insertAfter(attribs, lastAttrib);
+		        node = appendChildren(firstChildID() + 1, this, getPath(), attribs, true);
 		}
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
@@ -1111,11 +1111,11 @@ public class ElementImpl extends NamedNode implements Element {
 	 * child.
 	 */
 	public Node insertAfter(NodeList nodes, Node refChild) throws DOMException {
-		if (!(refChild instanceof NodeImpl))
-			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
-		final DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		if (refChild == null)
 			return appendChildren(nodes, -1);
+		if (!(refChild instanceof NodeImpl))
+			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type: ");
+		final DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		final NodeImpl ref = (NodeImpl) refChild;
 		final long first = firstChildID();
 		if (ref.gid < first || ref.gid > ref.gid + children - 1)
