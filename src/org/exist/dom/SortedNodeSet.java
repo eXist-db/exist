@@ -81,7 +81,9 @@ public class SortedNodeSet extends AbstractNodeSetBase {
 		} catch (antlr.TokenStreamException tse) {
 			LOG.debug(tse);
 		} catch (EXistException e) {
-			LOG.debug("exception during sort", e);
+			LOG.debug("Exception during sort", e);
+		} catch (XPathException e) {
+			LOG.debug("Exception during sort", e);
 		} finally {
 			pool.release(broker);
 		}

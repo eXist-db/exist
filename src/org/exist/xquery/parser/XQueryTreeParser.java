@@ -102,7 +102,7 @@ public XQueryTreeParser() {
 
 	public final void xpointer(AST _t,
 		PathExpr path
-	) throws RecognitionException {
+	) throws RecognitionException, XPathException {
 		
 		org.exist.xquery.parser.XQueryAST xpointer_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST nc = null;
@@ -149,16 +149,10 @@ public XQueryTreeParser() {
 			}
 			}
 		}
-		catch (RecognitionException e) {
-			handleException(e);
-		}
 		catch (EXistException e) {
 			handleException(e);
 		}
 		catch (PermissionDeniedException e) {
-			handleException(e);
-		}
-		catch (XPathException e) {
 			handleException(e);
 		}
 		_retTree = _t;
@@ -2250,7 +2244,7 @@ public XQueryTreeParser() {
 	
 	public final void xpath(AST _t,
 		PathExpr path
-	) throws RecognitionException {
+	) throws RecognitionException, XPathException {
 		
 		org.exist.xquery.parser.XQueryAST xpath_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		context.setRootExpression(path);
@@ -2269,9 +2263,6 @@ public XQueryTreeParser() {
 			handleException(e);
 		}
 		catch (PermissionDeniedException e) {
-			handleException(e);
-		}
-		catch (XPathException e) {
 			handleException(e);
 		}
 		_retTree = _t;
