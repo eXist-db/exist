@@ -68,7 +68,7 @@ public class JettyStart {
 			Thread hook = new Thread() {
 				public void run() {
 					setName("Shutdown");
-					BrokerPool.stopAll();
+					BrokerPool.stopAll(true);
 					try {
 						server.stop();
 					} catch (InterruptedException e) {

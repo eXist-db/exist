@@ -1,7 +1,7 @@
 
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2000,  Wolfgang Meier (wolfgang@exist-db.org)
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -41,7 +41,7 @@ import org.xml.sax.helpers.AttributesImpl;
 /**
  *  Description of the Class
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    9. Juli 2002
  */
 public class AttrImpl extends NodeImpl implements Attr {

@@ -31,7 +31,7 @@ OPTIONS="-Dexist.home=$EXIST_HOME"
 
 # set java options
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms32000k -Xmx384000k -Dfile.encoding=UTF-8"
+    export JAVA_OPTIONS="-Xms32000k -Xmx128000k -Dfile.encoding=UTF-8"
 fi
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
@@ -50,7 +50,7 @@ if [ -n "$LD_LIBRARY_PATH" ]; then
 	OLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 fi
 # add lib/core to LD_LIBRARY_PATH for readline support
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$EXIST_HOME/lib/core"
+#export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$EXIST_HOME/lib/core"
 
 $JAVA_HOME/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" client $*
 

@@ -1,8 +1,8 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001/2002 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
- *  http://exist.sourceforge.net
+ *  wolfgang@exist-db.org
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -122,8 +122,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		try {
 			if ((dbWords = (BFile) config.getProperty("db-connection.words")) == null) {
 				dbWords =
-					new BFile(new File(dataDir + pathSep + "words.dbx"), buffers / 2, buffers);
-				LOG.debug("words index buffer size: " + buffers);
+					new BFile(new File(dataDir + pathSep + "words.dbx"), buffers, buffers >> 1);
 				if (!dbWords.exists())
 					dbWords.create();
 				else
@@ -770,7 +769,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public void addRow(String word, long gid) {
-			LongLinkedList buf = (OrderedLongLinkedList) words.get(word);
+			LongLinkedList buf = (LongLinkedList) words.get(word);
 			if (buf == null) {
 				buf = new OrderedLongLinkedList();
 				words.put(word, buf);

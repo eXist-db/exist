@@ -1,7 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
+ *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
  *  This program is free software; you can redistribute it and/or
@@ -42,6 +42,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
+import org.exist.util.StorageAddress;
 import org.exist.util.UTF8;
 import org.exist.util.XMLUtil;
 import org.w3c.dom.Attr;

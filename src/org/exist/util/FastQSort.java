@@ -3,6 +3,8 @@ package org.exist.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.exist.dom.NodeProxy;
+
 public final class FastQSort {
 
 	private final static void QuickSort(Comparable a[], int l, int r)
@@ -12,6 +14,43 @@ public final class FastQSort {
 		int i;
 		int j;
 		Comparable v;
+
+		if ((r - l) > M) {
+			// 26july00: following [.][1] -> [.][0]
+			i = (r + l) / 2;
+			if (a[l].compareTo(a[i]) > 0)
+				swap(a, l, i); // Tri-Median Methode!
+			if (a[l].compareTo(a[r]) > 0)
+				swap(a, l, r);
+			if (a[i].compareTo(a[r]) > 0)
+				swap(a, i, r);
+
+			j = r - 1;
+			swap(a, i, j);
+			i = l;
+
+			v = a[j];
+			for (;;) {
+				while (a[++i].compareTo(v) < 0);
+				while (a[--j].compareTo(v) > 0);
+				if (j < i)
+					break;
+				swap(a, i, j);
+			}
+			swap(a, i, r - 1);
+
+			QuickSort(a, l, j);
+			QuickSort(a, i + 1, r);
+		}
+	}
+
+	private final static void QuickSort(NodeProxy a[], int l, int r)
+	//----------------------------------------------------
+	{
+		int M = 4;
+		int i;
+		int j;
+		NodeProxy v;
 
 		if ((r - l) > M) {
 			// 26july00: following [.][1] -> [.][0]
@@ -128,13 +167,34 @@ public final class FastQSort {
 			temp = a.get(i); // the column we're sorting on
 			j = i;
 
-			while ((j > lo0) && (((Comparable) a.get(j - 1)).compareTo(temp) > 0)) {
+			while ((j > lo0)
+				&& (((Comparable) a.get(j - 1)).compareTo(temp) > 0)) {
 				a.set(j, a.get(j - 1));
 				j--;
 			}
 
 			a.set(j, temp);
 		}
+	}
+
+	public final static void shellSort(NodeProxy a[], int length) {
+		if (length == 1)
+			return;
+		int h = 1;
+		while (h < length) {
+			h = 3 * h + 1;
+		}
+		do {
+			h = h / 3;
+			for (int i = h - 1; i < length; i++) {
+				NodeProxy B = a[i];
+				int j = i;
+				for (j = i;(j >= h) && ((a[j - h].compareTo(B) > 0)); j -= h) {
+					a[j] = a[j - h];
+				}
+				a[j] = B;
+			}
+		} while (h > 1);
 	}
 
 	public static void sort(Comparable[] a, int lo, int hi) {
@@ -146,11 +206,24 @@ public final class FastQSort {
 		QuickSort(a, lo, hi);
 		InsertionSort(a, lo, hi);
 	}
-	
+
+	public static void sort(NodeProxy[] a, int lo, int hi) {
+		QuickSort(a, lo, hi);
+		InsertionSort(a, lo, hi);
+	}
+
 	public static void main(String[] args) throws Exception {
-		String[] a = new String[] { "Rudi", "Herbert", "Anton", "Berta", "Olga", "Willi", "Heinz" };
+		String[] a =
+			new String[] {
+				"Rudi",
+				"Herbert",
+				"Anton",
+				"Berta",
+				"Olga",
+				"Willi",
+				"Heinz" };
 		List l = new ArrayList(a.length);
-		for(int i = 0; i < a.length; i++)
+		for (int i = 0; i < a.length; i++)
 			l.add(a[i]);
 		sort(l, 0, l.size() - 1);
 		for (int i = 0; i < l.size(); i++)

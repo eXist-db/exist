@@ -1,7 +1,7 @@
 
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000/01,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2000/01,  Wolfgang Meier (wolfgang@exist-db.org)
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -24,7 +24,7 @@ package org.exist.util;
 /**
  *  Description of the Class
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    11. September 2002
  */
 public class ByteConversion {
@@ -88,7 +88,7 @@ public class ByteConversion {
      *@param  start  Description of the Parameter
      *@return        Description of the Return Value
      */
-    public final static int byteToInt( byte data[], int start ) {
+    public final static int byteToInt( final byte data[], final int start ) {
         return ( data[start] & 0xff ) |
             ( ( data[start + 1] & 0xff ) << 8 ) |
             ( ( data[start + 2] & 0xff ) << 16 ) |
@@ -121,7 +121,7 @@ public class ByteConversion {
      *@param  start  Description of the Parameter
      *@return        Description of the Return Value
      */
-    public final static long byteToLong( byte[] data, int start ) {
+    public final static long byteToLong( final byte[] data, final int start ) {
         return ( ( ( (long) data[start] ) & 0xffL ) << 56 ) |
             ( ( ( (long) data[start + 1] ) & 0xffL ) << 48 ) |
             ( ( ( (long) data[start + 2] ) & 0xffL ) << 40 ) |
@@ -140,7 +140,7 @@ public class ByteConversion {
      *@param  start  Description of the Parameter
      *@return        Description of the Return Value
      */
-    public final static short byteToShort( byte[] data, int start ) {
+    public final static short byteToShort( final byte[] data, final int start ) {
         return (short) ( ( ( data[start + 1] & 0xff ) << 8 ) |
             ( data[start] & 0xff ) );
     }
@@ -312,7 +312,7 @@ public class ByteConversion {
      *@param  start  Description of the Parameter
      *@return        Description of the Return Value
      */
-    public final static byte[] intToByte( int v, byte[] data, int start ) {
+    public final static byte[] intToByte( final int v, final byte[] data, final int start ) {
         data[start] = (byte) ( ( v >>> 0 ) & 0xff );
         data[start + 1] = (byte) ( ( v >>> 8 ) & 0xff );
         data[start + 2] = (byte) ( ( v >>> 16 ) & 0xff );
@@ -327,7 +327,7 @@ public class ByteConversion {
      *@param  v  Description of the Parameter
      *@return    Description of the Return Value
      */
-    public final static byte[] intToByte( int v ) {
+    public final static byte[] intToByte( final int v ) {
         byte[] data = new byte[4];
         data[0] = (byte) ( ( v >>> 0 ) & 0xff );
         data[1] = (byte) ( ( v >>> 8 ) & 0xff );
@@ -352,7 +352,7 @@ public class ByteConversion {
      *@param  start  Description of the Parameter
      *@return        Description of the Return Value
      */
-    public final static byte[] longToByte( long v, byte[] data, int start ) {
+    public final static byte[] longToByte( final long v, final byte[] data, final int start ) {
         data[start + 7] = (byte) ( ( v >>> 0 ) & 0xff );
         data[start + 6] = (byte) ( ( v >>> 8 ) & 0xff );
         data[start + 5] = (byte) ( ( v >>> 16 ) & 0xff );
@@ -371,7 +371,7 @@ public class ByteConversion {
      *@param  v  Description of the Parameter
      *@return    Description of the Return Value
      */
-    public final static byte[] longToByte( long v ) {
+    public final static byte[] longToByte( final long v ) {
         byte[] data = new byte[8];
         data[7] = (byte) ( ( v >>> 0 ) & 0xff );
         data[6] = (byte) ( ( v >>> 8 ) & 0xff );
@@ -393,7 +393,7 @@ public class ByteConversion {
      *@param  start  Description of the Parameter
      *@return        Description of the Return Value
      */
-    public final static byte[] shortToByte( short v, byte[] data, int start ) {
+    public final static byte[] shortToByte( final short v, final byte[] data, final int start ) {
         data[start] = (byte) ( ( v >>> 0 ) & 0xff );
         data[start + 1] = (byte) ( ( v >>> 8 ) & 0xff );
         return data;
@@ -406,7 +406,7 @@ public class ByteConversion {
      *@param  v  Description of the Parameter
      *@return    Description of the Return Value
      */
-    public final static byte[] shortToByte( short v ) {
+    public final static byte[] shortToByte( final short v ) {
         byte[] data = new byte[2];
         data[0] = (byte) ( ( v >>> 0 ) & 0xff );
         data[1] = (byte) ( ( v >>> 8 ) & 0xff );

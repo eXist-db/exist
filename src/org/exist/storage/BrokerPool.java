@@ -49,7 +49,8 @@ public class BrokerPool {
 	private static Logger LOG = Logger.getLogger(BrokerPool.class);
 	private static TreeMap instances = new TreeMap();
 	private static long timeOut = 30000L;
-
+	private static ShutdownThread shutdownThread = new ShutdownThread();
+	
 	public final static String DEFAULT_INSTANCE = "exist";
 
 	public final static void configure(int minBrokers, int maxBrokers, Configuration config)
@@ -78,6 +79,10 @@ public class BrokerPool {
 			LOG.debug("configuring database instance '" + id + "' ...");
 			instance = new BrokerPool(id, minBrokers, maxBrokers, config);
 			instances.put(id, instance);
+			if(instances.size() == 1) {
+				LOG.debug("registering shutdown hook");
+				Runtime.getRuntime().addShutdownHook(shutdownThread);
+			}
 		} else
 			LOG.warn("instance with id " + id + " already configured");
 	}
@@ -124,7 +129,6 @@ public class BrokerPool {
 		BrokerPool instance = (BrokerPool) instances.get(id);
 		if (instance != null) {
 			instance.shutdown();
-			instances.remove(id);
 		} else
 			throw new EXistException("instance with id " + " is not available");
 	}
@@ -133,12 +137,12 @@ public class BrokerPool {
 		stop(DEFAULT_INSTANCE);
 	}
 
-	public final static void stopAll() {
+	public final static void stopAll(boolean killed) {
 		BrokerPool instance;
 		for (Iterator i = instances.values().iterator(); i.hasNext();) {
 			instance = (BrokerPool) i.next();
 			if (instance.conf != null)
-				instance.shutdown();
+				instance.shutdown(killed);
 		}
 		instances.clear();
 	}
@@ -318,8 +322,12 @@ public class BrokerPool {
 		broker.sync();
 	}
 
-	/**  Shutdown all brokers. */
 	public synchronized void shutdown() {
+		shutdown(false);
+	}
+	
+	/**  Shutdown all brokers. */
+	public synchronized void shutdown(boolean killed) {
 		syncDaemon.shutDown();
 		while (pool.size() < brokers)
 			try {
@@ -327,11 +335,15 @@ public class BrokerPool {
 			} catch (InterruptedException e) {
 			}
 		LOG.debug("calling shutdown ...");
-		for (Iterator i = active.iterator(); i.hasNext();)
-			 ((DBBroker) i.next()).shutdown();
+		DBBroker broker = (DBBroker)pool.peek();
+		broker.shutdown();
 		LOG.debug("shutdown!");
 		conf = null;
 		instances.remove(instanceId);
+		if(instances.size() == 0 && (!killed)) {
+			LOG.debug("removing shutdown hook");
+			Runtime.getRuntime().removeShutdownHook(shutdownThread);
+		}
 		if (shutdownListener != null)
 			shutdownListener.shutdown(instanceId, instances.size());
 	}
@@ -373,7 +385,7 @@ public class BrokerPool {
 		shutdownListener = listener;
 	}
 
-	protected class ShutdownThread extends Thread {
+	protected static class ShutdownThread extends Thread {
 
 		/**  Constructor for the ShutdownThread object */
 		public ShutdownThread() {
@@ -383,11 +395,8 @@ public class BrokerPool {
 		/**  Main processing method for the ShutdownThread object */
 		public void run() {
 			LOG.debug("shutdown forced");
-			BrokerPool.stopAll();
+			BrokerPool.stopAll(true);
 		}
-	}
-	{
-		Runtime.getRuntime().addShutdownHook(new ShutdownThread());
 	}
 
 }

@@ -2,7 +2,7 @@
 /*
  *  DBBroker.java - eXist Open Source Native XML Database
  *  Copyright (C) 2001 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
+ *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
  *  This program is free software; you can redistribute it and/or
@@ -52,7 +52,7 @@ import org.w3c.dom.NodeList;
  * This is the base class for all database backends. All other components rely
  * on the methods defined here.
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    20. Mai 2002
  */
 public abstract class DBBroker extends Observable {

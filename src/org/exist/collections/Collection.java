@@ -2,7 +2,7 @@
 /*
  *  Collection.java - eXist Open Source Native XML Database
  *  Copyright (C) 2001 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
+ *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
  *  This program is free software; you can redistribute it and/or

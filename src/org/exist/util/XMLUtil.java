@@ -258,6 +258,13 @@ public class XMLUtil {
 		return (gid - doc.getLevelStartPoint(level)) * order + doc.getLevelStartPoint(level + 1);
 	}
 
+	public final static Range getChildRange(DocumentImpl doc, long gid) {
+		final int level = doc.getTreeLevel(gid);
+		final int order = doc.getTreeLevelOrder(level + 1);
+		final long start = (gid - doc.getLevelStartPoint(level)) * order + doc.getLevelStartPoint(level + 1);
+		return new Range(start, start + order - 1);
+	}
+	
 	public final static long getParentId(final DocumentImpl doc, final long gid) {
 		final int level = doc.getTreeLevel(gid);
 		if (level < 0) {

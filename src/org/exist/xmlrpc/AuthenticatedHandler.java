@@ -17,7 +17,7 @@ import org.exist.util.XMLUtil;
 /**
  *  Description of the Class
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    25. August 2002
  */
 public class AuthenticatedHandler implements AuthenticatedXmlRpcHandler {

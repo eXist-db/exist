@@ -1,7 +1,7 @@
 package org.exist.storage;
 
 /* eXist xml document repository and xpath implementation
- * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000,  Wolfgang M. Meier (wolfgang@exist-db.org)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License

@@ -186,12 +186,12 @@
     </appender>
     
     <root>
-		<appender-ref ref="exist.core"/>
+		<appender-ref ref="console"/>
 		<priority value="debug"/>
     </root>
 
     <category name="org.exist.xmldb" additivity="false">
-		<appender-ref ref="exist.xmldb"/>
+		<appender-ref ref="console"/>
 		<priority value="debug"/>
     </category>
 

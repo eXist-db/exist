@@ -1276,11 +1276,13 @@ public class InteractiveClient {
 		if (current instanceof Observable) {
 			((Observable) current).addObserver(upload.getObserver());
 		}
-		upload.setMaxFilesCount(files.length);
+		upload.setTotalSize(calculateFileSizes(files));
+		long totalSize = 0;
 		for (int i = 0; i < files.length; i++) {
 			if (files[i].canRead()) {
 				if (files[i].isDirectory()) {
-					return findRecursive(current, files[i], path, upload);
+					findRecursive(current, files[i], path, upload, totalSize);
+					return true;
 				}
 				upload.reset();
 				upload.setCurrentDir(files[i].getParentFile().getAbsolutePath());
@@ -1289,21 +1291,35 @@ public class InteractiveClient {
 				document = (XMLResource) current.createResource(files[i].getName(), "XMLResource");
 				document.setContent(files[i]);
 				current.storeResource(document);
-				upload.setFilesCount(i + 1);
+				totalSize += files[i].length();
+				upload.setStoredSize(totalSize);
 			}
 		}
 		upload.setVisible(false);
 		return true;
 	}
 
-	private final boolean findRecursive(
+	private long calculateFileSizes(File[] files) throws XMLDBException {
+		long size = 0;
+		for(int i = 0; i < files.length; i++) {
+			if(!files[i].canRead())
+				continue;
+			if(files[i].isDirectory())
+				size += calculateFileSizes(files[i].listFiles());
+			else
+				size += files[i].length();
+		}
+		return size;
+	}
+	
+	private final long findRecursive(
 		Collection collection,
 		File dir,
 		String base,
-		UploadDialog upload) {
+		UploadDialog upload,
+		long totalSize) {
 		upload.setCurrentDir(dir.getAbsolutePath());
 		File temp[] = dir.listFiles();
-		upload.setMaxFilesCount(temp.length);
 		Collection c;
 		XMLResource document;
 		CollectionManagementService mgtService;
@@ -1325,7 +1341,7 @@ public class InteractiveClient {
 					if (c instanceof Observable) {
 						((Observable) c).addObserver(upload.getObserver());
 					}
-					findRecursive(c, temp[i], next, upload);
+					totalSize = findRecursive(c, temp[i], next, upload, totalSize);
 				} else {
 					upload.reset();
 					upload.setCurrent(temp[i].getName());
@@ -1335,13 +1351,14 @@ public class InteractiveClient {
 					document.setContent(temp[i]);
 					collection.storeResource(document);
 					++filesCount;
-					upload.setFilesCount(i + 1);
+					totalSize += temp[i].length();
+					upload.setStoredSize(totalSize);
 				}
 			} catch (XMLDBException e) {
 				upload.showMessage("could not parse file " + temp[i].getAbsolutePath());
 			}
 		}
-		return true;
+		return totalSize;
 	}
 
 	private final void mkcol(String collPath) throws XMLDBException {
