@@ -344,6 +344,7 @@ public class RpcConnection extends Thread {
             
                   String param = (String)en.nextElement();
                   String paramvalue = parametri.get(param).toString();                      
+	  //LOG.debug("-------Parametri passati:"+param+": "+paramvalue); 
 
 if (param.equals(EXistOutputKeys.EXPAND_XINCLUDES)){
 	serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, paramvalue);
@@ -363,6 +364,10 @@ if (param.equals(EXistOutputKeys.STYLESHEET)){
 
 if (param.equals(EXistOutputKeys.STYLESHEET_PARAM)){
 	 styleparam = (Hashtable)parametri.get(param);
+	}
+
+if (param.equals(OutputKeys.DOCTYPE_SYSTEM)){
+	   serializer.setProperty(OutputKeys.DOCTYPE_SYSTEM, paramvalue);
 	}
 
 }
