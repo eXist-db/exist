@@ -969,8 +969,8 @@ public class DOMFile extends BTree implements Lockable {
         if (pnum < 0) {
             final DOMPage page = new DOMPage();
             pages.put(owner, page.page.getPageNum());
-            LOG.debug("new page created: " + page.page.getPageNum() + " by " + owner +
-            		"; thread: " + Thread.currentThread().getName());
+//            LOG.debug("new page created: " + page.page.getPageNum() + " by " + owner +
+//            		"; thread: " + Thread.currentThread().getName());
             dataCache.add(page);
             return page;
         } else
