@@ -417,7 +417,7 @@ sub getDocument {
     $name = "$COLLECTION/$name";
   }
   $req = RPC::XML::request->new('getDocument', $name, "ISO-8859-1", 
-				RPC::XML::int->new($PRETTY));
+				RPC::XML::int->new($PRETTY), '/db/shakespeare/plays/shakes.xsl');
 
   $resp =
     $client->send_request($req);

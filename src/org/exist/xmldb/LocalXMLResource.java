@@ -255,7 +255,7 @@ public class LocalXMLResource implements XMLResource {
 	}
 
 	public String getId() throws XMLDBException {
-		return id < 0 ? Long.toString(id) : docId;
+		return id < 0 ? docId : Long.toString(id);
 	}
 
 	public Collection getParentCollection() throws XMLDBException {

@@ -9,7 +9,8 @@
                 
                 <p>Retrieving document <xsp:expr>request.getParameter("doc")</xsp:expr></p>
                 
-                <xmldb:collection uri="xmldb:exist:///db/shakespeare/plays">
+                <xmldb:collection uri="xmldb:exist:///db/shakespeare/plays"
+                	user="guest" password="guest">
                     <xml-source>
                         <xmldb:get-document encoding="ISO-8859-1" as="xml">
                              <xmldb:name>request.getParameter("doc")</xmldb:name>

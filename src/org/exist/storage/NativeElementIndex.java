@@ -20,11 +20,18 @@
  */
 package org.exist.storage;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 import org.apache.log4j.Category;
-import java.util.*;
-import org.dbxml.core.data.Value;
 import org.dbxml.core.DBException;
-import org.exist.dom.*;
+import org.dbxml.core.data.Value;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -75,21 +82,97 @@ public class NativeElementIndex extends ElementIndex {
 		buf.add(proxy);
 		int percent = (int) (run.freeMemory() / (run.totalMemory() / 100));
 		if (percent < memMinFree) {
-			LOG.info("total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
+			LOG.info(
+				"total memory: "
+					+ run.totalMemory()
+					+ "; free: "
+					+ run.freeMemory());
 			flush();
 			System.gc();
-				LOG.info(
-					"total memory: "
-						+ run.totalMemory()
-						+ "; free: "
-						+ run.freeMemory());
+			LOG.info(
+				"total memory: "
+					+ run.totalMemory()
+					+ "; free: "
+					+ run.freeMemory());
 		}
 	}
 
+	public void reindex(DocumentImpl oldDoc) {
+		if (elementIds.size() == 0)
+			return;
+		Lock lock = dbElement.getLock();
+		Map.Entry entry;
+		String elementName;
+		NodeSet oldList;
+		ArrayList newList, idList;
+		NodeProxy p;
+        NodeProxy nodeList[];
+        VariableByteOutputStream os = new VariableByteOutputStream();
+        int count = 1, len;
+        byte[] data;
+        Value ref;
+        Value val;
+        long prevId, cid, addr;
+        short collectionId = oldDoc.getCollection().getId();
+		try {
+			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
+				entry = (Map.Entry) i.next();
+				idList = (ArrayList) entry.getValue();
+				elementName = (String) entry.getKey();
+				DocumentSet docs = new DocumentSet();
+				docs.add(oldDoc);
+				oldList = broker.findElementsByTagName(docs, elementName);
+				newList = new ArrayList(oldList.getLength());
+				for (Iterator j = oldList.iterator(); j.hasNext();) {
+					p = (NodeProxy) j.next();
+					if (oldDoc.getTreeLevel(p.gid) < oldDoc.reindexRequired())
+						newList.add(p);
+				}
+				newList.addAll(idList);
+				nodeList = new NodeProxy[newList.size()];
+				nodeList = (NodeProxy[]) newList.toArray(nodeList);
+				len = nodeList.length;
+				Arrays.sort(nodeList);
+				os.writeInt(doc.getDocId());
+				os.writeInt(len);
+				prevId = 0;
+				for (int j = 0; j < len; j++) {
+					cid = nodeList[j].gid - prevId;
+					prevId = nodeList[j].gid;
+					os.writeLong(cid);
+					addr = nodeList[j].internalAddress;
+					os.writeInt(DOMFile.pageFromPointer(addr));
+					os.writeInt(DOMFile.tidFromPointer(addr));
+				}
+				data = os.toByteArray();
+				os.clear();
+				short sym = NativeBroker.getSymbols().getSymbol(elementName);
+				ref = new NativeBroker.ElementValue(collectionId, sym);
+				try {
+					lock.acquire(this, Lock.WRITE_LOCK);
+					lock.enter(this);
+					if (!dbElement.put(ref, new Value(data)))
+						LOG.warn(
+							"could not save index for element " + elementName);
+						continue;
+				} catch (LockException e) {
+					LOG.error("could not acquire lock on elements", e);
+				} finally {
+					lock.release(this);
+				}
+				count++;
+			}
+		} catch (ReadOnlyException e) {
+			LOG.warn("database is read only");
+		}
+        elementIds = new TreeMap();
+	}
+    
 	public void flush() {
 		if (elementIds.size() == 0)
 			return;
-		final ProgressIndicator progress = new ProgressIndicator(elementIds.size());
+		final ProgressIndicator progress =
+			new ProgressIndicator(elementIds.size());
 
 		NodeProxy proxy;
 		String elementName;
@@ -128,7 +211,7 @@ public class NativeElementIndex extends ElementIndex {
 					os.writeLong(cid);
 					addr = nodeList[j].internalAddress;
 					os.writeInt(DOMFile.pageFromPointer(addr));
-					os.writeInt(DOMFile.offsetFromPointer(addr));
+					os.writeInt(DOMFile.tidFromPointer(addr));
 				}
 				data = os.toByteArray();
 				os.clear();
@@ -138,10 +221,11 @@ public class NativeElementIndex extends ElementIndex {
 					lock.acquire(this, Lock.WRITE_LOCK);
 					lock.enter(this);
 					if (!dbElement.append(ref, new Value(data))) {
-						LOG.warn("could not save index for element " + elementName);
+						LOG.warn(
+							"could not save index for element " + elementName);
 						continue;
 					}
-				} catch(LockException e) {
+				} catch (LockException e) {
 					LOG.error("could not acquire lock on elements", e);
 				} finally {
 					lock.release(this);
@@ -197,7 +281,7 @@ public class NativeElementIndex extends ElementIndex {
 			} catch (DBException dbe) {
 				LOG.warn(dbe);
 			}
-		} catch(LockException e) {
+		} catch (LockException e) {
 			LOG.warn("could not acquire lock for elements", e);
 		} finally {
 			lock.release(this);

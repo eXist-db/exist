@@ -32,7 +32,7 @@ SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
 LOCALCLASSPATH=$CLASSPATH:$LOCALCLASSPATH
 
 if [ -z "$JAVA_OPTS" ]; then
-    JAVA_OPTS="-Xms128000k -Xmx256000k"
+    JAVA_OPTS="-Xms32000k -Xmx256000k"
 fi
 
 #PROF=-Xrunjmp:nomethods

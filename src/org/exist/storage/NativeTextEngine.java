@@ -245,6 +245,10 @@ public class NativeTextEngine extends TextSearchEngine {
 		invIdx.flush();
 	}
 
+    public void reindex(DocumentImpl oldDoc) {
+        invIdx.reindex(oldDoc);
+    }
+    
 	/**
 	 *  Find    all the nodes containing the search terms given by the array
 	 * expr from the fulltext-index.
@@ -295,7 +299,7 @@ public class NativeTextEngine extends TextSearchEngine {
 	 * @return array containing a NodeSet for each of the search terms
 	 */
 	public NodeSet[] getNodesExact(DocumentSet docs, String[] expr) {
-		long start = System.currentTimeMillis();
+		//long start = System.currentTimeMillis();
 		ArraySet[] result = new ArraySet[expr.length];
 		DocumentImpl doc;
 		Value ref;
@@ -364,12 +368,9 @@ public class NativeTextEngine extends TextSearchEngine {
 				}
 			}
 			//( (ArraySet) result[i] ).setIsSorted( true );
-			LOG.debug(
-				"found: "
-					+ result[i].getLength()
-					+ " in "
-					+ (System.currentTimeMillis() - start)
-					+ "ms.");
+//			LOG.debug("found: " + result[i].getLength() + " in "
+//			 + (System.currentTimeMillis() - start)
+//			 + "ms.");
 		}
 		return result;
 	}
@@ -686,7 +687,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			} catch (DBException dbe) {
 				LOG.warn(dbe);
 			}
-		} catch(LockException e) {
+		} catch (LockException e) {
 			LOG.warn("could not acquire lock on words db", e);
 		} finally {
 			lock.release(this);
@@ -757,7 +758,8 @@ public class NativeTextEngine extends TextSearchEngine {
 				words.put(word, buf);
 			}
 			buf.add(gid);
-			final int percent = (int) (run.freeMemory() / (run.totalMemory() / 100));
+			final int percent =
+				(int) (run.freeMemory() / (run.totalMemory() / 100));
 			if (percent < memMinFree) {
 				flush();
 				flushed = true;
@@ -768,6 +770,73 @@ public class NativeTextEngine extends TextSearchEngine {
 						+ "; free: "
 						+ run.freeMemory());
 			}
+		}
+
+		public void reindex(DocumentImpl oldDoc) {
+			final short collectionId = doc.getCollection().getId();
+			int count = 1, len;
+			Map.Entry entry;
+			String word;
+			LongLinkedList idList;
+			long[] ids;
+			byte[] data;
+			long prevId;
+			long delta;
+			NodeSet oldList;
+			DocumentSet docs;
+			NodeProxy p;
+			WordRef ref;
+			Lock lock;
+			String[] terms = new String[1];
+			for (Iterator i = words.entrySet().iterator();
+				i.hasNext();
+				count++) {
+				entry = (Map.Entry) i.next();
+				word = (String) entry.getKey();
+				terms[0] = word;
+				idList = (LongLinkedList) entry.getValue();
+				docs = new DocumentSet();
+				docs.add(oldDoc);
+				oldList = getNodesExact(docs, terms)[0];
+				for (Iterator j = oldList.iterator(); j.hasNext();) {
+					p = (NodeProxy) j.next();
+					if (oldDoc.getTreeLevel(p.gid) < oldDoc.reindexRequired())
+                        idList.add(p.gid);
+				}
+				ids = idList.getData();
+				i.remove();
+				Arrays.sort(ids);
+				len = ids.length;
+				os.writeInt(doc.getDocId());
+				os.writeInt(len);
+				prevId = 0;
+				for (int j = 0; j < len; j++) {
+					delta = ids[j] - prevId;
+					if (delta < 0) {
+						LOG.debug("neg. delta: " + delta + " for " + word);
+						LOG.debug("id = " + ids[j] + "; prev = " + prevId);
+					}
+					os.writeLong(delta);
+					prevId = ids[j];
+				}
+				data = os.toByteArray();
+				os.clear();
+				ref = new WordRef(collectionId, word);
+				lock = dbWords.getLock();
+				try {
+					lock.acquire(this, Lock.WRITE_LOCK);
+					lock.enter(this);
+					try {
+						dbWords.put(ref, new Value(data));
+					} catch (ReadOnlyException e) {
+					}
+				} catch (LockException e) {
+					LOG.warn("could not acquire lock", e);
+				} finally {
+					lock.release(this);
+				}
+			}
+            words = new TreeMap();
 		}
 
 		public void flush() {

@@ -263,15 +263,6 @@
                 <exclude name="**/*~"/>
             </fileset>
         </copy>
-        <mkdir dir="${webapp.dir}/bin"/>
-        <copy todir="${webapp.dir}/bin">
-            <fileset dir="bin">
-                <include name="client.sh"/>
-                <include name="client.bat"/>
-				<include name="server.sh"/>
-				<include name="server.bat"/>
-            </fileset>
-        </copy>
         <chmod file="${webapp.dir}/bin/client.sh" perm="+x"/>
         <copy todir="${webapp.dir}/WEB-INF/lib">
             <fileset dir=".">

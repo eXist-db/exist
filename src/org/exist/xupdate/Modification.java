@@ -1,0 +1,97 @@
+package org.exist.xupdate;
+
+import java.io.StringReader;
+
+import org.apache.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeSet;
+import org.exist.parser.XPathLexer;
+import org.exist.parser.XPathParser;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.User;
+import org.exist.storage.BrokerPool;
+import org.exist.util.XMLUtil;
+import org.exist.xpath.PathExpr;
+import org.exist.xpath.RootNode;
+import org.exist.xpath.Value;
+import org.w3c.dom.DocumentFragment;
+
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
+
+/**
+ * Modification.java
+ * 
+ * @author Wolfgang Meier
+ */
+public abstract class Modification {
+
+    private final static Logger LOG = Logger.getLogger(Modification.class);
+    
+	protected String selectStmt = null;
+	protected DocumentFragment content = null;
+	protected BrokerPool pool;
+    protected User user;
+    
+	/**
+	 * Constructor for Modification.
+	 */
+	public Modification(BrokerPool pool, User user, String selectStmt) {
+		this.selectStmt = selectStmt;
+        this.pool = pool;
+        this.user = user;
+	}
+
+	public abstract long process(DocumentSet docs) throws PermissionDeniedException, EXistException;
+
+	public abstract String getName();
+
+	public void setContent(DocumentFragment node) {
+		content = node;
+	}
+
+	protected NodeSet select(DocumentSet docs) throws PermissionDeniedException, EXistException {
+		try {
+			XPathLexer lexer = new XPathLexer(new StringReader(selectStmt));
+			XPathParser parser = new XPathParser(pool, user, lexer);
+			PathExpr expr = new PathExpr(pool);
+            RootNode root = new RootNode(pool);
+            expr.add(root);
+			parser.expr(expr);
+			LOG.info("query: " + expr.pprint());
+			long start = System.currentTimeMillis();
+			if (parser.foundErrors())
+				throw new RuntimeException(parser.getErrorMsg());
+			docs = expr.preselect(docs);
+			if (docs.getLength() == 0)
+				return null;
+			
+			Value resultValue = expr.eval(docs, null, null);
+            if(!(resultValue.getType() == Value.isNodeList))
+                throw new EXistException("select expression should evaluate to a" +
+                    "node-set");
+            return (NodeSet)resultValue.getNodeList();
+		} catch (RecognitionException e) {
+            LOG.warn("error while parsing select expression", e);
+            throw new EXistException(e);
+		} catch (TokenStreamException e) {
+            LOG.warn("error while parsing select expression", e);
+            throw new EXistException(e);
+		}
+	}
+    
+	public String toString() {
+		StringBuffer buf = new StringBuffer();
+		buf.append("<xu:");
+		buf.append(getName());
+		buf.append(" select=\"");
+		buf.append(selectStmt);
+		buf.append("\">");
+		buf.append(XMLUtil.dump(content));
+		buf.append("</xu:");
+		buf.append(getName());
+		buf.append(">");
+		return buf.toString();
+	}
+}
