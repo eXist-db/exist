@@ -134,6 +134,37 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.xmldb.IndexQueryService#scanIndexTerms(java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public Occurrences[] scanIndexTerms(String xpath, String start, String end) throws XMLDBException {
+		try {
+			Vector params = new Vector();
+			params.addElement(xpath);
+			params.addElement(start);
+			params.addElement(end);
+			Vector result = (Vector) rpcClient.execute("scanIndexTerms", params);
+			Occurrences occurrences[] = new Occurrences[result.size()];
+			Vector row;
+			for (int i = 0; i < occurrences.length; i++) {
+				row = (Vector) result.elementAt(i);
+				occurrences[i] = new Occurrences((String) row.elementAt(0));
+				occurrences[i].addOccurrences(((Integer) row.elementAt(1)).intValue());
+			}
+			return occurrences;
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(
+				ErrorCodes.UNKNOWN_ERROR,
+				"xmlrpc error while retrieving indexed elements",
+				e);
+		} catch (IOException e) {
+			throw new XMLDBException(
+				ErrorCodes.UNKNOWN_ERROR,
+				"io error while retrieving indexed elements",
+				e);
+		}
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.xmldb.api.base.Service#getName()
 	 */
 	public String getName() throws XMLDBException {

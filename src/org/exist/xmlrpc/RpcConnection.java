@@ -1992,22 +1992,58 @@ public class RpcConnection extends Thread {
 			if (collection == null)
 				throw new EXistException("collection " + collectionName
 						+ " not found");
-			Occurrences occurrences[] = broker.getTextEngine().scanIndexTerms(
-					user, collection, start, end, inclusive);
-			Vector result = new Vector(occurrences.length);
-			Vector temp;
-			for (int i = 0; i < occurrences.length; i++) {
-				temp = new Vector(2);
-				temp.addElement(occurrences[i].getTerm().toString());
-				temp.addElement(new Integer(occurrences[i].getOccurrences()));
-				result.addElement(temp);
-			}
+			DocumentSet docs = new DocumentSet();
+			collection.allDocs(broker, docs, inclusive, true);
+			NodeSet nodes = docs.toNodeSet();
+			Vector result = scanIndexTerms(start, end, broker, docs, nodes);
 			return result;
 		} finally {
 			if(collection != null)
 				collection.release();
 			brokerPool.release(broker);
 		}
+	}
+
+	public Vector scanIndexTerms(User user, String xpath,
+			String start, String end)
+			throws PermissionDeniedException, EXistException, XPathException {
+		DBBroker broker = null;
+		Collection collection = null;
+		try {
+			broker = brokerPool.get(user);
+			XQuery xquery = broker.getXQueryService();
+			Sequence nodes = xquery.execute(xpath, null);
+			Vector result = scanIndexTerms(start, end, broker, nodes.getDocumentSet(), nodes.toNodeSet());
+			return result;
+		} finally {
+			if(collection != null)
+				collection.release();
+			brokerPool.release(broker);
+		}
+	}
+	
+	/**
+	 * @param user
+	 * @param start
+	 * @param end
+	 * @param broker
+	 * @param docs
+	 * @return
+	 * @throws PermissionDeniedException
+	 */
+	private Vector scanIndexTerms(String start, String end, DBBroker broker, DocumentSet docs, NodeSet nodes) 
+	throws PermissionDeniedException {
+		Occurrences occurrences[] = 
+			broker.getTextEngine().scanIndexTerms(docs, nodes, start, end);
+		Vector result = new Vector(occurrences.length);
+		Vector temp;
+		for (int i = 0; i < occurrences.length; i++) {
+			temp = new Vector(2);
+			temp.addElement(occurrences[i].getTerm().toString());
+			temp.addElement(new Integer(occurrences[i].getOccurrences()));
+			result.addElement(temp);
+		}
+		return result;
 	}
 
 	public void synchronize() {

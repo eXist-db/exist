@@ -52,9 +52,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
-import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
@@ -421,9 +419,8 @@ public class NativeTextEngine extends TextSearchEngine {
 		Value ref;
 		Collection collection;
 		short collectionId;
-		SearchCallback cb;
 		Lock lock = dbWords.getLock();
-		cb = new SearchCallback(context, matcher, result, contextSet, docs);
+		SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, docs);
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			collection = (Collection) iter.next();
 			collectionId = collection.getId();
@@ -484,30 +481,15 @@ public class NativeTextEngine extends TextSearchEngine {
 		return cb.getMatches();
 	}
 
-	public Occurrences[] scanIndexTerms(User user, Collection collection,
-										String start, String end,
-										boolean inclusive)
-			throws PermissionDeniedException {
-		if (!collection.getPermissions().validate(user, Permission.READ))
-			throw new PermissionDeniedException("permission denied");
-		List collections = inclusive
-				? collection.getDescendants(broker, user)
-				: new ArrayList();
-		collections.add(collection);
+	public Occurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet,
+			String start, String end) throws PermissionDeniedException {
+		long t0 = System.currentTimeMillis();
 		final Lock lock = dbWords.getLock();
 		short collectionId;
-		byte section;
 		Collection current;
 		IndexQuery query;
-		ArrayList values;
-		Value[] val;
-		String term;
-		TreeMap map = new TreeMap();
-		Occurrences oc;
-		VariableByteArrayInput is;
-		int docId;
-		int len;
-		for (Iterator i = collections.iterator(); i.hasNext();) {
+		IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
+		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
 			current = (Collection) i.next();
 			collectionId = current.getId();
             if (end == null)
@@ -517,31 +499,7 @@ public class NativeTextEngine extends TextSearchEngine {
     					start), new WordRef(collectionId, end));
 			try {
 				lock.acquire();
-				values = dbWords.findEntries(query);
-				for (Iterator j = values.iterator(); j.hasNext();) {
-					val = (Value[]) j.next();
-					term = new String(val[0].getData(), 2,
-							val[0].getLength() - 2, "UTF-8");
-					oc = (Occurrences) map.get(term);
-					if (oc == null) {
-						oc = new Occurrences(term);
-						map.put(term, oc);
-					}
-					is = new VariableByteArrayInput(val[1].getData());
-					try {
-						while (is.available() > 0) {
-							docId = is.readInt();
-                            oc.addDocument(docId);
-							section = is.readByte();
-							len = is.readInt();
-							for(int k = 0; k < len; k++) {
-								is.skip(1);
-								oc.addOccurrences(is.readInt());
-							}
-						}
-					} catch (EOFException e) {
-					}
-				}
+				dbWords.query(query, cb);
 			} catch (LockException e) {
 				LOG.warn("cannot get lock on words", e);
 			} catch (IOException e) {
@@ -554,7 +512,9 @@ public class NativeTextEngine extends TextSearchEngine {
 				lock.release();
 			}
 		}
+		Map map = cb.map;
 		Occurrences[] result = new Occurrences[map.size()];
+		LOG.debug("Found " + result.length + " in " + (System.currentTimeMillis() - t0));
 		return (Occurrences[]) map.values().toArray(result);
 	}
 
@@ -1170,7 +1130,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 	}
 	
-	private class SearchCallback implements BTreeCallback {
+	private final class SearchCallback implements BTreeCallback {
 
 		DocumentSet docs;
 		TermMatcher matcher;
@@ -1261,6 +1221,86 @@ public class NativeTextEngine extends TextSearchEngine {
 			}
 			if (contextSet != null)
 				((ExtArrayNodeSet) result).sort();
+			return true;
+		}
+	}
+	
+	private final class IndexScanCallback implements BTreeCallback{
+		
+		private DocumentSet docs;
+		private NodeSet contextSet;
+		private Map map = new TreeMap();
+		
+		IndexScanCallback(DocumentSet docs, NodeSet contextSet) {
+			this.docs = docs;
+			this.contextSet = contextSet;
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
+		 */
+		public boolean indexInfo(Value key, long pointer)
+				throws TerminatedException {
+			String term;
+			try {
+				term = new String(key.getData(), 2, key.getLength() - 2,
+						"UTF-8");
+			} catch (UnsupportedEncodingException uee) {
+				term = new String(key.getData(), 2, key.getLength() - 2);
+			}
+			Occurrences oc = (Occurrences) map.get(term);
+			
+			VariableByteInput is = null;
+			try {
+				is = dbWords.getAsStream(pointer);
+			} catch (IOException ioe) {
+				LOG.warn(ioe.getMessage(), ioe);
+			}
+			if (is == null)
+				return true;
+			try {
+				int docId;
+				byte section;
+				int len;
+				int freq = 1;
+				long gid;
+				DocumentImpl doc;
+				boolean include = true;
+				boolean docAdded;
+				while (is.available() > 0) {
+					docId = is.readInt();
+					section = is.readByte();
+					len = is.readInt();
+					if ((doc = docs.getDoc(docId)) == null) {
+						is.skip(termFreq ? len * 2 : len);
+						continue;
+					}
+					docAdded = false;
+					gid = 0;
+					for (int j = 0; j < len; j++) {
+						gid += is.readLong();
+						if(termFreq)
+							freq = is.readInt();
+						if (contextSet != null) {
+							include = contextSet.parentWithChild(doc, gid, false, true) != null;
+						}
+						if (include) {
+							if (oc == null) {
+								oc = new Occurrences(term);
+								map.put(term, oc);
+							}
+							if (!docAdded) {
+								oc.addDocument(doc);
+								docAdded = true;
+							}
+							oc.addOccurrences(freq);
+						}
+					}
+				}
+			} catch(EOFException e) {
+			} catch(IOException e) {
+				LOG.warn("Exception while scanning index: " + e.getMessage(), e);
+			}
 			return true;
 		}
 	}

@@ -212,6 +212,18 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		return containsKey(id);
 	}
 
+	public NodeSet toNodeSet() {
+		NodeSet result = new ArraySet(getLength());
+		DocumentImpl doc;
+        for (Iterator i = iterator(); i.hasNext();) {
+            doc = (DocumentImpl) i.next();
+            if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
+            	result.add(new NodeProxy(doc, -1));
+            }
+        }
+        return result;
+	}
+	
 	public int getMinDocId() {
 		int min = -1;
 		DocumentImpl d;

@@ -28,6 +28,7 @@ import java.util.Vector;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.xquery.XPathException;
 import org.xml.sax.SAXException;
 
 /**
@@ -734,6 +735,10 @@ public interface RpcAPI {
 		boolean inclusive)
 		throws PermissionDeniedException, EXistException;
 
+	Vector scanIndexTerms(User user, String xpath,
+			String start, String end)
+			throws PermissionDeniedException, EXistException, XPathException;
+	
 	boolean releaseQueryResult(User user, int handle);
 
 	int xupdate(User user, String collectionName, byte[] xupdate)

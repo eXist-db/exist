@@ -24,12 +24,16 @@ package org.exist.xmldb;
 import org.exist.EXistException;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.dom.DocumentSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
 import org.exist.util.Occurrences;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.value.Sequence;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -179,8 +183,9 @@ public class LocalIndexQueryService implements IndexQueryService {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			return broker.getTextEngine().scanIndexTerms(user, parent.getCollection(), 
-					start, end, inclusive);
+			DocumentSet docs = new DocumentSet();
+			parent.getCollection().allDocs(broker, docs, inclusive, true);
+			return broker.getTextEngine().scanIndexTerms(docs, docs.toNodeSet(),  start, end);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 				"permission denied", e);
@@ -193,5 +198,32 @@ public class LocalIndexQueryService implements IndexQueryService {
 			pool.release(broker);
 		}
 	}
-
+	
+	public Occurrences[] scanIndexTerms(
+			String xpath,
+			String start,
+			String end)
+			throws XMLDBException {
+		DBBroker broker = null;
+		try {
+			broker = pool.get(user);
+			XQuery xquery = broker.getXQueryService();
+			Sequence nodes = xquery.execute(xpath, null);
+			return broker.getTextEngine().scanIndexTerms(nodes.getDocumentSet(), 
+					nodes.toNodeSet(),  start, end);
+		} catch (EXistException e) {
+			throw new XMLDBException(
+					ErrorCodes.VENDOR_ERROR,
+					"database access error",
+					e);
+		} catch (XPathException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+					e.getMessage(), e);
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+					e.getMessage(), e);
+		} finally {
+			pool.release(broker);
+		}
+	}
 }

@@ -976,13 +976,16 @@ public class InteractiveClient {
 			} else if (args[0].equalsIgnoreCase("terms")) {
 				if (args.length < 3) {
 					System.out
-							.println("Usage: terms sequence-start sequence-end");
+							.println("Usage: terms [xpath] sequence-start sequence-end");
 					return true;
 				}
 				IndexQueryService service = (IndexQueryService) current
 						.getService("IndexQueryService", "1.0");
-				Occurrences[] terms = service.scanIndexTerms(args[1], args[2],
-						true);
+				Occurrences[] terms;
+				if (args.length == 3)
+					terms = service.scanIndexTerms(args[1], args[2], true);
+				else
+					terms = service.scanIndexTerms(args[1], args[2], args[3]);
 				System.out.println("Element occurrences in collection "
 						+ current.getName());
 				System.out
