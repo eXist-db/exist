@@ -50,6 +50,9 @@ public class XMLReaderPool extends StackObjectPool {
 	}
 	
 	public synchronized void returnXMLReader(XMLReader reader) {
+		if(reader == null) {
+			return;
+		}
 		try {
 			returnObject(reader);
 		} catch (Exception e) {

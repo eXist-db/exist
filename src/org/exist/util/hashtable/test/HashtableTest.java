@@ -28,15 +28,14 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.exist.util.hashtable.SequencedLongHashMap;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class HashtableTest extends TestCase {
 
-    private int tabSize = 10000;
-	private Int2ObjectHashMap table = new Int2ObjectHashMap(tabSize);
-	private int keys[] = new int[tabSize];
+    private int tabSize = 100000;
 	private Object values[] = new Object[tabSize];
 
 	public static void main(String[] args) {
@@ -48,6 +47,8 @@ public class HashtableTest extends TestCase {
 	}
 	
 	public void testPut() {
+		int keys[] = new int[tabSize];
+		Int2ObjectHashMap table = new Int2ObjectHashMap(tabSize);
 		Random rand = new Random(System.currentTimeMillis());
 		for(int i = 0; i < tabSize; i++) {
 			keys[i] = rand.nextInt(Integer.MAX_VALUE);
@@ -87,4 +88,28 @@ public class HashtableTest extends TestCase {
 		assertEquals(table.size(), c);
 	}
 
+	public void testSequencedMap() {
+		long keys[] = new long[tabSize];
+		SequencedLongHashMap table = new SequencedLongHashMap(tabSize);
+		Random rand = new Random(System.currentTimeMillis());
+		for(int i = 0; i < tabSize; i++) {
+			do {
+				keys[i] = rand.nextInt(Integer.MAX_VALUE);
+			} while(table.get(keys[i]) != null);
+			values[i] = new String("a" + keys[i]);
+			table.put(keys[i], values[i]);
+		}
+		for(int i = 0; i < tabSize; i++) {
+			Object v = table.get(keys[i]);
+			assertEquals( values[i], v);
+		}
+		int c = 0;
+		for(Iterator i = table.iterator(); i.hasNext(); c++) {
+			Long v = (Long)i.next();
+			assertEquals(keys[c], v.longValue());
+		}
+		System.out.println(table.size() + " = " + c);
+		System.out.println("maxRehash: " + table.getMaxRehash());
+		assertEquals(table.size(), c);
+	}
 }

@@ -841,6 +841,8 @@ implements Comparable, EntityResolver, Cacheable {
 			lock.acquire(Lock.WRITE_LOCK);
 			source = new InputSource(new StringReader(data));
 			XMLReader currentReader = getReader(broker);
+			if(currentReader == null)
+				throw new EXistException("No reader!");
 			DocumentImpl oldDoc = (DocumentImpl)documents.get(name);
 			DocumentImpl document = new DocumentImpl(broker, name, this);
 			// first pass: parse the document to determine tree structure

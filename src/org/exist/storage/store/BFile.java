@@ -482,8 +482,7 @@ public class BFile extends BTree {
     }
     
     private DataPage getDataPage(long pos, boolean initialize) throws IOException {
-        DataPage wp = null;
-        wp = (DataPage) dataCache.get(pos);
+        DataPage wp = (DataPage) dataCache.get(pos);
         if (wp == null) {
             final Page page = getPage(pos);
             if (page == null) {
@@ -684,7 +683,7 @@ public class BFile extends BTree {
             value.copyTo(data, 6);
             page.setData(data);
             page.setDirty(true);
-            dataCache.add(page);
+//            dataCache.add(page);
             return StorageAddress.createPointer((int) page.getPageNum(),
                     (short) 1);
         }
@@ -1273,7 +1272,7 @@ public class BFile extends BTree {
         }
 
         public OverflowPage(DataPage page) {
-            firstPage = (SinglePage) page;
+        	firstPage = (SinglePage) page;
         }
 
         public OverflowPage(Page p, byte[] data) throws IOException {

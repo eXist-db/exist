@@ -55,7 +55,6 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 	 * @see org.apache.commons.pool.BasePoolableObjectFactory#makeObject()
 	 */
 	public Object makeObject() throws Exception {
-		System.out.println("Creating new SAXReader");
 		Configuration config = pool.getConfiguration();
 		// get validation settings
 		int validation = VALIDATION_AUTO;
