@@ -769,7 +769,6 @@ public class Parser
 				final XMLString normalized = charBuf.normalize(normalize);
 				if (normalized.length() > 0) {
 					text.setData(charBuf);
-					System.out.println(text.getData());
 					text.setOwnerDocument(document);
 					last.appendChildInternal(text);
 					if (!validate)
