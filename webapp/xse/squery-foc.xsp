@@ -72,7 +72,7 @@ $Header$
     
                         <xmldb:collection uri="xmldb:exist:///db" user="guest" password="guest">
                             <xsp:logic>
-                                String cname = <xsp-request:get-parameter name="cname" as="string"/>;
+                                String cname = <xsp-request:get-parameter name="collection" as="string"/>;
                                 ArrayList collections = new ArrayList();
                                 getAllCollections(<xmldb:get-collection/>, collections);
                                 for(Iterator i = collections.iterator(); i.hasNext(); ) {
@@ -90,6 +90,7 @@ $Header$
                         </xmldb:collection>
 		</select>
                 </td>
+
                 <td align="left" width="60%">
 			<!-- <input type="text" name="query" size="40">
                         <xsp:logic>
