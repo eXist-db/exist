@@ -3,6 +3,7 @@ package org.exist.xquery;
 import java.util.Iterator;
 
 import org.exist.dom.DocumentSet;
+import org.exist.memtree.MemTreeBuilder;
 import org.exist.storage.DBBroker;
 
 
@@ -72,4 +73,25 @@ public class ModuleContext extends XQueryContext {
     public DBBroker getBroker() {
         return parentContext.getBroker();
     }
+    
+    /* (non-Javadoc)
+	 * @see org.exist.xquery.XQueryContext#getDocumentBuilder()
+	 */
+	public MemTreeBuilder getDocumentBuilder() {
+		return parentContext.getDocumentBuilder();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.XQueryContext#pushDocumentContext()
+	 */
+	public void pushDocumentContext() {
+		parentContext.pushDocumentContext();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.XQueryContext#popDocumentContext()
+	 */
+	public void popDocumentContext() {
+		parentContext.popDocumentContext();
+	}
 }

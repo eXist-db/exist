@@ -122,4 +122,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 	public Variable resolveVariable(QName qname) throws XPathException {
 		return (Variable)mGlobalVariables.get(qname);
 	}
+	
+	public void reset() {
+	}
 }

@@ -590,6 +590,10 @@ public class XQueryContext {
 		lastVar = null;
 		fragmentStack = new Stack();
 		watchdog.reset();
+		for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
+			Module module = (Module)i.next();
+			module.reset();
+		}
 	}
 	
 	/**
