@@ -799,22 +799,22 @@ public class RpcConnection extends Thread {
 		return r;
 	}
 
-	public boolean parse(User user, byte[] xml, String docName, 
+	public boolean parse(User user, byte[] xml, String path, 
 			boolean replace) throws Exception {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			int p = docName.lastIndexOf('/');
-			if (p < 0 || p == docName.length() - 1)
+			int p = path.lastIndexOf('/');
+			if (p < 0 || p == path.length() - 1)
 				throw new EXistException("Illegal document path");
-			String collectionName = docName.substring(0, p);
-			docName = docName.substring(p + 1);
+			String collectionName = path.substring(0, p);
+			String docName = path.substring(p + 1);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
 				throw new EXistException("Collection " + collectionName
 						+ " not found");
 			if (!replace) {
-				DocumentImpl old = collection.getDocument(docName);
+				DocumentImpl old = collection.getDocument(path);
 				if (old != null)
 					throw new PermissionDeniedException(
 							"Document exists and overwrite is not allowed");
@@ -823,7 +823,7 @@ public class RpcConnection extends Thread {
 			InputStream is = new ByteArrayInputStream(xml);
 			DocumentImpl doc = collection.addDocument(broker, docName,
 					new InputSource(is));
-			LOG.debug("parsing " + docName + " took "
+			LOG.debug("parsing " + path + " took "
 					+ (System.currentTimeMillis() - startTime) + "ms.");
 			documentCache.clear();
 			return doc != null;
