@@ -391,6 +391,10 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public void storeResource(Resource res) throws XMLDBException {
+		storeResource(res, null, null);
+	}
+
+	public void storeResource(Resource res, Date a, Date b) throws XMLDBException {
 		Object content = res.getContent();
 		if (content instanceof File) {
 			File file = (File) content;
@@ -399,15 +403,27 @@ public class RemoteCollection implements CollectionImpl {
 					ErrorCodes.INVALID_RESOURCE,
 					"failed to read resource from file " + file.getAbsolutePath());
 			if (file.length() < MAX_CHUNK_LENGTH) {
+				((RemoteXMLResource)res).datecreated =a;
+				((RemoteXMLResource)res).datemodified =b;
 				store((RemoteXMLResource)res);
 			} else {
+				((RemoteXMLResource)res).datecreated =a;
+				((RemoteXMLResource)res).datemodified =b;
 				uploadAndStore(res);
 			}
 		} else if(res.getResourceType().equals("BinaryResource"))
+		{
+			((RemoteBinaryResource)res).datecreated =a;
+	        ((RemoteBinaryResource)res).datemodified =b;			
 			store((RemoteBinaryResource)res);
-		else
+		}	
+		else {
+			((RemoteXMLResource)res).datecreated =a;
+		    ((RemoteXMLResource)res).datemodified =b;
 			store((RemoteXMLResource)res);
 	}
+	}
+	
 
 	private void store(RemoteXMLResource res) throws XMLDBException {
 		byte[] data = res.getData();
@@ -415,6 +431,12 @@ public class RemoteCollection implements CollectionImpl {
 		params.addElement(data);
 		params.addElement(getPath() + '/' + res.getId());
 		params.addElement(new Integer(1));
+		
+		if (res.datecreated != null) {
+		params.addElement(res.datecreated );
+		params.addElement(res.datemodified );			
+		}
+		        
 		try {
 			rpcClient.execute("parse", params);
 		} catch (XmlRpcException xre) {
@@ -434,6 +456,13 @@ public class RemoteCollection implements CollectionImpl {
 		params.addElement(getPath() + '/' + res.getId());
         params.addElement(res.getMimeType());
 		params.addElement(Boolean.TRUE);
+		
+		
+		if ((Date)res.datecreated != null) {
+			params.addElement((Date)res.datecreated );
+			params.addElement((Date)res.datemodified );			
+			}
+		
 		try {
 			rpcClient.execute("storeBinary", params);
 		} catch (XmlRpcException xre) {
@@ -473,6 +502,12 @@ public class RemoteCollection implements CollectionImpl {
 			params.addElement(fileName);
 			params.addElement(getPath() + '/' + res.getId());
 			params.addElement(Boolean.TRUE);
+			
+			if ( ((RemoteXMLResource)res).datecreated  != null ) {
+				params.addElement( ((RemoteXMLResource)res).datecreated );
+				params.addElement( ((RemoteXMLResource)res).datemodified );			
+				}
+
 			rpcClient.execute("parseLocal", params);
 		} catch (FileNotFoundException e) {
 			throw new XMLDBException(

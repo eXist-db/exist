@@ -103,7 +103,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-
 import antlr.collections.AST;
 
 /**
@@ -1072,6 +1071,11 @@ public class RpcConnection extends Thread {
 	
 	public boolean parse(User user, byte[] xml, String path, 
 			boolean replace) throws Exception {
+		return parse(user, xml,path, replace, null, null);
+	}
+
+	public boolean parse(User user, byte[] xml, String path, 
+			boolean replace, Date created, Date modified) throws Exception {
 		DBBroker broker = null;
 		Collection collection = null;
 		try {
@@ -1102,6 +1106,15 @@ public class RpcConnection extends Thread {
 				if(collection != null)
 					collection.release();
 			}
+						
+			if (created != null) 
+				info.getDocument().setCreated( created.getTime());
+			
+			
+			if (modified != null)
+				info.getDocument().setLastModified( modified.getTime());
+			
+			
 			collection.store(broker, info, source, false);
 			LOG.debug("parsing " + path + " took "
 					+ (System.currentTimeMillis() - startTime) + "ms.");
@@ -1115,6 +1128,8 @@ public class RpcConnection extends Thread {
 		}
 	}
 
+	
+	
 	/**
 	 * Parse a file previously uploaded with upload.
 	 * 
@@ -1127,6 +1142,13 @@ public class RpcConnection extends Thread {
 	 */
 	public boolean parseLocal(User user, String localFile, String docName,
 			boolean replace) throws EXistException, PermissionDeniedException, LockException,
+			SAXException, TriggerException {
+		return parseLocal(user, localFile, docName, replace, null, null);		
+	}
+
+
+	public boolean parseLocal(User user, String localFile, String docName,
+			boolean replace, Date created, Date modified) throws EXistException, PermissionDeniedException, LockException,
 			SAXException, TriggerException {
 		File file = new File(localFile);
 		if (!file.canRead())
@@ -1160,6 +1182,13 @@ public class RpcConnection extends Thread {
 				if(collection != null)
 					collection.release();
 			}
+			
+			if (created != null)
+				info.getDocument().setCreated(created.getTime());
+			
+			if (modified != null)
+				info.getDocument().setLastModified(modified.getTime());
+			
 			collection.store(broker, info, source, false);
 		} finally {
 			brokerPool.release(broker);
@@ -1169,8 +1198,17 @@ public class RpcConnection extends Thread {
 		return doc != null;
 	}
 
+	
+	
+	
+	
 	public boolean storeBinary(User user, byte[] data, String docName, String mimeType,
 		boolean replace) throws EXistException, PermissionDeniedException, LockException {
+		return storeBinary(user, data, docName, mimeType, replace, null, null);
+	}
+
+	public boolean storeBinary(User user, byte[] data, String docName, String mimeType,
+			boolean replace, Date created, Date modified) throws EXistException, PermissionDeniedException, LockException {
 		DBBroker broker = null;
 		DocumentImpl doc = null;
 		Collection collection = null;
@@ -1193,6 +1231,11 @@ public class RpcConnection extends Thread {
 			}
 			LOG.debug("Storing binary resource to collection " + collection.getName());
 			doc = collection.addBinaryResource(broker, docName, data, mimeType);
+				if (created != null)
+					doc.setCreated(created.getTime());
+				if (modified != null)
+					doc.setLastModified(modified.getTime());
+
 		} finally {
 			if(collection != null)
 				collection.release();
@@ -1202,6 +1245,10 @@ public class RpcConnection extends Thread {
 		return doc != null;
 	}
 
+	
+	
+	
+	
 	public String upload(User user, byte[] chunk, int length, String fileName)
 			throws EXistException, IOException {
 		File file;

@@ -23,6 +23,7 @@
  */
 package org.exist.xmldb;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -538,6 +539,10 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				"unknown resource type: " + resource.getResourceType());
         ((AbstractEXistResource)resource).isNewResource = false;
 		needsSync = true;
+	}
+	
+	public void storeResource(Resource res, Date a, Date b) throws XMLDBException {
+	
 	}
 
 	private void storeBinaryResource(LocalBinaryResource res) throws XMLDBException {
