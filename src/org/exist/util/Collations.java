@@ -68,12 +68,16 @@ public class Collations {
 			 * Check if the db broker is configured to be case insensitive.
 			 * If yes, we assume "primary" strength unless the user specified
 			 * something different.
+			 * 
+			 * TODO: bad idea: using primary strength as default also ignores
+			 * German Umlaute.
 			 */
-			if(!context.getBroker().isCaseSensitive())
-				strength = "primary";
+//			if(!context.getBroker().isCaseSensitive())
+//				strength = "primary";
 			if(query == null) {
 				return getCollationFromParams(null, strength, null);
 			} else {
+				LOG.debug("Loading collation: " + query);
 				String lang = null;
 				String decomposition = null;
 				StringTokenizer queryTokenizer = new StringTokenizer(query, ";&");
