@@ -23,19 +23,15 @@ package org.exist.xmldb.test.concurrent;
 
 import java.io.File;
 
-import org.xmldb.api.base.Collection;
-
 /**
- * Test concurrent acess to resources.
- * 
  * @author wolf
  */
-public class ConcurrentResourceTest extends ConcurrentTestBase {
+public class ConcurrentQueryTest extends ConcurrentTestBase {
 
 	private final static String URI = "xmldb:exist:///db";
 	
 	public static void main(String[] args) {
-		junit.textui.TestRunner.run(ConcurrentResourceTest.class);
+		junit.textui.TestRunner.run(ConcurrentQueryTest.class);
 	}
 	
 	private File tempFile;
@@ -45,7 +41,7 @@ public class ConcurrentResourceTest extends ConcurrentTestBase {
 	 * @param uri
 	 * @param testCollection
 	 */
-	public ConcurrentResourceTest(String name) {
+	public ConcurrentQueryTest(String name) {
 		super(name, URI, "C1");
 	}
 
@@ -56,29 +52,15 @@ public class ConcurrentResourceTest extends ConcurrentTestBase {
 		super.setUp();
 		
 		String[] wordList = DBUtils.wordList(rootCol);
-		tempFile = DBUtils.generateXMLFile(1000, 10, wordList);
+		tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
+		DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
 		
-		Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
-		Collection c2 = DBUtils.addCollection(getTestCollection(), "C1-C3");
+		String query0 = "/ROOT-ELEMENT/ELEMENT/ELEMENT-1";
+		String query1 = "distinct-values(//ELEMENT/@attribute-2)";
+		String query2 = "/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
 		
-		DBUtils.addXMLResource(c1, "R1.xml", tempFile);
-		DBUtils.addXMLResource(c2, "R1.xml", tempFile);
-		
-		addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R1.xml", wordList), 20, 200);
-		addAction(new RetrieveResourceAction(URI + "/C1/C1-C2", "R1.xml"), 20, 1000);
-		
-		addAction(new ReplaceResourceAction(URI + "/C1/C1-C3", "R1.xml", wordList), 20, 200);
-		addAction(new RetrieveResourceAction(URI + "/C1/C1-C3", "R1.xml"), 20, 1000);
-		
-		// TODO: using a second replace thread on the same resource generates a deadlock condition !!!	
-//		addAction(new ReplaceResourceAction(URI + "/C1-C2", "R1.xml", wordList), 10, 300);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#tearDown()
-	 */
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		tempFile.delete();
+		addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 20, 500);
+		addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 20, 0);
+		addAction(new XQueryAction(URI + "/C1", "R1.xml", query2), 20, 0);
 	}
 }

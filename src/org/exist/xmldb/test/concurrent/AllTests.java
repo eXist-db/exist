@@ -32,6 +32,7 @@ public class AllTests {
 		//$JUnit-BEGIN$
 		suite.addTest(new TestSuite(ConcurrentResourceTest.class));
 		suite.addTest(new TestSuite(ConcurrentXUpdateTest.class));
+		suite.addTest(new TestSuite(ConcurrentQueryTest.class));
 		//$JUnit-END$
 		return suite;
 	}
