@@ -25,6 +25,7 @@ import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -61,8 +62,7 @@ public class FunSubstring extends Function {
 		start = getArgument(1);
 
 		if(node != null) {
-			context = new ArraySet(1);
-			context.add(node);
+			context = new SingleNodeSet(node);
 		}
 		int s = (int)start.eval(docs, context, node).getNumericValue();
 		int l = 0;

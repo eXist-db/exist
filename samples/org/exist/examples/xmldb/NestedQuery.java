@@ -15,12 +15,12 @@ import org.xmldb.api.modules.XPathQueryService;
  */
 public class NestedQuery {
 
-    protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+    protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc/db";
 
     protected static String driver = "org.exist.xmldb.DatabaseImpl";
 
-    protected static String query1 = "document(*)//rdf:Description[dc:subject&='computer']";
-    protected static String query2 = "/dc:title";
+    protected static String query1 = "document(*)//SPEECH[LINE &= 'corrupt*']";
+    protected static String query2 = "/ancestor::SCENE/TITLE";
     
     public static void main( String args[] ) {
         try {
@@ -39,7 +39,6 @@ public class NestedQuery {
             // set properties
             service.setProperty( "pretty", "true" );
             service.setProperty( "encoding", "ISO-8859-1" );
-            service.setProperty( "create-container-elements", "false");
             
             // execute first query
             ResourceSet result = service.query( query1 );
@@ -59,19 +58,13 @@ public class NestedQuery {
                 // print the results found by the second query
                 for( int j = 0; j < (int)result2.getSize(); j++ ) {
                     xml = (String)result2.getResource( (long)j ).getContent();
-                    System.out.println( xml );
+                    System.out.println( "Scene: " + xml );
                 }
+				System.out.println((String)resource.getContent());
             }
         } catch ( Exception e ) {
             e.printStackTrace();
         }
     }
 
-
-    /**  Description of the Method */
-    protected static void usage() {
-        System.out.println( "usage: samples.APISearch [ collection ] xpath-query" );
-        System.exit( 0 );
-    }
 }
-

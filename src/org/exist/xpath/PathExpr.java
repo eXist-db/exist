@@ -28,6 +28,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
 
 public class PathExpr implements Expression {
@@ -85,11 +86,10 @@ public class PathExpr implements Expression {
                     return expr.eval( docs, set, null );
                 ValueSet values = new ValueSet();
                 NodeProxy current;
-                ArraySet currentSet;
+                NodeSet currentSet;
                 for ( Iterator iter2 = set.iterator(); iter2.hasNext();  ) {
                 	current = (NodeProxy)iter2.next();
-                	currentSet = new ArraySet(1);
-                	currentSet.add(current);
+                	currentSet = new SingleNodeSet(current);
                     values.add( expr.eval( docs, currentSet, current ) );
                 }
                 return values;

@@ -15,6 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -33,15 +34,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 
 import org.exist.security.User;
 import org.exist.xmldb.UserManagementService;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 
 class UserDialog extends JFrame {
@@ -56,11 +53,13 @@ class UserDialog extends JFrame {
 	DefaultListModel groupsModel, allGroupsModel;
 	JTable users;
 	UserTableModel userModel;
+	Properties properties;
 
-	public UserDialog(UserManagementService service, String title)
+	public UserDialog(UserManagementService service, String title, Properties props)
 		throws XMLDBException {
 		super(title);
 		this.service = service;
+		this.properties = props;
 		setupComponents();
 	}
 
@@ -348,6 +347,10 @@ class UserDialog extends JFrame {
 			JOptionPane.showMessageDialog(this, "Different passwords. Please check.");
 			return;
 		}
+		String myUser = properties.getProperty("user", "admin");
+		if(name.equals(myUser))
+			properties.setProperty("password", pass1);
+		
 		user.setPassword(pass1);
 		user.setHome(homedir.getText());
 		for (int i = 0; i < groupsModel.size(); i++)
@@ -395,18 +398,6 @@ class UserDialog extends JFrame {
 		homedir.setText(user.getHome());
 		for (Iterator i = user.getGroups(); i.hasNext();)
 			groupsModel.addElement(i.next());
-	}
-
-	public static void main(String[] args) throws Exception {
-		Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-		Database database = (Database) cl.newInstance();
-		database.setProperty("create-database", "true");
-		DatabaseManager.registerDatabase(database);
-		Collection current = DatabaseManager.getCollection("xmldb:exist:///db", "admin", null);
-		UserManagementService service =
-			(UserManagementService) current.getService("UserManagementService", "1.0");
-		JFrame dialog = new UserDialog(service, "Edit Users");
-		dialog.show();
 	}
 
 	class UserTableModel extends AbstractTableModel {

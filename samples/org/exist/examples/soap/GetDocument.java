@@ -12,6 +12,7 @@ public class GetDocument {
 			"/db/shakespeare/plays/much_ado.xml",
 			true, false);
 		System.out.println(data);
+		query.disconnect(session);
     }
 }
 

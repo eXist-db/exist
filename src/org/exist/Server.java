@@ -26,6 +26,7 @@ import org.apache.xmlrpc.*;
 import org.exist.http.*;
 import org.exist.storage.*;
 import org.exist.util.*;
+import org.exist.xmldb.*;
 import org.exist.xmlrpc.*;
 import org.apache.avalon.excalibur.cli.*;
 import java.util.List;

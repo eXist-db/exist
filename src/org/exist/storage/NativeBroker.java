@@ -1085,6 +1085,7 @@ public class NativeBroker extends DBBroker {
 				current.getPermissions().setOwner(user);
 				current.getPermissions().setGroup(user.getPrimaryGroup());
 				current.setId(getNextCollectionId());
+				current.setCreationTime(System.currentTimeMillis());
 				saveCollection(current);
 			}
 			while (tok.hasMoreTokens()) {
@@ -1100,6 +1101,7 @@ public class NativeBroker extends DBBroker {
 					sub.getPermissions().setOwner(user);
 					sub.getPermissions().setGroup(user.getPrimaryGroup());
 					sub.setId(getNextCollectionId());
+					sub.setCreationTime(System.currentTimeMillis());
 					current.addCollection(sub);
 					saveCollection(current);
 					current = sub;
@@ -1711,26 +1713,24 @@ public class NativeBroker extends DBBroker {
 				cmp = content.toLowerCase();
 				expr = expr.toLowerCase();
 			}
+			//System.out.println("context = " + p.gid + "; context-length = " + 
+			//	(p.getContext() == null ? -1 : p.getContext().getSize()));
 			switch (truncation) {
 				case Constants.TRUNC_LEFT :
 					if (cmp.endsWith(expr))
 						resultNodeSet.add(p);
-
 					break;
 				case Constants.TRUNC_RIGHT :
 					if (cmp.startsWith(expr))
 						resultNodeSet.add(p);
-
 					break;
 				case Constants.TRUNC_BOTH :
 					if (-1 < cmp.indexOf(expr))
 						resultNodeSet.add(p);
-
 					break;
 				case Constants.TRUNC_NONE :
 					if (compare(cmp, expr, relation))
 						resultNodeSet.add(p);
-
 					break;
 				case Constants.REGEXP :
 					if (regexp != null && matcher.contains(cmp, regexp)) {

@@ -170,9 +170,8 @@ public class SortedNodeSet extends NodeSet {
 		public Item(DBBroker broker, NodeProxy proxy, PathExpr expr, 
 			DocumentSet ndocs) {
 			this.proxy = proxy;
-			ArraySet context = new ArraySet(1);
-			context.add(proxy);
-			Value v = expr.eval(ndocs, context, proxy);
+			NodeSet context = new SingleNodeSet(proxy);
+			Value v = expr.eval(ndocs, context, null);
 			StringBuffer buf = new StringBuffer();
 			OrderedLinkedList strings = new OrderedLinkedList();
 			switch (v.getType()) {

@@ -29,12 +29,12 @@ import org.apache.xmlrpc.*;
 public class ResourceIteratorImpl implements ResourceIterator {
 
 	protected XmlRpcClient rpcClient;
-	protected CollectionImpl collection;
+	protected RemoteCollection collection;
 	protected Vector resources;
 	protected int pos = 0, indentXML;
 	protected String encoding = "UTF-8";
 
-	public ResourceIteratorImpl(CollectionImpl col, Vector resources, 
+	public ResourceIteratorImpl(RemoteCollection col, Vector resources, 
 								int indentXML, String encoding) {
 		this.resources = resources;
 		this.collection = col;
@@ -71,7 +71,7 @@ public class ResourceIteratorImpl implements ResourceIterator {
             params.addElement(encoding);
             try {
                 byte[] data = (byte[])collection.getClient().execute("retrieve", params);
-                XMLResource res = new XMLResourceImpl(collection, doc, doc + "_" + s_id);
+                XMLResource res = new RemoteXMLResource(collection, doc, doc + "_" + s_id);
                 res.setContent((Object)new String(data, encoding));
                 return res;
             } catch(XmlRpcException xre) {
@@ -81,7 +81,7 @@ public class ResourceIteratorImpl implements ResourceIterator {
             }
         } else {
             // value
-            XMLResource res = new XMLResourceImpl(collection, null, Integer.toString(pos));
+            XMLResource res = new RemoteXMLResource(collection, null, Integer.toString(pos));
             res.setContent(resources.elementAt(pos++));
             return res;
         }

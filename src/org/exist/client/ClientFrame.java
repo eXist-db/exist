@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.TreeSet;
@@ -74,7 +75,9 @@ import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
 import org.exist.backup.Restore;
 import org.exist.security.Permission;
+import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XMLResourceImpl;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -217,6 +220,16 @@ public class ClientFrame extends JFrame {
 		});
 		toolbar.add(button);
 
+		url = getClass().getResource("icons/Find24.gif");
+		button = new JButton(new ImageIcon(url));
+		button.setToolTipText("Query the database with XPath");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				findAction(e);
+			}
+		});
+		toolbar.add(button);
+		
 		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		split.setResizeWeight(0.5);
 
@@ -472,7 +485,7 @@ public class ClientFrame extends JFrame {
 			Collection collection = client.getCollection();
 			UserManagementService service =
 				(UserManagementService) collection.getService("UserManagementService", "1.0");
-			UserDialog dialog = new UserDialog(service, "Edit Users");
+			UserDialog dialog = new UserDialog(service, "Edit Users", properties);
 			dialog.show();
 		} catch (XMLDBException e) {
 			showErrorMessage("Failed to retrieve UserManagementService", e);
@@ -480,6 +493,12 @@ public class ClientFrame extends JFrame {
 		}
 	}
 
+	private void findAction(ActionEvent ev) {
+		Collection collection = client.getCollection();
+		QueryDialog dialog = new QueryDialog(collection, properties);
+		dialog.show();
+	}
+	
 	private void setPermAction(ActionEvent ev) {
 		if(fileman.getSelectedRowCount() == 0)
 			return;
@@ -489,16 +508,21 @@ public class ClientFrame extends JFrame {
 				(UserManagementService) collection.getService("UserManagementService", "1.0");
 			Permission perm = null;
 			String name;
+			Date created = new Date();
+			Date modified = null;
 			if(fileman.getSelectedRowCount() == 1) {
 				int row = fileman.getSelectedRow();
 				Object obj = (Object) resources.getValueAt(row, 3);
 				if(obj instanceof InteractiveClient.CollectionName) {
 					name = obj.toString();
 					Collection coll = collection.getChildCollection(name);
+					created = ((CollectionImpl)coll).getCreationTime();
 					perm = service.getPermissions(coll);
 				} else {
 					name = (String)obj;
 					Resource res = collection.getResource(name);
+					created = ((XMLResourceImpl)res).getCreationTime();
+					modified = ((XMLResourceImpl)res).getLastModificationTime();
 					perm = service.getPermissions(res);
 				}
 			} else {
@@ -506,7 +530,7 @@ public class ClientFrame extends JFrame {
 				perm = new Permission("", "");
 			}
 			ResourcePropertyDialog dialog = 
-				new ResourcePropertyDialog(this, service, name, perm);
+				new ResourcePropertyDialog(this, service, name, perm, created, modified);
 			dialog.show();
 			if(dialog.getResult() == ResourcePropertyDialog.APPLY_OPTION) {
 				int rows[] = fileman.getSelectedRows();
@@ -803,7 +827,7 @@ public class ClientFrame extends JFrame {
 		return null;
 	}
 	
-	protected void showErrorMessage(String message, Throwable t) {
+	public static void showErrorMessage(String message, Throwable t) {
 		ErrorPanel panel = new ErrorPanel(message, t);
 		JOptionPane.showOptionDialog(null, panel, "Exception",
 			JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE,

@@ -232,7 +232,15 @@
       <layout class="org.apache.log4j.PatternLayout">
         <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
       </layout>
-    </appender>
+  </appender>
+
+  <appender name="axis" class="org.apache.log4j.RollingFileAppender">
+	  <param name="File" value="logs/axis.log"/>
+	  <param name="MaximumFileSize" value="500000"/>
+      <layout class="org.apache.log4j.PatternLayout">
+        <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
+      </layout>
+  </appender>
 
     <!-- LF5 appender -->
     <appender name="lf5" class="org.apache.log4j.lf5.LF5Appender">
@@ -250,7 +258,7 @@
     </category>
     
 	<category name="org.apache.axis" additivity="false">
-		<appender-ref ref="console"/>
+		<appender-ref ref="axis"/>
 		<priority value="warn"/>
     </category>
   </log4j:configuration>

@@ -382,53 +382,51 @@ public class InteractiveClient {
 			(UserManagementService) current.getService("UserManagementService", "1.0");
 		String childCollections[] = current.listChildCollections();
 		String childResources[] = current.listResources();
-		Permission perms[] = null;
-		if (startGUI || properties.getProperty("permissions").equals("true"))
-			perms = mgtService.listCollectionPermissions();
 		resources = new String[childCollections.length + childResources.length];
 		int i = 0;
 		Collection child;
+		Permission perm;
 		Object tableData[][] = new Object[resources.length][4];
 		String cols[] = new String[4];
 		for (; i < childCollections.length; i++) {
 			child = current.getChildCollection(childCollections[i]);
+			perm = mgtService.getPermissions(child);
 			if (properties.getProperty("permissions").equals("true")) {
-				cols[0] = perms[i].toString();
-				cols[1] = perms[i].getOwner();
-				cols[2] = perms[i].getOwnerGroup();
+				cols[0] = perm.toString();
+				cols[1] = perm.getOwner();
+				cols[2] = perm.getOwnerGroup();
 				cols[3] = childCollections[i];
 				resources[i] = 'd' + formatString(cols, colSizes);
 			} else
 				resources[i] = childCollections[i];
 			if (startGUI) {
-				tableData[i][0] = perms[i].toString();
-				tableData[i][1] = perms[i].getOwner();
-				tableData[i][2] = perms[i].getOwnerGroup();
+				tableData[i][0] = perm.toString();
+				tableData[i][1] = perm.getOwner();
+				tableData[i][2] = perm.getOwnerGroup();
 				tableData[i][3] = new CollectionName(childCollections[i]);
 			}
 			completitions.add(childCollections[i]);
 		}
-		if (startGUI || properties.getProperty("permissions").equals("true"))
-			perms = mgtService.listResourcePermissions();
 		Resource res;
 		for (int j = 0; j < childResources.length; i++, j++) {
 			res = current.getResource(childResources[j]);
-			if (properties.getProperty("permissions").equals("true") && j < perms.length) {
+			perm = mgtService.getPermissions(res);
+			if (properties.getProperty("permissions").equals("true")) {
 				resources[i] =
 					'-'
-						+ perms[j].toString()
+						+ perm.toString()
 						+ '\t'
-						+ perms[j].getOwner()
+						+ perm.getOwner()
 						+ '\t'
-						+ perms[j].getOwnerGroup()
+						+ perm.getOwnerGroup()
 						+ '\t'
 						+ childResources[j];
 			} else
 				resources[i] = childResources[j];
 			if (startGUI) {
-				tableData[i][0] = perms[j].toString();
-				tableData[i][1] = perms[j].getOwner();
-				tableData[i][2] = perms[j].getOwnerGroup();
+				tableData[i][0] = perm.toString();
+				tableData[i][1] = perm.getOwner();
+				tableData[i][2] = perm.getOwnerGroup();
 				tableData[i][3] = childResources[j];
 			}
 			completitions.add(childResources[j]);

@@ -15,7 +15,7 @@ import org.xmldb.api.modules.XMLResource;
 
 public class ResourceSetImpl implements ResourceSet {
 
-    protected CollectionImpl collection;
+    protected RemoteCollection collection;
     protected String encoding = "UTF-8";
     protected int indentXML = 0;
     protected int handle = -1;
@@ -24,12 +24,12 @@ public class ResourceSetImpl implements ResourceSet {
     protected XmlRpcClient rpcClient;
 
 
-    public ResourceSetImpl( CollectionImpl col ) {
+    public ResourceSetImpl( RemoteCollection col ) {
         this.collection = col;
         resources = new Vector();
     }
 
-    public ResourceSetImpl( CollectionImpl col, Vector resources, int handle,
+    public ResourceSetImpl( RemoteCollection col, Vector resources, int handle,
                             int indentXML, String encoding ) {
         this.handle = handle;
         this.resources = resources;
@@ -69,11 +69,11 @@ public class ResourceSetImpl implements ResourceSet {
             String doc = (String) v.elementAt( 0 );
             String s_id = (String) v.elementAt( 1 );
 			String path = doc.substring(0, doc.lastIndexOf('/'));
-			CollectionImpl parent = 
-				new CollectionImpl(collection.getClient(), null, path);
+			RemoteCollection parent = 
+				new RemoteCollection(collection.getClient(), null, path);
 			
             XMLResource res =
-                new XMLResourceImpl( parent, handle,
+                new RemoteXMLResource( parent, handle,
                 	(int)pos, doc, s_id, indentXML, encoding );
             return res;
         }
@@ -81,7 +81,7 @@ public class ResourceSetImpl implements ResourceSet {
             return (Resource) resources.elementAt( (int) pos );
         else {
             // value
-            XMLResource res = new XMLResourceImpl( collection, handle, (int)pos, 
+            XMLResource res = new RemoteXMLResource( collection, handle, (int)pos, 
             	Long.toString( pos ), null, indentXML, encoding );
             res.setContent( resources.elementAt( (int) pos ) );
             return res;

@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncDaemon;
 import org.exist.util.*;
+import org.exist.xmldb.*;
 import org.exist.*;
 
 /**

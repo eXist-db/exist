@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -225,16 +226,29 @@ public class RpcConnection extends Thread {
 			Vector collections = new Vector();
 			if (collection.getPermissions().validate(user, Permission.READ)) {
 				DocumentImpl doc;
+				Hashtable hash;
+				Permission perms;
 				for (Iterator i = collection.iterator(); i.hasNext();) {
 					doc = (DocumentImpl) i.next();
-					docs.addElement(doc.getFileName());
+					perms = doc.getPermissions();
+					hash = new Hashtable(4);
+					hash.put("name", doc.getFileName());
+					hash.put("owner", perms.getOwner());
+					hash.put("group", perms.getOwnerGroup());
+					hash.put("permissions", new Integer(perms.getPermissions()));
+					docs.addElement(hash);
 				}
 				for (Iterator i = collection.collectionIterator(); i.hasNext();)
 					collections.addElement((String) i.next());
 			}
+			Permission perms = collection.getPermissions();
 			desc.put("collections", collections);
 			desc.put("documents", docs);
 			desc.put("name", collection.getName());
+			desc.put("created", Long.toString(collection.getCreationTime()));
+			desc.put("owner", perms.getOwner());
+			desc.put("group", perms.getOwnerGroup());
+			desc.put("permissions", new Integer(perms.getPermissions()));
 			return desc;
 		} finally {
 			brokerPool.release(broker);
@@ -261,7 +275,7 @@ public class RpcConnection extends Thread {
 			properties.put(Serializer.ENCODING, encoding);
 			properties.put(Serializer.PRETTY_PRINT, Boolean.toString(prettyPrint));
 			serializer.setProperties(properties);
-			
+
 			if (stylesheet != null) {
 				if (!stylesheet.startsWith("/")) {
 					// make path relative to current collection
@@ -518,7 +532,6 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get();
-			User admin = brokerPool.getSecurityManager().getUser("admin");
 			if (!name.startsWith("/"))
 				name = '/' + name;
 			if (!name.startsWith("/db"))
@@ -526,13 +539,12 @@ public class RpcConnection extends Thread {
 			Collection collection = broker.getCollection(name);
 			Permission perm = null;
 			if (collection == null) {
-				DocumentImpl doc = (DocumentImpl) broker.getDocument(admin, name);
+				DocumentImpl doc = (DocumentImpl) broker.getDocument(user, name);
 				if (doc == null)
 					throw new EXistException("document or collection " + name + " not found");
 				perm = doc.getPermissions();
 			} else {
 				perm = collection.getPermissions();
-				LOG.debug("collection found finally");
 			}
 			Hashtable result = new Hashtable();
 			result.put("owner", perm.getOwner());
@@ -544,6 +556,47 @@ public class RpcConnection extends Thread {
 		}
 	}
 
+	public Date getCreationDate(User user, String collectionPath)
+		throws PermissionDeniedException, EXistException {
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get();
+			if (!collectionPath.startsWith("/"))
+				collectionPath = '/' + collectionPath;
+			if (!collectionPath.startsWith("/db"))
+				collectionPath = "/db" + collectionPath;
+			Collection collection = broker.getCollection(collectionPath);
+			if (collection == null)
+				throw new EXistException("collection " + collectionPath + " not found");
+			return new Date(collection.getCreationTime());
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
+
+	public Vector getTimestamps(User user, String documentPath)
+			throws PermissionDeniedException, EXistException {
+			DBBroker broker = null;
+			try {
+				broker = brokerPool.get();
+				if (!documentPath.startsWith("/"))
+					documentPath = '/' + documentPath;
+				if (!documentPath.startsWith("/db"))
+					documentPath = "/db" + documentPath;
+				DocumentImpl doc = (DocumentImpl) broker.getDocument(user, documentPath);
+				if (doc == null) {
+					LOG.debug("document " + documentPath + " not found!");
+					throw new EXistException("document not found");
+				}
+				Vector vector = new Vector(2);
+				vector.addElement(new Date(doc.getCreated()));
+				vector.addElement(new Date(doc.getLastModified()));
+				return vector;
+			} finally {
+				brokerPool.release(broker);
+			}
+		}
+		
 	/**
 	 *  Gets the permissions attribute of the RpcConnection object
 	 *
@@ -585,7 +638,7 @@ public class RpcConnection extends Thread {
 		}
 		return r;
 	}
-	
+
 	public Vector getGroups(User user) throws EXistException, PermissionDeniedException {
 		String[] groups = brokerPool.getSecurityManager().getGroups();
 		Vector v = new Vector(groups.length);
@@ -640,10 +693,10 @@ public class RpcConnection extends Thread {
 	 * @throws EXistException
 	 * @throws IOException
 	 */
-	public boolean parseLocal(User user, String localFile, String docName, boolean replace) 
+	public boolean parseLocal(User user, String localFile, String docName, boolean replace)
 		throws EXistException, PermissionDeniedException, SAXException {
 		File file = new File(localFile);
-		if(!file.canRead())
+		if (!file.canRead())
 			throw new EXistException("unable to read file " + localFile);
 		DBBroker broker = null;
 		DocumentImpl doc = null;

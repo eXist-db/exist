@@ -7,7 +7,7 @@ import java.rmi.RemoteException;
  * operations on the database.
  */
 public interface Admin extends java.rmi.Remote {
-	
+
 	/**
 	 * Create a new user session. Authenticates the user against the database.
 	 * The user has to be a valid database user. If the provided user information
@@ -64,25 +64,49 @@ public interface Admin extends java.rmi.Remote {
 	 * @throws RemoteException
 	 */
 	public boolean removeCollection(String sessionId, String path) throws RemoteException;
-	
+
 	/**
 	 * Remove the specified document.
 	 * 
-	 * @param sessionId sessionId a unique id for the created session.
+	 * @param sessionId a unique id for the created session.
 	 * @param path the full path to the document.
 	 * @return true on success.
 	 * 
 	 * @throws RemoteException
 	 */
 	public boolean removeDocument(String sessionId, String path) throws RemoteException;
-	
+
 	/**
 	 * Create a new collection using the specified path.
 	 * 
-	 * @param sessionId sessionId a unique id for the created session.
+	 * @param sessionId a unique id for the created session.
 	 * @param path the full path to the collection.
 	 * @return
 	 * @throws RemoteException
 	 */
 	public boolean createCollection(String sessionId, String path) throws RemoteException;
+
+	/**
+	 * Apply a set of XUpdate modifications to a collection.
+	 * 
+	 * @param sessionId a unique id for the created session.
+	 * @param collectionName the full path to the collection.
+	 * @param xupdate the XUpdate document to be applied.
+	 * @return
+	 * @throws RemoteException
+	 */
+	public int xupdate(String sessionId, String collectionName, String xupdate)
+		throws RemoteException;
+
+	/**
+	 * Apply a set of XUpdate modifications to the specified document.
+	 * 
+	 * @param sessionId a unique id for the created session.
+	 * @param documentName the full path to the document.
+	 * @param xupdate the XUpdate document to be applied.
+	 * @return
+	 * @throws RemoteException
+	 */
+	public int xupdateResource(String sessionId, String documentName, String xupdate)
+		throws RemoteException;
 }

@@ -69,6 +69,7 @@ public class DatabaseImpl implements Database {
     protected String dbName = DEFAULT_NAME;
     protected String selector = dbName + ':'; 
     protected XmlRpcClient rpcClient;
+    protected ShutdownListener shutdown = null;
 	protected int mode = 0;
 	
     public DatabaseImpl() {
@@ -87,11 +88,11 @@ public class DatabaseImpl implements Database {
         String temp = tok.nextToken();
 
         Collection current =
-            new CollectionImpl( rpcClient, null, address, temp );
+            new RemoteCollection( rpcClient, null, address, temp );
         while ( tok.hasMoreTokens() ) {
             temp = tok.nextToken();
             current =
-                current.getChildCollection( ( (CollectionImpl) current ).getPath() + '/' + temp );
+                current.getChildCollection( ( (RemoteCollection) current ).getPath() + '/' + temp );
         }
         return current;
     }
@@ -121,6 +122,8 @@ public class DatabaseImpl implements Database {
         try {
             Configuration config = new Configuration( file, home );
             BrokerPool.configure( dbName, 1, 5, config );
+            if(shutdown != null)
+            	BrokerPool.getInstance(dbName).registerShutdownListener(shutdown);
         } catch ( Exception e ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 "configuration error", e );
@@ -224,6 +227,17 @@ public class DatabaseImpl implements Database {
     public String getName() throws XMLDBException {
         return dbName;
     }
+	
+	/**
+	 * Register a ShutdownListener for the current database instance. The ShutdownListener is called
+	 * after the database has shut down. You have to register a listener before any calls to getCollection().
+	 * 
+	 * @param listener
+	 * @throws XMLDBException
+	 */
+	public void setDatabaseShutdownListener(ShutdownListener listener) throws XMLDBException {
+		shutdown = listener;
+	}
 	
     public String getProperty( String property ) throws XMLDBException {
         if ( property.equals( "create-database" ) )

@@ -18,12 +18,11 @@
 
 package org.exist.xpath;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
-import org.w3c.dom.NodeList;
 
 /**
  * xpath-library function: string-length(string?)
@@ -40,13 +39,10 @@ public class FunStrLength extends Function {
 	}
 
 	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		if (node != null) {
-			context = new ArraySet(1);
-			context.add(node);
-		}
+		if (node != null)
+			context = new SingleNodeSet(node);
 		Value v = getArgument(0).eval(docs, context, node);
 		String strval = v.getStringValue();
-		System.out.println(strval);
 		return new ValueNumber(strval.length());
 	}
 

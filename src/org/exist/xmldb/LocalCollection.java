@@ -23,6 +23,7 @@
  */
 package org.exist.xmldb;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
@@ -55,7 +56,7 @@ import org.xmldb.api.modules.XMLResource;
  *@author     wolf
  *@created    April 2, 2002
  */
-public class LocalCollection extends Observable implements Collection {
+public class LocalCollection extends Observable implements CollectionImpl {
 
     private static Category LOG =
         Category.getInstance( LocalCollection.class.getName() );
@@ -417,6 +418,10 @@ public class LocalCollection extends Observable implements Collection {
         needsSync = true;
     }
 
+	public Date getCreationTime() {
+		return new Date(collection.getCreationTime());
+	}
+	
 	/**
 	 * Add a new observer to the list. Observers are just passed
 	 * on to the indexer to be notified about the indexing progress.

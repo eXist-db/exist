@@ -30,6 +30,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SingleNodeSet;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -64,8 +65,7 @@ public class LocationStep extends Step {
 
 	public Value eval(DocumentSet documents, NodeSet context, NodeProxy node) {
 		if(node != null) {
-			context = new ArraySet(1);
-			context.add(node);
+			context = new SingleNodeSet(node);
 		}
 		NodeSet temp;
 		switch (axis) {

@@ -36,12 +36,10 @@ public class Retrieve {
 		// initialize database drivers
 		Class cl = Class.forName(driver);
 		Database database = (Database) cl.newInstance();
-		database.setProperty("create-database", "true");
 		DatabaseManager.registerDatabase(database);
 
 		// get the collection
 		Collection col = DatabaseManager.getCollection(URI + collection);
-		col.setProperty("encoding", "ISO-8859-1");
 		col.setProperty("pretty", "false");
 		XMLResource res = (XMLResource)col.getResource(args[1]);
 		if(res == null)

@@ -108,6 +108,34 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
             _myOperations.put("createCollection", new java.util.ArrayList());
         }
         ((java.util.List)_myOperations.get("createCollection")).add(_oper);
+        _params = new org.apache.axis.description.ParameterDesc [] {
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in1"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in2"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+        };
+        _oper = new org.apache.axis.description.OperationDesc("xupdate", _params, new javax.xml.namespace.QName("", "xupdateReturn"));
+        _oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
+        _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "xupdate"));
+        _oper.setSoapAction("");
+        _myOperationsList.add(_oper);
+        if (_myOperations.get("xupdate") == null) {
+            _myOperations.put("xupdate", new java.util.ArrayList());
+        }
+        ((java.util.List)_myOperations.get("xupdate")).add(_oper);
+        _params = new org.apache.axis.description.ParameterDesc [] {
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in1"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in2"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+        };
+        _oper = new org.apache.axis.description.OperationDesc("xupdateResource", _params, new javax.xml.namespace.QName("", "xupdateResourceReturn"));
+        _oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
+        _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "xupdateResource"));
+        _oper.setSoapAction("");
+        _myOperationsList.add(_oper);
+        if (_myOperations.get("xupdateResource") == null) {
+            _myOperations.put("xupdateResource", new java.util.ArrayList());
+        }
+        ((java.util.List)_myOperations.get("xupdateResource")).add(_oper);
     }
 
     public AdminSoapBindingSkeleton() {
@@ -148,6 +176,18 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
     public boolean createCollection(java.lang.String in0, java.lang.String in1) throws java.rmi.RemoteException
     {
         boolean ret = impl.createCollection(in0, in1);
+        return ret;
+    }
+
+    public int xupdate(java.lang.String in0, java.lang.String in1, java.lang.String in2) throws java.rmi.RemoteException
+    {
+        int ret = impl.xupdate(in0, in1, in2);
+        return ret;
+    }
+
+    public int xupdateResource(java.lang.String in0, java.lang.String in1, java.lang.String in2) throws java.rmi.RemoteException
+    {
+        int ret = impl.xupdateResource(in0, in1, in2);
         return ret;
     }
 

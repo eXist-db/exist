@@ -130,30 +130,9 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
             java.lang.Class arraydf = org.apache.axis.encoding.ser.ArrayDeserializerFactory.class;
             java.lang.Class simplesf = org.apache.axis.encoding.ser.SimpleSerializerFactory.class;
             java.lang.Class simpledf = org.apache.axis.encoding.ser.SimpleDeserializerFactory.class;
-            qName = new javax.xml.namespace.QName("urn:exist", "ArrayOfQueryResponseDocument");
-            cachedSerQNames.add(qName);
-            cls = org.exist.soap.QueryResponseDocument[].class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(arraysf);
-            cachedDeserFactories.add(arraydf);
-
             qName = new javax.xml.namespace.QName("urn:exist", "ArrayOfQueryResponseCollection");
             cachedSerQNames.add(qName);
             cls = org.exist.soap.QueryResponseCollection[].class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(arraysf);
-            cachedDeserFactories.add(arraydf);
-
-            qName = new javax.xml.namespace.QName("urn:exist", "Collection");
-            cachedSerQNames.add(qName);
-            cls = org.exist.soap.Collection.class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(beansf);
-            cachedDeserFactories.add(beandf);
-
-            qName = new javax.xml.namespace.QName("urn:exist", "ArrayOf_xsd_string");
-            cachedSerQNames.add(qName);
-            cls = java.lang.String[].class;
             cachedSerClasses.add(cls);
             cachedSerFactories.add(arraysf);
             cachedDeserFactories.add(arraydf);
@@ -165,6 +144,13 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
 
+            qName = new javax.xml.namespace.QName("urn:exist", "QueryResponseDocument");
+            cachedSerQNames.add(qName);
+            cls = org.exist.soap.QueryResponseDocument.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
             qName = new javax.xml.namespace.QName("urn:exist", "QueryResponseCollection");
             cachedSerQNames.add(qName);
             cls = org.exist.soap.QueryResponseCollection.class;
@@ -172,9 +158,23 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
 
-            qName = new javax.xml.namespace.QName("urn:exist", "QueryResponseDocument");
+            qName = new javax.xml.namespace.QName("urn:exist", "ArrayOfQueryResponseDocument");
             cachedSerQNames.add(qName);
-            cls = org.exist.soap.QueryResponseDocument.class;
+            cls = org.exist.soap.QueryResponseDocument[].class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(arraysf);
+            cachedDeserFactories.add(arraydf);
+
+            qName = new javax.xml.namespace.QName("urn:exist", "ArrayOf_xsd_string");
+            cachedSerQNames.add(qName);
+            cls = java.lang.String[].class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(arraysf);
+            cachedDeserFactories.add(arraydf);
+
+            qName = new javax.xml.namespace.QName("urn:exist", "Collection");
+            cachedSerQNames.add(qName);
+            cls = org.exist.soap.Collection.class;
             cachedSerClasses.add(cls);
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);

@@ -29,6 +29,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexPaths;
@@ -103,16 +104,13 @@ public class OpEquals extends BinaryOp {
 		NodeProxy n;
 		boolean lvalue;
 		boolean rvalue;
-		ArraySet set;
+		NodeSet set;
 		DocumentSet dset;
 		for (Iterator i = context.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			set = new ArraySet(1);
-			set.add(n);
-			dset = new DocumentSet();
-			dset.add(n.doc);
-			rvalue = left.eval(dset, set, n).getBooleanValue();
-			lvalue = right.eval(dset, set, n).getBooleanValue();
+			set = new SingleNodeSet(n);
+			rvalue = left.eval(docs, set, n).getBooleanValue();
+			lvalue = right.eval(docs, set, n).getBooleanValue();
 			if (lvalue == rvalue)
 				result.add(n);
 		}
@@ -296,8 +294,7 @@ public class OpEquals extends BinaryOp {
 				} catch (NumberFormatException nfe) {
 					continue;
 				}
-				temp = new ArraySet(1);
-				temp.add(ln);
+				temp = new SingleNodeSet(ln);
 				rvalue = right.eval(docs, temp, ln).getNumericValue();
 				if (cmpNumbers(lvalue, rvalue))
 					result.add(ln);
@@ -375,14 +372,13 @@ public class OpEquals extends BinaryOp {
 		NodeSet context,
 		NodeProxy node) {
 		ArraySet result = new ArraySet(100);
-		ArraySet currentSet;
+		NodeSet currentSet;
 		NodeProxy current;
 		double rvalue;
 		double lvalue;
 		for (Iterator i = context.iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
-			currentSet = new ArraySet(1);
-			currentSet.add(current);
+			currentSet = new SingleNodeSet(current);
 			rvalue = right.eval(docs, currentSet, current).getNumericValue();
 			lvalue = left.eval(docs, currentSet, current).getNumericValue();
 			if (cmpNumbers(lvalue, rvalue)) {
@@ -441,8 +437,10 @@ public class OpEquals extends BinaryOp {
 			n = (NodeProxy) i.next();
 			rvalue = left.eval(docs, context, n).getStringValue();
 			lvalue = right.eval(docs, context, n).getStringValue();
-			if (compareStrings(rvalue, lvalue))
+			if (compareStrings(rvalue, lvalue)) {
 				result.add(n);
+				n.addContextNode(n);
+			}
 		}
 		return new ValueNodeSet(result);
 	}

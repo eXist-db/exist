@@ -6,7 +6,9 @@
 package org.exist.cocoon;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Iterator;
+import java.util.Locale;
 
 import org.apache.cocoon.ProcessingException;
 import org.apache.cocoon.generation.AbstractGenerator;
@@ -18,6 +20,11 @@ import org.exist.util.Configuration;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+/**
+ * A Cocoon Generator which generates status information about running database instances,
+ * buffer usage and the like.
+ * 
+ */
 public class StatusGenerator extends AbstractGenerator {
 
 	public final static String NAMESPACE = "http://exist.sourceforge.net/generators/status";
@@ -54,6 +61,12 @@ public class StatusGenerator extends AbstractGenerator {
 		this.contentHandler.startElement(NAMESPACE, "jvm", PREFIX + ":jvm", atts);
 		addValue("version", System.getProperty("java.version"));
 		addValue("vendor", System.getProperty("java.vendor"));
+		
+		Locale locale = Locale.getDefault();
+		addValue("locale", locale.toString());
+		
+		InputStreamReader is = new InputStreamReader(System.in);
+		addValue("charset", is.getEncoding());
 		this.contentHandler.endElement(NAMESPACE, "jvm", PREFIX + ":jvm");
 		
 		this.contentHandler.startElement(NAMESPACE, "os", PREFIX + ":os", atts);

@@ -287,7 +287,9 @@
             <!--#######################################################-->
             <!-- Register eXist's XMLDBSessionLoginAction                                           -->
             <!--#######################################################-->
-            <map:action logger="sitemap.action.xmldb.login" name="xmldb-login" src="org.exist.cocoon.XMLDBSessionLoginAction"/>
+			<map:action logger="sitemap.action.xmldb.login" name="xmldb-login" src="org.exist.cocoon.XMLDBSessionLoginAction"/>
+			<map:action logger="sitemap.action.xmldb.shutdown" 
+				name="xmldb-shutdown" src="org.exist.cocoon.ShutdownAction"/>
         </map:actions>
 
   <!--+
@@ -614,11 +616,19 @@
                 <map:match pattern="status">
                     <map:generate type="exist-status"/>
                     <map:transform src="stylesheets/status.xsl">
-                        <map:parameter name="use-request-parameters" value="true"/>
+						<map:parameter name="use-request-parameters" 
+							value="true"/>
                     </map:transform>
                     <map:serialize type="html"/>
                 </map:match>
 
+				<map:match pattern="shutdown">
+					<map:act type="xmldb-shutdown">
+						<map:redirect-to uri="status"/>
+					</map:act>
+					<map:redirect-to uri="status"/>
+				</map:match>
+				
                 <map:match pattern="changes.xml">
                     <map:generate src="changes.xml"/>
                     <map:transform src="stylesheets/changes.xsl"/>
