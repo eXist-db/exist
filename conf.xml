@@ -170,23 +170,34 @@
 	    		retrieving queryb results or for some types of XPath subexpressions, like
 	    		equality comparisons.
         -->
-        <index doctype="auth" default="none" attributes="false">
+        <index doctype="auth">
+			<fulltext default="none" attributes="false"/>
 		</index>
 
-		<index doctype="dblp" attributes="true" alphanum="true" default="all">
-			<exclude path="//@mdate"/>
-			<exclude path="//ee"/>
-			<exclude path="//volume"/>
-			<exclude path="//cdrom"/>
-			<exclude path="//url"/>
+		<index doctype="test">
+			<fulltext default="none" attributes="false"/>
+			<create path="//year" type="xs:long"/>
+			<create path="//key" type="xs:string"/>
 		</index>
 
-		<index doctype="movie" attributes="true" default="all">
-			<exclude path="//@subtype"/>
-			<exclude path="//@id"/>
-			<exclude path="//@name"/>
-			<exclude path="//@type"/>
-			<exclude path="//@creditorder"/>
+		<index doctype="dblp">
+			<fulltext default="all">
+				<exclude path="//@mdate"/>
+				<exclude path="//ee"/>
+				<exclude path="//volume"/>
+				<exclude path="//cdrom"/>
+				<exclude path="//url"/>
+			</fulltext>
+		</index>
+
+		<index doctype="movie">
+			<fulltext default="all" attributes="true">
+				<exclude path="//@subtype"/>
+				<exclude path="//@id"/>
+				<exclude path="//@name"/>
+				<exclude path="//@type"/>
+				<exclude path="//@creditorder"/>
+			</fulltext>
 		</index>
 
         <!-- Specify the location of one or more catalog files.
