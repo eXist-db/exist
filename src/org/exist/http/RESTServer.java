@@ -287,6 +287,7 @@ public class RESTServer {
                             throw new PermissionDeniedException(
                                     "Not allowed to read collection");
                         // return a listing of the collection contents
+						response.setContentType("text/xml");
                         writeResponse(response, printCollection(broker, collection), encoding);
                     } else {
                         throw new NotFoundException("Document " + path
@@ -960,7 +961,11 @@ public class RESTServer {
     
     private void writeResponse(HttpServletResponse response, String data, String encoding)
     throws IOException {
-        response.setCharacterEncoding(encoding);
+//        response.setCharacterEncoding(encoding);
+		String contentType = response.getContentType();
+		if (contentType != null && contentType.indexOf(';') < 0)
+			response.setContentType(contentType + "; charset=" + encoding);
+		
         OutputStream is = response.getOutputStream();
         is.write(data.getBytes(encoding));
     }
