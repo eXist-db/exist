@@ -44,6 +44,8 @@ public class FunName extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("name", BUILTIN_FUNCTION_NS),
+			"Returns the name of a node, as an xs:string that is " +
+			"either the zero-length string, or has the lexical form of an xs:QName",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 			true);
