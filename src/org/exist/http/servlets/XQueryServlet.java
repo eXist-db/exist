@@ -40,7 +40,7 @@ import javax.servlet.http.HttpSession;
 
 import org.exist.source.FileSource;
 import org.exist.source.Source;
-import org.exist.xmldb.CompiledExpression;
+import org.xmldb.api.base.CompiledExpression;
 import org.exist.xmldb.XQueryService;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;

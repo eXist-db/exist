@@ -23,7 +23,7 @@
 package org.exist.xmldb.test;
 
 import org.apache.xpath.XPathAPI;
-import org.exist.xmldb.CompiledExpression;
+import org.xmldb.api.base.CompiledExpression;
 import org.exist.xmldb.XQueryService;
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;

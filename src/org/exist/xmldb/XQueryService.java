@@ -26,9 +26,9 @@ import java.io.Writer;
 
 import org.exist.source.Source;
 import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.base.CompiledExpression;
 
 /**
  * Execute XQuery expressions on the database.
@@ -40,7 +40,7 @@ import org.xmldb.api.modules.XMLResource;
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public interface XQueryService extends Service {
+public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	
 	/**
 	 * Execute the specified query and return the results as a {@link ResourceSet}.
