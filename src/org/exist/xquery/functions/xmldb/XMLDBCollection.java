@@ -23,12 +23,11 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
+import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Item;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -40,11 +39,11 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * @author wolf
  */
-public class XMLDBCollection extends Function {
+public class XMLDBCollection extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("collection", XMLDB_FUNCTION_NS, "xmldb"),
+			new QName("collection", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
 			"Get a reference to a collection identified by the XMLDB URI passed " +
 			"as first argument. The second argument should specify the name of " +
 			"a valid user, the third is the password. The method returns a Java object " +
@@ -68,17 +67,18 @@ public class XMLDBCollection extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
+		Sequence args[],
+		Sequence contextSequence)
 		throws XPathException {
-		String collectionURI = getArgument(0).eval(contextSequence, contextItem).getStringValue();
-		String user = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-		String passwd = getArgument(2).eval(contextSequence, contextItem).getStringValue();
+		String collectionURI = args[0].getStringValue();
+		String user = args[1].getStringValue();
+		String passwd = args[2].getStringValue();
 		Collection collection = null;
 		try {
 			collection = DatabaseManager.getCollection(collectionURI, user, passwd);
 		} catch (XMLDBException e) {
-			LOG.debug("exception while retrieving collection: " + e.getMessage(), e);
+			throw new XPathException(getASTNode(), 
+				"exception while retrieving collection: " + e.getMessage(), e);
 		}
 		return collection == null ? Sequence.EMPTY_SEQUENCE : new JavaObjectValue(collection);
 	}

@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.QName;
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -74,6 +75,8 @@ public abstract class Function extends PathExpr {
 	// The parent expression from which this function is called.
 	private Expression parent;
 	
+	private XQueryAST astNode = null;
+	
 	/**
 	 * Internal constructor. Subclasses should <b>always</b> call this and
 	 * pass the current context and their function signature.
@@ -119,24 +122,25 @@ public abstract class Function extends PathExpr {
 	 */
 	public static Function createFunction(
 		XQueryContext context,
-		Class fclass) {
+		XQueryAST ast,
+		Class fclass) throws XPathException {
 		try {
 			if (fclass == null)
-				throw new RuntimeException("class for function is null");
+				throw new XPathException(ast, "class for function is null");
 			Class constructorArgs[] = { XQueryContext.class };
 			Constructor construct = fclass.getConstructor(constructorArgs);
 			if (construct == null)
-				throw new RuntimeException("constructor not found");
+				throw new XPathException(ast, "constructor not found");
 			Object initArgs[] = { context };
 			Object obj = construct.newInstance(initArgs);
-			if (obj instanceof Function)
+			if (obj instanceof Function) {
+				((Function)obj).setASTNode(ast);
 				return (Function) obj;
-			else
-				throw new RuntimeException("function object does not implement interface function");
+			} else
+				throw new XPathException(ast, "function object does not implement interface function");
 		} catch (Exception e) {
 			LOG.debug(e.getMessage(), e);
-			e.printStackTrace();
-			throw new RuntimeException("function " + fclass.getName() + " not found");
+			throw new XPathException(ast, "function " + fclass.getName() + " not found");
 		}
 	}
 
@@ -173,7 +177,7 @@ public abstract class Function extends PathExpr {
 		SequenceType[] argumentTypes = mySignature.getArgumentTypes();
 		if ((!mySignature.isOverloaded())
 			&& arguments.size() != mySignature.getArgumentCount())
-			throw new XPathException(
+			throw new XPathException(getASTNode(),
 				"number of arguments to function "
 					+ getName()
 					+ " doesn't match function signature (expected "
@@ -214,7 +218,8 @@ public abstract class Function extends PathExpr {
 			if ((!cardinalityMatches)
 				&& expr.getCardinality() == Cardinality.ZERO
 				&& (type.getCardinality() & Cardinality.ZERO) == 0)
-				throw new XPathException("Function does not allow an empty argument");
+				throw new XPathException(astNode, "Argument " + expr.pprint() + " is empty. An " +
+						"empty argument is not allowed here.");
 		}
 
 		// check return type if both types are not Type.ITEM
@@ -259,6 +264,7 @@ public abstract class Function extends PathExpr {
 		if (!Type.subTypeOf(returnType, type.getPrimaryType())) {
 			if ((!Type.subTypeOf(type.getPrimaryType(), returnType)) && returnType != Type.ITEM)
 				throw new XPathException(
+					astNode,
 					"Supplied argument " + expr.pprint() + " doesn't match required type: required: "
 						+ type.toString()
 						+ "; got: "
@@ -349,5 +355,13 @@ public abstract class Function extends PathExpr {
 		buf.deleteCharAt(buf.length() - 1);
 		buf.append(')');
 		return buf.toString();
+	}
+	
+	public void setASTNode(XQueryAST ast) {
+		this.astNode = ast;
+	}
+	
+	public XQueryAST getASTNode() {
+		return astNode;
 	}
 }

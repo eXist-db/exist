@@ -116,45 +116,50 @@ public class OpNumeric extends BinaryOp {
 
 		Item lvalue = lseq.itemAt(0), rvalue = rseq.itemAt(0);
 		
-		// runtime type checks:
-		if (!(lvalue instanceof ComputableValue))
-			lvalue =
-				operator == Constants.IDIV
-					? lvalue.convertTo(Type.INTEGER)
-					: lvalue.convertTo(Type.DOUBLE);
-		if (!(rvalue instanceof ComputableValue))
-			rvalue =
-				operator == Constants.IDIV
-					? rvalue.convertTo(Type.INTEGER)
-					: rvalue.convertTo(Type.DOUBLE);
-	
-		int ltype = lvalue.getType(), rtype = rvalue.getType();
-		if (Type.subTypeOf(ltype, Type.NUMBER)) {
-			if (!Type.subTypeOf(rtype, Type.NUMBER)) {
-				rvalue = rvalue.convertTo(ltype);
-			} else {
-				if (ltype > rtype) {
-					rvalue = rvalue.convertTo(ltype);
-				} else if (rtype > ltype) {
-					lvalue = lvalue.convertTo(rtype);
-				}
-			}
-		} else if (Type.subTypeOf(rtype, Type.NUMBER)) {
-			if (!Type.subTypeOf(ltype, Type.NUMBER)) {
-				lvalue = lvalue.convertTo(rtype);
-			} else {
-				if (rtype > ltype) {
-					lvalue = lvalue.convertTo(rtype);
-				} else if (rtype > ltype) {
-					rvalue = rvalue.convertTo(ltype);
-				}
-			}
-		}
+		try {
+			// runtime type checks:
+			if (!(lvalue instanceof ComputableValue))
+				lvalue =
+					operator == Constants.IDIV
+						? lvalue.convertTo(Type.INTEGER)
+						: lvalue.convertTo(Type.DOUBLE);
+			if (!(rvalue instanceof ComputableValue))
+				rvalue =
+					operator == Constants.IDIV
+						? rvalue.convertTo(Type.INTEGER)
+						: rvalue.convertTo(Type.DOUBLE);
 
-		if (operator == Constants.IDIV)
-			return ((IntegerValue) lvalue).idiv((NumericValue) rvalue);
-		else
-			return applyOperator((ComputableValue) lvalue, (ComputableValue) rvalue);
+			int ltype = lvalue.getType(), rtype = rvalue.getType();
+			if (Type.subTypeOf(ltype, Type.NUMBER)) {
+				if (!Type.subTypeOf(rtype, Type.NUMBER)) {
+					rvalue = rvalue.convertTo(ltype);
+				} else {
+					if (ltype > rtype) {
+						rvalue = rvalue.convertTo(ltype);
+					} else if (rtype > ltype) {
+						lvalue = lvalue.convertTo(rtype);
+					}
+				}
+			} else if (Type.subTypeOf(rtype, Type.NUMBER)) {
+				if (!Type.subTypeOf(ltype, Type.NUMBER)) {
+					lvalue = lvalue.convertTo(rtype);
+				} else {
+					if (rtype > ltype) {
+						lvalue = lvalue.convertTo(rtype);
+					} else if (rtype > ltype) {
+						rvalue = rvalue.convertTo(ltype);
+					}
+				}
+			}
+
+			if (operator == Constants.IDIV)
+				return ((IntegerValue) lvalue).idiv((NumericValue) rvalue);
+			else
+				return applyOperator((ComputableValue) lvalue, (ComputableValue) rvalue);
+		} catch (XPathException e) {
+			e.setASTNode(getASTNode());
+			throw e;
+		}
 	}
 
 	public ComputableValue applyOperator(ComputableValue left, ComputableValue right)

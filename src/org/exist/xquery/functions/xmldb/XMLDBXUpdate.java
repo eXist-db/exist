@@ -54,7 +54,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
 public class XMLDBXUpdate extends BasicFunction {
 
 	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("update", XMLDB_FUNCTION_NS, "xmldb"),
+			new QName("update", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
 			"Process an XUpdate request on the current collection. The first "
 					+ "argument specifies the collection object as returned by the collection or "
 					+ "create-collection functions. The second argument specifies the XUpdate "
@@ -76,7 +76,7 @@ public class XMLDBXUpdate extends BasicFunction {
 			throws XPathException {
 		JavaObjectValue object = (JavaObjectValue) args[0].itemAt(0);
 		if (!(object.getObject() instanceof Collection))
-			throw new XPathException(
+			throw new XPathException(getASTNode(),
 					"Specified Java object is not an XMLDB collection object");
 		NodeValue data = (NodeValue) args[1].itemAt(0);
 		DOMSerializer serializer = DOMSerializerPool.getInstance()
@@ -90,7 +90,7 @@ public class XMLDBXUpdate extends BasicFunction {
 			serializer.serialize(data.getNode());
 		} catch (TransformerException e) {
 			LOG.debug("Exception while serializing XUpdate document", e);
-			throw new XPathException(
+			throw new XPathException(getASTNode(),
 					"Exception while serializing XUpdate document: "
 							+ e.getMessage(), e);
 		} finally {
@@ -105,7 +105,7 @@ public class XMLDBXUpdate extends BasicFunction {
 			LOG.debug("Processing XUpdate request: " + xupdate);
 			modifications = service.update(xupdate);
 		} catch (XMLDBException e) {
-			throw new XPathException("Exception while processing xupdate: "
+			throw new XPathException(getASTNode(), "Exception while processing xupdate: "
 					+ e.getMessage(), e);
 		}
 		return new IntegerValue(modifications);

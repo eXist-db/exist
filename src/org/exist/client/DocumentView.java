@@ -26,15 +26,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
-import java.nio.charset.Charset;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -47,6 +47,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.border.BevelBorder;
+
 import org.exist.storage.ElementIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.util.ProgressIndicator;

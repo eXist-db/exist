@@ -22,11 +22,15 @@
  */
 package org.exist.cocoon;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cocoon.environment.Request;
 import org.exist.http.servlets.RequestWrapper;
@@ -38,6 +42,7 @@ import org.exist.http.servlets.SessionWrapper;
 public class CocoonRequestWrapper implements RequestWrapper {
 
 	private Request request;
+	private HttpServletRequest httpRequest = null;
 	
 	/**
 	 * 
@@ -46,6 +51,21 @@ public class CocoonRequestWrapper implements RequestWrapper {
 		this.request = request;
 	}
 
+	public CocoonRequestWrapper(Request request, HttpServletRequest httpRequest) {
+		this.request = request;
+		this.httpRequest = httpRequest;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.http.servlets.RequestWrapper#getInputStream()
+	 */
+	public InputStream getInputStream() throws IOException {
+		if(httpRequest == null)
+			throw new IOException("Request input stream is only available " +
+				"within a servlet environment");
+		return httpRequest.getInputStream();
+	}
+	
 	/**
 	 * @param arg0
 	 * @return

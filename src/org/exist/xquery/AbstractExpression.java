@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.NodeProxy;
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -30,6 +31,8 @@ public abstract class AbstractExpression implements Expression {
 
 	protected XQueryContext context;
 
+	protected XQueryAST astNode = null;
+	
 	public AbstractExpression(XQueryContext context) {
 		this.context = context;
 	}
@@ -82,5 +85,13 @@ public abstract class AbstractExpression implements Expression {
 			if (next instanceof NodeProxy)
 				 ((NodeProxy) next).addContextNode((NodeProxy) next);
 		}
+	}
+	
+	public void setASTNode(XQueryAST ast) {
+		this.astNode = ast;
+	}
+	
+	public XQueryAST getASTNode() {
+		return astNode;
 	}
 }

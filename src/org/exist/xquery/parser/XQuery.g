@@ -52,6 +52,7 @@ options {
 	defaultErrorHandler= false;
 	k= 1;
 	buildAST= true;
+    ASTLabelType = org.exist.xquery.parser.XQueryAST;
 }
 
 {
@@ -64,6 +65,7 @@ options {
 	public XQueryParser(XQueryLexer lexer, boolean dummy) {
 		this((TokenStream) lexer);
 		this.lexer= lexer;
+        setASTNodeClass("org.exist.xquery.parser.XQueryAST");
 	}
 
 	public boolean foundErrors() {
@@ -172,9 +174,12 @@ defaultNamespaceDecl
 varDecl
 { String varName= null; }
 :
-	"declare"! "variable"! DOLLAR! varName=qName! ( typeDeclaration )?
+	decl:"declare"! "variable"! DOLLAR! varName=qName! ( typeDeclaration )?
 	LCURLY! ex:expr RCURLY!
-	{ #varDecl= #(#[GLOBAL_VAR, varName], #varDecl); }
+	{ 
+        #varDecl= #(#[GLOBAL_VAR, varName], #varDecl);
+        #varDecl.copyLexInfo(#decl);
+    }
 	;
 
 moduleImport
@@ -374,11 +379,17 @@ unaryExpr
 :
 	// TODO: XPath 2.0 allows an arbitrary number of +/-, 
 	// we restrict it to one
-	MINUS expr:unionExpr
-	{ #unaryExpr= #(#[UNARY_MINUS, "-"], #expr); }
+	m:MINUS expr:unionExpr
+	{ 
+        #unaryExpr= #(#[UNARY_MINUS, "-"], #expr);
+        #unaryExpr.copyLexInfo(#m);
+    }
 	|
-	PLUS expr2:unionExpr
-	{ #unaryExpr= #(#[UNARY_PLUS, "+"], #expr2); }
+	p:PLUS expr2:unionExpr
+	{ 
+        #unaryExpr= #(#[UNARY_PLUS, "+"], #expr2);
+        #unaryExpr.copyLexInfo(#p);
+    }
 	|
 	unionExpr
 	;
@@ -525,8 +536,11 @@ primaryExpr
 	|
 	parenthesizedExpr
 	|
-	DOLLAR! varName=qName
-	{ #primaryExpr= #[VARIABLE_REF, varName]; }
+	DOLLAR! varName=v:qName
+	{ 
+        #primaryExpr= #[VARIABLE_REF, varName];
+        #primaryExpr.copyLexInfo(#v);
+    }
 	|
 	constructor
 	|
@@ -553,12 +567,15 @@ parenthesizedExpr
 functionCall
 { String fnName= null; }
 :
-	fnName=qName LPAREN!
-	{ #functionCall= #[FUNCTION, fnName]; }
+	fnName=q:qName LPAREN!
+	{ 
+        #functionCall = #[FUNCTION, fnName];
+    }
 	(
 		params:functionParameters
 		{ #functionCall= #(#[FUNCTION, fnName], #params); }
 	)?
+    { #functionCall.copyLexInfo(#q); }
 	RPAREN!
 	;
 
@@ -760,11 +777,13 @@ attributeEnclosedExpr
 	LCURLY^
 	{
 		lexer.inAttributeContent= false;
+        lexer.parseStringLiterals = true;
 		//lexer.wsExplicit= false;
 	}
 	expr RCURLY!
 	{
 		lexer.inAttributeContent= true;
+        lexer.parseStringLiterals = false;
 		//lexer.wsExplicit= true;
 	}
 	;
@@ -873,6 +892,8 @@ reservedKeywords returns [String name]
 	"import" { name = "import"; }
 	|
 	"at" { name = "at"; }
+    |
+    "cast" { name = "cast"; }
 	;
 
 /**
@@ -885,6 +906,7 @@ class XQueryTreeParser extends TreeParser;
 options {
 	k= 1;
 	defaultErrorHandler = false;
+    ASTLabelType = org.exist.xquery.parser.XQueryAST;
 }
 
 {
@@ -1004,7 +1026,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			v:VERSION_DECL
 			{
 				if (!v.getText().equals("1.0"))
-					throw new XPathException("Wrong XQuery version: require 1.0");
+					throw new XPathException(v, "Wrong XQuery version: require 1.0");
 			}
 		)
 	)?
@@ -1037,10 +1059,11 @@ throws PermissionDeniedException, EXistException, XPathException
 					sequenceType [type]
 				)
 			)?
-			step=expr [enclosed]
+			step=e:expr [enclosed]
 			{
 				VariableDeclaration decl= new VariableDeclaration(context, qname.getText(), enclosed);
 				decl.setSequenceType(type);
+                decl.setASTNode(e);
 				path.add(decl);
 				if(myModule != null) {
 					QName qn = QName.parse(context, qname.getText());
@@ -1076,6 +1099,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			QName qn= QName.parse(context, name.getText());
 			FunctionSignature signature= new FunctionSignature(qn);
 			UserDefinedFunction func= new UserDefinedFunction(context, signature);
+            func.setASTNode(name);
 			List varList= new ArrayList(3);
 		}
 		( paramList [varList] )?
@@ -1203,7 +1227,7 @@ throws PermissionDeniedException, EXistException, XPathException
 }
 :
 	#(
-		"cast"
+		castAST:"cast"
 		{
 			PathExpr expr= new PathExpr(context);
 			int cardinality= Cardinality.EXACTLY_ONE;
@@ -1218,6 +1242,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			QName qn= QName.parse(context, t.getText());
 			int code= Type.getType(qn);
 			CastExpression castExpr= new CastExpression(context, expr, code, cardinality);
+            castExpr.setASTNode(castAST);
 			path.add(castExpr);
 			step = castExpr;
 		}
@@ -1657,7 +1682,10 @@ throws PermissionDeniedException, EXistException, XPathException
 	{ path.add(step); }
 	|
 	v:VARIABLE_REF
-	{ step= new VariableReference(context, v.getText()); }
+	{ 
+        step= new VariableReference(context, v.getText());
+        step.setASTNode(v);
+    }
 	step=predicates [step]
 	{ path.add(step); }
 	|
@@ -1802,17 +1830,30 @@ throws XPathException
 { step= null; }
 :
 	c:STRING_LITERAL
-	{ step= new LiteralValue(context, new StringValue(c.getText())); }
+	{ 
+        step= new LiteralValue(context, new StringValue(c.getText()));
+        step.setASTNode(c);
+    }
 	|
 	i:INTEGER_LITERAL
-	{ step= new LiteralValue(context, new IntegerValue(Integer.parseInt(i.getText()))); }
+	{ 
+        step= new LiteralValue(context, new IntegerValue(Integer.parseInt(i.getText())));
+        step.setASTNode(i);
+    }
 	|
 	(
 		dec:DECIMAL_LITERAL
-		{ step= new LiteralValue(context, new DecimalValue(dec.getText())); }
+		{ 
+            step= new LiteralValue(context, new DecimalValue(dec.getText()));
+            step.setASTNode(dec);
+        }
 		|
 		dbl:DOUBLE_LITERAL
-		{ step= new LiteralValue(context, new DoubleValue(Double.parseDouble(dbl.getText()))); }
+		{ 
+            step= new LiteralValue(context, 
+                new DoubleValue(Double.parseDouble(dbl.getText())));
+            step.setASTNode(dbl);
+        }
 	)
 	;
 
@@ -1825,60 +1866,68 @@ throws PermissionDeniedException, EXistException, XPathException
 	PathExpr right= new PathExpr(context);
 }
 :
-	#( PLUS step=expr [left] step=expr [right] )
+	#( plus:PLUS step=expr [left] step=expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.PLUS);
+        op.setASTNode(plus);
 		path.addPath(op);
 		step= op;
 	}
 	|
-	#( MINUS step=expr [left] step=expr [right] )
+	#( minus:MINUS step=expr [left] step=expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.MINUS);
+        op.setASTNode(minus);
 		path.addPath(op);
 		step= op;
 	}
 	|
-	#( UNARY_MINUS step=expr [left] )
+	#( uminus:UNARY_MINUS step=expr [left] )
 	{
 		UnaryExpr unary= new UnaryExpr(context, Constants.MINUS);
+        unary.setASTNode(uminus);
 		unary.add(left);
 		path.addPath(unary);
 		step= unary;
 	}
 	|
-	#( UNARY_PLUS step=expr [left] )
+	#( uplus:UNARY_PLUS step=expr [left] )
 	{
 		UnaryExpr unary= new UnaryExpr(context, Constants.PLUS);
+        unary.setASTNode(uplus);
 		unary.add(left);
 		path.addPath(unary);
 		step= unary;
 	}
 	|
-	#( "div" step=expr [left] step=expr [right] )
+	#( div:"div" step=expr [left] step=expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.DIV);
+        op.setASTNode(div);
 		path.addPath(op);
 		step= op;
 	}
 	|
-	#( "idiv" step=expr [left] step=expr [right] )
+	#( idiv:"idiv" step=expr [left] step=expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.IDIV);
+        op.setASTNode(idiv);
 		path.addPath(op);
 		step= op;
 	}
 	|
-	#( "mod" step=expr [left] step=expr [right] )
+	#( mod:"mod" step=expr [left] step=expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.MOD);
+        op.setASTNode(mod);
 		path.addPath(op);
 		step= op;
 	}
 	|
-	#( STAR step=expr [left] step=expr [right] )
+	#( mult:STAR step=expr [left] step=expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.MULT);
+        op.setASTNode(mult);
 		path.addPath(op);
 		step= op;
 	}
@@ -1938,7 +1987,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			{ params.add(pathExpr); }
 		)*
 	)
-	{ step= FunctionFactory.createFunction(context, path, fn.getText(), params); }
+	{ step= FunctionFactory.createFunction(context, fn, path, params); }
 	;
 
 forwardAxis returns [int axis]
@@ -2002,55 +2051,61 @@ throws PermissionDeniedException, EXistException, XPathException
 }
 :
 	#(
-		"eq" step=expr [left]
+		eq:"eq" step=expr [left]
 		step=expr [right]
 		{
 			step= new ValueComparison(context, left, right, Constants.EQ);
+            step.setASTNode(eq);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		"ne" step=expr [left]
+		ne:"ne" step=expr [left]
 		step=expr [right]
 		{
 			step= new ValueComparison(context, left, right, Constants.NEQ);
+            step.setASTNode(ne);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		"lt" step=expr [left]
+		lt:"lt" step=expr [left]
 		step=expr [right]
 		{
 			step= new ValueComparison(context, left, right, Constants.LT);
+            step.setASTNode(lt);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		"le" step=expr [left]
+		le:"le" step=expr [left]
 		step=expr [right]
 		{
 			step= new ValueComparison(context, left, right, Constants.LTEQ);
+            step.setASTNode(le);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		"gt" step=expr [left]
+		gt:"gt" step=expr [left]
 		step=expr [right]
 		{
 			step= new ValueComparison(context, left, right, Constants.GT);
+            step.setASTNode(gt);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		"ge" step=expr [left]
+		ge:"ge" step=expr [left]
 		step=expr [right]
 		{
 			step= new ValueComparison(context, left, right, Constants.GTEQ);
+            step.setASTNode(ge);
 			path.add(step);
 		}
 	)
@@ -2066,55 +2121,61 @@ throws PermissionDeniedException, EXistException, XPathException
 }
 :
 	#(
-		EQ step=expr [left]
+		eq:EQ step=expr [left]
 		step=expr [right]
 		{
 			step= new GeneralComparison(context, left, right, Constants.EQ);
+            step.setASTNode(eq);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		NEQ step=expr [left]
+		neq:NEQ step=expr [left]
 		step=expr [right]
 		{
 			step= new GeneralComparison(context, left, right, Constants.NEQ);
+            step.setASTNode(neq);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		LT step=expr [left]
+		lt:LT step=expr [left]
 		step=expr [right]
 		{
 			step= new GeneralComparison(context, left, right, Constants.LT);
+            step.setASTNode(lt);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		LTEQ step=expr [left]
+		lteq:LTEQ step=expr [left]
 		step=expr [right]
 		{
 			step= new GeneralComparison(context, left, right, Constants.LTEQ);
+            step.setASTNode(lteq);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		GT step=expr [left]
+		gt:GT step=expr [left]
 		step=expr [right]
 		{
 			step= new GeneralComparison(context, left, right, Constants.GT);
+            step.setASTNode(gt);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		GTEQ step=expr [left]
+		gteq:GTEQ step=expr [left]
 		step=expr [right]
 		{
 			step= new GeneralComparison(context, left, right, Constants.GTEQ);
+            step.setASTNode(gteq);
 			path.add(step);
 		}
 	)
@@ -2130,33 +2191,37 @@ throws PermissionDeniedException, EXistException, XPathException
 }
 :
 	#(
-		"is" step=expr [left] step=expr [right]
+		is:"is" step=expr [left] step=expr [right]
 		{
 			step = new NodeComparison(context, left, right, Constants.IS);
+            step.setASTNode(is);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		"isnot" step=expr[left] step=expr[right]
+		isnot:"isnot" step=expr[left] step=expr[right]
 		{
 			step = new NodeComparison(context, left, right, Constants.ISNOT);
+            step.setASTNode(isnot);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		BEFORE step=expr[left] step=expr[right]
+		before:BEFORE step=expr[left] step=expr[right]
 		{
 			step = new NodeComparison(context, left, right, Constants.BEFORE);
+            step.setASTNode(before);
 			path.add(step);
 		}
 	)
 	|
 	#(
-		AFTER step=expr[left] step=expr[right]
+		after:AFTER step=expr[left] step=expr[right]
 		{
 			step = new NodeComparison(context, left, right, Constants.AFTER);
+            step.setASTNode(after);
 			path.add(step);
 		}
 	)

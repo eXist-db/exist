@@ -44,7 +44,7 @@ public class XMLDBRemove extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("remove-resource", XMLDB_FUNCTION_NS, "xmldb"),
+			new QName("remove-resource", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
 				"Remove a resource from the collection. The first " +
 				"argument specifies the collection object as returned by the collection or " +
 				"create-collection functions. The second argument is the name of the resource " +
@@ -66,7 +66,7 @@ public class XMLDBRemove extends BasicFunction {
 		throws XPathException {
 		JavaObjectValue obj = (JavaObjectValue)args[0].itemAt(0);
 		if (!(obj.getObject() instanceof Collection))
-			throw new XPathException("Argument 1 should be an instance of org.xmldb.api.base.Collection");
+			throw new XPathException(getASTNode(), "Argument 1 should be an instance of org.xmldb.api.base.Collection");
 		Collection collection = (Collection) obj.getObject();
 		String doc = args[1].getStringValue();
 		if(doc.startsWith("/db")) {
@@ -75,15 +75,15 @@ public class XMLDBRemove extends BasicFunction {
 			if(p + 1 < doc.length())
 				doc = doc.substring(p + 1);
 			else
-				throw new XPathException("No resource name found in " + doc);
+				throw new XPathException(getASTNode(), "No resource name found in " + doc);
 		}
 		try {
 			Resource resource = collection.getResource(doc);
 			if (resource == null)
-				throw new XPathException("Resource " + doc + " not found");
+				throw new XPathException(getASTNode(), "Resource " + doc + " not found");
 			collection.removeResource(resource);
 		} catch (XMLDBException e) {
-			throw new XPathException("XMLDB exception caught: " + e.getMessage(), e);
+			throw new XPathException(getASTNode(), "XMLDB exception caught: " + e.getMessage(), e);
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

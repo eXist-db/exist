@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -83,5 +84,13 @@ public class Atomize extends AbstractExpression {
 	 */
 	public void resetState() {
 		expression.resetState();
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.AbstractExpression#getASTNode()
+	 */
+	public XQueryAST getASTNode() {
+		return expression.getASTNode();
 	}
 }

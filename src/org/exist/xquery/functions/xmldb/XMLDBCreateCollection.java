@@ -23,12 +23,11 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
+import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Item;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -40,17 +39,17 @@ import org.xmldb.api.modules.CollectionManagementService;
 /**
  * @author wolf
  */
-public class XMLDBCreateCollection extends Function {
+public class XMLDBCreateCollection extends BasicFunction {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("create-collection", XMLDB_FUNCTION_NS, "xmldb"),
-			"Create a new collection as a child of the collection object passed as " +
-			"first argument. The second argument specifies the name of the new " +
-			"collection.",
-			new SequenceType[] {
-				new SequenceType(Type.JAVA_OBJECT, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+	public final static FunctionSignature signature = new FunctionSignature(
+			new QName("create-collection", ModuleImpl.NAMESPACE_URI,
+					ModuleImpl.PREFIX),
+			"Create a new collection as a child of the collection object passed as "
+					+ "first argument. The second argument specifies the name of the new "
+					+ "collection.",
+			new SequenceType[]{
+					new SequenceType(Type.JAVA_OBJECT, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
 			new SequenceType(Type.JAVA_OBJECT, Cardinality.ZERO_OR_ONE));
 
 	/**
@@ -61,33 +60,33 @@ public class XMLDBCreateCollection extends Function {
 		super(context, signature);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet,
+	 *         org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-		JavaObjectValue obj =
-			(JavaObjectValue) getArgument(0)
-				.eval(contextSequence, contextItem)
-				.itemAt(0);
-		String collectionName = getArgument(1).eval(contextSequence, contextItem).getStringValue(); 
+	public Sequence eval(Sequence args[], Sequence contextSequence)
+			throws XPathException {
+		JavaObjectValue obj = (JavaObjectValue) args[0].itemAt(0);
+		String collectionName = args[0].getStringValue();
 		if (!(obj.getObject() instanceof Collection))
-			throw new XPathException("Argument 1 should be an instance of org.xmldb.api.base.Collection");
+			throw new XPathException(getASTNode(),
+					"Argument 1 should be an instance of org.xmldb.api.base.Collection");
 		Collection collection = (Collection) obj.getObject();
 		try {
-			CollectionManagementService mgtService = (CollectionManagementService)
-				collection.getService("CollectionManagementService", "1.0");
-			Collection newCollection = mgtService.createCollection(collectionName);
-			if(newCollection == null)
+			CollectionManagementService mgtService = (CollectionManagementService) collection
+					.getService("CollectionManagementService", "1.0");
+			Collection newCollection = mgtService
+					.createCollection(collectionName);
+			if (newCollection == null)
 				return Sequence.EMPTY_SEQUENCE;
 			else
 				return new JavaObjectValue(newCollection);
 		} catch (XMLDBException e) {
-			LOG.warn("failed to create new collection " + collectionName + ": " + e.getMessage(), e);
-			return Sequence.EMPTY_SEQUENCE;
+			throw new XPathException(getASTNode(),
+					"failed to create new collection " + collectionName + ": "
+							+ e.getMessage(), e);
 		}
 	}
-
 }

@@ -29,7 +29,7 @@
 
     <property file="build.properties"/>
 	
-    <property name="dist.dir" value="${dist}/${project.name}-${build.version}"/>
+    <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
 	
     <path id="classpath.core">
         <fileset dir="${lib.core}">
@@ -78,7 +78,7 @@
     <!-- Prepare the build                                                   -->
     <!-- =================================================================== -->
     <target name="prepare">
-        <echo message="eXist ${build.version} build"/>
+        <echo message="eXist ${project.version} build"/>
         <echo message="----------------------------"/>
 		<echo message="basedir=${basedir}"/>
         <mkdir dir="${build}"/>
@@ -112,6 +112,7 @@
 			<fileset dir="${src}/org/exist/xquery/parser">
 				<include name="*.java"/>
 				<include name="*.txt"/>
+                <exclude name="XQueryAST.java"/>
 			</fileset>
 		</delete>
 		<antlr target="${src}/org/exist/xquery/parser/XQuery.g"
@@ -397,7 +398,7 @@
 	<!-- Create .war file                                                   -->
 	<!-- ================================================================== -->
     <target name="dist-war" depends="webapps">
-	    <jar basedir="${webapp.dir}" jarfile="${dist}/${project.name}-${build.version}.war"/>
+	    <jar basedir="${webapp.dir}" jarfile="${dist}/${project.name}-${project.version}.war"/>
     </target>
     
     <!-- ================================================================== -->
@@ -522,13 +523,14 @@
     <!-- ================================================================== -->
     <target depends="dist" name="dist-zip">
         <zip basedir="${dist}" compress="true"
-            excludes="${project.name}-${build.version}.zip" zipfile="${dist}/${project.name}-${build.version}.zip"/>
+            excludes="${project.name}-${project.version}.zip"
+            zipfile="${dist}/${project.name}-${project.version}.zip"/>
     </target>
    
     <target depends="dist" name="snapshot">
 		<tstamp/>
 		<zip basedir="${dist}" compress="true"
-			excludes="${project.name}-${build.version}.zip"
+			excludes="${project.name}-${project.version}.zip"
 			zipfile="${dist}/${project.name}-snapshot-${DSTAMP}.zip"/>
 	</target>
 	
@@ -536,7 +538,7 @@
     <!-- Create dist-tgz                                                    -->
     <!-- ================================================================== -->
     <target depends="dist" name="dist-tgz">
-        <property name="dist.name" value="${project.name}-${build.version}"/>
+        <property name="dist.name" value="${project.name}-${project.version}"/>
         <delete file="${dist}/${dist.name}.tar.gz"/>
         <delete file="${dist}/${dist.name}.tar"/>
         <tar basedir="${dist}" excludes="${dist.name}.zip" longfile="gnu" tarfile="${dist}/${dist.name}.tar"/>
@@ -552,7 +554,7 @@
 		    classname="com.izforge.izpack.ant.IzPackTask"/>
 		<echo message="Calling IzPack to create installer ..."/>
 		<izpack input="installer/install.xml"
-			output="installer/${project.name}-${build.version}.jar"
+			output="installer/${project.name}-${project.version}.jar"
 			basedir="." izPackDir="${izpack.dir}"
 			installerType="standard"/>
 	</target>

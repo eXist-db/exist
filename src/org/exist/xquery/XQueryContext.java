@@ -748,7 +748,8 @@ public class XQueryContext {
 			FunctionCall call = (FunctionCall)forwardReferences.pop();
 			UserDefinedFunction func = resolveFunction(call.getQName());
 			if(func == null)
-				throw new XPathException("Call to undeclared function: " + call.getQName().toString());
+				throw new XPathException(call.getASTNode(), 
+					"Call to undeclared function: " + call.getQName().toString());
 			call.resolveForwardReference(func);
 		}
 	}

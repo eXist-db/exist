@@ -266,6 +266,7 @@ public class GeneralComparison extends BinaryOp {
 			boolean foundNumeric = false;
 			// setup up an &= expression using the fulltext index
 			ExtFulltext containsExpr = new ExtFulltext(context, Constants.FULLTEXT_AND);
+			containsExpr.setASTNode(getASTNode());
 			int i = 0;
 			for (; i < 5 && (token = tokenizer.nextToken(true)) != null; i++) {
 				// remember if we find an alphanumeric token
@@ -297,43 +298,48 @@ public class GeneralComparison extends BinaryOp {
 		throws XPathException {
 		int ltype = lv.getType();
 		int rtype = rv.getType();
-		if (ltype == Type.ITEM || ltype == Type.ATOMIC) {
-			if (Type.subTypeOf(rtype, Type.NUMBER)) {
-				lv = lv.convertTo(Type.DOUBLE);
+		try {
+			if (ltype == Type.ITEM || ltype == Type.ATOMIC) {
+				if (Type.subTypeOf(rtype, Type.NUMBER)) {
+					lv = lv.convertTo(Type.DOUBLE);
+				} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
+					lv = lv.convertTo(Type.STRING);
+					rv = rv.convertTo(Type.STRING);
+				} else
+					lv = lv.convertTo(rv.getType());
 			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
-				lv = lv.convertTo(Type.STRING);
-				rv = rv.convertTo(Type.STRING);
-			} else
-				lv = lv.convertTo(rv.getType());
-		} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
-			if (Type.subTypeOf(ltype, Type.NUMBER)) {
-				rv = rv.convertTo(Type.DOUBLE);
-			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
-				lv = lv.convertTo(Type.STRING);
-				rv = rv.convertTo(Type.STRING);
-			} else
-				rv = rv.convertTo(lv.getType());
-		}
-		if (context.isBackwardsCompatible()) {
-			// in XPath 1.0 compatible mode, if one of the operands is a number, cast
-			// both operands to xs:double
-			if (Type.subTypeOf(ltype, Type.NUMBER)
-				|| Type.subTypeOf(rtype, Type.NUMBER)) {
-				lv = lv.convertTo(Type.DOUBLE);
-				rv = rv.convertTo(Type.DOUBLE);
+				if (Type.subTypeOf(ltype, Type.NUMBER)) {
+					rv = rv.convertTo(Type.DOUBLE);
+				} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
+					lv = lv.convertTo(Type.STRING);
+					rv = rv.convertTo(Type.STRING);
+				} else
+					rv = rv.convertTo(lv.getType());
 			}
-		}
+			if (context.isBackwardsCompatible()) {
+				// in XPath 1.0 compatible mode, if one of the operands is a number, cast
+				// both operands to xs:double
+				if (Type.subTypeOf(ltype, Type.NUMBER)
+					|| Type.subTypeOf(rtype, Type.NUMBER)) {
+					lv = lv.convertTo(Type.DOUBLE);
+					rv = rv.convertTo(Type.DOUBLE);
+				}
+			}
 //				System.out.println(
 //					lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
-		switch(truncation) {
-			case Constants.TRUNC_RIGHT:
-				return lv.startsWith(rv);
-			case Constants.TRUNC_LEFT:
-				return lv.endsWith(rv);
-			case Constants.TRUNC_BOTH:
-				return lv.contains(rv);
-			default:
-				return lv.compareTo(relation, rv);
+			switch(truncation) {
+				case Constants.TRUNC_RIGHT:
+					return lv.startsWith(rv);
+				case Constants.TRUNC_LEFT:
+					return lv.endsWith(rv);
+				case Constants.TRUNC_BOTH:
+					return lv.contains(rv);
+				default:
+					return lv.compareTo(relation, rv);
+			}
+		} catch (XPathException e) {
+			e.setASTNode(getASTNode());
+			throw e;
 		}
 	}
 

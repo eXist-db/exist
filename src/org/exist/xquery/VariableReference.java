@@ -46,9 +46,14 @@ public class VariableReference extends AbstractExpression {
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
-		Variable var = context.resolveVariable(qname);
-		Sequence seq = var.getValue();
-		return seq;
+		try {
+			Variable var = context.resolveVariable(qname);
+			Sequence seq = var.getValue();
+			return seq;
+		} catch (XPathException e) {
+			e.setASTNode(getASTNode());
+			throw e;
+		}
 	}
 
 	/* (non-Javadoc)
