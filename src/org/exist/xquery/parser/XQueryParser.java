@@ -6565,7 +6565,7 @@ public XQueryParser(ParserSharedInputState state) {
 		{
 			match(QUOT);
 			if ( inputState.guessing==0 ) {
-				lexer.inAttributeContent= true; System.out.println("in attribute...");
+				lexer.inAttributeContent= true;
 			}
 			attributeValue();
 			astFactory.addASTChild(currentAST, returnAST);
