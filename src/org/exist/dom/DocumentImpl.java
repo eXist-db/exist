@@ -179,11 +179,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	    maxDepth = other.maxDepth;
 	    childList = null;
 	    children = 0;
-	    docType = other.docType;
+	    docType = other.getDoctype();
 	    treeLevelOrder = other.treeLevelOrder;
 	    treeLevelStartPoints = other.treeLevelStartPoints;
 	    internalAddress = -1;
-	    lastModified = other.lastModified;
+	    lastModified = other.getLastModified();
 	}
 	
 	public void copyChildren(DocumentImpl other) {
