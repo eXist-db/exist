@@ -114,6 +114,7 @@ public class DTMHandleTest extends TestCase {
 				System.out.println("Test succeeded");
 			}
 		} catch (Exception e) {
+		    e.printStackTrace();
 			fail("Failed to issue xpath: " + e.getMessage());
 		}
 	}

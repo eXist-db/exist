@@ -2592,8 +2592,9 @@ public class NativeBroker extends DBBroker {
 				currentPath.addComponent(new QName('@' + node.getLocalName(), node.getNamespaceURI()));
 				if (idxSpec != null) {
 				    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-				    if(spec != null)
+				    if(spec != null) {
 				        indexType = spec.getIndexType();
+				    }
 				}
 				if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
 				    indexType |= ValueIndexSpec.TEXT;

@@ -45,7 +45,7 @@ public class ValueIndexTest extends TestCase {
 
     private final static String CONFIG =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
-    	"	<index xmlns:x=\"http://www.foo.com\">" + 
+    	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" + 
     	"		<fulltext default=\"all\">" + 
     	"			<include path=\"//item/name\"/>" + 
     	"			<include path=\"//item/mixed\"/>" + 
@@ -55,7 +55,8 @@ public class ValueIndexTest extends TestCase {
     	"		<create path=\"//item/stock\" type=\"xs:integer\"/>" + 
     	"		<create path=\"//item/price\" type=\"xs:double\"/>" + 
     	"		<create path=\"//item/price/@specialprice\" type=\"xs:boolean\"/>" + 
-    	"		<create path=\"//item/x:rating\" type=\"xs:double\"/>" + 
+    	"		<create path=\"//item/x:rating\" type=\"xs:double\"/>" +
+    	"		<create path=\"//item/@xx:test\" type=\"xs:integer\"/>" +
     	"	</index>" + 
     	"</collection>";
     
@@ -95,6 +96,7 @@ public class ValueIndexTest extends TestCase {
         queryResource(service, "items.xml", "//item[stock <= 10]", 5);
         queryResource(service, "items.xml", "//item[stock > 20]", 1);
         queryResource(service, "items.xml", "declare namespace x=\"http://www.foo.com\"; //item[x:rating > 8.0]", 2);
+        queryResource(service, "items.xml", "declare namespace xx=\"http://test.com\"; //item[@xx:test = 123]", 1);
         queryResource(service, "items.xml", "//item[name &= 'Racing Bicycle']", 1);
         queryResource(service, "items.xml", "//item[mixed = 'uneven']", 1);
     }

@@ -123,9 +123,13 @@ public class NodePath {
         if(prefix == null) {
             addComponent(new QName(component, ""));
             return;
+        }  
+        String localName = QName.extractLocalName(component);
+        if(prefix.startsWith("@")) {
+            prefix = prefix.substring(1);
+            localName = "@" + localName;
         }
         String namespaceURI = (String) namespaces.get(prefix);
-        String localName = QName.extractLocalName(component);
         if(namespaceURI == null) {
             LOG.error("No namespace URI defined for prefix: " + prefix);
             addComponent(new QName(localName, ""));
