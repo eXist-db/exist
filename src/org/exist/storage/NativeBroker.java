@@ -2139,35 +2139,53 @@ public class NativeBroker extends DBBroker {
 	    if(newName.indexOf('/') > -1)
 	        throw new PermissionDeniedException("New collection name is illegal (may not contain a '/')");
 	    //	check if another collection with the same name exists at the destination
-	    Collection old = openCollection(newName, Lock.WRITE_LOCK);
+	    Collection old = openCollection(destination.getName() + '/' + newName, Lock.WRITE_LOCK);
 	    if(old != null) {
+	    	LOG.debug("removing old collection: " + newName);
 	    	try {
 	    		removeCollection(old);
 	    	} finally {
 	    		old.release();
 	    	}
 	    }
+	    Collection destCollection = null;
 	    Lock lock = null;
 	    try {
 	        lock = collectionsDb.getLock();
 	        lock.acquire(Lock.WRITE_LOCK);
-	        newName = destination.getName() + '/' + newName;
 	        
-		    Collection destCollection = getOrCreateCollection(newName);
+	        newName = destination.getName() + '/' + newName;
+	        LOG.debug("Copying collection to " + newName);
+		    destCollection = getOrCreateCollection(newName);
 		    for(Iterator i = collection.iterator(this); i.hasNext(); ) {
 		    	DocumentImpl child = (DocumentImpl) i.next();
-		    	
+		    	LOG.debug("Copying resource: " + child.getName());
 		    	DocumentImpl newDoc = new DocumentImpl(this, child.getFileName(), destCollection);
 		        newDoc.copyOf(child);
 		        copyResource(child, newDoc);
 		        flush();
-		        destCollection.addDocument(this, child);
+		        destCollection.addDocument(this, newDoc);
 		    }
 		    saveCollection(destCollection);
-		    saveCollection(destination);
-        } finally {
+	    } finally {
 	        lock.release();
 	    }
+	    String name = collection.getName();
+	    for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
+	    	String childName = (String)i.next();
+	        Collection child = openCollection(name + '/' + childName, Lock.WRITE_LOCK);
+	        if(child == null)
+	            LOG.warn("Child collection " + childName + " not found");
+	        else {
+	            try {
+	            	copyCollection(child, destCollection, childName);
+	            } finally {
+	            	child.release();
+	            }
+	        }
+	    }
+	    saveCollection(destCollection);
+	    saveCollection(destination);
 	}
 	
 	public void moveCollection(Collection collection, Collection destination, String newName) 

@@ -162,9 +162,31 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     /* (non-Javadoc)
 	 * @see org.exist.xmldb.CollectionManagementServiceImpl#copy(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public void copy(String collection, String destination, String newName)
+	public void copy(String collectionPath, String destinationPath, String newName)
 			throws XMLDBException {
-		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED);
+		if(!collectionPath.startsWith("/db"))
+            collectionPath = parent.getPath() + '/' + collectionPath;
+        if(!destinationPath.startsWith("/db"))
+            destinationPath = parent.getPath() + '/' + destinationPath;
+        if(newName == null) {
+            int p = collectionPath.lastIndexOf(('/'));
+            newName = collectionPath.substring(p + 1);
+        }
+        Vector params = new Vector();
+        params.addElement( collectionPath );
+        params.addElement( destinationPath );
+        params.addElement( newName );
+        try {
+            client.execute( "copyCollection", params );
+        } catch ( XmlRpcException xre ) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                xre.getMessage(),
+                xre );
+        } catch ( IOException ioe ) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                ioe.getMessage(),
+                ioe);
+        }
 	}
 	
     /* (non-Javadoc)
@@ -172,8 +194,29 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
      */
     public void copyResource(String resourcePath, String destinationPath,
             String newName) throws XMLDBException {
-        throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED, "copyResource is not yet implemented for " +
-        		"remote resources");
+    	if(!resourcePath.startsWith("/db"))
+            resourcePath = parent.getPath() + '/' + resourcePath;
+        if(!destinationPath.startsWith("/db"))
+            destinationPath = parent.getPath() + '/' + destinationPath;
+        if(newName == null) {
+            int p = resourcePath.lastIndexOf(('/'));
+            newName = resourcePath.substring(p + 1);
+        }
+        Vector params = new Vector();
+        params.addElement( resourcePath );
+        params.addElement( destinationPath );
+        params.addElement( newName );
+        try {
+            client.execute( "copyResource", params );
+        } catch ( XmlRpcException xre ) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                xre.getMessage(),
+                xre );
+        } catch ( IOException ioe ) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                ioe.getMessage(),
+                ioe);
+        }
     }
 }
 

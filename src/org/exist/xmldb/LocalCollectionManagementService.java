@@ -265,6 +265,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             collectionPath = parent.getPath() + '/' + collectionPath;
         if(!destinationPath.startsWith("/db"))
             destinationPath = parent.getPath() + '/' + destinationPath;
+        System.out.println("Copying " + collectionPath + " to " + destinationPath + " as " + newName);
         DBBroker broker = null;
         org.exist.collections.Collection collection = null;
         org.exist.collections.Collection destination = null;
@@ -289,7 +290,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                     e.getMessage(), e );
         } finally {
         	if(collection != null) collection.release();
-        	if(destination != null) collection.release();
+        	if(destination != null) destination.release();
             brokerPool.release( broker );
         }
 	}

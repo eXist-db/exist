@@ -84,7 +84,6 @@ import org.exist.xquery.Pragma;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
@@ -2041,7 +2040,8 @@ public class RpcConnection extends Thread {
 		return buffer;
 	}
 	
-	public boolean moveResource(User user, String docPath, String destinationPath, String newName) 
+	public boolean moveOrCopyResource(User user, String docPath, String destinationPath, 
+			String newName, boolean move) 
 	throws EXistException, PermissionDeniedException {
 	    DBBroker broker = null;
 	    Collection collection = null;
@@ -2055,7 +2055,7 @@ public class RpcConnection extends Thread {
 				throw new EXistException("Illegal document path");
 			String collectionName = docPath.substring(0, p);
 			String docName = docPath.substring(p + 1);
-			collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
+			collection = broker.openCollection(collectionName, move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
 			if (collection == null)
 				throw new EXistException("Collection " + collectionName
 						+ " not found");
@@ -2067,7 +2067,10 @@ public class RpcConnection extends Thread {
 			destination = broker.openCollection(destinationPath, Lock.WRITE_LOCK);
 			if(destination == null)
 			    throw new EXistException("Destination collection " + destinationPath + " not found");
-			broker.moveResource(doc, destination, newName);
+			if(move)
+				broker.moveResource(doc, destination, newName);
+			else
+				broker.copyResource(doc, destination, newName);
 			documentCache.clear();
 			return true;
         } catch (LockException e) {
@@ -2083,7 +2086,8 @@ public class RpcConnection extends Thread {
 		}
 	}
 	
-	public boolean moveCollection(User user, String collectionPath, String destinationPath, String newName) 
+	public boolean moveOrCopyCollection(User user, String collectionPath, String destinationPath, 
+			String newName, boolean move) 
 	throws EXistException, PermissionDeniedException {
 	    DBBroker broker = null;
 	    Collection collection = null;
@@ -2091,7 +2095,7 @@ public class RpcConnection extends Thread {
 		try {
 			broker = brokerPool.get(user);
 			// get source document
-			collection = broker.openCollection(collectionPath, Lock.WRITE_LOCK);
+			collection = broker.openCollection(collectionPath, move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
 			if (collection == null)
 				throw new EXistException("Collection " + collectionPath
 						+ " not found");
@@ -2100,7 +2104,10 @@ public class RpcConnection extends Thread {
 			destination = broker.openCollection(destinationPath, Lock.WRITE_LOCK);
 			if(destination == null)
 			    throw new EXistException("Destination collection " + destinationPath + " not found");
-			broker.moveCollection(collection, destination, newName);
+			if(move)
+				broker.moveCollection(collection, destination, newName);
+			else
+				broker.copyCollection(collection, destination, newName);
 			documentCache.clear();
 			return true;
         } catch (LockException e) {
