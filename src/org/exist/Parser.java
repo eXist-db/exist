@@ -84,7 +84,7 @@ public class Parser
 	private final static Category LOG = Category.getInstance(Parser.class.getName());
 
 	public final static int MAX_STR_LEN = 225;
-	public final static int SPARSE_IDENTIFIERS = 15;
+	public final static int SPARSE_IDENTIFIERS = 0;
 
 	private final static int VALIDATION_ENABLED = 0;
 	private final static int VALIDATION_AUTO = 1;

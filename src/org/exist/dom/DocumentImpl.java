@@ -252,7 +252,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			treeLevelStartPoints[i + 1] =
 				(treeLevelStartPoints[i] - treeLevelStartPoints[i - 1]) * treeLevelOrder[i]
 					+ treeLevelStartPoints[i];
-			checkRange(i);
+			System.out.println(treeLevelStartPoints[i + 1]);
 		}
 	}
 
