@@ -87,6 +87,7 @@ public class XQueryServlet extends HttpServlet {
 	public final static String DEFAULT_PASS = "guest";
 	public final static String DEFAULT_URI = "xmldb:exist:///db";
 	public final static String DEFAULT_ENCODING = "UTF-8";
+	public final static String DEFAULT_CONTENT_TYPE = "text/html";
 	
 	public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 		
@@ -97,6 +98,7 @@ public class XQueryServlet extends HttpServlet {
 	private String containerEncoding = null;
 	private String formEncoding = null;
 	private String encoding = null;
+	private String contentType = null;
 	
 	/* (non-Javadoc)
 	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
@@ -124,6 +126,9 @@ public class XQueryServlet extends HttpServlet {
 		if(encoding == null)
 			encoding = DEFAULT_ENCODING;
 		log("encoding = " + encoding);
+		contentType = config.getInitParameter("content-type");
+		if(contentType == null)
+		    contentType = DEFAULT_CONTENT_TYPE;
 		
 		try {
 			Class driver = Class.forName(DRIVER);
@@ -159,7 +164,7 @@ public class XQueryServlet extends HttpServlet {
 		ServletOutputStream sout = response.getOutputStream();
 		PrintWriter output = 
 			new PrintWriter(new OutputStreamWriter(sout, formEncoding));
-		response.setContentType("text/html; charset=" + formEncoding);
+		response.setContentType(contentType + "; charset=" + formEncoding);
 		response.addHeader( "pragma", "no-cache" );
 		response.addHeader( "Cache-Control", "no-cache" );
 		
