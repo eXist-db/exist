@@ -103,20 +103,25 @@ public class TimeValue extends AbstractDateTimeValue {
 			millis = Integer.parseInt(part);
 		}
 		part = util.group(6);
-		if (part != null && part.length() > 0 && (!part.equals("Z"))) {
-			if (!util.match(tzre, part))
-				throw new XPathException("Type error: error in  timezone: " + part);
-			explicitTimeZone = true;
-			part = util.group(2);
-			tzOffset = Integer.parseInt(part) * 60;
-			part = util.group(3);
-			if (part != null) {
-				int tzminute = Integer.parseInt(part);
-				tzOffset += tzminute;
+		if (part != null && part.length() > 0) {
+			if (part.equals("Z")) {
+				explicitTimeZone = true;
+				tzOffset = 0;
+			} else	{
+				if (!util.match(tzre, part))
+					throw new XPathException("Type error: error in  timezone: " + part);
+				explicitTimeZone = true;
+				part = util.group(2);
+				tzOffset = Integer.parseInt(part) * 60;
+				part = util.group(3);
+				if (part != null) {
+					int tzminute = Integer.parseInt(part);
+					tzOffset += tzminute;
+				}
+				part = util.group(1);
+				if (part.equals("-"))
+					tzOffset *= -1;
 			}
-			part = util.group(1);
-			if (part.equals("-"))
-				tzOffset *= -1;
 		}
 
 		SimpleTimeZone zone = new SimpleTimeZone(tzOffset * 60000, "LLL");
@@ -148,6 +153,11 @@ public class TimeValue extends AbstractDateTimeValue {
 		return Type.TIME;
 	}
 
+	public TimeValue adjustToTimezone(int offset) {
+		Date date = calendar.getTime();
+		return new TimeValue(date.getTime(), offset);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */

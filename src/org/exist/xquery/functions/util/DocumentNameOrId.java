@@ -29,6 +29,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -39,9 +40,9 @@ import org.exist.xquery.value.Type;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  *
  */
-public class DocumentName extends BasicFunction {
+public class DocumentNameOrId extends BasicFunction {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature docNameSignature =
 		new FunctionSignature(
 			new QName("document-name", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns the name of the document to which the passed node belongs.",
@@ -50,7 +51,16 @@ public class DocumentName extends BasicFunction {
 			},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 	
-	public DocumentName(XQueryContext context) {
+	public final static FunctionSignature docIdSignature =
+		new FunctionSignature(
+			new QName("document-id", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Returns the internal id of the document to which the passed node belongs.",
+			new SequenceType[] {
+					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.INT, Cardinality.ZERO_OR_ONE));
+	
+	public DocumentNameOrId(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
@@ -62,7 +72,10 @@ public class DocumentName extends BasicFunction {
 		NodeValue node = (NodeValue)args[0].itemAt(0);
 		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy)node;
-			return new StringValue(proxy.getDocument().getFileName());
+			if("document-name".equals(getSignature().getName().getLocalName()))
+				return new StringValue(proxy.getDocument().getFileName());
+			else
+				return new IntegerValue(proxy.getDocument().getDocId(), Type.INT);
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

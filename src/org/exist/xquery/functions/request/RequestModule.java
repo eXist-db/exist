@@ -58,6 +58,13 @@ public class RequestModule extends AbstractInternalModule {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.xquery.Module#getDescription()
+	 */
+	public String getDescription() {
+		return "Functions dealing with HTTP requests/responses"; 
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {

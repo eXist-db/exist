@@ -29,6 +29,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
+import org.exist.xquery.CachedResult;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
@@ -65,7 +66,8 @@ public class ExtRegexp extends Function {
 		);
 			
 	protected int type = Constants.FULLTEXT_AND;
-
+	protected CachedResult cached = null;
+	
 	public ExtRegexp(XQueryContext context) {
 		super(context, signature);
 	}
@@ -102,13 +104,22 @@ public class ExtRegexp extends Function {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		Expression path = getArgument(0);
-		if ((getDependencies() & Dependency.CONTEXT_ITEM) == Dependency.NO_DEPENDENCY) {
+		if ((path.getDependencies() & Dependency.CONTEXT_ITEM) == Dependency.NO_DEPENDENCY) {
+			boolean canCache = (getTermDependencies() & Dependency.CONTEXT_ITEM)
+				== Dependency.NO_DEPENDENCY;
+			if(	canCache && cached != null && cached.isValid(contextSequence)) {
+				return cached.getResult();
+			}
+			
 			NodeSet nodes =
 				path == null
 					? contextSequence.toNodeSet()
 					: path.eval(contextSequence).toNodeSet();
-			List terms = getSearchTerms(context, contextSequence);
-			return evalQuery(context, nodes, terms);
+			List terms = getSearchTerms(contextSequence);
+			Sequence result = evalQuery(nodes, terms);
+			if(canCache && contextSequence instanceof NodeSet)
+				cached = new CachedResult((NodeSet)contextSequence, result);
+			return result;
 		} else {
 			Item current;
 			String arg;
@@ -119,7 +130,7 @@ public class ExtRegexp extends Function {
 				i.hasNext();
 				) {
 				current = i.nextItem();
-				List terms = getSearchTerms(context, current.toSequence());
+				List terms = getSearchTerms(current.toSequence());
 				long start = System.currentTimeMillis();
 				nodes =
 					path == null
@@ -127,7 +138,7 @@ public class ExtRegexp extends Function {
 						: path
 							.eval(current.toSequence())
 							.toNodeSet();
-				temp = evalQuery(context, nodes, terms);
+				temp = evalQuery(nodes, terms);
 				result.addAll(temp);
 				LOG.debug(
 					"found "
@@ -143,7 +154,6 @@ public class ExtRegexp extends Function {
 	 * @see org.exist.xquery.functions.ExtFulltext#evalQuery(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, java.lang.String, org.exist.dom.NodeSet)
 	 */
 	public Sequence evalQuery(
-		XQueryContext context,
 		NodeSet nodes,
 		List terms)
 		throws XPathException {
@@ -170,7 +180,7 @@ public class ExtRegexp extends Function {
 			return NodeSet.EMPTY_SET;
 	}
 	
-	protected List getSearchTerms(XQueryContext context, Sequence contextSequence) throws XPathException {
+	protected List getSearchTerms(Sequence contextSequence) throws XPathException {
 		if(getArgumentCount() < 2)
 			throw new XPathException(getASTNode(), "function requires at least 2 arguments");
 		List terms = new ArrayList();
@@ -188,5 +198,15 @@ public class ExtRegexp extends Function {
 			}
 		}
 		return terms;
+	}
+	
+	protected int getTermDependencies() throws XPathException {
+		int deps = 0;
+		Expression next;
+		for(int i = 1; i < getLength(); i++) {
+			next = getArgument(i);
+			deps |= next.getDependencies();
+		}
+		return deps;
 	}
 }

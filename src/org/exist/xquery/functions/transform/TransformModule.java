@@ -43,6 +43,13 @@ public class TransformModule extends AbstractInternalModule {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.xquery.Module#getDescription()
+	 */
+	public String getDescription() {
+		return "Functions to deal with XSL transformations";
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {

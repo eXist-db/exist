@@ -75,7 +75,7 @@ public class Variable {
 	
 	public int getDependencies(XQueryContext context) {
 		if(context.getCurrentStackSize() > positionInStack)
-			return Dependency.CONTEXT_SET + Dependency.GLOBAL_VARS;
+			return Dependency.CONTEXT_SET + Dependency.GLOBAL_VARS+ Dependency.CONTEXT_ITEM;
 		else
 			return Dependency.CONTEXT_SET + Dependency.LOCAL_VARS;
 	}

@@ -73,7 +73,7 @@ public class ExtNear extends ExtFulltext {
 		} catch (EXistException e) {
 			throw new XPathException(e.getMessage(), e);
 		}
-		NodeSet hits = processQuery(context, nodes);
+		NodeSet hits = processQuery(nodes);
 		if (hits == null)
 			return Sequence.EMPTY_SEQUENCE;
 		//LOG.debug("scanning " + hits.getLength() + " matches ...");

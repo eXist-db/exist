@@ -30,6 +30,7 @@ import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DateValue;
+import org.exist.xquery.value.DayTimeDurationValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -39,21 +40,47 @@ import org.exist.xquery.value.Type;
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class FunGetDayFromDate extends Function {
+public class FunGetDateComponent extends Function {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature fnGetDayFromDate =
 		new FunctionSignature(
-			new QName("get-day-from-date", Module.BUILTIN_FUNCTION_NS),
+			new QName("day-from-date", Module.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 1 and 31, both inclusive, representing " +
 			"the day component in the localized value of $a.",
 			new SequenceType[] { new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
+	
+	public final static FunctionSignature fnGetMonthFromDate =
+		new FunctionSignature(
+			new QName("month-from-date", Module.BUILTIN_FUNCTION_NS),
+			"Returns an xs:integer between 1 and 12, both inclusive, representing the month " +
+			"component in the localized value of $a.",
+			new SequenceType[] {  new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE) },
+			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
+	
+	public final static FunctionSignature fnGetYearFromDate =
+		new FunctionSignature(
+			new QName("year-from-date", Module.BUILTIN_FUNCTION_NS),
+			"Returns an xs:integer representing the year in the localized value of $a. The value may be negative.",
+			new SequenceType[] {
+				 new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE)
+			},
+			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
+	
+	public final static FunctionSignature fnGetTimezoneFromDate =
+		new FunctionSignature(
+			new QName("timezone-from-date", Module.BUILTIN_FUNCTION_NS),
+			"Returns an xs:integer representing the year in the localized value of $a. The value may be negative.",
+			new SequenceType[] {
+				 new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE)
+			},
+			new SequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE));
 
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public FunGetDayFromDate(XQueryContext context) {
+	public FunGetDateComponent(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -66,7 +93,14 @@ public class FunGetDayFromDate extends Function {
 		if (arg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		DateValue date = (DateValue) arg.itemAt(0);
-		return new IntegerValue(date.getPart(DateValue.DAY), Type.INTEGER);
+		if(isCalledAs("day-from-date"))
+			return new IntegerValue(date.getPart(DateValue.DAY), Type.INTEGER);
+		else if(isCalledAs("month-from-date"))
+			return new IntegerValue(date.getPart(DateValue.MONTH), Type.INTEGER);
+		else if(isCalledAs("timezone-from-date")) {
+			long tzoffset = date.getTimezoneOffset();
+			return new DayTimeDurationValue(tzoffset);
+		} else
+			return new IntegerValue(date.getPart(DateValue.YEAR), Type.INTEGER);
 	}
-
 }

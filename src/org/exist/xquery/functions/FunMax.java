@@ -42,7 +42,7 @@ import org.exist.xquery.value.Type;
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class FunMax extends Function {
+public class FunMax extends CollatingFunction {
 
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
@@ -85,12 +85,7 @@ public class FunMax extends Function {
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if(arg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		Collator collator;
-		if(getSignature().getArgumentCount() == 2) {
-			String collationURI = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-			collator = context.getCollator(collationURI);
-		} else
-			collator = context.getDefaultCollator();
+		Collator collator = getCollator(contextSequence, contextItem, 2);
 		SequenceIterator iter = arg.iterate();
 		AtomicValue max = (AtomicValue)iter.nextItem();
 		if(max.getType() == Type.ATOMIC)

@@ -24,6 +24,7 @@ package org.exist.xquery.value;
 
 import java.text.Collator;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.SimpleTimeZone;
 
@@ -153,6 +154,11 @@ public class DateTimeValue extends AbstractDateTimeValue {
 		return Type.DATE_TIME;
 	}
 
+	public DateValue adjustToTimezone(int offset) {
+		Date date = calendar.getTime();
+		return new DateValue(date.getTime(), offset);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */

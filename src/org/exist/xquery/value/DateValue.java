@@ -66,20 +66,25 @@ public class DateValue extends AbstractDateTimeValue {
 		int day = Integer.parseInt(part);
 		tzOffset = 0;
 		part = util.group(5);
-		if (part != null && part.length() > 0 && (!part.equals("Z"))) {
-			if (!util.match(tzre, part))
-				throw new XPathException("Type error: error in  timezone: " + part);
-			explicitTimeZone = true;
-			part = util.group(2);
-			tzOffset = Integer.parseInt(part) * 60;
-			part = util.group(3);
-			if (part != null) {
-				int tzminute = Integer.parseInt(part);
-				tzOffset += tzminute;
+		if (part != null && part.length() > 0) {
+			if (part.equals("Z")) {
+				explicitTimeZone = true;
+				tzOffset = 0;
+			} else	{
+				if (!util.match(tzre, part))
+					throw new XPathException("Type error: error in  timezone: " + part);
+				explicitTimeZone = true;
+				part = util.group(2);
+				tzOffset = Integer.parseInt(part) * 60;
+				part = util.group(3);
+				if (part != null) {
+					int tzminute = Integer.parseInt(part);
+					tzOffset += tzminute;
+				}
+				part = util.group(1);
+				if (part.equals("-"))
+					tzOffset *= -1;
 			}
-			part = util.group(1);
-			if (part.equals("-"))
-				tzOffset *= -1;
 		}
 		SimpleTimeZone zone = new SimpleTimeZone(tzOffset * 60000, "LLL");
 		if (explicitTimeZone) {
@@ -113,6 +118,17 @@ public class DateValue extends AbstractDateTimeValue {
 			cal.get(Calendar.YEAR),
 			cal.get(Calendar.MONTH),
 			cal.get(Calendar.DATE));
+		calendar.set(Calendar.ZONE_OFFSET, tzOffset * 60000);
+		date = calendar.getTime();
+	}
+	
+	public DateValue(long milliseconds, int timezone) {
+		tzOffset = timezone;
+		explicitTimeZone = true;
+		SimpleTimeZone zone = new SimpleTimeZone(tzOffset * 60000, "LLL");
+		calendar = new GregorianCalendar(zone);
+		calendar.setLenient(false);
+		calendar.setTimeInMillis(milliseconds);
 		calendar.set(Calendar.ZONE_OFFSET, tzOffset * 60000);
 		date = calendar.getTime();
 	}
@@ -158,6 +174,11 @@ public class DateValue extends AbstractDateTimeValue {
 		return buf.toString();
 	}
 
+	public DateValue adjustToTimezone(int offset) {
+		Date date = calendar.getTime();
+		return new DateValue(date.getTime(), offset);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#convertTo(int)
 	 */

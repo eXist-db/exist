@@ -27,7 +27,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.QName;
+import org.exist.xquery.Atomize;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
@@ -48,6 +50,10 @@ public class FunConcat extends Function {
 	public final static FunctionSignature signature =
 			new FunctionSignature(
 				new QName("concat", Module.BUILTIN_FUNCTION_NS),
+				"Accepts two or more xdt:anyAtomicType arguments and converts them " +
+				"to xs:string. Returns the xs:string that is the concatenation of the values " +
+				"of its arguments after conversion. If any of the arguments is the empty sequence, " +
+				"the argument is treated as the zero-length string.",
 				new SequenceType[] {
 						new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
 				},
@@ -70,7 +76,10 @@ public class FunConcat extends Function {
 	 */
 	public void setArguments(List arguments) throws XPathException {
 		for(Iterator i = arguments.iterator(); i.hasNext(); ) {
-			steps.add(i.next());
+			Expression next = (Expression) i.next();
+			if(!Type.subTypeOf(next.returnsType(), Type.ATOMIC))
+				next = new Atomize(context, next);
+			steps.add(next);
 		}
 	}
 	

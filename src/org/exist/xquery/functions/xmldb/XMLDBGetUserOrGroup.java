@@ -18,6 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
+ * $Id$
  */
 package org.exist.xquery.functions.xmldb;
 
@@ -38,9 +39,9 @@ import org.xmldb.api.base.XMLDBException;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  *
  */
-public class XMLDBGroup extends XMLDBPermissions {
+public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature getGroupSignatures[] = {
 			new FunctionSignature(
 				new QName("get-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Returns the owner group of a collection. The collection can be passed as a simple collection "
@@ -63,7 +64,31 @@ public class XMLDBGroup extends XMLDBPermissions {
 			)
 		};
 	
-	public XMLDBGroup(XQueryContext context, FunctionSignature signature) {
+	public final static FunctionSignature getOwnerSignatures[] = {
+			new FunctionSignature(
+				new QName("get-owner", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+				"Returns the owner of a collection. " +
+				"The collection can be passed as a simple collection " +
+				"path, an XMLDB URI or a collection object (obtained from the collection function).",
+				new SequenceType[] {
+						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+				},
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			),
+			new FunctionSignature(
+				new QName("get-owner", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+				"Returns the owner of the specified resource $b in collection $a. " +
+				"The collection can be passed as a simple collection " +
+				"path, an XMLDB URI or a collection object (obtained from the collection function).",
+				new SequenceType[] {
+						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+						new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				},
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			)
+		};
+	
+	public XMLDBGetUserOrGroup(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
@@ -74,7 +99,10 @@ public class XMLDBGroup extends XMLDBPermissions {
 		throws XPathException {
 		try {
 			Permission perm = getPermissions(collection, args);
-			return new StringValue(perm.getOwnerGroup());
+			if("get-owner".equals(getSignature().getName().getLocalName()))
+				return new StringValue(perm.getOwner());
+			else
+				return new StringValue(perm.getOwnerGroup());
         } catch (XMLDBException xe) {
             throw new XPathException(getASTNode(), "Unable to retrieve resource permissions", xe);
         }

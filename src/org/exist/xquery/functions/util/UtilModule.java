@@ -35,12 +35,15 @@ public class UtilModule extends AbstractInternalModule {
 	public final static String PREFIX = "util";
 	
 	public final static FunctionDef[] functions = {
-		new FunctionDef(BuiltinFunctions.signature, BuiltinFunctions.class),
+		new FunctionDef(BuiltinFunctions.signatures[0], BuiltinFunctions.class),
+		new FunctionDef(BuiltinFunctions.signatures[1], BuiltinFunctions.class),
+		new FunctionDef(ModuleInfo.moduleDescriptionSig, ModuleInfo.class),
+		new FunctionDef(ModuleInfo.registeredModulesSig, ModuleInfo.class),
 		new FunctionDef(DescribeFunction.signature, DescribeFunction.class),
 		new FunctionDef(EvalFunction.signature, EvalFunction.class),
 		new FunctionDef(MD5.signature, MD5.class),
-		new FunctionDef(DocumentName.signature, DocumentName.class),
-		new FunctionDef(DocumentId.signature, DocumentId.class),
+		new FunctionDef(DocumentNameOrId.docIdSignature, DocumentNameOrId.class),
+		new FunctionDef(DocumentNameOrId.docNameSignature, DocumentNameOrId.class),
 		new FunctionDef(CollectionName.signature, CollectionName.class),
 		new FunctionDef(LogFunction.signature, LogFunction.class),
 		new FunctionDef(CatchFunction.signature, CatchFunction.class),
@@ -55,6 +58,13 @@ public class UtilModule extends AbstractInternalModule {
 		super(functions);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.Module#getDescription()
+	 */
+	public String getDescription() {
+		return "Various utility extension functions";
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */

@@ -206,7 +206,7 @@ public class Collations {
 			// matched first character, note the position of the possible match
 			int start = s0.getOffset();
 			if (collationStartsWith(s0, s1)) {
-				if (endsWith) {
+				if (!endsWith) {
 					if (offsets != null) {
 						offsets[0] = start-1;
 						offsets[1] = s0.getOffset();

@@ -90,6 +90,13 @@ public interface Module {
 	public String getDefaultPrefix();
 	
 	/**
+	 * Return a short description of this module to be displayed to a user.
+	 * 
+	 * @return
+	 */
+	public String getDescription();
+	
+	/**
 	 * Is this an internal module?
 	 * 
 	 * @return

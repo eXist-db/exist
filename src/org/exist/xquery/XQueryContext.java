@@ -548,6 +548,10 @@ public class XQueryContext {
 		UserDefinedFunction func = (UserDefinedFunction) declaredFunctions.get(name);
 		return func;
 	}
+	
+	public Iterator localFunctions() {
+		return declaredFunctions.values().iterator();
+	}
 
 	/**
 	 * Declare a local variable. This is called by variable binding expressions like

@@ -44,7 +44,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature createdSignatures[] = {
         new FunctionSignature(
 			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the creation date of a resource in the collection specified by $a. " +
@@ -67,6 +67,19 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
         )
     };
 	
+	public final static FunctionSignature lastModifiedSignature =
+        new FunctionSignature(
+			new QName("last-modified", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			"Returns the last-modification date of a resource in the collection specified by $a. " +
+			"The collection can be passed as a simple collection " +
+			"path, an XMLDB URI or a collection object (obtained from the collection function).",
+			new SequenceType[] {
+                new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE)
+        );
+	
 	public XMLDBCreated(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
@@ -77,14 +90,17 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		try {
+			Date date;
 			if(getSignature().getArgumentCount() == 1) {
-                Date created = ((CollectionImpl)collection).getCreationTime();
-                return new DateTimeValue(created.getTime());
+                date = ((CollectionImpl)collection).getCreationTime();
 			} else {
                 Resource resource = collection.getResource(args[1].getStringValue());
-                Date created = ((EXistResource)resource).getCreationTime();
-                return new DateTimeValue(created.getTime());
+                if("last-modified".equals(getSignature().getName().getLocalName()))
+                	date = ((EXistResource)resource).getLastModificationTime();
+                else
+                	date = ((EXistResource)resource).getCreationTime();
             }
+			return new DateTimeValue(date.getTime());
 		} catch(XMLDBException e) {
 			throw new XPathException(getASTNode(), "Failed to retrieve creation date: " + e.getMessage(), e);
 		}
