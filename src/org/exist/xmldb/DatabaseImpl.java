@@ -233,6 +233,10 @@ public class DatabaseImpl implements Database {
         return dbName;
     }
 	
+	public String[] getNames() throws XMLDBException {
+		return new String[] { dbName };
+	}
+	
 	/**
 	 * Register a ShutdownListener for the current database instance. The ShutdownListener is called
 	 * after the database has shut down. You have to register a listener before any calls to getCollection().
