@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://exist-db.org/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://exist-db.org/" >
+
+   <xsd:annotation>
+      <xsd:documentation> An XML format to share informations about applications built with eXist.
+Ii could be reused for other applications as well.
+
+For those of you who want to remain confidential you can omit some elements, e.g. publisher, etc, and just fill the technical information.
+
+Generated from XML instance by example2Schema.xslt - 
+                 See http://wwbota.free.fr/XSLT_models/README.html
+    </xsd:documentation>
+   </xsd:annotation>
+   <xsd:import namespace="http://purl.org/dc/elements/1.1/" 
+ schemaLocation="http://uk.dublincore.org/schemas/xmls/simpledc20021212.xsd"
+/>
+   <xsd:import namespace="http://www.w3.org/1999/xhtml"/>
+   <xsd:element name="applications">
+      <xsd:annotation>
+         <xsd:appinfo>
+            <statistics xmlns="" occurs="1"/>
+         </xsd:appinfo>
+      </xsd:annotation>
+      <xsd:complexType mixed="true">
+         <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+            <xsd:element minOccurs="0" name="application">
+               <xsd:annotation>
+                  <xsd:appinfo>
+                     <statistics xmlns="" occurs="3"/>
+                  </xsd:appinfo>
+               </xsd:annotation>
+               <xsd:complexType mixed="true">
+                  <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+                     <xsd:element minOccurs="0" ref="dc:creator"/>
+                     <xsd:element minOccurs="0" name="creator-site" type="xsd:string" />
+                     <xsd:element minOccurs="0" ref="dc:identifier">
+                         <xsd:annotation>
+                            <xsd:documentation>
+                              A dc:identifier can be deduced: if a dev-site exists, it will be the dc:identifier. Otherwise, the first of the production-site will be used. Otherwise, the dc:publisher or dc:creator will be used.
+                          </xsd:documentation>
+                         </xsd:annotation>
+                     </xsd:element>
+
+                     <xsd:element minOccurs="0" ref="dc:rights"/>
+                     <xsd:element minOccurs="0" ref="dc:title"/>
+                     <xsd:element minOccurs="0" ref="dc:subject"/>
+                     <xsd:element minOccurs="0" ref="dc:description"/>
+                     <xsd:element minOccurs="0" ref="dc:publisher"/>
+                     <xsd:element minOccurs="0" ref="dc:format">
+                         <xsd:annotation>
+                            <xsd:documentation>
+                              the format of the application itself. I suppose that the possibilities will be:
+- eXist distribution add-on (e.g. Cocoon sub-sitemap)
+- .jar for standalone app.
+- .war for J2EE web app.
+                            </xsd:documentation>
+                         </xsd:annotation>
+                     </xsd:element>
+                     <xsd:element minOccurs="0"  maxOccurs="1" name="dev-site">
+                        <xsd:annotation>
+                           <xsd:appinfo>
+                              <statistics xmlns="" occurs="3"/>
+                           </xsd:appinfo>
+                        </xsd:annotation>
+                        <xsd:complexType mixed="true"/>
+                     </xsd:element>
+                     <xsd:element minOccurs="0" name="production-site">
+                        <xsd:annotation>
+                           <xsd:documentation>
+                              the URL of an active Web site powered by eXist.
+                           </xsd:documentation>
+                           <xsd:appinfo>
+                              <statistics xmlns="" occurs="1"/>
+                           </xsd:appinfo>
+                        </xsd:annotation>
+                        <xsd:complexType mixed="true"/>
+                     </xsd:element>
+                     <xsd:element minOccurs="0" name="status">
+                        <xsd:annotation>
+                           <xsd:documentation> alpha,beta,production </xsd:documentation>
+                           <xsd:appinfo>
+                              <statistics xmlns="" occurs="1"/>
+                           </xsd:appinfo>
+                        </xsd:annotation>
+                        <xsd:complexType mixed="true"/>
+                     </xsd:element>
+
+                     <xsd:element minOccurs="0" name="feature-used">
+                        <xsd:annotation>
+                           <xsd:appinfo>
+                              <statistics xmlns="" occurs="2"/>
+                           </xsd:appinfo>
+                        </xsd:annotation>
+                        <xsd:complexType mixed="true"/>
+                     </xsd:element>
+                     <xsd:element minOccurs="0" name="database">
+                        <xsd:annotation>
+                           <xsd:appinfo>
+                              <statistics xmlns="" occurs="2"/>
+                           </xsd:appinfo>
+                        </xsd:annotation>
+                        <xsd:complexType>
+                           <xsd:attribute name="size" type="xsd:string"/>
+                           <xsd:attribute name="documents" type="xsd:string"/>
+                           <xsd:attribute name="updates" type="xsd:string"/>
+                           <xsd:attribute name="security" type="xsd:string"/>
+                        </xsd:complexType>
+                     </xsd:element>
+                     <xsd:element minOccurs="0" name="dev-notes">
+                        <xsd:annotation>
+                           <xsd:appinfo>
+                              <statistics xmlns="" occurs="3"/>
+                           </xsd:appinfo>
+                        </xsd:annotation>
+                        <xsd:complexType mixed="true"/>
+                     </xsd:element>
+                     <xsd:element minOccurs="0" name="submitter">
+                        <xsd:annotation>
+                           <xsd:documentation>name or email address of the person who created the entry.
+                           </xsd:documentation>
+                           <xsd:appinfo>
+                              <statistics xmlns="" occurs="3"/>
+                           </xsd:appinfo>
+                        </xsd:annotation>
+                        <xsd:complexType mixed="true"/>
+                     </xsd:element>
+                     <xsd:element minOccurs="0" name="third-party-feature-used">
+                        <xsd:annotation>
+                           <xsd:appinfo>
+                              <statistics xmlns="" occurs="6"/>
+                           </xsd:appinfo>
+                        </xsd:annotation>
+                        <xsd:complexType mixed="true"/>
+                     </xsd:element>
+                     <xsd:element minOccurs="0" name="datatype-stored">
+                        <xsd:annotation>
+                           <xsd:appinfo>
+                              <statistics xmlns="" occurs="3"/>
+                           </xsd:appinfo>
+                        </xsd:annotation>
+                        <xsd:complexType mixed="true">
+                            <xsd:attribute name="targetnamespace" type="xsd:string" />
+                        </xsd:complexType>
+                     </xsd:element>
+                     <xsd:element minOccurs="0" name="demo-site">
+                        <xsd:annotation>
+                           <xsd:documentation>
+                              the URL of an active demo. Web site powered by eXist.
+                           </xsd:documentation>
+                           <xsd:appinfo>
+                              <statistics xmlns="" occurs="1"/>
+                           </xsd:appinfo>
+                        </xsd:annotation>
+                        <xsd:complexType mixed="true"/>
+                     </xsd:element>
+                  </xsd:sequence>
+               </xsd:complexType>
+            </xsd:element>
+         </xsd:sequence>
+         <xsd:attribute name="using" type="xsd:string"/>
+      </xsd:complexType>
+   </xsd:element>
+</xsd:schema>
