@@ -85,6 +85,7 @@ import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
+import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
@@ -2319,12 +2320,10 @@ public class NativeBroker extends DBBroker {
 				domDb.getLock().release();
 			}
 			if (isCaseSensitive())
-				cmp = content;
+				cmp = StringValue.collapseWhitespace(content);
 			else {
-				cmp = content.toLowerCase();
+				cmp = StringValue.collapseWhitespace(content.toLowerCase());
 			}
-			//System.out.println("context = " + p.gid + "; context-length = " + 
-			//	(p.getContext() == null ? -1 : p.getContext().getSize()));
 			switch (truncation) {
 				case Constants.TRUNC_LEFT :
 					if (Collations.endsWith(collator, cmp, expr))
