@@ -19,7 +19,7 @@ import org.xmldb.api.modules.XPathQueryService;
 
 public class XPathQueryTest extends TestCase {
 
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://localhost:8081/db";
 
 	private final static String nested =
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -71,7 +71,7 @@ public class XPathQueryTest extends TestCase {
 			
 			Collection root =
 				DatabaseManager.getCollection(
-					"xmldb:exist:///db",
+					URI,
 					"admin",
 					null);
 			CollectionManagementService service =
@@ -277,6 +277,36 @@ public class XPathQueryTest extends TestCase {
 			queryResource(service, "strings.xml", "//*[blah][not(@blah)]", 0);
 		} catch (XMLDBException e) {
 			System.out.println("testStrings(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testQueryResource() {
+		try {
+			XMLResource doc =
+				(XMLResource) testCollection.createResource(
+						"strings.xml", "XMLResource" );
+			doc.setContent(strings);
+			testCollection.storeResource(doc);
+			
+			doc =
+				(XMLResource) testCollection.createResource(
+						"strings2.xml", "XMLResource" );
+			doc.setContent(strings);
+			testCollection.storeResource(doc);
+			
+			XPathQueryService query =
+				(XPathQueryService) testCollection.getService(
+					"XPathQueryService",
+					"1.0");
+			ResourceSet result = query.queryResource("strings2.xml", "/test/string[. = 'Hello World!']");
+			assertEquals(1, result.getSize());
+			
+			result = query.query("/test/string[. = 'Hello World!']");
+			assertEquals(2, result.getSize());
+			
+		} catch (XMLDBException e) {
+			System.out.println("testQueryResource(): XMLDBException: "+e);
 			fail(e.getMessage());
 		}
 	}
