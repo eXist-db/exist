@@ -68,12 +68,12 @@ public class XMLWriter {
 	 * @param outputProperties
 	 */
 	public void setOutputProperties(Properties properties) {
-		if(outputProperties == null)
-			this.outputProperties = defaultProperties;
+		if(properties == null)
+			outputProperties = defaultProperties;
 		else
-			this.outputProperties = properties;
+			outputProperties = properties;
 		String encoding =
-			this.outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+			outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
 		charSet = CharacterSet.getCharacterSet(encoding);
 	}
 

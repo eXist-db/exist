@@ -29,6 +29,9 @@ declare variable $xupdate {
         <xu:append select="/todo-list/todo[status='open']">
             <priority level="3"/>
         </xu:append>
+        <xu:update select="/todo-list/todo/status">
+            closed
+        </xu:update>
     </xu:modifications>
 };
 

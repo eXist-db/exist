@@ -44,6 +44,7 @@ public class Retrieve {
 		Collection col = DatabaseManager.getCollection(URI + collection);
 		col.setProperty(OutputKeys.INDENT, "yes");
 		col.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+        col.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
 		XMLResource res = (XMLResource)col.getResource(args[1]);
 		if(res == null)
 			System.out.println("document not found!");

@@ -1283,23 +1283,6 @@ public class RpcConnection extends Thread {
 		}
 	}
 
-	/**
-	 * Sets the password attribute of the RpcConnection object
-	 * 
-	 * @param user
-	 *                   The new password value
-	 * @param name
-	 *                   The new password value
-	 * @param passwd
-	 *                   The new password value
-	 * @param groups
-	 *                   The new user value
-	 * @return Description of the Return Value
-	 * @exception EXistException
-	 *                         Description of the Exception
-	 * @exception PermissionDeniedException
-	 *                         Description of the Exception
-	 */
 	public boolean setUser(User user, String name, String passwd,
 			Vector groups, String home) throws EXistException,
 			PermissionDeniedException {
@@ -1323,8 +1306,12 @@ public class RpcConnection extends Thread {
 		String g;
 		for (Iterator i = groups.iterator(); i.hasNext(); ) {
 			g = (String) i.next();
-			if (!u.hasGroup(g))
+			if (!u.hasGroup(g)) {
+				if(!manager.hasAdminPrivileges(user))
+					throw new PermissionDeniedException(
+							"User is not allowed to add groups");
 				u.addGroup(g);
+			}
 		}
 		if (home != null)
 			u.setHome(home);

@@ -525,6 +525,13 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"user " + u.getName() + " does not exist");
+		for(Iterator i = u.getGroups(); i.hasNext(); ) {
+			String g = (String)i.next();
+			if(!(old.hasGroup(g) || manager.hasAdminPrivileges(user)))
+				throw new XMLDBException(
+					ErrorCodes.PERMISSION_DENIED,
+					"not allowed to change group memberships");
+		}
 		u.setUID(old.getUID());
 		manager.setUser(u);
 	}
