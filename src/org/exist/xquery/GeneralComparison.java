@@ -51,7 +51,7 @@ import org.exist.xquery.value.Type;
 public class GeneralComparison extends BinaryOp {
 
 	protected int relation = Constants.EQ;
-	protected int truncation;
+	protected int truncation = Constants.TRUNC_NONE;
 	
 	public GeneralComparison(XQueryContext context, int relation) {
 		this(context, relation, Constants.TRUNC_NONE);
@@ -75,6 +75,7 @@ public class GeneralComparison extends BinaryOp {
 		int truncation) {
 		super(context);
 		this.relation = relation;
+		this.truncation = truncation;
 		// simplify arguments
 		if (left instanceof PathExpr && ((PathExpr) left).getLength() == 1)
 			add(((PathExpr) left).getExpression(0));
