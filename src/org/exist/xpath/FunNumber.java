@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000-01,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -20,7 +20,6 @@
 
 package org.exist.xpath;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -41,10 +40,11 @@ public class FunNumber extends Function {
 		return Constants.TYPE_NUM;
 	}
 	
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		if(node != null)
-			context = new SingleNodeSet(node);
-		double result = getArgument(0).eval(docs, context, node).getNumericValue();
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
+		NodeProxy contextNode) {
+		if(contextNode != null)
+			contextSet = new SingleNodeSet(contextNode);
+		double result = getArgument(0).eval(context, docs, contextSet).getNumericValue();
 		return new ValueNumber(result);
 	}
 

@@ -12,6 +12,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeImpl;
+import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -60,12 +61,12 @@ public class Rename extends Modification {
 			parent = (NodeImpl)node.getParentNode();
 			switch(node.getNodeType()) {
 				case Node.ELEMENT_NODE :
-					((ElementImpl)node).setNodeName(newName);
+					((ElementImpl)node).setNodeName(new QName(newName, "", null));
 					parent.updateChild(node, node);
 					modificationCount++;
 					break;
 				case Node.ATTRIBUTE_NODE :
-					((AttrImpl)node).setNodeName(newName);
+					((AttrImpl)node).setNodeName(new QName(newName, "", null));
 					parent.updateChild(node, node);
 					modificationCount++;
 					break;

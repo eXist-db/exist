@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- * Copyright (C) 2001, Wolfgang M. Meier (meier@ifs. tu- darmstadt. de)
+ * Copyright (C) 2001-03, Wolfgang M. Meier (meier@ifs. tu- darmstadt. de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -72,9 +72,10 @@ public class FunContains extends Function {
 		this.containsExpr.add(arg);
 	}
 
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		NodeSet nodes = path == null ? context :
-			(NodeSet) path.eval(docs, context, null).getNodeList();
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+		NodeProxy contextNode) {
+		NodeSet nodes = path == null ? contextSet :
+			(NodeSet) path.eval(context, docs, contextSet, contextNode).getNodeList();
 		if (hits == null)
 			processQuery(docs);
 		long pid;

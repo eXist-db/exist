@@ -53,7 +53,7 @@ public class NamedNodeMapImpl extends LinkedList implements NamedNodeMap {
   }
 
   public Node getNamedItem(String name) {
-    NodeImpl comparable = new NodeImpl((short)0, name);
+    NodeImpl comparable = new NodeImpl((short)0, new QName(name, "", null));
     int i = indexOf(comparable);
     return (i < 0) ? null : (Node)get(i);
   }
@@ -63,7 +63,7 @@ public class NamedNodeMapImpl extends LinkedList implements NamedNodeMap {
   }
 
   public Node removeNamedItem(String name) throws DOMException {
-    NodeImpl comparable = new NodeImpl((short)0, name);
+    NodeImpl comparable = new NodeImpl((short)0, new QName(name, "", null));
     int i = indexOf(comparable);
     remove(i);
     return comparable;
@@ -71,7 +71,7 @@ public class NamedNodeMapImpl extends LinkedList implements NamedNodeMap {
 
   public Node removeNamedItemNS(String namespaceURI, String name)
   throws DOMException {
-    NodeImpl comparable = new NodeImpl((short)0, name);
+    NodeImpl comparable = new NodeImpl((short)0, new QName(name, "", null));
     int i = indexOf(comparable);
     remove(i);
     return comparable;

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001 Wolfgang M. Meier
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
  *  meier@ifs.tu-darmstadt.de
  *  http://exist.sourceforge.net
  *
@@ -42,8 +42,10 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
@@ -278,6 +280,7 @@ public class InteractiveClient {
 	protected Properties properties;
 	protected String[] resources = null;
 	protected ResourceSet result = null;
+	protected HashMap namespaceMappings = new HashMap();
 	protected int filesCount = 0;
 	protected boolean quiet = false;
 	protected boolean verbose = false;
@@ -923,6 +926,15 @@ public class InteractiveClient {
 					(XUpdateQueryService) current.getService("XUpdateQueryService", "1.0");
 				long mods = service.update(xupdate);
 				System.out.println(mods + " modifications processed.");
+			} else if (args[0].equalsIgnoreCase("map")) {
+				StringTokenizer tok = new StringTokenizer(args[1], "= ");
+				if (tok.countTokens() < 2) {
+					messageln("please specify a namespace/prefix mapping as: prefix=namespaceURI");
+					return true;
+				}
+				String prefix = tok.nextToken();
+				String uri = tok.nextToken();
+				namespaceMappings.put(prefix, uri);
 			} else if (args[0].equalsIgnoreCase("set")) {
 				if (args.length == 1)
 					properties.list(System.out);
@@ -992,6 +1004,12 @@ public class InteractiveClient {
 			(XPathQueryServiceImpl) current.getService("XPathQueryService", "1.0");
 		service.setProperty("pretty", properties.getProperty("indent"));
 		service.setProperty("encoding", properties.getProperty("encoding"));
+		Map.Entry mapping;
+		for(Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext(); ) {
+			mapping = (Map.Entry)i.next();
+			service.setNamespace((String)mapping.getKey(), (String)mapping.getValue());
+		}
+			
 		return (sortBy == null) ? service.query(xpath) : service.query(xpath, sortBy);
 	}
 

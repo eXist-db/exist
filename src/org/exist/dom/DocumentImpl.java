@@ -197,27 +197,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return node;
 	}
 
-	protected static NodeImpl createNode(
-		long gid,
-		short type,
-		String name,
-		String data,
-		int children) {
-		NodeImpl node;
-		switch (type) {
-			case Node.TEXT_NODE :
-				node = new TextImpl(gid, data);
-				break;
-			case Node.ELEMENT_NODE :
-				node = new ElementImpl(gid, name);
-				node.setChildCount(children);
-				break;
-			default :
-				node = null;
-		}
-		return node;
-	}
-
 	public Node adoptNode(Node node) throws DOMException {
 		return node;
 	}
@@ -258,13 +237,18 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public Attr createAttribute(String name) throws DOMException {
-		AttrImpl attr = new AttrImpl(name, null);
+		AttrImpl attr = new AttrImpl(new QName(name, "", null), null);
 		attr.setOwnerDocument(this);
 		return attr;
 	}
 
 	public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
-		return createAttribute(qualifiedName);
+		int p = qualifiedName.indexOf(':');
+		String name = p > -1 ? qualifiedName.substring(p) : qualifiedName;
+		String prefix = p > -1 ? qualifiedName.substring(0, p) : null; 
+		AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix), null);
+		attr.setOwnerDocument(this);
+		return attr;
 	}
 
 	public CDATASection createCDATASection(String data) throws DOMException {
@@ -280,13 +264,18 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public Element createElement(String tagName) throws DOMException {
-		ElementImpl element = new ElementImpl(tagName);
+		ElementImpl element = new ElementImpl(new QName(tagName, "", null));
 		element.setOwnerDocument(this);
 		return element;
 	}
 
 	public Element createElementNS(String namespaceURI, String qualifiedName) throws DOMException {
-		return createElement(qualifiedName);
+		int p = qualifiedName.indexOf(':');
+				String name = p > -1 ? qualifiedName.substring(p) : qualifiedName;
+				String prefix = p > -1 ? qualifiedName.substring(0, p) : null;
+		ElementImpl element = new ElementImpl(new QName(name, namespaceURI, prefix));
+		element.setOwnerDocument(this);
+		return element;
 	}
 
 	public EntityReference createEntityReference(String name) throws DOMException {
@@ -304,24 +293,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return text;
 	}
 
-	protected NodeList findElementsByTagName(NodeImpl root, String tagName) {
+	protected NodeList findElementsByTagName(NodeImpl root, QName qname) {
 		DocumentSet docs = new DocumentSet();
 		docs.add(this);
 		NodeSet context = new ArraySet(1);
 		NodeSet result = new ArraySet(100);
 		context.add(root);
-		NodeSet temp = (NodeSet) broker.findElementsByTagName(docs, tagName);
+		NodeSet temp = (NodeSet) broker.findElementsByTagName(docs, qname);
 		return temp.getDescendants(context, NodeSet.DESCENDANT);
-		//		NodeProxy p;
-		//		for (Iterator iter = temp.iterator(); iter.hasNext();) {
-		//			p = (NodeProxy) iter.next();
-		//			if (context.nodeHasParent(p.doc, p.gid, true)) {
-		//				LOG.debug("adding " + p.doc.getDocId() + ":" + p.gid);
-		//				result.add(p);
-		//			} else
-		//				LOG.debug("skipping " + p.doc.getDocId() + ":" + p.gid);
-		//		}
-		//		return result;
 	}
 
 	public int getChildCount() {
@@ -396,7 +375,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public NodeList getElementsByTagName(String tagname) {
 		DocumentSet docs = new DocumentSet();
 		docs.add(this);
-		return broker.findElementsByTagName(docs, tagname);
+		QName qname = new QName(tagname, "", null);
+		return broker.findElementsByTagName(docs, qname);
 	}
 
 	public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
@@ -459,7 +439,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public SymbolTable getSymbols() {
-		//return collection.getSymbols();
 		return NativeBroker.getSymbols();
 	}
 

@@ -1,4 +1,4 @@
-// $ANTLR : "XPathParser.g" -> "XPathLexer.java"$
+// $ANTLR 2.7.2: "XPathParser.g" -> "XPathLexer.java"$
 
 	package org.exist.parser;
 	
@@ -57,30 +57,30 @@ public XPathLexer(LexerSharedInputState state) {
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();
-	literals.put(new ANTLRHashString("ancestor", this), new Integer(48));
-	literals.put(new ANTLRHashString("node", this), new Integer(38));
-	literals.put(new ANTLRHashString("near", this), new Integer(33));
-	literals.put(new ANTLRHashString("text", this), new Integer(28));
-	literals.put(new ANTLRHashString("descendant", this), new Integer(42));
+	literals.put(new ANTLRHashString("ancestor", this), new Integer(42));
+	literals.put(new ANTLRHashString("near", this), new Integer(53));
+	literals.put(new ANTLRHashString("node", this), new Integer(32));
+	literals.put(new ANTLRHashString("text", this), new Integer(48));
+	literals.put(new ANTLRHashString("descendant", this), new Integer(36));
 	literals.put(new ANTLRHashString("doctype", this), new Integer(21));
-	literals.put(new ANTLRHashString("parent", this), new Integer(45));
-	literals.put(new ANTLRHashString("child", this), new Integer(44));
-	literals.put(new ANTLRHashString("self", this), new Integer(46));
-	literals.put(new ANTLRHashString("attribute", this), new Integer(47));
+	literals.put(new ANTLRHashString("parent", this), new Integer(39));
+	literals.put(new ANTLRHashString("child", this), new Integer(38));
+	literals.put(new ANTLRHashString("self", this), new Integer(40));
+	literals.put(new ANTLRHashString("attribute", this), new Integer(41));
+	literals.put(new ANTLRHashString("starts-with", this), new Integer(49));
 	literals.put(new ANTLRHashString("or", this), new Integer(8));
-	literals.put(new ANTLRHashString("starts-with", this), new Integer(29));
-	literals.put(new ANTLRHashString("descendant-or-self", this), new Integer(43));
+	literals.put(new ANTLRHashString("descendant-or-self", this), new Integer(37));
+	literals.put(new ANTLRHashString("match", this), new Integer(52));
 	literals.put(new ANTLRHashString("collection", this), new Integer(25));
-	literals.put(new ANTLRHashString("match", this), new Integer(32));
 	literals.put(new ANTLRHashString("document", this), new Integer(22));
 	literals.put(new ANTLRHashString("xpointer", this), new Integer(4));
-	literals.put(new ANTLRHashString("ancestor-or-self", this), new Integer(49));
-	literals.put(new ANTLRHashString("preceding-sibling", this), new Integer(51));
+	literals.put(new ANTLRHashString("ancestor-or-self", this), new Integer(43));
+	literals.put(new ANTLRHashString("preceding-sibling", this), new Integer(45));
 	literals.put(new ANTLRHashString("and", this), new Integer(9));
 	literals.put(new ANTLRHashString("xcollection", this), new Integer(26));
-	literals.put(new ANTLRHashString("ends-with", this), new Integer(30));
-	literals.put(new ANTLRHashString("following-sibling", this), new Integer(50));
-	literals.put(new ANTLRHashString("contains", this), new Integer(31));
+	literals.put(new ANTLRHashString("ends-with", this), new Integer(50));
+	literals.put(new ANTLRHashString("following-sibling", this), new Integer(44));
+	literals.put(new ANTLRHashString("contains", this), new Integer(51));
 }
 
 public Token nextToken() throws TokenStreamException {
@@ -346,7 +346,7 @@ tryAgain:
 			match('"');
 			text.setLength(_saveIndex);
 			{
-			_loop65:
+			_loop69:
 			do {
 				if ((_tokenSet_0.member(LA(1)))) {
 					{
@@ -354,7 +354,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop65;
+					break _loop69;
 				}
 				
 			} while (true);
@@ -370,7 +370,7 @@ tryAgain:
 			match('\'');
 			text.setLength(_saveIndex);
 			{
-			_loop68:
+			_loop72:
 			do {
 				if ((_tokenSet_1.member(LA(1)))) {
 					{
@@ -378,7 +378,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop68;
+					break _loop72;
 				}
 				
 			} while (true);
@@ -844,13 +844,13 @@ tryAgain:
 		
 		mNMSTART(false);
 		{
-		_loop95:
+		_loop99:
 		do {
 			if ((_tokenSet_2.member(LA(1)))) {
 				mNMCHAR(false);
 			}
 			else {
-				break _loop95;
+				break _loop99;
 			}
 			
 		} while (true);
@@ -869,41 +869,41 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt98=0;
-		_loop98:
+		int _cnt102=0;
+		_loop102:
 		do {
 			if (((LA(1) >= '0' && LA(1) <= '9'))) {
 				mDIGIT(false);
 			}
 			else {
-				if ( _cnt98>=1 ) { break _loop98; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt102>=1 ) { break _loop102; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt98++;
+			_cnt102++;
 		} while (true);
 		}
 		{
-		_loop102:
+		_loop106:
 		do {
 			if ((LA(1)=='.')) {
 				match('.');
 				{
-				int _cnt101=0;
-				_loop101:
+				int _cnt105=0;
+				_loop105:
 				do {
 					if (((LA(1) >= '0' && LA(1) <= '9'))) {
 						mDIGIT(false);
 					}
 					else {
-						if ( _cnt101>=1 ) { break _loop101; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+						if ( _cnt105>=1 ) { break _loop105; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 					}
 					
-					_cnt101++;
+					_cnt105++;
 				} while (true);
 				}
 			}
 			else {
-				break _loop102;
+				break _loop106;
 			}
 			
 		} while (true);

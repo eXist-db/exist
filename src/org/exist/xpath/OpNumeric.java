@@ -65,7 +65,7 @@ public class OpNumeric extends BinaryOp {
 		return out_docs;
     }
 
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy node) {
 		if(getLeft().returnsType() == Constants.TYPE_NODELIST) {
 			DocumentSet dset = new DocumentSet();
 			NodeSet set = new ArraySet(1);
@@ -73,8 +73,8 @@ public class OpNumeric extends BinaryOp {
 			dset.add(node.doc);
 			ValueSet result = new ValueSet();
 			double rvalue, val;
-			NodeList args = getLeft().eval(dset, set, node).getNodeList();
-			rvalue = getRight().eval(dset, set, node).getNumericValue();
+			NodeList args = getLeft().eval(context, dset, set, node).getNodeList();
+			rvalue = getRight().eval(context, dset, set, node).getNumericValue();
 			for(int i = 0; i < args.getLength(); i++) {
 				try {
 					val = applyOperator(Double.parseDouble(args.item(i).getNodeValue()), rvalue);

@@ -21,14 +21,11 @@
 
 package org.exist.xpath;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * xpath-library function: string(object)
@@ -57,18 +54,19 @@ public class FunSubstring extends Function {
 		return Constants.TYPE_STRING;
 	}
 		
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+		NodeProxy contextNode) {
 		arg1 = getArgument(0);
 		start = getArgument(1);
 
-		if(node != null) {
-			context = new SingleNodeSet(node);
+		if(contextNode != null) {
+			contextSet = new SingleNodeSet(contextNode);
 		}
-		int s = (int)start.eval(docs, context, node).getNumericValue();
+		int s = (int)start.eval(context, docs, contextSet, contextNode).getNumericValue();
 		int l = 0;
 		if(length != null)
-			l = (int)length.eval(docs, context, node).getNumericValue();
-		Value nodes = arg1.eval(docs, context, node);
+			l = (int)length.eval(context, docs, contextSet, contextNode).getNumericValue();
+		Value nodes = arg1.eval(context, docs, contextSet, contextNode);
 		if(nodes.getType()==Value.isNodeList) {
 			NodeSet nset = (NodeSet)nodes.getNodeList();
 			NodeProxy n;

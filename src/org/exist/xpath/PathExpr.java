@@ -28,10 +28,10 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
 
-public class PathExpr implements Expression {
+public class PathExpr extends AbstractExpression {
+	
     protected static Logger LOG = Logger.getLogger( PathExpr.class );
     protected DocumentSet docs = new DocumentSet();
     protected boolean keepVirtual = false;
@@ -48,8 +48,11 @@ public class PathExpr implements Expression {
     }
 
     public void add( PathExpr path ) {
-        for ( Iterator i = path.steps.iterator(); i.hasNext();  )
-            add( (Expression) i.next() );
+    	Expression expr;
+        for ( Iterator i = path.steps.iterator(); i.hasNext();  ) {
+			expr = (Expression) i.next();
+            add( expr );
+        }
     }
 
     public void addDocument( DocumentImpl doc ) {
@@ -64,37 +67,36 @@ public class PathExpr implements Expression {
         Expression e = (Expression) steps.getLast();
         if ( e instanceof Step )
             ( (Step) e ).addPredicate( pred );
-        else
-            System.out.println( "not a Step" );
     }
 
-    public Value eval( DocumentSet docs, NodeSet context, NodeProxy node ) {
+    public Value eval( StaticContext context, DocumentSet docs, 
+    	NodeSet contextSet, NodeProxy contextNode) {
         if ( docs.getLength() == 0 )
             return new ValueNodeSet( new ArraySet( 1 ) );
         Value r;
-        if ( context != null )
-            r = new ValueNodeSet( context );
+        if ( contextSet != null )
+            r = new ValueNodeSet( contextSet );
         else
             r = new ValueNodeSet( new ArraySet( 1 ) );
+        
         NodeSet set;
+		NodeProxy current;
         Expression expr;
+        ValueSet values;
         for ( Iterator iter = steps.iterator(); iter.hasNext();  ) {
             set = (NodeSet) r.getNodeList();
             expr = (Expression) iter.next();
             if ( expr.returnsType() != Constants.TYPE_NODELIST ) {
                 if ( expr instanceof Literal || expr instanceof IntNumber )
-                    return expr.eval( docs, set, null );
-                ValueSet values = new ValueSet();
-                NodeProxy current;
-                NodeSet currentSet;
+                    return expr.eval( context, docs, set, null );
+                values = new ValueSet();
                 for ( Iterator iter2 = set.iterator(); iter2.hasNext();  ) {
                 	current = (NodeProxy)iter2.next();
-                	currentSet = new SingleNodeSet(current);
-                    values.add( expr.eval( docs, currentSet, current ) );
+                    values.add( expr.eval( context, docs, set, current ) );
                 }
                 return values;
             }
-            r = expr.eval( docs, set, node );
+            r = expr.eval( context, docs, set );
         }
         return r;
     }

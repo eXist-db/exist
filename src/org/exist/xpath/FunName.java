@@ -44,14 +44,15 @@ public class FunName extends Function {
         return Constants.TYPE_STRING;
     }
 	
-    public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+    public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+    	NodeProxy contextNode) {
         Node n;
         if(getArgumentCount() > 0) {
-            NodeSet set = new SingleNodeSet(node);
-            NodeSet result = (NodeSet)getArgument(0).eval(docs, set, null).getNodeList();
+            NodeSet set = new SingleNodeSet(contextNode);
+            NodeSet result = (NodeSet)getArgument(0).eval(context, docs, set, null).getNodeList();
             n = result.item(0);
         } else
-            n = node.getNode();
+            n = contextNode.getNode();
         switch(n.getNodeType()) {
         case Node.ELEMENT_NODE:
             return new ValueString(((Element)n).getLocalName());

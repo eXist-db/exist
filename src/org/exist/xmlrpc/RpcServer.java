@@ -1,7 +1,7 @@
 
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -23,9 +23,6 @@ package org.exist.xmlrpc;
 
 import it.unimi.dsi.fastutil.Int2ObjectOpenHashMap;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -134,11 +131,11 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public int executeQuery(User user, String xpath)
+	public int executeQuery(User user, String xpath, Hashtable namespaces)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		try {
-			return con.executeQuery(user, xpath);
+			return con.executeQuery(user, xpath, namespaces);
 		} catch (Exception e) {
 			handleException(e);
 			return -1;
@@ -157,7 +154,7 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public int executeQuery(User user, byte[] xpath, String encoding)
+	public int executeQuery(User user, byte[] xpath, String encoding, Hashtable namespaces)
 		throws EXistException, PermissionDeniedException {
 		String xpathString = null;
 		if (encoding != null)
@@ -170,7 +167,7 @@ public class RpcServer implements RpcAPI {
 			xpathString = new String(xpath);
 
 		LOG.debug("query: " + xpathString);
-		return executeQuery(user, xpathString);
+		return executeQuery(user, xpathString, namespaces);
 	}
 
 	/**
@@ -182,9 +179,9 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public int executeQuery(User user, byte[] xpath)
+	public int executeQuery(User user, byte[] xpath, Hashtable namespaces)
 		throws EXistException, PermissionDeniedException {
-		return executeQuery(user, xpath, null);
+		return executeQuery(user, xpath, null, namespaces);
 	}
 
 	/**
@@ -683,22 +680,24 @@ public class RpcServer implements RpcAPI {
 		return parse(user, xml, docName, 0);
 	}
 
-	public Hashtable queryP(User user, byte[] xpath)
+	public Hashtable queryP(User user, byte[] xpath, Hashtable namespaces)
 		throws EXistException, PermissionDeniedException {
-		return queryP(user, xpath, null);
+		return queryP(user, xpath, null, namespaces);
 	}
 
-	public Hashtable queryP(User user, byte[] xpath, byte[] sortExpr)
+	public Hashtable queryP(User user, byte[] xpath, byte[] sortExpr, Hashtable namespaces)
 		throws EXistException, PermissionDeniedException {
-		return queryP(user, xpath, null, null, sortExpr);
+		return queryP(user, xpath, null, null, sortExpr, namespaces);
 	}
 
-	public Hashtable queryP(User user, byte[] xpath, String docName, String s_id)
+	public Hashtable queryP(User user, byte[] xpath, String docName, String s_id, 
+		Hashtable namespaces)
 		throws EXistException, PermissionDeniedException {
-		return queryP(user, xpath, docName, s_id, null);
+		return queryP(user, xpath, docName, s_id, null, namespaces);
 	}
 
-	public Hashtable queryP(User user, byte[] xpath, String docName, String s_id, byte[] sortExpr)
+	public Hashtable queryP(User user, byte[] xpath, String docName, String s_id, byte[] sortExpr,
+		Hashtable namespaces)
 		throws EXistException, PermissionDeniedException {
 		String xpathString = null;
 		String sortString = null;
@@ -720,7 +719,7 @@ public class RpcServer implements RpcAPI {
 			xpathString = xpathString.substring(0, xpathString.length() - 1);
 		RpcConnection con = pool.get();
 		try {
-			return con.queryP(user, xpathString, docName, s_id, sortString);
+			return con.queryP(user, xpathString, docName, s_id, sortString, namespaces);
 		} catch (Exception e) {
 			handleException(e);
 			return null;
@@ -780,9 +779,10 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public String query(User user, String xpath, int howmany, int start, int prettyPrint)
+	public String query(User user, String xpath, int howmany, int start, int prettyPrint,
+		Hashtable namespaces)
 		throws EXistException, PermissionDeniedException {
-		return query(user, xpath, howmany, start, prettyPrint, null);
+		return query(user, xpath, howmany, start, prettyPrint, namespaces, null);
 	}
 
 	/**
@@ -809,12 +809,14 @@ public class RpcServer implements RpcAPI {
 		int howmany,
 		int start,
 		int prettyPrint,
+		Hashtable namespaces,
 		String sortExpr)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		String result = null;
 		try {
-			result = con.query(user, xpath, howmany, start, (prettyPrint > 0), false, sortExpr);
+			result = con.query(user, xpath, howmany, start, (prettyPrint > 0), false, 
+				namespaces, sortExpr);
 			return result;
 		} catch (Exception e) {
 			handleException(e);

@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000-01,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -40,10 +40,10 @@ header {
 class XPathParser extends Parser;
 options {
 	defaultErrorHandler=false;
-	k=2;
+	k=3;
 }
 {
-	protected DocumentSet includeDocs = new DocumentSet();
+	protected DocumentSet includeDocs = null;
 	protected BrokerPool pool = null;
 	protected ArrayList exceptions = new ArrayList(5);
 	protected PathExpr topExpr;
@@ -131,10 +131,10 @@ xpointer_expr [PathExpr exprIn]
 	{
 		PathExpr expr = new PathExpr(pool);
 	}:
-	document_function[exprIn] or_expr[exprIn] {
-		exprIn.setDocumentSet(includeDocs);
-	}
-	| or_expr[expr] {
+	//document_function[exprIn] or_expr[exprIn] {
+	//	exprIn.setDocumentSet(includeDocs);
+	//}
+	or_expr[expr] {
 		RootNode rootStep = new RootNode(pool);
         exprIn.add(rootStep);
         exprIn.addPath(expr);
@@ -159,10 +159,13 @@ xpath_expr [PathExpr exprIn]
 {
 	PathExpr expr = new PathExpr(pool);
 }:	
-    document_function[exprIn] or_expr[exprIn] {
-      exprIn.setDocumentSet(includeDocs);
-    }
-	| or_expr[exprIn]
+    //document_function[exprIn] or_expr[exprIn] {
+    //  exprIn.setDocumentSet(includeDocs);
+    //}
+	or_expr[exprIn] {
+		if(includeDocs != null)
+			exprIn.setDocumentSet(includeDocs);
+	}
 	;
     exception
     catch[RecognitionException ex] {
@@ -241,7 +244,8 @@ equality_expr[PathExpr exprIn]
 					branch = true;
 				}
 			)
-			| ( op=fulltext_operator l:CONST {
+			| 
+			( op=fulltext_operator l:CONST {
 			  FunContains exprCont = new FunContains(pool, op);
 		   	  exprCont.setPath(left);
 		   	  DBBroker broker = null;
@@ -347,9 +351,10 @@ additive_expr [PathExpr expr]
 	;
 
 document_function [PathExpr expr] 
+	returns[Expression step]
 	throws PermissionDeniedException, EXistException
 {
-	Expression step = null;
+	step = null;
 	boolean inclusive = true;
 	DocumentSet temp;
 }:
@@ -376,6 +381,7 @@ document_function [PathExpr expr]
             step = new RootNode(pool);
             expr.setDocumentSet(includeDocs);
             expr.add(step);
+            System.out.println("docs added to " + expr);
         } catch(EXistException e) {
             e.printStackTrace();
         } finally {
@@ -383,12 +389,13 @@ document_function [PathExpr expr]
         }
 	}
 	// 2. document('filename', 'filename', ...) function
-	| "document" LPAREN arg1:CONST {
+	| ( "document" LPAREN ) => "document" LPAREN arg1:CONST {
         DBBroker broker = null;
         try {
             broker = pool.get();
             step = new RootNode(pool);
             expr.add(step);
+            includeDocs = new DocumentSet();
             DocumentImpl doc = (DocumentImpl)broker.getDocument(user, arg1.getText());
             if(doc != null) {
               expr.addDocument(doc);
@@ -448,7 +455,7 @@ document_function [PathExpr expr]
       	try {
       		broker = pool.get();
         	temp = broker.getDocumentsByCollection(user, arg8.getText(), false);
-        	includeDocs.addAll(temp);
+        	includeDocs = temp;
         } catch(EXistException e) {
         } finally {
         	pool.release(broker);
@@ -505,6 +512,166 @@ returns [Expression step]
 	}
 	;
 
+regularexpr [PathExpr expr]
+returns [Expression result] 
+	throws PermissionDeniedException, EXistException
+{   result = null; 
+	Predicate pred = null;
+	int axis = Constants.CHILD_AXIS;
+}:
+	( axis=axis_spec )? result=step[expr] {
+		if(result instanceof Step && ((Step)result).getAxis() == -1)
+            ((Step)result).setAxis(axis);
+    }
+    ( 
+	  	pred=predicate[expr] {
+		expr.addPredicate(pred);
+	}
+	)*
+    | SLASH result=regularexpr[expr] {
+		if(result instanceof Step && ((Step)result).getAxis() == -1)
+			((Step)result).setAxis(Constants.CHILD_AXIS);
+    }
+	| DSLASH result=regularexpr[expr] {
+		if(result instanceof Step)
+			((Step)result).setAxis(Constants.DESCENDANT_SELF_AXIS);
+    }
+	;
+
+step [PathExpr expr]
+returns [Expression step] 
+	throws PermissionDeniedException, EXistException
+{ step = null; 
+  String attr;
+}:
+	AT attr=qname {
+			step = new LocationStep(pool,
+				Constants.ATTRIBUTE_AXIS,
+				new NameTest(attr));
+			expr.add(step);
+	}
+	| any:STAR {
+			step = new LocationStep(pool,
+				-1,
+				new TypeTest(Constants.ELEMENT_NODE));
+			expr.add(step);
+	}
+	| anyAttr:ATTRIB_STAR {
+		step = new LocationStep(pool, Constants.ATTRIBUTE_AXIS, new TypeTest(Constants.ATTRIBUTE_NODE));
+		expr.add(step);
+	}
+	| "node" LPAREN RPAREN {
+			step = new LocationStep(pool, -1, new TypeTest(Constants.NODE_TYPE));
+			expr.add(step);
+	}
+	| PARENT {
+			step = new LocationStep(pool, 
+				Constants.PARENT_AXIS,
+				new TypeTest(Constants.NODE_TYPE));
+			expr.add(step);
+	}
+	| SELF {
+			step = new LocationStep(pool,
+				Constants.SELF_AXIS,
+				new TypeTest(Constants.NODE_TYPE));
+			expr.add(step);
+	}
+	| l:CONST {
+		step = new Literal(l.getText());
+		expr.add(step);
+	}
+	| i:INT {
+		step = new IntNumber(Double.parseDouble(i.getText()));
+		expr.add(step);
+	}
+	| step=function_or_qname[expr]
+	;
+
+function_or_qname[PathExpr expr]
+returns [Expression step] 
+throws PermissionDeniedException, EXistException {
+	String qn;
+	step = null;
+}:
+	qn=qname {
+		step = new LocationStep( pool, -1, new NameTest(qn));
+		expr.add(step);
+	}
+	| step=function_call[expr]
+	;
+	
+qname
+returns [String name]
+{
+	name = null;
+	String name2 = null;
+}:
+	name=name_or_reserved
+	(
+		COLON name2=name_or_reserved {
+			name = name + ':' + name2;
+		}
+	)?
+	;
+
+name_or_reserved
+returns [String name]
+{
+	name = null;
+}:
+	n1:NCNAME { name = n1.getText(); }
+	| name=reserved_keywords
+	;
+	
+axis_spec
+returns [int axis]
+{
+	axis = -1;
+}:
+	"descendant" COLON COLON {
+		axis = Constants.DESCENDANT_AXIS;
+	}
+	| "descendant-or-self" COLON COLON {
+		axis = Constants.DESCENDANT_SELF_AXIS;
+	}
+	| "child" COLON COLON {
+		axis = Constants.CHILD_AXIS;
+	}
+	| "parent" COLON COLON {
+		axis = Constants.PARENT_AXIS;
+	}
+	| "self" COLON COLON {
+		axis = Constants.SELF_AXIS;
+	}
+	| "attribute" COLON COLON {
+		axis = Constants.ATTRIBUTE_AXIS;
+	}
+	| "ancestor" COLON COLON {
+		axis = Constants.ANCESTOR_AXIS;
+	}
+	| "ancestor-or-self" COLON COLON {
+		axis = Constants.ANCESTOR_SELF_AXIS;
+	}
+	| "following-sibling" COLON COLON {
+		axis = Constants.FOLLOWING_SIBLING_AXIS;
+	}
+	| "preceding-sibling" COLON COLON {
+		axis = Constants.PRECEDING_SIBLING_AXIS;
+	}
+	;
+	
+predicate [PathExpr expr]
+returns [Predicate pred] 
+	throws PermissionDeniedException, EXistException
+{
+    pred = new Predicate(pool);
+}:
+		LPPAREN or_expr[pred] RPPAREN
+	;
+
+empty_expr:
+	;
+
 function_call [PathExpr expr]
 returns [Expression step] 
 	throws PermissionDeniedException, EXistException
@@ -515,6 +682,7 @@ returns [Expression step]
 	PathExpr arg2 = null;
 	Function fun = null;
     int distance = 1;
+    String qn;
 }:
     // special functions
     "text" LPAREN RPAREN {
@@ -577,23 +745,23 @@ returns [Expression step]
 	     }
             expr.addPath(near);
 	}
+	| step=document_function[expr]
         // generic function without arguments
-	| ( NCNAME LPAREN RPAREN ) =>
-	  f1:NCNAME { env.hasFunction(f1.getText()) }? LPAREN RPAREN {
-		fun = Function.createFunction(pool, env.getFunction(f1.getText()));
-		expr.addPath(fun);
-	}
 
 	// generic function with arguments
-	| (NCNAME LPAREN) => f2:NCNAME LPAREN
-    {
-		fun = Function.createFunction(pool, env.getFunction(f2.getText()));
-		expr.addPath(fun);
-	}
-	or_expr[arg1] { fun.addArgument(arg1); } 
-    ( COMMA { arg2 = new PathExpr(pool); } 
-	or_expr[arg2] { fun.addArgument(arg2); } )*
-	RPAREN
+	| (NCNAME LPAREN) => fname:NCNAME LPAREN
+    	{
+			fun = Function.createFunction(pool, env.getFunction(fname.getText()));
+			expr.addPath(fun);
+		}
+		(
+			or_expr[arg1] { fun.addArgument(arg1); } 
+    		( 
+    			COMMA { arg2 = new PathExpr(pool); } 
+				or_expr[arg2] { fun.addArgument(arg2); } 
+			)*
+		)?
+		RPAREN
 	;
 
 empty_arglist: /* empty */;
@@ -610,150 +778,24 @@ function_args [Function fun]
 	{ fun.addArgument(arg2); }
 	)*
 	;
-
-regularexpr [PathExpr expr]
-returns [Expression result] 
-	throws PermissionDeniedException, EXistException
-{   result = null; 
-	Predicate pred = null;
-	int axis = Constants.CHILD_AXIS;
-}:
-	axis=axis_spec result=step[expr] {
-		if(result instanceof Step && ((Step)result).getAxis() == -1)
-            ((Step)result).setAxis(axis);
-    }
-    ( 
-	  	pred=predicate[expr] {
-		expr.addPredicate(pred);
-	}
-	)*
- 	| result=step[expr] {
-		if(result instanceof Step && ((Step)result).getAxis() == -1)
-            ((Step)result).setAxis(Constants.CHILD_AXIS);
-      }
-	  ( 
-	    pred=predicate[expr] {
-		  expr.addPredicate(pred);
-	    }
-	  )*
-    | SLASH result=regularexpr[expr] {
-		if(result instanceof Step && ((Step)result).getAxis() == -1)
-			((Step)result).setAxis(Constants.CHILD_AXIS);
-    }
-	| DSLASH result=regularexpr[expr] {
-		if(result instanceof Step)
-			((Step)result).setAxis(Constants.DESCENDANT_SELF_AXIS);
-    }
-	;
-
-step [PathExpr expr]
-returns [Expression step] 
-	throws PermissionDeniedException, EXistException
-{ step = null; 
-  String qn;
-  String attr;
-}:
-	AT attr=qname {
-			step = new LocationStep(pool,
-				Constants.ATTRIBUTE_AXIS,
-				new NameTest(attr));
-			expr.add(step);
-	}
-	| any:STAR {
-			step = new LocationStep(pool,
-				-1,
-				new TypeTest(Constants.ELEMENT_NODE));
-			expr.add(step);
-	}
-	| anyAttr:ATTRIB_STAR {
-		step = new LocationStep(pool, Constants.ATTRIBUTE_AXIS, new TypeTest(Constants.ATTRIBUTE_NODE));
-		expr.add(step);
-	}
-	| "node" LPAREN RPAREN {
-			step = new LocationStep(pool, -1, new TypeTest(Constants.NODE_TYPE));
-			expr.add(step);
-	}
-	| PARENT {
-			step = new LocationStep(pool, 
-				Constants.PARENT_AXIS,
-				new TypeTest(Constants.NODE_TYPE));
-			expr.add(step);
-	}
-	| SELF {
-			step = new LocationStep(pool,
-				Constants.SELF_AXIS,
-				new TypeTest(Constants.NODE_TYPE));
-			expr.add(step);
-	}
-	| step=function_call[expr]
-	| qn=qname {
-			step = new LocationStep( pool, -1, new NameTest(qn));
-			expr.add(step);
-	}
-	| step=primary_expr[expr]
-	;
 	
-qname
+reserved_keywords
 returns [String name]
 {
 	name = null;
 }:
-	n1:NCNAME { name = n1.getText(); }
-	(COLON n2:NCNAME { name = name + ':' + n2.getText(); } )?
+	"document" { name = "document"; }
+	| "doctype" { name = "doctype"; }
+	| "collection" { name = "collection"; }
+	| "xcollection" { name = "xcollection"; }
 	| "text" { name = "text"; }
-	| "contains" { name = "contains"; }
+	| "near" { name = "near"; }
 	| "starts-with" { name = "starts-with"; }
 	| "ends-with" { name = "ends-with"; }
-	| "near" { name = "near"; }
-	;
-
-axis_spec
-returns [int axis]
-{
-	axis = -1;
-}:
-	"descendant" COLON COLON {
-		axis = Constants.DESCENDANT_AXIS;
-	}
-	| "descendant-or-self" COLON COLON {
-		axis = Constants.DESCENDANT_SELF_AXIS;
-	}
-	| "child" COLON COLON {
-		axis = Constants.CHILD_AXIS;
-	}
-	| "parent" COLON COLON {
-		axis = Constants.PARENT_AXIS;
-	}
-	| "self" COLON COLON {
-		axis = Constants.SELF_AXIS;
-	}
-	| "attribute" COLON COLON {
-		axis = Constants.ATTRIBUTE_AXIS;
-	}
-	| "ancestor" COLON COLON {
-		axis = Constants.ANCESTOR_AXIS;
-	}
-	| "ancestor-or-self" COLON COLON {
-		axis = Constants.ANCESTOR_SELF_AXIS;
-	}
-	| "following-sibling" COLON COLON {
-		axis = Constants.FOLLOWING_SIBLING_AXIS;
-	}
-	| "preceding-sibling" COLON COLON {
-		axis = Constants.PRECEDING_SIBLING_AXIS;
-	}
+	| "match" { name = "match"; }
+	| "contains" { name = "contains"; }
 	;
 	
-predicate [PathExpr expr]
-returns [Predicate pred] 
-	throws PermissionDeniedException, EXistException
-{
-    pred = new Predicate(pool);
-}:
-		LPPAREN or_expr[pred] RPPAREN
-	;
-
-
 class XPathLexer extends Lexer;
 options {
 	k = 2;

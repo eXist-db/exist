@@ -1,7 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
  * 
- *  Copyright (C) 2000, Wolfgang M. Meier (meier@ifs. tu- darmstadt. de)
+ *  Copyright (C) 2000-03, Wolfgang M. Meier (meier@ifs. tu- darmstadt. de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -35,7 +35,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.IndexPaths;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.TextToken;
-import org.exist.storage.analysis.Token;
 import org.exist.util.Configuration;
 
 /**
@@ -97,22 +96,24 @@ public class OpEquals extends BinaryOp {
 	protected Value booleanCompare(
 		Expression left,
 		Expression right,
+		StaticContext context,
 		DocumentSet docs,
-		NodeSet context,
-		NodeProxy node) {
+		NodeSet contextSet) {
 		ArraySet result = new ArraySet(100);
 		NodeProxy n;
 		boolean lvalue;
 		boolean rvalue;
-		NodeSet set;
 		DocumentSet dset;
-		for (Iterator i = context.iterator(); i.hasNext();) {
+		SingleNodeSet set = new SingleNodeSet();
+		for (Iterator i = contextSet.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			set = new SingleNodeSet(n);
-			rvalue = left.eval(docs, set, n).getBooleanValue();
-			lvalue = right.eval(docs, set, n).getBooleanValue();
-			if (lvalue == rvalue)
+			set.add(n);
+			rvalue = left.eval(context, docs, set).getBooleanValue();
+			lvalue = right.eval(context, docs, set).getBooleanValue();
+			if (lvalue == rvalue) {
 				result.add(n);
+				n.addContextNode(n);
+			}
 		}
 		return new ValueNodeSet(result);
 	}
@@ -197,22 +198,23 @@ public class OpEquals extends BinaryOp {
 	 *@param  node     Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
+		NodeProxy contextNode) {
 		if (getLeft().returnsType() == Constants.TYPE_NODELIST)
-			return nodeSetCompare(getLeft(), getRight(), docs, context, node);
+			return nodeSetCompare(getLeft(), getRight(), context, docs, contextSet);
 		else if (getRight().returnsType() == Constants.TYPE_NODELIST) {
 			switchOperands();
-			return nodeSetCompare(getRight(), getLeft(), docs, context, node);
+			return nodeSetCompare(getRight(), getLeft(), context, docs, contextSet);
 		} else if (getLeft().returnsType() == Constants.TYPE_NUM)
-			return numberCompare(getLeft(), getRight(), docs, context, node);
+			return numberCompare(getLeft(), getRight(), context, docs, contextSet);
 		else if (getRight().returnsType() == Constants.TYPE_NUM)
-			return numberCompare(getRight(), getLeft(), docs, context, node);
+			return numberCompare(getRight(), getLeft(), context, docs, contextSet);
 		else if (getLeft().returnsType() == Constants.TYPE_STRING)
-			return stringCompare(getLeft(), getRight(), docs, context, node);
+			return stringCompare(getLeft(), getRight(), context, docs, contextSet);
 		else if (getLeft().returnsType() == Constants.TYPE_BOOL)
-			return booleanCompare(getLeft(), getRight(), docs, context, node);
+			return booleanCompare(getLeft(), getRight(), context, docs, contextSet);
 		else if (getRight().returnsType() == Constants.TYPE_BOOL)
-			return booleanCompare(getRight(), getLeft(), docs, context, node);
+			return booleanCompare(getRight(), getLeft(), context, docs, contextSet);
 		throw new RuntimeException("syntax error");
 	}
 
@@ -233,15 +235,16 @@ public class OpEquals extends BinaryOp {
 	protected Value nodeSetCompare(
 		Expression left,
 		Expression right,
+		StaticContext context,
 		DocumentSet docs,
-		NodeSet context,
-		NodeProxy node) {
+		NodeSet contextSet) {
 		NodeSet result = new ArraySet(100);
+		// TODO: not correct: should test if right is a string literal
 		if (right.returnsType() == Constants.TYPE_STRING ||
 			right.returnsType() == Constants.TYPE_NODELIST) {
 			// evaluate left expression
-			NodeSet nodes = (NodeSet) left.eval(docs, context, null).getNodeList();
-			String cmp = right.eval(docs, context, null).getStringValue();
+			NodeSet nodes = (NodeSet) left.eval(context, docs, contextSet).getNodeList();
+			String cmp = right.eval(context, docs, contextSet).getStringValue();
 			if (getLeft().returnsType() == Constants.TYPE_NODELIST && relation == Constants.EQ &&
 				nodes.hasIndex() && cmp.length() > 0) {
 				cmp = cmp.replace('%', '*');
@@ -266,7 +269,7 @@ public class OpEquals extends BinaryOp {
 					foundNumeric = checkArgumentTypes(docs);
 				if(!foundNumeric) {
 					// all elements are indexed: use the fulltext index
-					Value temp = containsExpr.eval(docs, nodes, null);
+					Value temp = containsExpr.eval(context, docs, nodes, null);
 					nodes = (NodeSet) temp.getNodeList();
 				}
 				cmp = cmp.replace('*', '%');
@@ -285,8 +288,8 @@ public class OpEquals extends BinaryOp {
 			double rvalue;
 			double lvalue;
 			NodeProxy ln;
-			NodeSet temp;
-			NodeSet lset = (NodeSet) left.eval(docs, context, null).getNodeList();
+			NodeSet temp = new SingleNodeSet();
+			NodeSet lset = (NodeSet) left.eval(context, docs, contextSet).getNodeList();
 			for (Iterator i = lset.iterator(); i.hasNext();) {
 				ln = (NodeProxy) i.next();
 				try {
@@ -294,8 +297,8 @@ public class OpEquals extends BinaryOp {
 				} catch (NumberFormatException nfe) {
 					continue;
 				}
-				temp = new SingleNodeSet(ln);
-				rvalue = right.eval(docs, temp, ln).getNumericValue();
+				temp.add(ln);
+				rvalue = right.eval(context, docs, temp).getNumericValue();
 				if (cmpNumbers(lvalue, rvalue))
 					result.add(ln);
 			}
@@ -308,21 +311,23 @@ public class OpEquals extends BinaryOp {
 			ArraySet leftNodeSet;
 			ArraySet temp;
 			// get left arguments node set
-			leftNodeSet = (ArraySet) left.eval(docs, context, null).getNodeList();
+			leftNodeSet = (ArraySet) left.eval(context, docs, contextSet).getNodeList();
 			temp = new ArraySet(10);
 			// get that part of context for which left argument's node set would
 			// be > 0
 			for (Iterator i = leftNodeSet.iterator(); i.hasNext();) {
 				n = (NodeProxy) i.next();
-				parent = context.parentWithChild(n, false, true);
+				parent = contextSet.parentWithChild(n, false, true);
 				if (parent != null)
 					temp.add(parent);
 			}
+			SingleNodeSet ltemp = new SingleNodeSet();
 			// now compare every node of context with the temporary set
-			for (Iterator i = context.iterator(); i.hasNext();) {
+			for (Iterator i = contextSet.iterator(); i.hasNext();) {
 				n = (NodeProxy) i.next();
+				ltemp.add(n);
 				lvalue = temp.contains(n);
-				rvalue = right.eval(docs, context, n).getBooleanValue();
+				rvalue = right.eval(context, docs, ltemp).getBooleanValue();
 				if (cmpBooleans(lvalue, rvalue))
 					result.add(n);
 			}
@@ -368,19 +373,17 @@ public class OpEquals extends BinaryOp {
 	protected Value numberCompare(
 		Expression left,
 		Expression right,
+		StaticContext context,
 		DocumentSet docs,
-		NodeSet context,
-		NodeProxy node) {
+		NodeSet contextSet) {
 		ArraySet result = new ArraySet(100);
-		NodeSet currentSet;
 		NodeProxy current;
 		double rvalue;
 		double lvalue;
-		for (Iterator i = context.iterator(); i.hasNext();) {
+		for (Iterator i = contextSet.iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
-			currentSet = new SingleNodeSet(current);
-			rvalue = right.eval(docs, currentSet, current).getNumericValue();
-			lvalue = left.eval(docs, currentSet, current).getNumericValue();
+			rvalue = right.eval(context, docs, contextSet, current).getNumericValue();
+			lvalue = left.eval(context, docs, contextSet, current).getNumericValue();
 			if (cmpNumbers(lvalue, rvalue)) {
 				result.add(current);
 				current.addContextNode(current);
@@ -425,18 +428,20 @@ public class OpEquals extends BinaryOp {
 	protected Value stringCompare(
 		Expression left,
 		Expression right,
+		StaticContext context,
 		DocumentSet docs,
-		NodeSet context,
-		NodeProxy node) {
+		NodeSet contextSet) {
 		ArraySet result = new ArraySet(100);
 		NodeProxy n;
 		String lvalue;
 		String rvalue;
 		int cmp;
-		for (Iterator i = context.iterator(); i.hasNext();) {
+		SingleNodeSet temp = new SingleNodeSet();
+		for (Iterator i = contextSet.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			rvalue = left.eval(docs, context, n).getStringValue();
-			lvalue = right.eval(docs, context, n).getStringValue();
+			temp.add(n);
+			rvalue = left.eval(context, docs, temp).getStringValue();
+			lvalue = right.eval(context, docs, temp).getStringValue();
 			if (compareStrings(rvalue, lvalue)) {
 				result.add(n);
 				n.addContextNode(n);

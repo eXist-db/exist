@@ -4,7 +4,7 @@
 <!-- ======================================================================= -->
 <project basedir="." default="all" name="exist">
 
-    <property name="antlr-home" value="/home/wolf/Java/antlr-2.7.2a2"/>
+    <property name="antlr-home" value="/home/wolf/Java/antlr-2.7.2"/>
     <property name="jetty.dir" value="Jetty-4.1.4"/>
     <property name="src" value="./src"/>
 	<property name="samples" value="./samples"/>

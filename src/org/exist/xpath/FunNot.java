@@ -1,5 +1,5 @@
-/* eXist xml document repository and xpath implementation
- * Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+/* eXist Native XML Database
+ * Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -44,10 +44,11 @@ public class FunNot extends Function {
         return getArgument(0).preselect(in_docs);
     }
 
-    public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+    public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+    	NodeProxy contextNode) {
         NodeSet result = new NodeIDSet();
         Expression path = getArgument(0);
-        result.addAll(context);
+        result.addAll(contextSet);
         NodeProxy current;
         if(inPredicate)
         	for(Iterator i = result.iterator(); i.hasNext(); ) {
@@ -55,7 +56,7 @@ public class FunNot extends Function {
         		current.addContextNode(current);
         	}
         // evaluate argument expression
-        NodeSet nodes = (NodeSet)path.eval(docs, context, null).getNodeList();
+        NodeSet nodes = (NodeSet)path.eval(context, docs, contextSet, contextNode).getNodeList();
         NodeProxy parent;
         long pid;
         LongLinkedList contextNodes;

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001 Wolfgang M. Meier
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
  *  meier@ifs.tu-darmstadt.de
  *  http://exist.sourceforge.net
  *
@@ -59,6 +59,7 @@ import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
@@ -110,10 +111,8 @@ public class NativeBroker extends DBBroker {
 	protected NativeElementIndex elementIndex;
 	protected ElementPool elementPool = new ElementPool(50);
 	protected BFile elementsDb = null;
-	protected BFile namespacesDb = null;
 	protected NativeTextEngine textEngine;
 	protected Serializer xmlSerializer;
-	protected static SymbolTable symbols = null;
 	protected PatternCompiler compiler = new Perl5Compiler();
 	protected PatternMatcher matcher = new Perl5Matcher();
 	protected int defaultIndexDepth = 1;
@@ -162,7 +161,7 @@ public class NativeBroker extends DBBroker {
 						new File(dataDir + pathSep + "elements.dbx"),
 						elementsBuffers >> 3,
 						elementsBuffers);
-				elementsDb.fixedKeyLen = 4;
+				elementsDb.fixedKeyLen = 6;
 				if (!elementsDb.exists()) {
 					LOG.info("creating elements.dbx");
 					elementsDb.create();
@@ -172,25 +171,6 @@ public class NativeBroker extends DBBroker {
 				elementsDb.setCompression(compress);
 				config.setProperty("db-connection.elements", elementsDb);
 				readOnly = elementsDb.isReadOnly();
-			}
-			if ((namespacesDb = (BFile) config.getProperty("db-connection.namespaces")) == null) {
-				namespacesDb =
-					new BFile(
-						new File(dataDir + pathSep + "namespaces.dbx"),
-						buffers / 4,
-						buffers / 4);
-				if (!namespacesDb.exists()) {
-					LOG.info("creating namespaces.dbx");
-					namespacesDb.create();
-					symbols = new SymbolTable();
-					saveSymbols(namespacesDb);
-				} else {
-					namespacesDb.open();
-					symbols = loadSymbols(namespacesDb);
-				}
-				config.setProperty("db-connection.namespaces", namespacesDb);
-				if (!readOnly)
-					readOnly = namespacesDb.isReadOnly();
 			}
 
 			if ((domDb = (DOMFile) config.getProperty("db-connection.dom")) == null) {
@@ -358,7 +338,7 @@ public class NativeBroker extends DBBroker {
 	 *@param  tagName  Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	public NodeSet findElementsByTagName(DocumentSet docs, String tagName) {
+	public NodeSet findElementsByTagName(DocumentSet docs, QName qname) {
 		final long start = System.currentTimeMillis();
 		final NodeSet result = new ArraySet(10000);
 		DocumentImpl doc;
@@ -370,14 +350,15 @@ public class NativeBroker extends DBBroker {
 		ElementValue ref;
 		byte[] data;
 		InputStream dis;
-		short sym;
+		short sym, nsSym;
 		Collection collection;
 		final Lock lock = elementsDb.getLock();
 		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
 			collection = (Collection) i.next();
 			collectionId = collection.getId();
-			sym = NativeBroker.getSymbols().getSymbol(tagName);
-			ref = new ElementValue(collectionId, sym);
+			sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());
+			nsSym = NativeBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
+			ref = new ElementValue(collectionId, sym, nsSym);
 			try {
 				lock.acquire(Lock.READ_LOCK);
 				dis = elementsDb.getAsStream(ref);
@@ -412,7 +393,7 @@ public class NativeBroker extends DBBroker {
 		}
 		LOG.debug(
 			"found "
-				+ tagName
+				+ qname
 				+ ": "
 				+ result.getLength()
 				+ " in "
@@ -425,7 +406,11 @@ public class NativeBroker extends DBBroker {
 		textEngine.flush();
 		elementIndex.flush();
 		if (symbols != null && symbols.hasChanged())
-			saveSymbols(namespacesDb);
+			try {
+				DBBroker.saveSymbols();
+			} catch (EXistException e) {
+				LOG.warn(e.getMessage(), e);
+			}
 		nodesCount = 0;
 	}
 
@@ -464,8 +449,9 @@ public class NativeBroker extends DBBroker {
 	 *@param  name  Description of the Parameter
 	 *@return       The attributesByName value
 	 */
-	public NodeSet getAttributesByName(DocumentSet docs, String name) {
-		NodeSet result = findElementsByTagName(docs, "@" + name);
+	public NodeSet getAttributesByName(DocumentSet docs, QName qname) {
+		qname.setLocalName("@" + qname.getLocalName());
+		NodeSet result = findElementsByTagName(docs, qname);
 		LOG.debug("found " + result.getLength() + " matching attributes");
 		return result;
 	}
@@ -538,36 +524,6 @@ public class NativeBroker extends DBBroker {
 		//					+ (System.currentTimeMillis() - start)
 		//					+ "ms.");
 		return collection;
-	}
-
-	public static SymbolTable getSymbols() {
-		return symbols;
-	}
-
-	protected synchronized static SymbolTable loadSymbols(BFile namespacesDb) {
-		Value key;
-		try {
-			key = new Value("__symbols".getBytes("UTF-8"));
-		} catch (UnsupportedEncodingException uee) {
-			key = new Value("__symbols".getBytes());
-		}
-		Value val = null;
-		synchronized (namespacesDb) {
-			val = namespacesDb.get(key);
-		}
-		if (val == null) {
-			LOG.warn("symbol-table not found!");
-			return null;
-		}
-		byte[] data = val.getData();
-		VariableByteInputStream istream = new VariableByteInputStream(data);
-		SymbolTable symbols = new SymbolTable();
-		try {
-			symbols.read(istream);
-		} catch (IOException ioe) {
-			LOG.warn("unexpected io error", ioe);
-		}
-		return symbols;
 	}
 
 	public Iterator getDOMIterator(NodeProxy proxy) {
@@ -688,26 +644,6 @@ public class NativeBroker extends DBBroker {
 		return result;
 	}
 
-	public String getNamespacePrefix(String namespace) {
-		Value ns;
-		try {
-			ns = new Value(namespace.getBytes("UTF-8"));
-		} catch (UnsupportedEncodingException uee) {
-			ns = new Value(namespace);
-		}
-		Value prefix = null;
-		synchronized (namespacesDb) {
-			prefix = namespacesDb.get(ns);
-		}
-		if (prefix == null)
-			return null;
-		return prefix.toString();
-	}
-
-	public String getNamespaceURI(String prefix) {
-		return getNamespacePrefix(prefix);
-	}
-
 	protected short getNextCollectionId() throws ReadOnlyException {
 		short nextCollectionId = 0;
 		Value key = new Value("__next_collection_id");
@@ -780,15 +716,18 @@ public class NativeBroker extends DBBroker {
 		final int depth = idx == null ? defaultIndexDepth : idx.getIndexDepth();
 		final int level = doc.getTreeLevel(gid);
 		NodeProxy tempProxy = new NodeProxy(doc, gid, address);
+		QName qname;
 		switch (nodeType) {
 			case Node.ELEMENT_NODE :
 				// save element by calling ElementIndex
 				elementIndex.setDocument(doc);
-				elementIndex.addRow(nodeName, tempProxy);
+				elementIndex.addRow(node.getQName(), tempProxy);
 				break;
 			case Node.ATTRIBUTE_NODE :
 				elementIndex.setDocument(doc);
-				elementIndex.addRow("@" + nodeName, tempProxy);
+				qname =
+					new QName("@" + node.getLocalName(), node.getNamespaceURI(), node.getPrefix());
+				elementIndex.addRow(qname, tempProxy);
 				// check if attribute value should be fulltext-indexed
 				// by calling IndexPaths.match(path) 
 				if (idx == null || idx.getIncludeAttributes())
@@ -796,7 +735,8 @@ public class NativeBroker extends DBBroker {
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
 				if (((AttrImpl) node).getType() == AttrImpl.ID) {
-					elementIndex.addRow("&" + ((AttrImpl) node).getValue(), tempProxy);
+					qname = new QName("&" + ((AttrImpl) node).getValue(), "", null);
+					elementIndex.addRow(qname, tempProxy);
 				}
 				break;
 			case Node.TEXT_NODE :
@@ -923,17 +863,23 @@ public class NativeBroker extends DBBroker {
 				.run();
 			}
 			final NodeProxy tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
+			QName qname;
 			switch (nodeType) {
 				case Node.ELEMENT_NODE :
 					// save element by calling ElementIndex
 					tempProxy.setHasIndex(idx == null || idx.match(currentPath.toString()));
 					elementIndex.setDocument(doc);
-					elementIndex.addRow(nodeName, tempProxy);
+					elementIndex.addRow(node.getQName(), tempProxy);
 					break;
 				case Node.ATTRIBUTE_NODE :
 					tempProxy.setHasIndex(idx == null || idx.match(currentPath.toString()));
 					elementIndex.setDocument(doc);
-					elementIndex.addRow("@" + nodeName, tempProxy);
+					qname =
+						new QName(
+							"@" + node.getLocalName(),
+							node.getNamespaceURI(),
+							node.getPrefix());
+					elementIndex.addRow(qname, tempProxy);
 					// check if attribute value should be fulltext-indexed
 					// by calling IndexPaths.match(path) 
 					if (idx == null
@@ -942,7 +888,8 @@ public class NativeBroker extends DBBroker {
 					// if the attribute has type ID, store the ID-value
 					// to the element index as well
 					if (((AttrImpl) node).getType() == AttrImpl.ID) {
-						elementIndex.addRow("&" + ((AttrImpl) node).getValue(), tempProxy);
+						qname = new QName("&" + ((AttrImpl) node).getValue(), "", null);
+						elementIndex.addRow(qname, tempProxy);
 					}
 					break;
 				case Node.TEXT_NODE :
@@ -1188,27 +1135,6 @@ public class NativeBroker extends DBBroker {
 			}
 		}
 		.run();
-	}
-
-	public void registerNamespace(String namespace, String prefix) {
-		byte[] ns;
-		byte[] pfx;
-		try {
-			ns = namespace.getBytes("UTF-8");
-			pfx = prefix.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException uee) {
-			ns = namespace.getBytes();
-			pfx = prefix.getBytes();
-		}
-		LOG.debug("registering namespace: " + namespace + "; prefix: " + prefix);
-		synchronized (namespacesDb) {
-			try {
-				namespacesDb.put(new Value(ns), pfx, false);
-				namespacesDb.put(new Value(pfx), ns, false);
-			} catch (ReadOnlyException e) {
-				LOG.warn("database is read-only");
-			}
-		}
 	}
 
 	public boolean removeCollection(User user, String name) throws PermissionDeniedException {
@@ -1520,15 +1446,18 @@ public class NativeBroker extends DBBroker {
 		}
 		.run();
 		final NodeProxy tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
+		QName qname;
 		switch (nodeType) {
 			case Node.ELEMENT_NODE :
 				// save element by calling ElementIndex
 				elementIndex.setDocument(doc);
-				elementIndex.addRow(nodeName, tempProxy);
+				elementIndex.addRow(node.getQName(), tempProxy);
 				break;
 			case Node.ATTRIBUTE_NODE :
 				elementIndex.setDocument(doc);
-				elementIndex.addRow("@" + nodeName, tempProxy);
+				qname =
+					new QName("@" + node.getLocalName(), node.getNamespaceURI(), node.getPrefix());
+				elementIndex.addRow(qname, tempProxy);
 				// check if attribute value should be fulltext-indexed
 				// by calling IndexPaths.match(path) 
 				if (idx == null
@@ -1537,7 +1466,8 @@ public class NativeBroker extends DBBroker {
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
 				if (((AttrImpl) node).getType() == AttrImpl.ID) {
-					elementIndex.addRow("&" + ((AttrImpl) node).getValue(), tempProxy);
+					qname = new QName("&" + ((AttrImpl) node).getValue(), "", null);
+					elementIndex.addRow(qname, tempProxy);
 				}
 				break;
 			case Node.TEXT_NODE :
@@ -1636,31 +1566,6 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
-	public static void saveSymbols(BFile namespacesDb) {
-		Value name;
-		try {
-			name = new Value("__symbols".getBytes("UTF-8"));
-		} catch (UnsupportedEncodingException uee) {
-			name = new Value("__symbols".getBytes());
-		}
-		try {
-			VariableByteOutputStream ostream = new VariableByteOutputStream(7);
-			symbols.write(ostream);
-			//byte[] data = ostream.toByteArray();
-			synchronized (namespacesDb) {
-				if (namespacesDb.put(name, ostream.data()) < 0) {
-					LOG.debug("could not store symbol table");
-					return;
-				}
-			}
-			ostream.close();
-		} catch (IOException ioe) {
-			LOG.warn(ioe);
-		} catch (ReadOnlyException e) {
-			LOG.warn("database is read-only");
-		}
-	}
-
 	/**
 	 *  Do a sequential search through the DOM-file.
 	 *
@@ -1750,7 +1655,6 @@ public class NativeBroker extends DBBroker {
 			textEngine.close();
 			domDb.close();
 			elementsDb.close();
-			namespacesDb.close();
 			collectionsDb.close();
 		} catch (Exception e) {
 			LOG.debug(e);
@@ -1789,6 +1693,7 @@ public class NativeBroker extends DBBroker {
 		}
 		final short nodeType = node.getNodeType();
 		final String nodeName = node.getNodeName();
+		final String localName = node.getLocalName();
 		final int depth = idx == null ? defaultIndexDepth : idx.getIndexDepth();
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 			public Object start() throws ReadOnlyException {
@@ -1811,17 +1716,20 @@ public class NativeBroker extends DBBroker {
 		.run();
 		++nodesCount;
 		final NodeProxy tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
+		QName qname;
 		switch (nodeType) {
 			case Node.ELEMENT_NODE :
 				tempProxy.setHasIndex(idx == null || idx.match(currentPath));
 				// save element by calling ElementIndex
 				elementIndex.setDocument(doc);
-				elementIndex.addRow(nodeName, tempProxy);
+				elementIndex.addRow(node.getQName(), tempProxy);
 				break;
 			case Node.ATTRIBUTE_NODE :
 				tempProxy.setHasIndex(idx == null || idx.match(currentPath));
+				qname =
+					new QName("@" + node.getLocalName(), node.getNamespaceURI(), node.getPrefix());
 				elementIndex.setDocument(doc);
-				elementIndex.addRow("@" + nodeName, tempProxy);
+				elementIndex.addRow(qname, tempProxy);
 				// check if attribute value should be fulltext-indexed
 				// by calling IndexPaths.match(path) 
 				if (idx == null
@@ -1830,7 +1738,8 @@ public class NativeBroker extends DBBroker {
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
 				if (((AttrImpl) node).getType() == AttrImpl.ID) {
-					elementIndex.addRow("&" + ((AttrImpl) node).getValue(), tempProxy);
+					qname = new QName("&" + ((AttrImpl) node).getValue(), "", null);
+					elementIndex.addRow(qname, tempProxy);
 				}
 				break;
 			case Node.TEXT_NODE :
@@ -1894,9 +1803,6 @@ public class NativeBroker extends DBBroker {
 				}
 			}
 			.run();
-			synchronized (namespacesDb) {
-				namespacesDb.flush();
-			}
 			elementIndex.sync();
 			textEngine.sync();
 		} catch (DBException dbe) {
@@ -1984,12 +1890,12 @@ public class NativeBroker extends DBBroker {
 			pos = 0;
 		}
 
-		ElementValue(short collectionId, short symbol, short partition) {
+		ElementValue(short collectionId, short symbol, short nsSymbol) {
 			len = 6;
 			data = new byte[len];
 			ByteConversion.shortToByte(collectionId, data, 0);
 			ByteConversion.shortToByte(symbol, data, 2);
-			ByteConversion.shortToByte(partition, data, 4);
+			ByteConversion.shortToByte(nsSymbol, data, 4);
 			pos = 0;
 		}
 

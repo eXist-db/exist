@@ -18,6 +18,7 @@ import org.exist.util.StorageAddress;
 import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.RootNode;
+import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.NodeList;
@@ -62,6 +63,7 @@ public abstract class Modification {
 		try {
 			XPathLexer lexer = new XPathLexer(new StringReader(selectStmt));
 			XPathParser parser = new XPathParser(pool, user, lexer);
+			StaticContext context = new StaticContext();
 			PathExpr expr = new PathExpr(pool);
             RootNode root = new RootNode(pool);
             expr.add(root);
@@ -74,7 +76,7 @@ public abstract class Modification {
 			if (docs.getLength() == 0)
 				return null;
 			
-			Value resultValue = expr.eval(docs, null, null);
+			Value resultValue = expr.eval(context, docs, null, null);
             if(!(resultValue.getType() == Value.isNodeList))
                 throw new EXistException("select expression should evaluate to a" +
                     "node-set");

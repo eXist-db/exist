@@ -1,6 +1,6 @@
 
-/* eXist xml document repository and xpath implementation
- * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+/* eXist Native XML Database
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -19,14 +19,15 @@
 
 package org.exist.xpath;
 
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
+import org.exist.dom.ArraySet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.storage.BrokerPool;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
-import java.util.Iterator;
-import org.exist.*;
-import org.exist.dom.*;
-import org.exist.storage.BrokerPool;
 
 public class FunLast extends Function {
 
@@ -42,17 +43,18 @@ public class FunLast extends Function {
     return in_docs;
   }
 
-   public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-      DocumentImpl doc = node.getDoc();
-      int level = doc.getTreeLevel(node.getGID());
-      long pid = (node.getGID() - doc.getLevelStartPoint(level)) /
+   public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
+   	NodeProxy contextNode) {
+      DocumentImpl doc = contextNode.getDoc();
+      int level = doc.getTreeLevel(contextNode.getGID());
+      long pid = (contextNode.getGID() - doc.getLevelStartPoint(level)) /
         doc.getTreeLevelOrder(level)
         + doc.getLevelStartPoint(level - 1);
       long f_gid = (pid - doc.getLevelStartPoint(level -1)) *
         doc.getTreeLevelOrder(level) +
         doc.getLevelStartPoint(level);
       long e_gid = f_gid + doc.getTreeLevelOrder(level);
-      NodeSet set = ((ArraySet)context).getRange(doc, f_gid, e_gid);
+      NodeSet set = contextSet.getRange(doc, f_gid, e_gid);
       int len = set.getLength();
       return new ValueNumber((double)len);
    }

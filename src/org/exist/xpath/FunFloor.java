@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -19,10 +19,10 @@
  */
 package org.exist.xpath;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
 
 public class FunFloor extends Function {
@@ -39,12 +39,15 @@ public class FunFloor extends Function {
 		return getArgument(0).preselect(in_docs);
 	}
 
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
+		NodeProxy contextNode) {
+		if(contextNode != null)
+			contextSet = new SingleNodeSet(contextNode);
 		double val;
 		// Argument is a node list
 		if (getArgument(0).returnsType() == Constants.TYPE_NODELIST) {
 			ValueSet values = new ValueSet();
-			NodeSet args = (NodeSet) getArgument(0).eval(docs, context, null).getNodeList();
+			NodeSet args = (NodeSet) getArgument(0).eval(context, docs, contextSet, contextNode).getNodeList();
 			if (args.getLength() > 0) {
 				try {
 					val = Double.parseDouble(args.get(0).getNodeValue());
@@ -55,7 +58,7 @@ public class FunFloor extends Function {
 			return values;
 		} else {
 			// does argument return a value set?
-			Value v = getArgument(0).eval(docs, context, node);
+			Value v = getArgument(0).eval(context, docs, contextSet, contextNode);
 			return new ValueNumber(Math.ceil(v.getNumericValue()));
 		}
 	}

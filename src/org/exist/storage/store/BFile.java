@@ -226,15 +226,11 @@ public class BFile extends BTree {
 				long p = storeValue(value);
 				addValue(key, p);
 				return p;
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-			LOG.warn(e);
+			LOG.warn("io error while appending value " + key, e);
 		} catch (BTreeException bte) {
-			bte.printStackTrace();
-			LOG.warn(bte);
+			LOG.warn("btree exception while appending value", bte);
 		}
 		return -1;
 	}
@@ -611,8 +607,7 @@ public class BFile extends BTree {
 			else
 				return wp;
 		} catch (IOException ioe) {
-			LOG.debug("cannot read page: " + pos + ": " + ioe);
-			ioe.printStackTrace();
+			LOG.debug("cannot read page: " + pos + ": " + ioe, ioe);
 			return null;
 		}
 	}
@@ -1497,6 +1492,7 @@ public class BFile extends BTree {
 		 */
 		public void setDirty(boolean dirty) {
 			saved = !dirty;
+			getPageHeader().setDirty(dirty);
 		}
 
 		/**
@@ -1909,12 +1905,10 @@ public class BFile extends BTree {
 				if (remaining < chunkSize)
 					chunkSize = remaining;
 				// copy next chunk of data to the page
-				//if(!Arrays.equals(data, current, page.getData(), 0, chunkSize)) {
 				System.arraycopy(data, current, page.getData(), 0, chunkSize);
 				if (page != firstPage)
 					page.getPageHeader().setDataLength(chunkSize);
 				page.setDirty(true);
-				//}
 				remaining -= chunkSize;
 				current += chunkSize;
 				next = page.getPageHeader().getNextInChain();
@@ -2138,7 +2132,7 @@ public class BFile extends BTree {
 						//fileHeader.write();
 					} catch (IOException ioe) {
 						ioe.printStackTrace();
-					}
+					}	
 			}
 		}
 
@@ -2185,6 +2179,8 @@ public class BFile extends BTree {
 					old.decRefCount();
 					// replace old page if it has reference count < 1,
 					if (old.getRefCount() < 1) {
+						if(getFile().getName().equals("words.dbx"))
+							System.out.println("removing page " + oldNum);
 						i.remove();
 						//map.remove(oldNum);
 						removed = true;
@@ -2285,7 +2281,7 @@ public class BFile extends BTree {
 			if (!(p.getPageHeader().getStatus() == RECORD
 				|| p.getPageHeader().getStatus() == MULTI_PAGE)) {
 				LOG.debug("not a data-page: " + p.getPageInfo());
-				throw new IOException("not a data-page");
+				throw new IOException("not a data-page: " + p.getPageHeader().getStatus());
 			}
 			this.data = data;
 			this.compress = compress;
@@ -2356,26 +2352,14 @@ public class BFile extends BTree {
 		}
 
 		/**
-		 *  Sets the dirty attribute of the SinglePage object
-		 *
-		 *@param  dirty  The new dirty value
-		 */
-		public void setDirty(boolean dirty) {
-			super.setDirty(dirty);
-			ph.setDirty(true);
-			saved = false;
-		}
-
-		/**
 		 *  Description of the Method
 		 *
 		 *@exception  IOException  Description of the Exception
 		 */
 		public void write() throws IOException {
-			ph.setDirty(true);
 			Value value = new Value(data);
 			writeValue(page, value);
-			saved = true;
+			setDirty(false);
 		}
 	}
 }

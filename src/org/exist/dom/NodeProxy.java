@@ -46,6 +46,9 @@ public final class NodeProxy implements Comparable, Cloneable {
     public short nodeType = -1;
 	public Match[] matches = null;
 	
+	//public long backupId = -1;
+	//public boolean valid = true;
+	
     public NodeProxy() {
     }
         
@@ -117,6 +120,7 @@ public final class NodeProxy implements Comparable, Cloneable {
 		this.internalAddress = p.internalAddress;
 		this.nodeType = p.nodeType;
 		this.matches = p.matches;
+		//this.backupId = p.backupId;
     }
 
 

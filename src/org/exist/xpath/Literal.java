@@ -1,7 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
  * 
- *  Copyright (C) 2001, Wolfgang M. Meier (meier@ifs. tu- darmstadt. de)
+ *  Copyright (C) 2001-03, Wolfgang M. Meier (meier@ifs. tu- darmstadt. de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -19,10 +19,11 @@
  */
 package org.exist.xpath;
 
-import org.exist.*;
-import org.exist.dom.*;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
 
-public class Literal implements Expression {
+public class Literal extends AbstractExpression {
 
     protected String literalValue;
 
@@ -38,7 +39,8 @@ public class Literal implements Expression {
 		return in_docs;
 	}
 	
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+		NodeProxy contextNode) {
 		return new ValueString(literalValue);
 	}
 	
@@ -53,11 +55,4 @@ public class Literal implements Expression {
 		buf.append('\'');
 		return buf.toString();
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
-	 */
-	public void setInPredicate(boolean inPredicate) {
-	}
-
 }

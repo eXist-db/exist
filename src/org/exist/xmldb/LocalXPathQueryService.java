@@ -16,6 +16,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.xpath.PathExpr;
+import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.exist.xpath.ValueNodeSet;
 import org.xmldb.api.base.Collection;
@@ -33,7 +34,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
 	protected User user;
-
+	protected StaticContext context = new StaticContext();
+	
 	public LocalXPathQueryService(User user, BrokerPool pool, LocalCollection collection) {
 		this.user = user;
 		this.collection = collection;
@@ -41,6 +43,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	}
 
 	public void clearNamespaces() throws XMLDBException {
+		context.clearNamespaces();
 	}
 
 	public String getName() throws XMLDBException {
@@ -94,7 +97,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	}
 
 	protected ResourceSet doQuery(String query, DocumentSet docs, 
-		NodeSet context, String sortExpr)
+		NodeSet contextSet, String sortExpr)
 		throws XMLDBException {
 		try {
 			XPathLexer lexer = new XPathLexer(new StringReader(query));
@@ -110,7 +113,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			if (docs.getLength() == 0)
 				resultValue = new ValueNodeSet(NodeSet.EMPTY_SET);
 			else 
-				resultValue = expr.eval(docs, context, null);
+				resultValue = expr.eval(context, docs, contextSet, null);
 			LOG.info(
 				expr.pprint()
 					+ " found: "
@@ -158,7 +161,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public void removeNamespace(String ns) throws XMLDBException {
-		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED);
+		context.removeNamespace(ns);
 	}
 
 	/**
@@ -178,7 +181,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public void setNamespace(String prefix, String namespace) throws XMLDBException {
-		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED);
+		context.declareNamespace(prefix, namespace);
 	}
 
 	/**

@@ -1,5 +1,5 @@
-/* eXist xml document repository and xpath implementation
- * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+/* eXist Native XML Database
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -36,7 +36,8 @@ public abstract class BinaryOp extends PathExpr {
   public Expression getRight() { return getExpression(1); }
 
   public abstract DocumentSet preselect(DocumentSet in_docs);
-  public abstract Value eval(DocumentSet docs, NodeSet context, NodeProxy node);
+  public abstract Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
+  	NodeProxy contextNode);
 
   public abstract String pprint();
 }

@@ -7,6 +7,7 @@ package org.exist.dom;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Set;
 
 import org.exist.storage.Signatures;
 import org.w3c.dom.Comment;
@@ -90,7 +91,7 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
      */
     public void toSAX( ContentHandler contentHandler,
             LexicalHandler lexicalHandler, boolean first,
-            ArrayList prefixes )
+            Set namespaces )
              throws SAXException {
         if ( lexicalHandler != null ) {
             char data[] = cdata.toString().toCharArray();

@@ -30,7 +30,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -39,6 +43,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
+import org.exist.util.UTF8;
 import org.exist.util.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
@@ -65,8 +70,7 @@ public class ElementImpl extends NodeImpl implements Element {
 
 	protected int children = 0;
 	protected long firstChild = -1;
-	//protected boolean loaded = false;
-	protected ArrayList prefixes = null;
+	protected Map namespaceMappings = null;
 
 	/**  Constructor for the ElementImpl object */
 	public ElementImpl() {
@@ -87,7 +91,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 *
 	 *@param  nodeName  Description of the Parameter
 	 */
-	public ElementImpl(String nodeName) {
+	public ElementImpl(QName nodeName) {
 		super(Node.ELEMENT_NODE, nodeName);
 	}
 
@@ -97,7 +101,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 *@param  gid       Description of the Parameter
 	 *@param  nodeName  Description of the Parameter
 	 */
-	public ElementImpl(long gid, String nodeName) {
+	public ElementImpl(long gid, QName nodeName) {
 		super(Node.ELEMENT_NODE, nodeName, gid);
 	}
 
@@ -111,8 +115,8 @@ public class ElementImpl extends NodeImpl implements Element {
 		firstChild = -1;
 		gid = 0;
 		children = 0;
-		if (prefixes != null)
-			prefixes = null;
+		if (namespaceMappings != null)
+			namespaceMappings = null;
 	}
 
 	/**
@@ -125,17 +129,32 @@ public class ElementImpl extends NodeImpl implements Element {
 	public static NodeImpl deserialize(byte[] data, int start, int len, DocumentImpl doc) {
 		byte attrSizeType = (byte) ((data[start] & 0x0C) >> 0x2);
 		byte idSizeType = (byte) (data[start] & 0x03);
+		boolean hasNamespace = (data[start] & 0x10) == 0x10;
+
 		int children = ByteConversion.byteToInt(data, start + 1);
 		short attributes = (short) Signatures.read(attrSizeType, data, start + 5);
 		int next = start + 5 + Signatures.getLength(attrSizeType);
 		int end = start + len;
 		short id = (short) Signatures.read(idSizeType, data, next);
+		next += Signatures.getLength(idSizeType);
+		short nsId = 0;
+		String prefix = null;
+		if (hasNamespace) {
+			nsId = ByteConversion.byteToShort(data, next);
+			next += 2;
+			int prefixLen = ByteConversion.byteToShort(data, next);
+			next += 2;
+			if(prefixLen > 0)
+				prefix = UTF8.decode(data, next, prefixLen).toString();
+			next += prefixLen;
+		}
+
 		String name = doc.getSymbols().getName(id);
-		ElementImpl node = new ElementImpl(0, name);
+		String namespace = nsId == 0 ? "" : doc.getSymbols().getNamespace(nsId);
+		ElementImpl node = new ElementImpl(0, new QName(name, namespace, prefix));
 		node.children = children;
 		node.attributes = attributes;
 		node.ownerDocument = doc;
-		next += Signatures.getLength(idSizeType);
 		if (end > next) {
 			byte[] pfxData = new byte[end - next];
 			System.arraycopy(data, next, pfxData, 0, end - next);
@@ -143,10 +162,10 @@ public class ElementImpl extends NodeImpl implements Element {
 			DataInputStream in = new DataInputStream(bin);
 			try {
 				short prefixCount = in.readShort();
-				String prefix;
 				for (int i = 0; i < prefixCount; i++) {
 					prefix = in.readUTF();
-					node.addNamespacePrefix(prefix);
+					nsId = in.readShort();
+					node.addNamespaceMapping(prefix, doc.getSymbols().getNamespace(nsId));
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -159,18 +178,15 @@ public class ElementImpl extends NodeImpl implements Element {
 		return ownerDocument.getSymbols().getSymbol(this);
 	}
 
-	public void addNamespacePrefix(String prefix) {
+	public void addNamespaceMapping(String prefix, String ns) {
 		if (prefix == null)
 			return;
-		if (prefixes == null)
-			prefixes = new ArrayList(1);
-
-		String temp;
-		for (Iterator i = prefixes.iterator(); i.hasNext();)
-			if (((String) i.next()).equals(prefix))
-				return;
-
-		prefixes.add(prefix);
+		if (namespaceMappings == null)
+			namespaceMappings = new HashMap(1);
+		else if (namespaceMappings.containsKey(prefix))
+			return;
+		namespaceMappings.put(prefix, ns);
+		ownerDocument.getSymbols().getNSSymbol(ns);
 	}
 
 	/**
@@ -303,35 +319,41 @@ public class ElementImpl extends NodeImpl implements Element {
 		switch (child.getNodeType()) {
 			case Node.ELEMENT_NODE :
 				// create new element
-				final ElementImpl elem = new ElementImpl(((Element) child).getTagName());
+				Element childElem = (Element) child;
+				final ElementImpl elem =
+					new ElementImpl(
+						new QName(
+							child.getLocalName(),
+							child.getNamespaceURI(),
+							child.getPrefix()));
 				elem.setGID(gid);
 				elem.setOwnerDocument(ownerDocument);
 				// handle namespaces
-				ns = child.getNamespaceURI();
-				if (ns != null && ns.length() > 0) {
-					prefix = ownerDocument.broker.getNamespacePrefix(ns);
-					if (prefix == null) {
-						prefix = child.getPrefix() != null ? child.getPrefix() : '#' + ns;
-						ownerDocument.broker.registerNamespace(ns, prefix);
-					}
-					elem.setNodeName(prefix + ':' + child.getLocalName());
-					elem.addPrefix(prefix);
-				}
+				//				ns = child.getNamespaceURI();
+				//				if (ns != null && ns.length() > 0) {
+				//					prefix = ownerDocument.broker.getNamespacePrefix(ns);
+				//					if (prefix == null) {
+				//						prefix = child.getPrefix() != null ? child.getPrefix() : '#' + ns;
+				//						ownerDocument.broker.registerNamespace(ns, prefix);
+				//					}
+				//					elem.setNodeName(prefix + ':' + child.getLocalName());
+				//					elem.addPrefix(prefix);
+				//				}
 				// add attributes to list of child nodes
 				final NodeListImpl ch = new NodeListImpl();
 				final NamedNodeMap attribs = child.getAttributes();
 				for (int i = 0; i < attribs.getLength(); i++) {
 					attr = (Attr) attribs.item(i);
 					// register namespace prefixes
-					ns = attr.getNamespaceURI();
-					if (ns != null && ns.length() > 0) {
-						prefix = ownerDocument.broker.getNamespacePrefix(ns);
-						if (prefix == null) {
-							prefix = attr.getPrefix() != null ? attr.getPrefix() : '#' + ns;
-							ownerDocument.broker.registerNamespace(ns, prefix);
-						}
-						elem.addPrefix(prefix);
-					}
+					//					ns = attr.getNamespaceURI();
+					//					if (ns != null && ns.length() > 0) {
+					//						prefix = ownerDocument.broker.getNamespacePrefix(ns);
+					//						if (prefix == null) {
+					//							prefix = attr.getPrefix() != null ? attr.getPrefix() : '#' + ns;
+					//							ownerDocument.broker.registerNamespace(ns, prefix);
+					//						}
+					//						elem.addPrefix(prefix);
+					//					}
 					ch.add(attr);
 				}
 				ch.addAll(child.getChildNodes());
@@ -367,15 +389,17 @@ public class ElementImpl extends NodeImpl implements Element {
 				return text;
 			case Node.ATTRIBUTE_NODE :
 				attr = (Attr) child;
-				final AttrImpl attrib = new AttrImpl(attr.getName(), attr.getValue());
+				QName attrName =
+					new QName(attr.getLocalName(), attr.getNamespaceURI(), attr.getPrefix());
+				final AttrImpl attrib = new AttrImpl(attrName, attr.getValue());
 				attrib.setGID(gid);
 				attrib.setOwnerDocument(ownerDocument);
 				// handle namespaces
-				ns = child.getNamespaceURI();
-				if (ns != null && ns.length() > 0) {
-					prefix = ownerDocument.broker.getNamespacePrefix(ns);
-					attrib.setNodeName(prefix + ':' + child.getLocalName());
-				}
+				//				ns = child.getNamespaceURI();
+				//				if (ns != null && ns.length() > 0) {
+				//					prefix = ownerDocument.broker.getNamespacePrefix(ns);
+				//					attrib.setNodeName(prefix + ':' + child.getLocalName());
+				//				}
 				// insert the node
 				ownerDocument.broker.insertAfter(last, attrib);
 				// index now?
@@ -419,24 +443,25 @@ public class ElementImpl extends NodeImpl implements Element {
 	/**
 	 * @see org.w3c.dom.Node#getNamespaceURI()
 	 */
-	public String getNamespaceURI() {
-		if (nodeName != null && nodeName.indexOf(':') < 0 && declaresNamespacePrefixes()) {
-			// check for default namespaces
-			String ns;
-			for (Iterator i = prefixes.iterator(); i.hasNext();) {
-				ns = (String) i.next();
-				if (ns.startsWith("#"))
-					return ownerDocument.broker.getNamespaceURI(ns);
-			}
-		}
-		if (nodeName != null && nodeName.indexOf(':') > -1) {
-			String prefix = nodeName.substring(0, nodeName.indexOf(':'));
-			if (!prefix.equals("xml")) {
-				return ownerDocument.broker.getNamespaceURI(prefix);
-			}
-		}
-		return "";
-	}
+	//	public String getNamespaceURI() {
+	//		
+	//		if (nodeName != null && nodeName.indexOf(':') < 0 && declaresNamespacePrefixes()) {
+	//			// check for default namespaces
+	//			String ns;
+	//			for (Iterator i = prefixes.iterator(); i.hasNext();) {
+	//				ns = (String) i.next();
+	//				if (ns.startsWith("#"))
+	//					return ownerDocument.broker.getNamespaceURI(ns);
+	//			}
+	//		}
+	//		if (nodeName != null && nodeName.indexOf(':') > -1) {
+	//			String prefix = nodeName.substring(0, nodeName.indexOf(':'));
+	//			if (!prefix.equals("xml")) {
+	//				return ownerDocument.broker.getNamespaceURI(prefix);
+	//			}
+	//		}
+	//		return "";
+	//	}
 
 	/**
 	 *  Description of the Method
@@ -444,7 +469,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 *@return    Description of the Return Value
 	 */
 	public boolean declaresNamespacePrefixes() {
-		return prefixes != null && prefixes.size() > 0;
+		return namespaceMappings != null && namespaceMappings.size() > 0;
 	}
 
 	/**
@@ -547,16 +572,16 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
 	 */
 	public NodeList getElementsByTagName(String tagName) {
-		return (NodeSet) ownerDocument.findElementsByTagName(this, tagName);
+		QName qname = new QName(tagName, "", null);
+		return (NodeSet) ownerDocument.findElementsByTagName(this, qname);
 	}
 
 	/**
 	 * @see org.w3c.dom.Element#getElementsByTagNameNS(java.lang.String, java.lang.String)
 	 */
 	public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
-		String prefix = ownerDocument.broker.getNamespacePrefix(namespaceURI);
-		String qname = (prefix != null) ? prefix + ':' + localName : localName;
-		return getElementsByTagName(qname);
+		QName qname = new QName(localName, namespaceURI, null);
+		return (NodeSet) ownerDocument.findElementsByTagName(this, qname);
 	}
 
 	/**
@@ -587,20 +612,11 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Gets the namespacePrefixes attribute of the DocumentImpl object
-	 *
-	 *@return    The namespacePrefixes value
-	 */
-	public Iterator getNamespacePrefixes() {
-		return prefixes == null ? null : prefixes.iterator();
-	}
-
-	/**
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
-	public String getNodeName() {
-		return nodeName;
-	}
+	//	public String getNodeName() {
+	//		return nodeName;
+	//	}
 
 	/**
 	 * @see org.w3c.dom.Node#getNodeValue()
@@ -631,7 +647,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.w3c.dom.Element#getTagName()
 	 */
 	public String getTagName() {
-		return nodeName;
+		return nodeName.toString();
 	}
 
 	/**
@@ -713,40 +729,63 @@ public class ElementImpl extends NodeImpl implements Element {
 		try {
 			byte[] prefixData = null;
 			// serialize namespace prefixes declared in this element
-			if (prefixes != null && prefixes.size() > 0) {
+			if (namespaceMappings != null && namespaceMappings.size() > 0) {
 				ByteArrayOutputStream bout = new ByteArrayOutputStream();
 				DataOutputStream out = new DataOutputStream(bout);
-				out.writeShort(prefixes.size());
-				String pfx;
-				for (Iterator i = prefixes.iterator(); i.hasNext();) {
-					pfx = (String) i.next();
-					out.writeUTF(pfx);
+				out.writeShort(namespaceMappings.size());
+				Map.Entry entry;
+				short nsId;
+				for (Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext();) {
+					entry = (Map.Entry) i.next();
+					out.writeUTF((String) entry.getKey());
+					nsId = ownerDocument.getSymbols().getNSSymbol((String) entry.getValue());
+					out.writeShort(nsId);
 				}
 				prefixData = bout.toByteArray();
 			}
 			final short id = ownerDocument.getSymbols().getSymbol(this);
+			final boolean hasNamespace = nodeName.needsNamespaceDecl();
+			final short nsId =
+				hasNamespace
+					? ownerDocument.getSymbols().getNSSymbol(nodeName.getNamespaceURI())
+					: 0;
+
 			final byte attrSizeType = Signatures.getSizeType(attributes);
 			final byte idSizeType = Signatures.getSizeType(id);
-			final byte signature =
-				(byte) ((Signatures.Elem << 0x5) | (attrSizeType << 0x2) | idSizeType);
+			byte signature = (byte) ((Signatures.Elem << 0x5) | (attrSizeType << 0x2) | idSizeType);
+			int prefixLen = 0;
+			if (hasNamespace) {
+				prefixLen = nodeName.getPrefix().length() > 0 ?
+					UTF8.encoded(nodeName.getPrefix()) : 0;
+				signature |= 0x10;
+			}
 			byte[] data =
 				ByteArrayPool.getByteArray(
 					5
 						+ Signatures.getLength(attrSizeType)
 						+ Signatures.getLength(idSizeType)
+						+ (hasNamespace ? prefixLen + 4 : 0)
 						+ (prefixData != null ? prefixData.length : 0));
-			data[0] = signature;
-			ByteConversion.intToByte(children, data, 1);
-			Signatures.write(attrSizeType, attributes, data, 5);
-			Signatures.write(idSizeType, id, data, 5 + Signatures.getLength(attrSizeType));
-			if (prefixData != null)
-				System.arraycopy(
-					prefixData,
-					0,
-					data,
-					5 + Signatures.getLength(attrSizeType) + Signatures.getLength(idSizeType),
-					prefixData.length);
+			int next = 0;
+			data[next++] = signature;
+			ByteConversion.intToByte(children, data, next);
+			next += 4;
+			Signatures.write(attrSizeType, attributes, data, next);
+			next += Signatures.getLength(attrSizeType);
+			Signatures.write(idSizeType, id, data, next);
+			next += Signatures.getLength(idSizeType);
+			if (hasNamespace) {
+				ByteConversion.shortToByte(nsId, data, next);
+				next += 2;
+				ByteConversion.shortToByte((short) prefixLen, data, next);
+				next += 2;
+				if(nodeName.getPrefix().length() > 0)
+					UTF8.encode(nodeName.getPrefix(), data, next);
+				next += prefixLen;
+			}
 
+			if (prefixData != null)
+				System.arraycopy(prefixData, 0, data, next, prefixData.length);
 			return data;
 		} catch (IOException e) {
 			return null;
@@ -810,7 +849,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 *
 	 *@param  name  The new nodeName value
 	 */
-	public void setNodeName(String name) {
+	public void setNodeName(QName name) {
 		nodeName = name;
 	}
 
@@ -819,19 +858,23 @@ public class ElementImpl extends NodeImpl implements Element {
 	 *
 	 *@param  pfx  The new prefixes value
 	 */
-	public void setPrefixes(Collection pfx) {
-		if (prefixes == null)
-			prefixes = new ArrayList(pfx.size());
-
-		this.prefixes.addAll(pfx);
+	public void setNamespaceMappings(Map map) {
+		namespaceMappings = new HashMap(map);
+		String ns;
+		for (Iterator i = namespaceMappings.values().iterator(); i.hasNext();) {
+			ns = (String) i.next();
+			ownerDocument.getSymbols().getNSSymbol(ns);
+		}
+	}
+	
+	public Iterator getPrefixes() {
+		return namespaceMappings.keySet().iterator();
 	}
 
-	public void addPrefix(String pfx) {
-		if (prefixes == null)
-			prefixes = new ArrayList(1);
-		prefixes.add(pfx);
+	public String getNamespaceForPrefix(String prefix) {
+		return (String)namespaceMappings.get(prefix);
 	}
-
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -845,7 +888,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		ContentHandler contentHandler,
 		LexicalHandler lexicalHandler,
 		boolean first,
-		ArrayList prefixes)
+		Set namespaces)
 		throws SAXException {
 		NodeList childNodes = getChildNodes();
 		NodeImpl child = null;
@@ -855,22 +898,17 @@ public class ElementImpl extends NodeImpl implements Element {
 		String defaultNS = null;
 		if (declaresNamespacePrefixes()) {
 			// declare namespaces used by this element
-			String prefix;
-			myPrefixes = new ArrayList();
-			for (Iterator i = getNamespacePrefixes(); i.hasNext();) {
-				prefix = (String) i.next();
-				if (!prefixes.contains(prefix)) {
-					if (prefix.startsWith("#")) {
-						defaultNS = broker.getNamespaceURI(prefix);
-						contentHandler.startPrefixMapping("", defaultNS);
-					} else
-						contentHandler.startPrefixMapping(prefix, broker.getNamespaceURI(prefix));
-
-					prefixes.add(prefix);
-					myPrefixes.add(prefix);
-				}
+			Map.Entry entry;
+			for (Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext();) {
+				entry = (Map.Entry) i.next();
+				contentHandler.startPrefixMapping(
+					(String) entry.getKey(),
+					(String) entry.getValue());
 			}
 		}
+		if(nodeName.needsNamespaceDecl() && 
+			(!namespaces.contains(nodeName.getNamespaceURI())))
+			contentHandler.startPrefixMapping(nodeName.getPrefix(), nodeName.getNamespaceURI());
 		if (first) {
 			attributes.addAttribute(
 				"http://exist.sourceforge.net/NS/exist",
@@ -902,7 +940,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		String ns = defaultNS == null ? getNamespaceURI() : defaultNS;
 		contentHandler.startElement(ns, getLocalName(), getNodeName(), attributes);
 		while (i < childNodes.getLength()) {
-			child.toSAX(contentHandler, lexicalHandler, false, prefixes);
+			child.toSAX(contentHandler, lexicalHandler, false, namespaces);
 			i++;
 			if (i < childNodes.getLength())
 				child = (NodeImpl) childNodes.item(i);
@@ -912,12 +950,14 @@ public class ElementImpl extends NodeImpl implements Element {
 		contentHandler.endElement(ns, getLocalName(), getNodeName());
 		if (declaresNamespacePrefixes() && myPrefixes != null) {
 			String prefix;
-			for (Iterator pi = myPrefixes.iterator(); pi.hasNext();) {
-				prefix = (String) pi.next();
+			for (Iterator j = namespaceMappings.keySet().iterator(); j.hasNext();) {
+				prefix = (String) j.next();
 				contentHandler.endPrefixMapping(prefix);
-				prefixes.remove(prefix);
 			}
 		}
+		if(nodeName.needsNamespaceDecl() && 
+			(!namespaces.contains(nodeName.getNamespaceURI())))
+			contentHandler.endPrefixMapping(nodeName.getPrefix());
 	}
 
 	/**
@@ -931,7 +971,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.exist.dom.NodeImpl#toString(boolean)
 	 */
 	public String toString(boolean top) {
-		return toString(top, new ArrayList(5));
+		return toString(top, new TreeSet());
 	}
 
 	/**
@@ -940,7 +980,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @param prefixes
 	 * @return String
 	 */
-	public String toString(boolean top, ArrayList prefixes) {
+	public String toString(boolean top, TreeSet namespaces) {
 		DBBroker broker = ownerDocument.getBroker();
 		StringBuffer buf = new StringBuffer();
 		StringBuffer attributes = new StringBuffer();
@@ -958,26 +998,31 @@ public class ElementImpl extends NodeImpl implements Element {
 		ArrayList myPrefixes = null;
 		if (declaresNamespacePrefixes()) {
 			// declare namespaces used by this element
-			String prefix;
-			myPrefixes = new ArrayList();
-			for (Iterator i = getNamespacePrefixes(); i.hasNext();) {
-				prefix = (String) i.next();
-				if (!prefixes.contains(prefix)) {
-					if (prefix.startsWith("#")) {
-						buf.append("xmlns=\"");
-						buf.append(broker.getNamespaceURI(prefix));
-					} else {
-						buf.append("xmlns:");
-						buf.append(prefix);
-						buf.append("=\"");
-						buf.append(broker.getNamespaceURI(prefix));
-					}
-					buf.append("\" ");
-					prefixes.add(prefix);
-					myPrefixes.add(prefix);
+			Map.Entry entry;
+			String namespace, prefix;
+			for (Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext();) {
+				entry = (Map.Entry) i.next();
+				prefix = (String) entry.getKey();
+				namespace = (String) entry.getValue();
+				if (prefix.length() == 0) {
+					buf.append("xmlns=\"");
+					buf.append(namespace);
+				} else {
+					buf.append("xmlns:");
+					buf.append(prefix);
+					buf.append("=\"");
+					buf.append(namespace);
 				}
+				buf.append("\" ");
+				namespaces.add(namespace);
 			}
 		}
+		if(nodeName.getNamespaceURI().length() > 0 && 
+			(!namespaces.contains(nodeName.getNamespaceURI()))) {
+			buf.append("\" xmlns:").append(nodeName.getPrefix()).append("=\"");
+			buf.append(nodeName.getNamespaceURI());
+			buf.append("\" ");
+			}
 		NodeList childNodes = getChildNodes();
 		Node child;
 		for (int i = 0; i < childNodes.getLength(); i++) {
@@ -991,7 +1036,7 @@ public class ElementImpl extends NodeImpl implements Element {
 					attributes.append("\"");
 					break;
 				case Node.ELEMENT_NODE :
-					children.append(((ElementImpl) child).toString(false, prefixes));
+					children.append(((ElementImpl) child).toString(false, namespaces));
 					break;
 				default :
 					children.append(child.toString());

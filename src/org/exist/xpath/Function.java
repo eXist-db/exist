@@ -1,7 +1,7 @@
 
 /*
- *  eXist xml document repository and xpath implementation
- *  Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  eXist Native XML Database
+ *  Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -50,7 +50,7 @@ public abstract class Function extends PathExpr {
 
 
     /**  Constructor for the Function object */
-    public Function( BrokerPool pool) {
+    public Function(BrokerPool pool) {
         super(pool);
     }
 
@@ -61,7 +61,7 @@ public abstract class Function extends PathExpr {
      *@param  name    Description of the Parameter
      *@return         Description of the Return Value
      */
-    public static Function createFunction( BrokerPool pool, String name ) {
+    public static Function createFunction(BrokerPool pool, String name) {
         try {
             if ( name == null )
                 throw new RuntimeException( "insufficient arguments" );
@@ -108,7 +108,8 @@ public abstract class Function extends PathExpr {
      *@param  node     Description of the Parameter
      *@return          Description of the Return Value
      */
-    public abstract Value eval( DocumentSet docs, NodeSet context, NodeProxy node );
+    public abstract Value eval( StaticContext context, DocumentSet docs, NodeSet contextSet,
+    	NodeProxy contextNode);
 
 
     /**

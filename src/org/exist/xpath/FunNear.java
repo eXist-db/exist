@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001 Wolfgang M. Meier
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
  *  meier@ifs.tu-darmstadt.de
  *  http://exist.sourceforge.net
  *
@@ -60,8 +60,9 @@ public class FunNear extends FunContains {
 		super(pool, path, arg);
 	}
 
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		NodeSet nodes = (NodeSet) path.eval(docs, context, null).getNodeList();
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+		NodeProxy contextNode) {
+		NodeSet nodes = (NodeSet) path.eval(context, docs, contextSet, contextNode).getNodeList();
 		if (hits == null)
 			processQuery(docs);
 

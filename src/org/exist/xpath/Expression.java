@@ -1,6 +1,6 @@
 
-/* eXist xml document repository and xpath implementation
- * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+/* eXist Native XML Database
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -36,13 +36,30 @@ public interface Expression {
 	 * context to contain a list of nodes which represents the current
 	 * context of this expression.
 	 *
+	 * @param context the static xpath context
 	 * @param docs the set of documents all nodes belong to.
-	 * @param context the node-set which defines the current context node-set.
+	 * @param contextSet the node-set which defines the current context node-set.
 	 * @param node a single node, taken from context. This defines the node,
 	 * the expression should work on.
 	 */
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node);
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
+		NodeProxy contextNode);
 
+	/**
+	 * Evaluate the expression represented by this object.
+	 *
+	 * Depending on the context in which this expression is executed,
+	 * either context, node or both of them may be set. An implementing
+	 * class should know how to handle this. Most classes only expect 
+	 * context to contain a list of nodes which represents the current
+	 * context of this expression.
+	 *
+	 * @param context the static xpath context
+	 * @param docs the set of documents all nodes belong to.
+	 * @param contextSet the node-set which defines the current context node-set.
+	 */
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet);
+	
 	/**
 	 * Determine the documents, taken from in_docs, for which this expression
 	 * will possibly yield a result. An expression does not have to do

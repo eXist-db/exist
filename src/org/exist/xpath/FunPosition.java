@@ -1,6 +1,6 @@
 
-/* eXist xml document repository and xpath implementation
- * Copyright (C) 2000-01,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+/* eXist Native XML Database
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -45,15 +45,16 @@ public class FunPosition extends Function {
         return in_docs;
     }
 
-    public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-        DocumentImpl doc = node.getDoc();
-        NodeSet set = ((ArraySet)context).getChildren(doc, node.getGID());
+    public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+    	NodeProxy contextNode) {
+        DocumentImpl doc = contextNode.getDoc();
+        NodeSet set = ((ArraySet)contextSet).getChildren(doc, contextNode.getGID());
         // determine position of current node in the set
         NodeProxy p;
         double count = 1.0;
         for(Iterator i = set.iterator(); i.hasNext(); count++) {
             p = (NodeProxy)i.next();
-            if(p.gid == node.gid && node.doc.getDocId() == node.doc.getDocId())
+            if(p.gid == contextNode.gid && contextNode.doc.getDocId() == contextNode.doc.getDocId())
                 return new ValueNumber(count);
         }
         return new ValueNumber(-1);

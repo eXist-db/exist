@@ -1,5 +1,6 @@
-/* eXist xml document repository and xpath implementation
- * Copyright (C) 2000-01,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+/* 
+ * eXist Native XML Database
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -18,7 +19,6 @@
 
 package org.exist.xpath;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -39,12 +39,21 @@ public class FunString extends Function {
 		return Constants.TYPE_STRING;
 	}
 	
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		if(node != null) {
-			context = new SingleNodeSet(node);
-		}
-		String result = getArgument(0).eval(docs, context, node).getStringValue();
-		return new ValueString(result);
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
+		NodeProxy contextNode) {
+		if(contextNode != null)
+			contextSet = new SingleNodeSet(contextNode);
+		String strval;
+		Value v = getArgument(0).eval(context, docs, contextSet);
+		if(getArgument(0).returnsType() == Constants.TYPE_NODELIST) {
+			NodeSet nodes = (NodeSet)v.getNodeList();
+			if(nodes.getLength() == 0)
+				strval = "";
+			else
+				strval = nodes.get(0).getNodeValue();
+		} else
+			strval = v.getStringValue();
+		return new ValueString(strval);
 	}
 
 	public String pprint() {

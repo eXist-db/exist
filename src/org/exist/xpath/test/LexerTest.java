@@ -20,6 +20,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.xpath.PathExpr;
+import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.xml.sax.SAXException;
 
@@ -95,7 +96,7 @@ public class LexerTest extends TestCase {
 			
 			// execute the query
 			DocumentSet docs = expr.preselect();
-			Value resultValue = expr.eval(docs, null, null);
+			Value resultValue = expr.eval(new StaticContext(), docs, null, null);
 			
 			// check results
 			NodeSet resultSet = (NodeSet)resultValue.getNodeList();

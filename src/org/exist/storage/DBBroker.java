@@ -20,21 +20,30 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.exist.storage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Observable;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
+import org.exist.util.VariableByteInputStream;
+import org.exist.util.VariableByteOutputStream;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -63,22 +72,67 @@ public abstract class DBBroker extends Observable {
 
     protected Configuration config;
 	protected BrokerPool pool;
+	protected static File symbolsFile;
+	protected static SymbolTable symbols = null;
 
     /**
      *  Constructor for the DBBroker object
      *
      *@param  config  Description of the Parameter
      */
-    public DBBroker( BrokerPool pool, Configuration config ) {
+    public DBBroker( BrokerPool pool, Configuration config ) throws EXistException {
         this.config = config;
         Boolean temp;
         if ( ( temp = (Boolean) config.getProperty( "indexer.case-sensitive" ) )
              != null )
             caseSensitive = temp.booleanValue();
+        String sym, dataDir;
+		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)
+			dataDir = "data";
+		if(symbols == null) {
+			symbolsFile = new File(dataDir + File.separatorChar + "symbols.dbx");
+			symbols = new SymbolTable();
+			if(!symbolsFile.canRead()) {
+				saveSymbols();
+			} else
+				loadSymbols();
+		}
 		this.pool = pool;
     }
 
-
+	protected static void saveSymbols() throws EXistException {
+		synchronized(symbols) {
+			try {
+				VariableByteOutputStream os = new VariableByteOutputStream(256);
+				symbols.write(os);
+				FileOutputStream fos = new FileOutputStream(symbolsFile, false);
+				fos.write(os.toByteArray());
+				fos.close();
+			} catch (FileNotFoundException e) {
+				throw new EXistException("file not found: " + symbolsFile.getAbsolutePath());
+			} catch (IOException e) {
+				throw new EXistException("io error occurred while creating " + symbolsFile.getAbsolutePath());
+			}
+		}
+	}
+	
+	protected static void loadSymbols() throws EXistException {
+		try {
+			FileInputStream fis = new FileInputStream(symbolsFile);
+			VariableByteInputStream is = new VariableByteInputStream(fis);
+			symbols.read(is);
+			fis.close();
+		} catch (FileNotFoundException e) {
+			throw new EXistException("could not read " + symbolsFile.getAbsolutePath());
+		} catch (IOException e) {
+			throw new EXistException("io error occurred while reading " + symbolsFile.getAbsolutePath());
+		}
+	}
+	
+	public static synchronized SymbolTable getSymbols() {
+		return symbols;
+	}
+	
     /**
      *  find elements by their tag name. This method is comparable to the DOM's
      *  method call getElementsByTagName. All elements matching tagName and
@@ -88,7 +142,7 @@ public abstract class DBBroker extends Observable {
      *@param  tagName  Description of the Parameter
      *@return          Description of the Return Value
      */
-    public abstract NodeSet findElementsByTagName( DocumentSet docs, String tagName );
+    public abstract NodeSet findElementsByTagName( DocumentSet docs, QName qname );
 
 
     /**  flush all data that has not been written before. */
@@ -128,7 +182,7 @@ public abstract class DBBroker extends Observable {
      *@param  name  Description of the Parameter
      *@return       The attributesByName value
      */
-    public abstract NodeSet getAttributesByName( DocumentSet docs, String name );
+    public abstract NodeSet getAttributesByName( DocumentSet docs, QName qname );
 
 
     /**
@@ -525,10 +579,6 @@ public abstract class DBBroker extends Observable {
 
 	public void closeDocument() {
 	}
-	
-    public static SymbolTable getSymbols() {
-	    return null;
-    }
     
     /**
      *  shutdown the broker. All open files, jdbc connections etc. should be

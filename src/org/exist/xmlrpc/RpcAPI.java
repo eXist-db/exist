@@ -22,6 +22,7 @@
 package org.exist.xmlrpc;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Map;
 
 import java.util.Vector;
 import org.exist.*;
@@ -288,15 +289,16 @@ public interface RpcAPI {
 
 	Vector query(User user, byte[] xpath) throws EXistException, PermissionDeniedException;
 
-	Hashtable queryP(User user, byte[] xpath) throws EXistException, PermissionDeniedException;
+	Hashtable queryP(User user, byte[] xpath, Hashtable namespaces) throws EXistException, PermissionDeniedException;
 
-	Hashtable queryP(User user, byte[] xpath, byte[] sortExpr)
+	Hashtable queryP(User user, byte[] xpath, byte[] sortExpr, Hashtable namespaces)
 		throws EXistException, PermissionDeniedException;
 
-	Hashtable queryP(User user, byte[] xpath, String docName, String s_id, byte[] sortExpr)
+	Hashtable queryP(User user, byte[] xpath, String docName, String s_id, byte[] sortExpr, 
+		Hashtable namespaces)
 		throws EXistException, PermissionDeniedException;
 
-	Hashtable queryP(User user, byte[] xpath, String docName, String s_id)
+	Hashtable queryP(User user, byte[] xpath, String docName, String s_id, Hashtable namespaces)
 		throws EXistException, PermissionDeniedException;
 
 	/**
@@ -319,7 +321,7 @@ public interface RpcAPI {
 	 *@depreceated                           use Vector query() or int
 	 *      executeQuery() instead
 	 */
-	String query(User user, String xpath, int howmany, int start, int prettyPrint)
+	String query(User user, String xpath, int howmany, int start, int prettyPrint, Hashtable namespaces)
 		throws EXistException, PermissionDeniedException;
 
 	/**
@@ -348,6 +350,7 @@ public interface RpcAPI {
 		int howmany,
 		int start,
 		int prettyPrint,
+		Hashtable namespaces,
 		String sortExpr)
 		throws EXistException, PermissionDeniedException;
 
@@ -555,12 +558,12 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	int executeQuery(User user, byte[] xpath, String encoding)
+	int executeQuery(User user, byte[] xpath, String encoding, Hashtable namespaces)
 		throws EXistException, PermissionDeniedException;
 
-	int executeQuery(User user, byte[] xpath) throws EXistException, PermissionDeniedException;
+	int executeQuery(User user, byte[] xpath, Hashtable namespaces) throws EXistException, PermissionDeniedException;
 
-	int executeQuery(User user, String xpath) throws EXistException, PermissionDeniedException;
+	int executeQuery(User user, String xpath, Hashtable namespaces) throws EXistException, PermissionDeniedException;
 
 	/**
 	 *  Retrieve a summary of the result set identified by it's result-set-id.

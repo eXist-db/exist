@@ -51,7 +51,8 @@ public class RootNode extends Step {
      *@param  node     Description of the Parameter
      *@return          Description of the Return Value
      */
-    public Value eval( DocumentSet docs, NodeSet context, NodeProxy node ) {
+    public Value eval( StaticContext context, DocumentSet docs, NodeSet contextSet, 
+    	NodeProxy contextNode ) {
         ArraySet result = new ArraySet( docs.getLength() );
         DocumentImpl doc;
         NodeProxy n;

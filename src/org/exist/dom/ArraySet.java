@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -49,34 +49,34 @@ public class ArraySet extends NodeSet {
 		length = initialCapacity;
 	}
 
-	private final static boolean getParentSet(NodeProxy[] nl) {
+	private final static boolean getParentSet(NodeProxy[] nl, int len) {
 		int level;
 		boolean foundValid = false;
-		final int len = nl.length;
 		long pid;
+		NodeProxy node;
 		for (int i = 0; i < len; i++) {
+			node = nl[i];
 			// skip invalid nodes
-			if (nl[i] == null)
+			if (node == null)
 				continue;
-			if (nl[i].gid < 0) {
+			if (node.gid < 0) {
 				nl[i] = null;
 				continue;
 			}
-			level = nl[i].doc.getTreeLevel(nl[i].gid);
+			level = node.doc.getTreeLevel(node.gid);
 			if (level == 0) {
-				nl[i].gid = -1;
+				node.gid = -1;
 			} else {
 				// calculate parent's gid
 				pid =
-					(nl[i].gid - nl[i].doc.treeLevelStartPoints[level])
-						/ nl[i].doc.treeLevelOrder[level]
-						+ nl[i].doc.treeLevelStartPoints[level
+					(node.gid - node.doc.treeLevelStartPoints[level])
+						/ node.doc.treeLevelOrder[level]
+						+ node.doc.treeLevelStartPoints[level
 						- 1];
-				//System.out.println(nl[i].doc.getDocId() + ":" + nl[i].gid + "->" + pid);
-				nl[i].gid = pid;
+				//System.out.println(node.doc.getDocId() + ":" + node.gid + "->" + pid);
+				node.gid = pid;
 			}
-			//if (nl[i].gid > 0)
-			// continue until all nodes are set to null
+			// continue until all nodes are set to invalid
 			foundValid = true;
 		}
 		return foundValid;
@@ -276,9 +276,8 @@ public class ArraySet extends NodeSet {
 	}
 
 	public ArraySet getChildren(NodeSet ancestors, int mode, boolean rememberContext) {
-		if (!(ancestors instanceof ArraySet)) {
+		if (!(ancestors instanceof ArraySet)) 
 			return super.getChildren(ancestors, mode, rememberContext);
-		}
 		ArraySet al = (ArraySet) ancestors;
 		if (al.counter == 0)
 			return new ArraySet(1);
@@ -288,9 +287,7 @@ public class ArraySet extends NodeSet {
 		// get a deep copy of array - will be modified
 		NodeProxy[] dl = null;
 		if (mode == DESCENDANT) {
-			dl = new NodeProxy[counter];
-			for (int i = 0; i < counter; i++)
-				dl[i] = new NodeProxy(nodes[i]);
+			dl = copyNodeSet(al, this);
 		} else
 			dl = nodes;
 
@@ -299,12 +296,11 @@ public class ArraySet extends NodeSet {
 		int dx = 0;
 		final int dlen = dl.length;
 		int cmp;
-		getParentSet(dl);
+		getParentSet(dl, dlen);
 		while (dx < dlen) {
-			if (dl[dx] == null) { // || dl[dx].gid < 1) {
-				dx++;
-				continue;
-			}
+			while(dl[dx] == null && ++dx < dlen);
+			if(dx == dlen)
+				break;
 			//          System.out.println(
 			//              dl[dx].doc.getDocId()
 			//                  + ":"
@@ -377,29 +373,27 @@ public class ArraySet extends NodeSet {
 			return super.getDescendants(other, mode, includeSelf, rememberContext);
 		ArraySet al = (ArraySet) other;
 		if (al.counter == 0 || counter == 0)
-			return new ArraySet(1);
+			return NodeSet.EMPTY_SET;
 		//long start = System.currentTimeMillis();
 		al.sort();
 		sort();
 		// the descendant set will be modified: copy if required 
 		NodeProxy[] dl = null;
 		if (mode == DESCENDANT) {
-			dl = new NodeProxy[counter];
-			for (int i = 0; i < counter; i++)
-				dl[i] = new NodeProxy(nodes[i]);
+			dl = copyNodeSet(al, this);
 		} else
 			dl = nodes;
 
-		ArraySet result = new ArraySet(counter);
+		ArraySet result = new ArraySet(dl.length);
 		int ax;
 		int dx;
 		int cmp;
+		NodeProxy node;
 		final int dlen = dl.length;
-		boolean more = includeSelf ? true : getParentSet(dl);
+		boolean more = includeSelf ? true : getParentSet(dl, dlen);
 		while (more) {
 			ax = 0;
 			dx = 0;
-			//more = getParentSet(dl);
 			while (dx < dlen) {
 				if (dl[dx] == null) { // || dl[dx].gid < 1) {
 					dx++;
@@ -443,7 +437,7 @@ public class ArraySet extends NodeSet {
 			// calculate parent id for each node in the
 			// descendant set. Returns false if no more
 			// valid nodes are found
-			more = getParentSet(dl);
+			more = getParentSet(dl, dlen);
 		}
 		//		LOG.debug(
 		//			"getDescendants found "
@@ -451,6 +445,10 @@ public class ArraySet extends NodeSet {
 		//				+ " in "
 		//				+ (System.currentTimeMillis() - start)
 		//				+ "ms.");
+//		for(int i = 0; i < counter; i++) {
+//			nodes[i].gid = nodes[i].backupId;
+//			nodes[i].valid = true;
+//		}
 		return result;
 	}
 
@@ -472,10 +470,7 @@ public class ArraySet extends NodeSet {
 		al.sort();
 		sort();
 		// the descendant set will be modified: copy if required 
-		NodeProxy[] dl = null;
-		dl = new NodeProxy[counter];
-		for (int i = 0; i < counter; i++)
-			dl[i] = new NodeProxy(nodes[i]);
+		NodeProxy[] dl = copyNodeSet(al, this);
 
 		//NodeSet result = new NodeIDSet();
 		NodeSet result = new ArraySet(getLength());
@@ -484,7 +479,7 @@ public class ArraySet extends NodeSet {
 		int dx;
 		int cmp;
 		final int dlen = dl.length;
-		boolean more = includeSelf ? true : getParentSet(dl);
+		boolean more = includeSelf ? true : getParentSet(dl, dlen);
 		while (more) {
 			ax = 0;
 			dx = 0;
@@ -492,6 +487,7 @@ public class ArraySet extends NodeSet {
 			while (dx < dlen) {
 				if (dl[dx] == null) { // || dl[dx].gid < 1) {
 					dx++;
+					System.out.println("skipping " + dx);
 					continue;
 				}
 				//System.out.println(dl[dx].gid + " == " + al.nodes[ax].gid);
@@ -522,7 +518,7 @@ public class ArraySet extends NodeSet {
 			// calculate parent id for each node in the
 			// descendant set. Returns false if no more
 			// valid nodes are found
-			more = getParentSet(dl);
+			more = getParentSet(dl, dlen);
 		}
 		LOG.debug(
 			"getAncestors found "
@@ -619,7 +615,7 @@ public class ArraySet extends NodeSet {
 		//this.sorted = sorted;
 	}
 
-	public final void sort() {
+	public void sort() {
 		if (this.sorted || counter < 2)
 			return;
 		//quickSort(nodes, 0, counter - 1);
@@ -628,6 +624,67 @@ public class ArraySet extends NodeSet {
 		sorted = true;
 	}
 
+	private final static NodeProxy[] copyNodeSet(ArraySet al, ArraySet dl) {
+		int ax = 0, dx = 0;
+		int ad = al.nodes[ax].doc.docId, dd = dl.nodes[dx].doc.docId;
+		final int alen = al.counter - 1, dlen = dl.counter - 1;
+		final NodeProxy[] ol = new NodeProxy[dl.counter];
+		while(true) {
+			if(ad < dd) {
+				if(ax < alen) {
+					++ax;
+					ad = al.nodes[ax].doc.docId;
+				} else
+					break;
+			} else if(ad > dd) {
+				if(dx < dlen) {
+					ol[dx] = null;
+					++dx;
+					dd = dl.nodes[dx].doc.docId;
+				} else
+					break;
+			} else {
+				ol[dx] = new NodeProxy(dl.nodes[dx]);
+				if(dx < dlen) {
+					++dx;
+					dd = dl.nodes[dx].doc.docId;
+				} else
+					break;
+			}
+		}
+		return ol;
+	}
+	
+	private final static void trimNodeSet(ArraySet al, ArraySet dl) {
+			int ax = 0, dx = 0;
+			int ad = al.nodes[ax].doc.docId, dd = dl.nodes[dx].doc.docId;
+			int count = 0;
+			final int alen = al.counter - 1, dlen = dl.counter - 1;
+			while(true) {
+				if(ad < dd) {
+					if(ax < alen) {
+						++ax;
+						ad = al.nodes[ax].doc.docId;
+					} else
+						break;
+				} else if(ad > dd) {
+					if(dx < dlen) {
+						++dx;
+						dd = dl.nodes[dx].doc.docId;
+					} else
+						break;
+				} else {
+					if(dx < dlen) {
+						++dx;
+						count++;
+						dd = dl.nodes[dx].doc.docId;
+					} else
+						break;
+				}
+			}
+			System.out.println("dl = " + dlen + "; copy = " + count);
+		}
+		
 	public class ArraySetIterator implements Iterator {
 
 		protected int pos = 0;

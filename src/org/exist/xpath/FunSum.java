@@ -1,6 +1,6 @@
 
 /* eXist Open Source Native XML Database
- * Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -37,15 +37,19 @@ public class FunSum extends Function {
 		return getArgument(0).preselect(in_docs);
     }
 
-    public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+    public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
+    	NodeProxy contextNode) {
 		double sum = 0.0, val;
 		// does argument return a node list?
 		if(getArgument(0).returnsType() == Constants.TYPE_NODELIST) {
-			ValueSet values = new ValueSet();
-			NodeSet args = (NodeSet) getArgument(0).eval(docs, context, null).getNodeList();
+			NodeSet args = (NodeSet) getArgument(0).eval(context, docs, contextSet, contextNode).getNodeList();
+			LOG.debug("found " + args.getLength() + " nodes for sum");
+			String nval;
 			for(int i = 0; i < args.getLength(); i++) {
 				try {
-					val = Double.parseDouble(args.get(i).getNodeValue());
+					nval = args.get(i).getNodeValue();
+					System.out.println(nval);
+					val = Double.parseDouble(nval);
 					if(val != Double.NaN)
 						sum += val;
 				} catch (NumberFormatException nfe) {
@@ -53,7 +57,7 @@ public class FunSum extends Function {
 			}
 		} else {
 			// does argument return a value set?
-			Value v = getArgument(0).eval(docs, context, null);
+			Value v = getArgument(0).eval(context, docs, contextSet, contextNode);
 			if(v.getType() == Value.isValueSet) {
 				for(int i = 0; i < v.getLength(); i++) {
 					val = v.get(i).getNumericValue();
