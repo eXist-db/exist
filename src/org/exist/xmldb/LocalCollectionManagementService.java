@@ -71,6 +71,10 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             broker = brokerPool.get(user);
             org.exist.collections.Collection coll =
                 broker.getOrCreateCollection( collName );
+           
+            if (created != null)
+        		coll.setCreationTime(created.getTime());
+            
             broker.saveCollection( coll );
         } catch ( EXistException e ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,

@@ -562,7 +562,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 					broker,
 					res.getId(),
 					(byte[]) res.getContent(),
-                    res.getMimeType());
+                    res.getMimeType(), res.datecreated, res.datemodified  );
 		} catch (Exception e) {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
