@@ -71,13 +71,16 @@ public class NativeSerializer extends Serializer {
 
 	protected void serializeToSAX(NodeSet set, int start, int howmany, long queryTime)
 		throws SAXException {
+		boolean generateDocEvents = 
+			outputProperties.getProperty(Serializer.GENERATE_DOC_EVENTS, "false").equals("true");
 		Iterator iter = set.iterator();
 		for (int i = 0; i < start - 1; i++)
 			iter.next();
 
 		if (!iter.hasNext())
 			return;
-		contentHandler.startDocument();
+		if(generateDocEvents)
+			contentHandler.startDocument();
 		contentHandler.startPrefixMapping("exist", EXIST_NS);
 		AttributesImpl attribs = new AttributesImpl();
 		attribs.addAttribute(
@@ -103,7 +106,8 @@ public class NativeSerializer extends Serializer {
 			serializeToSAX(null, domIter, p.doc, p.gid, true, p.match);
 		}
 		contentHandler.endElement(EXIST_NS, "result", "exist:result");
-		contentHandler.endDocument();
+		if(generateDocEvents)
+			contentHandler.endDocument();
 	}
 
 	protected void serializeToSAX(Document doc, boolean generateDocEvent) throws SAXException {
