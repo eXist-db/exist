@@ -51,6 +51,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.BinaryDocument;
@@ -980,7 +981,7 @@ public class RpcConnection extends Thread {
 			String collectionName = path.substring(0, p);
 			String docName = path.substring(p + 1);
 			InputSource source;
-			Indexer indexer;
+			IndexInfo info;
 			try {
 				collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
 				if (collection == null)
@@ -994,12 +995,12 @@ public class RpcConnection extends Thread {
 				}
 				InputStream is = new ByteArrayInputStream(xml);
 				source = new InputSource(is);
-				indexer = collection.validate(broker, docName, source);
+				info = collection.validate(broker, docName, source);
 			} finally {
 				if(collection != null)
 					collection.release();
 			}
-			collection.store(broker, indexer, source, false);
+			collection.store(broker, info, source, false);
 			LOG.debug("parsing " + path + " took "
 					+ (System.currentTimeMillis() - startTime) + "ms.");
 			documentCache.clear();
@@ -1038,7 +1039,7 @@ public class RpcConnection extends Thread {
 			String collectionName = docName.substring(0, p);
 			docName = docName.substring(p + 1);
 			Collection collection = null;
-			Indexer indexer;
+			IndexInfo info;
 			InputSource source;
 			try {
 				collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
@@ -1058,12 +1059,12 @@ public class RpcConnection extends Thread {
 					uri = file.getAbsolutePath();
 				}
 				source = new InputSource(uri);
-				indexer = collection.validate(broker, docName, source);
+				info = collection.validate(broker, docName, source);
 			} finally {
 				if(collection != null)
 					collection.release();
 			}
-			collection.store(broker, indexer, source, false);
+			collection.store(broker, info, source, false);
 		} finally {
 			brokerPool.release(broker);
 		}

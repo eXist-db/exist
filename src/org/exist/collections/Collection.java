@@ -763,7 +763,7 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 	}
 
-	public Indexer validate(DBBroker broker, String name, InputSource source) 
+	public IndexInfo validate(DBBroker broker, String name, InputSource source) 
 	throws EXistException, PermissionDeniedException, TriggerException,
 	SAXException, LockException {
 		if (broker.isReadOnly())
@@ -780,7 +780,7 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 	}
 	
-	public void store(DBBroker broker, Indexer indexer, InputSource source, boolean privileged)
+	public void store(DBBroker broker, IndexInfo info, InputSource source, boolean privileged)
 	throws EXistException, PermissionDeniedException, TriggerException,
 	SAXException, LockException {
 		// reset the input source
@@ -797,11 +797,12 @@ implements Comparable, EntityResolver, Cacheable {
 			LOG.debug("could not reset input source", e);
 		}
 		// second pass: store the document
+		Indexer indexer = info.getIndexer();
 		DocumentImpl document = indexer.getDocument();
 		LOG.debug("storing document " + document.getDocId() + "; " + document.getFileName() + " ...");
 		try {
 			try {
-				indexer.getReader().parse(source);
+				info.getReader().parse(source);
 			} catch (IOException e) {
 				throw new EXistException(e);
 			}
@@ -830,7 +831,7 @@ implements Comparable, EntityResolver, Cacheable {
 		return;
 	}
 	
-	public Indexer validate(DBBroker broker, String name, String data)
+	public IndexInfo validate(DBBroker broker, String name, String data)
 	throws EXistException, PermissionDeniedException, TriggerException,
 	SAXException, LockException {
 		if (broker.isReadOnly())
@@ -849,20 +850,137 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 	}
 	
-	public void store(DBBroker broker, Indexer indexer, String data, boolean privileged)
+	public void store(DBBroker broker, IndexInfo info, String data, boolean privileged)
 	throws EXistException, PermissionDeniedException, TriggerException,
 	SAXException, LockException {
 		InputSource source = new InputSource(new StringReader(data));
 
 		// second pass: store the document
+		Indexer indexer = info.getIndexer();
 		DocumentImpl document = indexer.getDocument();
 		LOG.debug("storing document " + document.getDocId() + " ...");
 		try {
 			try {
-				indexer.getReader().parse(source);
+				info.getReader().parse(source);
 			} catch (IOException e) {
 				throw new EXistException(e);
 			}
+
+			if(!hasDocument(document.getFileName())) {
+				addDocument(broker, document);
+				broker.addDocument(this, document);
+			} else {
+				broker.updateDocument(document);
+			}
+			broker.closeDocument();
+			broker.flush();
+//			broker.checkTree(document);
+			LOG.debug("document stored.");
+			// if we are running in privileged mode (e.g. backup/restore)
+			// notify the SecurityManager about changes
+			if (getName().equals(SecurityManager.SYSTEM) && document.getFileName().equals(SecurityManager.ACL_FILE)
+			        && privileged == false) {
+			    // inform the security manager that system data has changed
+			    LOG.debug("users.xml changed");
+			    broker.getBrokerPool().reloadSecurityManager(broker);
+			}
+		} finally {
+			document.getUpdateLock().release(Lock.WRITE_LOCK);
+		}
+		broker.deleteObservers();
+		return;
+	}
+	
+	public IndexInfo validate(DBBroker broker, String name, Node node) 
+	throws EXistException, PermissionDeniedException, TriggerException,
+	SAXException, LockException {
+		if (broker.isReadOnly())
+			throw new PermissionDeniedException("Database is read-only");
+		DocumentImpl document, oldDoc = null;
+		try {
+			lock.acquire(Lock.WRITE_LOCK);
+			oldDoc = getDocument(broker, name);
+			document = new DocumentImpl(broker, name,	this);
+		
+			checkPermissions(broker, name, oldDoc);
+			
+			manageDocumentInformation(broker, name, oldDoc, document );
+			
+			Trigger trigger = setupTriggers(broker, name, oldDoc);
+			
+			Indexer indexer = new Indexer(broker);
+			IndexInfo info = new IndexInfo(indexer);
+			indexer.setDocument(document);
+
+			addObserversToIndexer(broker, indexer);
+			indexer.setValidating(true);
+			DOMStreamer streamer = new DOMStreamer();
+			info.setDOMStreamer(streamer);
+			if (trigger != null && triggersEnabled) {
+				streamer.setContentHandler(trigger.getInputHandler());
+				streamer.setLexicalHandler(trigger.getLexicalInputHandler());
+				trigger.setOutputHandler(indexer);
+				trigger.setValidating(true);
+				// prepare the trigger
+				trigger.prepare(oldDoc == null
+						? Trigger.STORE_DOCUMENT_EVENT
+						: Trigger.UPDATE_DOCUMENT_EVENT, broker, name, oldDoc);
+			} else {
+				streamer.setContentHandler(indexer);
+				streamer.setLexicalHandler(indexer);
+			}
+
+			// first pass: parse the document to determine tree structure
+			LOG.debug("validating document " + name);
+			streamer.serialize(node, true);
+			document.setMaxDepth(document.getMaxDepth() + 1);
+			document.calculateTreeLevelStartPoints();
+			// new document is valid: remove old document 
+			if (oldDoc != null) {
+				LOG.debug("removing old document " + oldDoc.getFileName());
+				if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
+					broker.removeBinaryResource((BinaryDocument) oldDoc);
+				else
+					broker.removeDocument(oldDoc, false);
+				oldDoc.copyOf(document);
+				indexer.setDocumentObject(oldDoc);
+				document = oldDoc;
+			} else {
+			    document.getUpdateLock().acquire(Lock.WRITE_LOCK);
+			    document.setDocId(broker.getNextDocId(this));
+			}
+
+			indexer.setValidating(false);
+			if (trigger != null)
+				trigger.setValidating(false);
+			return info;
+		} catch(EXistException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} catch(SAXException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} catch(PermissionDeniedException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} catch(TriggerException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} finally {
+			lock.release();
+		}
+	}
+	
+	public void store(DBBroker broker, IndexInfo info, Node node, boolean privileged)
+	throws EXistException, PermissionDeniedException, TriggerException,
+	SAXException, LockException {
+//		 second pass: store the document
+		Indexer indexer = info.getIndexer();
+		DocumentImpl document = indexer.getDocument();
+		LOG.debug("storing document " + document.getDocId() + " ...");
+		DOMStreamer streamer = info.getDOMStreamer();
+		try {
+			streamer.serialize(node, true);
 
 			if(!hasDocument(document.getFileName())) {
 				addDocument(broker, document);
@@ -913,8 +1031,8 @@ implements Comparable, EntityResolver, Cacheable {
 			oldDoc = (DocumentImpl) documents.get(name);
 			
 			// first pass: parse the document to determine tree structure
-			Indexer indexer = determineTreeStructure(broker, name, document, oldDoc, reader, source);
-			document = indexer.getDocument();
+			IndexInfo info = determineTreeStructure(broker, name, document, oldDoc, reader, source);
+			document = info.getIndexer().getDocument();
 		} finally {
 			lock.release();
 		}
@@ -970,7 +1088,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @throws PermissionDeniedException
 	 * @throws TriggerException
 	 */
-	private Indexer determineTreeStructure(DBBroker broker, String name, DocumentImpl document, DocumentImpl oldDoc, XMLReader reader, InputSource source) throws LockException, EXistException, SAXException, PermissionDeniedException, TriggerException {
+	private IndexInfo determineTreeStructure(DBBroker broker, String name, DocumentImpl document, DocumentImpl oldDoc, XMLReader reader, InputSource source) throws LockException, EXistException, SAXException, PermissionDeniedException, TriggerException {
 		try {
 			checkPermissions(broker, name, oldDoc);
 			
@@ -978,10 +1096,11 @@ implements Comparable, EntityResolver, Cacheable {
 			
 			Trigger trigger = setupTriggers(broker, name, oldDoc);
 			Indexer indexer = new Indexer(broker);
+			IndexInfo info = new IndexInfo(indexer);
 			indexer.setDocument(document);
 
 			addObserversToIndexer(broker, indexer);
-			prepareSAXParser(broker, name, oldDoc, trigger, indexer, reader );
+			prepareSAXParser(broker, name, oldDoc, trigger, info, reader );
 
 			// first pass: parse the document to determine tree structure
 			LOG.debug("validating document " + name);
@@ -1013,7 +1132,7 @@ implements Comparable, EntityResolver, Cacheable {
 			indexer.setValidating(false);
 			if (trigger != null)
 				trigger.setValidating(false);
-			return indexer;
+			return info;
 		} catch(EXistException e) {
 		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 		    throw e;
@@ -1043,8 +1162,9 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @throws TriggerException
 	 */
 	private void prepareSAXParser(DBBroker broker, String name, DocumentImpl oldDoc, 
-			Trigger trigger, Indexer indexer, XMLReader reader) throws EXistException, SAXException, SAXNotRecognizedException, SAXNotSupportedException, TriggerException {
+			Trigger trigger, IndexInfo info, XMLReader reader) throws EXistException, SAXException, SAXNotRecognizedException, SAXNotSupportedException, TriggerException {
 		//XMLReader reader;
+		Indexer indexer = info.getIndexer();
 		indexer.setValidating(true);
 		// reader = getReader(broker);
 		reader.setEntityResolver(this);
@@ -1069,7 +1189,7 @@ implements Comparable, EntityResolver, Cacheable {
 							indexer);
 		}
 		reader.setErrorHandler(indexer);
-		indexer.setReader(reader);
+		info.setReader(reader);
 		//return reader;
 	}
 
@@ -1169,8 +1289,8 @@ implements Comparable, EntityResolver, Cacheable {
 			reader = getReader(broker);
 	
 			// first pass: parse the document to determine tree structure
-			Indexer indexer = determineTreeStructure(broker, name, document, oldDoc, reader, source);
-			document = indexer.getDocument();
+			IndexInfo info = determineTreeStructure(broker, name, document, oldDoc, reader, source);
+			document = info.getIndexer().getDocument();
 		} finally {
 			lock.release();
 		}

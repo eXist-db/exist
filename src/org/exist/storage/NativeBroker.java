@@ -1619,10 +1619,10 @@ public class NativeBroker extends DBBroker {
 			public Object start() {
 				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
 				if (val == null) {
-				    if(LOG.isDebugEnabled()) {
-				        LOG.debug("node " + gid + " not found in document " + ((DocumentImpl)doc).getDocId());
-				        Thread.dumpStack();
-				    }
+//				    if(LOG.isDebugEnabled()) {
+//				        LOG.debug("node " + gid + " not found in document " + ((DocumentImpl)doc).getDocId());
+//				        Thread.dumpStack();
+//				    }
 					return null;
 				}
 				NodeImpl node =
