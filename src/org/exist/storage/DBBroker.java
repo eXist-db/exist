@@ -545,11 +545,7 @@ public abstract class DBBroker extends Observable {
 	
 	public abstract void consistencyCheck(DocumentImpl doc) throws EXistException;
 	
-	public void sync() {
-		/*
-		 *  do nothing
-		 */
-	}
+	public abstract void sync(int syncEvent);
 
 	/**
 	 *  Update a node's data. To keep nodes in a correct sequential order, it is sometimes 

@@ -111,21 +111,21 @@ public class BFile extends BTree {
         minFree = PAGE_MIN_FREE;
         lock = new ReentrantReadWriteLock(file.getName());
         
-        Runnable syncAction = new Runnable() {
-            public void run() {
-                if(dataCache.hasDirtyItems()) {
-	                try {
-	                    lock.acquire(Lock.WRITE_LOCK);
-	                    dataCache.flush();
-	                } catch (LockException e) {
-	                    LOG.warn("Failed to acquire lock on " + getFile().getName());
-	                } finally {
-	                    lock.release();
-	                }
-                }
-            }
-        };
-        pool.getSyncDaemon().executePeriodically(getDataSyncPeriod(), syncAction, false);
+//        Runnable syncAction = new Runnable() {
+//            public void run() {
+//                if(dataCache.hasDirtyItems()) {
+//	                try {
+//	                    lock.acquire(Lock.WRITE_LOCK);
+//	                    dataCache.flush();
+//	                } catch (LockException e) {
+//	                    LOG.warn("Failed to acquire lock on " + getFile().getName());
+//	                } finally {
+//	                    lock.release();
+//	                }
+//                }
+//            }
+//        };
+//        pool.getSyncDaemon().executePeriodically(getDataSyncPeriod(), syncAction, false);
     }
 
     /**
