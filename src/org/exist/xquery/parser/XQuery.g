@@ -2433,9 +2433,9 @@ throws PermissionDeniedException, EXistException, XPathException
 			ElementConstructor c= new ElementConstructor(context);
 			c.setASTNode(qn);
 			step= c;
-			elementContent = new SequenceConstructor(context);
+			SequenceConstructor construct = new SequenceConstructor(context);
 			EnclosedExpr enclosed = new EnclosedExpr(context);
-			enclosed.addPath(elementContent);
+			enclosed.addPath(construct);
 			c.setContent(enclosed);
 			PathExpr qnamePathExpr = new PathExpr(context);
 			c.setNameExpr(qnamePathExpr);
@@ -2448,7 +2448,9 @@ throws PermissionDeniedException, EXistException, XPathException
 				c.addNamespaceDecl(prefix.getText(), uri.getText());
 			}
 			|
+			{ elementContent = new PathExpr(context); }
 			contentExpr=expr[elementContent]
+			{ construct.addPath(elementContent); }
 		)*
 	)
 	|

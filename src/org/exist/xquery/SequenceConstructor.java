@@ -65,11 +65,13 @@ public class SequenceConstructor extends PathExpr {
 	 */
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
+		buf.append("#[");
 		for(Iterator i = steps.iterator(); i.hasNext(); ) {
-			if(buf.length() > 0)
-				buf.append(", ");
 			buf.append(((Expression)i.next()).pprint());
+			if(i.hasNext())
+				buf.append(", ");
 		}
+		buf.append("]");
 		return buf.toString();
 	}
 
