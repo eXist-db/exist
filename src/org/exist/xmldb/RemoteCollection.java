@@ -34,6 +34,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
 
@@ -62,14 +63,12 @@ public class RemoteCollection implements CollectionImpl {
 	private static final int MAX_CHUNK_LENGTH = 512000;
 
 	protected Map childCollections = null;
-	protected String encoding = "UTF-8";
-	protected int indentXML = 0;
 	protected String name;
 	protected Permission permissions = null;
 	protected RemoteCollection parent = null;
 	protected List resources = null;
 	protected XmlRpcClient rpcClient = null;
-	protected boolean saxDocumentEvents = true;
+	protected Properties properties = new Properties();
 
 	public RemoteCollection(XmlRpcClient client, String host, String collection)
 		throws XMLDBException {
@@ -132,8 +131,7 @@ public class RemoteCollection implements CollectionImpl {
 
 	public Resource createResource(String id, String type) throws XMLDBException {
 		String newId = id == null ? createId() : id;
-		RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, newId, null, indentXML, encoding);
-		r.setSAXDocEvents(this.saxDocumentEvents);
+		RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, newId, null);
 		return r;
 	}
 
@@ -171,15 +169,13 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public String getProperty(String property) throws XMLDBException {
-		if (property.equals(OutputKeys.INDENT))
-			return (indentXML == 1) ? "yes" : "no";
-		if (property.equals(OutputKeys.ENCODING))
-			return encoding;
-		if (property.equals("sax-document-events"))
-			return saxDocumentEvents ? "true" : "false";
-		return null;
+		return (String)properties.get(property);
 	}
 
+	public Properties getProperties() {
+		return properties;
+	}
+	
 	public Resource getResource(String id) throws XMLDBException {
 		if (childCollections == null)
 			readCollection();
@@ -188,8 +184,7 @@ public class RemoteCollection implements CollectionImpl {
 			DocumentProxy dp = (DocumentProxy) resources.get(i);
 			RemoteXMLResource r;
 			if (dp.getName().equals(id)) {
-				r = new RemoteXMLResource(this, -1, -1, dp.getName(), null, indentXML, encoding);
-				r.setSAXDocEvents(this.saxDocumentEvents);
+				r = new RemoteXMLResource(this, -1, -1, dp.getName(), null);
 				r.setPermissions(dp.getPermissions());
 				return r;
 			}
@@ -375,15 +370,7 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public void setProperty(String property, String value) throws XMLDBException {
-		if (property.equals(OutputKeys.INDENT))
-			indentXML = (value.equals("yes") ? 1 : -1);
-
-		if (property.equals(OutputKeys.ENCODING))
-			encoding = value;
-
-		if (property.equals("sax-document-events"))
-			saxDocumentEvents = value.equals("true");
-
+		properties.put(property, value);
 	}
 
 	public void storeResource(Resource res) throws XMLDBException {

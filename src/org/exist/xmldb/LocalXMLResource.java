@@ -18,6 +18,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
@@ -47,7 +48,6 @@ public class LocalXMLResource implements XMLResourceImpl {
 	protected LocalCollection parent;
 	protected NodeProxy proxy = null;
 	protected long id = -1;
-	protected Properties properties = null;
 	protected User user;
 	
 	// those are the different types of content this resource
@@ -56,30 +56,18 @@ public class LocalXMLResource implements XMLResourceImpl {
 	protected File file = null;
 	protected Node root = null;
 	protected AtomicValue value = null;
-	
-	public LocalXMLResource(
-		User user,
-		BrokerPool pool,
-		LocalCollection parent,
-		String docId,
-		long id)
-		throws XMLDBException {
-		this(user, pool, parent, docId, id, null);
-	}
 
 	public LocalXMLResource(
 		User user,
 		BrokerPool pool,
 		LocalCollection parent,
 		String did,
-		long id,
-		Properties properties)
+		long id)
 		throws XMLDBException {
 		this.user = user;
 		this.brokerPool = pool;
 		this.parent = parent;
 		this.id = id;
-		this.properties = properties;
 		if (did != null && did.indexOf('/') > -1)
 			did = did.substring(did.lastIndexOf('/') + 1);
 
@@ -91,8 +79,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 		BrokerPool pool,
 		LocalCollection parent,
 		DocumentImpl doc,
-		long id,
-		Properties properties)
+		long id)
 		throws XMLDBException {
 		this.user = user;
 		this.brokerPool = pool;
@@ -102,18 +89,15 @@ public class LocalXMLResource implements XMLResourceImpl {
 		this.docId = doc.getFileName();
 		if (docId.indexOf('/') > -1)
 			docId = docId.substring(docId.lastIndexOf('/') + 1);
-
-		this.properties = properties;
 	}
 
 	public LocalXMLResource(
 		User user,
 		BrokerPool pool,
 		LocalCollection parent,
-		NodeProxy p,
-		Properties properties)
+		NodeProxy p)
 		throws XMLDBException {
-		this(user, pool, parent, p.doc, p.gid, properties);
+		this(user, pool, parent, p.doc, p.gid);
 		this.proxy = p;
 	}
 
@@ -123,7 +107,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 		else if (root != null) {
 			try {
 				StringWriter writer = new StringWriter();
-				DOMSerializer serializer = new DOMSerializer(writer, properties);
+				DOMSerializer serializer = new DOMSerializer(writer, parent.properties);
 				serializer.serialize(root);
 				content = writer.toString();
 			} catch (TransformerException e) {
@@ -158,7 +142,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 						"permission denied to read resource");
 				Serializer serializer = broker.getSerializer();
 				serializer.setUser(user);
-				serializer.setProperties(properties);
+				serializer.setProperties(parent.properties);
 				if (id < 0)
 					content = serializer.serialize(document);
 				else {
@@ -215,7 +199,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 		DBBroker broker = null;
         if (root != null) {
 			try {
-				String option = properties.getProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+				String option = parent.properties.getProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 				if(option.equalsIgnoreCase("false"))
 					handler = new IncludeXMLFilter(handler);
                 DOMStreamer streamer = new DOMStreamer(handler, null);
@@ -243,14 +227,14 @@ public class LocalXMLResource implements XMLResourceImpl {
                     throw new XMLDBException(
                         ErrorCodes.PERMISSION_DENIED,
                         "permission denied to read resource");
-                if (properties.getProperty(Serializer.GENERATE_DOC_EVENTS) == null)
-                    properties.put(Serializer.GENERATE_DOC_EVENTS, "true");
+                if (parent.properties.getProperty(Serializer.GENERATE_DOC_EVENTS) == null)
+                    parent.properties.setProperty(Serializer.GENERATE_DOC_EVENTS, "true");
                 Serializer serializer = broker.getSerializer();
-                serializer.setContentHandler(handler);
                 serializer.setUser(user);
                 String xml;
                 try {
-                    serializer.setProperties(properties);
+					serializer.setProperties(parent.properties);
+					serializer.setContentHandler(handler);
                     if (id < 0)
                         serializer.toSAX(document);
                     else {
@@ -384,9 +368,6 @@ public class LocalXMLResource implements XMLResourceImpl {
 	}
 
 	public ContentHandler setContentAsSAX() throws XMLDBException {
-		String encoding = "UTF-8";
-		if (properties != null && properties.containsKey("encoding"))
-			encoding = (String) properties.get("encoding");
 		return new InternalXMLSerializer();
 	}
 

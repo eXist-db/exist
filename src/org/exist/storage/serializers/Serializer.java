@@ -24,6 +24,7 @@ package org.exist.storage.serializers;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -164,10 +165,9 @@ public class Serializer implements XMLReader {
 	public void setProperties(Properties properties) throws SAXNotRecognizedException, SAXNotSupportedException {
 		if (properties == null)
 			return;
-		Map.Entry entry;
-		for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
-			entry = (Map.Entry) i.next();
-			setProperty((String)entry.getKey(), entry.getValue());
+		for (Enumeration e = properties.propertyNames(); e.hasMoreElements(); ) {
+			String key = (String)e.nextElement();
+			setProperty(key, properties.getProperty(key));
 		}
 	}
 
@@ -175,8 +175,9 @@ public class Serializer implements XMLReader {
 	throws SAXNotRecognizedException, SAXNotSupportedException {
 		if (prop.equals("http://xml.org/sax/properties/lexical-handler")) {
 			lexicalHandler = (LexicalHandler) value;
-		} else
+		} else {
 			outputProperties.setProperty(prop, (String)value);
+		}
 	}
 
 	protected int getHighlightingMode() {
@@ -201,9 +202,9 @@ public class Serializer implements XMLReader {
 		StringWriter sout = new StringWriter();
 		StreamResult result = new StreamResult(sout);
 		xslHandler.setResult(result);
-		if (outputProperties.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes").equals("yes"))
+		if (outputProperties.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes").equals("yes")) {
 			xinclude.setContentHandler(xslHandler);
-		else
+		} else
 			contentHandler = xslHandler;
 		lexicalHandler = null;
 		return sout;
