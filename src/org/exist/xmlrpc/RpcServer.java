@@ -106,11 +106,11 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	public int executeQuery(User user, String xpath)
+	public int executeQuery(User user, String xpath, Hashtable parameters)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		try {
-			return con.executeQuery(user, xpath);
+			return con.executeQuery(user, xpath, parameters);
 		} catch (Exception e) {
 			handleException(e);
 			return -1;
@@ -122,7 +122,8 @@ public class RpcServer implements RpcAPI {
 	public int executeQuery(
 		User user,
 		byte[] xpath,
-		String encoding)
+		String encoding,
+		Hashtable parameters)
 		throws EXistException, PermissionDeniedException {
 		String xpathString = null;
 		if (encoding != null)
@@ -135,12 +136,12 @@ public class RpcServer implements RpcAPI {
 			xpathString = new String(xpath);
 
 		LOG.debug("query: " + xpathString);
-		return executeQuery(user, xpathString);
+		return executeQuery(user, xpathString, parameters);
 	}
 
-	public int executeQuery(User user, byte[] xpath)
+	public int executeQuery(User user, byte[] xpath, Hashtable parameters)
 		throws EXistException, PermissionDeniedException {
-		return executeQuery(user, xpath, null);
+		return executeQuery(user, xpath, null, parameters);
 	}
 
 	public Hashtable getCollectionDesc(User user, String rootCollection)

@@ -20,6 +20,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 
     protected RemoteCollection collection;
 	protected Hashtable namespaceMappings = new Hashtable(5);
+	protected Hashtable variableDecls = new Hashtable();
 	protected Properties outputProperties = null;
 	
     public RemoteXPathQueryService( RemoteCollection collection ) {
@@ -38,6 +39,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             	optParams.put(RpcAPI.SORT_EXPR, sortExpr);
             if(namespaceMappings.size() > 0)
             	optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
+            if(variableDecls.size() > 0)
+            	optParams.put(RpcAPI.VARIABLES, variableDecls);
             optParams.put(RpcAPI.BASE_URI, collection.getPath());
 			Vector params = new Vector();
 			params.addElement(query.getBytes("UTF-8"));
@@ -65,7 +68,10 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         RemoteXMLResource resource = (RemoteXMLResource)res;
         try {
         	Hashtable optParams = new Hashtable();
-        	optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
+        	if(namespaceMappings.size() > 0)
+            	optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
+            if(variableDecls.size() > 0)
+            	optParams.put(RpcAPI.VARIABLES, variableDecls);
         	if(sortExpr != null)
         		optParams.put(RpcAPI.SORT_EXPR, sortExpr);
 			optParams.put(RpcAPI.BASE_URI, collection.getPath());
@@ -134,9 +140,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	 * @see org.exist.xmldb.XPathQueryServiceImpl#declareVariable(java.lang.String, java.lang.Object)
 	 */
 	public void declareVariable(String qname, Object initialValue) throws XMLDBException {
-		// TODO Not implemented
-		//throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED,
-		//	"method not implemented");
+		variableDecls.put(qname, initialValue);
 	}
 
 	/**

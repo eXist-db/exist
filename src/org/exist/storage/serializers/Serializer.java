@@ -169,7 +169,7 @@ public class Serializer implements XMLReader {
 			return;
 		for (Iterator i = properties.entrySet().iterator(); i.hasNext(); ) {
 			Map.Entry entry = (Map.Entry) i.next();
-			setProperty((String)entry.getKey(), (String)entry.getValue());
+			setProperty((String)entry.getKey(), entry.getValue().toString());
 		}
 	}
 
@@ -179,7 +179,7 @@ public class Serializer implements XMLReader {
 			return;
 		for(Iterator i = table.entrySet().iterator(); i.hasNext(); ) {
 			Map.Entry entry = (Map.Entry) i.next();
-			setProperty((String)entry.getKey(), (String)entry.getValue());
+			setProperty((String)entry.getKey(), entry.getValue().toString());
 		}
 	}
 	
