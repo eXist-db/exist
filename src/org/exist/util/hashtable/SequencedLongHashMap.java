@@ -77,23 +77,22 @@ public class SequencedLongHashMap extends Long2ObjectHashMap {
 				throw new RuntimeException("Found old object: " + old.getClass().getName());
 			duplicate = (Entry)old;
 		} catch (HashtableOverflowException e) {
-			throw new RuntimeException(e);
-//			long[] copyKeys = keys;
-//			Object[] copyValues = values;
-//			// enlarge the table with a prime value
-//			tabSize = (int) nextPrime(tabSize + tabSize / 2);
-//			keys = new long[tabSize];
-//			values = new Object[tabSize];
-//			items = 0;
-//
-//			try {
-//				for (int k = 0; k < copyValues.length; k++) {
-//					if (copyValues[k] != null && copyValues[k] != REMOVED)
-//						insert(copyKeys[k], copyValues[k]);
-//				}
-//				duplicate = (Entry)insert(key, entry);
-//			} catch (HashtableOverflowException e1) {
-//			}
+			long[] copyKeys = keys;
+			Object[] copyValues = values;
+			// enlarge the table with a prime value
+			tabSize = (int) nextPrime(tabSize + tabSize / 2);
+			keys = new long[tabSize];
+			values = new Object[tabSize];
+			items = 0;
+
+			try {
+				for (int k = 0; k < copyValues.length; k++) {
+					if (copyValues[k] != null && copyValues[k] != REMOVED)
+						insert(copyKeys[k], copyValues[k]);
+				}
+				duplicate = (Entry)insert(key, entry);
+			} catch (HashtableOverflowException e1) {
+			}
 		}
 		if(duplicate != null)
 			removeEntry(duplicate);
