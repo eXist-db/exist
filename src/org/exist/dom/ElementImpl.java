@@ -286,6 +286,8 @@ public class ElementImpl
 	            node = appendChildren(firstChildID(), this, getPath(), attribs, true);
 	        }
 	        else {
+	            final int level = ownerDocument.getTreeLevel(gid);
+	            ownerDocument.reindex = level + 1;
 	            if (lastAttrib != null && lastAttrib.gid == lastChildID())
 	                node = appendChildren(lastChildID() + 1, lastAttrib, getPath(), attribs, true);
 	            else
