@@ -113,6 +113,9 @@ public interface Trigger extends ContentHandler, LexicalHandler {
 	public final static int STORE_DOCUMENT_EVENT = 0;
 	public final static int UPDATE_DOCUMENT_EVENT = 1;
 	public final static int REMOVE_DOCUMENT_EVENT = 2;
+	public final static int CREATE_COLLECTION_EVENT = 3;
+	public final static int RENAME_COLLECTION_EVENT = 4;
+	public final static int DELETE_COLLECTION_EVENT = 5;
 
 	/**
 	 * The configure method is called once whenever the collection configuration is loaded. Use it to
