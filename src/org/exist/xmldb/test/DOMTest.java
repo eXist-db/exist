@@ -31,7 +31,7 @@ public class DOMTest {
 		tester.runTest4(false);
 		tester.runTest4(true);
 	}
-
+	
 	public void runTest1() {
 		try {
 			System.out.println("Running test1 ...");

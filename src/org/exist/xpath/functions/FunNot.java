@@ -70,6 +70,9 @@ public class FunNot extends Function {
 		Item contextItem)
 		throws XPathException {
 		Expression arg = getArgument(0);
+		// case 1: if the argument expression returns a node set,
+		// subtract the set from the context node set and return
+		// the remaining set
 		if (Type.subTypeOf(arg.returnsType(), Type.NODE)) {
 			NodeSet result = new ExtArrayNodeSet();
 			if(contextSequence.getLength() > 0)
@@ -108,10 +111,11 @@ public class FunNot extends Function {
 			}
 			LOG.debug("found " + result.getLength());
 			return result;
+		// case 2: simply invert the boolean value
 		} else {
 			Sequence seq =
 				arg.eval(contextSequence, contextItem);
-			return seq.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
+			return seq.effectiveBooleanValue() ? BooleanValue.FALSE : BooleanValue.TRUE;
 		}
 	}
 

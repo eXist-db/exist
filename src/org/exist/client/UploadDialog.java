@@ -124,11 +124,12 @@ class UploadDialog extends JFrame {
 
 		messages = new JTextArea(5, 50);
 		messages.setEditable(false);
+		messages.setLineWrap(true);
 		JScrollPane scroll =
 			new JScrollPane(
 				messages,
 				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scroll.setBorder(BorderFactory.createTitledBorder("Messages"));
 		c.gridx = 0;
 		c.gridy = 5;

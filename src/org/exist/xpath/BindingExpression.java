@@ -133,7 +133,6 @@ public abstract class BindingExpression extends AbstractExpression {
 			}
 			return result;
 		} else if (contextSequence == null) {
-			System.out.println("SINGLE");
 			Sequence innerSeq = whereExpr.eval(null);
 			return innerSeq.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		} else {

@@ -146,3 +146,10 @@ body {
             font-weight: bold;
             font-family: Arial, Helvetica, sans-serif;
           }
+
+p {
+text-align: left;
+padding-left: 15px;
+margin-top: 5px;
+margin-bottom: 5px;
+}

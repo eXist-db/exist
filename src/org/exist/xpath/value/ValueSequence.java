@@ -91,7 +91,7 @@ public class ValueSequence extends AbstractSequence {
 	 * @see org.exist.xpath.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
-		if(itemType == Type.NODE) {
+		if(Type.subTypeOf(itemType, Type.NODE)) {
 			NodeSet set = new ExtArrayNodeSet();
 			for(Iterator i = values.iterator(); i.hasNext(); ) {
 				set.add((NodeProxy)i.next());

@@ -48,17 +48,28 @@
             </definitionlist>
         </section>
         <section id="overview" title="Overview">
-            <p>eXist is an Open Source native XML database featuring efficient, 
-            	index-based XPath query processing, extensions for keyword search,
-            	XUpdate support and tight integration with existing XML development tools. 
+            <p>eXist is an Open Source native XML database featuring an efficient, 
+            	index-based XPath/XQuery engine, extensions for full-text
+                searching, XUpdate support and tight integration with existing XML development tools. 
             	The database is lightweight, completely written in Java and may be easily deployed in a
                 number of ways, running either as a stand-alone server process,
                 inside a servlet-engine or directly embedded into an application.</p>
+            
+            <p>To avoid memory-intensive document tree traversals during query
+            processing, eXist uses an efficient index structure which is based on a numerical 
+            indexing scheme for identifying XML nodes in the index.</p>
+            
+            <p>eXist also implements a number of extensions to
+            efficiently support document-centric queries, which overcome the
+            inability of standard XPath/XQuery functions to produce satisfactory
+            results when querying larger sections of text.</p>
+            
             <p>Depending on how the database engine has
                 been deployed, eXist offers several interfaces to application
                 developers, including HTTP, XML-RPC, SOAP and WebDAV. Java
                 developers should have a look at the <link href="http://www.xmldb.org">XML:DB API</link>, which
                 provides a common interface to access XML database services.</p>
+                
             <p>eXist integrates well with <link href="http://xml.apache.org/cocoon">Apache's Cocoon</link>,
                 allowing developers to create complex web applications entirely
                 based on XML and related technologies.</p>

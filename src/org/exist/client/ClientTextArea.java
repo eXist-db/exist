@@ -41,11 +41,13 @@ public class ClientTextArea extends JEditTextArea {
 	
 	public ClientTextArea(boolean editable, String mode) {
 		super();
+		
 		setFont(textFont);
 		setEditable(editable);
 		setPreferredSize(new Dimension(300, 200));
 		SyntaxDocument doc = new SyntaxDocument();
 		doc.putProperty(PlainDocument.tabSizeAttribute, new Integer(4));
+		
 		setDocument(doc);
 		setElectricScroll(2);
 		if(mode.equals("XML"))

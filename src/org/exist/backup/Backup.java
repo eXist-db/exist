@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Properties;
 
 import javax.swing.JFrame;
 import javax.xml.transform.OutputKeys;
@@ -53,6 +54,12 @@ public class Backup {
 
 	public final static String NS = "http://exist.sourceforge.net/NS/exist";
 
+	public final static Properties defaultOutputProperties = new Properties();
+	static {
+		defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
+		defaultOutputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+	}
+	
 	public Backup(String user, String pass, String backupDir, String rootCollection) {
 		this.user = user;
 		this.pass = pass;
@@ -160,7 +167,7 @@ public class Backup {
 						new FileOutputStream(path + '/' + resources[i]),
 						"UTF-8"));
 			// write resource to contentSerializer
-			contentSerializer = new SAXSerializer(writer, null);
+			contentSerializer = new SAXSerializer(writer, defaultOutputProperties);
 			resource.getContentAsSAX(contentSerializer);
             //writer.write((String)resource.getContent());
 			writer.close();

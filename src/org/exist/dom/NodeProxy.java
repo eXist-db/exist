@@ -28,6 +28,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.Item;
+import org.exist.xpath.value.NodeValue;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.StringValue;
@@ -54,7 +55,7 @@ import org.xml.sax.SAXException;
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public final class NodeProxy extends AbstractNodeSet implements Item, Comparable {
+public final class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable {
 
 	/**
 	 * The owner document of this node.
@@ -110,11 +111,7 @@ public final class NodeProxy extends AbstractNodeSet implements Item, Comparable
 		this.nodeType = nodeType;
 	}
 
-	public NodeProxy(
-		DocumentImpl doc,
-		long gid,
-		short nodeType,
-		long address) {
+	public NodeProxy(DocumentImpl doc, long gid, short nodeType, long address) {
 		this.doc = doc;
 		this.gid = gid;
 		this.nodeType = nodeType;
@@ -140,11 +137,16 @@ public final class NodeProxy extends AbstractNodeSet implements Item, Comparable
 		internalAddress = node.getInternalAddress();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NodeValue#getImplementation()
+	 */
+	public int getImplementationType() {
+		return NodeValue.PERSISTENT_NODE;
+	}
+
 	public int compareTo(NodeProxy other) {
 		final int diff = doc.docId - other.doc.docId;
-		return diff == 0
-			? (gid < other.gid ? -1 : (gid > other.gid ? 1 : 0))
-			: diff;
+		return diff == 0 ? (gid < other.gid ? -1 : (gid > other.gid ? 1 : 0)) : diff;
 	}
 
 	public int compareTo(Object other) {
@@ -169,6 +171,77 @@ public final class NodeProxy extends AbstractNodeSet implements Item, Comparable
 		if (node.doc.getDocId() == doc.getDocId() && node.gid == gid)
 			return true;
 		return false;
+	}
+
+	public boolean equals(NodeValue other) throws XPathException {
+		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
+			throw new XPathException("cannot compare persistent node with in-memory node");
+		NodeProxy node = (NodeProxy) other;
+		if (node.doc.getDocId() == doc.getDocId() && node.gid == gid)
+			return true;
+		return false;
+	}
+
+	public boolean before(NodeValue other) throws XPathException {
+		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
+			throw new XPathException("cannot compare persistent node with in-memory node");
+		NodeProxy node = (NodeProxy) other;
+		if (doc.docId != node.doc.docId)
+			return false;
+		int la = doc.getTreeLevel(gid);
+		int lb = doc.getTreeLevel(node.gid);
+		long pa = gid, pb = node.gid;
+		if (la > lb) {
+			while (la > lb) {
+				pa = XMLUtil.getParentId(doc, gid, la);
+				--la;
+			}
+			if (pa == pb)
+				return false;
+			else
+				return pa < pb;
+		} else if (lb > la) {
+			while (lb > la) {
+				pb = XMLUtil.getParentId(node.doc, pb, lb);
+				--lb;
+			}
+			if (pb == pa)
+				return true;
+			else
+				return pa < pb;
+		} else
+			return pa < pb;
+	}
+
+	public boolean after(NodeValue other) throws XPathException {
+		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
+			throw new XPathException("cannot compare persistent node with in-memory node");
+		NodeProxy node = (NodeProxy) other;
+		if (doc.docId != node.doc.docId)
+			return false;
+		int la = doc.getTreeLevel(gid);
+		int lb = doc.getTreeLevel(node.gid);
+		long pa = gid, pb = node.gid;
+		if (la > lb) {
+			while (la > lb) {
+				pa = XMLUtil.getParentId(doc, gid, la);
+				--la;
+			}
+			if (pa == pb)
+				return true;
+			else
+				return pa > pb;
+		} else if (lb > la) {
+			while (lb > la) {
+				pb = XMLUtil.getParentId(node.doc, pb, lb);
+				--lb;
+			}
+			if (pb == pa)
+				return false;
+			else
+				return pa > pb;
+		} else
+			return pa > pb;
 	}
 
 	public DocumentImpl getDoc() {
@@ -260,9 +333,7 @@ public final class NodeProxy extends AbstractNodeSet implements Item, Comparable
 
 	public void setHasIndex(boolean hasIndex) {
 		internalAddress =
-			(hasIndex
-				? internalAddress | 0x10000L
-				: internalAddress & (~0x10000L));
+			(hasIndex ? internalAddress | 0x10000L : internalAddress & (~0x10000L));
 	}
 
 	public boolean hasIndex() {
@@ -302,7 +373,7 @@ public final class NodeProxy extends AbstractNodeSet implements Item, Comparable
 				next.prevMatch = m;
 				m.nextMatch = next;
 				return;
-			} else if(next.nextMatch == null) {
+			} else if (next.nextMatch == null) {
 				next.nextMatch = m;
 				m.prevMatch = next;
 				m.nextMatch = null;
@@ -355,7 +426,7 @@ public final class NodeProxy extends AbstractNodeSet implements Item, Comparable
 	public void addContextNode(NodeProxy node) {
 		if (context == null) {
 			context = new ContextItem(node);
-//			Thread.dumpStack();
+			//			Thread.dumpStack();
 			return;
 		}
 		ContextItem next = context;
@@ -368,17 +439,17 @@ public final class NodeProxy extends AbstractNodeSet implements Item, Comparable
 			}
 			next = next.getNextItem();
 		}
-//		Thread.dumpStack();
+		//		Thread.dumpStack();
 	}
 
 	public void clearContext() {
 		context = null;
 	}
-	
+
 	public void printContext() {
 		ContextItem next = context;
 		System.out.println(gid + ": ");
-		while(next != null) {
+		while (next != null) {
 			System.out.print(next.getNode().gid);
 			System.out.print(' ');
 			next = next.getNextItem();
@@ -442,7 +513,7 @@ public final class NodeProxy extends AbstractNodeSet implements Item, Comparable
 	public AtomicValue atomize() throws XPathException {
 		return new StringValue(getNodeValue());
 	}
-	
+
 	/* -----------------------------------------------*
 	 * Methods of class NodeSet
 	 * -----------------------------------------------*/
@@ -535,9 +606,8 @@ public final class NodeProxy extends AbstractNodeSet implements Item, Comparable
 		serializer.setContentHandler(handler);
 		serializer.toSAX(this);
 	}
-	
-	private final static class SingleNodeIterator
-		implements Iterator, SequenceIterator {
+
+	private final static class SingleNodeIterator implements Iterator, SequenceIterator {
 
 		private boolean hasNext = true;
 		private NodeProxy node;

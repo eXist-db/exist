@@ -29,6 +29,10 @@ public class CollectionTest extends TestCase {
 		junit.textui.TestRunner.run(CollectionTest.class);
 	}
 
+	public CollectionTest(String name) {
+		super(name);
+	}
+	
 	protected void setUp() {
 		try {
 			// initialize driver

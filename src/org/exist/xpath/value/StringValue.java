@@ -91,6 +91,8 @@ public class StringValue extends AtomicValue {
 				return new DateTimeValue(value);
 			case Type.TIME:
 				return new TimeValue(value);
+			case Type.DATE:
+				return new DateValue(value);
 			case Type.DURATION:
 				return new DurationValue(value);
 			case Type.YEAR_MONTH_DURATION:

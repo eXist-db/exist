@@ -37,6 +37,10 @@ public class DOMTest extends TestCase {
 		junit.textui.TestRunner.run(DOMTest.class);
 	}
 
+	public DOMTest(String name) {
+		super(name);
+	}
+	
 	public void testDocumentBuilder() throws Exception {
 		Receiver receiver = new Receiver();
 		SAXParserFactory factory = SAXParserFactory.newInstance();

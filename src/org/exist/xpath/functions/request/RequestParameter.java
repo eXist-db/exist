@@ -51,7 +51,7 @@ public class RequestParameter extends Function {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE));
 	
 	public RequestParameter(StaticContext context) {
 		super(context, signature);

@@ -15,15 +15,13 @@ if [ -z "$EXIST_BASE" ]; then
     EXIST_BASE=$EXIST_HOME
 fi
 
-LOCALCLASSPATH=$JAVA_HOME/lib/tools.jar:$EXIST_BASE/exist.jar:$EXIST_BASE/examples.jar
+LOCALCLASSPATH=$JAVA_HOME/lib/tools.jar:$EXIST_BASE/exist.jar:$EXIST_BASE/examples.jar:$EXIST_BASE/tools/lib/junit.jar
+
 JARS=`ls -1 $EXIST_BASE/lib/core/*.jar $EXIST_BASE/lib/optional/*.jar`
 for jar in $JARS
 do
    LOCALCLASSPATH=$jar:$LOCALCLASSPATH ;
 done
-
-# use xerces as SAX parser
-SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
 
 LOCALCLASSPATH=$CLASSPATH:$LOCALCLASSPATH
 
@@ -34,6 +32,5 @@ fi
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 
 $JAVA_HOME/bin/java $PROF $JAVA_OPTS \
-	-Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY \
 	-Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
 	-Dexist.home=$EXIST_HOME -classpath $LOCALCLASSPATH $*

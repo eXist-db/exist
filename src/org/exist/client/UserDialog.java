@@ -15,7 +15,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -347,15 +346,6 @@ class UserDialog extends JFrame {
 			JOptionPane.showMessageDialog(this, "Different passwords. Please check.");
 			return;
 		}
-		String myUser = client.properties.getProperty("user", "admin");
-		if(name.equals(myUser)) {
-			client.properties.setProperty("password", pass1);
-			try {
-				client.getResources();
-			} catch (XMLDBException e) {
-				JOptionPane.showMessageDialog(this, e.getMessage());
-			}
-		}
 		
 		user.setPassword(pass1);
 		user.setHome(homedir.getText());
@@ -366,6 +356,15 @@ class UserDialog extends JFrame {
 			userModel.reload();
 		} catch (XMLDBException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage());
+		}
+		String myUser = client.properties.getProperty("user", "admin");
+		if(name.equals(myUser)) {
+			client.properties.setProperty("password", pass1);
+			try {
+				client.getResources();
+			} catch (XMLDBException e) {
+				JOptionPane.showMessageDialog(this, e.getMessage());
+			}
 		}
 	}
 	

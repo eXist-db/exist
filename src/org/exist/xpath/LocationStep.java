@@ -69,16 +69,16 @@ public class LocationStep extends Step {
 	}
 	
 	protected Sequence applyPredicate(
-		StaticContext context,
-		Sequence contextSet)
+		Sequence outerSequence,
+		Sequence contextSequence)
 		throws XPathException {
-		if(contextSet == null)
+		if(contextSequence == null)
 			return Sequence.EMPTY_SEQUENCE;
 		Predicate pred;
-		Sequence result = contextSet;
+		Sequence result = contextSequence;
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			pred = (Predicate) i.next();
-			result = pred.eval(result);
+			result = pred.evalPredicate(outerSequence, result);
 		}
 		return result;
 	}
@@ -145,7 +145,7 @@ public class LocationStep extends Step {
 		return
 			(predicates.size() == 0)
 				? temp
-				: applyPredicate(context, temp);
+				: applyPredicate(contextSequence, temp);
 	}
 
 	protected NodeSet getAttributes(

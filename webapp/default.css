@@ -11,6 +11,8 @@ alignment: left;
 p {
 text-align: left;
 padding-left: 15px;
+margin-top: 5px;
+margin-bottom: 5px;
 }
 
 ol {

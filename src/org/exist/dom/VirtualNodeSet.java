@@ -85,6 +85,13 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		inPredicate = predicate;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.dom.AbstractNodeSet#getDocumentSet()
+	 */
+	public DocumentSet getDocumentSet() {
+		return context.getDocumentSet();
+	}
+	
 	protected NodeProxy getFirstParent(NodeProxy node, long gid, boolean includeSelf) {
 		return getFirstParent(node, null, includeSelf, true, 0);
 	}
@@ -304,6 +311,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	private final void realize() {
 		if (realSet != null)
 			return;
+		//Thread.dumpStack();
 		realSet = getNodes();
 	}
 

@@ -95,7 +95,10 @@
             	dir=".">
             	<include name="build.*"/>
             	<exclude name="*~"/>
-            </fileset>
+			</fileset>
+			<fileset targetdir="$INSTALL_PATH/tools" dir="tools">
+				<include name="**/*.jar"/>
+			</fileset>
         </pack>
         <pack name="javadoc" required="no">
         	<description>Generated Javadocs</description>

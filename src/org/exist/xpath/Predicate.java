@@ -29,7 +29,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.XMLUtil;
+import org.exist.dom.VirtualNodeSet;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.NumericValue;
 import org.exist.xpath.value.Sequence;
@@ -64,9 +64,9 @@ public class Predicate extends PathExpr {
         }
 	}
 	
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
+	public Sequence evalPredicate(
+		Sequence outerSequence,
+		Sequence contextSequence)
 		throws XPathException {
 		setInPredicate(true);
 		//long start = System.currentTimeMillis();
@@ -81,6 +81,8 @@ public class Predicate extends PathExpr {
 		// predicate expression returns a non-empty sequence.
 		if (Type.subTypeOf(type, Type.NODE)) {
 			ExtArrayNodeSet result = new ExtArrayNodeSet();
+			NodeSet contextSet = contextSequence.toNodeSet();
+			boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
 			NodeSet nodes =
 				super.eval(contextSequence, null).toNodeSet();
 			NodeProxy current;
@@ -101,9 +103,10 @@ public class Predicate extends PathExpr {
 				}
 				while (contextNode != null) {
 					next = contextNode.getNode();
-					next.addMatches(current.match);
-					result.add(next, sizeHint);
-					//System.out.println("found: " + next.gid);
+					if(contextIsVirtual || contextSet.contains(next)) {
+						next.addMatches(current.match);
+						result.add(next, sizeHint);
+					}
 					contextNode = contextNode.getNextItem();
 				}
 			}
@@ -129,30 +132,21 @@ public class Predicate extends PathExpr {
 		// Case 3: predicate expression returns a number. Call the predicate
 		// expression once for each item in the context set.
 		} else if (Type.subTypeOf(type, Type.NUMBER)) {
-			if(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
+			if(Type.subTypeOf(contextSequence.getItemType(), Type.NODE) && outerSequence != null &&
+				outerSequence.getLength() > 0) {
 				Sequence result = new ArraySet(100);
-				long last = -1;
-				DocumentImpl lastDoc = null;
-				for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); ) {
-					NodeProxy p = (NodeProxy) i.nextItem();
-					
-					Sequence innerSeq = inner.eval(p);
-					int level = p.doc.getTreeLevel(p.gid);
-					long pid = XMLUtil.getParentId(p.doc, p.gid, level);
-					if(pid == last && lastDoc != null && lastDoc.getDocId() == p.doc.getDocId())
-						continue;
-					long firstChild = XMLUtil.getFirstChildId(p.doc, pid);
-					long lastChild = firstChild + p.doc.getTreeLevelOrder(level);
-					
-					Sequence sub = ((NodeSet)contextSequence).getRange(p.doc, firstChild, lastChild);
+				NodeSet contextSet = contextSequence.toNodeSet();
+				for(SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
+					Item item = i.nextItem();
+					NodeProxy p = (NodeProxy)item;
+					Sequence temp = contextSet.selectAncestorDescendant(p, NodeSet.DESCENDANT);
+					Sequence innerSeq = inner.eval(contextSequence);
 					for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {
 						NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);
 						int pos = v.getInt() - 1;
-						if(pos < sub.getLength() && pos > -1)
-							result.add(sub.itemAt(pos));
+						if(pos < temp.getLength() && pos > -1)
+							result.add(temp.itemAt(pos));
 					}
-					last = pid;
-					lastDoc = p.doc;
 				}
 				return result;
 			} else {

@@ -71,18 +71,12 @@ public class FunAvg extends Function {
 		SequenceIterator iter = inner.iterate();
 		AtomicValue next = (AtomicValue) iter.nextItem();
 		if (!Type.subTypeOf(next.getType(), Type.NUMBER))
-			throw new XPathException(
-				"Invalid argument to aggregate function. Expected number, got "
-					+ Type.getTypeName(next.getType()));
+			next = next.convertTo(Type.DOUBLE);
 		ComputableValue sum = (ComputableValue) next;
 		while (iter.hasNext()) {
 			next = (AtomicValue) iter.nextItem();
-			if(next.getType() == Type.ATOMIC)
-				next = next.convertTo(Type.DOUBLE);
 			if (!Type.subTypeOf(next.getType(), Type.NUMBER))
-				throw new XPathException(
-					"Invalid argument to aggregate function. Expected number, got "
-						+ Type.getTypeName(next.getType()));
+				next = next.convertTo(Type.DOUBLE);
 			sum = sum.plus((NumericValue) next);
 		}
 		return sum.div(new IntegerValue(inner.getLength()));

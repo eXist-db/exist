@@ -56,4 +56,12 @@ public class OrderSpec {
 	public int getModifiers() {
 		return modifiers;
 	}
+	
+	public String toString() {
+		StringBuffer buf = new StringBuffer();
+		buf.append(expression.pprint());
+		buf.append(' ');
+		buf.append((modifiers & DESCENDING_ORDER) == 0 ? "ascending" : "descending");
+		return buf.toString();
+	}
 }
