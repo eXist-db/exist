@@ -396,7 +396,7 @@ public class NativeBroker extends DBBroker {
 	 */
 	public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname,
 		NodeSelector selector) {
-		final long start = System.currentTimeMillis();
+//		final long start = System.currentTimeMillis();
 		final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
 		DocumentImpl doc;
 		int docId;
@@ -471,7 +471,7 @@ public class NativeBroker extends DBBroker {
                     e);
 			}
 		}
-//		result.sort();
+		result.sort();
 //				LOG.debug(
 //					"found "
 //						+ qname
@@ -2196,9 +2196,9 @@ public class NativeBroker extends DBBroker {
 		new DOMTransaction(this, domDb) {
 			public Object start() {
 				long address = previous.getInternalAddress();
-				if (address > -1)
+				if (address > -1) {
 					address = domDb.insertAfter(doc, address, data);
-				else {
+				} else {
 					NodeRef ref = new NodeRef(doc.getDocId(), previous.getGID());
 					address = domDb.insertAfter(doc, ref, data);
 				}

@@ -1,5 +1,7 @@
 package org.exist.xupdate;
 
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -32,13 +34,13 @@ public class Insert extends Modification {
 	 * @param user
 	 * @param selectStmt
 	 */
-	public Insert(DBBroker broker, DocumentSet docs, String selectStmt) {
-		super(broker, docs, selectStmt);
+	public Insert(DBBroker broker, DocumentSet docs, String selectStmt, Map namespaces) {
+		super(broker, docs, selectStmt, namespaces);
 	}
 
 	public Insert(DBBroker broker, DocumentSet docs, 
-		String selectStmt, int mode) {
-		this(broker, docs, selectStmt);
+		String selectStmt, int mode, Map namespaces) {
+		this(broker, docs, selectStmt, namespaces);
 		this.mode = mode;
 	}
 

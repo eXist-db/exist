@@ -244,19 +244,19 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			// start a new modification section
 			if (localName.equals("append")) {
 			    String child = atts.getValue("child");
-				modification = new Append(broker, documentSet, select, child);
+				modification = new Append(broker, documentSet, select, child, namespaces);
 			} else if (localName.equals("update"))
-				modification = new Update(broker, documentSet, select);
+				modification = new Update(broker, documentSet, select, namespaces);
 			else if (localName.equals("insert-before"))
 				modification =
-					new Insert(broker, documentSet, select, Insert.INSERT_BEFORE);
+					new Insert(broker, documentSet, select, Insert.INSERT_BEFORE, namespaces);
 			else if (localName.equals("insert-after"))
 				modification =
-					new Insert(broker, documentSet, select, Insert.INSERT_AFTER);
+					new Insert(broker, documentSet, select, Insert.INSERT_AFTER, namespaces);
 			else if (localName.equals("remove"))
-				modification = new Remove(broker, documentSet, select);
+				modification = new Remove(broker, documentSet, select, namespaces);
 			else if (localName.equals("rename"))
-				modification = new Rename(broker, documentSet, select);
+				modification = new Rename(broker, documentSet, select, namespaces);
 
 			// process commands for node creation
 			else if (localName.equals("element")) {
