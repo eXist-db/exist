@@ -227,8 +227,8 @@ public class NativeBroker extends DBBroker {
 			}
 			if (readOnly)
 				LOG.info("database runs in read-only mode");
-			collections = (CollectionCache)config.getProperty("db-connection.collection-cache");
-			if(collections == null) {
+			collections = (CollectionCache) config.getProperty("db-connection.collection-cache");
+			if (collections == null) {
 				collections = new CollectionCache(COLLECTION_BUFFER_SIZE);
 				config.setProperty("db-connection.collection-cache", collections);
 			}
@@ -583,50 +583,53 @@ public class NativeBroker extends DBBroker {
 			} catch (UnsupportedEncodingException uee) {
 				key = new Value(name.getBytes());
 			}
+		Collection collection = null;
 		synchronized (collections) {
-			Collection collection = collections.get(name);
+			collection = collections.get(name);
 			if (collection != null) {
 				return collection;
 			}
-			collection = new Collection(this, name);
-			//Value val = null;
-			InputStream dis = null;
-			Lock lock = collectionsDb.getLock();
-			try {
-				lock.acquire(Lock.READ_LOCK);
-				if (addr < 0) {
-					//val = collectionsDb.get(key);
-					dis = collectionsDb.getAsStream(key);
-				} else {
-					//val = collectionsDb.get(addr);
-					dis = collectionsDb.getAsStream(addr);
-				}
-			} catch(LockException e) {
-				LOG.warn("failed to acquire lock on collection store");
-				return null;
-			} finally {
-				lock.release();
-			}
-			//if (val == null)
-			if (dis == null)
-				return null;
-			//final byte[] data = val.getData();
-			VariableByteInputStream istream = new VariableByteInputStream(dis);
-			try {
-				collection.read(istream);
-			} catch (IOException ioe) {
-				LOG.warn(ioe);
-				return null;
-			}
-			collections.add(collection);
-			//			LOG.debug(
-			//				"loading collection "
-			//					+ name
-			//					+ " took "
-			//					+ (System.currentTimeMillis() - start)
-			//					+ "ms.");
-			return collection;
 		}
+		collection = new Collection(this, name);
+		//Value val = null;
+		InputStream dis = null;
+		Lock lock = collectionsDb.getLock();
+		try {
+			lock.acquire(Lock.READ_LOCK);
+			if (addr < 0) {
+				//val = collectionsDb.get(key);
+				dis = collectionsDb.getAsStream(key);
+			} else {
+				//val = collectionsDb.get(addr);
+				dis = collectionsDb.getAsStream(addr);
+			}
+		} catch (LockException e) {
+			LOG.warn("failed to acquire lock on collection store");
+			return null;
+		} finally {
+			lock.release();
+		}
+		//if (val == null)
+		if (dis == null)
+			return null;
+		//final byte[] data = val.getData();
+		VariableByteInputStream istream = new VariableByteInputStream(dis);
+		try {
+			collection.read(istream);
+		} catch (IOException ioe) {
+			LOG.warn(ioe);
+			return null;
+		}
+		synchronized (collections) {
+			collections.add(collection);
+		}
+		//			LOG.debug(
+		//				"loading collection "
+		//					+ name
+		//					+ " took "
+		//					+ (System.currentTimeMillis() - start)
+		//					+ "ms.");
+		return collection;
 	}
 
 	public static SymbolTable getSymbols() {
@@ -687,7 +690,7 @@ public class NativeBroker extends DBBroker {
 		}
 		return null;
 	}
-	
+
 	/**
 	 *  Gets the databaseType attribute of the NativeBroker object
 	 *
@@ -905,7 +908,7 @@ public class NativeBroker extends DBBroker {
 			byte[] d = new byte[2];
 			ByteConversion.shortToByte(nextCollectionId, d, 0);
 			collectionsDb.put(key, d);
-		} catch(LockException e) {
+		} catch (LockException e) {
 			LOG.warn("failed to acquire lock on collections store", e);
 			return -1;
 		} finally {
@@ -941,7 +944,7 @@ public class NativeBroker extends DBBroker {
 				LOG.debug("database read-only");
 				return -1;
 			}
-		} catch(LockException e) {
+		} catch (LockException e) {
 			LOG.warn("failed to acquire lock on collections store", e);
 		} finally {
 			lock.release();
@@ -1061,7 +1064,8 @@ public class NativeBroker extends DBBroker {
 				scanNodes(iterator, n, "");
 			}
 		} else {
-			iterator = getNodeIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
+			iterator =
+				getNodeIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
 			iterator.next();
 			scanNodes(iterator, node, node.getPath());
 		}
@@ -1182,7 +1186,8 @@ public class NativeBroker extends DBBroker {
 			public Object start() {
 				return domDb.getNodeValue(proxy);
 			}
-		}.run();
+		}
+		.run();
 	}
 
 	/**
@@ -1245,11 +1250,15 @@ public class NativeBroker extends DBBroker {
 		return result;
 	}
 
-	public NodeSet getNodesEqualTo(NodeSet context, DocumentSet docs, int relation, String expr[]) {
+	public NodeSet getNodesEqualTo(
+		NodeSet context,
+		DocumentSet docs,
+		int relation,
+		String expr[]) {
 		NodeSet tempSet[] = getNodesContaining(docs, expr);
 		return tempSet[0];
 	}
-	
+
 	/**
 	 *  get collection object If the collection does not yet exists, it is
 	 *  created automatically.
@@ -1373,8 +1382,8 @@ public class NativeBroker extends DBBroker {
 					Thread.dumpStack();
 					return null;
 				}
-				NodeImpl node = NodeImpl.deserialize(val.getData(), 0, val.getLength(), 
-					(DocumentImpl) doc);
+				NodeImpl node =
+					NodeImpl.deserialize(val.getData(), 0, val.getLength(), (DocumentImpl) doc);
 				node.setGID(gid);
 				node.setOwnerDocument(doc);
 				node.setInternalAddress(val.getAddress());
@@ -1473,7 +1482,7 @@ public class NativeBroker extends DBBroker {
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
 					collectionsDb.remove(key);
-				} catch(LockException e) {
+				} catch (LockException e) {
 					LOG.warn("failed to acquire lock on collections store", e);
 				} finally {
 					lock.release();
@@ -1520,7 +1529,9 @@ public class NativeBroker extends DBBroker {
 						NodeImpl node;
 						for (int j = 0; j < children.getLength(); j++) {
 							node = (NodeImpl) children.item(j);
-							Iterator k = getDOMIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
+							Iterator k =
+								getDOMIterator(
+									new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
 							removeNodes(k);
 						}
 						return null;
@@ -1590,7 +1601,7 @@ public class NativeBroker extends DBBroker {
 					collection.removeDocument(docName);
 					saveCollection(collection);
 					collectionsDb.flush();
-				} catch(LockException e) {
+				} catch (LockException e) {
 					LOG.warn("failed to acquire lock on collections store", e);
 				} finally {
 					lock.release();
@@ -1677,7 +1688,9 @@ public class NativeBroker extends DBBroker {
 					NodeImpl node;
 					for (int i = 0; i < children.getLength(); i++) {
 						node = (NodeImpl) children.item(i);
-						Iterator j = getDOMIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
+						Iterator j =
+							getDOMIterator(
+								new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
 						removeNodes(j);
 					}
 					return null;
@@ -1811,7 +1824,7 @@ public class NativeBroker extends DBBroker {
 					parent.update(collection);
 					saveCollection(parent);
 				}
-			} catch(LockException e) {
+			} catch (LockException e) {
 				LOG.warn("failed to lock collections store", e);
 			} finally {
 				lock.release();
@@ -1859,7 +1872,7 @@ public class NativeBroker extends DBBroker {
 						parent.update(collection);
 						saveCollection(parent);
 					}
-				} catch(LockException e) {
+				} catch (LockException e) {
 					LOG.warn("could not acquire lock for collections store", e);
 				} finally {
 					lock.release();
@@ -2186,7 +2199,7 @@ public class NativeBroker extends DBBroker {
 		new DOMTransaction(this, domDb) {
 			public Object start() {
 				long address = previous.getInternalAddress();
-//				LOG.debug("inserting new child after " + address);
+				//				LOG.debug("inserting new child after " + address);
 				if (address > -1)
 					address = domDb.insertAfter(address, data);
 				else {
