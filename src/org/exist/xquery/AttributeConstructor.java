@@ -82,7 +82,9 @@ public class AttributeConstructor extends NodeConstructor {
 			else
 				buf.append(next);
 		}
-		return new StringValue(buf.toString());
+		StringValue result = new StringValue(buf.toString());
+		result.expand();
+		return result;
 	}
 
 	private void evalEnclosedExpr(Sequence seq, StringBuffer buf) throws XPathException {

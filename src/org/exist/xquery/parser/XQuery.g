@@ -2014,7 +2014,9 @@ throws XPathException
 :
 	c:STRING_LITERAL
 	{ 
-        step= new LiteralValue(context, new StringValue(c.getText()));
+		StringValue val = new StringValue(c.getText());
+		val.expand();
+        step= new LiteralValue(context, val);
         step.setASTNode(c);
     }
 	|
