@@ -1,3 +1,31 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
+/*
+ *  Some modifications Copyright (C) 2004 Luigi P. Bai
+ *  finder@users.sf.net
+ *  Licensed as above under the LGPL.
+ *  
+ */
 package org.exist.xupdate;
 
 import java.io.IOException;
@@ -88,6 +116,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	
 	private boolean inModification = false;
 	private boolean inAttribute = false;
+    private boolean preserveWhitespace = false;
+    private Stack spaceStack = null;
 	
 	private Modification modification = null;
 	private DocumentBuilder builder;
@@ -145,9 +175,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		throws ParserConfigurationException, IOException, SAXException {
 		XMLReader reader = broker.getBrokerPool().getParserPool().borrowXMLReader();
 		try {
-			reader.setProperty(
-					"http://xml.org/sax/properties/lexical-handler",
-					this);
+			reader.setProperty("http://xml.org/sax/properties/lexical-handler", this);
+            reader.setFeature("http://xml.org/sax/features/namespaces", true);
+            reader.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
 			reader.setContentHandler(this);
 			
 			reader.parse(is);
@@ -168,6 +198,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	 * @see org.xml.sax.ContentHandler#startDocument()
 	 */
 	public void startDocument() throws SAXException {
+        // The default...
+        this.preserveWhitespace = false;
+        this.spaceStack = new Stack();
+        this.spaceStack.push("default");
 	}
 
 	/**
@@ -203,7 +237,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		// save accumulated character content
 		if (inModification && charBuf.length() > 0) {
 			final String normalized =
-				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+				// charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+                charBuf.toString();
+
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
@@ -312,7 +348,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					Element last = (Element) stack.peek();
 					last.appendChild(elem);
 				}
-				stack.push(elem);
+				this.setWhitespaceHandling((Element) stack.push(elem));
 			} else if (ATTRIBUTE.equals(localName)) {
 				String name = atts.getValue("name");
 				if (name == null)
@@ -384,9 +420,15 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			Element elem = doc.createElementNS(namespaceURI, qName);
 			Attr a;
 			for (int i = 0; i < atts.getLength(); i++) {
-				a = doc.createAttributeNS(atts.getURI(i), atts.getQName(i));
-				a.setValue(atts.getValue(i));
-				elem.setAttributeNodeNS(a);
+                String name = atts.getQName(i);
+                String nsURI = atts.getURI(i);
+                if (name.startsWith("xmlns")) {
+                    // Why are these showing up? They are supposed to be stripped out?
+                } else {
+                    a = doc.createAttributeNS(nsURI, name);
+                    a.setValue(atts.getValue(i));
+                    elem.setAttributeNodeNS(a);
+                }
 			}
 			if (stack.isEmpty()) {
 				contents.add(elem);
@@ -394,7 +436,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				Element last = (Element) stack.peek();
 				last.appendChild(elem);
 			}
-			stack.push(elem);
+            this.setWhitespaceHandling((Element) stack.push(elem));
 		}
 	}
 
@@ -429,7 +471,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		throws SAXException {
 		if (inModification && charBuf.length() > 0) {
 			final String normalized =
-				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+				// charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+                charBuf.toString();
+                
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
@@ -446,7 +490,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				Conditional cond = (Conditional) conditionals.pop();
 				modifications.add(cond);
 			} else if (localName.equals(ELEMENT)) {
-				stack.pop();
+				this.resetWhitespaceHandling((Element) stack.pop());
 			} else if (localName.equals(ATTRIBUTE)) {
 				inAttribute = false;
 			} else if (localName.equals(APPEND)
@@ -466,8 +510,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				}
 				modification = null;
 			}
-		} else if (inModification)
-			stack.pop();
+		} else if (inModification) {
+            this.resetWhitespaceHandling((Element) stack.pop());
+        }
 	}
 
 	/**
@@ -495,7 +540,48 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	 */
 	public void ignorableWhitespace(char[] ch, int start, int length)
 		throws SAXException {
+        if (this.preserveWhitespace) {
+            if (this.inModification) {
+                if (this.inAttribute) {
+                    Attr attr = (Attr) this.currentNode;
+                    String val = attr.getValue();
+                    if(val == null)
+                        val = new String(ch, start, length);
+                    else
+                        val += new String(ch, start, length);
+                    attr.setValue(val);
+                } else {
+                    this.charBuf.append(ch, start, length);
+                }
+            }
+        }
 	}
+    
+    private void setWhitespaceHandling(Element e) {
+        String wsSetting = e.getAttributeNS("http://www.w3.org/XML/1998/namespace", "space");
+        if ("preserve".equals(wsSetting)) {
+            this.spaceStack.push(wsSetting);
+            this.preserveWhitespace = true;
+        } else if ("default".equals(wsSetting)) {
+            this.spaceStack.push(wsSetting);
+            this.preserveWhitespace = false;
+        }
+        // Otherwise, don't change what's currently in effect!
+    }
+    
+    private void resetWhitespaceHandling(Element e) {
+        String wsSetting = e.getAttributeNS("http://www.w3.org/XML/1998/namespace", "space");
+        if ("preserve".equals(wsSetting) || "default".equals(wsSetting)) {
+            // Since an opinion was expressed, restore what was previously set:
+            this.spaceStack.pop();
+            if (0 == this.spaceStack.size()) {
+                // This is the default...
+                this.preserveWhitespace = false;
+            } else {
+                this.preserveWhitespace = ("preserve".equals(this.spaceStack.peek()));
+            }
+        }
+    }
 
 	/**
 	 * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
@@ -656,20 +742,23 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	}
 
 	public void reset() {
-	    inModification = false;
-		inAttribute = false;
-		modification = null;
-		doc = null;
-		contents = null;
-		stack.clear();
-		currentNode = null;
-		broker = null;
-		documentSet = null;
-		modifications.clear();
-		charBuf = new FastStringBuffer(6, 15, 5);
-		variables.clear();
-		namespaces.clear();
-		conditionals.clear();
-		namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
+        this.preserveWhitespace = false;
+        this.spaceStack = null;
+        
+	    this.inModification = false;
+		this.inAttribute = false;
+		this.modification = null;
+		this.doc = null;
+		this.contents = null;
+		this.stack.clear();
+		this.currentNode = null;
+		this.broker = null;
+		this.documentSet = null;
+		this.modifications.clear();
+		this.charBuf = new FastStringBuffer(6, 15, 5);
+		this.variables.clear();
+		this.namespaces.clear();
+		this.conditionals.clear();
+		this.namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
 	}
 }
