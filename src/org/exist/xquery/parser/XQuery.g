@@ -2001,7 +2001,7 @@ throws XPathException
 	|
 	i:INTEGER_LITERAL
 	{ 
-        step= new LiteralValue(context, new IntegerValue(Integer.parseInt(i.getText())));
+        step= new LiteralValue(context, new IntegerValue(i.getText()));
         step.setASTNode(i);
     }
 	|
