@@ -205,7 +205,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 		}
 	}
 	
-	private static final class IteratorItem implements Comparable {
+	private static final class IteratorItem extends OrderedLinkedList.Node {
 		NodeProxy proxy;
 		String value = null;
 
@@ -223,17 +223,17 @@ public class SortedNodeSet extends AbstractNodeSet {
 				Item item;
 				for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 					item = i.nextItem();
-					strings.add(item.getStringValue().toUpperCase());
+					strings.add(new OrderedLinkedList.SimpleNode(item.getStringValue().toUpperCase()));
 				}
 				for (Iterator j = strings.iterator(); j.hasNext();) 
-					buf.append((String) j.next());
+					buf.append(((OrderedLinkedList.SimpleNode) j.next()).getData());
 				value = buf.toString();
 			} catch (XPathException e) {
 				LOG.warn(e.getMessage(), e);
 			}
 		}
 
-		public int compareTo(Object other) {
+		public int compareTo(OrderedLinkedList.Node other) {
 			IteratorItem o = (IteratorItem) other;
 			if (value == null)
 				return o.value == null ? 0 : 1;

@@ -9,6 +9,8 @@ public class Match implements Comparable {
 	
 	private String matchTerm;
 	private long nodeId;
+	private int frequency = 1;
+	
 	protected Match nextMatch = null;
 	protected Match prevMatch = null;
 	
@@ -28,6 +30,14 @@ public class Match implements Comparable {
 	
 	public long getNodeId() {
 		return nodeId;
+	}
+	
+	public void setFrequency(int freq) {
+		this.frequency = freq;
+	}
+	
+	public int getFrequency() {
+		return frequency;
 	}
 	
 	public Match getNextMatch() {

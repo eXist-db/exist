@@ -24,17 +24,41 @@ import java.util.Iterator;
 
 public class OrderedLinkedList {
 
-	private final static class Node {
-		Comparable data;
+	public abstract static class Node {
 		Node next = null;
 		Node prev = null;
 
-		public Node(Comparable data) {
-			this.data = data;
+		public Node() {
 		}
         
+		public Node getNextNode() { return next; }
+		public Node getPrevNode() { return prev; }
+
+		public abstract int compareTo(Node other);
+		public abstract boolean equals(Node other);
 	}
 
+	public static class SimpleNode extends Node {
+		Comparable data;
+		
+		public SimpleNode(Comparable data) {
+			this.data = data;
+		}
+		
+		public int compareTo(Node other) {
+			final SimpleNode o = (SimpleNode)other;
+			return data.compareTo(o.data);
+		}
+		
+		public boolean equals(Node other) {
+			return ((SimpleNode)other).data.equals(data);
+		}
+		
+		public Comparable getData() {
+			return data;
+		}
+	}
+	
 	private Node header = null;
     private Node last = null;
     
@@ -42,17 +66,18 @@ public class OrderedLinkedList {
 
 	public OrderedLinkedList() {
 	}
-
-	public Node add(Comparable obj) {
+	
+	public Node add(Node newNode) {
+		newNode.next = null;
+		newNode.prev = null;
 		size++;
 		if (header == null) {
-			header = new Node(obj);
+			header = newNode;
             last = header;
 			return header;
 		}
-		Node newNode = new Node(obj);
 		Node node = header;
-		while (obj.compareTo(node.data) > 0) {
+		while (newNode.compareTo(node) > 0) {
 			if (node.next == null) {
 				// append to end of list
 				node.next = newNode;
@@ -73,58 +98,97 @@ public class OrderedLinkedList {
         return newNode;
 	}
     
-	public void remove(Comparable obj) {
+	public void remove(Node n) {
 		Node node = header;
 		while (node != null) {
-			if (node.data == obj) {
-				if (node.prev == null) {
-					if (node.next != null) {
-						node.next.prev = null;
-						header = node.next;
-					} else
-						header = null;
-				} else {
-					node.prev.next = node.next;
-					if (node.next != null)
-						node.next.prev = node.prev;
-                    else
-                        last = node.prev;
-				}
-				size--;
+			if (node.equals(n)) {
+				removeNode(n);
 				return;
 			}
 			node = node.next;
 		}
 	}
     
-    public Object removeFirst() {
+	public void removeNode(Node node) {
+		if (node.prev == null) {
+			if (node.next != null) {
+				node.next.prev = null;
+				header = node.next;
+			} else
+				header = null;
+		} else {
+			node.prev.next = node.next;
+			if (node.next != null)
+				node.next.prev = node.prev;
+            else
+                last = node.prev;
+		}
+		size--;
+	}
+	
+    public Node removeFirst() {
         Node node = header;
         header = node.next;
         if(header != null)
             header.prev = null;
         --size;
-        return  node.data;
+        return  node;
     }
 
-    public Object removeLast() {
+    public Node removeLast() {
         Node node = last;
         last = node.prev;
         last.next = null;
         --size;
-        return node.data;
+        return node;
     }
-           
-	public Object get(int pos) {
+    
+    public Node getLast() {
+    	return last == null ? null : last;
+    }
+    
+	public Node get(int pos) {
 		Node node = header;
 		int count = 0;
 		while (node != null) {
 			if (count++ == pos)
-				return node.data;
+				return node;
 			node = node.next;
 		}
 		return null;
 	}
 
+	public Node[] getData() {
+		Node[] data = new Node[size];
+		Node next = header;
+		int i = 0;
+		while( next != null ) {
+			data[i++] = next;
+			next = next.next;
+		}
+		return data;
+    }
+	
+	public Node[] toArray(Node[] data) {
+		Node next = header;
+		int i = 0;
+		while( next != null ) {
+			data[i++] = next;
+			next = next.next;
+		}
+		return data;
+	}
+	
+	public boolean contains(Node c) {
+    	Node next = header;
+    	while( next != null ) {
+    		if(next.equals(c))
+    			return true;
+    		next = next.next;
+    	}
+    	return false;
+    }
+	
 	public int size() {
 		return size;
 	}
@@ -154,9 +218,9 @@ public class OrderedLinkedList {
 		public Object next() {
 			if (next == null)
 				return null;
-			Node current = next;
+			final Node current = next;
 			next = next.next;
-			return current.data;
+			return current;
 		}
 
 		public void remove() {
@@ -166,24 +230,22 @@ public class OrderedLinkedList {
 
 	public static void main(String args[]) {
 		OrderedLinkedList list = new OrderedLinkedList();
-		list.add("Adam");
-		list.add("Sabine");
-		list.add("Adam");
-		list.add("Georg");
-		list.add("Heinrich");
-		list.add("Georg");
-		list.add("Wolfgang");
-		list.add("Egon");
-		list.add("Berta");
-		list.add("Fritz");
-		list.remove("Berta");
-		list.add("Hans");
-		list.add("Xerces");
-		list.add("Hubert");
-		list.add("Georg");
-		list.remove("Xerces");
-		list.remove("Wolfgang");
+		list.add(new SimpleNode("Adam"));
+		list.add(new SimpleNode("Sabine"));
+		list.add(new SimpleNode("Georg"));
+		list.add(new SimpleNode("Henry"));
+		list.add(new SimpleNode("Achim"));
+		list.add(new SimpleNode("Franz"));
+		list.add(new SimpleNode("Doris"));
+		list.add(new SimpleNode("Rudi"));
+		list.add(new SimpleNode("Hermann"));
+		list.add(new SimpleNode("Lisa"));
+		list.add(new SimpleNode("Xaver"));
+		list.add(new SimpleNode("Reinhard"));
+		list.add(new SimpleNode("Ludwig"));
+		list.remove(new SimpleNode("Lisa"));
+		list.remove(new SimpleNode("Henry"));
 		for(int i = 0; i < list.size(); i++)
-			System.out.println(list.get(i));
+			System.out.println(((SimpleNode)list.get(i)).data);
 	}
 }
