@@ -123,6 +123,7 @@ public class ReceiverToSAX implements Receiver {
 	 * @see org.exist.util.serializer.Receiver#attribute(org.exist.dom.QName, java.lang.String)
 	 */
 	public void attribute(QName qname, String value) throws SAXException {
+		contentHandler.characters(value.toCharArray(), 0, value.length());
 	}
 
 	/* (non-Javadoc)
