@@ -61,6 +61,10 @@
 			<param-name>url</param-name>
 			<param-value>xmldb:exist:///db</param-value>
 		</init-param>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>utf-8</param-value>
+		</init-param>
 	</servlet>
 	
   <!-- configure the Axis servlets. Axis provides eXist's
