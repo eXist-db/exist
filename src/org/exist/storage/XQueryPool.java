@@ -54,6 +54,8 @@ public class XQueryPool extends Object2ObjectHashMap {
     }
 
     public synchronized void returnCompiledXQuery(Source source, CompiledXQuery xquery) {
+        if(xquery == null)
+            return;
         Stack stack = (Stack)get(source);
         if(stack == null) {
             stack = new Stack();
