@@ -41,6 +41,7 @@ import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 import org.exist.util.FastStringBuffer;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.XMLString;
@@ -119,6 +120,17 @@ public class Indexer
 	public Indexer(DBBroker broker, boolean priv) throws EXistException {
 		this.broker = broker;
 		this.privileged = priv;
+		Configuration config = broker.getConfiguration();
+		String suppressWS =
+			(String) config.getProperty("indexer.suppress-whitespace");
+		if (suppressWS != null) {
+			if (suppressWS.equals("leading"))
+				normalize = XMLString.SUPPRESS_LEADING_WS;
+			else if (suppressWS.equals("trailing"))
+				normalize = XMLString.SUPPRESS_TRAILING_WS;
+			else if (suppressWS.equals("none"))
+				normalize = 0;
+		}
 	}
 
 	public void setBroker(DBBroker broker) {
@@ -187,7 +199,7 @@ public class Indexer
 	}
 
 	public void endDocument() {
-		if(!validate) {
+		if (!validate) {
 			progress.finish();
 			setChanged();
 			notifyObservers(progress);
@@ -467,7 +479,7 @@ public class Indexer
 		if (attrLength > 0)
 			node.setAttributes((short) attrLength);
 		// notify observers about progress every 100 lines
-		if(locator != null) {
+		if (locator != null) {
 			currentLine = locator.getLineNumber();
 			if (!validate) {
 				progress.setValue(currentLine);

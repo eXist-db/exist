@@ -225,7 +225,8 @@ public class OpEquals extends BinaryOp {
 			throw new XPathException("context is not a node sequence");
 		NodeSet contextSet = (NodeSet)contextSequence;
 		// TODO: not correct: should test if right is a string literal
-		if (right.returnsType() == Type.STRING) {
+		if (Type.subTypeOf(right.returnsType(), Type.STRING) ||
+			Type.subTypeOf(right.returnsType(), Type.NODE)) {
 			// evaluate left expression
 			NodeSet nodes = (NodeSet) left.eval(context, docs, contextSequence);
 			String cmp = right.eval(context, docs, contextSequence).getStringValue();
@@ -287,7 +288,7 @@ public class OpEquals extends BinaryOp {
 			// be > 0
 			for (Iterator i = lset.iterator(); i.hasNext();) {
 				n = (NodeProxy) i.next();
-				parent = contextSet.parentWithChild(n, false, true);
+				parent = contextSet.parentWithChild(n, false, true, -1);
 				if (parent != null)
 					temp.add(parent);
 			}

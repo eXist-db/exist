@@ -136,6 +136,8 @@ public class VirtualNodeSet extends NodeSet {
 		parent = context.get(node.doc, pid);
 
 		if (parent != null && test.matches(first)) {
+//			if(directParent)
+//				node = first;
 			if (useSelfAsContext && inPredicate)
 				node.addContextNode(node);
 			else if (inPredicate)
@@ -143,8 +145,9 @@ public class VirtualNodeSet extends NodeSet {
 			else {
 				node.copyContext(parent);
 			}
-			// Timo Boehme: we return the ancestor which is child of context 
-			return node;
+			// Timo Boehme: we return the ancestor which is child of context
+			// TODO 
+			return first;
 		} else if (pid < 0)
 			// no matching node has been found in the context
 			return null;
@@ -186,18 +189,12 @@ public class VirtualNodeSet extends NodeSet {
 			realSet.add(p);
 	}
 
-	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent) {
-		NodeProxy p = parentWithChild(doc, gid, directParent, false);
-		if (p != null)
-			addInternal(p);
-		return p;
-	}
-
 	public NodeProxy parentWithChild(
 		DocumentImpl doc,
 		long gid,
 		boolean directParent,
-		boolean includeSelf) {
+		boolean includeSelf,
+		int level) {
 		NodeProxy first =
 			getFirstParent(new NodeProxy(doc, gid), null, includeSelf, directParent, 0);
 		if (first != null)
@@ -205,7 +202,7 @@ public class VirtualNodeSet extends NodeSet {
 		return first;
 	}
 
-	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf) {
+	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf, int level) {
 		NodeProxy first = getFirstParent(proxy, null, includeSelf, directParent, 0);
 		if (first != null) {
 			addInternal(first);
@@ -214,7 +211,7 @@ public class VirtualNodeSet extends NodeSet {
 	}
 
 	private final NodeSet getNodes() {
-		ArraySet result = new ArraySet(100);
+		ExtArrayNodeSet result = new ExtArrayNodeSet();
 		Node p, c;
 		NodeProxy proxy;
 		NodeList cl;
@@ -302,6 +299,7 @@ public class VirtualNodeSet extends NodeSet {
 	private final void realize() {
 		if (realSet != null)
 			return;
+		Thread.dumpStack();
 		realSet = getNodes();
 	}
 
@@ -309,6 +307,14 @@ public class VirtualNodeSet extends NodeSet {
 		useSelfAsContext = true;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#hasIndex()
+	 */
+	public boolean hasIndex() {
+		// Always return false: there's no index
+		return false;
+	}
+	
 	/* the following methods are normally never called in this context,
 	 * we just provide them because they are declared abstract
 	 * in the super class
@@ -386,14 +392,5 @@ public class VirtualNodeSet extends NodeSet {
 	public NodeSet union(NodeSet other) {
 		realize();
 		return realSet.union(other);
-	}
-
-	public boolean hasValues() {
-		return false;
-	}
-
-	public int getLast() {
-		realize();
-		return realSet.getLength();
 	}
 }

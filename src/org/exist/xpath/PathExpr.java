@@ -138,8 +138,6 @@ public class PathExpr extends AbstractExpression {
 
     public DocumentSet preselect( DocumentSet in_docs, StaticContext context) throws XPathException {
         DocumentSet docs = in_docs;
-        if ( docs.getLength() == 0 )
-            return docs;
         for ( Iterator iter = steps.iterator(); iter.hasNext();  )
             docs = ( (Expression) iter.next() ).preselect( docs, context );
         return docs;

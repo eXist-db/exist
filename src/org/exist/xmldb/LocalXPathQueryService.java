@@ -145,9 +145,10 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			//	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, parser.getErrorMsg());
 			Sequence result = null;
 			docs = (docs == null ? expr.preselect(context) : expr.preselect(docs, context));
-			if (docs.getLength() == 0)
+			if (docs.getLength() == 0) {
 				result = Sequence.EMPTY_SEQUENCE;
-			else 
+				LOG.info("no documents!");
+			} else 
 				result = expr.eval(context, docs, contextSet, null);
 			LOG.info(
 				expr.pprint()

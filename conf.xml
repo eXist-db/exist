@@ -54,7 +54,7 @@
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
   <serializer enable-xinclude="true" enable-xsl="false"
-	  indent="false" add-exist-id="element" match-tagging-elements="false"
+	  indent="false" add-exist-id="element" match-tagging-elements="true"
 	  match-tagging-attributes="false"/>
   
   <!-- settings for the indexer
@@ -74,7 +74,7 @@
     		equality comparisons.
   -->
   <indexer stemming="false" caseSensitive="false"
-	  suppress-whitespace="none" index-depth="1"
+	  suppress-whitespace="both" index-depth="1"
 	  tokenizer="org.exist.storage.analysis.SimpleTokenizer"
 	  validation="false">
 

@@ -159,7 +159,8 @@ public class Predicate extends PathExpr {
 				}
 			}
 			return result;
-		}
+		} else
+			LOG.debug("unable to determine return type of predicate expression");
 		return Sequence.EMPTY_SEQUENCE;
 		//		LOG.debug(
 		//			"predicate expression found "
