@@ -101,7 +101,8 @@
             <title>Index Configuration</title>
             <para>The default index creation policy can be configured in the
                 central configuration file, conf.xml, which is read at database
-                startup. Index creation for a specific collection and its
+                startup. Settings in conf.xml apply if no collection-specific
+                configuration is found. Index creation for a specific collection and its
                 sub-collections is configured in the collection configuration
                 file, located in a special section of the database. Collection
                 configurations are stored as normal XML documents below the
@@ -252,7 +253,11 @@
                 </unorderedlist>
                 <para>Other types will probably be added in the future. Please note, that
                     the xs:integer type is limited to the range of values that can be represented
-                    by a Java signed long.</para>  
+                    by a Java signed long.</para>
+                <para>If a node value cannot be cast to the specified type, it will be ignored silently.
+                    For example, if one of the price tags contains the string "unknown" instead of
+                    a double value, the indexer will just skip this value. However, the value will still be
+                    found in a string comparison.</para>
             </section>
             <section>
                 <title>Configuration Loading</title>

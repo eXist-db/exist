@@ -37,6 +37,10 @@
                     features and extensions.</para>
                 </listitem>
                 <listitem>
+                    <para><ulink href="indexing.xml">Configuring Indexes</ulink>: how to configure
+                    specific indexes.</para>
+                </listitem>
+                <listitem>
                     <para><ulink href="devguide.xml">Developer's Guide</ulink>: describes the
                     various interfaces: XML:DB API, XML-RPC, REST, SOAP.</para>
                 </listitem>
