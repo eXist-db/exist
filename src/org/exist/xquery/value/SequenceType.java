@@ -22,14 +22,17 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.xquery.AtomicToString;
+import org.exist.xquery.Atomize;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.UntypedValueCheck;
 import org.exist.xquery.XPathException;
 
 /**
  * @author wolf
  */
 public class SequenceType {
-
+ 
 	private int primaryType = Type.ITEM;
 	private int cardinality = Cardinality.EXACTLY_ONE;
 
@@ -58,8 +61,9 @@ public class SequenceType {
 	}
 
 	public void checkType(int type) throws XPathException {
-		if (type == Type.EMPTY)
+		if (type == Type.EMPTY || type == Type.ITEM)
 			return;
+        
 		if (!Type.subTypeOf(type, primaryType))
 			throw new XPathException(
 				"Type error: expected type: "

@@ -50,7 +50,9 @@ public class LetExpr extends BindingExpression {
 		LocalVariable mark = context.markLocalVariables();
 		
 		// Declare the iteration variable
-		context.declareVariable(new LocalVariable(QName.parse(context, varName, null)));
+        LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
+        inVar.setSequenceType(sequenceType);
+		context.declareVariable(inVar);
 		
 		inputSequence.analyze(this, flags);
 		if(whereExpr != null) {
@@ -80,15 +82,14 @@ public class LetExpr extends BindingExpression {
 		
 		// Declare the iteration variable
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
+        var.setSequenceType(sequenceType);
 		context.declareVariable(var);
 		
 		Sequence in = inputSequence.eval(null, null);
-		if (sequenceType != null) {
-			sequenceType.checkType(in.getItemType());
-			sequenceType.checkCardinality(in);
-		}
 		clearContext(in);
 		var.setValue(in);
+        var.checkType();
+        
 		Sequence filtered = null;
 		if (whereExpr != null) {
 			filtered = applyWhereExpression(null);

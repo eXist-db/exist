@@ -22,11 +22,9 @@
  */
 package org.exist.xquery;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,11 +47,8 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.source.ClassLoaderSource;
-import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
-import org.exist.source.URLSource;
 import org.exist.storage.DBBroker;
 import org.exist.util.Collations;
 import org.exist.util.Lock;

@@ -73,10 +73,8 @@ public class QuantifiedExpression extends BindingExpression {
 		boolean found = false;
 		for(SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
 			contextItem = i.nextItem();
-			if(sequenceType != null)
-				// check sequence type
-				sequenceType.checkType(contextItem.getType());
 			var.setValue(contextItem.toSequence());
+            var.checkType();
 			satisfiesSeq = returnExpr.eval(null);
 //			LOG.debug("satisfies returned: " + satisfiesSeq.getLength());
 			if(returnExpr.returnsType() == Type.BOOLEAN)

@@ -50,6 +50,9 @@ public abstract class BindingExpression extends AbstractExpression {
 	protected final static Logger LOG =
 		Logger.getLogger(BindingExpression.class);
 
+    protected final static SequenceType POSITIONAL_VAR_TYPE = 
+        new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE);
+    
 	protected String varName;
 	protected SequenceType sequenceType = null;
 	protected Expression inputSequence;

@@ -24,7 +24,12 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * An XQuery/XPath variable, consisting of a QName and a value.
@@ -44,24 +49,24 @@ public class Variable {
 	// before another
 	private int positionInStack = 0;
 	
-	// the cardinality of this variable
-	private int cardinality = Cardinality.ZERO_OR_MORE;
-	
 	// the context document set
 	private DocumentSet contextDocs = null;
 	
+    // the sequence type of this variable if known
+    private SequenceType type = null;
+    
 	/**
 	 * 
 	 */
 	public Variable(QName qname) {
 		this.qname = qname;
 	}
-
+    
 	public void setValue(Sequence value) {
 		this.value = value;
 	}
-	
-	public Sequence getValue() {
+
+    public Sequence getValue() {
 		return value;
 	}
 	
@@ -69,6 +74,21 @@ public class Variable {
 		return qname;
 	}
 	
+    public int getType() {
+        if(type != null)
+            return type.getPrimaryType();
+        else
+            return Type.ITEM;
+    }
+    
+    public void setSequenceType(SequenceType type) {
+        this.type = type;
+    }
+    
+    public SequenceType getSequenceType() {
+        return type;
+    }
+    
 	public String toString() {
 		return "$" + qname.toString();
 	}
@@ -86,11 +106,7 @@ public class Variable {
 	}
 	
 	public int getCardinality() {
-		return cardinality;
-	}
-	
-	public void setCardinality(int card) {
-		this.cardinality = card;
+		return Cardinality.ZERO_OR_MORE;
 	}
 	
 	public void setStackPosition(int position) {
@@ -104,4 +120,31 @@ public class Variable {
 	public void setContextDocs(DocumentSet docs) {
 	    this.contextDocs = docs;
 	}
+    
+    public void checkType() throws XPathException {
+        if (type == null)
+            return;
+        type.checkCardinality(value);
+        
+        int requiredType = type.getPrimaryType();
+        if(Type.subTypeOf(requiredType, Type.ATOMIC)) {
+            if(!Type.subTypeOf(value.getItemType(), Type.ATOMIC))
+                value = Atomize.atomize(value);
+            if(requiredType != Type.ATOMIC)
+                value = convert(value);
+        }
+        if(!Type.subTypeOf(value.getItemType(), requiredType))
+            throw new XPathException("The type of variable " + toString() +
+                    " does not match the declared type: " + type);
+    }
+    
+    private Sequence convert(Sequence seq) throws XPathException {
+        ValueSequence result = new ValueSequence();
+        Item item;
+        for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+            item = i.nextItem();
+            result.add(item.convertTo(type.getPrimaryType()));
+        }
+        return result;
+    }
 }

@@ -88,10 +88,14 @@ public class VariableReference extends AbstractExpression {
 	public int returnsType() {
 		try {
 			Variable var = context.resolveVariable(qname);
-			if (var != null && var.getValue() != null) {
-				int type = var.getValue().getItemType();
-				return type;
-			}
+            if(var != null) {
+                if (var.getValue() != null) {
+                    int type = var.getValue().getItemType();
+                    return type;
+                } else {
+                    return var.getType();
+                }
+            }
 		} catch (XPathException e) {
 		}
 		return Type.ITEM;
