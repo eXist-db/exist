@@ -159,5 +159,14 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         }
     }
 
+    
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.CollectionManagementServiceImpl#copyResource(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void copyResource(String resourcePath, String destinationPath,
+            String newName) throws XMLDBException {
+        throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED, "copyResource is not yet implemented for " +
+        		"remote resources");
+    }
 }
 
