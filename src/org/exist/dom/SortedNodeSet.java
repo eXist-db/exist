@@ -241,6 +241,11 @@ public class SortedNodeSet extends AbstractNodeSet {
 				return value == null ? 0 : -1;
 			return value.compareTo(o.value);
 		}
+
+		public boolean equals(OrderedLinkedList.Node other) {
+			IteratorItem o = (IteratorItem) other;
+			return value.equals(o.value);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -248,4 +253,5 @@ public class SortedNodeSet extends AbstractNodeSet {
 	 */
 	public void add(NodeProxy proxy) {
 	}
+
 }
