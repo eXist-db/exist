@@ -172,7 +172,7 @@ public class DOMFile extends BTree implements Lockable {
 			if (page != null) {
 				DOMFilePageHeader ph = page.getPageHeader();
 				ph.setNextDataPage(newPage.getPageNum());
-                newPage.getPageHeader().setPrevDataPage(page.getPageNum());
+				newPage.getPageHeader().setPrevDataPage(page.getPageNum());
 				page.setDirty(true);
 				//page.write();
 			}
@@ -251,23 +251,20 @@ public class DOMFile extends BTree implements Lockable {
 				splitPage.getPageHeader().setDataLength(splitPage.len);
 				splitPage.getPageHeader().setNextDataPage(
 					rec.page.getPageHeader().getNextDataPage());
-                splitPage.getPageHeader().setPrevDataPage(
-                    rec.page.getPageNum()
-                );
+				splitPage.getPageHeader().setPrevDataPage(
+					rec.page.getPageNum());
 				splitPage.getPageHeader().setNextTID(
 					rec.page.getPageHeader().getNextTID());
 				splitPage.getPageHeader().setRecordCount(
 					getRecordCount(splitPage));
 				splitPage.setDirty(true);
 				buffer.add(splitPage);
-                DOMPage nextPage = getCurrentPage(
-                    splitPage.getPageHeader().getNextDataPage()
-                );
-                nextPage.getPageHeader().setPrevDataPage(
-                    splitPage.getPageNum()
-                );
-                nextPage.setDirty(true);
-                buffer.add(nextPage);
+				DOMPage nextPage =
+					getCurrentPage(splitPage.getPageHeader().getNextDataPage());
+				nextPage.getPageHeader().setPrevDataPage(
+					splitPage.getPageNum());
+				nextPage.setDirty(true);
+				buffer.add(nextPage);
 				rec.page.getPageHeader().setNextDataPage(
 					splitPage.getPageNum());
 				rec.page.len = rec.offset + value.length + 4;
@@ -398,7 +395,7 @@ public class DOMFile extends BTree implements Lockable {
 			ph.setStatus(RECORD);
 			ph.setDirty(true);
 			ph.setNextDataPage(-1);
-            ph.setPrevDataPage(-1);
+			ph.setPrevDataPage(-1);
 			ph.setDataLength(0);
 			ph.setRecordCount((short) 0);
 			//page.write();
@@ -639,11 +636,12 @@ public class DOMFile extends BTree implements Lockable {
 			page = getCurrentPage(pageNr);
 			buffer.add(page);
 			pos = 0;
-            final int dlen = page.getPageHeader().getDataLength();
+			final int dlen = page.getPageHeader().getDataLength();
 			while (pos < dlen) {
-				final short current = ByteConversion.byteToShort(page.data, pos);
+				final short current =
+					ByteConversion.byteToShort(page.data, pos);
 				if (current == tid)
-					return new RecordPos(pos + 2, page); 
+					return new RecordPos(pos + 2, page);
 				pos = pos + ByteConversion.byteToShort(page.data, pos + 2) + 4;
 			}
 			pageNr = page.getPageHeader().getNextDataPage();
@@ -817,15 +815,22 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public void remove(long p) {
 		RecordPos rec = findValuePosition(p);
-        LOG.debug("removing tid " + tidFromPointer(p) + 
-            " from page " + pageFromPointer(p));
-        DOMFilePageHeader ph = rec.page.getPageHeader();
+		LOG.debug(
+			"removing tid "
+				+ tidFromPointer(p)
+				+ " from page "
+				+ pageFromPointer(p));
+		DOMFilePageHeader ph = rec.page.getPageHeader();
 		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
 		int end = rec.offset + 2 + l;
 		int len = ph.getDataLength();
 		// remove old value
-		System.arraycopy(rec.page.data, end, rec.page.data, 
-            rec.offset - 2, len - end);
+		System.arraycopy(
+			rec.page.data,
+			end,
+			rec.page.data,
+			rec.offset - 2,
+			len - end);
 		ph.setDirty(true);
 		len = len - l - 4;
 		ph.setDataLength(len);
@@ -834,10 +839,10 @@ public class DOMFile extends BTree implements Lockable {
 		if (ph.getRecordCount() == 0) {
 			buffer.remove(rec.page);
 			long np = ph.getNextDataPage();
-            DOMPage prev = getCurrentPage(ph.getPrevDataPage());
-            prev.getPageHeader().setNextDataPage(np);
-            prev.setDirty(true);
-            buffer.add(prev);
+			DOMPage prev = getCurrentPage(ph.getPrevDataPage());
+			prev.getPageHeader().setNextDataPage(np);
+			prev.setDirty(true);
+			buffer.add(prev);
 			try {
 				if (fileHeader.getLastDataPage() == rec.page.getPageNum())
 					fileHeader.setLastDataPage(-1);
@@ -1165,7 +1170,7 @@ public class DOMFile extends BTree implements Lockable {
 						if (db.fileHeader.getLastDataPage() == p.getPageNum())
 							db.fileHeader.setLastDataPage(-1);
 						ph.setNextDataPage(-1);
-                        ph.setPrevDataPage(-1);
+						ph.setPrevDataPage(-1);
 						ph.setDataLength(0);
 						ph.setRecordCount((short) 0);
 						p.setDirty(true);
@@ -1342,7 +1347,7 @@ public class DOMFile extends BTree implements Lockable {
 	private final class DOMFilePageHeader extends BTreePageHeader {
 		protected int dataLen = 0;
 		protected long nextDataPage = -1;
-        protected long prevDataPage = -1;
+		protected long prevDataPage = -1;
 		protected short tid = 0;
 		protected short records = 0;
 
@@ -1392,10 +1397,10 @@ public class DOMFile extends BTree implements Lockable {
 			return nextDataPage;
 		}
 
-        public long getPrevDataPage() {
-            return prevDataPage;
-        }
-        
+		public long getPrevDataPage() {
+			return prevDataPage;
+		}
+
 		/**
 		 *  Gets the recordCount attribute of the DOMFilePageHeader object
 		 *
@@ -1421,7 +1426,7 @@ public class DOMFile extends BTree implements Lockable {
 			records = dis.readShort();
 			dataLen = dis.readInt();
 			nextDataPage = dis.readLong();
-            prevDataPage = dis.readLong();
+			prevDataPage = dis.readLong();
 			tid = dis.readShort();
 		}
 
@@ -1443,10 +1448,10 @@ public class DOMFile extends BTree implements Lockable {
 			nextDataPage = page;
 		}
 
-        public void setPrevDataPage(long page) {
-            prevDataPage = page;
-        }
-        
+		public void setPrevDataPage(long page) {
+			prevDataPage = page;
+		}
+
 		/**
 		 *  Sets the recordCount attribute of the DOMFilePageHeader object
 		 *
@@ -1467,7 +1472,7 @@ public class DOMFile extends BTree implements Lockable {
 			dos.writeShort(records);
 			dos.writeInt(dataLen);
 			dos.writeLong(nextDataPage);
-            dos.writeLong(prevDataPage);
+			dos.writeLong(prevDataPage);
 			dos.writeShort(tid);
 		}
 	}

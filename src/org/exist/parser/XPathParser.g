@@ -747,7 +747,7 @@ NMSTART :	(BASECHAR | '_')
 	;
 	
 protected
-NMCHAR	:	(BASECHAR | DIGIT | '.' | '-' | '_' )
+NMCHAR	:	(BASECHAR | DIGIT | '.' | '-' | '_' | ':' )
 	;
 
 protected

@@ -28,6 +28,6 @@ fi
 
 SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
 
-PROF=-Xrundrmem:file=drmem.log
+#PROF=-Xrundrmem:file=drmem.log
 
 $JAVA_HOME/bin/java $PROF $JAVA_OPTS -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dexist.home=$EXIST_HOME -classpath $LOCALCLASSPATH:$CLASSPATH org.exist.Server $*

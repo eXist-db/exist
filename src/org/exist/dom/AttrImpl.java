@@ -71,7 +71,8 @@ public class AttrImpl extends NodeImpl implements Attr {
      */
     public AttrImpl( String name, String value ) {
         super( Node.ATTRIBUTE_NODE, name );
-        this.value = XMLUtil.encodeAttrMarkup( value );
+        //this.value = XMLUtil.encodeAttrMarkup( value );
+		this.value = value;
     }
 
 

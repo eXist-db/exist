@@ -333,7 +333,7 @@ tryAgain:
 			match('"');
 			text.setLength(_saveIndex);
 			{
-			_loop176:
+			_loop60:
 			do {
 				if ((_tokenSet_1.member(LA(1)))) {
 					{
@@ -341,7 +341,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop176;
+					break _loop60;
 				}
 				
 			} while (true);
@@ -357,7 +357,7 @@ tryAgain:
 			match('\'');
 			text.setLength(_saveIndex);
 			{
-			_loop179:
+			_loop63:
 			do {
 				if ((_tokenSet_2.member(LA(1)))) {
 					{
@@ -365,7 +365,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop179;
+					break _loop63;
 				}
 				
 			} while (true);
@@ -785,6 +785,11 @@ tryAgain:
 			match('_');
 			break;
 		}
+		case ':':
+		{
+			match(':');
+			break;
+		}
 		default:
 		{
 			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
@@ -805,13 +810,13 @@ tryAgain:
 		
 		mNMSTART(false);
 		{
-		_loop204:
+		_loop88:
 		do {
 			if ((_tokenSet_3.member(LA(1)))) {
 				mNMCHAR(false);
 			}
 			else {
-				break _loop204;
+				break _loop88;
 			}
 			
 		} while (true);
@@ -830,13 +835,13 @@ tryAgain:
 		
 		mNMSTART(false);
 		{
-		_loop207:
+		_loop91:
 		do {
 			if ((_tokenSet_3.member(LA(1)))) {
 				mNMCHAR(false);
 			}
 			else {
-				break _loop207;
+				break _loop91;
 			}
 			
 		} while (true);
@@ -867,10 +872,10 @@ tryAgain:
 		_ttype = ID_OR_FUNC;
 		int _saveIndex;
 		
-		boolean synPredMatched211 = false;
+		boolean synPredMatched95 = false;
 		if (((_tokenSet_0.member(LA(1))) && (true))) {
-			int _m211 = mark();
-			synPredMatched211 = true;
+			int _m95 = mark();
+			synPredMatched95 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -879,12 +884,12 @@ tryAgain:
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched211 = false;
+				synPredMatched95 = false;
 			}
-			rewind(_m211);
+			rewind(_m95);
 			inputState.guessing--;
 		}
-		if ( synPredMatched211 ) {
+		if ( synPredMatched95 ) {
 			mFUNC(false);
 			if ( inputState.guessing==0 ) {
 				_ttype = FUNC;
@@ -914,41 +919,41 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt214=0;
-		_loop214:
+		int _cnt98=0;
+		_loop98:
 		do {
 			if (((LA(1) >= '0' && LA(1) <= '9'))) {
 				mDIGIT(false);
 			}
 			else {
-				if ( _cnt214>=1 ) { break _loop214; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt98>=1 ) { break _loop98; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt214++;
+			_cnt98++;
 		} while (true);
 		}
 		{
-		_loop218:
+		_loop102:
 		do {
 			if ((LA(1)=='.')) {
 				match('.');
 				{
-				int _cnt217=0;
-				_loop217:
+				int _cnt101=0;
+				_loop101:
 				do {
 					if (((LA(1) >= '0' && LA(1) <= '9'))) {
 						mDIGIT(false);
 					}
 					else {
-						if ( _cnt217>=1 ) { break _loop217; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+						if ( _cnt101>=1 ) { break _loop101; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 					}
 					
-					_cnt217++;
+					_cnt101++;
 				} while (true);
 				}
 			}
 			else {
-				break _loop218;
+				break _loop102;
 			}
 			
 		} while (true);
@@ -1141,7 +1146,7 @@ tryAgain:
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
 		long[] data = new long[1025];
-		data[0]=288054454291267584L;
+		data[0]=576284830442979328L;
 		data[1]=576460745995190270L;
 		data[2]=0L;
 		data[3]=-36028797027352577L;
