@@ -1,7 +1,10 @@
+xquery version "1.0";
+
 (:
     Main module of the database administration interface.
 :)
-xquery version "1.0";
+declare namespace admin="http://exist-db.org/xquery/admin-interface";
+declare namespace xdb="http://exist-db.org/xquery/xmldb";
 
 import module namespace status="http://exist-db.org/xquery/admin-interface/status" at "status.xqm";
 import module namespace browse="http://exist-db.org/xquery/admin-interface/browse" at "browse.xqm";
@@ -9,10 +12,9 @@ import module namespace users="http://exist-db.org/xquery/admin-interface/users"
 import module namespace shut="http://exist-db.org/xquery/admin-interface/shutdown" at "shutdown.xqm";
 import module namespace setup="http://exist-db.org/xquery/admin-interface/setup" at "setup.xqm";
 
-declare namespace admin="http://exist-db.org/xquery/admin-interface";
-declare namespace xdb="http://exist-db.org/xquery/xmldb";
-
-(: Display the version and user info in the top right corner :)
+(: 
+    Display the version and user info in the top right corner 
+:)
 declare function admin:info-header($user as xs:string) as element() {
     <div class="info">
         <ul>
@@ -23,7 +25,9 @@ declare function admin:info-header($user as xs:string) as element() {
     </div>
 };
 
-(: Select the page to show. Every page is defined in its own module :)
+(:
+    Select the page to show. Every page is defined in its own module 
+:)
 declare function admin:panel($user as xs:string, $pass as xs:string?) as element() {
     let $panel := request:request-parameter("panel", "status")
     return
@@ -39,7 +43,8 @@ declare function admin:panel($user as xs:string, $pass as xs:string?) as element
             status:main()
 };
 
-(:  Main function: display login form if no credentials have been supplied
+(:
+    Main function: display login form if no credentials have been supplied
     or logout is selected.
     
     $credentials is either an empty sequence or a pair (user, password).
@@ -51,7 +56,9 @@ declare function admin:main($credentials as xs:string*) as element()+ {
         admin:panel($credentials[1], $credentials[2])
 };
 
-(:  Display the login form. :)
+(:~  
+    Display the login form.
+:)
 declare function admin:display-login-form() as element() {
     <div class="panel">
         <div class="panel-head">Login</div>
@@ -81,7 +88,7 @@ declare function admin:display-login-form() as element() {
     </div>
 };
 
-(:  Try to authenticate the user name and password from
+(:~  Try to authenticate the user name and password from
     the current HTTP session. Returns a pair of (user, password)
     on success, an empty sequence otherwise.
 :)
@@ -96,7 +103,8 @@ declare function admin:checkUser() as xs:string* {
             ()
 };
 
-(:  Process user and password passed from the login form.
+(:~
+    Process user and password passed from the login form.
     Returns a pair of (user, password) if the credentials are
     valid, an empty sequence if not.
 :)
@@ -110,7 +118,9 @@ declare function admin:doLogin($user as xs:string) as xs:string* {
             ()
 };
 
-(:  Authenticate the user :)
+(:~  
+    Authenticate the user 
+:)
 declare function admin:login() as xs:string* {
     let $userParam := request:request-parameter("user", ())
     return

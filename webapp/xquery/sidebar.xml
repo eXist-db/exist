@@ -39,7 +39,10 @@
     </group>
     <group name="Community">
         <item>
-            <link href="../index.xml#mailing">Mailing List/IRC</link>
+            <link href="../index.xml#mailing">Mailing List</link>
+        </item>
+        <item>
+            <link href="irc://irc.freenode.net/existdb">IRC Channel</link>
         </item>
         <item>
             <link href="../apps/applications.xml">Powered By eXist</link>
@@ -70,9 +73,6 @@
         <item>
             <link href="../admin/admin.xql">Admin</link>
         </item>
-        <item>
-			<link href="../status">Server Status</link>
-        </item>
     </group>
     
     <banner>
@@ -81,5 +81,9 @@
     
 	<banner name="" empty="true">
         <link href="http://sourceforge.net/projects/exist"><img src="http://sourceforge.net/sflogo.php?group_id=17691&amp;type=4" width="125" height="37" border="0" alt="SourceForge Logo"/></link>
-  </banner>
+    </banner>
+    
+    <banner>
+        <link href="http://www.java.net"><img src="resources/javanet_button_90.gif" border="0" alt="java.net Member Button"/></link>
+    </banner>
 </sidebar>
