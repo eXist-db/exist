@@ -1687,7 +1687,7 @@ public XQueryParser(ParserSharedInputState state) {
 					astFactory.addASTChild(currentAST, returnAST);
 					exprSingle_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 				}
-				else if ((_tokenSet_5.member(LA(1)))) {
+				else if ((_tokenSet_0.member(LA(1)))) {
 					orExpr();
 					astFactory.addASTChild(currentAST, returnAST);
 					exprSingle_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -2633,7 +2633,7 @@ public XQueryParser(ParserSharedInputState state) {
 						currentAST.advanceChildToEnd();
 					}
 				}
-				else if ((_tokenSet_6.member(LA(1)))) {
+				else if ((_tokenSet_5.member(LA(1)))) {
 					{
 					{
 					switch ( LA(1)) {
@@ -2832,7 +2832,7 @@ public XQueryParser(ParserSharedInputState state) {
 		{
 		_loop138:
 		do {
-			if ((_tokenSet_7.member(LA(1)))) {
+			if ((_tokenSet_6.member(LA(1)))) {
 				{
 				switch ( LA(1)) {
 				case STAR:
@@ -2952,6 +2952,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case STRING_LITERAL:
 		case XQUERY:
 		case VERSION:
+		case LITERAL_declare:
 		case LITERAL_default:
 		case LITERAL_function:
 		case LITERAL_variable:
@@ -3195,6 +3196,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case STRING_LITERAL:
 		case XQUERY:
 		case VERSION:
+		case LITERAL_declare:
 		case LITERAL_default:
 		case LITERAL_function:
 		case LITERAL_variable:
@@ -3397,7 +3399,7 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST stepExpr_AST = null;
 		
 		boolean synPredMatched157 = false;
-		if (((_tokenSet_8.member(LA(1))))) {
+		if (((_tokenSet_7.member(LA(1))))) {
 			int _m157 = mark();
 			synPredMatched157 = true;
 			inputState.guessing++;
@@ -3462,7 +3464,7 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		else {
 			boolean synPredMatched160 = false;
-			if (((_tokenSet_9.member(LA(1))))) {
+			if (((_tokenSet_8.member(LA(1))))) {
 				int _m160 = mark();
 				synPredMatched160 = true;
 				inputState.guessing++;
@@ -3522,7 +3524,7 @@ public XQueryParser(ParserSharedInputState state) {
 			}
 			else {
 				boolean synPredMatched163 = false;
-				if (((_tokenSet_9.member(LA(1))))) {
+				if (((_tokenSet_8.member(LA(1))))) {
 					int _m163 = mark();
 					synPredMatched163 = true;
 					inputState.guessing++;
@@ -3573,7 +3575,7 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 				else {
 					boolean synPredMatched166 = false;
-					if (((_tokenSet_9.member(LA(1))))) {
+					if (((_tokenSet_8.member(LA(1))))) {
 						int _m166 = mark();
 						synPredMatched166 = true;
 						inputState.guessing++;
@@ -3590,6 +3592,7 @@ public XQueryParser(ParserSharedInputState state) {
 							case LITERAL_namespace:
 							case XQUERY:
 							case VERSION:
+							case LITERAL_declare:
 							case LITERAL_default:
 							case LITERAL_function:
 							case LITERAL_variable:
@@ -3698,7 +3701,7 @@ public XQueryParser(ParserSharedInputState state) {
 						astFactory.addASTChild(currentAST, returnAST);
 						stepExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 					}
-					else if ((_tokenSet_8.member(LA(1)))) {
+					else if ((_tokenSet_7.member(LA(1)))) {
 						axisStep();
 						astFactory.addASTChild(currentAST, returnAST);
 						stepExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -3780,7 +3783,7 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST forwardOrReverseStep_AST = null;
 		
 		boolean synPredMatched175 = false;
-		if (((_tokenSet_10.member(LA(1))))) {
+		if (((_tokenSet_9.member(LA(1))))) {
 			int _m175 = mark();
 			synPredMatched175 = true;
 			inputState.guessing++;
@@ -3828,7 +3831,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 				forwardOrReverseStep_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			}
-			else if ((_tokenSet_8.member(LA(1)))) {
+			else if ((_tokenSet_7.member(LA(1)))) {
 				abbrevStep();
 				astFactory.addASTChild(currentAST, returnAST);
 				forwardOrReverseStep_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -4007,7 +4010,7 @@ public XQueryParser(ParserSharedInputState state) {
 			astFactory.addASTChild(currentAST, returnAST);
 			nodeTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
-		else if ((_tokenSet_11.member(LA(1)))) {
+		else if ((_tokenSet_10.member(LA(1)))) {
 			nameTest();
 			astFactory.addASTChild(currentAST, returnAST);
 			nodeTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -4096,6 +4099,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_namespace:
 		case XQUERY:
 		case VERSION:
+		case LITERAL_declare:
 		case LITERAL_default:
 		case LITERAL_function:
 		case LITERAL_variable:
@@ -4165,6 +4169,7 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_namespace:
 			case XQUERY:
 			case VERSION:
+			case LITERAL_declare:
 			case LITERAL_default:
 			case LITERAL_function:
 			case LITERAL_variable:
@@ -4256,7 +4261,7 @@ public XQueryParser(ParserSharedInputState state) {
 		String name= null;
 		
 		boolean synPredMatched190 = false;
-		if (((_tokenSet_11.member(LA(1))))) {
+		if (((_tokenSet_10.member(LA(1))))) {
 			int _m190 = mark();
 			synPredMatched190 = true;
 			inputState.guessing++;
@@ -4421,6 +4426,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_namespace:
 		case XQUERY:
 		case VERSION:
+		case LITERAL_declare:
 		case LITERAL_default:
 		case LITERAL_function:
 		case LITERAL_variable:
@@ -4550,7 +4556,7 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		default:
 			boolean synPredMatched198 = false;
-			if (((_tokenSet_12.member(LA(1))))) {
+			if (((_tokenSet_11.member(LA(1))))) {
 				int _m198 = mark();
 				synPredMatched198 = true;
 				inputState.guessing++;
@@ -4610,7 +4616,7 @@ public XQueryParser(ParserSharedInputState state) {
 			}
 			else {
 				boolean synPredMatched201 = false;
-				if (((_tokenSet_12.member(LA(1))))) {
+				if (((_tokenSet_11.member(LA(1))))) {
 					int _m201 = mark();
 					synPredMatched201 = true;
 					inputState.guessing++;
@@ -4805,6 +4811,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case STRING_LITERAL:
 		case XQUERY:
 		case VERSION:
+		case LITERAL_declare:
 		case LITERAL_default:
 		case LITERAL_function:
 		case LITERAL_variable:
@@ -4935,6 +4942,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case STRING_LITERAL:
 		case XQUERY:
 		case VERSION:
+		case LITERAL_declare:
 		case LITERAL_default:
 		case LITERAL_function:
 		case LITERAL_variable:
@@ -5238,7 +5246,7 @@ public XQueryParser(ParserSharedInputState state) {
 				match(LT);
 				qName();
 				{
-				match(_tokenSet_13);
+				match(_tokenSet_12);
 				}
 				}
 			}
@@ -5836,7 +5844,7 @@ public XQueryParser(ParserSharedInputState state) {
 		{
 		_loop259:
 		do {
-			if ((_tokenSet_14.member(LA(1)))) {
+			if ((_tokenSet_13.member(LA(1)))) {
 				elementContent();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
@@ -6738,6 +6746,18 @@ public XQueryParser(ParserSharedInputState state) {
 			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
+		case LITERAL_declare:
+		{
+			org.exist.xquery.parser.XQueryAST tmp421_AST = null;
+			tmp421_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp421_AST);
+			match(LITERAL_declare);
+			if ( inputState.guessing==0 ) {
+				name = "declare";
+			}
+			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
 		default:
 		{
 			throw new NoViableAltException(LT(1), getFilename());
@@ -6939,12 +6959,12 @@ public XQueryParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
-		long[] data = { -4057250683051573248L, 8013775106948149189L, 100728768L, 0L, 0L, 0L};
+		long[] data = { -4039236284542091264L, 8013775106948149189L, 100728768L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
-		long[] data = { -4057250683051573248L, 9166696611554996165L, 100728768L, 0L, 0L, 0L};
+		long[] data = { -4039236284542091264L, 9166696611554996165L, 100728768L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
@@ -6954,57 +6974,52 @@ public XQueryParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
 	private static final long[] mk_tokenSet_5() {
-		long[] data = { -3479646438655262720L, -2561859953414155L, 101187571L, 0L, 0L, 0L};
+		long[] data = { 562949953421312L, 1927366574080L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
 	private static final long[] mk_tokenSet_6() {
-		long[] data = { 562949953421312L, 1927366574080L, 0L, 0L};
+		long[] data = { 0L, 985162418487312L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	private static final long[] mk_tokenSet_7() {
-		long[] data = { 0L, 985162418487312L, 0L, 0L};
+		long[] data = { -4039236284542091264L, 9166696611554996181L, 100728816L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
 	private static final long[] mk_tokenSet_8() {
-		long[] data = { -4057250683051573248L, 9166696611554996181L, 100728816L, 0L, 0L, 0L};
+		long[] data = { -3461632040145780736L, -56675424226037819L, 101187523L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
 	private static final long[] mk_tokenSet_9() {
-		long[] data = { -3479646438655262720L, -56675424226037819L, 101187523L, 0L, 0L, 0L};
+		long[] data = { 0L, 288230376151711744L, 4032L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
 	private static final long[] mk_tokenSet_10() {
-		long[] data = { 0L, 288230376151711744L, 4032L, 0L, 0L, 0L};
+		long[] data = { -4039236284542091264L, 8013775106948149205L, 100728768L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
 	private static final long[] mk_tokenSet_11() {
-		long[] data = { -4057250683051573248L, 8013775106948149205L, 100728768L, 0L, 0L, 0L};
+		long[] data = { 288511851128422400L, 6701356245527298048L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
 	private static final long[] mk_tokenSet_12() {
-		long[] data = { 288511851128422400L, 6701356245527298048L, 0L, 0L};
-		return data;
-	}
-	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
-	private static final long[] mk_tokenSet_13() {
 		long[] data = new long[8];
 		data[0]=-16L;
 		data[1]=-18014400656965633L;
 		data[2]=35184372088831L;
 		return data;
 	}
-	public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
-	private static final long[] mk_tokenSet_14() {
+	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
+	private static final long[] mk_tokenSet_13() {
 		long[] data = { 1152921504606846976L, 1073741824L, 4194307L, 0L, 0L, 0L};
 		return data;
 	}
-	public static final BitSet _tokenSet_14 = new BitSet(mk_tokenSet_14());
+	public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
 	
 	}

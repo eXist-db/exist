@@ -4931,9 +4931,7 @@ public XQueryTreeParser() {
 			match(_t,INTEGER_LITERAL);
 			_t = _t.getNextSibling();
 			
-			// jmv: trouble with bIg integer in XQuery source: step= new LiteralValue(context, new IntegerValue(Integer.parseInt(i.getText())));
-			step= new LiteralValue(context, new IntegerValue( i.getText() ));
-			
+			step= new LiteralValue(context, new IntegerValue(i.getText()));
 			step.setASTNode(i);
 			
 			break;

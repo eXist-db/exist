@@ -709,8 +709,10 @@ implements Comparable, EntityResolver, Cacheable {
 			LockException {
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("Database is read-only");
+
 		DocumentImpl document, oldDoc = null;
 		XMLReader reader;
+
 		InputSource source = new InputSource(new StringReader(data));
 		oldDoc = getDocument(broker, name);
 		document = new DocumentImpl(broker, name,	this);
@@ -915,11 +917,6 @@ implements Comparable, EntityResolver, Cacheable {
 	private void checkPermissions(DBBroker broker, String name, DocumentImpl oldDoc) throws LockException, PermissionDeniedException {
 		lock.acquire(Lock.WRITE_LOCK);
 		if (hasDocument(name) && (oldDoc ) != null) {
-
-			// jmv: Note: this was only in addDocument(DBBroker broker, String name, String data,)
-			if(oldDoc.isLockedForWrite())
-				throw new PermissionDeniedException("Document " + name + 
-						" is locked for write");
 
 			// check if the document is locked by another user
 			User lockUser = oldDoc.getUserLock();

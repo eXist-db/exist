@@ -98,7 +98,6 @@ public class ClockCache implements Cache {
 			map.remove(old.getKey());
 			old.sync();
 		}
-//		System.out.println(old.getKey() + " -> " + item.getKey());
 		items[bucket] = item;
 		map.put(item.getKey(), item);
 		return old;
@@ -110,6 +109,7 @@ public class ClockCache implements Cache {
 	public Cacheable get(long key) {
 		Cacheable item = (Cacheable) map.get(key);
 		if (item == null) {
+//			LOG.debug("Page " + key + " not found in cache");
 			fails++;
 		} else
 			hits++;
@@ -131,6 +131,7 @@ public class ClockCache implements Cache {
 		Cacheable cacheable = (Cacheable) map.remove(key);
 		if (cacheable == null)
 			return;
+//		LOG.debug("Removing from cache: " + key);
 		for (int i = 0; i < count; i++) {
 			if (items[i] != null && items[i].getKey() == key) {
 			    System.arraycopy(items, i + 1, items, i, --count - i);
@@ -193,5 +194,4 @@ public class ClockCache implements Cache {
 	 */
 	public void setFileName(String fileName) {
 	}
-
 }

@@ -99,7 +99,7 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 		}
 		return null;
 	}
-
+	
 	public Object remove(long key) {
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
