@@ -99,6 +99,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
 				p = files[i].lastIndexOf(File.separatorChar);
 				if (p > -1) {
 					relDir = files[i].substring(0, p);
+					// It's necessary to do this translation on Windows, and possibly MacOS:
+					relDir = relDir.replace(File.separatorChar, '/');
 					if (createSubcollections && (prevDir == null || (!relDir.equals(prevDir)))) {
 						collection = mkcol(root, baseURI, "/db" + path, relDir);
 						prevDir = relDir;
