@@ -75,13 +75,17 @@ public class FunNodeName extends Function {
             if(result.getLength() > 0)
                 n = result.item(0);
         } else {
-            if(contextSequence.getLength() > 0 && contextSequence.getItemType() == Type.NODE)
+            if(contextSequence != null && contextSequence.getLength() > 0 && contextSequence.getItemType() == Type.NODE)
                 n = ((NodeSet)contextSequence).item(0);
         }
         if(n != null) {
             switch(n.getNodeType()) {
                 case Node.ELEMENT_NODE:
                 case Node.ATTRIBUTE_NODE:
+                    QName qname = ((QNameable) n).getQName();
+                	/*if (qname.getPrefix() != null) {
+                	    context.declareNamespace(qname.getPrefix(), qname.getNamespaceURI());
+                	}*/
                     retval = new QNameValue(context, ((QNameable) n).getQName());
                     break;
                 default:
