@@ -20,7 +20,10 @@
  */
 package org.exist.memtree;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
@@ -414,14 +417,13 @@ public class DocumentImpl extends NodeImpl implements Document {
         return count;
     }
     
-    public int getChildCountFor(int nodeNumber) {
+    public int getChildCountFor(int nr) {
         int count = 0;
-        short level = (short)(treeLevel[nodeNumber] + 1);
-        int nextNode = nodeNumber;
-        while (++nextNode < size) {
-            if(treeLevel[nextNode] == level)
-                ++count;
-            if (next[nextNode] <= nodeNumber) break;
+        short level = (short)(treeLevel[nr] + 1);
+        int nextNode = getFirstChildFor(nr);
+        while (nextNode > nr) {
+            ++count;
+            nextNode = next[nextNode];
         }
         return count;
     }
@@ -723,8 +725,13 @@ public class DocumentImpl extends NodeImpl implements Document {
      * reference nodes.
      */
     public void expand() throws DOMException {
+        DocumentImpl newDoc = expandRefs();
+        copyDocContents(newDoc);
+    }
+
+    private DocumentImpl expandRefs() throws DOMException {
         if(nextRef == 0) {
-            return;
+            return this;
         }
         MemTreeBuilder builder = new MemTreeBuilder(context);
         DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
@@ -739,10 +746,9 @@ public class DocumentImpl extends NodeImpl implements Document {
         } catch (SAXException e) {
             throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
         }
-        DocumentImpl newDoc = builder.getDocument();
-        copyDocContents(newDoc);
+        return builder.getDocument();
     }
-
+    
     /**
      * @param newDoc
      */
@@ -879,27 +885,30 @@ public class DocumentImpl extends NodeImpl implements Document {
     	}
     }
     
-    protected NodeProxy toNodeSet(NodeImpl node) throws XPathException {
-    	if (storedNodes == null)
-    		makePersistent();
-    	return (NodeProxy) storedNodes.get(node.nodeNumber);
-    }
-    
-    protected void makePersistent() throws XPathException {
-    	expand();
-    	org.exist.dom.DocumentImpl doc = context.storeTemporaryDoc(this);
-    	NodeList cl = doc.getDocumentElement().getChildNodes();
-    	storedNodes = new Int2ObjectHashMap();
-    	int top = size > 1 ? 1 : -1;
-    	int i = 0;
+    public Int2ObjectHashMap makePersistent() throws XPathException {
+        if (size <= 1)
+            return null;
+        List oldIds = new ArrayList(20);
+        int top = 1;
+        while (top > 0) {
+            oldIds.add(new Integer(top));
+            top = getNextSiblingFor(top);
+        }
+        DocumentImpl expandedDoc = expandRefs();
+        org.exist.dom.DocumentImpl doc = context.storeTemporaryDoc(expandedDoc);
+        NodeList cl = doc.getDocumentElement().getChildNodes();
+        storedNodes = new Int2ObjectHashMap();
+        top = 1;
+        int i = 0;
         while(top > 0 && i < cl.getLength()) {
             org.exist.dom.NodeImpl node = (org.exist.dom.NodeImpl) cl.item(i);
             NodeProxy proxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
-            System.err.println(top + " = " + proxy.gid);
-            storedNodes.put(top, proxy);
-            top = getNextSiblingFor(top);
+            int old = ((Integer)oldIds.get(i)).intValue();
+            storedNodes.put(old, proxy);
+            top = expandedDoc.getNextSiblingFor(top);
             i++;
         }
+        return storedNodes;
     }
     
     public int getChildCount() {

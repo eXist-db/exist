@@ -175,13 +175,12 @@ public final class NodeIterator implements Iterator {
 						offset += l;
 					}
 					if(nextNode == null) {
-					    SanityCheck.TRACE("illegal node on page " + p.getPageNum() + "; tid = " + ItemId.getId(lastTID) +
+					    LOG.debug("illegal node on page " + p.getPageNum() + "; tid = " + ItemId.getId(lastTID) +
 					            "; next = " + p.getPageHeader().getNextDataPage() + "; prev = " + 
 					            p.getPageHeader().getPrevDataPage() + "; offset = " + (offset - l) +
 					            "; len = " + p.getPageHeader().getDataLength());
-					    LOG.debug(db.debugPageContents(p));
-					    LOG.debug(p.dumpPage());
-					    Thread.dumpStack();
+//					    LOG.debug(db.debugPageContents(p));
+//					    LOG.debug(p.dumpPage());
 					    return null;
 					}
 					if(ItemId.isRelocated(lastTID)) {

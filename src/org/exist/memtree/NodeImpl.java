@@ -41,6 +41,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -513,7 +514,9 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 */
 	public NodeSet toNodeSet() throws XPathException {
 //		throw new XPathException("Querying constructed nodes is not yet implemented");
-        return document.toNodeSet(this);
+        ValueSequence seq = new ValueSequence();
+        seq.add(this);
+        return seq.toNodeSet();
 	}
 
 	private final static class SingleNodeIterator implements SequenceIterator {

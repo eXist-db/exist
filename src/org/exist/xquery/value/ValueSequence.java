@@ -28,8 +28,10 @@ import org.apache.log4j.Logger;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.util.FastQSort;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.XPathException;
 
 /**
@@ -122,26 +124,43 @@ public class ValueSequence extends AbstractSequence {
 		return values[pos];
 	}
 	
-	/* (non-Javadoc)
+	/**
+     * Makes all in-memory nodes in this sequence persistent,
+     * so they can be handled like other node sets.
+     * 
 	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
 		if(size == -1)
 			return NodeSet.EMPTY_SET;
+        // for this method to work, all items have to be nodes
 		if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
 			NodeSet set = new ExtArrayNodeSet();
 			NodeValue v;
 			for (int i = 0; i <= size; i++) {
 				v = (NodeValue)values[i];
 				if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-//					throw new XPathException("Cannot query constructed nodes.");
-					NodeSet p = ((NodeImpl)v).toNodeSet();
-                    if (p == null) {
-                        LOG.warn("Node " + ((NodeImpl)v).getQName() + " not found!");
-                        continue;
+                    // found an in-memory document
+                    DocumentImpl doc = ((NodeImpl)v).getDocument();
+                    // make this document persistent: doc.makePersistent()
+                    // returns a map of all root node ids mapped to the corresponding
+                    // persistent node. We scan the current sequence and replace all
+                    // in-memory nodes with their new persistent node objects.
+                    Int2ObjectHashMap newRoots = doc.makePersistent();
+                    for (int j = i; j <= size; j++) {
+                        v = (NodeValue) values[j];
+                        if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+                            NodeImpl node = (NodeImpl) v;
+                            if (node.getDocument() == doc) {
+                                NodeProxy p = (NodeProxy) newRoots.get(node.getNodeNumber());
+                                if (p != null) {
+                                    // replace the node by the NodeProxy
+                                    values[j] = p;
+                                }
+                            }
+                        }
                     }
-					set.addAll(p);
-                    LOG.debug("Added " + ((NodeImpl)v).getQName());
+                    set.add((NodeProxy) values[i]);
 				} else {
 					set.add((NodeProxy)v);
 				}
