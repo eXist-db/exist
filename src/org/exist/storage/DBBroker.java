@@ -32,6 +32,7 @@ import java.util.Observable;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.dom.BLOBDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
@@ -491,7 +492,12 @@ public abstract class DBBroker extends Observable {
 	 */
 	public abstract void storeDocument(DocumentImpl doc);
 
-	/**  Description of the Method */
+	public abstract void storeBinaryResource(BLOBDocument blob, byte[] data);
+	
+	public abstract byte[] getBinaryResourceData(final BLOBDocument blob);
+	
+	public abstract void removeBinaryResource(final BLOBDocument blob) throws PermissionDeniedException;
+	
 	public void sync() {
 		/*
 		 *  do nothing

@@ -49,6 +49,7 @@ import org.apache.xml.resolver.tools.CatalogResolver;
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.triggers.*;
+import org.exist.dom.BLOBDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.security.Group;
@@ -399,9 +400,20 @@ public class Collection
 		permissions.setPermissions(perm);
 		created = istream.readLong();
 		DocumentImpl doc;
+		byte resourceType;
 		try {
 			while (istream.available() > 0) {
-				doc = new DocumentImpl(broker, this);
+				resourceType = istream.readByte();
+				switch (resourceType) {
+					case DocumentImpl.XML_FILE :
+						doc = new DocumentImpl(broker, this);
+						break;
+					case DocumentImpl.BINARY_FILE :
+						doc = new BLOBDocument(broker, this);
+						break;
+					default :
+						throw new IOException("unable to determine document type");
+				}
 				doc.read(istream);
 				addDocument(broker, doc);
 			}
@@ -423,13 +435,11 @@ public class Collection
 	 *
 	 *@param  name  Description of the Parameter
 	 */
-	synchronized public void removeDocument(
-		DBBroker broker,
-		String docname)
+	synchronized public void removeDocument(DBBroker broker, String docname)
 		throws PermissionDeniedException, TriggerException {
 		Trigger trigger = null;
 		if (!docname.equals(COLLECTION_CONFIG_FILE)) {
-			if(triggersEnabled) {
+			if (triggersEnabled) {
 				CollectionConfiguration config = getConfiguration(broker);
 				if (config != null)
 					trigger = config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
@@ -441,7 +451,11 @@ public class Collection
 		if (doc == null)
 			return;
 		if (trigger != null && triggersEnabled) {
-			trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, docname, doc);
+			trigger.prepare(
+				Trigger.REMOVE_DOCUMENT_EVENT,
+				broker,
+				docname,
+				doc);
 		}
 		broker.removeDocument(path);
 		documents.remove(path);
@@ -452,10 +466,20 @@ public class Collection
 		documents.remove(path);
 	}
 
-	public DocumentImpl addDocument(
-		DBBroker broker,
-		String name,
-		String data)
+	synchronized public void removeBinaryResource(DBBroker broker, String docname)
+	throws PermissionDeniedException {
+		 String path = getName() + '/' + docname;
+		DocumentImpl doc = getDocument(path);
+		if(doc == null)
+			return;
+		if(doc.getResourceType() != DocumentImpl.BINARY_FILE)
+			throw new PermissionDeniedException("document " + docname + " is not a binary object");
+		broker.removeBinaryResource((BLOBDocument)doc);
+		documents.remove(path);
+		broker.saveCollection(this);
+	}
+	
+	public DocumentImpl addDocument(DBBroker broker, String name, String data)
 		throws
 			EXistException,
 			PermissionDeniedException,
@@ -482,11 +506,14 @@ public class Collection
 		}
 		if (oldDoc != null) {
 			// do we have permissions for update?
-			if (!oldDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
+			if (!oldDoc
+				.getPermissions()
+				.validate(broker.getUser(), Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"document exists and update " + "is not allowed");
 			// do we have write permissions?
-		} else if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
+		} else if (
+			!getPermissions().validate(broker.getUser(), Permission.WRITE))
 			throw new PermissionDeniedException(
 				"not allowed to write to collection " + getName());
 		// if an old document exists, save the new document with a temporary
@@ -500,18 +527,21 @@ public class Collection
 			document = new DocumentImpl(broker, getName() + '/' + name, this);
 			document.setCreated(System.currentTimeMillis());
 			document.getPermissions().setOwner(broker.getUser());
-			document.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
+			document.getPermissions().setGroup(
+				broker.getUser().getPrimaryGroup());
 		}
 		// setup triggers
 		Trigger trigger = null;
-		if(!name.equals(COLLECTION_CONFIG_FILE)) {
-			if(triggersEnabled) {
+		if (!name.equals(COLLECTION_CONFIG_FILE)) {
+			if (triggersEnabled) {
 				CollectionConfiguration config = getConfiguration(broker);
 				if (config != null) {
 					if (oldDoc == null)
-						trigger = config.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
+						trigger =
+							config.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
 					else
-						trigger = config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+						trigger =
+							config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
 				}
 			}
 		} else
@@ -542,8 +572,13 @@ public class Collection
 			trigger.setOutputHandler(parser);
 			trigger.setValidating(true);
 			// prepare the trigger
-			trigger.prepare(oldDoc == null ? Trigger.STORE_DOCUMENT_EVENT : Trigger.UPDATE_DOCUMENT_EVENT, 
-				broker, name, oldDoc);
+			trigger.prepare(
+				oldDoc == null
+					? Trigger.STORE_DOCUMENT_EVENT
+					: Trigger.UPDATE_DOCUMENT_EVENT,
+				broker,
+				name,
+				oldDoc);
 		} else {
 			reader.setContentHandler(parser);
 			reader.setProperty(
@@ -632,11 +667,14 @@ public class Collection
 		}
 		if (oldDoc != null) {
 			// do we have permissions for update?
-			if (!oldDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
+			if (!oldDoc
+				.getPermissions()
+				.validate(broker.getUser(), Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"document exists and update " + "is not allowed");
 			// do we have write permissions?
-		} else if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
+		} else if (
+			!getPermissions().validate(broker.getUser(), Permission.WRITE))
 			throw new PermissionDeniedException(
 				"not allowed to write to collection " + getName());
 		// if an old document exists, save the new document with a temporary
@@ -650,18 +688,21 @@ public class Collection
 			document = new DocumentImpl(broker, getName() + '/' + name, this);
 			document.setCreated(System.currentTimeMillis());
 			document.getPermissions().setOwner(broker.getUser());
-			document.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
+			document.getPermissions().setGroup(
+				broker.getUser().getPrimaryGroup());
 		}
 		// setup triggers
 		Trigger trigger = null;
-		if(!name.equals(COLLECTION_CONFIG_FILE)) {
-			if(triggersEnabled) {
+		if (!name.equals(COLLECTION_CONFIG_FILE)) {
+			if (triggersEnabled) {
 				CollectionConfiguration config = getConfiguration(broker);
 				if (config != null) {
 					if (oldDoc == null)
-						trigger = config.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
+						trigger =
+							config.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
 					else
-						trigger = config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+						trigger =
+							config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
 				}
 			}
 		} else
@@ -693,7 +734,13 @@ public class Collection
 			trigger.setLexicalOutputHandler(parser);
 			trigger.setValidating(true);
 			// prepare the trigger
-			trigger.prepare(oldDoc == null ? Trigger.STORE_DOCUMENT_EVENT : Trigger.UPDATE_DOCUMENT_EVENT, broker, name, oldDoc);
+			trigger.prepare(
+				oldDoc == null
+					? Trigger.STORE_DOCUMENT_EVENT
+					: Trigger.UPDATE_DOCUMENT_EVENT,
+				broker,
+				name,
+				oldDoc);
 		} else {
 			reader.setContentHandler(parser);
 			reader.setProperty(
@@ -762,10 +809,7 @@ public class Collection
 		return document;
 	}
 
-	public DocumentImpl addDocument(
-		DBBroker broker,
-		String name,
-		Node node)
+	public DocumentImpl addDocument(DBBroker broker, String name, Node node)
 		throws
 			EXistException,
 			PermissionDeniedException,
@@ -793,11 +837,14 @@ public class Collection
 		}
 		if (oldDoc != null) {
 			// do we have permissions for update?
-			if (!oldDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
+			if (!oldDoc
+				.getPermissions()
+				.validate(broker.getUser(), Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"document exists and update " + "is not allowed");
 			// no: do we have write permissions?
-		} else if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
+		} else if (
+			!getPermissions().validate(broker.getUser(), Permission.WRITE))
 			throw new PermissionDeniedException(
 				"not allowed to write to collection " + getName());
 		// if an old document exists, save the new document with a temporary
@@ -811,18 +858,21 @@ public class Collection
 			document = new DocumentImpl(broker, getName() + '/' + name, this);
 			document.setCreated(System.currentTimeMillis());
 			document.getPermissions().setOwner(broker.getUser());
-			document.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
+			document.getPermissions().setGroup(
+				broker.getUser().getPrimaryGroup());
 		}
 		// setup triggers
 		Trigger trigger = null;
-		if(!name.equals(COLLECTION_CONFIG_FILE)) {
-			if(triggersEnabled) {
+		if (!name.equals(COLLECTION_CONFIG_FILE)) {
+			if (triggersEnabled) {
 				CollectionConfiguration config = getConfiguration(broker);
 				if (config != null) {
 					if (oldDoc == null)
-						trigger = config.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
+						trigger =
+							config.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
 					else
-						trigger = config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+						trigger =
+							config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
 				}
 			}
 		} else
@@ -847,8 +897,13 @@ public class Collection
 			trigger.setOutputHandler(parser);
 			trigger.setValidating(true);
 			// prepare the trigger
-			trigger.prepare(oldDoc == null ? Trigger.STORE_DOCUMENT_EVENT : Trigger.UPDATE_DOCUMENT_EVENT, 
-				broker, name, oldDoc);
+			trigger.prepare(
+				oldDoc == null
+					? Trigger.STORE_DOCUMENT_EVENT
+					: Trigger.UPDATE_DOCUMENT_EVENT,
+				broker,
+				name,
+				oldDoc);
 		} else {
 			streamer.setContentHandler(parser);
 			streamer.setLexicalHandler(parser);
@@ -891,6 +946,52 @@ public class Collection
 			}
 		}
 		return document;
+	}
+
+	public synchronized BLOBDocument addBinaryResource(
+		DBBroker broker,
+		String name,
+		byte[] data)
+		throws EXistException, PermissionDeniedException {
+		if (broker.isReadOnly())
+			throw new PermissionDeniedException("Database is read-only");
+		DocumentImpl oldDoc = null;
+		synchronized (this) {
+			oldDoc = getDocument(getName() + '/' + name);
+		}
+		if (oldDoc != null) {
+			// do we have permissions for update?
+			if (!oldDoc
+				.getPermissions()
+				.validate(broker.getUser(), Permission.UPDATE))
+				throw new PermissionDeniedException(
+					"document exists and update " + "is not allowed");
+		// no: do we have write permissions?
+		} else if (
+			!getPermissions().validate(broker.getUser(), Permission.WRITE))
+			throw new PermissionDeniedException(
+				"not allowed to write to collection " + getName());
+		
+		BLOBDocument blob = new BLOBDocument(broker, getName() + '/' + name, this);
+		if (oldDoc != null) {
+			blob.setCreated(oldDoc.getCreated());
+			blob.setLastModified(System.currentTimeMillis());
+			blob.setPermissions(oldDoc.getPermissions());
+			
+			LOG.debug("removing old document " + oldDoc.getFileName());
+			broker.removeDocument(oldDoc.getFileName());
+		} else {
+			blob.setCreated(System.currentTimeMillis());
+			blob.getPermissions().setOwner(broker.getUser());
+			blob.getPermissions().setGroup(
+				broker.getUser().getPrimaryGroup());
+		}
+		broker.storeBinaryResource(blob, data);
+		synchronized (this) {
+			addDocument(broker, blob);
+			broker.addDocument(this, blob);
+		}
+		return blob;
 	}
 
 	public synchronized void setId(short id) {
@@ -952,8 +1053,7 @@ public class Collection
 		}
 	}
 
-	public CollectionConfiguration getConfiguration(
-		DBBroker broker) {
+	public CollectionConfiguration getConfiguration(DBBroker broker) {
 		if (configuration == null)
 			configuration = readCollectionConfiguration(broker);
 		return configuration;
@@ -1012,7 +1112,7 @@ public class Collection
 	public void setTriggersEnabled(boolean enabled) {
 		this.triggersEnabled = enabled;
 	}
-	
+
 	private XMLReader getReader(DBBroker broker)
 		throws EXistException, SAXException {
 		Configuration config = broker.getConfiguration();
@@ -1110,7 +1210,7 @@ public class Collection
 	public synchronized void addObserver(Observer o) {
 		if (observers == null)
 			observers = new ArrayList(1);
-		if(!observers.contains(o))
+		if (!observers.contains(o))
 			observers.add(o);
 	}
 }

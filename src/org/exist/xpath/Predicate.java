@@ -92,7 +92,9 @@ public class Predicate extends PathExpr {
 					throw new XPathException("Internal evaluation error: context node is missing for node " +
 						current.gid + "!");
 				}
+				int c = 0;
 				while (contextNode != null) {
+					c++;
 					next = contextNode.getNode();
 					next.addMatches(current.match);
 					if (!result.contains(next))

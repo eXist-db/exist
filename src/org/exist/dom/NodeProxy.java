@@ -289,9 +289,11 @@ public final class NodeProxy extends NodeSet implements Item, Comparable {
 		}
 		Match next = match;
 		int cmp;
-		while (true) {
+		while (next != null) {
 			cmp = m.compareTo(next);
-			if (cmp < 0) {
+			if (cmp == 0 && m.getNodeId() == next.getNodeId())
+				return;
+			else if (cmp < 0) {
 				if (next.prevMatch != null)
 					next.prevMatch.nextMatch = m;
 				else
@@ -299,14 +301,12 @@ public final class NodeProxy extends NodeSet implements Item, Comparable {
 				m.prevMatch = next.prevMatch;
 				next.prevMatch = m;
 				m.nextMatch = next;
-				break;
-			} else if (cmp == 0 && m.getNodeId() == next.getNodeId())
-				break;
-			if (next.nextMatch == null) {
+				return;
+			} else if(next.nextMatch == null) {
 				next.nextMatch = m;
 				m.prevMatch = next;
 				m.nextMatch = null;
-				break;
+				return;
 			}
 			next = next.nextMatch;
 		}
@@ -316,10 +316,10 @@ public final class NodeProxy extends NodeSet implements Item, Comparable {
 		Match next;
 		while (m != null) {
 			next = m.nextMatch;
-
 			addMatch(m);
 			m = next;
 		}
+		//printMatches();
 	}
 
 	public void printMatches() {
@@ -359,19 +359,26 @@ public final class NodeProxy extends NodeSet implements Item, Comparable {
 		}
 		ContextItem next = context;
 		while (next != null) {
+			if (next.getNode().gid == node.gid)
+				break;
 			if (next.getNextItem() == null) {
 				next.setNextItem(new ContextItem(node));
-				return;
+				break;
 			}
 			next = next.getNextItem();
 		}
-		//		System.out.print(gid + " context: ");
-		//		for(Iterator i = contextNodes.iterator(); i.hasNext(); ) {
-		//			System.out.print(((NodeProxy)i.next()).gid + " ");
-		//		}
-		//		System.out.println();
 	}
 
+	public void printContext() {
+		ContextItem next = context;
+		System.out.println(gid + ": ");
+		while(next != null) {
+			System.out.print(next.getNode().gid);
+			System.out.print(' ');
+			next = next.getNextItem();
+		}
+		System.out.println();
+	}
 	public void copyContext(NodeProxy node) {
 		context = node.getContext();
 	}

@@ -36,7 +36,7 @@ fi
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 
-JAVA_OPTIONS="$JAVA_OPTIONS -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS"
+JAVA_OPTIONS="$JAVA_OPTIONS -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS -Dexist.start.debug=true"
 
 # save LANG
 if [ -n "$LANG" ]; then
