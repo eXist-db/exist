@@ -24,12 +24,12 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.ComputableValue;
-import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -56,27 +56,20 @@ public class FunSum extends Function {
     }
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		Sequence zero = DoubleValue.ZERO;
-		if(getArgumentCount() == 2)
-			zero = getArgument(1).eval(contextSequence, contextItem);
 		Sequence inner = getArgument(0).eval(contextSequence, contextItem);
-		if(inner.getLength() == 0)
-			return zero;
-		
+		if (inner.getLength() == 0)
+			return Sequence.EMPTY_SEQUENCE;
+
 		SequenceIterator iter = inner.iterate();
-		AtomicValue next = (AtomicValue)iter.nextItem();
-		if(!Type.subTypeOf(next.getType(), Type.NUMBER))
-			throw new XPathException("Invalid argument to aggregate function. Expected number, got " + 
-				Type.getTypeName(next.getType()));
-		ComputableValue sum = (ComputableValue)next;
-		while(iter.hasNext()) {
-			next = (AtomicValue)iter.nextItem();
-			if(next.getType() == Type.ATOMIC)
+		AtomicValue next = (AtomicValue) iter.nextItem();
+		if (!Type.subTypeOf(next.getType(), Type.NUMBER))
+			next = next.convertTo(Type.DOUBLE);
+		ComputableValue sum = (ComputableValue) next;
+		while (iter.hasNext()) {
+			next = (AtomicValue) iter.nextItem();
+			if (!Type.subTypeOf(next.getType(), Type.NUMBER))
 				next = next.convertTo(Type.DOUBLE);
-			if(!Type.subTypeOf(next.getType(), Type.NUMBER))
-				throw new XPathException("Invalid argument to aggregate function. Expected number, got " + 
-					Type.getTypeName(next.getType()));
-			sum = sum.plus((ComputableValue)next);
+			sum = sum.plus((NumericValue) next);
 		}
 		return sum;
 	}

@@ -39,7 +39,7 @@ public class Put {
 		Collection col = 
 			DatabaseManager.getCollection(URI + collection);
 		if(col == null) {
-            // collection does not exist: get root collection and create
+            // collection does not exist: get root collection and create.
             // for simplicity, we assume that the new collection is a
             // direct child of the root collection, e.g. /db/test.
             // the example will fail otherwise.
@@ -48,23 +48,12 @@ public class Put {
                 (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
             col = mgtService.createCollection(collection.substring("/db/".length()));
         }
-        // create new XMLResource; an id will be assigned to the new resource
-		XMLResource document = (XMLResource)col.createResource(null, "XMLResource");
-		String xml = readFile(file);
-		document.setContent(xml);
+		File f = new File(file);
+        // create new XMLResource
+		XMLResource document = (XMLResource)col.createResource(f.getName(), "XMLResource");
+		document.setContent(f);
 		System.out.print("storing document " + document.getId() + "...");
 		col.storeResource(document);
 		System.out.println("ok.");
 	}
-
-	protected static String readFile(String file) throws IOException {
-        // read the file into a string
-        BufferedReader f = new BufferedReader(new FileReader(file));
-        String line;
-        StringBuffer xml = new StringBuffer();
-        while((line = f.readLine()) != null)
-            xml.append(line);
-        f.close();
-        return xml.toString();
-    }
 }

@@ -30,6 +30,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 
@@ -71,7 +72,7 @@ public class XQueryContext {
 
 	private final static Logger LOG = Logger.getLogger(XQueryContext.class);
 
-	private HashMap namespaces;
+	private Map namespaces;
 	private HashMap inScopeNamespaces = new HashMap();
 
 	private HashMap prefixes;
@@ -150,6 +151,15 @@ public class XQueryContext {
 		prefixes.put(uri, prefix);
 	}
 
+	public void declareNamespaces(Map namespaceMap) {
+		this.namespaces = namespaceMap;
+		Map.Entry entry;
+		for(Iterator i = namespaceMap.entrySet().iterator(); i.hasNext(); ) {
+			entry = (Map.Entry)i.next();
+			prefixes.put(entry.getValue(), entry.getKey());
+		}
+	}
+	
 	/**
 	 * Declare an in-scope namespace. This is called during query execution.
 	 * 

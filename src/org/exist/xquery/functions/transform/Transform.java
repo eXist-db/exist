@@ -154,8 +154,6 @@ public class Transform extends BasicFunction {
 				f = new File(stylesheet);
 				if(f.canRead())
 					stylesheet = f.toURI().toASCIIString();
-				else
-					throw new XPathException("Cannot read stylesheet from " + stylesheet);
 			}
 		}
 		CachedStylesheet cached = (CachedStylesheet)cache.get(stylesheet);

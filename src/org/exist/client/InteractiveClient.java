@@ -305,6 +305,8 @@ public class InteractiveClient {
 		messageln("                     [user|group|other]=[+|-][read|write|update].");
 		messageln("                     chmod without resource changes permissions for");
 		messageln("                     the current collection.");
+		messageln("lock resource        put a write lock on the specified resource.");
+		messageln("unlock resource      remove a write lock from the specified resource.");
 		messageln("quit                 quit the program");
 	}
 

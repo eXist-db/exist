@@ -160,7 +160,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		try {
 			broker = brokerPool.get(user);
 			XQueryContext context = new XQueryContext(broker);
-			context.setBaseURI(collection.properties.getProperty("base-uri", collection.getPath()));
+			context.setBaseURI(properties.getProperty("base-uri", collection.getPath()));
 			if(moduleLoadPath != null)
 				context.setModuleLoadPath(moduleLoadPath);
 			Map.Entry entry;

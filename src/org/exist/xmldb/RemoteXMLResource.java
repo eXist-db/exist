@@ -239,6 +239,9 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	public void setContentAsDOM(Node root) throws XMLDBException {
 		StringWriter sout = new StringWriter();
 		DOMSerializer xmlout = DOMSerializerPool.getInstance().borrowDOMSerializer();
+		xmlout.reset();
+		xmlout.setOutputProperties(getProperties());
+		xmlout.setWriter(sout);
 		try {
 			switch (root.getNodeType()) {
 				case Node.ELEMENT_NODE :
