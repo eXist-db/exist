@@ -752,7 +752,7 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 			// setup triggers
 			Trigger trigger = null;
-			if (!name.equals(COLLECTION_CONFIG_FILE)) {
+			if (triggersEnabled && !name.equals(COLLECTION_CONFIG_FILE)) {
 				if (triggersEnabled) {
 					CollectionConfiguration config = getConfiguration(broker);
 					if (config != null) {
@@ -940,7 +940,7 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 			// setup triggers
 			Trigger trigger = null;
-			if (!name.equals(COLLECTION_CONFIG_FILE)) {
+			if (triggersEnabled && !name.equals(COLLECTION_CONFIG_FILE)) {
 				if (triggersEnabled) {
 					CollectionConfiguration config = getConfiguration(broker);
 					if (config != null) {
@@ -1139,7 +1139,7 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 			// setup triggers
 			Trigger trigger = null;
-			if (!name.equals(COLLECTION_CONFIG_FILE)) {
+			if (triggersEnabled && !name.equals(COLLECTION_CONFIG_FILE)) {
 				if (triggersEnabled) {
 					CollectionConfiguration config = getConfiguration(broker);
 					if (config != null) {
