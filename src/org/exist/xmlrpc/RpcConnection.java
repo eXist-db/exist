@@ -346,42 +346,40 @@ public class RpcConnection extends Thread {
                   String paramvalue = parametri.get(param).toString();                      
 	  //LOG.debug("-------Parametri passati:"+param+": "+paramvalue); 
 
-if (param.equals(EXistOutputKeys.EXPAND_XINCLUDES)){
-	serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, paramvalue);
-	} 
-	
-if (param.equals(OutputKeys.INDENT)){
-	prettyPrint= paramvalue;
-	}
+		if (param.equals(EXistOutputKeys.EXPAND_XINCLUDES)){	
+			option =  (paramvalue.equals("yes")) ? "true" : "false";
+			} 
+			
+		if (param.equals(OutputKeys.INDENT)){
+			prettyPrint= paramvalue;
+			}
+		
+		if (param.equals(OutputKeys.ENCODING)){
+			encoding= paramvalue;
+			}
+		
+		if (param.equals(EXistOutputKeys.STYLESHEET)){
+			stylesheet= paramvalue;
+			}
+		
+		if (param.equals(EXistOutputKeys.STYLESHEET_PARAM)){
+			 styleparam = (Hashtable)parametri.get(param);
+			}
+		
+		if (param.equals(OutputKeys.DOCTYPE_SYSTEM)){
+			   serializer.setProperty(OutputKeys.DOCTYPE_SYSTEM, paramvalue);
+			}
+		
+		}
+		
+		}
 
-if (param.equals(OutputKeys.ENCODING)){
-	encoding= paramvalue;
-	}
 
-if (param.equals(EXistOutputKeys.STYLESHEET)){
-	stylesheet= paramvalue;
-	}
-
-if (param.equals(EXistOutputKeys.STYLESHEET_PARAM)){
-	 styleparam = (Hashtable)parametri.get(param);
-	}
-
-if (param.equals(OutputKeys.DOCTYPE_SYSTEM)){
-	   serializer.setProperty(OutputKeys.DOCTYPE_SYSTEM, paramvalue);
-	}
-
-}
-}
-
-
-if (!parametri.containsKey(EXistOutputKeys.EXPAND_XINCLUDES))
-{
 	  if (option.equals("true")){
 			serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");	
 	  }	else {
 			serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
 	  }	 
-}
 
 		    serializer.setProperty(OutputKeys.ENCODING, encoding);
 			serializer.setProperty(OutputKeys.INDENT, prettyPrint);
