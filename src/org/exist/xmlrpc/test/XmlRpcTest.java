@@ -29,48 +29,59 @@ import junit.framework.TestCase;
 import org.apache.xmlrpc.WebServer;
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
-import org.exist.storage.BrokerPool;
-import org.exist.util.Configuration;
-import org.exist.xmlrpc.AuthenticatedHandler;
 
 /**
  * JUnit test for XMLRPC interface methods.
  * 
+ * This test assumes that the XMLRPC server is running at port 8081
+ * of the local host. The server is normally started from Ant before calling
+ * the test.
+ * 
  * @author wolf
  */
 public class XmlRpcTest extends TestCase {
-
-    private final static int PORT = 8081;
     
     private final static String URI = "http://localhost:8081";
     
     private final static String XML_DATA =
-    	"<test><para>ääööüüÄÄÖÖÜÜ</para></test>";
+    	"<test>" +
+    	"<para>ääööüüÄÄÖÖÜÜßß</para>" +
+		"<para>\uC5F4\uB2E8\uACC4</para>" +
+    	"</test>";
     
-    private final static String TARGET_COLLECTION = "/db/test/";
-    
-    private WebServer webServer = null;
+    private final static String TARGET_COLLECTION = "/db/xmlrpc/";
  
 	public static void main(String[] args) {
-		junit.textui.TestRunner.run(XmlRpcTest.class);
+		junit.textui.TestRunner.run(new XmlRpcTest("XmlRpcTest"));
 	}
 
+	private WebServer webServer = null;
+	
+	public XmlRpcTest(String name) {
+		super(name);
+	}
+	
 	public void testStore() throws Exception {
-		System.out.println("Storing document " + XML_DATA);
-		// set parameters for XML-RPC call
+		System.out.println("Creating collection " + TARGET_COLLECTION);
+		XmlRpcClient xmlrpc = getClient();
 		Vector params = new Vector();
+		params.addElement(TARGET_COLLECTION);
+		Boolean result = (Boolean)xmlrpc.execute("createCollection", params);
+		assertTrue(result.booleanValue());
+		
+		System.out.println("Storing document " + XML_DATA);
+		params.clear();
 		params.addElement(XML_DATA);
 		params.addElement(TARGET_COLLECTION + "test.xml");
 		params.addElement(new Integer(1));
 		
-		// execute the call
-		XmlRpcClient xmlrpc = getClient();
-		Boolean result = (Boolean)xmlrpc.execute("parse", params);
+		result = (Boolean)xmlrpc.execute("parse", params);
 		assertTrue(result.booleanValue());
 		System.out.println("Document stored.");
 	}
 	
 	public void testRetrieveDoc() throws Exception {
+		System.out.println("Retrieving document " + TARGET_COLLECTION + "test.xml");
 		Hashtable options = new Hashtable();
         options.put("indent", "yes");
         options.put("encoding", "UTF-8");
@@ -88,35 +99,59 @@ public class XmlRpcTest extends TestCase {
 		System.out.println( new String(data, "UTF-8") );
 	}
 	
-	/*
-	 * @see TestCase#setUp()
-	 */
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() throws Exception {
-		if(webServer == null)
-			startServer();
+	public void testCharEncoding() throws Exception {
+		System.out.println("Testing charsets returned by query");
+		Vector params = new Vector();
+		String query = "distinct-values(//para)";
+		params.addElement(query.getBytes("UTF-8"));
+		params.addElement(new Hashtable());
+		XmlRpcClient xmlrpc = getClient();
+        Hashtable result = (Hashtable) xmlrpc.execute( "queryP", params );
+        Vector resources = (Vector)result.get("results");
+        assertEquals(resources.size(), 2);
+        String value = (String)resources.elementAt(0);
+        assertEquals(value, "ääööüüÄÄÖÖÜÜßß");
+        System.out.println("Result1: " + value);
+        value = (String)resources.elementAt(1);
+        assertEquals(value, "\uC5F4\uB2E8\uACC4");
+        System.out.println("Result2: " + value);
 	}
 	
-	protected void startServer() throws Exception {
-		System.out.println("Starting database ...");
-		String pathSep = System.getProperty( "file.separator", "/" );
-        String home = System.getProperty( "exist.home" );
-        if ( home == null )
-            home = System.getProperty( "user.dir" );
-        System.out.println( "loading configuration from " + home +
-            pathSep + "conf.xml" );
-        Configuration config = new Configuration( "conf.xml", home );
-        BrokerPool.configure( 1, 5, config );
+	public void testQuery() throws Exception {
+		Vector params = new Vector();
+		String query = "//para";
+		params.addElement(query.getBytes("UTF-8"));
+		params.addElement(new Integer(10));
+		params.addElement(new Integer(1));
+		params.addElement(new Hashtable());
+		XmlRpcClient xmlrpc = getClient();
+        byte[] result = (byte[]) xmlrpc.execute( "query", params );
+        assertNotNull(result);
+        assertTrue(result.length > 0);
+        System.out.println(new String(result, "UTF-8"));
+	}
+	
+	public void testExecuteQuery() throws Exception {
+		Vector params = new Vector();
+		String query = "distinct-values(//para)";
+		params.addElement(query.getBytes("UTF-8"));
+		params.addElement(new Hashtable());
+		XmlRpcClient xmlrpc = getClient();
+		System.out.println("Executing query: " + query);
+        Integer handle = (Integer) xmlrpc.execute( "executeQuery", params );
+        assertNotNull(handle);
         
-        System.out.println( "starting XMLRPC listener at port " + PORT );
-        XmlRpc.setEncoding( "UTF-8" );
-        webServer = new WebServer( PORT );
-        AuthenticatedHandler handler = new AuthenticatedHandler( config );
-        webServer.addHandler( "$default", handler );
-        webServer.start();
-        System.err.println( "waiting for connections ..." );
+        params.clear();
+        params.addElement(handle);
+        Integer hits = (Integer) xmlrpc.execute( "getHits", params );
+        assertNotNull(hits);
+        System.out.println("Found: " + hits.intValue());
+        assertEquals(hits.intValue(), 2);
+        
+        params.addElement(new Integer(1));
+        params.addElement(new Hashtable());
+        byte[] item = (byte[]) xmlrpc.execute( "retrieve", params );
+        System.out.println(new String(item, "UTF-8"));
 	}
 	
 	protected XmlRpcClient getClient() throws MalformedURLException {
