@@ -1396,6 +1396,7 @@ public class ClientFrame extends JFrame
 		optionPane.setMessage(new Object[]{msgArea, scroll});
 		optionPane.setMessageType(JOptionPane.ERROR_MESSAGE);
 		JDialog dialog = optionPane.createDialog(null, "Error");
+		dialog.setResizable(true);
 		dialog.pack();
 		dialog.show();
 		return;
