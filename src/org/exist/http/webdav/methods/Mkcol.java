@@ -75,6 +75,8 @@ public class Mkcol implements WebDAVMethod {
                     "no path specified");
             return;
         }
+        if(path.endsWith("/"))
+            path = path.substring(0, path.length() - 1);
         int p = path.lastIndexOf('/');
         String parentPath = -1 < p ? path.substring(0, p) : "/db";
         String newCollection = -1 < p ? path.substring(p + 1) : path;
@@ -83,6 +85,7 @@ public class Mkcol implements WebDAVMethod {
             broker = pool.get(user);
             Collection parent = broker.getCollection(parentPath);
             if(parent == null) {
+                LOG.debug("parent collection " + parentPath + " not found");
                 response.sendError(HttpServletResponse.SC_CONFLICT,
                         "parent collection not found");
                 return;
