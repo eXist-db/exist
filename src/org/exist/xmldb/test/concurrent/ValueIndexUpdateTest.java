@@ -54,6 +54,6 @@ public class ValueIndexUpdateTest extends ConcurrentTestBase {
 		DBUtils.addXMLResource(getTestCollection(), "collection.xconf", XCONF);
 		DBUtils.addXMLResource(getTestCollection(), "R1.xml", "<items/>");
 		
-		addAction(new ValueAppendAction(URI + "/C1", "R1.xml"), 1, 0, 500);
+		addAction(new ValueAppendAction(URI + "/C1", "R1.xml"), 50, 0, 500);
 	}
 }
