@@ -43,15 +43,21 @@
             <itemizedlist>
                 <listitem>Unrecognized keywords: 
                 <command>typeswitch</command>, <command>treat as</command>,
-                <command>instance of</command>, <command>castable as</command>.
+                <command>castable as</command>.
                 </listitem>
 
+				<listitem>Item types
                 <listitem>Schema related features: <command>validate</command>,
                 <command>import schema</command>, <command>declare validation</command>.
                 </listitem>
 
                 <listitem>Since schema support is missing, the value of a node
                     is always treated as xs:untypedAtomic.</listitem>
+
+				<listitem>For the same reason, one cannot specify a type name
+					in an element or attribute test. The test:
+					element(test) works, but: element(test, xs:integer)
+					results in a syntax error.</listitem>
 
                 <listitem>The atomic types xs:gYear, xs:gMonth etc. are not
                     recognized.</listitem>

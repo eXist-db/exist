@@ -63,7 +63,7 @@ public class VirtualNodeSet extends AbstractNodeSetBase {
 	}
 
 	public boolean contains(DocumentImpl doc, long nodeId) {
-		NodeProxy first = getFirstParent(new NodeProxy(doc, nodeId), null, false, 0);
+		NodeProxy first = getFirstParent(new NodeProxy(doc, nodeId), null, (axis == Constants.SELF_AXIS), 0);
 		// Timo Boehme: getFirstParent returns now only real parents
 		//              therefore test if node is child of context
 		//return (first != null);
@@ -73,7 +73,7 @@ public class VirtualNodeSet extends AbstractNodeSetBase {
 	}
 
 	public boolean contains(NodeProxy p) {
-		NodeProxy first = getFirstParent(p, null, false, 0);
+		NodeProxy first = getFirstParent(p, null, (axis == Constants.SELF_AXIS), 0);
 		// Timo Boehme: getFirstParent returns now only real parents
 		//              therefore test if node is child of context
 		//return (first != null);
@@ -260,11 +260,17 @@ public class VirtualNodeSet extends AbstractNodeSetBase {
 				continue;
 				// -- end of insertion --
 			} else {
-				domIter = proxy.getDocument().getBroker().getNodeIterator(proxy);
-				NodeImpl node = (NodeImpl) domIter.next();
-				node.setOwnerDocument(proxy.getDocument());
-				node.setGID(proxy.gid);
-				addChildren(proxy, result, node, domIter, 0);
+				if(axis == Constants.SELF_AXIS && test.matches(proxy)) {
+					if(inPredicate)
+						proxy.addContextNode(proxy);
+					result.add(proxy);
+				} else {
+					domIter = proxy.getDocument().getBroker().getNodeIterator(proxy);
+					NodeImpl node = (NodeImpl) domIter.next();
+					node.setOwnerDocument(proxy.getDocument());
+					node.setGID(proxy.gid);
+					addChildren(proxy, result, node, domIter, 0);
+				}
 			}
 		}
 		return result;

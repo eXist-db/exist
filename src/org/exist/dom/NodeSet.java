@@ -382,7 +382,7 @@ public interface NodeSet extends Sequence, NodeList {
 	 * current set.
 	 * @return
 	 */
-	public NodeSet getParents();
+	public NodeSet getParents(boolean rememberContext);
 	
 	/**
 	 * Returns true if all nodes in this node set are included in

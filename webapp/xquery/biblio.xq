@@ -197,7 +197,7 @@ declare function fn:main() as element()+
 				(
 					fn:main(),
             		<p><small>Request served in 
-					{get-seconds-from-dayTimeDuration(current-time()-$start)}
+					{seconds-from-duration(current-time()-$start)}
 					seconds. <a href="source/biblio.xq">View Source</a>.
 					</small></p>
 				)

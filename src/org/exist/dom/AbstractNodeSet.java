@@ -871,7 +871,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * current set.
 	 * @return
 	 */
-	public NodeSet getParents() {
+	public NodeSet getParents(boolean rememberContext) {
 		NodeSet parents = new ExtArrayNodeSet();
 		NodeProxy p;
 		long pid;
@@ -879,8 +879,14 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			p = (NodeProxy) i.next();
 			// calculate parent's gid
 			pid = XMLUtil.getParentId(p.getDocument(), p.gid);
-			if (pid > -1)
-				parents.add(new NodeProxy(p.getDocument(), pid, Node.ELEMENT_NODE));
+			if (pid > -1) {
+				NodeProxy parent = new NodeProxy(p.getDocument(), pid, Node.ELEMENT_NODE);
+				if (rememberContext)
+					parent.addContextNode(p);
+				else
+					parent.copyContext(p);
+				parents.add(parent);
+			}
 		}
 		return parents;
 	}
