@@ -30,7 +30,7 @@ import javax.xml.transform.TransformerException;
 
 import org.exist.dom.QName;
 import org.exist.util.serializer.DOMSerializer;
-import org.exist.util.serializer.DOMSerializerPool;
+import org.exist.util.serializer.ExtendedDOMSerializer;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -79,13 +79,10 @@ public class XMLDBXUpdate extends BasicFunction {
 			throw new XPathException(getASTNode(),
 					"Specified Java object is not an XMLDB collection object");
 		NodeValue data = (NodeValue) args[1].itemAt(0);
-		DOMSerializer serializer = DOMSerializerPool.getInstance()
-				.borrowDOMSerializer();
 		StringWriter writer = new StringWriter();
-		serializer.setWriter(writer);
 		Properties properties = new Properties();
 		properties.setProperty(OutputKeys.INDENT, "yes");
-		serializer.setOutputProperties(properties);
+        DOMSerializer serializer = new ExtendedDOMSerializer(context.getBroker(), writer, properties);
 		try {
 			serializer.serialize(data.getNode());
 		} catch (TransformerException e) {
@@ -93,8 +90,6 @@ public class XMLDBXUpdate extends BasicFunction {
 			throw new XPathException(getASTNode(),
 					"Exception while serializing XUpdate document: "
 							+ e.getMessage(), e);
-		} finally {
-			DOMSerializerPool.getInstance().returnDOMSerializer(serializer);
 		}
 		String xupdate = writer.toString();
 
