@@ -155,6 +155,52 @@ public class XmlRpcTest extends TestCase {
         System.out.println(new String(item, "UTF-8"));
 	}
 	
+	public void testCollectionWithAccents() throws Exception {
+		System.out.println("Creating collection with accents in name ...");
+		Vector params = new Vector();
+		params.addElement("/db/Città");
+		XmlRpcClient xmlrpc = getClient();
+		xmlrpc.execute( "createCollection", params );
+		
+		System.out.println("Storing document " + XML_DATA);
+		params.clear();
+		params.addElement(XML_DATA);
+		params.addElement("/db/Città/test.xml");
+		params.addElement(new Integer(1));
+		
+		Boolean result = (Boolean)xmlrpc.execute("parse", params);
+		assertTrue(result.booleanValue());
+		
+		params.clear();
+		params.addElement("/db");
+
+		Hashtable collection = (Hashtable) xmlrpc.execute("describeCollection", params);
+		Vector collections = (Vector) collection.get("collections");
+		String colWithAccent = null;
+		for (int i = 0; i < collections.size(); i++) {
+			String childName = (String) collections.elementAt(i);
+			if(childName.equals("Città"))
+				colWithAccent = childName;
+			System.out.println("Child collection: " + childName);
+		}
+		assertNotNull("added collection not found", colWithAccent);
+		
+		System.out.println("Retrieving document /db/Città/test.xml");
+		Hashtable options = new Hashtable();
+        options.put("indent", "yes");
+        options.put("encoding", "UTF-8");
+        options.put("expand-xincludes", "yes");
+        options.put("process-xsl-pi", "no");
+        
+        params.clear();
+        params.addElement( "/db/" + colWithAccent + "/test.xml" ); 
+        params.addElement( options );
+        
+        // execute the call
+		byte[] data = (byte[]) xmlrpc.execute( "getDocument", params );
+		System.out.println( new String(data, "UTF-8") );
+	}
+	
 	protected XmlRpcClient getClient() throws MalformedURLException {
 		XmlRpc.setEncoding("UTF-8");
 		XmlRpcClient xmlrpc = new XmlRpcClient(URI);
