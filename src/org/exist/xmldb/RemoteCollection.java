@@ -288,6 +288,8 @@ public class RemoteCollection implements CollectionImpl {
 			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "an io error occurred", ioe);
 		}
 		String docName = (String) hash.get("name");
+		if(docName == null)
+			return null;	// resource does not exist!
 		int p;	
 		if ((p = docName.lastIndexOf('/')) > -1)
 			docName = docName.substring(p + 1);
