@@ -24,8 +24,7 @@ package org.exist.xquery;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.Collator;
@@ -47,6 +46,9 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.source.FileSource;
+import org.exist.source.Source;
+import org.exist.source.URLSource;
 import org.exist.storage.DBBroker;
 import org.exist.util.Collations;
 import org.exist.util.Lock;
@@ -483,6 +485,27 @@ public class XQueryContext {
 	}
 
 	/**
+	 * For compiled expressions: check if the source of any
+	 * module imported by the current query has changed since
+	 * compilation.
+	 * 
+	 * @return
+	 */
+	public boolean checkModulesValid() {
+		for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
+			Module module = (Module)i.next();
+			if(!module.isInternalModule()) {
+				if(!((ExternalModule)module).moduleIsValid()) {
+					LOG.debug("Module with URI " + module.getNamespaceURI() + 
+							" has changed and needs to be reloaded");
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	/**
 	 * Load a built-in module from the given class name and assign it to the
 	 * namespace URI. The specified class should be a subclass of
 	 * {@link Module}. The method will try to instantiate the class. If the
@@ -909,6 +932,7 @@ public class XQueryContext {
 				location = location.substring("java:".length());
 				module = loadBuiltInModule(namespaceURI, location);
 			} else {
+				Source source = null;
 				if(location.indexOf(':') < 0) {
 					File f = new File(moduleLoadPath + File.separatorChar + location);
 					if(!f.canRead()) {
@@ -917,16 +941,20 @@ public class XQueryContext {
 							throw new XPathException("cannot read module source from file at " + f.getAbsolutePath());
 					}
 					location = f.toURI().toASCIIString();
+					source = new FileSource(f, "UTF-8");
+				} else {
+					URL url;
+					try {
+						url = new URL(location);
+					} catch (MalformedURLException e1) {
+						throw new XPathException("source location for module " + namespaceURI + " should be a valid URL");
+					}
+					source = new URLSource(url);
 				}
 				LOG.debug("Loading module from " + location);
-				InputStreamReader reader;
+				Reader reader;
 				try {
-					URL url = new URL(location);
-					reader = new InputStreamReader(url.openStream(), "UTF-8");
-				} catch (MalformedURLException e) {
-					throw new XPathException("source location for module " + namespaceURI + " should be a valid URL");
-				} catch (UnsupportedEncodingException e) {
-					throw new XPathException("unsupported source encoding");
+					reader = source.getReader();
 				} catch (IOException e) {
 					throw new XPathException("IO exception while loading module " + namespaceURI, e);
 				}
@@ -953,13 +981,16 @@ public class XQueryContext {
 							astParser.getLastException());
 					}
 					
-					module = astParser.getModule();
-					if(module == null)
+					ExternalModule modExternal = astParser.getModule();
+					if(modExternal == null)
 						throw new XPathException("source at " + location + " is not a valid module");
-					if(!module.getNamespaceURI().equals(namespaceURI))
-						throw new XPathException("namespace URI declared by module (" + module.getNamespaceURI() + 
+					if(!modExternal.getNamespaceURI().equals(namespaceURI))
+						throw new XPathException("namespace URI declared by module (" + modExternal.getNamespaceURI() + 
 							") does not match namespace URI in import statement, which was: " + namespaceURI);
-					modules.put(module.getNamespaceURI(), module);
+					modules.put(modExternal.getNamespaceURI(), modExternal);
+					modExternal.setSource(source);
+					modExternal.setContext(context);
+					module = modExternal;
 				} catch (RecognitionException e) {
 					throw new XPathException(
 						"error found while loading module from " + location + ": " + e.getMessage(),

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import org.exist.dom.QName;
+import org.exist.source.Source;
 import org.exist.xquery.value.Sequence;
 
 /**
@@ -45,6 +46,10 @@ public class ExternalModuleImpl implements ExternalModule {
 	private TreeMap mGlobalVariables = new TreeMap();
 	private TreeMap mStaticVariables = new TreeMap();
 
+	private Source mSource = null;
+	
+	private XQueryContext mContext = null;
+	
 	public ExternalModuleImpl(String namespaceURI, String prefix) {
 		mNamespaceURI = namespaceURI;
 		mPrefix = prefix;
@@ -140,5 +145,23 @@ public class ExternalModuleImpl implements ExternalModule {
 			decl.eval(null);
 		}
 		return (Variable) mStaticVariables.get(qname);
+	}
+	
+	public void setSource(Source source) {
+		mSource = source;
+	}
+	
+	public void setContext(XQueryContext context) {
+		mContext = context;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.ExternalModule#moduleIsValid()
+	 */
+	public boolean moduleIsValid() {
+		if(mSource.isValid() != Source.VALID)
+			return false;
+		// check other modules imported from here
+		return mContext.checkModulesValid();
 	}
 }

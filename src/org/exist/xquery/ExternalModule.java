@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
+import org.exist.source.Source;
 
 /**
  * An external library module implemented in XQuery and loaded
@@ -50,4 +51,27 @@ public interface ExternalModule extends Module {
 	public UserDefinedFunction getFunction(QName qname);
 	
 	public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException;
+	
+	/**
+	 * Set the source object this module has been read from.
+	 * 
+	 * This is required to check the validity of a compiled expression.
+	 * @param source
+	 */
+	public void setSource(Source source);
+	
+	/**
+	 * Set the XQueryContext of this module. This will be a sub-context
+	 * of the main context as parts of the static context are shared. 
+	 * 
+	 * @param context
+	 */
+	public void setContext(XQueryContext context);
+	
+	/**
+	 * Is this module still valid or should it be reloaded from its source?
+	 * 
+	 * @return
+	 */
+	public boolean moduleIsValid();
 }

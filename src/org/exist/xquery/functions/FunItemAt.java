@@ -45,7 +45,7 @@ public class FunItemAt extends Function {
 		new FunctionSignature(
 			new QName("item-at", Module.BUILTIN_FUNCTION_NS),
 			"Returns the item in the first argument sequence that is located at the position " +
-			"specified by the second argument.",
+			"specified by the second argument. Deprecated. Use $x[1] instead.",
 			new SequenceType[] {
 				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
 				 new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
