@@ -67,7 +67,7 @@ public class DescribeFunction extends Function {
 		Item contextItem)
 		throws XPathException {
 		String fname = getArgument(0).eval(contextSequence, contextItem).getStringValue();
-		QName qname = QName.parseFunction(context, fname);
+		QName qname = QName.parse(context, fname, context.getDefaultFunctionNamespace());
 		String uri = qname.getNamespaceURI();
 		FunctionSignature signature;
 		Module module = context.getModule(uri);

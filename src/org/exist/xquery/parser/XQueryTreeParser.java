@@ -2626,7 +2626,7 @@ public XQueryTreeParser() {
 				
 								VariableDeclaration decl= new VariableDeclaration(context, qname.getText(), enclosed);
 								decl.setSequenceType(type);
-				decl.setASTNode(e);
+								decl.setASTNode(e);
 								path.add(decl);
 								if(myModule != null) {
 									QName qn = QName.parse(context, qname.getText());
@@ -3937,7 +3937,7 @@ public XQueryTreeParser() {
 				attr = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,QNAME);
 				_t = _t.getNextSibling();
-				qname= QName.parseAttribute(context, attr.getText());
+				qname= QName.parse(context, attr.getText(), null);
 				break;
 			}
 			case WILDCARD:
@@ -5200,8 +5200,8 @@ public XQueryTreeParser() {
 		"COMP_PI_CONSTRUCTOR",
 		"COMP_NS_CONSTRUCTOR",
 		"\"xpointer\"",
-		"(",
-		")",
+		"'('",
+		"')'",
 		"NCNAME",
 		"\"module\"",
 		"\"namespace\"",

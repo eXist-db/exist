@@ -203,53 +203,40 @@ public class QName implements Comparable {
 	 * 
 	 * @param context
 	 * @param qname
+	 * @return defaultNS the default namespace to use if no namespace prefix is present.
+	 * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
+	 */
+	public static QName parse(XQueryContext context, String qname, String defaultNS)
+		throws XPathException {
+		String prefix = extractPrefix(qname);
+		String namespaceURI;
+		if (prefix != null) {
+			namespaceURI = context.getURIForPrefix(prefix);
+			if (namespaceURI == null)
+				throw new XPathException("No namespace defined for prefix " + prefix);
+		} else
+			namespaceURI = defaultNS;
+		if (namespaceURI == null)
+			namespaceURI = "";
+		return new QName(extractLocalName(qname), namespaceURI, prefix);
+	}
+	
+	/**
+	 * Parses the given string into a QName. The method uses context to look up
+	 * a namespace URI for an existing prefix.
+	 * 
+	 * This method uses the default element namespace for qnames without prefix.
+	 * 
+	 * @param context
+	 * @param qname
 	 * @return
 	 * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
 	 */
 	public static QName parse(XQueryContext context, String qname)
 		throws XPathException {
-		String prefix = extractPrefix(qname);
-		String namespaceURI;
-		if (prefix != null) {
-			namespaceURI = context.getURIForPrefix(prefix);
-			if (namespaceURI == null)
-				throw new XPathException("No namespace defined for prefix " + prefix);
-		} else
-			namespaceURI = context.getURIForPrefix("");
-		if (namespaceURI == null)
-			namespaceURI = "";
-		return new QName(extractLocalName(qname), namespaceURI, prefix);
+		return parse(context, qname, context.getURIForPrefix(""));
 	}
-
-	public static QName parseAttribute(XQueryContext context, String qname)
-		throws XPathException {
-		String prefix = extractPrefix(qname);
-		String namespaceURI = null;
-		if (prefix != null) {
-			namespaceURI = context.getURIForPrefix(prefix);
-			if (namespaceURI == null)
-				throw new XPathException("No namespace defined for prefix " + prefix);
-		}
-		if (namespaceURI == null)
-			namespaceURI = "";
-		return new QName(extractLocalName(qname), namespaceURI, prefix);
-	}
-
-	public static QName parseFunction(XQueryContext context, String qname)
-		throws XPathException {
-		String prefix = extractPrefix(qname);
-		String namespaceURI;
-		if (prefix != null) {
-			namespaceURI = context.getURIForPrefix(prefix);
-			if (namespaceURI == null)
-				throw new XPathException("No namespace defined for prefix " + prefix);
-		} else
-			namespaceURI = context.getDefaultFunctionNamespace();
-		if (namespaceURI == null)
-			namespaceURI = "";
-		return new QName(extractLocalName(qname), namespaceURI, prefix);
-	}
-
+	
 	public final static boolean isQName(String name) {
 		int colon = name.indexOf(':');
 		if (colon < 0)

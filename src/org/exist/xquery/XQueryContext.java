@@ -531,7 +531,7 @@ public class XQueryContext {
 	 * @throws XPathException if the variable is unknown
 	 */
 	public Variable resolveVariable(String name) throws XPathException {
-		QName qn = QName.parse(this, name);
+		QName qn = QName.parse(this, name, null);
 		return resolveVariable(qn);
 	}
 	

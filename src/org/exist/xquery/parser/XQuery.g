@@ -1908,7 +1908,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	{ QName qname= null; }
 	(
 		attr:QNAME
-		{ qname= QName.parseAttribute(context, attr.getText()); }
+		{ qname= QName.parse(context, attr.getText(), null); }
 		|
 		WILDCARD
 		|
