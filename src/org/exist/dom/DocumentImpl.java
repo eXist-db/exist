@@ -40,6 +40,8 @@ import org.w3c.dom.*;
 import org.exist.util.SyntaxException;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
+import org.exist.xquery.DescendantSelector;
+import org.exist.xquery.NodeSelector;
 
 /**
  *  Represents a persistent document object in the database.
@@ -291,8 +293,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	protected NodeList findElementsByTagName(NodeImpl root, QName qname) {
 		DocumentSet docs = new DocumentSet();
 		docs.add(this);
-		NodeSet temp = (NodeSet) broker.findElementsByTagName(ElementValue.ELEMENT, docs, qname);
-		return temp.selectAncestorDescendant(new NodeProxy(root), NodeSet.DESCENDANT);
+		NodeSelector selector = new DescendantSelector(new NodeProxy(root), false);
+		return (NodeSet) broker.findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
 	}
 
 	public int getChildCount() {
@@ -374,14 +376,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public NodeList getElementsByTagName(String tagname) {
-		DocumentSet docs = new DocumentSet();
-		docs.add(this);
-		QName qname = new QName(tagname, "", null);
-		return broker.findElementsByTagName(ElementValue.ELEMENT, docs, qname);
+		return getElementsByTagNameNS("", tagname);
 	}
 
 	public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
-		return null;
+		DocumentSet docs = new DocumentSet();
+		docs.add(this);
+		QName qname = new QName(localName, namespaceURI, null);
+		return broker.findElementsByTagName(ElementValue.ELEMENT, docs, qname, null);
 	}
 
 	public String getEncoding() {
