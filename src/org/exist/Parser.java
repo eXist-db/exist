@@ -221,7 +221,6 @@ public class Parser
 			return;
 		if (charBuf != null) {
 			charBuf.append(ch, start, length);
-			return;
 		} else {
 			charBuf = new XMLString(ch, start, length);
 		}
@@ -445,11 +444,11 @@ public class Parser
 		collection = coll;
 		ByteArrayInputStream bos = new ByteArrayInputStream(data);
 		InputSource is = new InputSource(bos);
-		is.setEncoding("UTF-8");
+		//is.setEncoding("UTF-8");
 		scan(is, xmlFileName);
 		bos.reset();
 		is = new InputSource(bos);
-		is.setEncoding("UTF-8");
+		//is.setEncoding("UTF-8");
 		return store(is);
 	}
 

@@ -1,0 +1,11 @@
+Most of the jars in this directory are required for Cocoon.
+
+The included Cocoon version is 2.1rc1. It has been built with the
+following blocks:
+
+databases
+xmldb
+xmlform
+
+All other blocks have been excluded. You have to recompile Cocoon
+if you need additional features.

@@ -297,6 +297,7 @@
 		<mkdir dir="webapp/api"/-->
         <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved."
 			destdir="webapp/api" doctitle="eXist Javadocs"
+			noindex="true" notree="true"
 			packagenames="org.exist.*">
 			<fileset dir="${src}" defaultexcludes="yes">
 				<include name="org/exist/**/*.java"/>
@@ -558,22 +559,22 @@
 			value="index.html#articles"/>
         <replace dir="${build.docs}" includes="index.xml sidebar.xml"
 			token="simple/xquery.xsp" summary="true"
-			value="http://130.83.186.203:8080/exist/simple/xquery.xsp"/>
+			value="http://130.83.186.203/exist/simple/xquery.xsp"/>
         <replace dir="${build.docs}" includes="index.xml sidebar.xml"
 			token="library/biblio.xml" summary="true"
-			value="http://130.83.186.203:8080/exist/library/biblio.xml"/>
+			value="http://130.83.186.203/exist/library/biblio.xml"/>
         <replace dir="${build.docs}" includes="index.xml sidebar.xml"
             token="xadmin.xsp" summary="true"
-			value="http://130.83.186.203:8080/exist/xadmin.xsp"/>
+			value="http://130.83.186.203/exist/xadmin.xsp"/>
         <replace dir="${build.docs}" includes="index.xml sidebar.xml"
             token="/exist/admin" summary="true"
-			value="http://130.83.186.203:8080/exist/admin"/>
+			value="http://130.83.186.203/exist/admin"/>
         <replace dir="${build.docs}" includes="index.xml sidebar.xml"
             token="xmldb/db/" summary="true"
-			value="http://130.83.186.203:8080/exist/xmldb/db/"/>
+			value="http://130.83.186.203/exist/xmldb/db/"/>
 		<replace dir="${build.docs}" includes="index.xml sidebar.xml"
 			token="xse/squery.xsp" summary="true"
-			value="http://130.83.186.203:8080/exist/xse/squery.xsp"/>
+			value="http://130.83.186.203/exist/xse/squery.xsp"/>
     </target>
     
 	<target name="docs" depends="javadocs">

@@ -609,8 +609,8 @@
                     <map:mount check-reload="yes" src="examples/sitemap.xmap" uri-prefix="examples"/>
                 </map:match>
 
-				<map:match pattern="dictionary/**">
-					<map:mount check-reload="yes" src="dictionary/sitemap.xmap" uri-prefix="dictionary"/>
+				<map:match pattern="acronyms/**">
+					<map:mount check-reload="yes" src="acronyms/sitemap.xmap" uri-prefix="acronyms"/>
 				</map:match>
 				
                 <map:match pattern="status">

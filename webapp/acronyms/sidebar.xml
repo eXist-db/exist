@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sidebar title="Navigation" xmlns="http://exist-db.org/NS/sidebar">
     <group href="../index.xml" name="Home"/>
-	<group name="Donations" href="../donations.xml"/>
     <group name="Documentation">
         <item id="features">
             <link href="../features.xml">Features</link>
@@ -11,9 +10,6 @@
         </item>
         <item>
             <link href="../quickstart.xml">Quick Start</link>
-        </item>
-        <item>
-        	<link href="client.xml">Command-Line Client</link>
         </item>
         <item>
             <link href="../deployment.xml">Deployment</link>
@@ -50,14 +46,14 @@
     </group>
     <group name="Examples">
         <item>
-			<link href="../simple/xquery.xsp">Query interface</link>
+            <link href="../simple/xquery.xsp">Query interface</link>
         </item>
         <item>
-            <link href="biblio.xml">Library</link>
+			<link href="../library/biblio.xml">Library</link>
         </item>
-		<item>
-			<link href="../acronyms/query.xsp">XML Acronyms</link>
-		</item>
+        <item>
+        	<link href="query.xsp">XML Acronyms</link>
+        </item>
         <item>
             <link href="../xmldb/db/">Cocoon + XML:DB</link>
         </item>
@@ -70,7 +66,7 @@
             <link href="../xadmin.xsp">Admin Interface</link>
         </item>
         <item>
-            <link href="../status">Server Status</link>
+			<link href="../status">Server Status</link>
         </item>
     </group>
     

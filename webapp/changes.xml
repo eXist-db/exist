@@ -5,7 +5,8 @@
 	<release version="0.9.2">
 		<topic category="New Features">
 			<action name="XUpdate Support">
-				eXist now supports the XUpdate standard. XUpdate allows to update fragments of a 
+				eXist now has full support for XUpdate. The XUpdate 
+				specification allows to update fragments of a 
 				document or an entire collection.
 			</action>
 			<action name="Additions to XPath">
@@ -17,12 +18,16 @@
 		</topic>
 		<topic category="General Improvements">
 			<action name="Unicode support">
-				Much work has been invested to ensure that all components do in fact correctly process the UTF-8
-				codeset. While the database core has been UTF-8 clean before, deficiencies have been found in
-				several supporting libraries, including the XML-RPC library and GNU Readline. The included 
-				XML-RPC library has been patched to fix a transport encoding bug. All components have been 
-				extensively tested to work with other character encodings than ISO-8859-1. The database is now
-				truely usable for applications using non-european languages.
+				Much effort has been invested to ensure that East Asian 
+				character codesets are correctly processed by the database
+				as well as the query engine. While the database core has 
+				been UTF-8 clean before, deficiencies have been found in
+				several supporting libraries, including the XML-RPC library 
+				and GNU Readline. The included XML-RPC library has been 
+				patched to fix a transport encoding bug. All components have 
+				been extensively tested to work with other character encodings 
+				than ISO-8859-1. The database is now truely usable for 
+				applications using non-european languages.
 			</action>	
 			<action name="SOAP interface">
 				eXist's SOAP services have been enhanced to support authentication and user sessions. The

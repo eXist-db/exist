@@ -13,6 +13,7 @@
         <xsp:include>org.apache.avalon.framework.context.ContextException</xsp:include>
         <xsp:include>java.io.BufferedReader</xsp:include>
         <xsp:include>java.io.FileReader</xsp:include>
+        <xsp:include>java.io.File</xsp:include>
         <xsp:include>java.util.StringTokenizer</xsp:include>
         <xsp:include>org.apache.cocoon.servlet.multipart.Part</xsp:include>
         <xsp:include>org.exist.util.XMLUtil</xsp:include>
@@ -144,6 +145,8 @@
                 String fileName = request.getParameter("filename");
                 if(fileName == null || fileName.length() == 0)
 					fileName = file.getUploadName();
+                fileName = new File(fileName).getName();
+                
 				String source = null;
 				try {
 					source = XMLUtil.readFile(file.getInputStream(), "ISO-8859-1");

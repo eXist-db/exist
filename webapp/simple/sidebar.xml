@@ -56,6 +56,9 @@
             <link href="../library/biblio.xml">Library</link>
         </item>
         <item>
+        	<link href="../acronyms/query.xsp">XML Acronyms</link>
+        </item>
+        <item>
             <link href="../xmldb/db/">Cocoon + XML:DB</link>
         </item>
         <item>

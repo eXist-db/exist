@@ -23,6 +23,7 @@
  */
 package org.exist.xmldb;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -289,8 +290,11 @@ public class RemoteCollection implements CollectionImpl {
 		}
 		Vector documents = (Vector) collection.get("documents");
 		Vector collections = (Vector) collection.get("collections");
-		permissions = new Permission((String)collection.get("owner"), (String)collection.get("group"),
-			((Integer)collection.get("permissions")).intValue());
+		permissions =
+			new Permission(
+				(String) collection.get("owner"),
+				(String) collection.get("group"),
+				((Integer) collection.get("permissions")).intValue());
 		String docName;
 		String childName;
 		Hashtable hash;
@@ -355,7 +359,7 @@ public class RemoteCollection implements CollectionImpl {
 		} catch (IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}
-		
+
 		resources.remove(pos);
 	}
 
@@ -363,14 +367,14 @@ public class RemoteCollection implements CollectionImpl {
 		Vector params = new Vector(1);
 		params.addElement(getPath());
 		try {
-			return (Date)rpcClient.execute("getCreationDate", params);
-		} catch(XmlRpcException e) {
+			return (Date) rpcClient.execute("getCreationDate", params);
+		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
 		} catch (IOException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
 		}
 	}
-	
+
 	public void setProperty(String property, String value) throws XMLDBException {
 		if (property.equals("pretty"))
 			indentXML = (value.equals("true") ? 1 : -1);
@@ -396,28 +400,19 @@ public class RemoteCollection implements CollectionImpl {
 				throw new XMLDBException(
 					ErrorCodes.INVALID_RESOURCE,
 					"failed to read resource from file " + file.getAbsolutePath());
-			if (file.length() < MAX_CHUNK_LENGTH)
-				 ((RemoteXMLResource) res).readContent();
-			else {
+			if (file.length() < MAX_CHUNK_LENGTH) {
+				store((RemoteXMLResource)res);
+			} else {
 				uploadAndStore(res);
-				resources.add(new DocumentProxy(res.getId()));
-				return;
 			}
 		}
-		store(res);
 		resources.add(new DocumentProxy(res.getId()));
 	}
 
-	private void store(Resource res) throws XMLDBException {
-		String data = (String) res.getContent();
-		byte[] bdata = null;
-		try {
-			bdata = data.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			bdata = data.getBytes();
-		}
+	private void store(RemoteXMLResource res) throws XMLDBException {
+		byte[] data = res.getData();
 		Vector params = new Vector();
-		params.addElement(bdata);
+		params.addElement(data);
 		params.addElement(getPath() + '/' + res.getId());
 		params.addElement(new Integer(1));
 		try {
@@ -467,7 +462,7 @@ public class RemoteCollection implements CollectionImpl {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "networking error", e);
 		}
 	}
-	
+
 	public Permission getPermissions() {
 		return permissions;
 	}

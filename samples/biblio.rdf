@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="ISO-8859-1"?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-         xmlns:dc="http://purl.org/dc/elements/1.1/#"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
          xmlns:x="http://exist.sourceforge.net/dc-ext">
 
     <rdf:Description id="3">
@@ -71,12 +71,11 @@
         <dc:subject>System</dc:subject>
         <dc:subject>Technik</dc:subject>
         <dc:subject>Technische Chemie</dc:subject>
-        <dc:subject>UniversitÃ¤t</dc:subject>
+        <dc:subject>Universit�t</dc:subject>
         <dc:subject>Unternehmen</dc:subject>
         <dc:subject>USA</dc:subject>
         <dc:subject>Verfahrenstechnik</dc:subject>
-		<dc:subject>Werkstoff</dc:subject>
-		<dc:subject>在真实生活中，玄奘的确是一个了不起的僧人。</dc:subject>
+        <dc:subject>Werkstoff</dc:subject>
         <dc:subject>Wirtschaft</dc:subject>
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
@@ -101,7 +100,7 @@
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>System</dc:subject>
         <dc:subject>USA</dc:subject>
-        <dc:subject>Ãsthetik</dc:subject>
+        <dc:subject>�sthetik</dc:subject>
     </rdf:Description>
 
     <rdf:Description id="6">
@@ -132,12 +131,12 @@
         <dc:subject>Institution</dc:subject>
         <dc:subject>Kommunikation</dc:subject>
         <dc:subject>Konflikt</dc:subject>
-        <dc:subject>MilitÃ¤r</dc:subject>
+        <dc:subject>Milit�r</dc:subject>
         <dc:subject>Naturwissenschaften</dc:subject>
         <dc:subject>Organisation</dc:subject>
         <dc:subject>Partizipation</dc:subject>
         <dc:subject>Politik</dc:subject>
-        <dc:subject>SelbstverstÃ¤ndnis</dc:subject>
+        <dc:subject>Selbstverst�ndnis</dc:subject>
         <dc:subject>Staat</dc:subject>
         <dc:subject>Struktur</dc:subject>
         <dc:subject>USA</dc:subject>
@@ -213,7 +212,7 @@
         <dc:subject>Kommunikation</dc:subject>
         <dc:subject>Maschine</dc:subject>
         <dc:subject>Methode</dc:subject>
-        <dc:subject>MilitÃ¤r</dc:subject>
+        <dc:subject>Milit�r</dc:subject>
         <dc:subject>Naturwissenschaften</dc:subject>
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>Organisation</dc:subject>
@@ -240,10 +239,10 @@
         <dc:subject>Altertum</dc:subject>
         <dc:subject>Analyse</dc:subject>
         <dc:subject>Ausland</dc:subject>
-        <dc:subject>BevÃ¶lkerung</dc:subject>
+        <dc:subject>Bev�lkerung</dc:subject>
         <dc:subject>Buchdruck</dc:subject>
         <dc:subject>China</dc:subject>
-        <dc:subject>ElektrizitÃ¤t</dc:subject>
+        <dc:subject>Elektrizit�t</dc:subject>
         <dc:subject>Elektrotechnik</dc:subject>
         <dc:subject>Energie</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
@@ -319,7 +318,7 @@
         <dc:subject>Technik</dc:subject>
         <dc:subject>Werkstoff</dc:subject>
         <dc:subject>Wissenschaft</dc:subject>
-        <dc:subject>Ãsthetik</dc:subject>
+        <dc:subject>�sthetik</dc:subject>
     </rdf:Description>
 
     <rdf:Description id="14">
@@ -371,7 +370,7 @@
 
     <rdf:Description id="16">
         <dc:title>
-            AbrÂgÂ d'histoire des mathÂmatiques 1700-1900 dt.
+            Abr�g� d'histoire des math�matiques 1700-1900 dt.
         </dc:title>
         <dc:language>dt.</dc:language>
     </rdf:Description>
@@ -404,7 +403,7 @@
         <dc:subject>Industrie</dc:subject>
         <dc:subject>Ingenieurwissenschaften</dc:subject>
         <dc:subject>Innovation</dc:subject>
-		<dc:subject>Interaktion</dc:subject>
+        <dc:subject>Interaktion</dc:subject>
         <dc:subject>Kommunikation</dc:subject>
         <dc:subject>Konflikt</dc:subject>
         <dc:subject>Kontrolle</dc:subject>
@@ -412,7 +411,7 @@
         <dc:subject>Management</dc:subject>
         <dc:subject>Massenfertigung</dc:subject>
         <dc:subject>Mechanisierung</dc:subject>
-        <dc:subject>MilitÃ¤r</dc:subject>
+        <dc:subject>Milit�r</dc:subject>
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>Organisation</dc:subject>
         <dc:subject>Physik</dc:subject>
@@ -453,7 +452,7 @@
         <dc:subject>Hardware</dc:subject>
         <dc:subject>Informatik</dc:subject>
         <dc:subject>Intelligenz</dc:subject>
-        <dc:subject>KÃ¼nstliche Intelligenz</dc:subject>
+        <dc:subject>K�nstliche Intelligenz</dc:subject>
         <dc:subject>Lernen</dc:subject>
         <dc:subject>Maschine</dc:subject>
         <dc:subject>Mensch</dc:subject>
@@ -501,7 +500,7 @@
         <dc:subject>Wandel</dc:subject>
         <dc:subject>Wohnen</dc:subject>
         <dc:subject>Zukunft</dc:subject>
-        <dc:subject>Ãsthetik</dc:subject>
+        <dc:subject>�sthetik</dc:subject>
     </rdf:Description>
 
     <rdf:Description id="823">
@@ -545,7 +544,7 @@
         <dc:subject>Entscheidung</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
         <dc:subject>Europa</dc:subject>
-        <dc:subject>EuropÃ¤ische Union</dc:subject>
+        <dc:subject>Europ�ische Union</dc:subject>
         <dc:subject>Forschung</dc:subject>
         <dc:subject>Fortschritt</dc:subject>
         <dc:subject>Frankreich</dc:subject>
@@ -577,8 +576,8 @@
         <dc:creator>Kalinowski, Martin</dc:creator>
         <dc:creator>Vydra, Jan</dc:creator>
         <dc:creator>Colschen, Lars</dc:creator>
-        <dc:creator>InterdisziplinÃ¤re Arbeitsgruppe Naturwissenschaft, Technik und Sicherheitspolitik (IANUS) Darmstadt</dc:creator>
-        <dc:creator>Institut fÃ¼r Kernphysik an der Technischen Hochschule Darmstadt Darmstadt</dc:creator>
+        <dc:creator>Interdisziplin�re Arbeitsgruppe Naturwissenschaft, Technik und Sicherheitspolitik (IANUS) Darmstadt</dc:creator>
+        <dc:creator>Institut f�r Kernphysik an der Technischen Hochschule Darmstadt Darmstadt</dc:creator>
         <dc:language>dt.</dc:language>
         <x:place>Darmstadt</x:place>
         <dc:date>1991</dc:date>
@@ -598,7 +597,7 @@
         <dc:description>History of inventions and development of electric power systems</dc:description>
         <dc:subject>Ausland</dc:subject>
         <dc:subject>Deutschland</dc:subject>
-        <dc:subject>ElektrizitÃ¤t</dc:subject>
+        <dc:subject>Elektrizit�t</dc:subject>
         <dc:subject>Elektrotechnik</dc:subject>
         <dc:subject>Energie</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
@@ -627,7 +626,7 @@
         <dc:subject>Struktur</dc:subject>
         <dc:subject>System</dc:subject>
         <dc:subject>Technik</dc:subject>
-        <dc:subject>UniversitÃ¤t</dc:subject>
+        <dc:subject>Universit�t</dc:subject>
         <dc:subject>Unternehmen</dc:subject>
         <dc:subject>USA</dc:subject>
         <dc:subject>Verwaltung</dc:subject>
@@ -642,7 +641,7 @@
             New Technology at the Outset : Social Forces in the Shaping of Technological Innovations
         </dc:title>
         <dc:creator>Dierkes, Meinolf</dc:creator>
-        <dc:creator>Wissenschaftszentrum Berlin fÃ¼r Sozialforschung Berlin</dc:creator>
+        <dc:creator>Wissenschaftszentrum Berlin f�r Sozialforschung Berlin</dc:creator>
         <dc:language>engl.</dc:language>
         <x:place>Frankfurt / M.</x:place>
         <dc:date>1992</dc:date>
@@ -718,10 +717,10 @@
         <dc:subject>Lernen</dc:subject>
         <dc:subject>Medien</dc:subject>
         <dc:subject>Neue Medien</dc:subject>
-        <dc:subject>PersÃ¶nlichkeit</dc:subject>
+        <dc:subject>Pers�nlichkeit</dc:subject>
         <dc:subject>Politik</dc:subject>
         <dc:subject>Schule</dc:subject>
-        <dc:subject>SelbstverstÃ¤ndnis</dc:subject>
+        <dc:subject>Selbstverst�ndnis</dc:subject>
         <dc:subject>Soziale Situation</dc:subject>
         <dc:subject>Sozialisation</dc:subject>
         <dc:subject>Sozialverhalten</dc:subject>
@@ -769,7 +768,7 @@
         <dc:subject>Organisation</dc:subject>
         <dc:subject>Physiologie</dc:subject>
         <dc:subject>Praxis</dc:subject>
-        <dc:subject>SelbstverstÃ¤ndnis</dc:subject>
+        <dc:subject>Selbstverst�ndnis</dc:subject>
         <dc:subject>Soziale Situation</dc:subject>
         <dc:subject>Sozialverhalten</dc:subject>
         <dc:subject>Soziologie</dc:subject>
@@ -814,7 +813,7 @@
         <dc:subject>Utopie</dc:subject>
         <dc:subject>Vergleich</dc:subject>
         <dc:subject>Wandel</dc:subject>
-        <dc:subject>Ãsthetik</dc:subject>
+        <dc:subject>�sthetik</dc:subject>
     </rdf:Description>
 
     <rdf:Description id="1590">
@@ -833,7 +832,7 @@
         <dc:subject>Arbeitnehmer</dc:subject>
         <dc:subject>Arbeitsbedingungen</dc:subject>
         <dc:subject>Ausland</dc:subject>
-        <dc:subject>BevÃ¶lkerung</dc:subject>
+        <dc:subject>Bev�lkerung</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
         <dc:subject>Erfahrung</dc:subject>
         <dc:subject>Geschichte</dc:subject>
@@ -858,7 +857,7 @@
         <dc:subject>Politik</dc:subject>
         <dc:subject>Politisches System</dc:subject>
         <dc:subject>Produktion</dc:subject>
-        <dc:subject>SelbstverstÃ¤ndnis</dc:subject>
+        <dc:subject>Selbstverst�ndnis</dc:subject>
         <dc:subject>Sowjetunion</dc:subject>
         <dc:subject>Soziale Situation</dc:subject>
         <dc:subject>Soziale Ungleichheit</dc:subject>
@@ -889,7 +888,7 @@
         <dc:subject>Entscheidung</dc:subject>
         <dc:subject>Kommunikation</dc:subject>
         <dc:subject>Infrastruktur</dc:subject>
-        <dc:subject>UmweltvertrÃ¤glichkeitsprÃ¼fung</dc:subject>
+        <dc:subject>Umweltvertr�glichkeitspr�fung</dc:subject>
         <dc:subject>USA</dc:subject>
         <dc:subject>Partizipation</dc:subject>
         <dc:subject>Konflikt</dc:subject>
@@ -919,7 +918,7 @@
         <dc:subject>Entscheidung</dc:subject>
         <dc:subject>Kommunikation</dc:subject>
         <dc:subject>Infrastruktur</dc:subject>
-        <dc:subject>UmweltvertrÃ¤glichkeitsprÃ¼fung</dc:subject>
+        <dc:subject>Umweltvertr�glichkeitspr�fung</dc:subject>
         <dc:subject>USA</dc:subject>
         <dc:subject>Partizipation</dc:subject>
         <dc:subject>Konflikt</dc:subject>
@@ -944,7 +943,7 @@
         <x:series>American Philosophical Society Memoirs series ; Bd.148</x:series>
         <dc:description>This book is a study of the evolution and interaction between changes in the needs for batteries and the response of battery designers to these needs.</dc:description>
         <dc:subject>Chemie</dc:subject>
-        <dc:subject>ElektrizitÃ¤t</dc:subject>
+        <dc:subject>Elektrizit�t</dc:subject>
         <dc:subject>Elektrotechnik</dc:subject>
         <dc:subject>Energie</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
@@ -973,7 +972,7 @@
         <dc:subject>Geschichte</dc:subject>
         <dc:subject>Innovation</dc:subject>
         <dc:subject>Krieg</dc:subject>
-        <dc:subject>MilitÃ¤r</dc:subject>
+        <dc:subject>Milit�r</dc:subject>
         <dc:subject>Modernisierung</dc:subject>
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>Organisation</dc:subject>
@@ -1155,7 +1154,7 @@
         <dc:subject>USA</dc:subject>
         <dc:subject>Vergleich</dc:subject>
         <dc:subject>Wahrnehmung</dc:subject>
-        <dc:subject>Ãsthetik</dc:subject>
+        <dc:subject>�sthetik</dc:subject>
     </rdf:Description>
 
     <rdf:Description id="2181">
@@ -1167,7 +1166,7 @@
         <dc:date>1985</dc:date>
         <dc:format>321 S.p.</dc:format>
         <dc:identifier>ISBN: 0-934235-03-1</dc:identifier>
-        <dc:description>AufsÃ¤tze zur Geschichte der Geschichtsschreibung der amerikanischen Wissenschaften</dc:description>
+        <dc:description>Aufs�tze zur Geschichte der Geschichtsschreibung der amerikanischen Wissenschaften</dc:description>
         <dc:subject>Amerika</dc:subject>
         <dc:subject>Analyse</dc:subject>
         <dc:subject>Anthropologie</dc:subject>
@@ -1194,7 +1193,7 @@
         <dc:subject>Kernenergie</dc:subject>
         <dc:subject>Krieg</dc:subject>
         <dc:subject>Medizin</dc:subject>
-        <dc:subject>MilitÃ¤r</dc:subject>
+        <dc:subject>Milit�r</dc:subject>
         <dc:subject>Naturwissenschaften</dc:subject>
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>Organisation</dc:subject>
@@ -1282,7 +1281,7 @@
         <dc:subject>Ausbildung</dc:subject>
         <dc:subject>Ausland</dc:subject>
         <dc:subject>Deutschland</dc:subject>
-        <dc:subject>ElektrizitÃ¤t</dc:subject>
+        <dc:subject>Elektrizit�t</dc:subject>
         <dc:subject>Entdeckung</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
         <dc:subject>Ethik</dc:subject>
@@ -1312,11 +1311,11 @@
         <dc:subject>Soziologie</dc:subject>
         <dc:subject>Struktur</dc:subject>
         <dc:subject>Theorie</dc:subject>
-        <dc:subject>UniversitÃ¤t</dc:subject>
+        <dc:subject>Universit�t</dc:subject>
         <dc:subject>USA</dc:subject>
         <dc:subject>Weltraum</dc:subject>
         <dc:subject>Wissenschaft</dc:subject>
-        <dc:subject>Ãsterreich</dc:subject>
+        <dc:subject>�sterreich</dc:subject>
     </rdf:Description>
 
     <rdf:Description id="2184">
@@ -1328,10 +1327,10 @@
         <dc:date>1988</dc:date>
         <dc:format>236 S.p.</dc:format>
         <dc:identifier>ISBN: 0-934235-10-4</dc:identifier>
-        <dc:description>Die AufsÃ¤tze behandeln die Entwicklung der chemischen Wissenschaften in den Zeiten Lavoisiers. Ihr werden revolutionÃ¤re Eigenschaften zugesprochen, die ein neues Paradigma entstehen lieÃen.</dc:description>
+        <dc:description>Die Aufs�tze behandeln die Entwicklung der chemischen Wissenschaften in den Zeiten Lavoisiers. Ihr werden revolution�re Eigenschaften zugesprochen, die ein neues Paradigma entstehen lie�en.</dc:description>
         <dc:subject>Aufsatzsammlung</dc:subject>
         <dc:subject>Ausland</dc:subject>
-        <dc:subject>BeneluxlÃ¤nder</dc:subject>
+        <dc:subject>Beneluxl�nder</dc:subject>
         <dc:subject>Bildung</dc:subject>
         <dc:subject>Chemie</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
@@ -1348,7 +1347,7 @@
         <dc:subject>Institution</dc:subject>
         <dc:subject>Konflikt</dc:subject>
         <dc:subject>Methode</dc:subject>
-        <dc:subject>MilitÃ¤r</dc:subject>
+        <dc:subject>Milit�r</dc:subject>
         <dc:subject>Naturwissenschaften</dc:subject>
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>Ontologie</dc:subject>
@@ -1359,7 +1358,7 @@
         <dc:subject>Skandinavien</dc:subject>
         <dc:subject>System</dc:subject>
         <dc:subject>Theorie</dc:subject>
-        <dc:subject>UniversitÃ¤t</dc:subject>
+        <dc:subject>Universit�t</dc:subject>
         <dc:subject>Wahrnehmung</dc:subject>
         <dc:subject>Wandel</dc:subject>
         <dc:subject>Wirkung</dc:subject>
@@ -1375,7 +1374,7 @@
         <dc:date>1989</dc:date>
         <dc:format>313 S.p.</dc:format>
         <dc:identifier>ISBN: 0-934235-12-0</dc:identifier>
-        <dc:description>Die AufsÃ¤tze Ã¼ber die Geschichte der Wissenschaften in Deutschland legen ihr Schwergewicht auf ihre Institutionalisierung</dc:description>
+        <dc:description>Die Aufs�tze �ber die Geschichte der Wissenschaften in Deutschland legen ihr Schwergewicht auf ihre Institutionalisierung</dc:description>
         <dc:subject>Aufsatzsammlung</dc:subject>
         <dc:subject>Ausbildung</dc:subject>
         <dc:subject>Bildung</dc:subject>
@@ -1407,7 +1406,7 @@
         <dc:subject>Philosophie</dc:subject>
         <dc:subject>Physik</dc:subject>
         <dc:subject>Politik</dc:subject>
-        <dc:subject>PÃ¤dagogik</dc:subject>
+        <dc:subject>P�dagogik</dc:subject>
         <dc:subject>Reform</dc:subject>
         <dc:subject>Schule</dc:subject>
         <dc:subject>Staat</dc:subject>
@@ -1415,7 +1414,7 @@
         <dc:subject>Studium</dc:subject>
         <dc:subject>System</dc:subject>
         <dc:subject>Technik</dc:subject>
-        <dc:subject>UniversitÃ¤t</dc:subject>
+        <dc:subject>Universit�t</dc:subject>
         <dc:subject>Unternehmen</dc:subject>
         <dc:subject>Unterricht</dc:subject>
         <dc:subject>Verwaltung</dc:subject>
@@ -1463,10 +1462,10 @@
         <dc:subject>Pharmazie</dc:subject>
         <dc:subject>Philosophie</dc:subject>
         <dc:subject>Praxis</dc:subject>
-        <dc:subject>PÃ¤dagogik</dc:subject>
+        <dc:subject>P�dagogik</dc:subject>
         <dc:subject>Studium</dc:subject>
         <dc:subject>Theorie</dc:subject>
-        <dc:subject>UniversitÃ¤t</dc:subject>
+        <dc:subject>Universit�t</dc:subject>
         <dc:subject>Vergleich</dc:subject>
         <dc:subject>Wandel</dc:subject>
         <dc:subject>Wirkung</dc:subject>
@@ -1515,7 +1514,7 @@
         <dc:subject>Krise</dc:subject>
         <dc:subject>Kultur</dc:subject>
         <dc:subject>Landwirtschaft</dc:subject>
-        <dc:subject>MilitÃ¤r</dc:subject>
+        <dc:subject>Milit�r</dc:subject>
         <dc:subject>Naturwissenschaften</dc:subject>
         <dc:subject>Organisation</dc:subject>
         <dc:subject>Physik</dc:subject>
@@ -1530,7 +1529,7 @@
         <dc:subject>Staat</dc:subject>
         <dc:subject>System</dc:subject>
         <dc:subject>Technik</dc:subject>
-        <dc:subject>UniversitÃ¤t</dc:subject>
+        <dc:subject>Universit�t</dc:subject>
         <dc:subject>USA</dc:subject>
         <dc:subject>Wandel</dc:subject>
         <dc:subject>Weltraum</dc:subject>
@@ -1546,7 +1545,7 @@
         <dc:language>amerik.</dc:language>
         <dc:date>1993</dc:date>
         <dc:identifier>ISBN: 0-226-28545-6</dc:identifier>
-        <dc:description>Die AufsÃ¤tze reflektieren die Geschichtsschreibung der Institutionalisierung von naturwissenschaftlichen Forschungsgemeinschaften vor allem hinsichtlich der Weitergabe des Wissens.</dc:description>
+        <dc:description>Die Aufs�tze reflektieren die Geschichtsschreibung der Institutionalisierung von naturwissenschaftlichen Forschungsgemeinschaften vor allem hinsichtlich der Weitergabe des Wissens.</dc:description>
         <dc:subject>Aufsatzsammlung</dc:subject>
         <dc:subject>Ausland</dc:subject>
         <dc:subject>Biologie</dc:subject>
@@ -1571,11 +1570,11 @@
         <dc:subject>Naturwissenschaften</dc:subject>
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>Physik</dc:subject>
-        <dc:subject>PÃ¤dagogik</dc:subject>
+        <dc:subject>P�dagogik</dc:subject>
         <dc:subject>Schule</dc:subject>
         <dc:subject>Sprache</dc:subject>
         <dc:subject>Studium</dc:subject>
-        <dc:subject>UniversitÃ¤t</dc:subject>
+        <dc:subject>Universit�t</dc:subject>
         <dc:subject>Wirkung</dc:subject>
         <dc:subject>Wirtschaft</dc:subject>
         <dc:subject>Wissen</dc:subject>
@@ -1591,14 +1590,14 @@
         <dc:date>1994</dc:date>
         <dc:format>250 S.p.</dc:format>
         <dc:identifier>ISBN: 0-226-84883-3</dc:identifier>
-        <dc:description>Wie beschreibt die Wissenschaftsgeschichte die Rolle der Instrumente bzw. experimentellen Methoden fÃ¼r die Diskussion um das VerhÃ¤ltnis von Theorie und Praxis? The philosophical debate over wether theory drives experiment or experiment drives theory has tended to obscure the intependant role of instruments in science....The traditional mix of experiment and theory need a new ingrident - instruments.(S.6)</dc:description>
+        <dc:description>Wie beschreibt die Wissenschaftsgeschichte die Rolle der Instrumente bzw. experimentellen Methoden f�r die Diskussion um das Verh�ltnis von Theorie und Praxis? The philosophical debate over wether theory drives experiment or experiment drives theory has tended to obscure the intependant role of instruments in science....The traditional mix of experiment and theory need a new ingrident - instruments.(S.6)</dc:description>
         <dc:subject>Astronomie</dc:subject>
         <dc:subject>Aufsatzsammlung</dc:subject>
         <dc:subject>Ausland</dc:subject>
         <dc:subject>Chemie</dc:subject>
         <dc:subject>China</dc:subject>
         <dc:subject>Deutschland</dc:subject>
-        <dc:subject>ElektrizitÃ¤t</dc:subject>
+        <dc:subject>Elektrizit�t</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
         <dc:subject>Erfindung</dc:subject>
         <dc:subject>Europa</dc:subject>
@@ -1651,7 +1650,7 @@
         <dc:subject>Geistesgeschichte</dc:subject>
         <dc:subject>Geschichte</dc:subject>
         <dc:subject>Internationaler Vergleich</dc:subject>
-        <dc:subject>UniversitÃ¤t</dc:subject>
+        <dc:subject>Universit�t</dc:subject>
         <dc:subject>Wissen</dc:subject>
         <dc:subject>Wissenschaft</dc:subject>
         <dc:subject>Wissenschaftstheorie</dc:subject>
@@ -1769,12 +1768,12 @@
         </dc:title>
         <dc:creator>Partsch, Helmut</dc:creator>
         <dc:language>dt.</dc:language>
-        <x:place>MÃ¼nchen</x:place>
+        <x:place>M�nchen</x:place>
         <dc:date>1991</dc:date>
         <dc:format>335 S.p.</dc:format>
         <dc:identifier>ISBN: 3-486-20784-9</dc:identifier>
         <x:series>Handbuch der Informatik ; Bd. 5.5</x:series>
-        <dc:description>Voraussetzungen fÃ¼r die Konkretisierung und Spezifikation der Anforderungen, die an die Entwicklung von Informationsprogrammen gerichtet sind.</dc:description>
+        <dc:description>Voraussetzungen f�r die Konkretisierung und Spezifikation der Anforderungen, die an die Entwicklung von Informationsprogrammen gerichtet sind.</dc:description>
         <dc:subject>Analyse</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
         <dc:subject>Informatik</dc:subject>
@@ -1803,7 +1802,7 @@
         <dc:date>1991</dc:date>
         <dc:format>59 S.p.</dc:format>
         <x:series>Monitor - SAST Activity : Strategic Analysis in Science and Technology</x:series>
-        <dc:description>MÃ¶glichkeiten der Emissionsverminderung im Verkehrsbereich sollen in einem breiteren Rahmen bewertet werden, um eventuelle externe Entwicklungen, die diesen Bereich beeinflussen, zu erkennen; es geht vor allem um die Bewertung des Ausmasses der Nachfrage nach TransportmÃ¶glichkeiten.</dc:description>
+        <dc:description>M�glichkeiten der Emissionsverminderung im Verkehrsbereich sollen in einem breiteren Rahmen bewertet werden, um eventuelle externe Entwicklungen, die diesen Bereich beeinflussen, zu erkennen; es geht vor allem um die Bewertung des Ausmasses der Nachfrage nach Transportm�glichkeiten.</dc:description>
     </rdf:Description>
 
     <rdf:Description id="2251">
@@ -1843,7 +1842,7 @@
         <dc:subject>Bewusstsein</dc:subject>
         <dc:subject>Europa</dc:subject>
         <dc:subject>Fortschritt</dc:subject>
-        <dc:subject>InterdisziplinÃ¤re Forschung</dc:subject>
+        <dc:subject>Interdisziplin�re Forschung</dc:subject>
         <dc:subject>Kultur</dc:subject>
         <dc:subject>Maschine</dc:subject>
         <dc:subject>Natur</dc:subject>
@@ -1945,7 +1944,7 @@
         <dc:identifier>ISBN: 0-89232-505-4</dc:identifier>
         <x:series>Research of Philosophy and Technology : An Annual Compilation of Research ; Bd. 7</x:series>
         <dc:subject>Computer</dc:subject>
-        <dc:subject>EntwicklungslÃ¤nder</dc:subject>
+        <dc:subject>Entwicklungsl�nder</dc:subject>
         <dc:subject>Frau</dc:subject>
         <dc:subject>Gesellschaft</dc:subject>
         <dc:subject>Individuum</dc:subject>
@@ -1990,7 +1989,7 @@
         <dc:subject>Philosophie</dc:subject>
         <dc:subject>Produktion</dc:subject>
         <dc:subject>Religion</dc:subject>
-        <dc:subject>SozialvertrÃ¤glichkeit</dc:subject>
+        <dc:subject>Sozialvertr�glichkeit</dc:subject>
         <dc:subject>Soziologie</dc:subject>
         <dc:subject>Technik</dc:subject>
         <dc:subject>Technikphilosophie</dc:subject>

@@ -297,7 +297,7 @@ dav:/exist/webdav/shakespeare/>
       <title>What Next?</title>
       <para>To use all the power of eXist you should read the <ulink url="xpath.xml">XPath HowTo</ulink>. eXist provides a number of extensions to standard XPath and you can make your queries a lot faster by using these extensions, so don't miss them.</para>
       <para>If you would like to know more about the different deployment options, read the document about <ulink url="deployment.xml">Server Deployment</ulink>. Security related issues are covered by <ulink url="security.xml">security.xml</ulink>.</para>
-      <para>Finally, developers should have a look at the <ulink url="development.xml">Developer's Guide</ulink>.</para>
+	  <para>Finally, developers should have a look at the <ulink url="devguide.xml">Developer's Guide</ulink>.</para>
     </section>
   </chapter>
 </book>

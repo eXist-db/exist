@@ -1,10 +1,10 @@
 
-eXist Native XML Database - Version 0.9
-=======================================
+eXist Native XML Database - Version 0.9.2
+=========================================
 
 For instructions on how to install and start eXist, please
-refer to the QuickStart.html document contained in this
-directory. Alternatively you may directly start the included
+refer to the quickstart.html document contained in the
+docs directory. Alternatively you may directly start the included
 Tomcat webserver and read the documentation which will be 
 available at
 

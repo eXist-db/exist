@@ -16,7 +16,7 @@
       </affiliation>
     </author>
   </bookinfo>
-  <include ci:src="sidebar.xml"></include>
+  <ci:include src="sidebar.xml"/>
   <chapter>
     <title>Server Deployment</title>
     <para>As described in the <ulink url="quickstart.xml">Quick Start Guide</ulink>, the database engine may either run as a standalone server, embedded into an application, or in connection with a servlet container. The Quick Start Guide explained how to set up eXist for use with a servlet-engine. In the following sections, some additional information is provided about running eXist as a standalone server and about embedding eXist into an application. However, to understand how different servers are addressed from Java clients, we first introduce the XML:DB URI. Section 2 deals with eXist running in standalone mode. Finally, we discuss the required steps to directly embed eXist into an application.</para>

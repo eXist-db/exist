@@ -68,16 +68,20 @@ public class XMLString implements CharSequence, Comparable {
 	}
 
 	public XMLString normalize(int mode) {
-		int end = start_ + length_ - 1;
+		if(length_ == 0)
+			return this;
 		if ((mode & SUPPRESS_LEADING_WS) != 0) {
-			while (start_ <= end && isWhiteSpace(value_[start_]))
-				++start_;
+			while (length_ > 0 && isWhiteSpace(value_[start_])) {
+				--length_;
+				if(length_ > 0)
+					++start_;
+			}
 		}
 		if ((mode & SUPPRESS_TRAILING_WS) != 0) {
-			while (end > start_ && isWhiteSpace(value_[end]))
-				--end;
+			while (length_ > 0 && isWhiteSpace(value_[start_ + length_ - 1])) {
+				--length_;
+			}
 		}
-		length_ = end - start_ + 1;
 		return this;
 	}
 
