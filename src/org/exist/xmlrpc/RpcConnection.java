@@ -251,7 +251,7 @@ public class RpcConnection extends Thread {
 		    compiled = xquery.compile(context, source);
 		try {
 		    long start = System.currentTimeMillis();
-		    Sequence result = xquery.execute(compiled, null);
+		    Sequence result = xquery.execute(compiled, contextSet);
 		    LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
 		    return result;
 		} finally {
