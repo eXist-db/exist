@@ -77,6 +77,74 @@ public class Backup {
 		this(user, pass, backupDir, "xmldb:exist:///db");
 	}
 
+	public String encode(String enco) {		
+		StringBuffer out = new StringBuffer();
+		char t;
+		for (int y=0; y < enco.length(); y++) {
+			t= enco.charAt(y);
+			if (t == '"') {
+	            out.append("&22;");
+			} else if (t == '&') {
+				out.append("&26;");
+			} else if (t == '*') {
+				out.append("&2A;");
+	        } else if (t ==':') {
+	        	out.append("&3A;");
+	        } else if (t =='<') {
+	        	out.append("&3C;");
+	        } else if (t =='>') {
+	        	out.append("&3E;");
+	        } else if (t =='?') {
+	        	out.append("&3F;");
+	        } else if (t =='\\') {
+	        	out.append("&5C;");
+	        } else if (t =='|') {
+	        	out.append("&7C;");
+	        } else {
+	        	out.append(t);
+	        }			
+		}		
+		return out.toString();
+	}
+	
+	
+	public String decode(String enco) {
+		StringBuffer out = new StringBuffer();
+		String temp="";
+		char t;
+		for (int y=0; y < enco.length(); y++) {
+			t= enco.charAt(y);
+			if (t != '&') {
+				out.append(t);
+			}
+			else {
+			    temp = enco.substring(y,y+4);
+                if (temp.equals("&22;")) {
+                	out.append('"');
+                } else if (temp.equals("&26;")) {
+                	out.append('&');
+                } else if (temp.equals("&2A;")) {
+                	out.append('*');
+                } else if (temp.equals("&3A;")) {
+                	out.append(':');
+                } else if (temp.equals("&3C;")) {
+                	out.append('<');
+                } else if (temp.equals("&3E;")) {
+                	out.append(">");
+                } else if (temp.equals("&3F;")) {
+                	out.append('?');
+                } else if (temp.equals("&5C;")) {
+                	out.append('\\');
+                } else if (temp.equals("&7C;")) {
+                	out.append('|');
+                } else {
+                	}			    
+			    y=y+3;
+			}			
+		}		
+		return out.toString();
+	}
+	
 	public void backup(boolean guiMode, JFrame parent) throws XMLDBException, IOException, SAXException {
 		Collection current = DatabaseManager.getCollection(rootCollection, user, pass);
 		if (guiMode) {
@@ -115,7 +183,8 @@ public class Backup {
 		String cname = current.getName();
 		if (cname.charAt(0) != '/')
 			cname = '/' + cname;
-		String path = backupDir + cname;
+		String path = backupDir + encode(cname);
+		
 		UserManagementService mgtService =
 			(UserManagementService) current.getService("UserManagementService", "1.0");
 		Permission perms[] = mgtService.listResourcePermissions();
@@ -180,7 +249,8 @@ public class Backup {
 				dialog.setResource(resources[i]);
 				dialog.setProgress(i);
 			}
-			os = new FileOutputStream(path + '/' + resources[i]);
+			//os = new FileOutputStream(path + '/' + resources[i]);
+			os = new FileOutputStream(path + '/' + encode(resources[i]));
 			if(resource.getResourceType().equals("BinaryResource")) {
 				byte[] bdata = (byte[])resource.getContent();
 				os.write(bdata);
@@ -230,6 +300,15 @@ public class Backup {
 					"modified",
 					"CDATA",
 					ris.getLastModificationTime().toString() );
+
+			attr.addAttribute(
+					NS,
+					"filename",
+					"filename",
+					"CDATA",
+					encode( ""+resources[i] )
+					 );
+
 			
 			serializer.startElement(NS, "resource", "resource", attr);
 			serializer.endElement(NS, "resource", "resource");
@@ -241,6 +320,7 @@ public class Backup {
 				continue;
 			attr.clear();
 			attr.addAttribute(NS, "name", "name", "CDATA", collections[i]);
+			attr.addAttribute(NS, "filename", "filename", "CDATA", encode(collections[i]));
 			serializer.startElement(NS, "subcollection", "subcollection", attr);
 			serializer.endElement(NS, "subcollection", "subcollection");
 		}
