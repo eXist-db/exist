@@ -457,6 +457,7 @@ public class Parser
 
 	public DocumentImpl parse(Collection coll, Node node, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
+		LOG.debug("parsing node " + node.getNodeName());
 		collection = coll;
 		scan(node, xmlFileName);
 		return store(node);

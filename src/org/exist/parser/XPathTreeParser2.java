@@ -1,4 +1,4 @@
-// $ANTLR 2.7.2: "XPathParser2.g" -> "XPathTreeParser2.java"$
+// $ANTLR : "XPathParser2.g" -> "XPathTreeParser2.java"$
 
 	package org.exist.parser;
 	
@@ -351,8 +351,14 @@ public XPathTreeParser2() {
 				step=pathExpr(_t,path);
 				_t = _retTree;
 				
-								if(step instanceof LocationStep)
-									((LocationStep)step).setAxis(Constants.DESCENDANT_AXIS);
+								if(step instanceof LocationStep) {
+									LocationStep s = (LocationStep)step;
+									if(s.getAxis() == Constants.ATTRIBUTE_AXIS)
+										// combines descendant-or-self::node()/attribute:*
+										s.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
+									else
+										s.setAxis(Constants.DESCENDANT_AXIS);
+								}
 							
 				break;
 			}
@@ -955,8 +961,13 @@ public XPathTreeParser2() {
 				rightStep=pathExpr(_t,path);
 				_t = _retTree;
 				
-								if(rightStep instanceof LocationStep)
-									((LocationStep)rightStep).setAxis(Constants.DESCENDANT_SELF_AXIS);
+								if(rightStep instanceof LocationStep) {
+									LocationStep rs = (LocationStep)rightStep;
+									if(rs.getAxis() == Constants.ATTRIBUTE_AXIS)
+										rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
+									else
+										rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
+								}
 							
 				break;
 			}

@@ -8,4 +8,8 @@
 	<p name="statement">The opinions presented herein represent those 
 	of the individual and should not be interpreted as the official 
 	policy endorsed by this organization.</p>
+
+	<comment xmlns="http://test.org">
+		This comment uses a different namespace
+	</comment>
 </disclaimer>

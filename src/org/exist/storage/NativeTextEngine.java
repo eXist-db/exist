@@ -335,6 +335,9 @@ public class NativeTextEngine extends TextSearchEngine {
 				} catch (LockException e) {
 					LOG.warn("could not acquire lock on words db", e);
 					dis = null;
+				} catch (IOException e) {
+					LOG.warn("io error while reading words", e);
+					dis = null;
 				} finally {
 					lock.release();
 				}
@@ -602,6 +605,9 @@ public class NativeTextEngine extends TextSearchEngine {
 					dis = dbWords.getAsStream(ref);
 				} catch (LockException e) {
 					LOG.warn("could not acquire lock on words db", e);
+					dis = null;
+				} catch (IOException e) {
+					LOG.error("io error while reading words", e);
 					dis = null;
 				} finally {
 					lock.release();
@@ -896,6 +902,10 @@ public class NativeTextEngine extends TextSearchEngine {
 					dis = dbWords.getAsStream(ref);
 				} catch (LockException e) {
 					LOG.error("could not acquire lock on index for '" + word + "'");
+					dis = null;
+				} catch (IOException e) {
+					LOG.error("io error while reindexing word '" + word + "'");
+					dis = null;
 				} finally {
 					lock.release();
 				}
@@ -1031,6 +1041,8 @@ public class NativeTextEngine extends TextSearchEngine {
 				try {
 					dbWords.append(ref, data);
 				} catch (ReadOnlyException e) {
+				} catch (IOException ioe) {
+					LOG.warn("io error while writing '" + word + "'", ioe);
 				}
 			} catch (LockException e) {
 				LOG.warn("could not acquire lock", e);
@@ -1067,7 +1079,12 @@ public class NativeTextEngine extends TextSearchEngine {
 				word = new String(key.getData(), 2, key.getLength() - 2);
 			}
 			if (matcher.matches(word, regexp)) {
-				InputStream dis = dbWords.getAsStream(pointer);
+				InputStream dis = null;
+				try {
+					dis = dbWords.getAsStream(pointer);
+				} catch (IOException ioe) {
+					LOG.warn(ioe.getMessage(), ioe);
+				}
 				if (dis == null)
 					return true;
 				int k = 0;

@@ -230,7 +230,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		throws java.rmi.RemoteException {
 		Session session = SessionManager.getInstance().getSession(sessionId);
 		if (!(query.startsWith("document(") || query.startsWith("collection(")))
-			query = "document(*)" + query;
+			query = "document()" + query;
 
 		QueryResponse resp = new QueryResponse();
 		resp.setHits(0);

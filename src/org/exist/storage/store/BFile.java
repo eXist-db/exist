@@ -146,6 +146,10 @@ public class BFile extends BTree {
 	}
 
 	private final static long createPointer(int page, int offset) {
+		if(page < 0)
+			throw new IllegalArgumentException("page num < 0");
+		if(offset < 0)
+			throw new IllegalArgumentException("offset < 0");
 		long p = (page & 0xffff);
 		long o = (offset & 0xffff);
 		return page | (o << 32);
@@ -167,7 +171,7 @@ public class BFile extends BTree {
 	public Lock getLock() {
 		return lock;
 	}
-	public long append(Value key, ByteArray value) throws ReadOnlyException {
+	public long append(Value key, ByteArray value) throws ReadOnlyException, IOException {
 		if (key == null) {
 			LOG.debug("key is null");
 			return -1;
@@ -227,8 +231,6 @@ public class BFile extends BTree {
 				addValue(key, p);
 				return p;
 			}
-		} catch (IOException e) {
-			LOG.warn("io error while appending value " + key, e);
 		} catch (BTreeException bte) {
 			LOG.warn("btree exception while appending value", bte);
 		}
@@ -397,7 +399,7 @@ public class BFile extends BTree {
 		query(query, cb);
 	}
 
-	private final int findValuePosition(DataPage page, short tid) {
+	private final int findValuePosition(DataPage page, short tid) throws IOException {
 		int pos = 0;
 		int l;
 		short current = -1;
@@ -468,7 +470,7 @@ public class BFile extends BTree {
 		return null;
 	}
 
-	public InputStream getAsStream(Value key) {
+	public InputStream getAsStream(Value key) throws IOException {
 		try {
 			final long p = findValue(key);
 			if (p == KEY_NOT_FOUND)
@@ -483,13 +485,11 @@ public class BFile extends BTree {
 			}
 		} catch (BTreeException b) {
 			LOG.debug("key " + key + " not found");
-		} catch (IOException e) {
-			LOG.debug(e);
 		}
 		return null;
 	}
 
-	public InputStream getAsStream(long pointer) {
+	public InputStream getAsStream(long pointer) throws IOException {
 		final DataPage page = getDataPage((long) pageFromPointer(pointer));
 		switch (page.getPageHeader().getStatus()) {
 			case MULTI_PAGE :
@@ -499,7 +499,7 @@ public class BFile extends BTree {
 		}
 	}
 
-	private InputStream getAsStream(DataPage page, long pointer) {
+	private InputStream getAsStream(DataPage page, long pointer) throws IOException {
 		pages.add(page);
 		final short tid = (short) offsetFromPointer(pointer);
 		final int offset = findValuePosition(page, tid);
@@ -588,8 +588,7 @@ public class BFile extends BTree {
 		return v;
 	}
 
-	private DataPage getDataPage(long pos) {
-		try {
+	private DataPage getDataPage(long pos) throws IOException {
 			DataPage wp;
 			if ((wp = pages.get(pos)) == null) {
 				final Page page = getPage(pos);
@@ -606,10 +605,6 @@ public class BFile extends BTree {
 				return new OverflowPage(wp);
 			else
 				return wp;
-		} catch (IOException ioe) {
-			LOG.debug("cannot read page: " + pos + ": " + ioe, ioe);
-			return null;
-		}
 	}
 
 	/**
@@ -884,8 +879,10 @@ public class BFile extends BTree {
 				}
 			}
 			tid = page.getPageHeader().getNextTID();
-			if (tid < 0)
+			if (tid < 0) {
+				LOG.info("removing page " + page.getPageHeader() + " from free pages");
 				fileHeader.removeFreeSpace(free);
+			}
 		}
 		// create pointer from pageNum and offset into page
 		long p = createPointer((int) page.getPageNum(), (int) tid);
@@ -1300,7 +1297,7 @@ public class BFile extends BTree {
 		 */
 		public short getNextTID() {
 			++nextTID;
-			if (nextTID > Short.MAX_VALUE) {
+			if (nextTID < 0) {
 				LOG.debug("tid limit reached");
 				return -1;
 			}
@@ -1428,7 +1425,7 @@ public class BFile extends BTree {
 		 *
 		 *@return    The data value
 		 */
-		public abstract byte[] getData();
+		public abstract byte[] getData() throws IOException;
 
 		/**
 		 *  Gets the pageHeader attribute of the DataPage object
@@ -1539,21 +1536,26 @@ public class BFile extends BTree {
 		 *@return          Description of the Return Value
 		 */
 		public boolean indexInfo(Value value, long pointer) {
-			long pos;
-			short tid;
-			DataPage page;
-			int offset;
-			int l;
-			Value v;
-			pos = (long) pageFromPointer(pointer);
-			tid = (short) offsetFromPointer(pointer);
-			page = getDataPage(pos);
-			offset = findValuePosition(page, tid);
-			byte[] data = page.getData();
-			l = ByteConversion.byteToInt(data, offset);
-			v = new Value(data, offset + 4, l);
-			callback.info(value, v);
-			return true;
+			try {
+				long pos;
+				short tid;
+				DataPage page;
+				int offset;
+				int l;
+				Value v;
+				pos = (long) pageFromPointer(pointer);
+				tid = (short) offsetFromPointer(pointer);
+				page = getDataPage(pos);
+				offset = findValuePosition(page, tid);
+				byte[] data = page.getData();
+				l = ByteConversion.byteToInt(data, offset);
+				v = new Value(data, offset + 4, l);
+				callback.info(value, v);
+				return true;
+			} catch(IOException e) {
+				LOG.error(e.getMessage(), e);
+				return true;
+			}
 		}
 	}
 
@@ -1616,47 +1618,51 @@ public class BFile extends BTree {
 			int l;
 			Value v;
 			byte[] data;
-			switch (mode) {
-				case VALUES :
-					pos = (long) pageFromPointer(pointer);
-					tid = (short) offsetFromPointer(pointer);
-					page = getDataPage(pos);
-					pages.add(page);
-					offset = findValuePosition(page, tid);
-					data = page.getData();
-					l = ByteConversion.byteToInt(data, offset);
-					v = new Value(data, offset + 4, l);
-					v.setAddress(pointer);
-					if (callback == null)
-						values.add(v);
-					else
-						return callback.indexInfo(value, v);
-					return true;
-				case KEYS :
-					value.setAddress(pointer);
-					if (callback == null)
-						values.add(value);
-					else
-						return callback.indexInfo(value, null);
-					return true;
-				case BOTH :
-					Value[] entry = new Value[2];
-					entry[0] = value;
-					pos = (long) pageFromPointer(pointer);
-					tid = (short) offsetFromPointer(pointer);
-					page = getDataPage(pos);
-					pages.add(page);
-					offset = findValuePosition(page, tid);
-					data = page.getData();
-					l = ByteConversion.byteToInt(data, offset);
-					v = new Value(data, offset + 4, l);
-					v.setAddress(pointer);
-					entry[1] = v;
-					if (callback == null)
-						values.add(entry);
-					else
-						return callback.indexInfo(value, v);
-					return true;
+			try {
+				switch (mode) {
+					case VALUES :
+						pos = (long) pageFromPointer(pointer);
+						tid = (short) offsetFromPointer(pointer);
+						page = getDataPage(pos);
+						pages.add(page);
+						offset = findValuePosition(page, tid);
+						data = page.getData();
+						l = ByteConversion.byteToInt(data, offset);
+						v = new Value(data, offset + 4, l);
+						v.setAddress(pointer);
+						if (callback == null)
+							values.add(v);
+						else
+							return callback.indexInfo(value, v);
+						return true;
+					case KEYS :
+						value.setAddress(pointer);
+						if (callback == null)
+							values.add(value);
+						else
+							return callback.indexInfo(value, null);
+						return true;
+					case BOTH :
+						Value[] entry = new Value[2];
+						entry[0] = value;
+						pos = (long) pageFromPointer(pointer);
+						tid = (short) offsetFromPointer(pointer);
+						page = getDataPage(pos);
+						pages.add(page);
+						offset = findValuePosition(page, tid);
+						data = page.getData();
+						l = ByteConversion.byteToInt(data, offset);
+						v = new Value(data, offset + 4, l);
+						v.setAddress(pointer);
+						entry[1] = v;
+						if (callback == null)
+							values.add(entry);
+						else
+							return callback.indexInfo(value, v);
+						return true;
+				}
+			} catch (IOException e) {
+				LOG.error(e.getMessage(), e);
 			}
 			return false;
 		}
@@ -1708,7 +1714,7 @@ public class BFile extends BTree {
 		 *
 		 *@param  chunk  chunk of data to append
 		 */
-		public void append(ByteArray chunk) {
+		public void append(ByteArray chunk) throws IOException {
 			SinglePage nextPage;
 			BFilePageHeader ph = firstPage.getPageHeader();
 			// get the last page and fill it
@@ -1800,7 +1806,7 @@ public class BFile extends BTree {
 		 *
 		 *@return    The data value
 		 */
-		public byte[] getData() {
+		public byte[] getData() throws IOException {
 			if (data != null)
 				return data;
 			SinglePage page = firstPage;

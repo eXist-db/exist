@@ -8,6 +8,8 @@ package org.exist.cocoon;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 
@@ -34,6 +36,7 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
 
 /**
  * Transformer component for querying an XML database using the
@@ -81,7 +84,8 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	private int nesting = 0;
 	private int mode = 0;
 	private XMLResource currentResource = null;
-
+	private HashMap namespaces = new HashMap(20);
+	
 	/**
 	 * Setup the component. Accepts parameters "driver", "user" and
 	 * "password". If specified, those parameters override the default-
@@ -221,6 +225,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			else if (highlightAttributeMatches)
 				highlighting = "attributes";
 			service.setProperty(Serializer.HIGHLIGHT_MATCHES, highlighting);
+			setQueryContext(service);
 			ResourceSet queryResult =
 				(resource == null) ? service.query(xpath) : service.query(resource, xpath);
 			if (queryResult == null) {
@@ -243,7 +248,6 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			return;
 		}
 		ForEach each = new ForEach();
-		nesting++;
 		XMLResource resource = null;
 		boolean nested = !commandStack.isEmpty();
 		if (nested) {
@@ -303,6 +307,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			else if (highlightAttributeMatches)
 				highlighting = "attributes";
 			service.setProperty(Serializer.HIGHLIGHT_MATCHES, highlighting);
+			setQueryContext(service);
 			// check if query result is already stored in the session
 			if (createSession && resource == null)
 				queryResult = (ResourceSet) session.getAttribute(xpath);
@@ -351,6 +356,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			reportError(FATAL_ERROR, e.getMessage(), e);
 			return;
 		}
+		nesting++;
 		isRecording = true;
 		startRecording();
 	}
@@ -496,4 +502,31 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			DEFAULT_DRIVER = child.getValue();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
+	 */
+	public void endPrefixMapping(String prefix) throws SAXException {
+		namespaces.remove(prefix);
+		super.endPrefixMapping(prefix);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
+	 */
+	public void startPrefixMapping(String prefix, String namespaceURI)
+		throws SAXException {
+		namespaces.put(prefix, namespaceURI);
+		super.startPrefixMapping(prefix, namespaceURI);
+	}
+
+	private void setQueryContext(XPathQueryService service) {
+		Map.Entry entry;
+		for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
+			entry = (Map.Entry)i.next();
+			try {
+				service.setNamespace((String)entry.getKey(), (String)entry.getValue());
+			} catch (XMLDBException e) {
+			}
+		}
+	}
 }

@@ -89,11 +89,11 @@ $Header$
             if ( squery == null ) squery = "";
             // ]]>
 
-            // add document(*) to query if missing
+            // add document() to query if missing
             if(!(query.startsWith("document(") || query.startsWith("collection(")) ||
                  query.startsWith("xcollection(")) {
                 if(cname == null || cname.equals("all documents"))
-                    query = "document(*)" + query;
+                    query = "document()" + query;
                 else
                     query = "collection('" + cname + "')" + query;
             }

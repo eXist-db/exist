@@ -116,6 +116,9 @@ public class NativeElementIndex extends ElementIndex {
 				} catch (LockException e) {
 					LOG.error("could not acquire lock for index on " + qname);
 					return;
+				} catch (IOException e) {
+					LOG.error("io error while reindexing " + qname, e);
+					dis = null;
 				} finally {
 					lock.release();
 				}
@@ -358,6 +361,8 @@ public class NativeElementIndex extends ElementIndex {
 					}
 				} catch (LockException e) {
 					LOG.error("could not acquire lock on elements", e);
+				} catch (IOException e) {
+					LOG.error("io error while writing element " + qname, e);
 				} finally {
 					lock.release();
 				}

@@ -246,7 +246,7 @@ DatabaseManager.registerDatabase(database1);
         <para>eXist defines some extension methods to the XPathQueryService. To use these methods, you have to cast the retrieved service to the eXist interface <ulink url="api/org/exist/xmldb/XPathQueryServiceImpl.html">XPathQueryServiceImpl</ulink>. The interface defines three additional query methods. The first allows you to evaluate a query on an XMLResource retrieved from a previous query. It thus becomes possible to execute nested queries. Since XPath does only allow one result to be returned, nested queries are useful to get additional information on a query result. For example, we may want to find certain SPEECH sections from a Shakespeare play, but we would also like to know the title of the scene in which this section occurrs. Using the nested query facility, the corresponding code could look like this (the whole example can be found in <filename moreinfo="none">samples/org/exist/examples/xmldb/NestedQuery.java</filename>):</para>
         <example>
           <title>Nested Queries</title>
-          <programlisting format="linespecific">String query1 = "document(*)//SPEECH[LINE &amp;= 'corrupt*']";
+          <programlisting format="linespecific">String query1 = "document()//SPEECH[LINE &amp;= 'corrupt*']";
 String query2 = "/ancestor::SCENE/TITLE";
 
 // get query-service
@@ -407,7 +407,7 @@ for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
             <xmldb:collection uri="xmldb:exist:///db">
                 <xmldb:execute>
                     <xmldb:xpath>
-                        "document(*)//rdf:Description[dc:title" +
+                        "document()//rdf:Description[dc:title" +
                         "&amp;='" + request.getParameter("title") + "']"
                     </xmldb:xpath>
                     <p>Found <xmldb:get-hit-count/> hits.</p>

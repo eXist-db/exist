@@ -32,7 +32,7 @@
 	
 	<!-- build the XPath expression -->
 	<xsl:template name="build-query">
-		document(*)//SCENE[
+		document()//SCENE[
 		<xsl:call-template name="predicate-expression">
 			<xsl:with-param name="context"><xsl:value-of select="$context"/></xsl:with-param>
 			<xsl:with-param name="terms"><xsl:value-of select="$terms"/></xsl:with-param>

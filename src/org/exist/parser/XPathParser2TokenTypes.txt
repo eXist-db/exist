@@ -1,4 +1,4 @@
-// $ANTLR 2.7.2: XPathParser2.g -> XPathParser2TokenTypes.txt$
+// $ANTLR : XPathParser2.g -> XPathParser2TokenTypes.txt$
 XPathParser2    // output token vocab name
 QNAME=4
 PREDICATE=5

@@ -63,6 +63,7 @@ public class ExtFulltext extends Function {
 	}
 
 	public void addTerm(String arg) {
+		System.out.println("adding " + arg);
 		this.containsExpr.add(arg);
 	}
 
@@ -82,6 +83,10 @@ public class ExtFulltext extends Function {
 		} finally {
 			pool.release(broker);
 		}
+	}
+	
+	public int countTerms() {
+		return containsExpr.size();
 	}
 	
 	public Value eval(

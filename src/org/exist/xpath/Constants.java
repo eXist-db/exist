@@ -17,7 +17,9 @@ public interface Constants {
 					    "parent",
 					    "preceding",
 					    "preceding-sibling",
-					    "self"};
+					    "self",
+					    "attribute"
+	};
 					    
     public final static int ANCESTOR_AXIS = 0;
     public final static int ANCESTOR_SELF_AXIS = 1;
@@ -32,14 +34,15 @@ public interface Constants {
     public final static int PRECEDING_AXIS = 10;
     public final static int PRECEDING_SIBLING_AXIS = 11;
     public final static int SELF_AXIS = 12;
-
+	public final static int DESCENDANT_ATTRIBUTE_AXIS = 13;
+	
     /**
      * These constants represent the
      * different node types in <i>XPath</i>.
      */
     public final static String[] NODETYPES = {"node",
 				       "root",
-				       "element",
+				       "*",
 				       "text",
 				       "attribute",
 				       "namespace",

@@ -71,8 +71,8 @@ public class LexerTest extends TestCase {
 	}
 
 	public void testQuery() throws XPathException {
-		//String query = "document(*)//p[. &= '\uB2E8\uACC4']";
-		String query = "document(*)//p[. = '\u4ED6\u4E3A\u8FD9\u9879\u5DE5\u7A0B\u6295" +
+		//String query = "document()//p[. &= '\uB2E8\uACC4']";
+		String query = "document()//p[. = '\u4ED6\u4E3A\u8FD9\u9879\u5DE5\u7A0B\u6295" +
 			"\u5165\u4E86\u5341\u4E09\u5E74\u65F6\u95F4\u3002']";
 			
 		// get a BrokerPool for access to the database engine

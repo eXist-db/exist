@@ -42,4 +42,11 @@ public class AnyNodeTest implements NodeTest {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return "node()";
+	}
+
 }
