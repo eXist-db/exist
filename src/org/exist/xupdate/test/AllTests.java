@@ -2,6 +2,7 @@ package org.exist.xupdate.test;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import junit.textui.TestRunner;
 
 /**
  * @author berlinge-to
@@ -30,6 +31,7 @@ public class AllTests {
         suite.addTest(new XUpdateTestCases("conditional", test));
         suite.addTest(new XUpdateTestCases("variables", test));
         suite.addTest(new XUpdateTestCases("replace", test));
+        suite.addTest(new XUpdateTestCases("whitespace", test));
         
         /*
          * create new TestCase
@@ -47,4 +49,7 @@ public class AllTests {
 		return suite;
 	}
 
+	public static void main(String[] args) {
+		TestRunner.run(suite());
+	}
 }

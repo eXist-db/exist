@@ -31,6 +31,7 @@ public class XUpdateTestCases extends TestCase {
     public void conditional() throws Exception { test.doTest("conditional", "address.xml"); }
     public void variables() throws Exception { test.doTest("variables", "address.xml"); }
     public void replace() throws Exception { test.doTest("replace", "address.xml"); }
+    public void whitespace() throws Exception { test.doTest("whitespace", "address.xml"); }
     // <add a new TestCase Method here>     
     
     // TestCases End

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+    
+	<!-- Test namespaces and xml:space attribute -->
+    <xu:append select="/addressbook">
+        
+        <xu:element name="address">
+            <xu:attribute name="x:rating" namespace="http://x.org">99</xu:attribute>
+			<xu:element name="x:note" namespace="http://y.org">Note</xu:element>
+            <fname>Boris</fname>
+            <lname>Becker</lname>
+            <city xml:space="preserve">   Leimen</city>
+        </xu:element>
+        
+    </xu:append>
+    
+</xu:modifications>    
+

@@ -236,9 +236,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		throws SAXException {
 		// save accumulated character content
 		if (inModification && charBuf.length() > 0) {
-			final String normalized =
-				// charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
-                charBuf.toString();
+			final String normalized = preserveWhitespace ? charBuf.toString() :
+				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(normalized);
@@ -298,6 +297,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					throw new SAXException(
 							"creation elements are only allowed inside "
 							+ "a modification");
+				charBuf.setLength(0);
 			} else
 				throw new SAXException("Unknown XUpdate element: " + qName);
 
@@ -334,7 +334,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 						throw new SAXException(
 							"illegal prefix in qname: " + name);
 					name = name.substring(p + 1);
-					namespace = (String) namespaces.get(prefix);
+					namespace = atts.getValue("namespace");
+					if(namespace == null)
+						namespace = (String) namespaces.get(prefix);
 					if (namespace == null) {
 						throw new SAXException(
 							"no namespace defined for prefix " + prefix);
@@ -360,8 +362,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					if (name.length() == p + 1)
 						throw new SAXException(
 							"illegal prefix in qname: " + name);
-					name = name.substring(p + 1);
-					namespace = (String) namespaces.get(prefix);
+					namespace = atts.getValue("namespace");
+					if(namespace == null)
+						namespace = (String) namespaces.get(prefix);
 					if (namespace == null)
 						throw new SAXException(
 							"no namespace defined for prefix " + prefix);
@@ -383,7 +386,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					if(last.hasAttributeNS(namespace, name))
 						throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified " +
 								"twice on the same element");
-					last.setAttributeNode(attrib);
+					LOG.debug("attribute: " + attrib.getName() + " = " + attrib.getNamespaceURI());
+					last.setAttributeNodeNS(attrib);
 				}
 				inAttribute = true;
 				currentNode = attrib;
@@ -470,10 +474,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	public void endElement(String namespaceURI, String localName, String qName)
 		throws SAXException {
 		if (inModification && charBuf.length() > 0) {
-			final String normalized =
-				// charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
-                charBuf.toString();
-                
+			final String normalized = preserveWhitespace ? charBuf.toString() :
+				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
