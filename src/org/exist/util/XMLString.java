@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
  * Faster string implementation which uses a CharArrayPool to
  * pool the backing char arrays.
  */
-public class XMLString implements CharSequence, Comparable {
+public final class XMLString implements CharSequence, Comparable {
 
 	public final static int SUPPRESS_NONE = 0;
 	public final static int SUPPRESS_LEADING_WS = 0x01;
@@ -224,19 +224,67 @@ public class XMLString implements CharSequence, Comparable {
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public final int compareTo(Object o) {
-		CharSequence cs = (CharSequence)o;
-		for(int i = 0; i < length_ && i < cs.length(); i++) {
-			if(value_[start_ + i] < cs.charAt(i))
-				return -1;
-			else if(value_[start_ + i] > cs.charAt(i))
-				return 1;
-		}
-		if(length_ < cs.length())
-			return -1;
-		else if(length_ > cs.length())
-			return 1;
-		else
-			return 0;
-	}
+        CharSequence cs = (CharSequence) o;
+        for (int i = 0; i < length_ && i < cs.length(); i++) {
+            if (value_[start_ + i] < cs.charAt(i))
+                return -1;
+            else if (value_[start_ + i] > cs.charAt(i))
+                return 1;
+        }
+        if (length_ < cs.length())
+            return -1;
+        else if (length_ > cs.length())
+            return 1;
+        else
+            return 0;
+    }
 
+    /*
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+	public boolean equals(Object anObject) {
+	    if (this == anObject) {
+	        return true;
+	    }
+	    if (anObject instanceof XMLString) {
+	        XMLString anotherString = (XMLString) anObject;
+	        int n = length_;
+	        if (n == anotherString.length_) {
+	            char v1[] = value_;
+	            char v2[] = anotherString.value_;
+	            int i = start_;
+	            int j = anotherString.start_;
+	            
+	            while (n-- != 0) {
+	                if (v1[i++] != v2[j++])
+	                    return false;
+	            }
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+	
+    /*
+     * @see hashCode()
+     */
+	private int hash = 0;
+	
+    /*
+     * @see java.lang.Object#hashCode()
+     */
+	public int hashCode() {
+	    int h = hash;
+	    if (h == 0) {
+	        int off = start_;
+	        char val[] = value_;
+	        int len = length_;
+	        
+	        for (int i = 0; i < len; i++) {
+	            h = 31 * h + val[off++];
+	        }
+	        hash = h;
+	    }
+	    return h;
+	}
 }
