@@ -10,6 +10,7 @@ import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+import org.exist.dom.QName;
 import org.exist.util.Occurrences;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -44,8 +45,10 @@ public class RemoteIndexQueryService implements IndexQueryService {
 			Vector row;
 			for (int i = 0; i < occurrences.length; i++) {
 				row = (Vector) result.elementAt(i);
-				occurrences[i] = new Occurrences((String) row.elementAt(0));
-				occurrences[i].addOccurrences(((Integer) row.elementAt(1)).intValue());
+				QName qname = new QName((String)row.elementAt(0), (String)row.elementAt(1),
+						(String)row.elementAt(2));
+				occurrences[i] = new Occurrences(qname);
+				occurrences[i].addOccurrences(((Integer) row.elementAt(3)).intValue());
 			}
 			return occurrences;
 		} catch (XmlRpcException e) {

@@ -38,7 +38,9 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(BuiltinFunctions.signature, BuiltinFunctions.class),
 		new FunctionDef(DescribeFunction.signature, DescribeFunction.class),
 		new FunctionDef(EvalFunction.signature, EvalFunction.class),
-		new FunctionDef(MD5.signature, MD5.class)
+		new FunctionDef(MD5.signature, MD5.class),
+		new FunctionDef(DocumentName.signature, DocumentName.class),
+		new FunctionDef(CollectionName.signature, CollectionName.class)
 	};
 	
 	public ModuleImpl() {

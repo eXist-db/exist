@@ -117,13 +117,6 @@ public class ElementImpl extends NodeImpl implements Element {
 			namespaceMappings = null;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  data  Description of the Parameter
-	 *@param  doc   Description of the Parameter
-	 *@return       Description of the Return Value
-	 */
 	public static NodeImpl deserialize(
 		byte[] data,
 		int start,

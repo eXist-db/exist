@@ -1,42 +1,36 @@
-/*
- * ElementOccurrences.java - Mar 5, 2003
- * 
- * @author wolf
- */
 package org.exist.util;
 
 /**
- * @author wolf
- *
- * To change this generated comment go to 
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * Class to count element and word frequencies.
+ * 
  */
 public class Occurrences implements Comparable {
 
-	private String term;
+	private Comparable term;
 	private int occurrences = 0;
-	
-	public Occurrences(String name) {
+
+	public Occurrences(Comparable name) {
 		term = name;
 	}
-	
-	public String getTerm() {
+
+	public Comparable getTerm() {
 		return term;
 	}
-	
+
 	public int getOccurrences() {
 		return occurrences;
 	}
-	
+
 	public void addOccurrences(int count) {
 		occurrences += count;
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(Object o) {
-		return term.compareTo(((Occurrences)o).term);
+		return term.compareTo(((Occurrences) o).term);
 	}
-
 }

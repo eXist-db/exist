@@ -898,7 +898,7 @@ public class InteractiveClient {
 				Occurrences[] elements = service.getIndexedElements(true);
 				for (int i = 0; i < elements.length; i++) {
 					System.out
-							.println(formatString(elements[i].getTerm(),
+							.println(formatString(elements[i].getTerm().toString(),
 									Integer.toString(elements[i]
 											.getOccurrences()), 50));
 				}
@@ -920,7 +920,7 @@ public class InteractiveClient {
 						.println("--------------------------------------------"
 								+ "-----------");
 				for (int i = 0; i < terms.length; i++) {
-					System.out.println(formatString(terms[i].getTerm(), Integer
+					System.out.println(formatString(terms[i].getTerm().toString(), Integer
 							.toString(terms[i].getOccurrences()), 50));
 				}
 			} else if (args[0].equalsIgnoreCase("xupdate")) {

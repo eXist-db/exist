@@ -46,7 +46,6 @@ public class LocalIndexQueryService implements IndexQueryService {
 			broker = pool.get(user);
 			return broker.scanIndexedElements(parent.collection, inclusive);
 		} catch (EXistException e) {
-			// TODO: handle exception
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				"database access error",

@@ -26,13 +26,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -67,6 +69,11 @@ import org.xmldb.api.base.XMLDBException;
  * 	<tr><td>password</td><td>Password for the user.</td></tr>
  * 	<tr><td>uri</td><td>A valid XML:DB URI leading to the root collection used to
  * 	process the request.</td></tr>
+ * 	<tr><td>encoding</td><td>The character encoding used for XQuery files.</td></tr>
+ * 	<tr><td>container-encoding</td><td>The character encoding used by the servlet
+ * 	container.</td></tr>
+ * 	<tr><td>form-encoding</td><td>The character encoding used by parameters posted
+ * 	from HTML forms.</td></tr>
  * </table>
  * 
  * User identity and password may also be specified through the HTTP session attributes
@@ -79,17 +86,18 @@ public class XQueryServlet extends HttpServlet {
 	public final static String DEFAULT_USER = "guest";
 	public final static String DEFAULT_PASS = "guest";
 	public final static String DEFAULT_URI = "xmldb:exist:///db";
-
 	public final static String DEFAULT_ENCODING = "UTF-8";
-
+	
 	public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 		
 	private String user = null;
 	private String password = null;
 	private String collectionURI = null;
-
+	
+	private String containerEncoding = null;
+	private String formEncoding = null;
 	private String encoding = null;
-
+	
 	private Map cache = new HashMap();
 	
 	/* (non-Javadoc)
@@ -104,14 +112,21 @@ public class XQueryServlet extends HttpServlet {
 		if(password == null)
 			password = DEFAULT_PASS;
 		collectionURI = config.getInitParameter("uri");
-
-		encoding = config.getInitParameter("encoding");
-		if(encoding == null) {
-			encoding = DEFAULT_ENCODING;
-		}
-
 		if(collectionURI == null)
 			collectionURI = DEFAULT_URI;
+		formEncoding = config.getInitParameter("form-encoding");
+		if(formEncoding == null)
+			formEncoding = DEFAULT_ENCODING;
+		log("form-encoding = " + formEncoding);
+		containerEncoding = config.getInitParameter("container-encoding");
+		if(containerEncoding == null)
+			containerEncoding = DEFAULT_ENCODING;
+		log("container-encoding = " + containerEncoding);
+		encoding = config.getInitParameter("encoding");
+		if(encoding == null)
+			encoding = DEFAULT_ENCODING;
+		log("encoding = " + encoding);
+		
 		try {
 			Class driver = Class.forName(DRIVER);
 			Database database = (Database)driver.newInstance();
@@ -143,8 +158,10 @@ public class XQueryServlet extends HttpServlet {
 	 */
 	protected void process(HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException {
-		PrintStream output = new PrintStream( response.getOutputStream() );
-		response.setContentType("text/html");
+		ServletOutputStream sout = response.getOutputStream();
+		PrintWriter output = 
+			new PrintWriter(new OutputStreamWriter(sout, formEncoding));
+		response.setContentType("text/html; charset=" + formEncoding);
 		response.addHeader( "pragma", "no-cache" );
 		response.addHeader( "Cache-Control", "no-cache" );
 		
@@ -186,7 +203,8 @@ public class XQueryServlet extends HttpServlet {
 			service.setModuleLoadPath(baseURI);
 			String prefix = RequestModule.PREFIX;
 			service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
-			service.declareVariable(prefix + ":request", new HttpRequestWrapper(request));
+			service.declareVariable(prefix + ":request", 
+					new HttpRequestWrapper(request, formEncoding, containerEncoding));
 			service.declareVariable(prefix + ":response", new HttpResponseWrapper(response));
 			service.declareVariable(prefix + ":session", new HttpSessionWrapper(session));
 						
@@ -205,8 +223,10 @@ public class XQueryServlet extends HttpServlet {
 				output.println(res.getContent().toString());
 			}
 		} catch (XMLDBException e) {
+			log(e.getMessage(), e);
 			sendError(output, e.getMessage(), e);
 		}
+		output.flush();
 	}
 	
 	private String getSessionAttribute(HttpSession session, String attribute) {
@@ -222,11 +242,11 @@ public class XQueryServlet extends HttpServlet {
 		return obj.toString();
 	}
 	
-	private void sendError(PrintStream out, String message, Exception e) {
+	private void sendError(PrintWriter out, String message, Exception e) {
 		out.print("<html><head>");
 		out.print("<title>XQueryServlet Error</title>");
 		out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></head>");
-		out.println("<body><h1>Error found</h1>");
+		out.print("<body><h1>Error found</h1>");
 		out.print("<div class='message'><b>Message:</b>");
 		out.print(message);
 		out.print("</div>");
@@ -236,7 +256,7 @@ public class XQueryServlet extends HttpServlet {
 		out.print("</div></body></html>");
 	}
 	
-	private void sendError(PrintStream out, String message, String description) {
+	private void sendError(PrintWriter out, String message, String description) {
 		out.print("<html><head>");
 		out.print("<title>XQueryServlet Error</title>");
 		out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></head>");

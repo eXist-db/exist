@@ -36,6 +36,7 @@ public class StringValue extends AtomicValue {
 
 	public StringValue(String stringValue, int type) throws XPathException {
 		this.type = type;
+        stringValue = expand(stringValue);
 		if(type == Type.STRING)
 			this.value = stringValue;
 		else if(type == Type.NORMALIZED_STRING)
@@ -47,7 +48,11 @@ public class StringValue extends AtomicValue {
 	}
 
 	public StringValue(String stringValue) {
-		value = stringValue;
+        try {
+            value = expand(stringValue);
+        } catch(XPathException e) {
+            value = stringValue;
+        }
 	}
 
 	private void checkType() throws XPathException {

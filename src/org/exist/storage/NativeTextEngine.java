@@ -493,6 +493,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		collections.add(collection);
 		final Lock lock = dbWords.getLock();
 		short collectionId;
+		byte section;
 		Collection current;
 		IndexQuery query;
 		ArrayList values;
@@ -527,6 +528,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					try {
 						while (is.available() > 0) {
 							docId = is.readInt();
+							section = is.readByte();
 							len = is.readInt();
 							is.skip(len);
 							oc.addOccurrences(len);

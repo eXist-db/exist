@@ -84,6 +84,7 @@ import org.exist.util.ReadOnlyException;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
 import org.exist.xquery.Constants;
+import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
@@ -296,37 +297,35 @@ public class NativeBroker extends DBBroker {
 		List collections =
 			inclusive ? collection.getDescendants(this, user) : new ArrayList();
 		collections.add(collection);
-		short collectionId, elementId;
-		ElementValue ref;
-		IndexQuery query;
-		ArrayList values;
-		Value val[];
-		String name;
-		Collection current;
 		TreeMap map = new TreeMap();
-		Occurrences oc;
 		VariableByteInputStream is;
 		int docId;
 		int len;
+		// required for namespace lookups
+		XQueryContext context = new XQueryContext(this);
 		final Lock lock = elementsDb.getLock();
-		Short id;
 		for (Iterator i = collections.iterator(); i.hasNext();) {
-			current = (Collection) i.next();
-			collectionId = current.getId();
-			ref = new ElementValue(ElementValue.ELEMENT, collectionId);
-			query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+			Collection current = (Collection) i.next();
+			short collectionId = current.getId();
+
+			ElementValue ref = new ElementValue(ElementValue.ELEMENT, collectionId);
+			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 			try {
 				lock.acquire();
-				values = elementsDb.findEntries(query);
+				ArrayList values = elementsDb.findEntries(query);
 				for (Iterator j = values.iterator(); j.hasNext();) {
-					val = (Value[]) j.next();
-					elementId = ByteConversion.byteToShort(val[0].getData(), 2);
-					id = new Short(elementId);
-					name = getSymbols().getName(elementId);
-					oc = (Occurrences) map.get(id);
+					Value val[] = (Value[]) j.next();
+					short elementId = ByteConversion.byteToShort(val[0].getData(), 3);
+					short nsSymbol = ByteConversion.byteToShort(val[0].getData(), 5);
+
+					String name = getSymbols().getName(elementId);
+					String namespace = nsSymbol == 0 ? "" : getSymbols().getNamespace(nsSymbol);
+					QName qname = new QName(name, namespace);
+					Occurrences oc = (Occurrences) map.get(qname);
 					if (oc == null) {
-						oc = new Occurrences(name);
-						map.put(id, oc);
+						qname.setPrefix(context.getPrefixForURI(namespace));
+						oc = new Occurrences(qname);
+						map.put(qname, oc);
 					}
 
 					is =
