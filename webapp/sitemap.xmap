@@ -589,7 +589,7 @@
 
                 <map:match pattern="index.xml">
                     <map:generate src="index.xml"/>
-                    <map:transform type="cinclude"/>
+                    <map:transform type="xinclude"/>
                     <map:transform src="stylesheets/doc2html-2.xsl"/>
 					<map:serialize type="html"/>
                 </map:match>
@@ -649,7 +649,7 @@
                 <map:match pattern="xadmin.xsp">
                     <map:act src="xmldb:exist:///db" type="xmldb-login">
                         <map:generate src="xadmin.xsp" type="serverpages"/>
-                        <map:transform type="cinclude">
+						<map:transform type="xinclude">
                             <map:parameter name="use-request-parameters" value="true"/>
                         </map:transform>
                         <map:transform src="stylesheets/doc2html-2.xsl">
@@ -659,7 +659,7 @@
                     </map:act>
                 <!-- no session found: display login form -->
                     <map:generate src="login.xml"/>
-                    <map:transform type="cinclude"/>
+					<map:transform type="xinclude"/>
                     <map:transform src="stylesheets/doc2html-2.xsl"/>
                     <map:serialize type="html"/>
                 </map:match>
