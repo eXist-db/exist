@@ -420,7 +420,6 @@ public class InteractiveClient {
 		}
 		Resource res;
 		for (int j = 0; j < childResources.length; i++, j++) {
-		    System.out.println("Loading " + childResources[j]);
 			res = current.getResource(childResources[j]);
 			perm = mgtService.getPermissions(res);
 			if (perm == null)
