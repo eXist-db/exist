@@ -851,8 +851,6 @@ public class BFile extends BTree {
 		}
 
 		public FreeSpace findFreeSpace(int needed) {
-			if(freeList.size() > 100)
-				System.out.println("free list: " + freeList.size());
 			FreeSpace freeSpace;
 			for (Iterator i = freeList.iterator(); i.hasNext();) {
 				freeSpace = (FreeSpace) i.next();
@@ -1642,7 +1640,7 @@ public class BFile extends BTree {
 			ph.setDataLength(0);
 			ph.setNextInChain(-1L);
 			ph.setLastInChain(-1L);
-			ph.setTID((short) - 1);
+			ph.setTID((short) -1);
 			ph.setRecordCount((short) 0);
 			setReferenceCount(0);
 			ph.setDirty(true);

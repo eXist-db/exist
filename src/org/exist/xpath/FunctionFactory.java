@@ -17,9 +17,11 @@ import org.exist.xpath.value.Type;
 public class FunctionFactory {
 
 	/**
-	 * Create a function call. This method handles special functions like 
-	 * document(), collection() or near(). It also optimizes some function 
-	 * calls.
+	 * Create a function call. 
+	 * 
+	 * This method handles all calls to built-in or user-defined
+	 * functions. It also deals with constructor functions and
+	 * optimizes selected function calls. 
 	 * 
 	 * @param pool
 	 * @param context
@@ -59,7 +61,6 @@ public class FunctionFactory {
 					near.setDistance(p1);
 				}
 				step = near;
-				parent.addPath(near);
 			}
 	
 			// ends-with(node-set, string)
@@ -78,7 +79,6 @@ public class FunctionFactory {
 					l.setValue(v);
 					GeneralComparison op =
 						new GeneralComparison(context, p0, e1, Constants.EQ);
-					parent.addPath(op);
 					step = op;
 				}
 			}
@@ -99,7 +99,6 @@ public class FunctionFactory {
 					l.setValue(v);
 					GeneralComparison op =
 						new GeneralComparison(context, p0, e1, Constants.EQ);
-					parent.addPath(op);
 					step = op;
 				}
 			}
@@ -120,17 +119,17 @@ public class FunctionFactory {
 					l.setValue(v);
 					GeneralComparison op =
 						new GeneralComparison(context, p0, e1, Constants.EQ);
-					parent.addPath(op);
 					step = op;
 				}
 			}
+		// Check if the namespace belongs to one of the schema namespaces.
+		// If yes, the function is a constructor function
 		} else if(uri.equals(StaticContext.SCHEMA_NS) || uri.equals(StaticContext.XPATH_DATATYPES_NS)) {
 			if(params.size() != 1)
 				throw new XPathException("Wrong number of arguments for constructor function");
 			PathExpr arg = (PathExpr)params.get(0);
 			int code= Type.getType(qname);
 			CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.EXACTLY_ONE);
-			parent.add(castExpr);
 			step = castExpr;
 		}
 		// None of the above matched: function is either a builtin function or
@@ -145,13 +144,11 @@ public class FunctionFactory {
 				Function func = Function.createFunction(context, clazz);
 				func.setArguments(params);
 				func.setParent(parent);
-				parent.addPath(func);
 				step = func;
 			} else {
 				UserDefinedFunction func = context.resolveFunction(qname);
 				FunctionCall call = new FunctionCall(context, func);
 				call.setArguments(params);
-				parent.addPath(call);
 				step = call;
 			}
 		}

@@ -81,6 +81,7 @@ public final class SystemFunctions {
 		"org.exist.xpath.functions.FunZeroOrOne",
 		"org.exist.xpath.functions.FunOneOrMore",
 		"org.exist.xpath.functions.FunExactlyOne",
+		"org.exist.xpath.functions.FunDoc",
 		"org.exist.xpath.functions.xmldb.XMLDBCollection",
 		"org.exist.xpath.functions.xmldb.XMLDBStore",
 		"org.exist.xpath.functions.xmldb.XMLDBRegisterDatabase",

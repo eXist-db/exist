@@ -167,7 +167,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
-					LOG.debug("appending text to fragment: " + text.getData());
+					//LOG.debug("appending text to fragment: " + text.getData());
 					fragment.appendChild(text);
 				} else {
 					Element last = (Element) stack.peek();
@@ -509,7 +509,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
-					LOG.debug("appending text to fragment: " + text.getData());
+					//LOG.debug("appending text to fragment: " + text.getData());
 					fragment.appendChild(text);
 				} else {
 					Element last = (Element) stack.peek();

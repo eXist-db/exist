@@ -22,68 +22,67 @@
  */
 package org.exist.xpath;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.SequenceType;
+import org.exist.xpath.value.Type;
 
 /**
- * A global variable declaration (with: declare variable). Variable bindings within
- * for and let expressions are handled by {@link org.exist.xpath.ForExpr} and
- * {@link org.exist.xpath.LetExpr}.
- * 
- * @author wolf
+ * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class VariableDeclaration extends AbstractExpression {
+public class FilteredExpression extends AbstractExpression {
 
-	String qname;
-	SequenceType sequenceType = null;
-	Expression expression;
-	
+	protected Expression expression;
+	protected List predicates = new ArrayList(2);
+
 	/**
 	 * @param context
 	 */
-	public VariableDeclaration(StaticContext context, String qname, Expression expr) {
+	public FilteredExpression(StaticContext context, Expression expr) {
 		super(context);
-		this.qname = qname;
 		this.expression = expr;
 	}
 
-	/**
-	 * Set the sequence type of the variable.
-	 * 
-	 * @param type
-	 */
-	public void setSequenceType(SequenceType type) {
-		this.sequenceType = type;
+	public void addPredicate(Predicate pred) {
+		predicates.add(pred);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(
-		DocumentSet docs,
-		Sequence contextSequence,
-		Item contextItem)
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
 		throws XPathException {
-		// declare the variable
-		Variable var = new Variable(QName.parse(context, qname));
+		if (contextItem != null)
+			contextSequence = contextItem.toSequence();
 		Sequence seq = expression.eval(docs, contextSequence, contextItem);
-		if(sequenceType != null) {
-			sequenceType.checkType(seq.getItemType());
-			sequenceType.checkCardinality(seq);
+		if (seq.getLength() == 0)
+			return seq;
+		Predicate pred;
+		Sequence result = seq;
+		for (Iterator i = predicates.iterator(); i.hasNext();) {
+			pred = (Predicate) i.next();
+			System.out.println("calling predicate with " + result.getLength());
+			result = pred.eval(docs, result);
 		}
-		var.setValue(seq);
-		context.declareVariable(var);
-		return Sequence.EMPTY_SEQUENCE;
+		return result;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#pprint()
 	 */
 	public String pprint() {
-		return "";
+		StringBuffer buf = new StringBuffer();
+		buf.append(expression.pprint());
+		for (Iterator i = predicates.iterator(); i.hasNext();) {
+			buf.append('[');
+			buf.append(((Expression) i.next()).pprint());
+			buf.append(']');
+		}
+		return buf.toString();
 	}
 
 	/* (non-Javadoc)
@@ -92,25 +91,26 @@ public class VariableDeclaration extends AbstractExpression {
 	public int returnsType() {
 		return expression.returnsType();
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.Expression#resetState()
+	 */
+	public void resetState() {
+		expression.resetState();
+		for (Iterator i = predicates.iterator(); i.hasNext();) {
+			Predicate pred = (Predicate) i.next();
+			pred.resetState();
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
-		return expression.getDependencies();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#getCardinality()
-	 */
-	public int getCardinality() {
-		return expression.getCardinality();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#resetState()
-	 */
-	public void resetState() {
-		expression.resetState();
+		int deps = Dependency.CONTEXT_SET;
+		for (Iterator i = predicates.iterator(); i.hasNext();) {
+			deps |= ((Predicate) i.next()).getDependencies();
+		}
+		return deps;
 	}
 }

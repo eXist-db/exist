@@ -5,7 +5,7 @@
 <xsp:page language="java"
 		xmlns:xsp="http://apache.org/xsp"
     	xmlns:xi="http://www.w3.org/2001/XInclude"
-    	xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+		xmlns:xdb="http://exist-db.org/xmldb/1.0"
         xmlns:log="http://apache.org/xsp/log/2.0">
 	
     <xsp:structure>
@@ -51,7 +51,7 @@
 
    <body>
 
-    <xmldb:driver class="org.exist.xmldb.DatabaseImpl"/>
+	<xdb:driver class="org.exist.xmldb.DatabaseImpl"/>
         
     <xsp:logic>
         response.addHeader("pragma", "no-cache");
@@ -79,17 +79,17 @@
         
                      <section title="View document">
                         <xml-source>
-                            <xmldb:collection>
-                                <xmldb:uri>collectionURI</xmldb:uri>
-                                <xmldb:user>user</xmldb:user>
-                                <xmldb:password>passwd</xmldb:password>
-                                <xmldb:get-document as="xml" >
-                                    <xmldb:name>docs[0]</xmldb:name>
-                                </xmldb:get-document>
-                                <xmldb:error>
-                                    <error>Error: <xmldb:get-error/></error>
-                                </xmldb:error>
-                            </xmldb:collection>
+							<xdb:collection>
+								<xdb:uri>collectionURI</xdb:uri>
+                                <xdb:user>user</xdb:user>
+                                <xdb:password>passwd</xdb:password>
+                                <xdb:get-document as="xml" >
+                                    <xdb:name>docs[0]</xdb:name>
+                                </xdb:get-document>
+                                <xdb:error>
+                                    <error>Error: <xdb:get-error/></error>
+                                </xdb:error>
+                            </xdb:collection>
                         </xml-source>
                           
                      </section>                  
@@ -99,17 +99,17 @@
                 if(subcoll != null &amp;&amp; subcoll.length() &gt; 0) {
                     <section title="Removing collection">
                     
-                        <xmldb:collection>
-                            <xmldb:uri>collectionURI</xmldb:uri>
-                            <xmldb:user>user</xmldb:user>
-                            <xmldb:password>passwd</xmldb:password>
-                            <xmldb:remove-collection>
-                                <xmldb:name>subcoll</xmldb:name>
-                            </xmldb:remove-collection>
-                            <xmldb:error>
-                                <error>Error: <xmldb:get-error/></error>
-                            </xmldb:error>
-                        </xmldb:collection>
+                        <xdb:collection>
+                            <xdb:uri>collectionURI</xdb:uri>
+                            <xdb:user>user</xdb:user>
+                            <xdb:password>passwd</xdb:password>
+                            <xdb:remove-collection>
+                                <xdb:name>subcoll</xdb:name>
+                            </xdb:remove-collection>
+                            <xdb:error>
+                                <error>Error: <xdb:get-error/></error>
+                            </xdb:error>
+                        </xdb:collection>
                         
                         <p>Removed collection: <xsp:expr>subcoll</xsp:expr>.</p>
                     </section>
@@ -117,22 +117,22 @@
                     String docs[] = request.getParameterValues("docs");
                     <section title="Removing document">
                 
-                        <xmldb:collection>
-                            <xmldb:uri>collectionURI</xmldb:uri>
-                            <xmldb:user>user</xmldb:user>
-                            <xmldb:password>passwd</xmldb:password>
+                        <xdb:collection>
+                            <xdb:uri>collectionURI</xdb:uri>
+                            <xdb:user>user</xdb:user>
+                            <xdb:password>passwd</xdb:password>
                             <xsp:logic>
                                 for(int i = 0; i &lt; docs.length; i++) {
-                                    <xmldb:remove-document>
-                                        <xmldb:name>docs[i]</xmldb:name>
-                                    </xmldb:remove-document>
+                                    <xdb:remove-document>
+                                        <xdb:name>docs[i]</xdb:name>
+                                    </xdb:remove-document>
                                     <p>Removed: <xsp:expr>docs[i]</xsp:expr>.</p>
                                 }
                             </xsp:logic>
-                            <xmldb:error>
-                                <error>Error: <xmldb:get-error/></error>
-                            </xmldb:error>
-                        </xmldb:collection>
+                            <xdb:error>
+                                <error>Error: <xdb:get-error/></error>
+                            </xdb:error>
+                        </xdb:collection>
                 
                     </section>
                 }
@@ -159,35 +159,35 @@
                 <p>Overwrite: <xsp:expr>overwrite</xsp:expr>.</p>
                 <p>Collection: <xsp:expr>rootCollection</xsp:expr>.</p>
                 
-                <xmldb:collection>
-                    <xmldb:uri>collectionURI</xmldb:uri>
-                    <xmldb:user>user</xmldb:user>
-                    <xmldb:password>passwd</xmldb:password>
-                    <xmldb:store>
-                        <xmldb:name>fileName</xmldb:name>
-                        <xmldb:source>source</xmldb:source>
-                        <xmldb:overwrite>overwrite</xmldb:overwrite>
-                    </xmldb:store>
-                    <xmldb:error>
-                        <error>Error: <xmldb:get-error/></error>
-                    </xmldb:error>
-                </xmldb:collection>
+                <xdb:collection>
+					<xdb:uri>collectionURI</xdb:uri>
+					<xdb:user>user</xdb:user>
+                    <xdb:password>passwd</xdb:password>
+                    <xdb:store>
+                        <xdb:name>fileName</xdb:name>
+						<xdb:source>source</xdb:source>
+						<xdb:overwrite>overwrite</xdb:overwrite>
+                    </xdb:store>
+					<xdb:error>
+                        <error>Error: <xdb:get-error/></error>
+                    </xdb:error>
+                </xdb:collection>
                         
                 </section>
 
             } else if(action.equals("create")) {
                 String subcoll = request.getParameter("subcoll");
-                <xmldb:collection>
-                    <xmldb:uri>collectionURI</xmldb:uri>
-                    <xmldb:user>user</xmldb:user>
-                    <xmldb:password>passwd</xmldb:password>
-                    <xmldb:create-collection>
-                        <xmldb:name>subcoll</xmldb:name>
-                    </xmldb:create-collection>
-                    <xmldb:error>
-                        <error>Error: <xmldb:get-error/></error>
-                    </xmldb:error>
-                </xmldb:collection>
+                <xdb:collection>
+                    <xdb:uri>collectionURI</xdb:uri>
+                    <xdb:user>user</xdb:user>
+                    <xdb:password>passwd</xdb:password>
+                    <xdb:create-collection>
+                        <xdb:name>subcoll</xdb:name>
+                    </xdb:create-collection>
+                    <xdb:error>
+                        <error>Error: <xdb:get-error/></error>
+                    </xdb:error>
+                </xdb:collection>
                 
             } else if(action.equals("add/update user")) {
                 String username = request.getParameter("username");
@@ -206,10 +206,10 @@
                     while(tok.hasMoreTokens()) {
                         newUser.addGroup(tok.nextToken());
                     }
-                    <xmldb:collection>
-                        <xmldb:uri>collectionURI</xmldb:uri>
-                        <xmldb:user>user</xmldb:user>
-                        <xmldb:password>passwd</xmldb:password>
+                    <xdb:collection>
+                        <xdb:uri>collectionURI</xdb:uri>
+                        <xdb:user>user</xdb:user>
+                        <xdb:password>passwd</xdb:password>
                         
                         <xsp:logic>
                             UserManagementService _service = (UserManagementService)
@@ -222,18 +222,18 @@
                                 session.setAttribute("password", password);
                         </xsp:logic>
                         
-                        <xmldb:error>
-                            <error><xmldb:get-error/></error>
-                        </xmldb:error>
-                    </xmldb:collection>
+                        <xdb:error>
+                            <error><xdb:get-error/></error>
+                        </xdb:error>
+                    </xdb:collection>
                 }
                 
             } else if(action.equalsIgnoreCase("remove user")) {
                 String username = request.getParameter("user");
-                <xmldb:collection>
-                    <xmldb:uri>collectionURI</xmldb:uri>
-                    <xmldb:user>user</xmldb:user>
-                    <xmldb:password>passwd</xmldb:password>
+                <xdb:collection>
+                    <xdb:uri>collectionURI</xdb:uri>
+                    <xdb:user>user</xdb:user>
+                    <xdb:password>passwd</xdb:password>
                     
                     <xsp:logic>
                         UserManagementService _service = (UserManagementService)
@@ -241,10 +241,10 @@
                         User user_ = _service.getUser( username );
                         _service.removeUser( user_ );
                     </xsp:logic>
-                    <xmldb:error>
-                        <error><xmldb:get-error/></error>
-                    </xmldb:error>
-                </xmldb:collection>
+                    <xdb:error>
+                        <error><xdb:get-error/></error>
+                    </xdb:error>
+                </xdb:collection>
             }
       }
      </xsp:logic>
@@ -277,21 +277,21 @@
                         <td width="70%" align="left">Collection</td>
                         <td width="30%" align="right">
                             <select name="collection" size="1">
-                                <xmldb:collection>
-                                    <xmldb:user>user</xmldb:user>
-                                    <xmldb:password>passwd</xmldb:password>
-                                    <xmldb:uri>collectionURI</xmldb:uri>
+                                <xdb:collection>
+                                    <xdb:user>user</xdb:user>
+                                    <xdb:password>passwd</xdb:password>
+                                    <xdb:uri>collectionURI</xdb:uri>
                                     <xsp:logic>
                                         ArrayList collections = new ArrayList();
-                                        getAllCollections(<xmldb:get-collection/>, collections);
+                                        getAllCollections(<xdb:get-collection/>, collections);
                                         for(Iterator i = collections.iterator(); i.hasNext(); ) {
                                             <option><xsp:expr>(String)i.next()</xsp:expr></option>
                                         }
                                     </xsp:logic>
-                                    <xmldb:error>
-                                        <error>Error: <xmldb:get-error/></error>
-                                    </xmldb:error>
-                                </xmldb:collection>
+                                    <xdb:error>
+                                        <error>Error: <xdb:get-error/></error>
+                                    </xdb:error>
+                                </xdb:collection>
                             </select>
                         </td>
                       </tr>
@@ -336,10 +336,10 @@ Cocoon are actually available (shakes.xsl may be missing in your collection).</s
                         <xsp:attribute name="value"><xsp:expr>rootCollection</xsp:expr></xsp:attribute>
                     </input>
                     
-                    <xmldb:collection>
-                        <xmldb:uri>collectionURI</xmldb:uri>
-                        <xmldb:user>user</xmldb:user>
-                        <xmldb:password>passwd</xmldb:password>
+                    <xdb:collection>
+                        <xdb:uri>collectionURI</xdb:uri>
+                        <xdb:user>user</xdb:user>
+                        <xdb:password>passwd</xdb:password>
                     
                         <table width="100%" border="0" cellspacing="0">
                             <tr bgcolor="#a0f0ff">
@@ -358,19 +358,19 @@ Cocoon are actually available (shakes.xsl may be missing in your collection).</s
                                                 </link>
                                             </td>
                                         </tr>                                        
-                                        <xmldb:subcollections> 
+                                        <xdb:subcollections> 
                                             <tr>
                                                 <td align="left">
                                                     <input type="radio" name="subcoll">
-                                                        <xsp:attribute name="value"><xsp:expr><xmldb:child-collection-name/></xsp:expr></xsp:attribute>
+                                                        <xsp:attribute name="value"><xsp:expr><xdb:child-collection-name/></xsp:expr></xsp:attribute>
                                                         <a style="font-family: Courier,monospace">
-                                                            <xsp:attribute name="href"><xsp:expr>link + <xmldb:child-collection-name/></xsp:expr></xsp:attribute>
-                                                            <xmldb:child-collection-name/>
+                                                            <xsp:attribute name="href"><xsp:expr>link + <xdb:child-collection-name/></xsp:expr></xsp:attribute>
+                                                            <xdb:child-collection-name/>
                                                         </a>
                                                     </input>
                                                 </td>
                                             </tr>                                        
-                                        </xmldb:subcollections>                                        
+                                        </xdb:subcollections>                                        
                                     </table>
                                 </td>
                             </tr>
@@ -380,7 +380,7 @@ Cocoon are actually available (shakes.xsl may be missing in your collection).</s
                                     
                                     <table width="100%" border="0">
                                         <xsp:logic>
-                                            int resourceCount = <xmldb:get-resource-count/>;
+                                            int resourceCount = <xdb:get-resource-count/>;
                                             
                                             for( int i = 0; i &lt; resourceCount; ) {
                                                 <tr>
@@ -389,14 +389,14 @@ Cocoon are actually available (shakes.xsl may be missing in your collection).</s
                                                             resourceCount; j++, i++ ) {
                                                             <td align="left">
                                                                 <input type="checkbox" name="docs">
-                                                                    <xsp:attribute name="value"><xmldb:resource-name><xmldb:count>i</xmldb:count></xmldb:resource-name></xsp:attribute>
+                                                                    <xsp:attribute name="value"><xdb:resource-name><xdb:count>i</xdb:count></xdb:resource-name></xsp:attribute>
                                                                     <a style="font-family: Courier,monospace">
                                                                         <xsp:attribute name="href"><xsp:expr>"xmldb" + rootCollection + "/" +
-                                                                                <xmldb:resource-name>
-                                                                                    <xmldb:count>i</xmldb:count>
-                                                                                </xmldb:resource-name>
+                                                                                <xdb:resource-name>
+                                                                                    <xdb:count>i</xdb:count>
+                                                                                </xdb:resource-name>
                                                                             </xsp:expr></xsp:attribute>
-                                                                        <xmldb:resource-name><xmldb:count>i</xmldb:count></xmldb:resource-name>
+                                                                        <xdb:resource-name><xdb:count>i</xdb:count></xdb:resource-name>
                                                                     </a>
                                                                 </input>
                                                             </td>
@@ -409,10 +409,10 @@ Cocoon are actually available (shakes.xsl may be missing in your collection).</s
                                 </td>
                             </tr>
                         </table>
-                        <xmldb:error>
-                            <error>Error: <xmldb:get-error/></error>
-                        </xmldb:error>
-                    </xmldb:collection>
+                        <xdb:error>
+                            <error>Error: <xdb:get-error/></error>
+                        </xdb:error>
+                    </xdb:collection>
                  </xsp:logic>
                  
                  <input type="hidden" name="page" value="edit"/>
@@ -447,10 +447,10 @@ Cocoon are actually available (shakes.xsl may be missing in your collection).</s
                 <form method="GET">
                     <xsp:attribute name="action"><xsp:expr>response.encodeURL(request.getRequestURI())</xsp:expr></xsp:attribute>
                     <input type="hidden" name="page" value="users"/>
-                    <xmldb:collection>
-                        <xmldb:uri>collectionURI</xmldb:uri>
-                        <xmldb:user>user</xmldb:user>
-                        <xmldb:password>passwd</xmldb:password>
+                    <xdb:collection>
+                        <xdb:uri>collectionURI</xdb:uri>
+                        <xdb:user>user</xdb:user>
+                        <xdb:password>passwd</xdb:password>
                         
                         <table width="100%" border="0">
                             <tr bgcolor="#a0f0ff">
@@ -549,7 +549,7 @@ Cocoon are actually available (shakes.xsl may be missing in your collection).</s
                                 </tr>
                             </xsp:logic>
                         </table>
-                    </xmldb:collection>
+                    </xdb:collection>
                 </form>
             </page>
        </tabbed-form>

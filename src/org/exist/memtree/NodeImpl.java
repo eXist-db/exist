@@ -315,7 +315,7 @@ public class NodeImpl implements Node, Item, Sequence {
 	 * @see org.exist.xpath.value.Item#toSequence()
 	 */
 	public Sequence toSequence() {
-		return null;
+		return this;
 	}
 
 	/* (non-Javadoc)

@@ -28,7 +28,6 @@ import org.exist.xpath.Constants;
 import org.exist.xpath.NodeTest;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.SequenceIterator;
-import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -303,7 +302,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	}
 
 	private final void realize() {
-		System.out.println("realizing ...");
 		if (realSet != null)
 			return;
 		realSet = getNodes();

@@ -74,7 +74,8 @@ public class FunNot extends Function {
 		Expression arg = getArgument(0);
 		if (Type.subTypeOf(arg.returnsType(), Type.NODE)) {
 			NodeSet result = new ExtArrayNodeSet();
-			result.addAll(contextSequence);
+			if(contextSequence.getLength() > 0)
+				result.addAll(contextSequence);
 			NodeProxy current;
 			if (inPredicate)
 				for (SequenceIterator i = result.iterate(); i.hasNext();) {
@@ -84,6 +85,7 @@ public class FunNot extends Function {
 			// evaluate argument expression
 			Sequence argSeq =
 				arg.eval(docs, contextSequence, contextItem);
+			LOG.debug("not argument: " + argSeq.getLength());
 			NodeProxy parent;
 			long pid;
 			ContextItem contextNode;

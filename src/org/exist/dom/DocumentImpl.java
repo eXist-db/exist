@@ -205,8 +205,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		++children;
 		childList.add(new Long(child.internalAddress));
 	}
-
+	
 	public void calculateTreeLevelStartPoints() throws EXistException {
+		calculateTreeLevelStartPoints(true);
+	}
+	
+	public void calculateTreeLevelStartPoints(boolean failOnError) throws EXistException {
 		treeLevelStartPoints = new long[maxDepth + 1];
 		// we know the start point of the root element (which is always 1)
 		// and the start point of the first non-root node (children + 1)

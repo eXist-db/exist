@@ -36,7 +36,6 @@ import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.xpath.functions.UserDefinedFunction;
 import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.Type;
 
 public class StaticContext {
 
@@ -81,6 +80,7 @@ public class StaticContext {
 	 * fragments
 	 */
 	private MemTreeBuilder builder = null;
+	private Stack fragmentStack = new Stack();
 
 	public StaticContext(DBBroker broker) {
 		this.broker = broker;
@@ -224,6 +224,7 @@ public class StaticContext {
 	 */
 	public Variable declareVariable(Variable var) throws XPathException {
 		variables.put(var.getQName(), var);
+		var.setStackPosition(variableStack.size());
 		return var;
 	}
 
@@ -329,6 +330,17 @@ public class StaticContext {
 		return builder;
 	}
 
+	protected void pushDocumentContext() {
+		if(builder != null)
+			fragmentStack.push(builder);
+		builder = null;
+	}
+	
+	protected void popDocumentContext() {
+		if(!fragmentStack.isEmpty())
+			builder = (MemTreeBuilder)fragmentStack.pop();
+	}
+	
 	/**
 	 * Set the base URI for the evaluation context.
 	 * 
@@ -392,6 +404,10 @@ public class StaticContext {
 		variables = (TreeMap) variableStack.pop();
 	}
 
+	public int getCurrentStackSize() {
+		return variableStack.size();
+	}
+	
 	/**
 	 * Load the default prefix/namespace mappings table and set up
 	 * internal functions.

@@ -70,8 +70,7 @@ public class FunExists extends Function {
 		throws XPathException {
 			if(contextItem != null)
 				contextSequence = contextItem.toSequence();
-			Sequence seq = getArgument(0).eval(docs, contextSequence, contextItem);
+			Sequence seq = getArgument(0).eval(docs, contextSequence);
 			return seq.getLength() == 0 ? BooleanValue.FALSE : BooleanValue.TRUE;
 	}
-
 }

@@ -35,6 +35,7 @@ import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
 /**
@@ -48,6 +49,7 @@ public abstract class BindingExpression extends AbstractExpression {
 		Logger.getLogger(BindingExpression.class);
 
 	protected String varName;
+	protected SequenceType sequenceType = null;
 	protected Expression inputSequence;
 	protected Expression returnExpr;
 	protected Expression whereExpr;
@@ -60,17 +62,26 @@ public abstract class BindingExpression extends AbstractExpression {
 	public void setVariable(String qname) {
 		varName = qname;
 	}
+	
+	/**
+	 * Set the sequence type of the variable (as specified in the "as" clause).
+	 * 
+	 * @param type
+	 */
+	public void setSequenceType(SequenceType type) {
+		this.sequenceType = type;
+	}
 
 	public void setInputSequence(Expression sequence) {
-		inputSequence = sequence;
+		this.inputSequence = sequence;
 	}
 
 	public void setReturnExpression(Expression expr) {
-		returnExpr = expr;
+		this.returnExpr = expr;
 	}
 
 	public void setWhereExpression(Expression expr) {
-		whereExpr = expr;
+		this.whereExpr = expr;
 	}
 
 	public void setOrderSpecs(OrderSpec specs[]) {
@@ -95,7 +106,6 @@ public abstract class BindingExpression extends AbstractExpression {
 		if (Type.subTypeOf(whereExpr.returnsType(), Type.NODE)) {
 			// if the where expression returns a node set, check the context
 			// node of each node in the set
-			LOG.debug("calling single: " + whereExpr);
 			NodeSet temp = whereExpr.eval(docs, contextSequence).toNodeSet();
 			NodeProxy current;
 			ContextItem contextNode;

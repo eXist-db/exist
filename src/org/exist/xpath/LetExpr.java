@@ -38,33 +38,34 @@ public class LetExpr extends BindingExpression {
 	public LetExpr(StaticContext context) {
 		super(context);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(
-		DocumentSet docs,
-		Sequence contextSequence,
-		Item contextItem)
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
 		throws XPathException {
 		context.pushLocalContext(false);
 		Variable var = new Variable(QName.parse(context, varName));
 		context.declareVariable(var);
 		Sequence val = inputSequence.eval(docs, null, null);
+		if(sequenceType != null) {
+			sequenceType.checkType(val.getItemType());
+			sequenceType.checkCardinality(val);
+		}
 		var.setValue(val);
-		
+
 		Sequence filtered = null;
-		if(whereExpr != null)
+		if (whereExpr != null)
 			filtered = applyWhereExpression(context, docs, null);
-		if(whereExpr != null && filtered.getLength() == 0)
+		if (whereExpr != null && filtered.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		Sequence returnSeq = null;
-		if(orderSpecs == null) 
+		if (orderSpecs == null)
 			returnSeq = returnExpr.eval(docs, filtered, null);
 		else {
-			if(filtered != null)
+			if (filtered != null)
 				val = filtered;
-			OrderedValueSequence ordered = 
+			OrderedValueSequence ordered =
 				new OrderedValueSequence(docs, orderSpecs, val.getLength());
 			ordered.addAll(val);
 			returnSeq = returnExpr.eval(docs, ordered, null);
@@ -80,6 +81,10 @@ public class LetExpr extends BindingExpression {
 		StringBuffer buf = new StringBuffer();
 		buf.append("let ");
 		buf.append(varName);
+		if (sequenceType != null) {
+			buf.append(" as ");
+			buf.append(sequenceType.toString());
+		}
 		buf.append(" := ");
 		buf.append(inputSequence.pprint());
 		if (whereExpr != null)

@@ -23,7 +23,6 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.Receiver;
 import org.exist.xpath.value.Item;
@@ -51,41 +50,43 @@ public class EnclosedExpr extends PathExpr {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence)
 	 */
-	public Sequence eval(
-		DocumentSet docs,
-		Sequence contextSequence,
-		Item contextItem)
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
 		throws XPathException {
 		long start = System.currentTimeMillis();
+		context.pushDocumentContext();
+		Sequence result = super.eval(docs, contextSequence, contextItem);
+		context.popDocumentContext();
 		MemTreeBuilder builder = context.getDocumentBuilder();
 		Receiver receiver = new Receiver(builder);
-		Sequence result =
-			super.eval(docs, contextSequence, contextItem);
 		start = System.currentTimeMillis();
 		try {
-			Item next;
+			SequenceIterator i = result.iterate();
+			Item next = i.nextItem();
+			boolean readNext = true;
 			StringBuffer buf = new StringBuffer();
-			for (SequenceIterator i = result.iterate(); i.hasNext();) {
-				next = i.nextItem();
-					// if item is an atomic value, collect the string values of all
-					// following atomic values and seperate them by a space. 
-					if(Type.subTypeOf(next.getType(), Type.ATOMIC)) {
-						if(buf.length() > 0)
-							buf.append(' ');
-						buf.append(next.getStringValue());
-					} else if(next instanceof NodeProxy){
-						if(buf.length() > 0) {
-							receiver.characters(buf);
-							buf.setLength(0);
-						}
-						next.toSAX(context.getBroker(), receiver);
+			while (next != null) {
+				// if item is an atomic value, collect the string values of all
+				// following atomic values and seperate them by a space. 
+				if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
+					if (buf.length() > 0)
+						buf.append(' ');
+					buf.append(next.getStringValue());
+					next = i.nextItem();
+				} else if (Type.subTypeOf(next.getType(), Type.NODE)) {
+					if (buf.length() > 0) {
+						receiver.characters(buf);
+						buf.setLength(0);
 					}
+					next.toSAX(context.getBroker(), receiver);
+					next = i.nextItem();
+				}
 			}
-			if(buf.length() > 0)
+			if (buf.length() > 0)
 				receiver.characters(buf);
 		} catch (SAXException e) {
-			throw new XPathException("Encountered SAX exception while serializing enclosed expression: " +
-				pprint());
+			throw new XPathException(
+				"Encountered SAX exception while serializing enclosed expression: "
+					+ pprint());
 		}
 		return result;
 	}

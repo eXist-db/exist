@@ -254,7 +254,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		if (ownerDocument.getTreeLevelOrder(level + 1) < children + size) {
 			// recompute the order of the tree
 			ownerDocument.setTreeLevelOrder(level + 1, children + size);
-			ownerDocument.calculateTreeLevelStartPoints();
+			ownerDocument.calculateTreeLevelStartPoints(false);
 			if (ownerDocument.reindex < 0 || ownerDocument.reindex > level + 1) {
 				ownerDocument.reindex = level + 1;
 			}

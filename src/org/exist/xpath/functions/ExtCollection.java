@@ -83,7 +83,8 @@ public class ExtCollection extends Function {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		docs.clear();
+		//docs.clear();
+		docs = new DocumentSet();
 		getParent().resetState();
 		for (int i = 0; i < getArgumentCount(); i++) {
 			Sequence seq =

@@ -1531,6 +1531,8 @@ public class NativeBroker extends DBBroker {
 
 	private void removeNodes(Iterator domIterator) {
 		final Value next = (Value) domIterator.next();
+		if(next == null)
+			return;
 		final byte[] data = next.data();
 		final short type = Signatures.getType(data[next.start()]);
 		switch (type) {

@@ -277,5 +277,13 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 			else
 				return new Integer(keys[idx++]);
 		}
+		
+		/* (non-Javadoc)
+		 * @see org.exist.util.hashtable.AbstractHashtable.HashtableIterator#remove()
+		 */
+		public void remove() {
+			values[idx] = REMOVED;
+			items--;
+		}
 	}
 }

@@ -74,7 +74,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public abstract boolean contains(DocumentImpl doc, long nodeId);
-	
+
 	/**
 	 * Check if this node set contains a node matching the document and
 	 * node-id of the given NodeProxy object.
@@ -153,23 +153,24 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param node
 	 */
 	public void remove(NodeProxy node) {
-		throw new RuntimeException("remove not implemented for class " + getClass().getName());
+		throw new RuntimeException(
+			"remove not implemented for class " + getClass().getName());
 	}
 
 	/**
 	 * Return the number of nodes contained in this node set.
 	 */
 	public abstract int getLength();
-	
+
 	public abstract Node item(int pos);
-	
+
 	/**
 	 * Get the node at position pos within this node set.
 	 * @param pos
 	 * @return
 	 */
 	public abstract NodeProxy get(int pos);
-	
+
 	/**
 	 * Get a node from this node set matching the document and node id of
 	 * the given NodeProxy.
@@ -178,7 +179,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public abstract NodeProxy get(NodeProxy p);
-	
+
 	/**
 	 * Get a node from this node set matching the document and node id.
 	 * 
@@ -326,7 +327,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			return hasChildrenInSet(al.get(0), mode, rememberContext);
 		}
 		NodeProxy n, p;
-//		long start = System.currentTimeMillis();
+		//		long start = System.currentTimeMillis();
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
 		DocumentImpl lastDoc = null;
 		int sizeHint = -1;
@@ -366,11 +367,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				}
 				break;
 		}
-//				LOG.debug(
-//					"getChildren found "
-//						+ result.getLength()
-//						+ " in "
-//						+ (System.currentTimeMillis() - start));
+		//				LOG.debug(
+		//					"getChildren found "
+		//						+ result.getLength()
+		//						+ " in "
+		//						+ (System.currentTimeMillis() - start));
 		result.sort();
 		return result;
 	}
@@ -434,7 +435,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		boolean includeSelf,
 		boolean rememberContext) {
 		NodeProxy n, p;
-//		long start = System.currentTimeMillis();
+		//		long start = System.currentTimeMillis();
 		DocumentImpl lastDoc = null;
 		int sizeHint = -1;
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
@@ -477,11 +478,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				break;
 		}
 		//result.sort();
-//				LOG.debug(
-//					"getDescendants found "
-//						+ result.getLength()
-//						+ " in "
-//						+ (System.currentTimeMillis() - start));
+		//				LOG.debug(
+		//					"getDescendants found "
+		//						+ result.getLength()
+		//						+ " in "
+		//						+ (System.currentTimeMillis() - start));
 		return result;
 	}
 
@@ -605,13 +606,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		int level = doc.getTreeLevel(gid);
 		// get parents id
 		long pid =
-			(gid - doc.getLevelStartPoint(level))
-				/ doc.getTreeLevelOrder(level)
+			(gid - doc.getLevelStartPoint(level)) / doc.getTreeLevelOrder(level)
 				+ doc.getLevelStartPoint(level - 1);
 		// get first childs id
 		long f_gid =
-			(pid - doc.getLevelStartPoint(level - 1))
-				* doc.getTreeLevelOrder(level)
+			(pid - doc.getLevelStartPoint(level - 1)) * doc.getTreeLevelOrder(level)
 				+ doc.getLevelStartPoint(level);
 		// get last childs id
 		long e_gid = f_gid + doc.getTreeLevelOrder(level);
@@ -629,10 +628,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * parents.
 	 *
 	 */
-	public NodeProxy parentWithChild(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent) {
+	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent) {
 		return parentWithChild(doc, gid, directParent, false, -1);
 	}
 
@@ -683,8 +679,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			else
 				// calculate parent's gid
 				gid =
-					(gid - doc.treeLevelStartPoints[level])
-						/ doc.treeLevelOrder[level]
+					(gid - doc.treeLevelStartPoints[level]) / doc.treeLevelOrder[level]
 						+ doc.treeLevelStartPoints[level
 						- 1];
 			if ((temp = get(doc, gid)) != null)
@@ -713,12 +708,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		boolean directParent,
 		boolean includeSelf,
 		int level) {
-		return parentWithChild(
-			proxy.doc,
-			proxy.gid,
-			directParent,
-			includeSelf,
-			level);
+		return parentWithChild(proxy.doc, proxy.gid, directParent, includeSelf, level);
 	}
 
 	/**
@@ -792,14 +782,17 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		long start = System.currentTimeMillis();
 		AVLTreeNodeSet r = new AVLTreeNodeSet();
 		NodeProxy l, p;
+		System.out.println("intersection: " + getLength() + " : " + other.getLength());
 		for (Iterator i = iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
 			if (other.contains(l)) {
+				System.out.println("adding " + l.gid);
 				r.add(l);
 			}
 		}
 		for (Iterator i = other.iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
+			System.out.println("checking " + l.gid);
 			if (contains(l)) {
 				if ((p = r.get(l)) != null) {
 					p.addMatches(l.match);
@@ -841,9 +834,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param rememberContext
 	 * @return
 	 */
-	public NodeSet getContextNodes(
-		NodeSet contextNodes,
-		boolean rememberContext) {
+	public NodeSet getContextNodes(NodeSet contextNodes, boolean rememberContext) {
 		NodeSet result = new ArraySet(getLength());
 		NodeProxy current, context, item;
 		ContextItem contextNode;
@@ -867,7 +858,28 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		}
 		return result;
 	}
-	
+
+	public NodeSet getContextNodes(boolean rememberContext) {
+		NodeProxy current, context;
+		ContextItem contextNode;
+		NodeSet result = new ArraySet(getLength());
+		for (Iterator i = iterator(); i.hasNext();) {
+			current = (NodeProxy) i.next();
+			contextNode = current.getContext();
+			while (contextNode != null) {
+				context = contextNode.getNode();
+				context.addMatches(current.match);
+				if(!result.contains(context)) {
+					if(rememberContext)
+						context.addContextNode(context);
+					result.add(context);
+				}
+				contextNode = contextNode.getNextItem();
+			}
+		}
+		return result;
+	}
+
 	/**
 	 * Always returns this.
 	 * 
