@@ -49,7 +49,6 @@ public class XMLDBSessionLoginAction extends ServiceableAction
 
         // check user account and store it to the session
         if ( session.getAttribute( "user" ) == null ) {
-        	System.out.println("no user ");
             // try to read parameters from sitemap
             user = param.getParameter( "user", null );
             passwd = param.getParameter( "password", null );
