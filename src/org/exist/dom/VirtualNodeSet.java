@@ -316,6 +316,11 @@ public class VirtualNodeSet extends NodeSet {
 		realize();
 		return realSet.get(doc, gid);
 	}
+	
+	public NodeProxy get(NodeProxy proxy) {
+		realize();
+		return realSet.get(proxy);
+	}
 
 	public Iterator iterator() {
 		realize();

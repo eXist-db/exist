@@ -74,5 +74,9 @@ public class EmptyNodeSet extends NodeSet {
     public NodeProxy get(DocumentImpl doc, long nodeId) {
 	    return null;
     }
+    
+    public NodeProxy get(NodeProxy proxy) {
+    	return null;
+    }
 
 }
