@@ -58,6 +58,13 @@ public class FloatValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
+	 */
+	public boolean effectiveBooleanValue() throws XPathException {
+		return value != 0.0f;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NumericValue#isNaN()
 	 */
 	public boolean isNaN() {
