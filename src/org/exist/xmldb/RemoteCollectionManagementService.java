@@ -38,7 +38,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
                 ioe );
         }
         RemoteCollection collection =
-            new RemoteCollection( client, (RemoteCollection) parent, null, name );
+            new RemoteCollection( client, (RemoteCollection) parent, name );
         parent.addChildCollection( collection );
         return collection;
     }

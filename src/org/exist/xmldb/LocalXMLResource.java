@@ -311,7 +311,7 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 	}
 
 	public String getId() throws XMLDBException {
-		return id < 0 ? docId : Long.toString(id);
+		return id < 2 ? docId : Long.toString(id);
 	}
 
 	public Collection getParentCollection() throws XMLDBException {

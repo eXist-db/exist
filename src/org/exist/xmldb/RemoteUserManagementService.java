@@ -299,6 +299,7 @@ public class RemoteUserManagementService implements UserManagementService {
 		if(((EXistResource)res).getPermissions() != null)
 			return ((EXistResource)res).getPermissions();
 		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
+		System.out.println("Retrieving permissions for " + path);
 		try {
 			Vector params = new Vector();
 			params.addElement(path);

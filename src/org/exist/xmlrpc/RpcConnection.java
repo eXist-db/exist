@@ -324,6 +324,68 @@ public class RpcConnection extends Thread {
 		}
 	}
 
+	Hashtable describeResource(User user, String resourceName)
+		throws EXistException, PermissionDeniedException {
+	    DBBroker broker = brokerPool.get(user);
+		try {
+		    DocumentImpl doc = (DocumentImpl) broker.getDocument(resourceName);
+			if (doc == null) {
+				LOG.debug("document " + resourceName + " not found!");
+				throw new EXistException("document not found");
+			}
+			if (!doc.getCollection().getPermissions().validate(user, Permission.READ)) {
+				throw new PermissionDeniedException("Not allowed to read collection");
+			}
+			Hashtable desc = new Hashtable();
+			Vector collections = new Vector();
+			Permission perms = doc.getPermissions();
+			Hashtable hash = new Hashtable(5);
+			hash.put("name", doc.getFileName());
+			hash.put("owner", perms.getOwner());
+			hash.put("group", perms.getOwnerGroup());
+			hash
+					.put("permissions", new Integer(perms
+							.getPermissions()));
+			hash.put("type",
+					doc.getResourceType() == DocumentImpl.BINARY_FILE
+							? "BinaryResource"
+							: "XMLResource");
+			return hash;
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
+	
+	public Hashtable describeCollection(User user, String rootCollection)
+	throws Exception {
+		DBBroker broker = brokerPool.get(user);
+		try {
+			if (rootCollection == null)
+				rootCollection = "/db";
+		
+			Collection collection = broker.getCollection(rootCollection);
+			if (collection == null)
+				throw new EXistException("collection " + rootCollection
+						+ " not found!");
+			Hashtable desc = new Hashtable();
+			Vector collections = new Vector();
+			if (collection.getPermissions().validate(user, Permission.READ)) {
+				for (Iterator i = collection.collectionIterator(); i.hasNext(); )
+					collections.addElement((String) i.next());
+			}
+			Permission perms = collection.getPermissions();
+			desc.put("collections", collections);
+			desc.put("name", collection.getName());
+			desc.put("created", Long.toString(collection.getCreationTime()));
+			desc.put("owner", perms.getOwner());
+			desc.put("group", perms.getOwnerGroup());
+			desc.put("permissions", new Integer(perms.getPermissions()));
+			return desc;
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
+	
 	public String getDocument(User user, String name, Hashtable parametri)
 			throws Exception {
 		long start = System.currentTimeMillis();
@@ -578,8 +640,10 @@ public class RpcConnection extends Thread {
 				name = "/db" + name;
 			Collection collection = broker.getCollection(name);
 			Vector vec = new Vector();
-			if (collection == null)
+			if (collection == null) {
+			    LOG.debug("collection " + name + " not found.");
 				return vec;
+			}
 			String resource;
 			int p;
 			for (Iterator i = collection.iterator(); i.hasNext(); ) {
@@ -593,6 +657,52 @@ public class RpcConnection extends Thread {
 		}
 	}
 
+	public int getResourceCount(User user, String collectionName)
+	throws EXistException, PermissionDeniedException {
+	    DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			if (!collectionName.startsWith("/"))
+				collectionName = '/' + collectionName;
+			if (!collectionName.startsWith("/db"))
+				collectionName = "/db" + collectionName;
+			Collection collection = broker.getCollection(collectionName);
+			return collection.getDocumentCount();
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
+	
+	public String createResourceId(User user, String collectionName)
+	throws EXistException, PermissionDeniedException {
+	    DBBroker broker = null;
+	    try {
+	        broker = brokerPool.get(user);
+	        if (!collectionName.startsWith("/"))
+	            collectionName = '/' + collectionName;
+	        if (!collectionName.startsWith("/db"))
+	            collectionName = "/db" + collectionName;
+	        Collection collection = broker.getCollection(collectionName);
+	        String id;
+			Random rand = new Random();
+			boolean ok;
+			do {
+				ok = true;
+				id = Integer.toHexString(rand.nextInt()) + ".xml";
+				// check if this id does already exist
+				if (collection.hasDocument(id))
+					ok = false;
+
+				if (collection.hasSubcollection(id))
+					ok = false;
+
+			} while (!ok);
+			return id;
+	    } finally {
+	        brokerPool.release(broker);
+	    }
+}
+	
 	public Hashtable listDocumentPermissions(User user, String name)
 			throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;

@@ -35,7 +35,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcClient;
@@ -64,23 +63,21 @@ public class RemoteCollection implements CollectionImpl {
 	protected String name;
 	protected Permission permissions = null;
 	protected RemoteCollection parent = null;
-	protected List resources = null;
 	protected XmlRpcClient rpcClient = null;
 	protected Properties properties = null;
-
-	public RemoteCollection(XmlRpcClient client, String host, String collection)
+ 
+	public RemoteCollection(XmlRpcClient client, String collection)
 		throws XMLDBException {
-		this(client, null, host, collection);
+		this(client, null, collection);
 	}
 
 	public RemoteCollection(
 		XmlRpcClient client,
 		RemoteCollection parent,
-		String host,
 		String collection)
 		throws XMLDBException {
-		this.name = collection;
 		this.parent = parent;
+		this.name = collection;
 		this.rpcClient = client;
 	}
 
@@ -88,12 +85,6 @@ public class RemoteCollection implements CollectionImpl {
 		if (childCollections == null)
 			readCollection();
 		childCollections.put(child.getName(), child);
-	}
-
-	protected void addResource(String id) throws XMLDBException {
-		if (childCollections == null)
-			readCollection();
-		resources.add(id);
 	}
 
 	public void close() throws XMLDBException {
@@ -107,24 +98,15 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public String createId() throws XMLDBException {
-		if (childCollections == null)
-			readCollection();
-		String id;
-		Random rand = new Random();
-		boolean ok;
-		do {
-			ok = true;
-			id = Integer.toHexString(rand.nextInt()) + ".xml";
-			// check if this id does already exist
-			for (int i = 0; i < resources.size(); i++)
-				if (((DocumentProxy) resources.get(i)).getName().equals(id))
-					ok = false;
-
-			if (childCollections.containsKey(id))
-				ok = false;
-
-		} while (!ok);
-		return id;
+	    Vector params = new Vector(1);
+	    params.addElement(getPath());
+	    try {
+			return (String)rpcClient.execute("createResourceId", params);
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
+		} catch (IOException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
+		}
 	}
 
 	public Resource createResource(String id, String type) throws XMLDBException {
@@ -163,12 +145,20 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public Collection getParentCollection() throws XMLDBException {
+	    if(parent == null && !name.equals("/db")) {
+	        String parentName = name.substring(0, name.lastIndexOf('/'));
+	        return new RemoteCollection(rpcClient, null, parentName);
+	    }
 		return parent;
 	}
 
 	public String getPath() throws XMLDBException {
-		if (parent == null)
-			return "/db";
+		if (parent == null) {
+		    if(name != null)
+		        return name;
+		    else
+		        return "/db";
+		}
 		return name;
 	}
 
@@ -182,33 +172,17 @@ public class RemoteCollection implements CollectionImpl {
 			properties = new Properties();
 		return properties;
 	}
-	
-	public Resource getResource(String id) throws XMLDBException {
-		if (childCollections == null)
-			readCollection();
-		int rlen = resources.size();
-		DocumentProxy dp;
-		for (int i = 0; i < rlen; i++) {
-			dp = (DocumentProxy) resources.get(i);
-			if (dp.getName().equals(id)) {
-				if(dp.getType() == null || dp.getType().equals("XMLResource")) {
-					RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, dp.getName(), null);
-					r.setPermissions(dp.getPermissions());
-					return r;
-				} else {
-					RemoteBinaryResource r = new RemoteBinaryResource(this, dp.getName());
-					r.setPermissions(dp.getPermissions());
-					return r;
-				}
-			}
-		}
-		return null;
-	}
 
 	public int getResourceCount() throws XMLDBException {
-		if (childCollections == null)
-			readCollection();
-		return resources.size();
+	    Vector params = new Vector(1);
+	    params.addElement(getPath());
+	    try {
+			return ((Integer)rpcClient.execute("getResourceCount", params)).intValue();
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
+		} catch (IOException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
+		}
 	}
 
 	public Service getService(String name, String version) throws XMLDBException {
@@ -278,13 +252,23 @@ public class RemoteCollection implements CollectionImpl {
 	}
 	
 	public String[] listResources() throws XMLDBException {
-		if (childCollections == null)
-			readCollection();
-		int lsize = resources.size();
-		String[] list = new String[lsize];
-		for (int i = 0; i < lsize; i++)
-			list[i] = ((DocumentProxy) resources.get(i)).getName();
-		return list;
+	    Vector params = new Vector();
+		params.addElement(getPath());
+		try {
+			Vector vec = (Vector)rpcClient.execute("getDocumentListing", params);
+			String[] resources = new String[vec.size()];
+			return (String[])vec.toArray(resources);
+		} catch (XmlRpcException xre) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+		} catch (IOException ioe) {
+			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "an io error occurred", ioe);
+		}
+//		List resources = readResources();
+//		int lsize = resources.size();
+//		String[] list = new String[lsize];
+//		for (int i = 0; i < lsize; i++)
+//			list[i] = ((DocumentProxy) resources.get(i)).getName();
+//		return list;
 	}
 
 	/* (non-Javadoc)
@@ -294,12 +278,45 @@ public class RemoteCollection implements CollectionImpl {
 		return listResources();
 	}
 	
-	private void readCollection() throws XMLDBException {
-		resources = new ArrayList();
-		childCollections = new HashMap();
-		Vector params = new Vector();
+	public Resource getResource(String name) throws XMLDBException {
+	    Vector params = new Vector();
+		params.addElement(getPath() + '/' + name);
+		Hashtable hash;
+		try {
+			hash = (Hashtable) rpcClient.execute("describeResource", params);
+		} catch (XmlRpcException xre) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+		} catch (IOException ioe) {
+			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "an io error occurred", ioe);
+		}
+		Permission perm;
+		String docName = (String) hash.get("name");
+		int p;	
+		if ((p = docName.lastIndexOf('/')) > -1)
+			docName = docName.substring(p + 1);
+		DocumentProxy proxy = new DocumentProxy(docName);
+		perm =
+			new Permission(
+				(String) hash.get("owner"),
+				(String) hash.get("group"),
+				((Integer) hash.get("permissions")).intValue());
+		proxy.setPermissions(perm);
+		proxy.setType((String)hash.get("type"));
+		if(proxy.getType() == null || proxy.getType().equals("XMLResource")) {
+			RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, proxy.getName(), null);
+			r.setPermissions(proxy.getPermissions());
+			return r;
+		} else {
+			RemoteBinaryResource r = new RemoteBinaryResource(this, proxy.getName());
+			r.setPermissions(proxy.getPermissions());
+			return r;
+		}
+	}
+	
+	private List readResources() throws XMLDBException {
+	    List resources = new ArrayList();
+	    Vector params = new Vector();
 		params.addElement(getPath());
-
 		Hashtable collection;
 		try {
 			collection = (Hashtable) rpcClient.execute("getCollectionDesc", params);
@@ -309,12 +326,6 @@ public class RemoteCollection implements CollectionImpl {
 			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "an io error occurred", ioe);
 		}
 		Vector documents = (Vector) collection.get("documents");
-		Vector collections = (Vector) collection.get("collections");
-		permissions =
-			new Permission(
-				(String) collection.get("owner"),
-				(String) collection.get("group"),
-				((Integer) collection.get("permissions")).intValue());
 		String docName;
 		String childName;
 		Hashtable hash;
@@ -336,11 +347,34 @@ public class RemoteCollection implements CollectionImpl {
 			proxy.setType((String)hash.get("type"));
 			resources.add(proxy);
 		}
+		return resources;
+	}
+	
+	private void readCollection() throws XMLDBException {
+		childCollections = new HashMap();
+		Vector params = new Vector();
+		params.addElement(getPath());
+
+		Hashtable collection;
+		try {
+			collection = (Hashtable) rpcClient.execute("describeCollection", params);
+		} catch (XmlRpcException xre) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+		} catch (IOException ioe) {
+			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "an io error occurred", ioe);
+		}
+		Vector collections = (Vector) collection.get("collections");
+		permissions =
+			new Permission(
+				(String) collection.get("owner"),
+				(String) collection.get("group"),
+				((Integer) collection.get("permissions")).intValue());
+		String childName;
 		for (int i = 0; i < collections.size(); i++) {
 			childName = (String) collections.elementAt(i);
 			try {
 				RemoteCollection child =
-					new RemoteCollection(rpcClient, this, null, getPath() + '/' + childName);
+					new RemoteCollection(rpcClient, this, getPath() + '/' + childName);
 				addChildCollection(child);
 			} catch (XMLDBException e) {
 			}
@@ -358,20 +392,9 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public void removeResource(Resource res) throws XMLDBException {
-		if (resources == null)
-			readCollection();
-		int pos = -1;
-		for (int i = 0; i < resources.size(); i++)
-			if (((DocumentProxy) resources.get(i)).getName().equals(res.getId())) {
-				pos = i;
-				break;
-			}
-		if (pos < 0)
-			throw new XMLDBException(
-				ErrorCodes.INVALID_RESOURCE,
-				"resource " + res.getId() + " not found");
 		Vector params = new Vector();
 		params.addElement(getPath() + '/' + res.getId());
+		System.out.println("Removing " + params.elementAt(0));
 
 		try {
 			rpcClient.execute("remove", params);
@@ -380,8 +403,6 @@ public class RemoteCollection implements CollectionImpl {
 		} catch (IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}
-
-		resources.remove(pos);
 	}
 
 	public Date getCreationTime() throws XMLDBException {
@@ -403,11 +424,6 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public void storeResource(Resource res) throws XMLDBException {
-		if (resources == null)
-			readCollection();
-		for (int i = 0; i < resources.size(); i++)
-			if (((DocumentProxy) resources.get(i)).getName().equals(res.getId()))
-				resources.remove(i);
 		Object content = res.getContent();
 		if (content instanceof File) {
 			File file = (File) content;
@@ -424,7 +440,6 @@ public class RemoteCollection implements CollectionImpl {
 			store((RemoteBinaryResource)res);
 		else
 			store((RemoteXMLResource)res);
-		resources.add(new DocumentProxy(res.getId(), res.getResourceType()));
 	}
 
 	private void store(RemoteXMLResource res) throws XMLDBException {

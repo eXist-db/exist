@@ -199,6 +199,25 @@ public interface RpcAPI {
 	Hashtable getCollectionDesc(User user, String rootCollection)
 		throws EXistException, PermissionDeniedException;
 
+	Hashtable describeCollection(User user, String collectionName)
+		throws EXistException, PermissionDeniedException;
+	
+	Hashtable describeResource(User user, String resourceName)
+		throws EXistException, PermissionDeniedException;
+	
+	/**
+	 * Returns the number of resources in the collection identified by
+	 * collectionName.
+	 * 
+	 * @param user
+	 * @param collection
+	 * @return
+	 * @throws EXistException
+	 * @throws PermissionDeniedException
+	 */
+	int getResourceCount(User user, String collectionName)
+		throws EXistException, PermissionDeniedException;
+	
 	/**
 	 *  Retrieve a single node from a document. The node is identified by it's
 	 *  internal id.
@@ -340,6 +359,9 @@ public interface RpcAPI {
 	Hashtable querySummary(User user, String xquery)
 		throws EXistException, PermissionDeniedException;
 
+	String createResourceId(User user, String collection)
+		throws EXistException, PermissionDeniedException;
+	
 	/**
 	 *  Parse an XML document and store it into the database. The document will
 	 *  later be identified by <code>docName</code>. Some xmlrpc clients seem to
