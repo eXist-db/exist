@@ -101,8 +101,6 @@ public class FunDoc extends Function {
         // relative URL: add the current base collection
 		if (path.charAt(0) != '/')
 			path = context.getBaseCollection() + '/' + path;
-
-        LOG.debug("Loading document: " + path);
         
 		// check if the loaded documents should remain locked
         boolean lockOnLoad = context.lockDocumentsOnLoad();
