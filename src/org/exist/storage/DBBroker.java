@@ -439,6 +439,8 @@ public abstract class DBBroker extends Observable {
 	
 	/**
 	 * Store a collection into the database.
+     * 
+     * @param collection to store
 	 */
 	public abstract void saveCollection(Collection collection)
 		throws PermissionDeniedException;
@@ -474,20 +476,49 @@ public abstract class DBBroker extends Observable {
 	}
 	
 	/**
-	 *  Store a document into the database. This method will save the document
-	 * metadata.
+	 * Store a document (descriptor) into the database
+     * (all metadata information which is returned by 
+     * {@link org.exist.dom.DocumentImpl#serialize()}).
 	 *
-	 *@param  doc
+	 * @param doc the document's metadata to store.
 	 */
 	public abstract void storeDocument(DocumentImpl doc);
 
+    /**
+     * Stores the document (descriptor) and it's parent collection.
+     * 
+     * @param doc the document to store
+     * @throws LockException if document is write locked
+     * @throws PermissionDeniedException if you don't have the right to do this
+     */
 	public abstract void updateDocument(DocumentImpl doc) 
 	throws LockException, PermissionDeniedException;
 	
+    /**
+     * Stores the given data under the given binary resource descriptor 
+     * (BinaryDocument).
+     * 
+     * @param blob the binary document descriptor
+     * @param data the document binary data
+     */
 	public abstract void storeBinaryResource(BinaryDocument blob, byte[] data);
 	
+    /**
+     * Retrieve the binary data stored under the resource descriptor
+     * BinaryDocument.
+     * 
+     * @param blob the binary document descriptor
+     * @return the document binary data
+     */
 	public abstract byte[] getBinaryResourceData(final BinaryDocument blob);
 	
+    /**
+     * Completely delete this binary document (descriptor and binary
+     * data).
+     * 
+     * @param blob the binary document descriptor
+     * @throws PermissionDeniedException if you don't have the right to do this
+     */
 	public abstract void removeBinaryResource(final BinaryDocument blob) throws PermissionDeniedException;
 
 	/**
@@ -534,6 +565,12 @@ public abstract class DBBroker extends Observable {
 	public abstract void copyResource(DocumentImpl doc, Collection destination, String newName) 
 	throws PermissionDeniedException, LockException;
 	
+    /**
+     * Defragment pages of this document. This will minimize the number of
+     * split pages.
+     * 
+     * @param doc to defrag
+     */
 	public abstract void defrag(DocumentImpl doc);
 	
 	/**
@@ -547,6 +584,13 @@ public abstract class DBBroker extends Observable {
 	
 	public abstract void consistencyCheck(DocumentImpl doc) throws EXistException;
 	
+    /**
+     * Sync dom and collection state data (pages) to disk.
+     * In case of {@link org.exist.storage.sync.Sync.MAJOR_SYNC}, sync all
+     * states (dom, collection, text and element) to disk.
+     * 
+     * @param syncEvent Sync.MAJOR_SYNC or Sync.MINOR_SYNC
+     */
 	public abstract void sync(int syncEvent);
 
 	/**
