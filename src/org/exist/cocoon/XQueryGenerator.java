@@ -45,6 +45,7 @@ import org.apache.excalibur.source.Source;
 import org.apache.excalibur.source.SourceValidity;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
+import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.CompiledExpression;
 import org.exist.xmldb.XQueryService;
 import org.exist.xquery.functions.request.RequestModule;
@@ -203,14 +204,16 @@ public class XQueryGenerator extends ServiceableGenerator {
 			String prefix = RequestModule.PREFIX;
 			service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
 			service.setModuleLoadPath(baseURI);
-			HttpServletRequest httpRequest = (HttpServletRequest) objectModel
-					.get(HttpEnvironment.HTTP_REQUEST_OBJECT);
-			service.declareVariable(prefix + ":request",
-					new CocoonRequestWrapper(request, httpRequest));
-			service.declareVariable(prefix + ":response",
-					new CocoonResponseWrapper(response));
-			service.declareVariable(prefix + ":session",
-					new CocoonSessionWrapper(session));
+			if(!((CollectionImpl)collection).isRemoteCollection()) {
+				HttpServletRequest httpRequest = (HttpServletRequest) objectModel
+						.get(HttpEnvironment.HTTP_REQUEST_OBJECT);
+				service.declareVariable(prefix + ":request",
+						new CocoonRequestWrapper(request, httpRequest));
+				service.declareVariable(prefix + ":response",
+						new CocoonResponseWrapper(response));
+				service.declareVariable(prefix + ":session",
+						new CocoonSessionWrapper(session));
+			}
 			declareParameters(service);
 			
 			String uri = inputSource.getURI();
