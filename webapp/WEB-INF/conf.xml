@@ -52,8 +52,8 @@
        -->
        
 	   <db-connection database="native" files="data" 
-		   buffers="8192" words_buffers="32768" collection_buffers="4096" 
-		   elements_buffers="4096" free_mem_min="10" 
+		   buffers="1024" words_buffers="8192" collection_buffers="1024" 
+		   elements_buffers="1024" free_mem_min="0" 
 		   pageSize="4096">
 
 		   <!-- Settings for the database connection pool
@@ -118,7 +118,7 @@
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
   <serializer enable-xinclude="true" enable-xsl="false"
-  	indent="false" add-exist-id="true"/>
+	  indent="false" add-exist-id="false"/>
   
   <!-- settings for the indexer
        Attributes:
@@ -202,10 +202,6 @@
 		<exclude path="//@id"/>
 	</index>
 
-	<index doctype="PLAY" alphanum="true" default="all">
-		<exclude path="//SPEECH"/>
-	</index>
-
     <entity-resolver>
 	    <catalog file="samples/xcatalog.xml"/>
     </entity-resolver>
@@ -236,7 +232,7 @@
 
     <!-- file appenders -->
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="logs/exist.log"/>
+	    <param name="File" value="logs/exist.log"/>
 	  <param name="MaximumFileSize" value="500000"/>
       <layout class="org.apache.log4j.PatternLayout">
         <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
@@ -258,12 +254,12 @@
     
     <root>
 		<appender-ref ref="exist.core"/>
-		<priority value="info"/>
+		<priority value="debug"/>
     </root>
 
     <category name="org.exist.xmldb" additivity="false">
 		<appender-ref ref="exist.xmldb"/>
-		<priority value="info"/>
+		<priority value="debug"/>
     </category>
     
     <!--

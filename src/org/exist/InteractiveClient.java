@@ -228,6 +228,8 @@ public class InteractiveClient {
 	protected Properties properties;
 	protected String[] resources = null;
 	protected ResourceSet result = null;
+	protected int filesCount = 0;
+	protected long bytesCount = 0;
 	protected boolean quiet = false;
 	protected boolean verbose = false;
 	protected boolean recurseDirs = false;
@@ -1025,6 +1027,8 @@ public class InteractiveClient {
 							"XMLResource");
 					document.setContent(temp[i]);
 					collection.storeResource(document);
+					bytesCount += temp[i].length();
+					++filesCount;
 					messageln(
 						"storing "
 							+ temp[i].length()
@@ -1052,8 +1056,15 @@ public class InteractiveClient {
 		File files[];
 		if (file.canRead()) {
 			if (file.isDirectory()) {
-				if (recurseDirs)
-					return findRecursive(current, file, path);
+				if (recurseDirs) {
+					bytesCount = 0;
+					fileCount = 0;
+					long start = System.currentTimeMillis();
+					boolean result = 
+						findRecursive(current, file, path);
+					System.out.println("storing " + fileCount + " files (" +
+						(bytesCount / 1024) + "K) took " + 
+						(System.currentTimeMillis() - start) + "ms.");
 				else
 					files = file.listFiles(new XMLFilenameFilter());
 			} else {

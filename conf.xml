@@ -52,7 +52,7 @@
        -->
        
        <db-connection database="native" files="webapp/WEB-INF/data" 
-		   buffers="512" words_buffers="8192" collection_buffers="1024" 
+		   buffers="1024" words_buffers="8192" collection_buffers="1024" 
 		   elements_buffers="1024" free_mem_min="0" 
 		   pageSize="4096">
 
@@ -200,10 +200,6 @@
 
 	<index attributes="true" alphanum="true" doctype="movie" default="all">
 		<exclude path="//@id"/>
-	</index>
-
-	<index doctype="PLAY" alphanum="true" default="all">
-		<exclude path="//SPEECH"/>
 	</index>
 
     <entity-resolver>
