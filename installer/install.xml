@@ -1,10 +1,14 @@
 <installation version="1.0">
     <info>
         <appname>eXist</appname>
-		<appversion>1.0-dev</appversion>
+		<appversion>1.0b2</appversion>
         <url>http://exist-db.org</url>
     </info>
-	<guiprefs height="430" resizable="yes" width="640"/>
+	<guiprefs height="450" resizable="yes" width="640">
+		<laf name="metouia">
+			<os family="unix"/>
+		</laf>
+	</guiprefs>
     <locale>
         <langpack iso3="eng"/>
     </locale>
@@ -33,7 +37,6 @@
                 <include name="client.properties"/>
                 <include name="backup.properties"/>
                 <include name="conf.xml"/>
-                <include name="log4j.xml"/>
                 <include name="build.xml"/>
             	<include name="LICENSE"/>
             	<include name="README"/>
@@ -55,7 +58,6 @@
 				<include name="wrapper/**"/>
 				<include name="jetty/**"/>
                 <exclude name="jetty/logs/*"/>
-                <exclude name="jetty/work/*"/>
 			</fileset>
             <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
             	<exclude name="**/*.dbx"/>
@@ -83,6 +85,7 @@
             </fileset>
             <file src="installer/build.sh" targetdir="$INSTALL_PATH"/>
             <file src="installer/build.bat" targetdir="$INSTALL_PATH"/>
+
 			<parsable type="shell" targetfile="$INSTALL_PATH/bin/client.sh"/>
 			<parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh"/>
 			<parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"/>
@@ -129,5 +132,5 @@
         		<exclude name="**/CVS/"/>
         	</fileset>
         </pack>
-    </packs>	
+    </packs>
 </installation>

@@ -4,7 +4,7 @@
 		<appversion>@version@</appversion>
         <url>http://exist-db.org</url>
     </info>
-	<guiprefs height="470" resizable="yes" width="640">
+	<guiprefs height="450" resizable="yes" width="640">
 		<laf name="metouia">
 			<os family="unix"/>
 		</laf>
@@ -37,7 +37,6 @@
                 <include name="client.properties"/>
                 <include name="backup.properties"/>
                 <include name="conf.xml"/>
-                <include name="log4j.xml"/>
                 <include name="build.xml"/>
             	<include name="LICENSE"/>
             	<include name="README"/>
@@ -86,6 +85,7 @@
             </fileset>
             <file src="installer/build.sh" targetdir="$INSTALL_PATH"/>
             <file src="installer/build.bat" targetdir="$INSTALL_PATH"/>
+
 			<parsable type="shell" targetfile="$INSTALL_PATH/bin/client.sh"/>
 			<parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh"/>
 			<parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"/>
@@ -132,5 +132,5 @@
         		<exclude name="**/CVS/"/>
         	</fileset>
         </pack>
-    </packs>	
+    </packs>
 </installation>
