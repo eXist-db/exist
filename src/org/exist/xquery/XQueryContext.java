@@ -814,10 +814,7 @@ public class XQueryContext {
 						if(!f.canRead())
 							throw new XPathException("cannot read module source from file at " + f.getAbsolutePath());
 					}
-					try {
-						location = new URI(f.toURL().toString()).toASCIIString();
-					} catch (Exception e1) {
-					}
+					location = f.toURI().toASCIIString();
 				}
 				LOG.debug("Loading module from " + location);
 				InputStreamReader reader;

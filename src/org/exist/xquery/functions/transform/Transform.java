@@ -168,19 +168,11 @@ public class Transform extends BasicFunction {
 		String base;
 		if(stylesheet.indexOf(':') < 0) {
 			File f = new File(stylesheet);
-			if(f.canRead())
-				try {
-					stylesheet = new URI(f.toURL().toString()).toASCIIString();
-				} catch (Exception e1) {
-				}
+			if(f.canRead()) stylesheet = f.toURI().toASCIIString();
 			else {
 				stylesheet = context.getBaseURI() + File.separatorChar + stylesheet;
 				f = new File(stylesheet);
-				if(f.canRead())
-					try {
-						stylesheet = f.toURL().toString();
-					} catch (MalformedURLException e2) {
-					}
+				if(f.canRead()) stylesheet = f.toURI().toASCIIString();
 			}
 		}
 		int p = stylesheet.lastIndexOf('/');

@@ -570,8 +570,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			broker = brokerPool.get(user);
 			String name = res.getDocumentId();
 			String uri = null;
-			if(res.file != null)
-				uri = new URI(res.file.toURL().toString()).toASCIIString();
+			if(res.file != null) uri = res.file.toURI().toASCIIString();
 			DocumentImpl newDoc;
 			Collection collection = broker.openCollection(path, Lock.WRITE_LOCK);
 			IndexInfo info = null;

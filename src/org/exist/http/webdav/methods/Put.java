@@ -65,12 +65,7 @@ public class Put extends AbstractWebDAVMethod {
 	public void process(User user, HttpServletRequest request,
 			HttpServletResponse response, String path) throws ServletException, IOException {
 		File tempFile = saveRequestContent(request);
-		String url;
-		try {
-			url = new URI(tempFile.toURL().toString()).toASCIIString();
-		} catch (URISyntaxException e1) {
-			url = tempFile.toString();
-		}
+		String url = tempFile.toURI().toASCIIString();
 		String contentType = request.getContentType();
 		DBBroker broker = null;
 		Collection collection = null;

@@ -340,12 +340,7 @@ public class RESTServer {
 					collection = broker.getOrCreateCollection(collectionName);
 					broker.saveCollection(collection);
 				}
-				String url;
-				try {
-					url = new URI(tempFile.toURL().toString()).toASCIIString();
-				} catch (URISyntaxException e1) {
-					url = tempFile.toString();
-				}
+				String url = tempFile.toURI().toASCIIString();
 				if(contentType == null || contentType.equalsIgnoreCase("text/xml")) {
 					DocumentImpl doc = collection.addDocument(broker, docPath,
 							new InputSource(url));
