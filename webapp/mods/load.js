@@ -90,3 +90,13 @@ function toggleCheckboxes() {
     for (var i = 0; i < l; i++)
     if (a[i].type == "checkbox") a[i].checked = true;
 }
+
+function exportData() {
+    document.mainForm.action = "export.xql";
+    document.mainForm.target = "_new";
+    document.mainForm.submit
+}
+
+function showError(message) {
+    alert(message)
+}

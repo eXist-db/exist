@@ -28,6 +28,30 @@
     }
 }
 
+#sidebar form li {
+    display: block;
+}
+
+#sidebar form a {
+    display: inline;
+}
+
+#sidebar fieldset {
+    margin: 8px 0 0 0;
+    border: none;
+    padding: 0;
+}
+
+#sidebar label {
+    font-size: 8pt;
+}
+
+#sidebar .button {
+    border: solid 1px #f66;
+    font-size: 8pt;
+    cursor: pointer;
+}
+
 #navigation {
     background: #fff;
     border: 1px solid #999;

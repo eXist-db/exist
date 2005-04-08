@@ -23,36 +23,74 @@ declare variable $bib:sort-import {
 };
 
 (: Removes a document :)
-declare function bib:remove($user, $pass) as element()
+declare function bib:remove() as element()?
 {
+    let $resources := request:request-parameter("r", ())
+    return
+        if(empty($resources)) then
+            <script>showError(&quot;Please select a resource to remove!&quot;)</script>
+        else
+            for $r as xs:integer in $resources
+            let $cached := request:get-session-attribute("cache"),
+                $rec := $cached[$r]
+            return (
+                xdb:remove(util:collection-name($rec), util:document-name($rec)),
+                request:set-session-attribute("cache", remove($cached, $r))
+            )
+};
+
+declare function bib:remove-folder() as element()? {
+    let $folder := request:request-parameter("folder", ())
+    return
+        if(not($folder)) then
+            <script>showError(&quot;Please select a folder to remove!&quot;)</script>
+        else
+            xdb:remove($folder)
+};
+
+declare function bib:create-folder($homeColl as xs:string) as element()? {
+    let $name := request:request-parameter("name", ()),
+         $parentParam := request:request-parameter("folder", ()),
+         $parent :=
+             if ($parentParam) then
+                 $parentParam
+             else
+                 $homeColl
+    return
+        let $newCol := xdb:create-collection($parent, $name)
+        return ()
+};
+
+declare function bib:folders($root as xs:string, $current as xs:string) as element() {
     <ul>
-    {
-    	let $resources := request:request-parameter("r", ())
-    	return
-    		if(empty($resources)) then
-    			<li>No resource selected!</li>
-    		else
-    		    for $r as xs:integer in $resources
-    		    let $cached := request:get-session-attribute("cache"),
-    		        $rec := $cached[$r]
-    		    return (
-    			    xdb:remove(util:collection-name($rec), util:document-name($rec)),
-    			    request:set-session-attribute("cache", remove($cached, $r)),
-    			    <li>Removed: {util:document-name($rec)}</li>
-    			)
-    }
+        {bib:scan-collection($root, $root, $current)}
     </ul>
 };
 
-declare function bib:folders($root as xs:string) as element() {
-    <ul>
-        <li><a href="?collection={$root}">{$root}</a></li>
-        {
-            for $child in xdb:get-child-collections($root)
-            order by $child return
-                <li><a href="?collection={$child}">{$child}</a></li>
-        }
-    </ul>
+declare function bib:scan-collection($home as xs:string, $collection as
+xs:string, $current as xs:string) as element()+ {
+    let $displayName := 
+        if ($home eq $collection) then
+            "All folders"
+        else
+            substring-after(substring-after($collection, $home), '/')
+    return (
+        <li>
+            <input type="radio" name="folder" value="{$collection}">
+            {
+                if ($collection eq $current) then
+                    attribute checked { "checked" }
+                else
+                    ()
+            }
+            </input>
+            <a href="?collection={$collection}">{$displayName}</a>
+        </li>,
+        for $child in xdb:get-child-collections($collection)
+        order by $child return
+            bib:scan-collection($home, concat($collection, '/', $child),
+            $current)
+    )
 };
 
 (: Get the XPath expression for the specified field :)
@@ -117,7 +155,7 @@ declare function bib:displayOverview($recs as item()*, $collection) as element()
         $expandAll := exists(request:request-parameter("expand", ())),
         $preload := if ($expandAll) then true() else $conf:preload
     return
-        <form name="mainForm" action="biblio.xq" method="GET">
+        <form name="mainForm" action="biblio.xq" method="POST">
             {display:navigation($count, $start, $end + 1, $max, $preload)}
             <table id="results">
                 <tr id="headings">
@@ -178,6 +216,7 @@ declare function bib:buildQuery($xpath as xs:string, $order as xs:string) as xs:
 declare function bib:reorder($order as xs:string, $collection as xs:string) as element()+
 {
     let $xpath := request:get-session-attribute("query"),
+        $l := util:log("debug", ("Cached: ", $xpath)),
         $recs := util:eval(bib:buildQuery($xpath, $order)),
         $x := request:set-session-attribute("cache", $recs)
     return
@@ -186,25 +225,25 @@ declare function bib:reorder($order as xs:string, $collection as xs:string) as e
 
 declare function bib:query($collection as xs:string) as element()+
 {
-    let $simpleQuery := boolean(request:request-parameter("query", ())),
+    let $simpleQuery := request:request-parameter("query", ()),
         $start := request:request-parameter("start", ()),
         $cached := request:get-session-attribute("cache"),
         $orderby := request:request-parameter("order", ""),
         $term1 :=
             if($simpleQuery) then
-                request:request-parameter("query", ())
+                $simpleQuery
             else
                 request:request-parameter("term1", ())
     return
         (: if parameter "start" is not set, execute a new query :)
-        if(empty($start) or empty($cached)) then
-	        let $xpath := bib:createXPath($collection, $term1),
+        if($term1) then
+            let $xpath := bib:createXPath($collection, $term1),
                 $l := util:log("debug", ("Query: ", $xpath)),
-		        $recs := util:eval(bib:buildQuery($xpath, $orderby)),
+                $recs := util:eval(bib:buildQuery($xpath, $orderby)),
                 $x := request:set-session-attribute("query", $xpath),
                 $r := request:set-session-attribute("cache", $recs)
-	        return
-		        bib:display($recs, $collection)
+	return
+                bib:display($recs, $collection)
         (: redisplay previous query results :)
         else if($orderby != "") then
             bib:reorder($orderby, $collection)
@@ -214,18 +253,26 @@ declare function bib:query($collection as xs:string) as element()+
         )
 };
 
-declare function bib:main($user as xs:string, $collection as xs:string)
-as element()+
-{
+declare function bib:process-action($collection as xs:string,
+$homeCol as xs:string) as element()* {
     let $action := request:request-parameter("action", "")
     return (
         util:log("debug", "checking action"),
         if($action eq "Remove") then
-            bib:remove($user, $pass)
+            bib:remove()
+        else if ($action eq "Create") then
+            bib:create-folder($homeCol)
+        else if ($action eq "Remove Folder") then
+            bib:remove-folder()
         else
-            util:log("debug", "no action"),
-        bib:query($collection)
+            util:log("debug", "no action")
     )
+};
+
+declare function bib:main($collection as xs:string)
+as element()+
+{
+    bib:query($collection)
 };
 
 declare function bib:get-collection($user as xs:string?) as xs:string {
@@ -250,7 +297,14 @@ declare function bib:get-collection($user as xs:string?) as xs:string {
 let $user := request:get-session-attribute("user"),
     $pass := request:get-session-attribute("password"),
     $url := request:encode-url(request:request-uri()),
-    $collection := bib:get-collection($user)
+    $collection := bib:get-collection($user),
+    $homeSess := request:get-session-attribute("root-collection"),
+    $homeCol :=
+        if ($homeSess) then $homeSess
+        else (
+            request:set-session-attribute("root-collection", $collection),
+            $collection
+        )
 return
 <html>
     <head>
@@ -273,7 +327,7 @@ return
                 </ul>
             </div>
         </div>
-
+        {bib:process-action($collection, $homeCol)}
         <!-- include the sidebar -->
         <div id="sidebar">
             <div class="block">
@@ -284,7 +338,7 @@ return
                             onkeypress="liveSearchStart()" />
                     </div>
                     <div id="LSResult" style="display: none;"><div id="LSShadow"></div></div>
-                    <input type="submit"/>
+                    <input type="submit" class="button"/>
                 </form>
                 <ul>
                     <li><a href="{$url}?show-form=true">Advanced Query</a></li>
@@ -293,9 +347,18 @@ return
         
             <div class="block">
                 <h3>Folders</h3>
-                <ul>
-                    <li>{bib:folders($collection)}</li>
-                </ul>
+                <form action="{$url}" method="GET" id="folders">
+                    {bib:folders($homeCol, $collection)}
+                    <fieldset>
+                        <label for="name">Create a new folder</label>
+                        <input type="text" name="name"/>
+                        <input class="button" type="submit" name="action" value="Create"/>
+                     </fieldset>
+                     <fieldset>
+                         <input class="button" type="submit" name="action"
+                         value="Remove Folder"/>
+                     </fieldset>
+                </form>
             </div>
             
             <div class="userinfo">
@@ -312,7 +375,7 @@ return
                     if($displayForm) then
                         conf:query-form($url, $collection)
                     else
-                        bib:main($user, $collection) 
+                        bib:main($collection) 
             }
         </div>
     </body>

@@ -151,10 +151,10 @@ declare function display:year($rec as element()) as xs:string? {
 };
 
 declare function display:titles($rec as element()) as node()* {
-    let $main := $rec/mods:titleInfo
+    let $main := $rec/mods:titleInfo[not(@type)]
     return (
         <span class="mods-title">
-            {$main/mods:title[not(@type)]/text()}
+            {$main/mods:title/text()}
         </span>
     )
 };
@@ -236,7 +236,7 @@ declare function display:navigation($hits as xs:int, $start as xs:int, $next as 
                 <li>
                     <input type="submit" name="action" value="Remove"/></li>
                 <li>
-                    <input type="submit" name="action" value="Export"/>
+                    <input type="submit" onClick="exportData()" name="action" value="Export"/>
                     <label for="format">Format: </label>
                     <select id="format" name="format">
                         <option>MODS</option>
