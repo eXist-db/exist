@@ -63,7 +63,8 @@ public class ElementImpl extends NamedNode implements Element {
     protected long firstChild = -1;
     protected Map namespaceMappings = null;
 	protected int indexType = ValueIndexSpec.NO_INDEX;
-	
+	protected int position = 0;
+    
     public ElementImpl() {
         super(Node.ELEMENT_NODE);
     }
@@ -108,6 +109,7 @@ public class ElementImpl extends NamedNode implements Element {
         gid = 0;
         children = 0;
         attributes = 0;
+        position = 0;
         if (namespaceMappings != null)
             namespaceMappings = null;
     }
@@ -512,6 +514,14 @@ public class ElementImpl extends NamedNode implements Element {
 		return indexType;
 	}
 	
+    public void setPosition(int pos) {
+        position = pos;
+    }
+    
+    public int getPosition() {
+        return position;
+    }
+    
     public boolean declaresNamespacePrefixes() {
         return namespaceMappings != null && namespaceMappings.size() > 0;
     }

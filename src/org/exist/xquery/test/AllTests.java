@@ -42,6 +42,7 @@ public class AllTests {
 		suite.addTestSuite(LexerTest.class); // jmv: Note: LexerTest needs /db/test created by XPathQueryTest
 		suite.addTestSuite(DeepEqualTest.class);
 		suite.addTestSuite(SeqOpTest.class);
+        suite.addTestSuite(XMLNodeAsXQueryParameterTest.class);
 //		suite.addTestSuite(XQueryUseCasesTest.class);
 		//$JUnit-END$
 		return suite;
