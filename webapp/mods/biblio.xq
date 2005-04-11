@@ -236,13 +236,13 @@ declare function bib:query($collection as xs:string) as element()+
                 request:request-parameter("term1", ())
     return
         (: if parameter "start" is not set, execute a new query :)
-        if($term1) then
+        if($term1 or $simpleQuery eq "" or empty($cached)) then
             let $xpath := bib:createXPath($collection, $term1),
                 $l := util:log("debug", ("Query: ", $xpath)),
                 $recs := util:eval(bib:buildQuery($xpath, $orderby)),
                 $x := request:set-session-attribute("query", $xpath),
                 $r := request:set-session-attribute("cache", $recs)
-	return
+	        return
                 bib:display($recs, $collection)
         (: redisplay previous query results :)
         else if($orderby != "") then

@@ -92,7 +92,7 @@ function toggleCheckboxes() {
 }
 
 function exportData() {
-    document.mainForm.action = "export.xql";
+    document.mainForm.action = "export.xq";
     document.mainForm.target = "_new";
     document.mainForm.submit
 }
