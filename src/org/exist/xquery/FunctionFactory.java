@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.QName;
@@ -168,9 +169,22 @@ public class FunctionFactory {
 				if(module.isInternalModule()) {
 					// for internal modules: create a new function instance from the class
 					FunctionDef def = ((InternalModule)module).getFunctionDef(qname, params.size());
-					if (def == null)
-						throw new XPathException(ast, "function " + qname.toString() + " ( namespace-uri = " + 
-							qname.getNamespaceURI() + ") is not defined");
+					if (def == null) {
+						List funcs = ((InternalModule)module).getFunctionsByName(qname);
+						if (funcs.size() == 0)
+							throw new XPathException(ast, "function " + qname.toString() + "() " + 
+								" is not defined in module namespace: " + qname.getNamespaceURI());
+						else {
+							StringBuffer buf = new StringBuffer();
+							buf.append("wrong number of parameters in call to function ").append(qname.toString());
+							buf.append(". Defined function signatures:\r\n");
+							for (Iterator i = funcs.iterator(); i.hasNext(); ) {
+								FunctionSignature sig = (FunctionSignature) i.next();
+								buf.append(sig.toString()).append("\r\n");
+							}
+							throw new XPathException(ast, buf.toString());
+						}
+					}
 					Function func = Function.createFunction(context, ast, def );
 					func.setArguments(params);
 					step = func;

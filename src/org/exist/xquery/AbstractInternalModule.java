@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -103,6 +104,18 @@ public abstract class AbstractInternalModule implements InternalModule {
 	public FunctionDef getFunctionDef(QName qname, int argCount) {
 		final FunctionId id = new FunctionId(qname, argCount);
 		return (FunctionDef)mFunctionMap.get(id);
+	}
+	
+	public List getFunctionsByName(QName qname) {
+		List funcs = new ArrayList();
+		for (Iterator i = mFunctionMap.values().iterator(); i.hasNext(); ) {
+			FunctionDef def = (FunctionDef) i.next();
+			FunctionSignature sig = def.getSignature();
+			if (sig.getName().compareTo(qname) == 0) {
+				funcs.add(sig);
+			}
+		}
+		return funcs;
 	}
 	
 	public Variable declareVariable(QName qname, Object value) throws XPathException {

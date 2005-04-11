@@ -114,7 +114,11 @@ public class XQuery {
             LOG.debug("Compilation took "  +  (System.currentTimeMillis() - start));
             return expr;
         } catch (RecognitionException e) {
-            throw new XPathException(e.getMessage(), e.getLine(), e.getColumn());
+			e.printStackTrace();
+			String msg = e.getMessage();
+			if (msg.endsWith(", found 'null'"))
+				msg = msg.substring(0, msg.length() - ", found 'null'".length());
+            throw new XPathException(msg, e.getLine(), e.getColumn());
         } catch (TokenStreamException e) {
             throw new XPathException(e.getMessage());
         }

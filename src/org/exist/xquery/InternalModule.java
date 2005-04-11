@@ -22,6 +22,8 @@
  */
 package org.exist.xquery;
 
+import java.util.List;
+
 import org.exist.dom.QName;
 
 /**
@@ -42,5 +44,14 @@ public interface InternalModule extends Module {
 	 * @param qname
 	 * @return
 	 */
-	public FunctionDef getFunctionDef(QName qname, int argCount);	
+	public FunctionDef getFunctionDef(QName qname, int argCount);
+	
+	/**
+	 * Returns all functions defined in this module matching the
+	 * specified qname.
+	 * 
+	 * @param qname
+	 * @return
+	 */
+	public List getFunctionsByName(QName qname);
 }
