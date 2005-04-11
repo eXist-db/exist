@@ -87,14 +87,18 @@ public class Configuration implements ErrorHandler {
     public Configuration(String file, String dbHome)
             throws DatabaseConfigurationException {
         try {
+            InputStream is = null;
             // first try to read the configuration from a file within the
             // classpath
-            InputStream is = Configuration.class.getClassLoader()
+            if (file == null) {
+                is = Configuration.class.getClassLoader()
                     .getResourceAsStream(file);
-            if (is != null) {
-                LOG.info("Reading configuration from classloader");
-                this.file = file;
-            } else {
+                if (is != null) {
+                    LOG.info("Reading configuration from classloader");
+                } else
+                    file = "conf.xml";
+            }
+            if (is == null) {
                 // try to read configuration from file. Guess the location if
                 // necessary
                 File f = new File(file);
