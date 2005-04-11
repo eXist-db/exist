@@ -394,9 +394,12 @@ public class DOMFile extends BTree implements Lockable {
         rec.offset += value.length;
         rec.page.getPageHeader().incRecordCount();
         rec.page.setDirty(true);
-        if(rec.page.getPageHeader().getCurrentTID() >= ItemId.DEFRAG_LIMIT &&
-        		doc != null)
-        	doc.triggerDefrag();
+        if(rec.page.getPageHeader().getCurrentTID() >= ItemId.DEFRAG_LIMIT) {
+            if (doc != null)
+                doc.triggerDefrag();
+            else
+                throw new RuntimeException("DOCUEMNT is null");
+        }
 //        LOG.debug(debugPageContents(rec.page));
         dataCache.add(rec.page);
         return StorageAddress.createPointer((int) rec.page.getPageNum(), tid);
@@ -467,7 +470,7 @@ public class DOMFile extends BTree implements Lockable {
 				if (rec.page.len + 10 > fileHeader.getWorkSize()) {
 					/* no room in the old page, append a new one */
 					DOMPage newPage = new DOMPage();
-					newPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getNextTID() - 1));
+					newPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getCurrentTID()));
                     newPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
                     newPage.getPageHeader().setNextDataPage(rec.page.getPageHeader().getNextDataPage());
                     LOG.debug("appending page after split: " + newPage.getPageNum());
@@ -505,7 +508,7 @@ public class DOMFile extends BTree implements Lockable {
             if(nextSplitPage.len + realLen + 12 > fileHeader.getWorkSize()) {
                 // not enough room in the split page: append a new page
                 DOMPage newPage = new DOMPage();
-                newPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getNextTID() - 1));
+                newPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getCurrentTID()));
                 newPage.getPageHeader().setPrevDataPage(nextSplitPage.getPageNum());
                 LOG.debug("creating new split page: " + newPage.getPageNum());
                 nextSplitPage.getPageHeader().setNextDataPage(newPage.getPageNum());
@@ -573,7 +576,7 @@ public class DOMFile extends BTree implements Lockable {
                 if(rec.page.len + 10 > fileHeader.getWorkSize()) {
                     // the link doesn't fit into the old page. Append a new page
                     DOMPage newPage = new DOMPage();
-                    newPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getNextTID() - 1));
+                    newPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getCurrentTID()));
                     newPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
                     newPage.getPageHeader().setNextDataPage(rec.page.getPageHeader().getNextDataPage());
                     LOG.debug("creating new page after split: " + newPage.getPageNum());
