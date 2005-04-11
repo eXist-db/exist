@@ -35,6 +35,7 @@ public class AllTests {
 		suite.addTest(new TestSuite(ConcurrentXUpdateTest.class));
 		suite.addTest(new TestSuite(ConcurrentQueryTest.class));
 		suite.addTest(new TestSuite(ComplexUpdateTest.class));
+        suite.addTest(new TestSuite(ValueIndexUpdateTest.class));
 		//$JUnit-END$
 		return suite;
 	}
