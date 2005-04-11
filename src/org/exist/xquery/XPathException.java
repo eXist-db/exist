@@ -118,6 +118,7 @@ public class XPathException extends Exception {
         StringBuffer buf = new StringBuffer();
         if(message == null)
             message = "";
+		message = message.replaceAll("\r?\n", "<br/>");
         buf.append("<div class=\"message\">");
         buf.append("<h2>").append(message);
         if (getLine() > 0) {
