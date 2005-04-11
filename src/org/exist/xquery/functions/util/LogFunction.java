@@ -23,15 +23,19 @@
 package org.exist.xquery.functions.util;
 
 import org.exist.dom.QName;
+import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -46,7 +50,7 @@ public class LogFunction extends BasicFunction {
 			"the log priority, e.g. 'debug' or 'warn'.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 	
@@ -62,24 +66,29 @@ public class LogFunction extends BasicFunction {
 		if(args[1].getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		String priority = args[0].getStringValue();
-		CharSequence message;
-		if(args[1].getLength() == 1)
-			message = args[1].getStringValue();
-		else {
-			StringBuffer buf = new StringBuffer();
-			for(SequenceIterator i = args[1].unorderedIterator(); i.hasNext(); ) {
-				buf.append(i.nextItem().getStringValue());
-			}
-			message = buf;
+		StringBuffer buf = new StringBuffer();
+		for(SequenceIterator i = args[1].unorderedIterator(); i.hasNext(); ) {
+			Item next = i.nextItem();
+			if (Type.subTypeOf(next.getType(), Type.NODE)) {
+				Serializer serializer = context.getBroker().getSerializer();
+				serializer.reset();
+				try {
+					buf.append(serializer.serialize((NodeValue) next));
+				} catch (SAXException e) {
+					throw new XPathException(getASTNode(), "An exception occurred while serializing node to log: " +
+							"e.getMessage()", e);
+				}
+			} else
+				buf.append(next.getStringValue());
 		}
 		if(priority.equalsIgnoreCase("error"))
-			LOG.error(message);
+			LOG.error(buf);
 		else if(priority.equalsIgnoreCase("warn"))
-			LOG.warn(message);
+			LOG.warn(buf);
 		else if(priority.equalsIgnoreCase("info"))
-			LOG.info(message);
+			LOG.info(buf);
 		else
-			LOG.debug(message);
+			LOG.debug(buf);
 		return Sequence.EMPTY_SEQUENCE;
 	}
 }
