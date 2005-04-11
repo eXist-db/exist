@@ -45,7 +45,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.ValueIndexSpec;
 import org.exist.util.Configuration;
-import org.exist.util.FastStringBuffer;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.XMLString;
 import org.w3c.dom.Element;
@@ -74,7 +73,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	protected DBBroker broker = null;
 	protected XMLString charBuf = new XMLString();
 	protected int currentLine = 0;
-//	protected StringBuffer currentPath = new StringBuffer();
 	protected NodePath currentPath = new NodePath();
 	
 	protected DocumentImpl document = null;
@@ -90,44 +88,34 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	protected Stack stack = new Stack();
 	protected Stack nodeContentStack = new Stack();
 	
-	protected boolean privileged = false;
 	protected String ignorePrefix = null;
 	protected ProgressIndicator progress;
 	protected boolean suppressWSmixed =false;
 
+    /* used to record the number of children of an element during 
+     * validation phase. later, when storing the nodes, we already
+     * know the child count and don't need to update the element
+     * a second time.
+     */
+    private int childCnt[] = new int[0x8000];
+//    private int childCnt[] = null;
+    
+    // the current position in childCnt
+    private int elementCnt = 0;
+    
 	// reusable fields
 	private TextImpl text = new TextImpl();
 	private Stack usedElements = new Stack();
-	private FastStringBuffer temp = new FastStringBuffer();
 
 	/**
 	 *  Create a new parser using the given database broker and
 	 * user to store the document.
 	 *
-	 *@param  broker              
-	 *@param  user                user identity
-	 *@param  replace             replace existing documents?
+	 *@param  broker
 	 *@exception  EXistException  
 	 */
 	public Indexer(DBBroker broker) throws EXistException {
-		this(broker, false);
-	}
-
-	/**
-	 *  Create a new parser using the given database broker and
-	 * user to store the document.
-	 *
-	 *@param  broker              
-	 *@param  user                user identity
-	 *@param  replace             replace existing documents?
-	 *@param  privileged		  used by the security manager to
-	 *							  indicate that it needs privileged
-	 *                            access to the db.
-	 *@exception  EXistException  
-	 */
-	public Indexer(DBBroker broker, boolean priv) throws EXistException {
 		this.broker = broker;
-		this.privileged = priv;
 		Configuration config = broker.getConfiguration();
 		String suppressWS =
 			(String) config.getProperty("indexer.suppress-whitespace");
@@ -146,30 +134,26 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			suppressWSmixed = temp.booleanValue();
 	}
 
-	public void setBroker(DBBroker broker) {
-		this.broker = broker;
-	}
-
 	public void setValidating(boolean validate) {
 		this.validate = validate;
 	}
-	
-	/**
-	 * Prepare the indexer for parsing a new document. This will
-	 * reset the internal state of the Indexer object.
-	 * 
-	 * @param doc
-	 */
-	public void setDocument(DocumentImpl doc) {
-		document = doc;
-		// reset internal fields
-		level = 0;
-		currentPath.reset();
-		stack = new Stack();
-		nsMappings.clear();
-		rootNode = null;
-	}
-	
+
+    /**
+     * Prepare the indexer for parsing a new document. This will
+     * reset the internal state of the Indexer object.
+     *
+     * @param doc
+     */
+    public void setDocument(DocumentImpl doc) {
+        document = doc;
+        // reset internal fields
+        level = 0;
+        currentPath.reset();
+        stack = new Stack();
+        nsMappings.clear();
+        rootNode = null;
+    }
+    
 	/**
 	 * Set the document object to be used by this Indexer. This
 	 * method doesn't reset the internal state.
@@ -208,8 +192,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			if (charBuf != null && charBuf.length() > 0) {
 				final XMLString normalized = charBuf.normalize(normalize);
 				if (normalized.length() > 0) {
-					//TextImpl text =
-					//    new TextImpl( normalized );
 					text.setData(normalized);
 					text.setOwnerDocument(document);
 					last.appendChildInternal(text);
@@ -237,6 +219,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			setChanged();
 			notifyObservers(progress);
 		}
+//        LOG.debug("elementCnt = " + childCnt.length);
 	}
 
 	public void endElement(String namespace, String name, String qname) {
@@ -273,9 +256,11 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				if (document.getTreeLevelOrder(level) < last.getChildCount()) {
 					document.setTreeLevelOrder(level, last.getChildCount());
 				}
+                if (childCnt != null)
+                    setChildCount(last);
 			} else {
 				document.setOwnerDocument(document);
-				if (last.getChildCount() > 0) {
+				if (childCnt == null && last.getChildCount() > 0) {
 					broker.update(last);
 				}
 			}
@@ -286,6 +271,18 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			}
 		}
 	}
+
+    /**
+     * @param last
+     */
+    private void setChildCount(final ElementImpl last) {
+        if (last.getPosition() >= childCnt.length) {
+            int n[] = new int[childCnt.length * 2];
+            System.arraycopy(childCnt, 0, n, 0, childCnt.length);
+            childCnt = n;
+        }
+        childCnt[last.getPosition()] = last.getChildCount();
+    }
 
 	public void endEntity(String name) {
 	}
@@ -402,6 +399,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				document.setDocumentType(dt);
 			}
 			document.setChildCount(0);
+            elementCnt = 0;
 		}
 	}
 
@@ -471,8 +469,11 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
 			stack.push(node);
 			currentPath.addComponent(qn);
-//			currentPath.append('/').append(qname);
+
+            node.setPosition(elementCnt++);
 			if (!validate) {
+                if (childCnt != null)
+                    node.setChildCount(childCnt[node.getPosition()]);
 				storeElement(node);
 			}
 		} else {
@@ -490,8 +491,11 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
 			stack.push(node);
 			currentPath.addComponent(qn);
-//			currentPath.append('/').append(qname);
+
+            node.setPosition(elementCnt++);
 			if (!validate) {
+                if (childCnt != null)
+                    node.setChildCount(childCnt[node.getPosition()]);
 				storeElement(node);
 			}
 			document.appendChild(node);
@@ -553,6 +557,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
 	private void storeElement(ElementImpl node) {
 		broker.store(node, currentPath);
+        node.setChildCount(0);
 		if (ValueIndexSpec.hasRangeIndex(node.getIndexType())) {
 			XMLString contentBuf = new XMLString();
 			nodeContentStack.push(contentBuf);
@@ -569,10 +574,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			return;
 		}
 		nsMappings.put(prefix, uri);
-	}
-
-	public void prepareForStore() {
-
 	}
 
 	public void warning(SAXParseException e) throws SAXException {
