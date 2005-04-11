@@ -61,6 +61,11 @@
                 <map:serialize type="html"/>
             </map:match>
             
+            <map:match pattern="export.xq">
+                <map:generate src="export.xq" type="xquery"/>
+                <map:serialize encoding="UTF-8" type="xml"/>
+            </map:match>
+            
 			<map:match pattern="*.xq">
                 <map:generate src="{1}.xq" type="xquery">
                     <map:parameter name="file" value="{1}.xq"/>

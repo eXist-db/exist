@@ -154,7 +154,7 @@ declare function display:titles($rec as element()) as node()* {
     let $main := $rec/mods:titleInfo[not(@type)]
     return (
         <span class="mods-title">
-            {$main/mods:title/text()}
+            {$main/mods:title[not(@type)]/text()}
         </span>
     )
 };
