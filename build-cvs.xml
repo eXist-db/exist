@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="eXist CVS" default="update" basedir=".">
+    <description>eXist CVS updater</description>
+
+    <property name="ws.dir" location="."/>
+
+    <target name="checkout">
+        <cvs cvsRoot=":pserver:anonymous@cvs.sourceforge.net:/cvsroot/exist"
+                package="eXist-1.0"
+                dest="${ws.dir}" noexec="true" />
+    </target>
+    
+    <target name="update">
+        <cvs dest="${ws.dir}" command="update"/>
+    </target>
+    
+    <target name="diff">
+        <cvs command="-q diff -u -N" output="patch.txt"/>
+    </target>
+    
+</project>  
+
