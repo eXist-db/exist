@@ -90,7 +90,6 @@ public class LetExpr extends BindingExpression {
 		context.declareVariable(var);
 		clearContext(in);
 		var.setValue(in);
-		LOG.debug(var.getQName().toString() + " = " + in.getLength());
         var.checkType();
         
 		Sequence filtered = null;
