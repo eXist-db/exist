@@ -176,7 +176,7 @@ public class Transform extends BasicFunction {
 			if(f.canRead()) 
 				stylesheet = f.toURI().toASCIIString();
 			else {
-				stylesheet = context.getBaseURI() + File.separatorChar + stylesheet;
+				stylesheet = context.getModuleLoadPath() + File.separatorChar + stylesheet;
 				f = new File(stylesheet);
 				if(f.canRead()) stylesheet = f.toURI().toASCIIString();
 			}
