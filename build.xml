@@ -102,7 +102,7 @@
     <!-- =================================================================== -->
     <!-- Compiles the source code                                            -->
     <!-- =================================================================== -->
-    <target depends="prepare" name="compile">
+    <target depends="prepare" name="compile" description="Compiles the source code">
         <mkdir dir="${build}"/>
         <echo message="Compiling with Java ${ant.java.version}, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         <javac debug="${build.debug}" deprecation="${build.deprecation}" 
@@ -124,7 +124,7 @@
 	<!-- =================================================================== -->
 	<!-- Compile the Tomcat realm                                            -->
     <!-- =================================================================== -->
-	<target name="compile-tomcat-realm" if="catalina.present">
+	<target name="compile-tomcat-realm" if="catalina.present" description="Compile the Tomcat realm">
 		<echo message="Compiling Tomcat Realm"/>
 		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
 			destdir="${build.classes}" encoding="UTF-8"
@@ -179,7 +179,7 @@
     <!-- ================================================================== -->
     <!-- Create samples                                                     -->
     <!-- ================================================================== -->
-    <target depends="prepare" name="samples">
+    <target depends="prepare" name="samples" description="Create samples">
 		<delete failonerror="false" dir="${build}/examples"/>
         <mkdir dir="${build}/examples"/>
 		<javac debug="${build.debug}" 
@@ -198,7 +198,7 @@
     <!-- =================================================================== -->
     <!-- Create jar file          										   -->
     <!-- =================================================================== -->
-    <target name="jar" depends="compile, compile-tomcat-realm">
+    <target name="jar" depends="compile, compile-tomcat-realm" description="Create eXist jar files">
 		<filter token="version" value="${project.version}"/>
 		<filter token="build" value="${DSTAMP}"/>
 		<copy file="${src}/CatalogManager.properties" todir="${build.classes}"/>
@@ -275,17 +275,17 @@
     <!-- ================================================================== -->
     <!-- Build all                                                                                                                                        -->
     <!-- ================================================================== -->
-    <target name="all" depends="jar"/>
+    <target name="all" depends="jar" description="Build all"/>
 
 	<!-- ================================================================== -->
 	<!-- Rebuild all                                                        -->
 	<!-- ================================================================== -->
-	<target name="rebuild" depends="clean,all,wrapper"/>
+	<target name="rebuild" depends="clean,all,wrapper" description="Rebuild all"/>
 
     <!-- ================================================================== -->
     <!-- Run JUnit tests                                                    -->
 	<!-- ================================================================== -->
-	<target name="test" depends="test-local,test-concurrent,test-remote"/>
+	<target name="test" depends="test-local,test-concurrent,test-remote" description="Run jUnit tests"/>
 
     <target name="test-local" depends="jar">
         <delete failonerror="false">
@@ -386,7 +386,7 @@
     <!-- ================================================================== -->
     <!-- Create javadoc                                                     -->
     <!-- ================================================================== -->
-    <target depends="prepare" name="javadocs">
+    <target depends="prepare" name="javadocs" description="Create javadoc">
 		<mkdir dir="${build.src}"/>
 		<antcall target="copy-xapi"/>
 
@@ -425,7 +425,7 @@
     <!-- ================================================================== -->
     <!-- Cleanup                                                            -->
     <!-- ================================================================== -->
-    <target name="clean">
+    <target name="clean" description="Cleanup">
     	<echo message="-------------------------"/>
         <echo message="Cleaning"/>
         <echo message="-------------------------"/>
@@ -533,7 +533,7 @@
 	<!-- ================================================================== -->
 	<!-- Create .war file                                                   -->
 	<!-- ================================================================== -->
-    <target name="dist-war" depends="webapps">
+    <target name="dist-war" depends="webapps" description="Create war file">
         <war basedir="${webapp.dir}"
             destfile="${dist}/${project.name}-${project.version}.war"
             webxml="webapp\WEB-INF\web.xml">
@@ -705,13 +705,13 @@
     <!-- ================================================================== -->
     <!-- Create dist-zip                                                    -->
     <!-- ================================================================== -->
-    <target depends="dist" name="dist-zip">
+    <target depends="dist" name="dist-zip" description="Create dist-zip">
         <zip basedir="${dist}" compress="true"
             excludes="${project.name}-${project.version}.zip"
             zipfile="${dist}/${project.name}-${project.version}.zip"/>
     </target>
    
-    <target depends="dist" name="snapshot">
+    <target depends="dist" name="snapshot" description="Create snapshot zip">
 		<tstamp/>
 		<zip basedir="${dist}" compress="true"
 			excludes="${project.name}-${project.version}.zip"
@@ -721,7 +721,7 @@
     <!-- ================================================================== -->
     <!-- Create dist-tgz                                                    -->
     <!-- ================================================================== -->
-    <target depends="dist" name="dist-tgz">
+    <target depends="dist" name="dist-tgz" description="Create dist-tgz">
         <property name="dist.name" value="${project.name}-${project.version}"/>
         <delete file="${dist}/${dist.name}.tar.gz"/>
         <delete file="${dist}/${dist.name}.tar"/>
@@ -743,7 +743,7 @@
 		<copy file="installer/install.xml.tmpl" tofile="installer/install.xml" filtering="true"/>
 	</target>
 		
-	<target depends="prepare-installer" name="installer">
+	<target depends="prepare-installer" name="installer" description="Create installer">
 		<echo message="Calling IzPack to create installer ..."/>
 		<izpack input="installer/install.xml"
 			output="installer/${project.name}-${project.version}.jar"
@@ -751,7 +751,7 @@
 			installerType="standard"/>
 	</target>
 
-	<target depends="prepare-installer" name="snapshot-installer">
+	<target depends="prepare-installer" name="snapshot-installer" description="Create snapshot installer">
 		<echo message="Calling IzPack to create installer ..."/>
 		<izpack input="installer/install.xml"
 			output="installer/${project.name}-snapshot-${DSTAMP}.jar"
