@@ -49,12 +49,13 @@ public class LetExpr extends BindingExpression {
         // Save the local variable stack
 		LocalVariable mark = context.markLocalVariables();
 		
+		inputSequence.analyze(this, flags);
+		
 		// Declare the iteration variable
         LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
         inVar.setSequenceType(sequenceType);
 		context.declareVariable(inVar);
 		
-		inputSequence.analyze(this, flags);
 		if(whereExpr != null) {
 		    whereExpr.analyze(this, flags | IN_PREDICATE | IN_WHERE_CLAUSE);
 		}
@@ -80,14 +81,16 @@ public class LetExpr extends BindingExpression {
 		// Save the local variable stack
 		LocalVariable mark = context.markLocalVariables();
 		
+		// evaluate input sequence
+		Sequence in = inputSequence.eval(null, null);
+		
 		// Declare the iteration variable
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
         var.setSequenceType(sequenceType);
 		context.declareVariable(var);
-		
-		Sequence in = inputSequence.eval(null, null);
 		clearContext(in);
 		var.setValue(in);
+		LOG.debug(var.getQName().toString() + " = " + in.getLength());
         var.checkType();
         
 		Sequence filtered = null;

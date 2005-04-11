@@ -66,6 +66,8 @@ public class ForExpr extends BindingExpression {
         // Save the local variable stack
 		LocalVariable mark = context.markLocalVariables();
 		
+		inputSequence.analyze(this, flags);
+		
 		// Declare the iteration variable
         LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
         inVar.setSequenceType(sequenceType);
@@ -78,7 +80,6 @@ public class ForExpr extends BindingExpression {
             context.declareVariable(posVar);
         }
         
-		inputSequence.analyze(this, flags);
 		if(whereExpr != null) {
 		    whereExpr.analyze(this, flags | IN_PREDICATE | IN_WHERE_CLAUSE);
 		}
@@ -115,6 +116,10 @@ public class ForExpr extends BindingExpression {
 		// Save the local variable stack
 		LocalVariable mark = context.markLocalVariables();
 		
+		// Evaluate the "in" expression
+		Sequence in = inputSequence.eval(null, null);
+		clearContext(in);
+		
 		// Declare the iteration variable
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
         var.setSequenceType(sequenceType);
@@ -127,10 +132,6 @@ public class ForExpr extends BindingExpression {
             at.setSequenceType(POSITIONAL_VAR_TYPE);
 			context.declareVariable(at);
 		}
-		
-		// Evaluate the "in" expression
-		Sequence in = inputSequence.eval(null, null);
-		clearContext(in);
 		
 		// Assign the whole input sequence to the bound variable.
 		// This is required if we process the "where" or "order by" clause
