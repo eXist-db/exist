@@ -416,6 +416,10 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 					document.characters,
 					document.alpha[next],
 					document.alphaLen[next]);
+			} else if (document.nodeKind[next] == REFERENCE_NODE) {
+				if (buf == null)
+					buf = new StringBuffer();
+				buf.append(document.references[document.alpha[next]].getStringValue());
 			}
 			++next;
 		}
