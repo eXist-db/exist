@@ -1119,7 +1119,7 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 			document.setMaxDepth(document.getMaxDepth() + 1);
 			document.calculateTreeLevelStartPoints();
-			
+            
 			// new document is valid: remove old document
 			if (oldDoc != null) {
 				LOG.debug("removing old document " + oldDoc.getFileName());

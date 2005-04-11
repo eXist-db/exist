@@ -283,6 +283,9 @@ public class GeneralComparison extends BinaryOp {
 		//	evaluate left expression
 		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
 		
+        if (nodes.getLength() == 0)
+            return Sequence.EMPTY_SEQUENCE;
+        
 //		if(nodes.getLength() < 2)
 //			// fall back to nodeSetCompare if we just have to check a single node
 //			return nodeSetCompare(nodes, contextSequence);
