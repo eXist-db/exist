@@ -105,6 +105,10 @@ public class CollectionConfiguration {
 		}
     }
 
+    protected void setIndexConfiguration(IndexSpec spec) {
+        this.indexSpec = spec;
+    }
+    
     public Collection getCollection() {
     	return collection;
     }

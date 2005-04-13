@@ -1849,9 +1849,9 @@ implements Comparable, EntityResolver, Cacheable {
 
 	public IndexSpec getIdxConf(DBBroker broker) {
 	    CollectionConfiguration conf = getConfiguration(broker);
-	    if(conf == null)
+	    if(conf == null) {
 	        return broker.getIndexConfiguration();
-	    else {
+        } else {
 	        return conf.getIndexConfiguration();
 	    }
 	}
