@@ -442,6 +442,12 @@ public class XPathQueryTest extends TestCase {
 			result = service.queryResource("namespaces.xml", "//*:comment");
 			assertEquals(1, result.getSize());
 			
+            result = service.queryResource("namespaces.xml", "/t:test/t:*[. &= 'comment']");
+            assertEquals(1, result.getSize());
+            
+            result = service.queryResource("namespaces.xml", "/t:test/*:section[. &= 'comment']");
+            assertEquals(1, result.getSize());
+            
 			result = service.queryResource("namespaces.xml", "namespace-uri(//t:test)");
 			assertEquals(1, result.getSize());
 			assertEquals(result.getResource(0).getContent(), "http://www.foo.com");

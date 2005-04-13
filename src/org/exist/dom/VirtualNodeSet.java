@@ -147,7 +147,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		// is pid member of the context set?
 		parent = context.get(node.getDocument(), pid);
 
-		if (parent != null && test.matches(first)) {
+		if (parent != null && test.matches(node)) {
 			if (axis != Constants.CHILD_AXIS) {
 				// if we are on the descendant-axis, we return the first node 
 				// we found while walking bottom-up.
