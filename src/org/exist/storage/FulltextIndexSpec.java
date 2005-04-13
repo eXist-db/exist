@@ -49,11 +49,13 @@ public class FulltextIndexSpec {
     private static final String ATTRIBUTES_ATTRIB = "attributes";
     private static final String DEFAULT_ATTRIB = "default";
     
+    private static final NodePath[] ARRAY_TYPE = new NodePath[0];
+    
     private final static Logger LOG = Logger.getLogger(FulltextIndexSpec.class);
     
-    protected ArrayList includePath;
-    protected ArrayList excludePath;
-    protected ArrayList preserveContent;
+    protected NodePath[] includePath;
+    protected NodePath[] excludePath;
+    protected NodePath[] preserveContent;
     
     protected boolean includeByDefault = true;
     protected boolean includeAttributes = true;
@@ -65,21 +67,17 @@ public class FulltextIndexSpec {
      * @param def if set to true, include everything by default. In this case
      * use exclude elements to specify the excluded parts.
      */
-    public FulltextIndexSpec( boolean def ) {
-        includeByDefault = def;
-        includePath = new ArrayList(  );
-        excludePath = new ArrayList(  );
-        preserveContent = new ArrayList(  );
-    }
-
     public FulltextIndexSpec(Map namespaces, Element node) {
-        this(true);
+        includeByDefault = true;
+        ArrayList includeList = new ArrayList(  );
+        ArrayList excludeList = new ArrayList(  );
+        ArrayList preserveList = new ArrayList(  );
         String def = node.getAttribute(DEFAULT_ATTRIB);
-        if(def != null && def.length() > 0)
+        if(def != null && def.length() > 0) {
             includeByDefault = def.equals("all");
+        }
         String indexAttributes = node.getAttribute(ATTRIBUTES_ATTRIB);
 		if (indexAttributes != null && indexAttributes.length() > 0) {
-			LOG.debug("INCLUDE: " + indexAttributes);
 			setIncludeAttributes(indexAttributes.equals("true") || indexAttributes.equals("yes"));
 		}
 
@@ -95,33 +93,18 @@ public class FulltextIndexSpec {
 		    next = children.item(j);
 		    if(INCLUDE_ELEMENT.equals(next.getLocalName())) {
 		        ps = ((Element) next).getAttribute(PATH_ATTRIB);
-		        addInclude(namespaces, ps);
+                includeList.add( new NodePath(namespaces, ps) );
 		    } else if(EXCLUDE_INTERFACE.equals(next.getLocalName())) {
 		        ps = ((Element) next).getAttribute(PATH_ATTRIB);
-		        addExclude(namespaces, ps);
+                excludeList.add( new NodePath(namespaces, ps) );
 		    } else if(PRESERVE_CONTENT_ELEMENT.equals(next.getLocalName())) {
 		        ps = ((Element) next).getAttribute(PATH_ATTRIB);
-		        addpreserveContent(namespaces, ps);
+                preserveList.add( new NodePath(namespaces, ps) );
 		    }
 		}
-    }
-    
-    /**
-     * Add a path to the list of includes
-     *
-     * @param path The feature to be added to the Include attribute
-     */
-    private void addInclude( Map namespaces, String path ) {
-        includePath.add( new NodePath(namespaces, path) );
-    }
-
-    /**
-     * Add a path to the list of excludes
-     *
-     * @param path DOCUMENT ME!
-     */
-    public void addExclude( Map namespaces, String path ) {
-        excludePath.add( new NodePath(namespaces, path) );
+        includePath = (NodePath[]) includeList.toArray(ARRAY_TYPE);
+        excludePath = (NodePath[]) excludeList.toArray(ARRAY_TYPE);
+        preserveContent = (NodePath[]) preserveList.toArray(ARRAY_TYPE);
     }
 
 	/**
@@ -131,8 +114,8 @@ public class FulltextIndexSpec {
 	 * @return
 	 */
 	public boolean isSelective() {
-		if((includeByDefault && excludePath.size() > 0) ||
-			((!includeByDefault) && includePath.size() > 0))
+		if((includeByDefault && excludePath.length > 0) ||
+			((!includeByDefault) && includePath.length > 0))
 			return true;
 		return false;
 	}
@@ -142,7 +125,7 @@ public class FulltextIndexSpec {
      *
      * @param index The new includeAttributes value
      */
-    public void setIncludeAttributes( boolean index ) {
+    private void setIncludeAttributes( boolean index ) {
         includeAttributes = index;
     }
 
@@ -160,7 +143,7 @@ public class FulltextIndexSpec {
      *
      * @param index include alpha-numeric data
      */
-    public void setIncludeAlphaNum( boolean index ) {
+    private void setIncludeAlphaNum( boolean index ) {
         includeAlphaNum = index;
     }
 
@@ -183,29 +166,19 @@ public class FulltextIndexSpec {
     public boolean match( NodePath path ) {
         if ( includeByDefault ) {
             // check exclusions
-            for ( Iterator i = excludePath.iterator(); i.hasNext(  ); )
-                if( ((NodePath)i.next()).match(path) )
+            for (int i = 0; i < excludePath.length; i++)
+                if( excludePath[i].match(path) )
                     return false;
                 
             return true;
         }
 
-        for ( Iterator i = includePath.iterator(); i.hasNext(); )
-            if( ((NodePath)i.next()).match(path) )
+        for (int i = 0; i < includePath.length; i++) {
+            if( includePath[i].match(path) )
                 return true;
-
+        }
         return false;
     }
-
-    /**
-     * Add a path to the list of node with preserveContent option
-     *
-     * @param path DOCUMENT ME!
-     */
-    public void addpreserveContent( Map namespaces, String path ) {
-    	preserveContent.add( new NodePath(namespaces, path) );
-    }
-    
     
     /**
      * Check if a given path should be preserveContent.
@@ -216,12 +189,11 @@ public class FulltextIndexSpec {
      */
 
       public boolean preserveContent( NodePath path ) {
-     	
-    	for ( Iterator i = preserveContent.iterator(); i.hasNext(); ) 
-            if( ((NodePath)i.next()).match(path) )
-                return true; 
-
-        return false;
+          for (int i = 0; i < preserveContent.length; i++) { 
+              if( preserveContent[i].match(path) )
+                  return true;
+          }
+          return false;
     }
 
 

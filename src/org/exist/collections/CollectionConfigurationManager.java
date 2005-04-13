@@ -50,7 +50,7 @@ public class CollectionConfigurationManager {
 	private static final Logger LOG = Logger.getLogger(CollectionConfigurationManager.class);
 	
     public final static String CONFIG_COLLECTION = "/db/system/config";
-	
+    
 	private BrokerPool pool;
 	
     private Map cache = new TreeMap();
@@ -109,12 +109,13 @@ public class CollectionConfigurationManager {
             Collection collection) throws CollectionConfigurationException {
     	LOG.debug("Reading config for " + collection.getName());
     	CollectionConfiguration conf = new CollectionConfiguration(collection);
+        boolean configFound = false;
     	String path = collection.getName() + '/';
     	int p = "/db".length();
     	String next;
     	Collection coll = null;
     	while(p != -1) {
-    		next = CONFIG_COLLECTION + path.substring(0, p);
+    		next = CONFIG_COLLECTION + path.substring(0, p);    
     		try {
     			coll = broker.openCollection(next, Lock.READ_LOCK);
     			if (coll != null && coll.getDocumentCount() > 0) {
@@ -124,16 +125,21 @@ public class CollectionConfigurationManager {
     			            if(LOG.isDebugEnabled())
     			                LOG.debug("Reading config for " + collection.getName() + " from " + confDoc.getName());
     			            conf.read(broker, confDoc);
+                            configFound = true;
     			            break;
     			        }
     			    }
-    			}
+                }
     		} finally {
     			if(coll != null)
     				coll.release();
     		}
     		p = path.indexOf('/', p + 1);
 	    }
+        if (!configFound)
+            // use default configuration
+            conf.setIndexConfiguration(broker.getIndexConfiguration());
+        
 		// we synchronize on the global CollectionCache to avoid deadlocks.
 		// the calling code does mostly already hold a lock on CollectionCache.
 		CollectionCache collectionCache = pool.getCollectionsCache();
