@@ -122,6 +122,8 @@ public interface Module {
 	
 	public Variable declareVariable(QName qname, Object value) throws XPathException;
 	
+    public Variable declareVariable(Variable var);
+    
 	/**
 	 * Reset the module's internal state for being reused.
 	 *

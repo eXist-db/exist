@@ -1207,9 +1207,21 @@ public class XQueryContext {
         		"error found while loading module from " + location + ": " + e.getMessage(),
         		e);
         }
+        declareModuleVars(module);
         return module;
     }
 
+    private void declareModuleVars(Module module) {
+        String moduleNS = module.getNamespaceURI();
+        for (Iterator i = globalVariables.values().iterator(); i.hasNext(); ) {
+            Variable var = (Variable) i.next();
+            if (moduleNS.equals(var.getQName().getNamespaceURI())) {
+                module.declareVariable(var);
+                globalVariables.remove(var.getQName());
+            }
+        }
+    }
+    
 	/**
 	 * Add a forward reference to an undeclared function. Forward
 	 * references will be resolved later.

@@ -132,6 +132,11 @@ public class ExternalModuleImpl implements ExternalModule {
 		return var;
 	}
 
+    public Variable declareVariable(Variable var) {
+        mStaticVariables.put(var.getQName(), var);
+        return var;
+    }
+    
 	public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException {
 		mGlobalVariables.put(qname, decl);
 	}
