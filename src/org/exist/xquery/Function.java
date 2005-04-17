@@ -233,6 +233,9 @@ public abstract class Function extends PathExpr {
 
 		// check return type if both types are not Type.ITEM
 		int returnType = expr.returnsType();
+        if (returnType == Type.ANY_TYPE || returnType == Type.EMPTY)
+            returnType = Type.ITEM;
+        
 		boolean typeMatches = type.getPrimaryType() == Type.ITEM;
 		typeMatches = Type.subTypeOf(returnType, type.getPrimaryType());
 
@@ -251,8 +254,7 @@ public abstract class Function extends PathExpr {
 				}
 				expr = new AtomicToString(context, expr);
 				returnType = Type.STRING;
-			} else if (
-				type.getPrimaryType() == Type.NUMBER
+			} else if (type.getPrimaryType() == Type.NUMBER
 					|| Type.subTypeOf(type.getPrimaryType(), Type.DOUBLE)) {
 				if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
 					expr = new Atomize(context, expr);
@@ -276,8 +278,8 @@ public abstract class Function extends PathExpr {
 			returnType = expr.returnsType();
 		}
 
-		if (!Type.subTypeOf(returnType, type.getPrimaryType())) {
-			if ((!Type.subTypeOf(type.getPrimaryType(), returnType)) && returnType != Type.ITEM)
+		if (returnType != Type.ITEM && !Type.subTypeOf(returnType, type.getPrimaryType())) {
+			if ((!Type.subTypeOf(type.getPrimaryType(), returnType)))
                 throw new XPathException(getASTNode(),
                         Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC, 
                                 String.valueOf(argPosition), mySignature,
