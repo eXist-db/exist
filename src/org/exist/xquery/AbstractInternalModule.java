@@ -129,6 +129,11 @@ public abstract class AbstractInternalModule implements InternalModule {
 		return var;
 	}
 	
+    public Variable declareVariable(Variable var) {
+        mGlobalVariables.put(var.getQName(), var);
+        return var;
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
 	 */
