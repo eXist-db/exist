@@ -26,7 +26,7 @@ public class ModuleContext extends XQueryContext {
 		this.broker = parentContext.broker;
 		baseURI = parentContext.baseURI;
 		moduleLoadPath = parentContext.moduleLoadPath;
-		loadDefaults();
+		loadDefaults(broker.getConfiguration());
 	}
     
 	/* (non-Javadoc)

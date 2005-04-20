@@ -48,6 +48,7 @@
                 <include name="README"/>
                 <include name="exist.jar"/>
                 <include name="exist-optional.jar"/>
+                <include name="exist-modules.jar"/>
                 <include name="start.jar"/>
                 <include name="examples.jar"/>
                 <include name="mime-types.xml"/>
@@ -95,11 +96,13 @@
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/shutdown.sh"/>
+			<parsable type="shell" targetfile="$INSTALL_PATH/bin/backup.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/build.sh"/>
             <parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/shutdown.bat"/>
+			<parsable targetfile="$INSTALL_PATH/bin/backup.bat"/>
             <parsable targetfile="$INSTALL_PATH/build.bat"/>
             <singlefile src="tools/wrapper/conf/wrapper.conf.install"
                 target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"
@@ -113,6 +116,8 @@
                 os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/shutdown.sh" stage="never"
                 os="unix"/>
+			<executable targetfile="$INSTALL_PATH/bin/backup.sh" stage="never"
+				os="unix"/>
             <executable targetfile="$INSTALL_PATH/build.sh" stage="never"
                 os="unix"/>
             <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper"
@@ -128,6 +133,15 @@
                 <exclude name="**/CVS/"/>
                 <exclude name=".*"/>
             </fileset>
+            <fileset targetdir="$INSTALL_PATH/extensions/modules/src"
+            	dir="extensions/modules/src">
+            	<exclude name="**/*~"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/CVS/"/>
+                <exclude name=".*"/>
+            </fileset>
+            <file src="extensions/modules/build.xml" 
+            	targetdir="$INSTALL_PATH/extensions/modules"/>
         </pack>
         <pack name="javadoc" required="no">
             <description>Generated Javadocs</description>

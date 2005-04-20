@@ -27,7 +27,6 @@ import java.io.Reader;
 import java.io.StringReader;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.NodeSet;
 import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
