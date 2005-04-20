@@ -52,6 +52,7 @@ import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.storage.DBBroker;
 import org.exist.util.Collations;
+import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.xquery.parser.XQueryLexer;
@@ -229,7 +230,7 @@ public class XQueryContext {
 	public XQueryContext(DBBroker broker) {
 		this();
 		this.broker = broker;
-		loadDefaults();
+		loadDefaults(broker.getConfiguration());
 	}
 	
 	/**
@@ -424,7 +425,7 @@ public class XQueryContext {
 			inScopeNamespaces.clear();
 			inScopePrefixes.clear();
 		}
-		loadDefaults();
+		loadDefaults(broker.getConfiguration());
 	}
 
 	/**
@@ -1217,7 +1218,7 @@ public class XQueryContext {
             Variable var = (Variable) i.next();
             if (moduleNS.equals(var.getQName().getNamespaceURI())) {
                 module.declareVariable(var);
-                globalVariables.remove(var.getQName());
+				i.remove();
             }
         }
     }
@@ -1322,7 +1323,7 @@ public class XQueryContext {
 	 * Load the default prefix/namespace mappings table and set up
 	 * internal functions.
 	 */
-	protected void loadDefaults() {
+	protected void loadDefaults(Configuration config) {
 		this.watchdog = new XQueryWatchDog(this);
 		SymbolTable syms = broker.getSymbols();
 		String[] pfx = syms.defaultPrefixList();
@@ -1350,19 +1351,11 @@ public class XQueryContext {
 		loadBuiltInModule(
 			Module.BUILTIN_FUNCTION_NS,
 			"org.exist.xquery.functions.ModuleImpl");
-		loadBuiltInModule(
-			Module.UTIL_FUNCTION_NS,
-			"org.exist.xquery.functions.util.UtilModule");
-		loadBuiltInModule(Module.TRANSFORM_FUNCTION_NS,
-			"org.exist.xquery.functions.transform.TransformModule");
-		loadBuiltInModule(
-			Module.XMLDB_FUNCTION_NS,
-			"org.exist.xquery.functions.xmldb.XMLDBModule");
-		loadBuiltInModule(
-			Module.REQUEST_FUNCTION_NS,
-			"org.exist.xquery.functions.request.RequestModule");
-		loadBuiltInModule(
-			Module.TEXT_FUNCTION_NS,
-			"org.exist.xquery.functions.text.TextModule");
+		
+		String modules[][] = (String[][]) config.getProperty("xquery.modules");
+		for (int i = 0; i < modules.length; i++) {
+			LOG.debug("Loading module " + modules[i][0]);
+			loadBuiltInModule(modules[i][0], modules[i][1]);
+		}
 	}
 }
