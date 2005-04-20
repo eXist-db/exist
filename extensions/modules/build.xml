@@ -1,0 +1,54 @@
+<project basedir="." default="jar" name="modules">
+
+    <property name="src" value="./src"/>
+    <property name="classes" value="./classes"/>
+	<property name="top.dir" value="../.."/>
+	
+    <property name="build.compiler" value="modern"/>
+	
+	<path id="classpath.core">
+        <fileset dir="${top.dir}/${lib.core}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.optional}">
+            <include name="*.jar"/>
+        </fileset>
+		<fileset dir="${top.dir}/${lib.endorsed}">
+			<include name="*.jar"/>
+		</fileset>
+        <pathelement path="${top.dir}/exist.jar"/>
+		<pathelement path="${top.dir}/exist-optional.jar"/>
+    	<pathelement path="${top.dir}/start.jar"/>
+		<pathelement path="${java.class.path}"/>
+    </path>
+	
+	<target name="prepare">
+		<mkdir dir="${classes}"/>
+	</target>
+	
+	<target name="compile" depends="prepare">
+		<echo message="---------------------------"/>
+        <echo message="Compiling extension modules"/>
+        <echo message="---------------------------"/>
+		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
+			destdir="${classes}" encoding="UTF-8"
+			optimize="${build.optimize}" srcdir="${src}" 
+        	source="1.4">
+			<!-- jmv target="1.4" -->
+            <classpath>
+            	<path refid="classpath.core"/>
+            </classpath>
+        </javac>
+	</target>
+	
+	<target name="jar" depends="compile">
+		<echo message="Creating exist-modules.jar ..."/>
+        <jar basedir="${classes}" compress="true" jarfile="${top.dir}/exist-modules.jar">
+        </jar>
+	</target>
+
+	<target name="clean">
+		<delete dir="${classes}"/>
+		<delete file="${top.dir}/exist-modules.jar"/>
+	</target>
+</project>

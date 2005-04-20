@@ -9,14 +9,13 @@
 <exist>
 
 
-    <!-- Configurs the cluster configuration
-- protocol:
-defines a protocol stack. Refers the jgroups protocol stack.
-- dbaUser:
-defines the user used by the cluster for the replica.
-- dbaPassword:
-defines the user password used by the cluster for the replica.
-
+    <!-- Configures the cluster configuration
+        - protocol:
+        defines a protocol stack. Refers the jgroups protocol stack.
+        - dbaUser:
+        defines the user used by the cluster for the replica.
+        - dbaPassword:
+        defines the user password used by the cluster for the replica.
    -->
     <cluster protocol="UDP:PING" dbaUser="admin" dbaPassword=""/>
 
@@ -121,6 +120,23 @@ defines the user password used by the cluster for the replica.
 
 	<xupdate growth-factor="20" allowed-fragmentation="20"
 		enable-consistency-checks="no"/>
+
+    <xquery>
+        <builtin-modules>
+            <module uri="http://exist-db.org/xquery/util"
+                class="org.exist.xquery.functions.util.UtilModule"/>
+            <module uri="http://exist-db.org/xquery/transform"
+                class="org.exist.xquery.functions.transform.TransformModule"/>
+            <module uri="http://exist-db.org/xquery/xmldb"
+                class="org.exist.xquery.functions.xmldb.XMLDBModule"/>
+            <module uri="http://exist-db.org/xquery/request"
+                class="org.exist.xquery.functions.request.RequestModule"/>
+            <module uri="http://exist-db.org/xquery/text"
+                class="org.exist.xquery.functions.text.TextModule"/>
+            <module uri="http://exist-db.org/xquery/examples"
+                class="org.exist.xquery.modules.example.ExampleModule"/>
+        </builtin-modules>
+    </xquery>
 
     <!-- 
         Settings for the indexer:

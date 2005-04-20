@@ -275,12 +275,12 @@
     <!-- ================================================================== -->
     <!-- Build all                                                                                                                                        -->
     <!-- ================================================================== -->
-    <target name="all" depends="jar" description="Build all"/>
+    <target name="all" depends="jar,wrapper,extension-modules" description="Build all"/>
 
 	<!-- ================================================================== -->
 	<!-- Rebuild all                                                        -->
 	<!-- ================================================================== -->
-	<target name="rebuild" depends="clean,all,wrapper" description="Rebuild all"/>
+	<target name="rebuild" depends="clean,all" description="Rebuild all"/>
 
     <!-- ================================================================== -->
     <!-- Run JUnit tests                                                    -->
@@ -443,6 +443,7 @@
 		<delete file="start.jar"/>
         <delete dir="${dist}"/>
     	<ant antfile="build.xml" dir="tools/wrapper" target="clean"/>
+    	<ant antfile="build.xml" dir="extensions/modules" target="clean"/>
     </target>
 
 	<!-- ============================================================ -->
@@ -522,7 +523,7 @@
     <!-- ================================================================== -->
     <!-- Prepare webapp                                                     -->
     <!-- ================================================================== -->
-    <target depends="jar" name="webapps">
+    <target depends="jar,extension-modules,samples" name="webapps">
         <delete dir="dist"/>
 		<mkdir dir="${webapp.dir}"/>
 		<mkdir dir="webapp/WEB-INF/data"/>
@@ -540,6 +541,7 @@
             <lib dir=".">
                 <include name="exist.jar"/>
                 <include name="exist-optional.jar"/>
+                <include name="exist-modules.jar"/>
             </lib>
             <lib dir="${lib.core}">
                 <include name="*"/>
@@ -578,7 +580,7 @@
     <!-- ================================================================== -->
     <!-- Prepare dist                                                       -->
     <!-- ================================================================== -->
-	<target depends="jar,samples" name="dist">
+	<target depends="jar,samples,extension-modules,wrapper" name="dist">
         <delete dir="dist"/>
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/logs" includes="*.log"/>
@@ -601,6 +603,8 @@
         <mkdir dir="${dist.dir}/log"/>
         <mkdir dir="${dist.dir}/samples"/>
 		<mkdir dir="${dist.dir}/thirdparty"/>
+       	<mkdir dir="${dist.dir}/extensions"/>
+       	<mkdir dir="${dist.dir}/extensions/modules"/>
 		<touch file="${dist.dir}/webapp/WEB-INF/data/.DO_NOT_DELETE"/>
 		<touch file="${dist.dir}/webapp/WEB-INF/logs/.DO_NOT_DELETE"/>
         <touch file="${dist.dir}/log/.DO_NOT_DELETE"/>
@@ -631,6 +635,7 @@
 				<include name="exist-optional.jar"/>
 				<include name="examples.jar"/>
 				<include name="start.jar"/>
+				<include name="exist-modules.jar"/>
             </fileset>
         </copy>
 
@@ -676,6 +681,9 @@
 				<exclude name="**/lib/*.jar"/>
 			</fileset>
 		</copy>
+		<copy todir="${dist.dir}/extensions">
+			<fileset dir="./extensions"/>
+        </copy>
         <copy todir="${dist.dir}/samples">
             <fileset dir="./samples">
 				<exclude name="**/*~"/>
@@ -710,13 +718,6 @@
             excludes="${project.name}-${project.version}.zip"
             zipfile="${dist}/${project.name}-${project.version}.zip"/>
     </target>
-   
-    <target depends="dist" name="snapshot" description="Create snapshot zip">
-		<tstamp/>
-		<zip basedir="${dist}" compress="true"
-			excludes="${project.name}-${project.version}.zip"
-			zipfile="${dist}/${project.name}-snapshot-${DSTAMP}.zip"/>
-	</target>
 	
     <!-- ================================================================== -->
     <!-- Create dist-tgz                                                    -->
@@ -733,7 +734,7 @@
 	<!-- ================================================================== -->
 	<!-- Build installer                                                    -->
 	<!-- ================================================================== -->
-	<target depends="all,samples,wrapper,javadocs" name="prepare-installer">
+	<target depends="all,samples,javadocs" name="prepare-installer">
 		<taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
 			classname="com.izforge.izpack.ant.IzPackTask"/>
 		<tstamp/>
@@ -897,6 +898,10 @@
 		<ant antfile="build.xml" dir="tools/wrapper"/>
 	</target>
 	
+	<target name="extension-modules" depends="jar">
+		<ant antfile="build.xml" dir="extensions/modules"/>
+	</target>
+
 	<target name="cleandocs">
 		<replaceregexp>
 			<regexp pattern="/\*.*Description of the Method.*\*/"/>
