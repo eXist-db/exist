@@ -26,7 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
@@ -169,6 +171,11 @@ public class Configuration implements ErrorHandler {
             if (xupdates.getLength() > 0) {
                 configureXUpdate(xupdates);
             }
+			
+			NodeList xquery = doc.getElementsByTagName("xquery");
+            if (xquery.getLength() > 0) {
+                configureXQuery((Element) xquery.item(0));
+            }
         } catch (SAXException e) {
             LOG.warn("error while reading config file: " + file, e);
             throw new DatabaseConfigurationException(e.getMessage());
@@ -181,7 +188,28 @@ public class Configuration implements ErrorHandler {
         }
     }
 
-    public Object getProperty(String name) {
+    private void configureXQuery(Element xquery) throws DatabaseConfigurationException {
+		NodeList builtins = xquery.getElementsByTagName("builtin-modules");
+		if (builtins.getLength() > 0) {
+			Element elem = (Element) builtins.item(0);
+			NodeList modules = elem.getElementsByTagName("module");
+			String moduleList[][] = new String[modules.getLength()][2];
+			for (int i = 0; i < modules.getLength(); i++) {
+				elem = (Element) modules.item(i);
+				String uri = elem.getAttribute("uri");
+				String clazz = elem.getAttribute("class");
+				if (uri == null)
+					throw new DatabaseConfigurationException("element 'module' requires an attribute 'uri'");
+				if (clazz == null)
+					throw new DatabaseConfigurationException("element 'module' requires an attribute 'class'");
+				moduleList[i][0] = uri;
+				moduleList[i][1] = clazz;
+			}
+			config.put("xquery.modules", moduleList);
+		}
+	}
+
+	public Object getProperty(String name) {
         return config.get(name);
     }
 
