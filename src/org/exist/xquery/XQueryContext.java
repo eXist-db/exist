@@ -1353,9 +1353,11 @@ public class XQueryContext {
 			"org.exist.xquery.functions.ModuleImpl");
 		
 		String modules[][] = (String[][]) config.getProperty("xquery.modules");
-		for (int i = 0; i < modules.length; i++) {
-			LOG.debug("Loading module " + modules[i][0]);
-			loadBuiltInModule(modules[i][0], modules[i][1]);
+		if ( modules != null ) {
+			for (int i = 0; i < modules.length; i++) {
+				LOG.debug("Loading module " + modules[i][0]);
+				loadBuiltInModule(modules[i][0], modules[i][1]);
+			}
 		}
 	}
 }
