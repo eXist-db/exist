@@ -114,13 +114,15 @@ public class DatabaseImpl implements Database {
     private void configure() throws XMLDBException {
         String home, file = "conf.xml";
         if(configuration == null) {
-        	home = System.getProperty( "exist.home" );
-        	if ( home == null )
-            	home = System.getProperty( "user.dir" );
+        	home = findExistHomeFromProperties();
         } else {
         	File f = new File(configuration);
-        	home = f.getParentFile().getAbsolutePath();
-        	file = f.getName();
+    		file = f.getName();
+			if ( f.isAbsolute() ) {
+				home = f.getParentFile().getAbsolutePath();
+			} else {
+	        	home = findExistHomeFromProperties();
+			}
         }
 		System.out.println("configuring " + dbName + " using " + home + '/' + file);
         try {
@@ -133,6 +135,17 @@ public class DatabaseImpl implements Database {
                 "configuration error", e );
         }
     }
+
+	/**
+	 * @return Exist Home dir. From system Properties
+	 */
+	private String findExistHomeFromProperties() {
+		String home;
+		home = System.getProperty( "exist.home" );
+		if ( home == null )
+			home = System.getProperty( "user.dir" );
+		return home;
+	}
 
     public Collection getCollection( String collection, String user,
                                      String password ) throws XMLDBException {
