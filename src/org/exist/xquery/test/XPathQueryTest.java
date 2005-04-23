@@ -29,7 +29,7 @@ public class XPathQueryTest extends TestCase {
 
 	private final static String numbers =
 		"<test>"
-			+ "<item id='1'><price>5.6</price><stock>22</stock></item>"
+			+ "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
 			+ "<item id='2'><price>7.4</price><stock>43</stock></item>"
 			+ "<item id='3'><price>18.4</price><stock>5</stock></item>"
 			+ "<item id='4'><price>65.54</price><stock>16</stock></item>"
@@ -111,7 +111,37 @@ public class XPathQueryTest extends TestCase {
 			e.printStackTrace();
 		}
 	}
+	/** test simple queries involving attributes */
+	public void testAttributes() {
+		ResourceSet result;
+		try {
+			String testDocument = "numbers.xml";
+			String query;
 
+			XQueryService service = storeXMLStringAndGetQueryService(
+					testDocument, numbers);
+
+			query = "/test/item[ @id='1' ]";
+			result = service.queryResource(testDocument, query);
+			System.out.println("testAttributes 1: ========");
+			printResult(result);
+			assertEquals("XPath: " + query, 1, result.getSize());
+			
+			XMLResource resource = (XMLResource)result.getResource(0);
+			assertEquals("XPath: " + query, "item", resource.getContentAsDOM().getNodeName());
+		
+			query = "/test/item [ @type='alphanum' ]";
+			result = service.queryResource(testDocument, query);
+			System.out.println("testAttributes 2: ========");
+			printResult(result);
+			assertEquals("XPath: " + query, 1, result.getSize());
+			
+		} catch (XMLDBException e) {
+			System.out.println("testAttributes(): XMLDBException: " + e);
+			fail(e.getMessage());
+		}
+	}
+	
 	public void testStarAxis() {
 		ResourceSet result;
 		try {
