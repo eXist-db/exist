@@ -44,6 +44,8 @@ import org.exist.xquery.XQueryContext;
  */
 public class XQueryPool extends Object2ObjectHashMap {
 
+    public final static int MAX_POOL_SIZE = 32;
+    
     public final static int MAX_STACK_SIZE = 5;
 
     public final static long TIMEOUT = 120000;
@@ -95,14 +97,16 @@ public class XQueryPool extends Object2ObjectHashMap {
 
     public synchronized void returnCompiledXQuery(Source source,
             CompiledXQuery xquery) {
-        Stack stack = (Stack) get(source);
-        if (stack == null) {
-            stack = new Stack();
-            source.setCacheTimestamp(System.currentTimeMillis());
-            put(source, stack);
-        }
-        if (stack.size() < maxStackSize) {
-            stack.push(xquery);
+        if (size() < MAX_POOL_SIZE) {
+            Stack stack = (Stack) get(source);
+            if (stack == null) {
+                stack = new Stack();
+                source.setCacheTimestamp(System.currentTimeMillis());
+                put(source, stack);
+            }
+            if (stack.size() < maxStackSize) {
+                stack.push(xquery);
+            }
         }
         timeoutCheck();
     }
@@ -146,8 +150,9 @@ public class XQueryPool extends Object2ObjectHashMap {
 
         for (Iterator i = iterator(); i.hasNext();) {
             Source next = (Source) i.next();
-            if (currentTime - next.getCacheTimestamp() > timeout)
+            if (currentTime - next.getCacheTimestamp() > timeout) {
                 remove(next);
+            }
         }
     }
 }
