@@ -21,41 +21,102 @@
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
+import org.exist.storage.serializers.Serializer;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.xml.sax.SAXException;
 
-public class FunError extends Function {
+public class FunError extends BasicFunction {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signature[] = {
 		new FunctionSignature(
 			new QName("error", Module.BUILTIN_FUNCTION_NS),
 			"Indicates that an irrecoverable error has occurred. The "
 				+ "script will terminate immediately with an exception.",
-			new SequenceType[] { new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.BOOLEAN, Cardinality.ONE));
+			null,
+			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
+		new FunctionSignature(
+			new QName("error", Module.BUILTIN_FUNCTION_NS),
+			"Indicates that an irrecoverable error has occurred. The "
+				+ "script will terminate immediately with an exception.",
+            new SequenceType[] {
+				new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
+		new FunctionSignature(
+			new QName("error", Module.BUILTIN_FUNCTION_NS),
+			"Indicates that an irrecoverable error has occurred. The "
+				+ "script will terminate immediately with an exception.",
+            new SequenceType[] {
+				new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
+		new FunctionSignature(
+			new QName("error", Module.BUILTIN_FUNCTION_NS),
+			"Indicates that an irrecoverable error has occurred. The "
+				+ "script will terminate immediately with an exception.",
+            new SequenceType[] {
+				new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+			},
+			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
+	};
 
-	public FunError(XQueryContext context) {
+	public final static QName DEFAULT_ERR =
+		new QName("FOER0000", "http://www.w3.org/2004/07/xqt-errors", "err");
+	
+	public FunError(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
 	public int returnsType() {
-		return Type.BOOLEAN;
+		return Type.EMPTY;
 	}
 
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
-		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
-		if (arg.getLength() == 0)
-			throw new XPathException(getASTNode(), "The query generated an error");
-		else
-			throw new XPathException(getASTNode(), arg.getStringValue());
+	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+		QName errQName = DEFAULT_ERR;
+		String message = "An error has been raised by the query";
+		if (args.length > 0) {
+			if (args[0].getLength() != 0)
+				errQName = ((QNameValue) args[0].itemAt(0)).getQName();
+			if (args.length > 1)
+				message = args[1].getStringValue();
+			if (args.length == 3)
+				message += ": " + serializeErrorObject(args[2]);
+		}
+		throw new XPathException(getASTNode(), message + " (" +
+				errQName.getNamespaceURI() + '#' + errQName.getLocalName() + ')');
+	}
+	
+	private String serializeErrorObject(Sequence seq) throws XPathException {
+		StringBuffer buf = new StringBuffer();
+		for(SequenceIterator i = seq.unorderedIterator(); i.hasNext(); ) {
+			Item next = i.nextItem();
+			if (Type.subTypeOf(next.getType(), Type.NODE)) {
+				Serializer serializer = context.getBroker().getSerializer();
+				serializer.reset();
+				try {
+					buf.append(serializer.serialize((NodeValue) next));
+				} catch (SAXException e) {
+					throw new XPathException(getASTNode(), "An exception occurred while serializing node to log: " +
+							"e.getMessage()", e);
+				}
+			} else
+				buf.append(next.getStringValue());
+		}
+		return buf.toString();
 	}
 }

@@ -55,7 +55,10 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunDocumentURI.signature, FunDocumentURI.class),
 		new FunctionDef(FunEmpty.signature, FunEmpty.class),
 		new FunctionDef(FunEndsWith.signature, FunEndsWith.class),
-		new FunctionDef(FunError.signature, FunError.class),
+		new FunctionDef(FunError.signature[0], FunError.class),
+		new FunctionDef(FunError.signature[1], FunError.class),
+		new FunctionDef(FunError.signature[2], FunError.class),
+		new FunctionDef(FunError.signature[3], FunError.class),
 		new FunctionDef(FunEscapeURI.signature, FunEscapeURI.class),
 		new FunctionDef(FunExactlyOne.signature, FunExactlyOne.class),
 		new FunctionDef(FunExists.signature, FunExists.class),
@@ -112,6 +115,7 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunNumber.signatures[1], FunNumber.class),
 		new FunctionDef(FunOneOrMore.signature, FunOneOrMore.class),
 		new FunctionDef(FunPosition.signature, FunPosition.class),
+		new FunctionDef(FunQName.signature, FunQName.class),
 		new FunctionDef(FunRemove.signature, FunRemove.class),
 		new FunctionDef(FunReplace.signatures[0], FunReplace.class),
 		new FunctionDef(FunReplace.signatures[1], FunReplace.class),
@@ -152,7 +156,10 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(ExtDoctype.signature, ExtDoctype.class),
 		new FunctionDef(ExtDocument.signature, ExtDocument.class),
 		new FunctionDef(ExtRegexp.signature, ExtRegexp.class),
-		new FunctionDef(ExtRegexpOr.signature, ExtRegexpOr.class)
+		new FunctionDef(ExtRegexpOr.signature, ExtRegexpOr.class),
+		new FunctionDef(QNameFunctions.localNameFromQName, QNameFunctions.class),
+		new FunctionDef(QNameFunctions.prefixFromQName, QNameFunctions.class),
+		new FunctionDef(QNameFunctions.namespaceURIFromQName, QNameFunctions.class)
 	};
 	
 	public ModuleImpl() {
