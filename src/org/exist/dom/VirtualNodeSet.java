@@ -317,20 +317,21 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				}
 				addChildren(contextNode, result, child, iter, recursions + 1);
 			}
-		} else if (test.matches(node)) {
-			if((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS)
-				&& recursions > 0)
-				return;
-			NodeProxy p = new NodeProxy(node.ownerDocument, node.gid, node.getNodeType());
-			p.setInternalAddress(node.internalAddress);
-			p.setMatches(contextNode.getMatches());
-			result.add(p);
-			p.copyContext(contextNode);
-			if (useSelfAsContext && inPredicate) {
-				p.addContextNode(p);
-			} else if (inPredicate)
-				p.addContextNode(contextNode);
 		}
+//		} else if (test.matches(node)) {
+//			if((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS)
+//				&& recursions > 0)
+//				return;
+//			NodeProxy p = new NodeProxy(node.ownerDocument, node.gid, node.getNodeType());
+//			p.setInternalAddress(node.internalAddress);
+//			p.setMatches(contextNode.getMatches());
+//			result.add(p);
+//			p.copyContext(contextNode);
+//			if (useSelfAsContext && inPredicate) {
+//				p.addContextNode(p);
+//			} else if (inPredicate)
+//				p.addContextNode(contextNode);
+//		}
 	}
 
 	public final void realize() {
