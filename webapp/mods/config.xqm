@@ -1,5 +1,7 @@
 module namespace conf="http://exist-db.org/modules/mods-config";
 
+import module namespace md="http://exist-db.org/biblio/mods-display" at "mods-display.xq";
+
 declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace util="http://exist-db.org/xquery/util";
 
@@ -7,16 +9,45 @@ declare variable $conf:preload { true() };
 
 declare variable $conf:css { "styles/display.css" };
 
-(:  called to select elements from a record for display :)
-declare function conf:displayItem($record as element())
-as element()+
+declare function conf:get-namespace-decls() as xs:string? {
+	"declare namespace mods='http://www.loc.gov/mods/v3';"
+};
+
+declare function conf:get-query-root($collection as xs:string) as xs:string {
+    concat("collection('", $collection, "')//mods:mods")
+};
+
+declare function conf:display-record-full($rec as element()) as element() {
+    md:record-full($rec)
+};
+
+declare function conf:display-names($rec as element()) as element()* {
+    md:names($rec/mods:name)
+};
+
+declare function conf:display-year($rec as element()) as xs:string? {
+    md:year($rec)
+};
+
+declare function conf:display-titles($rec as element()) as element()* {
+    md:titles($rec)
+};
+
+(: Get the XPath expression for the specified field :)
+declare function conf:queryField($field as xs:string) as xs:string
 {
-    $record/mods:titleInfo,
-    $record/mods:name,
-    $record/mods:abstract,
-    $record/mods:subject,
-    $record/mods:originInfo/mods:dateIssued,
-    $record/mods:location
+	if($field eq "au") then
+	    "mods:name"
+	else if($field eq "ti") then
+	    "mods:titleInfo"
+	else if($field eq "ab") then
+	    "mods:abstract"
+	else if($field eq "su") then
+	    "mods:subject"
+	else if($field eq "ye") then
+	    "mods:originInfo/mods:dateIssued"
+	else
+	    "."
 };
 
 declare function conf:query-form($url as xs:string, $collection as xs:string) as element() {

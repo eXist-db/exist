@@ -19,10 +19,10 @@ declare function sort:orderByName($m as element()) as xs:string?
 (: Map order parameter to xpath for order by clause :)
 declare function sort:orderExpr($field as xs:string) as xs:string
 {
-if ($field = "creator") then
-"sort:orderByName($m)"
-else if ($field = "title") then
-"$m/mods:titleInfo[1]/mods:title[1]"
-else
-"$m/mods:originInfo/mods:dateCreated[1] descending"
+    if ($field = "creator") then
+        "sort:orderByName($m)"
+    else if ($field = "title") then
+        "$m/mods:titleInfo[1]/mods:title[1]"
+    else
+        "$m/mods:originInfo/mods:dateCreated[1] descending"
 };
