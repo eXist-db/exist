@@ -23,6 +23,7 @@
 package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
@@ -30,71 +31,82 @@ import org.xmldb.api.base.Database;
 /**
  * @author wolf
  */
-public abstract class AbstractXMLDBTask extends Task {
+public abstract class AbstractXMLDBTask extends Task
+{
 
-	protected String driver = "org.exist.xmldb.DatabaseImpl";
-	protected String user = "guest";
-	protected String password = "guest";
-	protected String uri = null;
-	protected boolean createDatabase = false;
+  protected String driver = "org.exist.xmldb.DatabaseImpl";
+  protected String user = "guest";
+  protected String password = "guest";
+  protected String uri = null;
+  protected boolean createDatabase = false;
+  protected boolean failonerror = true;
 
-	/* (non-Javadoc)
-	 * @see org.apache.tools.ant.Task#execute()
-	 */
-	public abstract void execute() throws BuildException;
+  /**
+   * @param driver
+   */
+  public void setDriver(String driver)
+  {
+    this.driver = driver;
+  }
 
-	/**
-		 * @param driver
-		 */
-	public void setDriver(String driver) {
-		this.driver = driver;
-	}
+  /**
+   * @param password
+   */
+  public void setPassword(String password)
+  {
+    this.password = password;
+  }
 
-	/**
-	 * @param password
-	 */
-	public void setPassword(String password) {
-		this.password = password;
-	}
+  /**
+   * @param user
+   */
+  public void setUser(String user)
+  {
+    this.user = user;
+  }
 
-	/**
-	 * @param user
-	 */
-	public void setUser(String user) {
-		this.user = user;
-	}
+  /**
+   * @param uri
+   */
+  public void setUri(String uri)
+  {
+    this.uri = uri;
+  }
 
-	/**
-	* @param uri
-	*/
-	public void setUri(String uri) {
-		this.uri = uri;
-	}
+  /**
+   * @param create
+   */
+  public void setInitdb(boolean create)
+  {
+    this.createDatabase = create;
+  }
 
-	/**
-	 * @param createDatabase
-	 */
-	public void setInitdb(boolean create) {
-		this.createDatabase = create;
-	}
+  public void setFailonerror(boolean failonerror)
+  {
+    this.failonerror = failonerror;
+  }
 
-	protected void registerDatabase() throws BuildException {
-		try {
-			Database dbs[] = DatabaseManager.getDatabases();
-			for(int i = 0; i < dbs.length; i++) {
-				if(dbs[i].acceptsURI(uri)) {
-					log("Database driver already registered.");
-					return;
-				}
-			}
-			Class clazz = Class.forName(driver);
-			Database database = (Database) clazz.newInstance();
-			database.setProperty(
-				"create-database",
-				createDatabase ? "true" : "false");
-			DatabaseManager.registerDatabase(database);
-		} catch (Exception e) {
-			throw new BuildException("failed to initialize XMLDB database driver");
-		}
-	}
+  protected void registerDatabase() throws BuildException
+  {
+    try
+    {
+      log("Registering database", Project.MSG_DEBUG);
+      Database dbs[] = DatabaseManager.getDatabases();
+      for (int i = 0; i < dbs.length; i++)
+      {
+        if (dbs[i].acceptsURI(uri))
+        {
+          log("Database driver already registered.");
+          return;
+        }
+      }
+      Class clazz = Class.forName(driver);
+      Database database = (Database) clazz.newInstance();
+      database.setProperty("create-database", createDatabase ? "true" : "false");
+      DatabaseManager.registerDatabase(database);
+    } catch (Exception e)
+    {
+      throw new BuildException("failed to initialize XMLDB database driver");
+    }
+  }
 }

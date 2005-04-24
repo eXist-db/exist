@@ -28,21 +28,18 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XUpdateQueryService;
 
 /**
- * an ant task to remove a collection or resource
+ * an ant task to update a collection or resource using XUpdate
  *
- * @author wolf
- *         <p/>
- *         modified by
  * @author peter.klotz@blue-elephant-systems.com
  */
-public class XMLDBRemoveTask extends AbstractXMLDBTask
+public class XMLDBXUpdateTask extends AbstractXMLDBTask
 {
 
   private String resource = null;
-  private String collection = null;
+  private String commands = null;
 
   /* (non-Javadoc)
    * @see org.apache.tools.ant.Task#execute()
@@ -51,26 +48,25 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
   {
     if (uri == null)
       throw new BuildException("You have to specify an XMLDB collection URI");
-    if (resource == null && collection == null)
-      throw new BuildException("Missing parameter: either resource or collection should be specified");
 
+    log("XUpdate command is: " + commands, Project.MSG_DEBUG);
     registerDatabase();
     try
     {
       log("Get base collection: " + uri, Project.MSG_DEBUG);
       Collection base = DatabaseManager.getCollection(uri, user, password);
+      XUpdateQueryService service = (XUpdateQueryService) base.getService("XUpdateQueryService", "1.0");
       if (resource != null)
       {
-        log("Removing resource: " + resource, Project.MSG_INFO);
+        log("Updating resource: " + resource, Project.MSG_INFO);
         Resource res = base.getResource(resource);
         if (res == null)
           throw new BuildException("Resource " + resource + " not found.");
-        base.removeResource(res);
+        service.updateResource(resource, commands);
       } else
       {
-        log("Removing collection: " + collection, Project.MSG_INFO);
-        CollectionManagementService service = (CollectionManagementService) base.getService("CollectionManagementService", "1.0");
-        service.removeCollection(collection);
+        log("Updating collection: " + base.getName(), Project.MSG_INFO);
+        service.update(commands);
       }
     } catch (XMLDBException e)
     {
@@ -78,13 +74,6 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
     }
   }
 
-  /**
-   * @param collection
-   */
-  public void setCollection(String collection)
-  {
-    this.collection = collection;
-  }
 
   /**
    * @param resource
@@ -94,4 +83,8 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
     this.resource = resource;
   }
 
+  public void setCommands(String commands)
+  {
+    this.commands = commands;
+  }
 }

@@ -24,25 +24,24 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
 
 /**
- * an ant task to remove a collection or resource
+ * an ant task to copy a collection or resource
  *
- * @author wolf
- *         <p/>
- *         modified by
  * @author peter.klotz@blue-elephant-systems.com
  */
-public class XMLDBRemoveTask extends AbstractXMLDBTask
+public class XMLDBCopyTask extends AbstractXMLDBTask
 {
 
   private String resource = null;
   private String collection = null;
+  private String destination = null;
+  private String name = null;
 
   /* (non-Javadoc)
    * @see org.apache.tools.ant.Task#execute()
@@ -59,18 +58,19 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
     {
       log("Get base collection: " + uri, Project.MSG_DEBUG);
       Collection base = DatabaseManager.getCollection(uri, user, password);
+      log("Create collection management service for collection " + base.getName(), Project.MSG_DEBUG);
+      CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) base.getService("CollectionManagementService", "1.0");
       if (resource != null)
       {
-        log("Removing resource: " + resource, Project.MSG_INFO);
+        log("Copying resource: " + resource, Project.MSG_INFO);
         Resource res = base.getResource(resource);
         if (res == null)
           throw new BuildException("Resource " + resource + " not found.");
-        base.removeResource(res);
+        service.copyResource(resource, destination, name);
       } else
       {
-        log("Removing collection: " + collection, Project.MSG_INFO);
-        CollectionManagementService service = (CollectionManagementService) base.getService("CollectionManagementService", "1.0");
-        service.removeCollection(collection);
+        log("Copying collection: " + collection, Project.MSG_INFO);
+        service.copy(collection, destination, name);
       }
     } catch (XMLDBException e)
     {
@@ -94,4 +94,13 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
     this.resource = resource;
   }
 
+  public void setDestination(String destination)
+  {
+    this.destination = destination;
+  }
+
+  public void setName(String name)
+  {
+    this.name = name;
+  }
 }

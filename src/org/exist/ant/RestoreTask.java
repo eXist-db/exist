@@ -22,48 +22,89 @@
  */
 package org.exist.ant;
 
-import java.io.File;
-
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.DirSet;
 import org.exist.backup.Restore;
+
+import java.io.File;
 
 /**
  * @author wolf
  */
-public class RestoreTask extends AbstractXMLDBTask {
+public class RestoreTask extends AbstractXMLDBTask
+{
 
-	private String file = null;
-	
-	/* (non-Javadoc)
-	 * @see org.apache.tools.ant.Task#execute()
-	 */
-	public void execute() throws BuildException {
-		if (uri == null)
-			throw new BuildException("You have to specify an XMLDB collection URI");
-		if(file == null)
-			throw new BuildException("Missing required argument: file");
-		File f = new File(file);
-		if(!f.canRead())
-			throw new BuildException("Cannot read restore file: " + file);
-		registerDatabase();
-		try {
-			log("Restoring from " + f.getAbsolutePath());
-			Restore restore = new Restore(user, password, f, uri);
-			restore.restore(false, null);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new BuildException("Exception during restore: " + e.getMessage(), e);
-		}
-	}
+  private File dir = null;
+  private DirSet dirSet = null;
 
-	/**
-	 * @param file
-	 */
-	public void setFile(String file) {
-		this.file = file;
-	}
+  /* (non-Javadoc)
+   * @see org.apache.tools.ant.Task#execute()
+   */
+  public void execute() throws BuildException
+  {
+    if (uri == null)
+      throw new BuildException("You have to specify an XMLDB collection URI");
+    if (dir == null && dirSet == null)
+      throw new BuildException("Missing required argument: either dir or dirset required");
 
-	public void setBase(String base)  {
-		this.uri = base;
-	}
+    if (dir != null && !dir.canRead())
+      throw new BuildException("Cannot read restore file: " + dir.getAbsolutePath());
+
+    registerDatabase();
+    try
+    {
+      if (dir != null)
+      {
+        log("Restoring from " + dir.getAbsolutePath(), Project.MSG_INFO);
+        File file = new File(dir, "__contents__.xml");
+        if (!file.exists())
+        {
+          throw new BuildException("Did not found file "+file.getAbsolutePath());
+        }
+        Restore restore = new Restore(user, password, file, uri);
+        restore.restore(false, null);
+      } else if (dirSet != null)
+      {
+        DirectoryScanner scanner = dirSet.getDirectoryScanner(getProject());
+        scanner.scan();
+        String[] files = scanner.getIncludedFiles();
+        log("Found " + files.length + " files.\n");
+
+        File file = null;
+        for (int i = 0; i < files.length; i++)
+        {
+          dir = new File(scanner.getBasedir() + File.separator + files[i]);
+          file = new File(dir, "__contents__.xml");
+          if (!file.exists())
+          {
+            throw new BuildException("Did not found file "+file.getAbsolutePath());
+          }
+          log("Restoring from " + file.getAbsolutePath() + " ...\n");
+          // TODO subdirectories as sub-collections?
+          Restore restore = new Restore(user, password, file, uri);
+          restore.restore(false, null);
+        }
+      }
+    } catch (Exception e)
+    {
+      e.printStackTrace();
+      throw new BuildException("Exception during restore: " + e.getMessage(), e);
+    }
+  }
+
+  public DirSet createDirSet()
+  {
+    this.dirSet = new DirSet();
+    return dirSet;
+  }
+
+  /**
+   * @param dir
+   */
+  public void setDir(File dir)
+  {
+    this.dir = dir;
+  }
 }
