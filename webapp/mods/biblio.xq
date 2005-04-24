@@ -2,7 +2,6 @@ xquery version "1.0";
 
 (::pragma exist:output-size-limit -1::)
 
-declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace bib="http://exist-db.org/bibliography";
 
 (: Load library modules :)
@@ -93,23 +92,6 @@ xs:string, $current as xs:string) as element()+ {
     )
 };
 
-(: Get the XPath expression for the specified field :)
-declare function bib:queryField($field as xs:string) as xs:string
-{
-	if($field eq "au") then
-		"mods:name"
-	else if($field eq "ti") then
-		"mods:titleInfo"
-	else if($field eq "ab") then
-		"mods:abstract"
-	else if($field eq "su") then
-		"mods:subject"
-	else if($field eq "ye") then
-		"mods:originInfo/mods:dateIssued"
-	else
-		"."
-};
-
 declare function bib:operand($field, $terms) as xs:string
 {
     let $mode := request:request-parameter("mode", "all")
@@ -129,9 +111,9 @@ as xs:string
     let $field1 := request:request-parameter("field1", "any"),
         $queryPart :=
             if($term1) then
-                concat("collection('", $collection, "')//mods:mods[", bib:operand(bib:queryField($field1), $term1))
+                concat(conf:get-query-root($collection), bib:operand(conf:queryField($field1), $term1))
             else
-                concat("collection('", $collection, "')//mods:mods"),
+                conf:get-query-root($collection),
         $l := util:log("debug", ("Part: ", $term1)),
         $term2 := request:request-parameter("term2", ())
     return
@@ -139,7 +121,7 @@ as xs:string
             let $field2 := request:request-parameter("field2", "any"),
                 $op := request:request-parameter("op", "and")
             return
-                concat($queryPart, " ", $op, " ", bib:operand(bib:queryField($field2), $term2), "]")
+                concat($queryPart, " ", $op, " ", bib:operand(conf:queryField($field2), $term2), "]")
         else if($term1) then
             concat($queryPart, "]")
         else
@@ -209,7 +191,7 @@ declare function bib:buildQuery($xpath as xs:string, $order as xs:string) as xs:
 {
     let $orderExpr := sort:orderExpr($order)
     return
-        concat($bib:sort-import,
+        concat(conf:get-namespace-decls(), $bib:sort-import,
             "for $m in ", $xpath, " order by ", $orderExpr, " return $m")
 };
 
