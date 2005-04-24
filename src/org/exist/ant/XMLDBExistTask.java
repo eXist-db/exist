@@ -24,67 +24,64 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.condition.Condition;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
 
 /**
- * an ant task to remove a collection or resource
+ * an ant task to check for the existance of a collection or resource
+ * to be used as a ant condition
  *
- * @author wolf
- *         <p/>
- *         modified by
  * @author peter.klotz@blue-elephant-systems.com
  */
-public class XMLDBRemoveTask extends AbstractXMLDBTask
+public class XMLDBExistTask extends AbstractXMLDBTask implements Condition
 {
-
   private String resource = null;
-  private String collection = null;
 
-  /* (non-Javadoc)
-   * @see org.apache.tools.ant.Task#execute()
+  /**
+   * @return
+   * @throws BuildException
+   * @see org.apache.tools.ant.taskdefs.condition.Condition#eval()
    */
-  public void execute() throws BuildException
+  public boolean eval() throws BuildException
   {
+    boolean exist = false;
+
     if (uri == null)
       throw new BuildException("You have to specify an XMLDB collection URI");
-    if (resource == null && collection == null)
-      throw new BuildException("Missing parameter: either resource or collection should be specified");
 
     registerDatabase();
     try
     {
-      log("Get base collection: " + uri, Project.MSG_DEBUG);
+      log("Checking collection: " + uri, Project.MSG_INFO);
       Collection base = DatabaseManager.getCollection(uri, user, password);
-      if (resource != null)
+      if (base != null)
       {
-        log("Removing resource: " + resource, Project.MSG_INFO);
+        log("Base collection found", Project.MSG_DEBUG);
+        exist = true;
+      }
+      if (base != null && resource != null)
+      {
+        log("Checking resource: " + resource, Project.MSG_INFO);
         Resource res = base.getResource(resource);
         if (res == null)
-          throw new BuildException("Resource " + resource + " not found.");
-        base.removeResource(res);
-      } else
-      {
-        log("Removing collection: " + collection, Project.MSG_INFO);
-        CollectionManagementService service = (CollectionManagementService) base.getService("CollectionManagementService", "1.0");
-        service.removeCollection(collection);
+        {
+          log("Resource not found", Project.MSG_DEBUG);
+          exist = false;
+        }
       }
     } catch (XMLDBException e)
     {
-      throw new BuildException("XMLDB exception during remove: " + e.getMessage(), e);
+      // ignore is false already
+      log("Resource or collection cannot be retrieved", Project.MSG_DEBUG);
+      exist = false;
     }
+
+    return exist;
   }
 
-  /**
-   * @param collection
-   */
-  public void setCollection(String collection)
-  {
-    this.collection = collection;
-  }
 
   /**
    * @param resource

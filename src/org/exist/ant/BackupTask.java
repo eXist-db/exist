@@ -28,35 +28,40 @@ import org.exist.backup.Backup;
 /**
  * @author wolf
  */
-public class BackupTask extends AbstractXMLDBTask {
+public class BackupTask extends AbstractXMLDBTask
+{
 
-	private String dir = null;
-	
-	/* (non-Javadoc)
-	 * @see org.apache.tools.ant.Task#execute()
-	 */
-	public void execute() throws BuildException {
-		if (uri == null)
-			throw new BuildException("you have to specify an XMLDB collection URI");
-		if(dir == null)
-			throw new BuildException("missing required parameter: dir");
-		registerDatabase();
-		Backup backup = new Backup(user, password, dir, uri);
-		log("Creating backup of collection: " + uri);
-		log("Backup directory: " + dir);
-		try {
-			backup.backup(false, null);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new BuildException("Exception during backup: " + e.getMessage(), e);
-		}
-	}
+  private String dir = null;
 
-	/**
-	 * @param dir
-	 */
-	public void setDir(String dir) {
-		this.dir = dir;
-	}
+  /* (non-Javadoc)
+   * @see org.apache.tools.ant.Task#execute()
+   */
+  public void execute() throws BuildException
+  {
+    if (uri == null)
+      throw new BuildException("you have to specify an XMLDB collection URI");
+    if (dir == null)
+      throw new BuildException("missing required parameter: dir");
 
+    registerDatabase();
+    log("Creating backup of collection: " + uri);
+    Backup backup = new Backup(user, password, dir, uri);
+    log("Backup directory: " + dir);
+    try
+    {
+      backup.backup(false, null);
+    } catch (Exception e)
+    {
+      e.printStackTrace();
+      throw new BuildException("Exception during backup: " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * @param dir
+   */
+  public void setDir(String dir)
+  {
+    this.dir = dir;
+  }
 }

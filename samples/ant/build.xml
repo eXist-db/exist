@@ -1,0 +1,173 @@
+<?xml version="1.0"?>
+<project default="all" basedir=".">
+  <description>
+    eXist ant task test
+  </description>
+
+  <typedef resource="org/exist/ant/antlib.xml">
+    <classpath>
+      <fileset dir="../../lib/core">
+        <include name="*.jar"/>
+      </fileset>
+ <!--     <fileset dir="../../lib/endorsed">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="../../lib/optional">
+        <include name="*.jar"/>
+      </fileset>-->
+      <pathelement location="../../exist.jar"/>
+      <pathelement location="../../exist-optional.jar"/>
+    </classpath>
+  </typedef>
+
+  
+  <property name="xmldb.host" value="localhost"/>
+  <property name="xmldb.port" value="8080"/>
+  <property name="xmldb.user" value="admin"/>
+  <property name="xmldb.passwd" value="admin"/>
+  <property name="xmldb.url" value="xmldb:exist://${xmldb.host}:${xmldb.port}/exist/xmlrpc/db"/>
+  
+  <target name="all">
+    <antcall target="store"/>
+    <antcall target="create"/>
+    <antcall target="list"/>
+    <antcall target="exist"/>
+    <antcall target="extract"/>
+    <antcall target="xpath"/>
+    <antcall target="copy"/>
+    <antcall target="move"/>
+    <antcall target="xquery"/>
+    <antcall target="xupdate"/>
+    <antcall target="backup"/>
+    <antcall target="remove"/>
+    <antcall target="groups"/>
+    <antcall target="users"/>
+    <antcall target="adduser"/>
+    <antcall target="rmuser"/>
+    <antcall target="restore"/>
+  </target>
+
+  <target name="store" description="test store task">
+    <mkdir dir="data"/>
+    <copy todir="data">
+      <fileset dir="../mods" includes="*.xml"/>
+    </copy>
+    <xdbstore user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" createcollection="true">
+      <fileset dir="data">
+        <include name="*.xml"/>
+      </fileset>
+    </xdbstore>
+    <xdbstore user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" createcollection="true" srcfile="../examples.xml"/>
+  </target>
+
+  <target name="create" description="test create task">
+    <xdbcreate user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" collection="sub1"/>
+    <xdbcreate user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test/sub1" collection="sub11"/>
+    <xdbcreate user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" collection="sub2"/>
+  </target>
+
+  <target name="exist">
+    <antcall target="exist_col"/>
+    <antcall target="exist_res"/>
+  </target>
+  <condition property="col.exist">
+    <xdbexist user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"/>
+  </condition>
+  <condition property="res.exist">
+    <xdbexist user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" resource="examples.xml"/>
+  </condition>
+  <target name="exist_col" description="test exist condition for collection" if="col.exist">
+    <echo message="collection exists"/>
+  </target>
+  <target name="exist_res" description="test exist condition for resource" if="res.exist">
+    <echo message="resource exists"/>
+  </target>
+
+  <target name="list" description="test list task">
+    <xdblist user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" collections="true" outputproperty="cols"/>
+    <echo message="cols=${cols}/test"/>
+    <xdblist user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" resources="true" outputproperty="res"/>
+    <echo message="cols=${res}"/>
+    <xdblist user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" collections="true" resources="true" outputproperty="colsnres"/>
+    <echo message="cols=${colsnres}"/>
+  </target>
+
+  <target name="extract" description="test extract task">
+    <mkdir dir="tmp"/>
+    <xdbextract user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" destdir="tmp"/>
+    <xdbextract user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" resource="examples.xml" destfile="tmp/test.xml"/>
+  </target>
+
+  <target name="xpath" description="test query task">
+    <mkdir dir="tmp"/>
+    <xdbxpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" query="/example-queries/query" count="true" outputproperty="count"/>
+    <echo message="Found ${count} results"/>
+    <xdbxpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" query="/example-queries/query[0]/description" outputproperty="descr"/>
+    <echo message="Query result: ${descr}"/>
+    <xdbxpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" query="/example-queries/query" destDir="tmp"/>
+    <xdbxpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" query="/mods/titleInfo" namespace="http://www.loc.gov/mods/v3" destDir="tmp"/>
+    <xdbxpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" resource="examples.xml" query="/example-queries/query" destDir="tmp"/>
+  </target>
+
+  <target name="copy" description="test copy task">
+    <xdbcopy user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" resource="examples.xml" destination="sub1" name="new.xml"/>
+    <xdbcopy user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" collection="sub1" destination="sub2" name="new"/>
+  </target>
+
+  <target name="move" description="test move task">
+    <xdbmove user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test/sub1" resource="new.xml" destination="sub11" name="moved.xml"/>
+    <xdbmove user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test/sub2" collection="new" destination="sub1" name="moved"/>
+  </target>
+
+  <target name="xquery" description="test xquery task">
+    <xdbxquery user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" query=""/>
+    <xdbxquery user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test">
+
+    </xdbxquery>
+    <xdbxquery user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" queryFile="../xquery/"/>
+  </target>
+
+  <target name="xupdate" description="test xupdate task">
+    <xdbxupdate user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" />
+  </target>
+
+  <target name="remove" description="test remove task">
+    <xdbremove user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" resource="examples.xml"/>
+    <xdbremove user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" collection="test"/>
+  </target>
+
+  <target name="backup" description="test backup task">
+    <mkdir dir="backup"/>
+    <xdbbackup user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" dir="backup"/>
+  </target>
+
+  <target name="restore" description="test restore task">
+    <xdbrestore user="${xmldb.user}" password="${xmldb.passwd}" uri="xmldb:exist://${xmldb.host}:${xmldb.port}/exist/xmlrpc/" dir="backup/db/test"/>
+    <!--xdbrestore user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}">
+      <dirset dir="backup/db">
+        <include name="*"/>
+      </dirset>
+    </xdbrestore-->
+  </target>
+
+  <target name="groups" description="test groups task">
+    <xdbgroups user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" outputproperty="groups"/>
+    <echo message="groups=${groups}"/>
+  </target>
+  <target name="users" description="test users task">
+    <xdbusers user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" outputproperty="users"/>
+    <echo message="users=${users}"/>
+  </target>
+  <target name="adduser" description="test add user task">
+    <xdbadduser user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" name="test" secret="test" primarygroup="guest"/>
+  </target>
+  <target name="rmuser" description="test remove user task">
+    <xdbrmuser user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" name="test"/>
+  </target>
+
+  <target name="shutdown" description="test shutdown task">
+    <xdbshutdown user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"/>
+  </target>
+</project>
+
+

@@ -14,31 +14,40 @@
                 </address>
             </affiliation>
         </author>
+      <author>
+           <firstname>Peter</firstname>
+           <surname>Klotz</surname>
+           <affiliation>
+               <address format="linespecific">
+                   <email>peter.klotz@blue-elephant-systems.com</email>
+               </address>
+           </affiliation>
+       </author>
     </bookinfo>
     <ci:include src="sidebar.xml"/>
     <chapter>
         <title>Ant Tasks</title>
-        
-        <para>eXist provides a taskdef library for the <ulink
-        url="http://ant.apache.org">Ant</ulink> build tool to automate common 
+
+      <para>eXist provides a taskdef library for the
+        <ulink url="http://ant.apache.org">Ant</ulink> build tool to automate common
         tasks like backup/restore or importing a bunch of files. To use this library
         you need at least Ant 1.6, which is included in the eXist distribution (if you
-        installed the eXist source code).</para>
-        
-        <para>In your build file, import the eXist tasks as follows:</para>
+        installed the eXist source code).
+      </para>
+
+      <para>In your build file, import the eXist tasks as follows:</para>
         
         <example>
             <title>Import the Tasks</title>
             
             <screen>
-<![CDATA[<typedef resource="org/exist/ant/antlib.xml"
-    uri="http://exist-db.org/ant">
+<![CDATA[<taskdef resource="org/exist/ant/antlib.xml">
     <classpath refid="classpath.core"/>
 </typedef>]]></screen>
         </example>
         
         <para>All tasks share the following common attributes:</para>
-        
+
         <variablelist>
             <varlistentry>
                 <term>uri</term>
@@ -66,36 +75,52 @@
                     <para>Password for the user (default: guest).</para>
                 </listitem>
             </varlistentry>
-        </variablelist>
+          <varlistentry>
+               <term>failonerror</term>
+               <listitem>
+                   <para>Whether or not a error should stop the build execution</para>
+               </listitem>
+           </varlistentry>
+       </variablelist>
 
         <section>
             <title>Storing Documents</title>
-            
+
+          <para>The store task uploads and stores the specified documents into
+           the database. Documents are specified through a fileset or as single source file.
+           The following attributes are recognized:
+          </para>
             <example>
                 <title>Storing Documents</title>
-                
+
                 <screen>
-<![CDATA[<xdb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
+<![CDATA[<xdbstore uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
     createcollection="true">
     <fileset dir="samples/shakespeare"> 
         <include name="*.xml"/>
         <include name="*.xsl"/>
     </fileset>
-</xdb:store>]]></screen>
+</xdbstore>]]></screen>
+              <screen>
+<![CDATA[<xdbstore uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
+  createcollection="true" srcfile="samples/shakespeare/hamlet.xml"/>]]></screen>
             </example>
-            
-            <para>The store task uploads and stores the specified documents into
-            the database. Documents are specified through a fileset. The following
-            attributes are recognized:</para>
-            
+
             <variablelist>
                 <varlistentry>
                     <term>createcollection</term>
                     <listitem>
-                        <para>If set to "true", any non-existing subcollections will
+                        <para>If set to "true", a non-existing base collections will
                         be automatically created.</para>
                     </listitem>
                 </varlistentry>
+              <varlistentry>
+                  <term>createsubcollections</term>
+                  <listitem>
+                      <para>If set to "true", any non-existing sub-collections will
+                      be automatically created.</para>
+                  </listitem>
+              </varlistentry>
                 <varlistentry>
                     <term>type</term>
                     <listitem>
@@ -103,35 +128,286 @@
                         "binary", documents will be stored as binary resources.</para>
                     </listitem>
                 </varlistentry>
+              <varlistentry>
+                  <term>srcfile</term>
+                  <listitem>
+                      <para>a single source file to store, use instead of a fileset</para>
+                  </listitem>
+              </varlistentry>
             </variablelist>
         </section>
         <section>
             <title>Removing Documents/Collections</title>
+
             <para>The remove task removes a single resource or collection from
             the collection specified in the uri attribute.</para>
-            
+          <example>
+              <title>Remove a Resource</title>
+              <screen>
+<![CDATA[<xdbremove uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml"/>]]></screen>
+          </example>
+          <example>
+              <title>Remove a Collection</title>
+              <screen>
+<![CDATA[<xdbremove uri="xmldb:exist:///db/shakespeare" collection="plays"/>]]></screen>
+          </example>
+
             <variablelist>
                 <varlistentry>
                     <term>collection</term>
                     <listitem>
-                        <para>The name of the subcollection which should be
-                        removed.</para>
+                        <para>The name of the subcollection which should be removed.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
                     <term>resource</term>
                     <listitem>
-                        <para>The name of the resource which should be
-                        removed.</para>
+                        <para>The name of the resource which should be removed.</para>
                     </listitem>
                 </varlistentry>
             </variablelist>
         </section>
+      <section>
+          <title>Creating Empty Collections</title>
+
+          <para>The create task creates a single empty collection from
+          the collection specified in the uri attribute.</para>
+        <example>
+            <title>Create a Collection</title>
+            <screen>
+<![CDATA[<xdbcreate uri="xmldb:exist:///db/shakespeare" collection="plays"/>]]></screen>
+        </example>
+
+          <variablelist>
+              <varlistentry>
+                  <term>collection</term>
+                  <listitem>
+                      <para>The name of the subcollection which should be created.</para>
+                  </listitem>
+              </varlistentry>
+          </variablelist>
+      </section>
+      <section>
+          <title>Check Existence of Resource/Collection</title>
+
+          <para>The exist task is a condition that checks whether a resource or
+            collection as specified in the uri attribute.
+            A ant target can be executed conditionally depending on the property set or not
+            set by the condition.
+          </para>
+        <example>
+            <title>Check a Collection</title>
+            <screen>
+<![CDATA[<condition property="exists">
+<xdbexist uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml"/>
+ </condition>]]></screen>
+        </example>
+
+          <variablelist>
+              <varlistentry>
+                  <term>resource</term>
+                  <listitem>
+                      <para>The name of the resource which should be checked.</para>
+                  </listitem>
+              </varlistentry>
+          </variablelist>
+      </section>
+      <section>
+          <title>List Resources/Collections</title>
+
+          <para>The list task returns a list of all resources and/or conditions
+            in the collection specified in the uri attribute.</para>
+        <example>
+            <title>List Resources</title>
+            <screen>
+<![CDATA[<xdblist uri="xmldb:exist:///db/shakespeare/plays" resources="true" outputproperty="resources"/>]]></screen>
+        </example>
+        <example>
+            <title>List Collections</title>
+            <screen>
+<![CDATA[<xdblist uri="xmldb:exist:///db/shakespeare" collections="true" outputproperty="collections"/>]]></screen>
+        </example>
+
+          <variablelist>
+              <varlistentry>
+                  <term>resources</term>
+                  <listitem>
+                      <para>If "true" lists resources</para>
+                  </listitem>
+              </varlistentry>
+            <varlistentry>
+                <term>collections</term>
+                <listitem>
+                    <para>If "true" lists collections</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>separator</term>
+                <listitem>
+                    <para>separator character for the returned list, default is ","</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>outputproperty</term>
+                <listitem>
+                    <para>name of a new ant property that will contain the result</para>
+                </listitem>
+            </varlistentry>
+          </variablelist>
+      </section>
+      <section>
+          <title>Copy a Resource/Collection</title>
+
+          <para>The copy task copies a resource or collection to a new destination.</para>
+        <example>
+            <title>Copy a Resource</title>
+            <screen>
+<![CDATA[<xdbcopy uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml" destination="sub"/>]]></screen>
+        </example>
+        <example>
+            <title>Copy a Collection</title>
+            <screen>
+<![CDATA[<xdbcopy uri="xmldb:exist:///db/shakespeare" collection="plays" destination="sub"/>]]></screen>
+        </example>
+
+          <variablelist>
+              <varlistentry>
+                  <term>resource</term>
+                  <listitem>
+                      <para>The name of the resource which should be copied.</para>
+                  </listitem>
+              </varlistentry>
+            <varlistentry>
+                <term>collection</term>
+                <listitem>
+                    <para>The name of the collection which should be copied.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>destination</term>
+                <listitem>
+                    <para>The name of the destination collection to copy to.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>name</term>
+                <listitem>
+                    <para>The new name of the resource or collection in the destination.</para>
+                </listitem>
+            </varlistentry>
+          </variablelist>
+      </section>
+      <section>
+          <title>Move a Resource/Collection</title>
+
+          <para>The move task moves a resource or collection to a new destination.</para>
+        <example>
+            <title>Move a Resource</title>
+            <screen>
+<![CDATA[<xdbmove uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml" destination="sub"/>]]></screen>
+        </example>
+        <example>
+            <title>Move a Collection</title>
+            <screen>
+<![CDATA[<xdbmove uri="xmldb:exist:///db/shakespeare" collection="plays" destination="sub"/>]]></screen>
+        </example>
+
+          <variablelist>
+              <varlistentry>
+                  <term>resource</term>
+                  <listitem>
+                      <para>The name of the resource which should be moved.</para>
+                  </listitem>
+              </varlistentry>
+            <varlistentry>
+                <term>collection</term>
+                <listitem>
+                    <para>The name of the collection which should be moved.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>destination</term>
+                <listitem>
+                    <para>The name of the destination collection to move to.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>name</term>
+                <listitem>
+                    <para>The new name of the resource or collection in the destination.</para>
+                </listitem>
+            </varlistentry>
+          </variablelist>
+      </section>
+      <section>
+           <title>Process an XPath Expression</title>
+
+           <para>The xpath task executes an XPath expression.
+             The output of the script is discarded, except when a destination file
+             or output property is specified.
+           </para>
+           <para>The XQuery may either be specified through the query attribute
+             or within the text content of the element. A optional namespace may be used
+             for the query.
+           </para>
+           <example>
+               <title>Process an XPath</title>
+               <screen>
+ <![CDATA[<xdbxpath uri="xmldb:exist:///db" query="/example-queries/query"/>]]></screen>
+           </example>
+           <para>The query task accepts the following attributes:</para>
+           <variablelist>
+               <varlistentry>
+                   <term>query</term>
+                   <listitem>
+                       <para>The query to be processed.</para>
+                   </listitem>
+               </varlistentry>
+             <varlistentry>
+                 <term>resource</term>
+                 <listitem>
+                     <para>query a resource instead of a collection.</para>
+                 </listitem>
+             </varlistentry>
+             <varlistentry>
+                 <term>count</term>
+                 <listitem>
+                     <para>If "true" the number of found results is returned
+                       instead of the results itself.
+                     </para>
+                 </listitem>
+             </varlistentry>
+             <varlistentry>
+                 <term>outputproperty</term>
+                 <listitem>
+                     <para>return the results as a string in a new property.
+                       In this case only the text of the result is returned.
+                     </para>
+                 </listitem>
+             </varlistentry>
+             <varlistentry>
+                 <term>destfile</term>
+                 <listitem>
+                     <para>write the results of the query to a destination file.
+                       In this case the whole XML fragments of the result is written to the file.
+                       Care should be taken to get a wellformed document (e.g. one root tag).
+                     </para>
+                 </listitem>
+             </varlistentry>
+             <varlistentry>
+                 <term>namespace</term>
+                 <listitem>
+                     <para>XML namespace to use for the query (optional).</para>
+                 </listitem>
+             </varlistentry>
+           </variablelist>
+       </section>
         <section>
             <title>Process an XQuery Expression</title>
-            <para>The query task executes an XQuery expression. This task is
+
+            <para>The xquery task executes an XQuery expression. This task is
             primarily intended for transformations. The output of the script is
-            discarded.</para>
+            discarded when no destination file or output property is specified.</para>
             <para>The XQuery may either be specified through the query attribute
             or within the text content of the element. You can also use the
             loadfile task to load the query from a file as in the following example:</para>
@@ -139,7 +415,7 @@
                 <title>Process an XQuery</title>
                 <screen>
 <![CDATA[<loadfile property="xquery" srcFile="wzb.xq"/>
-<xdb:query uri="xmldb:exist:///db" query="${xquery}"/>]]></screen>
+<xdbxquery uri="xmldb:exist:///db" query="${xquery}"/>]]></screen>
             </example>
             <para>The query task accepts the following attributes:</para>
             <variablelist>
@@ -149,19 +425,108 @@
                         <para>The query to be processed.</para>
                     </listitem>
                 </varlistentry>
+              <varlistentry>
+                  <term>queryUri</term>
+                  <listitem>
+                      <para>The query to be processed specified a URI.</para>
+                  </listitem>
+              </varlistentry>
+              <varlistentry>
+                  <term>outputproperty</term>
+                  <listitem>
+                      <para>return the results as a string in a new property.</para>
+                  </listitem>
+              </varlistentry>
+              <varlistentry>
+                  <term>destfile</term>
+                  <listitem>
+                      <para>write the results of the query to a destination file.</para>
+                  </listitem>
+              </varlistentry>
+              <varlistentry>
+                   <term>queryfile</term>
+                   <listitem>
+                       <para>read the query from a file.</para>
+                   </listitem>
+               </varlistentry>
             </variablelist>
         </section>
+      <section>
+          <title>Extract a Resource/Collection</title>
+
+          <para>The extract task dumps a resource or collection to a file or directory.</para>
+        <example>
+            <title>Extract a Resource</title>
+            <screen>
+<![CDATA[<xdbextract uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml" destfile="/tmp/hamlet.xml"/>]]></screen>
+        </example>
+        <example>
+            <title>Extract a Collection</title>
+            <screen>
+<![CDATA[<xdbextract uri="xmldb:exist:///db/shakespeare/plays" destdir="/tmp" subcollections="true" createdirectories="true"/>]]></screen>
+        </example>
+
+          <variablelist>
+              <varlistentry>
+                  <term>resource</term>
+                  <listitem>
+                      <para>The name of the resource which should be extracted.</para>
+                  </listitem>
+              </varlistentry>
+            <varlistentry>
+                <term>subcollections</term>
+                <listitem>
+                    <para>If "true" all sub-collections of the specified collection
+                      are extracted as well
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>destfile</term>
+                <listitem>
+                    <para>The name of the destination file to extract to.
+                      Only supported when a resource is extracted.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>destdir</term>
+                <listitem>
+                    <para>The name of a destination directory to extract to.
+                      Has to be used when extracting a collection.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>createsubdirectories</term>
+                <listitem>
+                    <para>If "true" directories for sub-collections will be created
+                      Otherwise all extracted resoruces are written to the destination
+                      directory directly.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>type</term>
+                <listitem>
+                    <para>Type of the resource to extract.
+                      Only "xml" is supported currently.
+                    </para>
+                </listitem>
+            </varlistentry>
+          </variablelist>
+      </section>
         <section>
             <title>Backup</title>
+
             <para>Creates a backup of the specified database collection on the
             local disk. For example:</para>
             
             <example>
                 <title>Backing up the System Collection</title>
                 <screen>
-<![CDATA[<xdb:backup uri="${backup.uri}/db/system"
-    dir="${backup.dir}" user="${backup.user}"
-    password="${backup.pass}"/>]]></screen>
+<![CDATA[<xdbbackup uri="${backup.uri}/db/system"
+    dir="${backup.dir}" user="${backup.user}" password="${backup.pass}"/>]]></screen>
             </example>
             
             <para>creates a backup of the system collection.</para>
@@ -177,6 +542,7 @@
         </section>
         <section>
             <title>Restore</title>
+
             <para>Restores database contents from a backup. The file attribute
             should point to one of the <filename>__contents__.xml</filename>
             files created by the backup. The base attribute specifies the base
@@ -185,16 +551,10 @@
             
             <variablelist>
                 <varlistentry>
-                    <term>base</term>
+                    <term>dir</term>
                     <listitem>
-                        <para>The base XMLDB URI of the database.</para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>file</term>
-                    <listitem>
-                        <para>The __content__.xml file to be used for the 
-                        restore.</para>
+                        <para>A directory containing a __content__.xml file to be used
+                          for the restore.</para>
                     </listitem>
                 </varlistentry>
             </variablelist>
@@ -204,9 +564,208 @@
             <example>
                 <title>Restore a Collection</title>
                 <screen>
-<![CDATA[<xdb:restore base="xmldb:exist://" user="admin" password=""
-    file="${backup.dir}/db/home/__contents__.xml" initdb="true"/>]]></screen>
+<![CDATA[<xdbrestore base="xmldb:exist://" user="admin" password=""
+    dir="${backup.dir}/db/home"/>]]></screen>
             </example>
+        </section>
+      <section>
+          <title>List Groups</title>
+          <para>
+            This task lists all groups defined in eXist.
+          </para>
+
+          <example>
+              <title>Write list of groups to output property</title>
+              <screen>
+<![CDATA[<xdbgroups uri="${backup.uri}/db/system" outputproperty="groups"/>]]></screen>
+          </example>
+
+          <variablelist>
+              <varlistentry>
+                  <term>outputproperty</term>
+                  <listitem>
+                      <para>Name of new property to write the output to.</para>
+                  </listitem>
+              </varlistentry>
+            <varlistentry>
+                <term>separator</term>
+                <listitem>
+                    <para>Separator character for output, by default ",".</para>
+                </listitem>
+            </varlistentry>
+          </variablelist>
+      </section>
+      <section>
+           <title>List Users</title>
+           <para>
+             This task lists all users defined in eXist.
+           </para>
+
+           <example>
+               <title>Write list of users to output property</title>
+               <screen>
+ <![CDATA[<xdbusers uri="${backup.uri}/db/system" outputproperty="users"/>]]></screen>
+           </example>
+
+           <variablelist>
+               <varlistentry>
+                   <term>outputproperty</term>
+                   <listitem>
+                       <para>Name of new property to write the output to.</para>
+                   </listitem>
+               </varlistentry>
+             <varlistentry>
+                 <term>separator</term>
+                 <listitem>
+                     <para>Separator character for output, by default ",".</para>
+                 </listitem>
+             </varlistentry>
+           </variablelist>
+       </section>
+      <section>
+            <title>Lock Resource</title>
+            <para>
+              This task locks a resource for a user.
+            </para>
+
+            <example>
+                <title>Lock Resource</title>
+                <screen>
+  <![CDATA[<xdblock uri="${backup.uri}/db/shakespeare/plays" resource="hamlet.xml" name="guest"/>]]></screen>
+            </example>
+
+            <variablelist>
+                <varlistentry>
+                    <term>resource</term>
+                    <listitem>
+                        <para>Name of resource to lock.</para>
+                    </listitem>
+                </varlistentry>
+              <varlistentry>
+                  <term>name</term>
+                  <listitem>
+                      <para>Name of user to lock the resource for.</para>
+                  </listitem>
+              </varlistentry>
+            </variablelist>
+        </section>
+      <section>
+            <title>Add User</title>
+            <para>
+              This task adds a user.
+            </para>
+
+            <example>
+                <title>Add User</title>
+                <screen>
+  <![CDATA[<xdbadduser uri="${backup.uri}/db" name="guest"/>]]></screen>
+            </example>
+
+            <variablelist>
+              <varlistentry>
+                  <term>name</term>
+                  <listitem>
+                      <para>Name of user to lock the resource for.</para>
+                  </listitem>
+              </varlistentry>
+              <varlistentry>
+                  <term>home</term>
+                  <listitem>
+                      <para>Name of collection that is home collection.</para>
+                  </listitem>
+              </varlistentry>
+              <varlistentry>
+                  <term>secret</term>
+                  <listitem>
+                      <para>The password of the new user.</para>
+                  </listitem>
+              </varlistentry>
+              <varlistentry>
+                  <term>primaryGroup</term>
+                  <listitem>
+                      <para>Name of primary group of the new user.</para>
+                  </listitem>
+              </varlistentry>
+            </variablelist>
+
+           <note>
+             This task does not seem to work currently!
+           </note>
+        </section>
+      <section>
+            <title>Remove User</title>
+            <para>
+              This task remove a user.
+            </para>
+
+            <example>
+                <title>Remove User</title>
+                <screen>
+  <![CDATA[<xdbrmuser uri="${backup.uri}/db" name="guest"/>]]></screen>
+            </example>
+
+            <variablelist>
+              <varlistentry>
+                  <term>name</term>
+                  <listitem>
+                      <para>Name of user to lock the resource for.</para>
+                  </listitem>
+              </varlistentry>
+            </variablelist>
+        </section>
+        <section>
+            <title>Change Mod</title>
+            <para>
+              This task remove a user.
+            </para>
+
+            <example>
+                <title>Chmod</title>
+                <screen>
+  <![CDATA[<xdbchmod uri="${backup.uri}/db/shakespear/plays" resource="hamlet.xml" mod=""/>]]></screen>
+            </example>
+
+        <variablelist>
+          <varlistentry>
+              <term>resource</term>
+              <listitem>
+                  <para>Name of resource to modify.</para>
+              </listitem>
+          </varlistentry>
+          <varlistentry>
+              <term>mod</term>
+              <listitem>
+                  <para>Modification string.</para>
+              </listitem>
+          </varlistentry>
+        </variablelist>
+      </section>
+      <section>
+            <title>Change Owner</title>
+            <para>
+              This task changes the owner of a resource
+            </para>
+
+            <example>
+                <title>Chown</title>
+                <screen>
+  <![CDATA[<xdbchown uri="${backup.uri}/db/shakespear/plays" resource="hamlet.xml" name="guest" group="guest"/>]]></screen>
+            </example>
+
+            <variablelist>
+              <varlistentry>
+                  <term>name</term>
+                  <listitem>
+                      <para>Name of user to own the resource/collection.</para>
+                  </listitem>
+              </varlistentry>
+              <varlistentry>
+                  <term>group</term>
+                  <listitem>
+                      <para>Name of group to own the resource/collection.</para>
+                  </listitem>
+              </varlistentry>
+            </variablelist>
         </section>
         <section>
             <title>Database Shutdown</title>
