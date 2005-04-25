@@ -54,6 +54,10 @@ public class QNameValue extends AtomicValue {
 		return Type.QNAME;
 	}
 
+	public QName getQName() {
+		return qname;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
