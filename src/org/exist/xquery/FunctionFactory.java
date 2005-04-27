@@ -190,7 +190,7 @@ public class FunctionFactory {
 					step = func;
 				} else {
                     // function is from an imported XQuery module
-					UserDefinedFunction func = ((ExternalModule)module).getFunction(qname);
+					UserDefinedFunction func = ((ExternalModule)module).getFunction(qname, params.size());
 					if(func == null)
 						throw new XPathException(ast, "function " + qname.toString() + " ( namespace-uri = " + 
 							qname.getNamespaceURI() + ") is not defined");
@@ -200,7 +200,7 @@ public class FunctionFactory {
 					step = call;
 				}
 			} else {
-				UserDefinedFunction func = context.resolveFunction(qname);
+				UserDefinedFunction func = context.resolveFunction(qname, params.size());
 				FunctionCall call;
 				if(func != null) {
 					call = new FunctionCall(context, func);

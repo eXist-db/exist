@@ -86,11 +86,11 @@ public class FunctionFunction extends BasicFunction {
         Module module = context.getModule(qname.getNamespaceURI());
         UserDefinedFunction func;
         if(module == null) {
-            func = context.resolveFunction(qname);
+            func = context.resolveFunction(qname, arity);
         } else {
             if(module.isInternalModule())
                 throw new XPathException(getASTNode(), "Cannot create a reference to an internal Java function");
-            func = ((ExternalModule)module).getFunction(qname);
+            func = ((ExternalModule)module).getFunction(qname, arity);
         }
         FunctionCall call = new FunctionCall(context, func);
         call.setASTNode(getASTNode());
