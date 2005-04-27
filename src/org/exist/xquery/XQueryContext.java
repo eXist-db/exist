@@ -708,7 +708,7 @@ public class XQueryContext {
 	 * @throws XPathException
 	 */
 	public void declareFunction(UserDefinedFunction function) throws XPathException {
-		declaredFunctions.put(function.getName(), function);
+		declaredFunctions.put(function.getSignature().getFunctionId(), function);
 	}
 
 	/**
@@ -718,9 +718,20 @@ public class XQueryContext {
 	 * @return
 	 * @throws XPathException
 	 */
-	public UserDefinedFunction resolveFunction(QName name) throws XPathException {
-		UserDefinedFunction func = (UserDefinedFunction) declaredFunctions.get(name);
+	public UserDefinedFunction resolveFunction(QName name, int argCount) throws XPathException {
+		FunctionId id = new FunctionId(name, argCount);
+		UserDefinedFunction func = (UserDefinedFunction) declaredFunctions.get(id);
 		return func;
+	}
+	
+	public Iterator getSignaturesForFunction(QName name) {
+		ArrayList signatures = new ArrayList(2);
+		for (Iterator i = declaredFunctions.values().iterator(); i.hasNext(); ) {
+			UserDefinedFunction func = (UserDefinedFunction) i.next();
+			if (func.getName().equals(name))
+				signatures.add(func.getSignature());
+		}
+		return signatures.iterator();
 	}
 	
 	public Iterator localFunctions() {
@@ -1241,7 +1252,7 @@ public class XQueryContext {
 	public void resolveForwardReferences() throws XPathException {
 		while(!forwardReferences.empty()) {
 			FunctionCall call = (FunctionCall)forwardReferences.pop();
-			UserDefinedFunction func = resolveFunction(call.getQName());
+			UserDefinedFunction func = resolveFunction(call.getQName(), call.getArgumentCount());
 			if(func == null)
 				throw new XPathException(call.getASTNode(), 
 					"Call to undeclared function: " + call.getQName().toString());

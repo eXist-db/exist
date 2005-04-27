@@ -48,7 +48,7 @@ public interface ExternalModule extends Module {
 	 * @param qname
 	 * @return
 	 */
-	public UserDefinedFunction getFunction(QName qname);
+	public UserDefinedFunction getFunction(QName qname, int arity);
 	
 	public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException;
 	

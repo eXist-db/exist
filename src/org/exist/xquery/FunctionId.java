@@ -25,6 +25,8 @@ package org.exist.xquery;
 import org.exist.dom.QName;
 
 /**
+ * Used to uniquely identify a function by its function name and arity.
+ * 
  * @author wolf
  */
 public class FunctionId implements Comparable {

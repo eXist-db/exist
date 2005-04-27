@@ -101,8 +101,8 @@ public abstract class AbstractInternalModule implements InternalModule {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getClassForFunction(org.exist.dom.QName)
 	 */
-	public FunctionDef getFunctionDef(QName qname, int argCount) {
-		final FunctionId id = new FunctionId(qname, argCount);
+	public FunctionDef getFunctionDef(QName qname, int arity) {
+		final FunctionId id = new FunctionId(qname, arity);
 		return (FunctionDef)mFunctionMap.get(id);
 	}
 	

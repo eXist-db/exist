@@ -101,6 +101,13 @@ public class FunctionCall extends Function {
 		name = null;
 	} 
 	
+	public int getArgumentCount() {
+		if (arguments == null)
+			return super.getArgumentCount();
+		else
+			return arguments.size();
+	}
+	
 	public QName getQName() {
 		return name;
 	}

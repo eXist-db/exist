@@ -87,9 +87,11 @@ public class DescribeFunction extends Function {
 				writeSignature(signature, builder);
 			}
 		} else {
-			UserDefinedFunction func = context.resolveFunction(qname);
-			signature = func.getSignature();
-			writeSignature(signature, builder);
+			Iterator i = context.getSignaturesForFunction(qname);
+			while(i.hasNext()) {
+				signature = (FunctionSignature) i.next();
+				writeSignature(signature, builder);
+			}
 		}
 		builder.endElement();
 		return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);

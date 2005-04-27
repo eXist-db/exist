@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,15 +63,16 @@ public class ExternalModuleImpl implements ExternalModule {
 		return "User defined module";
 	}
 	
-	public UserDefinedFunction getFunction(QName qname) {
-		return (UserDefinedFunction) mFunctionMap.get(qname);
+	public UserDefinedFunction getFunction(QName qname, int arity) {
+		FunctionId id = new FunctionId(qname, arity);
+		return (UserDefinedFunction) mFunctionMap.get(id);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.ExternalModule#declareFunction(org.exist.xquery.UserDefinedFunction)
 	 */
 	public void declareFunction(UserDefinedFunction func) {
-		mFunctionMap.put(func.getSignature().getName(), func);
+		mFunctionMap.put(func.getSignature().getFunctionId(), func);
 	}
 
 	/* (non-Javadoc)
@@ -110,12 +112,13 @@ public class ExternalModuleImpl implements ExternalModule {
 	 * @see org.exist.xquery.Module#getSignatureForFunction(org.exist.dom.QName)
 	 */
 	public Iterator getSignaturesForFunction(QName qname) {
-		List list = new LinkedList();
-		UserDefinedFunction func = (UserDefinedFunction) mFunctionMap.get(qname);
-		if (func != null) {
-			list.add(func.getSignature());
+		ArrayList signatures = new ArrayList(2);
+		for (Iterator i = mFunctionMap.values().iterator(); i.hasNext(); ) {
+			UserDefinedFunction func = (UserDefinedFunction) i.next();
+			if(func.getName().compareTo(qname) == 0)
+				signatures.add(func.getSignature());
 		}
-		return list.iterator();
+		return signatures.iterator();
 	}
 
 	/* (non-Javadoc)
