@@ -41,7 +41,7 @@ public class Messages {
     public static final String BASE_NAME = "org.exist.xquery.util.messages";
     
     public static String getMessage(String messageId) {
-        return formatMessage(messageId, null);
+        return formatMessage(messageId, new Object[0]);
     }
     
     public static String getMessage(String messageId, Object arg0) {

@@ -31,6 +31,8 @@ import org.exist.xquery.Module;
 import org.exist.xquery.UserDefinedFunction;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.Error;
+import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -87,6 +89,8 @@ public class FunctionFunction extends BasicFunction {
         UserDefinedFunction func;
         if(module == null) {
             func = context.resolveFunction(qname, arity);
+			if (func == null)
+				throw new XPathException(getASTNode(), Messages.getMessage(Error.FUNC_NOT_FOUND, qname, Integer.toString(arity)));
         } else {
             if(module.isInternalModule())
                 throw new XPathException(getASTNode(), "Cannot create a reference to an internal Java function");
