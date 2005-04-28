@@ -51,10 +51,18 @@ public class Error {
     public final static String FUNC_PARAM_TYPE = "D06";
     
     public final static String VAR_TYPE_MISMATCH = "D07";
+	
+	public final static String UPDATE_SELECT_TYPE = "D08";
+	
+	public final static String UPDATE_EMPTY_CONTENT = "D09";
+	
+	public final static String UPDATE_REPLACE_ELEM_TYPE = "D10";
     
     public final static String FUNC_EMPTY_SEQ_DISALLOWED = "S01";
     
     public final static String FUNC_PARAM_TYPE_STATIC = "S02";
+	
+	public final static String FUNC_NOT_FOUND = "S03";
      
     private String errCode;
     private Object[] args = null;
