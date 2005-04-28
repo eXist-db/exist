@@ -111,7 +111,7 @@ as xs:string
     let $field1 := request:request-parameter("field1", "any"),
         $queryPart :=
             if($term1) then
-                concat(conf:get-query-root($collection), bib:operand(conf:queryField($field1), $term1))
+                concat(conf:get-query-root($collection), "[", bib:operand(conf:queryField($field1), $term1))
             else
                 conf:get-query-root($collection),
         $l := util:log("debug", ("Part: ", $term1)),

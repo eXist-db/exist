@@ -29,6 +29,7 @@ let $t := request:request-parameter("query", ()),
 return
     <ul class="LSRes">
 	{
-	    t:index-terms(collection($collection), $t, util:function("f:term-callback", 3), 15)
+	    t:index-terms(collection($collection), $t, util:function("f:term-callback",
+	    2), 15)
 	}
     </ul>
