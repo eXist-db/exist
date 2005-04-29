@@ -37,6 +37,10 @@
                     features and extensions.</para>
                 </listitem>
                 <listitem>
+                    <para><ulink href="update_ext.xml">XQuery Update</ulink></para>
+                </listitem>
+                
+                <listitem>
                     <para><ulink href="indexing.xml">Configuring Indexes</ulink>: how to configure
                     specific indexes.</para>
                 </listitem>
