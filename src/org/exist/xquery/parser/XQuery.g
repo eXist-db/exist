@@ -356,7 +356,45 @@ exprSingle throws XPathException
 	| ( ( "some" | "every" ) DOLLAR ) => quantifiedExpr
 	| ( "if" LPAREN ) => ifExpr 
 //	| ( "typeswitch" LPAREN ) => typeswitchExpr
+	| ( "update" ( "replace" | "value" | "insert" | "delete" | "rename" )) => updateExpr
 	| orExpr
+	;
+
+updateExpr throws XPathException
+:
+	"update"^
+	(
+		replaceExpr
+		| valueExpr
+		| insertExpr
+		| deleteExpr
+		| ( "rename" . "as" ) => renameExpr
+	)	
+	;
+
+replaceExpr throws XPathException
+:
+	"replace" expr "with"! exprSingle
+	;
+
+valueExpr throws XPathException
+:
+	"value" expr "with"! exprSingle
+	;
+
+insertExpr throws XPathException
+:
+	"insert" exprSingle ( "into" | "before" | "after" ) exprSingle
+	;
+
+deleteExpr throws XPathException
+:
+	"delete" exprSingle
+	;
+
+renameExpr throws XPathException
+:
+	"rename" exprSingle "as"! exprSingle
 	;
 
 flworExpr throws XPathException
@@ -1272,6 +1310,26 @@ reservedKeywords returns [String name]
 	"encoding" { name = "encoding"; }
 	|
 	"base-uri" { name = "base-uri"; }
+	|
+	"update" { name = "update"; }
+	|
+	"replace" { name = "replace"; }
+	|
+	"delete" { name = "delete"; }
+	|
+	"value" { name = "value"; }
+	|
+	"insert" { name = "insert"; }
+	|
+	"before" { name = "before"; }
+	|
+	"after" { name = "after"; }
+	|
+	"with" { name = "with"; }
+	|
+	"into" { name = "into"; }
+	|
+	"rename" { name = "rename"; }
 	;
 
 /**

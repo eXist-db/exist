@@ -40,6 +40,7 @@ header {
 	import org.exist.xquery.*;
 	import org.exist.xquery.value.*;
 	import org.exist.xquery.functions.*;
+	import org.exist.xquery.update.*;
 }
 
 /**
@@ -957,6 +958,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	step=pathExpr [path]
 	|
 	step=numericExpr [path]
+	|
+	step=updateExpr [path]
 	;
 
 /**
@@ -1837,6 +1840,57 @@ throws PermissionDeniedException, EXistException, XPathException
 			castExpr.setASTNode(castAST);
 			path.add(castExpr);
 			step = castExpr;
+		}
+	)
+	;
+	
+updateExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+	#( updateAST:"update"
+		{ 
+			PathExpr p1 = new PathExpr(context);
+			PathExpr p2 = new PathExpr(context);
+			int type;
+			int position = Insert.INSERT_APPEND;
+		}
+		(
+			"replace" { type = 0; }
+			|
+			"value" { type = 1; }
+			|
+			"insert"{ type = 2; }
+			|
+			"delete" { type = 3; }
+			|
+			"rename" { type = 4; }
+		)
+		step=expr [p1]
+		(
+			"before" { position = Insert.INSERT_BEFORE; }
+			|
+			"after" { position = Insert.INSERT_AFTER; }
+			|
+			"into" { position = Insert.INSERT_APPEND; }
+		)?
+		( step=expr [p2] )?
+		{
+			Modification mod;
+			if (type == 0)
+				mod = new Replace(context, p1, p2);
+			else if (type == 1)
+				mod = new Update(context, p1, p2);
+			else if (type == 2)
+				mod = new Insert(context, p2, p1, position);
+			else if (type == 3)
+				mod = new Delete(context, p1);
+			else
+				mod = new Rename(context, p1, p2);
+			mod.setASTNode(updateAST);
+			path.add(mod);
+			step = mod;
 		}
 	)
 	;
