@@ -20,14 +20,13 @@
  */
 package org.exist.dom;
 
-import java.util.LinkedList;
-import java.util.ListIterator;
+import java.util.ArrayList;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-public class NamedNodeMapImpl extends LinkedList implements NamedNodeMap {
+public class NamedNodeMapImpl extends ArrayList implements NamedNodeMap {
 
 	public NamedNodeMapImpl() {
 		super();
@@ -78,12 +77,11 @@ public class NamedNodeMapImpl extends LinkedList implements NamedNodeMap {
 	}
 
 	private int indexOf(QName name) {
-		ListIterator i = this.listIterator();
-		while (i.hasNext()) {
-			Node temp = (Node) i.next();
+		for (int i = 0; i < size(); i++) {
+			Node temp = (Node) get(i);
 			if (temp.getLocalName().equals(name.getLocalName())
 				&& temp.getNamespaceURI().equals(name.getNamespaceURI()))
-				return i.previousIndex();
+				return i;
 		}
 		return -1;
 	}

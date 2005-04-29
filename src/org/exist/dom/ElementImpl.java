@@ -411,7 +411,12 @@ public class ElementImpl extends NamedNode implements Element {
                     attr = (Attr) attribs.item(i);
                     ch.add(attr);
                 }
-                ch.addAll(child.getChildNodes());
+				NodeList cl = child.getChildNodes();
+				for (int i = 0; i < cl.getLength(); i++) {
+					Node n = cl.item(i);
+					if (n.getNodeType() != Node.ATTRIBUTE_NODE)
+						ch.add(n);
+				}
                 elem.setChildCount(ch.getLength());
                 elem.setAttributes((short) (elem.getAttributesCount() + attribs.getLength()));
                 lastPath.addComponent(elem.getQName());
