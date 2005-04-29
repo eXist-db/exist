@@ -58,7 +58,7 @@
                     <term>following</term>
                     <listitem>
                         <para>The content is inserted immediately after the node specified
-                            in exprSingle.</listitem>
+                            in exprSingle.</para></listitem>
                 </varlistentry>
                 <varlistentry>
                     <term>preceding</term>
