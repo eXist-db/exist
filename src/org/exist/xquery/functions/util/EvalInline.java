@@ -1,8 +1,8 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-04 The eXist Team
+ *
+ *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -37,7 +37,6 @@ import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.EmptySequence;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
@@ -47,62 +46,48 @@ import antlr.TokenStreamException;
 import antlr.collections.AST;
 
 /**
- * Dynamically evaluates a string argument as an XPath/Query
- * expression.
- * 
  * @author wolf
+ *
  */
-public class EvalFunction extends BasicFunction {
+public class EvalInline extends BasicFunction {
 
-	public final static FunctionSignature signature[] = new FunctionSignature[] {
+	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Dynamically evaluates its string argument as an XPath/XQuery expression. " +
-			"The argument expression will inherit the current execution context, i.e. all " +
-			"namespace declarations and variable declarations are visible from within the " +
-			"inner expression. It will return" +
-			"an empty sequence if you pass a whitespace string.",
-			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-			},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
-			new FunctionSignature(
-				new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Dynamically evaluates its string argument as an XPath/XQuery expression. " +
-				"The argument expression will inherit the current execution context, i.e. all " +
-				"namespace declarations and variable declarations are visible from within the " +
-				"inner expression. The function accepts a second string argument to specify " +
-				"the static context collection to which the expression applies.",
+				new QName("eval-inline", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+				"Dynamically evaluates the XPath/XQuery expression specified in $b within " +
+				"the current instance of the query engine. The evaluation context is taken from " +
+				"argument $a.",
 				new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 				},
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE))
-	};
-
+				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
+				
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public EvalFunction(XQueryContext context, FunctionSignature signature) {
+	public EvalInline(XQueryContext context) {
 		super(context, signature);
 	}
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+	 */
+	public Sequence eval(Sequence[] args, Sequence contextSequence)
+			throws XPathException {
+		// the current expression context
+		Sequence exprContext = args[0];
 		// get the query expression
-		String expr = StringValue.expand(args[0].getStringValue());
+		String expr = StringValue.expand(args[1].getStringValue());
 		if ("".equals(expr.trim()))
 		  return new EmptySequence();
-        // check optional collection argument
-        DocumentSet oldDocumentSet = null;
-        if(args.length > 1) {
-        	oldDocumentSet = context.getStaticallyKnownDocuments();
-        	Sequence collectionArgs = args[1];
-        	if(collectionArgs.getLength() > 0)
-            	context.setStaticallyKnownDocuments(getCollectionContext(collectionArgs));
-        }
+		
+		// save some context properties
         context.pushNamespaceContext();
-		LOG.debug("eval: " + expr);
+		DocumentSet oldDocs = context.getStaticallyKnownDocuments();
+		context.setStaticallyKnownDocuments(exprContext.getDocumentSet());
+		
 		XQueryLexer lexer = new XQueryLexer(context, new StringReader(expr));
 		XQueryParser parser = new XQueryParser(lexer);
 		// shares the context of the outer expression
@@ -124,7 +109,7 @@ public class EvalFunction extends BasicFunction {
 			}
 			long start = System.currentTimeMillis();
 			path.analyze(null, 0);
-			Sequence sequence = path.eval(null, null);
+			Sequence sequence = path.eval(exprContext, null);
 			path.reset();
 			LOG.debug("Found " + sequence.getLength() + " for " + expr);
 			LOG.debug("Query took " + (System.currentTimeMillis() - start));
@@ -135,19 +120,10 @@ public class EvalFunction extends BasicFunction {
 		} catch (TokenStreamException e) {
 			throw new XPathException(getASTNode(), e.getMessage(), e);
 		} finally {
-			if(oldDocumentSet != null)
-				context.setStaticallyKnownDocuments(oldDocumentSet);
+			if (oldDocs != null)
+				context.setStaticallyKnownDocuments(oldDocs);
 			context.popNamespaceContext();
 		}
 	}
 
-    private String[] getCollectionContext(Sequence arg) throws XPathException {
-    	String collections[] = new String[arg.getLength()];
-    	int j = 0;
-        for(SequenceIterator i = arg.iterate(); i.hasNext(); j++) {
-        	String collection = i.nextItem().getStringValue();
-        	collections[j] = collection;
-        }
-        return collections;
-    }
 }
