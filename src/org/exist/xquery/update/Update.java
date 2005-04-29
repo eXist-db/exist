@@ -161,7 +161,7 @@ public class Update extends Modification {
 		dumper.display("update value").nl();
 		dumper.startIndent();
 		select.dump(dumper);
-		dumper.nl();
+		dumper.nl().endIndent().display("with").nl().startIndent();
 		value.dump(dumper);
 		dumper.nl().endIndent();
 	}
