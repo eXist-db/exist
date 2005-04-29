@@ -165,5 +165,4 @@ public class Update extends Modification {
 		value.dump(dumper);
 		dumper.nl().endIndent();
 	}
-
 }

@@ -74,6 +74,7 @@ public class Replace extends Modification {
 		Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.getLength() == 0)
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+		contentSeq = deepCopy(contentSeq);
 		try {
             NodeImpl ql[] = selectAndLock(inSeq.toNodeSet());
             IndexListener listener = new IndexListener(ql);
@@ -151,7 +152,7 @@ public class Replace extends Modification {
 		dumper.display("update replace").nl();
 		dumper.startIndent();
 		select.dump(dumper);
-		dumper.nl();
+		dumper.nl().endIndent().display("with").nl().startIndent();
 		value.dump(dumper);
 		dumper.nl().endIndent();
 	}
