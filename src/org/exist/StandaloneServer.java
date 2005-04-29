@@ -37,11 +37,9 @@ import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.xmlrpc.WebServer;
 import org.apache.xmlrpc.XmlRpc;
-import org.apache.xmlrpc.XmlRpcException;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.xmldb.ShutdownListener;
-import org.exist.xmlrpc.AuthenticatedHandler;
 import org.mortbay.http.HttpContext;
 import org.mortbay.http.HttpServer;
 import org.mortbay.http.SocketListener;
@@ -69,7 +67,6 @@ public class StandaloneServer {
 	private final static int HELP_OPT = 'h';
     private final static int DEBUG_OPT = 'd';
     private final static int HTTP_PORT_OPT = 'p';
-    private final static int XMLRPC_PORT_OPT = 'x';
     private final static int THREADS_OPT = 't';
     
     private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
@@ -79,8 +76,6 @@ public class StandaloneServer {
             DEBUG_OPT, "debug XMLRPC calls." ),
         new CLOptionDescriptor( "http-port", CLOptionDescriptor.ARGUMENT_REQUIRED,
             HTTP_PORT_OPT, "set HTTP port." ),
-        new CLOptionDescriptor( "xmlrpc-port", CLOptionDescriptor.ARGUMENT_REQUIRED,
-            XMLRPC_PORT_OPT, "set XMLRPC port." ),
         new CLOptionDescriptor( "threads", CLOptionDescriptor.ARGUMENT_REQUIRED,
             THREADS_OPT, "set max. number of parallel threads allowed by the db." )
     };
@@ -131,14 +126,6 @@ public class StandaloneServer {
                         return;
                     }
                     break;
-                case XMLRPC_PORT_OPT :
-                    try {
-                        rpcPort = Integer.parseInt( option.getArgument() );
-                    } catch( NumberFormatException e ) {
-                        System.err.println("option -x requires a numeric argument");
-                        return;
-                    }
-                    break;
                 case THREADS_OPT :
                     try {
                         threads = Integer.parseInt( option.getArgument() );
@@ -161,9 +148,6 @@ public class StandaloneServer {
         
         Properties props = loadProperties(home);
         
-        if(props.getProperty("xmlrpc.enabled").equalsIgnoreCase("yes"))
-        	startRpcServer(rpcPort, config);
-        
         startHTTPServer(httpPort, props);
         
         System.out.println("\nServer launched ...");
@@ -174,7 +158,7 @@ public class StandaloneServer {
         if (props.getProperty("webdav.enabled").equalsIgnoreCase("yes"))
         	System.out.println("WebDAV:\t\tlocalhost:" + httpPort + "/webdav");
         if (props.getProperty("xmlrpc.enabled").equalsIgnoreCase("yes"))
-        	System.out.println("XMLRPC:\t\tlocalhost:" + rpcPort);
+        	System.out.println("XMLRPC:\t\tlocalhost:" + httpPort + "/xmlrpc");
     }
 
     /**
@@ -250,26 +234,14 @@ public class StandaloneServer {
         		servletHandler.addServlet("WebDAV", "/webdav/*", "org.exist.http.servlets.WebDAVServlet");
         	davServlet.setInitParameter("authentication", props.getProperty("webdav.authentication"));
         }
-        
+        if(props.getProperty("xmlrpc.enabled").equalsIgnoreCase("yes")) {
+            ServletHolder rpcServlet =
+                servletHandler.addServlet("RpcServlet", "/xmlrpc/*", "org.exist.xmlrpc.RpcServlet");
+        }
         context.addHandler(servletHandler);
         context.addHandler(new NotFoundHandler());
         httpServer.addContext(context);
-        
         httpServer.start();
-    }
-
-    /**
-     * @param rpcPort
-     * @param config
-     * @throws XmlRpcException
-     */
-    private void startRpcServer(int rpcPort, Configuration config) throws XmlRpcException {
-        System.out.println( "starting XMLRPC listener at port " + rpcPort );
-        XmlRpc.setEncoding( "UTF-8" );
-        webServer = new WebServer( rpcPort );
-        AuthenticatedHandler handler = new AuthenticatedHandler( config );
-        webServer.addHandler( "$default", handler );
-        webServer.start();
     }
     
     private static void printHelp() {
@@ -278,7 +250,7 @@ public class StandaloneServer {
     }
     
     public static void printNotice() {
-        System.out.println("eXist version 1.0, Copyright (C) 2004 Wolfgang Meier");
+        System.out.println("eXist version 1.0, Copyright (C) 2005 The eXist Project");
         System.out.println("eXist comes with ABSOLUTELY NO WARRANTY.");
         System.out.println("This is free software, and you are welcome to "
                 + "redistribute it\nunder certain conditions; "
