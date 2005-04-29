@@ -75,7 +75,7 @@ public class Rename extends Modification {
 		Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.getLength() == 0)
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
-		String newName = contentSeq.getStringValue();
+		String newName = contentSeq.itemAt(0).getStringValue();
 		try {
             NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
             DocumentImpl doc = null;
