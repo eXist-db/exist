@@ -30,9 +30,13 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
+import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.Serializer;
 import org.exist.storage.store.StorageAddress;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -41,7 +45,13 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
+import org.xml.sax.SAXException;
 
 /**
  * @author wolf
@@ -128,6 +138,35 @@ public abstract class Modification extends AbstractExpression {
 	    } finally {
 	        globalLock.release();
 	    }
+	}
+	
+	protected Sequence deepCopy(Sequence inSeq) throws XPathException {
+		context.pushDocumentContext();
+		MemTreeBuilder builder = context.getDocumentBuilder();
+		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+		Serializer serializer = context.getBroker().getSerializer();
+		serializer.setReceiver(receiver);
+		
+		try {
+			Sequence out = new ValueSequence();
+			for (SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
+				Item item = i.nextItem();
+				if (Type.subTypeOf(item.getType(), Type.NODE)) {
+					if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+						int last = builder.getDocument().getLastNode();
+						NodeProxy p = (NodeProxy) item;
+						serializer.toReceiver(p);
+						item = builder.getDocument().getNode(last + 1);
+					} else {
+						((org.exist.memtree.NodeImpl)item).expand();
+					}
+				}
+				out.add(item);
+			}
+			return out;
+		} catch(SAXException e) {
+			throw new XPathException(getASTNode(), e.getMessage(), e);
+		}
 	}
 	
 	/**
