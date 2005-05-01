@@ -85,7 +85,7 @@
 				had been started as a standalone server, the URI would change 
 				to</para>
 			<synopsis format="linespecific">
-				xmldb:exist://localhost:8081/db/shakespeare</synopsis>
+				xmldb:exist://localhost:8088/xmlrpc/db/shakespeare</synopsis>
 			<para>Finally, to access an embedded instance of the database, we 
 				just drop the host part completely, using three slashes in 
 				front of the collection path:</para>
@@ -119,15 +119,14 @@
 				database engine running in its own Java virtual machine. In 
 				general, the database will be more reliable, because there are 
 				no other threads which might cause problems. If your 
-				application doesn't need Cocoon, WebDAV or SOAP, you should 
+				application doesn't need Cocoon or SOAP, you should 
 				prefer the stand-alone server.</para>
-			<para>The standalone database server offers XML-RPC and REST-style HTTP 
-				interfaces to the outside world. It does not support SOAP nor 
-				WebDAV, because these protocols are served by Java 
-				servlets. The XML-RPC and REST interfaces are explained in depth 
+			<para>The standalone database server offers XML-RPC, WebDAV and 
+				REST-style HTTP 
+				interfaces to the outside world. It does not support SOAP.
+				The XML-RPC and REST interfaces are explained in depth 
                 in the <ulink url="devguide.xml">Developer's Guide</ulink>.</para>
-			<para>For the stand-alone server, the HTTP listener runs 
-				by default on port 8088, XMLRPC is found at port 8081.</para>
+			<para>The stand-alone server runs on port 8088 by default.</para>
 			<section>
 				<title>Starting the stand-alone server</title>
 				<para>To start the server, you may use the <filename 
@@ -137,8 +136,8 @@
 				<synopsis format="linespecific">bin\server.bat</synopsis>
 				<para>The corresponding Java class is called 
 					<classname>org.exist.Server</classname>. You may specify 
-					different listener ports with the <option>-p</option> 
-					(HTTP) and <option>-x</option> (XMLRPC) options.</para>
+					a different listener port with the <option>-p</option> 
+					option.</para>
 				<para>The server is multi-threaded. A server thread is assigned 
 					to each client request. If a certain maximum of threads is 
 					reached, the server will block the client until one of the 
@@ -154,7 +153,7 @@
 					have to change the XML:DB server URI as described above. 
 					Change the URI to</para>
 				<synopsis format="linespecific">
-					uri=xmldb:exist://localhost:8081</synopsis>
+					uri=xmldb:exist://localhost:8088/xmlrpc</synopsis>
 				<para>The same applies to Cocoon-based applications. To access 
 					the stand-alone server from one of the XSP pages you have 
 					to change the corresponding line defining the XML:DB 
@@ -167,7 +166,7 @@
 					xmldb:exist:///db/shakespeare/plays/{1}.xml</synopsis>
 				<para>should become</para>
 				<synopsis format="linespecific">
-					xmldb:exist://localhost:8081/db/shakespeare/plays/{1}.xml</synopsis>
+					xmldb:exist://localhost:8088/xmlrpc/db/shakespeare/plays/{1}.xml</synopsis>
 			</section>
 		</section>
         <section>
@@ -184,7 +183,7 @@
 				eXist when running in stand-alone mode:</para>
                 
 			<synopsis format="linespecific">java -jar start.jar shutdown 
-				--uri=xmldb:exist://localhost:8081</synopsis>
+				--uri=xmldb:exist://localhost:8088/xmlrpc</synopsis>
         </section>
 		<section>
 			<title id="embedded">Embedding eXist</title>
