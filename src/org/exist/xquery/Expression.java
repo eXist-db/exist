@@ -59,6 +59,12 @@ public interface Expression {
     public final static int IN_WHERE_CLAUSE = 4;
     
     /**
+     * Indicates that the expression is used within an update statement. Subexpressions
+     * should not cache any relevant data as it may be subject to change.
+     */
+    public final static int IN_UPDATE = 8;
+    
+    /**
      * Statically analyze the expression and its subexpressions.
      * 
      * During the static analysis phase, the query engine can detect

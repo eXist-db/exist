@@ -103,17 +103,11 @@ public class Delete extends Modification {
             if (doc != null) context.getBroker().saveCollection(collection);
             checkFragmentation(modifiedDocs);
         } catch (EXistException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (LockException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (XPathException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new XPathException(getASTNode(), e.getMessage(), e);
 		} finally {
             unlockDocuments();
         }

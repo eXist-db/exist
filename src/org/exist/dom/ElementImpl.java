@@ -261,7 +261,7 @@ public class ElementImpl extends NamedNode implements Element {
         int level = ownerDocument.getTreeLevel(gid);
         if (ownerDocument.getMaxDepth() == level + 1) {
             ownerDocument.incMaxDepth();
-            LOG.debug("setting maxDepth = " + ownerDocument.getMaxDepth());
+            LOG.debug("setting maxDepth = " + ownerDocument.getMaxDepth() + "; current = " + level);
         }
         if (ownerDocument.getTreeLevelOrder(level + 1) < children + size) {
             // recompute the order of the tree
@@ -374,7 +374,7 @@ public class ElementImpl extends NamedNode implements Element {
         }
         catch (EXistException e) {
             throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
-                    "max. document size exceeded");
+                    "max. document size exceeded: " + e.getMessage());
         }
         children += nodes.getLength();
         Node child;

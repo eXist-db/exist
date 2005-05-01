@@ -57,7 +57,8 @@ public class LocationStep extends Step {
 	
 	protected int parentDeps = -1;
 	protected boolean preload = false;
-	
+	protected boolean inUpdate = false;
+    
 	public LocationStep(XQueryContext context, int axis) {
 		super(context, axis);
 	}
@@ -85,6 +86,8 @@ public class LocationStep extends Step {
 	 * @return
 	 */
 	protected boolean preloadNodeSets() {
+        if (inUpdate)
+            return false;
 		return 
 			preload ||
 			(parentDeps & Dependency.LOCAL_VARS) == Dependency.LOCAL_VARS;
@@ -111,6 +114,8 @@ public class LocationStep extends Step {
     public void analyze(Expression parent, int flags) throws XPathException {
         this.parent = parent;
         parentDeps = parent.getDependencies();
+        if ((flags & IN_UPDATE) > 0)
+            inUpdate = true;
         if((flags & SINGLE_STEP_EXECUTION) > 0)
             preload = true;
         super.analyze(parent, flags);
@@ -286,7 +291,8 @@ public class LocationStep extends Step {
                         ElementValue.ELEMENT,
                         currentDocs,
                         test.getName(), null);
-            }
+            } else
+                LOG.debug("Using cache for: " + test.getName());
             return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
 		} else {
 		    DocumentSet docs = getDocumentSet(contextSet);

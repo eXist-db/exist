@@ -32,10 +32,12 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.serializers.Serializer;
 import org.exist.util.LockException;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.update.Modification.IndexListener;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
@@ -44,6 +46,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 /**
  * @author wolf
@@ -74,7 +77,8 @@ public class Replace extends Modification {
 		Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.getLength() == 0)
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
-		contentSeq = deepCopy(contentSeq);
+        contentSeq = deepCopy(contentSeq);
+        
 		try {
             NodeImpl ql[] = selectAndLock(inSeq.toNodeSet());
             IndexListener listener = new IndexListener(ql);
@@ -128,18 +132,12 @@ public class Replace extends Modification {
             if (doc != null) doc.getBroker().saveCollection(collection);
             checkFragmentation(modifiedDocs);
         } catch (LockException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (XPathException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (EXistException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
+            throw new XPathException(getASTNode(), e.getMessage(), e);
+        } finally {
             unlockDocuments();
         }
 		return Sequence.EMPTY_SEQUENCE;

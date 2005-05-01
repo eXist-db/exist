@@ -119,7 +119,7 @@ public class ForExpr extends BindingExpression {
 		// Evaluate the "in" expression
 		Sequence in = inputSequence.eval(null, null);
 		clearContext(in);
-		
+        
 		// Declare the iteration variable
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
         var.setSequenceType(sequenceType);

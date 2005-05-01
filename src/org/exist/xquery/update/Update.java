@@ -137,17 +137,11 @@ public class Update extends Modification {
             if (doc != null) doc.getBroker().saveCollection(collection);
             checkFragmentation(modifiedDocs);
         } catch (LockException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (XPathException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (EXistException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new XPathException(getASTNode(), e.getMessage(), e);
 		} finally {
             unlockDocuments();
         }
