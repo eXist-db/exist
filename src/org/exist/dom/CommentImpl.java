@@ -4,6 +4,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.Set;
 
 import org.exist.storage.Signatures;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
@@ -51,11 +53,17 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
     }
 
     public byte[] serialize() {
+        String s;
+        try {
+            s = StringValue.expand(cdata);
+        } catch (XPathException e) {
+            s = cdata.toString();
+        }
         byte[] cd;
         try {
-            cd = cdata.toString().getBytes( "UTF-8" );
+            cd = s.getBytes( "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
-            cd = cdata.toString().getBytes();
+            cd = s.getBytes();
         }
         byte[] data = new byte[cd.length + 1];
         data[0] = (byte) ( Signatures.Comm << 0x5 );
