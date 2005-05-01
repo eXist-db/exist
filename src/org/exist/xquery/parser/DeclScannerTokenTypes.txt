@@ -94,8 +94,8 @@ LITERAL_delete="delete"=94
 LITERAL_rename="rename"=95
 LITERAL_with="with"=96
 LITERAL_into="into"=97
-LITERAL_before="before"=98
-LITERAL_after="after"=99
+LITERAL_preceding="preceding"=98
+LITERAL_following="following"=99
 LITERAL_where="where"=100
 LITERAL_return="return"=101
 LITERAL_in="in"=102
@@ -162,44 +162,42 @@ LITERAL_self="self"=162
 LITERAL_descendant="descendant"=163
 "descendant-or-self"=164
 "following-sibling"=165
-LITERAL_following="following"=166
-LITERAL_parent="parent"=167
-LITERAL_ancestor="ancestor"=168
-"ancestor-or-self"=169
-"preceding-sibling"=170
-DOUBLE_LITERAL=171
-DECIMAL_LITERAL=172
-INTEGER_LITERAL=173
-END_TAG_START("XML end tag")=174
-QUOT("double quote '\"'")=175
-APOS("single quote '")=176
-QUOT_ATTRIBUTE_CONTENT=177
-APOS_ATTRIBUTE_CONTENT=178
-ELEMENT_CONTENT=179
-XML_COMMENT_END("end of XML comment")=180
-XML_PI_END("end of processing instruction")=181
-XML_CDATA("CDATA section")=182
-LITERAL_collection="collection"=183
-LITERAL_preceding="preceding"=184
-XML_PI_START("start of processing instruction")=185
-XML_CDATA_START("CDATA section start")=186
-XML_CDATA_END("end of CDATA section")=187
-LETTER=188
-DIGITS=189
-HEX_DIGITS=190
-NMSTART=191
-NMCHAR=192
-WS=193
-EXPR_COMMENT("XQuery comment")=194
-PRAGMA("XQuery pragma")=195
-PRAGMA_CONTENT=196
-PRAGMA_QNAME=197
-PREDEFINED_ENTITY_REF=198
-CHAR_REF=199
-NEXT_TOKEN=200
-CHAR=201
-BASECHAR=202
-IDEOGRAPHIC=203
-COMBINING_CHAR=204
-DIGIT=205
-EXTENDER=206
+LITERAL_parent="parent"=166
+LITERAL_ancestor="ancestor"=167
+"ancestor-or-self"=168
+"preceding-sibling"=169
+DOUBLE_LITERAL=170
+DECIMAL_LITERAL=171
+INTEGER_LITERAL=172
+END_TAG_START("XML end tag")=173
+QUOT("double quote '\"'")=174
+APOS("single quote '")=175
+QUOT_ATTRIBUTE_CONTENT=176
+APOS_ATTRIBUTE_CONTENT=177
+ELEMENT_CONTENT=178
+XML_COMMENT_END("end of XML comment")=179
+XML_PI_END("end of processing instruction")=180
+XML_CDATA("CDATA section")=181
+LITERAL_collection="collection"=182
+XML_PI_START("start of processing instruction")=183
+XML_CDATA_START("CDATA section start")=184
+XML_CDATA_END("end of CDATA section")=185
+LETTER=186
+DIGITS=187
+HEX_DIGITS=188
+NMSTART=189
+NMCHAR=190
+WS=191
+EXPR_COMMENT("XQuery comment")=192
+PRAGMA("XQuery pragma")=193
+PRAGMA_CONTENT=194
+PRAGMA_QNAME=195
+PREDEFINED_ENTITY_REF=196
+CHAR_REF=197
+NEXT_TOKEN=198
+CHAR=199
+BASECHAR=200
+IDEOGRAPHIC=201
+COMBINING_CHAR=202
+DIGIT=203
+EXTENDER=204

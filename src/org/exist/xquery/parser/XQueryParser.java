@@ -427,8 +427,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_rename:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
@@ -469,16 +469,14 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_descendant:
 		case 164:
 		case 165:
-		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
+		case 168:
 		case 169:
-		case 170:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_collection:
-		case LITERAL_preceding:
 		{
 			module();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -1504,8 +1502,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_rename:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
@@ -1536,13 +1534,11 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_descendant:
 		case 164:
 		case 165:
-		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
+		case 168:
 		case 169:
-		case 170:
 		case LITERAL_collection:
-		case LITERAL_preceding:
 		{
 			name=reservedKeywords();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -1782,8 +1778,8 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_let:
 			case LITERAL_with:
 			case LITERAL_into:
-			case LITERAL_before:
-			case LITERAL_after:
+			case LITERAL_preceding:
+			case LITERAL_following:
 			case LITERAL_where:
 			case LITERAL_return:
 			case LITERAL_in:
@@ -2082,8 +2078,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_let:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_where:
 		case LITERAL_return:
 		case LITERAL_order:
@@ -2585,20 +2581,20 @@ public XQueryParser(ParserSharedInputState state) {
 			match(LITERAL_into);
 			break;
 		}
-		case LITERAL_before:
+		case LITERAL_preceding:
 		{
 			org.exist.xquery.parser.XQueryAST tmp134_AST = null;
 			tmp134_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp134_AST);
-			match(LITERAL_before);
+			match(LITERAL_preceding);
 			break;
 		}
-		case LITERAL_after:
+		case LITERAL_following:
 		{
 			org.exist.xquery.parser.XQueryAST tmp135_AST = null;
 			tmp135_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp135_AST);
-			match(LITERAL_after);
+			match(LITERAL_following);
 			break;
 		}
 		default:
@@ -3171,8 +3167,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_rename:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
@@ -3204,13 +3200,11 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_descendant:
 		case 164:
 		case 165:
-		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
+		case 168:
 		case 169:
-		case 170:
 		case LITERAL_collection:
-		case LITERAL_preceding:
 		{
 			break;
 		}
@@ -3316,8 +3310,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_let:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_where:
 		case LITERAL_return:
 		case LITERAL_order:
@@ -3375,8 +3369,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_let:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_where:
 		case LITERAL_return:
 		case LITERAL_order:
@@ -3435,8 +3429,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_let:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_where:
 		case LITERAL_return:
 		case LITERAL_order:
@@ -3620,8 +3614,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_let:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_where:
 		case LITERAL_return:
 		case LITERAL_order:
@@ -3811,8 +3805,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_let:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_where:
 		case LITERAL_return:
 		case LITERAL_order:
@@ -4071,8 +4065,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_rename:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
@@ -4112,16 +4106,14 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_descendant:
 		case 164:
 		case 165:
-		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
+		case 168:
 		case 169:
-		case 170:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_collection:
-		case LITERAL_preceding:
 		{
 			unionExpr();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -4196,8 +4188,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_let:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_where:
 		case LITERAL_return:
 		case LITERAL_order:
@@ -4346,8 +4338,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_rename:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
@@ -4385,16 +4377,14 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_descendant:
 		case 164:
 		case 165:
-		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
+		case 168:
 		case 169:
-		case 170:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_collection:
-		case LITERAL_preceding:
 		{
 			relativePathExpr();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -4762,8 +4752,8 @@ public XQueryParser(ParserSharedInputState state) {
 							case LITERAL_rename:
 							case LITERAL_with:
 							case LITERAL_into:
-							case LITERAL_before:
-							case LITERAL_after:
+							case LITERAL_preceding:
+							case LITERAL_following:
 							case LITERAL_return:
 							case LITERAL_order:
 							case LITERAL_by:
@@ -4794,13 +4784,11 @@ public XQueryParser(ParserSharedInputState state) {
 							case LITERAL_descendant:
 							case 164:
 							case 165:
-							case LITERAL_following:
 							case LITERAL_parent:
 							case LITERAL_ancestor:
+							case 168:
 							case 169:
-							case 170:
 							case LITERAL_collection:
-							case LITERAL_preceding:
 							{
 								{
 								qName();
@@ -4966,7 +4954,7 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		else {
 			boolean synPredMatched222 = false;
-			if ((((LA(1) >= LITERAL_parent && LA(1) <= 170)))) {
+			if ((((LA(1) >= LITERAL_parent && LA(1) <= 169)))) {
 				int _m222 = mark();
 				synPredMatched222 = true;
 				inputState.guessing++;
@@ -5205,21 +5193,21 @@ public XQueryParser(ParserSharedInputState state) {
 			reverseAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 169:
+		case 168:
 		{
 			org.exist.xquery.parser.XQueryAST tmp229_AST = null;
 			tmp229_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp229_AST);
-			match(169);
+			match(168);
 			reverseAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 170:
+		case 169:
 		{
 			org.exist.xquery.parser.XQueryAST tmp230_AST = null;
 			tmp230_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp230_AST);
-			match(170);
+			match(169);
 			reverseAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
@@ -5292,8 +5280,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_rename:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
@@ -5326,13 +5314,11 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_descendant:
 		case 164:
 		case 165:
-		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
+		case 168:
 		case 169:
-		case 170:
 		case LITERAL_collection:
-		case LITERAL_preceding:
 		{
 			{
 			switch ( LA(1)) {
@@ -5384,8 +5370,8 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_rename:
 			case LITERAL_with:
 			case LITERAL_into:
-			case LITERAL_before:
-			case LITERAL_after:
+			case LITERAL_preceding:
+			case LITERAL_following:
 			case LITERAL_return:
 			case LITERAL_order:
 			case LITERAL_by:
@@ -5417,13 +5403,11 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_descendant:
 			case 164:
 			case 165:
-			case LITERAL_following:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
+			case 168:
 			case 169:
-			case 170:
 			case LITERAL_collection:
-			case LITERAL_preceding:
 			{
 				break;
 			}
@@ -5509,8 +5493,8 @@ public XQueryParser(ParserSharedInputState state) {
 				case LITERAL_rename:
 				case LITERAL_with:
 				case LITERAL_into:
-				case LITERAL_before:
-				case LITERAL_after:
+				case LITERAL_preceding:
+				case LITERAL_following:
 				case LITERAL_return:
 				case LITERAL_order:
 				case LITERAL_by:
@@ -5541,13 +5525,11 @@ public XQueryParser(ParserSharedInputState state) {
 				case LITERAL_descendant:
 				case 164:
 				case 165:
-				case LITERAL_following:
 				case LITERAL_parent:
 				case LITERAL_ancestor:
+				case 168:
 				case 169:
-				case 170:
 				case LITERAL_collection:
-				case LITERAL_preceding:
 				{
 					{
 					ncnameOrKeyword();
@@ -6015,8 +5997,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_rename:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
@@ -6057,16 +6039,14 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_descendant:
 		case 164:
 		case 165:
-		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
+		case 168:
 		case 169:
-		case 170:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_collection:
-		case LITERAL_preceding:
 		{
 			functionParameters();
 			params_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
@@ -6168,8 +6148,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_rename:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
@@ -6210,16 +6190,14 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_descendant:
 		case 164:
 		case 165:
-		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
+		case 168:
 		case 169:
-		case 170:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_collection:
-		case LITERAL_preceding:
 		{
 			expr();
 			e_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
@@ -6429,8 +6407,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_rename:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
@@ -6461,13 +6439,11 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_descendant:
 		case 164:
 		case 165:
-		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
+		case 168:
 		case 169:
-		case 170:
 		case LITERAL_collection:
-		case LITERAL_preceding:
 		{
 			elementNameOrWildcard();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -6577,8 +6553,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_rename:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
@@ -6609,13 +6585,11 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_descendant:
 		case 164:
 		case 165:
-		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
+		case 168:
 		case 169:
-		case 170:
 		case LITERAL_collection:
-		case LITERAL_preceding:
 		{
 			attributeNameOrWildcard();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -6795,8 +6769,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_rename:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
@@ -6827,13 +6801,11 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_descendant:
 		case 164:
 		case 165:
-		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
+		case 168:
 		case 169:
-		case 170:
 		case LITERAL_collection:
-		case LITERAL_preceding:
 		{
 			qn=qName();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -6941,8 +6913,8 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_rename:
 		case LITERAL_with:
 		case LITERAL_into:
-		case LITERAL_before:
-		case LITERAL_after:
+		case LITERAL_preceding:
+		case LITERAL_following:
 		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
@@ -6973,13 +6945,11 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_descendant:
 		case 164:
 		case 165:
-		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
+		case 168:
 		case 169:
-		case 170:
 		case LITERAL_collection:
-		case LITERAL_preceding:
 		{
 			qn=qName();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -8441,24 +8411,24 @@ public XQueryParser(ParserSharedInputState state) {
 			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 169:
+		case 168:
 		{
 			org.exist.xquery.parser.XQueryAST tmp366_AST = null;
 			tmp366_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp366_AST);
-			match(169);
+			match(168);
 			if ( inputState.guessing==0 ) {
 				name= "ancestor-or-self";
 			}
 			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 170:
+		case 169:
 		{
 			org.exist.xquery.parser.XQueryAST tmp367_AST = null;
 			tmp367_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp367_AST);
-			match(170);
+			match(169);
 			if ( inputState.guessing==0 ) {
 				name= "preceding-sibling";
 			}
@@ -9077,35 +9047,11 @@ public XQueryParser(ParserSharedInputState state) {
 			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case LITERAL_before:
+		case LITERAL_with:
 		{
 			org.exist.xquery.parser.XQueryAST tmp419_AST = null;
 			tmp419_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp419_AST);
-			match(LITERAL_before);
-			if ( inputState.guessing==0 ) {
-				name = "before";
-			}
-			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			break;
-		}
-		case LITERAL_after:
-		{
-			org.exist.xquery.parser.XQueryAST tmp420_AST = null;
-			tmp420_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp420_AST);
-			match(LITERAL_after);
-			if ( inputState.guessing==0 ) {
-				name = "after";
-			}
-			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			break;
-		}
-		case LITERAL_with:
-		{
-			org.exist.xquery.parser.XQueryAST tmp421_AST = null;
-			tmp421_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp421_AST);
 			match(LITERAL_with);
 			if ( inputState.guessing==0 ) {
 				name = "with";
@@ -9115,9 +9061,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_into:
 		{
-			org.exist.xquery.parser.XQueryAST tmp422_AST = null;
-			tmp422_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp422_AST);
+			org.exist.xquery.parser.XQueryAST tmp420_AST = null;
+			tmp420_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp420_AST);
 			match(LITERAL_into);
 			if ( inputState.guessing==0 ) {
 				name = "into";
@@ -9127,9 +9073,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_rename:
 		{
-			org.exist.xquery.parser.XQueryAST tmp423_AST = null;
-			tmp423_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp423_AST);
+			org.exist.xquery.parser.XQueryAST tmp421_AST = null;
+			tmp421_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp421_AST);
 			match(LITERAL_rename);
 			if ( inputState.guessing==0 ) {
 				name = "rename";
@@ -9246,8 +9192,8 @@ public XQueryParser(ParserSharedInputState state) {
 		"\"rename\"",
 		"\"with\"",
 		"\"into\"",
-		"\"before\"",
-		"\"after\"",
+		"\"preceding\"",
+		"\"following\"",
 		"\"where\"",
 		"\"return\"",
 		"\"in\"",
@@ -9314,7 +9260,6 @@ public XQueryParser(ParserSharedInputState state) {
 		"\"descendant\"",
 		"\"descendant-or-self\"",
 		"\"following-sibling\"",
-		"\"following\"",
 		"\"parent\"",
 		"\"ancestor\"",
 		"\"ancestor-or-self\"",
@@ -9332,7 +9277,6 @@ public XQueryParser(ParserSharedInputState state) {
 		"end of processing instruction",
 		"CDATA section",
 		"\"collection\"",
-		"\"preceding\"",
 		"start of processing instruction",
 		"CDATA section start",
 		"end of CDATA section",
@@ -9362,17 +9306,17 @@ public XQueryParser(ParserSharedInputState state) {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { -40954609111400448L, 251782871360828415L, 108156758190438192L, 0L, 0L, 0L};
+		long[] data = { -40954609111400448L, 251782871360828415L, 18049581270939440L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { -113152940637683712L, 107667683284185599L, 108095178618287408L, 0L, 0L, 0L};
+		long[] data = { -113152940637683712L, 107667683284185599L, 18018788024366384L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
-		long[] data = { -113152940637683712L, 107667683284185599L, 108095178626676016L, 0L, 0L, 0L};
+		long[] data = { -113152940637683712L, 107667683284185599L, 18018788032754992L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
@@ -9392,22 +9336,22 @@ public XQueryParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
 	private static final long[] mk_tokenSet_6() {
-		long[] data = { -113152940637683712L, 107667683284447743L, 108095185069126960L, 0L, 0L, 0L};
+		long[] data = { -113152940637683712L, 107667683284447743L, 18018794475205936L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	private static final long[] mk_tokenSet_7() {
-		long[] data = { -40954609111400448L, 251782871360041983L, 108156751747593520L, 0L, 0L, 0L};
+		long[] data = { -40954609111400448L, 251782871360041983L, 18049574828094768L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
 	private static final long[] mk_tokenSet_8() {
-		long[] data = { 0L, 0L, 541167976448L, 0L, 0L, 0L};
+		long[] data = { 0L, 34359738368L, 266290069504L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
 	private static final long[] mk_tokenSet_9() {
-		long[] data = { -113152940637683712L, 107667683284447743L, 108095178618287408L, 0L, 0L, 0L};
+		long[] data = { -113152940637683712L, 107667683284447743L, 18018788024366384L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
@@ -9421,12 +9365,12 @@ public XQueryParser(ParserSharedInputState state) {
 		data[0]=-16L;
 		data[1]=-288230376151711745L;
 		data[2]=-131073L;
-		data[3]=32767L;
+		data[3]=8191L;
 		return data;
 	}
 	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
 	private static final long[] mk_tokenSet_12() {
-		long[] data = { 0L, 144115188075858944L, 20266198457384960L, 0L, 0L, 0L};
+		long[] data = { 0L, 144115188075858944L, 10133099295801344L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());

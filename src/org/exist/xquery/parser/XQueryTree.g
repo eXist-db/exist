@@ -1869,9 +1869,9 @@ throws XPathException, PermissionDeniedException, EXistException
 		)
 		step=expr [p1]
 		(
-			"before" { position = Insert.INSERT_BEFORE; }
+			"preceding" { position = Insert.INSERT_BEFORE; }
 			|
-			"after" { position = Insert.INSERT_AFTER; }
+			"following" { position = Insert.INSERT_AFTER; }
 			|
 			"into" { position = Insert.INSERT_APPEND; }
 		)?
