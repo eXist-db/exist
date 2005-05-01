@@ -384,7 +384,8 @@ valueExpr throws XPathException
 
 insertExpr throws XPathException
 :
-	"insert" exprSingle ( "into" | "before" | "after" ) exprSingle
+	"insert" exprSingle 
+	( "into" | "preceding" | "following" ) exprSingle
 	;
 
 deleteExpr throws XPathException
@@ -1320,10 +1321,6 @@ reservedKeywords returns [String name]
 	"value" { name = "value"; }
 	|
 	"insert" { name = "insert"; }
-	|
-	"before" { name = "before"; }
-	|
-	"after" { name = "after"; }
 	|
 	"with" { name = "with"; }
 	|
