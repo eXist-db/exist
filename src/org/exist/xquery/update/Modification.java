@@ -100,9 +100,9 @@ public abstract class Modification extends AbstractExpression {
 	 * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
 	 */
 	public void analyze(Expression parent, int flags) throws XPathException {
-		select.analyze(this, flags);
+		select.analyze(this, flags | IN_UPDATE);
 		if (value != null)
-			value.analyze(this, flags);
+			value.analyze(this, flags | IN_UPDATE);
 	}
 	
 	/**
@@ -159,6 +159,7 @@ public abstract class Modification extends AbstractExpression {
 						item = builder.getDocument().getNode(last + 1);
 					} else {
 						((org.exist.memtree.NodeImpl)item).expand();
+//                        System.out.println(context.getBroker().getSerializer().serialize((NodeValue)item));
 					}
 				}
 				out.add(item);
@@ -196,7 +197,7 @@ public abstract class Modification extends AbstractExpression {
 	    }
 	}
 	
-	final static class IndexListener implements NodeIndexListener {
+    final static class IndexListener implements NodeIndexListener {
 
 		NodeImpl[] nodes;
 
@@ -208,28 +209,12 @@ public abstract class Modification extends AbstractExpression {
 		 * @see org.exist.dom.NodeIndexListener#nodeChanged(org.exist.dom.NodeImpl)
 		 */
 		public void nodeChanged(NodeImpl node) {
-			final long address = node.getInternalAddress();
+			long address = node.getInternalAddress();
 			for (int i = 0; i < nodes.length; i++) {
 				if (StorageAddress.equals(nodes[i].getInternalAddress(), address)) {
 					nodes[i] = node;
 				}
 			}
 		}
-
-		/* (non-Javadoc)
-		 * @see org.exist.dom.NodeIndexListener#nodeChanged(long, long)
-		 */
-		public void nodeChanged(long oldAddress, long newAddress) {
-			// Ignore the address change
-			// TODO: is this really save?
-			
-//			for (int i = 0; i < nodes.length; i++) {
-//				if (StorageAddress.equals(nodes[i].getInternalAddress(), oldAddress)) {
-//					nodes[i].setInternalAddress(newAddress);
-//				}
-//			}
-
-		}
-
 	}
 }

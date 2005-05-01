@@ -78,6 +78,7 @@ public class XQueryContext {
 	
 	private static final String JAVA_URI_START = "java:";
     private static final String XMLDB_URI_START = "xmldb:exist://";
+    
     public final static String XML_NS = "http://www.w3.org/XML/1998/namespace";
 	public final static String SCHEMA_NS = "http://www.w3.org/2001/XMLSchema";
 	public final static String SCHEMA_DATATYPES_NS =
@@ -95,6 +96,8 @@ public class XQueryContext {
 
 	private static final String TEMP_STORE_ERROR = "Error occurred while storing temporary data";
 	
+    private static final HashMap moduleClasses = new HashMap();
+    
 	// Static namespace/prefix mappings
 	protected HashMap namespaces;
 	
@@ -130,7 +133,7 @@ public class XQueryContext {
 	
 	// the watchdog object assigned to this query
 	protected XQueryWatchDog watchdog;
-	
+    
 	/**
 	 * Loaded modules.
 	 */
@@ -671,14 +674,18 @@ public class XQueryContext {
 			return module;
 		}
 		try {
-			Class mClass = Class.forName(moduleClass);
-			if (!(Module.class.isAssignableFrom(mClass))) {
-				LOG.warn(
-					"failed to load module. "
-						+ moduleClass
-						+ " is not an instance of org.exist.xquery.Module.");
-				return null;
-			}
+            Class mClass = (Class) moduleClasses.get(moduleClass);
+            if (mClass == null) {
+    			mClass = Class.forName(moduleClass);
+    			if (!(Module.class.isAssignableFrom(mClass))) {
+    				LOG.warn(
+    					"failed to load module. "
+    						+ moduleClass
+    						+ " is not an instance of org.exist.xquery.Module.");
+    				return null;
+    			}
+                moduleClasses.put(moduleClass, mClass);
+            }
 			module = (Module) mClass.newInstance();
 			if (!module.getNamespaceURI().equals(namespaceURI)) {
 				LOG.warn("the module declares a different namespace URI. Skipping...");
@@ -1316,6 +1323,7 @@ public class XQueryContext {
 	 */
 	public DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) throws XPathException {
 		try {
+            Thread.dumpStack();
 			DocumentImpl targetDoc = broker.storeTemporaryDoc(doc);
 			watchdog.addTemporaryFragment(targetDoc.getFileName());
             LOG.debug("Stored: " + targetDoc.getDocId() + ": " + targetDoc.getName() +
@@ -1329,7 +1337,7 @@ public class XQueryContext {
 			throw new XPathException(TEMP_STORE_ERROR, e);
 		}
 	}
-	
+    
 	/**
 	 * Load the default prefix/namespace mappings table and set up
 	 * internal functions.

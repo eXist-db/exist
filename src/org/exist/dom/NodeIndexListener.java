@@ -17,13 +17,4 @@ public interface NodeIndexListener {
 	 * @param node
 	 */
 	void nodeChanged(NodeImpl node);
-	
-	/**
-	 * The storage address of a node has changed. This occurrs if
-	 * a dom page is split during a modification.
-	 * 
-	 * @param oldAddress
-	 * @param newAddress
-	 */
-	void nodeChanged(long oldAddress, long newAddress);
 }

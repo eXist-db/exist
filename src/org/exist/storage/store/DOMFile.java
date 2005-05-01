@@ -36,7 +36,6 @@ import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
-import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.BufferStats;
@@ -435,7 +434,7 @@ public class DOMFile extends BTree implements Lockable {
             rec.offset = rec.page.len;
             return rec;
         }
-        NodeIndexListener idx = doc.getIndexListener();
+//        NodeIndexListener idx = doc.getIndexListener();
         
         // copy the old data up to the split point into a new array
         int oldDataLen = rec.page.getPageHeader().getDataLength();
@@ -564,11 +563,11 @@ public class DOMFile extends BTree implements Lockable {
             nextSplitPage.len += realLen;
             pos += realLen;
 
-            // report the split to the index listener. Pass it the old and the new storage address.
-            if(idx != null) {
-	            idx.nodeChanged(StorageAddress.createPointer((int) oldPageNum, tid), StorageAddress.createPointer(
-	                    (int) nextSplitPage.getPageNum(), tid));
-            }
+//            // report the split to the index listener. Pass it the old and the new storage address.
+//            if(idx != null) {
+//	            idx.nodeChanged(StorageAddress.createPointer((int) oldPageNum, tid), StorageAddress.createPointer(
+//	                    (int) nextSplitPage.getPageNum(), tid));
+//            }
             
             // save a link pointer in the original page if the record has not been
             // relocated before.

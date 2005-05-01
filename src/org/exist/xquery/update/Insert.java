@@ -27,6 +27,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
+import org.exist.dom.NodeListImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.LockException;
@@ -37,8 +38,11 @@ import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.NodeList;
 
 /**
  * @author wolf
@@ -72,6 +76,7 @@ public class Insert extends Modification {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		Sequence inSeq = select.eval(contextSequence);
+        LOG.debug("Found: " + inSeq.getLength());
 		if (inSeq.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
@@ -80,6 +85,7 @@ public class Insert extends Modification {
 		Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.getLength() == 0)
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+        contentSeq = deepCopy(contentSeq);
         try {
             NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
             IndexListener listener = new IndexListener(ql);
@@ -90,6 +96,7 @@ public class Insert extends Modification {
             DocumentSet modifiedDocs = new DocumentSet();
             int len = contentSeq.getLength();
             LOG.debug("found " + len + " nodes to insert");
+            NodeList contentList = seq2nodeList(contentSeq);
             for (int i = 0; i < ql.length; i++) {
                 node = ql[i];
                 doc = (DocumentImpl) node.getOwnerDocument();
@@ -103,15 +110,15 @@ public class Insert extends Modification {
                                 "permission to remove document denied");
                 modifiedDocs.add(doc);
 				if (mode == INSERT_APPEND) {
-					node.appendChildren(contentSeq.toNodeSet(), -1);
+					node.appendChildren(contentList, -1);
 				} else {
 	                parent = (NodeImpl) node.getParentNode();
 	                switch (mode) {
 	                    case INSERT_BEFORE:
-	                        parent.insertBefore(contentSeq.toNodeSet(), node);
+	                        parent.insertBefore(contentList, node);
 	                        break;
 	                    case INSERT_AFTER:
-	                        ((NodeImpl) parent).insertAfter(contentSeq.toNodeSet(), node);
+	                        ((NodeImpl) parent).insertAfter(contentList, node);
 	                        break;
 	                }
 				}
@@ -122,28 +129,50 @@ public class Insert extends Modification {
             if (doc != null) doc.getBroker().saveCollection(collection);
             checkFragmentation(modifiedDocs);
         } catch (PermissionDeniedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (EXistException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (LockException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (XPathException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new XPathException(getASTNode(), e.getMessage(), e);
 		} finally {
             unlockDocuments();
         }
 		return Sequence.EMPTY_SEQUENCE;
 	}
 
-	/* (non-Javadoc)
+	private NodeList seq2nodeList(Sequence contentSeq) {
+        NodeListImpl nl = new NodeListImpl();
+        for (SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+            Item item = i.nextItem();
+            if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                NodeValue val = (NodeValue) item;
+                nl.add(val.getNode());
+            }
+        }
+        return nl;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
 	 */
 	public void dump(ExpressionDumper dumper) {
-		// TODO Auto-generated method stub
-
+        dumper.display("update insert").nl();
+        dumper.startIndent();
+        value.dump(dumper);
+        dumper.endIndent();
+        switch (mode) {
+            case INSERT_AFTER:
+                dumper.display(" following ");
+                break;
+            case INSERT_BEFORE:
+                dumper.display(" preceding ");
+                break;
+            case INSERT_APPEND:
+                dumper.display("into");
+                break;
+        }
+        dumper.startIndent();
+        select.dump(dumper);
+        dumper.nl().endIndent();
 	}
 }
