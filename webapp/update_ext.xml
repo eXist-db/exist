@@ -26,22 +26,54 @@
             specified in XML and the XUpdate processor uses its own instance of
             the query engine. To forward information from the XQuery to the
             XUpdate, one had to dynamically construct an XUpdate XML fragment,
-            passing the XPath select expression as string.</para>
-        <para>We thus provide an extension for XQuery, which maps each of the
-            XUpdate instructions to a corresponding XQuery expression. The
-            syntax follows the proposal by Patrick Lehti, at least until the
+            passing the required XPath expressions as strings.</para>
+        <para>We thus provide an extension to XQuery, which maps each of the
+            XUpdate instructions to a corresponding XQuery expression. Until the
             W3C working group starts its work on an official update 
-            specification.</para>
+            specification, the basic syntax follows the proposal by Patrick Lehti.</para>
         <para>All update statements start with the keyword "update", followed by
             an update action. Available actions are: "insert", "delete", "replace", 
-            "value" and "rename".</para>
+            "value" and "rename". The return type of the expression is <option>empty()</option>.
+        </para>
+        <para>An update statement may occur at any position within the XQuery main 
+            code or a function body. When using an update within the return
+            clause of a FLWOR expression, it should be clear that one should not 
+            delete or replace nodes that are still being used by enclosing code. A delete 
+            or replace will be processed immediately, and
+            the deleted or replaced node will no longer be available. For example, the
+            following expression throws the db into an inconsistent state if //address
+            returns more than one node:</para>
+        <example>
+            <title>Bad Update</title>
+            <programlisting><![CDATA[
+for $address in //address
+return
+    update delete //address]]></programlisting>
+        </example>
+        
+        <para>However, an expression like the following is save as it only modifies the 
+            current iteration variable:</para>
+        <example>
+            <title>Complex Update</title>
+            <programlisting><![CDATA[
+for $address in //address
+return
+    (: Move lname and fname into a new name element :)
+    update replace $address with
+        <address>
+            <name>
+                <family>{$address/lname/text()}</family>
+                <given>{$address/fname/text()}</given>
+            </name>
+            {$address/city, $address/email}
+        </address>]]></programlisting>
+        </example>
         <section>
             <title>Insert</title>
             <synopsis>update insert expr ( into | following | preceding )
                 exprSingle</synopsis>
             <para>Inserts the content sequence specified in expr into the
-                element node passed
-                via exprSingle. exprSingle and expr should evaluate to a node
+                element node passed via exprSingle. exprSingle and expr should evaluate to a node
                 set. If exprSingle contains more than one element node, the
                 modification will be applied to each of the nodes. The
                 position of the insertion is determined by the keywords "into",

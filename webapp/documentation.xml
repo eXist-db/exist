@@ -37,7 +37,8 @@
                     features and extensions.</para>
                 </listitem>
                 <listitem>
-                    <para><ulink href="update_ext.xml">XQuery Update</ulink></para>
+                    <para><ulink href="update_ext.xml">XQuery Update Extensions</ulink>: eXist provides a
+                    number of extensions to update document fragments from within an XQuery.</para>
                 </listitem>
                 
                 <listitem>
