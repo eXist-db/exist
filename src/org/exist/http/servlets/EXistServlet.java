@@ -210,6 +210,36 @@ public class EXistServlet extends HttpServlet {
 		}
 	}
 
+	protected void doHead(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		User user = authenticate(request);
+		if (user == null) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN,
+					"Permission denied: unknown user " + "or password");
+			return;
+		}
+
+		String path = adjustPath(request);
+		DBBroker broker = null;
+		try {
+			broker = pool.get(user);
+			server.doHead(broker, request, response, path);
+		} catch (BadRequestException e) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e
+					.getMessage());
+		} catch (PermissionDeniedException e) {
+			response
+					.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+		} catch (NotFoundException e) {
+			response
+					.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+		} catch (EXistException e) {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e
+					.getMessage());
+		} finally {
+			pool.release(broker);
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpServlet#doDelete(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
@@ -321,37 +351,6 @@ public class EXistServlet extends HttpServlet {
 		if (!user.validate(password))
 			return null;
 		return user;
-	}
-
-	private Map getParameters(HttpServletRequest request) {
-		Map params = new HashMap();
-		String key;
-		for(Enumeration e = request.getParameterNames(); e.hasMoreElements(); ) {
-			key = (String)e.nextElement();
-			params.put(key, request.getParameter(key));
-		}
-		return params;
-	}
-	
-	private void writeResponse(Response internal, HttpServletResponse response)
-			throws IOException {
-		if (internal.getResponseCode() != HttpServletResponse.SC_OK && internal.getContent() == null) {
-			response.sendError(internal.getResponseCode(), internal
-					.getDescription());
-		} else {
-			String contentType = internal.getContentType() + "; charset="
-					+ internal.getEncoding();
-			response.setContentType(contentType);
-			response.setStatus(internal.getResponseCode());
-			if(internal.getContent() == null) {
-				if(internal.getDescription() != null)
-					internal.setContent(internal.getDescription());
-				else
-					internal.setContent("OK");
-			}
-			ServletOutputStream os = response.getOutputStream();
-			os.write(internal.getContent());
-		}
 	}
 	
 	private void startup(Configuration configuration) throws ServletException {

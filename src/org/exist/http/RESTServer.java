@@ -334,6 +334,22 @@ public class RESTServer {
         }
     }
 
+	public void doHead(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path)
+    throws BadRequestException, PermissionDeniedException,
+    NotFoundException, IOException {
+		DocumentImpl resource = broker.openDocument(path, Lock.READ_LOCK);
+		if(resource == null) {
+			throw new NotFoundException("Resouce " + path + " not found");
+		}
+		if(!resource.getPermissions().validate(broker.getUser(), Permission.READ)) {
+			throw new PermissionDeniedException("Permission to read resource " + path + " denied");
+		} 
+		response.setContentType(resource.getMimeType());
+		response.setContentLength(resource.getContentLength());
+		response.addDateHeader("Last-Modified", resource.getLastModified());
+		response.addDateHeader("Created", resource.getCreated());
+	}
+	
     /**
      * Handles POST requests. If the path leads to a binary resource with
      * mime-type "application/xquery", that resource will be read and executed
