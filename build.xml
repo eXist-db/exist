@@ -734,6 +734,10 @@
 	<!-- ================================================================== -->
 	<!-- Build installer                                                    -->
 	<!-- ================================================================== -->
+	<target name="commandline-installer">
+		<ant antfile="build.xml" dir="tools/izpack"/>
+	</target>
+	
 	<target depends="all,samples,javadocs" name="prepare-installer">
 		<taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
 			classname="com.izforge.izpack.ant.IzPackTask"/>
@@ -752,12 +756,19 @@
 			installerType="standard"/>
 	</target>
 
-	<target depends="prepare-installer" name="snapshot-installer" description="Create snapshot installer">
+	<target depends="prepare-installer,commandline-installer" 
+			name="snapshot-installer" description="Create snapshot installer">
 		<echo message="Calling IzPack to create installer ..."/>
+		<property name="inst-jar" value="installer/${project.name}-snapshot-${DSTAMP}.jar"/>
 		<izpack input="installer/install.xml"
 			output="installer/${project.name}-snapshot-${DSTAMP}.jar"
 			basedir="." izPackDir="${izpack.dir}"
 			installerType="standard"/>
+		<jar update="yes" destfile="${inst-jar}">
+			<manifest>
+				<attribute name="Main-Class" value="org.exist.izpack.CommandLineInstaller"/>
+			</manifest>
+		</jar>
 	</target>
 
 	<target depends="prepare-installer" name="cvs-build">

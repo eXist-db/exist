@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ======================================================================= -->
+<!-- Compile the wrapper class to start eXist as a service                   -->
+<!-- ======================================================================= -->
+<project basedir="." default="jar" name="CommandLineInstaller">
+
+    <property name="src" value="./src"/>
+    <property name="classes" value="./classes"/>
+	<property name="main.dir" value="../.."/>
+
+    <property name="build.compiler" value="modern"/>
+
+    <path id="classpath.izpack">
+    	<pathelement path="${izpack.dir}/lib/installer.jar"/>
+    	<pathelement path="${main.dir}/lib/core/excalibur-cli-1.0.jar"/>
+    </path>
+
+    <!-- =================================================================== -->
+    <!-- Prepare the build                                                   -->
+    <!-- =================================================================== -->
+    <target name="prepare">
+        <mkdir dir="${classes}"/>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Compiles the source code                                            -->
+    <!-- =================================================================== -->
+    <target depends="prepare" name="compile">
+        <javac debug="${build.debug}" deprecation="${build.deprecation}" 
+			destdir="${classes}" encoding="UTF-8"
+			optimize="${build.optimize}" srcdir="${src}" 
+        	source="1.4">
+			<!-- jmv target="1.4" -->
+            <classpath>
+            	<path refid="classpath.izpack"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+		<jar destfile="clinstaller.jar" basedir="${classes}" compress="true"/>
+	</target>
+</project>
