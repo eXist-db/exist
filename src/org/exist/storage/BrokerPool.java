@@ -285,8 +285,8 @@ public class BrokerPool {
 		monitor = new XQueryMonitor();
 		collectionsCache = new CollectionCache(this, COLLECTION_BUFFER_SIZE);
 		xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
+		syncDaemon = new SyncDaemon();
 		initialize();
-        syncDaemon = new SyncDaemon();
         if (syncPeriod > 0)
             syncDaemon.executePeriodically(1000, new Sync(this, syncPeriod), false);
 	}
@@ -669,6 +669,7 @@ public class BrokerPool {
             LOG.debug("Scheduling system task: " + taskConf.getClassName() + "; period = " + taskConf.getPeriod());
             syncDaemon.executePeriodically(taskConf.getPeriod(), new SystemTaskRunnable(this, task), false);
         } catch (Exception e) {
+			LOG.warn(e.getMessage(), e);
             throw new EXistException("Failed to register system task: " + e.getMessage());
         }
     }
