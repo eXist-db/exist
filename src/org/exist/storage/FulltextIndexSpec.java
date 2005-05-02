@@ -21,7 +21,6 @@
 package org.exist.storage;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -180,6 +179,30 @@ public class FulltextIndexSpec {
         return false;
     }
     
+	/**
+     * Check if a given path should be indexed.
+     *
+     * @param path path to the node
+     *
+     * @return Description of the Return Value
+     */
+    public boolean matchAttribute( NodePath path ) {
+        if ( includeAttributes) {
+            // check exclusions
+            for (int i = 0; i < excludePath.length; i++)
+                if( excludePath[i].match(path) )
+                    return false;
+                
+            return true;
+        }
+
+        for (int i = 0; i < includePath.length; i++) {
+            if( includePath[i].match(path) )
+                return true;
+        }
+        return false;
+    }
+	
     /**
      * Check if a given path should be preserveContent.
      *
