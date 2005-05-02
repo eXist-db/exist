@@ -35,7 +35,6 @@ import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
-import org.apache.xmlrpc.WebServer;
 import org.apache.xmlrpc.XmlRpc;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
@@ -90,7 +89,6 @@ public class StandaloneServer {
     	DEFAULT_PROPERTIES.setProperty("rest.container.encoding", "UTF-8");
     }
     
-    private WebServer webServer;
     private HttpServer httpServer;
     
     public StandaloneServer() {
@@ -275,7 +273,6 @@ public class StandaloneServer {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        webServer.shutdown();
                         System.exit(0);
                     }
                 }, 1000);
