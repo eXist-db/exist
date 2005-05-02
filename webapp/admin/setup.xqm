@@ -102,8 +102,9 @@ declare function setup:importFromURLs() as element()+ {
 };
 
 declare function setup:load-URL($collection, $url, $docName) as element() {
-    xdb:store($collection, $docName, xs:anyURI($url)),
-        <li>File {$docName} imported from url: {$url}</li>
+	let $x := xdb:store($collection, $docName, xs:anyURI($url))
+	return
+    	<li>File {$docName} imported from url: {$url}</li>
 };
 
 declare function setup:store-files($collection, $home, $patterns, $mimeType) as element()* {
