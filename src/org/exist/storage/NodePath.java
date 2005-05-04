@@ -70,6 +70,19 @@ public class NodePath {
         components[pos++] = component;
     }
     
+	public void addComponentAtStart(QName component) {
+		if(pos == components.length) {
+            QName[] t = new QName[pos + 1];
+            System.arraycopy(components, 0, t, 1, pos);
+            components = t;
+			components[0] = component;
+        } else {
+			System.arraycopy(components, 0, components, 1, pos);
+			components[0] = component;
+			pos++;
+        }
+	}
+	
     public void removeLastComponent() {
         components[--pos] = null;
     }

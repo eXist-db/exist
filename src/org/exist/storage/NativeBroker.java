@@ -944,10 +944,11 @@ public class NativeBroker extends DBBroker {
 				qname.setNameType(ElementValue.ATTRIBUTE);
 				tempProxy = new NodeProxy(doc, gid, address);
 				currentPath.addComponent(new QName('@' + node.getLocalName(), node.getNamespaceURI()));
+				ValueIndexSpec valSpec = null;
 				if (idxSpec != null) {
-				    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-				    if(spec != null)
-				        indexType = spec.getIndexType();
+				    valSpec = idxSpec.getIndexByPath(currentPath);
+				    if(valSpec != null)
+				        indexType = valSpec.getIndexType();
 				}
 				boolean indexAttribs = false;
 				if(ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath)) {
@@ -958,12 +959,9 @@ public class NativeBroker extends DBBroker {
 				
 				elementIndex.addRow(qname, tempProxy);
 
-				if (idxSpec != null) {
-				    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-				    if(spec != null) {
-				        valueIndex.setDocument(doc);
-				        valueIndex.storeAttribute(spec, (AttrImpl) node);
-				    }
+				if (valSpec != null) {
+			        valueIndex.setDocument(doc);
+			        valueIndex.storeAttribute(valSpec, (AttrImpl) node);
 				}
 				if(indexAttribs)
 					textEngine.storeAttribute(ftIdx, (AttrImpl) node);
@@ -1144,10 +1142,11 @@ public class NativeBroker extends DBBroker {
 					break;
 				case Node.ATTRIBUTE_NODE :
 				    currentPath.addComponent(new QName('@' + node.getLocalName(), node.getNamespaceURI()));
+					ValueIndexSpec valSpec = null;
 				    if (idxSpec != null) {
-					    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-					    if(spec != null)
-					        indexType = spec.getIndexType();
+					    valSpec = idxSpec.getIndexByPath(currentPath);
+					    if(valSpec != null)
+					        indexType = valSpec.getIndexType();
 					}
 					boolean indexAttribs = false;
 					if(ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath)) {
@@ -1163,12 +1162,9 @@ public class NativeBroker extends DBBroker {
 							node.getPrefix());
 					qname.setNameType(ElementValue.ATTRIBUTE);
 					elementIndex.addRow(qname, tempProxy);
-					if (idxSpec != null) {
-					    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-					    if(spec != null) {
-					        valueIndex.setDocument(doc);
-					        valueIndex.storeAttribute(spec, (AttrImpl) node);
-					    }
+					if (valSpec != null) {
+				        valueIndex.setDocument(doc);
+				        valueIndex.storeAttribute(valSpec, (AttrImpl) node);
 					}
 					if (indexAttribs)
 						textEngine.storeAttribute(ftIdx, (AttrImpl) node);
@@ -2512,10 +2508,11 @@ public class NativeBroker extends DBBroker {
 				tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
                 if (currentPath != null)
                     currentPath.addComponent(new QName('@' + node.getLocalName(), node.getNamespaceURI()));
+				ValueIndexSpec valSpec = null;
 				if (idxSpec != null) {
-				    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-				    if(spec != null) {
-				        indexType = spec.getIndexType();
+				    valSpec = idxSpec.getIndexByPath(currentPath);
+				    if(valSpec != null) {
+				        indexType = valSpec.getIndexType();
 				    }
 				}
 				boolean indexAttribs = false;
@@ -2534,12 +2531,9 @@ public class NativeBroker extends DBBroker {
 				elementIndex.setDocument(doc);
 				elementIndex.addRow(qname, tempProxy);
 
-				if (idxSpec != null) {
-				    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-				    if(spec != null) {
-				        valueIndex.setDocument(doc);
-				        valueIndex.storeAttribute(spec, (AttrImpl) node);
-				    }
+				if (valSpec != null) {
+			        valueIndex.setDocument(doc);
+			        valueIndex.storeAttribute(valSpec, (AttrImpl) node);
 				}
 				if(indexAttribs && !isTemp)
 					textEngine.storeAttribute(ftIdx, (AttrImpl) node);
