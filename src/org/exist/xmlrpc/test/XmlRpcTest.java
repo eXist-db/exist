@@ -44,7 +44,7 @@ import org.exist.storage.serializers.EXistOutputKeys;
  */
 public class XmlRpcTest extends TestCase {
     
-    private final static String URI = "http://localhost:8081";
+    private final static String URI = "http://localhost:8088/xmlrpc";
     
     private final static String XML_DATA =
     	"<test>" +
