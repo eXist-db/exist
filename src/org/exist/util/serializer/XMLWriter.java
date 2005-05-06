@@ -336,6 +336,8 @@ public class XMLWriter {
 				writer.write(" PUBLIC \"" + publicId + "\"");
 			}
 			if (systemId != null) {
+                if (publicId == null)
+                    writer.write(" SYSTEM");
 				writer.write(" \"" + systemId + "\"");
 			}
 			writer.write(">");
