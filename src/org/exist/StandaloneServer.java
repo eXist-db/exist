@@ -105,7 +105,6 @@ public class StandaloneServer {
         int size = opt.size();
         CLOption option;
         int httpPort = 8088;
-        int rpcPort = 8081;
         int threads = 5;
         for(int i = 0; i < size; i++) {
             option = (CLOption)opt.get(i);
