@@ -171,6 +171,11 @@ public class XIncludeFilter implements Receiver {
 		}
 	}
 	
+	public void documentType(String name, String publicId, String systemId) 
+	throws SAXException {
+		receiver.documentType(name, publicId, systemId);
+	}
+	
 	protected void processXInclude(String href) throws SAXException {
 		if(href == null)
 			throw new SAXException("No href attribute found in XInclude include element");

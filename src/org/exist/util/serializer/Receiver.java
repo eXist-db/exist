@@ -57,4 +57,6 @@ public interface Receiver {
     public void cdataSection(char[] ch, int start, int len) throws SAXException;
 	
 	public void processingInstruction(String target, String data) throws SAXException;
+	
+	public void documentType(String name, String publicId, String systemId) throws SAXException;
 }

@@ -30,6 +30,7 @@ import org.apache.oro.text.perl.Perl5Util;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentTypeImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.Match;
 import org.exist.dom.NodeImpl;
@@ -106,6 +107,13 @@ public class NativeSerializer extends Serializer {
     	setDocument(doc);
     	NodeList children = doc.getChildNodes();
     	if (generateDocEvent) receiver.startDocument();
+		if (doc.getDoctype()!=null){
+			if (getProperty(EXistOutputKeys.OUPUT_DOCTYPE, "no").equals("yes")) {
+				final NodeImpl n = (NodeImpl) doc.getDoctype();
+				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), n
+						.getGID(), true, null, new TreeSet());
+			}
+		}
     	// iterate through children
     	for (int i = 0; i < children.getLength(); i++) {
     		final NodeImpl n = (NodeImpl) children.item(i);
@@ -241,6 +249,12 @@ public class NativeSerializer extends Serializer {
         		receiver.attribute(node.getQName(), cdata);
             node.release();
             break;
+		case Node.DOCUMENT_TYPE_NODE:
+			String systemId = ((DocumentTypeImpl) node).getSystemId();
+			String publicId =  ((DocumentTypeImpl) node).getPublicId();
+			String name = ((DocumentTypeImpl) node).getName();
+			receiver.documentType(name, publicId, systemId);
+			break;
         case Node.PROCESSING_INSTRUCTION_NODE:
             receiver.processingInstruction(
                     ((ProcessingInstructionImpl) node).getTarget(),

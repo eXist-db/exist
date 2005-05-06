@@ -240,6 +240,17 @@ public class MemTreeBuilder {
 		return nodeNr;
 	}
     
+	public int documentType(String publicId, String systemId) {
+//		int nodeNr = doc.addNode(Node.DOCUMENT_TYPE_NODE, level, null);
+//		doc.addChars(nodeNr, data);
+//		linkNode(nodeNr);
+//		return nodeNr;
+		return -1;
+	}
+	
+	public void documentType(String name, String publicId, String systemId) {
+	}
+	
     private void linkNode(int nodeNr) {
         int prevNr = prevNodeInLevel[level];
         if (prevNr > -1)

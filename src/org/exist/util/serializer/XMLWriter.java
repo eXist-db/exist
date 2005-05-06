@@ -32,8 +32,8 @@ import org.exist.util.XMLString;
 import org.exist.util.serializer.encodings.CharacterSet;
 
 /**
- * Write XML to a writer. This class defines methods similar to SAX.
- * It deals with opening and closing tags, writing attributes and so on.
+ * Write XML to a writer. This class defines methods similar to SAX. It deals
+ * with opening and closing tags, writing attributes and so on.
  * 
  * @author wolf
  */
@@ -43,11 +43,15 @@ public class XMLWriter {
 	static {
 		defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
 	}
-	
+
 	protected Writer writer = null;
+
 	protected CharacterSet charSet = null;
+
 	protected boolean tagIsOpen = false;
+
 	protected boolean tagIsEmpty = true;
+
 	protected boolean declarationWritten = false;
 
 	protected Properties outputProperties;
@@ -55,16 +59,17 @@ public class XMLWriter {
 	private char[] charref = new char[10];
 
 	private static boolean[] textSpecialChars;
+
 	private static boolean[] attrSpecialChars;
-	
+
 	static {
 		textSpecialChars = new boolean[128];
 		Arrays.fill(textSpecialChars, false);
 		textSpecialChars['<'] = true;
 		textSpecialChars['>'] = true;
-//		textSpecialChars['\r'] = true;
+		// textSpecialChars['\r'] = true;
 		textSpecialChars['&'] = true;
-		
+
 		attrSpecialChars = new boolean[128];
 		Arrays.fill(attrSpecialChars, false);
 		attrSpecialChars['<'] = true;
@@ -78,7 +83,7 @@ public class XMLWriter {
 
 	public XMLWriter() {
 	}
-	
+
 	public XMLWriter(Writer writer) {
 		super();
 		this.writer = writer;
@@ -90,18 +95,17 @@ public class XMLWriter {
 	 * @param outputProperties
 	 */
 	public void setOutputProperties(Properties properties) {
-		if(properties == null)
+		if (properties == null)
 			outputProperties = defaultProperties;
 		else
 			outputProperties = properties;
-		String encoding =
-			outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+		String encoding = outputProperties.getProperty(OutputKeys.ENCODING,
+				"UTF-8");
 		charSet = CharacterSet.getCharacterSet(encoding);
 	}
 
 	/**
-	 * Set a new writer. Calling this method will reset the state
-	 * of the object.
+	 * Set a new writer. Calling this method will reset the state of the object.
 	 * 
 	 * @param writer
 	 */
@@ -111,7 +115,7 @@ public class XMLWriter {
 		tagIsEmpty = true;
 		declarationWritten = false;
 	}
-	
+
 	public void startDocument() throws TransformerException {
 		tagIsOpen = false;
 		tagIsEmpty = true;
@@ -142,7 +146,7 @@ public class XMLWriter {
 			if (tagIsOpen)
 				closeStartTag(false);
 			writer.write('<');
-			if(qname.getPrefix() != null && qname.getPrefix().length() > 0) {
+			if (qname.getPrefix() != null && qname.getPrefix().length() > 0) {
 				writer.write(qname.getPrefix());
 				writer.write(':');
 			}
@@ -152,7 +156,7 @@ public class XMLWriter {
 			throw new TransformerException(e.getMessage(), e);
 		}
 	}
-	
+
 	public void endElement(String qname) throws TransformerException {
 		try {
 			if (tagIsOpen)
@@ -173,7 +177,7 @@ public class XMLWriter {
 				closeStartTag(true);
 			else {
 				writer.write("</");
-				if(qname.getPrefix() != null && qname.getPrefix().length() > 0) {
+				if (qname.getPrefix() != null && qname.getPrefix().length() > 0) {
 					writer.write(qname.getPrefix());
 					writer.write(':');
 				}
@@ -184,15 +188,16 @@ public class XMLWriter {
 			throw new TransformerException(e.getMessage(), e);
 		}
 	}
-	
+
 	public void namespace(String prefix, String nsURI)
-		throws TransformerException {
+			throws TransformerException {
 		if ((nsURI == null || nsURI.length() == 0)
-			&& (prefix == null || prefix.length() == 0))
+				&& (prefix == null || prefix.length() == 0))
 			return;
 		try {
 			if (!tagIsOpen)
-				throw new TransformerException("Found a namespace declaration outside an element");
+				throw new TransformerException(
+						"Found a namespace declaration outside an element");
 			writer.write(' ');
 			writer.write("xmlns");
 			if (prefix != null && prefix.length() > 0) {
@@ -208,12 +213,13 @@ public class XMLWriter {
 	}
 
 	public void attribute(String qname, String value)
-		throws TransformerException {
+			throws TransformerException {
 		try {
 			if (!tagIsOpen) {
 				characters(value);
 				return;
-//				throw new TransformerException("Found an attribute outside an element");
+				// throw new TransformerException("Found an attribute outside an
+				// element");
 			}
 			writer.write(' ');
 			writer.write(qname);
@@ -225,15 +231,17 @@ public class XMLWriter {
 		}
 	}
 
-	public void attribute(QName qname, String value) throws TransformerException {
+	public void attribute(QName qname, String value)
+			throws TransformerException {
 		try {
 			if (!tagIsOpen) {
 				characters(value);
 				return;
-//				throw new TransformerException("Found an attribute outside an element");
-			}	
+				// throw new TransformerException("Found an attribute outside an
+				// element");
+			}
 			writer.write(' ');
-			if(qname.getPrefix() != null && qname.getPrefix().length() > 0) {
+			if (qname.getPrefix() != null && qname.getPrefix().length() > 0) {
 				writer.write(qname.getPrefix());
 				writer.write(':');
 			}
@@ -245,7 +253,7 @@ public class XMLWriter {
 			throw new TransformerException(e.getMessage(), e);
 		}
 	}
-	
+
 	public void characters(CharSequence chars) throws TransformerException {
 		if (!declarationWritten)
 			writeDeclaration();
@@ -259,7 +267,7 @@ public class XMLWriter {
 	}
 
 	public void characters(char[] ch, int start, int len)
-		throws TransformerException {
+			throws TransformerException {
 		if (!declarationWritten)
 			writeDeclaration();
 		XMLString s = new XMLString(ch, start, len);
@@ -268,7 +276,7 @@ public class XMLWriter {
 	}
 
 	public void processingInstruction(String target, String data)
-		throws TransformerException {
+			throws TransformerException {
 		if (!declarationWritten)
 			writeDeclaration();
 		try {
@@ -300,18 +308,42 @@ public class XMLWriter {
 		}
 	}
 
-    public void cdataSection(char[] ch, int start, int len) throws TransformerException {
-        if (tagIsOpen)
-            closeStartTag(false);
-        try {
-            writer.write("<![CDATA[");
-            writer.write(ch, start, len);
-            writer.write("]]>");
-        } catch (IOException e) {
-            throw new TransformerException(e.getMessage(), e);
-        }
-    }
-    
+	public void cdataSection(char[] ch, int start, int len)
+			throws TransformerException {
+		if (tagIsOpen)
+			closeStartTag(false);
+		try {
+			writer.write("<![CDATA[");
+			writer.write(ch, start, len);
+			writer.write("]]>");
+		} catch (IOException e) {
+			throw new TransformerException(e.getMessage(), e);
+		}
+	}
+
+	public void documentType(String name, String publicId, String systemId)
+			throws TransformerException {
+		if (!declarationWritten)
+			writeDeclaration();
+
+		if (publicId == null && systemId == null)
+			return;
+
+		try {
+			writer.write("<!DOCTYPE ");
+			writer.write(name);
+			if (publicId != null) {
+				writer.write(" PUBLIC \"" + publicId + "\"");
+			}
+			if (systemId != null) {
+				writer.write(" \"" + systemId + "\"");
+			}
+			writer.write(">");
+		} catch (IOException e) {
+			throw new TransformerException(e.getMessage(), e);
+		}
+	}
+
 	protected void closeStartTag(boolean isEmpty) throws TransformerException {
 		try {
 			if (tagIsOpen) {
@@ -329,18 +361,16 @@ public class XMLWriter {
 	protected void writeDeclaration() throws TransformerException {
 		if (declarationWritten)
 			return;
-		if(outputProperties == null)
+		if (outputProperties == null)
 			outputProperties = defaultProperties;
 		declarationWritten = true;
-		String omitXmlDecl =
-			outputProperties.getProperty(
-				OutputKeys.OMIT_XML_DECLARATION,
-				"yes");
-		String version =
-			outputProperties.getProperty(OutputKeys.VERSION, "1.0");
+		String omitXmlDecl = outputProperties.getProperty(
+				OutputKeys.OMIT_XML_DECLARATION, "yes");
+		String version = outputProperties
+				.getProperty(OutputKeys.VERSION, "1.0");
 		String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
-		String encoding =
-			outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+		String encoding = outputProperties.getProperty(OutputKeys.ENCODING,
+				"UTF-8");
 		if (omitXmlDecl.equals("no")) {
 			try {
 				writer.write("<?xml version=\"");
@@ -360,68 +390,71 @@ public class XMLWriter {
 		}
 	}
 
-	private final void writeChars(CharSequence s, boolean inAttribute) throws IOException {
-	    boolean[] specialChars = inAttribute ? attrSpecialChars : textSpecialChars;
+	private final void writeChars(CharSequence s, boolean inAttribute)
+			throws IOException {
+		boolean[] specialChars = inAttribute ? attrSpecialChars
+				: textSpecialChars;
 		char ch = 0;
 		final int len = s.length();
 		int pos = 0, i;
-		while(pos < len) {
-		    i = pos;
-		    while(i < len) {
-		        ch = s.charAt(i);
-				if(ch < 128) {
-		            if(specialChars[ch])
-		                break;
-		            else
-		                i++;
-		        } else if(!charSet.inCharacterSet(ch) || ch == 160)
-		            break;
-		        else
-		            i++;
-		    }
-		    writeCharSeq(s, pos, i);
-//	        writer.write(s.subSequence(pos, i).toString());
-		    if(i >= len)
-		        return;
-		    switch (ch) {
-				case '<' :
-					writer.write("&lt;");
+		while (pos < len) {
+			i = pos;
+			while (i < len) {
+				ch = s.charAt(i);
+				if (ch < 128) {
+					if (specialChars[ch])
+						break;
+					else
+						i++;
+				} else if (!charSet.inCharacterSet(ch) || ch == 160)
 					break;
-				case '>' :
-					writer.write("&gt;");
-					break;
-				case '&' :
-					writer.write("&amp;");
-					break;
-				case '\r' :
-					writer.write("&#xD;");
-					break;
-				case '\n' :
-					writer.write("&#xA;");
-					break;
-				case '\t' :
-					writer.write("&#x9;");
-					break;
-				case '"' :
-					writer.write("&#34;");
-					break;
-				// non-breaking space:
-				case 160:
-					writer.write("&#160;");
-					break;
-				default:
-				    writeCharacterReference(ch);
-		    }
-		    pos = ++i;
+				else
+					i++;
+			}
+			writeCharSeq(s, pos, i);
+			// writer.write(s.subSequence(pos, i).toString());
+			if (i >= len)
+				return;
+			switch (ch) {
+			case '<':
+				writer.write("&lt;");
+				break;
+			case '>':
+				writer.write("&gt;");
+				break;
+			case '&':
+				writer.write("&amp;");
+				break;
+			case '\r':
+				writer.write("&#xD;");
+				break;
+			case '\n':
+				writer.write("&#xA;");
+				break;
+			case '\t':
+				writer.write("&#x9;");
+				break;
+			case '"':
+				writer.write("&#34;");
+				break;
+			// non-breaking space:
+			case 160:
+				writer.write("&#160;");
+				break;
+			default:
+				writeCharacterReference(ch);
+			}
+			pos = ++i;
 		}
 	}
 
-	private void writeCharSeq(CharSequence ch, int start, int end) throws IOException {
-		for(int i = start; i < end; i++) {
+	private void writeCharSeq(CharSequence ch, int start, int end)
+			throws IOException {
+		for (int i = start; i < end; i++) {
 			writer.write(ch.charAt(i));
 		}
 	}
-	
+
 	protected void writeCharacterReference(char charval) throws IOException {
 		int o = 0;
 		charref[o++] = '&';

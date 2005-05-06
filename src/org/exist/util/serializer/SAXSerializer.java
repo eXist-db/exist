@@ -409,6 +409,15 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 	public void endDTD() throws SAXException {
 	}
 
+	public void documentType(String name, String publicId, String systemId) 
+	throws SAXException {
+	try {
+		receiver.documentType(name, publicId, systemId);
+	} catch (TransformerException e) {
+		throw new SAXException(e.getMessage(), e);
+	}
+}
+	
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
 	 */

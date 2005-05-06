@@ -203,6 +203,11 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         // TODO Ignored
     }
 
+	public void documentType(String name, String publicId, String systemId) 
+	throws SAXException {
+		builder.documentType(name, publicId, systemId);
+	}
+	
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#comment(char[], int, int)
      */
