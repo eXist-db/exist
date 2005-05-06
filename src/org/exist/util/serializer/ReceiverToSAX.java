@@ -165,4 +165,11 @@ public class ReceiverToSAX implements Receiver {
             lexicalHandler.endCDATA();
     }
 
+	public void documentType(String name, String publicId, String systemId) 
+	throws SAXException {
+		if(lexicalHandler != null){
+			lexicalHandler.startDTD( name, publicId, systemId);
+			lexicalHandler.endDTD();
+		}
+	}
 }
