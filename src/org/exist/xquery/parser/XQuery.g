@@ -122,7 +122,8 @@ imaginaryTokenDefinitions
 	DEF_FUNCTION_NS_DECL 
 	GLOBAL_VAR 
 	FUNCTION_DECL 
-	PROLOG 
+	PROLOG
+	OPTION
 	ATOMIC_TYPE 
 	MODULE 
 	ORDER_BY 
@@ -195,6 +196,9 @@ prolog throws XPathException
 			( "declare" "namespace" )
 			=> namespaceDecl { inSetters = false; }
 			|
+			( "declare" "option" )
+			=> optionDecl { inSetters = false; }
+			|
 			( "declare" "function" )
 			=> functionDecl { inSetters = false; }
 			|
@@ -261,6 +265,16 @@ varDecl throws XPathException
 	{ 
 		#varDecl= #(#[GLOBAL_VAR, varName], #varDecl);
 		#varDecl.copyLexInfo(#decl);
+	}
+	;
+
+optionDecl
+{ String qn = null; }
+:
+	decl:"declare"! opt:"option"! qn=qName! STRING_LITERAL
+	{
+		#optionDecl = #(#[OPTION, qn], #optionDecl);
+		#optionDecl.copyLexInfo(#decl);
 	}
 	;
 	
@@ -1327,6 +1341,8 @@ reservedKeywords returns [String name]
 	"into" { name = "into"; }
 	|
 	"rename" { name = "rename"; }
+	|
+	"option" { name = "option"; }
 	;
 
 /**

@@ -264,6 +264,14 @@ throws PermissionDeniedException, EXistException, XPathException
 			)
 		)
 		|
+		#(
+			qname2:OPTION
+			content:STRING_LITERAL
+			{
+				context.addPragma(qname2.getText(), content.getText());
+			}
+		)
+		|
 		functionDecl [path]
 		|
 		#(
