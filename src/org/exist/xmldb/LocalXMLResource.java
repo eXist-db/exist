@@ -22,8 +22,8 @@ import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.DOMStreamer;
-import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.NodeValue;
@@ -187,12 +187,11 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			try {
 				String option = parent.properties.getProperty(
 						Serializer.GENERATE_DOC_EVENTS, "false");
-				DOMStreamer streamer = DOMStreamerPool.getInstance()
-						.borrowDOMStreamer();
+                DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
 				streamer.setContentHandler(handler);
 				streamer.setLexicalHandler(lexicalHandler);
 				streamer.serialize(root, option.equalsIgnoreCase("true"));
-				DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
+				SerializerPool.getInstance().returnObject(streamer);
 			} catch (Exception e) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e
 						.getMessage(), e);

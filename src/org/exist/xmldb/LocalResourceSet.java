@@ -13,7 +13,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SAXSerializerPool;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
@@ -86,10 +86,9 @@ public class LocalResourceSet implements ResourceSet {
 	}
 
 	public Resource getMembersAsResource() throws XMLDBException {
-		SAXSerializer handler = SAXSerializerPool.getInstance().borrowSAXSerializer();
-		handler.setOutputProperties(outputProperties);
+        SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 		StringWriter writer = new StringWriter();
-		handler.setWriter(writer);
+		handler.setOutput(writer, outputProperties);
 		
 		DBBroker broker = null;
 		try {
@@ -140,6 +139,7 @@ public class LocalResourceSet implements ResourceSet {
 		}
 		Resource res = new LocalXMLResource(user, brokerPool, collection, "");
 		res.setContent(writer.toString());
+        SerializerPool.getInstance().returnObject(handler);
 		return res;
 	}
 

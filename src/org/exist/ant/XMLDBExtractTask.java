@@ -3,18 +3,22 @@
  */
 package org.exist.ant;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Properties;
+
+import javax.xml.transform.OutputKeys;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SAXSerializerPool;
+import org.exist.util.serializer.SerializerPool;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-
-import javax.xml.transform.OutputKeys;
-import java.io.*;
-import java.util.Properties;
 
 /**
  * an ant task to extract the content of a collection or resource
@@ -149,8 +153,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
       Properties outputProperties = new Properties();
       outputProperties.setProperty(OutputKeys.INDENT, "yes");
 
-      SAXSerializer serializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
-      serializer.setOutputProperties(outputProperties);
+      SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
       Writer writer = null;
       if (dest.isDirectory())
@@ -167,9 +170,9 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
         writer = new FileWriter(dest);
       }
       log("Writing resource "+resource.getId()+" to destination "+dest.getAbsolutePath(), Project.MSG_DEBUG);
-      serializer.setWriter(writer);
+      serializer.setOutput(writer, outputProperties);
       resource.getContentAsSAX(serializer);
-      SAXSerializerPool.getInstance().returnSAXSerializer(serializer);
+      SerializerPool.getInstance().returnObject(serializer);
       writer.close();
     } else
     {

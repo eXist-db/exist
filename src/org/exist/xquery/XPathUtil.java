@@ -27,11 +27,11 @@ import java.util.List;
 
 import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.NodeProxy;
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
-import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.util.serializer.DOMStreamer;
-import org.exist.util.serializer.DOMStreamerPool;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FloatValue;
@@ -78,8 +78,7 @@ public class XPathUtil {
         else if (obj instanceof Long)
             return new IntegerValue(((Long) obj).longValue(), Type.LONG);
         else if (obj instanceof Node) {
-            DOMStreamer streamer = DOMStreamerPool.getInstance()
-                    .borrowDOMStreamer();
+            DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
             try {
                 MemTreeBuilder builder = new MemTreeBuilder();
                 builder.startDocument();
@@ -93,7 +92,7 @@ public class XPathUtil {
                         "Failed to transform node into internal model: "
                                 + e.getMessage());
             } finally {
-                DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
+                SerializerPool.getInstance().returnObject(streamer);
             }
         } else if (obj instanceof List) {
             boolean createNodeSequence = true;
@@ -113,8 +112,7 @@ public class XPathUtil {
             }
             return seq;
         } else if (obj instanceof NodeList) {
-            DOMStreamer streamer = DOMStreamerPool.getInstance()
-                    .borrowDOMStreamer();
+            DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
             try {
                 MemTreeBuilder builder = new MemTreeBuilder();
                 builder.startDocument();
@@ -137,7 +135,7 @@ public class XPathUtil {
                         "Failed to transform node into internal model: "
                                 + e.getMessage());
             } finally {
-                DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
+                SerializerPool.getInstance().returnObject(streamer);
             }
         } else if (obj instanceof Object[]) {
             boolean createNodeSequence = true;

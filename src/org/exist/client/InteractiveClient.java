@@ -83,7 +83,7 @@ import org.exist.util.Occurrences;
 import org.exist.util.ProgressBar;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SAXSerializerPool;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
@@ -2235,10 +2235,8 @@ public class InteractiveClient {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(
                     queryHistoryFile));
-            SAXSerializer serializer = SAXSerializerPool.getInstance()
-            .borrowSAXSerializer();
-            serializer.setWriter(writer);
-            serializer.setOutputProperties(null);
+            SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+            serializer.setOutput(writer, null);
             int p = 0;
             if (queryHistory.size() > 20)
                 p = queryHistory.size() - 20;
@@ -2254,7 +2252,7 @@ public class InteractiveClient {
             serializer.endElement("", "history", "history");
             serializer.endDocument();
             writer.close();
-            SAXSerializerPool.getInstance().returnSAXSerializer(serializer);
+            SerializerPool.getInstance().returnObject(serializer);
         } catch (IOException e) {
             System.err.println("IO error while writing query history.");
         } catch (SAXException e) {

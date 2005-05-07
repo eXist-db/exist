@@ -81,7 +81,7 @@ import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.util.SyntaxException;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SAXSerializerPool;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.Pragma;
@@ -103,6 +103,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
 import antlr.collections.AST;
 
 /**
@@ -138,27 +139,27 @@ public class RpcConnection extends Thread {
 		createCollection(user, name, null);
 	}
 
-	public void createCollection(User user, String name, Date created) throws Exception,
-	PermissionDeniedException {
-DBBroker broker = null;
-try {
-	broker = brokerPool.get(user);
-	Collection current = broker.getOrCreateCollection(name);
-	if (created != null)
-		current.setCreationTime( created.getTime());	
-
-	LOG.debug("creating collection " + name);
-	broker.saveCollection(current);
-	broker.flush();
-	//broker.sync();
-	LOG.debug("collection " + name + " has been created");
-} catch (Exception e) {
-	LOG.debug(e);
-	throw e;
-} finally {
-	brokerPool.release(broker);
-}
-}
+    public void createCollection(User user, String name, Date created) throws Exception,
+    PermissionDeniedException {
+        DBBroker broker = null;
+        try {
+            broker = brokerPool.get(user);
+            Collection current = broker.getOrCreateCollection(name);
+            if (created != null)
+                current.setCreationTime( created.getTime());	
+            
+            LOG.debug("creating collection " + name);
+            broker.saveCollection(current);
+            broker.flush();
+            //broker.sync();
+            LOG.debug("collection " + name + " has been created");
+        } catch (Exception e) {
+            LOG.debug(e);
+            throw e;
+        } finally {
+            brokerPool.release(broker);
+        }
+    }
 	
 	public void configureCollection(User user, String collName, String configuration)
 	throws EXistException {
@@ -1650,10 +1651,9 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 			serializer.reset();
 			serializer.setProperties(parameters);
 			
-			SAXSerializer handler = SAXSerializerPool.getInstance().borrowSAXSerializer();
-			handler.setOutputProperties(getProperties(parameters));
+            SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 			StringWriter writer = new StringWriter();
-			handler.setWriter(writer);
+			handler.setOutput(writer, getProperties(parameters));
 			
 //			serialize results
 			handler.startDocument();
@@ -1684,6 +1684,7 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 			handler.endElement(Serializer.EXIST_NS, "result", "exist:result");
 			handler.endPrefixMapping("exist");
 			handler.endDocument();
+            SerializerPool.getInstance().returnObject(handler);
 			return writer.toString();
 		} finally {
 			brokerPool.release(broker);
