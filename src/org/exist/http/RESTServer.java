@@ -71,7 +71,7 @@ import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SAXSerializerPool;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Pragma;
 import org.exist.xquery.XPathException;
@@ -852,9 +852,9 @@ public class RESTServer {
         SAXSerializer serializer = null;
         StringWriter writer = new StringWriter();
         try {
-            serializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
-            serializer.setWriter(writer);
-            serializer.setOutputProperties(defaultProperties);
+            serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+
+            serializer.setOutput(writer, defaultProperties);
             AttributesImpl attrs = new AttributesImpl();
 
             serializer.startDocument();
@@ -918,7 +918,7 @@ public class RESTServer {
             LOG.warn("Error while serializing collection contents: "
                     + e.getMessage(), e);
         } finally {
-            SAXSerializerPool.getInstance().returnSAXSerializer(serializer);
+            SerializerPool.getInstance().returnObject(serializer);
         }
         return writer.toString();
     }
@@ -949,14 +949,14 @@ public class RESTServer {
         SAXSerializer sax = null;
         try {
             StringWriter writer = new StringWriter();
-            sax = SAXSerializerPool.getInstance().borrowSAXSerializer();
-            sax.setWriter(writer);
-            sax.setOutputProperties(outputProperties);
+            sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+            sax.setOutput(writer, outputProperties);
             serializer.setProperties(outputProperties);
             serializer.setSAXHandlers(sax, sax);
 
             serializer.toSAX(results, start, howmany, wrap);
 
+            SerializerPool.getInstance().returnObject(sax);
             return writer.toString();
         } catch (SAXException e) {
             LOG.warn(e);

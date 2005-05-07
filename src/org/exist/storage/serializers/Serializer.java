@@ -60,7 +60,7 @@ import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.ReceiverToSAX;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SAXSerializerPool;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -462,9 +462,8 @@ public abstract class Serializer implements XMLReader {
 		outputProperties.setProperty(
 			OutputKeys.OMIT_XML_DECLARATION,
 			xmlDecl ? "no" : "yes");
-		xmlout = SAXSerializerPool.getInstance().borrowSAXSerializer();
-		xmlout.setWriter(writer);
-		xmlout.setOutputProperties(outputProperties);
+        xmlout = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+		xmlout.setOutput(writer, outputProperties);
 		if (getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes")
 				.equals("yes")) {
 			xinclude.setReceiver(xmlout);
@@ -475,7 +474,7 @@ public abstract class Serializer implements XMLReader {
 
 	protected void releasePrettyPrinter() {
 		if (xmlout != null)
-			SAXSerializerPool.getInstance().returnSAXSerializer(xmlout);
+            SerializerPool.getInstance().returnObject(xmlout);
 		xmlout = null;
 	}
 

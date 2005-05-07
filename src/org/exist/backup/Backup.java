@@ -36,10 +36,11 @@ import javax.xml.transform.OutputKeys;
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SAXSerializerPool;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xquery.value.DateTimeValue;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xmldb.api.DatabaseManager;
@@ -48,7 +49,6 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-import org.exist.xquery.value.DateTimeValue;
 
 public class Backup {
 
@@ -208,9 +208,8 @@ public class Backup {
 					new FileOutputStream(path + '/' + "__contents__.xml"),
 					"UTF-8"));
 		// serializer writes to __contents__.xml
-		SAXSerializer serializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
-		serializer.setWriter(contents);
-		serializer.setOutputProperties(defaultOutputProperties);
+		SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+		serializer.setOutput(contents, defaultOutputProperties);
 		
 		serializer.startDocument();
 		serializer.startPrefixMapping("", NS);
@@ -262,12 +261,11 @@ public class Backup {
 						new BufferedWriter(
 							new OutputStreamWriter(os, "UTF-8"));
 					// write resource to contentSerializer
-					contentSerializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
-					contentSerializer.setWriter(writer);
-					contentSerializer.setOutputProperties(defaultOutputProperties);
+                    contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+					contentSerializer.setOutput(writer, defaultOutputProperties);
 					((EXistResource)resource).setLexicalHandler(contentSerializer);
 					((XMLResource)resource).getContentAsSAX(contentSerializer);
-					SAXSerializerPool.getInstance().returnSAXSerializer(contentSerializer);
+					SerializerPool.getInstance().returnObject(contentSerializer);
 					writer.close();
 			    } catch(Exception e) {
 			        System.err.println("An exception occurred while writing the resource: " + e.getMessage());
@@ -336,7 +334,7 @@ public class Backup {
 		serializer.endPrefixMapping("");
 		serializer.endDocument();
 		contents.close();
-		SAXSerializerPool.getInstance().returnSAXSerializer(serializer);
+		SerializerPool.getInstance().returnObject(serializer);
 		// descend into subcollections
 		Collection child;
 		for (int i = 0; i < collections.length; i++) {

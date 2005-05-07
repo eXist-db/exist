@@ -46,37 +46,46 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 		defaultProperties.setProperty(OutputKeys.INDENT, "false");
 	}
 	
+    private final static int XML_WRITER = 0;
+    private final static int XHTML_WRITER = 1;
+    
+    private XMLWriter writers[] = {
+            new XMLIndenter(),
+            new XHTMLWriter()
+    };
+    
+    
 	protected XMLWriter receiver;
-	protected Properties outputProperties;
+	protected Properties outputProperties = defaultProperties;
 	protected NamespaceSupport nsSupport = new NamespaceSupport();
 	protected HashMap namespaceDecls = new HashMap();
 	protected HashMap optionalNamespaceDecls = new HashMap();
 
 	public SAXSerializer() {
 		super();
-		this.receiver = new XMLIndenter();
+		receiver = writers[XML_WRITER];
 	}
 	
 	public SAXSerializer(Writer writer, Properties outputProperties) {
 		super();
-		this.outputProperties = outputProperties;
-		if(outputProperties == null)
-			outputProperties = defaultProperties;
-		this.receiver = new XMLIndenter(writer);
-		this.receiver.setOutputProperties(outputProperties);
-	}
-
-	public void setOutputProperties(Properties properties) {
-		if(properties == null)
-			outputProperties = defaultProperties;
-		outputProperties = properties;
-		receiver.setOutputProperties(outputProperties);
+        setOutput(writer, outputProperties);
 	}
 	
-	public void setWriter(Writer writer) {
-		receiver.setWriter(writer);
-	}
-	
+    public void setOutput(Writer writer, Properties properties) {
+        if (properties == null)
+            outputProperties = defaultProperties;
+        else
+            outputProperties = properties;
+        String method = outputProperties.getProperty("method", "xml");
+        
+        if ("xhtml".equalsIgnoreCase(method))
+            receiver = writers[XHTML_WRITER];
+        else
+            receiver = writers[XML_WRITER];
+        receiver.setWriter(writer);
+        receiver.setOutputProperties(outputProperties);
+    }
+    
 	public Writer getWriter() {
 		return receiver.writer;
 	}

@@ -215,7 +215,7 @@ public class Restore extends DefaultHandler {
 				if (filename == null) filename = name;
 
 				if (name == null)
-					throw new SAXException("collection requires a name attribute");
+					throw new SAXException("resource requires a name attribute");
 				final File f =
 					new File(
 						contents.getParentFile().getAbsolutePath() + File.separatorChar + filename);
@@ -241,12 +241,14 @@ public class Restore extends DefaultHandler {
 						try {
 							date_created = (Date)(new DateTimeValue(created)).getDate();
 						} catch (XPathException e2) {
+                            e2.printStackTrace();
 						} 
 					
 					if (modified != null)
 						try {
 							date_modified = (Date)(new DateTimeValue(modified)).getDate();
 						} catch (XPathException e2) {
+                            e2.printStackTrace();
 						} 
 					
 					current.storeResource(res, date_created, date_modified);
@@ -263,6 +265,7 @@ public class Restore extends DefaultHandler {
 					if(dialog != null)
 						dialog.displayMessage("restored " + name);
 				} catch (XMLDBException e) {
+                    e.printStackTrace();
 					throw new SAXException(e);
 				}
 			}

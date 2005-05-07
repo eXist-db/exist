@@ -55,7 +55,7 @@ import org.exist.storage.DBBroker;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SAXSerializerPool;
+import org.exist.util.serializer.SerializerPool;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -204,10 +204,9 @@ public class Propfind extends AbstractWebDAVMethod {
 				String servletPath = getServletPath(request);
 				int depth = getDepth(request);
 				StringWriter os = new StringWriter();
-				SAXSerializer serializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
+                SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 				try {
-					serializer.setWriter(os);
-					serializer.setOutputProperties(WebDAV.OUTPUT_PROPERTIES);
+					serializer.setOutput(os, WebDAV.OUTPUT_PROPERTIES);
 					AttributesImpl attrs = new AttributesImpl();
 					serializer.startDocument();
 					serializer.startPrefixMapping(PREFIX, WebDAV.DAV_NS);
@@ -227,7 +226,7 @@ public class Propfind extends AbstractWebDAVMethod {
 				} catch (SAXException e) {
 					throw new ServletException("Exception while writing multistatus response: " + e.getMessage(), e);
 				} finally {
-					SAXSerializerPool.getInstance().returnSAXSerializer(serializer);
+					SerializerPool.getInstance().returnObject(serializer);
 				}
 				String content = os.toString();
 				LOG.debug("response:\n" + content);

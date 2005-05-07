@@ -297,8 +297,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 
 		public InternalXMLSerializer() {
 			super();
-			setWriter(writer);
-			setOutputProperties(emptyProperties);
+			setOutput(writer, emptyProperties);
 		}
 
 		/**

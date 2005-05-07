@@ -30,8 +30,8 @@ import org.exist.dom.QNameable;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.DOMStreamer;
-import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.util.serializer.Receiver;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -559,11 +559,11 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 		    serializer.reset();
 			serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 			serializer.setSAXHandlers(handler, null);
-			streamer = DOMStreamerPool.getInstance().borrowDOMStreamer(serializer);
+            streamer = SerializerPool.getInstance().borrowDOMStreamer(serializer);
 			streamer.setContentHandler(handler);
 			streamer.serialize(this, false);
 		} catch (Exception e) {
-		    DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
+		    SerializerPool.getInstance().returnObject(streamer);
 		    e.printStackTrace();
 			throw new SAXException(e);
 		}
