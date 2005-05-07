@@ -50,7 +50,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     private final static int XHTML_WRITER = 1;
     
     private XMLWriter writers[] = {
-            new XMLIndenter(),
+            new IndentingXMLWriter(),
             new XHTMLWriter()
     };
     

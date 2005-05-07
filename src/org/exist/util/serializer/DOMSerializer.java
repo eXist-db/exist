@@ -44,7 +44,7 @@ public class DOMSerializer {
 
 	public DOMSerializer() {
 		super();
-		this.receiver = new XMLIndenter();
+		this.receiver = new IndentingXMLWriter();
 	}
 
 	public DOMSerializer(Writer writer, Properties outputProperties) {
@@ -53,7 +53,7 @@ public class DOMSerializer {
 		if (outputProperties == null) {
 			outputProperties = new Properties();
 		}
-		this.receiver = new XMLIndenter(writer);
+		this.receiver = new IndentingXMLWriter(writer);
 		this.receiver.setOutputProperties(outputProperties);
 	}
 

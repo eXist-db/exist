@@ -33,7 +33,7 @@ import org.exist.util.hashtable.ObjectHashSet;
  * @author wolf
  *
  */
-public class XHTMLWriter extends XMLIndenter {
+public class XHTMLWriter extends IndentingXMLWriter {
 
     private static ObjectHashSet emptyTags = new ObjectHashSet(31);
     
