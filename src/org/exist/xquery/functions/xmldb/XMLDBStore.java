@@ -149,7 +149,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 					if(binary) {
 						StringWriter writer = new StringWriter();
 						SAXSerializer serializer = new SAXSerializer();
-						serializer.setWriter(writer);
+						serializer.setOutput(writer, null);
 						item.toSAX(context.getBroker(), serializer);
 						resource.setContent(writer.toString());
 					} else {
