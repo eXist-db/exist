@@ -183,7 +183,7 @@
                 <table border="0" width="100%" cellspacing="10">
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="xmldb/db/xinclude/xinclude.xml">XInclude
+                            <link href="servlet/db/xinclude/xinclude.xml">XInclude
                                 Sample Document</link>
                         </td>
                         <td width="70%">Dynamically generates a page out of the
