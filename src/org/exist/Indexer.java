@@ -97,7 +97,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
      * know the child count and don't need to update the element
      * a second time.
      */
-    private int childCnt[] = new int[0x8000];
+    private int childCnt[] = new int[0x1000];
 //    private int childCnt[] = null;
     
     // the current position in childCnt
