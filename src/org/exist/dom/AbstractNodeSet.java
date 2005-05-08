@@ -392,9 +392,13 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return NodeSetHelper.selectAncestors(this, dl, includeSelf, rememberContext);
 	}
 
-	public NodeSet selectFollowing(NodeSet following) throws XPathException {
-		return NodeSetHelper.selectFollowing(this, following);
+	public NodeSet selectFollowing(NodeSet fl) throws XPathException {
+		return NodeSetHelper.selectFollowing(fl, this);
 	}
+    
+    public NodeSet selectPreceding(NodeSet pl) throws XPathException {
+        return NodeSetHelper.selectPreceding(pl, this);
+    }
 	
 	/**
 	 * Select all nodes from the passed node set, which

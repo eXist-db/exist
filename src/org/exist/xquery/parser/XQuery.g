@@ -681,7 +681,7 @@ reverseAxis : reverseAxisSpecifier COLON! COLON! ;
 
 reverseAxisSpecifier
 :
-	"parent" | "ancestor" | "ancestor-or-self" | "preceding-sibling"
+	"parent" | "ancestor" | "ancestor-or-self" | "preceding-sibling" | "preceding"
 	;
 
 nodeTest throws XPathException
