@@ -8,16 +8,15 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SerializerPool;
+import org.exist.xmldb.XQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.XMLResource;
-
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SAXSerializerPool;
-import org.exist.xmldb.XQueryService;
 
 /**
  *  Reads an XQuery file and executes it. To run this example enter: 
@@ -83,14 +82,14 @@ public class XQueryExample {
             
             Properties outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
-            SAXSerializer serializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
-            serializer.setOutputProperties(outputProperties);
-            serializer.setWriter(new OutputStreamWriter(System.out));
+            SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+            serializer.setOutput(new OutputStreamWriter(System.out), outputProperties);
             
             for ( int i = 0; i < (int) result.getSize(); i++ ) {
                 XMLResource resource = (XMLResource) result.getResource( (long) i ); 
                 resource.getContentAsSAX(serializer);
             }
+            SerializerPool.getInstance().returnObject(serializer);
             long rtime = System.currentTimeMillis() - start;
 			System.out.println("hits:          " + result.getSize());
             System.out.println("query time:    " + qtime);
