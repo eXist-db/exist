@@ -1001,6 +1001,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         return NodeSetHelper.selectFollowing(this, following);
     }
     
+    public NodeSet selectPreceding(NodeSet preceding) throws XPathException {
+        return NodeSetHelper.selectPreceding(this, preceding);
+    }
+    
 	private final static class SingleNodeIterator implements Iterator, SequenceIterator {
 
 		private boolean hasNext = true;
