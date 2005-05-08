@@ -334,40 +334,41 @@ public class NodeSetHelper {
 		return result;
 	}
 	
-	/**
-	 * TODO: not working!!!
-	 */
 	public static NodeSet selectFollowing(NodeSet set, NodeSet following) throws XPathException {
 		if (following.getLength() == 0 || set.getLength() == 0)
 			return NodeSet.EMPTY_SET;
 		NodeSet result = new ExtArrayNodeSet();
-		Iterator ia = set.iterator();
-		Iterator ib = following.iterator();
-		NodeProxy na = (NodeProxy) ia.next(), nb = (NodeProxy) ib.next();
-		while(true) {
-			if(na.getDocument().getDocId() < nb.getDocument().getDocId()) {
-				if(ia.hasNext())
-					na = (NodeProxy) ia.next();
-				else
-					break;
-			} else if(na.getDocument().getDocId() > nb.getDocument().getDocId()) {
-				if(ib.hasNext())
-					nb = (NodeProxy) ib.next();
-				else
-					break;
-			} else {
-				if(nb.after(na, false)) {
-					nb.addContextNode(na);
-					result.add(nb);
-				} else {
-					if(ib.hasNext())
-						nb = (NodeProxy) ib.next();
-					else
-						break;
-				}
-			}
-		}
+		for (Iterator si = set.iterator(); si.hasNext(); ) {
+            NodeProxy sn = (NodeProxy) si.next();
+//            System.out.println("Context " + sn.toString());
+            for (Iterator fi = following.iterator(); fi.hasNext(); ) {
+                NodeProxy fn = (NodeProxy) fi.next();
+//                System.out.println("Checking " + fn.toString());
+                if (fn.after(sn)) {
+                    fn.addContextNode(sn);
+                    result.add(fn);
+                }
+            }
+        }
 		return result;
 	}
-	
+    
+    public static NodeSet selectPreceding(NodeSet set, NodeSet following) throws XPathException {
+        if (following.getLength() == 0 || set.getLength() == 0)
+            return NodeSet.EMPTY_SET;
+        NodeSet result = new ExtArrayNodeSet();
+        for (Iterator si = set.iterator(); si.hasNext(); ) {
+            NodeProxy sn = (NodeProxy) si.next();
+//            System.out.println("Context " + sn.toString());
+            for (Iterator fi = following.iterator(); fi.hasNext(); ) {
+                NodeProxy fn = (NodeProxy) fi.next();
+//                System.out.println("Checking " + fn.toString());
+                if (fn.before(sn)) {
+                    fn.addContextNode(sn);
+                    result.add(fn);
+                }
+            }
+        }
+        return result;
+    }
 }

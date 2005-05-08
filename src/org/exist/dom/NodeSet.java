@@ -220,6 +220,8 @@ public interface NodeSet extends Sequence, NodeList {
 	
 	public NodeSet selectFollowing(NodeSet following) throws XPathException;
 		
+    public NodeSet selectPreceding(NodeSet preceding) throws XPathException;
+    
 	/**
 	 * Check if the node identified by its node id has an ancestor contained in this node set
 	 * and return the ancestor found.

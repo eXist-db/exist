@@ -176,10 +176,11 @@ public class LocationStep extends Step {
 					getSiblings(context, contextSequence.toNodeSet());
 				break;
 			case Constants.FOLLOWING_AXIS:
-				//temp = getFollowing(context, contextSequence.toNodeSet());
-				throw new XPathException("The following axis is not yet supported");
+				temp = getFollowing(context, contextSequence.toNodeSet());
+                break;
 			case Constants.PRECEDING_AXIS:
-				throw new XPathException("The preceding axis is not yet supported");
+                temp = getPreceding(context, contextSequence.toNodeSet());
+                break;
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
 		}
@@ -291,8 +292,7 @@ public class LocationStep extends Step {
                         ElementValue.ELEMENT,
                         currentDocs,
                         test.getName(), null);
-            } else
-                LOG.debug("Using cache for: " + test.getName());
+            }
             return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
 		} else {
 		    DocumentSet docs = getDocumentSet(contextSet);
@@ -395,11 +395,29 @@ public class LocationStep extends Step {
 						ElementValue.ELEMENT, currentDocs,
 						test.getName(), null);
 			}
-			result = contextSet.selectFollowing(currentSet);
+			result = currentSet.selectFollowing(contextSet);
 		}
 		return result;
 	}
 	
+    protected NodeSet getPreceding(XQueryContext context, NodeSet contextSet)
+    throws XPathException {
+        NodeSet result = NodeSet.EMPTY_SET;
+        if(!test.isWildcardTest()) {
+            DocumentSet docs = getDocumentSet(contextSet);
+//          DocumentSet docs = contextSet.getDocumentSet();
+            if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+                currentDocs = docs;
+                currentSet =
+                    (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
+                        ElementValue.ELEMENT, currentDocs,
+                        test.getName(), null);
+            }
+            result = currentSet.selectPreceding(contextSet);
+        }
+        return result;
+    }
+    
 	protected NodeSet getAncestors(
 		XQueryContext context,
 		NodeSet contextSet) {

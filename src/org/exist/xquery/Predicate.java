@@ -207,6 +207,7 @@ public class Predicate extends PathExpr {
 			NodeSet contextSet = contextSequence.toNodeSet();
 			boolean reverseAxis = isReverseAxis(mode);
 			if(!(reverseAxis || mode == Constants.FOLLOWING_SIBLING_AXIS 
+                    || mode == Constants.FOLLOWING_AXIS
 					|| mode == Constants.SELF_AXIS)) {
 				Sequence ancestors = contextSet.selectAncestorDescendant(outerSequence.toNodeSet(),
 						NodeSet.ANCESTOR, true, true);
@@ -238,6 +239,12 @@ public class Predicate extends PathExpr {
 				    	case Constants.PRECEDING_SIBLING_AXIS:
 				    	    temp = contextSet.selectSiblings(p, NodeSet.PRECEDING);
 				    		break;
+                        case Constants.PRECEDING_AXIS:
+                            temp = contextSet.selectPreceding(p);
+                            break;
+                        case Constants.FOLLOWING_AXIS:
+                            temp = contextSet.selectFollowing(p);
+                            break;
 				    	case Constants.PARENT_AXIS:
 				    	    temp = p.getParents(false);
 				    		break;
