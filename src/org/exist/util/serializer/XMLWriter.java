@@ -54,6 +54,8 @@ public class XMLWriter {
 
 	protected boolean declarationWritten = false;
 
+    protected boolean doctypeWritten = false;
+    
 	protected Properties outputProperties;
 
 	private char[] charref = new char[10];
@@ -128,6 +130,8 @@ public class XMLWriter {
 	public void startElement(String qname) throws TransformerException {
 		if (!declarationWritten)
 			writeDeclaration();
+        if (!doctypeWritten)
+            writeDoctype(qname.toString());
 		try {
 			if (tagIsOpen)
 				closeStartTag(false);
@@ -142,6 +146,8 @@ public class XMLWriter {
 	public void startElement(QName qname) throws TransformerException {
 		if (!declarationWritten)
 			writeDeclaration();
+        if (!doctypeWritten)
+            writeDoctype(qname.toString());
 		try {
 			if (tagIsOpen)
 				closeStartTag(false);
@@ -344,6 +350,7 @@ public class XMLWriter {
 		} catch (IOException e) {
 			throw new TransformerException(e.getMessage(), e);
 		}
+        doctypeWritten = true;
 	}
 
 	protected void closeStartTag(boolean isEmpty) throws TransformerException {
@@ -368,12 +375,11 @@ public class XMLWriter {
 		declarationWritten = true;
 		String omitXmlDecl = outputProperties.getProperty(
 				OutputKeys.OMIT_XML_DECLARATION, "yes");
-		String version = outputProperties
-				.getProperty(OutputKeys.VERSION, "1.0");
-		String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
-		String encoding = outputProperties.getProperty(OutputKeys.ENCODING,
-				"UTF-8");
 		if (omitXmlDecl.equals("no")) {
+            String version = outputProperties.getProperty(OutputKeys.VERSION, "1.0");
+            String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
+            String encoding = outputProperties.getProperty(OutputKeys.ENCODING,
+            "UTF-8");
 			try {
 				writer.write("<?xml version=\"");
 				writer.write(version);
@@ -392,6 +398,16 @@ public class XMLWriter {
 		}
 	}
 
+    protected void writeDoctype(String rootElement) throws TransformerException {
+        if (doctypeWritten)
+            return;
+        String publicId = outputProperties.getProperty(OutputKeys.DOCTYPE_PUBLIC);
+        String systemId = outputProperties.getProperty(OutputKeys.DOCTYPE_SYSTEM);
+        if (publicId != null || systemId != null)
+            documentType(rootElement, publicId, systemId);
+        doctypeWritten = true;
+    }
+    
 	private final void writeChars(CharSequence s, boolean inAttribute)
 			throws IOException {
 		boolean[] specialChars = inAttribute ? attrSpecialChars

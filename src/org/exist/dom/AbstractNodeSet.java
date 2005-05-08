@@ -711,7 +711,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				if(indexType == Type.ANY_TYPE)
 				    indexType = type;
 				else if(indexType != type) {
-				    LOG.debug(p);
 				    indexType = Type.ITEM;
 				}
 				if(!p.hasTextIndex()) {
