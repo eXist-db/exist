@@ -1323,7 +1323,6 @@ public class XQueryContext {
 	 */
 	public DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) throws XPathException {
 		try {
-            Thread.dumpStack();
 			DocumentImpl targetDoc = broker.storeTemporaryDoc(doc);
 			watchdog.addTemporaryFragment(targetDoc.getFileName());
             LOG.debug("Stored: " + targetDoc.getDocId() + ": " + targetDoc.getName() +
