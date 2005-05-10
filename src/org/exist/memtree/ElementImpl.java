@@ -77,15 +77,12 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	 */
 	public NodeList getChildNodes() {
 		NodeListImpl nl = new NodeListImpl();
-		short level = (short)(document.treeLevel[nodeNumber] + 1);
-		int nextNode = nodeNumber;
-		while (++nextNode < document.size) {
-			if(document.treeLevel[nextNode] == level) {
-				Node n = document.getNode(nextNode);
-				nl.add(n);
-			}
-			if (document.next[nextNode] <= nodeNumber) break;
-		}
+		int nextNode = document.getFirstChildFor(nodeNumber);
+		while (nextNode > nodeNumber) {
+			Node n = document.getNode(nextNode);
+			nl.add(n);
+            nextNode = document.next[nextNode];
+        }
 		return nl;
 	}
 	
