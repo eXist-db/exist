@@ -108,7 +108,7 @@ public abstract class Serializer implements XMLReader {
 	public final static int TAG_NONE = 0x0;
 	public final static int TAG_ELEMENT_MATCHES = 0x1;
 	public final static int TAG_ATTRIBUTE_MATCHES = 0x2;
-	public final static int TAG_BOTH = 0x4;
+	public final static int TAG_BOTH = 0x3;
 
 	public final static String GENERATE_DOC_EVENTS = "sax-document-events";
 	public final static String ENCODING = "encoding";
