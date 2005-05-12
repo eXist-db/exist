@@ -8,7 +8,6 @@ package org.exist.util;
 public interface ByteArray {
 
 	void setLength(int len);
-	void copyTo(byte[] b, int offset, int length);
 	void copyTo(byte[] b, int offset);
 	void copyTo(int start, byte[] newBuf, int offset, int len);
 	void copyTo(ByteArray other);

@@ -25,13 +25,6 @@ public class FixedByteArray implements ByteArray {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.util.ByteArray#copyTo(byte[], int, int)
-	 */
-	public void copyTo(byte[] b, int offset, int length) {
-		System.arraycopy(data, start, b, offset, length);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.exist.util.ByteArray#copyTo(byte[], int)
 	 */
 	public void copyTo(byte[] b, int offset) {
