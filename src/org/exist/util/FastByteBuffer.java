@@ -557,16 +557,10 @@ public class FastByteBuffer implements ByteArray {
         // Adjust the insert point in the last chunk, when we've reached it.
         m_firstFree += available;
     }
-
-
-	public void copyTo(byte[] newBuf, int offset) {
-		copyTo(newBuf, offset, size());
-	}
 	
-    public void copyTo( byte[] newBuf, int offset, int len ) {
+    public void copyTo( byte[] newBuf, int offset ) {
         int pos = offset;
-        int remaining = len;
-        for ( int i = 0; i < m_lastChunk && remaining > 0; i++, remaining-- ) {
+        for ( int i = 0; i < m_lastChunk; i++ ) {
             if ( i == 0 && m_innerFSB != null )
                 m_innerFSB.copyTo( newBuf, pos );
             else
@@ -574,11 +568,7 @@ public class FastByteBuffer implements ByteArray {
                     pos, m_chunkSize );
             pos += m_chunkSize;
         }
-        if(remaining > 0) {
-        	if(remaining > m_firstFree)
-        		remaining = m_firstFree;
-        	System.arraycopy( m_array[m_lastChunk], 0, newBuf, pos, m_firstFree );
-        }
+        System.arraycopy( m_array[m_lastChunk], 0, newBuf, pos, m_firstFree );
     }
     
     public void copyTo( ByteArray newBuf ) {
