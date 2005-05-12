@@ -1,5 +1,9 @@
 xquery version "1.0";
 
+
+(: Demonstrates sending an email through Sendmail from eXist :)
+
+
 declare namespace mail="http://exist-db.org/xquery/mail";
 
 declare variable $message

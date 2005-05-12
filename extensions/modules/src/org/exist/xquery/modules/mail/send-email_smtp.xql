@@ -1,5 +1,9 @@
 xquery version "1.0";
 
+
+(: Demonstrates sending an email with SMTP from eXist (NB - Using Sendmail instead of SMTP seems to perform much faster) :)
+
+
 declare namespace mail="http://exist-db.org/xquery/mail";
 
 declare variable $message
