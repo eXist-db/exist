@@ -134,6 +134,10 @@ public class Configuration implements ErrorHandler {
                 is = new FileInputStream(file);
             }
 
+			CatalogResolver resolver = new CatalogResolver(true);
+	        System.setProperty("xml.catalog.verbosity", "10");
+	        config.put("resolver", resolver);
+			
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
             // around a bug in Xerces
@@ -147,7 +151,7 @@ public class Configuration implements ErrorHandler {
             SAXAdapter adapter = new SAXAdapter();
             reader.setContentHandler(adapter);
             reader.parse(src);
-            
+			
             Document doc = adapter.getDocument();
             Element root = doc.getDocumentElement();
 
@@ -564,9 +568,8 @@ public class Configuration implements ErrorHandler {
             if (sf.canRead())
                 config.put("stopwords", stopwordFile);
         }
-        CatalogResolver resolver = new CatalogResolver(true);
-        System.setProperty("xml.catalog.verbosity", "10");
-        config.put("resolver", resolver);
+		
+		CatalogResolver resolver = (CatalogResolver) config.get("resolver");
         NodeList entityResolver = p
                 .getElementsByTagName("entity-resolver");
         if (entityResolver.getLength() > 0) {
