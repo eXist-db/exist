@@ -50,7 +50,7 @@ public class MultiDBTest extends TestCase {
         TestRunner.run(MultiDBTest.class);
     }
     
-    private final static int INSTANCE_COUNT = 20;
+    private final static int INSTANCE_COUNT = 5;
     
     private final static String CONFIG =
         "<exist>" +
@@ -103,6 +103,8 @@ public class MultiDBTest extends TestCase {
     
     protected void setUp() throws Exception {
         String homeDir = System.getProperty("exist.home");
+		if (homeDir == null)
+			homeDir = ".";
         File testDir = new File(homeDir + File.separatorChar + "test");
         if (!testDir.canWrite())
             testDir.mkdirs();
