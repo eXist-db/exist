@@ -12,6 +12,20 @@
 <web-app>
     <display-name>eXist Server</display-name>
     <description>eXist Server Setup</description>
+
+    <!-- Servlet for explicit initialisatio of log4j-->
+    <servlet>
+        <servlet-name>log4j-init</servlet-name>
+        <servlet-class>org.exist.http.servlets.Log4jInit</servlet-class>
+
+        <init-param>
+            <param-name>log4j-init-file</param-name>
+            <param-value>WEB-INF/log4j.xml</param-value>
+        </init-param>
+
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    
 	
     <!-- RpcServlet provides XML-RPC access to eXist -->
     <servlet>
@@ -47,29 +61,29 @@
             <param-name>start</param-name>
             <param-value>true</param-value>
         </init-param>
-
-		<load-on-startup>1</load-on-startup>
+		
+        <load-on-startup>2</load-on-startup>
 
     </servlet>
-
-	<servlet>
-		<servlet-name>WebDAVServlet</servlet-name>
-		<servlet-class>org.exist.http.servlets.WebDAVServlet</servlet-class>
-
-		<init-param>
-			<param-name>authentication</param-name>
-			<param-value>basic</param-value>
-		</init-param>
-	</servlet>
+	
+    <servlet>
+        <servlet-name>WebDAVServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.WebDAVServlet</servlet-class>
+		
+        <init-param>
+            <param-name>authentication</param-name>
+            <param-value>basic</param-value>
+        </init-param>
+    </servlet>
 
     <!-- XQueryServlet generates HTML from an XQuery file. -->
-	<servlet>
-		<servlet-name>XQueryServlet</servlet-name>
-		<servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
-
-		<init-param>
-			<param-name>uri</param-name>
-			<param-value>xmldb:exist:///db</param-value>
+    <servlet>
+        <servlet-name>XQueryServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
+		
+        <init-param>
+            <param-name>uri</param-name>
+            <param-value>xmldb:exist:///db</param-value>
         </init-param>
 
         <init-param>
@@ -81,16 +95,16 @@
             <param-name>container-encoding</param-name>
             <param-value>UTF-8</param-value>
         </init-param>
-
-		<init-param>
-			<param-name>encoding</param-name>
-			<param-value>UTF-8</param-value>
-		</init-param>
-	</servlet>
+		
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </servlet>
 	
   <!-- configure the Axis servlets. Axis provides eXist's
   web-services via SOAP -->
-  <servlet>
+    <servlet>
         <servlet-name>AxisServlet</servlet-name>
         <display-name>Apache-Axis Servlet</display-name>
         <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
@@ -103,7 +117,7 @@
         org.apache.axis.transport.http.AdminServlet
     </servlet-class>
         <load-on-startup>100</load-on-startup>
-	</servlet>
+    </servlet>
 	
   <!-- Cocoon2 Configuration starts here ================================ -->
 
@@ -236,7 +250,7 @@
     -->
         <init-param>
             <param-name>enable-uploads</param-name>
-			<param-value>true</param-value>
+            <param-value>true</param-value>
         </init-param>
     
     <!--
@@ -271,16 +285,16 @@
     -->
         <init-param>
             <param-name>overwrite-uploads</param-name>
-			<param-value>allow</param-value>
+            <param-value>allow</param-value>
         </init-param>
     
     <!--
       Specify maximum allowed size of the upload. Defaults to 10 Mb.
 	-->
-    <init-param>
-      <param-name>upload-max-size</param-name>
-      <param-value>100000000</param-value>
-    </init-param>
+        <init-param>
+            <param-name>upload-max-size</param-name>
+            <param-value>100000000</param-value>
+        </init-param>
 
     <!--
       This parameter allows to specify where Cocoon should create its page
@@ -386,19 +400,19 @@
     <!--
       Set encoding used by the container. If not set the ISO-8859-1 encoding will be assumed.
     -->
-	<init-param>
-      <param-name>container-encoding</param-name>
-	  <param-value>UTF-8</param-value>
-    </init-param>
+        <init-param>
+            <param-name>container-encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
 
     <!--
       Set form encoding. This will be the character set used to decode request parameters.
       If not set the ISO-8859-1 encoding will be assumed. 
     -->
-    <init-param>
-      <param-name>form-encoding</param-name>
-      <param-value>UTF-8</param-value>
-    </init-param>
+        <init-param>
+            <param-name>form-encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
 
     <!--
       This parameter allows you to startup Cocoon2 immediately after startup
@@ -416,32 +430,32 @@
   <!-- URL space mappings ============================================= -->
 
   <!-- Define where the XMLRPC servlet listens -->
-  <servlet-mapping>
-    <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
-    <url-pattern>/xmlrpc</url-pattern>
-  </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
+        <url-pattern>/xmlrpc</url-pattern>
+    </servlet-mapping>
   
   <!-- eXist's DatabaseAdminServlet -->
-  <servlet-mapping>
-    <servlet-name>EXistServlet</servlet-name>
-    <url-pattern>/servlet/*</url-pattern>
-  </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>EXistServlet</servlet-name>
+        <url-pattern>/servlet/*</url-pattern>
+    </servlet-mapping>
 
-  <servlet-mapping>
-	  <servlet-name>WebDAVServlet</servlet-name>
-	  <url-pattern>/webdav/*</url-pattern>
-  </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>WebDAVServlet</servlet-name>
+        <url-pattern>/webdav/*</url-pattern>
+    </servlet-mapping>
 
   <!-- XQueryServlet -->
-  <servlet-mapping>
-	  <servlet-name>XQueryServlet</servlet-name>
-	  <url-pattern>*.xql</url-pattern>
-  </servlet-mapping>
-  
-  <servlet-mapping>
-      <servlet-name>XQueryServlet</servlet-name>
-      <url-pattern>*.xqy</url-pattern>
-  </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>XQueryServlet</servlet-name>
+        <url-pattern>*.xql</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>XQueryServlet</servlet-name>
+        <url-pattern>*.xqy</url-pattern>
+    </servlet-mapping>
   
   <!-- Define where Xincon listens for WebDAV requests -->
   <!--servlet-mapping>
@@ -450,25 +464,25 @@
 	</servlet-mapping-->
     
   <!-- The following servlet-mappings are for Axis (SOAP) -->
-  <servlet-mapping>
-    <servlet-name>AxisServlet</servlet-name>
-	<url-pattern>/axis-servlet/AxisServlet</url-pattern>
-  </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>/axis-servlet/AxisServlet</url-pattern>
+    </servlet-mapping>
 
-  <servlet-mapping>
-    <servlet-name>AxisServlet</servlet-name>
-    <url-pattern>*.jws</url-pattern>
-  </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>*.jws</url-pattern>
+    </servlet-mapping>
 
-  <servlet-mapping>
-    <servlet-name>AxisServlet</servlet-name>
-    <url-pattern>/services/*</url-pattern>
-  </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>/services/*</url-pattern>
+    </servlet-mapping>
 
-  <servlet-mapping>
-    <servlet-name>AdminServlet</servlet-name>
-	<url-pattern>/axis-servlet/AdminServlet</url-pattern>
-  </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AdminServlet</servlet-name>
+        <url-pattern>/axis-servlet/AdminServlet</url-pattern>
+    </servlet-mapping>
   
   <!-- Finally, we establish the main mapping for Cocoon  -->
   
@@ -482,11 +496,11 @@
         <servlet-name>Cocoon</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
-  
+
     <servlet-mapping>
         <servlet-name>Jasper</servlet-name>
         <url-pattern>*.jsp</url-pattern>
-	</servlet-mapping>
+    </servlet-mapping>
 
   <!--
     Some servlet engines (WebLogic) have defaults which are not overriden
@@ -533,9 +547,9 @@
         <extension>grm</extension>
         <mime-type>text/plain</mime-type>
     </mime-mapping>
-
-	<taglib>
+	
+    <taglib>
         <taglib-uri>http://exist-db.org/exist</taglib-uri>
         <taglib-location>/WEB-INF/exist.tld</taglib-location>
-	</taglib>
+    </taglib>
 </web-app>
