@@ -18,15 +18,14 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *  TODO: Add CVS tag.
+ *  $Id$
  */
 
 package org.exist.http.servlets;
 
 import java.io.File;
-import java.io.IOException;
-import javax.servlet.ServletException;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -55,7 +54,7 @@ public class Log4jInit extends HttpServlet {
         logsdir.mkdirs();
         System.out.println("eXist logs dir="+ logsdir.getAbsolutePath());
         System.setProperty("logger.dir", logsdir.getAbsolutePath() );
-                 
+        
         
         // Get log4j configuration file
         File configFile = new File(existDir,file);
@@ -75,13 +74,4 @@ public class Log4jInit extends HttpServlet {
         //
     }
     
-    /**
-     *  Empty method.
-     *
-     * @param req HTTP Request object
-     * @param res HTTP Response object
-     */
-    public void doPost(HttpServletRequest req, HttpServletResponse res) {
-        //
-    }
 }
