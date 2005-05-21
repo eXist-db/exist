@@ -56,13 +56,38 @@ import org.exist.xquery.value.Type;
  */
 public class GeneralComparison extends BinaryOp {
 
+	/**
+	 * The type of operator used for the comparison, i.e. =, !=, &lt;, &gt; ...
+	 * One of the constants declared in class {@link Constants}.
+	 */
 	protected int relation = Constants.EQ;
+	
+	/**
+	 * Truncation flags: when comparing with a string value, the search
+	 * string may be truncated with a single * wildcard. See the constants declared
+	 * in class {@link Constants}.
+	 * 
+	 * The standard functions starts-with, ends-with and contains are
+	 * transformed into a general comparison with wildcard. Hence the need
+	 * to consider wildcards here.
+	 */
 	protected int truncation = Constants.TRUNC_NONE;
 	
+	/**
+	 * The class might cache the entire results of a previous execution.
+	 */
 	protected CachedResult cached = null;
 
+	/**
+	 * Extra argument (to standard functions starts-with/contains etc.)
+	 * to indicate the collation to be used for string comparisons.
+	 */
 	protected Expression collationArg = null;
 	
+	/**
+	 * Set to true if this expression is called within the where clause
+	 * of a FLWOR expression.
+	 */
 	protected boolean inWhereClause = false;
 	
 	public GeneralComparison(XQueryContext context, int relation) {
@@ -421,6 +446,7 @@ public class GeneralComparison extends BinaryOp {
 				return cmp;
 		}
 	}
+	
 	/**
 	 * Cast the atomic operands into a comparable type
 	 * and compare them.
