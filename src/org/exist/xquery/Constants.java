@@ -22,8 +22,15 @@
  */
 package org.exist.xquery;
 
+/**
+ * Declares various constants and flags used by the query engine:
+ * axis specifiers, operators.
+ * 
+ * @author wolf
+ */
 public interface Constants {
 
+	/** Axis names */
     public final static String[] AXISSPECIFIERS = {
 						"ancestor",
 					    "ancestor-or-self",
@@ -41,6 +48,10 @@ public interface Constants {
 					    "attribute-descendant"
 	};
 
+    /*
+     * XPath axis constants:
+     */
+    
     // Reverse axes
     public final static int ANCESTOR_AXIS = 0;
     public final static int ANCESTOR_SELF_AXIS = 1;
@@ -74,6 +85,10 @@ public interface Constants {
 
     public final static short TYPE_UNKNOWN = -1;
 
+    /*
+     * Node types
+     */
+    
     public final static int NODE_TYPE = 0;
     public final static int ROOT_NODE = 1;
     public final static int ELEMENT_NODE = 2;
@@ -83,6 +98,9 @@ public interface Constants {
     public final static int COMMENT_NODE = 6;
     public final static int PROCESSING_NODE = 7;
 
+    /*
+     * Comparison operators
+     */
     public final static int LT  = 0;
     public final static int GT  = 1;
     public final static int GTEQ = 2;
@@ -92,11 +110,17 @@ public interface Constants {
     public final static int IN = 6;
     public final static int REGEXP = 7;
 
+    /*
+     * String truncation operators
+     */
     public final static int TRUNC_NONE = -1;
     public final static int TRUNC_RIGHT = 0;
     public final static int TRUNC_LEFT = 1;
     public final static int TRUNC_BOTH = 2;
 
+    /*
+     * Arithmetic operators
+     */
 	public final static int PLUS = 8;
 	public final static int MINUS = 9;
 	public final static int MULT = 10;
@@ -104,6 +128,9 @@ public interface Constants {
 	public final static int MOD = 12;
 	public final static int IDIV = 13;
 
+	/*
+	 * Identity operators
+	 */
 	public final static int IS = 14;
 	public final static int ISNOT = 15;
 	public final static int BEFORE = 16;
@@ -130,11 +157,3 @@ public interface Constants {
     
     
 }
-
-
-
-
-
-
-
-
