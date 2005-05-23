@@ -1256,18 +1256,37 @@ try {
         }
     }
 
-    public byte[] retrieve(User user, int resultId, int num,
+     public byte[] retrieve(User user, int resultId, int num,
             Hashtable parameters) throws EXistException,
             PermissionDeniedException {
         RpcConnection con = pool.get();
+        String compression ="no"; 
+        if (((String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT)) != null) {
+            compression = (String) parameters
+                    .get(EXistOutputKeys.COMPRESS_OUTPUT);
+        }
+
         try {
             String xml = con.retrieve(user, resultId, num, parameters);
             String encoding = (String) parameters.get(OutputKeys.ENCODING);
             if (encoding == null) encoding = "UTF-8";
             try {
-                return xml.getBytes(encoding);
+            	
+            	 if (compression.equals("no")) {
+                    return xml.getBytes(encoding);
+                } else {
+                    LOG.debug("get result with compression");
+                    return compress(xml.getBytes(encoding));
+                }
+            	
             } catch (UnsupportedEncodingException uee) {
-                return xml.getBytes();
+
+                if (compression.equals("no")) {
+                    return xml.getBytes();
+                } else {
+                    LOG.debug("get result with compression");
+                    return compress(xml.getBytes());
+                }
             }
         } catch (Exception e) {
             handleException(e);
