@@ -98,6 +98,7 @@ import org.w3c.dom.NodeList;
 
 /**
  *  Main class for the native XML storage backend.
+ *  By "native" it is meant file-based, embedded backend.
  * 
  * Provides access to all low-level operations required by
  * the database. Extends {@link DBBroker}.
@@ -127,7 +128,7 @@ public class NativeBroker extends DBBroker {
 	/** check available memory after storing MEM_LIMIT_CHECK nodes */
 	protected final static int MEM_LIMIT_CHECK = 10000;
 
-	// the database files
+	/** the database files */
 	protected CollectionStore collectionsDb;
 	protected DOMFile domDb;
 	protected BFile elementsDb;
@@ -148,13 +149,14 @@ public class NativeBroker extends DBBroker {
 	
 	protected int memMinFree;
 	
-	// used to count the nodes inserted after the last memory check
+	/** used to count the nodes inserted after the last memory check */
 	protected int nodesCount = 0;
 
 	protected int pageSize;
 	
 	private final Runtime run = Runtime.getRuntime();
 
+	/** initialize database; read configuration, etc. */
 	public NativeBroker(BrokerPool pool, Configuration config) throws EXistException {
 		super(pool, config);
 		String dataDir;
@@ -301,6 +303,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+	/** changes // into /  */
 	protected final static String normalizeCollectionName(String name) {
 		StringBuffer out = new StringBuffer();
 		for (int i = 0; i < name.length(); i++)
@@ -361,6 +364,8 @@ public class NativeBroker extends DBBroker {
 		nodesCount = 0;
 	}
 
+	/** Takes care of actually remove entries from the indices;
+	 * must be called after one or more call to {@link #removeNode()}. */
 	public void endRemove() {
 		textEngine.remove();
 		elementIndex.remove();
@@ -371,8 +376,7 @@ public class NativeBroker extends DBBroker {
 	 *  get all the documents in this database repository. The documents are
 	 *  returned as a DocumentSet.
 	 *
-	 *@param  user  Description of the Parameter
-	 *@return       The allDocuments value
+	 *@param  docs TODO
 	 */
 	public DocumentSet getAllDocuments(DocumentSet docs) {
 		long start = System.currentTimeMillis();
@@ -412,7 +416,7 @@ public class NativeBroker extends DBBroker {
 	 *  Get collection object. If the collection does not exist, null is
 	 *  returned.
 	 *
-	 *@param  name  Description of the Parameter
+	 *@param  name  collection name
 	 *@return       The collection value
 	 */
 	public Collection openCollection(String name, long addr, int lockMode) {
@@ -487,6 +491,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+	/** TODO ?? */
 	public void reloadCollection(Collection collection) {
 		Value key = null;
 		if (collection.getAddress() == -1)
@@ -549,13 +554,12 @@ public class NativeBroker extends DBBroker {
 	}
 
 	/**
-	 *  get a document by it's file name. The document's file name is used to
-	 *  identify a document. File names are stored without the leading path.
+	 *  get a document by its file name. The document's file name is used to
+	 *  identify a document.
 	 *
-	 *@param  fileName                       Description of the Parameter
-	 *@param  user                           Description of the Parameter
+	 *@param  fileName                       absolute file name in the database; name can be given with or without the leading path /db .
 	 *@return                                The document value
-	 *@exception  PermissionDeniedException  Description of the Exception
+	 *@exception  PermissionDeniedException  
 	 */
 	public Document getDocument(String fileName) throws PermissionDeniedException {
 		if (!fileName.startsWith("/"))
@@ -626,6 +630,7 @@ public class NativeBroker extends DBBroker {
 		return getDocumentsByCollection(collection, docs, true);
 	}
 
+	/** appends documents in given collection to given DocumentSet. TODO wolf, is this so ? */
 	public DocumentSet getDocumentsByCollection(
 		String collection,
 		DocumentSet docs,
@@ -676,7 +681,6 @@ public class NativeBroker extends DBBroker {
 				&& doc.getCollection().getPermissions().validate(user, Permission.READ)
 				&& doc.getPermissions().validate(user, Permission.READ))
 				result.add(doc);
-
 		}
 		return result;
 	}
@@ -847,7 +851,8 @@ public class NativeBroker extends DBBroker {
 		}
 		return freeDocId;
 	}
-	
+
+	/** get next Free Doc Id */	
 	public int getNextDocId(Collection collection) {
 		int nextDocId;
 		try {
@@ -1235,11 +1240,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
-	/**
-	 * Reindex the nodes in the document. This method will either reindex all
-	 * descendant nodes of the passed node, or all nodes below some level of
-	 * the document if node is null.
-	 */
+	/** Reindex the nodes in the document. */
 	private void reindex(DocumentImpl doc) {
 		LOG.debug("Reindexing document " + doc.getFileName());
 		if(doc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX))
@@ -1474,7 +1475,9 @@ public class NativeBroker extends DBBroker {
 		    currentPath.removeLastComponent();
 		}
 	}
-	
+
+	/** consistency Check of the database; useful after XUpdates;
+	 * called if xupdate.consistency-checks is true in configuration */	
 	public void consistencyCheck(DocumentImpl doc) throws EXistException {
 		if(xupdateConsistencyChecks) {
 			LOG.debug("Checking document " + doc.getFileName());
@@ -1483,6 +1486,8 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 	
+	/** consistency Check of the database; useful after XUpdates;
+	 * called by {@link #consistencyCheck()} */
 	public void checkTree(final DocumentImpl doc) {
 		LOG.debug("Checking DOM tree for document " + doc.getFileName());
 		if(xupdateConsistencyChecks) {
@@ -1637,7 +1642,8 @@ public class NativeBroker extends DBBroker {
 			}
 		}
 	}
-	
+
+	/** @return all nodes whose global unique id's are in given interval. */	
 	public NodeList getRange(final Document doc, final long first, final long last) {
 		NodeListImpl result = new NodeListImpl((int) (last - first + 1));
 		for (long gid = first; gid <= last; gid++) {
@@ -1663,6 +1669,7 @@ public class NativeBroker extends DBBroker {
 		return new NativeSerializer(this, getConfiguration());
 	}
 
+	/** @return node with given global unique id. */	
 	public Node objectWith(final Document doc, final long gid) {
 		return (Node) new DOMTransaction(this, domDb) {
 			public Object start() {
@@ -1960,6 +1967,12 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+	/** Removes the Node Reference from the database.
+	 * The index will be updated later, i.e. after all nodes have been physically 
+	 * removed. See {@link #endRemove()}. 
+	 * removeNode() just adds the node ids to the list in elementIndex 
+	 * for later removal.
+	 */
 	public void removeNode(final NodeImpl node, NodePath currentPath, String content) {
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final IndexSpec idxSpec = 
@@ -2076,6 +2089,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+	/** TODO javadoc - at which moment in the life cycle of the collection is it called ? */
 	public void saveCollection(Collection collection) throws PermissionDeniedException {
 		if (readOnly)
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
@@ -2561,6 +2575,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+	/** TODO javadoc */
 	public void endElement(final NodeImpl node, NodePath currentPath, String content) {
 	    final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 	    final NodeProxy tempProxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
@@ -2772,6 +2787,7 @@ public class NativeBroker extends DBBroker {
 		return readOnly;
 	}
 
+	/** store into the temporary collection of the database a given in-memory Document */
 	public DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) 
     throws EXistException, PermissionDeniedException, LockException {
         user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
@@ -2804,6 +2820,7 @@ public class NativeBroker extends DBBroker {
         }
 	}
 	
+	/** remove from the temporary collection of the database a given list of Documents. */
 	public void removeTempDocs(List docs) {
 		Collection temp = openCollection(TEMP_COLLECTION, Lock.WRITE_LOCK);
 		if(temp == null)
@@ -2821,7 +2838,8 @@ public class NativeBroker extends DBBroker {
 			temp.release();
 		}
 	}
-	
+
+	/** remove temporary collection */	
 	public void cleanUpAll() {
 		Collection temp = getCollection(TEMP_COLLECTION);
 		if(temp == null)
@@ -2833,6 +2851,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 	
+	/** remove all documents from temporary collection */	
 	public void cleanUp() {
 		Collection temp = getCollection(TEMP_COLLECTION);
 		if(temp == null)
@@ -2854,6 +2873,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 	
+	/** create temporary collection */	
 	private Collection createTempCollection() throws LockException, PermissionDeniedException {
 		User u = user;
 		Lock lock = null;
@@ -2872,7 +2892,8 @@ public class NativeBroker extends DBBroker {
 			user = u;
 		}
 	}
-	
+
+	/** TODO javadoc */	
 	public final static class NodeRef extends Value {
         /**
          * Log4J Logger for this class
