@@ -707,7 +707,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		    NodeProxy p;
 			for (Iterator i = iterator(); i.hasNext();) {
 			    p = (NodeProxy) i.next();
-                if (p.doc.getName().startsWith("/db/system/temp")) {
+                if (p.doc.getCollection().isTempCollection()) {
                     indexType = Type.ITEM;
                     hasTextIndex = false;
                     break;

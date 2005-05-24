@@ -121,13 +121,17 @@ implements Comparable, EntityResolver, Cacheable {
 	/** user-defined Reader */
 	private XMLReader userReader = null;
 	
+    /** is this a temporary collection? */
+    private boolean isTempCollection = false;
+    
 	public Collection(CollectionStore db, String name) {
-		this.name = name;
+		setName(name);
 		this.db = db;
 		lock = new ReentrantReadWriteLock(name);
 	}
 
 	public void setName(String name) {
+        isTempCollection = name.equals(DBBroker.TEMP_COLLECTION);
 	    this.name = name;
 	}
 	
@@ -155,6 +159,16 @@ implements Comparable, EntityResolver, Cacheable {
 		return subcollections.contains(name);
 	}
 	
+    /**
+     * Returns true if this is a temporary collection. By default,
+     * the temporary collection is in /db/system/temp.
+     * 
+     * @return
+     */
+    public boolean isTempCollection() {
+        return isTempCollection;
+    }
+    
 	/**
 	 * Closes the collection, i.e. releases the lock held by 
 	 * the current thread. This is a shortcut for getLock().release().
