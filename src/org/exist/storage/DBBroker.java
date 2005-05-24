@@ -70,6 +70,8 @@ public abstract class DBBroker extends Observable {
     public final static int NATIVE = 0;
     public final static int NATIVE_CLUSTER = 1;
     
+    public final static String TEMP_COLLECTION ="/db/system/temp";
+    
 	protected final static Logger LOG = Logger.getLogger(DBBroker.class);
 	
 	protected boolean caseSensitive = true;
