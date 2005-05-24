@@ -33,6 +33,22 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
+ * Top class for index definitions as specified in a collection configuration
+ * or the main configuration file. The IndexSpec for a given collection can be retrieved through method
+ * {@link org.exist.collections.Collection#getIdxConf(DBBroker)}.
+ *  
+ *  An index definition should have the following structure:
+ *  
+ *  <pre>
+ *  &lt;index index-depth="idx-depth"&gt;
+ *      &lt;fulltext default="all|none" attributes="true|false"&gt;
+ *          &lt;include path="node-path"/&gt;
+ *          &lt;exclude path="node-path"/&gt;
+ *      &lt;/fulltext&gt;
+ *      &lt;create path="node-path" type="schema-type"&gt;
+ *  &lt;/index&gt;
+ *  </pre>
+ *  
  * @author wolf
  */
 public class IndexSpec {
@@ -55,6 +71,11 @@ public class IndexSpec {
     }
     
     /**
+     * Read index configurations from an "index" element node. The node should have
+     * exactly one "fulltext" child node and zero or more "create" nodes. The "fulltext"
+     * section  is forwarded to class {@link FulltextIndexSpec}. The "create" elements
+     * add a {@link ValueIndexSpec} to the current configuration.
+     *  
      * @param index
      * @param namespaces
      * @throws DatabaseConfigurationException
@@ -88,18 +109,46 @@ public class IndexSpec {
         }
     }
 
+    /**
+     * Returns the current index depth, i.e. the level in the tree up to which
+     * node ids are added to the B+-tree in the main dom.dbx. Nodes below
+     * the current index depth are not added. The main B+-tree is only required when
+     * retrieving nodes for display. Usually, it is not necessary to add all node levels
+     * there. Nodes in lower levels of the tree can be retrieved via their parent
+     * nodes.
+     * 
+     * @return
+     */
     public int getIndexDepth() {
 		return depth;
 	}
 	
+    /**
+     * Set the current index depth {@see #getIndexDepth()}.
+     * 
+     * @param depth
+     */
 	public void setIndexDepth( int depth ) {
 		this.depth = depth;
 	}
 	
+    /**
+     * Returns the fulltext index configuration object for the current
+     * configuration.
+     * 
+     * @return
+     */
     public FulltextIndexSpec getFulltextIndexSpec() {
         return ftSpec;
     }
     
+    /**
+     * Returns the {@link ValueIndexSpec} defined for the given
+     * node path or null if no index has been configured.
+     * 
+     * @param path
+     * @return
+     */
     public ValueIndexSpec getIndexByPath(NodePath path) {
         if(specs != null) {
 	        for(int i = 0; i < specs.length; i++) {
@@ -111,6 +160,8 @@ public class IndexSpec {
     }
     
     /**
+     * Add a {@link ValueIndexSpec}.
+     * 
      * @param valueIdx
      */
     private void addValueIndex(ValueIndexSpec valueIdx) {
