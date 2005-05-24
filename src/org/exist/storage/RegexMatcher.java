@@ -31,7 +31,14 @@ import org.apache.oro.text.regex.Perl5Compiler;
 import org.apache.oro.text.regex.Perl5Matcher;
 import org.exist.EXistException;
 
-
+/**
+ * A {@link org.exist.storage.TermMatcher} that matches index entries against a
+ * regular expression. Used by {@link org.exist.storage.NativeTextEngine} and
+ * {@link org.exist.storage.NativeValueIndex}.
+ * 
+ * @author wolf
+ *
+ */
 class RegexMatcher implements TermMatcher {
 
 	private PatternCompiler regexCompiler = new Perl5Compiler();
@@ -40,15 +47,11 @@ class RegexMatcher implements TermMatcher {
 	
 	private Pattern regexp;
 
-	public RegexMatcher(String expr, int type) throws EXistException {
+	public RegexMatcher(String expr, int type, int flags) throws EXistException {
 		try {
 			regexp = (type == DBBroker.MATCH_REGEXP
-					? regexCompiler.compile(expr,
-							Perl5Compiler.CASE_INSENSITIVE_MASK)
-					: globCompiler
-							.compile(
-									expr,
-									GlobCompiler.CASE_INSENSITIVE_MASK
+					? regexCompiler.compile(expr, flags)
+					: globCompiler.compile(	expr, GlobCompiler.CASE_INSENSITIVE_MASK
 											| GlobCompiler.QUESTION_MATCHES_ZERO_OR_ONE_MASK));
 		} catch (MalformedPatternException e) {
 			throw new EXistException(e);

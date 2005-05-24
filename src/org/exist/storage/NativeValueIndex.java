@@ -517,22 +517,24 @@ public class NativeValueIndex {
         return result;
     }
     
-    public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type)
+    public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type, int flags)
     throws TerminatedException, EXistException {
     	// if the regexp starts with a char sequence, we restrict the index scan to entries starting with
     	// the same sequence. Otherwise, we have to scan the whole index.
-    	StringBuffer term = new StringBuffer();
-		for (int j = 0; j < expr.length(); j++)
-			if (Character.isLetterOrDigit(expr.charAt(j)))
-				term.append(expr.charAt(j));
-			else
-				break;
-		StringValue startTerm = null;
-		if(term.length() > 0) {
-			startTerm = new StringValue(term.toString());
-		}
-		
-		TermMatcher comparator = new RegexMatcher(expr, type);
+        StringValue startTerm = null;
+        if (expr.startsWith("^")) {
+        	StringBuffer term = new StringBuffer();
+    		for (int j = 1; j < expr.length(); j++)
+    			if (Character.isLetterOrDigit(expr.charAt(j)))
+    				term.append(expr.charAt(j));
+    			else
+    				break;
+    		if(term.length() > 0) {
+    			startTerm = new StringValue(term.toString());
+    		}
+        }
+        
+		TermMatcher comparator = new RegexMatcher(expr, type, flags);
         NodeSet result = new ExtArrayNodeSet();
         RegexCallback callback = new RegexCallback(docs, contextSet, result, comparator);
         Lock lock = db.getLock();
