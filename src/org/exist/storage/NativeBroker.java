@@ -373,10 +373,10 @@ public class NativeBroker extends DBBroker {
 	}
 
 	/**
-	 *  get all the documents in this database repository. The documents are
-	 *  returned as a DocumentSet.
+	 *  Adds all the documents in the database to the specified DocumentSet.
 	 *
-	 *@param  docs TODO
+	 * @param docs a (possibly empty) document set to which the found
+     *  documents are added.
 	 */
 	public DocumentSet getAllDocuments(DocumentSet docs) {
 		long start = System.currentTimeMillis();
@@ -491,7 +491,13 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
-	/** TODO ?? */
+	/** 
+     * Called by class {@link Collection} to update its current
+     * status. Reloads the list of child collections and resources
+     * by calling {@link Collection#read(DBBroker, VariableByteInput)}.
+     * 
+     * @param collection the Collection to be reloaded
+     */
 	public void reloadCollection(Collection collection) {
 		Value key = null;
 		if (collection.getAddress() == -1)
@@ -625,12 +631,26 @@ public class NativeBroker extends DBBroker {
 		return null;
 	}
 	
+    /**
+     * Appends all documents found in collection to the given DocumentSet.
+     * 
+     * @param collection the collection path.
+     * @param docs a non-null DocumentSet object.
+     */
 	public DocumentSet getDocumentsByCollection(String collection, DocumentSet docs)
 		throws PermissionDeniedException {
 		return getDocumentsByCollection(collection, docs, true);
 	}
 
-	/** appends documents in given collection to given DocumentSet. TODO wolf, is this so ? */
+	/**
+     * Appends all documents found in collection to the given DocumentSet.
+     * If inclusive is true, the method will also include documents found in
+     * sub-collections of the current collection.
+     * 
+     * @param collection the collection path.
+     * @param docs a non-null DocumentSet object.
+     * @param inclusive include documents from sub-collections?
+     */
 	public DocumentSet getDocumentsByCollection(
 		String collection,
 		DocumentSet docs,
@@ -2089,7 +2109,14 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
-	/** TODO javadoc - at which moment in the life cycle of the collection is it called ? */
+	/**
+     * Saves the specified collection to storage. Collections are usually cached in
+     * memory. If a collection is modified, this method needs to be called to make
+     * the changes persistent.
+     * 
+     * Note: appending a new document to a collection does not require a save.
+     * Instead, {@link #addDocument(Collection, DocumentImpl)} is called.
+	 */
 	public void saveCollection(Collection collection) throws PermissionDeniedException {
 		if (readOnly)
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
@@ -2575,7 +2602,16 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
-	/** TODO javadoc */
+	/**
+     * Update indexes for the given element node. This method is called when the indexer
+     * encounters a closing element tag. It updates any range indexes defined on the
+     * element value and adds the element id to the structural index.
+     * 
+     * @param node the current element node
+     * @param currentPath node path leading to the element
+     * @param content contains the string value of the element. Needed if a range index
+     * is defined on it.
+	 */
 	public void endElement(final NodeImpl node, NodePath currentPath, String content) {
 	    final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 	    final NodeProxy tempProxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());

@@ -217,8 +217,10 @@ public abstract class DBBroker extends Observable {
 	}
 
 	/**
-	 *  Get all the documents currently in the database. The documents are
-	 *  returned as a DocumentSet.
+	 *  Adds all the documents in the database to the specified DocumentSet.
+     *  
+     *  @param docs a (possibly empty) document set to which the found
+     *  documents are added.
 	 *
 	 */
 	public abstract DocumentSet getAllDocuments(DocumentSet docs);
@@ -441,13 +443,24 @@ public abstract class DBBroker extends Observable {
 		throws PermissionDeniedException;
 	
 	/**
-	 * Store a collection into the database.
+     * Saves the specified collection to storage. Collections are usually cached in
+     * memory. If a collection is modified, this method needs to be called to make
+     * the changes persistent.
      * 
-     * @param collection to store
-	 */
+     * Note: appending a new document to a collection does not require a save.
+     * Instead, {@link #addDocument(Collection, DocumentImpl)} is called.
+     */
 	public abstract void saveCollection(Collection collection)
 		throws PermissionDeniedException;
 
+    /**
+     * Append a new document to the specified collection. The document data
+     * will be appended to the collection data.
+     * 
+     * @param collection
+     * @param doc
+     * @throws PermissionDeniedException
+     */
 	public void addDocument(Collection collection, DocumentImpl doc)
 		throws PermissionDeniedException {
 	}
@@ -478,6 +491,16 @@ public abstract class DBBroker extends Observable {
 	    store(node, currentPath, true);
 	}
 	
+	/**
+     * Update indexes for the given element node. This method is called when the indexer
+     * encounters a closing element tag. It updates any range indexes defined on the
+     * element value and adds the element id to the structural index.
+     * 
+     * @param node the current element node
+     * @param currentPath node path leading to the element
+     * @param content contains the string value of the element. Needed if a range index
+     * is defined on it.
+     */
 	public abstract void endElement(final NodeImpl node, NodePath currentPath, String content);
 	
 	/**
