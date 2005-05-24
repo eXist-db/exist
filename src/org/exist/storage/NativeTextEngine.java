@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.apache.oro.text.regex.Perl5Compiler;
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
 import org.dbxml.core.filer.BTreeCallback;
@@ -397,7 +398,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			else
 				break;
 		try {
-			TermMatcher comparator = new RegexMatcher(expr, type);
+			TermMatcher comparator = new RegexMatcher(expr, type, Perl5Compiler.CASE_INSENSITIVE_MASK);
 			return getNodes(context, docs, contextSet, comparator, term);
 		} catch (EXistException e) {
 			return null;

@@ -148,12 +148,12 @@ public class FunMatches extends Function {
 		Sequence input = getArgument(0).eval(contextSequence, contextItem);
 		if(input.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		
-		if(inPredicate && (getDependencies() & Dependency.CONTEXT_ITEM) == 0)
+        
+		if(inPredicate && (getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
 		    return evalWithIndex(contextSequence, contextItem, input);
-		else
+        } else {
 		    return evalGeneric(contextSequence, contextItem, input);
-		
+        }
 	}
 
 	/**
@@ -165,21 +165,25 @@ public class FunMatches extends Function {
      */
     private Sequence evalWithIndex(Sequence contextSequence, Item contextItem, Sequence input) throws XPathException {
         String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-        
-        int flags = 0;
-		if(getSignature().getArgumentCount() == 3)
-			flags = parseFlags(getArgument(2).eval(contextSequence, contextItem).getStringValue());
 		
         NodeSet nodes = input.toNodeSet();
         
+        int flags = 0;
+        boolean caseSensitive = true;
+        if(getSignature().getArgumentCount() == 3) {
+            String flagsArg = getArgument(2).eval(contextSequence, contextItem).getStringValue();
+            caseSensitive = flagsArg.indexOf('i') < 0;
+            flags = parseFlags(flagsArg);
+        }
+        
         // get the type of a possible index
 		int indexType = nodes.getIndexType();
-		if(Type.subTypeOf(indexType, Type.STRING)) {
+		if(caseSensitive && Type.subTypeOf(indexType, Type.STRING)) {
 		    DocumentSet docs = nodes.getDocumentSet();
 		    LOG.debug("Using index ...");
 		    try {
 				return context.getBroker().getValueIndex().match(docs, nodes, pattern, 
-						DBBroker.MATCH_REGEXP);
+						DBBroker.MATCH_REGEXP, flags);
 			} catch (EXistException e) {
 				throw new XPathException(getASTNode(), e.getMessage(), e);
 			}
@@ -204,9 +208,11 @@ public class FunMatches extends Function {
     private Sequence evalGeneric(Sequence contextSequence, Item contextItem, Sequence stringArg) throws XPathException {
         String string = stringArg.getStringValue();
 		String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+        
 		int flags = 0;
-		if(getSignature().getArgumentCount() == 3)
-			flags = parseFlags(getArgument(2).eval(contextSequence, contextItem).getStringValue());
+        if(getSignature().getArgumentCount() == 3)
+            flags = parseFlags(getArgument(2).eval(contextSequence, contextItem).getStringValue());
+        
 		return BooleanValue.valueOf(match(string, pattern, flags));
     }
 
