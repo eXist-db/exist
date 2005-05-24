@@ -24,6 +24,7 @@ package org.exist.xquery;
 import java.text.Collator;
 import java.util.Iterator;
 
+import org.apache.oro.text.regex.Perl5Compiler;
 import org.exist.EXistException;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentImpl;
@@ -349,7 +350,7 @@ public class GeneralComparison extends BinaryOp {
 	        	if(truncation != Constants.TRUNC_NONE) {
 					try {
 						result = context.getBroker().getValueIndex().match(docs, nodes, rightSeq.getStringValue().replace('%', '*'), 
-								DBBroker.MATCH_WILDCARDS);
+								DBBroker.MATCH_WILDCARDS, Perl5Compiler.DEFAULT_MASK);
 					} catch (EXistException e) {
 						throw new XPathException(getASTNode(), e.getMessage(), e);
 					}
@@ -363,7 +364,6 @@ public class GeneralComparison extends BinaryOp {
 	    } else if (key.getType() == Type.ATOMIC || Type.subTypeOf(key.getType(), Type.STRING)) {
 	        if (!nodes.hasMixedContent() && relation == Constants.EQ 
 	            && nodes.hasTextIndex()) {
-	        
 		        // we can use the fulltext index
 		        String cmp = rightSeq.getStringValue();
 		        if(cmp.length() < NativeTextEngine.MAX_WORD_LENGTH)
