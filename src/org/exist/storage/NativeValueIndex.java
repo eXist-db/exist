@@ -74,13 +74,19 @@ public class NativeValueIndex {
 
     private final static Logger LOG = Logger.getLogger(NativeValueIndex.class);
     
-    private DBBroker broker;
+	/** Data base broker associated to this value index - 1 to 1 association */
+	private DBBroker broker;
+	
+	/** Data storage associated to this value index - 1 to 1 association */
     private BFile db;
     
+	/** pending modifications */
     private TreeMap pending = new TreeMap();
     
+	/** the current document */
     private DocumentImpl doc;
     
+	/** work Output Stream; it is cleared before each use */
     private VariableByteOutputStream os = new VariableByteOutputStream();
     
     public NativeValueIndex(DBBroker broker, BFile valuesDb) {
@@ -88,6 +94,7 @@ public class NativeValueIndex {
         this.db = valuesDb;
     }
     
+	/** store and index given element into this value index */
     public void storeElement(int xpathType, ElementImpl node, String content) {
         AtomicValue atomic = convertToAtomic(xpathType, content);
         if(atomic == null)
@@ -102,6 +109,7 @@ public class NativeValueIndex {
         buf.add(node.getGID());
     }
     
+	/** store and index given attribute into this value index */
     public void storeAttribute(ValueIndexSpec spec, AttrImpl node) {
         AtomicValue atomic = convertToAtomic(spec.getType(), node.getValue());
         if(atomic == null)
@@ -120,6 +128,7 @@ public class NativeValueIndex {
         this.doc = document;
     }
     
+	/** writes the pending items into the BFile, for the current document's collection */
     public void flush() {
         if (pending.size() == 0) return;
         Indexable indexable;
@@ -171,6 +180,8 @@ public class NativeValueIndex {
         pending.clear();
     }
     
+	/** triggers a cache sync, i.e. forces BFile to write out all cached pages.	
+	sync() is called from time to time by the background sync daemon. */
     public void sync() {
         Lock lock = db.getLock();
         try {
@@ -248,8 +259,8 @@ public class NativeValueIndex {
                     while (is.available() > 0) {
                         docId = is.readInt();
                         len = is.readInt();
-                        if (docId != doc.getDocId()) {
-                            // copy data to new buffer
+                        // copy data to new buffer if not in given document
+						if (docId != doc.getDocId()) {
                             os.writeInt(docId);
                             os.writeInt(len);
                             for (int j = 0; j < len; j++) {
@@ -295,6 +306,7 @@ public class NativeValueIndex {
         }
     }
     
+	/** TODO document */
     public void reindex(DocumentImpl oldDoc, NodeImpl node) {
         if (pending.size() == 0) return;
         Lock lock = db.getLock();
@@ -393,6 +405,8 @@ public class NativeValueIndex {
         pending.clear();
     }
     
+	/** remove all pending modifications from the value index, 
+	 * for the current document. */
     public void remove() {
         if (pending.size() == 0) return;
         Lock lock = db.getLock();
@@ -409,7 +423,7 @@ public class NativeValueIndex {
         short collectionId = doc.getCollection().getId();
         long delta, last, gid;
         try {
-            // iterate through elements
+            // iterate through pending elements
             for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
                 try {
                     lock.acquire(Lock.WRITE_LOCK);
@@ -426,6 +440,7 @@ public class NativeValueIndex {
                         data = val.getData();
                         is = new VariableByteArrayInput(data);
                         try {
+							// iterate through indexed nodes
                             while (is.available() > 0) {
                                 docId = is.readInt();
                                 len = is.readInt();
@@ -488,6 +503,9 @@ public class NativeValueIndex {
         pending.clear();
     }
     
+	/** find
+	 * @param relation binary operator used for the comparison
+	 * @param value right hand comparison value */
     public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, Indexable value) 
     throws TerminatedException {
         int idxOp =  checkRelationOp(relation);
@@ -517,6 +535,10 @@ public class NativeValueIndex {
         return result;
     }
     
+	/** Regular expression search
+	 * @param type  like type argument for {@link RegexMatcher} constructor
+	 * @param flags like flags argument for {@link RegexMatcher} constructor
+	 *  */
     public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type, int flags)
     throws TerminatedException, EXistException {
     	// if the regexp starts with a char sequence, we restrict the index scan to entries starting with
@@ -594,6 +616,7 @@ public class NativeValueIndex {
         return indexOp;
     }
     
+	/** compute a key for the "pending" map */
     private AtomicValue convertToAtomic(int xpathType, String value) {
         final StringValue str = new StringValue(value);
         AtomicValue atomic = null;
@@ -615,6 +638,7 @@ public class NativeValueIndex {
         return atomic;        
     }
     
+	/** TODO document */
     private class SearchCallback implements BTreeCallback {
         
         DocumentSet docs;
@@ -682,6 +706,7 @@ public class NativeValueIndex {
         }
     }
     
+	/** TODO document */
     private class RegexCallback extends SearchCallback {
     	
     	private TermMatcher matcher;
@@ -691,7 +716,7 @@ public class NativeValueIndex {
     		this.matcher = matcher;
     	}
     	
-    	/* (non-Javadoc)
+    	/**
 		 * @see org.exist.storage.NativeValueIndex.SearchCallback#indexInfo(org.dbxml.core.data.Value, long)
 		 */
 		public boolean indexInfo(Value value, long pointer)
