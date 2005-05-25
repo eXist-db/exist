@@ -34,33 +34,81 @@ import org.exist.util.hashtable.Object2IntHashMap;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
+/**
+ * Maintains a global symbol table shared by a database instance. The symbol
+ * table maps namespace URIs and node names to unique, numeric ids. Internally,
+ * the db does not store node QNames in clear text. Instead, it uses the numeric ids
+ * maintained here.
+ * 
+ * The global SymbolTable singleton can be retrieved from {@link org.exist.storage.DBBroker#getSymbols()}.
+ * It is saved into the database file "symbols.dbx".
+ * 
+ * @author wolf
+ *
+ */
 public class SymbolTable {
 
 	private final static Logger LOG = Logger.getLogger(SymbolTable.class);
 
+    /** Maps local node names to an integer id */
 	protected Object2IntHashMap nameSymbols = new Object2IntHashMap(200);
+    
+    /** Maps int ids to local node names */
 	protected Int2ObjectHashMap names = new Int2ObjectHashMap(200);
+    
+    /** Maps namespace URIs to an integer id */
 	protected Object2IntHashMap nsSymbols = new Object2IntHashMap(200);
+    
+    /** Maps int ids to namespace URIs */
 	protected Int2ObjectHashMap namespaces = new Int2ObjectHashMap(200);
 
+    /**
+     * Contains default prefix-to-namespace mappings. For convenience, eXist tracks
+     * the first prefix-to-namespace mapping it finds in a document. If an undefined prefix
+     * is found in a query, the query engine will first look up the prefix in this table before
+     * throwing an error.
+     */
 	protected Object2IntHashMap defaultMappings = new Object2IntHashMap(200);
 
+    /**
+     * Temporary name pool to share QName instances during indexing.
+     */
 	protected QNamePool namePool = new QNamePool();
 	
+    /** contains the next local name id to be used */
 	protected short max = 0;
+    
+    /** contains the next namespace URI id to be used */
 	protected short nsMax = 0;
+    
+    /** set to true if the symbol table needs to be saved */
 	protected boolean changed = false;
 
+    /** the underlying symbols.dbx file */
 	protected File file;
 	
 	public SymbolTable(File file) {
 		this.file = file;
 	}
 
+    /**
+     * Retrieve a shared QName instance from the temporary pool.
+     * 
+     * @param namespaceURI
+     * @param localName
+     * @param prefix
+     * @return
+     */
 	public synchronized QName getQName(String namespaceURI, String localName, String prefix) {
 	    return namePool.add(namespaceURI, localName, prefix);
 	}
 	
+    /**
+     * Return a unique id for the local node name of the specified element.
+     * 
+     * @param element
+     * @return
+     */
 	public synchronized short getSymbol(Element element) {
 		short id = (short) nameSymbols.get(element.getLocalName());
 		if (id > -1)
@@ -80,6 +128,12 @@ public class SymbolTable {
 		return id;
 	}
 
+    /**
+     * Return a unique id for the local node name of the specified attribute.
+     * 
+     * @param attr
+     * @return
+     */
 	public synchronized short getSymbol(Attr attr) {
 		final String key = '@' + attr.getLocalName();
 		short id = (short) nameSymbols.get(key);
@@ -100,6 +154,13 @@ public class SymbolTable {
 		return id;
 	}
 
+    /**
+     * Returns a unique id for the specified local name. If the name is
+     * the local name of an attribute, it should start with a '@' character.
+     * 
+     * @param name
+     * @return
+     */
 	public synchronized short getSymbol(String name) {
 		if (name.length() == 0)
 			throw new IllegalArgumentException("name is empty");
@@ -113,6 +174,12 @@ public class SymbolTable {
 		return id;
 	}
 
+    /**
+     * Returns a unique id for the specified namespace URI.
+     * 
+     * @param ns
+     * @return
+     */
 	public synchronized short getNSSymbol(String ns) {
 		if (ns == null || ns.length() == 0) {
 			return 0;
@@ -127,33 +194,57 @@ public class SymbolTable {
 		return id;
 	}
 
+    /**
+     * Returns the namespace URI registered for the id or null
+     * if the namespace URI is not known. Returns the empty string
+     * if the namespace is empty.
+     * 
+     * @param id
+     * @return
+     */
 	public synchronized String getNamespace(short id) {
 		return id == 0 ? "" : (String) namespaces.get(id);
 	}
 
+    /**
+     * Returns true if the symbol table needs to be saved
+     * to persistent storage.
+     * 
+     * @return
+     */
 	public synchronized boolean hasChanged() {
 		return changed;
 	}
 
+    /**
+     * Returns the local name registered for the id or
+     * null if the name is not known.
+     * 
+     * @param id
+     * @return
+     */
 	public synchronized String getName(short id) {
 		return (String) names.get(id);
 	}
 
-	public String[] getSymbols() {
-		String[] result = new String[nameSymbols.size()];
-		int j = 0;
-		for (Iterator i = nameSymbols.iterator(); i.hasNext(); j++) {
-			result[j] = (String) i.next();
-		}
-		return result;
-	}
-
+    /**
+     * Returns a namespace URI for the given prefix if there's
+     * a default mapping.
+     * 
+     * @param prefix
+     * @return
+     */
 	public synchronized String getDefaultNamespace(String prefix) {
 		if (defaultMappings.containsKey(prefix))
 			return getNamespace((short)defaultMappings.get(prefix));
 		return null;
 	}
 	
+    /**
+     * Returns a list of default prefixes registered.
+     * 
+     * @return
+     */
 	public synchronized String[] defaultPrefixList() {
 		String[] prefixes = new String[defaultMappings.size()];
 		int i = 0;
@@ -162,6 +253,12 @@ public class SymbolTable {
 		return prefixes;
 	}
 
+    /**
+     * Write the symbol table to persistent storage.
+     * 
+     * @param ostream
+     * @throws IOException
+     */
 	public synchronized void write(final VariableByteOutputStream ostream)
 		throws IOException {
 		ostream.writeShort(max);
@@ -196,6 +293,12 @@ public class SymbolTable {
 		changed = false;
 	}
 
+    /**
+     * Read the symbol table.
+     * 
+     * @param istream
+     * @throws IOException
+     */
 	public synchronized void read(VariableByteInput istream) throws IOException {
 		max = istream.readShort();
 		nsMax = istream.readShort();
