@@ -68,6 +68,16 @@ import org.w3c.dom.Node;
  * 
  * TODO: Check correct types during validation.
  * 
+ * In the BTree single BFile, the keys are :
+ * (collectionId, indexType, indexData)
+ * and the values are : gid1, gid2-gid1, ...
+ * <b></b>
+ * <p>Algorithm:</p>
+ * When a node is stored, an entry is added or updated in the {@link #pending} map, 
+ * with given String content and basic type as key.
+ * This way, the index entries are easily put in the persistent BFile storage by 
+ * {@link #flush()} .
+ * 
  * @author wolf
  */
 public class NativeValueIndex {
@@ -80,7 +90,13 @@ public class NativeValueIndex {
 	/** Data storage associated to this value index - 1 to 1 association */
     private BFile db;
     
-	/** pending modifications */
+	/** Pending modifications; the keys are AtomicValue objects implementing Indexable 
+	 * (StringValue or numeric values, IntegerValue etc), 
+	 * which are the index entries,
+	 * and the values are LongLinkedList objects 
+	 * whose entries are gid (global identifiers) matching the index entries.
+	 * Do not confuse these keys with the keys used in persistent storage, created with
+	 * {@link Indexable#serialize(short) */
     private TreeMap pending = new TreeMap();
     
 	/** the current document */
@@ -124,6 +140,7 @@ public class NativeValueIndex {
         buf.add(node.getGID());
     }
     
+	/** set the current document; generally called before calling an operation */
     public void setDocument(DocumentImpl document) {
         this.doc = document;
     }
