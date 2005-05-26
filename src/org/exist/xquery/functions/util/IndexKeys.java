@@ -41,31 +41,28 @@ import org.exist.xquery.value.ValueSequence;
 
 /**
  * @author wolf
- *
+ * 
  */
 public class IndexKeys extends BasicFunction {
 
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("index-keys", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Can be used to query existing range indexes defined on a set of nodes. " +
-            "The node set is specified in the first " +
-            "argument $a. The function returns all index keys found for the node set $a in the range index. " +
-            "The second argument $b specifies " +
-            "a start string. Only keys starting with the specified character sequence are returned. " +
-            "$c is a function reference, which points to a callback function that will be called " +
-            "for every term occurrence. $d defines the maximum number of terms that should be " +
-            "reported. The function reference for $c can be created with the util:function " +
-            "function. It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
-            "1) the current term as found in the index as xs:string, 2) a sequence containing three int " +
-            "values: a) the overall frequency of the term within the node set, b) the number of distinct " +
-            "documents in the node set the term occurs in, c) the current position of the term in the whole " +
-            "list of terms returned.",
-            new SequenceType[]{
+                "Can be used to query existing range indexes defined on a set of nodes. " +
+                "All index keys defined for the given node set are reported to a callback function. " +
+                "The node set is specified in the first argument. The second argument specifies a start " +
+                "value. Only index keys being greater than $b will be reported. " +
+                "The third arguments is a function reference as created by the util:function function. " +
+                "It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
+                "1) the current index key as found in the range index as an atomic value, 2) a sequence " +
+                "containing three int values: a) the overall frequency of the key within the node set, " +
+                "b) the number of distinct documents in the node set the key occurs in, " +
+                "c) the current position of the key in the whole list of keys returned.", 
+                new SequenceType[] {
                     new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
                     new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.INT, Cardinality.EXACTLY_ONE)
-            },
+                    new SequenceType(Type.FUNCTION_REFERENCE,
+                            Cardinality.EXACTLY_ONE),
+                    new SequenceType(Type.INT, Cardinality.EXACTLY_ONE) },
             new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
 
     /**
@@ -76,12 +73,15 @@ public class IndexKeys extends BasicFunction {
         super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
+     *      org.exist.xquery.value.Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-        if(args[0].getLength() == 0)
+        if (args[0].getLength() == 0)
             return Sequence.EMPTY_SEQUENCE;
         NodeSet nodes = args[0].toNodeSet();
         DocumentSet docs = nodes.getDocumentSet();
@@ -89,18 +89,20 @@ public class IndexKeys extends BasicFunction {
         int max = ((IntegerValue) args[3].itemAt(0)).getInt();
         FunctionCall call = ref.getFunctionCall();
         Sequence result = new ValueSequence();
-        ValueOccurrences occur[] = 
-            context.getBroker().getValueIndex().scanIndexTerms(docs, nodes, (Indexable) args[1], null);
+        ValueOccurrences occur[] = context.getBroker().getValueIndex()
+                .scanIndexTerms(docs, nodes, (Indexable) args[1], null);
         int len = (occur.length > max ? max : occur.length);
         Sequence params[] = new Sequence[2];
         ValueSequence data = new ValueSequence();
         for (int j = 0; j < len; j++) {
             params[0] = occur[j].getValue();
-            data.add(new IntegerValue(occur[j].getOccurrences(), Type.UNSIGNED_INT));
-            data.add(new IntegerValue(occur[j].getDocuments(), Type.UNSIGNED_INT));
+            data.add(new IntegerValue(occur[j].getOccurrences(),
+                    Type.UNSIGNED_INT));
+            data.add(new IntegerValue(occur[j].getDocuments(),
+                    Type.UNSIGNED_INT));
             data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
             params[1] = data;
-            
+
             result.addAll(call.evalFunction(contextSequence, null, params));
             data.clear();
         }
