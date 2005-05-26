@@ -298,7 +298,7 @@ public class FloatValue extends NumericValue implements Indexable {
 				+ target.getName());
 	}
 
-	/* (non-Javadoc)
+	/** @deprecated
      * @see org.exist.storage.Indexable#serialize(short)
      */
     public byte[] serialize(short collectionId, boolean caseSensitive) {
@@ -310,6 +310,15 @@ public class FloatValue extends NumericValue implements Indexable {
         return data;
     }
 
+    /** Serialize for the persistant storage */
+    public byte[] serializeValue ( int offset, boolean caseSensitive) {
+		final byte[] data = new byte[ offset + 1 + 4 ];
+		data[offset] = (byte) Type.FLOAT;
+        final int bits = (int)(Float.floatToIntBits(value) ^ 0x80000000);
+        ByteConversion.intToByte(bits, data, offset+1 );
+        return data;
+    }
+	
     /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
