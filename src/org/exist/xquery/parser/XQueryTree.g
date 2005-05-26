@@ -1698,7 +1698,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				attrName:ATTRIBUTE
 				{
 					AttributeConstructor attrib= new AttributeConstructor(context, attrName.getText());
-                    attrib.setASTNode(attrName);
+					attrib.setASTNode(attrName);
 				}
 				(
 					attrVal:ATTRIBUTE_CONTENT
@@ -1711,7 +1711,7 @@ throws PermissionDeniedException, EXistException, XPathException
 						expr [enclosed]
 						{ attrib.addEnclosedExpr(enclosed); }
 					)
-				)+
+				)*
 				{ c.addAttribute(attrib); }
 			)
 		)*

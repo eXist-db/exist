@@ -5777,10 +5777,9 @@ public XQueryTreeParser() {
 					_t = _t.getFirstChild();
 					
 										AttributeConstructor attrib= new AttributeConstructor(context, attrName.getText());
-					attrib.setASTNode(attrName);
+										attrib.setASTNode(attrName);
 									
 					{
-					int _cnt197=0;
 					_loop197:
 					do {
 						if (_t==null) _t=ASTNULL;
@@ -5811,10 +5810,9 @@ public XQueryTreeParser() {
 						}
 						default:
 						{
-							if ( _cnt197>=1 ) { break _loop197; } else {throw new NoViableAltException(_t);}
+							break _loop197;
 						}
 						}
-						_cnt197++;
 					} while (true);
 					}
 					c.addAttribute(attrib);
