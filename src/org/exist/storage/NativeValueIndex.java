@@ -85,7 +85,7 @@ public class NativeValueIndex {
     private final static Logger LOG = Logger.getLogger(NativeValueIndex.class);
     
 	/** Data base broker associated to this value index - 1 to 1 association */
-	private DBBroker broker;
+	DBBroker broker;
 	
 	/** Data storage associated to this value index - 1 to 1 association */
     private BFile db;
@@ -97,7 +97,7 @@ public class NativeValueIndex {
 	 * whose entries are gid (global identifiers) matching the index entries.
 	 * Do not confuse these keys with the keys used in persistent storage, created with
 	 * {@link Indexable#serialize(short) */
-    private TreeMap pending = new TreeMap();
+    protected TreeMap pending = new TreeMap();
     
 	/** the current document */
     private DocumentImpl doc;
