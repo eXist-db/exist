@@ -32,23 +32,38 @@ import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
-/**
+/** The new index by QName that will make queries like
+<pre>
+/ root [ key = 123 ]
+</pre>
+very quick. 
+It is used by an Xquery extension function with this signature :
+<pre>
+qname-index-lookup( $qname as xs:string, 
+                    $key as xs:string) as node*
+</pre>
+
+that can be used this way :
+
+<pre>
+$key := index-lookup( "key", "123")
+$user := $key / parent::root
+</pre>
+
+The way of indexing is the same as current range indices {@link NativeValueIndex}, 
+except that for each QName like <key> mentioned above, the QName will be stored .
+ 
  * @author Jean-Marc Vanel http://jmvanel.free.fr/
  */
 public class NativeValueIndexByQName extends NativeValueIndex {
 	
     private final static Logger LOG = Logger.getLogger(NativeValueIndexByQName.class);
 
-
-	/**
-	 * @param broker
-	 * @param valuesDb
-	 */
 	public NativeValueIndexByQName(DBBroker broker, BFile valuesDb) {
 		super(broker, valuesDb);
 	}
 	
-	/** ? @see org.exist.storage.NativeValueIndex#storeAttribute(org.exist.storage.ValueIndexSpec, org.exist.dom.AttrImpl)
+	/** @see org.exist.storage.NativeValueIndex#storeAttribute(org.exist.storage.ValueIndexSpec, org.exist.dom.AttrImpl)
 	 */
 	public void storeAttribute(ValueIndexSpec spec, AttrImpl node) {
 		QName qname = new QName( node.getNodeName(), node.getNamespaceURI() );
@@ -56,7 +71,7 @@ public class NativeValueIndexByQName extends NativeValueIndex {
         updatePendingIndexEntry(node, indexable);
 	}
 
-	/** ? @see org.exist.storage.NativeValueIndex#storeElement(int, org.exist.dom.ElementImpl, java.lang.String)
+	/** @see org.exist.storage.NativeValueIndex#storeElement(int, org.exist.dom.ElementImpl, java.lang.String)
 	 */
 	public void storeElement(int xpathType, ElementImpl node, String content) {		
 		QName qname = new QName( node.getNodeName(), node.getNamespaceURI() );
@@ -64,9 +79,9 @@ public class NativeValueIndexByQName extends NativeValueIndex {
         updatePendingIndexEntry(node, indexable);
 	}
 
-	/**
-	 * @param node
-	 * @param indexable
+	/** an entry is added or updated in the {@link #pending} map
+	 * @param node the DOM node
+	 * @param indexable a {@link QNameIndexable}
 	 */
 	private void updatePendingIndexEntry(NodeImpl node, Indexable indexable) {
 		if(indexable == null)
@@ -81,7 +96,7 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 		buf.add(node.getGID());
 	}
 
-	/** compute a key for the "pending" map */
+	/** compute a key for the {@link #pending} map */
     private Indexable computeTemporaryKey(int xpathType, String value, QName qname) {
         final StringValue str = new StringValue(value);
         AtomicValue atomic = null;
@@ -109,9 +124,11 @@ public class NativeValueIndexByQName extends NativeValueIndex {
         return ret;      
     }
 	
+	/** key for the {@link #pending} map ; the order is lexicographic on 
+	 * qname first, indexable second */
 	private class QNameIndexable implements Indexable {
-		private Indexable indexable;
 		private QName qname;
+		private Indexable indexable;
 		
 		public QNameIndexable(Indexable indexable, QName qname) {
 			this.indexable = indexable;
@@ -123,6 +140,12 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 			return null;
 		}
 
+		public void serializeQName(byte[] data, int offset) {
+			// pb: comment récupérer les id à partir de l'objet QName et de SymbolTable ?
+			// broker.getSymbols().;
+		}
+
+		
 		/** @return negative value <==> this object is less than other */
 		public int compareTo(Object other) {
 			int ret = 0;
@@ -137,6 +160,5 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 			}
 			return ret;
 		}
-		
 	}
 }
