@@ -25,7 +25,9 @@ import org.exist.dom.AttrImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.QName;
+import org.exist.dom.SymbolTable;
 import org.exist.storage.store.BFile;
+import org.exist.util.ByteConversion;
 import org.exist.util.LongLinkedList;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -40,13 +42,13 @@ very quick.
 It is used by an Xquery extension function with this signature :
 <pre>
 qname-index-lookup( $qname as xs:string, 
-                    $key as xs:string) as node*
+                    $key as xs:string ) as node*
 </pre>
 
 that can be used this way :
 
 <pre>
-$key := index-lookup( "key", "123")
+$key := qname-index-lookup( "key", "123")
 $user := $key / parent::root
 </pre>
 
@@ -77,7 +79,7 @@ public class NativeValueIndexByQName extends NativeValueIndex {
         updatePendingIndexEntry(node, indexable);
 	}
 
-	/** an entry is added or updated in the {@link #pending} map
+	/** adds or updates an entry in the {@link #pending} map
 	 * @param node the DOM node
 	 * @param indexable a {@link QNameIndexable}
 	 */
@@ -122,8 +124,12 @@ public class NativeValueIndexByQName extends NativeValueIndex {
         return ret;      
     }
 	
+
 	/** key for the {@link #pending} map ; the order is lexicographic on 
-	 * qname first, indexable second */
+	 * qname first, indexable second ;
+	 * this class also provides through serialize() the persistant storage key :
+	 * (collectionId, qname, indexType, indexData)
+	 */
 	private class QNameIndexable implements Indexable {
 		private QName qname;
 		private Indexable indexable;
@@ -133,16 +139,23 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 			this.qname = qname;
 		}
 
+		/** the one that is called from {@link NativeValueIndex} */
 		public byte[] serialize(short collectionId, boolean caseSensitive) {
-			// TODO Auto-generated method stub
-			return null;
+			// key (collectionId, qname, indexType, indexData)
+	        final byte[] data = indexable.serializeValue(4, caseSensitive);
+	        ByteConversion.shortToByte(collectionId, data, 0);
+			serializeQName(data, 2 );
+			return data;
 		}
-
-		public void serializeQName(byte[] data, int offset) {
-			// pb: comment r�cup�rer les id � partir de l'objet QName et de SymbolTable ?
-			// broker.getSymbols().;
+		
+		/** serialize the QName field on the persistant storage */
+		private void serializeQName(byte[] data, int offset) {
+			SymbolTable symbols = broker.getSymbols();
+			short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
+			short localNameId = symbols.getSymbol(qname.getLocalName());
+	        data[offset]   = (byte)namespaceId;
+	        data[offset+1] = (byte)localNameId;
 		}
-
 		
 		/** @return negative value <==> this object is less than other */
 		public int compareTo(Object other) {
@@ -157,6 +170,11 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 				}
 			}
 			return ret;
+		}
+
+		/** unused */
+		public byte[] serializeValue( int offset, boolean caseSensitive) {
+			return null;
 		}
 	}
 }

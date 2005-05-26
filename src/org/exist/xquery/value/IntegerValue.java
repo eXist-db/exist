@@ -473,7 +473,7 @@ public class IntegerValue extends NumericValue implements Indexable {
 			" to Java object of type " + target.getName());
 	}
 	
-	/* (non-Javadoc)
+	/** @deprecated
      * @see org.exist.storage.Indexable#serialize(short)
      */
     public byte[] serialize(short collectionId, boolean caseSensitive) {
@@ -485,6 +485,15 @@ public class IntegerValue extends NumericValue implements Indexable {
 		return data;
     }
     
+    /** Serialize for the persistant storage */
+    public byte[] serializeValue ( int offset, boolean caseSensitive) {
+		final byte[] data = new byte[ offset + 1 + 8 ];
+		data[offset] = (byte) Type.INTEGER;
+        long l = value.longValue() - Long.MIN_VALUE;
+		ByteConversion.longToByte(l, data, offset+1 );
+		return data;
+    }
+	
     /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */

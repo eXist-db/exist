@@ -389,7 +389,7 @@ public class DoubleValue extends NumericValue implements Indexable {
 				+ target.getName());
 	}
 
-    /* (non-Javadoc)
+    /** @deprecated
      * @see org.exist.storage.Indexable#serialize(short)
      */
     public byte[] serialize(short collectionId, boolean caseSensitive) {
@@ -401,6 +401,21 @@ public class DoubleValue extends NumericValue implements Indexable {
         return data;
     }
 
+    /** Serialize for the persistant storage 
+     * @see org.exist.storage.Indexable#serializeValue(int, boolean) */
+    public byte[] serializeValue ( int offset, boolean caseSensitive) {
+        final byte[] data = new byte[ offset + 1 + 8 ];
+        data[offset] = (byte) Type.DOUBLE;
+        final long bits = Double.doubleToLongBits(value) ^ 0x8000000000000000L;
+        ByteConversion.longToByte(bits, data, offset+1 );
+        return data;
+    }
+
+    /** size writen by {@link #serialize(byte[] data, int offset)} */
+	public int getSerializedSize() {
+		return 1 + 8;
+	}
+	
     /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
@@ -411,5 +426,4 @@ public class DoubleValue extends NumericValue implements Indexable {
         else
             return getType() > other.getType() ? 1 : -1;
     }
-	
 }

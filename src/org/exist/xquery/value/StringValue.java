@@ -471,7 +471,7 @@ public class StringValue extends AtomicValue implements Indexable {
             return getType() > other.getType() ? 1 : -1;
     }
     
-    /* (non-Javadoc)
+    /** @deprecated
      * @see org.exist.storage.Indexable#serialize(short)
      */
     public byte[] serialize(short collectionId, boolean caseSensitive) {
@@ -483,6 +483,17 @@ public class StringValue extends AtomicValue implements Indexable {
 		return data;
     }
     
+    /** Serialize for the persistant storage 
+     * @param offset
+     * */
+    public byte[] serializeValue( int offset, boolean caseSensitive) {
+        final String val = caseSensitive ? value : value.toLowerCase();
+		final byte[] data = new byte[ offset + 1 + UTF8.encoded(val) ];
+		data[offset] = (byte) type;	// TODO: cast to byte is not safe
+		UTF8.encode(val, data, offset+1);  
+		return data;
+	}
+	
     public static String deserializeString(byte[] data) {
     	return new String(data, 3, data.length - 3);
     }
