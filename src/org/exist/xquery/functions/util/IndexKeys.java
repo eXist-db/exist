@@ -62,7 +62,7 @@ public class IndexKeys extends BasicFunction {
             "list of terms returned.",
             new SequenceType[]{
                     new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                    new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE),
                     new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
                     new SequenceType(Type.INT, Cardinality.EXACTLY_ONE)
             },
@@ -85,7 +85,6 @@ public class IndexKeys extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         NodeSet nodes = args[0].toNodeSet();
         DocumentSet docs = nodes.getDocumentSet();
-        String start = args[1].getStringValue();
         FunctionReference ref = (FunctionReference) args[2].itemAt(0);
         int max = ((IntegerValue) args[3].itemAt(0)).getInt();
         FunctionCall call = ref.getFunctionCall();
