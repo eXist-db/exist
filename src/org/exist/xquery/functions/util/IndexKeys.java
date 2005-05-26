@@ -47,11 +47,11 @@ public class IndexKeys extends BasicFunction {
 
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("index-keys", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "This function can be used to collect some information on the distribution " +
-            "of index terms within a set of nodes. The set of nodes is specified in the first " +
-            "argument $a. The function returns term frequencies for all terms in the index found " +
-            "in descendants of the nodes in $a. The second argument $b specifies " +
-            "a start string. Only terms starting with the specified character sequence are returned. " +
+            "Can be used to query existing range indexes defined on a set of nodes. " +
+            "The node set is specified in the first " +
+            "argument $a. The function returns all index keys found for the node set $a in the range index. " +
+            "The second argument $b specifies " +
+            "a start string. Only keys starting with the specified character sequence are returned. " +
             "$c is a function reference, which points to a callback function that will be called " +
             "for every term occurrence. $d defines the maximum number of terms that should be " +
             "reported. The function reference for $c can be created with the util:function " +
