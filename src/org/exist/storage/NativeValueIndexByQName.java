@@ -66,16 +66,14 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 	/** @see org.exist.storage.NativeValueIndex#storeAttribute(org.exist.storage.ValueIndexSpec, org.exist.dom.AttrImpl)
 	 */
 	public void storeAttribute(ValueIndexSpec spec, AttrImpl node) {
-		QName qname = new QName( node.getNodeName(), node.getNamespaceURI() );
-		Indexable indexable = computeTemporaryKey(spec.getType(), node.getValue(), qname);
+		Indexable indexable = computeTemporaryKey(spec.getType(), node.getValue(), node.getQName());
         updatePendingIndexEntry(node, indexable);
 	}
 
 	/** @see org.exist.storage.NativeValueIndex#storeElement(int, org.exist.dom.ElementImpl, java.lang.String)
 	 */
 	public void storeElement(int xpathType, ElementImpl node, String content) {		
-		QName qname = new QName( node.getNodeName(), node.getNamespaceURI() );
-		Indexable indexable = computeTemporaryKey( xpathType, content, qname );
+		Indexable indexable = computeTemporaryKey( xpathType, content, node.getQName() );
         updatePendingIndexEntry(node, indexable);
 	}
 
@@ -135,13 +133,13 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 			this.qname = qname;
 		}
 
-		public byte[] serialize(short collectionId) {
+		public byte[] serialize(short collectionId, boolean caseSensitive) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		public void serializeQName(byte[] data, int offset) {
-			// pb: comment récupérer les id à partir de l'objet QName et de SymbolTable ?
+			// pb: comment rï¿½cupï¿½rer les id ï¿½ partir de l'objet QName et de SymbolTable ?
 			// broker.getSymbols().;
 		}
 

@@ -55,13 +55,13 @@ import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.LongLinkedList;
 import org.exist.util.ReadOnlyException;
+import org.exist.util.ValueOccurrences;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Node;
 
 /**
  * Maintains an index on typed node values.
@@ -105,9 +105,14 @@ public class NativeValueIndex {
 	/** work Output Stream; it is cleared before each use */
     private VariableByteOutputStream os = new VariableByteOutputStream();
     
+    private boolean caseSensitive = true;
+    
     public NativeValueIndex(DBBroker broker, BFile valuesDb) {
         this.broker = broker;
         this.db = valuesDb;
+        Boolean caseOpt = (Boolean) broker.getConfiguration().getProperty("indexer.case-sensitive");
+        if (caseOpt != null)
+            caseSensitive = caseOpt.booleanValue();
     }
     
 	/** store and index given element into this value index */
@@ -175,7 +180,7 @@ public class NativeValueIndex {
                     prevId = ids[j];
                     os.writeLong(cid);
                 }
-                ref = new Value(indexable.serialize(collectionId));
+                ref = new Value(indexable.serialize(collectionId, caseSensitive));
                 try {
                     lock.acquire(Lock.WRITE_LOCK);
                     if (db.append(ref, os.data()) < 0) {
@@ -345,7 +350,7 @@ public class NativeValueIndex {
                 entry = (Map.Entry) i.next();
                 indexable = (Indexable) entry.getKey();
                 idList = (LongLinkedList) entry.getValue();
-                ref = new Value(indexable.serialize(collectionId));
+                ref = new Value(indexable.serialize(collectionId, caseSensitive));
                 
                 // try to retrieve old index entry for the element
                 try {
@@ -447,7 +452,7 @@ public class NativeValueIndex {
                     entry = (Map.Entry) i.next();
                     indexable = (Indexable) entry.getKey();
                     idList = (LongLinkedList) entry.getValue();
-                    ref = new Value(indexable.serialize(collectionId));
+                    ref = new Value(indexable.serialize(collectionId, caseSensitive));
                     
                     val = db.get(ref);
                     os.clear();
@@ -532,7 +537,7 @@ public class NativeValueIndex {
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			Collection collection = (Collection) iter.next();
 			short collectionId = collection.getId();
-			byte[] key = value.serialize(collectionId);
+			byte[] key = value.serialize(collectionId, caseSensitive);
 			IndexQuery query = new IndexQuery(idxOp, new Value(key));
 			try {
 				lock.acquire();
@@ -552,16 +557,21 @@ public class NativeValueIndex {
         return result;
     }
     
+    public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type)
+    throws TerminatedException, EXistException {
+        return match(docs, contextSet, expr, type, 0, true);
+    }
+    
 	/** Regular expression search
 	 * @param type  like type argument for {@link RegexMatcher} constructor
 	 * @param flags like flags argument for {@link RegexMatcher} constructor
 	 *  */
-    public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type, int flags)
+    public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type, int flags, boolean caseSensitiveQuery)
     throws TerminatedException, EXistException {
     	// if the regexp starts with a char sequence, we restrict the index scan to entries starting with
     	// the same sequence. Otherwise, we have to scan the whole index.
         StringValue startTerm = null;
-        if (expr.startsWith("^")) {
+        if (expr.startsWith("^") && caseSensitiveQuery == caseSensitive) {
         	StringBuffer term = new StringBuffer();
     		for (int j = 1; j < expr.length(); j++)
     			if (Character.isLetterOrDigit(expr.charAt(j)))
@@ -569,6 +579,7 @@ public class NativeValueIndex {
     			else
     				break;
     		if(term.length() > 0) {
+                LOG.debug("Start: " + term.toString());
     			startTerm = new StringValue(term.toString());
     		}
         }
@@ -582,7 +593,7 @@ public class NativeValueIndex {
 			short collectionId = collection.getId();
 			byte[] key;
 			if(startTerm != null)
-				key = startTerm.serialize(collectionId);
+				key = startTerm.serialize(collectionId, caseSensitive);
 			else {
 				key = new byte[3];
 				ByteConversion.shortToByte(collectionId, key, 0);
@@ -607,6 +618,46 @@ public class NativeValueIndex {
         return result;
     }
     
+public ValueOccurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet,
+            Indexable start, Indexable end) {
+        long t0 = System.currentTimeMillis();
+        final Lock lock = db.getLock();
+        short collectionId;
+        Collection current;
+        IndexQuery query;
+        IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
+        for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
+            current = (Collection) i.next();
+            collectionId = current.getId();
+            byte[] startKey = start.serialize(collectionId, caseSensitive);
+            if (end == null)
+                query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new Value(startKey));
+            else {
+                byte[] endKey = end.serialize(collectionId, caseSensitive);
+                query = new IndexQuery(IndexQuery.BW, new Value(startKey), 
+                        new Value(endKey));
+            }
+            try {
+                lock.acquire();
+                db.query(query, cb);
+            } catch (LockException e) {
+                LOG.warn("cannot get lock on words", e);
+            } catch (IOException e) {
+                LOG.warn("error while reading words", e);
+            } catch (BTreeException e) {
+                LOG.warn("error while reading words", e);
+            } catch (TerminatedException e) {
+                LOG.warn("Method terminated", e);
+            } finally {
+                lock.release();
+            }
+        }
+        Map map = cb.map;
+        ValueOccurrences[] result = new ValueOccurrences[map.size()];
+        LOG.debug("Found " + result.length + " in " + (System.currentTimeMillis() - t0));
+        return (ValueOccurrences[]) map.values().toArray(result);
+    }
+
     private int checkRelationOp(int relation) {
         int indexOp;
         switch(relation) {
@@ -635,13 +686,12 @@ public class NativeValueIndex {
     
 	/** compute a key for the "pending" map */
     private AtomicValue convertToAtomic(int xpathType, String value) {
-        final StringValue str = new StringValue(value);
         AtomicValue atomic = null;
-        if(Type.subTypeOf(xpathType, Type.STRING))
-            atomic = str;
-        else {
+        if(Type.subTypeOf(xpathType, Type.STRING)) {
+            atomic = new StringValue(value);
+        } else {
             try {
-                atomic = str.convertTo(xpathType);
+                atomic = new StringValue(value).convertTo(xpathType);
             } catch (XPathException e) {
                 LOG.warn("Node value: '" + value + "' cannot be converted to type " + 
                         Type.getTypeName(xpathType));
@@ -744,5 +794,80 @@ public class NativeValueIndex {
 			}
 			return true;
 		}
+    }
+    
+private final class IndexScanCallback implements BTreeCallback{
+        
+        private DocumentSet docs;
+        private NodeSet contextSet;
+        private Map map = new TreeMap();
+        
+        IndexScanCallback(DocumentSet docs, NodeSet contextSet) {
+            this.docs = docs;
+            this.contextSet = contextSet;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
+         */
+        public boolean indexInfo(Value key, long pointer)
+                throws TerminatedException {
+            AtomicValue atomic;
+            try {
+                atomic = ValueIndexFactory.deserialize(key.data(), key.start(), key.getLength());
+            } catch (EXistException e) {
+                LOG.warn(e.getMessage(), e);
+                return true;
+            }
+            ValueOccurrences oc = (ValueOccurrences) map.get(atomic);
+            
+            VariableByteInput is = null;
+            try {
+                is = db.getAsStream(pointer);
+            } catch (IOException ioe) {
+                LOG.warn(ioe.getMessage(), ioe);
+            }
+            if (is == null)
+                return true;
+            try {
+                int docId;
+                int len;
+                long gid;
+                DocumentImpl doc;
+                boolean include = true;
+                boolean docAdded;
+                while (is.available() > 0) {
+                    docId = is.readInt();
+                    len = is.readInt();
+                    if ((doc = docs.getDoc(docId)) == null) {
+                        is.skip(len);
+                        continue;
+                    }
+                    docAdded = false;
+                    gid = 0;
+                    for (int j = 0; j < len; j++) {
+                        gid += is.readLong();
+                        if (contextSet != null) {
+                            include = contextSet.parentWithChild(doc, gid, false, true) != null;
+                        }
+                        if (include) {
+                            if (oc == null) {
+                                oc = new ValueOccurrences(atomic);
+                                map.put(atomic, oc);
+                            }
+                            if (!docAdded) {
+                                oc.addDocument(doc);
+                                docAdded = true;
+                            }
+                            oc.addOccurrences(1);
+                        }
+                    }
+                }
+            } catch(EOFException e) {
+            } catch(IOException e) {
+                LOG.warn("Exception while scanning index: " + e.getMessage(), e);
+            }
+            return true;
+        }
     }
 }

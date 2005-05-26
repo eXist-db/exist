@@ -41,7 +41,7 @@ public class ValueIndexFactory {
 	public final static AtomicValue deserialize(byte[] data, int start, int len) throws EXistException {
 		int type = data[start + 2];
 		if (Type.subTypeOf(type, Type.STRING)) {
-			String s = new String(data, start + 3, data.length - 3 - start);
+			String s = new String(data, start + 3, len - 3);
 			return new StringValue(s);
 		} else if (Type.subTypeOf(type, Type.INTEGER) ) {
 			return new IntegerValue(ByteConversion.byteToLong(data, start + 3));

@@ -168,7 +168,7 @@ public class FunMatches extends Function {
 		
         NodeSet nodes = input.toNodeSet();
         
-        int flags = 0;
+        int flags = 0; 
         boolean caseSensitive = true;
         if(getSignature().getArgumentCount() == 3) {
             String flagsArg = getArgument(2).eval(contextSequence, contextItem).getStringValue();
@@ -178,12 +178,12 @@ public class FunMatches extends Function {
         
         // get the type of a possible index
 		int indexType = nodes.getIndexType();
-		if(caseSensitive && Type.subTypeOf(indexType, Type.STRING)) {
+		if(Type.subTypeOf(indexType, Type.STRING)) {
 		    DocumentSet docs = nodes.getDocumentSet();
 		    LOG.debug("Using index ...");
 		    try {
 				return context.getBroker().getValueIndex().match(docs, nodes, pattern, 
-						DBBroker.MATCH_REGEXP, flags);
+						DBBroker.MATCH_REGEXP, flags, caseSensitive);
 			} catch (EXistException e) {
 				throw new XPathException(getASTNode(), e.getMessage(), e);
 			}

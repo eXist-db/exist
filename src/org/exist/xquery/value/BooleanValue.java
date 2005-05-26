@@ -181,7 +181,7 @@ public class BooleanValue extends AtomicValue implements Indexable {
     /* (non-Javadoc)
      * @see org.exist.storage.Indexable#serialize(short)
      */
-    public byte[] serialize(short collectionId) {
+    public byte[] serialize(short collectionId, boolean caseSensitive) {
         byte[] data = new byte[4];
         ByteConversion.shortToByte(collectionId, data, 0);
         data[2] = Type.BOOLEAN;

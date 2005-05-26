@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
 
 
 /**
- * IndexPaths contains information about which parts of a document should be
+ * Contains information about which parts of a document should be
  * fulltext-indexed for a specified doctype. It basically keeps a list of paths
  * to include and exclude from indexing. Paths are specified using
  * simple XPath syntax, e.g. //SPEECH will select any SPEECH elements,

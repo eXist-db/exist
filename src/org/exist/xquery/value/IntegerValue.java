@@ -476,7 +476,7 @@ public class IntegerValue extends NumericValue implements Indexable {
 	/* (non-Javadoc)
      * @see org.exist.storage.Indexable#serialize(short)
      */
-    public byte[] serialize(short collectionId) {
+    public byte[] serialize(short collectionId, boolean caseSensitive) {
         long l = value.longValue() - Long.MIN_VALUE;
         byte[] data = new byte[11];
 		ByteConversion.shortToByte(collectionId, data, 0);

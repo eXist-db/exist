@@ -120,7 +120,6 @@ public class NativeBroker extends DBBroker {
     private static final long TEMP_FRAGMENT_TIMEOUT = 300000;
     
 	private static final String ROOT_COLLECTION = "/db";
-	private static final String TEMP_COLLECTION ="/db/system/temp";
 	
 	/** default buffer size setting */
 	protected final static int BUFFERS = 256;
