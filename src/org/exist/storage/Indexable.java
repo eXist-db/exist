@@ -38,7 +38,9 @@ public interface Indexable extends Comparable {
      * (short: collectionId, byte type, byte[] value)
      * 
      * @param collectionId the collection id to use
+     * @param caseSensitive only relevant for string values: if set to false,
+     * strings should be serialized in lower case
      * @return
      */
-    public byte[] serialize(short collectionId);
+    public byte[] serialize(short collectionId, boolean caseSensitive);
 }

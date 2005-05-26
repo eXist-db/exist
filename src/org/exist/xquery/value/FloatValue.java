@@ -301,7 +301,7 @@ public class FloatValue extends NumericValue implements Indexable {
 	/* (non-Javadoc)
      * @see org.exist.storage.Indexable#serialize(short)
      */
-    public byte[] serialize(short collectionId) {
+    public byte[] serialize(short collectionId, boolean caseSensitive) {
         final byte[] data = new byte[7];
         ByteConversion.shortToByte(collectionId, data, 0);
         data[2] = (byte) Type.FLOAT;

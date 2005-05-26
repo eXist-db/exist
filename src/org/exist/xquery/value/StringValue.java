@@ -55,7 +55,7 @@ public class StringValue extends AtomicValue implements Indexable {
 	public StringValue(String stringValue) {
 		value = stringValue;
 	}
-
+    
 	public StringValue expand() throws XPathException {
 		value = expand(value);
 		return this;
@@ -108,7 +108,7 @@ public class StringValue extends AtomicValue implements Indexable {
 	public String getStringValue() {
 		return value;
 	}
-
+    
 	public Item itemAt(int pos) {
 		return pos == 0 ? this : null;
 	}
@@ -474,21 +474,17 @@ public class StringValue extends AtomicValue implements Indexable {
     /* (non-Javadoc)
      * @see org.exist.storage.Indexable#serialize(short)
      */
-    public byte[] serialize(short collectionId) {
-		final byte[] data = new byte[UTF8.encoded(value) + 3];
+    public byte[] serialize(short collectionId, boolean caseSensitive) {
+        final String val = caseSensitive ? value : value.toLowerCase();
+		final byte[] data = new byte[UTF8.encoded(val) + 3];
 		ByteConversion.shortToByte(collectionId, data, 0);
 		data[2] = (byte) type;	// TODO: cast to byte is not safe
-		UTF8.encode(value, data, 3);
+		UTF8.encode(val, data, 3);
 		return data;
     }
     
     public static String deserializeString(byte[] data) {
     	return new String(data, 3, data.length - 3);
     }
-    
-    public static void main(String[] args) {
-        String inStr = "is \tXML";
-        inStr = StringValue.collapseWhitespace(inStr);
-        System.out.println("'" + inStr + "'");
-    }
+
 }
