@@ -78,20 +78,21 @@ public class DataBackup implements SystemTask {
 		String dataDir = (String) config.getProperty("db-connection.data-dir");
 		LOG.debug("Backing up data files ...");
 
-		String[] filenames = new String[]{dataDir + File.separatorChar + "dom.dbx",
-				dataDir + File.separatorChar +"symbols.dbx",
-				dataDir + File.separatorChar + "collections.dbx",
-				dataDir + File.separatorChar +"elements.dbx",
-				dataDir + File.separatorChar +"words.dbx"
-				};
+		File dir = new File(dataDir);
+		 FilenameFilter filter = new FilenameFilter() {
+	        public boolean accept(File dir, String name) {
+	            return name.endsWith(".dbx");
+	        }
+	    };
+	    String[] filenames = dir.list(filter);
 		try {
-			compressFiles(filenames);
+			compressFiles(dataDir + File.separatorChar,filenames);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	 void compressFiles(String[] filenames) throws IOException {
+	 void compressFiles(String datadir, String[] filenames) throws IOException {
 	     String creationDate = creationDateFormat.format(new Date());
          String outFilename = dest + File.separatorChar + creationDate + ".zip";
          
@@ -106,7 +107,7 @@ public class DataBackup implements SystemTask {
 	    
 	        // Compress the files
 	        for (int i=0; i<filenames.length; i++) {
-	            FileInputStream in = new FileInputStream(filenames[i]);
+	            FileInputStream in = new FileInputStream(datadir+filenames[i]);
 	    
 	            // Add ZIP entry to output stream.
 	            out.putNextEntry(new ZipEntry(filenames[i]));
