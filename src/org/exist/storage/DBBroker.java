@@ -396,6 +396,8 @@ public abstract class DBBroker extends Observable {
 
 	public abstract NativeValueIndex getValueIndex();
 	
+	public abstract NativeValueIndexByQName getQNameValueIndex();
+	
 	/**
 	 *  Is string comparison case sensitive?
 	 *
