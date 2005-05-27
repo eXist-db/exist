@@ -32,8 +32,15 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+/**
+ * Represents an atomic value. All simple values that are not nodes extend AtomicValue.
+ * As every single item is also a sequence, this class implements both: Item and Sequence.
+ * 
+ * @author wolf
+ */
 public abstract class AtomicValue implements Item, Sequence {
 
+    /** An empty atomic value */
 	public final static AtomicValue EMPTY_VALUE = new EmptyValue();
 
 	/* (non-Javadoc)
@@ -59,16 +66,43 @@ public abstract class AtomicValue implements Item, Sequence {
 
 	public abstract AtomicValue min(Collator collator, AtomicValue other) throws XPathException;
 
+    /**
+     * Compares this atomic value to another. Returns true if the current value is of type string
+     * and its value starts with the string value of the other value.
+     * 
+     * @param collator Collator used for string comparison.
+     * @param other
+     * @return
+     * @throws XPathException if this is not a string.
+     */
 	public boolean startsWith(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("Cannot call starts-with on value of type " + 
 				Type.getTypeName(getType()));
 	}
 	
+	/**
+     * Compares this atomic value to another. Returns true if the current value is of type string
+     * and its value ends with the string value of the other value.
+     * 
+     * @param collator Collator used for string comparison.
+     * @param other
+     * @return
+     * @throws XPathException if this is not a string.
+     */
 	public boolean endsWith(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("Cannot call ends-with on value of type " + 
 				Type.getTypeName(getType()));
 	}
 	
+	/**
+     * Compares this atomic value to another. Returns true if the current value is of type string
+     * and its value contains the string value of the other value.
+     * 
+     * @param collator Collator used for string comparison.
+     * @param other
+     * @return
+     * @throws XPathException if this is not a string.
+     */
 	public boolean contains(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("Cannot call contains on value of type " + 
 				Type.getTypeName(getType()));
@@ -133,6 +167,9 @@ public abstract class AtomicValue implements Item, Sequence {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Item#copyTo(org.exist.storage.DBBroker, org.exist.memtree.DocumentBuilderReceiver)
+	 */
 	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException {
 		try {
 			final String s = getStringValue();
@@ -148,6 +185,9 @@ public abstract class AtomicValue implements Item, Sequence {
 	public void add(Item item) throws XPathException {
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Sequence#addAll(org.exist.xquery.value.Sequence)
+	 */
 	public void addAll(Sequence other) throws XPathException {
 	}
 
@@ -183,6 +223,12 @@ public abstract class AtomicValue implements Item, Sequence {
         return DocumentSet.EMPTY_DOCUMENT_SET;
     }
 
+	/**
+     * Dump a string representation of this value to the given 
+     * ExpressionDumper.
+     * 
+	 * @param dumper
+	 */
 	public void dump(ExpressionDumper dumper) {
 	    try {
             dumper.display(getStringValue());
