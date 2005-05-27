@@ -27,6 +27,7 @@ import org.exist.storage.NativeValueIndexByQName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.RootNode;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.QNameValue;
@@ -64,6 +65,10 @@ public class QNameIndexLookup extends BasicFunction {
 		String content = args[1].getStringValue();
 		
         NativeValueIndexByQName valueIndex = context.getBroker().getQNameValueIndex();
+        if ( contextSequence == null ) {
+        	RootNode rootNode = new RootNode(context);
+        	contextSequence = rootNode.eval(null, null);
+        }
         Sequence result = valueIndex.findByQName(qname, content, contextSequence);
         return result;
 	}
