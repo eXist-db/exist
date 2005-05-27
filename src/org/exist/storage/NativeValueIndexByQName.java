@@ -20,15 +20,30 @@
 $Id$ */
 package org.exist.storage;
 
+import java.io.IOException;
+import java.util.Iterator;
+
 import org.apache.log4j.Logger;
+import org.dbxml.core.data.Value;
+import org.dbxml.core.filer.BTreeCallback;
+import org.dbxml.core.filer.BTreeException;
+import org.dbxml.core.indexer.IndexQuery;
+import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
+import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.storage.store.BFile;
 import org.exist.util.ByteConversion;
+import org.exist.util.Lock;
+import org.exist.util.LockException;
 import org.exist.util.LongLinkedList;
+import org.exist.xquery.Constants;
+import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
@@ -59,8 +74,8 @@ except that for each QName like <key> mentioned above, the QName will be stored 
  * @author Jean-Marc Vanel http://jmvanel.free.fr/
  */
 public class NativeValueIndexByQName extends NativeValueIndex {
-	
-    private final static Logger LOG = Logger.getLogger(NativeValueIndexByQName.class);
+
+	private final static Logger LOG = Logger.getLogger(NativeValueIndexByQName.class);
 
 	public NativeValueIndexByQName(DBBroker broker, BFile valuesDb) {
 		super(broker, valuesDb);
@@ -182,8 +197,49 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 		}
 	}
 
-	public Sequence findByQName(QName qname, String content) {
-		// TODO Auto-generated method stub
+	/** called from the special XQuery function util:qname-index-lookup() */
+	public Sequence findByQName(QName qname, String content, Sequence contextSequence) throws XPathException {
+		NodeSet contextSet = contextSequence.toNodeSet();
+		DocumentSet docSet = contextSet.getDocumentSet();
+		
+		ValueIndexKeyFactory 
+		// Indexable 
+		indexable = new QNameValueIndexKeyFactory( new StringValue(content), qname);
+		int relation = Constants.EQ;
+		find(relation, docSet, contextSet, indexable);
 		return null;
 	}
+	
+	/** find
+	 * @param relation binary operator used for the comparison
+	 * @param value right hand comparison value */
+    public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, ValueIndexKeyFactory value) 
+    throws TerminatedException {
+        int idxOp =  checkRelationOp(relation);
+        NodeSet result = new ExtArrayNodeSet();
+        Lock lock = db.getLock();
+        for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
+			Collection collection = (Collection) iter.next();
+			short collectionId = collection.getId();
+			byte[] key = value.serialize(collectionId, caseSensitive);
+			IndexQuery query = new IndexQuery(idxOp, new Value(key));
+			try {
+				lock.acquire();
+				try {
+					SearchCallback callback = new SearchCallback(docs, contextSet, result);
+					db.query(query, callback );
+				} catch (IOException ioe) {
+					LOG.debug(ioe);
+				} catch (BTreeException bte) {
+					LOG.debug(bte);
+				}
+			} catch (LockException e) {
+				LOG.debug(e);
+			} finally {
+				lock.release();
+			}
+        }
+        return result;
+    }
+
 }

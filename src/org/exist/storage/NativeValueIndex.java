@@ -88,7 +88,7 @@ public class NativeValueIndex {
 	DBBroker broker;
 	
 	/** Data storage associated to this value index - 1 to 1 association */
-    private BFile db;
+    protected BFile db;
     
 	/** Pending modifications; the keys are AtomicValue objects implementing Indexable 
 	 * (StringValue or numeric values, IntegerValue etc), 
@@ -105,7 +105,7 @@ public class NativeValueIndex {
 	/** work Output Stream; it is cleared before each use */
     private VariableByteOutputStream os = new VariableByteOutputStream();
     
-    private boolean caseSensitive = true;
+    protected boolean caseSensitive = true;
     
     public NativeValueIndex(DBBroker broker, BFile valuesDb) {
         this.broker = broker;
@@ -658,7 +658,7 @@ public ValueOccurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet,
         return (ValueOccurrences[]) map.values().toArray(result);
     }
 
-    private int checkRelationOp(int relation) {
+    protected int checkRelationOp(int relation) {
         int indexOp;
         switch(relation) {
         	case Constants.LT:
@@ -706,7 +706,7 @@ public ValueOccurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet,
     }
     
 	/** TODO document */
-    private class SearchCallback implements BTreeCallback {
+    class SearchCallback implements BTreeCallback {
         
         DocumentSet docs;
         NodeSet contextSet;
