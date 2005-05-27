@@ -216,10 +216,10 @@ public class NativeBroker extends DBBroker {
 				readOnly = elementsDb.isReadOnly();
 			}
 
-			valuesDb = createValueIndexFile(config, dataDir, VALUES_DB_FILE, buffers);
+			valuesDb = createValueIndexFile(config, dataDir, VALUES_DB_FILE, buffers, "db-connection.values" );
 			if ( qnameValueIndexation ) {
 				if ( VALUES_DB_QNAME_FILE != VALUES_DB_FILE ) 
-					valuesDbQname = createValueIndexFile(config, dataDir, VALUES_DB_QNAME_FILE, buffers);
+					valuesDbQname = createValueIndexFile(config, dataDir, VALUES_DB_QNAME_FILE, buffers, "db-connection2.values" );
 				else
 					valuesDbQname = valuesDb;
 			}
@@ -306,13 +306,13 @@ public class NativeBroker extends DBBroker {
 	 * @throws DBException
 	 */
 	private BFile createValueIndexFile(Configuration config, String dataDir, 
-			String dataFile, int buffers ) throws DBException {
+			String dataFile, int buffers, String propertyName ) throws DBException {
 		int indexBuffers;
 		int dataBuffers;
 		String pathSep = System.getProperty("file.separator", "/");
 		BFile valuesDb;
 		
-		if ((valuesDb = (BFile) config.getProperty("db-connection.values"))
+		if ((valuesDb = (BFile) config.getProperty(propertyName))
 		        == null) {
 		    indexBuffers = buffers * 4;
 		    dataBuffers = buffers * 10;
@@ -329,7 +329,7 @@ public class NativeBroker extends DBBroker {
 		    } else
 		        valuesDb.open();
 		    
-		    config.setProperty("db-connection.values", valuesDb);
+		    config.setProperty(propertyName, valuesDb);
 		    readOnly = valuesDb.isReadOnly();
 		}
 		return valuesDb;

@@ -206,8 +206,7 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 		// Indexable 
 		indexable = new QNameValueIndexKeyFactory( new StringValue(content), qname);
 		int relation = Constants.EQ;
-		find(relation, docSet, contextSet, indexable);
-		return null;
+		return find(relation, docSet, contextSet, indexable);
 	}
 	
 	/** find
