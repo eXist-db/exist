@@ -107,7 +107,10 @@ import org.w3c.dom.NodeList;
  */
 public class NativeBroker extends DBBroker {
 	
-    private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
+    static final String VALUES_DB_FILE = "values.dbx";
+	static final String VALUES_DB_QNAME_FILE = "values-by-qname.dbx";
+
+	private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
 	private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
 	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
 	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
@@ -132,6 +135,7 @@ public class NativeBroker extends DBBroker {
 	protected DOMFile domDb;
 	protected BFile elementsDb;
 	protected BFile valuesDb;
+	protected BFile valuesDbQname;
 	
 	protected NativeTextEngine textEngine;
 	protected NativeElementIndex elementIndex;
@@ -212,27 +216,13 @@ public class NativeBroker extends DBBroker {
 				readOnly = elementsDb.isReadOnly();
 			}
 
-			if ((valuesDb = (BFile) config.getProperty("db-connection.values"))
-			        == null) {
-			    indexBuffers = buffers * 4;
-			    dataBuffers = buffers * 10;
-			    
-			    LOG.debug(
-			            "values index buffer size: " + indexBuffers + "; " + dataBuffers);
-			    valuesDb =
-			        new BFile(new File(dataDir + pathSep + "values.dbx"),
-			                indexBuffers,
-			                dataBuffers);
-			    if (!valuesDb.exists()) {
-			        LOG.info("creating values.dbx");
-			        valuesDb.create();
-			    } else
-			        valuesDb.open();
-			    
-			    config.setProperty("db-connection.values", valuesDb);
-			    readOnly = valuesDb.isReadOnly();
+			valuesDb = createValueIndexFile(config, dataDir, VALUES_DB_FILE, buffers);
+			if ( qnameValueIndexation ) {
+				if ( VALUES_DB_QNAME_FILE != VALUES_DB_FILE ) 
+					valuesDbQname = createValueIndexFile(config, dataDir, VALUES_DB_QNAME_FILE, buffers);
+				else
+					valuesDbQname = valuesDb;
 			}
-			
 			if ((domDb = (DOMFile) config.getProperty("db-connection.dom")) == null) {
 				if (config.hasProperty("db-connection.buffers")) {
 					indexBuffers = buffers;
@@ -293,7 +283,7 @@ public class NativeBroker extends DBBroker {
 			textEngine = new NativeTextEngine(this, config, buffers);
 			valueIndex = new NativeValueIndex(this, valuesDb);
 			if ( qnameValueIndexation )
-				qnameValueIndex = new NativeValueIndexByQName(this, valuesDb);
+				qnameValueIndex = new NativeValueIndexByQName(this, valuesDbQname);
 			xmlSerializer = new NativeSerializer(this, config);
 			elementIndex = new NativeElementIndex(this, elementsDb);
 			user = SecurityManager.SYSTEM_USER;
@@ -306,6 +296,43 @@ public class NativeBroker extends DBBroker {
 			LOG.debug("failed to initialize database: " + e.getMessage(), e);
 			throw new EXistException(e);
 		}
+	}
+
+	/**
+	 * @param config
+	 * @param dataDir
+	 * @param buffers
+	 * @param pathSep
+	 * @throws DBException
+	 */
+	private BFile createValueIndexFile(Configuration config, String dataDir, 
+			String dataFile, int buffers ) throws DBException {
+		int indexBuffers;
+		int dataBuffers;
+		String pathSep = System.getProperty("file.separator", "/");
+		BFile valuesDb;
+		
+		if ((valuesDb = (BFile) config.getProperty("db-connection.values"))
+		        == null) {
+		    indexBuffers = buffers * 4;
+		    dataBuffers = buffers * 10;
+		    
+		    LOG.debug(
+		            "values index buffer size: " + indexBuffers + "; " + dataBuffers);
+		    valuesDb =
+		        new BFile(new File(dataDir + pathSep + dataFile ),
+		                indexBuffers,
+		                dataBuffers);
+		    if (!valuesDb.exists()) {
+		        LOG.info("creating " + VALUES_DB_FILE );
+		        valuesDb.create();
+		    } else
+		        valuesDb.open();
+		    
+		    config.setProperty("db-connection.values", valuesDb);
+		    readOnly = valuesDb.isReadOnly();
+		}
+		return valuesDb;
 	}
 
 	/** changes // into /  */
