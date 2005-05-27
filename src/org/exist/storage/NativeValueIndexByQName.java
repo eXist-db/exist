@@ -68,39 +68,39 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 	/** @see org.exist.storage.NativeValueIndex#storeAttribute(org.exist.storage.ValueIndexSpec, org.exist.dom.AttrImpl)
 	 */
 	public void storeAttribute(ValueIndexSpec spec, AttrImpl node) {
-		Indexable indexable = computeTemporaryKey(spec.getType(), node.getValue(), node.getQName());
-        updatePendingIndexEntry(node, indexable);
+		ValueIndexKeyFactory keyFactory = computeTemporaryKey(spec.getType(), node.getValue(), node.getQName());
+        updatePendingIndexEntry(node, keyFactory);
 	}
 
 	/** @see org.exist.storage.NativeValueIndex#storeElement(int, org.exist.dom.ElementImpl, java.lang.String)
 	 */
 	public void storeElement(int xpathType, ElementImpl node, String content) {		
-		Indexable indexable = computeTemporaryKey( xpathType, content, node.getQName() );
-        updatePendingIndexEntry(node, indexable);
+		ValueIndexKeyFactory keyFactory = computeTemporaryKey( xpathType, content, node.getQName() );
+        updatePendingIndexEntry(node, keyFactory);
 	}
 
 	/** adds or updates an entry in the {@link #pending} map
 	 * @param node the DOM node
-	 * @param indexable a {@link QNameIndexable}
+	 * @param keyFactory a {@link QNameValueIndexKeyFactory}
 	 */
-	private void updatePendingIndexEntry(NodeImpl node, Indexable indexable) {
-		if(indexable == null)
+	private void updatePendingIndexEntry(NodeImpl node, ValueIndexKeyFactory keyFactory) {
+		if(keyFactory == null)
             return;		// skip
 		LongLinkedList buf;
-		if (pending.containsKey(indexable))
-            buf = (LongLinkedList) pending.get(indexable);
+		if (pending.containsKey(keyFactory))
+            buf = (LongLinkedList) pending.get(keyFactory);
         else {
             buf = new LongLinkedList();
-            pending.put(indexable, buf);
+            pending.put(keyFactory, buf);
         }
 		buf.add(node.getGID());
 	}
 
 	/** compute a key for the {@link #pending} map */
-    private Indexable computeTemporaryKey(int xpathType, String value, QName qname) {
+    private ValueIndexKeyFactory computeTemporaryKey(int xpathType, String value, QName qname) {
         final StringValue str = new StringValue(value);
         AtomicValue atomic = null;
-		QNameIndexable ret = null;
+		QNameValueIndexKeyFactory ret = null;
 		
         if(Type.subTypeOf(xpathType, Type.STRING))
             atomic = str;
@@ -115,7 +115,7 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 		
         if( atomic instanceof Indexable ) {
 			if ( atomic != null )
-				ret = new QNameIndexable((Indexable)atomic, qname );
+				ret = new QNameValueIndexKeyFactory((Indexable)atomic, qname );
         } else {
 			LOG.warn("The specified type: " + Type.getTypeName(xpathType) +
             " cannot be used as index key. It does not implement interface Indexable.");
@@ -130,18 +130,21 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 	 * this class also provides through serialize() the persistant storage key :
 	 * (collectionId, qname, indexType, indexData)
 	 */
-	private class QNameIndexable implements Indexable {
+	private class QNameValueIndexKeyFactory implements ValueIndexKeyFactory, 
+		Indexable // TODO  "ValueIndexKeyFactory" refactoring: remove after refactoring NativeValueIndex
+	{
 		private QName qname;
 		private Indexable indexable;
 		
-		public QNameIndexable(Indexable indexable, QName qname) {
+		public QNameValueIndexKeyFactory(Indexable indexable, QName qname) {
 			this.indexable = indexable;
 			this.qname = qname;
 		}
 
-		/** the one that is called from {@link NativeValueIndex} */
+		/** called from {@link NativeValueIndex};
+		 * provides the persistant storage key :
+		 * (collectionId, qname, indexType, indexData) */
 		public byte[] serialize(short collectionId, boolean caseSensitive) {
-			// key (collectionId, qname, indexType, indexData)
 	        final byte[] data = indexable.serializeValue(4, caseSensitive);
 	        ByteConversion.shortToByte(collectionId, data, 0);
 			serializeQName(data, 2 );
@@ -160,8 +163,8 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 		/** @return negative value <==> this object is less than other */
 		public int compareTo(Object other) {
 			int ret = 0;
-			if ( other instanceof QNameIndexable ) {
-				QNameIndexable otherIndexable = (QNameIndexable)other;
+			if ( other instanceof QNameValueIndexKeyFactory ) {
+				QNameValueIndexKeyFactory otherIndexable = (QNameValueIndexKeyFactory)other;
 				int qnameComparison = qname.toString().compareTo(otherIndexable.qname.toString());
 				if ( qnameComparison != 0 ) {
 					ret = qnameComparison;
@@ -172,7 +175,7 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 			return ret;
 		}
 
-		/** unused */
+		/** unused - TODO "ValueIndexKeyFactory" refactoring: remove after refactoring NativeValueIndex */
 		public byte[] serializeValue( int offset, boolean caseSensitive) {
 			return null;
 		}
