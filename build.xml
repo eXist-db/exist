@@ -378,7 +378,7 @@
 
 		<echo message="Shutting down the server ..."/>
 		<xmldb:shutdown xmlns:xmldb="http://exist-db.org/ant"
-			uri="xmldb:exist://localhost:8081/db"
+			uri="xmldb:exist://localhost:8088/xmlrpc/db"
 			user="admin" password=""/>
 		<sleep seconds="10"/>
 	</target>

@@ -33,7 +33,7 @@ import org.xmldb.api.modules.CollectionManagementService;
  * @author Sebastian Bossung, Technische Universitaet Hamburg-Harburg
  */
 public abstract class RemoteDBTest extends TestCase {
-    protected final static String URI = "xmldb:exist://localhost:8081/exist/xmlrpc";
+    protected final static String URI = "xmldb:exist://localhost:8088/xmlrpc";
 
     private final static String COLLECTION_NAME = "unit-testing-collection-Città";
 
