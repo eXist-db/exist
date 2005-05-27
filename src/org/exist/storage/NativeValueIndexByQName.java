@@ -31,6 +31,7 @@ import org.exist.util.ByteConversion;
 import org.exist.util.LongLinkedList;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
@@ -179,5 +180,10 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 		public byte[] serializeValue( int offset, boolean caseSensitive) {
 			return null;
 		}
+	}
+
+	public Sequence findByQName(QName qname, String content) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

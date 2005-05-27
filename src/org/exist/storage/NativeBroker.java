@@ -136,6 +136,10 @@ public class NativeBroker extends DBBroker {
 	protected NativeTextEngine textEngine;
 	protected NativeElementIndex elementIndex;
 	protected NativeValueIndex valueIndex;
+	protected NativeValueIndexByQName qnameValueIndex;
+	/** switch to activate/deactivate the feature "new index by QName" */
+	private boolean qnameValueIndexation = false;
+	
 	protected Serializer xmlSerializer;
 	
 	protected PatternCompiler compiler = new Perl5Compiler();
@@ -288,6 +292,8 @@ public class NativeBroker extends DBBroker {
 			idxConf = (IndexSpec) config.getProperty("indexer.config");
 			textEngine = new NativeTextEngine(this, config, buffers);
 			valueIndex = new NativeValueIndex(this, valuesDb);
+			if ( qnameValueIndexation )
+				qnameValueIndex = new NativeValueIndexByQName(this, valuesDb);
 			xmlSerializer = new NativeSerializer(this, config);
 			elementIndex = new NativeElementIndex(this, elementsDb);
 			user = SecurityManager.SYSTEM_USER;
@@ -354,6 +360,8 @@ public class NativeBroker extends DBBroker {
 		textEngine.flush();
 		elementIndex.flush();
 		valueIndex.flush();
+		if ( qnameValueIndexation )
+			qnameValueIndex.flush();
 		if (symbols != null && symbols.hasChanged())
 			try {
 				saveSymbols();
@@ -2628,6 +2636,11 @@ public class NativeBroker extends DBBroker {
 		        valueIndex.setDocument(doc);
 		        valueIndex.storeElement(ValueIndexSpec.indexTypeToXPath(indexType), 
 						(ElementImpl) node, content.toString());
+		        if ( qnameValueIndexation  ) {
+		        	qnameValueIndex.setDocument(doc);
+		        	qnameValueIndex.storeElement(ValueIndexSpec.indexTypeToXPath(indexType), 
+						(ElementImpl) node, content.toString());
+		        }
 		}
 		
 		// save element by calling ElementIndex
@@ -2973,5 +2986,9 @@ public class NativeBroker extends DBBroker {
     public int getBackendType() {
         return NATIVE;
     }
+
+	public NativeValueIndexByQName getQNameValueIndex() {
+		return qnameValueIndex;
+	}
 
 }
