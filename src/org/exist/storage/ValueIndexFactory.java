@@ -44,20 +44,19 @@ public class ValueIndexFactory {
 			String s = new String(data, start + 3, len - 3);
 			return new StringValue(s);
 		} else if (Type.subTypeOf(type, Type.INTEGER) ) {
-			return new IntegerValue(ByteConversion.byteToLong(data, start + 3));
+			return new IntegerValue(ByteConversion.byteToLong(data, start + 3) ^ 0x8000000000000000L);
 		} else if (type == Type.BOOLEAN) {
 			return new BooleanValue(data[start + 3] == 1);
 		} else if (type == Type.FLOAT) {
-			int bits = ByteConversion.byteToInt(data, start + 3);
+			int bits = ByteConversion.byteToInt(data, start + 3) ^ 0x80000000;
 			float f = Float.intBitsToFloat(bits);
 			return new FloatValue(f);
 		} else if (type == Type.DOUBLE) {
-			long bits = ByteConversion.byteToLong(data, start + 3);
+			long bits = ByteConversion.byteToLong(data, start + 3) ^ 0x8000000000000000L;
 			double d = Double.longBitsToDouble(bits);
 			return new DoubleValue(d);
 		} else
 			throw new EXistException("Unknown data type for range index key: " + 
 					Type.getTypeName(type));
 	}
-
 }
