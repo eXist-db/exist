@@ -60,6 +60,7 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
@@ -579,7 +580,6 @@ public class NativeValueIndex {
     			else
     				break;
     		if(term.length() > 0) {
-                LOG.debug("Start: " + term.toString());
     			startTerm = new StringValue(term.toString());
     		}
         }
@@ -618,20 +618,20 @@ public class NativeValueIndex {
         return result;
     }
     
-public ValueOccurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet,
+    public ValueOccurrences[] scanIndexKeys(DocumentSet docs, NodeSet contextSet,
             Indexable start, Indexable end) {
         long t0 = System.currentTimeMillis();
         final Lock lock = db.getLock();
         short collectionId;
         Collection current;
         IndexQuery query;
-        IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
+        IndexScanCallback cb = new IndexScanCallback(docs, contextSet, ((Item) start).getType());
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             current = (Collection) i.next();
             collectionId = current.getId();
             byte[] startKey = start.serialize(collectionId, caseSensitive);
             if (end == null)
-                query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new Value(startKey));
+                query = new IndexQuery(IndexQuery.GEQ, new Value(startKey));
             else {
                 byte[] endKey = end.serialize(collectionId, caseSensitive);
                 query = new IndexQuery(IndexQuery.BW, new Value(startKey), 
@@ -801,10 +801,12 @@ private final class IndexScanCallback implements BTreeCallback{
         private DocumentSet docs;
         private NodeSet contextSet;
         private Map map = new TreeMap();
+        private int type;
         
-        IndexScanCallback(DocumentSet docs, NodeSet contextSet) {
+        IndexScanCallback(DocumentSet docs, NodeSet contextSet, int type) {
             this.docs = docs;
             this.contextSet = contextSet;
+            this.type = type;
         }
         
         /* (non-Javadoc)
@@ -815,6 +817,8 @@ private final class IndexScanCallback implements BTreeCallback{
             AtomicValue atomic;
             try {
                 atomic = ValueIndexFactory.deserialize(key.data(), key.start(), key.getLength());
+                if (atomic.getType() != type)
+                    return false;
             } catch (EXistException e) {
                 LOG.warn(e.getMessage(), e);
                 return true;
