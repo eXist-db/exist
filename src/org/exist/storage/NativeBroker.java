@@ -142,7 +142,7 @@ public class NativeBroker extends DBBroker {
 	protected NativeValueIndex valueIndex;
 	protected NativeValueIndexByQName qnameValueIndex;
 	/** switch to activate/deactivate the feature "new index by QName" */
-	private boolean qnameValueIndexation = false;
+	private boolean qnameValueIndexation = true; // false;
 	
 	protected Serializer xmlSerializer;
 	

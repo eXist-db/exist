@@ -29,6 +29,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -59,11 +60,11 @@ public class QNameIndexLookup extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		QName qname =(QName) args[0].itemAt(0);
+		QName qname =((QNameValue) args[0].itemAt(0)).getQName();
 		String content = args[1].getStringValue();
 		
         NativeValueIndexByQName valueIndex = context.getBroker().getQNameValueIndex();
-        Sequence result = valueIndex.findByQName(qname, content);
+        Sequence result = valueIndex.findByQName(qname, content, contextSequence);
         return result;
 	}
 }
