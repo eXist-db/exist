@@ -46,8 +46,8 @@ public class FuzzyMatcher implements TermMatcher {
 	/* (non-Javadoc)
 	 * @see org.exist.storage.TermMatcher#matches(java.lang.String)
 	 */
-	public boolean matches(String text) {
-		if(searchTerm.equalsIgnoreCase(text))
+	public boolean matches(CharSequence text) {
+		if(searchTerm.equals(text))
 			return true;
 		int textlen = text.length();
 		int dist = editDistance(text, searchTerm, textlen, termLength);
@@ -78,7 +78,7 @@ public class FuzzyMatcher implements TermMatcher {
      lengths to compute the Levenshtein distance between the two strings.
      The result is returned as an integer.
      */ 
-    private final int editDistance(String s, String t, int n, int m) {
+    private final int editDistance(CharSequence s, String t, int n, int m) {
         if (e.length <= n || e[0].length <= m) {
             e = new int[Math.max(e.length, n+1)][Math.max(e[0].length, m+1)];
         }

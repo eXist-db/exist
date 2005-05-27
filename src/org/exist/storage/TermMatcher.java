@@ -32,6 +32,6 @@ package org.exist.storage;
  */
 public interface TermMatcher {
 	
-	public boolean matches(String term);
+	public boolean matches(CharSequence term);
 	
 }

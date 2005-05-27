@@ -69,6 +69,7 @@ import org.exist.util.Occurrences;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.UTF8;
+import org.exist.util.XMLString;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
@@ -1141,7 +1142,8 @@ public class NativeTextEngine extends TextSearchEngine {
 		NodeSet result;
 		NodeSet contextSet;
 		XQueryContext context;
-		
+		XMLString word = new XMLString(64);
+        
 		public SearchCallback(XQueryContext context, TermMatcher comparator, NodeSet result,
 				NodeSet contextSet, DocumentSet docs) {
 			this.matcher = comparator;
@@ -1152,13 +1154,8 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
-			String word;
-			try {
-				word = new String(key.getData(), 2, key.getLength() - 2,
-						"UTF-8");
-			} catch (UnsupportedEncodingException uee) {
-				word = new String(key.getData(), 2, key.getLength() - 2);
-			}
+            word.reuse();
+            word = UTF8.decode(key.getData(), 2, key.getLength() - 2, word);
 			if (matcher.matches(word)) {
 				VariableByteInput is = null;
 				try {
@@ -1211,7 +1208,7 @@ public class NativeTextEngine extends TextSearchEngine {
 									parent = contextSet.get(proxy);
 								if (parent != null) {
 									result.add(parent, sizeHint);
-									match = new Match(word, gid);
+									match = new Match(word.toString(), gid);
 									match.setFrequency(freq);
 									if (trackMatches != Serializer.TAG_NONE)
 										parent.addMatch(match);

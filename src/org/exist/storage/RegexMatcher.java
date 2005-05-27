@@ -61,7 +61,7 @@ class RegexMatcher implements TermMatcher {
 	 * 
 	 * @see java.util.Comparator#equals(java.lang.Object)
 	 */
-	public boolean matches(String term) {
+	public boolean matches(CharSequence term) {
         matcher.reset(term);
         return matcher.find();
 	}
