@@ -30,6 +30,9 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 
 /**
+ * Wrapper class around a {@link org.exist.dom.QName} value which extends
+ * {@link org.exist.xquery.value.AtomicValue}.
+ * 
  * @author wolf
  */
 public class QNameValue extends AtomicValue {
@@ -37,6 +40,14 @@ public class QNameValue extends AtomicValue {
 	private XQueryContext context;
 	private QName qname;
 
+    /**
+     * Constructs a new QNameValue by parsing the given name using
+     * the namespace declarations in context.
+     * 
+     * @param context
+     * @param name
+     * @throws XPathException
+     */
 	public QNameValue(XQueryContext context, String name) throws XPathException {
 	    this.context = context;
         this.qname = QName.parse(context, name, context.getURIForPrefix(""));
@@ -54,6 +65,10 @@ public class QNameValue extends AtomicValue {
 		return Type.QNAME;
 	}
 
+    /**
+     * Returns the wrapped QName object.
+     * @return
+     */
 	public QName getQName() {
 		return qname;
 	}
