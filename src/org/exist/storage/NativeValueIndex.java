@@ -55,7 +55,9 @@ import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.LongLinkedList;
 import org.exist.util.ReadOnlyException;
+import org.exist.util.UTF8;
 import org.exist.util.ValueOccurrences;
+import org.exist.util.XMLString;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
@@ -778,7 +780,8 @@ public class NativeValueIndex {
     private class RegexCallback extends SearchCallback {
     	
     	private TermMatcher matcher;
-    	
+    	private XMLString key = new XMLString(128);
+        
     	public RegexCallback(DocumentSet docs, NodeSet contextSet, NodeSet result, TermMatcher matcher) {
     		super(docs, contextSet, result);
     		this.matcher = matcher;
@@ -789,7 +792,8 @@ public class NativeValueIndex {
 		 */
 		public boolean indexInfo(Value value, long pointer)
 				throws TerminatedException {
-			String key = StringValue.deserializeString(value.getData());
+            key.reuse();
+            UTF8.decode(value.data(), value.start() + 3, value.getLength() - 3, key);
 			if(matcher.matches(key)) {
 				super.indexInfo(value, pointer);
 			}

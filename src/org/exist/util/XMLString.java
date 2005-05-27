@@ -172,6 +172,11 @@ public final class XMLString implements CharSequence, Comparable {
 		length_ = 0;
 	}
 
+    public final void reuse() {
+        start_ = 0;
+        length_ = 0;
+    }
+    
 	private final void ensureCapacity(int capacity) {
 		if (value_ == null)
 			//value_ = new char[capacity];
