@@ -99,7 +99,6 @@ SYSTEM "play.dtd" "entities/play.dtd"
 			<listitem><para>exist.jar (from the root directory of eXist)</para></listitem>
 			<listitem><para>lib/core/antlr.jar</para></listitem>
             <listitem><para>lib/core/commons-pool-x.x.jar</para></listitem>
-            <listitem><para>lib/core/jakarta-oro-x.x.x.jar</para></listitem>
             <listitem><para>lib/core/log4j.jar</para></listitem>
             <listitem><para>lib/core/xmldb.jar</para></listitem>
             <listitem><para>lib/core/xmlrpc-x.x.jar</para></listitem>

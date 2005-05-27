@@ -22,14 +22,12 @@
  */
 package org.exist.storage;
 
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.PatternCompiler;
-import org.apache.oro.text.regex.PatternMatcher;
-import org.apache.oro.text.regex.Perl5Compiler;
-import org.apache.oro.text.regex.Perl5Matcher;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 import org.exist.EXistException;
+import org.exist.util.GlobToRegex;
 
 /**
  * A {@link org.exist.storage.TermMatcher} that matches index entries against a
@@ -40,22 +38,22 @@ import org.exist.EXistException;
  *
  */
 class RegexMatcher implements TermMatcher {
-
-	private PatternCompiler regexCompiler = new Perl5Compiler();
-	private PatternCompiler globCompiler = new GlobCompiler();
-	private PatternMatcher matcher = new Perl5Matcher();
 	
-	private Pattern regexp;
-
+	private Matcher matcher;
+    
 	public RegexMatcher(String expr, int type, int flags) throws EXistException {
-		try {
-			regexp = (type == DBBroker.MATCH_REGEXP
-					? regexCompiler.compile(expr, flags)
-					: globCompiler.compile(	expr, GlobCompiler.CASE_INSENSITIVE_MASK
-											| GlobCompiler.QUESTION_MATCHES_ZERO_OR_ONE_MASK));
-		} catch (MalformedPatternException e) {
-			throw new EXistException(e);
-		}
+        try {
+            // if expr is a file glob, translate it to a regular expression first
+            if (type == DBBroker.MATCH_WILDCARDS) {
+                expr = GlobToRegex.globToRegexp(expr);
+                flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+            }
+            
+            Pattern pattern = Pattern.compile(expr, flags);
+            matcher = pattern.matcher("");
+        } catch(PatternSyntaxException e) {
+            throw new EXistException("Invalid regular expression: " + e.getMessage());
+        }
 	}
 
 	/*
@@ -64,6 +62,7 @@ class RegexMatcher implements TermMatcher {
 	 * @see java.util.Comparator#equals(java.lang.Object)
 	 */
 	public boolean matches(String term) {
-		return matcher.contains(term, regexp);
+        matcher.reset(term);
+        return matcher.find();
 	}
 }

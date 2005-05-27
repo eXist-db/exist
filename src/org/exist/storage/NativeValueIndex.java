@@ -625,7 +625,8 @@ public class NativeValueIndex {
         short collectionId;
         Collection current;
         IndexQuery query;
-        IndexScanCallback cb = new IndexScanCallback(docs, contextSet, ((Item) start).getType());
+        int type = ((Item) start).getType();
+        IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type);
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             current = (Collection) i.next();
             collectionId = current.getId();

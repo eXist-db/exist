@@ -22,13 +22,9 @@
 package org.exist.xquery;
 
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.oro.text.perl.Perl5Util;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.MatchResult;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.Perl5Compiler;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.exist.dom.QName;
 
 /**
@@ -49,18 +45,9 @@ public class Pragma {
 	private final static String paramPattern =
 		"\\s*([\\w\\.-]+)\\s*=\\s*('[^']*'|\"[^\"]*\"|[^\\s]+)";
 	
-	private static Perl5Matcher matcher = new Perl5Matcher();
-	private static Pattern pattern;
-	
-	static {
-		Perl5Compiler compiler = new Perl5Compiler();
-		try {
-			pattern = compiler.compile(paramPattern);
-		} catch (MalformedPatternException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
+	private static Pattern pattern = Pattern.compile(paramPattern);
+	private static Matcher matcher = pattern.matcher("");
+    
 	private QName qname;
 	private String contents;
 	
@@ -89,12 +76,12 @@ public class Pragma {
 	}
 	
 	public static synchronized String[] parseKeyValuePair(String s) {
-		if(matcher.matches(s, pattern)) {
-			MatchResult result = matcher.getMatch();
-			String value = result.group(2);
+        matcher.reset(s);
+		if(matcher.matches()) {
+			String value = matcher.group(2);
 			if(value.charAt(0) == '\'' || value.charAt(0) == '"')
 				value = value.substring(1, value.length() - 1);
-			return new String[] { result.group(1), value };
+			return new String[] { matcher.group(1), value };
 		}
 		return null;
 	}

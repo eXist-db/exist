@@ -31,14 +31,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Observer;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.PatternCompiler;
-import org.apache.oro.text.regex.PatternMatcher;
-import org.apache.oro.text.regex.Perl5Compiler;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
 import org.dbxml.core.filer.BTreeException;
@@ -145,9 +141,6 @@ public class NativeBroker extends DBBroker {
 	private boolean qnameValueIndexation = true; // false;
 	
 	protected Serializer xmlSerializer;
-	
-	protected PatternCompiler compiler = new Perl5Compiler();
-	protected PatternMatcher matcher = new Perl5Matcher();
 	
 	protected int defaultIndexDepth = 1;
 	protected IndexSpec idxConf;
@@ -2435,16 +2428,10 @@ public class NativeBroker extends DBBroker {
 		String content;
 		String cmp;
 		Pattern regexp = null;
-		if (relation == Constants.REGEXP)
-			try {
-				regexp =
-					compiler.compile(
-						expr.toLowerCase(),
-						Perl5Compiler.CASE_INSENSITIVE_MASK);
+		if (relation == Constants.REGEXP) {
+				regexp = Pattern.compile(expr.toLowerCase(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 				truncation = Constants.REGEXP;
-			} catch (MalformedPatternException e) {
-				LOG.debug(e);
-			}
+		}
 		for (Iterator i = context.iterator(); i.hasNext();) {
 			p = (NodeProxy) i.next();
 			try {
@@ -2480,7 +2467,8 @@ public class NativeBroker extends DBBroker {
 						resultNodeSet.add(p);
 					break;
 				case Constants.REGEXP :
-					if (regexp != null && matcher.contains(cmp, regexp)) {
+                    Matcher matcher = regexp.matcher(cmp);
+					if (regexp != null && matcher.find()) {
 						resultNodeSet.add(p);
 					}
 					break;

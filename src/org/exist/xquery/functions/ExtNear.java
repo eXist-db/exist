@@ -23,13 +23,10 @@
 package org.exist.xquery.functions;
 
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.PatternCompiler;
-import org.apache.oro.text.regex.PatternMatcher;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.exist.EXistException;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
@@ -37,6 +34,7 @@ import org.exist.dom.NodeSet;
 import org.exist.storage.NativeTextEngine;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.analysis.Tokenizer;
+import org.exist.util.GlobToRegex;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -55,7 +53,6 @@ import org.exist.xquery.value.Type;
 public class ExtNear extends ExtFulltext {
 
 	private int max_distance = 1;
-	private PatternCompiler globCompiler = new GlobCompiler();
 	private Expression distance = null;
 
 	public ExtNear(XQueryContext context) {
@@ -155,14 +152,13 @@ public class ExtNear extends ExtFulltext {
 	private Sequence patternMatch(XQueryContext context, NodeSet result) {
 		// generate list of search term patterns
 		Pattern patterns[] = new Pattern[terms.length];
+        Matcher matchers[] = new Matcher[terms.length];
 		for (int i = 0; i < patterns.length; i++)
 			try {
-				patterns[i] =
-					globCompiler.compile(
-						terms[i],
-						GlobCompiler.CASE_INSENSITIVE_MASK
-							| GlobCompiler.QUESTION_MATCHES_ZERO_OR_ONE_MASK);
-			} catch (MalformedPatternException e) {
+                patterns[i] = Pattern.compile(GlobToRegex.globToRegexp(terms[i]), 
+                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+                matchers[i] = patterns[i].matcher("");
+			} catch (PatternSyntaxException e) {
 				LOG.warn("malformed pattern", e);
 				return Sequence.EMPTY_SEQUENCE;
 			}
@@ -174,7 +170,7 @@ public class ExtNear extends ExtFulltext {
 		TextToken token;
 		NodeProxy current;
 		ExtArrayNodeSet r = new ExtArrayNodeSet(100);
-		PatternMatcher matcher = new Perl5Matcher();
+		Matcher matcher;
 		Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
 		int j;
 		int distance;
@@ -183,9 +179,10 @@ public class ExtNear extends ExtFulltext {
 			value = current.getNodeValueSeparated();
 			tok.setText(value);
 			j = 0;
-			if (j < patterns.length)
+			if (j < patterns.length) {
 				term = patterns[j];
-			else
+                matcher = matchers[j];
+            } else
 				break;
 			distance = -1;
 			while ((token = tok.nextToken()) != null) {
@@ -194,23 +191,28 @@ public class ExtNear extends ExtFulltext {
 					// reset
 					j = 0;
 					term = patterns[j];
+                    matcher = matchers[j];
 					distance = -1;
 					continue;
 				}
-				if (matcher.matches(word, term)) {
+                matcher.reset(word);
+                matchers[0].reset(word);
+				if (matcher.matches()) {
 					distance = 0;
 					j++;
 					if (j == patterns.length) {
 						// all terms found
 						r.add(current);
 						break;
-					} else
+					} else {
 						term = patterns[j];
-
-				} else if (j > 0 && matcher.matches(word, patterns[0])) {
+                        matcher = matchers[j];
+                    }
+				} else if (j > 0 && matchers[0].matches()) {
 					// first search term found: start again
 					j = 1;
 					term = patterns[j];
+                    matcher = matchers[j];
 					distance = 0;
 					continue;
 				} else if (-1 < distance)

@@ -24,11 +24,10 @@ package org.exist.xquery.functions;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.Perl5Compiler;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.exist.EXistException;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
@@ -85,11 +84,8 @@ public class FunMatches extends Function {
 		)
 	};
 	
-	protected Perl5Compiler compiler = new Perl5Compiler();
-	protected Perl5Matcher matcher = new Perl5Matcher();
-	protected String prevPattern = null;
+	protected Matcher matcher = null;
 	protected Pattern pat = null;
-	protected int prevFlags = -1;
 	
 	/**
 	 * @param context
@@ -225,15 +221,18 @@ public class FunMatches extends Function {
      */
     private boolean match(String string, String pattern, int flags) throws XPathException {
         try {
-			if(prevPattern == null || (!pattern.equals(prevPattern)) || flags != prevFlags)
-				pat = compiler.compile(pattern, flags);
-			prevPattern = pattern;
-			prevFlags = flags;
-			if(matcher.contains(string, pat))
+			if(pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
+				pat = Pattern.compile(pattern, flags);
+                matcher = pat.matcher(string);
+            } else {
+                matcher.reset(string);
+            }
+            
+			if(matcher.find())
 				return true;
 			else
 				return false;
-		} catch (MalformedPatternException e) {
+		} catch (PatternSyntaxException e) {
 			throw new XPathException("Invalid regular expression: " + e.getMessage(), e);
 		}
     }
@@ -244,11 +243,17 @@ public class FunMatches extends Function {
 			char ch = s.charAt(i);
 			switch(ch) {
 				case 'm':
-					flags |= Perl5Compiler.MULTILINE_MASK;
+					flags |= Pattern.MULTILINE;
 					break;
 				case 'i':
-					flags |= Perl5Compiler.CASE_INSENSITIVE_MASK;
+					flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
 					break;
+                case 'x':
+                    flags |= Pattern.COMMENTS;
+                    break;
+                case 's':
+                    flags |= Pattern.DOTALL;
+                    break;
 				default:
 					throw new XPathException("Invalid regular expression flag: " + ch);
 			}
