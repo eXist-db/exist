@@ -29,6 +29,7 @@ import org.exist.xmldb.IndexQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -94,7 +95,12 @@ public class ValueIndexTest extends TestCase {
         queryResource(service, "items.xml", "//item[name = 'Racing Bicycle']", 1);
         queryResource(service, "items.xml", "//item[name > 'Racing Bicycle']", 4);
         queryResource(service, "items.xml", "//item[itemno = 3]", 1);
-        queryResource(service, "items.xml", "//item[stock <= 10]", 5);
+        ResourceSet result = queryResource(service, "items.xml", "for $i in //item[stock <= 10] return $i/itemno", 5);
+        for (long i = 0; i < result.getSize(); i++) {
+            Resource res = result.getResource(i);
+            System.out.println(res.getContent());
+        }
+        
         queryResource(service, "items.xml", "//item[stock > 20]", 1);
         queryResource(service, "items.xml", "declare namespace x=\"http://www.foo.com\"; //item[x:rating > 8.0]", 2);
         queryResource(service, "items.xml", "declare namespace xx=\"http://test.com\"; //item[@xx:test = 123]", 1);

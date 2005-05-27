@@ -22,17 +22,15 @@
  */
 package org.exist.xquery.functions;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Util;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -95,22 +93,17 @@ public class FunTokenize extends FunMatches {
 						.eval(contextSequence, contextItem)
 						.getStringValue());
 		try {
-			if (prevPattern == null
-				|| (!pattern.equals(prevPattern))
-				|| flags != prevFlags) {
-				LOG.debug("Compiling pattern " + pattern);
-				pat = compiler.compile(pattern, flags);
-			}
-			prevPattern = pattern;
-			prevFlags = flags;
-			List result = new ArrayList(10);
-			Util.split(result, matcher, pat, string);
+			if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
+				pat = Pattern.compile(pattern, flags);
+            }
+
+            String[] result = pat.split(string);
 			ValueSequence r = new ValueSequence();
-			for(int i = 0; i < result.size(); i++)
-				r.add(new StringValue((String)result.get(i)));
+			for(int i = 0; i < result.length; i++)
+				r.add(new StringValue(result[i]));
 			return r;
-		} catch (MalformedPatternException e) {
-			throw new XPathException("Invalid regular expression: " + e.getMessage(), e);
+		} catch (PatternSyntaxException e) {
+			throw new XPathException(getASTNode(), "Invalid regular expression: " + e.getMessage(), e);
 		}
 	}
 

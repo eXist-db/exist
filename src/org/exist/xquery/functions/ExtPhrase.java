@@ -26,13 +26,10 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.PatternCompiler;
-import org.apache.oro.text.regex.PatternMatcher;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.exist.EXistException;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.Match;
@@ -41,6 +38,7 @@ import org.exist.dom.NodeSet;
 import org.exist.storage.NativeTextEngine;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.analysis.Tokenizer;
+import org.exist.util.GlobToRegex;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -54,8 +52,6 @@ import org.exist.xquery.value.Sequence;
  *@created    March 30, 2005
  */
 public class ExtPhrase extends ExtFulltext {
-
-	private PatternCompiler globCompiler = new GlobCompiler();
 
 
 	/**
@@ -194,18 +190,18 @@ public class ExtPhrase extends ExtFulltext {
 	 */
 	private Sequence patternMatch(XQueryContext context, NodeSet result) {
 		// generate list of search term patterns
-		Pattern patterns[] = new Pattern[terms.length];
-		for (int i = 0; i < patterns.length; i++)
-			try {
-				patterns[i] =
-					globCompiler.compile(
-						terms[i],
-						GlobCompiler.CASE_INSENSITIVE_MASK
-							| GlobCompiler.QUESTION_MATCHES_ZERO_OR_ONE_MASK);
-			} catch (MalformedPatternException e) {
-				LOG.warn("malformed pattern", e);
-				return Sequence.EMPTY_SEQUENCE;
-			}
+	    Pattern patterns[] = new Pattern[terms.length];
+        Matcher matchers[] = new Matcher[terms.length];
+        for (int i = 0; i < patterns.length; i++)
+            try {
+                patterns[i] = Pattern.compile(GlobToRegex.globToRegexp(terms[i]), 
+                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+                matchers[i] = patterns[i].matcher("");
+            } catch (PatternSyntaxException e) {
+                LOG.warn("malformed pattern", e);
+                return Sequence.EMPTY_SEQUENCE;
+            }
+		
 		// walk through hits 
 		String value;
 		Pattern term;
@@ -213,7 +209,7 @@ public class ExtPhrase extends ExtFulltext {
 		TextToken token;
 		NodeProxy current;
 		ExtArrayNodeSet r = new ExtArrayNodeSet();
-		PatternMatcher matcher = new Perl5Matcher();
+		Matcher matcher;
 		Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
 		int j;
 		long gid=0;
@@ -239,14 +235,17 @@ public class ExtPhrase extends ExtFulltext {
 					value = mcurrent.getNodeValue();
 					tok.setText(value);
 					j = 0;
-					if (j < patterns.length)
+					if (j < patterns.length) {
 						term = patterns[j];
-					else
+                        matcher = matchers[j];
+                    } else
 						break;
 					matchTerm=null;
 					while ((token = tok.nextToken()) != null) {
 						word = token.getText().toLowerCase();
-						if (matcher.matches(word, term)) {
+                        matcher.reset(word);
+                        matchers[0].reset(word);
+						if (matcher.matches()) {
 							j++;
 							if(matchTerm==null)
 								matchTerm=word;
@@ -266,20 +265,25 @@ public class ExtPhrase extends ExtFulltext {
 								// start again on fist term
 								j=0;
 								term = patterns[j];
+                                matcher = matchers[j];
 								matchTerm=null;
 								continue;
-							} else 
+							} else {
 								term = patterns[j];
-						} else if (j > 0 && matcher.matches(word, patterns[0])) {
+                                matcher = matchers[j];
+                            }
+						} else if (j > 0 && matchers[0].matches()) {
 							// first search term found: start again
 							j=1;
 							term = patterns[j];
+                            matcher = matchers[j];
 							matchTerm=word;
 							continue;
 						} else {
 							// reset
 							j = 0;
 							term = patterns[j];
+                            matcher = matchers[j];
 							matchTerm=null;
 							continue;
 						}

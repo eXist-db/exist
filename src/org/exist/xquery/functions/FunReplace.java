@@ -22,15 +22,15 @@
  */
 package org.exist.xquery.functions;
 
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Perl5Substitution;
-import org.apache.oro.text.regex.Util;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -96,23 +96,19 @@ public class FunReplace extends FunMatches {
 						.eval(contextSequence, contextItem)
 						.getStringValue());
 		try {
-			if (prevPattern == null
-				|| (!pattern.equals(prevPattern))
-				|| flags != prevFlags)
-				pat = compiler.compile(pattern, flags);
-			prevPattern = pattern;
-			prevFlags = flags;
-			String r =
-				Util.substitute(
-					matcher,
-					pat,
-					new Perl5Substitution(replace),
-					string,
-					Util.SUBSTITUTE_ALL);
+			if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
+				pat = Pattern.compile(pattern, flags);
+                matcher = pat.matcher(string);
+            } else {
+                matcher.reset(string);
+            }
+            String r = matcher.replaceAll(replace);
 			return new StringValue(r);
-		} catch (MalformedPatternException e) {
-			throw new XPathException("Invalid regular expression: " + e.getMessage(), e);
-		}
+		} catch (PatternSyntaxException e) {
+			throw new XPathException(getASTNode(), "Invalid regular expression: " + e.getMessage(), e);
+		} catch (IndexOutOfBoundsException e) {
+		    throw new XPathException(getASTNode(), e.getMessage(), e);
+        }
 	}
 
 }

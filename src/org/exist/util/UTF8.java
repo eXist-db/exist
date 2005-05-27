@@ -48,18 +48,25 @@ public class UTF8 {
 
 		return decode(code, 0, code.length);
 	}
+    
+    public final static XMLString decode(byte[] code, int off, int many) {
+        if (null == code || 0 >= code.length)
+            return null;
+
+        XMLString xs = new XMLString(many);
+        return decode(code, off, many, xs);
+    }
+    
 	/**
 	 * Decode UTF-8 input, terminates decoding at a null character,
 	 * value 0x0.
 	 * 
 	 * @exception IllegalStateException Bad format.
 	 */
-	public final static XMLString decode(byte[] code, int off, int many) {
+	public final static XMLString decode(byte[] code, int off, int many, XMLString xs) {
 
 		if (null == code || 0 >= code.length)
 			return null;
-
-		XMLString xs = new XMLString(many);
 
 		char ch;
 

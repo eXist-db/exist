@@ -72,13 +72,13 @@ public class RootNode extends Step {
 	            if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
 	            	result.add(new NodeProxy(doc, -1));
 	            	if(lockOnLoad) {
-	            	    LOG.debug("Locking document: " + doc.getName());
 	            	    context.getLockedDocuments().add(doc);
 	            	}
 	            }
 	        }
 	        cached = result;
 	        cachedDocs = ds;
+            LOG.debug("Docs: " + result.getLength());
 	        return result;
         } catch (LockException e) {
             throw new XPathException(getASTNode(), "Failed to acquire lock on the context document set");

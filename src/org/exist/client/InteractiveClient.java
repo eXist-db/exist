@@ -26,7 +26,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -67,7 +66,6 @@ import javax.xml.transform.OutputKeys;
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLUtil;
-import org.apache.oro.io.GlobFilenameFilter;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
@@ -1265,21 +1263,6 @@ public class InteractiveClient {
             ((EXistResource)resource).setMimeType(mime == null ? "application/octet-stream" : mime.getName());
             current.storeResource(resource);
         }
-    }
-    
-    private final File[] findFiles(String pattern) {
-        String pathSep = System.getProperty("file.separator", "/");
-        String baseDir = ".", globExpr = pattern;
-        int p = pattern.lastIndexOf(pathSep);
-        if (-1 < p) {
-            baseDir = pattern.substring(0, p);
-            globExpr = pattern.substring(p + 1);
-        }
-        messageln("base = " + baseDir + "; glob = " + globExpr);
-        File dir = new File(baseDir);
-        if (!(dir.isDirectory() && dir.canRead()))
-            return null;
-        return dir.listFiles((FileFilter) new GlobFilenameFilter(globExpr));
     }
     
     private synchronized boolean findRecursive(Collection collection, File dir,

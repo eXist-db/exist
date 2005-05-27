@@ -25,8 +25,9 @@ package org.exist.storage.serializers;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.oro.text.perl.Perl5Util;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentImpl;
@@ -71,8 +72,6 @@ public class NativeSerializer extends Serializer {
     private final static QName ID_ATTRIB = new QName("id", EXIST_NS, "exist");
     
     private int showId = EXIST_ID_ELEMENT;
-
-    private Perl5Util reutil = new Perl5Util();
 
     public NativeSerializer(DBBroker broker, Configuration config) {
         super(broker, config);
@@ -280,7 +279,7 @@ public class NativeSerializer extends Serializer {
             if (next.getNodeId() == gid) {
                 if (expr == null) {
                     expr = new StringBuffer();
-                    expr.append("s/\\b(");
+                    expr.append("\\b(");
                 }
                 if (expr.length() > 5) expr.append('|');
                 expr.append(next.getMatchingTerm());
@@ -288,8 +287,10 @@ public class NativeSerializer extends Serializer {
             next = next.getNextMatch();
         }
         if (expr != null) {
-            expr.append(")\\b/||$1||/gi");
-            data = reutil.substitute(expr.toString(), data);
+            expr.append(")\\b");
+            Pattern pattern = Pattern.compile(expr.toString(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+            Matcher matcher = pattern.matcher(data);
+            return matcher.replaceAll("||$1||");
         }
         return data;
     }
@@ -303,7 +304,7 @@ public class NativeSerializer extends Serializer {
             if (next.getNodeId() == gid) {
                 if (expr == null) {
                     expr = new StringBuffer();
-                    expr.append("s/\\b(");
+                    expr.append("\\b(");
                 }
                 if (expr.length() > 5) expr.append('|');
                 expr.append(next.getMatchingTerm());
@@ -311,8 +312,10 @@ public class NativeSerializer extends Serializer {
             next = next.getNextMatch();
         }
         if (expr != null) {
-            expr.append(")\\b/||$1||/gi");
-            return reutil.substitute(expr.toString(), text.getData());
+            expr.append(")\\b");
+            Pattern pattern = Pattern.compile(expr.toString(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+            Matcher matcher = pattern.matcher(text.getData());
+            return matcher.replaceAll("||$1||");
         } else
             return null;
     }

@@ -21,8 +21,9 @@
 package org.exist.xquery.value;
 
 import java.text.Collator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.oro.text.perl.Perl5Util;
 import org.exist.dom.QName;
 import org.exist.storage.Indexable;
 import org.exist.util.ByteConversion;
@@ -36,6 +37,14 @@ public class StringValue extends AtomicValue implements Indexable {
 
 	public final static StringValue EMPTY_STRING = new StringValue("");
 
+    private final static String langRegex =
+        "/(([a-z]|[A-Z])([a-z]|[A-Z])|" // ISO639Code
+        + "([iI]-([a-z]|[A-Z])+)|"     // IanaCode
+        + "([xX]-([a-z]|[A-Z])+))"     // UserCode
+        + "(-([a-z]|[A-Z])+)*/";        // Subcode
+    
+    private final static Pattern langPattern = Pattern.compile(langRegex);
+    
 	protected int type = Type.STRING;
 
 	protected String value;
@@ -67,13 +76,8 @@ public class StringValue extends AtomicValue implements Indexable {
 			case Type.TOKEN:
 				return;
 			case Type.LANGUAGE:
-				Perl5Util util = new Perl5Util();
-				String regex =
-					"/(([a-z]|[A-Z])([a-z]|[A-Z])|" // ISO639Code
-					+ "([iI]-([a-z]|[A-Z])+)|"     // IanaCode
-					+ "([xX]-([a-z]|[A-Z])+))"     // UserCode
-					+ "(-([a-z]|[A-Z])+)*/";        // Subcode
-				if (!util.match(regex, value))
+				Matcher matcher = langPattern.matcher(value);				
+				if (!matcher.matches())
 					throw new XPathException(
 						"Type error: string "
 						+ value

@@ -27,8 +27,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.SimpleTimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.oro.text.perl.Perl5Util;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
@@ -39,9 +40,12 @@ public class TimeValue extends AbstractDateTimeValue {
 
 	//	time format is: hh:mm:ss[.fff*][([+|-]hh:mm | Z)]
 	private static final String regex =
-		"/([0-2]\\d):([0-6][0-9]):([0-6][0-9])(\\.(\\d{1,3}))?(.*)/";
-	private static final String tzre = "/(\\+|-)?([0-1]\\d):(\\d{2})/";
+		"([0-2]\\d):([0-6][0-9]):([0-6][0-9])(\\.(\\d{1,3}))?(.*)";
+	private static final String tzre = "(\\+|-)?([0-1]\\d):(\\d{2})";
 
+	private static final Pattern timePattern = Pattern.compile(regex);
+    private static final Pattern tzPattern = Pattern.compile(tzre);
+    
 	public TimeValue() {
 		calendar = new GregorianCalendar();
 		tzOffset =
@@ -83,17 +87,17 @@ public class TimeValue extends AbstractDateTimeValue {
 	}
 
 	public TimeValue(String timeValue) throws XPathException {
-		Perl5Util util = new Perl5Util();
-		if (!util.match(regex, timeValue))
+		Matcher matcher = timePattern.matcher(timeValue);
+		if (!matcher.matches())
 			throw new XPathException(
 				"Type error: string " + timeValue + " cannot be cast into an xs:time");
-		String part = util.group(1);
+		String part = matcher.group(1);
 		int hour = Integer.parseInt(part);
-		part = util.group(2);
+		part = matcher.group(2);
 		int minutes = Integer.parseInt(part);
-		part = util.group(3);
+		part = matcher.group(3);
 		int seconds = Integer.parseInt(part);
-		part = util.group(5);
+		part = matcher.group(5);
 		int millis = 0;
 		if (part != null) {
 			if (part.length() < 3)
@@ -102,23 +106,24 @@ public class TimeValue extends AbstractDateTimeValue {
 				part = part.substring(0, 3);
 			millis = Integer.parseInt(part);
 		}
-		part = util.group(6);
+		part = matcher.group(6);
 		if (part != null && part.length() > 0) {
 			if (part.equals("Z")) {
 				explicitTimeZone = true;
 				tzOffset = 0;
 			} else	{
-				if (!util.match(tzre, part))
+                matcher = tzPattern.matcher(part);
+				if (!matcher.matches())
 					throw new XPathException("Type error: error in  timezone: " + part);
 				explicitTimeZone = true;
-				part = util.group(2);
+				part = matcher.group(2);
 				tzOffset = Integer.parseInt(part) * 60;
-				part = util.group(3);
+				part = matcher.group(3);
 				if (part != null) {
 					int tzminute = Integer.parseInt(part);
 					tzOffset += tzminute;
 				}
-				part = util.group(1);
+				part = matcher.group(1);
 				if (part.equals("-"))
 					tzOffset *= -1;
 			}

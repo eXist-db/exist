@@ -24,7 +24,6 @@ package org.exist.xquery;
 import java.text.Collator;
 import java.util.Iterator;
 
-import org.apache.oro.text.regex.Perl5Compiler;
 import org.exist.EXistException;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentImpl;

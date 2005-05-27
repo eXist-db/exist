@@ -2358,12 +2358,6 @@ public class GetDocument {
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term>jakarta-oro-x.x.x.jar</term>
-                    <listitem>
-                        <para>Regular expression support.</para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
                     <term>xml-commons-resolver-x.x.jar</term>
                     <listitem>
                         <para>A library for resolving XML external entities 
