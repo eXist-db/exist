@@ -127,8 +127,10 @@ public class QNameIndexLookup extends Function {
             result = valueIndex.findByQName(qname, comparisonCriterium,
                     contextSequence);
         } else {
-            // TODO error message & log : 
-            // "The comparison Criterium must be an Indexable: boolean, numeric, string, and not ...
+            String message = "The comparison criterium must be an Indexable: " +
+            	"boolean, numeric, string; instead your criterium has type " +
+            	Type.getTypeName(comparisonCriterium.getType());
+        	throw new XPathException(getASTNode(), message);
         }
         return result;
     }
