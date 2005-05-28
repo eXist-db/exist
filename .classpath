@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="src" path="samples"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="tools/wrapper/src"/>
-	<classpathentry kind="src" path="samples"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/core/antlr.jar"/>
 	<classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
@@ -32,7 +32,6 @@
 	<classpathentry kind="lib" path="lib/optional/cocoon-xmldb-block.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-collections-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-jexl-1.0-beta-1-20040113.jar"/>
-	<classpathentry kind="lib" path="lib/core/jakarta-oro-2.0.8.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-1.2.9.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/jakarta-bcel-20040329.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/jakarta-regexp-1.3.jar"/>
