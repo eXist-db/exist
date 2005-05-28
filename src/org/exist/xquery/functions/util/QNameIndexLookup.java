@@ -22,16 +22,25 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.util.List;
+
 import org.exist.dom.QName;
 import org.exist.storage.Indexable;
 import org.exist.storage.NativeValueIndexByQName;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.DynamicCardinalityCheck;
+import org.exist.xquery.Expression;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.RootNode;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.Error;
+import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -40,7 +49,7 @@ import org.exist.xquery.value.Type;
 /**
  * @author J.M. Vanel
  */
-public class QNameIndexLookup extends BasicFunction {
+public class QNameIndexLookup extends Function {
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("qname-index-lookup", UtilModule.NAMESPACE_URI,
@@ -56,28 +65,71 @@ public class QNameIndexLookup extends BasicFunction {
 		super(context, signature);
 	}
 
-	/**
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
-		QName qname = ((QNameValue) args[0].itemAt(0)).getQName();
-		AtomicValue comparisonCriterium = (AtomicValue) args[1].itemAt(0);
-		Sequence result = Sequence.EMPTY_SEQUENCE;
+    
+    /**
+     * Overwritten: function can process the whole context sequence at once.
+     * 
+     * @see org.exist.xquery.Expression#getDependencies()
+     */
+    public int getDependencies() {
+        return Dependency.CONTEXT_SET;
+    }
+    
+    /**
+     * Overwritten to disable automatic type checks. We check manually.
+     * 
+     * @see org.exist.xquery.Function#setArguments(java.util.List)
+     */
+    public void setArguments(List arguments) throws XPathException {
+        // wrap arguments into a cardinality check, so an error will be generated if
+        // an empty sequence is passed to the function
+        Expression arg = (Expression) arguments.get(0);
+        arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
+                new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
+        steps.add(arg);
+        
+        arg = (Expression) arguments.get(1);
+        arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
+                new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
+        steps.add(arg);
+    }
+    
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (contextSequence == null || contextSequence.getLength() == 0) {
+            // if the context sequence is empty, we create a default context 
+            RootNode rootNode = new RootNode(context);
+            contextSequence = rootNode.eval(null, null);
+        }
+        Sequence[] args = getArguments(contextSequence, contextItem);
+        
+        Item item = args[0].itemAt(0);
+        QNameValue qval;
+        try {
+            // attempt to convert the first argument to a QName
+            qval = (QNameValue) item.convertTo(Type.QNAME);
+        } catch (XPathException e) {
+            // wrong type: generate a diagnostic error
+            throw new XPathException(getASTNode(),
+                    Messages.formatMessage(Error.FUNC_PARAM_TYPE, 
+                            new Object[] { "1", mySignature.toString(), null,
+                            Type.getTypeName(Type.QNAME), Type.getTypeName(item.getType()) }
+                    ));
+        }
+        QName qname = qval.getQName();
+        
+        AtomicValue comparisonCriterium = args[1].itemAt(0).atomize();
+        
+        Sequence result = Sequence.EMPTY_SEQUENCE;
 
-		if (comparisonCriterium instanceof Indexable) {
-			NativeValueIndexByQName valueIndex = context.getBroker()
-					.getQNameValueIndex();
-			if (contextSequence == null) {
-				RootNode rootNode = new RootNode(context);
-				contextSequence = rootNode.eval(null, null);
-			}
-			result = valueIndex.findByQName(qname, comparisonCriterium,
-					contextSequence);
-		} else {
-			// TODO error message & log : 
-			// "The comparison Criterium must be an Indexable: boolean, numeric, string, and not ...
-		}
-		return result;
-	}
+        if (comparisonCriterium instanceof Indexable) {
+            NativeValueIndexByQName valueIndex = context.getBroker()
+                    .getQNameValueIndex();
+            result = valueIndex.findByQName(qname, comparisonCriterium,
+                    contextSequence);
+        } else {
+            // TODO error message & log : 
+            // "The comparison Criterium must be an Indexable: boolean, numeric, string, and not ...
+        }
+        return result;
+    }
 }
