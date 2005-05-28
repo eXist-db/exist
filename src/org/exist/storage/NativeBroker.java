@@ -102,8 +102,9 @@ import org.w3c.dom.NodeList;
  *@author     Wolfgang Meier
  */
 public class NativeBroker extends DBBroker {
-	
+	/** file for the typed (range) index */
     static final String VALUES_DB_FILE = "values.dbx";
+	/** file for the typed index by qname's */
 	static final String VALUES_DB_QNAME_FILE = "values-by-qname.dbx";
 
 	private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
@@ -132,7 +133,7 @@ public class NativeBroker extends DBBroker {
 	protected BFile elementsDb;
 	protected BFile valuesDb;
 	protected BFile valuesDbQname;
-	
+	/** the index processors */
 	protected NativeTextEngine textEngine;
 	protected NativeElementIndex elementIndex;
 	protected NativeValueIndex valueIndex;
@@ -397,6 +398,8 @@ public class NativeBroker extends DBBroker {
 		textEngine.remove();
 		elementIndex.remove();
 		valueIndex.remove();
+		if ( qnameValueIndexation )
+			qnameValueIndex.remove();
 	}
 
 	/**
@@ -1014,6 +1017,10 @@ public class NativeBroker extends DBBroker {
 				if (valSpec != null) {
 			        valueIndex.setDocument(doc);
 			        valueIndex.storeAttribute(valSpec, (AttrImpl) node);
+					if ( qnameValueIndexation ) {
+				        qnameValueIndex.setDocument(doc);
+						qnameValueIndex.storeAttribute(valSpec, (AttrImpl) node);
+					}
 				}
 				if(indexAttribs)
 					textEngine.storeAttribute(ftIdx, (AttrImpl) node);
@@ -1128,6 +1135,8 @@ public class NativeBroker extends DBBroker {
 		}
 		elementIndex.reindex(oldDoc, node);
 		valueIndex.reindex(oldDoc, node);
+		if ( qnameValueIndexation )
+			qnameValueIndex.reindex(oldDoc, node);
 		textEngine.reindex(oldDoc, node);
 		doc.setReindexRequired(-1);
 //		checkTree(doc);
@@ -1217,6 +1226,10 @@ public class NativeBroker extends DBBroker {
 					if (valSpec != null) {
 				        valueIndex.setDocument(doc);
 				        valueIndex.storeAttribute(valSpec, (AttrImpl) node);
+						if ( qnameValueIndexation ) {
+				        	qnameValueIndex.setDocument(doc);
+				        	qnameValueIndex.storeAttribute(valSpec, (AttrImpl) node);
+						}
 					}
 					if (indexAttribs)
 						textEngine.storeAttribute(ftIdx, (AttrImpl) node);
@@ -1396,6 +1409,8 @@ public class NativeBroker extends DBBroker {
 			// dropping old structure index
 			elementIndex.dropIndex(doc);
 			valueIndex.dropIndex(doc);
+			if ( qnameValueIndexation )
+				qnameValueIndex.dropIndex(doc);
 			
 			// dropping dom index
 			NodeRef ref = new NodeRef(doc.getDocId());
@@ -1782,6 +1797,8 @@ public class NativeBroker extends DBBroker {
 	    textEngine.dropIndex(collection);
 	    elementIndex.dropIndex(collection);
 	    valueIndex.dropIndex(collection);
+		if ( qnameValueIndexation )
+	    	qnameValueIndex.dropIndex(collection);
 	    
 	    for (Iterator i = collection.iterator(this); i.hasNext();) {
 	        final DocumentImpl doc = (DocumentImpl) i.next();
@@ -1916,6 +1933,8 @@ public class NativeBroker extends DBBroker {
 		    textEngine.dropIndex(collection);
 		    elementIndex.dropIndex(collection);
 		    valueIndex.dropIndex(collection);
+			if ( qnameValueIndexation )
+		    	qnameValueIndex.dropIndex(collection);
 		    
 		    LOG.debug("removing resources ...");
 		    for (Iterator i = collection.iterator(this); i.hasNext();) {
@@ -1974,6 +1993,8 @@ public class NativeBroker extends DBBroker {
 
 			elementIndex.dropIndex(document);
 			valueIndex.dropIndex(document);
+			if ( qnameValueIndexation )
+				qnameValueIndex.dropIndex(document);
 			textEngine.dropIndex(document);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("removeDocument() - removing dom");
@@ -2054,6 +2075,10 @@ public class NativeBroker extends DBBroker {
 				    if(spec != null) {
 				        valueIndex.setDocument(doc);
 				        valueIndex.storeElement(spec.getType(), (ElementImpl) node, content);
+						if ( qnameValueIndexation ) {
+					        qnameValueIndex.setDocument(doc);
+					        qnameValueIndex.storeElement(spec.getType(), (ElementImpl) node, content);
+						}
 				    }
 				}
 				break;
@@ -2080,6 +2105,10 @@ public class NativeBroker extends DBBroker {
 				    if(spec != null) {
 				        valueIndex.setDocument(doc);
 				        valueIndex.storeAttribute(spec, (AttrImpl) node);
+						if ( qnameValueIndexation ) {
+				    		qnameValueIndex.setDocument(doc);
+				        	qnameValueIndex.storeAttribute(spec, (AttrImpl) node);
+						}
 				    }
 				}
 				// if the attribute has type ID, store the ID-value
@@ -2232,6 +2261,8 @@ public class NativeBroker extends DBBroker {
 		        elementIndex.dropIndex(doc);
 				textEngine.dropIndex(doc);
 				valueIndex.dropIndex(doc);
+				if ( qnameValueIndexation )
+					qnameValueIndex.dropIndex(doc);
 				saveCollection(collection);
 	        }
 			doc.setFileName(newName);
@@ -2597,6 +2628,10 @@ public class NativeBroker extends DBBroker {
 				if (valSpec != null) {
 			        valueIndex.setDocument(doc);
 			        valueIndex.storeAttribute(valSpec, (AttrImpl) node);
+					if ( qnameValueIndexation ) {
+						qnameValueIndex.setDocument(doc);
+			        	qnameValueIndex.storeAttribute(valSpec, (AttrImpl) node);
+					}
 				}
 				if(indexAttribs && !isTemp)
 					textEngine.storeAttribute(ftIdx, (AttrImpl) node);
@@ -2760,6 +2795,9 @@ public class NativeBroker extends DBBroker {
 				elementIndex.sync();
 				textEngine.sync();
 				valueIndex.sync();
+				if ( qnameValueIndexation ) {
+					qnameValueIndex.sync();
+				}
 				System.gc();
 				Runtime runtime = Runtime.getRuntime();
 				LOG.info("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
