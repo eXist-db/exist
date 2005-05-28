@@ -23,6 +23,7 @@
 package org.exist.xquery.functions.util;
 
 import org.exist.dom.QName;
+import org.exist.storage.Indexable;
 import org.exist.storage.NativeValueIndexByQName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -30,6 +31,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.RootNode;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -40,18 +42,16 @@ import org.exist.xquery.value.Type;
  */
 public class QNameIndexLookup extends BasicFunction {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("qname-index-lookup", 
-					UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Fast retrieval of nodes by node name and content, " +
-			"using the new value index by QName's" ,
+	public final static FunctionSignature signature = new FunctionSignature(
+			new QName("qname-index-lookup", UtilModule.NAMESPACE_URI,
+					UtilModule.PREFIX),
+			"Fast retrieval of nodes by node name and content, "
+					+ "using the new value index by QName's",
 			new SequenceType[] {
-				new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			},
+					new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE) },
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
-	
+
 	public QNameIndexLookup(XQueryContext context) {
 		super(context, signature);
 	}
@@ -61,15 +61,23 @@ public class QNameIndexLookup extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		QName qname =((QNameValue) args[0].itemAt(0)).getQName();
-		String content = args[1].getStringValue();
-		
-        NativeValueIndexByQName valueIndex = context.getBroker().getQNameValueIndex();
-        if ( contextSequence == null ) {
-        	RootNode rootNode = new RootNode(context);
-        	contextSequence = rootNode.eval(null, null);
-        }
-        Sequence result = valueIndex.findByQName(qname, content, contextSequence);
-        return result;
+		QName qname = ((QNameValue) args[0].itemAt(0)).getQName();
+		AtomicValue comparisonCriterium = (AtomicValue) args[1].itemAt(0);
+		Sequence result = Sequence.EMPTY_SEQUENCE;
+
+		if (comparisonCriterium instanceof Indexable) {
+			NativeValueIndexByQName valueIndex = context.getBroker()
+					.getQNameValueIndex();
+			if (contextSequence == null) {
+				RootNode rootNode = new RootNode(context);
+				contextSequence = rootNode.eval(null, null);
+			}
+			result = valueIndex.findByQName(qname, comparisonCriterium,
+					contextSequence);
+		} else {
+			// TODO error message & log : 
+			// "The comparison Criterium must be an Indexable: boolean, numeric, string, and not ...
+		}
+		return result;
 	}
 }

@@ -198,13 +198,13 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 	}
 
 	/** called from the special XQuery function util:qname-index-lookup() */
-	public Sequence findByQName(QName qname, String content, Sequence contextSequence) throws XPathException {
+	public Sequence findByQName(QName qname, AtomicValue comparisonCriterium, Sequence contextSequence) throws XPathException {
 		NodeSet contextSet = contextSequence.toNodeSet();
 		DocumentSet docSet = contextSet.getDocumentSet();
 		
 		ValueIndexKeyFactory 
 		// Indexable 
-		indexable = new QNameValueIndexKeyFactory( new StringValue(content), qname);
+		indexable = new QNameValueIndexKeyFactory( (Indexable)comparisonCriterium, qname);
 		int relation = Constants.EQ;
 		return find(relation, docSet, contextSet, indexable);
 	}
