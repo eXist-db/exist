@@ -60,7 +60,7 @@ public class Messages {
         return formatMessage(messageId, new Object[] { arg0, arg1, arg2, arg3 });
     }
     
-    protected static String formatMessage(String messageId, Object[] args) {
+    public static String formatMessage(String messageId, Object[] args) {
         for (int i = 0; i < args.length; i++) {
             if (args[i] != null)
                 args[i] = args[i].toString();
