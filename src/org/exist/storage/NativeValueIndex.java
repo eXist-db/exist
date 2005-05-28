@@ -535,7 +535,7 @@ public class NativeValueIndex {
     throws TerminatedException {
         int idxOp =  checkRelationOp(relation);
         NodeSet result = new ExtArrayNodeSet();
-        SearchCallback callback = new SearchCallback(docs, contextSet, result);
+        SearchCallback callback = new SearchCallback(docs, contextSet, result, true);
         Lock lock = db.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			Collection collection = (Collection) iter.next();
@@ -714,11 +714,13 @@ public class NativeValueIndex {
         DocumentSet docs;
         NodeSet contextSet;
         NodeSet result;
+        boolean returnAncestor;
         
-        public SearchCallback(DocumentSet docs, NodeSet contextSet, NodeSet result) {
+        public SearchCallback(DocumentSet docs, NodeSet contextSet, NodeSet result, boolean returnAncestor) {
             this.docs = docs;
             this.contextSet = contextSet;
             this.result = result;
+            this.returnAncestor = returnAncestor;
         }
         
         /* (non-Javadoc)
@@ -754,14 +756,14 @@ public class NativeValueIndex {
                 		current = new NodeProxy(doc, gid);
 						
                 		// if a context set is specified, we can directly check if the
-                		// matching text node is a descendant of one of the nodes
+                		// matching node is a descendant of one of the nodes
                 		// in the context set.
                 		if (contextSet != null) {
                 			parent = contextSet.parentWithChild(current, false, true, -1);
                 			if (parent != null) {
-                				result.add(parent, sizeHint);
+                				result.add(returnAncestor ? parent : current, sizeHint);
                 			}
-                		// otherwise, we add all text nodes without check
+                		// otherwise, we add all nodes without check
                 		} else {
                 			result.add(current, sizeHint);
                 		}
@@ -783,7 +785,7 @@ public class NativeValueIndex {
     	private XMLString key = new XMLString(128);
         
     	public RegexCallback(DocumentSet docs, NodeSet contextSet, NodeSet result, TermMatcher matcher) {
-    		super(docs, contextSet, result);
+    		super(docs, contextSet, result, true);
     		this.matcher = matcher;
     	}
     	

@@ -20,6 +20,7 @@
 $Id$ */
 package org.exist.storage;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -30,13 +31,16 @@ import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
+import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
+import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.store.BFile;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
@@ -225,7 +229,7 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 			try {
 				lock.acquire();
 				try {
-					SearchCallback callback = new SearchCallback(docs, contextSet, result);
+					SearchCallback callback = new SearchCallback(docs, contextSet, result, false);
 					db.query(query, callback );
 				} catch (IOException ioe) {
 					LOG.debug(ioe);
@@ -240,5 +244,4 @@ public class NativeValueIndexByQName extends NativeValueIndex {
         }
         return result;
     }
-
 }
