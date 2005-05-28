@@ -82,7 +82,7 @@ public class QNameIndexLookup extends Function {
      */
     public void setArguments(List arguments) throws XPathException {
         // wrap arguments into a cardinality check, so an error will be generated if
-        // an empty sequence is passed to the function
+        // one of the arguments returns an empty sequence
         Expression arg = (Expression) arguments.get(0);
         arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
                 new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
