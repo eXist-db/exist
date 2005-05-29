@@ -48,18 +48,18 @@ public interface Constants {
 					    "attribute-descendant"
 	};
 
-    /*
+    /**
      * XPath axis constants:
-     */
-    
-    // Reverse axes
+     *
+    <br>
+    * Reverse axes */
     public final static int ANCESTOR_AXIS = 0;
     public final static int ANCESTOR_SELF_AXIS = 1;
     public final static int PARENT_AXIS =  2;
     public final static int PRECEDING_AXIS = 3;
     public final static int PRECEDING_SIBLING_AXIS = 4;
     
-    // Forward axes
+    /** Forward axes */
     public final static int CHILD_AXIS = 5;
     public final static int ATTRIBUTE_AXIS = 6;
     public final static int DESCENDANT_AXIS = 7;
@@ -85,7 +85,7 @@ public interface Constants {
 
     public final static short TYPE_UNKNOWN = -1;
 
-    /*
+    /**
      * Node types
      */
     
@@ -98,7 +98,7 @@ public interface Constants {
     public final static int COMMENT_NODE = 6;
     public final static int PROCESSING_NODE = 7;
 
-    /*
+    /**
      * Comparison operators
      */
     public final static int LT  = 0;
@@ -110,7 +110,7 @@ public interface Constants {
     public final static int IN = 6;
     public final static int REGEXP = 7;
 
-    /*
+    /**
      * String truncation operators
      */
     public final static int TRUNC_NONE = -1;
@@ -118,7 +118,7 @@ public interface Constants {
     public final static int TRUNC_LEFT = 1;
     public final static int TRUNC_BOTH = 2;
 
-    /*
+    /**
      * Arithmetic operators
      */
 	public final static int PLUS = 8;
@@ -128,7 +128,7 @@ public interface Constants {
 	public final static int MOD = 12;
 	public final static int IDIV = 13;
 
-	/*
+	/**
 	 * Identity operators
 	 */
 	public final static int IS = 14;
