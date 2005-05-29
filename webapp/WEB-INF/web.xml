@@ -61,15 +61,15 @@
             <param-name>start</param-name>
             <param-value>true</param-value>
         </init-param>
-		
+
         <load-on-startup>2</load-on-startup>
 
     </servlet>
-	
+
     <servlet>
         <servlet-name>WebDAVServlet</servlet-name>
         <servlet-class>org.exist.http.servlets.WebDAVServlet</servlet-class>
-		
+
         <init-param>
             <param-name>authentication</param-name>
             <param-value>basic</param-value>
@@ -80,7 +80,7 @@
     <servlet>
         <servlet-name>XQueryServlet</servlet-name>
         <servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
-		
+
         <init-param>
             <param-name>uri</param-name>
             <param-value>xmldb:exist:///db</param-value>
@@ -95,7 +95,7 @@
             <param-name>container-encoding</param-name>
             <param-value>UTF-8</param-value>
         </init-param>
-		
+
         <init-param>
             <param-name>encoding</param-name>
             <param-value>UTF-8</param-value>
@@ -427,6 +427,13 @@
         <servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
     </servlet>
     
+    <!-- webstart -->
+    <servlet>
+        <servlet-name>jnlp</servlet-name>
+        <description>Webstart</description>
+        <servlet-class>org.exist.webstart.JnlpServlet</servlet-class>
+    </servlet>
+    
   <!-- URL space mappings ============================================= -->
 
   <!-- Define where the XMLRPC servlet listens -->
@@ -510,6 +517,13 @@
         <servlet-name>Cocoon</servlet-name>
         <url-pattern>*.html</url-pattern>
     </servlet-mapping>
+
+  <!-- webstart -->
+    <servlet-mapping>
+        <servlet-name>jnlp</servlet-name>
+        <url-pattern>/webstart/*</url-pattern>
+    </servlet-mapping>
+    
     
   <!-- various MIME type mappings ====================================== -->
 
@@ -547,7 +561,7 @@
         <extension>grm</extension>
         <mime-type>text/plain</mime-type>
     </mime-mapping>
-	
+
     <taglib>
         <taglib-uri>http://exist-db.org/exist</taglib-uri>
         <taglib-location>/WEB-INF/exist.tld</taglib-location>
