@@ -20,27 +20,22 @@
 $Id$ */
 package org.exist.storage;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.dbxml.core.data.Value;
-import org.dbxml.core.filer.BTreeCallback;
 import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
-import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.store.BFile;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
@@ -165,7 +160,7 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 		 * provides the persistant storage key :
 		 * (collectionId, qname, indexType, indexData) */
 		public byte[] serialize(short collectionId, boolean caseSensitive) {
-	        final byte[] data = indexable.serializeValue(4, caseSensitive);
+	        final byte[] data = indexable.serializeValue(6, caseSensitive);
 	        ByteConversion.shortToByte(collectionId, data, 0);
 			serializeQName(data, 2 );
 			return data;
@@ -176,8 +171,8 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 			SymbolTable symbols = broker.getSymbols();
 			short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
 			short localNameId = symbols.getSymbol(qname.getLocalName());
-	        data[offset]   = (byte)namespaceId;
-	        data[offset+1] = (byte)localNameId;
+			ByteConversion.shortToByte(namespaceId, data, offset);
+			ByteConversion.shortToByte(localNameId, data, offset + 2);
 		}
 		
 		/** @return negative value <==> this object is less than other */
