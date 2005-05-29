@@ -22,6 +22,9 @@
         <item>
             <link href="documentation.xml">Main Documentation</link>
         </item>
+        <item>
+            <link href="facts.xml">Feature Sheet</link>
+        </item>
     </group>
     <group name="Examples">
         <item>
@@ -72,6 +75,9 @@
         </item>
         <item>
 			<link href="status">Server Status</link>
+        </item>
+        <item>
+			<link href="webstart/exist.jnlp">Webstart Client</link>
         </item>
     </group>
     

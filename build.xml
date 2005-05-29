@@ -270,6 +270,10 @@
 			<include name="org/exist/source/CocoonSource.java"/>
             <include name="org/exist/*.xsl"/>
         </jar>
+        
+        <!-- Sign jar files -->
+        <antcall target="sign"/>
+        
     </target>
 
     <!-- ================================================================== -->
@@ -959,5 +963,22 @@
 			<replacefilter token='&lt;a href=".."' value='&lt;a href="${host}"'/>
 			<replacefilter token="../index.xml" value="${host}"/>
 		</replace>
+    </target>
+    
+	<!-- ============================================================================ -->
+	<!-- Sign jar files for java webstart.                                            -->
+	<!--                                                                              -->
+	<!-- ============================================================================ -->
+     <target name="sign">
+        <ant antfile="build-sign.xml" dir="." target="jnlp-sign-exist"/>
+        
+        <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
+        <echo message="!! Please run &apos;ant -f build-sign.xml&apos; "/>
+        <echo message="!! at least once manually for enabling webstart !!"/>
+        <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
+        
+        <!-- the core jars can NOT be signed in this build.xml file because -->
+        <!-- the jars are some how locked by ant (classpath.core)-->
+        
     </target>
 </project>
