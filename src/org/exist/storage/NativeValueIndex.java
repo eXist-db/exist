@@ -134,7 +134,7 @@ public class NativeValueIndex {
     }
     
 	/** store and index given attribute into this value index */
-    public void storeAttribute(ValueIndexSpec spec, AttrImpl node) {
+    public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
         AtomicValue atomic = convertToAtomic(spec.getType(), node.getValue());
         if(atomic == null)
             return;		// skip

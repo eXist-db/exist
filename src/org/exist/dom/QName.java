@@ -119,7 +119,10 @@ public class QName implements Comparable {
 			return localName_;
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * Compares two QNames by comparing namespace URI
+	 * and local names. The prefixes are not relevant.
+	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(Object o) {
@@ -137,7 +140,10 @@ public class QName implements Comparable {
 		return c == 0 ? localName_.compareTo(other.localName_) : c;
 	}
 	
-	/* (non-Javadoc)
+	/** 
+	 * Checks two QNames for equality. Two QNames are equal
+	 * if their namespace URIs, local names and prefixes are equal.
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {

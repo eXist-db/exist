@@ -43,7 +43,7 @@ import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
-import org.exist.storage.ValueIndexSpec;
+import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.util.Configuration;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.XMLString;
@@ -244,7 +244,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			stack.pop();
 			
 			XMLString elemContent = null;
-			if (ValueIndexSpec.hasRangeIndex(last.getIndexType())) {
+			if (GeneralRangeIndexSpec.hasRangeIndex(last.getIndexType())) {
 				elemContent = (XMLString) nodeContentStack.pop();
 			}
 			
@@ -558,7 +558,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	private void storeElement(ElementImpl node) {
 		broker.store(node, currentPath);
         node.setChildCount(0);
-		if (ValueIndexSpec.hasRangeIndex(node.getIndexType())) {
+		if (GeneralRangeIndexSpec.hasRangeIndex(node.getIndexType())) {
 			XMLString contentBuf = new XMLString();
 			nodeContentStack.push(contentBuf);
 		}

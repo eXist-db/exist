@@ -85,9 +85,9 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 		super(broker, valuesDb);
 	}
 	
-	/** @see org.exist.storage.NativeValueIndex#storeAttribute(org.exist.storage.ValueIndexSpec, org.exist.dom.AttrImpl)
+	/** @see org.exist.storage.NativeValueIndex#storeAttribute(org.exist.storage.RangeIndexSpec, org.exist.dom.AttrImpl)
 	 */
-	public void storeAttribute(ValueIndexSpec spec, AttrImpl node) {
+	public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
 		ValueIndexKeyFactory keyFactory = computeTemporaryKey(spec.getType(), node.getValue(), node.getQName());
         updatePendingIndexEntry(node, keyFactory);
 	}

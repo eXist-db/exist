@@ -28,8 +28,9 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
+import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.Signatures;
-import org.exist.storage.ValueIndexSpec;
+import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
@@ -62,7 +63,7 @@ public class ElementImpl extends NamedNode implements Element {
     protected int children = 0;
     protected long firstChild = -1;
     protected Map namespaceMappings = null;
-	protected int indexType = ValueIndexSpec.NO_INDEX;
+	protected int indexType = RangeIndexSpec.NO_INDEX;
 	protected int position = 0;
     
     public ElementImpl() {
@@ -1346,7 +1347,7 @@ public class ElementImpl extends NamedNode implements Element {
 				IndexSpec idxSpec = 
 				    ownerDocument.getCollection().getIdxConf(ownerDocument.broker);
 				if (idxSpec != null) {
-					ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+					GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 					if (spec != null) {
 						NodeProxy p = new NodeProxy(node.ownerDocument, node.gid, node.internalAddress);
 						content = ownerDocument.broker.getNodeValue(p, false);

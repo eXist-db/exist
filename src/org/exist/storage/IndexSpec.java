@@ -23,8 +23,10 @@ package org.exist.storage;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -56,13 +58,16 @@ public class IndexSpec {
     private static final String TYPE_ATTRIB = "type";
     private static final String PATH_ATTRIB = "path";
     private static final String CREATE_ELEMENT = "create";
+    private static final String CREATE_BY_QNAME = "create-by-qname";
+    private static final String QNAME_ATTRIB = "qname";
     private static final String FULLTEXT_ELEMENT = "fulltext";
     private static final String INDEX_DEPTH_ATTRIB = "index-depth";
     
     private final static Logger LOG = Logger.getLogger(IndexSpec.class);
     
     private FulltextIndexSpec ftSpec = null;
-    private ValueIndexSpec specs[] = null;
+    private GeneralRangeIndexSpec specs[] = null;
+    private Map qnameSpecs = new TreeMap();
     
     protected int depth = 1;
     
@@ -74,13 +79,14 @@ public class IndexSpec {
      * Read index configurations from an "index" element node. The node should have
      * exactly one "fulltext" child node and zero or more "create" nodes. The "fulltext"
      * section  is forwarded to class {@link FulltextIndexSpec}. The "create" elements
-     * add a {@link ValueIndexSpec} to the current configuration.
+     * add a {@link GeneralRangeIndexSpec} to the current configuration.
      *  
      * @param index
      * @param namespaces
      * @throws DatabaseConfigurationException
      */
     public void read(Element index) throws DatabaseConfigurationException {
+    	LOG.debug("Reading configuration ...");
         Map namespaces = getNamespaceMap(index);
         String indexDepth = index.getAttribute(INDEX_DEPTH_ATTRIB);
 		if (indexDepth != null && indexDepth.length() > 0)
@@ -95,15 +101,24 @@ public class IndexSpec {
             Node node = cl.item(i);
             if(node.getNodeType() == Node.ELEMENT_NODE) {
 	            if(FULLTEXT_ELEMENT.equals(node.getLocalName())) {
-//	                if(ftSpec != null)
-//	                    throw new DatabaseConfigurationException("Only one fulltext section is allowed per index");
 	                ftSpec = new FulltextIndexSpec(namespaces, (Element)node);
 	            } else if(CREATE_ELEMENT.equals(node.getLocalName())) {
 	                Element elem = (Element) node;
-	                String path = elem.getAttribute(PATH_ATTRIB);
 	                String type = elem.getAttribute(TYPE_ATTRIB);
-	                ValueIndexSpec valueIdx = new ValueIndexSpec(namespaces, path, type);
-	                addValueIndex(valueIdx);
+	                if (elem.hasAttribute(QNAME_ATTRIB)) {
+	                	String qname = elem.getAttribute(QNAME_ATTRIB);
+	                	QNameRangeIndexSpec qnIdx = new QNameRangeIndexSpec(namespaces, qname, type);
+		                qnameSpecs.put(qnIdx.getQName(), qnIdx);
+	                } else {
+	                	String path = elem.getAttribute(PATH_ATTRIB);
+	                	GeneralRangeIndexSpec valueIdx = new GeneralRangeIndexSpec(namespaces, path, type);
+	                	addValueIndex(valueIdx);
+	                }
+	            } else if (CREATE_BY_QNAME.equals(node.getLocalName())) {
+	            	Element elem = (Element) node;
+	                
+	                String type = elem.getAttribute(TYPE_ATTRIB);
+	                
 	            }
             }
         }
@@ -143,13 +158,13 @@ public class IndexSpec {
     }
     
     /**
-     * Returns the {@link ValueIndexSpec} defined for the given
+     * Returns the {@link GeneralRangeIndexSpec} defined for the given
      * node path or null if no index has been configured.
      * 
      * @param path
      * @return
      */
-    public ValueIndexSpec getIndexByPath(NodePath path) {
+    public GeneralRangeIndexSpec getIndexByPath(NodePath path) {
         if(specs != null) {
 	        for(int i = 0; i < specs.length; i++) {
 	            if(specs[i].matches(path))
@@ -159,17 +174,21 @@ public class IndexSpec {
         return null;
     }
     
+    public QNameRangeIndexSpec getIndexByQName(QName name) {
+    	return (QNameRangeIndexSpec) qnameSpecs.get(name);
+    }
+    
     /**
-     * Add a {@link ValueIndexSpec}.
+     * Add a {@link GeneralRangeIndexSpec}.
      * 
      * @param valueIdx
      */
-    private void addValueIndex(ValueIndexSpec valueIdx) {
+    private void addValueIndex(GeneralRangeIndexSpec valueIdx) {
         if(specs == null) {
-            specs = new ValueIndexSpec[1];
+            specs = new GeneralRangeIndexSpec[1];
             specs[0] = valueIdx;
         } else {
-            ValueIndexSpec nspecs[] = new ValueIndexSpec[specs.length + 1];
+            GeneralRangeIndexSpec nspecs[] = new GeneralRangeIndexSpec[specs.length + 1];
             System.arraycopy(specs, 0, nspecs, 0, specs.length);
             nspecs[specs.length] = valueIdx;
             specs = nspecs;
