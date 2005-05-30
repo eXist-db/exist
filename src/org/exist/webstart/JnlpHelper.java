@@ -69,8 +69,8 @@ public class JnlpHelper {
         _codeBase = _currentUrl.substring(0, position+1);
         _href = _currentUrl.substring(position+1);
         
-        // Find URL to connect to with client
-        _startUrl = _existBaseUrl.replace("http:", "xmldb:exist:") + "/xmlrpc";
+        // Find URL to connect to with client       
+        _startUrl = _existBaseUrl.replaceFirst("http:", "xmldb:exist:") + "/xmlrpc";
     }
     
     /**
