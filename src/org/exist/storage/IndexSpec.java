@@ -109,10 +109,14 @@ public class IndexSpec {
 	                	String qname = elem.getAttribute(QNAME_ATTRIB);
 	                	QNameRangeIndexSpec qnIdx = new QNameRangeIndexSpec(namespaces, qname, type);
 		                qnameSpecs.put(qnIdx.getQName(), qnIdx);
-	                } else {
+	                } else if (elem.hasAttribute(PATH_ATTRIB)) {
 	                	String path = elem.getAttribute(PATH_ATTRIB);
 	                	GeneralRangeIndexSpec valueIdx = new GeneralRangeIndexSpec(namespaces, path, type);
 	                	addValueIndex(valueIdx);
+	                } else {
+	                	String error_message = "Configuration error: element " + elem.getNodeName() +
+	                		" must have attribute " + PATH_ATTRIB + " or " + QNAME_ATTRIB;
+	                	throw new DatabaseConfigurationException(error_message);
 	                }
 	            } else if (CREATE_BY_QNAME.equals(node.getLocalName())) {
 	            	Element elem = (Element) node;
