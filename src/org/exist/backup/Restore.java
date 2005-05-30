@@ -4,20 +4,28 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Date;
 import java.util.Observable;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.Date; 
 
+import javax.swing.BorderFactory;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.exist.security.User;
 import org.exist.xmldb.CollectionImpl;
-import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.UserManagementService;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.DateTimeValue;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -27,9 +35,6 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-import org.exist.xmldb.CollectionManagementServiceImpl;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.DateTimeValue;
 
 /**
  * Restore.java
@@ -173,7 +178,10 @@ public class Restore extends DefaultHandler {
 					User u = new User(owner, null, group);
 					service.chown(u, group);
 					service.chmod(Integer.parseInt(mode, 8));
-				} catch (XMLDBException e) {
+				} catch (Exception e) {
+                    showErrorMessage("An unrecoverable error occurred while restoring\ncollection '" + name + "'. " +
+                            "Aborting restore!");
+                    e.printStackTrace();
 					throw new SAXException(e.getMessage(), e);
 				}
 				if(dialog != null)
@@ -214,8 +222,12 @@ public class Restore extends DefaultHandler {
 				
 				if (filename == null) filename = name;
 
-				if (name == null)
-					throw new SAXException("resource requires a name attribute");
+				if (name == null) {
+                    if (dialog != null)
+                        dialog.displayMessage("Wrong entry in backup descriptor: resource requires a name attribute.");
+                    else
+                        System.err.println("Wrong entry in backup descriptor: resource requires a name attribute.");
+                }
 				final File f =
 					new File(
 						contents.getParentFile().getAbsolutePath() + File.separatorChar + filename);
@@ -232,7 +244,7 @@ public class Restore extends DefaultHandler {
 					
 					res.setContent(f);
 					if(dialog == null)
-						System.out.println("restoring " + name);
+						System.out.println("Restoring " + name);
 					
 					Date date_created = null;
 					Date date_modified = null;
@@ -258,15 +270,26 @@ public class Restore extends DefaultHandler {
 					try {
 						service.chown(res, u, group);
 					} catch (XMLDBException e1) {
-						if(dialog != null)
-							dialog.displayMessage("failed to change owner on document " + name + "; skipping ...");
+						if(dialog != null) {
+							dialog.displayMessage("Failed to change owner on document '" + name + "'; skipping ...");
+                        }
 					}
 					service.chmod(res, Integer.parseInt(perms, 8));
 					if(dialog != null)
 						dialog.displayMessage("restored " + name);
-				} catch (XMLDBException e) {
-                    e.printStackTrace();
-					throw new SAXException(e);
+				} catch (Exception e) {
+                    if (dialog != null) { 
+                            dialog.displayMessage("Failed to restore resource '" + name + "'\nfrom file '" +
+                                    f.getAbsolutePath() + "'.\nReason: " + e.getMessage());
+                            showErrorMessage(
+                                    "Failed to restore resource '" + name + "' from file: '" +
+                                    f.getAbsolutePath() + "'.\n\nReason: " + e.getMessage()
+                            );
+                    } else {
+                        System.err.println("Failed to restore resource '" + name + "' from file '" +
+					        f.getAbsolutePath() + "'");
+                        e.printStackTrace();
+                    }
 				}
 			}
 		}
@@ -296,4 +319,19 @@ public class Restore extends DefaultHandler {
 		}
 		return (CollectionImpl)current;
 	}
+    
+	public static void showErrorMessage(String message) {
+        JTextArea msgArea = new JTextArea(message);
+        msgArea.setEditable(false);
+        msgArea.setBackground(null);
+        JScrollPane scroll = new JScrollPane(msgArea);
+        JOptionPane optionPane = new JOptionPane();
+        optionPane.setMessage(new Object[]{scroll});
+        optionPane.setMessageType(JOptionPane.ERROR_MESSAGE);
+        JDialog dialog = optionPane.createDialog(null, "Error");
+        dialog.setResizable(true);
+        dialog.pack();
+        dialog.setVisible(true);
+        return;
+    }
 }
