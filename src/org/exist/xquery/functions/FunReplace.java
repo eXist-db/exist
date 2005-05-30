@@ -85,7 +85,7 @@ public class FunReplace extends FunMatches {
 			return Sequence.EMPTY_SEQUENCE;
 		String string = stringArg.getStringValue();
 		String pattern =
-			getArgument(1).eval(contextSequence, contextItem).getStringValue();
+			translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
 		String replace =
 			getArgument(2).eval(contextSequence, contextItem).getStringValue();
 		int flags = 0;

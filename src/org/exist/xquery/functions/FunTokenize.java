@@ -84,7 +84,8 @@ public class FunTokenize extends FunMatches {
 			return Sequence.EMPTY_SEQUENCE;
 		String string = stringArg.getStringValue();
 		String pattern =
-			getArgument(1).eval(contextSequence, contextItem).getStringValue();
+			translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+		
 		int flags = 0;
 		if (getSignature().getArgumentCount() == 3)
 			flags =

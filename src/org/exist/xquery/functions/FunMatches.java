@@ -43,6 +43,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.RegexTranslator;
+import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -160,7 +162,7 @@ public class FunMatches extends Function {
 	 * @throws XPathException
      */
     private Sequence evalWithIndex(Sequence contextSequence, Item contextItem, Sequence input) throws XPathException {
-        String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+        String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
 		
         NodeSet nodes = input.toNodeSet();
         
@@ -194,6 +196,25 @@ public class FunMatches extends Function {
 		}
     }
 
+	/**
+	 * Translates the regular expression from XPath2 syntax to java regex
+	 * syntax.
+	 * 
+	 * @param pattern
+	 * @return
+	 * @throws XPathException
+	 */
+	protected String translateRegexp(String pattern) throws XPathException {
+		// convert pattern to Java regex syntax
+        try {
+			pattern = RegexTranslator.translate(pattern, true);
+		} catch (RegexSyntaxException e) {
+			throw new XPathException(getASTNode(), "Conversion from XPath2 to Java regular expression " +
+					"syntax failed: " + e.getMessage(), e);
+		}
+		return pattern;
+	}
+
     /**
      * @param contextSequence
      * @param contextItem
@@ -203,7 +224,7 @@ public class FunMatches extends Function {
      */
     private Sequence evalGeneric(Sequence contextSequence, Item contextItem, Sequence stringArg) throws XPathException {
         String string = stringArg.getStringValue();
-		String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+		String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
         
 		int flags = 0;
         if(getSignature().getArgumentCount() == 3)

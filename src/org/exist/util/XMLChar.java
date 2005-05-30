@@ -435,7 +435,13 @@ public class XMLChar {
         return (0xDC00 <= c && c <= 0xDFFF);
     }
 
-
+    /**
+     * Return whether a given char (codepoint) is a surrogate (high or low)
+     */
+    static public boolean isSurrogate(char c) {
+        return (c & 0xF800) == 0xD800;
+    }
+    
     /**
      * Returns true if the specified character is valid. This method
      * also checks the surrogate character range from 0x10000 to 0x10FFFF.

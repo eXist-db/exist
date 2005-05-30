@@ -39,6 +39,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.util.RegexTranslator;
+import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -190,10 +192,10 @@ public class ExtRegexp extends Function {
 			next = getArgument(i);
 			seq = next.eval(contextSequence);
 			if(seq.getLength() == 1)
-			    terms.add(seq.itemAt(0).getStringValue());
+			    terms.add(translateRegexp(seq.itemAt(0).getStringValue()));
 			else {
 				for(SequenceIterator it = seq.iterate(); it.hasNext(); ) {
-				    terms.add(it.nextItem().getStringValue());
+				    terms.add(translateRegexp(it.nextItem().getStringValue()));
 				}
 			}
 		}
@@ -216,5 +218,24 @@ public class ExtRegexp extends Function {
 	public void resetState() {
 		super.resetState();
 		cached = null;
+	}
+	
+	/**
+	 * Translates the regular expression from XPath2 syntax to java regex
+	 * syntax.
+	 * 
+	 * @param pattern
+	 * @return
+	 * @throws XPathException
+	 */
+	protected String translateRegexp(String pattern) throws XPathException {
+		// convert pattern to Java regex syntax
+       try {
+			pattern = RegexTranslator.translate(pattern, true);
+		} catch (RegexSyntaxException e) {
+			throw new XPathException(getASTNode(), "Conversion from XPath2 to Java regular expression " +
+					"syntax failed: " + e.getMessage(), e);
+		}
+		return pattern;
 	}
 }
