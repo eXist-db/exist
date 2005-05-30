@@ -1348,7 +1348,8 @@ public class ElementImpl extends NamedNode implements Element {
 				    ownerDocument.getCollection().getIdxConf(ownerDocument.broker);
 				if (idxSpec != null) {
 					GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-					if (spec != null) {
+					RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+					if (spec != null || qnIdx != null) {
 						NodeProxy p = new NodeProxy(node.ownerDocument, node.gid, node.internalAddress);
 						content = ownerDocument.broker.getNodeValue(p, false);
 					}
