@@ -244,7 +244,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			stack.pop();
 			
 			XMLString elemContent = null;
-			if (GeneralRangeIndexSpec.hasRangeIndex(last.getIndexType())) {
+			if (GeneralRangeIndexSpec.hasQNameOrValueIndex(last.getIndexType())) {
 				elemContent = (XMLString) nodeContentStack.pop();
 			}
 			
@@ -558,7 +558,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	private void storeElement(ElementImpl node) {
 		broker.store(node, currentPath);
         node.setChildCount(0);
-		if (GeneralRangeIndexSpec.hasRangeIndex(node.getIndexType())) {
+		if (GeneralRangeIndexSpec.hasQNameOrValueIndex(node.getIndexType())) {
 			XMLString contentBuf = new XMLString();
 			nodeContentStack.push(contentBuf);
 		}

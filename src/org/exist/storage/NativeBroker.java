@@ -981,6 +981,10 @@ public class NativeBroker extends DBBroker {
 				    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 				    if(spec != null)
 				        indexType = spec.getIndexType();
+				    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+				    if (qnIdx != null && qnameValueIndexation) {
+				    	indexType |= RangeIndexSpec.QNAME_INDEX;
+					}
 				}
 				if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
 				    indexType |= RangeIndexSpec.TEXT;
@@ -1195,6 +1199,10 @@ public class NativeBroker extends DBBroker {
 					    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 					    if(spec != null)
 					        indexType = spec.getIndexType();
+					    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+					    if (qnIdx != null && qnameValueIndexation) {
+					    	indexType |= RangeIndexSpec.QNAME_INDEX;
+						}
 					}
 					if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
 					    indexType |= RangeIndexSpec.TEXT;
@@ -2596,6 +2604,10 @@ public class NativeBroker extends DBBroker {
 				    RangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 				    if(spec != null)
 				        indexType = spec.getIndexType();
+				    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+				    if (qnIdx != null && qnameValueIndexation) {
+				    	indexType |= RangeIndexSpec.QNAME_INDEX;
+					}
 				}
 				if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
 				    indexType |= RangeIndexSpec.TEXT;
@@ -2696,13 +2708,13 @@ public class NativeBroker extends DBBroker {
 						(ElementImpl) node, content.toString());
 		}
 		
-		if ( qnameValueIndexation && idxSpec != null ) {
+		if ( RangeIndexSpec.hasQNameIndex(indexType) ) {
 			RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-			if (qnIdx != null) {
-				qnameValueIndex.setDocument(doc);
-	        	qnameValueIndex.storeElement(RangeIndexSpec.indexTypeToXPath(indexType), 
+			if (content == null)
+				content = getNodeValue(tempProxy, false);
+			qnameValueIndex.setDocument(doc);
+			qnameValueIndex.storeElement(qnIdx.getType(), 
 					(ElementImpl) node, content.toString());
-			}
 		}
 		
 		// save element by calling ElementIndex
