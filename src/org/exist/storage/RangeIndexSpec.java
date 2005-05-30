@@ -41,9 +41,29 @@ public abstract class RangeIndexSpec {
 	public static final int DOUBLE = 3;
 	public static final int FLOAT = 4;
 	public static final int BOOLEAN = 5;
+	
+	/** 
+	 * Indicates that the node has a qname-value index defined
+	 * on it.
+	 */
+	public static final int QNAME_INDEX = 0x20;
+	
+	/**
+	 * Bit is set if the node has mixed content.
+	 */
 	public static final int MIXED_CONTENT = 0x40;
+	
+	/**
+	 * Bit is set if the node is fulltext indexed.
+	 */
 	public static final int TEXT = 0x80;
-	public static final int RANGE_INDEX_MASK = 0x3F;
+	
+	/**
+	 * Bit mask to extract the type of the range index.
+	 */
+	public static final int RANGE_INDEX_MASK = 0x1F;
+	
+	public static final int HAS_VALUE_INDEX_MASK = 0x3F;
 	
 	private static final int[] xpathTypes = {
             Type.ITEM,
@@ -119,6 +139,14 @@ public abstract class RangeIndexSpec {
 		return (type & RANGE_INDEX_MASK) > 0;
 	}
 
+	public static final boolean hasQNameIndex(int type) {
+		return (type & QNAME_INDEX) != 0;
+	}
+	
+	public static final boolean hasQNameOrValueIndex(int type) {
+		return (type & HAS_VALUE_INDEX_MASK) > 0;
+	}
+	
 	protected int type;
 
 	protected RangeIndexSpec() {
