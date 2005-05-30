@@ -377,6 +377,23 @@ public class StringValue extends AtomicValue implements Indexable {
 		return sb.toString();
 	}
 
+	public final static String trimWhitespace(String in) {
+		if (in.length()==0) {
+            return in;
+        }
+        int first = 0;
+        int last = in.length()-1;
+        while (in.charAt(first) <= 0x20) {
+            if (first++ >= last) {
+                return "";
+            }
+        }
+        while (in.charAt(last) <= 0x20) {
+            last--;
+        }
+        return in.substring(first, last+1);
+	}
+	
 	public final static String expand(CharSequence seq) throws XPathException {
 		StringBuffer buf = new StringBuffer(seq.length());
 		StringBuffer entityRef = null;

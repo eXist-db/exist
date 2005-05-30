@@ -46,7 +46,10 @@ import org.exist.storage.NodePath;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.util.Configuration;
 import org.exist.util.ProgressIndicator;
+import org.exist.util.XMLChar;
 import org.exist.util.XMLString;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -407,7 +410,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		String namespace,
 		String name,
 		String qname,
-		Attributes attributes) {
+		Attributes attributes) throws SAXException {
 		// calculate number of real attributes:
 		// don't store namespace declarations
 		int attrLength = attributes.getLength();
@@ -522,8 +525,15 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				attr.setNodeName(document.getSymbols().getQName(attrNS, attrLocalName, attrPrefix));
 				attr.setValue(attributes.getValue(i));
 				attr.setOwnerDocument(document);
-				if (attributes.getType(i).equals("ID"))
+				if (attributes.getType(i).equals("ID")) {
 					attr.setType(AttrImpl.ID);
+				} else if (attrNS.equals(XQueryContext.XML_NS)) {
+					// an xml:id attribute. Normalize the attribute and set its type to ID
+					attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
+					if (!XMLChar.isValidNCName(attr.getValue()))
+						throw new SAXException("Value of xml:id attribute is not a valid NCName: " + attr.getValue());
+					attr.setType(AttrImpl.ID);
+				}
 				node.appendChildInternal(attr);
 				if (!validate)
 					broker.store(attr, currentPath);
