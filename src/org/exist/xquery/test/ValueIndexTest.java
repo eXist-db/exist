@@ -44,7 +44,7 @@ public class ValueIndexTest extends TestCase {
 
     private final static String URI = "xmldb:exist:///db";
 
-    private final static String CONFIG =
+    private String CONFIG =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
     	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" + 
     	"		<fulltext default=\"none\">" + 
@@ -78,9 +78,6 @@ public class ValueIndexTest extends TestCase {
             testCollection = service.createCollection("test");
             assertNotNull(testCollection);
             
-            IndexQueryService idxConf = (IndexQueryService)
-				testCollection.getService("IndexQueryService", "1.0");
-            idxConf.configureCollection(CONFIG);
         } catch (ClassNotFoundException e) {
         } catch (InstantiationException e) {
         } catch (IllegalAccessException e) {
@@ -89,7 +86,17 @@ public class ValueIndexTest extends TestCase {
         }
     }
 
+	/**
+	 * @throws XMLDBException
+	 */
+	protected void configureCollection() throws XMLDBException {
+		IndexQueryService idxConf = (IndexQueryService)
+			testCollection.getService("IndexQueryService", "1.0");
+		idxConf.configureCollection(getCollectionConfig());
+	}
+
     public void testStrings() throws Exception {
+        configureCollection();
         XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "src/org/exist/xquery/test/items.xml");
         
         queryResource(service, "items.xml", "//item[name = 'Racing Bicycle']", 1);
@@ -137,7 +144,7 @@ public class ValueIndexTest extends TestCase {
         queryResource(query, "items.xml", "//item[itemno = 7]", 0);
     }
     
-    private ResourceSet queryResource(XPathQueryService service,
+    protected ResourceSet queryResource(XPathQueryService service,
             String resource, String query, int expected) throws XMLDBException {
         return queryResource(service, resource, query, expected, null);
     }
@@ -161,7 +168,7 @@ public class ValueIndexTest extends TestCase {
      * @return
      * @throws XMLDBException
      */
-    private XPathQueryService storeXMLFileAndGetQueryService(
+    protected XPathQueryService storeXMLFileAndGetQueryService(
             String documentName, String path) throws XMLDBException {
         XMLResource doc = (XMLResource) testCollection.createResource(
                 documentName, "XMLResource");
@@ -175,5 +182,19 @@ public class ValueIndexTest extends TestCase {
     
     public static void main(String[] args) {
 		junit.textui.TestRunner.run(ValueIndexTest.class);
+	}
+
+	/**
+	 * @param cONFIG The cONFIG to set.
+	 */
+	protected void setCollectionConfig(String cONFIG) {
+		CONFIG = cONFIG;
+	}
+
+	/**
+	 * @return Returns the cONFIG.
+	 */
+	protected String getCollectionConfig() {
+		return CONFIG;
 	}
 }
