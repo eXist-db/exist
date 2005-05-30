@@ -65,10 +65,12 @@ public class XPathQueryTest extends TestCase {
 	    "<!ELEMENT name (#PCDATA)>" +
 	    "<!ATTLIST a ref IDREF #IMPLIED>" +
 	    "<!ATTLIST b id ID #IMPLIED>]>" +
-	    "<test>" +
+	    "<test xml:space=\"preserve\">" +
 	    "<a ref=\"id1\"/>" +
 	    "<a ref=\"id1\"/>" +
+	    "<d ref=\"id2\"/>" +
 	    "<b id=\"id1\"><name>one</name></b>" +
+	    "<c xml:id=\"     id2     \"><name>two</name></c>" +
 	    "</test>";
 	
 	private final static String quotes =
@@ -357,6 +359,10 @@ public class XPathQueryTest extends TestCase {
 			ResourceSet result = queryResource(service, "ids.xml", "//a/id(@ref)/name", 1);
 			Resource r = result.getResource(0);
 			assertEquals("<name>one</name>", r.getContent().toString());
+			
+			result = queryResource(service, "ids.xml", "//d/id(@ref)/name", 1);
+			r = result.getResource(0);
+			assertEquals("<name>two</name>", r.getContent().toString());
 		} catch (XMLDBException e) {
 			System.out.println("testIds(): XMLDBException: "+e);
 			fail(e.getMessage());
