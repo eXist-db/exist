@@ -363,6 +363,15 @@ public class XPathQueryTest extends TestCase {
 			result = queryResource(service, "ids.xml", "//d/id(@ref)/name", 1);
 			r = result.getResource(0);
 			assertEquals("<name>two</name>", r.getContent().toString());
+			
+			String update = "update insert <t xml:id=\"id3\">Hello</t> into /test";
+			queryResource(service, "ids.xml", update, 0);
+			
+			queryResource(service, "ids.xml", "id('id3')", 1);
+			
+			update = "update value //t/@xml:id with 'id4'";
+			queryResource(service, "ids.xml", update, 0);
+			queryResource(service, "ids.xml", "id('id4')", 1);
 		} catch (XMLDBException e) {
 			System.out.println("testIds(): XMLDBException: "+e);
 			fail(e.getMessage());
