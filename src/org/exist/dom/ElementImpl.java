@@ -23,23 +23,6 @@
  */
 package org.exist.dom;
 
-import org.exist.EXistException;
-import org.exist.security.PermissionDeniedException;
-import org.exist.storage.DBBroker;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.NodePath;
-import org.exist.storage.RangeIndexSpec;
-import org.exist.storage.Signatures;
-import org.exist.storage.GeneralRangeIndexSpec;
-import org.exist.util.ByteArrayPool;
-import org.exist.util.ByteConversion;
-import org.exist.util.UTF8;
-import org.w3c.dom.*;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.AttributesImpl;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -51,6 +34,35 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.exist.EXistException;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
+import org.exist.storage.GeneralRangeIndexSpec;
+import org.exist.storage.IndexSpec;
+import org.exist.storage.NodePath;
+import org.exist.storage.RangeIndexSpec;
+import org.exist.storage.Signatures;
+import org.exist.util.ByteArrayPool;
+import org.exist.util.ByteConversion;
+import org.exist.util.UTF8;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.StringValue;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
+import org.w3c.dom.TypeInfo;
+import org.w3c.dom.UserDataHandler;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * ElementImpl.java
@@ -460,7 +472,7 @@ public class ElementImpl extends NamedNode implements Element {
             case Node.ATTRIBUTE_NODE:
                 attr = (Attr) child;
                 ns = attr.getNamespaceURI();
-                prefix = (ns != null && ns.equals("http://www.w3.org/XML/1998/namespace") ? "xml" : attr.getPrefix());
+                prefix = (ns != null && ns.equals(XQueryContext.XML_NS) ? "xml" : attr.getPrefix());
                 String name = attr.getLocalName();
                 if (name == null) name = attr.getName();
                 QName attrName =
@@ -468,6 +480,11 @@ public class ElementImpl extends NamedNode implements Element {
                 final AttrImpl attrib = new AttrImpl(attrName, attr.getValue());
                 attrib.setGID(gid);
                 attrib.setOwnerDocument(ownerDocument);
+                if (ns.equals(XQueryContext.XML_NS)) {
+					// an xml:id attribute. Normalize the attribute and set its type to ID
+					attrib.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attrib.getValue())));
+					attrib.setType(AttrImpl.ID);
+				}
                 ownerDocument.broker.insertAfter(last.node, attrib);
                 // index now?
                 if ((ownerDocument.reindex < 0
@@ -1298,6 +1315,15 @@ public class ElementImpl extends NamedNode implements Element {
         if (old.getParentGID() != gid)
             throw new DOMException(DOMException.NOT_FOUND_ERR,
                     "node is not a child of this element");
+        if (newNode.getNodeType() == Node.ATTRIBUTE_NODE) {
+        	if (XQueryContext.XML_NS.equals(newNode.getNamespaceURI())) {
+					// an xml:id attribute. Normalize the attribute and set its type to ID
+        		AttrImpl attr = (AttrImpl) newNode;
+        		attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
+        		attr.setType(AttrImpl.ID);
+        	}
+        }
+        
         NodeImpl previous = (NodeImpl) old.getPreviousSibling();
         if (previous == null)
             previous = this;

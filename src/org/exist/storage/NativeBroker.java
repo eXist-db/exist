@@ -1248,7 +1248,8 @@ public class NativeBroker extends DBBroker {
 					// if the attribute has type ID, store the ID-value
 					// to the element index as well
 					if (((AttrImpl) node).getType() == AttrImpl.ID) {
-						qname = new QName("&" + ((AttrImpl) node).getValue(), "", null);
+						qname = new QName(((AttrImpl) node).getValue(), "", null);
+						//LOG.debug("found ID: " + qname.getLocalName());
 						qname.setNameType(ElementValue.ATTRIBUTE_ID);
 						elementIndex.addRow(qname, tempProxy);
 					}
