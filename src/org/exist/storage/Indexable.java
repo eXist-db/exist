@@ -58,4 +58,11 @@ public interface Indexable extends Comparable {
      */
 	byte[] serializeValue (int offset, boolean caseSensitive);
 
+    /**
+     * Returns the type of the Indexable as one of the constants defined
+     * in {@link org.exist.xquery.value.Type}.
+     * 
+     * @return
+     */
+    int getType();
 }
