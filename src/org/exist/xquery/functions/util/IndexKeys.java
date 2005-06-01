@@ -90,7 +90,7 @@ public class IndexKeys extends BasicFunction {
         FunctionCall call = ref.getFunctionCall();
         Sequence result = new ValueSequence();
         ValueOccurrences occur[] = context.getBroker().getValueIndex()
-                .scanIndexKeys(docs, nodes, (Indexable) args[1], null);
+                .scanIndexKeys(docs, nodes, (Indexable) args[1]);
         int len = (occur.length > max ? max : occur.length);
         Sequence params[] = new Sequence[2];
         ValueSequence data = new ValueSequence();
