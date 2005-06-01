@@ -194,6 +194,10 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 		public byte[] serializeValue( int offset, boolean caseSensitive) {
 			return null;
 		}
+        
+        public int getType() {
+            return indexable.getType();
+        }
 	}
 
 	/** called from the special XQuery function util:qname-index-lookup() */
