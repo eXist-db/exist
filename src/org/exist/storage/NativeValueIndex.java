@@ -542,10 +542,11 @@ public class NativeValueIndex {
 			short collectionId = collection.getId();
 			byte[] key = value.serialize(collectionId, caseSensitive);
 			IndexQuery query = new IndexQuery(idxOp, new Value(key));
+            Value prefix = getPrefixValue(value.getType(), collectionId);
 			try {
 				lock.acquire();
 				try {
-					db.query(query, callback);
+					db.query(query, prefix, callback);
 				} catch (IOException ioe) {
 					LOG.debug(ioe);
 				} catch (BTreeException bte) {
@@ -558,6 +559,16 @@ public class NativeValueIndex {
 			}
         }
         return result;
+    }
+    
+    /**
+     * Returns a key containing type and collectionId.
+     */
+    private Value getPrefixValue(int type, short collectionId) {
+        byte[] data = new byte[3];
+        ByteConversion.shortToByte(collectionId, data, 0);
+        data[2] = (byte) type;
+        return new Value(data);
     }
     
     public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type)
@@ -621,7 +632,7 @@ public class NativeValueIndex {
     }
     
     public ValueOccurrences[] scanIndexKeys(DocumentSet docs, NodeSet contextSet,
-            Indexable start, Indexable end) {
+            Indexable start) {
         long t0 = System.currentTimeMillis();
         final Lock lock = db.getLock();
         short collectionId;
@@ -633,16 +644,11 @@ public class NativeValueIndex {
             current = (Collection) i.next();
             collectionId = current.getId();
             byte[] startKey = start.serialize(collectionId, caseSensitive);
-            if (end == null)
-                query = new IndexQuery(IndexQuery.GEQ, new Value(startKey));
-            else {
-                byte[] endKey = end.serialize(collectionId, caseSensitive);
-                query = new IndexQuery(IndexQuery.BW, new Value(startKey), 
-                        new Value(endKey));
-            }
+            query = new IndexQuery(IndexQuery.GEQ, new Value(startKey));
+            Value prefix = getPrefixValue(start.getType(), collectionId);
             try {
                 lock.acquire();
-                db.query(query, cb);
+                db.query(query, prefix, cb);
             } catch (LockException e) {
                 LOG.warn("cannot get lock on words", e);
             } catch (IOException e) {
