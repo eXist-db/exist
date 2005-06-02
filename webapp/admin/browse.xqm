@@ -257,5 +257,5 @@ declare function browse:get-parent-collection($path as xs:string) as xs:string {
     if($path eq "/db") then
         $path
     else
-        replace($path, "\/[^\/]*$", "")
+        replace($path, "/[^/]*$", "")
 };
