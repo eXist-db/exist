@@ -42,13 +42,12 @@ import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NodePath;
 import org.exist.storage.GeneralRangeIndexSpec;
+import org.exist.storage.NodePath;
 import org.exist.util.Configuration;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.XMLChar;
 import org.exist.util.XMLString;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
@@ -70,7 +69,9 @@ import org.xml.sax.ext.LexicalHandler;
  */
 public class Indexer extends Observable implements ContentHandler, LexicalHandler, ErrorHandler {
 
-	private final static Logger LOG =
+	private static final String ATTR_ID_TYPE = "ID";
+
+    private final static Logger LOG =
 		Logger.getLogger(Indexer.class);
 
 	protected DBBroker broker = null;
@@ -525,9 +526,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				attr.setNodeName(document.getSymbols().getQName(attrNS, attrLocalName, attrPrefix));
 				attr.setValue(attributes.getValue(i));
 				attr.setOwnerDocument(document);
-				if (attributes.getType(i).equals("ID")) {
+				if (attributes.getType(i).equals(ATTR_ID_TYPE)) {
 					attr.setType(AttrImpl.ID);
-				} else if (attrNS.equals(XQueryContext.XML_NS)) {
+				} else if (attr.getQName().compareTo(AttrImpl.XML_ID_QNAME) == 0) {
 					// an xml:id attribute. Normalize the attribute and set its type to ID
 					attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
 					if (!XMLChar.isValidNCName(attr.getValue()))
