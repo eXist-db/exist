@@ -33,6 +33,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.exist.dom.QName;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.EXistResource;
 import org.exist.xquery.Cardinality;
@@ -114,12 +116,16 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 		if(docName != null && docName.length() == 0)
 			docName = null;
 		
-        String mimeType = "text/xml";
+        String mimeType = "application/octet-stream";
 		boolean binary = false;
 		if(getSignature().getArgumentCount() == 4) {
 			mimeType = args[3].getStringValue();
 			binary = !("text/xml".equals(mimeType) || "application/xml".equals(mimeType));
-		}
+		} else if (docName != null){
+		    MimeType mime = MimeTable.getInstance().getContentTypeFor(docName);
+            if (mime != null)
+                mimeType = mime.getName();
+        }
 		
 		Item item =
 			args[2].itemAt(0);
