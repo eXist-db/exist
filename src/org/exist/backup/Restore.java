@@ -179,8 +179,13 @@ public class Restore extends DefaultHandler {
 					service.chown(u, group);
 					service.chmod(Integer.parseInt(mode, 8));
 				} catch (Exception e) {
+                    if (dialog != null) {
                     showErrorMessage("An unrecoverable error occurred while restoring\ncollection '" + name + "'. " +
                             "Aborting restore!");
+                    } else {
+                        System.err.println("An unrecoverable error occurred while restoring\ncollection '" + name + "'. " +
+                            "Aborting restore!");
+                    }
                     e.printStackTrace();
 					throw new SAXException(e.getMessage(), e);
 				}
