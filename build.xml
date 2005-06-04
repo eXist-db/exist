@@ -4,7 +4,7 @@
 <!-- eXist build file                                                        -->
 <!-- ======================================================================= -->
 <project basedir="." default="all" name="exist">
-	
+
     <property file="build.properties"/>
 
     <property name="jetty.dir" value="tools/jetty"/>
@@ -32,11 +32,11 @@
     <property name="build.deprecation" value="on"/>
     <property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <property name="xmldb.src" value="undefined"/>
-	
+
     <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
-	
+
     <available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
-	
+
     <available file="${catalina.home}/bin" property="catalina.present"/>
 
     <path id="classpath.core">
@@ -57,7 +57,7 @@
         <pathelement path="start.jar"/>
         <pathelement path="${java.class.path}"/>
     </path>
-	
+
     <path id="classpath.jetty">
         <fileset dir="${jetty.dir}/lib">
             <include name="*.jar"/>
@@ -71,7 +71,7 @@
     <taskdef name="wsdl2java" classname="org.apache.axis.tools.ant.wsdl.Wsdl2javaAntTask">
         <classpath refid="classpath.core"/>
     </taskdef>
-	
+
     <taskdef name="axis-admin" classname="org.apache.axis.tools.ant.axis.AdminClientTask">
         <classpath refid="classpath.core"/>
     </taskdef>
@@ -295,30 +295,51 @@
     <!-- ================================================================== -->
     <!-- Run JUnit tests                                                    -->
 	<!-- ================================================================== -->
-    <target name="test" depends="test-local,test-concurrent,test-remote" description="Run jUnit tests"/>
+    <target name="test"
+            depends="test-prepare,test-local,test-concurrent,test-remote,test-wrapup,test-shutdown-server"
+            description="Run jUnit tests"/>
 
-    <target name="test-local" depends="jar">
+    <property name="junit.reports.dat" value="${junit.reports}/report/data"/>
+    <property name="junit.reports.html" value="${junit.reports}/report/html"/>
+
+    <target name="test-prepare">
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
         <mkdir dir="${junit.reports}"/>
+        <mkdir dir="${junit.reports.dat}"/>
+        <mkdir dir="${junit.reports.html}"/>
+    </target>
+
+    <target name="test-wrapup">
+        <echo message="--------------------------------"/>
+        <echo message="Creating reports, please wait"/>
+        <echo message="--------------------------------"/>
+        <junitreport todir="${junit.reports.dat}">
+            <fileset dir="${junit.reports.dat}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" styledir="${lib.tools}" todir="${junit.reports.html}"/>
+        </junitreport>
+    </target>
+
+    <target name="test-local" depends="jar">
 
         <echo message="------------------------------------------"/>
         <echo message="Running tests on a local database instance"/>
         <echo message="------------------------------------------"/>
 
-        <junit haltonfailure="yes" printsummary="yes"
-                showoutput="${junit.output}">
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
             <classpath refid="classpath.core"/>
             <formatter type="plain"/>
-            <test fork="yes" name="org.exist.xmldb.test.LocalTests"
-                    todir="${junit.reports}"></test>
-            <test fork="yes" name="org.exist.xupdate.test.AllTests" todir="${junit.reports}"/>
-            <test fork="yes" name="org.exist.xquery.test.AllTests" todir="${junit.reports}"/>
+            <formatter type="xml"/>
+            <test fork="yes" name="org.exist.xmldb.test.LocalTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xupdate.test.AllTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xquery.test.AllTests" todir="${junit.reports.dat}"/>
 			<!-- Execute all other tests except those that have to be called
 				 manually.
 		    -->
-            <batchtest fork="yes" todir="${junit.reports}">
+            <batchtest fork="yes" todir="${junit.reports.dat}">
                 <fileset dir="${src}">
                     <include name="**/test/*.java"/>
                     <exclude name="**/xmldb/test/*.java"/>
@@ -330,7 +351,7 @@
             </batchtest>
         </junit>
     </target>
-	
+
     <target name="test-concurrent">
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
@@ -338,18 +359,16 @@
         <echo message="-----------------"/>
         <echo message="Concurrency tests"/>
         <echo message="-----------------"/>
-        <junit haltonfailure="yes" printsummary="on"
-                showoutput="${junit.output}" fork="no">
+        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="no">
             <classpath refid="classpath.core"/>
             <formatter type="plain"/>
-            <test name="org.exist.xmldb.test.concurrent.AllTests"
-                    todir="${junit.reports}"/>
+            <formatter type="xml"/>
+            <test name="org.exist.xmldb.test.concurrent.AllTests" todir="${junit.reports.dat}"/>
         </junit>
     </target>
-	
+
     <target name="start-server">
-        <echo>Starting stand-alone database server...
-		</echo>
+        <echo>Starting stand-alone database server...</echo>
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
@@ -360,29 +379,32 @@
         </java>
         <echo>Server started.</echo>
     </target>
-	
+
     <target name="test-remote" depends="jar,start-server">
 		<!-- Register Ant tasks for eXist -->
-        <typedef resource="org/exist/ant/antlib.xml"
-                uri="http://exist-db.org/ant">
+<!--        <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
             <classpath refid="classpath.core"/>
-        </typedef>
+        </typedef> --> 
         <mkdir dir="${junit.reports}"/>
         <echo message="--------------------------------"/>
         <echo message="Running tests on remote database"/>
         <echo message="--------------------------------"/>
-        <junit haltonfailure="yes" printsummary="yes"
-                showoutput="${junit.output}">
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
             <classpath refid="classpath.core"/>
             <formatter type="plain"/>
-            <test fork="yes" name="org.exist.xmlrpc.test.XmlRpcTest"
-                    todir="${junit.reports}"></test>
-            <test fork="yes" name="org.exist.xmldb.test.RemoteTests"
-                    todir="${junit.reports}"></test>
-            <test fork="yes" name="org.exist.http.test.RESTServiceTest"
-                    todir="${junit.reports}"/>
+            <formatter type="xml"/>
+            <test fork="yes" name="org.exist.xmlrpc.test.XmlRpcTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xmldb.test.RemoteTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.http.test.RESTServiceTest" todir="${junit.reports.dat}"/>
         </junit>
-		
+    </target>
+    
+    <target name="test-shutdown-server">
+		<!-- Register Ant tasks for eXist -->
+        <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
+            <classpath refid="classpath.core"/>
+        </typedef>
+
         <echo message="Shutting down the server ..."/>
         <xmldb:shutdown xmlns:xmldb="http://exist-db.org/ant"
                 uri="xmldb:exist://localhost:8088/xmlrpc/db"
@@ -417,7 +439,7 @@
         </javadoc>
         <delete dir="${build.src}"/>
     </target>
-	
+
     <target name="copy-xapi" if="has.xmldb.src">
         <echo message="Copying XML:DB API sources ..."/>
         <copy todir="${build.src}">
@@ -744,7 +766,7 @@
     <target name="commandline-installer">
         <ant antfile="build.xml" dir="tools/izpack"/>
     </target>
-	
+
     <target depends="all,samples,javadocs" name="prepare-installer">
         <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
                 classname="com.izforge.izpack.ant.IzPackTask"/>
@@ -754,7 +776,7 @@
         <touch file="webapp/WEB-INF/logs/xmldb.log"/>
         <copy file="installer/install.xml.tmpl" tofile="installer/install.xml" filtering="true"/>
     </target>
-	
+
     <target depends="prepare-installer" name="installer" description="Create installer">
         <echo message="Calling IzPack to create installer ..."/>
         <izpack input="installer/install.xml"
@@ -762,7 +784,7 @@
                 basedir="." izPackDir="${izpack.dir}"
                 installerType="standard"/>
     </target>
-	
+
     <target depends="prepare-installer,commandline-installer"
             name="snapshot-installer" description="Create snapshot installer">
         <echo message="Calling IzPack to create installer ..."/>
@@ -777,7 +799,7 @@
             </manifest>
         </jar>
     </target>
-	
+
     <target depends="prepare-installer" name="cvs-build">
         <echo message="Calling IzPack to create installer ..."/>
         <izpack input="installer/install.xml"
@@ -843,12 +865,12 @@
             <replacefilter token="apps/applications.xml" value="${demo.host}/apps/applications.xml"/>
         </replace>
     </target>
-	
+
     <target depends="prepare-docs" name="docs">
         <mkdir dir="${build.docs.html}"/>
-	
+
         <delete dir="${build}/work"/>
-	
+
         <echo message="Calling Cocoon ..."/>
 
         <cocoon verbose="true"
@@ -911,15 +933,15 @@
     <target name="thirdparty" depends="jar">
         <ant antfile="build.xml" dir="thirdparty/jboss"/>
     </target>
-	
+
     <target name="wrapper" depends="jar">
         <ant antfile="build.xml" dir="tools/wrapper"/>
     </target>
-	
+
     <target name="extension-modules" depends="jar">
         <ant antfile="build.xml" dir="extensions/modules"/>
     </target>
-	
+
     <target name="cleandocs">
         <replaceregexp>
             <regexp pattern="/\*.*Description of the Method.*\*/"/>
@@ -929,7 +951,7 @@
             </fileset>
         </replaceregexp>
     </target>
-	
+
     <target name="demoserver">
         <echo message="Adjusting links ..."/>
         <property name="host" value="http://exist-db.org"/>
@@ -954,7 +976,7 @@
             <replacefilter token="../documentation.xml" value="${host}/documentation.html"/>
             <replacefilter token="../api/index.html" value="${host}/api/index.html"/>
         </replace>
-		
+
         <replace dir="webapp/admin" summary="true">
             <include name="admin.xql"/>
             <replacefilter token='&lt;a href="..">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
