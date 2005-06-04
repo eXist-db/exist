@@ -283,7 +283,7 @@
     </target>
 
     <!-- ================================================================== -->
-    <!-- Build all                                                                                                                                        -->
+    <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all" depends="jar,wrapper,extension-modules" description="Build all"/>
 
@@ -299,9 +299,11 @@
             depends="test-prepare,test-local,test-concurrent,test-remote,test-wrapup,test-shutdown-server"
             description="Run jUnit tests"/>
 
+    <!-- Extra jUnit properties -->
     <property name="junit.reports.dat" value="${junit.reports}/report/data"/>
     <property name="junit.reports.html" value="${junit.reports}/report/html"/>
 
+    <!-- Seperate target for creating folders -->
     <target name="test-prepare">
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
@@ -311,10 +313,11 @@
         <mkdir dir="${junit.reports.html}"/>
     </target>
 
+    <!-- Generate HTML reports -->
     <target name="test-wrapup">
-        <echo message="--------------------------------"/>
+        <echo message="-----------------------------"/>
         <echo message="Creating reports, please wait"/>
-        <echo message="--------------------------------"/>
+        <echo message="-----------------------------"/>
         <junitreport todir="${junit.reports.dat}">
             <fileset dir="${junit.reports.dat}">
                 <include name="TEST-*.xml"/>
@@ -323,8 +326,8 @@
         </junitreport>
     </target>
 
+    <!-- Test set 1 : local database instance -->
     <target name="test-local" depends="jar">
-
         <echo message="------------------------------------------"/>
         <echo message="Running tests on a local database instance"/>
         <echo message="------------------------------------------"/>
@@ -336,9 +339,8 @@
             <test fork="yes" name="org.exist.xmldb.test.LocalTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xupdate.test.AllTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.test.AllTests" todir="${junit.reports.dat}"/>
-			<!-- Execute all other tests except those that have to be called
-				 manually.
-		    -->
+            
+			<!-- Execute all other tests except those that have to be called manually.   -->
             <batchtest fork="yes" todir="${junit.reports.dat}">
                 <fileset dir="${src}">
                     <include name="**/test/*.java"/>
@@ -352,6 +354,7 @@
         </junit>
     </target>
 
+    <!-- Test set 2 : concurrent tests -->
     <target name="test-concurrent">
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
@@ -367,8 +370,11 @@
         </junit>
     </target>
 
+    <!-- Helper target for starting server -->
     <target name="start-server">
-        <echo>Starting stand-alone database server...</echo>
+        <echo message="---------------------------------------"/>
+        <echo message="Starting stand-alone database server..."/>
+        <echo message="---------------------------------------"/>
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
@@ -380,11 +386,8 @@
         <echo>Server started.</echo>
     </target>
 
+    <!-- Test set 3 : tests on remote server -->
     <target name="test-remote" depends="jar,start-server">
-		<!-- Register Ant tasks for eXist -->
-<!--        <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
-            <classpath refid="classpath.core"/>
-        </typedef> --> 
         <mkdir dir="${junit.reports}"/>
         <echo message="--------------------------------"/>
         <echo message="Running tests on remote database"/>
@@ -398,7 +401,10 @@
             <test fork="yes" name="org.exist.http.test.RESTServiceTest" todir="${junit.reports.dat}"/>
         </junit>
     </target>
-    
+
+    <!-- Helper target for stopping server -->
+    <!-- This target must be called after all tests because it shutsdown -->
+    <!-- the current Jvm -->
     <target name="test-shutdown-server">
 		<!-- Register Ant tasks for eXist -->
         <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
