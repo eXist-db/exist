@@ -43,7 +43,7 @@ class RemoveAppendAction extends Action {
 	
 	public RemoveAppendAction(String collectionPath, String resourceName, String[] wordList) {
 		super(collectionPath, resourceName);
-		xmlGenerator = new XMLGenerator(1, 5, 1, wordList);
+		xmlGenerator = new XMLGenerator(1, 5, 1, wordList, false);
 	}
 			
 	/* (non-Javadoc)
