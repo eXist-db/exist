@@ -35,19 +35,21 @@ public class XMLGenerator {
 	int attrCnt;
 	int depth;
 	Random random;
-	
-	public XMLGenerator(int elementCnt, int attrCnt, int depth, String[] words) {
+	boolean useNamespaces = false;
+    
+	public XMLGenerator(int elementCnt, int attrCnt, int depth, String[] words, boolean useNamespaces) {
 		this.elementCnt = elementCnt;
 		this.attrCnt = attrCnt;
 		this.depth = depth;
 		this.words = words;
+        this.useNamespaces = useNamespaces;
 		this.random = new Random(System.currentTimeMillis());
 	}
 	
 	public void generateXML(Writer writer) throws IOException {
 		writer.write("<?xml version=\"1.0\"?>");
 		writer.write("<ROOT-ELEMENT>");
-		
+        
 		for(int i = 0; i < elementCnt; i++) {
 			writeElement(writer, 0);
 		}
@@ -62,13 +64,24 @@ public class XMLGenerator {
 	}
 	
 	protected void writeElement(Writer writer, int level) throws IOException {
-		writer.write("<ELEMENT");
+        writer.write('<');
+        if (useNamespaces) {
+            writer.write("t:");
+        }
+		writer.write("ELEMENT");
 		if(level > 0) {
 			writer.write('-');
 			writer.write(Integer.toString(level));
 		}
+        if (useNamespaces) {
+            writer.write(" xmlns:t=\"urn:test\"");
+        }
 		for(int i = 0; i < attrCnt; i++) {
-			writer.write(" attribute-");
+            writer.write(' ');
+            if (useNamespaces) {
+                writer.write("t:");
+            }
+			writer.write("attribute-");
 			writer.write(Integer.toString(i));
 			writer.write("=\"");
 			writer.write(generateText(1));
@@ -79,7 +92,10 @@ public class XMLGenerator {
 			writeElement(writer, level + 1);
 		else
 			writer.write(generateText(20));
-		writer.write("\n</ELEMENT");
+		writer.write("\n</");
+        if (useNamespaces)
+            writer.write("t:");
+        writer.write("ELEMENT");
 		if(level > 0) {
 			writer.write('-');
 			writer.write(Integer.toString(level));
