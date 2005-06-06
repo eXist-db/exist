@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import java.util.Properties;
 
 import javax.swing.JFrame;
@@ -180,7 +181,8 @@ public class Backup {
 
 		// get resources and permissions
 		String[] resources = current.listResources();
-		
+		Arrays.sort(resources);
+        
 		String cname = current.getName();
 		if (cname.charAt(0) != '/')
 			cname = '/' + cname;
