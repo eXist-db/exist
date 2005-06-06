@@ -148,6 +148,10 @@ public class BFile extends BTree {
             LOG.debug("key is null");
             return -1;
         }
+        if (key.getLength() > fileHeader.getWorkSize()) {
+            LOG.warn("Key length exceeds page size! Skipping key ...");
+            return -1;
+        }
         try {
             try {
                 // check if key exists already
@@ -534,6 +538,10 @@ public class BFile extends BTree {
      */
     public long put(Value key, byte[] data, boolean overwrite)
             throws ReadOnlyException {
+        if (key.getLength() > fileHeader.getWorkSize()) {
+            LOG.warn("Key length exceeds page size! Skipping key ...");
+            return -1;
+        }
         FastByteBuffer buf = new FastByteBuffer(5);
         buf.append(data);
         return put(key, buf, overwrite);
@@ -566,6 +574,10 @@ public class BFile extends BTree {
             throws ReadOnlyException {
         if (key == null) {
             LOG.debug("key is null");
+            return -1;
+        }
+        if (key.getLength() > fileHeader.getWorkSize()) {
+            LOG.warn("Key length exceeds page size! Skipping key ...");
             return -1;
         }
         try {
