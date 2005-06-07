@@ -119,7 +119,7 @@ public class XIncludeFilter implements Receiver {
 	 * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.QName)
 	 */
 	public void endElement(QName qname) throws SAXException {
-		if(!qname.getNamespaceURI().equals(XINCLUDE_NS))
+		if( !XINCLUDE_NS.equals( qname.getNamespaceURI() ) )
 			receiver.endElement(qname);
 	}
 	
