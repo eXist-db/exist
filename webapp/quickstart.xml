@@ -499,7 +499,7 @@ jar xfv ../exist.war]]></screen>
             </screenshot>
             
             <para>In the default installation, the WebDAV server listens on 
-            <ulink url="http://localhost:8080/exist/webdav">http://localhost:8080/exist/webdav</ulink>.
+            <ulink url="http://localhost:8080/exist/webdav/db">http://localhost:8080/exist/webdav/db</ulink>.
             The implementation is not yet complete. In particular, the LOCK, UNLOCK and
             PROPSET methods are missing. However, most WebDAV clients should work
             well.</para>
