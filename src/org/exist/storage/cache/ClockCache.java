@@ -22,6 +22,7 @@
  */
 package org.exist.storage.cache;
 
+import org.exist.storage.CacheManager;
 import org.exist.util.hashtable.Long2ObjectHashMap;
 
 /**
@@ -195,4 +196,18 @@ public class ClockCache implements Cache {
 	 */
 	public void setFileName(String fileName) {
 	}
+
+    public double getGrowthFactor() {
+        return 1;
+    }
+
+    public void setCacheManager(CacheManager manager) {
+    }
+
+    public void resize(int newSize) {
+    }
+
+    public int getLoad() {
+        return 0;
+    }
 }

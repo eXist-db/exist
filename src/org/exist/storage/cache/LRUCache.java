@@ -22,8 +22,8 @@
  */
 package org.exist.storage.cache;
 
+import org.exist.storage.CacheManager;
 import org.exist.util.hashtable.SequencedLongHashMap;
-import org.exist.util.sanity.SanityCheck;
 
 /**
  * A simple cache implementing a Last Recently Used policy. This
@@ -35,17 +35,28 @@ import org.exist.util.sanity.SanityCheck;
  * @author wolf
  */
 public class LRUCache implements Cache {
-
+    
 	private int max;
 	private SequencedLongHashMap map;
 	
 	private int hits = 0;
 	private int misses = 0;
 	
+    private int hitsOld = -1;
+    
+    private int replacements = 0;
+    
 	private String fileName = null;;
 	
-	public LRUCache(int size) {
+    private double growthFactor;
+    private int growthThreshold;
+    
+    private CacheManager cacheManager = null;
+    
+	public LRUCache(int size, double growthFactor, int growthThreshold) {
 		this.max = size;
+        this.growthFactor = growthFactor;
+        this.growthThreshold = growthThreshold;
 		this.map = new SequencedLongHashMap(size);
 	}
 	
@@ -60,9 +71,6 @@ public class LRUCache implements Cache {
 	 * @see org.exist.storage.cache.Cache#add(org.exist.storage.cache.Cacheable)
 	 */
 	public void add(Cacheable item) {
-        String clazz = item.getClass().getName();
-        if(clazz.startsWith("org.exist.storage.store.BFile$OverflowPage"))
-            SanityCheck.TRACE(clazz);
 		if(map.size() == max) {
 			removeOne(item);
 		}
@@ -161,6 +169,10 @@ public class LRUCache implements Cache {
 		this.fileName = fileName;
 	}
 	
+    public SequencedLongHashMap.Entry getFirst() {
+        return map.getFirstEntry();
+    }
+    
 	private final void removeOne(Cacheable item) {
 		boolean removed = false;
 		SequencedLongHashMap.Entry next = map.getFirstEntry();
@@ -178,5 +190,59 @@ public class LRUCache implements Cache {
 				}
 			}
 		} while(!removed);
+        if (++replacements > growthThreshold) {
+            cacheManager.requestMem(this);
+            replacements = 0;
+        }
 	}
+
+    /* (non-Javadoc)
+     * @see org.exist.storage.cache.Cache#getGrowthFactor()
+     */
+    public double getGrowthFactor() {
+        return growthFactor;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.storage.cache.Cache#setCacheManager(org.exist.storage.CacheManager)
+     */
+    public void setCacheManager(CacheManager manager) {
+        this.cacheManager = manager;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.storage.cache.Cache#resize(int)
+     */
+    public void resize(int newSize) {
+        if (newSize < max) {
+            shrink(newSize);
+        } else {
+            LOG.debug("Growing cache from " + max + " to " + newSize);
+            SequencedLongHashMap newMap = new SequencedLongHashMap(newSize);
+            SequencedLongHashMap.Entry next = map.getFirstEntry();
+            Cacheable cacheable;
+            while(next != null) {
+                cacheable = (Cacheable)next.getValue();
+                newMap.put(cacheable.getKey(), cacheable);
+                next = next.getNext();
+            }
+            this.max = newSize;
+            this.map = newMap;
+        }
+        this.replacements = 0;
+    }
+    
+    private void shrink(int newSize) {
+        flush();
+        this.map = new SequencedLongHashMap(newSize);
+        this.max = newSize;
+    }
+
+    public int getLoad() {
+        if (hitsOld == -1)
+            return -1;
+        int load = hits - hitsOld;
+        hitsOld = hits;
+        return load;
+    }
 }

@@ -36,6 +36,7 @@ import org.dbxml.core.filer.BTreeCallback;
 import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.storage.BufferStats;
+import org.exist.storage.CacheManager;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
@@ -102,13 +103,17 @@ public class BFile extends BTree {
 
     public int fixedKeyLen = -1;
 
-    public BFile(File file, int btreeBuffers, int dataBuffers) {
-        super(file, btreeBuffers);
+    protected int maxValueSize;
+    
+    public BFile(File file, CacheManager cacheManager) {
+        super(cacheManager, file, 100);
         fileHeader = (BFileHeader) getFileHeader();
-        dataCache = new LRUCache(dataBuffers);
+        dataCache = new LRUCache(64, 1.5, 500);
         dataCache.setFileName(getFile().getName());
+        cacheManager.registerCache(dataCache);
         minFree = PAGE_MIN_FREE;
         lock = new ReentrantReadWriteLock(file.getName());
+        maxValueSize = fileHeader.getWorkSize() / 2;
     }
 
     /**
@@ -708,7 +713,7 @@ public class BFile extends BTree {
             ReadOnlyException {
         final int vlen = value.size();
         // does value fit into a single page?
-        if (6 + vlen > fileHeader.getWorkSize()) {
+        if (6 + vlen > maxValueSize) {
             OverflowPage page = new OverflowPage();
             byte[] data = new byte[vlen + 6];
             page.getPageHeader().setDataLength(vlen + 6);
@@ -871,7 +876,7 @@ public class BFile extends BTree {
                 ByteConversion.intToByte(valueLen, data, 2);
                 // save data
                 value.copyTo(data, 6);
-                //System.arraycopy(value, 0, data, 6, value.length);
+
                 page.setData(data);
                 return p;
             }
@@ -926,14 +931,14 @@ public class BFile extends BTree {
         	LOG.debug(getFile().getName() + ": " + freeList.toString());
         }
         
-        public void read(java.io.RandomAccessFile raf) throws IOException {
-            super.read(raf);
-            freeList.read(raf);
+        public int read(byte[] buf) throws IOException {
+            int offset = super.read(buf);
+            return freeList.read(buf, offset);
         }
 
-        public void write(java.io.RandomAccessFile raf) throws IOException {
-            super.write(raf);
-            freeList.write(raf);
+        public int write(byte[] buf) throws IOException {
+            int offset = super.write(buf);
+            return freeList.write(buf, offset);
         }
     }
 
@@ -1498,7 +1503,7 @@ public class BFile extends BTree {
                         firstPage.getPageHeader().setLastInChain(
                                 page.getPageNum());
                     } else
-                        firstPage.getPageHeader().setLastInChain(0L);
+                        firstPage.getPageHeader().setLastInChain(0L);                    
                     firstPage.setDirty(true);
                     dataCache.add(firstPage, 3);
                 }

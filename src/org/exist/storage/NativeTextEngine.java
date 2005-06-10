@@ -103,26 +103,20 @@ public class NativeTextEngine extends TextSearchEngine {
 	protected InvertedIndex invIdx;
 	protected boolean useCompression = false;
 
-	public NativeTextEngine(DBBroker broker, Configuration config, int buffers) {
+	public NativeTextEngine(DBBroker broker, Configuration config) {
 		super(broker, config);
 		String dataDir;
 		String temp;
 		boolean compress = false;
 		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)
 			dataDir = "data";
-		int indexBuffers, dataBuffers;
-		if ((indexBuffers = config.getInteger("db-connection.words.buffers")) < 0) {
-			indexBuffers = buffers * 14;
-			dataBuffers = buffers * 16;
-		} else
-			dataBuffers = indexBuffers;
 		if ((temp = (String) config.getProperty("db-connection.compress")) != null)
 			compress = temp.equals("true");
 		String pathSep = System.getProperty("file.separator", "/");
 		try {
 			if ((dbWords = (BFile) config.getProperty("db-connection.words")) == null) {
 				dbWords = new BFile(new File(dataDir + pathSep + "words.dbx"),
-						indexBuffers, dataBuffers);
+                        broker.getBrokerPool().getCacheManager());
 				if (!dbWords.exists())
 					dbWords.create();
 				else

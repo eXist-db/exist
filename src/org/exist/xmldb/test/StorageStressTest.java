@@ -23,7 +23,9 @@ package org.exist.xmldb.test;
 
 import java.io.File;
 
-import org.exist.xmldb.RemoteCollection;
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
+
 import org.exist.xmldb.test.concurrent.DBUtils;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -33,14 +35,11 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
 public class StorageStressTest extends TestCase {
 
-//    protected final static String URI = "xmldb:exist://localhost:8088/xmlrpc";
+    protected final static String URI = "xmldb:exist://localhost:8088/xmlrpc";
     
-    protected final static String URI = "xmldb:exist://";
+//    protected final static String URI = "xmldb:exist://";
     
     public final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
 
@@ -50,7 +49,7 @@ public class StorageStressTest extends TestCase {
     
     public void testStore() throws Exception {
         String[] wordList = DBUtils.wordList(collection);
-        for (int i = 0; i < 1250; i++) {
+        for (int i = 0; i < 50000; i++) {
             File f = DBUtils.generateXMLFile(50, 1, wordList, false);
             System.out.println("Storing file: " + f.getName() + "; size: " + (f.length() / 1024) + "kB");
             XMLResource res = (XMLResource)
@@ -84,7 +83,7 @@ public class StorageStressTest extends TestCase {
         }
         
         File f = new File("samples/shakespeare/hamlet.xml");
-        Resource res = (Resource) collection.createResource("test.xml", "XMLResource");
+        Resource res = (Resource) collection.createResource("test1.xml", "XMLResource");
         res.setContent(f);
         collection.storeResource(res);
     }

@@ -23,6 +23,7 @@
 package org.exist.storage.cache;
 
 import org.apache.log4j.Logger;
+import org.exist.storage.CacheManager;
 
 /**
  * Base interface for all cache implementations that are used for
@@ -72,6 +73,12 @@ public interface Cache {
 	 */
 	public void remove(Cacheable item);
 	
+    /**
+     * Returns true if the cache contains any dirty
+     * items that need to be written to disk.
+     * 
+     * @return
+     */
 	public boolean hasDirtyItems();
 	
 	/**
@@ -90,6 +97,36 @@ public interface Cache {
 	 */
 	public int getBuffers();
 	
+    /**
+     * Returns the factor by which the cache should grow
+     * if it can be resized. The returned factor f will be
+     * between 0 and 2. A value smaller or equal to 1 means the cache
+     * can't grow, 1.5 means it grows by 50 percent. A cache with
+     * growth factor &lt;= 1.0 can also not be shrinked.
+     * 
+     * A cache is resized by the {@link CacheManager}.
+     * 
+     * @return
+     */
+    public double getGrowthFactor();
+    
+    /**
+     * Resize the cache. This method is called by the
+     * {@link CacheManager}. The newSize parameter
+     * can either be larger or smaller than the current
+     * cache size.
+     * 
+     * @param newSize the new size of the cache.
+     */
+    public void resize(int newSize);
+    
+    /**
+     * Set the CacheManager object that controls this cache.
+     * 
+     * @param manager
+     */
+    public void setCacheManager(CacheManager manager);
+    
 	/**
 	 * Get the number of buffers currently used.
 	 * 
@@ -112,6 +149,8 @@ public interface Cache {
 	 */
 	public int getFails();
 	
+    public int getLoad();
+    
 	public void setFileName(String fileName);
 	
 	public final static Logger LOG = Logger.getLogger(Cache.class);

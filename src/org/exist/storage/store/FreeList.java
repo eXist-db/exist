@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import org.apache.log4j.Logger;
+import org.exist.util.ByteConversion;
 
 
 /**
@@ -149,15 +150,19 @@ public class FreeList {
 	 * @param raf
 	 * @throws IOException
 	 */
-	public void read(RandomAccessFile raf) throws IOException {
-		final int fsize = raf.readInt();
+	public int read(byte[] buf, int offset) throws IOException {
+		final int fsize = ByteConversion.byteToInt(buf, offset);
+        offset += 4;
         long page;
         int space;
         for (int i = 0; i < fsize; i++) {
-            page = raf.readLong();
-            space = raf.readInt();
+            page = ByteConversion.byteToLong(buf, offset);
+            offset += 8;
+            space = ByteConversion.byteToInt(buf, offset);
+            offset += 4;
             add(new FreeSpace(page, space));
         }
+        return offset;
 	}
 	
 	/**
@@ -172,24 +177,28 @@ public class FreeList {
 	 * @param raf
 	 * @throws IOException
 	 */
-	public void write(RandomAccessFile raf) throws IOException {
+	public int write(byte[] buf, int offset) throws IOException {
 //		 does the free-space list fit into the file header?
         int skip = 0;
         if (size > MAX_FREE_LIST_LEN) {
-            LOG.warn("removing " + (size - MAX_FREE_LIST_LEN)
-                    + " free pages.");
+//            LOG.warn("removing " + (size - MAX_FREE_LIST_LEN)
+//                    + " free pages.");
             // no: remove some smaller entries to make it fit
             skip = size - MAX_FREE_LIST_LEN;
         }
-        raf.writeInt(size - skip);
+        ByteConversion.intToByte(size - skip, buf, offset);
+        offset += 4;
         FreeSpace next = header;
         while(next != null) {
         	if(skip == 0) {
-        		raf.writeLong(next.page);
-                raf.writeInt(next.free);
+                ByteConversion.longToByte(next.page, buf, offset);
+                offset += 8;
+                ByteConversion.intToByte(next.free, buf, offset);
+                offset += 4;
         	} else
         		--skip;
 			next = next.next;
 		}
+        return offset;
 	}
 }
