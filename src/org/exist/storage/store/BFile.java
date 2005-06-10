@@ -1503,7 +1503,11 @@ public class BFile extends BTree {
                         firstPage.getPageHeader().setLastInChain(
                                 page.getPageNum());
                     } else
-                        firstPage.getPageHeader().setLastInChain(0L);                    
+                        firstPage.getPageHeader().setLastInChain(0L);
+                    // adjust length field in first page
+                    ByteConversion.intToByte(
+                            firstPage.getPageHeader().getDataLength() - 6, firstPage
+                                    .getData(), 2);
                     firstPage.setDirty(true);
                     dataCache.add(firstPage, 3);
                 }
