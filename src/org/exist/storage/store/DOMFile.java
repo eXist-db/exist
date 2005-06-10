@@ -39,6 +39,7 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.BufferStats;
+import org.exist.storage.CacheManager;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.Signatures;
 import org.exist.storage.cache.Cache;
@@ -117,18 +118,19 @@ public class DOMFile extends BTree implements Lockable {
 
     private DocumentImpl currentDocument = null;
     
-    protected DOMFile(int buffers, int dataBuffers) {
-        super(buffers);
+    protected DOMFile(CacheManager cacheManager) {
+        super(cacheManager, 1000);
         lock = new ReentrantReadWriteLock("dom.dbx");
         fileHeader = (BTreeFileHeader) getFileHeader();
         fileHeader.setPageCount(0);
         fileHeader.setTotalCount(0);
-        dataCache = new LRUCache(dataBuffers);
+        dataCache = new LRUCache(256, 0.0, 100);
         dataCache.setFileName("dom.dbx");
+        cacheManager.registerCache(dataCache);
     }
 
-    public DOMFile(File file, int buffers, int dataBuffers) {
-        this(buffers, dataBuffers);
+    public DOMFile(File file, CacheManager cacheManager) {
+        this(cacheManager);
         setFile(file);
     }
 

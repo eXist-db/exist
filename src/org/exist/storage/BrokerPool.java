@@ -218,6 +218,8 @@ public class BrokerPool {
 	
 	private CollectionConfigurationManager collectionConfig = null;
 	
+    private CacheManager cacheManager;
+    
 	/**
 	 * SyncDaemon is a daemon thread which periodically triggers a cache sync.
 	 */
@@ -280,10 +282,12 @@ public class BrokerPool {
 			LOG.info("Max. wait during shutdown: " + maxShutdownWait);
 		}
 		LOG.info("Instances: min = " + min + "; max = " + max + "; sync = " + syncPeriod);
+        
 		conf = config;
+        cacheManager = new CacheManager(config);
 		xqueryCache = new XQueryPool(conf);
 		monitor = new XQueryMonitor();
-		collectionsCache = new CollectionCache(this, COLLECTION_BUFFER_SIZE);
+		collectionsCache = new CollectionCache(this, COLLECTION_BUFFER_SIZE, 20);
 		xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
 		syncDaemon = new SyncDaemon();
 		initialize();
@@ -329,6 +333,10 @@ public class BrokerPool {
 		return collectionsCache;
 	}
 	
+    public CacheManager getCacheManager() {
+        return cacheManager;
+    }
+    
 	public XMLReaderPool getParserPool() {
 		return xmlReaderPool;
 	}
@@ -520,6 +528,9 @@ public class BrokerPool {
 		broker.sync(syncEvent);
 		broker.setUser(SecurityManager.SYSTEM_USER);
 		broker.cleanUp();
+        
+        if (syncEvent == Sync.MAJOR_SYNC)
+            cacheManager.checkCaches();
 	}
 
 	public synchronized void shutdown() {

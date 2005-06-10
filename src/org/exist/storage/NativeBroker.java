@@ -161,7 +161,6 @@ public class NativeBroker extends DBBroker {
 	public NativeBroker(BrokerPool pool, Configuration config) throws EXistException {
 		super(pool, config);
 		String dataDir;
-		int buffers, cacheSize;
 		String temp;
 		boolean compress = false;
 		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)
@@ -169,12 +168,6 @@ public class NativeBroker extends DBBroker {
 
 		if ((pageSize = config.getInteger("db-connection.page-size")) < 0)
 			pageSize = 4096;
-		if ((buffers = config.getInteger("db-connection.buffers")) < 0)
-			buffers = BUFFERS;
-		if ((cacheSize = config.getInteger("db-connection.cache-size")) > 0) {
-			long totalMem = cacheSize * 1024 * 1024;
-			buffers = (int) (totalMem / pageSize / 64);
-		}
 
 		if ((defaultIndexDepth = config.getInteger("indexer.index-depth")) < 0)
 			defaultIndexDepth = 1;
@@ -183,23 +176,11 @@ public class NativeBroker extends DBBroker {
 		
 		Paged.setPageSize(pageSize);
 		String pathSep = System.getProperty("file.separator", "/");
-		int indexBuffers, dataBuffers;
 		try {
 			if ((elementsDb = (BFile) config.getProperty("db-connection.elements"))
 				== null) {
-				if ((indexBuffers = config.getInteger("db-connection.elements.buffers"))
-					< 0) {
-					indexBuffers = buffers * 4;
-					dataBuffers = buffers * 10;
-				} else
-					dataBuffers = indexBuffers >> 2;
-
-				LOG.debug(
-					"elements index buffer size: " + indexBuffers + "; " + dataBuffers);
 				elementsDb =
-					new BFile(new File(dataDir + pathSep + "elements.dbx"),
-						indexBuffers,
-						dataBuffers);
+					new BFile(new File(dataDir + pathSep + "elements.dbx"), pool.getCacheManager());
 				if (!elementsDb.exists()) {
 					LOG.info("creating elements.dbx");
 					elementsDb.create();
@@ -210,25 +191,16 @@ public class NativeBroker extends DBBroker {
 				readOnly = elementsDb.isReadOnly();
 			}
 
-			valuesDb = createValueIndexFile(config, dataDir, VALUES_DB_FILE, buffers, "db-connection.values" );
+			valuesDb = createValueIndexFile(config, dataDir, VALUES_DB_FILE, "db-connection.values" );
 			if ( qnameValueIndexation ) {
 				if ( VALUES_DB_QNAME_FILE != VALUES_DB_FILE ) 
-					valuesDbQname = createValueIndexFile(config, dataDir, VALUES_DB_QNAME_FILE, buffers, "db-connection2.values" );
+					valuesDbQname = createValueIndexFile(config, dataDir, VALUES_DB_QNAME_FILE, "db-connection2.values" );
 				else
 					valuesDbQname = valuesDb;
 			}
 			if ((domDb = (DOMFile) config.getProperty("db-connection.dom")) == null) {
-				if (config.hasProperty("db-connection.buffers")) {
-					indexBuffers = buffers;
-					dataBuffers = 512;
-				} else {
-					indexBuffers = buffers * 4;
-					dataBuffers = buffers * 4;
-				}
-				LOG.debug("page buffer size = " + indexBuffers + "; " + dataBuffers);
 				domDb =
-					new DOMFile(new File(dataDir + pathSep + "dom.dbx"),
-						indexBuffers, dataBuffers);
+					new DOMFile(new File(dataDir + pathSep + "dom.dbx"), pool.getCacheManager());
 				if (!domDb.exists()) {
 					LOG.info("creating dom.dbx");
 					domDb.create();
@@ -243,22 +215,8 @@ public class NativeBroker extends DBBroker {
 			if ((collectionsDb =
 				(CollectionStore) config.getProperty("db-connection.collections"))
 				== null) {
-				if ((indexBuffers =
-					config.getInteger("db-connection.collections.buffers"))
-					< 0) {
-					indexBuffers = buffers * 6;
-					dataBuffers = buffers * 6;
-				} else
-					dataBuffers = indexBuffers;
-				LOG.debug(
-					"collections index buffer size: "
-						+ indexBuffers
-						+ "; "
-						+ dataBuffers);
 				collectionsDb =
-					new CollectionStore(new File(dataDir + pathSep + "collections.dbx"),
-						indexBuffers,
-						dataBuffers);
+					new CollectionStore(new File(dataDir + pathSep + "collections.dbx"), pool.getCacheManager());
 				if (!collectionsDb.exists()) {
 					LOG.info("creating collections.dbx");
 					collectionsDb.create();
@@ -274,7 +232,7 @@ public class NativeBroker extends DBBroker {
 				LOG.info("database runs in read-only mode");
 			
 			idxConf = (IndexSpec) config.getProperty("indexer.config");
-			textEngine = new NativeTextEngine(this, config, buffers);
+			textEngine = new NativeTextEngine(this, config);
 			valueIndex = new NativeValueIndex(this, valuesDb);
 			if ( qnameValueIndexation )
 				qnameValueIndex = new NativeValueIndexByQName(this, valuesDbQname);
@@ -300,23 +258,14 @@ public class NativeBroker extends DBBroker {
 	 * @throws DBException
 	 */
 	private BFile createValueIndexFile(Configuration config, String dataDir, 
-			String dataFile, int buffers, String propertyName ) throws DBException {
-		int indexBuffers;
-		int dataBuffers;
+			String dataFile, String propertyName ) throws DBException {
 		String pathSep = System.getProperty("file.separator", "/");
 		BFile valuesDb;
 		
 		if ((valuesDb = (BFile) config.getProperty(propertyName))
 		        == null) {
-		    indexBuffers = buffers * 4;
-		    dataBuffers = buffers * 10;
-		    
-		    LOG.debug(
-		            "values index buffer size: " + indexBuffers + "; " + dataBuffers);
 		    valuesDb =
-		        new BFile(new File(dataDir + pathSep + dataFile ),
-		                indexBuffers,
-		                dataBuffers);
+		        new BFile(new File(dataDir + pathSep + dataFile ), pool.getCacheManager());
 		    if (!valuesDb.exists()) {
 		        LOG.info("creating " + VALUES_DB_FILE );
 		        valuesDb.create();
@@ -2696,7 +2645,7 @@ public class NativeBroker extends DBBroker {
 	    final IndexSpec idxSpec = 
 		    doc.getCollection().getIdxConf(this);
 		
-		int indexType = ((ElementImpl) node).getIndexType();
+		final int indexType = ((ElementImpl) node).getIndexType();
 		tempProxy.setIndexType(indexType);
 		
 		node.getQName().setNameType(ElementValue.ELEMENT);

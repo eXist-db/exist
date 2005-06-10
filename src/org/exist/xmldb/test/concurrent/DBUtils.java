@@ -24,6 +24,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -154,11 +155,17 @@ public class DBUtils {
 	public static String[] wordList(Collection root) throws XMLDBException {
 		IndexQueryService service = (IndexQueryService)
 		root.getService("IndexQueryService", "1.0");
-		Occurrences[] terms = service.scanIndexTerms("a", "z", true);
-		String[] words = new String[terms.length];
-		for(int i = 0; i < terms.length; i++) {
-			words[i] = terms[i].getTerm().toString();
-		}
+        ArrayList list = new ArrayList();
+        String alphas = "abcdefghijklmnopqrstuvwxyz";
+        for (int i = 0; i < alphas.length(); i++) {
+            String s = alphas.substring(i, i + 1);
+            Occurrences[] terms = service.scanIndexTerms(s, s + 'z', true);
+    		for(int j = 0; j < terms.length; j++) {
+    			list.add( terms[j].getTerm().toString());
+    		}
+        }
+        String[] words = new String[list.size()];
+        list.toArray(words);
 		System.out.println("Size of the word list: " + words.length);
 		return words;
 	}

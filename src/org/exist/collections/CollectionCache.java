@@ -4,6 +4,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRDCache;
 import org.exist.util.Lock;
+import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.util.hashtable.Object2LongHashMap;
 
 /**
@@ -19,9 +20,9 @@ public class CollectionCache extends LRDCache {
 	private Object2LongHashMap names;
 	private BrokerPool pool;
 	
-	public CollectionCache(BrokerPool pool, int blockBuffers) {
-		super(blockBuffers);
-		this.names = new Object2LongHashMap(blockBuffers);
+	public CollectionCache(BrokerPool pool, int blockBuffers, int growthThreshold) {
+		super(blockBuffers, 1.25, growthThreshold);
+        this.names = new Object2LongHashMap(blockBuffers);
 		this.pool = pool;
 	}
 	
@@ -86,6 +87,10 @@ public class CollectionCache extends LRDCache {
 		}
 		items[bucket] = item;
 		map.put(item.getKey(), item);
+        
+        if (cacheManager != null && ++replacements > growthThreshold) {
+            cacheManager.requestMem(this);
+        }
 		return old;
 	}
 
@@ -96,4 +101,26 @@ public class CollectionCache extends LRDCache {
         if(pool.getConfigurationManager() != null) // might be null during db initialization
             pool.getConfigurationManager().invalidate(col.getName());
     }
+    
+    public void resize(int newSize) {
+        if (newSize < size) {
+            shrink(newSize);
+            names = new Object2LongHashMap(newSize);
+        } else {
+            LOG.debug("Growing cache from " + size + " to " + newSize);
+            Cacheable[] newItems = new Cacheable[newSize];
+            Long2ObjectHashMap newMap = new Long2ObjectHashMap(newSize);
+            Object2LongHashMap newNames = new Object2LongHashMap(newSize);
+            for (int i = 0; i < count; i++) {
+                newItems[i] = items[i];
+                newMap.put(items[i].getKey(), items[i]);
+                names.put(((Collection) items[i]).getName(), items[i].getKey());
+            }
+            this.size = newSize;
+            this.map = newMap;
+        }
+        this.replacements = 0;
+    }
+    
+    
 }

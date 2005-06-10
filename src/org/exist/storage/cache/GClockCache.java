@@ -22,6 +22,7 @@
  */
 package org.exist.storage.cache;
 
+import org.exist.storage.CacheManager;
 import org.exist.util.hashtable.Long2ObjectHashMap;
 
 /**
@@ -47,10 +48,18 @@ public class GClockCache implements Cache {
 	protected Long2ObjectHashMap map;
 	protected int used = 0;
 	protected int hits = 0 ;
+    protected int hitsOld = -1;
 	protected int fails = 0 ;
-	
-	public GClockCache(int size) {
+    protected double growthFactor;
+    protected int growthThreshold;
+	protected CacheManager cacheManager = null;
+    protected int replacements = 0;
+    private String fileName = "unknown";
+    
+	public GClockCache(int size, double growthFactor, int growthThreshold) {
 		this.size = size;
+        this.growthFactor = growthFactor;
+        this.growthThreshold = growthThreshold;
 		this.items = new Cacheable[size];
 		this.map = new Long2ObjectHashMap(size);
 	}
@@ -150,6 +159,11 @@ public class GClockCache implements Cache {
 				removed = true;
 			}
 		} while (!removed);
+        
+        if (cacheManager != null && ++replacements > growthThreshold) {
+            cacheManager.requestMem(this);
+            replacements = 0;
+        }
 		return old;
 	}
 
@@ -161,6 +175,10 @@ public class GClockCache implements Cache {
 		return used;
 	}
 
+    public double getGrowthFactor() {
+        return growthFactor;
+    }
+    
 	public int getHits() {
 		return hits;
 	}
@@ -169,6 +187,46 @@ public class GClockCache implements Cache {
 		return fails;
 	}
 
-	public void setFileName(String fileName) {
-	}
+    public void setCacheManager(CacheManager manager) {
+        this.cacheManager = manager;
+    }
+    
+    public void resize(int newSize) {
+        if (newSize < size) {
+            shrink(newSize);
+        } else {
+            LOG.debug("Growing cache " + fileName + " from " + size + " to " + newSize);
+            Cacheable[] newItems = new Cacheable[newSize];
+            Long2ObjectHashMap newMap = new Long2ObjectHashMap(newSize);
+            for (int i = 0; i < count; i++) {
+                newItems[i] = items[i];
+                newMap.put(items[i].getKey(), items[i]);
+            }
+            this.size = newSize;
+            this.map = newMap;
+            this.items = newItems;
+        }
+        this.replacements = 0;
+    }
+    
+    protected void shrink(int newSize) {
+        flush();
+        items = new Cacheable[newSize];
+        map = new Long2ObjectHashMap(newSize);
+        size = newSize;
+        count = 0;
+        used = 0;
+    }
+
+    public int getLoad() {
+        if (hitsOld == -1)
+            return -1;
+        int load = hits - hitsOld;
+        hitsOld = hits;
+        return load;
+    }
+  
+    public void setFileName(String name) {
+        fileName = name;
+    }
 }

@@ -7,6 +7,8 @@ package org.exist.storage.store;
 
 import java.io.File;
 
+import org.exist.storage.CacheManager;
+
 public class CollectionStore extends BFile {
 
 	/**
@@ -14,8 +16,8 @@ public class CollectionStore extends BFile {
 	 * @param btreeBuffers
 	 * @param dataBuffers
 	 */
-	public CollectionStore(File file, int btreeBuffers, int dataBuffers) {
-		super(file, btreeBuffers, dataBuffers);
+	public CollectionStore(File file, CacheManager cacheManager) {
+		super(file, cacheManager);
 	}
 	
 	
