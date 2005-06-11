@@ -860,13 +860,14 @@ public class BFile extends BTree {
         if (page.getPageHeader().getStatus() == MULTI_PAGE) {
             final int valueLen = value.size();
             // does value fit into a single page?
-            if (valueLen + 6 < fileHeader.getWorkSize()) {
+            if (valueLen + 6 < maxValueSize) {
                 // yes: remove the overflow page
                 remove(page, p);
                 final long np = storeValue(value);
                 addValue(key, np);
                 return np;
             } else {
+//                LOG.debug("Replacing overflow value on page: " + page.getPageNum() + ": " + value.size());
                 // this is an overflow page: simply replace the value
                 final byte[] data = new byte[valueLen + 6];
                 // save tid
@@ -1322,6 +1323,7 @@ public class BFile extends BTree {
         public void append(ByteArray chunk) throws IOException {
             SinglePage nextPage;
             BFilePageHeader ph = firstPage.getPageHeader();
+            final int newLen = ph.getDataLength() + chunk.size();
             // get the last page and fill it
             long next = ph.getLastInChain();
             DataPage page;
@@ -1335,9 +1337,10 @@ public class BFile extends BTree {
             if (chunkLen < chunkSize) chunkSize = chunkLen;
             // fill last page
             chunk.copyTo(0, page.getData(), ph.getDataLength(), chunkSize);
-            //System.arraycopy(chunk, 0, page.getData(), ph.getDataLength(),
-            // chunkSize);
-            ph.setDataLength(ph.getDataLength() + chunkSize);
+//            LOG.debug("Appending to " + firstPage.getPageNum() + "; " + firstPage.ph.getDataLength() + ": " + chunkLen +
+//                    "; chunk: " + chunkSize);
+            if (page != firstPage)
+                ph.setDataLength(ph.getDataLength() + chunkSize);
             page.setDirty(true);
             // write the remaining chunks to new pages
             int remaining = chunkLen - chunkSize;
@@ -1348,18 +1351,16 @@ public class BFile extends BTree {
                 while (remaining > 0) {
                     // add a new page to the chain
                     nextPage = (SinglePage) createDataPage();
+//                    LOG.debug("nextPage: " + nextPage.getPageNum() + "; remaining = " + remaining);
                     nextPage.setData(new byte[fileHeader.getWorkSize()]);
                     page.getPageHeader().setNextInChain(nextPage.getPageNum());
                     page.setDirty(true);
-                    //page.write();
 
                     dataCache.add(page);
                     page = nextPage;
                     if (remaining < chunkSize) chunkSize = remaining;
                     // copy next chunk of data to the page
                     chunk.copyTo(current, page.getData(), 0, chunkSize);
-                    //System.arraycopy(chunk, current, page.getData(), 0,
-                    // chunkSize);
                     page.setDirty(true);
                     if (page != firstPage)
                             page.getPageHeader().setDataLength(chunkSize);
@@ -1372,13 +1373,12 @@ public class BFile extends BTree {
                 // add link to last page
                 dataCache.add(page);
                 ph.setLastInChain(page.getPageNum());
-                ph.setDataLength(ph.getDataLength() + chunkLen);
             } else
                 ph.setLastInChain(0L);
             // adjust length field in first page
-            ByteConversion.intToByte(
-                    firstPage.getPageHeader().getDataLength() - 6, firstPage
-                            .getData(), 2);
+            ph.setDataLength(newLen);
+            ByteConversion.intToByte(newLen - 6, firstPage.getData(), 2);
+//            LOG.debug("First page " + firstPage.getPageNum() + " len: " + (newLen - 6) + "; ph: " + firstPage.ph.getDataLength());
             firstPage.setDirty(true);
             // keep the first page in cache
             dataCache.add(firstPage, 2);
@@ -1425,6 +1425,7 @@ public class BFile extends BTree {
                 }
             } while (next > 0);
             data = os.toByteArray();
+//            LOG.debug("Read data from page " + firstPage.getPageNum() + "; len = " + data.length);
             if (data.length != firstPage.getPageHeader().getDataLength()) {
                 LOG.warn(getFile().getName() + " read=" + data.length
                         + "; expected="
@@ -1464,17 +1465,16 @@ public class BFile extends BTree {
             int remaining = data.length;
             int current = 0;
             long next = 0L;
-            byte[] chunk;
             SinglePage page = firstPage;
-            page.getPageHeader().setDataLength(remaining);
             SinglePage nextPage;
             // walk through chain of pages
             while (remaining > 0) {
                 if (remaining < chunkSize) chunkSize = remaining;
+                page.clear();
                 // copy next chunk of data to the page
                 System.arraycopy(data, current, page.getData(), 0, chunkSize);
                 if (page != firstPage)
-                        page.getPageHeader().setDataLength(chunkSize);
+                    page.getPageHeader().setDataLength(chunkSize);
                 page.setDirty(true);
                 remaining -= chunkSize;
                 current += chunkSize;
@@ -1488,6 +1488,7 @@ public class BFile extends BTree {
                     } else {
                         // add a new page to the chain
                         nextPage = (SinglePage) createDataPage();
+//                        LOG.debug("New page: " + nextPage.getPageNum() + "; write: " + remaining);
                         nextPage.setData(new byte[fileHeader.getWorkSize()]);
                         nextPage.getPageHeader().setNextInChain(0L);
                         page.getPageHeader().setNextInChain(
@@ -1505,11 +1506,7 @@ public class BFile extends BTree {
                     } else
                         firstPage.getPageHeader().setLastInChain(0L);
                     // adjust length field in first page
-                    ByteConversion.intToByte(
-                            firstPage.getPageHeader().getDataLength() - 6, firstPage
-                                    .getData(), 2);
-                    firstPage.setDirty(true);
-                    dataCache.add(firstPage, 3);
+//                    ByteConversion.intToByte(data.length - 6, firstPage.getData(), 2);
                 }
             }
             if (next > 0) {
@@ -1520,9 +1517,14 @@ public class BFile extends BTree {
                     next = nextPage.getPageHeader().getNextInChain();
                     nextPage.setDirty(true);
                     nextPage.delete();
+//                    LOG.debug("Removing " + nextPage.getPageNum());
                     dataCache.remove(nextPage);
                 }
             }
+            firstPage.getPageHeader().setDataLength(data.length);
+            firstPage.setDirty(true);
+            dataCache.add(firstPage, 3);
+//            LOG.debug(firstPage.getPageNum() + " data length: " + firstPage.ph.getDataLength());
         }
         
         /* (non-Javadoc)
@@ -1904,6 +1906,10 @@ public class BFile extends BTree {
 //        	if(ph.nextTID > 256)
 //        		LOG.warn("TID size: " + ph.nextTID);
         	return tid;
+        }
+
+        public void clear() {
+            Arrays.fill(data, (byte) 0);
         }
         
         private String printContents() {

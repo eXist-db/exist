@@ -20,6 +20,7 @@ public class AllTests {
 		TestSuite suite = new TestSuite("Test suite for org.exist.xupdate");
    
 		//$JUnit-BEGIN$
+        
         suite.addTest(new XUpdateTestCases("append", test));
         suite.addTest(new XUpdateTestCases("insertafter", test));
         suite.addTest(new XUpdateTestCases("insertbefore", test));
@@ -33,7 +34,8 @@ public class AllTests {
         suite.addTest(new XUpdateTestCases("replace", test));
         suite.addTest(new XUpdateTestCases("whitespace", test));
         suite.addTest(new XUpdateTestCases("namespaces", test));
-        suite.addTestSuite(RemoveAppendTest.class);
+        
+//        suite.addTestSuite(RemoveAppendTest.class);
         
         /*
          * create new TestCase

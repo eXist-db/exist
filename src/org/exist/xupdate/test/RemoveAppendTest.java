@@ -61,29 +61,66 @@ public class RemoveAppendTest extends TestCase {
         "   <xu:remove select=\"/test/item[@id='5'][2]\"/>" +
         "</xu:modifications>";
     
-    private static final int ITEM_COUNT = 50;
+    private static final int ITEM_COUNT = 0;
     
     private Collection rootCol;
     private Collection testCol;
     private Random rand = new Random();
     
-    public void testRemoveAppend() throws Exception {
+//    public void testRemoveAppend() throws Exception {
+//        XUpdateQueryService service = (XUpdateQueryService)
+//            testCol.getService("XUpdateQueryService", "1.0");
+//        XPathQueryService query = (XPathQueryService)
+//            testCol.getService("XPathQueryService", "1.0");
+//        for (int i = 1; i < 1000; i++) {
+//            int which = rand.nextInt(ITEM_COUNT) + 1;
+//            insert(service, which);
+//            remove(service, which);
+//            
+//            ResourceSet result = query.query("/test/item[@id='" + which + "']");
+//            assertEquals(result.getSize(), 1);
+//            System.out.println(result.getResource(0).getContent());
+//        }
+//    }
+    
+    public void testAppendRemove() throws Exception {
         XUpdateQueryService service = (XUpdateQueryService)
-            testCol.getService("XUpdateQueryService", "1.0");
+        testCol.getService("XUpdateQueryService", "1.0");
         XPathQueryService query = (XPathQueryService)
             testCol.getService("XPathQueryService", "1.0");
-        for (int i = 1; i < 1000; i++) {
-            int which = rand.nextInt(ITEM_COUNT) + 1;
-            append(service, which);
-            remove(service, which);
+        for (int i = 1; i <= 100; i++) {
+            append(service, i);
             
-            ResourceSet result = query.query("/test/item[@id='" + which + "']");
+            ResourceSet result = query.query("/test/item[@id='" + i + "']");
             assertEquals(result.getSize(), 1);
+            System.out.println(result.getResource(0).getContent());
+        }
+        
+        for (int i = 100; i > 10; i--) {
+            String xu = 
+                "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+                "   <xu:remove select=\"/test/item[@id='" + i + "']\"/>" +
+                "</xu:modifications>";
+            long mods = service.update(xu);
+            assertEquals(mods, 1);
+            
+            ResourceSet result = query.query("/test/item/e0");
             System.out.println(result.getResource(0).getContent());
         }
     }
     
     protected void append(XUpdateQueryService service, int id) throws Exception {
+        StringWriter out = new StringWriter();
+        out.write("<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">");
+        out.write("<xu:append select=\"/test\">");
+        createItem(id, out);
+        out.write("</xu:append>");
+        out.write("</xu:modifications>");
+         long mods = service.update(out.toString());
+         assertEquals(mods, 1);
+    }
+    
+    protected void insert(XUpdateQueryService service, int id) throws Exception {
         StringWriter out = new StringWriter();
         out.write("<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">");
         out.write("<xu:insert-before select=\"/test/item[@id='");
@@ -119,14 +156,7 @@ public class RemoveAppendTest extends TestCase {
         testCol = DBUtils.addCollection(rootCol, "test");
         assertNotNull(testCol);
         
-        StringWriter out = new StringWriter();
-        out.write("<test>");
-        for(int i = 1; i <= ITEM_COUNT; i++) {
-            createItem(i, out);
-        }
-        out.write("</test>");
-        String data = out.toString();
-        DBUtils.addXMLResource(testCol, "test.xml", data);
+        DBUtils.addXMLResource(testCol, "test.xml", "<test/>");
     }
     
     protected void tearDown() throws Exception {

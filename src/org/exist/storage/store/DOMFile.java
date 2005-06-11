@@ -797,6 +797,11 @@ public class DOMFile extends BTree implements Lockable {
      * @throws BTreeException
      */
     protected long findValue(Object lock, NodeProxy node) throws IOException,
+    BTreeException {
+        return findValue(lock, node, KEY_NOT_FOUND);
+    }
+    
+    protected long findValue(Object lock, NodeProxy node, long parentPointer) throws IOException,
             BTreeException {
         final DocumentImpl doc = (DocumentImpl) node.getDocument();
         final NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc
@@ -807,21 +812,19 @@ public class DOMFile extends BTree implements Lockable {
             // node not found in index: try to find the nearest available
             // ancestor and traverse it
             long id = node.getGID();
-            long parentPointer = -1;
-            do {
+            while (parentPointer == KEY_NOT_FOUND) {
                 id = XMLUtil.getParentId(doc, id);
                 if (id < 1) {
                     SanityCheck.TRACE("Node " + node.gid + " not found.");
                     throw new BTreeException("node " + node.gid + " not found.");
                 }
-                NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc
-                        .getDocId(), id);
+                NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), id);
                 try {
                     parentPointer = findValue(parentRef);
                 } catch (BTreeException bte) {
                 }
-            } while (parentPointer == KEY_NOT_FOUND);
-            	
+            }
+            
             final long firstChildId = XMLUtil.getFirstChildId(doc, id);
             final Iterator iter = new NodeIterator(lock, this, node.getDocument(),
                     parentPointer);
@@ -829,8 +832,8 @@ public class DOMFile extends BTree implements Lockable {
             n.setGID(id);
             final long address = findNode(n, node.gid, iter);
             if(address == 0) {
-//            	if(LOG.isDebugEnabled())
-//            		LOG.debug("Node data location not found for node " + node.gid);
+            	if(LOG.isDebugEnabled())
+            		LOG.debug("Node data location not found for node " + node.gid);
             	return KEY_NOT_FOUND;
             } else
             	return address;
@@ -919,8 +922,19 @@ public class DOMFile extends BTree implements Lockable {
      * @return Description of the Return Value
      */
     public Value get(NodeProxy node) {
+        return get(node, KEY_NOT_FOUND);
+    }
+    
+    /**
+     * Retrieve a node described by the given NodeProxy.
+     * 
+     * @param node
+     *                   Description of the Parameter
+     * @return Description of the Return Value
+     */
+    public Value get(NodeProxy node, long parentPointer) {
         try {
-            long p = findValue(owner, node);
+            long p = findValue(owner, node, parentPointer);
             if (p == KEY_NOT_FOUND) return null;
             return get(p);
         } catch (BTreeException bte) {
@@ -1342,7 +1356,7 @@ public class DOMFile extends BTree implements Lockable {
     public String getNodeValue(NodeProxy proxy, boolean addWhitespace) {
         try {
             long address = proxy.getInternalAddress();
-            if (address < 0) address = findValue(this, proxy);
+            if (address < 0) address = findValue(this, proxy, KEY_NOT_FOUND);
             if (address == BTree.KEY_NOT_FOUND) return null;
             final RecordPos rec = findRecord(address);
             SanityCheck.THROW_ASSERT(rec != null, "Node data could not be found! Page: " + 
