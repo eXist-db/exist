@@ -1667,11 +1667,15 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+    public NodeList getRange(final Document doc, final long first, final long last) {
+        return getRange(doc, first, last, -1);
+    }
+    
 	/** @return all nodes whose global unique id's are in given interval. */	
-	public NodeList getRange(final Document doc, final long first, final long last) {
+	public NodeList getRange(final Document doc, final long first, final long last, final long parentPointer) {
 		NodeListImpl result = new NodeListImpl((int) (last - first + 1));
 		for (long gid = first; gid <= last; gid++) {
-			result.add(objectWith(doc, gid));
+			result.add(objectWith(doc, gid, parentPointer));
 		}
 		return result;
 	}
@@ -1693,11 +1697,15 @@ public class NativeBroker extends DBBroker {
 		return new NativeSerializer(this, getConfiguration());
 	}
 
+    public Node objectWith(final Document doc, final long gid) {
+        return objectWith(doc, gid, -1);
+    }
+    
 	/** @return node with given global unique id. */	
-	public Node objectWith(final Document doc, final long gid) {
+	public Node objectWith(final Document doc, final long gid, final long parentPointer) {
 		return (Node) new DOMTransaction(this, domDb) {
 			public Object start() {
-				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
+				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid), parentPointer);
 				if (val == null) {
 //				    if(LOG.isDebugEnabled()) {
 //				        LOG.debug("node " + gid + " not found in document " + ((DocumentImpl)doc).getDocId());
