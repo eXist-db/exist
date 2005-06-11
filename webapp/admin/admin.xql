@@ -109,7 +109,7 @@ declare function admin:checkUser() as xs:string* {
     valid, an empty sequence if not.
 :)
 declare function admin:doLogin($user as xs:string) as xs:string* {
-    let $pass := request:request-parameter("pass", ()),
+    let $pass := request:request-parameter("pass", ""),
         $login := request:set-current-user($user, $pass)
     return
         if($login) then

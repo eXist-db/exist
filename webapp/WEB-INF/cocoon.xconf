@@ -12,7 +12,7 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
---><cocoon version="2.1">
+--><!-- CVS $Id$ --><cocoon version="2.1">
 
 <!--+
     |  This is the Apache Cocoon configuration file. This is the place
@@ -37,7 +37,7 @@
       | For development environment, set the check-reload to yes.
       | For production environment, it is advisable to set check-reload to no.
       +-->
-  <sitemap check-reload="yes" config="resource://org/apache/cocoon/components/treeprocessor/treeprocessor-builtins.xml" file="context://sitemap.xmap" logger="sitemap"/>
+  <sitemap check-reload="yes" file="context://sitemap.xmap" logger="sitemap"/>
 
 <!-- ========================= Sitemap Flowscript ========================== -->
 
@@ -99,11 +99,27 @@
       | in miliseconds using the "time-to-live" attribute of
       | the <continuations-manager> element.
       |
+      | If your site is sharing continuations between sitemaps you
+      | should refactor your application to keep a continuation bound to
+      | a single sitemap. The log will contain warnings which indicate
+      | where a continuation from a different sitemap is used.
+      |
+      | When you cannot do the refactoring in one blow you can turn on
+      | compatibility with shared continuations by setting the
+      | "continuation-sharing-bug-compatible" attribute to "true".
+      |
       | The <expirations-check> element specifies different policies for
       | expiring continuations. Currently only the "periodic" type is
       | supported.
+      |
+      | If you need higher security you can bind your continuations
+      | to session. This way only the session that initially created
+      | the continuation can later resume it. Also if session gets
+      | invalidated all continuations are invalidated as well.
+      | Enable this feature for web applications by setting
+      | 'session-bound-continuations' to true.
       +-->
-  <continuations-manager logger="flow.manager" time-to-live="3600000">
+  <continuations-manager continuation-sharing-bug-compatible="false" logger="flow.manager" session-bound-continuations="false" time-to-live="3600000">
     <expirations-check type="periodic">
       <offset>180000</offset>
       <period>180000</period>
@@ -118,14 +134,14 @@
       | indirection, other components can be more generic and changes
       | to the application logic are easier.
       |
-      | A number of components already use InputModules: the sitemap processor, 
+      | A number of components already use InputModules: the sitemap processor,
       | flow, some matchers, the linkrewriting transformer, database actions
       | and more.
       |
       | For example the sitemap processor allows to obtain a value
       | named "foo" from an the InputModule for request parameters by
       | writing {request-param:foo} wherever a sitemap variable is
-      | allowed. 
+      | allowed.
       |
       | Some InputModules need the help of other InputModules to
       | obtain values and only apply a function to the obtained value
@@ -133,11 +149,17 @@
       | carry "Meta" in their name. An example is the ChainMetaModule
       | which tries several other modules in turn until a non-null
       | value is obtained or all modules are tied.
-	  |
+      |
       | For details and optional configuration parameters refer to the
       | accompanying javadocs.
       +-->
   <input-modules>
+    <component-instance class="org.apache.cocoon.components.modules.input.URLEncodeModule" logger="core.modules.input" name="url-encode">
+      <encoding>UTF-8</encoding>
+    </component-instance>
+    <component-instance class="org.apache.cocoon.components.modules.input.URLDecodeModule" logger="core.modules.input" name="url-decode">
+      <encoding>UTF-8</encoding>
+    </component-instance>
     <component-instance class="org.apache.cocoon.components.modules.input.GlobalInputModule" logger="core.modules.input" name="global"/>
     <component-instance class="org.apache.cocoon.components.modules.input.RequestModule" logger="core.modules.input" name="request"/>
     <component-instance class="org.apache.cocoon.components.modules.input.BaseLinkModule" logger="core.modules.input" name="baselink"/>
@@ -156,7 +178,17 @@
       <!--Eg: Mon, 28 Oct 2002 03:08:49 +1100 -->
     </component-instance>
     <component-instance class="org.apache.cocoon.components.modules.input.NullInputModule" logger="core.modules.input" name="nullinput"/>
-    <component-instance class="org.apache.cocoon.components.modules.input.RealPathModule" logger="core.modules.input" name="realpath"/> 
+    <component-instance class="org.apache.cocoon.components.modules.input.RealPathModule" logger="core.modules.input" name="realpath"/>
+    <component-instance class="org.apache.cocoon.components.modules.input.ContextPathModule" logger="core.modules.input" name="contextpath"/>
+    <component-instance class="org.apache.cocoon.components.modules.input.NamingInputModule" logger="core.modules.input" name="naming">
+    </component-instance>
+    <component-instance class="org.apache.cocoon.components.modules.input.PropertiesFileModule" logger="core.modules.input" name="cocoon-properties">
+      <file src="resource://org/apache/cocoon/cocoon.properties"/>
+    </component-instance>
+    <component-instance class="org.apache.cocoon.components.modules.input.FlowAttributeModule" logger="core.modules.input" name="flow-attribute"/>
+    <component-instance class="org.apache.cocoon.components.modules.input.FlowAttributeModule" logger="core.modules.input" name="flow-attr"/>
+    <component-instance class="org.apache.cocoon.components.modules.input.FlowContinuationModule" logger="core.modules.input" name="flow-continuation"/>
+
     <component-instance class="org.apache.cocoon.components.modules.input.XMLMetaModule" logger="core.modules.input" name="xmlmeta"/>
     <component-instance class="org.apache.cocoon.components.modules.input.MapMetaModule" logger="core.modules.input" name="mapmeta"/>
     <component-instance class="org.apache.cocoon.components.modules.input.DateMetaInputModule" logger="core.modules.input" name="datemeta"/>
@@ -169,10 +201,7 @@
       <input-module name="session-attr"/>
       <input-module name="defaults"/>
     </component-instance>
-    <component-instance class="org.apache.cocoon.components.modules.input.PropertiesFileModule" logger="core.modules.input" name="cocoon-properties">
-      <file src="resource://org/apache/cocoon/cocoon.properties"/>
-    </component-instance>
-    
+
     <!-- The 'defaults', 'myxml' and 'slashdot' input modules are used
          in the samples -->
     <component-instance class="org.apache.cocoon.components.modules.input.DefaultsModule" logger="core.modules.input" name="defaults">
@@ -183,14 +212,11 @@
     </component-instance>
 
     <component-instance class="org.apache.cocoon.components.modules.input.XMLFileModule" logger="core.modules.xml" name="myxml">
-      <file src="context:///samples/modules/forrestconf.xml"/>
+      <file src="context://samples/modules/forrestconf.xml"/>
     </component-instance>
     <component-instance class="org.apache.cocoon.components.modules.input.XMLFileModule" logger="core.modules.xml" name="slashdot">
       <file src="http://slashdot.org/slashdot.rss"/>
     </component-instance>
-
-    <component-instance class="org.apache.cocoon.components.modules.input.FlowAttributeModule" logger="core.modules.input" name="flow-attribute"/>
-    <component-instance class="org.apache.cocoon.components.modules.input.FlowContinuationModule" logger="core.modules.input" name="flow-continuation"/>
 
   <!--..... Start configuration from 'db-modules-input' -->
 
@@ -201,7 +227,7 @@
 </input-modules>
 
   <!--+
-      | OutputModules are companion modules for InputModules. 
+      | OutputModules are companion modules for InputModules.
       |
       | The same principles apply here, only that OutputModules allow
       | writing data to places. Apparently, there are a lot less
@@ -214,7 +240,7 @@
       | end. Until then, the value could not be read from the
       | corresponding InputModule. This behaviour is not enfored but
       | it should be expected. Omitting a commit or rollback is an
-      | error. 
+      | error.
       |
       | OutputModules are currently used by flow, a number of actions
       | and transformers.
@@ -236,14 +262,20 @@
     <component-instance class="org.apache.excalibur.source.impl.ResourceSourceFactory" name="resource"/>
     <component-instance class="org.apache.cocoon.components.source.impl.ContextSourceFactory" name="context"/>
     <component-instance class="org.apache.cocoon.components.source.impl.SitemapSourceFactory" name="cocoon"/>
-    <!-- The "file:" protocol is modifiable (can be written to) and traversable (directory structures
-         can be crawled). -->
+    <!--+
+        | The "file:" source protocol is modifiable (can be written to) and
+        | traversable (directory structures can be crawled).
+        +-->
     <component-instance class="org.apache.excalibur.source.impl.FileSourceFactory" name="file"/>
     <component-instance class="org.apache.cocoon.components.source.impl.PartSourceFactory" name="upload"/>
-    <!-- the "*" protocol handles all uri schemes that are not explicitely specified. This includes all
-         JDK standard protocols. -->
-    <component-instance class="org.apache.excalibur.source.impl.URLSourceFactory" name="*"/>
     <component-instance class="org.apache.cocoon.components.source.impl.ModuleSourceFactory" name="module"/>
+    <component-instance class="org.apache.cocoon.components.source.impl.XModuleSourceFactory" name="xmodule"/>
+
+    <!--+
+        | The "*" protocol handles all uri schemes that are not explicitely
+        | specified. This includes all JDK standard protocols.
+        +-->
+    <component-instance class="org.apache.excalibur.source.impl.URLSourceFactory" name="*"/>
   <!--..... Start configuration from 'blob' -->
 
 
@@ -256,12 +288,13 @@
 
     <!-- xmldb pseudo protocol -->
     <component-instance class="org.apache.cocoon.components.source.impl.XMLDBSourceFactory" name="xmldb">
-	  <driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
+      <driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
       <!-- Add here other XML:DB compliant databases' drivers -->
     </component-instance>
 
 <!--..... End configuration from 'xmldb' -->
 </source-factories>
+
   <!--+
       | Entity resolution catalogs
       |
@@ -298,15 +331,15 @@
       |     <parameter name="verbosity" value="2"/>
       +-->
   <entity-resolver logger="core.resolver">
-   <parameter name="catalog" value="WEB-INF/entities/catalog"/>
-   <parameter name="verbosity" value="1"/>
+    <parameter name="catalog" value="WEB-INF/entities/catalog"/>
+    <parameter name="verbosity" value="1"/>
   </entity-resolver>
 
   <!--+
       | XML Parser
       |
       | Apache Cocoon requires a JAXP 1.1 parser. The default parser is
-      | org.apache.excalibur.xml.impl.JaxpParser. 
+      | org.apache.excalibur.xml.impl.JaxpParser.
       | Note: If you have problems because your servlet environment uses its
       | own parser not conforming to JAXP 1.1 try using the alternative
       | XercesParser instead of the JaxpParser. To activate the XercesParser,
@@ -351,7 +384,7 @@
       |     from DTD. And the comment events from the internal DTD subset
       |     would appear in the serialized output again.
       +-->
-  <xml-parser class="org.apache.excalibur.xml.impl.JaxpParser" logger="core.xml-parser" pool-grow="4" pool-max="32" pool-min="8">
+  <xml-parser class="org.apache.excalibur.xml.impl.JaxpParser" logger="core.xml-parser" pool-max="32">
     <parameter name="validate" value="false"/>
     <parameter name="namespace-prefixes" value="false"/>
     <parameter name="stop-on-warning" value="true"/>
@@ -369,7 +402,7 @@
       | transformation to deliver the output.
       | WARNING: * if you enable incremental-processing, you should be aware of
       |            the following bug:
-      |            http://nagoya.apache.org/bugzilla/show_bug.cgi?id=13186
+      |            http://issues.apache.org/bugzilla/show_bug.cgi?id=13186
       |          * incremental-processing creates an additional, non-pooled thread.
       |          * using incremental-processing does not save memory, the input
       |            tree will still be build completely.
@@ -390,7 +423,7 @@
      <parameter name="use-store" value="true"/>
      <parameter name="transformer-factory" value="org.apache.xalan.xsltc.trax.TransformerFactoryImpl"/>
   </component>
-  
+
   <!--+
       | Xalan XSLT Processor
       +-->
@@ -404,7 +437,7 @@
       | Saxon XSLT Processor
       | For old (6.5.2) Saxon use:
       |  <parameter name="transformer-factory" value="com.icl.saxon.TransformerFactoryImpl"/>
-      | For new (7.x?) Saxon use:
+      | For new (7+) Saxon use:
       |  <parameter name="transformer-factory" value="net.sf.saxon.TransformerFactoryImpl"/>
   <component logger="core.xslt-processor"
              role="org.apache.excalibur.xml.xslt.XSLTProcessor/saxon"
@@ -412,14 +445,14 @@
      <parameter name="use-store" value="true"/>
      <parameter name="transformer-factory" value="com.icl.saxon.TransformerFactoryImpl"/>
   </component>
-  +-->
+      +-->
 
   <!-- Xpath Processor: -->
   <xpath-processor class="org.apache.excalibur.xml.xpath.XPathProcessorImpl" logger="core.xpath-processor"/>
 
   <!-- The XMLizers converts different mime-types to XML -->
   <xmlizer>
-      <parser mime-type="text/xml" role="org.apache.excalibur.xml.sax.SAXParser"/>
+    <parser mime-type="text/xml" role="org.apache.excalibur.xml.sax.SAXParser"/>
   </xmlizer>
 
 <!-- ============================ Object Stores =========================== -->
@@ -428,17 +461,17 @@
       | Transient Store: holds objects that don't have to survive shutdown
       |
       | Common configuration parameters:
-      | maxobjects: Indicates how many objects will be hold in the cache.
+      | maxobjects: Indicates how many objects will be held in the cache.
       |    When the number of maxobjects has been reached. The last object
       |    in the cache will be thrown out.
       +-->
   <transient-store logger="core.store.transient">
     <parameter name="maxobjects" value="1000"/>
   </transient-store>
-  
+
   <!--+
       | Store: generic store. The default implementation is an in-memory store
-      | backed by a disk store (based on JCS). This forms a two-stage
+      | backed by a disk store (based on EHCache). This forms a two-stage
       | cache composed of a fast in-memory MRU front-end and a persistent
       | back-end which stores the less-used objects.
       |
@@ -475,23 +508,45 @@
       |      to be a working value).
       +-->
   <store-janitor logger="core.store.janitor">
-     <!-- How much free memory shall be available in the jvm -->
-     <parameter name="freememory" value="2048000"/>
-     <!-- Indicates the limit of the jvm memory consumption. The default max
-          heapsize for Sun's JVM is (almost) 64Mb -->
-     <parameter name="heapsize" value="66600000"/>
-     <!-- How often shall the cleanup thread check memory -->
-     <parameter name="cleanupthreadinterval" value="10"/>
-     <!-- Experimental adaptive algorithm for cleanup interval
-     <parameter name="adaptivethreadinterval" value="true"/>
-     -->
-     <!-- Indicates the thread priority of the cleanup thread -->
-     <parameter name="threadpriority" value="5"/>
-     <!-- How much percent of the elements of each registered Store
-          shall be removed when low on memory. Default 10% -->
-     <parameter name="percent_to_free" value="10"/>
-     <!-- Invoke the garbage collector when low memory is reached -->
-     <parameter name="invokegc" value="false"/>
+    <!--+
+        | How much free memory shall be available in the jvm?
+        | If not specified, defaults to 1Mb.
+        +-->
+    <parameter name="freememory" value="2048000"/>
+    <!--+
+        | How much memory at max jvm can consume?
+        | The default max heapsize for Sun's JVM is (almost) 64Mb,
+        | can be increased by specifying -Xmx command line parameter.
+        | If not specified, defaults to 66600000 bytes.
+        +-->
+    <parameter name="heapsize" value="66600000"/>
+    <!--+
+        | How often shall the cleanup thread check memory?
+        | If not specified, defaults to 10 seconds.
+        +-->
+    <parameter name="cleanupthreadinterval" value="10"/>
+    <!--+
+        | Experimental adaptive algorithm for cleanup interval
+    <parameter name="adaptivethreadinterval" value="true"/>
+        +-->
+    <!--+
+        | What percent of the store elements shall be dropped on low memory?
+        | If not specified, defaults to 10%
+        +-->
+    <parameter name="percent_to_free" value="10"/>
+    <!--+
+        | Shall garbage collector be invoked on low memory?
+        | If not specified, defaults to false.
+        +-->
+    <parameter name="invokegc" value="false"/>
+
+    <!--+
+        | What should be the priority of the cleanup thread?
+        | This parameter is used only by older implementation of the janitor.
+        | New implementation uses centrally configured thread pool (see
+        | thread-pools element below).
+    <parameter name="threadpriority" value="5"/>
+        +-->
   </store-janitor>
 
 <!-- ========================= Protocol Handlers =========================== -->
@@ -529,15 +584,8 @@
       | the intermediate results of the pipeline stages reducing the overhead
       | of xml parsing/serialization.
       +-->
-  <xml-serializer class="org.apache.cocoon.components.sax.XMLByteStreamCompiler" logger="core.xml-serializer" pool-grow="4" pool-max="32" pool-min="8"/>
-  <xml-deserializer class="org.apache.cocoon.components.sax.XMLByteStreamInterpreter" logger="core.xml-deserializer" pool-grow="4" pool-max="32" pool-min="8"/>
-
-  <!--+
-      | The Monitor keeps track on changes to a Resource.
-      +-->
-  <monitor logger="core.monitor">
-    <thread frequency="10000" priority="5"/>
-  </monitor>
+  <xml-serializer class="org.apache.cocoon.components.sax.XMLByteStreamCompiler" logger="core.xml-serializer" pool-max="32"/>
+  <xml-deserializer class="org.apache.cocoon.components.sax.XMLByteStreamInterpreter" logger="core.xml-deserializer" pool-max="32"/>
 
   <!--+
       | The Cache Manager is a component that can be used to cache content.
@@ -545,11 +593,120 @@
       +-->
   <component class="org.apache.cocoon.transformation.helpers.DefaultIncludeCacheManager" role="org.apache.cocoon.transformation.helpers.IncludeCacheManager">
     <!-- Set the preemptive-loader-url to a pipeline inside Cocoon that
-         contains the preemptive loader action. The URL must be absolute! 
-    <parameter name="preemptive-loader-url" 
+         contains the preemptive loader action. The URL must be absolute!
+    <parameter name="preemptive-loader-url"
                value="http://localhost:8080/cocoon/samples/cinclude/loader"/>
     -->
- </component>
+  </component>
+
+  <!--+
+      | Runnable manager
+      |
+      | this component manages commands (Runnables) executed in background using
+      | preconfigured pools of worker threads
+      +-->
+  <runnable-manager logger="core.runnable">
+    <!--+
+        | This is the default configuration of the runnable-manager. More
+        | indepth information can be found at
+        | http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/PooledExecutor.html
+        | The following elements can be used:
+        |
+        | thread-factory:        specifies the fully qualified class name of an
+        |                        org.apache.cocoon.components.thread.ThreadFactory
+        |                        implementation. It is responsible to create Thread
+        |                        classes.
+        | thread-pools:          container element for thread-pool elements.
+        | name:                  required name of the pool.
+        | priority:              optional priority all threads of the pool will
+        |                        have (the ThreadFactory will be set to this
+        |                        priority).The possible values  are:
+        |                          MIN:  corresponds to Thread#MIN_PRIORITY
+        |                          NORM: corresponds to Thread#NORM_PRIORITY (default)
+        |                          MAX:  corresponds to Thread#MAX_PRIORITY
+        | daemon:                whether newly created Threads should run in
+        |                        daemon mode or not. Default to false.
+        | queue-size:            optional size of a queue to hold Runnables if the
+        |                        pool is full. Possible values are:
+        |                          less than 0:    unbounded (default)
+        |                          equal to 0:     no queue at all
+        |                          greater than 0: size of the queue
+        | max-pool-size:         optional maximum number of threads in the pool.
+        |                        Defaults to 5.
+        |                        NOTE: if a queue is specified (queue-sie != 0)
+        |                              this value will be ignored.
+        | min-pool-size:         optional minimum number of threads in the pool.
+        |                        Defaults to 5.
+        |                        NOTE: if a queue has been specified (queue-sie != 0)
+        |                              this value will be used as the maximum of
+        |                              thread running concurrently.
+        | keep-alive-time-ms:    The time in ms an idle thread should keep alive
+        |                        before it might get garbage collected. This
+        |                        defaults to 60000 ms.
+        | block-policy;          The policy to be used if all resources (thread in
+        |                        the pool and slots in the queue) are exhausted.
+        |                        Possible values are:
+        |                          ABORT:         Throw a RuntimeException
+        |                          DISCARD:       Throw away the current request
+        |                                         and return.
+        |                          DISCARDOLDEST: Throw away the oldest request
+        |                                         and return.
+        |                          RUN (default): The thread making the execute
+        |                                         request runs the task itself.
+        |                                         This policy helps guard against
+        |                                         lockup.
+        |                          WAIT:          Wait until a thread becomes
+        |                                         available. This policy should, in
+        |                                         general, not be used if the
+        |                                         minimum number of threads is zero,
+        |                                         in which case a thread may never
+        |                                         become available.
+        | shutdown-graceful:     Terminate thread pool after processing all
+        |                        Runnables currently in queue. Any Runnable entered
+        |                        after this point will be discarded. A shut down
+        |                        pool cannot be restarted. This also means that a
+        |                        pool will need keep-alive-time-ms to terminate.
+        |                        The default value not to shutdown graceful.
+        | shutdown-wait-time-ms: The time in ms to wait before issuing an
+        |                        immediate shutdown after a graceful shutdown
+        |                        has been requested.
+        +-->
+    <thread-factory>org.apache.cocoon.components.thread.DefaultThreadFactory</thread-factory>
+    <thread-pools>
+      <!--+
+          | This is the default thread pool. It's use fits best for short
+          | running background tasks.
+          +-->
+      <thread-pool>
+        <name>default</name>
+        <priority>NORM</priority>
+        <daemon>false</daemon>
+        <queue-size>-1</queue-size>
+        <max-pool-size>5</max-pool-size>
+        <min-pool-size>5</min-pool-size>
+        <keep-alive-time-ms>60000</keep-alive-time-ms>
+        <block-policy>RUN</block-policy>
+        <shutdown-graceful>false</shutdown-graceful>
+        <shutdown-wait-time-ms>-1</shutdown-wait-time-ms>
+      </thread-pool>
+      <!--+
+          | This thread pool should be used for daemons (permanently running
+          | threads).
+          +-->
+      <thread-pool>
+        <name>daemon</name>
+        <priority>NORM</priority>
+        <daemon>true</daemon>
+        <queue-size>0</queue-size>
+        <max-pool-size>-1</max-pool-size>
+        <min-pool-size>1</min-pool-size>
+        <keep-alive-time-ms>60000</keep-alive-time-ms>
+        <block-policy>ABORT</block-policy>
+        <shutdown-graceful>false</shutdown-graceful>
+        <shutdown-wait-time-ms>-1</shutdown-wait-time-ms>
+      </thread-pool>
+    </thread-pools>
+  </runnable-manager>
 <!--..... Start configuration from 'xsp-markup' -->
 
   <!--+
@@ -691,14 +848,13 @@
           <parameter name="href" value="resource://org/apache/cocoon/components/language/markup/xsp/java/esql.xsl"/>
         </builtin-logicsheet>
 
+        <builtin-logicsheet>
+          <parameter name="prefix" value="xdb"/>
+          <parameter name="uri" value="http://exist-db.org/xmldb/1.0"/>
+          <parameter name="href" value="resource://org/exist/xmldb.xsl"/>
+        </builtin-logicsheet>
 
 <!--..... End configuration from 'esql' -->
-
-		<builtin-logicsheet>
-			<parameter name="prefix" value="xdb"/>
-			<parameter name="uri" value="http://exist-db.org/xmldb/1.0"/>
-			<parameter name="href" value="resource://org/exist/xmldb.xsl"/>
-		</builtin-logicsheet>
 </target-language>
 
       <!--+
@@ -724,7 +880,6 @@
           <parameter name="uri" value="http://apache.org/xsp/session/2.0"/>
           <parameter name="href" value="resource://org/apache/cocoon/components/language/markup/xsp/javascript/session.xsl"/>
         </builtin-logicsheet>
-
       </target-language>
     </xsp-language>
   </markup-languages>
@@ -771,7 +926,7 @@
           |  - EclipseJavaCompiler: the Eclipse JTD java compiler
           |  - Javac: the java compiler that comes with JDK
           |  - Jikes: the Jikes java compiler
-          |  - Pizza: the Pizza java compiler
+          |  - Pizza: the Pizza java compiler (deprecated. Support will be removed in 2.2)
           |
           | NOTE: the Eclipse JTD is the only java compiler that is capable
           |       of imports classes thru the context classloader. All other
@@ -780,11 +935,26 @@
           |       time. It is *HIGHLY* suggested that you use this compiler
           |       or you might experience problems in some servlet containers.
           +-->
-      <parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.EclipseJavaCompiler"/>
-      <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Javac"/-->
+      <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.EclipseJavaCompiler"/-->
+      <parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Javac"/>
       <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Jikes"/-->
-      <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Pizza"/-->
+      <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Pizza"/--> <!-- deprecated-->
 
+      <!--+
+          | Specifies the java code source version used to compile the XSP code.
+          |
+          | Posible values:
+          | 1.3 = Java version 1.3 
+          | 1.4 = Java version 1.4
+          | 1.5 = Java version 1.5
+          | auto = The version of the JVM where cocoon is running. (Default value).
+          |
+          | NOTE: The parameter is optional to keep backward compatibility.
+          |       The parameter currently works only with Sun Javac compiler.
+          |       The eclipse compiler version 3.0.1 currently does not support java 1.5.
+          |       The pizza compiler does not support java 1.5.
+          +-->
+      <!-- <parameter name="compiler-compliance-level" value="auto"/> -->
     </java-language>
 
     <!-- Interpreted JavaScript language -->
@@ -799,6 +969,7 @@
     <parameter name="xscript:value-of" value="resource://org/apache/cocoon/components/xscript/xslt/value-of.xsl"/>
   </xscript>
 <!--..... End configuration from 'xsp-xscript' -->
+
 <!--..... Start configuration from 'datasources' -->
 
   <datasources>
@@ -849,4 +1020,38 @@
 -->
    </autoincrement-modules>
 <!--..... End configuration from 'db-modules' -->
+<!--..... Start configuration from 'deprecated' -->
+
+
+  <!--+
+      | URL Factory
+      |
+      | The url factory adds special url protocols to the system, they are then
+      | available inside Cocoon, e.g. as a source argument for one of the sitemap
+      | components.
+      |
+      | THIS COMPONENT IS DEPRECATED AND SHOULD NOT BE USED ANYMORE
+      +-->
+  <url-factory logger="core.url-factory">
+    <!-- Allows access to resources available from the ClassLoader, using getResource() method. -->
+    <protocol class="org.apache.cocoon.components.url.ResourceURLFactory" name="resource"/>
+  </url-factory>
+
+  <!--+
+      | Source Handler
+      |
+      | The source handler adds special url protocols to the system, they are
+      | then available inside Cocoon, e.g. as a source argument for one of the
+      | sitemap components.
+      |
+      | THIS COMPONENT IS DEPRECATED AND SHOULD NOT BE USED ANYMORE
+      +-->
+  <source-handler logger="core.source-handler">
+    <!-- file protocol : this is a WriteableSource -->
+    <protocol class="org.apache.cocoon.components.source.FileSourceFactory" name="file"/>
+    <!-- Allows access to resources available from the servlet context, using getResource() method. -->
+    <protocol class="org.apache.cocoon.components.source.ContextSourceFactory" name="context"/>
+  </source-handler>
+  
+<!--..... End configuration from 'deprecated' -->
 </cocoon>
