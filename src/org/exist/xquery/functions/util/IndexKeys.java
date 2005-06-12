@@ -50,7 +50,8 @@ public class IndexKeys extends BasicFunction {
                 "Can be used to query existing range indexes defined on a set of nodes. " +
                 "All index keys defined for the given node set are reported to a callback function. " +
                 "The node set is specified in the first argument. The second argument specifies a start " +
-                "value. Only index keys of the same type but being greater than $b will be reported. " +
+                "value. Only index keys of the same type but being greater than $b will be reported for non-string" +
+                "types. For string types, only keys starting with the given prefix are reported. " +
                 "The third arguments is a function reference as created by the util:function function. " +
                 "It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
                 "1) the current index key as found in the range index as an atomic value, 2) a sequence " +
