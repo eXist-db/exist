@@ -10,19 +10,14 @@
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-ant.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.2.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-jxpath-20030909.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-lang-2.0.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-logging-1.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-datasource-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-i18n-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-instrument-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-instrument-manager-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-instrument-manager-interfaces-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-io-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/optional/excalibur-monitor-1.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-naming-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-pool-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/optional/excalibur-util-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-pool-1.1.jar"/>
 	<classpathentry sourcepath="/jEdit-syntax" kind="lib" path="lib/core/jEdit-syntax.jar"/>
 	<classpathentry kind="lib" path="tools/lib/ant.jar"/>
@@ -30,29 +25,19 @@
 	<classpathentry kind="lib" path="lib/core/javax.servlet.jar"/>
 	<classpathentry kind="lib" path="lib/optional/cocoon-databases-block.jar"/>
 	<classpathentry kind="lib" path="lib/optional/cocoon-xmldb-block.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-collections-3.0.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-jexl-1.0-beta-1-20040113.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-1.2.9.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/jakarta-bcel-20040329.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/jakarta-regexp-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xalan-2.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/avalon-framework-api-4.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/optional/avalon-framework-impl-4.1.5.jar"/>
-	<classpathentry kind="lib" path="lib/optional/cocoon-2.1.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/optional/cocoon-2.1.5.1-deprecated.jar"/>
 	<classpathentry kind="lib" path="lib/optional/cocoon-xsp-block.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-httpclient-2.0-final.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-component-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/optional/excalibur-event-api-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/optional/excalibur-event-impl-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-logger-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-sourceresolve-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-store-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-xmlutil-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/optional/jcs-1.0-dev-20040516.jar"/>
-	<classpathentry kind="lib" path="lib/optional/jdtcore-2.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/optional/logkit-1.2.2.jar"/>
-	<classpathentry kind="lib" path="lib/optional/util.concurrent-1.3.3.jar"/>
 	<classpathentry kind="lib" path="lib/core/xml-commons-resolver-CVS-20050605.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-1.2-patched.jar"/>
 	<classpathentry kind="lib" path="lib/optional/castor-0.9.5-xml.jar"/>
@@ -71,5 +56,17 @@
 	<classpathentry kind="lib" path="lib/endorsed/dom3-xercesImpl.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/dom3-xml-apis.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jgroups-all.jar"/>
+	<classpathentry kind="lib" path="lib/optional/cocoon-2.1.7.jar"/>
+	<classpathentry kind="lib" path="lib/optional/cocoon-2.1.7-deprecated.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-collections-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-httpclient-2.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-jexl-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-jxpath-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-lang-2.0-20041007T2305.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/optional/ehcache-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/optional/javacApi-0.9.jar"/>
+	<classpathentry kind="lib" path="lib/optional/javacImpl-0.9.jar"/>
+	<classpathentry kind="lib" path="lib/optional/util.concurrent-1.3.4.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
