@@ -17,7 +17,7 @@ public class CollectionStore extends BFile {
 	 * @param dataBuffers
 	 */
 	public CollectionStore(File file, CacheManager cacheManager) {
-		super(file, cacheManager);
+		super(file, cacheManager, 1.25, 100, 1000);
 	}
 	
 	
