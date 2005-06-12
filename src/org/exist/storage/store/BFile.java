@@ -105,10 +105,10 @@ public class BFile extends BTree {
 
     protected int maxValueSize;
     
-    public BFile(File file, CacheManager cacheManager) {
-        super(cacheManager, file, 100);
+    public BFile(File file, CacheManager cacheManager, double cacheGrowth, int thresholdBTree, int thresholdData) {
+        super(cacheManager, file, thresholdBTree);
         fileHeader = (BFileHeader) getFileHeader();
-        dataCache = new LRUCache(64, 1.5, 500);
+        dataCache = new LRUCache(64, cacheGrowth, thresholdData);
         dataCache.setFileName(getFile().getName());
         cacheManager.registerCache(dataCache);
         minFree = PAGE_MIN_FREE;
