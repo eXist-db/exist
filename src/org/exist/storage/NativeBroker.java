@@ -180,7 +180,7 @@ public class NativeBroker extends DBBroker {
 			if ((elementsDb = (BFile) config.getProperty("db-connection.elements"))
 				== null) {
 				elementsDb =
-					new BFile(new File(dataDir + pathSep + "elements.dbx"), pool.getCacheManager());
+					new BFile(new File(dataDir + pathSep + "elements.dbx"), pool.getCacheManager(), 1.25, 100, 500);
 				if (!elementsDb.exists()) {
 					LOG.info("creating elements.dbx");
 					elementsDb.create();
@@ -265,7 +265,7 @@ public class NativeBroker extends DBBroker {
 		if ((valuesDb = (BFile) config.getProperty(propertyName))
 		        == null) {
 		    valuesDb =
-		        new BFile(new File(dataDir + pathSep + dataFile ), pool.getCacheManager());
+		        new BFile(new File(dataDir + pathSep + dataFile ), pool.getCacheManager(), 1.25, 50, 1000);
 		    if (!valuesDb.exists()) {
 		        LOG.info("creating " + VALUES_DB_FILE );
 		        valuesDb.create();

@@ -644,7 +644,8 @@ public class NativeValueIndex {
             current = (Collection) i.next();
             collectionId = current.getId();
             byte[] startKey = start.serialize(collectionId, caseSensitive);
-            query = new IndexQuery(IndexQuery.GEQ, new Value(startKey));
+            int op = Type.subTypeOf(type, Type.STRING) ? IndexQuery.TRUNC_RIGHT : IndexQuery.GEQ;
+            query = new IndexQuery(op, new Value(startKey));
             Value prefix = getPrefixValue(start.getType(), collectionId);
             try {
                 lock.acquire();

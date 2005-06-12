@@ -116,7 +116,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		try {
 			if ((dbWords = (BFile) config.getProperty("db-connection.words")) == null) {
 				dbWords = new BFile(new File(dataDir + pathSep + "words.dbx"),
-                        broker.getBrokerPool().getCacheManager());
+                        broker.getBrokerPool().getCacheManager(), 1.5, 10, 1000);
 				if (!dbWords.exists())
 					dbWords.create();
 				else
