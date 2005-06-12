@@ -639,17 +639,21 @@ public class NativeValueIndex {
         Collection current;
         IndexQuery query;
         int type = ((Item) start).getType();
+        boolean stringType = Type.subTypeOf(type, Type.STRING);
         IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type);
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             current = (Collection) i.next();
             collectionId = current.getId();
             byte[] startKey = start.serialize(collectionId, caseSensitive);
-            int op = Type.subTypeOf(type, Type.STRING) ? IndexQuery.TRUNC_RIGHT : IndexQuery.GEQ;
+            int op = stringType ? IndexQuery.TRUNC_RIGHT : IndexQuery.GEQ;
             query = new IndexQuery(op, new Value(startKey));
             Value prefix = getPrefixValue(start.getType(), collectionId);
             try {
                 lock.acquire();
-                db.query(query, prefix, cb);
+                if (stringType)
+                    db.query(query, cb);
+                else
+                    db.query(query, prefix, cb);
             } catch (LockException e) {
                 LOG.warn("cannot get lock on words", e);
             } catch (IOException e) {
