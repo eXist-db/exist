@@ -56,4 +56,8 @@ public class ValueIndexByQNameTest extends ValueIndexTest {
 	protected String getCollectionConfig() {
 		return config;
 	}
+    
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(ValueIndexByQNameTest.class);
+    }
 }

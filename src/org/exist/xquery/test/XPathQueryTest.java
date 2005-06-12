@@ -394,7 +394,8 @@ public class XPathQueryTest extends TestCase {
             Resource r = result.getResource(0);
             assertEquals("<string>Hello</string>", r.getContent().toString());
         } catch (XMLDBException e) {
-            System.out.println("testExternalVars(): XMLDBException: "+e);
+            System.out.println("testExternalVars(): XMLDBException");
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }
