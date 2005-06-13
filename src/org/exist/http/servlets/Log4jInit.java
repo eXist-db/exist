@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
 
 
@@ -42,7 +43,8 @@ public class Log4jInit extends HttpServlet {
      * Initialize servlet for log4j purposes.
      */
     public void init() throws ServletException {
-        
+    	LogManager.resetConfiguration();
+    	
         // Get data from web.xml
         String file = getInitParameter("log4j-init-file");
         

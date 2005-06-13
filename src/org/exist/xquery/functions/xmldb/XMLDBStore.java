@@ -70,7 +70,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			"resource. The third argument is either a node, an xs:string, a Java file object or an xs:anyURI. " +
 			"A node will be serialized to SAX. It becomes the root node of the new " +
 			"document. If the argument is of type xs:anyURI, the resource is loaded " +
-			"from that URI.",
+			"from that URI. The functions returns the path to the new document as an xs:string or " + 
+			" - if the document could not be stored - the empty sequence.",
 			new SequenceType[] {
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
@@ -88,7 +89,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			"document. If the argument is of type xs:anyURI, the resource is loaded " +
 			"from that URI. The final argument $d is used to specify a mime-type.  If the mime-type " +
 			"is something other than 'text/xml' or 'application/xml', the resource will be stored as " +
-			"a binary resource.",
+			"a binary resource. The functions returns the path to the new document as an xs:string or " +
+			"- if the document could not be stored - the empty sequence.",
 			new SequenceType[] {
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
