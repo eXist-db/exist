@@ -179,7 +179,7 @@
 		configuration for a collection.
         -->
         <index>
-			<fulltext default="all" attributes="false">
+			<fulltext default="all" attributes="true">
 				<exclude path="/auth"/>
 			</fulltext>
 		</index>
