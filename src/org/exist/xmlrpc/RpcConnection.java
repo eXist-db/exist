@@ -1617,8 +1617,10 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 					.get(resultId);
 			if (qr == null)
 				throw new EXistException("result set unknown or timed out");
+			if (num < 1 || num > qr.result.getLength())
+				throw new EXistException("position parameter out of bounds in call to retrieve: " + num);
 			qr.timestamp = System.currentTimeMillis();
-			Item item = qr.result.itemAt(num);
+			Item item = qr.result.itemAt(num - 1);
 			if (item == null)
 				throw new EXistException("index out of range");
 
