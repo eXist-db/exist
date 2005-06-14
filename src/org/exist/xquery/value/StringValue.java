@@ -355,7 +355,7 @@ public class StringValue extends AtomicValue implements Indexable {
 		
 		// start to collapse whitespace
 		StringBuffer sb = new StringBuffer(in.length());
-		sb.append(in.subSequence(0, i + 1));
+		sb.append(in.subSequence(0, i + 1).toString());
 		boolean inWhitespace = true;
 		for (; i < in.length(); i++) {
 			char c = in.charAt(i);
