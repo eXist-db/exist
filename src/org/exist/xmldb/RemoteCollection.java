@@ -361,7 +361,6 @@ public class RemoteCollection implements CollectionImpl {
 	public void removeResource(Resource res) throws XMLDBException {
 		Vector params = new Vector();
 		params.addElement(getPath() + '/' + res.getId());
-		System.out.println("Removing " + params.elementAt(0));
 
 		try {
 			rpcClient.execute("remove", params);
