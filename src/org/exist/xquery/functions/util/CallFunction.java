@@ -85,7 +85,7 @@ public class CallFunction extends Function {
             params.add(getArgument(i));
         }
         call.setArguments(params);
-        
+        call.analyze(this, 0);
         // Evaluate the function
         return call.eval(contextSequence);
     }

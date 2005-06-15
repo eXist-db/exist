@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -176,7 +177,6 @@ public abstract class Function extends PathExpr {
 	 * @throws XPathException
 	 */
 	public void setArguments(List arguments) throws XPathException {
-		SequenceType[] argumentTypes = mySignature.getArgumentTypes();
 		if ((!mySignature.isOverloaded())
 			&& arguments.size() != mySignature.getArgumentCount())
 			throw new XPathException(getASTNode(),
@@ -187,15 +187,25 @@ public abstract class Function extends PathExpr {
 					+ ", got "
 					+ arguments.size()
 					+ ')');
-		Expression next;
+        steps = arguments;
+	}
+
+    /**
+     * @param arguments
+     * @param argumentTypes
+     * @throws XPathException
+     */
+    protected void checkArguments() throws XPathException {
+        SequenceType[] argumentTypes = mySignature.getArgumentTypes();
+        Expression next;
 		SequenceType argType = null;
-		for (int i = 0; i < arguments.size(); i++) {
+		for (int i = 0; i < getArgumentCount(); i++) {
 			if (argumentTypes != null && i < argumentTypes.length)
 				argType = argumentTypes[i];
-			next = checkArgument((Expression) arguments.get(i), argType, i + 1);
-			steps.add(next);
+			next = checkArgument(getArgument(i), argType, i + 1);
+            steps.set(i, next);
 		}
-	}
+    }
 
 	/**
 	 * Statically check an argument against the sequence type specified in
@@ -279,11 +289,13 @@ public abstract class Function extends PathExpr {
 		}
 
 		if (returnType != Type.ITEM && !Type.subTypeOf(returnType, type.getPrimaryType())) {
-			if ((!Type.subTypeOf(type.getPrimaryType(), returnType)))
+			if ((!Type.subTypeOf(type.getPrimaryType(), returnType))) {
+                LOG.debug(ExpressionDumper.dump(expr));
                 throw new XPathException(getASTNode(),
                         Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC, 
                                 String.valueOf(argPosition), mySignature,
                                 type.toString(), Type.getTypeName(returnType)));
+            }
 		}
 		if (!typeMatches) {
 			if(type.getNodeName() != null)
@@ -299,9 +311,13 @@ public abstract class Function extends PathExpr {
      * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
      */
     public void analyze(Expression parent, int flags) throws XPathException {
+        // statically check the argument list
+        checkArguments();
+        // call analyze for each argument
     	inPredicate = (flags & IN_PREDICATE) > 0;
-        for(int i = 0; i < getArgumentCount(); i++)
+        for(int i = 0; i < getArgumentCount(); i++) {
             getArgument(i).analyze(this, flags);
+        }
     }
     
 	public abstract Sequence eval(

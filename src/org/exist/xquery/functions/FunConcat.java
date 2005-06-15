@@ -82,6 +82,14 @@ public class FunConcat extends Function {
 			steps.add(next);
 		}
 	}
+    
+    public void analyze(Expression parent, int flags) throws XPathException {
+        // call analyze for each argument
+        inPredicate = (flags & IN_PREDICATE) > 0;
+        for(int i = 0; i < getArgumentCount(); i++) {
+            getArgument(i).analyze(this, flags);
+        }
+    }
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		if(getArgumentCount() < 2)
