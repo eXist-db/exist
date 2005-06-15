@@ -901,6 +901,24 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		return NodeSet.EMPTY_SET;
     }
     
+    public NodeSet getAncestors(boolean rememberContext, boolean includeSelf) {
+        NodeSet ancestors = new ExtArrayNodeSet();
+        if (includeSelf) {
+            ancestors.add(this);
+        }
+        long pid = gid;
+        // calculate parent's gid
+        while((pid = XMLUtil.getParentId(getDocument(), pid)) > 0) {
+            NodeProxy parent = new NodeProxy(getDocument(), pid, Node.ELEMENT_NODE);
+            if (rememberContext)
+                parent.addContextNode(this);
+            else
+                parent.copyContext(this);
+            ancestors.add(parent);
+        }
+        return ancestors;
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#intersection(org.exist.dom.NodeSet)
      */

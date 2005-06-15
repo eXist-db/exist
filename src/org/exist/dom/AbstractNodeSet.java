@@ -525,6 +525,29 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return parents;
 	}
 
+    public NodeSet getAncestors(boolean rememberContext, boolean includeSelf) {
+        NodeSet ancestors = new ExtArrayNodeSet();
+        NodeProxy p;
+        long gid;
+        for (Iterator i = iterator(); i.hasNext();) {
+            p = (NodeProxy) i.next();
+            if (includeSelf) {
+                ancestors.add(p);
+            }
+            gid = p.gid;
+            // calculate parent's gid
+            while((gid = XMLUtil.getParentId(p.getDocument(), gid)) > 0) {
+                NodeProxy parent = new NodeProxy(p.getDocument(), gid, Node.ELEMENT_NODE);
+                if (rememberContext)
+                    parent.addContextNode(p);
+                else
+                    parent.copyContext(p);
+                ancestors.add(parent);
+            }
+        }
+        return ancestors;
+    }
+    
 	/**
 	 * Return a sub-range of this node set containing the range of nodes greater than or including
 	 * the lower node and smaller than or including the upper node.
@@ -716,6 +739,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				if(indexType == Type.ANY_TYPE)
 				    indexType = type;
 				else if(indexType != type) {
+                    if (indexType != Type.ITEM)
+                        LOG.debug("Found: " + Type.getTypeName(type) + "; node = " + p.toString());
 				    indexType = Type.ITEM;
 				}
 				if(!p.hasTextIndex()) {
