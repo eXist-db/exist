@@ -37,7 +37,6 @@ import org.exist.xquery.RootNode;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.Error;
-import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
@@ -94,13 +93,21 @@ public class QNameIndexLookup extends Function {
         steps.add(arg);
     }
     
+    public void analyze(Expression parent, int flags) throws XPathException {
+        // call analyze for each argument
+        inPredicate = (flags & IN_PREDICATE) > 0;
+        for(int i = 0; i < getArgumentCount(); i++) {
+            getArgument(i).analyze(this, flags);
+        }
+    }
+    
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (contextSequence == null || contextSequence.getLength() == 0) {
             // if the context sequence is empty, we create a default context 
             RootNode rootNode = new RootNode(context);
             contextSequence = rootNode.eval(null, null);
         }
-        Sequence[] args = getArguments(contextSequence, contextItem);
+        Sequence[] args = getArguments(null, null);
         
         Item item = args[0].itemAt(0);
         QNameValue qval;
