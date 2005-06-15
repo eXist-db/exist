@@ -34,22 +34,6 @@ import org.exist.xquery.value.Sequence;
 public interface CompiledXQuery extends CompiledExpression {
     
     /**
-     * Set the compile time for this query. Used to check
-     * if a query is still valid or should be recompiled from
-     * its source.
-     * 
-     * @param created
-     */
-    public void setCreationTime(long created);
-    
-    /**
-     * Returns the compile time of the query.
-     * 
-     * @return
-     */
-    public long getCreationTime();
-    
-    /**
      * Reset the compiled expression tree. Discard all
      * temporary expression results.
      */
@@ -83,4 +67,4 @@ public interface CompiledXQuery extends CompiledExpression {
      * specified writer.
      */
     public void dump(Writer writer);
-}
+} 
