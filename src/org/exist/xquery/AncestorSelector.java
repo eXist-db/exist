@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-04 The eXist Project
+ *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -26,30 +25,24 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 
-/**
- * @author wolf
- */
-public class ParentSelector implements NodeSelector {
+public class AncestorSelector implements NodeSelector {
 
-	private NodeSet parents;
-	private boolean rememberContext = false;
-	
-	/**
-	 * 
-	 */
-	public ParentSelector(NodeSet contextSet, boolean rememberContext) {
-		this.parents = contextSet.getParents(rememberContext);
-		this.rememberContext = rememberContext;
-	}
+    private NodeSet ancestors;
+    private boolean rememberContext = false;
+    private boolean includeSelf = false;
+    
+    public AncestorSelector(NodeSet descendants, boolean rememberContext, boolean includeSelf) {
+        super();
+        ancestors = descendants.getAncestors(rememberContext, includeSelf);
+        ancestors.getLength();
+        this.rememberContext = rememberContext;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.DocumentImpl, long)
-	 */
-	public NodeProxy match(DocumentImpl doc, long gid) {
-		NodeProxy p;
-		if((p = parents.get(doc, gid)) != null) {
-			return p;
-		} else
-			return null;
-	}
+    public NodeProxy match(DocumentImpl doc, long gid) {
+        NodeProxy p;
+        if((p = ancestors.get(doc, gid)) != null) {
+            return p;
+        } else
+            return null;
+    }
 }

@@ -423,20 +423,23 @@ public class LocationStep extends Step {
 		NodeSet contextSet) {
 		NodeSet result;
 		if (!test.isWildcardTest()) {
-//			DocumentSet docs = contextSet.getDocumentSet();
 			DocumentSet docs = getDocumentSet(contextSet);
-			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-				currentDocs = docs;
-				currentSet =
-					(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-						ElementValue.ELEMENT, currentDocs,
-						test.getName(), null);
-			}
-			result =
-				currentSet.selectAncestors(
-					contextSet,
-					axis == Constants.ANCESTOR_SELF_AXIS,
-					inPredicate);
+//			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+//				currentDocs = docs;
+//				currentSet =
+//					(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
+//						ElementValue.ELEMENT, currentDocs,
+//						test.getName(), null);
+//			}
+//			result =
+//				currentSet.selectAncestors(
+//					contextSet,
+//					axis == Constants.ANCESTOR_SELF_AXIS,
+//					inPredicate);
+            NodeSelector selector = new AncestorSelector(contextSet, inPredicate, axis == Constants.ANCESTOR_SELF_AXIS);
+            result = context.getBroker().getElementIndex().findElementsByTagName(
+                    ElementValue.ELEMENT, docs, test.getName(), selector
+            );
 //			LOG.debug("getAncestors found " + result.getLength());
 		} else {
 			result = new ExtArrayNodeSet();
