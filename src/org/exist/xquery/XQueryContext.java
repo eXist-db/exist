@@ -1373,7 +1373,7 @@ public class XQueryContext {
 		String modules[][] = (String[][]) config.getProperty("xquery.modules");
 		if ( modules != null ) {
 			for (int i = 0; i < modules.length; i++) {
-				LOG.debug("Loading module " + modules[i][0]);
+//				LOG.debug("Loading module " + modules[i][0]);
 				loadBuiltInModule(modules[i][0], modules[i][1]);
 			}
 		}
