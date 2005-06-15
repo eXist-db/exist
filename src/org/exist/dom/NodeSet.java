@@ -281,6 +281,8 @@ public interface NodeSet extends Sequence, NodeList {
 	 */
 	public NodeSet getParents(boolean rememberContext);
 	
+    public NodeSet getAncestors(boolean rememberContext, boolean includeSelf);
+    
 	/**
 	 * If all nodes in this set have an index, returns the common
 	 * supertype used to build the index, e.g. xs:integer or xs:string.
