@@ -9,7 +9,6 @@ import java.util.Observable;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
-import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -258,14 +257,14 @@ public class Restore extends DefaultHandler {
 						try {
 							date_created = (Date)(new DateTimeValue(created)).getDate();
 						} catch (XPathException e2) {
-                            e2.printStackTrace();
+                            System.err.println("Illegal creation date. Skipping ...");
 						} 
 					
 					if (modified != null)
 						try {
 							date_modified = (Date)(new DateTimeValue(modified)).getDate();
 						} catch (XPathException e2) {
-                            e2.printStackTrace();
+                            System.err.println("Illegal modification date. Skipping ...");
 						} 
 					
 					current.storeResource(res, date_created, date_modified);
