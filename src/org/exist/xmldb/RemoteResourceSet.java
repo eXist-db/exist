@@ -86,15 +86,15 @@ public class RemoteResourceSet implements ResourceSet {
 			parent.properties = outputProperties;
             RemoteXMLResource res =
                 new RemoteXMLResource( parent, handle,
-                	(int)pos, doc, s_id );
+                	(int) (pos + 1), doc, s_id );
             res.setProperties(outputProperties);
             return res;
         } else if ( resources.elementAt( (int) pos ) instanceof Resource )
             return (Resource) resources.elementAt( (int) pos );
         else {
             // value
-            RemoteXMLResource res = new RemoteXMLResource( collection, handle, (int)pos, 
-            	Long.toString( pos ), null );
+            RemoteXMLResource res = new RemoteXMLResource( collection, handle, (int) (pos + 1), 
+            	Long.toString( pos + 1 ), null );
             res.setContent( resources.elementAt( (int) pos ) );
             res.setProperties(outputProperties);
             return res;
