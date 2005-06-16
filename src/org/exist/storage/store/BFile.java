@@ -1483,8 +1483,6 @@ public class BFile extends BTree {
                     if (next > 0) {
                         // load next page in chain
                         nextPage = (SinglePage) getDataPage(next, false);
-                        dataCache.add(page);
-                        page = nextPage;
                     } else {
                         // add a new page to the chain
                         nextPage = (SinglePage) createDataPage();
@@ -1493,9 +1491,9 @@ public class BFile extends BTree {
                         nextPage.getPageHeader().setNextInChain(0L);
                         page.getPageHeader().setNextInChain(
                                 nextPage.getPageNum());
-                        dataCache.add(page);
-                        page = nextPage;
                     }
+                    dataCache.add(page);
+                    page = nextPage;
                 } else {
                     page.getPageHeader().setNextInChain(0L);
                     if (page != firstPage) {
@@ -1603,7 +1601,9 @@ public class BFile extends BTree {
         public MultiPageInput(SinglePage first, long address) {
             nextPage = first;
             offset = 6;
-            pageLen = fileHeader.getWorkSize();
+            pageLen = first.ph.getDataLength();
+            if (pageLen > fileHeader.getWorkSize())
+            	pageLen = fileHeader.getWorkSize();
             dataCache.add(first, 3);
             this.address = address;
         }
@@ -1611,7 +1611,7 @@ public class BFile extends BTree {
         public long getAddress() {
             return address;
         }
-
+        
         /*
          * (non-Javadoc)
          * 
