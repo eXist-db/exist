@@ -95,7 +95,15 @@
         <tstamp/>
         <filter token="version" value="${project.version}-${DSTAMP}"/>
         <filter token="database" value="native"/>
-        <copy file="${src.webapp}/header.xml.tmpl" tofile="${src.webapp}/header.xml" filtering="true"/>
+        <copy 
+        	file="${src.webapp}/header.xml.tmpl" 
+        	tofile="${src.webapp}/header.xml" filtering="true"
+        	overwrite="true"
+        />
+    	<copy file="${src.webapp}/header.xml.tmpl" 
+    		tofile="${src.webapp}/xquery/header.xml" filtering="true"
+    		overwrite="true"
+    	/>
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true"/>
     </target>
 
@@ -572,7 +580,7 @@
     <target name="dist-war" depends="webapps" description="Create war file">
         <war basedir="${webapp.dir}"
                 destfile="${dist}/${project.name}-${project.version}.war"
-                webxml="webapp\WEB-INF\web.xml">
+                webxml="webapp\WEB-INF\web.xml.war">
             <lib dir=".">
                 <include name="exist.jar"/>
                 <include name="exist-optional.jar"/>
