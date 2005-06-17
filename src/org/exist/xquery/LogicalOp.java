@@ -62,14 +62,14 @@ public abstract class LogicalOp extends BinaryOp {
 	 */
 	public void analyze(Expression parent, int flags) throws XPathException {
 		super.analyze(parent, flags);
-		if(!inWhereClause &&
-	            Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
+		if(Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 				Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
 				(getLeft().getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
 				(getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0)
 			optimize = true;
 		else
 			optimize = false;
+		LOG.debug("optimize = " + optimize);
 	}
 	
 	public int returnsType() {
