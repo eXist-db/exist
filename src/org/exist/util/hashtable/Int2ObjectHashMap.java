@@ -136,7 +136,7 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 		if (idx < 0)
 			idx *= -1;
 		if (values[idx] == null) {
-			System.out.println(key + " not found for remove");
+//			System.out.println(key + " not found for remove");
 			return null; // key does not exist
 		} else if (keys[idx] == key) {
 			if (values[idx] == REMOVED)
@@ -150,7 +150,7 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (values[idx] == null) {
-				System.out.println(key + " not found for remove");
+//				System.out.println(key + " not found for remove");
 				return null; // key not found
 			} else if (keys[idx] == key) {
 				if (values[idx] == REMOVED)

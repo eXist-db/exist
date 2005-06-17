@@ -132,6 +132,8 @@ public class RemoteResourceSet implements ResourceSet {
 	 * @see java.lang.Object#finalize()
 	 */
 	protected void finalize() throws Throwable {
+		if (handle == -1)
+			return;
 		try {
 			Vector params = new Vector(1);
 			params.addElement(new Integer(handle));
