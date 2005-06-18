@@ -29,8 +29,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
 
 
@@ -39,12 +37,23 @@ import org.apache.log4j.xml.DOMConfigurator;
  */
 public class Log4jInit extends HttpServlet {
     
+    private String existHome=System.getProperty("exist.home");
+    
     /**
-     * Initialize servlet for log4j purposes.
+     * Initialize servlet for log4j purposes in servlet container (war file).
      */
     public void init() throws ServletException {
-    	LogManager.resetConfiguration();
-    	
+        
+        // We need to check how eXist is running. If eXist is started in a
+        // servlet container like Tomcat, then initialization *is* needed.
+        //
+        // If eXist is started in its own jetty server, the logging is 
+        // already initialized. All can, must and shall be skipped then.
+        if(!isInWarFile()) {
+            System.out.println("Logging already initialized. Skipping...");
+            return;
+        }
+        
         // Get data from web.xml
         String file = getInitParameter("log4j-init-file");
         
@@ -55,8 +64,7 @@ public class Log4jInit extends HttpServlet {
         File logsdir = new File(existDir, "WEB-INF/logs" );
         logsdir.mkdirs();
         System.out.println("eXist logs dir="+ logsdir.getAbsolutePath());
-        System.setProperty("logger.dir", logsdir.getAbsolutePath() );
-        
+        System.setProperty("logger.dir", logsdir.getAbsolutePath() );      
         
         // Get log4j configuration file
         File configFile = new File(existDir,file);
@@ -64,6 +72,19 @@ public class Log4jInit extends HttpServlet {
         
         // Configure log4j
         DOMConfigurator.configure(configFile.getAbsolutePath());
+    }
+    
+    /**
+     *  Check wether exist runs in Servlet container (as war file).
+     * @return TRUE if exist runs in servlet container.
+     */
+    public boolean isInWarFile(){
+        
+        boolean retVal =true;
+        if( new File(existHome, "lib/core").isDirectory() ) {
+            retVal=false;
+        }
+        return retVal;
     }
     
     /**
