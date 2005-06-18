@@ -16,7 +16,7 @@
     <!-- Servlet for explicit initialisation of log4j. Only needed
          when deploying eXist as a .war web-archive.
     -->
-    <!--servlet>
+    <servlet>
         <servlet-name>log4j-init</servlet-name>
         <servlet-class>org.exist.http.servlets.Log4jInit</servlet-class>
 
@@ -26,7 +26,7 @@
         </init-param>
 
         <load-on-startup>1</load-on-startup>
-    </servlet-->
+    </servlet>
     
 	
     <!-- RpcServlet provides XML-RPC access to eXist -->
