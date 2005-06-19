@@ -4,7 +4,9 @@ $Id$
  */
 package org.exist.xmldb.test;
 
-import org.exist.xmldb.DatabaseInstanceManager;
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -14,9 +16,6 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 
 /**
  * @author jmv
@@ -58,20 +57,6 @@ public class DOMTestJUnit extends TestCase {
 		r.setContent(
 			"<properties><property key=\"type\">Table</property></properties>");
 		rootColl.storeResource(r);
-	}
-
-	/*
-	 * @see TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception {
-		rootColl.removeResource(rootColl.getResource(name));
-		
-		DatabaseManager.deregisterDatabase(database);
-		DatabaseInstanceManager dim =
-			(DatabaseInstanceManager) rootColl.getService(
-				"DatabaseInstanceManager", "1.0");
-		dim.shutdown();
-		System.out.println("tearDown PASSED");
 	}
 	
 	/** test Update of an existing document through DOM */
