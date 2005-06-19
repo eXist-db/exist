@@ -170,7 +170,7 @@ public class XmlRpcTest extends TestCase {
         
         params.clear();
         params.addElement(handle);
-        params.addElement(new Integer(0));
+        params.addElement(new Integer(1));
         params.addElement(options);
         byte[] item = (byte[]) xmlrpc.execute( "retrieve", params );
         assertNotNull(item);
