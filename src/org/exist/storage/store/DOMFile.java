@@ -342,6 +342,15 @@ public class DOMFile extends BTree implements Lockable {
                     newPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
                     rec.page.getPageHeader().setNextDataPage(
                             newPage.getPageNum());
+                    
+                    if (newPage.ph.getNextDataPage() != -1) {
+                        // link the next page in the chain back to the new page inserted 
+                        DOMPage nextInChain = getCurrentPage(newPage.ph.getNextDataPage());
+                        nextInChain.ph.setPrevDataPage(newPage.getPageNum());
+                        nextInChain.setDirty(true);
+                        dataCache.add(nextInChain);
+                    }
+                    
                     rec.page.setDirty(true);
                     dataCache.add(rec.page);
                     rec.page = newPage;
