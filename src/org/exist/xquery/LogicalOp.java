@@ -69,7 +69,6 @@ public abstract class LogicalOp extends BinaryOp {
 			optimize = true;
 		else
 			optimize = false;
-		LOG.debug("optimize = " + optimize);
 	}
 	
 	public int returnsType() {
