@@ -356,6 +356,9 @@ public abstract class Function extends PathExpr {
 		return steps.size();
 	}
 
+	public void setPrimaryAxis(int axis) {
+	}
+	
 	/**
 	 * Return the name of this function.
 	 * 
