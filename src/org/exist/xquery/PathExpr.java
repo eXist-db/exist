@@ -27,8 +27,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeSet;
-import org.xmldb.api.base.CompiledExpression;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -36,6 +34,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.xmldb.api.base.CompiledExpression;
 
 /**
  * PathExpr is just a sequence of XQuery/XPath expressions, which will be called
@@ -135,7 +134,6 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             }
         }
 
-        NodeSet set;
         Item current;
         Sequence values;
         for (Iterator iter = steps.iterator(); iter.hasNext();) {
