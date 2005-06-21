@@ -180,4 +180,26 @@
         <dev-notes> JSP under tomcat, XQuery based search-engine </dev-notes>
         <submitter />
     </application>
+    <application>
+        <dc:creator>Arnis Vuskans (ampatspell)</dc:creator>
+        <dc:rights>GPL</dc:rights>
+        <dc:title>&lt;sic/&gt; XML Powered Assessment System</dc:title>
+        <dc:subject>assessment</dc:subject>
+        <dc:subject>evaluation</dc:subject>
+        <dc:description>
+            Web based generic data capture and evaluation tool. The system allows to define a master data dictionary represented as a tree, multiple user input forms based on the dictionary, and multiple evaluation algorithms calculating "results". The results represent, for example, certification categories or total score based on the data entered. They will be used for certification data capture, evaluation and automatic assignment of categories (stars) for rural tourist accommodations in Latvia.
+        </dc:description>
+        <dc:format>war</dc:format>
+        <dev-site>http://adm.celotajs.lv/prj/sic</dev-site>
+        <status>alpha</status>
+        <feature-used>XQuery</feature-used>
+        <feature-used>XQuery update extensions</feature-used>
+        <third-party-feature-used>Jetty</third-party-feature-used>
+        <third-party-feature-used>Orbeon PresentationServer</third-party-feature-used>
+        <database updates="frequent"/> 
+        <dev-notes>
+            Orbeon PresentationServer based application backed by eXist native xml database
+        </dev-notes>
+        <submitter>ampatspell@gmail.com</submitter>
+    </application>
 </applications>

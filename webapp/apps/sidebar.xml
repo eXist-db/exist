@@ -11,6 +11,9 @@
         <item>
             <link href="../credits.xml">Who we are</link>
         </item>
+        <item>
+            <link href="../acknowledge.xml">Acknowledgements</link>
+        </item>
     </group>
     <group name="Documentation">
         <item>
