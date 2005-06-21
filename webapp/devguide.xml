@@ -1788,7 +1788,7 @@ sub process {
                                 <term>pos</term>
                                 <listitem>
                                     <para>The position of the item 
-										in the result-sequence, starting at 1.</para>
+										in the result-sequence, starting at 0.</para>
                                 </listitem>
                             </varlistentry>
                             <varlistentry>
