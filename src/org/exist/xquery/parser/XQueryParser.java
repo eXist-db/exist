@@ -438,6 +438,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_typeswitch:
+		case LITERAL_case:
 		case LITERAL_then:
 		case LITERAL_else:
 		case LITERAL_or:
@@ -1576,6 +1577,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_typeswitch:
+		case LITERAL_case:
 		case LITERAL_then:
 		case LITERAL_else:
 		case LITERAL_or:
@@ -3242,6 +3244,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_typeswitch:
+		case LITERAL_case:
 		case LITERAL_then:
 		case LITERAL_else:
 		case LITERAL_or:
@@ -4141,6 +4144,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_typeswitch:
+		case LITERAL_case:
 		case LITERAL_then:
 		case LITERAL_else:
 		case LITERAL_or:
@@ -4415,6 +4419,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_typeswitch:
+		case LITERAL_case:
 		case LITERAL_then:
 		case LITERAL_else:
 		case LITERAL_or:
@@ -4830,6 +4835,7 @@ public XQueryParser(ParserSharedInputState state) {
 							case LITERAL_order:
 							case LITERAL_by:
 							case LITERAL_typeswitch:
+							case LITERAL_case:
 							case LITERAL_then:
 							case LITERAL_else:
 							case LITERAL_or:
@@ -5368,6 +5374,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_typeswitch:
+		case LITERAL_case:
 		case LITERAL_then:
 		case LITERAL_else:
 		case LITERAL_or:
@@ -5459,6 +5466,7 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_order:
 			case LITERAL_by:
 			case LITERAL_typeswitch:
+			case LITERAL_case:
 			case LITERAL_then:
 			case LITERAL_else:
 			case LITERAL_or:
@@ -5583,6 +5591,7 @@ public XQueryParser(ParserSharedInputState state) {
 				case LITERAL_order:
 				case LITERAL_by:
 				case LITERAL_typeswitch:
+				case LITERAL_case:
 				case LITERAL_then:
 				case LITERAL_else:
 				case LITERAL_or:
@@ -6088,6 +6097,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_typeswitch:
+		case LITERAL_case:
 		case LITERAL_then:
 		case LITERAL_else:
 		case LITERAL_or:
@@ -6240,6 +6250,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_typeswitch:
+		case LITERAL_case:
 		case LITERAL_then:
 		case LITERAL_else:
 		case LITERAL_or:
@@ -6500,6 +6511,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_typeswitch:
+		case LITERAL_case:
 		case LITERAL_then:
 		case LITERAL_else:
 		case LITERAL_or:
@@ -6647,6 +6659,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_typeswitch:
+		case LITERAL_case:
 		case LITERAL_then:
 		case LITERAL_else:
 		case LITERAL_or:
@@ -6864,6 +6877,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_typeswitch:
+		case LITERAL_case:
 		case LITERAL_then:
 		case LITERAL_else:
 		case LITERAL_or:
@@ -7009,6 +7023,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_typeswitch:
+		case LITERAL_case:
 		case LITERAL_then:
 		case LITERAL_else:
 		case LITERAL_or:
@@ -9185,6 +9200,18 @@ public XQueryParser(ParserSharedInputState state) {
 			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
+		case LITERAL_case:
+		{
+			org.exist.xquery.parser.XQueryAST tmp426_AST = null;
+			tmp426_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp426_AST);
+			match(LITERAL_case);
+			if ( inputState.guessing==0 ) {
+				name = "case";
+			}
+			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
 		default:
 		{
 			throw new NoViableAltException(LT(1), getFilename());
@@ -9410,17 +9437,17 @@ public XQueryParser(ParserSharedInputState state) {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { -81909218222800896L, 1007131485443313663L, 72198325083757760L, 0L, 0L, 0L};
+		long[] data = { -81909218222800896L, 1008257385350156287L, 72198325083757760L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { -226305881275367424L, 430670733136742399L, 72075152097465536L, 0L, 0L, 0L};
+		long[] data = { -226305881275367424L, 431796633043585023L, 72075152097465536L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
-		long[] data = { -226305881275367424L, 430670733136742399L, 72075152131019968L, 0L, 0L, 0L};
+		long[] data = { -226305881275367424L, 431796633043585023L, 72075152131019968L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
@@ -9440,12 +9467,12 @@ public XQueryParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
 	private static final long[] mk_tokenSet_6() {
-		long[] data = { -226305881275367424L, 430670733137790975L, 72075177900823744L, 0L, 0L, 0L};
+		long[] data = { -226305881275367424L, 431796633044633599L, 72075177900823744L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	private static final long[] mk_tokenSet_7() {
-		long[] data = { -81909218222800896L, 1007131485440167935L, 72198299312379072L, 0L, 0L, 0L};
+		long[] data = { -81909218222800896L, 1008257385347010559L, 72198299312379072L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
@@ -9460,7 +9487,7 @@ public XQueryParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
 	private static final long[] mk_tokenSet_10() {
-		long[] data = { -226305881275367424L, 430670733137790975L, 72075152097465536L, 0L, 0L, 0L};
+		long[] data = { -226305881275367424L, 431796633044633599L, 72075152097465536L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());

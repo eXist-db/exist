@@ -1343,6 +1343,8 @@ reservedKeywords returns [String name]
 	"rename" { name = "rename"; }
 	|
 	"option" { name = "option"; }
+	|
+	"case" { name = "case"; }
 	;
 
 /**
