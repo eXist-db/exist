@@ -170,7 +170,7 @@ public class XmlRpcTest extends TestCase {
         
         params.clear();
         params.addElement(handle);
-        params.addElement(new Integer(1));
+        params.addElement(new Integer(0));
         params.addElement(options);
         byte[] item = (byte[]) xmlrpc.execute( "retrieve", params );
         assertNotNull(item);
@@ -198,9 +198,16 @@ public class XmlRpcTest extends TestCase {
         System.out.println("Found: " + hits.intValue());
         assertEquals(hits.intValue(), 2);
         
-        params.addElement(new Integer(1));
+        params.addElement(new Integer(0));
         params.addElement(new Hashtable());
         byte[] item = (byte[]) xmlrpc.execute( "retrieve", params );
+        System.out.println(new String(item, "UTF-8"));
+        
+        params.clear();
+        params.addElement(handle);
+        params.addElement(new Integer(1));
+        params.addElement(new Hashtable());
+        item = (byte[]) xmlrpc.execute( "retrieve", params );
         System.out.println(new String(item, "UTF-8"));
 	}
 	
