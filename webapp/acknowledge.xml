@@ -1,0 +1,80 @@
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+    
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <title>Open Source Native XML Database</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>wolfgang@exist-db.org</email>
+                </address>
+            </affiliation>
+        </author>
+        <style>
+            table { 
+                margin-left: 15px; 
+                margin-right: 15px;
+            }
+            td {
+                border-bottom: 1px dotted #C0C0C0;
+            }
+            td.description {
+                margin-right: 2em;
+            }
+            p.ack { margin-top: 1em; }
+            
+        </style>
+    </bookinfo>
+    
+    <ci:include src="sidebar.xml"/>
+    
+    <chapter>
+        <title>Acknowledgements</title>
+        
+        <para>We would like to thank the following organizations and corporations for 
+        supporting and sponsoring the development of eXist:</para>
+        
+        <table cellspacing="0" cellpadding="15">
+            <tr>
+                <td class="description"><a href="http://www.trapezenetworks.com">Trapeze Networks</a>, 
+                    headquartered in Pleasanton, Calif., has continuously sponsored improvements 
+                    and new features since 2004 and helped to advance development by testing and deploying 
+                    eXist in a production environment.</td>
+                <td align="center">
+                    <a href="http://www.trapezenetworks.com">
+                        <img border="0" src="resources/trapeze.gif"/>
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td class="description">Major parts of the XQuery implementation were motivated and 
+                    sponsored by the project: <em>"Exemplarische Internet-Edition der Werke des 
+                    jungen Goethe und Jakob Michael Reinhold Lenz'"</em>, funded by the
+                    <a href="http://www.fritz-thyssen-stiftung.de/">Fritz-Thyssen Stiftung</a>. Project lead: Prof. Dr. Karl Eibl 
+                    (Institut für Deutsche Philologie, Ludwig- Maximilians- Universität München), 
+                    Prof. Dr. Fotis Jannidis (Institut für Sprach- und Literaturwissenschaft, 
+                    TU Darmstadt).
+                </td>
+                <td align="center">
+                    <a href="http://www.fritz-thyssen-stiftung.de">
+                        <img border="0" src="resources/thyssen.png"/>
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td class="description">A number of features, including user management, XQuery extensions
+                and the bibliographic demo were developed within the context of the project: 
+                <a href="http://www.sozionet.org">SozioNet</a>, a German social-science portal. 
+                SozioNet has been funded by the German Federal Ministry For Education and Research.
+                Project lead: Prof. Dr. Rudi Schmiede (Institut für Soziologie, TU Darmstadt).</td>
+                <td align="center">
+                    <a href="http://www.bmbf.de">
+                        <img border="0" src="resources/bbf2.gif"/>
+                    </a>                    
+                </td>
+            </tr>
+        </table>
+    </chapter>
+</book>
