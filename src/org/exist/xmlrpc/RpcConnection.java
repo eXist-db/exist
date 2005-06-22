@@ -587,7 +587,7 @@ public class RpcConnection extends Thread {
 			serializer.setProperties(parameters);
 			Hashtable result = new Hashtable();
 			if(doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
-				File tempFile = File.createTempFile("eXist", ".xml");
+				File tempFile = File.createTempFile("eXistRPCC", ".xml");
 				tempFile.deleteOnExit();
 				LOG.debug("Writing to temporary file: " + tempFile.getName());
 				
@@ -641,6 +641,7 @@ public class RpcConnection extends Thread {
 			remaining = MAX_DOWNLOAD_CHUNK_SIZE;
 		byte[] data = new byte[remaining];
 		raf.readFully(data);
+		raf.close();
 		return data;
 	}
 	
