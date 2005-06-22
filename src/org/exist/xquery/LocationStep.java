@@ -443,16 +443,27 @@ public class LocationStep extends Step {
 //			LOG.debug("getAncestors found " + result.getLength());
 		} else {
 			result = new ExtArrayNodeSet();
-			NodeProxy p;
+			NodeProxy p, ancestor;
 			for (Iterator i = contextSet.iterator(); i.hasNext();) {
 				p = (NodeProxy) i.next();
-				if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(p))
-					result.add(
-						new NodeProxy(p.getDocument(), p.gid, p.getInternalAddress()));
+				if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(p)) {
+                    ancestor = new NodeProxy(p.getDocument(), p.gid, p.getInternalAddress());
+                    if (inPredicate)
+                        ancestor.addContextNode(p);
+                    else
+                        ancestor.copyContext(p);
+					result.add(ancestor);
+                }
 				while ((p.gid = XMLUtil.getParentId(p.getDocument(), p.gid)) > 0) {
 					p.nodeType = Node.ELEMENT_NODE;
-					if (test.matches(p))
-						result.add(new NodeProxy(p.getDocument(), p.gid));
+					if (test.matches(p)) {
+                        ancestor = new NodeProxy(p.getDocument(), p.gid);
+                        if (inPredicate)
+                            ancestor.addContextNode(p);
+                        else
+                            ancestor.copyContext(p);
+						result.add(ancestor);
+                    }
 				}
 			}
 		}
