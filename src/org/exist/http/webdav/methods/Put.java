@@ -144,7 +144,7 @@ public class Put extends AbstractWebDAVMethod {
 		int len = request.getContentLength();
 		// put may send a lot of data, so save it
 		// to a temporary file first.
-		File tempFile = File.createTempFile("exist", ".tmp");
+		File tempFile = File.createTempFile("existSRC", ".tmp");
 		OutputStream os = new FileOutputStream(tempFile);
 		byte[] buffer = new byte[4096];
 		int count, l = 0;

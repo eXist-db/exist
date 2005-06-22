@@ -363,7 +363,7 @@ public class CocoonRequestWrapper implements RequestWrapper {
 		 if(param instanceof Part) {
 		 	Part part = (Part) param;
 		 	try {
-				File temp = File.createTempFile("exist", ".xml");
+				File temp = File.createTempFile("existCRW", ".xml");
 				temp.deleteOnExit();
 				OutputStream os = new FileOutputStream(temp);
 				InputStream is = part.getInputStream();

@@ -204,7 +204,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			resource = loadFromFile(collection, file, docName, binary);
 		} else {
 			try {
-				File temp = File.createTempFile("exist", ".xml");
+				File temp = File.createTempFile("existDBS", ".xml");
+				// This is deleted later; is this necessary?
 				temp.deleteOnExit();
 				OutputStream os = new FileOutputStream(temp);
 				InputStream is = uri.toURL().openStream();
@@ -214,6 +215,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 					os.write(data, 0, read);
 				}
 				is.close();
+				os.close();
 				resource = loadFromFile(collection, temp, docName, binary);
 				temp.delete();
 			} catch (MalformedURLException e) {
