@@ -73,7 +73,9 @@ public class XQuery {
     public CompiledXQuery compile(XQueryContext context, Source source, boolean xpointer) 
     throws XPathException, IOException {
         Reader reader = source.getReader();
-        return compile(context, reader, xpointer);
+        CompiledXQuery compiled = compile(context, reader, xpointer);
+        reader.close();
+        return compiled;
     }
     
     public CompiledXQuery compile(XQueryContext context, Reader reader) throws XPathException {
