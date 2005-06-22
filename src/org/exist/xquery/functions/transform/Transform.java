@@ -330,8 +330,6 @@ public class Transform extends BasicFunction {
 			try {
 				xslDoc = (DocumentImpl)
 					context.getBroker().getDocument(path);
-				if(!xslDoc.getPermissions().validate(context.getUser(), Permission.READ))
-				    throw new TransformerException("Insufficient privileges to read resource " + path);
 			} catch (PermissionDeniedException e) {
 				throw new TransformerException(e.getMessage(), e);
 			}
@@ -339,6 +337,8 @@ public class Transform extends BasicFunction {
 				LOG.debug("Document " + href + " not found in collection " + collection.getName());
 				return null;
 			}
+			if(!xslDoc.getPermissions().validate(context.getUser(), Permission.READ))
+			    throw new TransformerException("Insufficient privileges to read resource " + path);
 			DOMSource source = new DOMSource(xslDoc);
 			return source;
 		}
