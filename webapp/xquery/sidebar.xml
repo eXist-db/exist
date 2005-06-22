@@ -77,7 +77,7 @@
             <link href="../admin/admin.xql">Admin</link>
         </item>
         <item>
-			<link href="webstart/exist.jnlp">Webstart Client</link>
+			<link href="../webstart/exist.jnlp">Webstart Client</link>
         </item>
     </group>
     
