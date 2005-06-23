@@ -14,8 +14,8 @@
   <typedef name="copy" classname="org.exist.ant.XMLDBCopyTask"/>
   <typedef name="xupdate" classname="org.exist.ant.XMLDBXUpdateTask"/>
   <typedef name="shutdown" classname="org.exist.ant.XMLDBShutdownTask"/>
-  <typedef name="chown" classname="org.exist.ant.ChmodTask"/>
-  <typedef name="chmod" classname="org.exist.ant.ChownTask"/>
+  <typedef name="chmod" classname="org.exist.ant.ChmodTask"/>
+  <typedef name="chown" classname="org.exist.ant.ChownTask"/>
   <typedef name="users" classname="org.exist.ant.ListUsersTask"/>
   <typedef name="groups" classname="org.exist.ant.ListGroupsTask"/>
   <typedef name="adduser" classname="org.exist.ant.AddUserTask"/>
