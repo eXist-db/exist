@@ -355,18 +355,21 @@ public class LocationStep extends Step {
 					: NodeSet.FOLLOWING);
 		} else {
 			result = new ArraySet(contextSet.getLength());
-			NodeProxy p;
+			NodeProxy p, sib;
 			NodeImpl n;
 			for (Iterator i = contextSet.iterator(); i.hasNext();) {
 				p = (NodeProxy) i.next();
 				n = (NodeImpl) p.getNode();
 				while ((n = getNextSibling(n)) != null) {
-					if (test.matches(n))
-						result.add(
-							new NodeProxy(
-								(DocumentImpl) n.getOwnerDocument(),
-								n.getGID(),
-								n.getInternalAddress()));
+					if (test.matches(n)) {
+						sib = new NodeProxy((DocumentImpl) n.getOwnerDocument(), n.getGID(),
+								n.getInternalAddress());
+                        if (inPredicate)
+                            sib.addContextNode(p);
+                        else
+                            sib.copyContext(p);
+                        result.add(sib);
+					}
 				}
 			}
 		}
