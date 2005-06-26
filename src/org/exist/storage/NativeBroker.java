@@ -2489,6 +2489,8 @@ public class NativeBroker extends DBBroker {
 			domDb.close();
 			elementsDb.close();
 			valuesDb.close();
+            if (qnameValueIndexation)
+                valuesDbQname.close();
 			collectionsDb.close();
 		} catch (Exception e) {
 			LOG.debug(e);
