@@ -539,10 +539,12 @@ public class GeneralComparison extends BinaryOp {
 			idxSpec = doc.getCollection().getIdxConf(context.getBroker());
 			if(idxSpec != null) {
 			    idx = idxSpec.getFulltextIndexSpec();
-			    if(idx.isSelective())
-			        return true;
-			    if(!idx.getIncludeAlphaNum())
-			        return true;
+                if (idx != null) {
+    			    if(idx.isSelective())
+    			        return true;
+    			    if(!idx.getIncludeAlphaNum())
+    			        return true;
+                }
 			}
 		}
 		return false;
