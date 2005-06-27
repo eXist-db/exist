@@ -288,7 +288,9 @@ public class InteractiveClient {
         int i = 0;
         Collection child;
         Permission perm;
-        Object tableData[][] = new Object[resources.length][4];
+        
+        List tableData = new ArrayList(resources.length); // A list of ResourceDescriptor for the GUI
+        
         String cols[] = new String[4];
         for (; i < childCollections.length; i++) {
             child = current.getChildCollection(childCollections[i]);
@@ -302,10 +304,11 @@ public class InteractiveClient {
             } else
                 resources[i] = childCollections[i];
             if (startGUI) {
-                tableData[i][0] = perm.toString();
-                tableData[i][1] = perm.getOwner();
-                tableData[i][2] = perm.getOwnerGroup();
-                tableData[i][3] = new CollectionName(childCollections[i]);
+                tableData.add(new ResourceDescriptor.Collection(
+                        childCollections[i],
+                        perm.getOwner(),
+                        perm.getOwnerGroup(),
+                        perm.toString()));
             }
             completitions.add(childCollections[i]);
         }
@@ -322,10 +325,11 @@ public class InteractiveClient {
             } else
                 resources[i] = childResources[j];
             if (startGUI) {
-                tableData[i][0] = perm.toString();
-                tableData[i][1] = perm.getOwner();
-                tableData[i][2] = perm.getOwnerGroup();
-                tableData[i][3] = childResources[j];
+                tableData.add(new ResourceDescriptor.Document(
+                        childResources[j],
+                        perm.getOwner(),
+                        perm.getOwnerGroup(),
+                        perm.toString()));
             }
             completitions.add(childResources[j]);
         }
@@ -1774,7 +1778,7 @@ public class InteractiveClient {
     /**
      *  Process the command line options
      * @param cOpt Object representing commandline options
-     * @throws java.lang.Exception 
+     * @throws java.lang.Exception
      * @return TRUE is all successfull, FALSE of not.
      */
     private boolean processCommandLineActions(CommandlineOptions cOpt)  throws Exception {
@@ -2086,7 +2090,7 @@ public class InteractiveClient {
             if (startGUI) {
                 frame = new ClientFrame(this, path, properties);
                 frame.setLocation(100, 100);
-                frame.setSize(500, 450);
+                frame.setSize(500, 500);
                 frame.setVisible(true);
             }
             
@@ -2436,16 +2440,4 @@ public class InteractiveClient {
         return buf.toString();
     }
     
-    public static class CollectionName {
-        
-        String name_;
-        
-        public CollectionName(String name) {
-            name_ = name;
-        }
-        
-        public String toString() {
-            return name_;
-        }
-    }
 }
