@@ -241,84 +241,88 @@ public class Backup {
 		BufferedWriter writer;
 		SAXSerializer contentSerializer;
 		for (int i = 0; i < resources.length; i++) {
-			resource = current.getResource(resources[i]);
-			file = new File(path);
-			if (!file.exists())
-				file.mkdirs();
-			if (dialog == null)
-				System.out.println("writing " + path + '/' + resources[i]);
-			else {
-				dialog.setResource(resources[i]);
-				dialog.setProgress(i);
-			}
-			//os = new FileOutputStream(path + '/' + resources[i]);
-			os = new FileOutputStream(path + '/' + encode(resources[i]));
-			if(resource.getResourceType().equals("BinaryResource")) {
-				byte[] bdata = (byte[])resource.getContent();
-				os.write(bdata);
-				os.close();
-			} else {
-			    try {
-					writer =
-						new BufferedWriter(
-							new OutputStreamWriter(os, "UTF-8"));
-					// write resource to contentSerializer
-                    contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-					contentSerializer.setOutput(writer, defaultOutputProperties);
-					((EXistResource)resource).setLexicalHandler(contentSerializer);
-					((XMLResource)resource).getContentAsSAX(contentSerializer);
-					SerializerPool.getInstance().returnObject(contentSerializer);
-					writer.close();
-			    } catch(Exception e) {
-			        System.err.println("An exception occurred while writing the resource: " + e.getMessage());
-			        e.printStackTrace();
-			        continue;
-			    }
-			}
-			EXistResource ris = (EXistResource)resource;
-			
-			//store permissions
-			attr.clear();
-			attr.addAttribute(NS, "type", "type", "CDATA", resource.getResourceType());
-			attr.addAttribute(NS, "name", "name", "CDATA", resources[i]);
-			attr.addAttribute(NS, "owner", "owner", "CDATA", perms[i].getOwner());
-			attr.addAttribute(NS, "group", "group", "CDATA", perms[i].getOwnerGroup());
-			attr.addAttribute(
-				NS,
-				"mode",
-				"mode",
-				"CDATA",
-				Integer.toOctalString(perms[i].getPermissions()));
-			attr.addAttribute(
-					NS,
-					"created",
-					"created",
-					"CDATA",
-					""+new DateTimeValue(ris.getCreationTime().getTime()));
-			attr.addAttribute(
-					NS,
-					"modified",
-					"modified",
-					"CDATA",
-					""+new DateTimeValue(ris.getLastModificationTime().getTime()));
-
-			attr.addAttribute(
-					NS,
-					"filename",
-					"filename",
-					"CDATA",
-					encode( ""+resources[i] )
-					 );
-			attr.addAttribute(
-					NS,
-					"mimetype",
-					"mimetype",
-					"CDATA",
-					encode( ((EXistResource)resource).getMimeType())
-					 );
-			
-			serializer.startElement(NS, "resource", "resource", attr);
-			serializer.endElement(NS, "resource", "resource");
+            try {
+                resource = current.getResource(resources[i]);
+                file = new File(path);
+                if (!file.exists())
+                    file.mkdirs();
+                if (dialog == null)
+                    System.out.println("writing " + path + '/' + resources[i]);
+                else {
+                    dialog.setResource(resources[i]);
+                    dialog.setProgress(i);
+                }
+                //os = new FileOutputStream(path + '/' + resources[i]);
+                os = new FileOutputStream(path + '/' + encode(resources[i]));
+                if(resource.getResourceType().equals("BinaryResource")) {
+                    byte[] bdata = (byte[])resource.getContent();
+                    os.write(bdata);
+                    os.close();
+                } else {
+                    try {
+                        writer =
+                            new BufferedWriter(
+                                    new OutputStreamWriter(os, "UTF-8"));
+                        // write resource to contentSerializer
+                        contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+                        contentSerializer.setOutput(writer, defaultOutputProperties);
+                        ((EXistResource)resource).setLexicalHandler(contentSerializer);
+                        ((XMLResource)resource).getContentAsSAX(contentSerializer);
+                        SerializerPool.getInstance().returnObject(contentSerializer);
+                        writer.close();
+                    } catch(Exception e) {
+                        System.err.println("An exception occurred while writing the resource: " + e.getMessage());
+                        e.printStackTrace();
+                        continue;
+                    }
+                }
+                EXistResource ris = (EXistResource)resource;
+                
+                //store permissions
+                attr.clear();
+                attr.addAttribute(NS, "type", "type", "CDATA", resource.getResourceType());
+                attr.addAttribute(NS, "name", "name", "CDATA", resources[i]);
+                attr.addAttribute(NS, "owner", "owner", "CDATA", perms[i].getOwner());
+                attr.addAttribute(NS, "group", "group", "CDATA", perms[i].getOwnerGroup());
+                attr.addAttribute(
+                        NS,
+                        "mode",
+                        "mode",
+                        "CDATA",
+                        Integer.toOctalString(perms[i].getPermissions()));
+                attr.addAttribute(
+                        NS,
+                        "created",
+                        "created",
+                        "CDATA",
+                        ""+new DateTimeValue(ris.getCreationTime().getTime()));
+                attr.addAttribute(
+                        NS,
+                        "modified",
+                        "modified",
+                        "CDATA",
+                        ""+new DateTimeValue(ris.getLastModificationTime().getTime()));
+                
+                attr.addAttribute(
+                        NS,
+                        "filename",
+                        "filename",
+                        "CDATA",
+                        encode( ""+resources[i] )
+                );
+                attr.addAttribute(
+                        NS,
+                        "mimetype",
+                        "mimetype",
+                        "CDATA",
+                        encode( ((EXistResource)resource).getMimeType())
+                );
+                
+                serializer.startElement(NS, "resource", "resource", attr);
+                serializer.endElement(NS, "resource", "resource");
+            } catch(XMLDBException e) {
+                System.err.println("Failed to backup resource " + resources[i] + " from collection " + current.getName());
+            }
 		}
 		// write subcollections
 		String[] collections = current.listChildCollections();
