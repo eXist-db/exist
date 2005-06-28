@@ -1285,7 +1285,7 @@ public class NativeBroker extends DBBroker {
 		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
 	}
 	
-	public void copyResource(DocumentImpl doc, Collection destination, String newName) 
+	public void copyResource(DocumentImpl doc, Collection destination, String newName)
 	throws PermissionDeniedException, LockException {
 		if (readOnly)
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
@@ -1324,15 +1324,25 @@ public class NativeBroker extends DBBroker {
 	    	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
 	    	                destination.getName());
 	        }
-	        DocumentImpl newDoc = new DocumentImpl(this, newName, destination);
-	        newDoc.copyOf(doc);
-	        newDoc.setDocId(getNextDocId(destination));
-	        copyResource(doc, newDoc);
-	        destination.addDocument(this, newDoc);
-	        updateDocument(newDoc);
+	        
+	        DocumentImpl newDoc;
+	        if (doc.getResourceType() == DocumentImpl.BINARY_FILE)  {
+	        	byte[] data = getBinaryResourceData((BinaryDocument) doc);
+	        	BinaryDocument newBinary = 
+        			destination.addBinaryResource(this, newName, data, doc.getMimeType());
+	        } else {
+	        	newDoc = new DocumentImpl(this, newName, destination);
+		        newDoc.copyOf(doc);
+		        newDoc.setDocId(getNextDocId(destination));
+		        copyResource(doc, newDoc);
+		        destination.addDocument(this, newDoc);
+		        updateDocument(newDoc);
+	        }
 //	        saveCollection(destination);
 		} catch (TriggerException e) {
 			throw new PermissionDeniedException(e.getMessage());
+		} catch (EXistException e) {
+			LOG.warn("An error occurred while copying resource", e);
 		} finally {
 	    	lock.release();
 	    }
@@ -2221,29 +2231,36 @@ public class NativeBroker extends DBBroker {
 	            if(!oldDoc.getPermissions().validate(user, Permission.UPDATE))
 	                throw new PermissionDeniedException("Resource with same name exists in target " +
 	                		"collection and update is denied");
-	            collection.removeDocument(this, oldDoc.getFileName());
+	            if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
+	            	collection.removeBinaryResource(this, oldDoc);
+	            else
+	            	collection.removeDocument(this, oldDoc.getFileName());
 	        } else
 	            if(!destination.getPermissions().validate(user, Permission.WRITE))
 	    	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
 	    	                destination.getName());
-	            
+	        
 	        boolean renameOnly = collection.getId() == destination.getId();
 	        collection.unlinkDocument(doc);
-	        if(!renameOnly) {
-		        elementIndex.dropIndex(doc);
-				textEngine.dropIndex(doc);
-				valueIndex.dropIndex(doc);
-				if ( qnameValueIndexation )
-					qnameValueIndex.dropIndex(doc);
-				saveCollection(collection);
-	        }
-			doc.setFileName(newName);
-			destination.addDocument(this, doc);
-	        doc.setCollection(destination);
-
-	        if(!renameOnly) {
-		        // reindexing
-				reindex(doc);
+	        doc.setFileName(newName);
+        	doc.setCollection(destination);
+	        if (doc.getResourceType() == DocumentImpl.XML_FILE) {
+		        if(!renameOnly) {
+			        elementIndex.dropIndex(doc);
+					textEngine.dropIndex(doc);
+					valueIndex.dropIndex(doc);
+					if ( qnameValueIndexation )
+						qnameValueIndex.dropIndex(doc);
+					saveCollection(collection);
+		        }
+		        destination.addDocument(this, doc);
+		        if(!renameOnly) {
+			        // reindexing
+					reindex(doc);
+		        }
+	        } else {
+	        	// binary resource
+	        	destination.addDocument(this, doc);
 	        }
 			saveCollection(destination);
         } catch (TriggerException e) {
