@@ -1318,7 +1318,10 @@ public class NativeBroker extends DBBroker {
 	            if(!oldDoc.getPermissions().validate(user, Permission.UPDATE))
 	                throw new PermissionDeniedException("Resource with same name exists in target " +
 	                		"collection and update is denied");
-	            collection.removeDocument(this, oldDoc.getFileName());
+                if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
+                    destination.removeBinaryResource(this, oldDoc);
+                else
+                    destination.removeDocument(this, oldDoc.getFileName());
 	        } else {
 	        	if(!destination.getPermissions().validate(user, Permission.WRITE))
 	    	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
@@ -2232,9 +2235,9 @@ public class NativeBroker extends DBBroker {
 	                throw new PermissionDeniedException("Resource with same name exists in target " +
 	                		"collection and update is denied");
 	            if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
-	            	collection.removeBinaryResource(this, oldDoc);
+	            	destination.removeBinaryResource(this, oldDoc);
 	            else
-	            	collection.removeDocument(this, oldDoc.getFileName());
+	            	destination.removeDocument(this, oldDoc.getFileName());
 	        } else
 	            if(!destination.getPermissions().validate(user, Permission.WRITE))
 	    	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
