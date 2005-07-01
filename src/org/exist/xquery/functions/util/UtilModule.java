@@ -62,6 +62,7 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(GetNodeById.signature, GetNodeById.class),
         new FunctionDef(IndexKeys.signature, IndexKeys.class),
         new FunctionDef(QNameIndexLookup.signature, QNameIndexLookup.class),
+        new FunctionDef(Serialize.signature, Serialize.class)
 	};
 	
 	public final static QName EXCEPTION_QNAME = 
