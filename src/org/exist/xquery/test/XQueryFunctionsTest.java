@@ -1,8 +1,5 @@
 /*
- * Created on 17.03.2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Created on 17.03.2005 - $Id$
  */
 package org.exist.xquery.test;
 
@@ -18,7 +15,7 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
-/**
+/** Tests for various standart XQuery functions
  * @author jens
  */
 public class XQueryFunctionsTest extends TestCase {
@@ -42,7 +39,7 @@ public class XQueryFunctionsTest extends TestCase {
 		super(arg0);
 	}
 	
-	/* Tests the XQuery-/XPath-function fn:round-half-to-even
+	/** Tests the XQuery-/XPath-function fn:round-half-to-even
 	 * with the rounding value typed xs:integer
 	 */
 	public void testRoundHtE_INTEGER() throws XPathException {
@@ -72,7 +69,7 @@ public class XQueryFunctionsTest extends TestCase {
 		}
 	}
 	
-	/* Tests the XQuery-/XPath-function fn:round-half-to-even
+	/** Tests the XQuery-/XPath-function fn:round-half-to-even
 	 * with the rounding value typed xs:double
 	 */
 	public void testRoundHtE_DOUBLE() throws XPathException {
@@ -97,6 +94,24 @@ public class XQueryFunctionsTest extends TestCase {
 			}
 		} catch (XMLDBException e) {
 			System.out.println("testRoundHtE_DOUBLE(): "+e);
+			fail(e.getMessage());
+		}
+	}
+	
+	/** Tests the XQuery-XPath function fn:tokenize() */
+	public void testTokenize() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			result 	= service.query( "count ( tokenize('a/b' , '/') )" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "2", r );
+			
+			result 	= service.query( "count ( tokenize('a/b/' , '/') )" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "3", r );
+		} catch (XMLDBException e) {
+			System.out.println("testTokenize(): " + e);
 			fail(e.getMessage());
 		}
 	}
