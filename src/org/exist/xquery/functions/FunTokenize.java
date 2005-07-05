@@ -98,7 +98,7 @@ public class FunTokenize extends FunMatches {
 				pat = Pattern.compile(pattern, flags);
             }
 
-            String[] result = pat.split(string);
+            String[] result = pat.split(string, -1);
 			ValueSequence r = new ValueSequence();
 			for(int i = 0; i < result.length; i++)
 				r.add(new StringValue(result[i]));
