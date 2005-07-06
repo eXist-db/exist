@@ -338,7 +338,8 @@
         <echo message="Running tests on a local database instance"/>
         <echo message="------------------------------------------"/>
 
-        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
+		<junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
+			<sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
