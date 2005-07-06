@@ -58,7 +58,7 @@ public class QNameValue extends AtomicValue {
 		this.qname = name;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.xquery.value.AtomicValue#getType()
 	 */
 	public int getType() {
@@ -73,7 +73,7 @@ public class QNameValue extends AtomicValue {
 		return qname;
 	}
 	
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
@@ -87,7 +87,7 @@ public class QNameValue extends AtomicValue {
 		return qname.toString();
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.xquery.value.Sequence#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
@@ -96,13 +96,15 @@ public class QNameValue extends AtomicValue {
 			case Type.ITEM :
 			case Type.QNAME :
 				return this;
+			case Type.STRING :
+				return new StringValue( qname.toString() );
 			default :
 				throw new XPathException(
 					"A QName cannot be converted to " + Type.getTypeName(requiredType));
 		}
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
@@ -130,7 +132,7 @@ public class QNameValue extends AtomicValue {
 					+ Type.getTypeName(other.getType()));
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
@@ -142,7 +144,7 @@ public class QNameValue extends AtomicValue {
 					+ Type.getTypeName(other.getType()));
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
@@ -153,7 +155,7 @@ public class QNameValue extends AtomicValue {
 		throw new XPathException("Invalid argument to aggregate function: QName");
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
 	public int conversionPreference(Class javaClass) {
@@ -167,7 +169,7 @@ public class QNameValue extends AtomicValue {
 		return Integer.MAX_VALUE;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
 	public Object toJavaObject(Class target) throws XPathException {
