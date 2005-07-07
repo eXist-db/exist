@@ -97,7 +97,7 @@ public class QNameValue extends AtomicValue {
 			case Type.QNAME :
 				return this;
 			case Type.STRING :
-				return new StringValue( qname.toString() );
+				return new StringValue( getStringValue() );
 			default :
 				throw new XPathException(
 					"A QName cannot be converted to " + Type.getTypeName(requiredType));
