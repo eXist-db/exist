@@ -382,7 +382,7 @@ public class QueryDialog extends JFrame {
 			this.xpath = query;
 		}
 		
-		/* (non-Javadoc)
+		/**
 		 * @see java.lang.Thread#run()
 		 */
 		public void run() {
@@ -393,8 +393,12 @@ public class QueryDialog extends JFrame {
 			try {
 				XQueryService service= (XQueryService) collection.getService("XQueryService", "1.0");
 				service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
+				long t0 = System.currentTimeMillis();
 				CompiledExpression compiled = service.compile(xpath);
+				long t1 = System.currentTimeMillis();
+				long tCompiled = t1 - t0;
 				ResourceSet result= service.execute(compiled);
+				long tResult = System.currentTimeMillis() - t1;
 				
 				StringWriter writer = new StringWriter();
 				service.dump(compiled, writer);
@@ -423,7 +427,8 @@ public class QueryDialog extends JFrame {
 				resultDisplay.setText(contents.toString());
 				resultDisplay.setCaretPosition(0);
 				resultDisplay.scrollToCaret();
-				statusMessage.setText("Found " + result.getSize() + " items.");
+				statusMessage.setText("Found " + result.getSize() + " items." + 
+					" Compilation: " + tCompiled + "ms, Execution: " + tResult+"ms");
 			} catch (Throwable e) {
 				ClientFrame.showErrorMessage(
 						"An exception occurred during query execution: "
