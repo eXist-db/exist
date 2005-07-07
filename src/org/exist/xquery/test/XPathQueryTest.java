@@ -77,6 +77,7 @@ public class XPathQueryTest extends TestCase {
 		"<test><title>&quot;Hello&quot;</title></test>";
 	
 	private Collection testCollection;
+	private String query;
 	
 	public XPathQueryTest(String name) {
 		super(name);
@@ -172,6 +173,55 @@ public class XPathQueryTest extends TestCase {
 		} catch (XMLDBException e) {
 			System.out.println("testStarAxis(): XMLDBException: "+e);
 			fail(e.getMessage());
+		}
+	}
+
+	/** Various tests involving operators * . []
+	* >>>>>>>>>> currently this crashes <<<<<<<<<< */
+	public void bugtestStarAxisConstraints() {
+		ResourceSet result;
+		try {
+			XQueryService service = 
+				storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
+			service.setNamespace("t", "http://www.foo.com");
+
+            result = service.queryResource("namespaces.xml", "/t:test/*:section[. &= 'comment']");
+            assertEquals(1, result.getSize());
+            
+            result = service.queryResource("namespaces.xml", "/t:test/t:*[. &= 'comment']");
+            assertEquals(1, result.getSize());
+            result = service.queryResource("namespaces.xml", "/t:test/t:section[. &= 'comment']");
+            assertEquals(1, result.getSize());
+            
+			// Note: this is OK:
+            result = service.queryResource("namespaces.xml", "/t:test/t:section/*[. &= 'comment']");
+			assertEquals("", 1, result.getSize());
+	
+			/* currently all this crashes
+	Caused by: org.exist.xquery.XPathException: Internal evaluation error: context node is missing for node 116!
+    at org.exist.xquery.Predicate.selectByNodeSet(Predicate.java:178)
+    at org.exist.xquery.Predicate.evalPredicate(Predicate.java:117)
+    at org.exist.xquery.LocationStep.applyPredicate(LocationStep.java:106)
+    at org.exist.xquery.LocationStep.eval(LocationStep.java:195)
+			*/
+
+			// Note: all this is OK:
+			// query =  "/ * / * [ t:title ]";
+			// query =  "/ t:test / t:section [ t:title ]";
+			// query =  "/ t:test / t:section";
+			query =  "/ * [ ./ * / t:title ]";
+			result = service.queryResource( "namespaces.xml", query );
+			System.out.println("testStarAxis2 : ========" ); 		printResult(result);
+			assertEquals( "XPath: "+query, 1, result.getSize() );
+
+			query =  "// t:title/text() [ . != 'aaaa' ]";
+			result = service.queryResource( "namespaces.xml", query );
+			System.out.println("testStarAxis2 : ========" ); 		printResult(result);
+			assertEquals( "XPath: "+query, 1, result.getSize() );
+
+			} catch (XMLDBException e) {
+				System.out.println("testStarAxis(): XMLDBException: "+e);
+				fail(e.getMessage());
 		}
 	}
 	
@@ -487,12 +537,6 @@ public class XPathQueryTest extends TestCase {
 
 			result = service.queryResource("namespaces.xml", "//*:comment");
 			assertEquals(1, result.getSize());
-			
-            result = service.queryResource("namespaces.xml", "/t:test/t:*[. &= 'comment']");
-            assertEquals(1, result.getSize());
-            
-            result = service.queryResource("namespaces.xml", "/t:test/*:section[. &= 'comment']");
-            assertEquals(1, result.getSize());
             
 			result = service.queryResource("namespaces.xml", "namespace-uri(//t:test)");
 			assertEquals(1, result.getSize());
