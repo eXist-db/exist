@@ -128,9 +128,9 @@ public class Propfind extends AbstractWebDAVMethod {
 		DBBroker broker = null;
 		Collection collection = null;
 		DocumentImpl resource = null;
-		synchronized (pool.getCollectionsCache()) {
-			try {
-				broker = pool.get(user);
+		try {
+			broker = pool.get(user);
+			synchronized (pool.getCollectionsCache()) {
 				// open the collection or resource specified in the path
 				collection = broker.openCollection(path, Lock.READ_LOCK);
 				if(collection == null) {
@@ -229,19 +229,19 @@ public class Propfind extends AbstractWebDAVMethod {
 					SerializerPool.getInstance().returnObject(serializer);
 				}
 				String content = os.toString();
-				LOG.debug("response:\n" + content);
+//				LOG.debug("response:\n" + content);
 				writeResponse(response, content);
-			} catch (EXistException e) {
-				throw new ServletException(e.getMessage(), e);
-			} catch (LockException e) {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-			} finally {
-				if(resource != null)
-					resource.getUpdateLock().release(Lock.READ_LOCK);
-				if(collection != null)
-					collection.release();
-				pool.release(broker);
 			}
+		} catch (EXistException e) {
+			throw new ServletException(e.getMessage(), e);
+		} catch (LockException e) {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		} finally {
+			if(resource != null)
+				resource.getUpdateLock().release(Lock.READ_LOCK);
+			if(collection != null)
+				collection.release();
+			pool.release(broker);
 		}
 	}
 	
