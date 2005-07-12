@@ -45,6 +45,7 @@ import org.apache.cocoon.environment.Session;
 import org.apache.cocoon.environment.SourceResolver;
 import org.apache.cocoon.environment.http.HttpEnvironment;
 import org.apache.cocoon.generation.ServiceableGenerator;
+import org.apache.cocoon.xml.IncludeXMLConsumer;
 import org.apache.excalibur.source.Source;
 import org.exist.source.CocoonSource;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -54,6 +55,7 @@ import org.exist.xmldb.XQueryService;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.Item;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -196,6 +198,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 	 */
 	public void generate() throws IOException, SAXException,
 			ProcessingException {
+		ContentHandler includeContentHandler;
 		if (inputSource == null)
 			throw new ProcessingException("No input source");
 		Request request = ObjectModelHelper.getRequest(objectModel);
@@ -250,7 +253,11 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 				if(session != null)
 					service.declareVariable(RequestModule.PREFIX + ":session",
 						new CocoonSessionWrapper(session));
+				includeContentHandler = this.contentHandler;
+			} else {
+				includeContentHandler = new IncludeXMLConsumer(this.contentHandler);
 			}
+
 			declareParameters(service);
 			
 			String uri = inputSource.getURI();
@@ -259,7 +266,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 			this.contentHandler.startDocument();
 			for (long i = 0; i < result.getSize(); i++) {
 				resource = (XMLResource) result.getResource(i);
-				resource.getContentAsSAX(this.contentHandler);
+				resource.getContentAsSAX(includeContentHandler);
 			}
 			this.contentHandler.endDocument();
 		} catch (XMLDBException e) {
