@@ -479,6 +479,34 @@ public class XPathQueryTest extends TestCase {
 			fail(e.getMessage());
 		}
 	}
+
+	/** test involving ancestor::
+	* >>>>>>> currently this produces variable corruption :
+	* 			The result is the ancestor <<<<<<<<<< */
+	public void bugtestAncestor() {
+		ResourceSet result;
+		try {
+			XQueryService service = 
+				storeXMLStringAndGetQueryService("numbers.xml", numbers );
+
+			query = 
+				"let $all_items := /test/item " +
+
+				"(: Note: variable non used but computed anyway :)" +
+				"let $unused_variable :=" +
+				"	for $one_item in $all_items " +
+				"			/ ancestor::*	(: <<<<< if you remove this line all is normal :)" +
+                "		return 'foo'" +
+                "return $all_items";
+
+            result = service.queryResource("numbers.xml", query );
+            assertEquals(4, result.getSize());
+
+		} catch (XMLDBException e) {
+			System.out.println("testAncestor(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}
 	
 	private ResourceSet queryResource(XQueryService service, String resource, String query, 
 		int expected) throws XMLDBException {
