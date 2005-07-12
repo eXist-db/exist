@@ -843,7 +843,7 @@ public class XQueryContext {
 			var = (Variable) globalVariables.get(qname);
 		}
 		if (var == null)
-			throw new XPathException("variable " + qname + " is not bound");
+			throw new XPathException("variable $\"" + qname + "\" is not bound");
 		return var;
 	}
 
