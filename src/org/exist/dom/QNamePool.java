@@ -53,10 +53,11 @@ public class QNamePool extends AbstractHashtable {
 	 * Add a QName, consisting of namespace, local name and prefix, to the
 	 * pool.
 	 */
-    public QName add(String namespaceURI, String localName, String prefix) {
+    public QName add(byte type, String namespaceURI, String localName, String prefix) {
         temp.setLocalName(localName);
         temp.setNamespaceURI(namespaceURI);
         temp.setPrefix(prefix);
+        temp.setNameType(type);
 		try {
 			return insert(temp);
 		} catch(HashtableOverflowException e) {

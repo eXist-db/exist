@@ -29,6 +29,7 @@ import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.util.GetNodeById;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -102,7 +103,7 @@ public class AttrImpl extends NamedNode implements Attr {
             attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
         else
             attr = new AttrImpl();
-        attr.nodeName = doc.getSymbols().getQName(namespace, name, prefix);
+        attr.nodeName = doc.getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix);
         attr.value = value;
         attr.setType( attrType );
         return attr;

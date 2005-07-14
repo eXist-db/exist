@@ -50,6 +50,7 @@ import org.exist.util.XMLChar;
 import org.exist.util.XMLString;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -429,7 +430,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		ElementImpl node = null;
 		int p = qname.indexOf(':');
 		String prefix = p > -1 ? qname.substring(0, p) : "";
-		QName qn = broker.getSymbols().getQName(namespace, name, prefix);
+		QName qn = broker.getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
 		if (!stack.empty()) {
 			last = (ElementImpl) stack.peek();
 			if (charBuf != null) {
@@ -523,7 +524,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				p = attrQName.indexOf(':');
 				attrPrefix = (p > -1) ? attrQName.substring(0, p) : null;
 				final AttrImpl attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
-				attr.setNodeName(document.getSymbols().getQName(attrNS, attrLocalName, attrPrefix));
+				attr.setNodeName(document.getSymbols().getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix));
 				attr.setValue(attributes.getValue(i));
 				attr.setOwnerDocument(document);
 				if (attributes.getType(i).equals(ATTR_ID_TYPE)) {

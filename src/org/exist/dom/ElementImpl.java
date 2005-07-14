@@ -161,7 +161,7 @@ public class ElementImpl extends NamedNode implements Element {
             node = (ElementImpl) NodeObjectPool.getInstance().borrowNode(ElementImpl.class);
         else
             node = new ElementImpl();
-        node.nodeName = doc.getSymbols().getQName(namespace, name, prefix);
+        node.nodeName = doc.getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
         node.children = children;
         node.attributes = attributes;
         node.ownerDocument = doc;

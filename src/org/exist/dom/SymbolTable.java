@@ -27,12 +27,15 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.exist.storage.ElementValue;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
+import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * Maintains a global symbol table shared by a database instance. The symbol
@@ -99,8 +102,9 @@ public class SymbolTable {
      * @param prefix
      * @return
      */
-	public synchronized QName getQName(String namespaceURI, String localName, String prefix) {
-	    return namePool.add(namespaceURI, localName, prefix);
+	public synchronized QName getQName(short type, String namespaceURI, String localName, String prefix) {
+        byte itype = type == Node.ATTRIBUTE_NODE ? ElementValue.ATTRIBUTE : ElementValue.ELEMENT;
+	    return namePool.add(itype, namespaceURI, localName, prefix);
 	}
 	
     /**
