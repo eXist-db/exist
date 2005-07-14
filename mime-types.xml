@@ -14,7 +14,7 @@
     <!-- Mime types stored as XML -->
     <mime-type name="text/xml" type="xml">
         <description>XML document</description>
-        <extensions>.xml,.xsl,.xsd,.mods,.xmi,.xconf,.xslt</extensions>
+        <extensions>.xml,.xsl,.xsd,.mods,.xmi,.xconf,.xslt,.wsdl,.x3d,.rdf,.owl</extensions>
     </mime-type>
     <mime-type name="application/xml" type="xml">
         <description>XML document</description>
