@@ -193,7 +193,7 @@ public class QueryDialog extends JFrame {
         		.createBevelBorder(BevelBorder.LOWERED));
         statusMessage = new JTextField(20);
         statusMessage.setEditable(false);
-        statusMessage.setFocusable(false);
+        statusMessage.setFocusable(true);
         statusbar.add(statusMessage);
 
         progress = new JProgressBar();
