@@ -21,14 +21,32 @@
  */
 package org.exist.client;
 
+import org.exist.backup.Backup;
+import org.exist.backup.CreateBackupDialog;
+import org.exist.backup.Restore;
+import org.exist.security.Permission;
+import org.exist.security.User;
+import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.MimeTable;
+import org.exist.xmldb.CollectionImpl;
+import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.UserManagementService;
+import org.gnu.readline.Readline;
+import org.xml.sax.SAXException;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -68,15 +86,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -91,26 +106,6 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.xml.transform.OutputKeys;
-
-import org.exist.backup.Backup;
-import org.exist.backup.CreateBackupDialog;
-import org.exist.backup.Restore;
-import org.exist.security.Permission;
-import org.exist.security.User;
-import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.util.MimeTable;
-import org.exist.xmldb.CollectionImpl;
-import org.exist.xmldb.CollectionManagementServiceImpl;
-import org.exist.xmldb.EXistResource;
-import org.exist.xmldb.IndexQueryService;
-import org.exist.xmldb.UserManagementService;
-import org.gnu.readline.Readline;
-import org.xml.sax.SAXException;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
 
 public class ClientFrame extends JFrame
         implements
@@ -1507,97 +1502,9 @@ public class ClientFrame extends JFrame
         }
     }
     
-    static class LoginPanel extends JPanel {
-        
-        JTextField username;
-        JPasswordField password;
-        JTextField cur_url;
-        
-        public LoginPanel(String defaultUser, String uri) {
-            super(false);
-            setupComponents(defaultUser, uri);
-        }
-        
-        private void setupComponents(String defaultUser, String uri) {
-            GridBagLayout grid = new GridBagLayout();
-            setLayout(grid);
-            GridBagConstraints c = new GridBagConstraints();
-            c.insets = new Insets(5, 5, 5, 5);
-            
-            JLabel label = new JLabel("Username");
-            c.gridx = 0;
-            c.gridy = 0;
-            c.anchor = GridBagConstraints.WEST;
-            c.fill = GridBagConstraints.NONE;
-            grid.setConstraints(label, c);
-            add(label);
-            
-            username = new JTextField(defaultUser, 12);
-            c.gridx = 1;
-            c.gridy = 0;
-            c.anchor = GridBagConstraints.EAST;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            grid.setConstraints(username, c);
-            add(username);
-            
-            label = new JLabel("Password");
-            c.gridx = 0;
-            c.gridy = 1;
-            c.anchor = GridBagConstraints.WEST;
-            c.fill = GridBagConstraints.NONE;
-            grid.setConstraints(label, c);
-            add(label);
-            
-            password = new JPasswordField(12);
-            c.gridx = 1;
-            c.gridy = 1;
-            c.anchor = GridBagConstraints.EAST;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            grid.setConstraints(password, c);
-            add(password);
-            
-            label = new JLabel("URL");
-            c.gridx = 0;
-            c.gridy = 2;
-            c.anchor = GridBagConstraints.WEST;
-            c.fill = GridBagConstraints.NONE;
-            grid.setConstraints(label, c);
-            add(label);
-            
-            cur_url = new JTextField(uri, 20);
-            c.gridx = 1;
-            c.gridy = 2;
-            c.anchor = GridBagConstraints.EAST;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            grid.setConstraints(cur_url, c);
-            add(cur_url);
-            
-            label = new JLabel("(insert xmldb:exist:// for start local mode)");
-            c.gridx = 1;
-            c.gridy = 3;
-            c.anchor = GridBagConstraints.EAST;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            grid.setConstraints(label, c);
-            add(label);
-        }
-        
-        public String getUsername() {
-            return username.getText();
-        }
-        
-        public String getPassword() {
-            return new String(password.getPassword());
-        }
-        
-        public String getUri() {
-            return cur_url.getText();
-        }
-    }
-    
     static class ResourceTableCellRenderer implements TableCellRenderer {
         
-        public final static Color collectionBackground = new Color(225, 235,
-                224);
+        public final static Color collectionBackground = new Color(225, 235, 224);
         public final static Color collectionForeground = Color.black;
         public final static Color highBackground = new Color(115, 130, 189);
         public final static Color highForeground = Color.white;
