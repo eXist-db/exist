@@ -1,8 +1,8 @@
 /**
- * LoginPanel.java
- *
- * Copyright 2005 by O2 IT Engineering
- * Zurich,  Switzerland (CH)
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
  * 
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -62,19 +62,30 @@ import javax.swing.event.ListSelectionListener;
  * This class implements the graphical login panel used to log into
  * local and remote eXist database instances.
  * 
- * @author Tobias Wunden
+ * @author Wolfgang M. Meier <wolfgang@exist-db.org>
+ * @author Tobias Wunden <tobias.wunden@o2it.ch>
  */
 public class LoginPanel extends JPanel {
 
-	static final int TYPE_REMOTE = 0;
-	static final int TYPE_LOCAL = 1;
+	public static final int TYPE_REMOTE = 0;
+	public static final int TYPE_LOCAL = 1;
 
+	/** Uri for local connections */
 	public static final String URI_LOCAL = "xmldb:exist://";
+	
+	/** Default uri for remote connections */
 	public static final String URI_REMOTE = "xmldb:exist://localhost:8080/exist/xmlrpc";
 
+	/** Connection prefix for the properties file */
     public final static String CONNECTION_PREFIX = "connection.";
+    
+    /** Properties file name */
     public final static String FAVOURITES_FILE = "connections.properties";
-	
+
+    /** Favourites connection settings */
+    protected File favouritesFile = null;
+    
+    /** Ui components */
     JTextField username;
     JPasswordField password;
     JTextField cur_url;
@@ -85,12 +96,24 @@ public class LoginPanel extends JPanel {
     JButton btnAddFavourite;
     JButton btnRemoveFavourite;
     JButton btnLoadFavourite;
-    
+        
+    /**
+     * Creates a new login panel with the given user and uri.
+     * 
+     * @param defaultUser the initial user
+     * @param uri the uri to connect to
+     */
     public LoginPanel(String defaultUser, String uri) {
         super(false);
         setupComponents(defaultUser, uri);
     }
-    
+
+    /**
+     * Sets up the graphical components.
+     * 
+     * @param defaultUser the initial user
+     * @param uri the uri to connect to
+     */
     private void setupComponents(final String defaultUser, final String uri) {
         GridBagLayout grid = new GridBagLayout();
         setLayout(grid);
@@ -147,7 +170,7 @@ public class LoginPanel extends JPanel {
         type.addItem("Remote");
 
         type.addItem("Local");
-        type.setSelectedIndex(TYPE_REMOTE);
+        type.setSelectedIndex(uri.equals(URI_LOCAL) ? TYPE_LOCAL : TYPE_REMOTE);
         type.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				switch (type.getSelectedIndex()) {
@@ -156,7 +179,7 @@ public class LoginPanel extends JPanel {
 						cur_url.setEnabled(false);
 						break;
 					case TYPE_REMOTE:
-						cur_url.setText(uri);
+						cur_url.setText(!uri.equals(URI_LOCAL) ? uri : URI_REMOTE);
 						cur_url.setEnabled(true);
 						break;
 				}
@@ -179,6 +202,7 @@ public class LoginPanel extends JPanel {
         add(label);
 
         cur_url = new JTextField(uri, 20);
+        cur_url.setEnabled(!uri.equals(URI_LOCAL));
         c.gridx = 1;
         c.gridy = 3;
         c.gridwidth = 2;
@@ -362,39 +386,39 @@ public class LoginPanel extends JPanel {
     private Favourite[] loadFavourites() {
     	Properties connectionProps = new Properties();
     	
+    	// Check if "exist.home" has been defined. If so, this is the home directory
+    	// for the connection settings. Otherwhise, "user.home" will be used.
+    	
     	String home = System.getProperty("exist.home");
-    	File propFile;
-    	if (home == null)
-    		propFile = new File(FAVOURITES_FILE);
-    	else
-    		propFile = new File(home
-    				+ System.getProperty("file.separator", "/")
-    				+ FAVOURITES_FILE);
-    	
+    	if (home == null) {
+    		home = System.getProperty("user.home") + File.separator + ".eXist";
+    	}
+    	    	
+    	// Try to load the file contents. If it cannot been found at the expected location, 
+    	// see if the classloader can do anything about it:
+
+    	favouritesFile = new File(home, FAVOURITES_FILE);
     	InputStream pin = null;
-    	
-    	// Try to load from file
     	try {
-    		pin = new FileInputStream(propFile);
+    		pin = new FileInputStream(favouritesFile);
     	} catch (FileNotFoundException ex) {
-    		// File not found, no exception handling
+    		pin = InteractiveClient.class.getResourceAsStream(FAVOURITES_FILE);
     	}
+
+    	// If we were unable to load anything, just return an empty array.
     	
-    	if (pin == null){
-    		// Try to load via classloader
-    		pin = InteractiveClient.class
-    		.getResourceAsStream(FAVOURITES_FILE);
+    	if (pin == null) {
+    		return new Favourite[] {};
     	}
+
+    	// Try to load the properties
     	
-    	if (pin != null){
-    		// Try to load properties from stream
-    		try{
-    			connectionProps.load(pin);
-    			pin.close();
-    		} catch (IOException ex) { }
-    	}
-    	
-    	Map favourites = new HashMap();
+		try{
+			connectionProps.load(pin);
+			pin.close();
+		} catch (IOException ex) { }
+
+		Map favourites = new HashMap();
     	final int l = CONNECTION_PREFIX.length();
     	Iterator pi = connectionProps.keySet().iterator();
     	while (pi.hasNext()) {
@@ -426,17 +450,13 @@ public class LoginPanel extends JPanel {
     		connectionProps.put(CONNECTION_PREFIX + i + ".password", f.getPassword());
     		connectionProps.put(CONNECTION_PREFIX + i + ".url", f.getUrl());
     	}
-    	String home = System.getProperty("exist.home");
-    	File propFile;
-    	if (home == null)
-    		propFile = new File("connections.properties");
-    	else
-    		propFile = new File(home
-    				+ System.getProperty("file.separator", "/")
-    				+ "connections.properties");
     	OutputStream os;
 		try {
-			os = new FileOutputStream(propFile);
+	    	if (!favouritesFile.exists()) {
+	        	favouritesFile.getParentFile().mkdirs();
+	        	favouritesFile.createNewFile();
+	    	}
+			os = new FileOutputStream(favouritesFile);
         	connectionProps.store(os, "eXist connection favourites");
         	os.flush();
         	os.close();
@@ -447,14 +467,29 @@ public class LoginPanel extends JPanel {
 		}
     }
     
+    /**
+     * Returns the username that is used to connect to the database.
+     * 
+     * @return the username
+     */
     public String getUsername() {
     	return username.getText();
     }
     
+    /**
+     * Returns the password that is used to connect to the database.
+     * 
+     * @return the password
+     */
     public String getPassword() {
     	return new String(password.getPassword());
     }
     
+    /**
+     * Returns the database uri.
+     * 
+     * @return the uri
+     */
     public String getUri() {
     	return cur_url.getText();
     }
@@ -536,8 +571,14 @@ public class LoginPanel extends JPanel {
     		return url;
     	}
     	
-    	public int compareTo(Object o2) {
-    		return name.compareTo(o2.toString());
+    	/**
+    	 * Compares <code>o</code> to this favourite by comparing the
+    	 * connection names to the object's toString() output.
+    	 * 
+    	 * @see java.util.Comparator#compareTo(Object)
+    	 */
+    	public int compareTo(Object o) {
+    		return name.compareTo(o.toString());
     	}
     	
     	/**
