@@ -45,6 +45,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
@@ -83,7 +84,7 @@ import org.exist.xquery.value.Type;
  * 
  * @author wolf
  */
-public class NativeValueIndex {
+public class NativeValueIndex implements ContentLoadingObserver {
 
     private final static Logger LOG = Logger.getLogger(NativeValueIndex.class);
     
@@ -118,7 +119,9 @@ public class NativeValueIndex {
             caseSensitive = caseOpt.booleanValue();
     }
     
-	/** store and index given element into this value index */
+	/* (non-Javadoc)
+	 * @see org.exist.storage.IndexGenerator#storeElement(int, org.exist.dom.ElementImpl, java.lang.String)
+	 */
     public void storeElement(int xpathType, ElementImpl node, String content) {
         AtomicValue atomic = convertToAtomic(xpathType, content);
         if(atomic == null)
@@ -133,7 +136,9 @@ public class NativeValueIndex {
         buf.add(node.getGID());
     }
     
-	/** store and index given attribute into this value index */
+	/* (non-Javadoc)
+	 * @see org.exist.storage.IndexGenerator#storeAttribute(org.exist.storage.RangeIndexSpec, org.exist.dom.AttrImpl)
+	 */
     public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
         AtomicValue atomic = convertToAtomic(spec.getType(), node.getValue());
         if(atomic == null)
@@ -148,12 +153,16 @@ public class NativeValueIndex {
         buf.add(node.getGID());
     }
     
-	/** set the current document; generally called before calling an operation */
+	/* (non-Javadoc)
+	 * @see org.exist.storage.IndexGenerator#setDocument(org.exist.dom.DocumentImpl)
+	 */
     public void setDocument(DocumentImpl document) {
         this.doc = document;
     }
     
-	/** writes the pending items into the BFile, for the current document's collection */
+	/* (non-Javadoc)
+	 * @see org.exist.storage.IndexGenerator#flush()
+	 */
     public void flush() {
         if (pending.size() == 0) return;
         Indexable indexable;
@@ -205,8 +214,9 @@ public class NativeValueIndex {
         pending.clear();
     }
     
-	/** triggers a cache sync, i.e. forces BFile to write out all cached pages.	
-	sync() is called from time to time by the background sync daemon. */
+	/* (non-Javadoc)
+	 * @see org.exist.storage.IndexGenerator#sync()
+	 */
     public void sync() {
         Lock lock = db.getLock();
         try {
@@ -223,11 +233,9 @@ public class NativeValueIndex {
         }
     }
     
-    /**
-     * Drop all index entries for the given collection.
-     * 
-     * @param collection
-     */
+    /* (non-Javadoc)
+	 * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.collections.Collection)
+	 */
     public void dropIndex(Collection collection) {
         LOG.debug("removing elements ...");
         Value ref = new ElementValue(collection.getId());
@@ -247,12 +255,9 @@ public class NativeValueIndex {
         }
     }
     
-    /**
-     * Drop all index entries for the given document.
-     * 
-     * @param doc
-     * @throws ReadOnlyException
-     */
+    /* (non-Javadoc)
+	 * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.dom.DocumentImpl)
+	 */
     public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
         //	  drop element-index
         short collectionId = doc.getCollection().getId();
@@ -331,7 +336,9 @@ public class NativeValueIndex {
         }
     }
     
-	/** TODO document */
+	/* (non-Javadoc)
+	 * @see org.exist.storage.IndexGenerator#reindex(org.exist.dom.DocumentImpl, org.exist.dom.NodeImpl)
+	 */
     public void reindex(DocumentImpl oldDoc, NodeImpl node) {
         if (pending.size() == 0) return;
         Lock lock = db.getLock();
@@ -430,8 +437,9 @@ public class NativeValueIndex {
         pending.clear();
     }
     
-	/** remove all pending modifications from the value index, 
-	 * for the current document. */
+	/* (non-Javadoc)
+	 * @see org.exist.storage.IndexGenerator#remove()
+	 */
     public void remove() {
         if (pending.size() == 0) return;
         Lock lock = db.getLock();
@@ -892,4 +900,8 @@ private final class IndexScanCallback implements BTreeCallback{
             return true;
         }
     }
+
+public void addRow(QName qname, NodeProxy proxy) {
+}
+
 }

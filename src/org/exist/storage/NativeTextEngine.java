@@ -46,11 +46,13 @@ import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.Match;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.security.PermissionDeniedException;
@@ -88,7 +90,7 @@ import org.w3c.dom.NodeList;
  * 
  * @author Wolfgang Meier
  */
-public class NativeTextEngine extends TextSearchEngine {
+public class NativeTextEngine extends TextSearchEngine implements ContentLoadingObserver {
 
 	public final static byte ATTRIBUTE_SECTION = 1;
 	public final static byte TEXT_SECTION = 0;
@@ -1409,5 +1411,21 @@ public class NativeTextEngine extends TextSearchEngine {
 			return ByteConversion.byteToShort(data, pos)
 					+ new String(data, pos, len);
 		}
+	}
+
+	public void storeElement(int xpathType, ElementImpl node, String content) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void addRow(QName qname, NodeProxy proxy) {
+	}
+
+	public void setDocument(DocumentImpl document) {
 	}
 }
