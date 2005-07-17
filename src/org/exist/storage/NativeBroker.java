@@ -316,7 +316,36 @@ public class NativeBroker extends DBBroker {
 			observer.dropIndex(doc);
 		}
 	}
-	
+	private void notifyDropIndex(Collection collection) {
+		for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
+			ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+			observer.dropIndex(collection);
+		}
+	}
+	private void notifyFlush() {
+		for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
+			ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+			observer.flush();
+		}
+	}
+	private void notifyRemove() {
+		for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
+			ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+			observer.remove();
+		}
+	}
+	private void notifyReindex(final DocumentImpl oldDoc, final NodeImpl node) {
+		for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
+			ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+			observer.reindex(oldDoc, node);
+		}
+	}
+	private void notifySync() {
+		for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
+			ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+			observer.sync();
+		}
+	}
 	// etc ... TODO for all methods of ContentLoadingObserver
 	
 	
@@ -369,11 +398,7 @@ public class NativeBroker extends DBBroker {
 	}
 	
 	public void flush() {
-		textEngine.flush();
-		elementIndex.flush();
-		valueIndex.flush();
-		if ( qnameValueIndexation )
-			qnameValueIndex.flush();
+		notifyFlush();
 		if (symbols != null && symbols.hasChanged())
 			try {
 				saveSymbols();
@@ -386,11 +411,7 @@ public class NativeBroker extends DBBroker {
 	/** Takes care of actually remove entries from the indices;
 	 * must be called after one or more call to {@link #removeNode()}. */
 	public void endRemove() {
-		textEngine.remove();
-		elementIndex.remove();
-		valueIndex.remove();
-		if ( qnameValueIndexation )
-			qnameValueIndex.remove();
+		notifyRemove();
 	}
 
 	/**
@@ -1130,11 +1151,7 @@ public class NativeBroker extends DBBroker {
 		} catch(Exception e) {
 			LOG.error("Error occured while reindexing document: " + e.getMessage(), e);
 		}
-		elementIndex.reindex(oldDoc, node);
-		valueIndex.reindex(oldDoc, node);
-		if ( qnameValueIndexation )
-			qnameValueIndex.reindex(oldDoc, node);
-		textEngine.reindex(oldDoc, node);
+		notifyReindex(oldDoc, node);
 		doc.setReindexRequired(-1);
 //		checkTree(doc);
 		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
@@ -1428,6 +1445,7 @@ public class NativeBroker extends DBBroker {
 			valueIndex.dropIndex(doc);
 			if ( qnameValueIndexation )
 				qnameValueIndex.dropIndex(doc);
+		    // notifyDropIndex(doc);
 			
 			// dropping dom index
 			NodeRef ref = new NodeRef(doc.getDocId());
@@ -1819,11 +1837,7 @@ public class NativeBroker extends DBBroker {
 	        throw new PermissionDeniedException("insufficient privileges on collection " + 
 	                collection.getName());
 	    
-	    textEngine.dropIndex(collection);
-	    elementIndex.dropIndex(collection);
-	    valueIndex.dropIndex(collection);
-		if ( qnameValueIndexation )
-	    	qnameValueIndex.dropIndex(collection);
+	    notifyDropIndex(collection);
 	    
 	    for (Iterator i = collection.iterator(this); i.hasNext();) {
 	        final DocumentImpl doc = (DocumentImpl) i.next();
@@ -1955,11 +1969,7 @@ public class NativeBroker extends DBBroker {
 		    	lock.release();
 		    }
 	    
-		    textEngine.dropIndex(collection);
-		    elementIndex.dropIndex(collection);
-		    valueIndex.dropIndex(collection);
-			if ( qnameValueIndexation )
-		    	qnameValueIndex.dropIndex(collection);
+		    notifyDropIndex(collection);
 		    
 		    LOG.debug("removing resources ...");
 		    for (Iterator i = collection.iterator(this); i.hasNext();) {
@@ -2016,11 +2026,7 @@ public class NativeBroker extends DBBroker {
                     + " ...");
             }
 
-			elementIndex.dropIndex(document);
-			valueIndex.dropIndex(document);
-			if ( qnameValueIndexation )
-				qnameValueIndex.dropIndex(document);
-			textEngine.dropIndex(document);
+			notifyDropIndex(document);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("removeDocument() - removing dom");
             }
@@ -2291,11 +2297,7 @@ public class NativeBroker extends DBBroker {
         	doc.setCollection(destination);
 	        if (doc.getResourceType() == DocumentImpl.XML_FILE) {
 		        if(!renameOnly) {
-			        elementIndex.dropIndex(doc);
-					textEngine.dropIndex(doc);
-					valueIndex.dropIndex(doc);
-					if ( qnameValueIndexation )
-						qnameValueIndex.dropIndex(doc);
+		        	notifyDropIndex(doc);
 					saveCollection(collection);
 		        }
 		        destination.addDocument(this, doc);
@@ -2838,12 +2840,7 @@ public class NativeBroker extends DBBroker {
 			}
 			.run();
 			if(syncEvent == Sync.MAJOR_SYNC) {
-				elementIndex.sync();
-				textEngine.sync();
-				valueIndex.sync();
-				if ( qnameValueIndexation ) {
-					qnameValueIndex.sync();
-				}
+				notifySync();
 				System.gc();
 				Runtime runtime = Runtime.getRuntime();
 				LOG.info("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
