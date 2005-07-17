@@ -35,8 +35,10 @@ import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
@@ -67,7 +69,7 @@ import org.w3c.dom.Node;
  * into the database, the process of associating a long gid with each element,
  * and the subsequent storing of the {@link NodeProxy} on disk.
  */
-public class NativeElementIndex extends ElementIndex {
+public class NativeElementIndex extends ElementIndex implements ContentLoadingObserver {
 
 //    public static long accTime = 0;
 //    public static int count = 0;
@@ -813,4 +815,10 @@ public class NativeElementIndex extends ElementIndex {
     public void printStatistics() {
         dbElement.printStatistics();
     }
+
+	public void storeElement(int xpathType, ElementImpl node, String content) {
+	}
+
+	public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
+	}
 }
