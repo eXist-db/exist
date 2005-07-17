@@ -98,7 +98,17 @@ import org.w3c.dom.NodeList;
  * 
  * Provides access to all low-level operations required by
  * the database. Extends {@link DBBroker}.
- *
+ * 
+ * Observer Design Pattern: role : this class is the subject (alias observable)
+ * for various classes that generate indices for the database content :
+ * @link org.exist.storage.NativeElementIndex,
+ * @link org.exist.storage.NativeTextEngine,
+ * @link org.exist.storage.NativeValueIndex, 
+ * @link org.exist.storage.NativeValueIndexByQName
+ * 
+ * This class dispatches the various events (defined by the methods 
+ * of @link org.exist.storage.ContentLoadingObserver) to indexing classes.
+ * 
  *@author     Wolfgang Meier
  */
 public class NativeBroker extends DBBroker {
@@ -234,10 +244,17 @@ public class NativeBroker extends DBBroker {
 			idxConf = (IndexSpec) config.getProperty("indexer.config");
 			textEngine = new NativeTextEngine(this, config);
 			valueIndex = new NativeValueIndex(this, valuesDb);
-			if ( qnameValueIndexation )
+			if ( qnameValueIndexation ) {
 				qnameValueIndex = new NativeValueIndexByQName(this, valuesDbQname);
+				addContentLoadingObserver(qnameValueIndex);
+			}			
 			xmlSerializer = new NativeSerializer(this, config);
 			elementIndex = new NativeElementIndex(this, elementsDb);
+
+			addContentLoadingObserver(textEngine);
+			addContentLoadingObserver(valueIndex);
+			addContentLoadingObserver(elementIndex);
+
 			user = SecurityManager.SYSTEM_USER;
 			if(pool.isInitializing())
 				getOrCreateCollection(ROOT_COLLECTION);
@@ -278,6 +295,31 @@ public class NativeBroker extends DBBroker {
 		return valuesDb;
 	}
 
+	
+	/** Observer Design Pattern: List of ContentLoadingObserver objects */
+	private List contentLoadingObservers = new ArrayList();
+	
+	/** Observer Design Pattern: add an observer. */
+	public void addContentLoadingObserver(ContentLoadingObserver observer) {
+		contentLoadingObservers.add(observer);
+	}
+	/** Observer Design Pattern: remove an observer. */
+	public void removeContentLoadingObserver(ContentLoadingObserver observer) {
+		contentLoadingObservers.remove(observer);
+	}
+	
+	// ============ dispatch the various events to indexing classes ==========
+
+	private void notifyDropIndex(DocumentImpl doc) throws ReadOnlyException {
+		for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
+			ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+			observer.dropIndex(doc);
+		}
+	}
+	
+	// etc ... TODO for all methods of ContentLoadingObserver
+	
+	
 	/** changes // into /  */
 	protected final static String normalizeCollectionName(String name) {
 		StringBuffer out = new StringBuffer();
