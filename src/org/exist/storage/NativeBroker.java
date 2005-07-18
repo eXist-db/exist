@@ -1050,17 +1050,19 @@ public class NativeBroker extends DBBroker {
 				}
 			    currentPath.removeLastComponent();
 				break;
-			case Node.TEXT_NODE :
-				// check if this textual content should be fulltext-indexed
-				// by calling IndexPaths.match(path)
-			    boolean indexText = true;
-				if(ftIdx != null && currentPath != null)
-				    indexText = ftIdx.match(currentPath);	                	                
-                boolean valore = (ftIdx == null || currentPath == null ? false : 
-                	ftIdx.preserveContent(currentPath));
-                if(indexText)
-                    textEngine.storeText(ftIdx, (TextImpl) node, valore);
-				break;
+				
+			case Node.TEXT_NODE:
+			// check if this textual content should be fulltext-indexed
+			// by calling IndexPaths.match(path)
+			boolean indexText = true;
+			if (ftIdx != null && currentPath != null)
+				indexText = ftIdx.match(currentPath);
+			if (indexText) {
+				boolean valore = (ftIdx == null || currentPath == null ? false
+						: ftIdx.preserveContent(currentPath));
+				textEngine.storeText(ftIdx, (TextImpl) node, valore);
+			}
+			break;
 		}
 		if (nodeType == Node.ELEMENT_NODE && level <= depth) {
 			new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -1265,12 +1267,16 @@ public class NativeBroker extends DBBroker {
 					}
 					currentPath.removeLastComponent();
 					break;
-				case Node.TEXT_NODE :
+					
+				case Node.TEXT_NODE:
 					// check if this textual content should be fulltext-indexed
 					// by calling IndexPaths.match(path)
-					if (ftIdx == null || ftIdx.match(currentPath)) {     
-		                boolean valore = (ftIdx == null ? false : 
-		                	ftIdx.preserveContent(currentPath));
+					boolean indexText = true;
+					if (ftIdx != null && currentPath != null)
+						indexText = ftIdx.match(currentPath);
+					if (indexText) {
+						boolean valore = (ftIdx == null || currentPath == null ? false
+								: ftIdx.preserveContent(currentPath));
 						textEngine.storeText(ftIdx, (TextImpl) node, valore);
 					}
 					break;
