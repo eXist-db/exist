@@ -24,8 +24,6 @@ import java.util.TreeMap;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeImpl;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
