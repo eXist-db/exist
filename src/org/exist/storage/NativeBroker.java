@@ -972,10 +972,9 @@ public class NativeBroker extends DBBroker {
 					"total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
 			}
 		}
-		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
-		final long gid = node.getGID();
 		final short nodeType = node.getNodeType();
-		final String nodeName = node.getNodeName();
+		final long gid = node.getGID();
+		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final long address = node.getInternalAddress();
 		final IndexSpec idxSpec = 
 		    doc.getCollection().getIdxConf(this);
@@ -985,8 +984,7 @@ public class NativeBroker extends DBBroker {
 		final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
 		final int level = doc.getTreeLevel(gid);
 		int indexType = RangeIndexSpec.NO_INDEX;
-		NodeProxy tempProxy;
-		QName qname;
+
 		switch (nodeType) {
 			case Node.ELEMENT_NODE :
 				if (idxSpec != null) {
@@ -1006,10 +1004,6 @@ public class NativeBroker extends DBBroker {
 				((ElementImpl) node).setIndexType(indexType);				
 				break;
 			case Node.ATTRIBUTE_NODE :
-				elementIndex.setDocument(doc);
-				qname = node.getQName();
-				qname.setNameType(ElementValue.ATTRIBUTE);
-				tempProxy = new NodeProxy(doc, gid, address);
 				QName idxQName = new QName('@' + node.getLocalName(), node.getNamespaceURI());
 				currentPath.addComponent(idxQName);
 				GeneralRangeIndexSpec valSpec = null;
@@ -1023,8 +1017,12 @@ public class NativeBroker extends DBBroker {
 				    indexType |= RangeIndexSpec.TEXT;
 					indexAttribs = true;
 				}
+				elementIndex.setDocument(doc);
+				NodeProxy tempProxy =
+					new NodeProxy(doc, gid, node.getInternalAddress());
 				tempProxy.setIndexType(indexType);
-				
+				QName qname = node.getQName();
+				qname.setNameType(ElementValue.ATTRIBUTE);
 				elementIndex.addRow(qname, tempProxy);
 
 				if (valSpec != null) {
@@ -1172,11 +1170,13 @@ public class NativeBroker extends DBBroker {
 		final short nodeType = node.getNodeType();
 		final long gid = node.getGID();
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
+		final long address = node.getInternalAddress();
 		final IndexSpec idxSpec = 
 		    doc.getCollection().getIdxConf(this);
 		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
 		final int level = doc.getTreeLevel(gid);
+		int indexType = RangeIndexSpec.NO_INDEX;
 		if (level >= doc.reindexRequired()) {
 			NodeIndexListener listener = doc.getIndexListener();
 			// jmv if ((listener = doc.getIndexListener()) != null)
@@ -1199,10 +1199,7 @@ public class NativeBroker extends DBBroker {
 				}
 				.run();
 			}
-			NodeProxy tempProxy =
-				new NodeProxy(doc, gid, node.getInternalAddress());
-			int indexType = RangeIndexSpec.NO_INDEX;
-			QName qname;
+
 			switch (nodeType) {
 				case Node.ELEMENT_NODE :
 					if (idxSpec != null) {
@@ -1235,9 +1232,11 @@ public class NativeBroker extends DBBroker {
 					    indexType |= RangeIndexSpec.TEXT;
 						indexAttribs = true;
 					}
-					tempProxy.setIndexType(indexType);
 					elementIndex.setDocument(doc);
-					qname = node.getQName();
+					NodeProxy tempProxy =
+						new NodeProxy(doc, gid, node.getInternalAddress());
+					tempProxy.setIndexType(indexType);
+					QName qname = node.getQName();
 					qname.setNameType(ElementValue.ATTRIBUTE);
 					elementIndex.addRow(qname, tempProxy);
 					
