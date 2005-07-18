@@ -76,6 +76,9 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 
 	private final static Logger LOG = Logger.getLogger(NativeValueIndexByQName.class);
 
+	/** switch to activate/deactivate the feature "new index by QName" */
+	private boolean qnameValueIndexation = true; // false;
+
 	public NativeValueIndexByQName(DBBroker broker, BFile valuesDb) {
 		super(broker, valuesDb);
 	}

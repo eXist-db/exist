@@ -64,13 +64,4 @@ public abstract class ElementIndex extends Observable {
 	public abstract Occurrences[] scanIndexedElements(Collection collection,
 			boolean inclusive) throws PermissionDeniedException;
 	
-    public abstract void addRow(QName qname, NodeProxy proxy);
-
-    public abstract void flush();
-    
-	public abstract void reindex(DocumentImpl oldDoc, NodeImpl node);
-	
-	public abstract void remove();
-	
-	public abstract void sync();
 }

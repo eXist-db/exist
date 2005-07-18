@@ -33,7 +33,7 @@ import org.exist.util.ReadOnlyException;
 /** Receives callback event during document(s) loading;
  * implemented by several classes that generate various indices;
  * Observer Design Pattern: role Observer; 
- * the class @link org.exist.storage.NativeBroker is the subjet (alias observable). */
+ * the class @link org.exist.storage.NativeBroker is the subject (alias observable). */
 public interface ContentLoadingObserver {
 
 	/** store and index given element */
