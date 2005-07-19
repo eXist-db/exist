@@ -984,6 +984,11 @@ public class NativeBroker extends DBBroker {
 			level = doc.getTreeLevel(gid);			
 		}
 		
+		public NodeProcessor(NodeImpl node, NodePath currentPath, boolean index2) {
+			this(node, currentPath);
+			this.index = index;
+		}
+
 		/** Updates the various indices */
 		public void doIndex() {
 			int indexType = RangeIndexSpec.NO_INDEX;
@@ -2525,11 +2530,10 @@ public class NativeBroker extends DBBroker {
 	 */
 	public void store(final NodeImpl node, NodePath currentPath, boolean index) {
 		checkAvailableMemory();
+		
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
-		final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
 		final IndexSpec idxSpec = 
 		    doc.getCollection().getIdxConf(this);
-		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final long gid = node.getGID();
 		if (gid < 0) {
 			LOG.debug("illegal node: " + gid + "; " + node.getNodeName());
@@ -2558,87 +2562,9 @@ public class NativeBroker extends DBBroker {
 		}
 		.run();
 		++nodesCount;
-		int indexType = RangeIndexSpec.NO_INDEX;
-		long address = node.getInternalAddress();
-		switch (nodeType) {
-			case Node.ELEMENT_NODE :
-				if (idxSpec != null) {
-				    RangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-				    if(spec != null)
-				        indexType = spec.getIndexType();
-				    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-				    if (qnIdx != null && qnameValueIndexation) {
-				    	indexType |= RangeIndexSpec.QNAME_INDEX;
-					}
-				}
-				if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
-				    indexType |= RangeIndexSpec.TEXT;
-				if(node.getChildCount() - node.getAttributesCount() > 1) {
-				    indexType |= RangeIndexSpec.MIXED_CONTENT;
-				}
-				((ElementImpl) node).setIndexType(indexType);
-				break;
-			case Node.ATTRIBUTE_NODE :
-				QName idxQName = new QName('@' + node.getLocalName(), node.getNamespaceURI());
-                if (currentPath != null)
-                    currentPath.addComponent(idxQName);
-				GeneralRangeIndexSpec valSpec = null;
-				if (idxSpec != null) {
-				    valSpec = idxSpec.getIndexByPath(currentPath);
-				    if(valSpec != null) {
-				        indexType = valSpec.getIndexType();
-				    }
-				}
-				boolean indexAttribs = false;
-				if(index && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
-				    indexType |= RangeIndexSpec.TEXT;
-					indexAttribs = true;
-				}
-				elementIndex.setDocument(doc);
-				NodeProxy tempProxy = 
-					new NodeProxy(doc, gid, address);
-				tempProxy.setIndexType(indexType);
-				QName qname = node.getQName();
-				qname.setNameType(ElementValue.ATTRIBUTE);
-				elementIndex.addRow(qname, tempProxy);
-
-				if (valSpec != null) {
-			        valueIndex.setDocument(doc);
-			        valueIndex.storeAttribute(valSpec, (AttrImpl) node);
-				}
-				
-				if (idxSpec != null && qnameValueIndexation) {
-					RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
-					if (qnIdx != null) {
-						qnameValueIndex.setDocument(doc);
-						qnameValueIndex.storeAttribute(qnIdx, (AttrImpl) node);
-					}
-				}
-				
-				if(indexAttribs && !isTemp)
-					textEngine.storeAttribute(ftIdx, (AttrImpl) node);
-				// if the attribute has type ID, store the ID-value
-				// to the element index as well
-				if (((AttrImpl) node).getType() == AttrImpl.ID) {
-					qname = new QName(((AttrImpl) node).getValue(), "", null);
-					//LOG.debug("found ID: " + qname.getLocalName());
-					qname.setNameType(ElementValue.ATTRIBUTE_ID);
-					elementIndex.addRow(qname, tempProxy);
-				}
-                if (currentPath != null)
-                    currentPath.removeLastComponent();
-				break;
-			case Node.TEXT_NODE :
-				// check if this textual content should be fulltext-indexed
-				// by calling IndexPaths.match(path)
-				if (!isTemp && index) {
-					if (ftIdx == null || ftIdx.match(currentPath)) {     
-		                boolean valore = (ftIdx == null ? false : ftIdx.preserveContent(currentPath));
-						textEngine.storeText(ftIdx, (TextImpl) node, valore);
-					}
-				}
-				break;
-		}
+		
+		( new NodeProcessor(node, currentPath, index) )
+			.doIndex();
 	}
 
 	/** check available memory */
