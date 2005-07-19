@@ -118,7 +118,7 @@ public class NativeBroker extends DBBroker {
 	static final String VALUES_DB_QNAME_FILE = "values-by-qname.dbx";
 
 	private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
-	private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
+	// private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
 	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
 	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
 	
@@ -171,8 +171,8 @@ public class NativeBroker extends DBBroker {
 	public NativeBroker(BrokerPool pool, Configuration config) throws EXistException {
 		super(pool, config);
 		String dataDir;
-		String temp;
-		boolean compress = false;
+//		String temp;
+//		boolean compress = false;
 		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)
 			dataDir = "data";
 
@@ -952,6 +952,159 @@ public class NativeBroker extends DBBroker {
 		}
 		return nextDocId;
 	}
+
+	/** Delegate for Node Processings : index */
+	private class NodeProcessor {
+		private NodeImpl node;
+		private NodePath currentPath;
+		/** work variables */
+		private short nodeType;
+		private long gid;
+		private DocumentImpl doc;
+		private long address;
+		private IndexSpec idxSpec;
+		private FulltextIndexSpec ftIdx;
+		private int depth;
+		private int level;
+
+		NodeProcessor(final NodeImpl node, NodePath currentPath) {
+			if (node.getGID() < 0)
+				LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
+			this.node = node;
+			this.currentPath = currentPath;
+			nodeType = node.getNodeType();
+			gid = node.getGID();
+			doc = (DocumentImpl) node.getOwnerDocument();
+			address = node.getInternalAddress();
+			idxSpec = doc.getCollection().getIdxConf(NativeBroker.this);
+			ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
+			depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
+			level = doc.getTreeLevel(gid);			
+		}
+		
+		/** Updates the various indices */
+		public void doIndex() {
+			int indexType = RangeIndexSpec.NO_INDEX;
+			switch (nodeType) {
+				case Node.ELEMENT_NODE :
+					if (idxSpec != null) {
+					    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+					    if(spec != null)
+					        indexType = spec.getIndexType();
+					    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+					    if (qnIdx != null && qnameValueIndexation) {
+					    	indexType |= RangeIndexSpec.QNAME_INDEX;
+						}
+					}
+					if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
+					    indexType |= RangeIndexSpec.TEXT;
+					if(node.getChildCount() - node.getAttributesCount() > 1) {
+					    indexType |= RangeIndexSpec.MIXED_CONTENT;
+					}
+					((ElementImpl) node).setIndexType(indexType);
+					break;
+				case Node.ATTRIBUTE_NODE :
+					QName idxQName = new QName('@' + node.getLocalName(), node.getNamespaceURI());
+				    currentPath.addComponent(idxQName);
+					GeneralRangeIndexSpec valSpec = null;
+				    if (idxSpec != null) {
+					    valSpec = idxSpec.getIndexByPath(currentPath);
+					    if(valSpec != null)
+					        indexType = valSpec.getIndexType();
+					}
+					boolean indexAttribs = false;
+					if(ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath)) {
+					    indexType |= RangeIndexSpec.TEXT;
+						indexAttribs = true;
+					}
+					elementIndex.setDocument(doc);
+					NodeProxy tempProxy =
+						new NodeProxy(doc, gid, address);
+					tempProxy.setIndexType(indexType);
+					QName qname = node.getQName();
+					qname.setNameType(ElementValue.ATTRIBUTE);
+					elementIndex.addRow(qname, tempProxy);
+					
+					if (valSpec != null) {
+				        valueIndex.setDocument(doc);
+				        valueIndex.storeAttribute(valSpec, (AttrImpl) node);
+					}
+					
+					if (idxSpec != null && qnameValueIndexation) {
+						RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
+						if (qnIdx != null) {
+							qnameValueIndex.setDocument(doc);
+							qnameValueIndex.storeAttribute(qnIdx, (AttrImpl) node);
+						}
+					}
+					
+					if (indexAttribs)
+						textEngine.storeAttribute(ftIdx, (AttrImpl) node);
+					// if the attribute has type ID, store the ID-value
+					// to the element index as well
+					if (((AttrImpl) node).getType() == AttrImpl.ID) {
+						qname = new QName(((AttrImpl) node).getValue(), "", null);
+						//LOG.debug("found ID: " + qname.getLocalName());
+						qname.setNameType(ElementValue.ATTRIBUTE_ID);
+						elementIndex.addRow(qname, tempProxy);
+					}
+					currentPath.removeLastComponent();
+					break;
+					
+				case Node.TEXT_NODE:
+					// check if this textual content should be fulltext-indexed
+					// by calling IndexPaths.match(path)
+					boolean indexText = true;
+					if (ftIdx != null && currentPath != null)
+						indexText = ftIdx.match(currentPath);
+					if (indexText) {
+						boolean valore = (ftIdx == null || currentPath == null ? false
+								: ftIdx.preserveContent(currentPath));
+						textEngine.storeText(ftIdx, (TextImpl) node, valore);
+					}
+					break;
+			}
+		}
+		
+		/** Stores this node into the database */
+		public void store() {
+			if (nodeType == Node.ELEMENT_NODE && level <= depth) {
+				new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+					public Object start() throws ReadOnlyException {
+						try {
+							domDb.addValue(
+								new NodeRef(doc.getDocId(), gid),
+								address);
+						} catch (BTreeException e) {
+							LOG.warn(EXCEPTION_DURING_REINDEX, e);
+						} catch (IOException e) {
+							LOG.warn(EXCEPTION_DURING_REINDEX, e);
+						}
+						return null;
+					}
+				}
+				.run();
+			}
+		}
+
+		/** Updates the various indices and stores this node into the database */
+		public void index() {
+			doIndex();
+			store();
+		}
+		
+		/** Updates the various indices and stores this node into the database
+		 * if necessary */
+		public void reindex() {
+			if (level >= doc.reindexRequired()) {
+				NodeIndexListener listener = doc.getIndexListener();
+				if(listener != null)
+					listener.nodeChanged(node);
+				store();
+				doIndex();
+			}
+		}
+	}
 	
 	/**
 	 * Index a single node, which has been added through an XUpdate
@@ -960,18 +1113,8 @@ public class NativeBroker extends DBBroker {
 	 * cases, reindex will be called.
 	 */
 	public void index(final NodeImpl node, NodePath currentPath) {
-	    // first, check available memory
-		if (++nodesCount > MEM_LIMIT_CHECK) {
-			final int percent = (int) (run.freeMemory() / (run.totalMemory() / 100));
-			if (percent < memMinFree) {
-				//LOG.info(
-				//	"total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
-				flush();
-				System.gc();
-				LOG.info(
-					"total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
-			}
-		}
+		++nodesCount;
+		checkAvailableMemory();
 		final short nodeType = node.getNodeType();
 		final long gid = node.getGID();
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
@@ -1070,7 +1213,7 @@ public class NativeBroker extends DBBroker {
 					try {
 						domDb.addValue(
 							new NodeRef(doc.getDocId(), gid),
-							node.getInternalAddress());
+							address);
 					} catch (BTreeException e) {
 						LOG.warn(EXCEPTION_DURING_REINDEX, e);
 					} catch (IOException e) {
@@ -1178,10 +1321,9 @@ public class NativeBroker extends DBBroker {
 		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
 		final int level = doc.getTreeLevel(gid);
-		int indexType = RangeIndexSpec.NO_INDEX;
+		
 		if (level >= doc.reindexRequired()) {
 			NodeIndexListener listener = doc.getIndexListener();
-			// jmv if ((listener = doc.getIndexListener()) != null)
 			if(listener != null)
 				listener.nodeChanged(node);
 			if (nodeType == Node.ELEMENT_NODE && level <= depth) {
@@ -1190,7 +1332,7 @@ public class NativeBroker extends DBBroker {
 						try {
 							domDb.addValue(
 								new NodeRef(doc.getDocId(), gid),
-								node.getInternalAddress());
+								address);
 						} catch (BTreeException e) {
 							LOG.warn(EXCEPTION_DURING_REINDEX, e);
 						} catch (IOException e) {
@@ -1202,6 +1344,7 @@ public class NativeBroker extends DBBroker {
 				.run();
 			}
 
+			int indexType = RangeIndexSpec.NO_INDEX;
 			switch (nodeType) {
 				case Node.ELEMENT_NODE :
 					if (idxSpec != null) {
@@ -1236,7 +1379,7 @@ public class NativeBroker extends DBBroker {
 					}
 					elementIndex.setDocument(doc);
 					NodeProxy tempProxy =
-						new NodeProxy(doc, gid, node.getInternalAddress());
+						new NodeProxy(doc, gid, address);
 					tempProxy.setIndexType(indexType);
 					QName qname = node.getQName();
 					qname.setNameType(ElementValue.ATTRIBUTE);
@@ -1399,7 +1542,7 @@ public class NativeBroker extends DBBroker {
 	        DocumentImpl newDoc;
 	        if (doc.getResourceType() == DocumentImpl.BINARY_FILE)  {
 	        	byte[] data = getBinaryResourceData((BinaryDocument) doc);
-	        	BinaryDocument newBinary = 
+	        	// BinaryDocument newBinary = 
         			destination.addBinaryResource(this, newName, data, doc.getMimeType());
 	        } else {
 	        	newDoc = new DocumentImpl(this, newName, destination);
@@ -2088,7 +2231,6 @@ public class NativeBroker extends DBBroker {
 		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final long gid = node.getGID();
 		final short nodeType = node.getNodeType();
-		final String nodeName = node.getNodeName();
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
 			public Object start() {
 				final long address = node.getInternalAddress();
@@ -2582,18 +2724,7 @@ public class NativeBroker extends DBBroker {
 	 *      fulltext-indexed).
 	 */
 	public void store(final NodeImpl node, NodePath currentPath, boolean index) {
-		// first, check available memory
-		if (nodesCount > MEM_LIMIT_CHECK) {
-			final int percent = (int) (run.freeMemory() / (run.totalMemory() / 100));
-			if (percent < memMinFree) {
-				//LOG.info(
-				//	"total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
-				flush();
-				System.gc();
-				LOG.info(
-					"total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
-			}
-		}
+		checkAvailableMemory();
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
 		final IndexSpec idxSpec = 
@@ -2606,7 +2737,6 @@ public class NativeBroker extends DBBroker {
 			return;
 		}
 		final short nodeType = node.getNodeType();
-		final String nodeName = node.getNodeName();
 		final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
 			public Object start() throws ReadOnlyException {
@@ -2709,6 +2839,22 @@ public class NativeBroker extends DBBroker {
 					}
 				}
 				break;
+		}
+	}
+
+	/** check available memory */
+	private void checkAvailableMemory() {
+		if (nodesCount > MEM_LIMIT_CHECK) {
+			final int percent = (int) (run.freeMemory() /
+					(run.totalMemory() / 100));
+			if (percent < memMinFree) {
+				//LOG.info(
+				//	"total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
+				flush();
+				System.gc();
+				LOG.info(
+					"total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
+			}
 		}
 	}
 
@@ -3051,7 +3197,7 @@ public class NativeBroker extends DBBroker {
         /**
          * Log4J Logger for this class
          */
-        private static final Logger LOG = Logger.getLogger(NodeRef.class);
+        // private static final Logger LOG = Logger.getLogger(NodeRef.class);
 
 		public NodeRef() {
 			data = new byte[12];
