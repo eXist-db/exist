@@ -966,6 +966,8 @@ public class NativeBroker extends DBBroker {
 		private FulltextIndexSpec ftIdx;
 		private int depth;
 		private int level;
+		/** overall switch to activate fulltest indexation */
+		private boolean index = true;
 
 		NodeProcessor(final NodeImpl node, NodePath currentPath) {
 			if (node.getGID() < 0)
@@ -985,10 +987,11 @@ public class NativeBroker extends DBBroker {
 		/** Updates the various indices */
 		public void doIndex() {
 			int indexType = RangeIndexSpec.NO_INDEX;
+			final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
 			switch (nodeType) {
 				case Node.ELEMENT_NODE :
 					if (idxSpec != null) {
-					    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+						RangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 					    if(spec != null)
 					        indexType = spec.getIndexType();
 					    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
@@ -1005,15 +1008,17 @@ public class NativeBroker extends DBBroker {
 					break;
 				case Node.ATTRIBUTE_NODE :
 					QName idxQName = new QName('@' + node.getLocalName(), node.getNamespaceURI());
-				    currentPath.addComponent(idxQName);
+	                if (currentPath != null)
+	                	currentPath.addComponent(idxQName);
 					GeneralRangeIndexSpec valSpec = null;
 				    if (idxSpec != null) {
 					    valSpec = idxSpec.getIndexByPath(currentPath);
-					    if(valSpec != null)
+					    if(valSpec != null) {
 					        indexType = valSpec.getIndexType();
+					    }
 					}
 					boolean indexAttribs = false;
-					if(ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath)) {
+					if(index && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
 					    indexType |= RangeIndexSpec.TEXT;
 						indexAttribs = true;
 					}
@@ -1038,7 +1043,7 @@ public class NativeBroker extends DBBroker {
 						}
 					}
 					
-					if (indexAttribs)
+					if (indexAttribs && !isTemp )
 						textEngine.storeAttribute(ftIdx, (AttrImpl) node);
 					// if the attribute has type ID, store the ID-value
 					// to the element index as well
@@ -1048,7 +1053,8 @@ public class NativeBroker extends DBBroker {
 						qname.setNameType(ElementValue.ATTRIBUTE_ID);
 						elementIndex.addRow(qname, tempProxy);
 					}
-					currentPath.removeLastComponent();
+	                if (currentPath != null)
+	                	currentPath.removeLastComponent();
 					break;
 					
 				case Node.TEXT_NODE:
@@ -1057,7 +1063,7 @@ public class NativeBroker extends DBBroker {
 					boolean indexText = true;
 					if (ftIdx != null && currentPath != null)
 						indexText = ftIdx.match(currentPath);
-					if (indexText) {
+					if (indexText && !isTemp && index ) {
 						boolean valore = (ftIdx == null || currentPath == null ? false
 								: ftIdx.preserveContent(currentPath));
 						textEngine.storeText(ftIdx, (TextImpl) node, valore);
@@ -2552,9 +2558,8 @@ public class NativeBroker extends DBBroker {
 		}
 		.run();
 		++nodesCount;
-		NodeProxy tempProxy = null;
-		QName qname;
 		int indexType = RangeIndexSpec.NO_INDEX;
+		long address = node.getInternalAddress();
 		switch (nodeType) {
 			case Node.ELEMENT_NODE :
 				if (idxSpec != null) {
@@ -2574,7 +2579,6 @@ public class NativeBroker extends DBBroker {
 				((ElementImpl) node).setIndexType(indexType);
 				break;
 			case Node.ATTRIBUTE_NODE :
-				tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
 				QName idxQName = new QName('@' + node.getLocalName(), node.getNamespaceURI());
                 if (currentPath != null)
                     currentPath.addComponent(idxQName);
@@ -2590,11 +2594,12 @@ public class NativeBroker extends DBBroker {
 				    indexType |= RangeIndexSpec.TEXT;
 					indexAttribs = true;
 				}
-				tempProxy.setIndexType(indexType);
-				
-				qname = node.getQName();
-				qname.setNameType(ElementValue.ATTRIBUTE);
 				elementIndex.setDocument(doc);
+				NodeProxy tempProxy = 
+					new NodeProxy(doc, gid, address);
+				tempProxy.setIndexType(indexType);
+				QName qname = node.getQName();
+				qname.setNameType(ElementValue.ATTRIBUTE);
 				elementIndex.addRow(qname, tempProxy);
 
 				if (valSpec != null) {
