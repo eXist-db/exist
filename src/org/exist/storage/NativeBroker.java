@@ -984,7 +984,7 @@ public class NativeBroker extends DBBroker {
 			level = doc.getTreeLevel(gid);			
 		}
 		
-		public NodeProcessor(NodeImpl node, NodePath currentPath, boolean index2) {
+		public NodeProcessor(NodeImpl node, NodePath currentPath, boolean index) {
 			this(node, currentPath);
 			this.index = index;
 		}
