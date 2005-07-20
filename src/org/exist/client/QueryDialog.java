@@ -221,10 +221,7 @@ public class QueryDialog extends JFrame {
 		historyBox.add(label);
 		final JComboBox historyList= new JComboBox(history);
 		for(Iterator i = client.queryHistory.iterator(); i.hasNext(); ) {
-			String item = (String) i.next();
-			if(item.length() > 40)
-				item = item.substring(0, 40);
-			history.addElement(item);
+			addQuery((String) i.next());
 		}
 		historyList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -437,12 +434,15 @@ public class QueryDialog extends JFrame {
 			if(client.queryHistory.isEmpty() || !((String)client.queryHistory.getLast()).equals(xpath)) {
 				client.addToHistory(xpath);
 				client.writeQueryHistory();
-				if(xpath.length() > 40)
-					xpath = xpath.substring(0, 40);
-				history.addElement(xpath);
+				addQuery(xpath);
 			}
 			setCursor(Cursor.getDefaultCursor());
 			progress.setVisible(false);
 		}
+	}
+	private void addQuery(String query) {
+		if(query.length() > 40)
+			query = query.substring(0, 40);
+		history.addElement(Integer.toString(history.getSize()+1) + ". " + query);
 	}
 }
