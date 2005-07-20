@@ -815,10 +815,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     public void printStatistics() {
         dbElement.printStatistics();
     }
+    
+    public void storeElement(int xpathType, ElementImpl node, String content) {
+    //	TODO
+    }
 
-	public void storeElement(int xpathType, ElementImpl node, String content) {
-	}
-
-	public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
-	}
 }

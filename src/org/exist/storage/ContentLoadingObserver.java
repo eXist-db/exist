@@ -22,18 +22,18 @@
 package org.exist.storage;
 
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
 import org.exist.util.ReadOnlyException;
 
 /** Receives callback event during document(s) loading;
  * implemented by several classes that generate various indices;
  * Observer Design Pattern: role Observer; 
- * the class @link org.exist.storage.NativeBroker is the subject (alias observable). */
+ * the class @link org.exist.storage.NativeBroker is the subject (alias observable).
+ * 
+ * Note: when we will have more than one runtime switch , we will refactor 
+ * fullTextIndexSwitch into an object */
 public interface ContentLoadingObserver {
 
 	/** store and index given element */
@@ -41,14 +41,27 @@ public interface ContentLoadingObserver {
 			String content);
 
 	/** store and index given attribute */
-	public abstract void storeAttribute(RangeIndexSpec spec, AttrImpl node);
+	// TODO public abstract void storeAttribute( AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
 
-    /** Add an index entry for the given QName and NodeProxy.
+	/** store and index given text node */
+	// TODO public abstract void storeText( TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
+	
+	/** Mark given Element;
+	 * added entries are written to the list of pending entries. Call
+     * {@link #flush()} to flush all pending entries.
+	 * <br>
+	 * Notes: changed name from storeElement() */
+	// TODO public abstract void markElement( ElementImpl node, NodePath currentPath, String content );
+	
+    /** Mark given Node;
+	 * add an index entry for the given node.
      * Added entries are written to the list of pending entries. Call
      * {@link #flush()} to flush all pending entries.
+     * Note: changed name from addRow()
      */
-    public void addRow(QName qname, NodeProxy proxy);
-    
+    // public void addRow(QName qname, NodeProxy proxy);
+	// TODO public void markNode(NodeImpl node, NodePath currentPath, boolean fullTextIndexSwitch);
+	
 	/** set the current document; generally called before calling an operation */
 	public abstract void setDocument(DocumentImpl document);
 
