@@ -953,7 +953,7 @@ public class NativeBroker extends DBBroker {
 		return nextDocId;
 	}
 
-	/** Delegate for Node Processings : index */
+	/** Delegate for Node Processings : indexing */
 	private class NodeProcessor {
 		private NodeImpl node;
 		private NodePath currentPath;
@@ -966,7 +966,7 @@ public class NativeBroker extends DBBroker {
 		private FulltextIndexSpec ftIdx;
 		private int depth;
 		private int level;
-		/** overall switch to activate fulltest indexation */
+		/** overall switch to activate fulltext indexation */
 		private boolean index = true;
 
 		NodeProcessor(final NodeImpl node, NodePath currentPath) {
@@ -996,37 +996,42 @@ public class NativeBroker extends DBBroker {
 			switch (nodeType) {
 				case Node.ELEMENT_NODE :
 					if (idxSpec != null) {
+						
+					    // --move to-- NativeValueIndex
 						RangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 					    if(spec != null)
 					        indexType = spec.getIndexType();
 					    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+
+					    // --move to-- NativeValueIndexByQName
 					    if (qnIdx != null && qnameValueIndexation) {
 					    	indexType |= RangeIndexSpec.QNAME_INDEX;
 						}
 					}
+					
+					// --move to-- NativeTextEngine
 					if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
 					    indexType |= RangeIndexSpec.TEXT;
 					if(node.getChildCount() - node.getAttributesCount() > 1) {
 					    indexType |= RangeIndexSpec.MIXED_CONTENT;
 					}
+					
+					// --move to-- NativeValueIndex NativeValueIndexByQName NativeTextEngine
+					// CAUTION TODO setIndexType( newIndexType | getIndexType() );
 					((ElementImpl) node).setIndexType(indexType);
 					break;
+					
 				case Node.ATTRIBUTE_NODE :
-					QName idxQName = new QName('@' + node.getLocalName(), node.getNamespaceURI());
-	                if (currentPath != null)
-	                	currentPath.addComponent(idxQName);
-					GeneralRangeIndexSpec valSpec = null;
-				    if (idxSpec != null) {
-					    valSpec = idxSpec.getIndexByPath(currentPath);
-					    if(valSpec != null) {
-					        indexType = valSpec.getIndexType();
-					    }
-					}
 					boolean indexAttribs = false;
+					
+					// --move to-- NativeElementIndex NativeValueIndex NativeTextEngine
 					if(index && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
 					    indexType |= RangeIndexSpec.TEXT;
 						indexAttribs = true;
 					}
+					
+					// --move to-- NativeElementIndex
+					// TODO : elementIndex.markNode(node, currentPath, index);
 					elementIndex.setDocument(doc);
 					NodeProxy tempProxy =
 						new NodeProxy(doc, gid, address);
@@ -1035,12 +1040,26 @@ public class NativeBroker extends DBBroker {
 					qname.setNameType(ElementValue.ATTRIBUTE);
 					elementIndex.addRow(qname, tempProxy);
 					
-					if (valSpec != null) {
+				    // --move to-- NativeValueIndex
+					// TODO : valueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
+					GeneralRangeIndexSpec valSpec = null;
+				    if (idxSpec != null) {
+					    valSpec = idxSpec.getIndexByPath(currentPath);
+					    if(valSpec != null) {
+					        indexType = valSpec.getIndexType();
+					    }
+					}
+				    if (valSpec != null) {
 				        valueIndex.setDocument(doc);
 				        valueIndex.storeAttribute(valSpec, (AttrImpl) node);
 					}
-					
+				    
+				    // --move to-- NativeValueIndexByQName
+					// TODO : qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
 					if (idxSpec != null && qnameValueIndexation) {
+						QName idxQName = new QName('@' + node.getLocalName(), node.getNamespaceURI());
+		                if (currentPath != null)
+		                	currentPath.addComponent(idxQName);
 						RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
 						if (qnIdx != null) {
 							qnameValueIndex.setDocument(doc);
@@ -1048,8 +1067,13 @@ public class NativeBroker extends DBBroker {
 						}
 					}
 					
+					// --move to-- NativeTextEngine
+					// TODO : textEngine.storeAttribute( (AttrImpl)node, currentPath, index);
 					if (indexAttribs && !isTemp )
 						textEngine.storeAttribute(ftIdx, (AttrImpl) node);
+										
+					// --move to-- NativeElementIndex
+					// TODO : elementIndex.markNode(node, currentPath, index);
 					// if the attribute has type ID, store the ID-value
 					// to the element index as well
 					if (((AttrImpl) node).getType() == AttrImpl.ID) {
@@ -1058,11 +1082,15 @@ public class NativeBroker extends DBBroker {
 						qname.setNameType(ElementValue.ATTRIBUTE_ID);
 						elementIndex.addRow(qname, tempProxy);
 					}
+					
+					// --move to-- ???
 	                if (currentPath != null)
 	                	currentPath.removeLastComponent();
 					break;
 					
 				case Node.TEXT_NODE:
+					// --move to-- NativeTextEngine
+					// TODO textEngine.storeText( (TextImpl) node, currentPath, index);
 					// check if this textual content should be fulltext-indexed
 					// by calling IndexPaths.match(path)
 					boolean indexText = true;
@@ -1077,7 +1105,7 @@ public class NativeBroker extends DBBroker {
 			}
 		}
 		
-		/** Stores this node into the database */
+		/** Stores this node into the database, if it's an element */
 		public void store() {
 			if (nodeType == Node.ELEMENT_NODE && level <= depth) {
 				new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -2023,6 +2051,8 @@ public class NativeBroker extends DBBroker {
 	 * removed. See {@link #endRemove()}. 
 	 * removeNode() just adds the node ids to the list in elementIndex 
 	 * for later removal.
+	 * <br>
+	 * Note: We need the content string to be able to remove the index entry based on that content.
 	 */
 	public void removeNode(final NodeImpl node, NodePath currentPath, String content) {
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
@@ -2046,6 +2076,8 @@ public class NativeBroker extends DBBroker {
 		QName qname;
 		switch (nodeType) {
 			case Node.ELEMENT_NODE :
+				// --move to-- NativeElementIndex
+				// TODO elementIndex.markNode(node, currentPath, true );
 				// save element by calling ElementIndex
 				qname = node.getQName();
 				qname.setNameType(ElementValue.ELEMENT);
@@ -2053,12 +2085,16 @@ public class NativeBroker extends DBBroker {
 				elementIndex.addRow(qname, tempProxy);
 				
 				if (idxSpec != null) {
+				    // --move to-- NativeValueIndex
+					// TODO : valueIndex.markNode(node, currentPath, true );
 				    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 				    if(spec != null) {
 				        valueIndex.setDocument(doc);
 				        valueIndex.storeElement(spec.getType(), (ElementImpl) node, content);
 				    }
 				    
+				    // --move to-- NativeValueIndexByQName
+					// TODO : qnameValueIndex.markNode(node, currentPath, true );
 				    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
 					if (qnIdx != null && qnameValueIndexation) {
 						qnameValueIndex.setDocument(doc);
@@ -2067,6 +2103,8 @@ public class NativeBroker extends DBBroker {
 				}
 				break;
 			case Node.ATTRIBUTE_NODE :
+				// --move to-- NativeElementIndex
+				// TODO elementIndex.markNode(node, currentPath, true );
 				QName idxQName = new QName('@' + node.getLocalName(), node.getNamespaceURI());
 			    currentPath.addComponent(idxQName);
 				elementIndex.setDocument(doc);
@@ -2074,6 +2112,8 @@ public class NativeBroker extends DBBroker {
 				qname.setNameType(ElementValue.ATTRIBUTE);
 				elementIndex.addRow(qname, tempProxy);
 				
+				// --move to-- NativeTextEngine
+				// TODO : textEngine.storeAttribute( (AttrImpl)node, currentPath, true);
 				// check if attribute value should be fulltext-indexed
 				// by calling IndexPaths.match(path) 
 				boolean indexAttribs = true;
@@ -2082,6 +2122,9 @@ public class NativeBroker extends DBBroker {
 				}
 				if (indexAttribs)
 					textEngine.storeAttribute(ftIdx, (AttrImpl) node);
+				
+			    // --move to-- NativeValueIndex
+				// TODO : valueIndex.storeAttribute( (AttrImpl)node, currentPath, true);
 				if (idxSpec != null) {
 				    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 				    if(spec != null) {
@@ -2089,12 +2132,17 @@ public class NativeBroker extends DBBroker {
 				        valueIndex.storeAttribute(spec, (AttrImpl) node);
 				    }
 				    
+				    // --move to-- NativeValueIndexByQName
+					// TODO : qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, true);
 					RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
 					if (qnIdx != null && qnameValueIndexation) {
 						qnameValueIndex.setDocument(doc);
 						qnameValueIndex.storeAttribute(qnIdx, (AttrImpl) node);
 					}
 				}
+				
+			    // --move to-- NativeElementIndex
+				// TODO : elementIndex.markNode( (AttrImpl)node, currentPath);
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
 				if (((AttrImpl) node).getType() == AttrImpl.ID) {
@@ -2102,9 +2150,13 @@ public class NativeBroker extends DBBroker {
 					qname.setNameType(ElementValue.ATTRIBUTE_ID);
 					elementIndex.addRow(qname, tempProxy);
 				}
+				
 				currentPath.removeLastComponent();
 				break;
+				
 			case Node.TEXT_NODE :
+				// --move to-- NativeTextEngine
+				// TODO : textEngine.storeText( (AttrImpl)node, currentPath, true);
 				// check if this textual content should be fulltext-indexed
 				// by calling IndexPaths.match(path)
 				if (ftIdx == null || ftIdx.match(currentPath)){
@@ -2526,7 +2578,7 @@ public class NativeBroker extends DBBroker {
 	 *      element-parent or to itself if it is an element (currently used by
 	 *      the Broker to determine if a node's content should be
 	 *      fulltext-indexed).
-	 *@param index overall switch to activate fulltest indexation
+	 *@param index overall switch to activate fulltext indexation
 	 */
 	public void store(final NodeImpl node, NodePath currentPath, boolean index) {
 		checkAvailableMemory();
