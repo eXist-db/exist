@@ -249,25 +249,25 @@ public abstract class DBBroker extends Observable {
 	 * absolute path, e.g. /db/system. It will be loaded and locked according to the
 	 * lockMode argument. 
 	 * 
-	 * The caller should take care to release the collection lock properly.
-	 * 
-	 * @param name the collection path
-	 * @param lockMode one of the modes specified in class {@link org.exist.util.Lock}
-	 * @return collection or null if no collection matches the path
-	 */
-	public abstract Collection openCollection(String name, int lockMode);
+         * The caller should take care to release the collection lock properly.
+         * 
+         * @param name the collection path
+         * @param lockMode one of the modes specified in class {@link org.exist.util.Lock}
+         * @return collection or null if no collection matches the path
+         */
+        public abstract Collection openCollection(String name, int lockMode);
 	
 	/**
 	 *  Returns the database collection identified by the specified path.
 	 * If the collection does not yet exist, it is created - including all
 	 * ancestors. The path should be absolute, e.g. /db/system.
-	 * 
-	 * @return collection or null if no collection matches the path
-	 */
-	public Collection getOrCreateCollection(String name)
-		throws PermissionDeniedException {
-		return null;
-	}
+         * 
+         * @return collection or null if no collection matches the path
+         */
+        public Collection getOrCreateCollection(String name)
+                throws PermissionDeniedException {
+                return null;
+        }
 
 	public abstract void reloadCollection(Collection collection);
 	
@@ -278,31 +278,31 @@ public abstract class DBBroker extends Observable {
 	 */
 	public Configuration getConfiguration() {
 		return config;
-	}
+        }
 
-	/**
-	 *  Return a {@link org.exist.storage.store.DOMFileIterator} starting
-	 * at the specified node.
-	 *
-	 */
+        /**
+         *  Return a {@link org.exist.storage.store.DOMFileIterator} starting
+         * at the specified node.
+         *
+         */
 	public Iterator getDOMIterator(Document doc, long gid) {
 		throw new RuntimeException("not implemented for this storage backend");
-	}
+        }
 
-	/**
-	 *  Return a {@link org.exist.storage.store.DOMFileIterator} starting
-	 * at the specified node.
-	 *
-	 */
+        /**
+         *  Return a {@link org.exist.storage.store.DOMFileIterator} starting
+         * at the specified node.
+         *
+         */
 	public Iterator getDOMIterator(NodeProxy proxy) {
 		throw new RuntimeException("not implemented for this storage backend");
-	}
+        }
 
-	/**
-	 * Return a {@link org.exist.storage.store.NodeIterator} starting
-	 * at the specified node.
-	 * 
-	 * @param proxy
+        /**
+         * Return a {@link org.exist.storage.store.NodeIterator} starting
+         * at the specified node.
+         * 
+         * @param proxy
 	 * @return
 	 */
 	public Iterator getNodeIterator(NodeProxy proxy) {
@@ -339,13 +339,13 @@ public abstract class DBBroker extends Observable {
 		String collection, DocumentSet docs, boolean inclusive)
 		throws PermissionDeniedException;
 
-	/**
-	 * Get a new document id that does not yet exist within the collection.
-	 */
-	public abstract int getNextDocId(Collection collection);
+        /**
+         * Get a new document id that does not yet exist within the collection.
+         */
+        public abstract int getNextDocId(Collection collection);
 
-	/**
-	 * Get the string value of the specified node.
+        /**
+         * Get the string value of the specified node.
      * 
      * If addWhitespace is set to true, an extra space character will be
      * added between adjacent elements in mixed content nodes.
@@ -421,43 +421,45 @@ public abstract class DBBroker extends Observable {
 
 	/**
 	 * Remove the collection and all its subcollections from
-	 * the database.
-	 * 
-	 */
-	public abstract boolean removeCollection(Collection collection)
-		throws PermissionDeniedException;
+         * the database.
+         * 
+         */
+        public abstract boolean removeCollection(Collection collection)
+                throws PermissionDeniedException;
 
-	/**
-	 *  Remove a document from the database.
-	 *
-	 */
-	public void removeDocument(DocumentImpl document)
-	throws PermissionDeniedException {
-	    removeDocument(document, true);
-	}
-	
-	public abstract void removeDocument(DocumentImpl document, boolean freeDocId)
-		throws PermissionDeniedException;
+        /**
+         *  Remove a document from the database.
+         *
+         */
+        public void removeDocument(DocumentImpl document)
+        throws PermissionDeniedException {
+            removeDocument(document, true);
+        }
+        
+        public abstract void removeDocument(DocumentImpl document, boolean freeDocId)
+                throws PermissionDeniedException;
 
-	/**
+        /**
 	 * Reindex a collection.
 	 * 
 	 * @param collectionName
 	 * @throws PermissionDeniedException
 	 */
-	public abstract void reindex(String collectionName) 
-		throws PermissionDeniedException;
-	
-	/**
+        public abstract void reindex(String collectionName) 
+                throws PermissionDeniedException;
+        
+    protected abstract void repair() throws PermissionDeniedException;
+    
+        /**
      * Saves the specified collection to storage. Collections are usually cached in
      * memory. If a collection is modified, this method needs to be called to make
      * the changes persistent.
      * 
      * Note: appending a new document to a collection does not require a save.
      * Instead, {@link #addDocument(Collection, DocumentImpl)} is called.
-     */
-	public abstract void saveCollection(Collection collection)
-		throws PermissionDeniedException;
+         */
+        public abstract void saveCollection(Collection collection)
+        throws PermissionDeniedException;
 
     /**
      * Append a new document to the specified collection. The document data
@@ -467,12 +469,12 @@ public abstract class DBBroker extends Observable {
      * @param doc
      * @throws PermissionDeniedException
      */
-	public void addDocument(Collection collection, DocumentImpl doc)
-		throws PermissionDeniedException {
-	}
+        public void addDocument(Collection collection, DocumentImpl doc)
+                throws PermissionDeniedException {
+        }
 
-	public void closeDocument() {
-	}
+        public void closeDocument() {
+        }
 
 	/**
 	 *  Shut down the database instance. All open files, jdbc connections etc. should be
@@ -488,16 +490,16 @@ public abstract class DBBroker extends Observable {
 	 *@param  node         the node to be stored
 	 *@param  currentPath  path expression which points to this node's
 	 *      element-parent or to itself if it is an element (currently used by
-	 *      the Broker to determine if a node's content should be
-	 *      fulltext-indexed).
-	 */
-	public abstract void store(NodeImpl node, NodePath currentPath, boolean index);
+         *      the Broker to determine if a node's content should be
+         *      fulltext-indexed).
+         */
+        public abstract void store(NodeImpl node, NodePath currentPath, boolean index);
 
-	public void store(NodeImpl node, NodePath currentPath) {
-	    store(node, currentPath, true);
-	}
-	
-	/**
+        public void store(NodeImpl node, NodePath currentPath) {
+            store(node, currentPath, true);
+        }
+        
+        /**
      * Update indexes for the given element node. This method is called when the indexer
      * encounters a closing element tag. It updates any range indexes defined on the
      * element value and adds the element id to the structural index.
@@ -513,10 +515,10 @@ public abstract class DBBroker extends Observable {
 	 * Store a document (descriptor) into the database
      * (all metadata information which is returned by 
      * {@link org.exist.dom.DocumentImpl#serialize()}).
-	 *
-	 * @param doc the document's metadata to store.
-	 */
-	public abstract void storeDocument(DocumentImpl doc);
+         *
+         * @param doc the document's metadata to store.
+         */
+        public abstract void storeDocument(DocumentImpl doc);
 
     /**
      * Stores the document (descriptor) and it's parent collection.
@@ -525,9 +527,9 @@ public abstract class DBBroker extends Observable {
      * @throws LockException if document is write locked
      * @throws PermissionDeniedException if you don't have the right to do this
      */
-	public abstract void updateDocument(DocumentImpl doc) 
-	throws LockException, PermissionDeniedException;
-	
+        public abstract void updateDocument(DocumentImpl doc) 
+        throws LockException, PermissionDeniedException;
+        
     /**
      * Stores the given data under the given binary resource descriptor 
      * (BinaryDocument).
@@ -535,8 +537,8 @@ public abstract class DBBroker extends Observable {
      * @param blob the binary document descriptor
      * @param data the document binary data
      */
-	public abstract void storeBinaryResource(BinaryDocument blob, byte[] data);
-	
+        public abstract void storeBinaryResource(BinaryDocument blob, byte[] data);
+        
     /**
      * Retrieve the binary data stored under the resource descriptor
      * BinaryDocument.
@@ -544,8 +546,8 @@ public abstract class DBBroker extends Observable {
      * @param blob the binary document descriptor
      * @return the document binary data
      */
-	public abstract byte[] getBinaryResourceData(final BinaryDocument blob);
-	
+        public abstract byte[] getBinaryResourceData(final BinaryDocument blob);
+        
     /**
      * Completely delete this binary document (descriptor and binary
      * data).
@@ -553,62 +555,62 @@ public abstract class DBBroker extends Observable {
      * @param blob the binary document descriptor
      * @throws PermissionDeniedException if you don't have the right to do this
      */
-	public abstract void removeBinaryResource(final BinaryDocument blob) throws PermissionDeniedException;
+        public abstract void removeBinaryResource(final BinaryDocument blob) throws PermissionDeniedException;
 
-	/**
-	 * Move a collection and all its subcollections to another collection and rename it.
+        /**
+         * Move a collection and all its subcollections to another collection and rename it.
 	 * Moving a collection just modifies the collection path and all resource paths. The
 	 * data itself remains in place.
 	 * 
 	 * @param collection the collection to move
-	 * @param destination the destination collection
-	 * @param newName the new name the collection should have in the destination collection
-	 */
-	public abstract void moveCollection(Collection collection, Collection destination, String newName) 
-	throws PermissionDeniedException, LockException;
-	
-	/**
+         * @param destination the destination collection
+         * @param newName the new name the collection should have in the destination collection
+         */
+        public abstract void moveCollection(Collection collection, Collection destination, String newName) 
+        throws PermissionDeniedException, LockException;
+        
+        /**
 	 * Move a resource to the destination collection and rename it.
 	 * 
 	 * @param doc the resource to move
-	 * @param destination the destination collection
-	 * @param new Name the new name the resource should have in the destination collection
-	 */
-	public abstract void moveResource(DocumentImpl doc, Collection destination, String newName)
-	throws PermissionDeniedException, LockException;
-	
-	/**
+         * @param destination the destination collection
+         * @param new Name the new name the resource should have in the destination collection
+         */
+        public abstract void moveResource(DocumentImpl doc, Collection destination, String newName)
+        throws PermissionDeniedException, LockException;
+        
+        /**
 	 * Copy a collection to the destination collection and rename it.
 	 * 
 	 * @param doc the resource to move
-	 * @param destination the destination collection
-	 * @param new Name the new name the resource should have in the destination collection
-	 */
-	public abstract void copyCollection(Collection collection, Collection destination, String newName)
-	throws PermissionDeniedException, LockException;
-	
-	/**
+         * @param destination the destination collection
+         * @param new Name the new name the resource should have in the destination collection
+         */
+        public abstract void copyCollection(Collection collection, Collection destination, String newName)
+        throws PermissionDeniedException, LockException;
+        
+        /**
 	 * Copy a resource to the destination collection and rename it.
 	 * 
 	 * @param doc the resource to copy
 	 * @param destination the destination collection
 	 * @param newName the new name the resource should have in the destination collection
-	 * @throws PermissionDeniedException
-	 * @throws LockException
-	 */
-	public abstract void copyResource(DocumentImpl doc, Collection destination, String newName) 
-	throws PermissionDeniedException, LockException;
-	
+         * @throws PermissionDeniedException
+         * @throws LockException
+         */
+        public abstract void copyResource(DocumentImpl doc, Collection destination, String newName) 
+        throws PermissionDeniedException, LockException;
+        
     /**
      * Defragment pages of this document. This will minimize the number of
      * split pages.
      * 
      * @param doc to defrag
      */
-	public abstract void defrag(DocumentImpl doc);
-	
-	/**
-	 * Perform a consistency check on the specified document.
+        public abstract void defrag(DocumentImpl doc);
+        
+        /**
+         * Perform a consistency check on the specified document.
 	 * 
 	 * This checks if the DOM tree is consistent.
 	 * 
@@ -630,12 +632,12 @@ public abstract class DBBroker extends Observable {
 	/**
 	 *  Update a node's data. To keep nodes in a correct sequential order, it is sometimes 
 	 * necessary to update a previous written node. Warning: don't use it for other purposes.
-	 *
-	 *@param  node  Description of the Parameter
-	 */
-	public void update(NodeImpl node) {
-		throw new RuntimeException("not implemented");
-	}
+         *
+         *@param  node  Description of the Parameter
+         */
+        public void update(NodeImpl node) {
+                throw new RuntimeException("not implemented");
+        }
 
 	/**
 	 * Is the database running read-only? Returns false by default.
@@ -649,28 +651,28 @@ public abstract class DBBroker extends Observable {
 	}
 
 	public BrokerPool getBrokerPool() {
-		return pool;
-	}
+                return pool;
+        }
 
-	public void insertAfter(final NodeImpl previous, final NodeImpl node) {
-		throw new RuntimeException("not implemented");
-	}
+        public void insertAfter(final NodeImpl previous, final NodeImpl node) {
+                throw new RuntimeException("not implemented");
+        }
 
-	public void reindex(DocumentImpl oldDoc, DocumentImpl doc, NodeImpl node) {
-		throw new RuntimeException("not implemented");
-	}
+        public void reindex(DocumentImpl oldDoc, DocumentImpl doc, NodeImpl node) {
+                throw new RuntimeException("not implemented");
+        }
 
-	public void index(NodeImpl node) {
-		index(node, null);
-	}
-	
-	public void index(NodeImpl node, NodePath currentPath) {
-		throw new RuntimeException("not implemented");
-	}
+        public void index(NodeImpl node) {
+                index(node, null);
+        }
+        
+        public void index(NodeImpl node, NodePath currentPath) {
+                throw new RuntimeException("not implemented");
+        }
 
-	public void removeNode(final NodeImpl node, NodePath currentPath, String content) {
-		throw new RuntimeException("not implemented");
-	}
+        public void removeNode(final NodeImpl node, NodePath currentPath, String content) {
+                throw new RuntimeException("not implemented");
+        }
 
 	public void endRemove() {
 		throw new RuntimeException("not implemented");
