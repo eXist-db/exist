@@ -716,4 +716,8 @@ public class BrokerPool {
 		}
 	}
 
+    public void triggerCheckpoint() {
+		// TODO jmv
+	}
+
 }

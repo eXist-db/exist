@@ -142,6 +142,7 @@ public class NativeBroker extends DBBroker {
 	protected DOMFile domDb;
 	protected BFile elementsDb;
 	protected BFile valuesDb;
+    protected BFile dbWords;
 	protected BFile valuesDbQname;
 	/** the index processors */
 	protected NativeTextEngine textEngine;
@@ -267,6 +268,10 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+	private void createIndexFiles() throws DBException  {
+		// TODO extract from above .......
+	}
+	
 	/**
 	 * @param config
 	 * @param dataDir
@@ -1876,6 +1881,30 @@ public class NativeBroker extends DBBroker {
 	    reindex(collection);
 	}
 	
+    protected void repair() throws PermissionDeniedException {
+        Collection root = getCollection(ROOT_COLLECTION);
+        if (readOnly)
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        
+        LOG.debug("Removing index files ...");
+        elementsDb.getFile().delete();
+        config.setProperty("db-connection.elements", null);
+        
+        dbWords.getFile().delete();
+        config.setProperty("db-connection.words", null);
+        
+        valuesDb.getFile().delete();
+        config.setProperty("db-connection.values", null);
+        
+        LOG.debug("Recreating index files ...");
+        try {
+            createIndexFiles();
+        } catch (DBException e) {
+            LOG.warn("Exception during repair: " + e.getMessage(), e);
+        }
+        // jmv TODO reindex(null, root, true);
+    }
+    
 	/** Recursively remove documents and sub-collections */
 	public boolean removeCollection(Collection collection) throws PermissionDeniedException {
 	    if (readOnly)
