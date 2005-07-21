@@ -27,12 +27,16 @@
     <property name="dist" value="./dist"/>
     <property name="webapp.dir" value="${dist}/webapp"/>
     <property name="build.compiler" value="modern"/>
+    <property name="build.compiler.source" value="1.4"/>
+    <property name="build.compiler.target" value="1.4"/>
     <property name="build.debug" value="on"/>
     <property name="build.optimize" value="on"/>
     <property name="build.deprecation" value="on"/>
     <property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <property name="xmldb.src" value="undefined"/>
 
+	<echo message="${build.compiler.source}"/>
+	
     <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
 
     <available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
@@ -114,7 +118,7 @@
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
                 destdir="${build.classes}" encoding="UTF-8"
                 optimize="${build.optimize}" srcdir="${src}"
-                source="1.4">
+                source="${build.compiler.source}" target="${build.compiler.target}">
 			<!-- jmv target="1.4" -->
             <include name="org/**"/>
             <include name="org/exist/schema/**"/>
