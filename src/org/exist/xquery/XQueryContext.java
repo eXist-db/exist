@@ -799,7 +799,7 @@ public class XQueryContext {
 			var = module.declareVariable(qn, value);
 			return var;
 		}
-		Sequence val = XPathUtil.javaObjectToXPath(value);
+		Sequence val = XPathUtil.javaObjectToXPath(value, this);
 		var = (Variable)globalVariables.get(qn);
 		if(var == null) {
 			var = new Variable(qn);

@@ -228,7 +228,7 @@ public class JavaCall extends Function {
 							args[0].toJavaObject(myClass),
 							params);
 				}
-				return XPathUtil.javaObjectToXPath(result);
+				return XPathUtil.javaObjectToXPath(result, getContext());
 			} catch (IllegalArgumentException e) {
 				throw new XPathException(getASTNode(),
 					"illegal argument to method "

@@ -119,7 +119,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 	}
 	
 	public Variable declareVariable(QName qname, Object value) throws XPathException {
-		Sequence val = XPathUtil.javaObjectToXPath(value);
+		Sequence val = XPathUtil.javaObjectToXPath(value, null);
 		Variable var = (Variable)mGlobalVariables.get(qname);
 		if(var == null) {
 			var = new Variable(qname);

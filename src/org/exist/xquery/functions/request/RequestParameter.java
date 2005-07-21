@@ -81,9 +81,9 @@ public class RequestParameter extends BasicFunction {
 			if (values == null || values.length == 0)
 				return args[1];
 			if (values.length == 1)
-				return XPathUtil.javaObjectToXPath(values[0]);
+				return XPathUtil.javaObjectToXPath(values[0], null);
 			else
-				return XPathUtil.javaObjectToXPath(values);
+				return XPathUtil.javaObjectToXPath(values, null);
 		} else
 			throw new XPathException("Variable $request is not bound to a Request object.");
 	}
