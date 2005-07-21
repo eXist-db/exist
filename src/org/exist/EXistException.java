@@ -19,68 +19,29 @@
  */
 package org.exist;
 
-import java.io.StringWriter;
-import java.io.PrintWriter;
-
 /**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <wolfgang@exist-db.org>
- *@created    24. Juni 2002
+ * General exception type.
+ * 
+ * @author wolf
  */
 public class EXistException extends Exception {
 
-    protected Throwable inner = null;
+    private static final long serialVersionUID = 3256728389837665330L;
 
-
-    /**  Constructor for the EXistException object */
     public EXistException() {
         super();
     }
 
-    /**
-     *  Constructor for the EXistException object
-     *
-     *@param  inner  Description of the Parameter
-     */
     public EXistException( Throwable inner ) {
-        super( inner.getMessage() );
-        this.inner = inner;
+        super(inner);
     }
 
-
-    /**
-     *  Constructor for the EXistException object
-     *
-     *@param  message  Description of the Parameter
-     */
     public EXistException( String message ) {
-        super( message );
+        super(message);
     }
 
-
-    /**
-     *  Gets the exception attribute of the EXistException object
-     *
-     *@return    The exception value
-     */
-    public Throwable getException() {
-        return inner;
-    }
-
-
-    /**
-     *  Gets the message attribute of the EXistException object
-     *
-     *@return    The message value
-     */
-    public String getMessage() {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter( sw );
-        pw.println( super.getMessage() );
-        if ( inner != null )
-            inner.printStackTrace( pw );
-        return sw.toString();
+    public EXistException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
 
