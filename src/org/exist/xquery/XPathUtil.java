@@ -57,7 +57,7 @@ public class XPathUtil {
      * @return
      * @throws XPathException
      */
-    public final static Sequence javaObjectToXPath(Object obj)
+    public final static Sequence javaObjectToXPath(Object obj, XQueryContext context)
             throws XPathException {
         if (obj == null)
             return Sequence.EMPTY_SEQUENCE;
@@ -80,7 +80,7 @@ public class XPathUtil {
         else if (obj instanceof Node) {
             DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
             try {
-                MemTreeBuilder builder = new MemTreeBuilder();
+                MemTreeBuilder builder = new MemTreeBuilder(context);
                 builder.startDocument();
                 DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(
                         builder);
@@ -108,7 +108,7 @@ public class XPathUtil {
             else
                 seq = new ValueSequence();
             for (Iterator i = ((List) obj).iterator(); i.hasNext();) {
-                seq.add((Item) javaObjectToXPath(i.next()));
+                seq.add((Item) javaObjectToXPath(i.next(), context));
             }
             return seq;
         } else if (obj instanceof NodeList) {
@@ -150,7 +150,7 @@ public class XPathUtil {
             else
                 seq = new ValueSequence();
             for (int i = 0; i < array.length; i++) {
-                seq.add((Item) javaObjectToXPath(array[i]));
+                seq.add((Item) javaObjectToXPath(array[i], context));
             }
             return seq;
         } else

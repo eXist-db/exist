@@ -24,8 +24,6 @@ package org.exist.xquery;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.TreeMap;
 
 import org.exist.dom.QName;
@@ -125,7 +123,7 @@ public class ExternalModuleImpl implements ExternalModule {
 	 * @see org.exist.xquery.Module#declareVariable(org.exist.dom.QName, java.lang.Object)
 	 */
 	public Variable declareVariable(QName qname, Object value) throws XPathException {
-		Sequence val = XPathUtil.javaObjectToXPath(value);
+		Sequence val = XPathUtil.javaObjectToXPath(value, mContext);
 		Variable var = (Variable) mStaticVariables.get(qname);
 		if (var == null) {
 			var = new Variable(qname);

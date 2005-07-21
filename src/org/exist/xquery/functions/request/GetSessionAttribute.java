@@ -88,7 +88,7 @@ public class GetSessionAttribute extends Function {
 			Object o = session.getAttribute(attrib);
 			if (o == null)
 				return Sequence.EMPTY_SEQUENCE;
-			return XPathUtil.javaObjectToXPath(o);
+			return XPathUtil.javaObjectToXPath(o, context);
 		} else
 			throw new XPathException("Type error: variable $request is not bound to a request object");
 	}
