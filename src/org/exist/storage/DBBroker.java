@@ -445,18 +445,20 @@ public abstract class DBBroker extends Observable {
 	 * @param collectionName
 	 * @throws PermissionDeniedException
 	 */
-        public abstract void reindex(String collectionName) 
-                throws PermissionDeniedException;
-        
+	public abstract void reindex(String collectionName) 
+		throws PermissionDeniedException;
+	
     protected abstract void repair() throws PermissionDeniedException;
     
-        /**
+	/**
      * Saves the specified collection to storage. Collections are usually cached in
      * memory. If a collection is modified, this method needs to be called to make
      * the changes persistent.
      * 
      * Note: appending a new document to a collection does not require a save.
      * Instead, {@link #addDocument(Collection, DocumentImpl)} is called.
+     *
+     * @param collection to store
          */
         public abstract void saveCollection(Collection collection)
         throws PermissionDeniedException;
