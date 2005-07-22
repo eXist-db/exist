@@ -205,8 +205,7 @@ public class NativeBroker extends DBBroker {
 		try {
 			createIndexFiles();
 			
-
-//????????????????????
+			// Initialize DOM storage (Document Object Model)
 
 			if ((domDb = (DOMFile) config.getProperty("db-connection.dom")) == null) {
 				domDb =
@@ -222,6 +221,8 @@ public class NativeBroker extends DBBroker {
 					readOnly = domDb.isReadOnly();
 			}
 
+			// Initialize collections storage
+			
 			if ((collectionsDb =
 				(CollectionStore) config.getProperty("db-connection.collections"))
 				== null) {
@@ -242,25 +243,18 @@ public class NativeBroker extends DBBroker {
 				LOG.info("database runs in read-only mode");
 			
 			idxConf = (IndexSpec) config.getProperty("indexer.config");
-			textEngine = new NativeTextEngine(this, config);
-			valueIndex = new NativeValueIndex(this, valuesDb);
-			if ( qnameValueIndexation ) {
-				qnameValueIndex = new NativeValueIndexByQName(this, valuesDbQname);
-				addContentLoadingObserver(qnameValueIndex);
-			}			
+
 			xmlSerializer = new NativeSerializer(this, config);
-			elementIndex = new NativeElementIndex(this, elementsDb);
-
-			addContentLoadingObserver(textEngine);
-			addContentLoadingObserver(valueIndex);
-			addContentLoadingObserver(elementIndex);
-
 			user = SecurityManager.SYSTEM_USER;
+
+			// ??????
 			if(pool.isInitializing())
 				getOrCreateCollection(ROOT_COLLECTION);
+			
 		} catch (DBException e) {
 			LOG.debug("failed to initialize database: " + e.getMessage(), e);
 			throw new EXistException(e);
+			
 		} catch (PermissionDeniedException e) {
 			LOG.debug("failed to initialize database: " + e.getMessage(), e);
 			throw new EXistException(e);
@@ -268,9 +262,6 @@ public class NativeBroker extends DBBroker {
 	}
 
 	private void createIndexFiles() throws DBException  {
-		// TODO extract from above .......
-		
-		String pathSep = System.getProperty("file.separator", "/");
 		
 		elementsDb = createValueIndexFile(config, dataDir, "elements.dbx", "db-connection.elements", 500 );
 		valuesDb = createValueIndexFile(config, dataDir, VALUES_DB_FILE, "db-connection.values", 1000 );
@@ -278,7 +269,18 @@ public class NativeBroker extends DBBroker {
 				valuesDbQname = createValueIndexFile(config, dataDir, VALUES_DB_QNAME_FILE,
 						"db-connection2.values", 1000 );
 		}
-		
+			
+		textEngine = new NativeTextEngine(this, config);
+		valueIndex = new NativeValueIndex(this, valuesDb);
+		if ( qnameValueIndexation ) {
+			qnameValueIndex = new NativeValueIndexByQName(this, valuesDbQname);
+			addContentLoadingObserver(qnameValueIndex);
+		}			
+		elementIndex = new NativeElementIndex(this, elementsDb);
+
+		addContentLoadingObserver(textEngine);
+		addContentLoadingObserver(valueIndex);
+		addContentLoadingObserver(elementIndex);		
 	}
 	
 	/**
