@@ -232,7 +232,7 @@ public class Backup {
 				"created",
 				"created",
 				"CDATA",
-				""+new DateTimeValue(cur.getCreationTime().getTime()));
+				""+new DateTimeValue(cur.getCreationTime()));
 		serializer.startElement(NS, "collection", "collection", attr);
 
 		// scan through resources
@@ -295,13 +295,13 @@ public class Backup {
                         "created",
                         "created",
                         "CDATA",
-                        ""+new DateTimeValue(ris.getCreationTime().getTime()));
+                        ""+new DateTimeValue(ris.getCreationTime()));
                 attr.addAttribute(
                         NS,
                         "modified",
                         "modified",
                         "CDATA",
-                        ""+new DateTimeValue(ris.getLastModificationTime().getTime()));
+                        ""+new DateTimeValue(ris.getLastModificationTime()));
                 
                 attr.addAttribute(
                         NS,
@@ -323,7 +323,7 @@ public class Backup {
             } catch(XMLDBException e) {
                 System.err.println("Failed to backup resource " + resources[i] + " from collection " + current.getName());
             }
-		}
+      }
 		// write subcollections
 		String[] collections = current.listChildCollections();
 		for (int i = 0; i < collections.length; i++) {

@@ -23,6 +23,8 @@
 
 package org.exist.xquery.value;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.Collator;
 
 import org.exist.storage.Indexable;
@@ -95,6 +97,7 @@ public class FloatValue extends NumericValue implements Indexable {
 			case Type.STRING :
 				return new StringValue(getStringValue());
 			case Type.DECIMAL :
+				return new DecimalValue(value);
 			case Type.INTEGER :
 			case Type.NON_POSITIVE_INTEGER :
 			case Type.NEGATIVE_INTEGER :
@@ -110,7 +113,7 @@ public class FloatValue extends NumericValue implements Indexable {
 			case Type.POSITIVE_INTEGER :
 				return new IntegerValue((long) value, requiredType);
 			case Type.BOOLEAN :
-				return (value == 0.0 || value == Double.NaN)
+				return (value == 0.0f || value == Float.NaN)
 					? BooleanValue.FALSE
 					: BooleanValue.TRUE;
 			default :
@@ -201,6 +204,16 @@ public class FloatValue extends NumericValue implements Indexable {
 			return new FloatValue(value / ((FloatValue) other).value);
 		else
 			return div((ComputableValue) other.convertTo(getType()));
+	}
+
+	public IntegerValue idiv(NumericValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(), Type.FLOAT)) {
+			float result = value / ((FloatValue) other).value;
+			if (result == Float.NaN || result == Float.POSITIVE_INFINITY || result == Float.NEGATIVE_INFINITY)
+				throw new XPathException("illegal arguments to idiv");
+			return new IntegerValue(new BigDecimal(result).toBigInteger(), Type.INTEGER);
+		}
+		throw new XPathException("idiv called with incompatible argument type: " + getType() + " vs " + other.getType());
 	}
 
 	/* (non-Javadoc)

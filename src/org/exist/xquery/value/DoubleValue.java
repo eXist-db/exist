@@ -271,7 +271,7 @@ public class DoubleValue extends NumericValue implements Indexable {
 			case Type.YEAR_MONTH_DURATION:
 				return other.mult(this);
 			default:
-				return ((ComputableValue) convertTo(other.getType())).mult(other);
+				return mult((ComputableValue) other.convertTo(getType()));
 		}
 	}
 
@@ -283,6 +283,16 @@ public class DoubleValue extends NumericValue implements Indexable {
 			return new DoubleValue(value / ((DoubleValue) other).value);
 		else
 			return div((ComputableValue) other.convertTo(getType()));
+	}
+
+	public IntegerValue idiv(NumericValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
+			double result = value / ((DoubleValue) other).value;
+			if (result == Double.NaN || result == Double.POSITIVE_INFINITY || result == Double.NEGATIVE_INFINITY)
+				throw new XPathException("illegal arguments to idiv");
+			return new IntegerValue(new BigDecimal(result).toBigInteger(), Type.INTEGER);
+		}
+		throw new XPathException("idiv called with incompatible argument type: " + getType() + " vs " + other.getType());
 	}
 
 	/* (non-Javadoc)

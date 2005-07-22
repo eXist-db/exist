@@ -18,3 +18,4 @@ webapp/api
 .exist_query_history
 hs_err_pid*.log
 
+.settings

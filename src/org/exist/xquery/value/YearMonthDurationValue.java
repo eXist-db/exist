@@ -23,165 +23,48 @@
 
 package org.exist.xquery.value;
 
-import java.text.Collator;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.math.*;
 
-import org.exist.xquery.Constants;
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.Duration;
+
 import org.exist.xquery.XPathException;
 
 /**
- * @author wolf
+ * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-public class YearMonthDurationValue extends DurationValue {
+public class YearMonthDurationValue extends OrderedDurationValue {
 
-	public YearMonthDurationValue(int months) {
-		if (months < 0) {
-			negative = true;
-			months *= -1;
-		}
-		this.year = months / 12;
-		this.month = months % 12;
-	}
-
-	public YearMonthDurationValue(DurationValue other) {
-		this.year = other.year;
-		this.month = other.month;
-		this.negative = other.negative;
-		normalize();
+	private static final Duration CANONICAL_ZERO_DURATION =
+		TimeUtils.getInstance().newDuration(true, null, BigInteger.ZERO, null, null, null, null);
+	
+	YearMonthDurationValue(Duration duration) throws XPathException {
+		super(duration);
+		if (
+				duration.isSet(DatatypeConstants.DAYS) ||
+				duration.isSet(DatatypeConstants.HOURS) ||
+				duration.isSet(DatatypeConstants.MINUTES) ||
+				duration.isSet(DatatypeConstants.SECONDS)
+				)
+			throw new XPathException("the value '" + duration + "' is not an xdt:yearMonthDuration since it specified days, hours, minutes or seconds values");
 	}
 
 	public YearMonthDurationValue(String str) throws XPathException {
-		super();
-		// format is: [+|-]PnYnM
-		if (str.length() < 3)
-			throw new XPathException("Type error: xs:duration should start with [+|-]P");
-		char ch;
-		StringBuffer buf = new StringBuffer();
-		int p = 0;
-		int state = 0;
-		int value = -1;
-		while (p < str.length()) {
-			ch = str.charAt(p);
-			switch (ch) {
-				case '-' :
-					if (state > 0)
-						throw new XPathException(
-							"Type error in xs:yearMonthDuration: "
-								+ str
-								+ ": - is not allowed here");
-					negative = true;
-					break;
-				case 'P' :
-					if (state > 0)
-						throw new XPathException(
-							"Type error in xs:yearMonthDuration: "
-								+ str
-								+ ": P is not allowed here");
-					state++;
-					break;
-				case 'Y' :
-					if (state != 1 || value < 0)
-						throw new XPathException(
-							"Type error in xs:yearMonthDuration: "
-								+ str
-								+ ": Y is not allowed to occur here");
-					year = value;
-					value = -1;
-					state++;
-					break;
-				case 'M' :
-					if (state > 2 || value < 0)
-						throw new XPathException(
-							"Type error in xs:yearMonthDuration: "
-								+ str
-								+ ": M is not allowed to occur here");
-					month = value;
-					state++;
-					value = -1;
-					break;
-				case '1' :
-				case '2' :
-				case '3' :
-				case '4' :
-				case '5' :
-				case '6' :
-				case '7' :
-				case '8' :
-				case '9' :
-				case '0' :
-					if (state < 1)
-						throw new XPathException(
-							"Type error in xs:yearMonthDuration: "
-								+ str
-								+ ": numeric value not allowed at this position");
-					buf.append(ch);
-					p++;
-					while (p < str.length()) {
-						ch = str.charAt(p);
-						if (ch == '1'
-							|| ch == '2'
-							|| ch == '3'
-							|| ch == '4'
-							|| ch == '5'
-							|| ch == '6'
-							|| ch == '7'
-							|| ch == '8'
-							|| ch == '9'
-							|| ch == '0')
-							buf.append(ch);
-						else {
-							value = Integer.parseInt(buf.toString());
-							buf.setLength(0);
-							p--;
-							break;
-						}
-						p++;
-					}
-					break;
-			}
-			p++;
-		}
-		normalize();
+		this(TimeUtils.getInstance().newDurationYearMonth(str));
 	}
 	
-	public void normalize() {
-		if (month >= 12) {
-			month %= 12;
-			year += month / 12;
-		}
+	protected Duration canonicalZeroDuration() {
+		return CANONICAL_ZERO_DURATION;
 	}
-
+	
 	public int getValue() {
-		int value = year * 12 + month;
-		return negative ? -value : value;
+		return duration.getSign() * (duration.getYears() * 12 + duration.getMonths());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.DurationValue#getType()
-	 */
 	public int getType() {
 		return Type.YEAR_MONTH_DURATION;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.DurationValue#getStringValue()
-	 */
-	public String getStringValue() throws XPathException {
-		StringBuffer buf = new StringBuffer();
-		if (negative)
-			buf.append('-');
-		buf.append('P');
-		if (year > 0)
-			buf.append(year).append('Y');
-		if (month > 0)
-			buf.append(month).append('M');
-		return buf.toString();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.DurationValue#convertTo(int)
-	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
 			case Type.ITEM :
@@ -191,7 +74,12 @@ public class YearMonthDurationValue extends DurationValue {
 			case Type.STRING :
 				return new StringValue(getStringValue());
 			case Type.DURATION :
-				return new DurationValue(this);
+				return new DurationValue(TimeUtils.getInstance().newDuration(
+						duration.getSign() >= 0,
+						(BigInteger) duration.getField(DatatypeConstants.YEARS),
+						(BigInteger) duration.getField(DatatypeConstants.MONTHS),
+						null, null, null, null
+				));
 			default :
 				throw new XPathException(
 					"Type error: cannot cast xs:yearMonthDuration to "
@@ -199,132 +87,45 @@ public class YearMonthDurationValue extends DurationValue {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
-	 */
-	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
-		if (other.getType() == Type.YEAR_MONTH_DURATION) {
-			int v1 = getValue();
-			int v2 = ((YearMonthDurationValue) other).getValue();
-			switch (operator) {
-				case Constants.EQ :
-					return v1 == v2;
-				case Constants.NEQ :
-					return v1 != v2;
-				case Constants.LT :
-					return v1 < v2;
-				case Constants.LTEQ :
-					return v1 <= v2;
-				case Constants.GT :
-					return v1 > v2;
-				case Constants.GTEQ :
-					return v1 >= v2;
-				default :
-					throw new XPathException("Unknown operator type in comparison");
-			}
-		} else
-			throw new XPathException(
-				"Type error: cannot compare xs:yearMonthDuration to "
-					+ Type.getTypeName(other.getType()));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
-	 */
-	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-		if (other.getType() == Type.YEAR_MONTH_DURATION) {
-			int v1 = getValue();
-			int v2 = ((YearMonthDurationValue) other).getValue();
-			if (v1 == v2)
-				return 0;
-			else if (v1 < v2)
-				return -1;
-			else
-				return 1;
-		} else
-			throw new XPathException(
-				"Type error: cannot compare xs:yearMonthDuration to "
-					+ Type.getTypeName(other.getType()));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
-	 */
-	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-		if (other.getType() == Type.YEAR_MONTH_DURATION)
-			return compareTo(null, other) > 0 ? this : other;
-		else
-			return compareTo(null, other.convertTo(Type.YEAR_MONTH_DURATION)) > 0
-				? this
-				: other;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
-	 */
-	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-		if (other.getType() == Type.YEAR_MONTH_DURATION)
-			return compareTo(null, other) < 0 ? this : other;
-		else
-			return compareTo(null, other.convertTo(Type.YEAR_MONTH_DURATION)) < 0
-				? this
-				: other;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.DurationValue#plus(org.exist.xquery.value.ComputableValue)
-	 */
-	public ComputableValue plus(ComputableValue other) throws XPathException {
-		switch (other.getType()) {
-			case Type.YEAR_MONTH_DURATION :
-				return new YearMonthDurationValue(getValue() + ((YearMonthDurationValue) other).getValue());
-			case Type.DATE :
-			case Type.DATE_TIME:
-				int tzOffset = ((AbstractDateTimeValue) other).tzOffset;
-				GregorianCalendar ncal = (GregorianCalendar) ((AbstractDateTimeValue) other).calendar.clone();
-				ncal.add(Calendar.MONTH, getValue());
-				if(other.getType() == Type.DATE) 
-					return new DateValue(ncal, tzOffset);
-				else
-					new DateTimeValue(ncal, tzOffset);
-			default:
-				throw new XPathException(
-					"Operand to plus should be of type xdt:yearMonthDuration, xs:date, "
-						+ "or xs:dateTime; got: "
-						+ Type.getTypeName(other.getType()));
-		}
-	}
-
-	public ComputableValue minus(ComputableValue other) throws XPathException {
-		switch (other.getType()) {
-			case Type.YEAR_MONTH_DURATION :
-				return new YearMonthDurationValue(
-					getValue() - ((YearMonthDurationValue) other).getValue());
-			default:
-				throw new XPathException(
-					"Operand to plus should be of type xdt:yearMonthDuration, xs:date, "
-						+ "or xs:dateTime; got: "
-						+ Type.getTypeName(other.getType()));
-		}
+	protected DurationValue createSameKind(Duration dur) throws XPathException {
+		return new YearMonthDurationValue(dur);
 	}
 	
-	public ComputableValue div(ComputableValue other) throws XPathException {
-		if (other.getType() == Type.YEAR_MONTH_DURATION) {
-			return new IntegerValue(getValue()).div(new IntegerValue(((YearMonthDurationValue) other).getValue()));
-		} else if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
-			return new YearMonthDurationValue(((NumericValue) new IntegerValue(getValue()).div(other)).round().getInt());
-		} else
+	public ComputableValue plus(ComputableValue other) throws XPathException {
+		try {
+			if (other.getType() == Type.TIME) throw new IllegalArgumentException();
+			return super.plus(other);
+		} catch (IllegalArgumentException e) {
 			throw new XPathException(
-					"Operand to div should be of xdt:yearMonthDuration or numeric type; got: "
+					"Operand to plus should be of type xdt:yearMonthDuration, xs:date, "
+						+ "or xs:dateTime; got: "
 						+ Type.getTypeName(other.getType()));
+		}
 	}
 	
 	public ComputableValue mult(ComputableValue other) throws XPathException {
-		if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
-			return new YearMonthDurationValue(((NumericValue) new IntegerValue(getValue()).mult(other)).round().getInt());
-		} else
-			throw new XPathException(
-					"Operand to mult should be of numeric type; got: "
-						+ Type.getTypeName(other.getType()));
+		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
+		return fromDecimalMonths(
+			new BigDecimal(monthsValueSigned())
+			.multiply(factor)
+			.setScale(0, BigDecimal.ROUND_HALF_UP)
+		);
 	}
+
+	public ComputableValue div(ComputableValue other) throws XPathException {
+		if (other.getType() == Type.YEAR_MONTH_DURATION) {
+			return new IntegerValue(getValue()).div(new IntegerValue(((YearMonthDurationValue) other).getValue()));
+		}
+		BigDecimal divisor = numberToBigDecimal(other, "Operand to div should be of xdt:yearMonthDuration or numeric type; got: ");
+		return fromDecimalMonths(
+			new BigDecimal(monthsValueSigned())
+			.divide(divisor, 0, BigDecimal.ROUND_HALF_UP)
+		);
+	}
+	
+	private YearMonthDurationValue fromDecimalMonths(BigDecimal x) throws XPathException {
+		return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
+				x.signum() >= 0, null, x.toBigInteger()));
+	}
+	
 }

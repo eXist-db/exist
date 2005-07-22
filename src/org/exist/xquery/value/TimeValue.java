@@ -22,194 +22,65 @@
  */
 package org.exist.xquery.value;
 
-import java.text.Collator;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.SimpleTimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.exist.xquery.Constants;
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
+
 import org.exist.xquery.XPathException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 public class TimeValue extends AbstractDateTimeValue {
 
-	//	time format is: hh:mm:ss[.fff*][([+|-]hh:mm | Z)]
-	private static final String regex =
-		"([0-2]\\d):([0-6][0-9]):([0-6][0-9])(\\.(\\d{1,3}))?(.*)";
-	private static final String tzre = "(\\+|-)?([0-1]\\d):(\\d{2})";
-
-	private static final Pattern timePattern = Pattern.compile(regex);
-    private static final Pattern tzPattern = Pattern.compile(tzre);
-    
-	public TimeValue() {
-		calendar = new GregorianCalendar();
-		tzOffset =
-			(calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET))
-				/ 60000;
-		calendar.set(Calendar.YEAR, 2000);
-		calendar.set(Calendar.MONTH, 0);
-		calendar.set(Calendar.DATE, 1);
-		date = calendar.getTime();
+	public TimeValue() throws XPathException {
+		super(stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
 	}
 
-	public TimeValue(Calendar cal, int timezone) {
-		tzOffset = timezone;
-		explicitTimeZone = true;
-		SimpleTimeZone zone = new SimpleTimeZone(tzOffset * 60000, "LLL");
-		calendar = new GregorianCalendar(zone);
-		calendar.setLenient(false);
-		calendar.set(Calendar.YEAR, 2000);
-		calendar.set(Calendar.MONTH, 0);
-		calendar.set(Calendar.DATE, 1);
-		calendar.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY));
-		calendar.set(Calendar.MINUTE, cal.get(Calendar.MINUTE));
-		calendar.set(Calendar.SECOND, cal.get(Calendar.SECOND));
-		calendar.set(Calendar.MILLISECOND, cal.get(Calendar.MILLISECOND));
-
-		calendar.set(Calendar.ZONE_OFFSET, tzOffset * 60000);
-		date = calendar.getTime();
-	}
-
-	public TimeValue(long milliseconds, int timezone) {
-		tzOffset = timezone;
-		explicitTimeZone = true;
-		SimpleTimeZone zone = new SimpleTimeZone(tzOffset * 60000, "LLL");
-		calendar = new GregorianCalendar(zone);
-		calendar.setLenient(false);
-		calendar.setTimeInMillis(milliseconds);
-		calendar.set(Calendar.ZONE_OFFSET, tzOffset * 60000);
-		date = calendar.getTime();
+	public TimeValue(XMLGregorianCalendar calendar) throws XPathException {
+		super(stripCalendar((XMLGregorianCalendar) calendar.clone()));
 	}
 
 	public TimeValue(String timeValue) throws XPathException {
-		Matcher matcher = timePattern.matcher(timeValue);
-		if (!matcher.matches())
-			throw new XPathException(
-				"Type error: string " + timeValue + " cannot be cast into an xs:time");
-		String part = matcher.group(1);
-		int hour = Integer.parseInt(part);
-		part = matcher.group(2);
-		int minutes = Integer.parseInt(part);
-		part = matcher.group(3);
-		int seconds = Integer.parseInt(part);
-		part = matcher.group(5);
-		int millis = 0;
-		if (part != null) {
-			if (part.length() < 3)
-				part += "00";
-			if (part.length() > 3)
-				part = part.substring(0, 3);
-			millis = Integer.parseInt(part);
-		}
-		part = matcher.group(6);
-		if (part != null && part.length() > 0) {
-			if (part.equals("Z")) {
-				explicitTimeZone = true;
-				tzOffset = 0;
-			} else	{
-                matcher = tzPattern.matcher(part);
-				if (!matcher.matches())
-					throw new XPathException("Type error: error in  timezone: " + part);
-				explicitTimeZone = true;
-				part = matcher.group(2);
-				tzOffset = Integer.parseInt(part) * 60;
-				part = matcher.group(3);
-				if (part != null) {
-					int tzminute = Integer.parseInt(part);
-					tzOffset += tzminute;
-				}
-				part = matcher.group(1);
-				if (part.equals("-"))
-					tzOffset *= -1;
-			}
-		}
-
-		SimpleTimeZone zone = new SimpleTimeZone(tzOffset * 60000, "LLL");
-		if (explicitTimeZone)
-			calendar = new GregorianCalendar(zone);
-		else {
-			calendar = new GregorianCalendar();
-			tzOffset =
-				(calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET))
-					/ 60000;
-		}
-		calendar.setLenient(false);
-		calendar.set(2000, 0, hour == 0 ? 2 : 1, hour, minutes, seconds);
-		calendar.set(Calendar.MILLISECOND, millis);
-		if (explicitTimeZone)
-			calendar.set(Calendar.ZONE_OFFSET, tzOffset * 60000);
+		super(timeValue);
 		try {
-			date = calendar.getTime();
-		} catch (Exception e) {
-			throw new XPathException(
-				"Type error: string " + timeValue + " cannot be cast into an xs:time");
+			if (calendar.getXMLSchemaType() != DatatypeConstants.TIME) throw new IllegalStateException();
+		} catch (IllegalStateException e) {
+			throw new XPathException("xs:time instance must not have year, month or day fields set");
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#getType()
-	 */
+	private static XMLGregorianCalendar stripCalendar(XMLGregorianCalendar calendar) {
+		calendar = (XMLGregorianCalendar) calendar.clone();
+		calendar.setYear(DatatypeConstants.FIELD_UNDEFINED);
+		calendar.setMonth(DatatypeConstants.FIELD_UNDEFINED);
+		calendar.setDay(DatatypeConstants.FIELD_UNDEFINED);
+		return calendar;
+	}
+
+	protected AbstractDateTimeValue createSameKind(XMLGregorianCalendar cal) throws XPathException {
+		return new TimeValue(cal);
+	}
+
+	protected QName getXMLSchemaType() {
+		return DatatypeConstants.TIME;
+	}
+
 	public int getType() {
 		return Type.TIME;
 	}
 
-	public TimeValue adjustToTimezone(int offset) {
-		Date date = calendar.getTime();
-		return new TimeValue(date.getTime(), offset);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#getStringValue()
-	 */
-	public String getStringValue() throws XPathException {
-		StringBuffer buf = new StringBuffer();
-		formatString(buf, calendar.get(Calendar.HOUR_OF_DAY), 2);
-		buf.append(':');
-		formatString(buf, calendar.get(Calendar.MINUTE), 2);
-		buf.append(':');
-		formatString(buf, calendar.get(Calendar.SECOND), 2);
-		int millis = calendar.get(Calendar.MILLISECOND);
-		if (millis != 0) {
-			buf.append('.');
-			String m = calendar.get(Calendar.MILLISECOND) + "";
-			while (m.length() < 3)
-				m = "0" + m;
-			while (m.endsWith("0"))
-				m = m.substring(0, m.length() - 1);
-			buf.append(m);
-		}
-		if (tzOffset == 0) {
-			buf.append('Z');
-		} else {
-			buf.append((tzOffset < 0 ? "-" : "+"));
-			int tzo = tzOffset;
-			if (tzo < 0)
-				tzo = -tzo;
-			int tzhours = tzo / 60;
-			formatString(buf, tzhours, 2);
-			buf.append(':');
-			int tzminutes = tzo % 60;
-			formatString(buf, tzminutes, 2);
-		}
-		return buf.toString();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#convertTo(int)
-	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
 			case Type.TIME :
 			case Type.ATOMIC :
 			case Type.ITEM :
 				return this;
-			case Type.DATE_TIME :
-				return new DateTimeValue(calendar, tzOffset);
+//		case Type.DATE_TIME :
+//			xs:time -> xs:dateTime conversion not defined in Funcs&Ops 17.1.5
 			case Type.STRING :
 				return new StringValue(getStringValue());
 			default :
@@ -219,76 +90,10 @@ public class TimeValue extends AbstractDateTimeValue {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
-	 */
-	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
-		if (other.getType() == Type.TIME) {
-			System.out.println(
-				date.getTime() + " eq " + ((TimeValue) other).date.getTime());
-			int cmp = date.compareTo(((TimeValue) other).date);
-			switch (operator) {
-				case Constants.EQ :
-					return cmp == 0;
-				case Constants.NEQ :
-					return cmp != 0;
-				case Constants.LT :
-					return cmp < 0;
-				case Constants.LTEQ :
-					return cmp <= 0;
-				case Constants.GT :
-					return cmp > 0;
-				case Constants.GTEQ :
-					return cmp >= 0;
-				default :
-					throw new XPathException("Unknown operator type in comparison");
-			}
-		} else
-			throw new XPathException(
-				"Type error: cannot compare xs:time to "
-					+ Type.getTypeName(other.getType()));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
-	 */
-	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-		if (other.getType() == Type.TIME) {
-			return date.compareTo(((TimeValue) other).date);
-		} else
-			throw new XPathException(
-				"Type error: cannot compare xs:time to "
-					+ Type.getTypeName(other.getType()));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
-	 */
-	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-		if (other.getType() == Type.TIME)
-			return date.compareTo(((TimeValue) other).date) > 0 ? this : other;
-		else
-			return date.compareTo(((TimeValue) other.convertTo(Type.TIME)).date) > 0
-				? this
-				: other;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
-	 */
-	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-		if (other.getType() == Type.TIME)
-			return date.compareTo(((TimeValue) other).date) < 0 ? this : other;
-		else
-			return date.compareTo(((TimeValue) other.convertTo(Type.TIME)).date) < 0
-				? this
-				: other;
-	}
-
 	public ComputableValue minus(ComputableValue other) throws XPathException {
 		switch(other.getType()) {
 			case Type.TIME:
-				return new DayTimeDurationValue(calendar.getTimeInMillis() - ((TimeValue) other).calendar.getTimeInMillis());
+				return new DayTimeDurationValue(getTimeInMillis() - ((TimeValue) other).getTimeInMillis());
 			case Type.DAY_TIME_DURATION:
 				return ((DayTimeDurationValue) other).negate().plus(this);
 			default:
@@ -301,41 +106,10 @@ public class TimeValue extends AbstractDateTimeValue {
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		if (other.getType() == Type.DAY_TIME_DURATION) {
 			return other.plus(this);
-		} else
-			throw new XPathException(
-				"Operand to plus should be of type xdt:dayTimeDuration; got: "
-					+ Type.getTypeName(other.getType()));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
-	 */
-	public int conversionPreference(Class javaClass) {
-		if (javaClass.isAssignableFrom(TimeValue.class))
-			return 0;
-		if (javaClass == Date.class)
-			return 1;
-		if (javaClass == Object.class)
-			return 20;
-
-		return Integer.MAX_VALUE;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
-	 */
-	public Object toJavaObject(Class target) throws XPathException {
-		if (target.isAssignableFrom(TimeValue.class))
-			return this;
-		else if (target == Date.class)
-			return calendar.getTime();
-		else if (target == Object.class)
-			return this;
-
+		}
 		throw new XPathException(
-			"cannot convert value of type "
-				+ Type.getTypeName(getType())
-				+ " to Java object of type "
-				+ target.getName());
+			"Operand to plus should be of type xdt:dayTimeDuration; got: "
+				+ Type.getTypeName(other.getType()));
 	}
+
 }

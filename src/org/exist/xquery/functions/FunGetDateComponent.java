@@ -97,10 +97,10 @@ public class FunGetDateComponent extends Function {
 			return new IntegerValue(date.getPart(DateValue.DAY), Type.INTEGER);
 		else if(isCalledAs("month-from-date"))
 			return new IntegerValue(date.getPart(DateValue.MONTH), Type.INTEGER);
-		else if(isCalledAs("timezone-from-date")) {
-			long tzoffset = date.getTimezoneOffset();
-			return new DayTimeDurationValue(tzoffset);
-		} else
+		else if(isCalledAs("timezone-from-date"))
+			return date.getTimezone();
+		else if(isCalledAs("year-from-date"))
 			return new IntegerValue(date.getPart(DateValue.YEAR), Type.INTEGER);
+		else throw new Error("can't handle function " + mySignature.getName().getLocalName());
 	}
 }
