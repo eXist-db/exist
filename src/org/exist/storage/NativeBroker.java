@@ -117,6 +117,22 @@ public class NativeBroker extends DBBroker {
 	/** file for the typed index by qname's */
 	static final String VALUES_DB_QNAME_FILE = "values-by-qname.dbx";
 
+    public static final byte COLLECTIONS_DBX_ID = 0;
+    public static final byte ELEMENTS_DBX_ID = 1;
+    public static final byte VALUES_DBX_ID = 2;
+    
+    public static final byte WORDS_DBX_ID = 3;
+    public static final byte DOM_DBX_ID = 4;
+    public static final byte VALUES_QNAME_DBX_ID = 5;
+    
+    // TODO : harmoniser ..........
+    private static final String ELEMENTS_DBX = "elements.dbx";
+    private static final String VALUES_DBX = "values.dbx";
+    private static final String VALUES_QNAME_DBX = "values-by-qname.dbx";
+    private static final String DOM_DBX = "dom.dbx";
+    private static final String COLLECTIONS_DBX = "collections.dbx";
+    private static final String WORDS_DBX = "words.dbx";
+    
 	private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
 	// private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
 	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
@@ -164,6 +180,7 @@ public class NativeBroker extends DBBroker {
 	/** used to count the nodes inserted after the last memory check */
 	protected int nodesCount = 0;
 
+	protected String dataDir;
 	protected int pageSize;
 	
 	private final Runtime run = Runtime.getRuntime();
@@ -171,9 +188,7 @@ public class NativeBroker extends DBBroker {
 	/** initialize database; read configuration, etc. */
 	public NativeBroker(BrokerPool pool, Configuration config) throws EXistException {
 		super(pool, config);
-		String dataDir;
-//		String temp;
-//		boolean compress = false;
+
 		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)
 			dataDir = "data";
 
@@ -188,27 +203,11 @@ public class NativeBroker extends DBBroker {
 		Paged.setPageSize(pageSize);
 		String pathSep = System.getProperty("file.separator", "/");
 		try {
-			if ((elementsDb = (BFile) config.getProperty("db-connection.elements"))
-				== null) {
-				elementsDb =
-					new BFile(new File(dataDir + pathSep + "elements.dbx"), pool.getCacheManager(), 1.25, 100, 500);
-				if (!elementsDb.exists()) {
-					LOG.info("creating elements.dbx");
-					elementsDb.create();
-				} else
-					elementsDb.open();
+			createIndexFiles();
+			
 
-				config.setProperty("db-connection.elements", elementsDb);
-				readOnly = elementsDb.isReadOnly();
-			}
+//????????????????????
 
-			valuesDb = createValueIndexFile(config, dataDir, VALUES_DB_FILE, "db-connection.values" );
-			if ( qnameValueIndexation ) {
-				if ( VALUES_DB_QNAME_FILE != VALUES_DB_FILE ) 
-					valuesDbQname = createValueIndexFile(config, dataDir, VALUES_DB_QNAME_FILE, "db-connection2.values" );
-				else
-					valuesDbQname = valuesDb;
-			}
 			if ((domDb = (DOMFile) config.getProperty("db-connection.dom")) == null) {
 				domDb =
 					new DOMFile(new File(dataDir + pathSep + "dom.dbx"), pool.getCacheManager());
@@ -270,6 +269,16 @@ public class NativeBroker extends DBBroker {
 
 	private void createIndexFiles() throws DBException  {
 		// TODO extract from above .......
+		
+		String pathSep = System.getProperty("file.separator", "/");
+		
+		elementsDb = createValueIndexFile(config, dataDir, "elements.dbx", "db-connection.elements", 500 );
+		valuesDb = createValueIndexFile(config, dataDir, VALUES_DB_FILE, "db-connection.values", 1000 );
+		if ( qnameValueIndexation ) {
+				valuesDbQname = createValueIndexFile(config, dataDir, VALUES_DB_QNAME_FILE,
+						"db-connection2.values", 1000 );
+		}
+		
 	}
 	
 	/**
@@ -280,16 +289,16 @@ public class NativeBroker extends DBBroker {
 	 * @throws DBException
 	 */
 	private BFile createValueIndexFile(Configuration config, String dataDir, 
-			String dataFile, String propertyName ) throws DBException {
+			String dataFile, String propertyName, int thresholdData ) throws DBException {
 		String pathSep = System.getProperty("file.separator", "/");
 		BFile valuesDb;
 		
 		if ((valuesDb = (BFile) config.getProperty(propertyName))
 		        == null) {
-		    valuesDb =
-		        new BFile(new File(dataDir + pathSep + dataFile ), pool.getCacheManager(), 1.25, 50, 1000);
+			valuesDb =
+		        new BFile(new File(dataDir + pathSep + dataFile ), pool.getCacheManager(), 1.25, 50, thresholdData);
 		    if (!valuesDb.exists()) {
-		        LOG.info("creating " + VALUES_DB_FILE );
+		        LOG.info("creating " + dataFile );
 		        valuesDb.create();
 		    } else
 		        valuesDb.open();
