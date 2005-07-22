@@ -20,6 +20,7 @@
  */
 package org.exist.storage;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -31,10 +32,14 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncDaemon;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.ReentrantReadWriteLock;
@@ -63,16 +68,18 @@ public class BrokerPool {
 	
 	private final static ShutdownThread shutdownThread = new ShutdownThread();
 	
-	//	size of the internal buffer for collection objects
+	/**	size of the internal buffer for collection objects */
 	public final static int COLLECTION_BUFFER_SIZE = 128;
 	
 	public final static String DEFAULT_INSTANCE = "exist";
-	
-	public final static long MAX_SHUTDOWN_WAIT = 45000;
+        
+    public final static long MAX_SHUTDOWN_WAIT = 45000;
 
-	/**
-	 * Should a shutdown hook be registered with the JVM? If set to true, method
-	 * {@link #configure(String, int, int, Configuration)} will register a shutdown thread
+    public static boolean FORCE_CORRUPTION = false;
+    
+        /**
+         * Should a shutdown hook be registered with the JVM? If set to true, method
+         * {@link #configure(String, int, int, Configuration)} will register a shutdown thread
 	 * which takes care to shut down the database if the application receives a kill or term
 	 * signal. However, this is unnecessary if the calling application has already registered
 	 * a shutdown hook.
@@ -141,12 +148,12 @@ public class BrokerPool {
 	 *@exception  EXistException  thrown if the instance has not been configured.
 	 */
 	public final static BrokerPool getInstance(String id) throws EXistException {
-		BrokerPool instance = (BrokerPool) instances.get(id);
-		if (instance != null)
-			return instance;
-		else
-			throw new EXistException("instance with id " + id + " has not been configured yet");
-	}
+                BrokerPool instance = (BrokerPool) instances.get(id);
+                if (instance != null)
+                        return instance;
+                else
+                throw new EXistException("instance with id " + id + " has not been configured yet");
+        }
 
     /**
      * Returns the default database instance, i.e. the instance configured for id
@@ -194,33 +201,65 @@ public class BrokerPool {
 		instances.clear();
 	}
 
-	private int max = 15;
-	private int min = 1;
-	protected Configuration conf = null;
-	private int brokers = 0;
-	
-	private Stack pool = new Stack();
-	private Map threads = new HashMap();
-	private String instanceId;
-	private boolean syncRequired = false;
-	private int syncEvent = 0;
-	private boolean initializing = true;
-	
-	/**
-	 * During shutdown: max. time to wait (in ms.) for running jobs to return
-	 */
-	private long maxShutdownWait = MAX_SHUTDOWN_WAIT;
-	
-	/**
-	 * The security manager for this database instance.
-	 */
-	private org.exist.security.SecurityManager secManager = null;
-	
-	private CollectionConfigurationManager collectionConfig = null;
-	
+        private int max = 15;
+        private int min = 1;
+    
+    /**
+     * @uml.associationEnd multiplicity="(0 1)"
+     */
+        protected Configuration conf = null;
+    
+        private int brokers = 0;
+        
+        private Stack pool = new Stack();
+        private Map threads = new HashMap();
+        private String instanceId;
+        private boolean syncRequired = false;
+    private boolean checkpoint = false;
+        private int syncEvent = 0;
+        private boolean initializing = true;
+        
+    /**
+     * Set to true if this database instance is running in read-only mode.
+     */
+    private boolean isReadOnly = false;
+    
+    /**
+     * Is this database instance transactional?
+     */
+    private boolean isTransactional = true;
+    
+        /**
+         * During shutdown: max. time to wait (in ms.) for running jobs to return
+         */
+        private long maxShutdownWait = MAX_SHUTDOWN_WAIT;
+
+    /**
+     * The security manager for this database instance. 
+     *  
+     * @uml.property name="secManager"
+     * @uml.associationEnd multiplicity="(1 1)"
+     */
+    private SecurityManager secManager = null;
+
+        
+    /**
+     * The global manager for access to collection configuration files.
+     * 
+     * @uml.associationEnd multiplicity="(1 1)"
+     */
+        private CollectionConfigurationManager collectionConfig = null;
+        
+    /**
+     * Global transaction management.
+     * 
+     * @uml.associationEnd multiplicity="(1 1)"
+     */
+    private TransactionManager txnManager = null;
+    
     private CacheManager cacheManager;
     
-	/**
+        /**
 	 * SyncDaemon is a daemon thread which periodically triggers a cache sync.
 	 */
 	private SyncDaemon syncDaemon;
@@ -232,23 +271,27 @@ public class BrokerPool {
 	
 	/**
 	 * ShutdownListener will be notified when the database instance shuts down.
-	 */
-	private ShutdownListener shutdownListener = null;
-	
-	// --------------- Global pools: --------------------------
-	
-	/**
-	 * The global pool for compiled XQuery expressions.
-	 */
-	private XQueryPool xqueryCache;
-	
+         */
+        private ShutdownListener shutdownListener = null;
+        
+        // --------------- Global pools: --------------------------
+        
+        /**
+         * The global pool for compiled XQuery expressions.
+     * 
+     * @uml.associationEnd multiplicity="(1 1)"
+         */
+        private XQueryPool xqueryCache;
+        
 	private XQueryMonitor monitor;
-	
-	/**
-	 * The global collection cache.
-	 */
-	protected CollectionCache collectionsCache;
-	
+        
+        /**
+         * The global collection cache.
+     * 
+     * @uml.associationEnd multiplicity="(1 1)"
+         */
+        protected CollectionCache collectionsCache;
+        
 	/**
 	 * Global pool for SAX XMLReader instances.
 	 */
@@ -281,16 +324,17 @@ public class BrokerPool {
 			maxShutdownWait = maxWaitInt.longValue();
 			LOG.info("Max. wait during shutdown: " + maxShutdownWait);
 		}
-		LOG.info("Instances: min = " + min + "; max = " + max + "; sync = " + syncPeriod);
+                LOG.info("Instances: min = " + min + "; max = " + max + "; sync = " + syncPeriod);
         
-		conf = config;
-        cacheManager = new CacheManager(config);
-		xqueryCache = new XQueryPool(conf);
-		monitor = new XQueryMonitor();
-		collectionsCache = new CollectionCache(this, COLLECTION_BUFFER_SIZE, 20);
-		xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
-		syncDaemon = new SyncDaemon();
-		initialize();
+                conf = config;
+//        cacheManager = new CacheManager(config);
+//                xqueryCache = new XQueryPool(conf);
+//                monitor = new XQueryMonitor();
+//                collectionsCache = new CollectionCache(this, COLLECTION_BUFFER_SIZE, 20);
+//                xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
+                syncDaemon = new SyncDaemon();
+                initialize();
+                
         if (syncPeriod > 0)
             syncDaemon.executePeriodically(1000, new Sync(this, syncPeriod), false);
 	}
@@ -358,6 +402,10 @@ public class BrokerPool {
         return collectionConfig;
     }
 
+    public TransactionManager getTransactionManager() {
+        return txnManager;
+    }
+    
     /**
      * Returns the global update lock for this database instance.
      * This lock is used by XUpdate operations to avoid that
@@ -382,10 +430,19 @@ public class BrokerPool {
     public SyncDaemon getSyncDaemon() {
         return syncDaemon;
     }
-	
-	protected DBBroker createBroker() throws EXistException {
-		DBBroker broker = BrokerFactory.getInstance(this, conf);
-		//Thread.dumpStack();
+        
+    /**
+     * Does this database instance support transactions?
+     * 
+     * @return
+     */
+    public boolean isTransactional() {
+        return !isReadOnly && isTransactional;
+    }
+    
+    protected DBBroker createBroker() throws EXistException {
+                DBBroker broker = BrokerFactory.getInstance(this, conf);
+                //Thread.dumpStack();
 		LOG.debug(
 			"database " + instanceId + ": created new instance of " + broker.getClass().getName());
 		pool.push(broker);
@@ -449,31 +506,110 @@ public class BrokerPool {
 	public void reloadSecurityManager(DBBroker broker) {
 		LOG.debug("reloading security manager");
 		secManager = new org.exist.security.SecurityManager(this, broker);
-	}
+        }
 
-	/**
-	 *  Initialize the current instance.
-	 *
-	 *@exception  EXistException  Description of the Exception
-	 */
-	protected void initialize() throws EXistException {
-		LOG.debug("initializing database " + instanceId);
-		initializing = true;
-		// create a first broker to initialize the security manager
-		createBroker();
-		DBBroker broker = (DBBroker) pool.peek();
-		broker.cleanUpAll();
-		secManager = new org.exist.security.SecurityManager(this, broker);
-		initializing = false;
-		
-		collectionConfig = new CollectionConfigurationManager(broker);
+    /**
+     * Initialize the data directory. If the directory does not exist, try to create
+     * one. Switch to read-only mode if creation fails or write is not allowed.
+     * 
+     * @throws EXistException
+     */
+    protected File initDataDir() throws EXistException {
+        String dataDir;
+        if ((dataDir = (String) conf.getProperty("db-connection.data-dir")) == null)
+            dataDir = "data";
+        File dir = new File(dataDir);
+        if (!dir.exists()) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Data directory " + dataDir + " does not exist. Creating one ...");
+            }
+            try {
+                dir.mkdir();
+            } catch (SecurityException e) {
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("Cannot create data directory: " + dir.getAbsolutePath() + ". Switching to read-only mode.");
+                }
+                isReadOnly = true;
+            }
+        }
+        if (!dir.canWrite()) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("Cannot write to data directory: " + dir.getAbsolutePath() + ". Switching to read-only mode.");
+            }
+            isReadOnly = true;
+        }
+        return dir;
+    }
+    
+        /**
+         *  Initialize the current instance.
+         *
+         *@exception  EXistException  Description of the Exception
+         */
+        protected void initialize() throws EXistException {
+            LOG.debug("initializing database " + instanceId);
+        // set flag to indicate that we are initializing
+                initializing = true;
         
-		// now create remaining brokers
-		for (int i = 1; i < min; i++)
-			createBroker();
+        cacheManager = new CacheManager(conf);
+        xqueryCache = new XQueryPool(conf);
+        monitor = new XQueryMonitor();
+        xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
+        
+        // initialize the data directory to see if we have to run in read-only mode
+        File dataDir = initDataDir();
+        
+                // initialize transaction management
+        txnManager = new TransactionManager(this, dataDir, isTransactional());
+
+        // jmv
+        collectionsCache = new CollectionCache(this, COLLECTION_BUFFER_SIZE, 20);
+        
+                // create a first broker to initialize the security manager
+                createBroker();
+                DBBroker broker = (DBBroker) pool.peek();
+        
+                // run recovery
+        boolean recovered = false;
+                if (isTransactional())
+                        recovered = txnManager.runRecovery(broker);
+                
+        // jmv collectionsCache = new CollectionCache(this, COLLECTION_BUFFER_SIZE, 20);
+        
+        if (!recovered) {
+            try {
+                Txn txn = txnManager.beginTransaction();
+                broker.getOrCreateCollection( /* txn,*/  "/db");
+                txnManager.commit(txn);
+            } catch (PermissionDeniedException e) {    
+                LOG.warn("Error during recovery 1: " + e.getMessage(), e);
+            }
+        }
+        
+        // remove old temporary docs
+        broker.cleanUpAll();
+        
+        // create the security manager
+                secManager = new org.exist.security.SecurityManager(this, broker);
+                initializing = false;
+                
+                collectionConfig = new CollectionConfigurationManager(broker);
+        
+        if (recovered) {
+            try {
+                broker.setUser(SecurityManager.SYSTEM_USER);
+                broker.repair();
+            } catch (PermissionDeniedException e) {
+                LOG.warn("Error during recovery: " + e.getMessage(), e);
+            }
+        }
+                // now create remaining brokers
+                for (int i = 1; i < min; i++)
+                        createBroker();
+                
         registerSystemTasks();
-		LOG.debug("database engine " + instanceId + " initialized.");
-	}
+            LOG.debug("database engine " + instanceId + " initialized.");
+        }
 
     /**
 	 * Returns true while the database is initializing
@@ -505,11 +641,12 @@ public class BrokerPool {
 		    threads.remove(Thread.currentThread());
 			pool.push(broker);
 			if(threads.size() == 0) {
-				if (syncRequired) {
-					sync(broker, syncEvent);
-					syncRequired = false;
-				}
-				
+                                if (syncRequired) {
+                                        sync(broker, syncEvent);
+                                        syncRequired = false;
+                    checkpoint = false;
+                                }
+                                
                 // process any waiting system tasks
 				processWaitingTasks(broker);
 			}
@@ -526,15 +663,22 @@ public class BrokerPool {
 	 */
 	public void sync(DBBroker broker, int syncEvent) {
 		broker.sync(syncEvent);
-		broker.setUser(SecurityManager.SYSTEM_USER);
-		broker.cleanUp();
-        
-        if (syncEvent == Sync.MAJOR_SYNC)
-            cacheManager.checkCaches();
-	}
+                broker.setUser(SecurityManager.SYSTEM_USER);
+                broker.cleanUp();
 
-	public synchronized void shutdown() {
-		shutdown(false);
+        if (syncEvent == Sync.MAJOR_SYNC) {
+            try {
+                if (!FORCE_CORRUPTION)
+                    txnManager.checkpoint(checkpoint);
+            } catch (TransactionException e) {
+                LOG.warn(e.getMessage(), e);
+            }
+            cacheManager.checkCaches();
+        }  
+        }
+
+        public synchronized void shutdown() {
+                shutdown(false);
 	}
 	
 	/**  Shutdown all brokers. */
@@ -559,13 +703,20 @@ public class BrokerPool {
 				broker = createBroker();
 			} catch (EXistException e) {
 				LOG.warn("could not create instance for shutdown. Giving up.");
-			}
-		else
-			broker = (DBBroker)pool.peek();
-		broker.shutdown();
-		LOG.debug("shutdown!");
-		conf = null;
-		instances.remove(instanceId);
+                        }
+                else
+                        broker = (DBBroker)pool.peek();
+        if (broker != null)
+            broker.shutdown();
+        try {
+            if (!FORCE_CORRUPTION)
+                txnManager.checkpoint(false);
+        } catch (TransactionException e) {
+            LOG.warn(e.getMessage(), e);
+        }
+                LOG.debug("shutdown!");
+                conf = null;
+                instances.remove(instanceId);
 		if(instances.size() == 0 && !killed) {
 			LOG.debug("removing shutdown hook");
 			Runtime.getRuntime().removeShutdownHook(shutdownThread);
@@ -611,12 +762,20 @@ public class BrokerPool {
 				syncEvent = event;
 				syncRequired = true;
 			}
-		}
-	}
+                }
+        }
+    
+    public void triggerCheckpoint() {
+        synchronized (this) {
+            syncEvent = Sync.MAJOR_SYNC;
+            syncRequired = true;
+            checkpoint = true;
+        }
+    }
 
-	public void registerShutdownListener(ShutdownListener listener) {
-		shutdownListener = listener;
-	}
+        public void registerShutdownListener(ShutdownListener listener) {
+                shutdownListener = listener;
+        }
 
 	/**
      * Schedule a system maintenance task for execution.
@@ -713,11 +872,22 @@ public class BrokerPool {
 		public void run() {
 			LOG.debug("shutdown forced");
 			BrokerPool.stopAll(true);
-		}
-	}
+                }
+        }
 
-    public void triggerCheckpoint() {
-		// TODO jmv
-	}
+    /**
+     *  
+     * @uml.property name="transactionManager"
+     * @uml.associationEnd multiplicity="(0 1)" inverse="brokerPool:org.exist.storage.txn.TransactionManager"
+     */
+    private TransactionManager transactionManager;
+
+    /**
+     *  
+     * @uml.property name="transactionManager"
+     */
+    public void setTransactionManager(TransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
+    }
 
 }
