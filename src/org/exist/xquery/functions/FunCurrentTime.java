@@ -22,18 +22,11 @@
  */
 package org.exist.xquery.functions;
 
+import java.util.Date;
+
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.TimeValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -49,20 +42,13 @@ public class FunCurrentTime extends Function {
 			null,
 			new SequenceType(Type.TIME, Cardinality.EXACTLY_ONE));
 
-	/**
-	 * @param context
-	 * @param signature
-	 */
 	public FunCurrentTime(XQueryContext context) {
 		super(context, signature);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
-		return new TimeValue();
+		return new DateTimeValue(new Date(context.getWatchDog().getStartTime())).convertTo(Type.TIME);
 	}
 
 }

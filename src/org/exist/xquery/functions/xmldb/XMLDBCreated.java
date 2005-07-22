@@ -100,7 +100,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
                 else
                 	date = ((EXistResource)resource).getCreationTime();
             }
-			return new DateTimeValue(date.getTime());
+			return new DateTimeValue(date);
 		} catch(XMLDBException e) {
 			throw new XPathException(getASTNode(), "Failed to retrieve creation date: " + e.getMessage(), e);
 		}

@@ -103,10 +103,10 @@ public class FunGetTimeComponent extends BasicFunction {
 		else if(isCalledAs("seconds-from-time")) {
 			long millis = time.getPart(DateValue.SECOND) * 1000 + time.getPart(DateValue.MILLISECOND);
 			return new DecimalValue(millis / 1000);
-		} else {
-			long tzoffset = time.getTimezoneOffset();
-			return new DayTimeDurationValue(tzoffset);
-		}
+		} else if(isCalledAs("timezone-from-time"))
+			return time.getTimezone();
+		else throw new Error("can't handle function " + mySignature.getName().getLocalName());
+
 	}
 
 }

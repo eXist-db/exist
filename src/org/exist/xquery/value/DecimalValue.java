@@ -170,20 +170,28 @@ public class DecimalValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#minus(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue minus(ComputableValue other) throws XPathException {
-		if (other.getType() == Type.DECIMAL)
-			return new DecimalValue(value.subtract(((DecimalValue) other).value));
-		else
-			return ((ComputableValue) convertTo(other.getType())).minus(other);
+		switch(other.getType()) {
+			case Type.DECIMAL:
+				return new DecimalValue(value.subtract(((DecimalValue) other).value));
+			case Type.INTEGER:
+				return minus((ComputableValue) other.convertTo(getType()));
+			default:
+				return ((ComputableValue) convertTo(other.getType())).minus(other);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NumericValue#plus(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue plus(ComputableValue other) throws XPathException {
-		if (other.getType() == Type.DECIMAL)
-			return new DecimalValue(value.add(((DecimalValue) other).value));
-		else
-			return ((ComputableValue) convertTo(other.getType())).plus(other);
+		switch(other.getType()) {
+			case Type.DECIMAL:
+				return new DecimalValue(value.add(((DecimalValue) other).value));
+			case Type.INTEGER:
+				return plus((ComputableValue) other.convertTo(getType()));
+			default:
+				return ((ComputableValue) convertTo(other.getType())).plus(other);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -193,6 +201,8 @@ public class DecimalValue extends NumericValue {
 		switch(other.getType()) {
 			case Type.DECIMAL:
 				return new DecimalValue(value.multiply(((DecimalValue) other).value));
+			case Type.INTEGER:
+				return mult((ComputableValue) other.convertTo(getType()));
 			case Type.DAY_TIME_DURATION:
 			case Type.YEAR_MONTH_DURATION:
 				return other.mult(this);
@@ -205,11 +215,27 @@ public class DecimalValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#div(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue div(ComputableValue other) throws XPathException {
-		if (other.getType() == Type.DECIMAL)
-			return new DecimalValue(
-				value.divide(((DecimalValue) other).value, BigDecimal.ROUND_DOWN));
-		else
-			return ((ComputableValue) convertTo(other.getType())).div(other);
+		switch(other.getType()) {
+			case Type.DECIMAL:
+				// arbitrarily set precision to 20 spots after the decimal point, since XQuery says it's "implementation-dependent"
+				// TODO: find a better algorithm for deciding the result's precision?
+				return new DecimalValue(value.divide(((DecimalValue) other).value, 20, BigDecimal.ROUND_HALF_UP));
+			case Type.INTEGER:
+				return div((ComputableValue) other.convertTo(getType()));
+			default:
+				return ((ComputableValue) convertTo(other.getType())).div(other);
+		}
+	}
+
+	public IntegerValue idiv(NumericValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(), Type.DECIMAL)) {
+			try {
+				return new IntegerValue(value.divide(((DecimalValue) other).value, 0, BigDecimal.ROUND_DOWN).toBigInteger(), Type.INTEGER);
+			} catch (ArithmeticException e) {
+				throw new XPathException("division by zero", e);
+			}
+		}
+		throw new XPathException("idiv called with incompatible argument type: " + getType() + " vs " + other.getType());
 	}
 
 	/* (non-Javadoc)

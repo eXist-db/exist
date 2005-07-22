@@ -360,16 +360,15 @@ public class IntegerValue extends NumericValue implements Indexable {
 			return ((ComputableValue) convertTo(other.getType())).div(other);
 	}
 
-	public NumericValue idiv(NumericValue other) throws XPathException {
+	public IntegerValue idiv(NumericValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
-			// long ov = ((IntegerValue) other).value.longValue();
-			BigInteger ov =  ((IntegerValue) other).value;
-			if( ! ((IntegerValue) other).effectiveBooleanValue() )
-			// if (ov == 0)
-				throw new XPathException("division by zero");
-			return new IntegerValue(value.divide(ov), type);
-		} else
-			return ((IntegerValue) convertTo(Type.INTEGER)).idiv(other);
+			try {
+				return new IntegerValue(value.divide(((IntegerValue) other).value), Type.INTEGER);
+			} catch (ArithmeticException e) {
+				throw new XPathException("division by zero", e);
+			}
+		}
+		throw new XPathException("idiv called with incompatible argument type: " + getType() + " vs " + other.getType());
 	}
 
 	/* (non-Javadoc)

@@ -23,231 +23,173 @@
 
 package org.exist.xquery.value;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.Collator;
+
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.Duration;
 
 import org.exist.xquery.XPathException;
 
 /**
- * @author wolf
+ * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-public class DurationValue extends ComputableValue implements Cloneable {
+public class DurationValue extends ComputableValue {
 
 	public final static int YEAR = 0;
 	public final static int MONTH = 1;
 	public final static int DAY = 2;
 	public final static int HOUR = 3;
 	public final static int MINUTE = 4;
-	public final static int SECOND = 5;
-	public final static int MILLISECOND = 6;
 	
-	protected boolean negative = false;
-	protected int year = 0;
-	protected int month = 0;
-	protected int day = 0;
-	protected int hour = 0;
-	protected int minute = 0;
-	protected int second = 0;
-	protected int millisecond = 0;
+	protected final Duration duration;
+	private Duration canonicalDuration;
 	
-	protected DurationValue() {
-	}
+	protected static final BigInteger
+		TWELVE = BigInteger.valueOf(12),
+		TWENTY_FOUR = BigInteger.valueOf(24),
+		SIXTY = BigInteger.valueOf(60);
+	protected static final BigDecimal
+		SIXTY_DECIMAL = BigDecimal.valueOf(60),
+		ZERO_DECIMAL = BigDecimal.valueOf(0);	// TODO: replace with BigDecimal.ZERO in JDK 1.5
 	
-	public DurationValue(DurationValue other) throws XPathException {
-		this.negative = other.negative;
-		this.year = other.year;
-		this.month = other.month;
-		this.day = other.day;
-		this.hour = other.hour;
-		this.minute = other.minute;
-		this.second = other.second;
-		this.millisecond = other.millisecond;
+	private static final Duration CANONICAL_ZERO_DURATION =
+		TimeUtils.getInstance().newDuration(true, null, null, null, null, null, ZERO_DECIMAL);
+	
+	public DurationValue(Duration duration) throws XPathException {
+		this.duration = duration;
 	}
 	
 	public DurationValue(String str) throws XPathException {
-		// format is: [+|-]PnYnMnDTnHnMnS
-		if(str.length() < 3)
-			throw new XPathException("Type error: xs:duration should start with [+|-]P");
-		char ch;
-		StringBuffer buf = new StringBuffer();
-		int p = 0;
-		int state = 0;
-		String value = null;
-		while(p < str.length()) {
-			ch = str.charAt(p);
-			switch(ch) {
-				case '-':
-					if(state > 0)
-						throw new XPathException("Type error in xs:duration: " + str + ": - is not allowed here");
-					negative = true;
-					break;
-				case 'P':
-					if(state > 0)
-						throw new XPathException("Type error in xs:duration: " + str + ": P is not allowed here");
-					state++;
-					break;
-				case 'Y':
-					if(state != 1 || value == null)
-						throw new XPathException("Type error in xs:duration: " + str +  ": Y is not allowed to occur here");
-					year = Integer.parseInt(value);
-					value = null;
-					state++;
-					break;
-				case 'M':
-					if(value == null)
-						throw new XPathException("Type error in xs:duration: " + str +  ": M is not allowed to occur here");
-					if(state == 5 || state == 6)
-						minute = Integer.parseInt(value);
-					else if(state == 1 || state == 2)
-						month = Integer.parseInt(value);
-					else
-						throw new XPathException("Type error in xs:duration: " + str +  ": M is not allowed to occur here");
-					state++;
-					value = null;
-					break;
-				case 'D':
-					if(state > 3 || value == null)
-						throw new XPathException("Type error in xs:duration: " + str +  ": D is not allowed to occur here");
-					day = Integer.parseInt(value);
-					value = null;
-					state++;
-					break;
-				case 'T':
-					state = 5;
-					break;
-				case 'H':
-					if(state != 5 || value == null)
-						throw new XPathException("Type error in xs:duration: " + str +  ": H is not allowed to occur here");
-					hour = Integer.parseInt(value);
-					value = null;
-					state++;
-					break;
-				case 'S':
-					if(value == null || state > 8)
-						throw new XPathException("Type error in xs:duration: " + str +  ": S is not allowed to occur here");
-					if(state == 8) {
-						while (value.length() < 3) value += "0";
-						if (value.length() > 3) value = value.substring(0, 3);
-						millisecond = Integer.parseInt(value);
-					} else
-						second = Integer.parseInt(value);
-					value = null;
-					state++;
-					break;
-				case '.':
-					if(state > 7)
-						throw new XPathException("Type error in xs:duration: " + str +  ": . is not allowed to occur here");
-					second = Integer.parseInt(value);
-					value = null;
-					state = 8;
-					break;
-				case '1': case '2': case '3': case '4': case '5': case '6': case '7':
-				case '8': case '9': case '0':
-					if(state < 1)
-						throw new XPathException("Type error in xs:duration: " + str + ": numeric value not allowed at this position");
-					buf.append(ch);
-					p++;
-					while(p < str.length()) {
-						ch = str.charAt(p);
-						if(ch == '1' || ch == '2' || ch == '3' || ch == '4' || ch == '5' || ch == '6' || ch == '7' ||
-							ch == '8' || ch == '9' || ch == '0')
-							buf.append(ch);
-						else {
-							value = buf.toString();
-							buf.setLength(0);
-							p--;
-							break;
-						}
-						p++;
-					}
-					break;
-			}
-			p++;
-		}
+		this.duration = TimeUtils.getInstance().newDuration(str);
 	}
 	
-	public Object clone() {
-		try {
-			return super.clone();
-		} catch (CloneNotSupportedException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public DurationValue negate() {
-		DurationValue result = (DurationValue) clone();
-		result.negative = !result.negative;
-		return result;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#getType()
-	 */
 	public int getType() {
 		return Type.DURATION;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#getStringValue()
-	 */
-	public String getStringValue() throws XPathException {
-		StringBuffer buf = new StringBuffer();
-		if(negative)
-			buf.append('-');
-		buf.append('P');
-		if(year > 0) buf.append(year).append('Y');
-		if(month > 0) buf.append(month).append('M');
-		if(day > 0) buf.append(day).append('D');
-		if(hour > 0 || minute > 0 || second > 0)
-			buf.append('T');
-		if(hour > 0) buf.append(hour).append('H');
-		if(minute > 0) buf.append(minute).append('M');
-		if(second > 0) buf.append(second).append('S');
-		return buf.toString();
+	protected DurationValue createSameKind(Duration d) throws XPathException {
+		return new DurationValue(d);
+	}
+	
+	public DurationValue negate() throws XPathException {
+		return createSameKind(duration.negate());
 	}
 
+	public String getStringValue() {
+		if (canonicalDuration == null) canonicalize();
+		return canonicalDuration.toString();
+	}
+	
+	private BigInteger nullIfZero(BigInteger x) {
+		if (BigInteger.ZERO.equals(x)) x = null;
+		return x;
+	}
+	
+	private BigInteger zeroIfNull(BigInteger x) {
+		if (x == null) x = BigInteger.ZERO;
+		return x;
+	}
+	
+	private BigDecimal nullIfZero(BigDecimal x) {
+		if (ZERO_DECIMAL.equals(x)) x = null;
+		return x;
+	}
+	
+	private BigDecimal zeroIfNull(BigDecimal x) {
+		if (x == null) x = ZERO_DECIMAL;
+		return x;
+	}
+	
+	private void canonicalize() {
+		BigInteger years, months, days, hours, minutes;
+		BigDecimal seconds;
+		BigInteger[] r;
+		
+		r = monthsValue().divideAndRemainder(TWELVE);
+		years = nullIfZero(r[0]);
+		months = nullIfZero(r[1]);
+
+		// TODO: replace following segment with this for JDK 1.5
+//		BigDecimal[] rd = secondsValue().divideAndRemainder(SIXTY_DECIMAL);
+//		seconds = nullIfZero(rd[1]);
+//		r = rd[0].toBigInteger().divideAndRemainder(SIXTY);
+
+		// segment to be replaced:
+		BigDecimal secondsValue = secondsValue();
+		BigDecimal m = secondsValue.divide(SIXTY_DECIMAL, 0, BigDecimal.ROUND_DOWN);
+		seconds = nullIfZero(secondsValue.subtract(SIXTY_DECIMAL.multiply(m)));
+		r = m.toBigInteger().divideAndRemainder(SIXTY);
+		
+		minutes = nullIfZero(r[1]);
+		r = r[0].divideAndRemainder(TWENTY_FOUR);
+		hours = nullIfZero(r[1]);
+		days = nullIfZero(r[0]);
+		
+		if (years == null && months == null && days == null && hours == null && minutes == null && seconds == null) {
+			canonicalDuration = canonicalZeroDuration();
+		} else {
+			canonicalDuration = TimeUtils.getInstance().newDuration(
+					duration.getSign() >= 0,
+					years, months, days, hours, minutes, seconds);
+		}
+	}
+
+	protected BigDecimal secondsValue() {
+		return
+			new BigDecimal(
+				zeroIfNull((BigInteger) duration.getField(DatatypeConstants.DAYS))
+				.multiply(TWENTY_FOUR)
+				.add(zeroIfNull((BigInteger) duration.getField(DatatypeConstants.HOURS)))
+				.multiply(SIXTY)
+				.add(zeroIfNull((BigInteger) duration.getField(DatatypeConstants.MINUTES)))
+				.multiply(SIXTY)
+			).add(zeroIfNull((BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
+	}
+
+	protected BigDecimal secondsValueSigned() {
+		BigDecimal x = secondsValue();
+		if (duration.getSign() < 0) x = x.negate();
+		return x;
+	}
+	
+	protected BigInteger monthsValue() {
+		return
+			zeroIfNull((BigInteger) duration.getField(DatatypeConstants.YEARS))
+			.multiply(TWELVE)
+			.add(zeroIfNull((BigInteger) duration.getField(DatatypeConstants.MONTHS)));
+	}
+	
+	protected BigInteger monthsValueSigned() {
+		BigInteger x = monthsValue();
+		if (duration.getSign() < 0) x = x.negate();
+		return x;
+	}
+	
+	protected Duration canonicalZeroDuration() {
+		return CANONICAL_ZERO_DURATION;
+	}
+	
 	public int getPart(int part) {
-        int returnValue = 0;
+		int r;
 		switch(part) {
-			case YEAR:
-				returnValue = year;
-                break;
-			case MONTH:
-				returnValue = month;
-                break;
-			case DAY:
-				returnValue = day;
-                break;
-			case HOUR:
-				returnValue = hour;
-                break;
-			case MINUTE:
-				returnValue = minute;
-                break;
-			case SECOND:
-				returnValue = second;
-                break;
-			case MILLISECOND:
-				returnValue = millisecond;
-                break;
+			case YEAR: r = duration.getYears(); break;
+			case MONTH: r = duration.getMonths(); break;
+			case DAY: r = duration.getDays(); break;
+			case HOUR: r = duration.getHours(); break;
+			case MINUTE: r = duration.getMinutes(); break;
 			default:
 				throw new IllegalArgumentException("Invalid argument to method getPart");
 		}
-        if (negative)
-            returnValue *= -1;
-        return returnValue;
+		return r * duration.getSign();
 	}
 	
 	public double getSeconds() {
-		double value = (double)second;
-		value += ((double)millisecond / 1000);
-        if (negative)
-            value *= -1;
-		return value;
+		Number n = duration.getField(DatatypeConstants.SECONDS);
+		return n == null ? 0 : n.doubleValue() * duration.getSign();
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#convertTo(int)
-	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch(requiredType) {
 			case Type.ITEM:
@@ -255,9 +197,19 @@ public class DurationValue extends ComputableValue implements Cloneable {
 			case Type.DURATION:
 				return this;
 			case Type.YEAR_MONTH_DURATION:
-				return new YearMonthDurationValue(this);
+				return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
+						duration.getSign() >= 0,
+						(BigInteger) duration.getField(DatatypeConstants.YEARS),
+						(BigInteger) duration.getField(DatatypeConstants.MONTHS)));
 			case Type.DAY_TIME_DURATION:
-				return new DayTimeDurationValue(this);
+				return new DayTimeDurationValue(TimeUtils.getInstance().newDuration(
+						duration.getSign() >= 0,
+						null,
+						null,
+						(BigInteger) duration.getField(DatatypeConstants.DAYS),
+						(BigInteger) duration.getField(DatatypeConstants.HOURS),
+						(BigInteger) duration.getField(DatatypeConstants.MINUTES),
+						(BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
 			case Type.STRING:
 				return new StringValue(getStringValue());
 			default:
@@ -267,60 +219,48 @@ public class DurationValue extends ComputableValue implements Cloneable {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
-	 */
 	public boolean compareTo(Collator collator, int operator, AtomicValue other)
 		throws XPathException {
 		throw new XPathException("xs:duration values cannot be compared. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
-	 */
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("xs:duration values cannot be compared. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
-	 */
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("xs:duration values cannot be compared. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
-	 */
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("xs:duration values cannot be compared. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.ComputableValue#minus(org.exist.xquery.value.NumericValue)
-	 */
 	public ComputableValue minus(ComputableValue other) throws XPathException {
 		throw new XPathException("subtraction is not supported for type xs:duration");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.ComputableValue#plus(org.exist.xquery.value.NumericValue)
-	 */
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		throw new XPathException("addition is not supported for type xs:duration");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.ComputableValue#mult(org.exist.xquery.value.NumericValue)
-	 */
 	public ComputableValue mult(ComputableValue other) throws XPathException {
 		throw new XPathException("multiplication is not supported for type xs:duration");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.ComputableValue#div(org.exist.xquery.value.NumericValue)
-	 */
 	public ComputableValue div(ComputableValue other) throws XPathException {
 		throw new XPathException("division is not supported for type xs:duration");
+	}
+
+	public int conversionPreference(Class target) {
+		if (target.isAssignableFrom(getClass())) return 0;
+		if (target.isAssignableFrom(Duration.class)) return 1;
+		return Integer.MAX_VALUE;
+	}
+
+	public Object toJavaObject(Class target) throws XPathException {
+		if (target.isAssignableFrom(getClass())) return this;
+		if (target.isAssignableFrom(Duration.class)) return duration;
+		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
 	}
 }

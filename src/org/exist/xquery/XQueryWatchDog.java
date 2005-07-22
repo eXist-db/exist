@@ -57,7 +57,7 @@ public class XQueryWatchDog {
     public XQueryWatchDog(XQueryContext context) {
         this.context = context;
         configureDefaults();
-        startTime = System.currentTimeMillis();
+        reset();
     }
     
     private void configureDefaults() {
@@ -151,6 +151,10 @@ public class XQueryWatchDog {
     public XQueryContext getContext() {
     	return context;
     }
+	 
+	 public long getStartTime() {
+		 return startTime;
+	 }
     
     public void reset() {
         startTime = System.currentTimeMillis();
