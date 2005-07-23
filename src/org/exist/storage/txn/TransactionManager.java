@@ -29,7 +29,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.LockManager;
 import org.exist.storage.log.LogException;
 import org.exist.storage.log.LogManager;
 import org.exist.storage.recovery.RecoveryManager;
