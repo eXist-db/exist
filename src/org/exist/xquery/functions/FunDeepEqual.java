@@ -68,7 +68,7 @@ public class FunDeepEqual extends Function {
 	private boolean deepEquals(Item a, Item b) {
 		try {
 			if (Type.subTypeOf(a.getType(), Type.ATOMIC) || Type.subTypeOf(b.getType(), Type.ATOMIC)) {
-				if (!Type.subTypeOf(a.getType(), Type.ATOMIC) || !Type.subTypeOf(b.getType(), Type.ATOMIC)) return false;
+				if ( a.getType() != b.getType() ) return false;
 				return a.atomize().compareTo(context.getDefaultCollator(), b.atomize()) == 0;
 			} else {
 //				assert Type.subTypeOf(a.getType(), Type.NODE);
