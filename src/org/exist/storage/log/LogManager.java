@@ -114,14 +114,14 @@ public class LogManager {
      * @param loggable
      * @throws TransactionException
      */
-    public void writeToLog(Loggable loggable) throws TransactionException {
+    public synchronized void writeToLog(Loggable loggable) throws TransactionException {
         SanityCheck.ASSERT(!inRecovery, "Write to log during recovery. Should not happen!");
-        int size = loggable.getLogSize();
-        int required = size + LOG_ENTRY_BASE_LEN;
+        final int size = loggable.getLogSize();
+        final int required = size + LOG_ENTRY_BASE_LEN;
         if (required > currentBuffer.capacity() - currentBuffer.position())
             flushToLog(false);
         try {
-            long lsn = Lsn.create(currentFile, (int) channel.position() + currentBuffer.position() + 1);
+            final long lsn = Lsn.create(currentFile, (int) channel.position() + currentBuffer.position() + 1);
             currentBuffer.put(loggable.getLogType());
             currentBuffer.putLong(loggable.getTransactionId());
             currentBuffer.putShort((short) loggable.getLogSize());
@@ -140,7 +140,7 @@ public class LogManager {
      * @param fsync
      * @throws TransactionException
      */
-    public void flushToLog(boolean fsync) {
+    public synchronized void flushToLog(boolean fsync) {
         if (inRecovery)
             return;
         try {

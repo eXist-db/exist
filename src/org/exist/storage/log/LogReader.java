@@ -91,11 +91,11 @@ public class LogReader {
             return null;
         // go back two bytes and read the back-link of the last entry
         mapped.position(mapped.position() - 2);
-        short prevLink = mapped.getShort();
+        final short prevLink = mapped.getShort();
         // position the channel to the start of the previous entry and mark it
-        int prevStart = mapped.position() - 2 -prevLink;
+        final int prevStart = mapped.position() - 2 -prevLink;
         mapped.position(prevStart);
-        Loggable loggable = readEntry();
+        final Loggable loggable = readEntry();
         // reset to the mark
         mapped.position(prevStart);
         return loggable;
@@ -108,19 +108,19 @@ public class LogReader {
      * @throws LogException
      */
     private Loggable readEntry() throws LogException {
-        long lsn = Lsn.create(fileNumber, (int) mapped.position() + 1);
-        byte entryType = mapped.get();
-        long transactId = mapped.getLong();
-        short size = mapped.getShort();
+        final long lsn = Lsn.create(fileNumber, mapped.position() + 1);
+        final byte entryType = mapped.get();
+        final long transactId = mapped.getLong();
+        final short size = mapped.getShort();
         if (mapped.position() + size > mapped.capacity())
             throw new LogException("Invalid length");
-        Loggable loggable = LogEntryTypes.create(entryType, broker, transactId);
+        final Loggable loggable = LogEntryTypes.create(entryType, broker, transactId);
         if (loggable == null)
             throw new LogException("Invalid log entry: " + entryType + "; size: " + size + "; id: " +
                     transactId + "; at: " + Lsn.dump(lsn));
         loggable.setLsn(lsn);
         loggable.read(mapped);
-        short prevLink = mapped.getShort();
+        final short prevLink = mapped.getShort();
         if (prevLink != size + LogManager.LOG_ENTRY_HEADER_LEN) {
             LOG.warn("Bad pointer to previous: prevLink = " + prevLink + "; size = " + size + 
                     "; transactId = " + transactId);
@@ -144,5 +144,6 @@ public class LogReader {
 			fc.close();
 		} catch (IOException e) {
 		}
+        mapped = null;
 	}
 }

@@ -46,15 +46,11 @@ public class Txn {
         return id;
     }
     
+    public void registerLock(Lock lock, int lockMode) {
+        locksHeld.add(new LockInfo(lock, lockMode));
+    }
+    
     public void acquireLock(Lock lock, int lockMode) throws LockException {
-        lock.acquire(lockMode);
-    }
-    
-    public void registerLock(Lock lock) {
-        locksHeld.add(new LockInfo(lock, Lock.READ_LOCK));
-    }
-    
-    public void registerLock(Lock lock, int lockMode) throws LockException {
         lock.acquire(lockMode);
         locksHeld.add(new LockInfo(lock, lockMode));
     }
@@ -67,6 +63,7 @@ public class Txn {
         System.out.println("Locks: " + locksHeld.size());
         for (int i = locksHeld.size() - 1; i > -1; i--) {
             LockInfo info = (LockInfo) locksHeld.get(i);
+            System.out.println("Release lock " + info.lock);
             info.lock.release(info.lockMode);
         }
         locksHeld.clear();

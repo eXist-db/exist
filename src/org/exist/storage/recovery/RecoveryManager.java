@@ -171,8 +171,6 @@ public class RecoveryManager {
             // do a reverse scan of the log, undoing all uncommitted transactions
 			while((next = reader.previousEntry()) != null) {
 				if (next.getLogType() == LogEntryTypes.TXN_START) {
-					if (LOG.isDebugEnabled())
-						LOG.debug("Read start of transaction: " + next.getTransactionId());
 					if (runningTxns.get(next.getTransactionId()) != null) {
 						runningTxns.remove(next.getTransactionId());
 						if (runningTxns.size() == 0)
