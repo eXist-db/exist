@@ -1359,11 +1359,13 @@ public class InteractiveClient {
         long start0 = System.currentTimeMillis();
         long bytes = 0;
         MimeType mimeType;
-        for (int i = 0; i < files.length; i++) {
-            start = System.currentTimeMillis();
+		for (int i = 0; i < files.length; i++) {
+            if (files[i].isDirectory())
+                continue;
+			start = System.currentTimeMillis();
             mimeType = MimeTable.getInstance().getContentTypeFor(files[i].getName());
-            if(mimeType == null)
-                mimeType = MimeType.XML_TYPE;
+			if(mimeType == null)
+                mimeType = MimeType.BINARY_TYPE;
             document = current.createResource(files[i].getName(),
                     mimeType.getXMLDBType());
             message("storing document " + files[i].getName() + " (" + (i + 1)
