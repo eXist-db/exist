@@ -463,7 +463,6 @@ public class StringValue extends AtomicValue implements Indexable {
 	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-		System.out.println("Comparing " + value + " > " + other.getStringValue());
 		if (Type.subTypeOf(other.getType(), Type.STRING))
 			return Collations.compare(collator, value, ((StringValue) other).value) > 0 ? this : other;
 		else
