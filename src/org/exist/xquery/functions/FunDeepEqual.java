@@ -24,16 +24,29 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.memtree.AttributeImpl;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
-import org.w3c.dom.*;
-import org.w3c.dom.Attr;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.GeneralComparison;
+import org.exist.xquery.Module;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 /**
  * Implements the fn:deep-equal library function.
- *
+ * @linkplain http://www.w3.org/TR/xpath-functions/#func-deep-equal
+ * 
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 public class FunDeepEqual extends Function {
@@ -60,17 +73,38 @@ public class FunDeepEqual extends Function {
 		int length = args[0].getLength();
 		if (length != args[1].getLength()) return BooleanValue.FALSE;
 		for (int i=0; i<length; i++) {
-			if (!deepEquals(args[0].itemAt(i), args[1].itemAt(i))) return BooleanValue.FALSE;
+			if ( ! deepEquals( args[0].itemAt(i),
+					           args[1].itemAt(i)) )
+				return BooleanValue.FALSE;
 		}
 		return BooleanValue.TRUE;
 	}
 	
 	private boolean deepEquals(Item a, Item b) {
 		try {
-			if (Type.subTypeOf(a.getType(), Type.ATOMIC) || Type.subTypeOf(b.getType(), Type.ATOMIC)) {
-				if ( a.getType() != b.getType() ) return false;
-				return a.atomize().compareTo(context.getDefaultCollator(), b.atomize()) == 0;
-			} else {
+			boolean aSubTypeOfATOMIC = Type.subTypeOf(a.getType(), Type.ATOMIC);
+			boolean bSubTypeOfATOMIC = Type.subTypeOf(b.getType(), Type.ATOMIC);
+			
+			// if at least one is atomic type
+			if (aSubTypeOfATOMIC || bSubTypeOfATOMIC) {	
+
+				// if one ist not atomic type
+				if ( !aSubTypeOfATOMIC || !bSubTypeOfATOMIC )
+					return false;
+				
+				// both are atomic: call the algo. that is being used for the eq operator
+				try {
+					return GeneralComparison.compareAtomic( context.getDefaultCollator(),
+						(AtomicValue)a, (AtomicValue)b, 
+						context.isBackwardsCompatible(), Constants.TRUNC_NONE, Constants.EQ );
+				}
+				// the eq operator throws an exception if types are not comparable, deep-equal must not
+				catch( XPathException e) {
+					return false;
+				}
+				
+			} else {	// both are not atomic types
+				
 //				assert Type.subTypeOf(a.getType(), Type.NODE);
 //				assert Type.subTypeOf(b.getType(), Type.NODE);
 				if (a.getType() != b.getType()) return false;

@@ -50,6 +50,11 @@ public class DeepEqualTest extends TestCase {
 		assertQuery(false, "deep-equal(42, 'hello')");
 	}
 	
+	public void testAtomic6() throws XMLDBException {
+		assertQuery(true, "deep-equal( 1. , xs:integer(1) )" );
+		assertQuery(true, "deep-equal( xs:double(1) , xs:integer(1) )" );
+	}
+	
 	public void testEmptySeq() throws XMLDBException {
 		assertQuery(true, "deep-equal((), ())");
 	}
