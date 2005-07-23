@@ -92,11 +92,15 @@ public class TransactionManager {
      * @return
      * @throws TransactionException
      */
-    public Txn beginTransaction() throws TransactionException {
+    public Txn beginTransaction() {
         if (!enabled)
             return null;
         long txnId = nextTxnId++;
-        logManager.writeToLog(new TxnStart(txnId));
+        try {
+            logManager.writeToLog(new TxnStart(txnId));
+        } catch (TransactionException e) {
+            LOG.warn("Failed to create transaction. Error writing to log file.", e);
+        }
         return new Txn(txnId);
     }
     
@@ -111,11 +115,11 @@ public class TransactionManager {
             logManager.writeToLog(new TxnCommit(txn.getId()));
             logManager.flushToLog(true);
         }
-//        txn.releaseAll();
+        txn.releaseAll();
     }
 	
     public void abort(Txn txn) {
-//        txn.releaseAll();
+        txn.releaseAll();
     }
     
     /**

@@ -180,7 +180,6 @@ public class MultiReadReentrantLock implements Lock {
     }
 
     public void release(int mode) {
-        System.out.println("Releasing lock: " + toString());
         switch (mode) {
         case Lock.WRITE_LOCK:
             releaseWrite();
