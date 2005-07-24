@@ -107,6 +107,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.xml.transform.OutputKeys;
 
+/** Main frame of the eXist GUI */
 public class ClientFrame extends JFrame
         implements
         WindowFocusListener,
@@ -114,7 +115,8 @@ public class ClientFrame extends JFrame
         ActionListener,
         MouseListener {
     
-    public final static String CUT = "Cut";
+	private static final long serialVersionUID = 1L;
+	public final static String CUT = "Cut";
     public final static String COPY = "Copy";
     public final static String PASTE = "Paste";
     
@@ -641,21 +643,13 @@ public class ClientFrame extends JFrame
         shell.setVisible(enabled);
     }
     
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
-     */
+    /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
     public void keyPressed(KeyEvent e) {
         type(e);
         gotUp = false;
     }
     
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent)
-     */
+    /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
     public void keyReleased(KeyEvent e) {
         gotUp = true;
         type(e);
@@ -712,11 +706,7 @@ public class ClientFrame extends JFrame
         }
     }
     
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-     */
+    /** @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent) */
     public void actionPerformed(ActionEvent e) {
         String cmd = e.getActionCommand();
         if (cmd.equals(CUT))
@@ -776,7 +766,7 @@ public class ClientFrame extends JFrame
         
         final ResourceDescriptor[] res = getSelectedResources();
         
-        String cmd;
+        // String cmd;
         if (JOptionPane.showConfirmDialog(this,
                 "Are you sure you want to remove the selected " + "resources?",
                 "Confirm deletion", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -1337,8 +1327,9 @@ public class ClientFrame extends JFrame
     
     class ResourceTableModel extends AbstractTableModel {
         
-        private final String[] columnNames = new String[]{"Permissions",
-                "Owner", "Group", "Resource"};
+		private static final long serialVersionUID = 1L;
+		private final String[] columnNames = new String[]{"Permissions",
+                "Owner", "Group", "Resource", "Date" };
                 
                 private List rows = null;
                 
@@ -1392,6 +1383,7 @@ public class ClientFrame extends JFrame
                         case 1: return row.getOwner();
                         case 2: return row.getGroup();
                         case 3: return row.getName();
+                        case 4: return row.getDate();
                         default: throw new RuntimeException("Column does not eXist!");
                     }
                 }

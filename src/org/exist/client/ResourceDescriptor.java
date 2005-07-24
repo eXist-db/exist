@@ -22,6 +22,8 @@
  */
 package org.exist.client;
 
+import java.util.Date;
+
 /**
  * Description of a resource, suitable for display by the graphical
  * client for instance.
@@ -33,13 +35,15 @@ public abstract class ResourceDescriptor {
     private String owner;
     private String group;
     private String permissions;
+    private Date date;
     
     public ResourceDescriptor(String aName, String aOwner, 
-                              String aGroup, String aPermissions) {
+                              String aGroup, String aPermissions, Date date ) {
         name = aName;
         owner = aOwner;
         group = aGroup;
         permissions = aPermissions;
+        this.date = date;
     }
     
     public String getGroup() {
@@ -58,11 +62,15 @@ public abstract class ResourceDescriptor {
         return permissions;
     }
     
+	public Date getDate() {
+		return date;
+	}
+	
     public abstract boolean isCollection();
     
     public static class Document extends ResourceDescriptor {
-        public Document(String aName, String aOwner, String aGroup, String aPermissions) {
-            super(aName, aOwner, aGroup, aPermissions);
+        public Document(String aName, String aOwner, String aGroup, String aPermissions, Date date) {
+            super(aName, aOwner, aGroup, aPermissions, date);
         }
         
         public boolean isCollection() {
@@ -72,11 +80,11 @@ public abstract class ResourceDescriptor {
     
     public static class Collection extends ResourceDescriptor {
         public Collection(String aName) {
-            super(aName, null, null, null);
+            super(aName, null, null, null, null);
         }
         
-        public Collection(String aName, String aOwner, String aGroup, String aPermissions) {
-            super(aName, aOwner, aGroup, aPermissions);
+        public Collection(String aName, String aOwner, String aGroup, String aPermissions, Date date) {
+            super(aName, aOwner, aGroup, aPermissions, date);
         }
         
         public boolean isCollection() {
