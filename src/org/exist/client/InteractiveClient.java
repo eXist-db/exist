@@ -45,6 +45,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -116,7 +117,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
 public class InteractiveClient {
     
     // ANSI colors for ls display
-    private final static String ANSI_BLUE = "\033[0;34m";
+    // private final static String ANSI_BLUE = "\033[0;34m";
     private final static String ANSI_CYAN = "\033[0;36m";
     private final static String ANSI_WHITE = "\033[0;37m";
     
@@ -303,12 +304,13 @@ public class InteractiveClient {
                 resources[i] = 'd' + formatString(cols, colSizes);
             } else
                 resources[i] = childCollections[i];
+            
             if (startGUI) {
-                tableData.add(new ResourceDescriptor.Collection(
+                tableData.add( new ResourceDescriptor.Collection(
                         childCollections[i],
                         perm.getOwner(),
                         perm.getOwnerGroup(),
-                        perm.toString()));
+                        perm.toString(), null /*lastModificationTime*/ ) );
             }
             completitions.add(childCollections[i]);
         }
@@ -324,12 +326,17 @@ public class InteractiveClient {
                         + childResources[j];
             } else
                 resources[i] = childResources[j];
+
+            Date lastModificationTime = ((EXistResource)res).getLastModificationTime();
+            resources[i] += "\t" + lastModificationTime;
+            	
             if (startGUI) {
                 tableData.add(new ResourceDescriptor.Document(
                         childResources[j],
                         perm.getOwner(),
                         perm.getOwnerGroup(),
-                        perm.toString()));
+                        perm.toString(),
+                        lastModificationTime ) );
             }
             completitions.add(childResources[j]);
         }
@@ -338,15 +345,14 @@ public class InteractiveClient {
     }
     
     /**
-     * Display document on screen.
+     * Display document on screen, by 24 lines.
      *
-     * @param str
-     *                   Description of the Parameter
+     * @param str string containing the document.
      */
     protected void more(String str) {
         LineNumberReader reader = new LineNumberReader(new StringReader(str));
         String line;
-        int count = 0;
+        // int count = 0;
         int ch;
         try {
             while (System.in.available() > 0)
@@ -389,7 +395,7 @@ public class InteractiveClient {
             tok.whitespaceChars(0x20, 0x20);
             
             List argList = new ArrayList(3);
-            int i = 0;
+            // int i = 0;
             int token;
             try {
                 while ((token = tok.nextToken()) != StreamTokenizer.TT_EOF) {
@@ -1096,6 +1102,7 @@ public class InteractiveClient {
                 sortBy);
     }
     
+    /** unused, for testing purposes ?? */
     private final void testQuery(String queryFile) {
         try {
             File f = new File(queryFile);
@@ -1135,15 +1142,16 @@ public class InteractiveClient {
         
         public void run() {
             try {
-                Collection collection = DatabaseManager.getCollection(
-                        properties.getProperty("uri") + path, properties
-                        .getProperty("user"), properties
-                        .getProperty("password"));
+                // Collection collection = 
+                DatabaseManager.getCollection(
+                        properties.getProperty("uri") + path, 
+                        properties.getProperty("user"),
+                        properties.getProperty("password"));
                 XPathQueryService service = (XPathQueryService) current
                         .getService("XPathQueryService", "1.0");
                 service.setProperty(OutputKeys.INDENT, "yes");
-                service.setProperty(OutputKeys.ENCODING, properties
-                        .getProperty("encoding"));
+                service.setProperty(OutputKeys.ENCODING,
+                		properties.getProperty("encoding"));
                 Random r = new Random(System.currentTimeMillis());
                 String query;
                 for (int i = 0; i < 10; i++) {
@@ -1330,7 +1338,7 @@ public class InteractiveClient {
                 File.separatorChar);
         File file = new File(fileName);
         Resource document;
-        String xml;
+        // String xml;
         File files[];
         if (current instanceof Observable && verbose) {
             ProgressObserver observer = new ProgressObserver();
@@ -1531,12 +1539,12 @@ public class InteractiveClient {
                 .getProperty("password"));
     }
     
-    // Reads user password from given input stream.
+    /** NEVER USED !!! Reads user password from given input stream. */
     private char[] readPassword(InputStream in) throws IOException {
         
         char[] lineBuffer;
         char[] buf;
-        int i;
+        // int i;
         
         buf = lineBuffer = new char[128];
         
@@ -1832,7 +1840,7 @@ public class InteractiveClient {
             try {
                 Resource res = retrieve(cOpt.optionGet);
                 if (res != null) {
-                    String data;
+                    // String data;
                     if (res.getResourceType().equals("XMLResource")) {
                         if (cOpt.optionOutputFile != null)
                             writeOutputFile(cOpt.optionOutputFile, res.getContent());
@@ -1990,8 +1998,7 @@ public class InteractiveClient {
     /**
      * Main processing method for the InteractiveClient object
      *
-     * @param args
-     *                   Description of the Parameter
+     * @param args arguments from main()
      */
     public void run(String args[]) throws Exception {
         
@@ -2028,7 +2035,6 @@ public class InteractiveClient {
             }
         }
         
-        String pathSep = System.getProperty("file.separator", "/");
         String home = System.getProperty("exist.home");
         
         if (home == null)
@@ -2268,7 +2274,6 @@ public class InteractiveClient {
             } catch (IOException ioe) {
                 System.err.println(ioe);
             } catch (Exception e) {
-                // TODO: handle exception
                 System.err.println(e);
             }
         try {
