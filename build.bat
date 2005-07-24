@@ -15,7 +15,7 @@ set ANT_HOME=%EXIST_HOME%\tools
 set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher.jar;%ANT_HOME%\lib\junit.jar;%JAVA_HOME%\lib\tools.jar
 
 set JAVA_ENDORSED_DIRS=%EXIST_HOME%\lib\endorsed
-set JAVA_OPTS=-Xms64M -Xmx512M -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -Dant.home="%ANT_HOME%"
+set JAVA_OPTS=-Xms64M -Xmx512M -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -Dant.home="%ANT_HOME%" -Dexist.home="%EXIST_HOME%"
 
 echo eXist Build
 echo -------------------
