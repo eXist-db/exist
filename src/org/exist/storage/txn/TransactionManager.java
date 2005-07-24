@@ -110,6 +110,8 @@ public class TransactionManager {
      * @throws TransactionException
      */
     public void commit(Txn txn) throws TransactionException {
+        if (!enabled)
+            return;
         if (enabled) {
             logManager.writeToLog(new TxnCommit(txn.getId()));
             logManager.flushToLog(true);
