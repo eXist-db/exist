@@ -52,7 +52,7 @@
 	<classpathentry kind="lib" path="lib/optional/axis.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jaxrpc.jar"/>
 	<classpathentry kind="lib" path="lib/optional/saaj.jar"/>
-	<classpathentry kind="lib" path="lib/optional/wsdl4j.jar"/>
+	<classpathentry kind="lib" path="lib/optional/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jgroups-all.jar"/>
 	<classpathentry kind="lib" path="lib/optional/cocoon-2.1.7.jar"/>
 	<classpathentry kind="lib" path="lib/optional/cocoon-2.1.7-deprecated.jar"/>
