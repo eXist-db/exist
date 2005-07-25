@@ -159,7 +159,19 @@ public class QName implements Comparable {
 			return prefix_.equals(other.prefix_);
 	}
 	
-	
+	public boolean equalsSimple(QName other) {
+        int c;
+        if (namespaceURI_ == null)
+            c = other.namespaceURI_ == null ? 0 : -1;
+        else if (other.namespaceURI_ == null)
+            c = 1;
+        else
+            c = namespaceURI_.compareTo(other.namespaceURI_);
+        if (c == 0)
+            return localName_.equals(other.localName_);
+        return false;
+    }
+    
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
