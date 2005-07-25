@@ -240,9 +240,10 @@ public class DOMFile extends BTree implements Lockable {
      * @param value
      * @return
      */
-    public long addBinary(byte[] value) {
+    public long addBinary(DocumentImpl doc, byte[] value) {
         OverflowDOMPage overflow = new OverflowDOMPage();
-        overflow.write(value);
+        int pagesCount = overflow.write(value);
+        doc.setPageCount(pagesCount);
         return overflow.getPageNum();
     }
 
@@ -1904,7 +1905,8 @@ public class DOMFile extends BTree implements Lockable {
             firstPage = getPage(first);
         }
 
-        public void write(byte[] data) {
+        public int write(byte[] data) {
+            int pageCount = 0;
             try {
                 int remaining = data.length;
                 int chunkSize = fileHeader.getWorkSize();
@@ -1926,10 +1928,12 @@ public class DOMFile extends BTree implements Lockable {
                     pos += chunkSize;
                     page = next;
                     next = null;
+                    ++pageCount;
                 }
             } catch (IOException e) {
                 LOG.error("io error while writing overflow page", e);
             }
+            return pageCount;
         }
 
         public byte[] read() {

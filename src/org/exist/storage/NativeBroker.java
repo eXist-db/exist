@@ -1099,7 +1099,7 @@ public class NativeBroker extends DBBroker {
 					// to the element index as well
 					if (((AttrImpl) node).getType() == AttrImpl.ID) {
 						qname = new QName(((AttrImpl) node).getValue(), "", null);
-						//LOG.debug("found ID: " + qname.getLocalName());
+//						LOG.debug("found ID: " + qname.toString());
 						qname.setNameType(ElementValue.ATTRIBUTE_ID);
 						elementIndex.addRow(qname, tempProxy);
 					}
@@ -2748,7 +2748,7 @@ public class NativeBroker extends DBBroker {
 //					domDb.remove(blob.getPage());
 //				}
 				LOG.debug("Storing binary resource " + blob.getFileName());
-				blob.setPage(domDb.addBinary(data));
+				blob.setPage(domDb.addBinary(blob, data));
 				return null;
 			}
 		}

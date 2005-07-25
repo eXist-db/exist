@@ -118,6 +118,7 @@ public class BinaryDocument extends DocumentImpl {
 			ostream.writeLong(created);
 			ostream.writeLong(lastModified);
             ostream.writeUTF(mimeType);
+            ostream.writeInt(pageCount);
 			final byte[] data = ostream.toByteArray();
 			ostream.close();
 			return data;
@@ -133,6 +134,7 @@ public class BinaryDocument extends DocumentImpl {
 			created = istream.readLong();
 			lastModified = istream.readLong();
             mimeType = istream.readUTF();
+            pageCount = istream.readInt();
 		} catch(IOException e) {
 			LOG.warn("IO error while reading document metadata", e);
 		}
