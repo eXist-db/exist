@@ -185,6 +185,8 @@ public class NativeBroker extends DBBroker {
 	
 	private final Runtime run = Runtime.getRuntime();
 
+    private NodeProcessor nodeProcessor = new NodeProcessor();
+    
 	/** initialize database; read configuration, etc. */
 	public NativeBroker(BrokerPool pool, Configuration config) throws EXistException {
 		super(pool, config);
@@ -985,26 +987,29 @@ public class NativeBroker extends DBBroker {
 		/** overall switch to activate fulltext indexation */
 		private boolean index = true;
 
-		NodeProcessor(final NodeImpl node, NodePath currentPath) {
-			if (node.getGID() < 0)
-				LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
-			this.node = node;
-			this.currentPath = currentPath;
-			nodeType = node.getNodeType();
-			gid = node.getGID();
-			doc = (DocumentImpl) node.getOwnerDocument();
-			address = node.getInternalAddress();
-			idxSpec = doc.getCollection().getIdxConf(NativeBroker.this);
-			ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
-			depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
-			level = doc.getTreeLevel(gid);			
-		}
-		
-		public NodeProcessor(NodeImpl node, NodePath currentPath, boolean index) {
-			this(node, currentPath);
-			this.index = index;
+		NodeProcessor() {
 		}
 
+        public void reset(NodeImpl node, NodePath currentPath) {
+            if (node.getGID() < 0)
+                LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
+            this.node = node;
+            this.currentPath = currentPath;
+            nodeType = node.getNodeType();
+            gid = node.getGID();
+            doc = (DocumentImpl) node.getOwnerDocument();
+            address = node.getInternalAddress();
+            idxSpec = doc.getCollection().getIdxConf(NativeBroker.this);
+            ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
+            depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
+            level = doc.getTreeLevel(gid);
+        }
+        
+        public void reset(NodeImpl node, NodePath currentPath, boolean index) {
+            reset(node, currentPath);
+            this.index = index;
+        }
+        
 		/** Updates the various indices */
 		public void doIndex() {
 			int indexType = RangeIndexSpec.NO_INDEX;
@@ -1170,8 +1175,7 @@ public class NativeBroker extends DBBroker {
 	 * cases, reindex will be called.
 	 */
 	public void index(final NodeImpl node, NodePath currentPath) {
-		NodeProcessor nodeProcessor = 
-			new NodeProcessor(node, currentPath);
+        nodeProcessor.reset(node, currentPath);
 		nodeProcessor.index();
 	}
 
@@ -1259,8 +1263,7 @@ public class NativeBroker extends DBBroker {
 	 * @param currentPath
 	 */
 	private void reindex(final NodeImpl node, NodePath currentPath) {
-		NodeProcessor nodeProcessor = 
-			new NodeProcessor(node, currentPath);
+		nodeProcessor.reset(node, currentPath);
 		nodeProcessor.reindex();
 	}
 
@@ -2655,8 +2658,8 @@ public class NativeBroker extends DBBroker {
 		.run();
 		++nodesCount;
 		
-		( new NodeProcessor(node, currentPath, index) )
-			.doIndex();
+        nodeProcessor.reset(node, currentPath, index);
+		nodeProcessor.doIndex();
 	}
 
 	/** check available memory */
