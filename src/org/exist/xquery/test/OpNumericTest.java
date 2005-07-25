@@ -1,5 +1,6 @@
 package org.exist.xquery.test;
 
+import org.exist.security.SecurityManager;
 import org.exist.storage.*;
 import org.exist.util.Configuration;
 import org.exist.xquery.*;
@@ -17,11 +18,19 @@ public class OpNumericTest extends TestCase {
 	private TimeValue time;
 	private IntegerValue integer;
 	private DecimalValue decimal;
-	
+	private DBBroker broker;
+    
 	protected void setUp() throws Exception {
 		super.setUp();
-		BrokerPool.configure(1, 1, new Configuration("conf.xml"));
-		context = new XQueryContext(BrokerPool.getInstance().get());
+        String home, file = "conf.xml";
+        home = System.getProperty("exist.home");
+        if (home == null)
+            home = System.getProperty("user.dir");
+        Configuration config = new Configuration(file, home);
+        BrokerPool.configure(1, 5, config);
+
+        broker = BrokerPool.getInstance().get(SecurityManager.SYSTEM_USER);
+		context = new XQueryContext(broker);
 		
 		dtDuration = new DayTimeDurationValue("P1D");
 		ymDuration = new YearMonthDurationValue("P1Y");
@@ -32,6 +41,11 @@ public class OpNumericTest extends TestCase {
 		decimal = new DecimalValue("1.5");
 	}
 	
+    protected void tearDown() throws Exception {
+        BrokerPool.getInstance().release(broker);
+        BrokerPool.stopAll(false);
+    }
+    
 	private OpNumeric buildOp(int op, AtomicValue a, AtomicValue b) {
 		return new OpNumeric(
 				context,
