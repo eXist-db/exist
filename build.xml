@@ -35,8 +35,6 @@
     <property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <property name="xmldb.src" value="undefined"/>
 
-	<echo message="${build.compiler.source}"/>
-	
     <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
 
     <available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
