@@ -32,6 +32,8 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -77,9 +79,10 @@ public class Rename extends Modification {
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
 		String newName = contentSeq.itemAt(0).getStringValue();
 		try {
+            TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+            Txn transaction = transact.beginTransaction();
             NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
             DocumentImpl doc = null;
-            Collection collection = null, prevCollection = null;
             DocumentSet modifiedDocs = new DocumentSet();
             NodeImpl node;
             NodeImpl parent;
@@ -87,14 +90,6 @@ public class Rename extends Modification {
             for (int i = 0; i < ql.length; i++) {
                 node = ql[i];
                 doc = (DocumentImpl) node.getOwnerDocument();
-                collection = doc.getCollection();
-                if (prevCollection != null && collection != prevCollection)
-                        doc.getBroker().saveCollection(prevCollection);
-                if (!collection.getPermissions().validate(context.getUser(),
-                        Permission.UPDATE))
-                        throw new XPathException(getASTNode(),
-                                "write access to collection denied; user="
-                                        + context.getUser().getName());
                 if (!doc.getPermissions().validate(context.getUser(),
                         Permission.UPDATE))
                         throw new XPathException(getASTNode(),
@@ -106,12 +101,12 @@ public class Rename extends Modification {
                     case Node.ELEMENT_NODE:
                         ((ElementImpl) node).setNodeName(new QName(newName, "",
                                 null));
-                        parent.updateChild(node, node);
+                        parent.updateChild(transaction, node, node);
                         break;
                     case Node.ATTRIBUTE_NODE:
                         ((AttrImpl) node).setNodeName(new QName(newName, "",
                                 null));
-                        parent.updateChild(node, node);
+                        parent.updateChild(transaction, node, node);
                         break;
                     default:
                         throw new XPathException(getASTNode(), "unsupported node-type");
@@ -119,10 +114,10 @@ public class Rename extends Modification {
 
                 doc.clearIndexListener();
                 doc.setLastModified(System.currentTimeMillis());
-                prevCollection = collection;
+                context.getBroker().storeDocument(transaction, doc);
             }
-            if (doc != null) doc.getBroker().saveCollection(collection);
-            checkFragmentation(modifiedDocs);
+            checkFragmentation(transaction, modifiedDocs);
+            transact.commit(transaction);
         } catch (PermissionDeniedException e) {
             throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (EXistException e) {

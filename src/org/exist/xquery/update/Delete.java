@@ -29,6 +29,8 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -68,45 +70,48 @@ public class Delete extends Modification {
 			return Sequence.EMPTY_SEQUENCE;
 		if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
             NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
             IndexListener listener = new IndexListener(ql);
             NodeImpl node;
-            Node parent;
+            NodeImpl parent;
             DocumentImpl doc = null;
-            Collection collection = null, prevCollection = null;
             DocumentSet modifiedDocs = new DocumentSet();
             for (int i = 0; i < ql.length; i++) {
                 node = ql[i];
                 doc = (DocumentImpl) node.getOwnerDocument();
                 if (!doc.getPermissions().validate(context.getUser(),
-                        Permission.UPDATE))
-                        throw new PermissionDeniedException(
-                                "permission to remove document denied");
-                collection = doc.getCollection();
-                if (prevCollection != null && collection != prevCollection)
-                        context.getBroker().saveCollection(prevCollection);
+                        Permission.UPDATE)) {
+                    transact.abort(transaction);    
+                    throw new PermissionDeniedException("permission to remove document denied");
+                }
                 doc.setIndexListener(listener);
                 modifiedDocs.add(doc);
-                parent = node.getParentNode();
+                parent = (NodeImpl) node.getParentNode();
                 if (parent.getNodeType() != Node.ELEMENT_NODE) {
                     LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
+                    transact.abort(transaction);
                     throw new XPathException(getASTNode(),
                             "you cannot remove the document element. Use update "
                                     + "instead");
                 } else
-                    parent.removeChild(node);
+                    parent.removeChild(transaction, node);
                 doc.clearIndexListener();
                 doc.setLastModified(System.currentTimeMillis());
-                prevCollection = collection;
+                context.getBroker().storeDocument(transaction, doc);
             }
-            if (doc != null) context.getBroker().saveCollection(collection);
-            checkFragmentation(modifiedDocs);
+            checkFragmentation(transaction, modifiedDocs);
+            transact.commit(transaction);
         } catch (EXistException e) {
+            transact.abort(transaction);
             throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
+            transact.abort(transaction);
             throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (LockException e) {
+            transact.abort(transaction);
             throw new XPathException(getASTNode(), e.getMessage(), e);
 		} finally {
             unlockDocuments();
