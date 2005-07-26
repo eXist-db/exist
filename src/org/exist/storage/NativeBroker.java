@@ -278,6 +278,7 @@ public class NativeBroker extends DBBroker {
                     new File(dataDir + File.separatorChar + WORDS_DBX), pool.getCacheManager(), 1.5, 10, 1000);
             config.setProperty("db-connection.words", dbWords);
         }
+        LOG.debug("words.dbx size: " + dbWords.getFile().length());
         textEngine = new NativeTextEngine(this, config, dbWords);
         valueIndex = new NativeValueIndex(this, valuesDb);
         if ( qnameValueIndexation ) {
@@ -1865,17 +1866,17 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         
         LOG.debug("Removing index files ...");
-        elementsDb.getFile().delete();
+        elementsDb.closeAndRemove();
         config.setProperty("db-connection.elements", null);
         
-        dbWords.getFile().delete();
+        dbWords.closeAndRemove();
         config.setProperty("db-connection.words", null);
         
-        valuesDb.getFile().delete();
+        valuesDb.closeAndRemove();
         config.setProperty("db-connection.values", null);
         
         if (qnameValueIndexation) {
-            valuesDb.getFile().delete();
+            valuesDb.closeAndRemove();
             config.setProperty("db-connection2.values", null);
         }
         LOG.debug("Recreating index files ...");
