@@ -30,6 +30,8 @@ import org.exist.dom.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
@@ -56,15 +58,14 @@ public class Remove extends Modification {
     /**
      * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
      */
-    public long process() throws PermissionDeniedException, LockException,
+    public long process(Txn transaction) throws PermissionDeniedException, LockException,
             EXistException, XPathException {
         try {
             NodeImpl[] ql = selectAndLock();
             IndexListener listener = new IndexListener(ql);
             NodeImpl node;
-            Node parent;
+            NodeImpl parent;
             DocumentImpl doc = null;
-            Collection collection = null, prevCollection = null;
             DocumentSet modifiedDocs = new DocumentSet();
             for (int i = 0; i < ql.length; i++) {
                 node = ql[i];
@@ -73,25 +74,21 @@ public class Remove extends Modification {
                         Permission.UPDATE))
                         throw new PermissionDeniedException(
                                 "permission to remove document denied");
-                collection = doc.getCollection();
-                if (prevCollection != null && collection != prevCollection)
-                        broker.saveCollection(prevCollection);
                 doc.setIndexListener(listener);
                 modifiedDocs.add(doc);
-                parent = node.getParentNode();
+                parent = (NodeImpl) node.getParentNode();
                 if (parent.getNodeType() != Node.ELEMENT_NODE) {
                     LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
                     throw new EXistException(
                             "you cannot remove the document element. Use update "
                                     + "instead");
                 } else
-                    parent.removeChild(node);
+                    parent.removeChild(transaction, node);
                 doc.clearIndexListener();
                 doc.setLastModified(System.currentTimeMillis());
-                prevCollection = collection;
+                broker.storeDocument(transaction, doc);
             }
-            if (doc != null) broker.saveCollection(collection);
-            checkFragmentation(modifiedDocs);
+            checkFragmentation(transaction, modifiedDocs);
             return ql.length;
         } finally {
             unlockDocuments();

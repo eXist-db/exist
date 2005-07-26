@@ -24,7 +24,8 @@ import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.SyntaxException;
 import org.w3c.dom.Node;
@@ -61,16 +62,16 @@ public final class ClusterCollection extends Collection {
 
 
 
-    public void store(DBBroker broker, IndexInfo info, String data, boolean privileged)
+    public void store(Txn txn, DBBroker broker, IndexInfo info, String data, boolean privileged)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
         InputSource is = new InputSource(new ByteArrayInputStream(data.getBytes()));
-        this.store(broker, info, is, privileged);
+        this.store(txn, broker, info, is, privileged);
     }
 
 
-    public void removeDocument(DBBroker broker, String docname) throws PermissionDeniedException, TriggerException, LockException {
-        collection.removeDocument(broker, docname);
+    public void removeDocument(Txn transaction, DBBroker broker, String docname) throws PermissionDeniedException, TriggerException, LockException {
+        collection.removeDocument(transaction, broker, docname);
         try {
             ClusterClient cc = new ClusterClient();
             cc.sendClusterEvent(new RemoveClusterEvent(docname, this.getName()));
@@ -93,14 +94,14 @@ public final class ClusterCollection extends Collection {
      * @throws SAXException
      * @throws LockException
      */
-    public void store(DBBroker broker, IndexInfo info, InputSource source, boolean privileged)
+    public void store(Txn transaction, DBBroker broker, IndexInfo info, InputSource source, boolean privileged)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
         
         Indexer indexer = info.getIndexer();
         DocumentImpl document = indexer.getDocument();
 
-        collection.store(broker, info, source, privileged);
+        collection.store(transaction, broker, info, source, privileged);
 
         InputStream is = source.getByteStream();
         Reader cs = null;
@@ -149,10 +150,10 @@ public final class ClusterCollection extends Collection {
 
     }
 
-    public BinaryDocument addBinaryResource(DBBroker broker,
+    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
 			String name, byte[] data, String mimeType) throws EXistException,
             PermissionDeniedException, LockException {
-        return collection.addBinaryResource(broker, name, data, mimeType);
+        return collection.addBinaryResource(transaction, broker, name, data, mimeType);
     }
 
     public void setName(String name) {
@@ -189,12 +190,8 @@ public final class ClusterCollection extends Collection {
         collection.update(child);
     }
 
-    public void addDocument(DBBroker broker, DocumentImpl doc) {
-        collection.addDocument(broker, doc);
-    }
-
-    public void addDocumentLink(DBBroker broker, DocumentImpl doc) {
-        collection.addDocumentLink(broker, doc);
+    public void addDocument(Txn transaction, DBBroker broker, DocumentImpl doc) {
+        collection.addDocument(transaction, broker, doc);
     }
 
     public void unlinkDocument(DocumentImpl doc) {
@@ -294,81 +291,41 @@ public final class ClusterCollection extends Collection {
     }
 
 
-    public void removeBinaryResource(DBBroker broker,
+    public void removeBinaryResource(Txn transaction, DBBroker broker,
                                      String docname) throws PermissionDeniedException, LockException {
-        collection.removeBinaryResource(broker, docname);
+        collection.removeBinaryResource(transaction, broker, docname);
     }
 
-    public void removeBinaryResource(DBBroker broker,
+    public void removeBinaryResource(Txn transaction, DBBroker broker,
                                      DocumentImpl doc) throws PermissionDeniedException, LockException {
-        collection.removeBinaryResource(broker, doc);
+        collection.removeBinaryResource(transaction, broker, doc);
     }
 
-    public IndexInfo validate(DBBroker broker, String name, InputSource source)
+    public IndexInfo validate(Txn txn, DBBroker broker, String name, InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
-        return collection.validate(broker, name, source);
+        return collection.validate(txn, broker, name, source);
     }
 
 
-    public IndexInfo validate(DBBroker broker, String name, String data)
+    public IndexInfo validate(Txn txn, DBBroker broker, String name, String data)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
-        return collection.validate(broker, name, data);
+        return collection.validate(txn, broker, name, data);
     }
 
 
-    public IndexInfo validate(DBBroker broker, String name, Node node)
+    public IndexInfo validate(Txn txn, DBBroker broker, String name, Node node)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
-        return collection.validate(broker, name, node);
+        return collection.validate(txn, broker, name, node);
     }
 
-    public void store(DBBroker broker, IndexInfo info, Node node, boolean privileged)
+    public void store(Txn txn, DBBroker broker, IndexInfo info, Node node, boolean privileged)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
-        collection.store(broker, info, node, privileged);
+        collection.store(txn, broker, info, node, privileged);
     }
-
-    public DocumentImpl addDocument(DBBroker broker, String name, String data, String mimeType)
-            throws EXistException, PermissionDeniedException, TriggerException,
-            SAXException, LockException {
-        return collection.addDocument(broker, name, data, mimeType);
-    }
-
-    public DocumentImpl addDocument(DBBroker broker, String name, String data, String mimeType,
-                                    boolean privileged) throws EXistException,
-            PermissionDeniedException, TriggerException, SAXException,
-            LockException {
-        return collection.addDocument(broker, name, data, mimeType, privileged);
-    }
-
-    public DocumentImpl addDocument(DBBroker broker, String name,
-                                    InputSource source, String mimeType) throws EXistException, LockException,
-            PermissionDeniedException, TriggerException, SAXException {
-        return collection.addDocument(broker, name, source, mimeType);
-    }
-
-    public DocumentImpl addDocument(DBBroker broker, String name,
-                                    InputSource source, String mimeType, boolean privileged) throws EXistException,
-            PermissionDeniedException, SAXException, TriggerException,
-            LockException {
-        return collection.addDocument(broker, name, source, mimeType, privileged);
-    }
-
-    public DocumentImpl addDocument(DBBroker broker, String name, Node node, String mimeType)
-            throws EXistException, PermissionDeniedException, TriggerException,
-            SAXException, LockException {
-        return collection.addDocument(broker, name, node, mimeType);
-    }
-
-    public DocumentImpl addDocument(DBBroker broker, String name, Node node, String mimeType,
-                                    boolean privileged) throws EXistException, LockException,
-            PermissionDeniedException, TriggerException, SAXException {
-        return collection.addDocument(broker, name, node, mimeType, privileged);
-    }
-
-
 
     public void setId(short id) {
         collection.setId(id);

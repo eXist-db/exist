@@ -28,11 +28,14 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.w3c.dom.Document;
@@ -71,8 +74,6 @@ public class SecurityManager {
 	private Int2ObjectHashMap users = new Int2ObjectHashMap(65);
 	private int nextUserId = 0;
 	private int nextGroupId = 0;
-	
-	private BrokerPool brokerPool;
 
 	/**
 	 * Initialize the security manager.
@@ -86,13 +87,15 @@ public class SecurityManager {
 	public SecurityManager(BrokerPool pool, DBBroker sysBroker) {
 		this.pool = pool;
 		
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		DBBroker broker = sysBroker;
 		try {
 			Collection sysCollection = broker.getCollection(SYSTEM);
 			if (sysCollection == null) {
-				sysCollection = broker.getOrCreateCollection(SYSTEM);
+				sysCollection = broker.getOrCreateCollection(txn, SYSTEM);
 				sysCollection.setPermissions(0770);
-				broker.saveCollection(sysCollection);
+				broker.saveCollection(txn, sysCollection);
 			}
 			Document acl = sysCollection.getDocument(broker, ACL_FILE);
 			Element docElement = null;
@@ -109,7 +112,7 @@ public class SecurityManager {
 				users.put(user.getUID(), user);
 				addGroup(DBA_GROUP);
 				addGroup(GUEST_GROUP);
-				save(broker);
+				save(broker, txn);
 			} else {
 				LOG.debug("loading acl");
 				Element root = acl.getDocumentElement();
@@ -157,7 +160,9 @@ public class SecurityManager {
 					}
 				}
 			}
+            transact.commit(txn);
 		} catch (Exception e) {
+            transact.abort(txn);
 			e.printStackTrace();
 			LOG.debug("loading acl failed: " + e.getMessage());
 		}
@@ -179,10 +184,14 @@ public class SecurityManager {
 		else
 			LOG.debug("user not found");
 		DBBroker broker = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		try {
 			broker = pool.get();
-			save(broker);
+			save(broker, txn);
+            transact.commit(txn);
 		} catch (EXistException e) {
+            transact.abort(txn);
 			e.printStackTrace();
 		} finally {
 			pool.release(broker);
@@ -270,7 +279,7 @@ public class SecurityManager {
 		return false;
 	}
 
-	public synchronized void save(DBBroker broker) throws EXistException {
+	private synchronized void save(DBBroker broker, Txn transaction) throws EXistException {
 		LOG.debug("storing acl file");
 		StringBuffer buf = new StringBuffer();
 		buf.append("<auth>");
@@ -289,16 +298,20 @@ public class SecurityManager {
 			buf.append(((User) i.next()).toString());
 		buf.append("</users>");
 		buf.append("</auth>");
+        
 		// store users.xml
 		broker.flush();
 		broker.sync(Sync.MAJOR_SYNC);
 		try {
 			broker.setUser(getUser(DBA_USER));
 			Collection sysCollection = broker.getCollection(SYSTEM);
-			DocumentImpl doc =
-				sysCollection.addDocument(broker, ACL_FILE, buf.toString(), "text/xml", true);
+            String data = buf.toString();
+            IndexInfo info = sysCollection.validate(transaction, broker, ACL_FILE, data);
+            DocumentImpl doc = info.getDocument();
+            doc.setMimeType("text/xml");
+            sysCollection.store(transaction, broker, info, data, false);
 			doc.setPermissions(0770);
-			broker.saveCollection(doc.getCollection());
+			broker.saveCollection(transaction, doc.getCollection());
 		} catch (SAXException e) {
 			throw new EXistException(e.getMessage());
 		} catch (PermissionDeniedException e) {
@@ -322,36 +335,33 @@ public class SecurityManager {
 			if (!hasGroup(group))
 				addGroup(group);
 		}
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		DBBroker broker = null;
 		try {
 			broker = pool.get();
-			save(broker);
-			createUserHome(broker, user);
+			save(broker, txn);
+			createUserHome(broker, txn, user);
+            transact.commit(txn);
 		} catch (EXistException e) {
+            transact.abort(txn);
 			LOG.debug("error while creating user", e);
 		} catch (PermissionDeniedException e) {
-			LOG.debug("error while create home collection", e);
+            transact.abort(txn);
+			LOG.debug("error while creating home collection", e);
 		} finally {
 			pool.release(broker);
 		}
 	}
 	
-	private void createUserHome(DBBroker broker, User user) 
+	private void createUserHome(DBBroker broker, Txn transaction, User user) 
 	throws EXistException, PermissionDeniedException {
 		if(user.getHome() == null)
 			return;
 		broker.setUser(getUser(DBA_USER));
-		Collection home = broker.getOrCreateCollection(user.getHome());
+		Collection home = broker.getOrCreateCollection(transaction, user.getHome());
 		home.getPermissions().setOwner(user.getName());
 		home.getPermissions().setGroup(user.getPrimaryGroup());
-		broker.saveCollection(home);
+		broker.saveCollection(transaction, home);
 	}
-	public BrokerPool getBrokerPool() {
-		return brokerPool;
-	}
-
-	public void setBrokerPool(BrokerPool brokerPool) {
-		this.brokerPool = brokerPool;
-	}
-
 }

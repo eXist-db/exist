@@ -32,9 +32,12 @@ import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.sync.Sync;
-import org.exist.util.Lock;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.sanity.SanityCheck;
 import org.xml.sax.SAXException;
 
 /**
@@ -68,16 +71,16 @@ public class CollectionConfigurationManager {
 	 * @param config the xconf document as a string.
 	 * @throws CollectionConfigurationException
 	 */
-    public void addConfiguration(DBBroker broker, Collection collection, String config) 
+    public void addConfiguration(Txn transaction, DBBroker broker, Collection collection, String config) 
     throws CollectionConfigurationException {
     	try {
 			String path = CONFIG_COLLECTION + collection.getName();
-			Collection confCol = broker.getOrCreateCollection(path);
+			Collection confCol = broker.getOrCreateCollection(transaction, path);
 			if(confCol == null)
 				throw new CollectionConfigurationException("Failed to create config collection: " + path);
-			broker.saveCollection(confCol);
-			IndexInfo info = confCol.validate(broker, "collection.xconf", config);
-			confCol.store(broker, info, config, false);
+			broker.saveCollection(transaction, confCol);
+			IndexInfo info = confCol.validate(transaction, broker, "collection.xconf", config);
+			confCol.store(transaction, broker, info, config, false);
 			broker.sync(Sync.MAJOR_SYNC);
 		} catch (PermissionDeniedException e) {
 			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
@@ -204,13 +207,18 @@ public class CollectionConfigurationManager {
 	 * @throws EXistException
 	 */
     private void checkConfigCollection(DBBroker broker) throws EXistException {
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
     	try {
     		Collection root = broker.getCollection(CONFIG_COLLECTION);
     		if(root == null) {
-    			root = broker.getOrCreateCollection(CONFIG_COLLECTION);
-    			broker.saveCollection(root);
+    			root = broker.getOrCreateCollection(txn, CONFIG_COLLECTION);
+                SanityCheck.THROW_ASSERT(root != null);
+    			broker.saveCollection(txn, root);
+                transact.commit(txn);
     		}
     	} catch (PermissionDeniedException e) {
+            transact.abort(txn);
     		throw new EXistException("Failed to initialize /db/system/config: " + e.getMessage());
     	}
     }

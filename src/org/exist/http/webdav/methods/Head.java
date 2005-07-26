@@ -36,7 +36,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
 
 /**
  * @author wolf

@@ -45,13 +45,13 @@ public class Lock extends AbstractWebDAVMethod {
 		DocumentImpl resource = null;
 		try {
 			broker = pool.get(user);
-			collection = broker.openCollection(path, org.exist.util.Lock.WRITE_LOCK);
+			collection = broker.openCollection(path, org.exist.storage.lock.Lock.WRITE_LOCK);
 			if(collection == null) {
 				int pos = path.lastIndexOf('/');
 				String collName = path.substring(0, pos);
 				String docName = path.substring(pos + 1);
 				LOG.debug("collection = " + collName + "; doc = " + docName);
-				collection = broker.openCollection(collName, org.exist.util.Lock.WRITE_LOCK);
+				collection = broker.openCollection(collName, org.exist.storage.lock.Lock.WRITE_LOCK);
 				if(collection == null) {
 					LOG.debug("No resource or collection found for path: " + path);
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);

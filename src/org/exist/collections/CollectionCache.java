@@ -3,13 +3,13 @@ package org.exist.collections;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRDCache;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
 import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.util.hashtable.Object2LongHashMap;
 
 /**
  * Global cache for {@link org.exist.collections.Collection} objects. The
- * cache is owned by {@link org.exist.storage.store.CollectionStore}. It is not
+ * cache is owned by {@link org.exist.storage.index.CollectionStore}. It is not
  * synchronized. Thus a lock should be obtained on the collection store before
  * accessing the cache.
  * 

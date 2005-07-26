@@ -59,6 +59,7 @@ public class ConcurrentResourceTest2 extends ConcurrentTestBase {
         
         Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
         addAction(new MultiResourcesAction("samples/mods", URI + "/C1/C1-C2"), 200, 0, 300);
+        addAction(new MultiResourcesAction("samples/mods", URI + "/C1/C1-C2"), 200, 0, 300);
         addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY0), 200, 200, 500);
         addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY1), 200, 300, 500);
 //        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY0), 200, 400, 500);

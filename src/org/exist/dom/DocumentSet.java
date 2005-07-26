@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.XQueryContext;

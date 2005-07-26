@@ -370,8 +370,26 @@ public class Configuration implements ErrorHandler {
         if (sysTasks.getLength() > 0) {
             configureSystemTasks(sysTasks);
         }
+        NodeList recovery = con.getElementsByTagName("recovery");
+        if (recovery.getLength() > 0) {
+            configureRecovery(recovery);
+        }
     }
 
+    private void configureRecovery(NodeList nodes) {
+        Element recovery = (Element) nodes.item(0);
+        String option = recovery.getAttribute("enabled");
+        boolean value = true;
+        if (option != null) {
+            value = option.equals("yes");
+        }
+        setProperty("db-connection.recovery.enabled", new Boolean(value));
+        
+        option = recovery.getAttribute("log-dir");
+        if (option != null)
+            setProperty("db-connection.recovery.log-dir", option);
+    }
+    
     /**
      * @param sysTasks
      */

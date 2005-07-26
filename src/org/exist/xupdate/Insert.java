@@ -30,6 +30,8 @@ import org.exist.dom.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.NodeList;
@@ -68,7 +70,7 @@ public class Insert extends Modification {
     /**
      * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
      */
-    public long process() throws PermissionDeniedException, LockException,
+    public long process(Txn transaction) throws PermissionDeniedException, LockException,
             EXistException, XPathException {
         NodeList children = content;
         if (children.getLength() == 0) return 0;
@@ -78,17 +80,14 @@ public class Insert extends Modification {
             NodeImpl node;
             NodeImpl parent;
             DocumentImpl doc = null;
-            Collection collection = null, prevCollection = null;
             DocumentSet modifiedDocs = new DocumentSet();
             int len = children.getLength();
-            LOG.debug("found " + len + " nodes to insert");
+            if (LOG.isDebugEnabled())
+                LOG.debug("found " + len + " nodes to insert");
             for (int i = 0; i < ql.length; i++) {
                 node = ql[i];
                 doc = (DocumentImpl) node.getOwnerDocument();
                 doc.setIndexListener(listener);
-                collection = doc.getCollection();
-                if (prevCollection != null && collection != prevCollection)
-                        doc.getBroker().saveCollection(prevCollection);
                 if (!doc.getPermissions().validate(broker.getUser(),
                         Permission.UPDATE))
                         throw new PermissionDeniedException(
@@ -97,18 +96,17 @@ public class Insert extends Modification {
                 parent = (NodeImpl) node.getParentNode();
                 switch (mode) {
                     case INSERT_BEFORE:
-                        parent.insertBefore(children, node);
+                        parent.insertBefore(transaction, children, node);
                         break;
                     case INSERT_AFTER:
-                        ((NodeImpl) parent).insertAfter(children, node);
+                        parent.insertAfter(transaction, children, node);
                         break;
                 }
                 doc.clearIndexListener();
                 doc.setLastModified(System.currentTimeMillis());
-                prevCollection = collection;
+                broker.storeDocument(transaction, doc);
             }
-            if (doc != null) doc.getBroker().saveCollection(collection);
-            checkFragmentation(modifiedDocs);
+            checkFragmentation(transaction, modifiedDocs);
             return ql.length;
         } finally {
             unlockDocuments();

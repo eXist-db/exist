@@ -5,10 +5,8 @@ import org.w3c.dom.Node;
 import org.exist.util.*;
 
 /**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    11. September 2002
+ *  Static methods to deal with the signature of a node stored
+ *  in the first byte of the node data in the persistent dom.
  */
 public final class Signatures {
     public final static int Attr = 0x4;
@@ -16,17 +14,15 @@ public final class Signatures {
     public final static int Char = 0x0;
     public final static int Comm = 0x3;
     public final static int Elem = 0x1;
+    
     public final static int IntContent = 0x1;
 	public final static int ByteContent = 0x3;
     public final static int NoContent = 0x0;
     public final static int ShortContent = 0x2;
-
-
+    
     /**
-     *  Gets the length attribute of the Signatures class
-     *
-     *@param  type  Description of the Parameter
-     *@return       The length value
+     *  Returns the storage size of the given type as
+     *  number of bytes required.
      */
     public final static int getLength( int type ) {
         switch ( type ) {
@@ -42,10 +38,9 @@ public final class Signatures {
 
 
     /**
-     *  Gets the sizeType attribute of the Signatures class
-     *
-     *@param  length  Description of the Parameter
-     *@return         The sizeType value
+     *  Returns one of IntContent, ShortContent, ByteContent
+     *  or NoContent based on the number of bytes required
+     *  to store the integer value given in length.
      */
     public final static byte getSizeType( int length ) {
         if ( length > Short.MAX_VALUE )
@@ -60,10 +55,9 @@ public final class Signatures {
 
 
     /**
-     *  Gets the type attribute of the Signatures class
-     *
-     *@param  signature  Description of the Parameter
-     *@return            The type value
+     *  From the signature in byte 0 of the node data,
+     *  extract the node type and return a constant
+     *  as defined in {@link Node}.
      */
     public final static short getType( byte signature ) {
         byte type = (byte) ( ( signature & 0xE0 ) >> 0x5 );
@@ -82,16 +76,7 @@ public final class Signatures {
         System.err.println( "unknown node type" );
         return -1;
     }
-
-
-    /**
-     *  Description of the Method
-     *
-     *@param  type  Description of the Parameter
-     *@param  data  Description of the Parameter
-     *@param  pos   Description of the Parameter
-     *@return       Description of the Return Value
-     */
+    
     public final static int read( int type, byte[] data, int pos ) {
         switch ( type ) {
             case IntContent:
@@ -104,15 +89,6 @@ public final class Signatures {
         return 0;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  type  Description of the Parameter
-     *@param  size  Description of the Parameter
-     *@param  data  Description of the Parameter
-     *@param  pos   Description of the Parameter
-     */
     public final static void write( int type, int size, byte[] data, int pos ) {
         switch ( type ) {
             case IntContent:

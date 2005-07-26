@@ -52,7 +52,7 @@ import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;

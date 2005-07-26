@@ -30,7 +30,6 @@ import org.exist.security.Group;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
-import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 
@@ -72,7 +71,6 @@ public class BinaryDocument extends DocumentImpl {
 	}
 
 	public void write(VariableByteOutputStream ostream) throws IOException {
-		ostream.writeByte(getResourceType());
 		ostream.writeInt(docId);
 		ostream.writeUTF(fileName);
 		ostream.writeLong(internalAddress);
@@ -88,6 +86,10 @@ public class BinaryDocument extends DocumentImpl {
 			ostream.writeInt(group.getId());
 		}
 		ostream.writeByte((byte) permissions.getPermissions());
+        ostream.writeLong(created);
+        ostream.writeLong(lastModified);
+        ostream.writeUTF(mimeType);
+        ostream.writeInt(pageCount);
 	}
 
 	public void read(VariableByteInput istream)
@@ -99,44 +101,21 @@ public class BinaryDocument extends DocumentImpl {
 		final SecurityManager secman =
 			broker.getBrokerPool().getSecurityManager();
 		final int uid = istream.readInt();
-		final int gid = istream.readInt();
+		final int groupId = istream.readInt();
 		final int perm = (istream.readByte() & 0777);
 		if (secman == null) {
 			permissions.setOwner(SecurityManager.DBA_USER);
 			permissions.setGroup(SecurityManager.DBA_GROUP);
 		} else {
 			permissions.setOwner(secman.getUser(uid));
-			permissions.setGroup(secman.getGroup(gid).getName());
+            Group group = secman.getGroup(groupId);
+            if (group != null)
+                permissions.setGroup(group.getName());
 		}
 		permissions.setPermissions(perm);
-        complete = false;
-	}
-	
-	public byte[] serialize() {
-		final VariableByteOutputStream ostream = new VariableByteOutputStream(17);
-		try {
-			ostream.writeLong(created);
-			ostream.writeLong(lastModified);
-            ostream.writeUTF(mimeType);
-            ostream.writeInt(pageCount);
-			final byte[] data = ostream.toByteArray();
-			ostream.close();
-			return data;
-		} catch (IOException e) {
-			LOG.warn("io error while writing document data", e);
-			return null;
-		}
-	}
-	
-	public void deserialize(byte[] data) {
-		VariableByteArrayInput istream = new VariableByteArrayInput(data);
-		try {
-			created = istream.readLong();
-			lastModified = istream.readLong();
-            mimeType = istream.readUTF();
-            pageCount = istream.readInt();
-		} catch(IOException e) {
-			LOG.warn("IO error while reading document metadata", e);
-		}
+        created = istream.readLong();
+        lastModified = istream.readLong();
+        mimeType = istream.readUTF();
+        pageCount = istream.readInt();
 	}
 }

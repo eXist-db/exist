@@ -23,7 +23,7 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
-import org.dbxml.core.data.Value;
+import org.exist.storage.btree.Value;
 import org.exist.xquery.Constants;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.value.Item;

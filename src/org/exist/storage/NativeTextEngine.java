@@ -23,7 +23,6 @@
 package org.exist.storage;
 
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -36,11 +35,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import org.dbxml.core.DBException;
-import org.dbxml.core.data.Value;
-import org.dbxml.core.filer.BTreeCallback;
-import org.dbxml.core.filer.BTreeException;
-import org.dbxml.core.indexer.IndexQuery;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
@@ -57,15 +51,20 @@ import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.TextToken;
+import org.exist.storage.btree.BTreeCallback;
+import org.exist.storage.btree.BTreeException;
+import org.exist.storage.btree.DBException;
+import org.exist.storage.btree.IndexQuery;
+import org.exist.storage.btree.Value;
+import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
-import org.exist.storage.store.BFile;
 import org.exist.util.ByteArray;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
-import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.util.ProgressIndicator;
@@ -103,34 +102,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	
 	protected BFile dbWords;
 	protected InvertedIndex invIdx;
-	protected boolean useCompression = false;
 
-	public NativeTextEngine(DBBroker broker, Configuration config) {
+	public NativeTextEngine(DBBroker broker, Configuration config, BFile db) {
 		super(broker, config);
-		String dataDir;
-		String temp;
-		boolean compress = false;
-		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)
-			dataDir = "data";
-		if ((temp = (String) config.getProperty("db-connection.compress")) != null)
-			compress = temp.equals("true");
-		String pathSep = System.getProperty("file.separator", "/");
-		try {
-			if ((dbWords = (BFile) config.getProperty("db-connection.words")) == null) {
-				dbWords = new BFile(new File(dataDir + pathSep + "words.dbx"),
-                        broker.getBrokerPool().getCacheManager(), 1.5, 10, 1000);
-				if (!dbWords.exists())
-					dbWords.create();
-				else
-					dbWords.open();
-				config.setProperty("db-connection.words", dbWords);
-			}
-			invIdx = new InvertedIndex();
-		} catch (BTreeException bte) {
-			LOG.warn(bte);
-		} catch (DBException dbe) {
-			LOG.warn(dbe);
-		}
+        this.dbWords = db;
+        this.invIdx = new InvertedIndex();
 	}
 
 	/**

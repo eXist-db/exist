@@ -13,6 +13,8 @@ import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
@@ -42,7 +44,7 @@ public class Replace extends Modification {
 	/* (non-Javadoc)
 	 * @see org.exist.xupdate.Modification#process()
 	 */
-	public long process() throws PermissionDeniedException, LockException,
+	public long process(Txn transaction) throws PermissionDeniedException, LockException,
 			EXistException, XPathException {
 		NodeList children = content;
         if (children.getLength() == 0) 
@@ -60,7 +62,6 @@ public class Replace extends Modification {
             AttrImpl attribute;
             ElementImpl parent;
             DocumentImpl doc = null;
-            Collection collection = null, prevCollection = null;
             DocumentSet modifiedDocs = new DocumentSet();
             for (int i = 0; i < ql.length; i++) {
                 node = ql[i];
@@ -71,26 +72,23 @@ public class Replace extends Modification {
                 doc = (DocumentImpl) node.getOwnerDocument();
                 doc.setIndexListener(listener);
                 modifiedDocs.add(doc);
-                collection = doc.getCollection();
                 if (!doc.getPermissions().validate(broker.getUser(),
                         Permission.UPDATE))
                         throw new PermissionDeniedException(
                                 "permission to update document denied");
-                if (prevCollection != null && collection != prevCollection)
-                        doc.getBroker().saveCollection(prevCollection);
                 parent = (ElementImpl) node.getParentNode();
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
                         if (modifications == 0) modifications = 1;
                         temp = children.item(0);
-                        parent.replaceChild(temp, node);
+                        parent.replaceChild(transaction, temp, node);
                         break;
                     case Node.TEXT_NODE:
                         temp = children.item(0);
                         text = new TextImpl(temp.getNodeValue());
                         modifications = 1;
                         text.setOwnerDocument(doc);
-                        parent.updateChild(node, text);
+                        parent.updateChild(transaction, node, text);
                         break;
                     case Node.ATTRIBUTE_NODE:
                         AttrImpl attr = (AttrImpl) node;
@@ -98,16 +96,15 @@ public class Replace extends Modification {
                         attribute = new AttrImpl(attr.getQName(), temp
                                 .getNodeValue());
                         attribute.setOwnerDocument(doc);
-                        parent.updateChild(node, attribute);
+                        parent.updateChild(transaction, node, attribute);
                         break;
                     default:
                         throw new EXistException("unsupported node-type");
                 }
                 doc.setLastModified(System.currentTimeMillis());
-                prevCollection = collection;
+                broker.storeDocument(transaction, doc);
             }
-            if (doc != null) doc.getBroker().saveCollection(collection);
-            checkFragmentation(modifiedDocs);
+            checkFragmentation(transaction, modifiedDocs);
         } finally {
             unlockDocuments();
         }

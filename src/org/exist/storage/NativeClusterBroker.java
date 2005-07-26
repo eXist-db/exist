@@ -5,6 +5,7 @@ import org.exist.EXistException;
 import org.exist.cluster.ClusterCollection;
 import org.exist.collections.Collection;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 
 /**
@@ -38,8 +39,8 @@ public class NativeClusterBroker extends NativeBroker {
 
     }
 
-    public void saveCollection(Collection collection) throws PermissionDeniedException {
-        super.saveCollection( new ClusterCollection( collection ));
+    public void saveCollection(Txn transaction, Collection collection) throws PermissionDeniedException {
+        super.saveCollection( transaction, new ClusterCollection( collection ));
     }
 
     /**
@@ -53,8 +54,8 @@ public class NativeClusterBroker extends NativeBroker {
      * @throws org.exist.security.PermissionDeniedException
      *          Description of the Exception
      */
-    public Collection getOrCreateCollection(String name) throws PermissionDeniedException {
-        Collection c=   super.getOrCreateCollection(name);
+    public Collection getOrCreateCollection(Txn transaction, String name) throws PermissionDeniedException {
+        Collection c=   super.getOrCreateCollection(transaction, name);
         return c==null?null:new ClusterCollection(c);
 
     }

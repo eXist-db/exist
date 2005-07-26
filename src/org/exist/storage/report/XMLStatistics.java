@@ -8,8 +8,8 @@ import java.util.Iterator;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.store.BFile;
-import org.exist.storage.store.DOMFile;
+import org.exist.storage.dom.DOMFile;
+import org.exist.storage.index.BFile;
 import org.exist.util.Configuration;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;

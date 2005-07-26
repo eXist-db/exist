@@ -52,6 +52,9 @@ public class CollectionConfiguration {
 	
 	private Trigger[] triggers = new Trigger[3];
 	
+    /**
+     * @uml.associationEnd multiplicity="(0 1)"
+     */
 	private IndexSpec indexSpec = null;
 
 	private Collection collection;

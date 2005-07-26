@@ -29,10 +29,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
-import org.dbxml.core.DBException;
-import org.dbxml.core.data.Value;
-import org.dbxml.core.filer.BTreeException;
-import org.dbxml.core.indexer.IndexQuery;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
@@ -48,14 +44,17 @@ import org.exist.dom.SymbolTable;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.btree.BTreeException;
+import org.exist.storage.btree.DBException;
+import org.exist.storage.btree.IndexQuery;
+import org.exist.storage.btree.Value;
+import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.store.BFile;
-import org.exist.storage.store.StorageAddress;
+import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
 import org.exist.util.FastQSort;
-import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.util.ProgressIndicator;
@@ -106,6 +105,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         buf.add(proxy);
     }
 
+    public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
+        // Not used
+    }
+    
     public NodeSet getAttributesByName(DocumentSet docs, QName qname, NodeSelector selector) {
         NodeSet result = findElementsByTagName(ElementValue.ATTRIBUTE, docs,
                 qname, selector);

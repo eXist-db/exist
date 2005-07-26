@@ -10,7 +10,9 @@ import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.SyntaxException;
 import org.xmldb.api.base.Collection;
@@ -79,30 +81,38 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		org.exist.collections.Collection coll = null;
 		DBBroker broker = null;
+        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
 			coll = broker.openCollection(collection.getPath(), Lock.WRITE_LOCK);
 			if(coll == null)
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + 
 						" not found");
-			if (!collection.checkOwner(coll, user) && !manager.hasAdminPrivileges(user))
+			if (!collection.checkOwner(coll, user) && !manager.hasAdminPrivileges(user)) {
+                transact.abort(transaction);
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					"you are not the owner of this collection");
+            }
 			coll.setPermissions(perm);
-			broker.saveCollection(coll);
+			broker.saveCollection(transaction, coll);
+            transact.commit(transaction);
 			broker.flush();
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				e.getMessage(),
 				e);
 		} catch (PermissionDeniedException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				e.getMessage(),
 				e);
 		} catch (LockException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
 					"Failed to acquire lock on collections.dbx",
@@ -118,35 +128,44 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		org.exist.collections.Collection coll = null;
 		DBBroker broker = null;
+        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
 			coll = broker.openCollection(collection.getPath(), Lock.WRITE_LOCK);
 			if(coll == null)
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + 
 						" not found");
-			if (!collection.checkOwner(coll, user) && !manager.hasAdminPrivileges(user))
+			if (!collection.checkOwner(coll, user) && !manager.hasAdminPrivileges(user)) {
+                transact.abort(transaction);
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					"you are not the owner of this collection");
+            }
 			coll.setPermissions(modeStr);
-			broker.saveCollection(coll);
+			broker.saveCollection(transaction, coll);
+            transact.commit(transaction);
 			broker.flush();
 		} catch (SyntaxException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				e.getMessage(),
 				e);
 		} catch (LockException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				"Failed to acquire lock on collections.dbx",
 				e);
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				e.getMessage(),
 				e);
 		} catch (PermissionDeniedException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				e.getMessage(),
@@ -162,18 +181,23 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DocumentImpl document = null;
 		DBBroker broker = null;
+        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
 			document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
 			if (!document.getPermissions().getOwner().equals(user.getName())
-				&& !manager.hasAdminPrivileges(user))
+				&& !manager.hasAdminPrivileges(user)) {
+                transact.abort(transaction);
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					"you are not the owner of this resource");
-
+            }
 			document.setPermissions(mode);
-			collection.saveCollection();
+			broker.storeDocument(transaction, document);
+            transact.commit(transaction);
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				e.getMessage(),
@@ -188,30 +212,38 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		org.exist.collections.Collection coll = null;
 		DBBroker broker = null;
+        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
 			coll = broker.openCollection(collection.getPath(), Lock.WRITE_LOCK);
 			if(coll == null)
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + 
 						" not found");
-			if (!collection.checkOwner(coll, user) && !manager.hasAdminPrivileges(user))
+			if (!collection.checkOwner(coll, user) && !manager.hasAdminPrivileges(user)) {
+                transact.abort(transaction);
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					"you are not the owner of this collection");
+            }
 			coll.setPermissions(mode);
-			broker.saveCollection(coll);
+			broker.saveCollection(transaction, coll);
+            transact.commit(transaction);
 			broker.flush();
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				e.getMessage(),
 				e);
 		} catch (PermissionDeniedException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				e.getMessage(),
 				e);
 		} catch (LockException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				"Failed to acquire lock on collections.dbx",
@@ -228,23 +260,28 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DocumentImpl document = null;
 		DBBroker broker = null;
+        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
 			document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
 			if (!document.getPermissions().getOwner().equals(user.getName())
-				&& !manager.hasAdminPrivileges(user))
+				&& !manager.hasAdminPrivileges(user)) {
+                transact.abort(transaction);
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					"you are not the owner of this resource");
-
+            }
 			document.setPermissions(modeStr);
-			collection.saveCollection();
+			broker.storeDocument(transaction, document);
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				e.getMessage(),
 				e);
 		} catch (SyntaxException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				e.getMessage(),
@@ -265,20 +302,25 @@ public class LocalUserManagementService implements UserManagementService {
 				"need admin privileges for chown");
 		org.exist.collections.Collection coll = null;
 		DBBroker broker = null;
+        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
 			coll = broker.openCollection(collection.getPath(), Lock.WRITE_LOCK);
 			coll.getPermissions().setOwner(u);
 			coll.getPermissions().setGroup(group);
-			broker.saveCollection(coll);
+			broker.saveCollection(transaction, coll);
+            transact.commit(transaction);
 			broker.flush();
 			//broker.sync();
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				e.getMessage(),
 				e);
 		} catch (PermissionDeniedException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				e.getMessage(),

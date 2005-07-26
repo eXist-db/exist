@@ -5,7 +5,7 @@
  */
 package org.exist.util;
 
-import org.dbxml.core.data.Value;
+import org.exist.storage.btree.Value;
 
 public interface IndexCallback {
 

@@ -37,7 +37,10 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 
 /**
@@ -129,42 +132,50 @@ public class Move extends AbstractWebDAVMethod {
             return;
         }
         Collection destCollection = null;
+        TransactionManager transact = pool.getTransactionManager();
         try {
-            boolean replaced = false;
-            destCollection = broker.openCollection(destination, Lock.WRITE_LOCK);
-    		if(destCollection != null) {
-    			boolean overwrite = overwrite(request);
-    			if(!overwrite) {
-    				response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED,
-    						"Destination collection exists and overwrite is not allowed");
-    				return;
-    			}
-    			broker.removeCollection(destCollection);
-    			replaced = true;
-    		}
-            
-            String parentPath = destination.substring(0, p);
-            String newCollectionName = destination.substring(p + 1);
-            LOG.debug("parent = " + parentPath + "; new name = " + newCollectionName);
-            destCollection = broker.openCollection(parentPath, Lock.WRITE_LOCK);
-            if(destCollection == null) {
-                response.sendError(HttpServletResponse.SC_CONFLICT,
-                        "No parent collection: " + parentPath);
-                return;
+            Txn txn = transact.beginTransaction();
+            try {
+                
+                boolean replaced = false;
+                destCollection = broker.openCollection(destination, Lock.WRITE_LOCK);
+        		if(destCollection != null) {
+        			boolean overwrite = overwrite(request);
+        			if(!overwrite) {
+        				response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED,
+        						"Destination collection exists and overwrite is not allowed");
+        				return;
+        			}
+        			broker.removeCollection(txn, destCollection);
+        			replaced = true;
+        		}
+                
+                String parentPath = destination.substring(0, p);
+                String newCollectionName = destination.substring(p + 1);
+                LOG.debug("parent = " + parentPath + "; new name = " + newCollectionName);
+                destCollection = broker.openCollection(parentPath, Lock.WRITE_LOCK);
+                if(destCollection == null) {
+                    response.sendError(HttpServletResponse.SC_CONFLICT,
+                            "No parent collection: " + parentPath);
+                    return;
+                }
+                broker.moveCollection(txn, collection, destCollection, newCollectionName);
+                if(replaced)
+                    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                else
+                    response.setStatus(HttpServletResponse.SC_CREATED);
+            } catch (PermissionDeniedException e) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            } catch (LockException e) {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            } finally {
+            	if(destCollection != null)
+            		destCollection.release();
+                transact.commit(txn);
+                pool.release(broker);
             }
-            broker.moveCollection(collection, destCollection, newCollectionName);
-            if(replaced)
-                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            else
-                response.setStatus(HttpServletResponse.SC_CREATED);
-        } catch (PermissionDeniedException e) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
-        } catch (LockException e) {
+        } catch (TransactionException e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-        } finally {
-        	if(destCollection != null)
-        		destCollection.release();
-            pool.release(broker);
         }
     }
     
@@ -181,9 +192,12 @@ public class Move extends AbstractWebDAVMethod {
         destination = destination.substring(0, p);
         boolean replaced = false;
         Collection destCollection = null;
+        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = transact.beginTransaction();
         try {
             destCollection = broker.openCollection(destination, Lock.WRITE_LOCK);
             if(destCollection == null) {
+                transact.abort(transaction);
                 response.sendError(HttpServletResponse.SC_CONFLICT,
                         "Destination collection not found");
                 return;
@@ -193,20 +207,27 @@ public class Move extends AbstractWebDAVMethod {
             if(oldDoc != null) {
                 boolean overwrite = overwrite(request);
                 if(!overwrite) {
+                    transact.abort(transaction);
                     response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED,
                             "Destination resource exists and overwrite is not allowed");
                     return;
                 }
                 replaced = true;
             }
-            broker.moveResource(resource, destCollection, newResourceName);
+            broker.moveResource(transaction, resource, destCollection, newResourceName);
+            transact.commit(transaction);
             if(replaced)
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
             else
                 response.setStatus(HttpServletResponse.SC_CREATED);
         } catch (PermissionDeniedException e) {
+            transact.abort(transaction);
             response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (LockException e) {
+            transact.abort(transaction);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (TransactionException e) {
+            transact.abort(transaction);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } finally {
         	if(destCollection != null)

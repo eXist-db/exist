@@ -22,14 +22,14 @@ package org.exist.collections;
 
 import org.exist.Indexer;
 import org.exist.dom.DocumentImpl;
+import org.exist.storage.txn.Txn;
 import org.exist.util.serializer.DOMStreamer;
 import org.xml.sax.XMLReader;
 
 /**
- * Internal class used to track some required fields when calling
- * {@link org.exist.collections.Collection#validate(DBBroker, String, Node)} and
- * {@link org.exist.collections.Collection#store(DBBroker, IndexInfo, Node, boolean)}.
- * This class is not publicly readable.
+ * Internal class used to track required fields between calls to
+ * {@link org.exist.collections.Collection#validate(Txn, DBBroker, String, InputSource)} and
+ * {@link org.exist.collections.Collection#store(DBBroker, IndexInfo, InputSource, boolean)}.
  * 
  * @author wolf
  */
@@ -46,7 +46,7 @@ public class IndexInfo {
 	public Indexer getIndexer() {
 		return indexer;
 	}
-	
+    
 	protected void setReader(XMLReader reader) {
 		this.reader = reader;
 	}

@@ -58,14 +58,17 @@ public class IndexSpec {
     private static final String TYPE_ATTRIB = "type";
     private static final String PATH_ATTRIB = "path";
     private static final String CREATE_ELEMENT = "create";
-    private static final String CREATE_BY_QNAME = "create-by-qname";
     private static final String QNAME_ATTRIB = "qname";
     private static final String FULLTEXT_ELEMENT = "fulltext";
     private static final String INDEX_DEPTH_ATTRIB = "index-depth";
     
     private final static Logger LOG = Logger.getLogger(IndexSpec.class);
     
+    /**
+     * @uml.associationEnd multiplicity="(0 1)"
+     */
     private FulltextIndexSpec ftSpec = null;
+
     private GeneralRangeIndexSpec specs[] = null;
     private Map qnameSpecs = new TreeMap();
     
@@ -91,8 +94,7 @@ public class IndexSpec {
         String indexDepth = index.getAttribute(INDEX_DEPTH_ATTRIB);
 		if (indexDepth != null && indexDepth.length() > 0)
 			try {
-				int depth = Integer.parseInt(indexDepth);
-				setIndexDepth(depth);
+				setIndexDepth(Integer.parseInt(indexDepth));
 			} catch (NumberFormatException e) {
 			}
 			
@@ -118,11 +120,6 @@ public class IndexSpec {
 	                		" must have attribute " + PATH_ATTRIB + " or " + QNAME_ATTRIB;
 	                	throw new DatabaseConfigurationException(error_message);
 	                }
-	            } else if (CREATE_BY_QNAME.equals(node.getLocalName())) {
-	            	Element elem = (Element) node;
-	                
-	                String type = elem.getAttribute(TYPE_ATTRIB);
-	                
 	            }
             }
         }

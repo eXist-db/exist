@@ -18,15 +18,13 @@
  *  
  * Created on 25 mai 2005
 $Id$ */
+
 package org.exist.storage;
 
 import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.dbxml.core.data.Value;
-import org.dbxml.core.filer.BTreeException;
-import org.dbxml.core.indexer.IndexQuery;
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentSet;
@@ -36,9 +34,12 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
-import org.exist.storage.store.BFile;
+import org.exist.storage.btree.BTreeException;
+import org.exist.storage.btree.IndexQuery;
+import org.exist.storage.btree.Value;
+import org.exist.storage.index.BFile;
+import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
-import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.LongLinkedList;
 import org.exist.xquery.Constants;

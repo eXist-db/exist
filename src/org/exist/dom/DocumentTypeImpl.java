@@ -19,6 +19,7 @@
 package org.exist.dom;
 
 import org.exist.storage.io.VariableByteArrayInput;
+import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.w3c.dom.*;
 import java.io.DataInput;
@@ -91,7 +92,7 @@ public class DocumentTypeImpl extends NodeImpl implements DocumentType {
         ostream.writeUTF(publicId != null ? publicId : "");
     }
 
-    protected void read(DataInput istream) throws IOException {
+    protected void read(VariableByteInput istream) throws IOException {
         name = istream.readUTF();
         systemId = istream.readUTF();
         if (systemId.length() == 0)

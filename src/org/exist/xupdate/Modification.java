@@ -40,9 +40,10 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
+import org.exist.storage.StorageAddress;
 import org.exist.storage.XQueryPool;
-import org.exist.storage.store.StorageAddress;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -91,7 +92,7 @@ public abstract class Modification {
 	 * @throws EXistException
 	 * @throws XPathException
 	 */
-	public abstract long process() throws PermissionDeniedException, LockException, 
+	public abstract long process(Txn transaction) throws PermissionDeniedException, LockException, 
 		EXistException, XPathException;
 
 	public abstract String getName();
@@ -223,11 +224,11 @@ public abstract class Modification {
 	 *  
 	 * @param docs
 	 */
-	protected void checkFragmentation(DocumentSet docs) throws EXistException {
+	protected void checkFragmentation(Txn transaction, DocumentSet docs) throws EXistException {
 	    for(Iterator i = docs.iterator(); i.hasNext(); ) {
 	        DocumentImpl next = (DocumentImpl) i.next();
 	        if(next.getSplitCount() > broker.getFragmentationLimit())
-	            broker.defrag(next);
+	            broker.defrag(transaction, next);
 	        broker.consistencyCheck(next);
 	    }
 	}

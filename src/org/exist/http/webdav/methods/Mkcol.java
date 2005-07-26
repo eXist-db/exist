@@ -34,7 +34,9 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 
 
 /**
@@ -85,16 +87,23 @@ public class Mkcol extends AbstractWebDAVMethod {
 	        }
 	        // TODO: releasing the lock here is dangerous, but we may get into deadlocks otherwise.
 	        collection.release();
-            Collection created = broker.getOrCreateCollection(path);
-            broker.saveCollection(created);
-            broker.flush();
+            
+            TransactionManager transact = pool.getTransactionManager();
+            Txn txn = transact.beginTransaction();
+            try {
+                Collection created = broker.getOrCreateCollection(txn, path);
+                broker.saveCollection(txn, created);
+                broker.flush();
+                transact.commit(txn);
+            } catch(PermissionDeniedException e) {
+                transact.abort(txn);
+                response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                        e.getMessage());
+            }
             LOG.debug("Created collection " + path);
             response.setStatus(HttpServletResponse.SC_CREATED);
         } catch(EXistException e) {
             throw new ServletException("Database error: " + e.getMessage(), e);
-        } catch (PermissionDeniedException e) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                    e.getMessage());
         } finally {
             pool.release(broker);
         }

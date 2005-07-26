@@ -56,6 +56,8 @@
  */
 package org.exist.util;
 
+import java.nio.ByteBuffer;
+
 /**
  *  Copied this class from Xalan and adopted it for eXist. Bare-bones, unsafe,
  *  fast string buffer. No thread-safety, no parameter range checking, exposed
@@ -582,6 +584,17 @@ public class FastByteBuffer implements ByteArray {
         
     }
     
+    public void copyTo( ByteBuffer newBuf ) {
+        for ( int i = 0; i < m_lastChunk; i++ ) {
+            if ( i == 0 && m_innerFSB != null )
+                m_innerFSB.copyTo( newBuf );
+            else
+                newBuf.put(m_array[i]);
+        }
+        newBuf.put(m_array[m_lastChunk], 0, m_firstFree);
+        
+    }
+    
 	public void copyTo( int start, byte[] newBuf, int offset, int len ) {
 		int stop = start + len;
 		int startChunk = start >>> m_chunkBits;
@@ -604,6 +617,26 @@ public class FastByteBuffer implements ByteArray {
 			System.arraycopy(m_array[stopChunk], startColumn, newBuf, pos, stopColumn - startColumn);
 	}
 
+	public void copyTo(int start, ByteBuffer buf, int len) {
+		int stop = start + len;
+		int startChunk = start >>> m_chunkBits;
+		int startColumn = start & m_chunkMask;
+		int stopChunk = stop >>> m_chunkBits;
+		int stopColumn = stop & m_chunkMask;
+		for(int i = startChunk; i < stopChunk; ++i) {
+			if( i == 0 && m_innerFSB != null)
+				m_innerFSB.copyTo(startColumn, buf, m_chunkSize - startColumn);
+			else
+				buf.put(m_array[i], startColumn, m_chunkSize - startColumn);
+			startColumn = 0;
+		}
+		
+		if(stopChunk == 0 && m_innerFSB != null)
+			m_innerFSB.copyTo(startColumn, buf, stopColumn - startColumn);
+		else if(stopColumn > startColumn)
+			buf.put(m_array[stopChunk], startColumn, stopColumn - startColumn);
+	}
+	
     /**
      *  Get the length of the list. Synonym for size().
      *

@@ -76,16 +76,16 @@ public class ReplaceResourceAction extends Action {
 			"<data now=\"" + System.currentTimeMillis() + "\" count=\"" +
 			++count + "\">" + XML + "</data>";
 			
-		DBUtils.addXMLResource(col, "R1.xml", xml);
+		DBUtils.addXMLResource(col, resourceName, xml);
 		
-		ResourceSet result = DBUtils.query(col, TEST_QUERY1);
+		ResourceSet result = DBUtils.queryResource(col, resourceName, TEST_QUERY1);
 		Assert.assertEquals(1, result.getSize());
 		Assert.assertEquals("+49 69 888478", result.getResource(0).getContent());
 		
-		result = DBUtils.query(col, TEST_QUERY2);
+		result = DBUtils.queryResource(col, resourceName, TEST_QUERY2);
 		Assert.assertEquals(1, result.getSize());
 		
-		result = DBUtils.query(col, TEST_QUERY3);
+		result = DBUtils.queryResource(col, resourceName, TEST_QUERY3);
 		Assert.assertEquals(1, result.getSize());
 		return false;
 	}

@@ -42,7 +42,9 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -69,6 +71,8 @@ public class Put extends AbstractWebDAVMethod {
 		DBBroker broker = null;
 		Collection collection = null;
 		boolean collectionLocked = true;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
 			if(path == null)
@@ -77,6 +81,7 @@ public class Put extends AbstractWebDAVMethod {
 				path = path.substring(0, path.length() - 1);
 			int p = path.lastIndexOf('/');
 			if(p < 1) {
+                transact.abort(txn);
 				response.sendError(HttpServletResponse.SC_CONFLICT, "No collection specified for PUT");
 				return;
 			}
@@ -85,11 +90,13 @@ public class Put extends AbstractWebDAVMethod {
 			
 			collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
 			if(collection == null) {
+                transact.abort(txn);
 				response.sendError(HttpServletResponse.SC_CONFLICT, "Parent collection " + collectionName +
 				" not found");
 				return;
 			}
 			if(collection.hasChildCollection(path)) {
+                transact.abort(txn);
 				response.sendError(HttpServletResponse.SC_CONFLICT, "Cannot overwrite an existing collection with a resource");
 				return;
 			}
@@ -104,13 +111,14 @@ public class Put extends AbstractWebDAVMethod {
             if (mime == null)
                 mime = MimeType.BINARY_TYPE;
 			LOG.debug("storing document " + path + "; content-type = " + contentType);
+            
 			if(mime.isXMLType()) {
 				InputSource is = new InputSource(url);
-				IndexInfo info = collection.validate(broker, path, is);
+				IndexInfo info = collection.validate(txn, broker, path, is);
                 info.getDocument().setMimeType(contentType);
 				collection.release();
 				collectionLocked = false;
-				collection.store(broker, info, is, false);
+				collection.store(txn, broker, info, is, false);
 			} else {
 				byte[] chunk = new byte[4096];
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -119,17 +127,23 @@ public class Put extends AbstractWebDAVMethod {
 				while((l = is.read(chunk)) > -1) {
 					os.write(chunk, 0, l);
 				}
-				collection.addBinaryResource(broker, path, os.toByteArray(), contentType);
+				collection.addBinaryResource(txn, broker, path, os.toByteArray(), contentType);
 			}
+            transact.commit(txn);
 		} catch (EXistException e) {
+            transact.abort(txn);
 			throw new ServletException("Failed to store resource: " + e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
+            transact.abort(txn);
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 		} catch (TriggerException e) {
+            transact.abort(txn);
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 		} catch (SAXException e) {
+            transact.abort(txn);
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 		} catch (LockException e) {
+            transact.abort(txn);
 			response.sendError(HttpServletResponse.SC_CONFLICT);
 		} finally {
 			if(collectionLocked)

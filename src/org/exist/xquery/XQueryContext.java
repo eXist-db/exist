@@ -51,9 +51,9 @@ import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
-import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
@@ -131,7 +131,12 @@ public class XQueryContext {
 	// List of pragmas declared for this query
 	protected List pragmas = null;
 	
-	// the watchdog object assigned to this query
+    /**
+     * the watchdog object assigned to this query
+     *  
+     * @uml.property name="watchdog"
+     * @uml.associationEnd multiplicity="(1 1)"
+     */
 	protected XQueryWatchDog watchdog;
     
 	/**

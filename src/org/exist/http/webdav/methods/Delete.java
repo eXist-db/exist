@@ -37,7 +37,9 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 
 /**
@@ -57,6 +59,8 @@ public class Delete extends AbstractWebDAVMethod {
 		DBBroker broker = null;
 		Collection collection = null;
 		DocumentImpl resource = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
 			collection = broker.openCollection(path, Lock.WRITE_LOCK);
@@ -67,6 +71,7 @@ public class Delete extends AbstractWebDAVMethod {
 				LOG.debug("collection = " + collName + "; doc = " + docName);
 				collection = broker.openCollection(collName, Lock.WRITE_LOCK);
 				if(collection == null) {
+                    transact.abort(txn);
 					LOG.debug("No resource or collection found for path: " + path);
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
 					return;
@@ -74,30 +79,38 @@ public class Delete extends AbstractWebDAVMethod {
 				resource = collection.getDocument(broker, docName);
 				if(resource == null) {
 					LOG.debug("No resource found for path: " + path);
+                    transact.abort(txn);
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
 					return;
 				}
 			}
 			if(!collection.getPermissions().validate(user, Permission.READ)) {
 				LOG.debug("Permission denied to read collection");
+                transact.abort(txn);
 				response.sendError(HttpServletResponse.SC_FORBIDDEN);
 				return;
 			}
+            
 			if(resource == null) {
-				broker.removeCollection(collection);
+				broker.removeCollection(txn, collection);
 			} else {
 				if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
-					collection.removeBinaryResource(broker, resource.getFileName());
+					collection.removeBinaryResource(txn, broker, resource.getFileName());
 				else
-					collection.removeDocument(broker, resource.getFileName());
+					collection.removeDocument(txn, broker, resource.getFileName());
 			}
+            transact.commit(txn);
 		} catch (EXistException e) {
+            transact.abort(txn);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 		} catch (PermissionDeniedException e) {
+            transact.abort(txn);
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
 		} catch (LockException e) {
+            transact.abort(txn);
 			response.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
 		} catch (TriggerException e) {
+            transact.abort(txn);
 			response.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
 		} finally {
 			if(collection != null)
