@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
@@ -64,7 +65,7 @@ public class ExampleTrigger extends FilteringTrigger {
 			// process the XUpdate
 			Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
 			for(int i = 0; i < modifications.length; i++)
-				modifications[i].process();
+				modifications[i].process(null);
 			broker.flush();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -94,8 +95,9 @@ public class ExampleTrigger extends FilteringTrigger {
 				// IMPORTANT: temporarily disable triggers on the collection.
                 // We would end up in infinite recursion if we don't do that
                 parent.setTriggersEnabled(false);
-				this.doc = parent.addDocument(broker, contentsFile, "<?xml version=\"1.0\"?><contents></contents>",
-                        "text/xml");
+				IndexInfo info = parent.validate(null, broker, contentsFile, "<?xml version=\"1.0\"?><contents></contents>");
+                parent.store(null, broker, info, "<?xml version=\"1.0\"?><contents></contents>", false);
+                this.doc = info.getDocument();
 			} catch (Exception e) {
 				throw new CollectionConfigurationException(e.getMessage(), e);
 			} finally {
