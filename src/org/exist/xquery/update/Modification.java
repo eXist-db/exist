@@ -37,8 +37,9 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
-import org.exist.storage.store.StorageAddress;
-import org.exist.util.Lock;
+import org.exist.storage.txn.Txn;
+import org.exist.storage.StorageAddress;
+import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.xquery.AbstractExpression;
 import org.exist.xquery.Cardinality;
@@ -187,12 +188,12 @@ public abstract class Modification extends AbstractExpression {
 	 *  
 	 * @param docs
 	 */
-	protected void checkFragmentation(DocumentSet docs) throws EXistException {
+	protected void checkFragmentation(Txn transaction, DocumentSet docs) throws EXistException {
 		DBBroker broker = context.getBroker();
 	    for(Iterator i = docs.iterator(); i.hasNext(); ) {
 	        DocumentImpl next = (DocumentImpl) i.next();
 	        if(next.getSplitCount() > broker.getFragmentationLimit())
-	            broker.defrag(next);
+	            broker.defrag(transaction, next);
 	        broker.consistencyCheck(next);
 	    }
 	}

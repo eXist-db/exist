@@ -33,6 +33,8 @@ import org.exist.dom.NodeListImpl;
 import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -74,6 +76,8 @@ public class Update extends Modification {
 		if (contentSeq.getLength() == 0)
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
 		try {
+            TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+            Txn transaction = transact.beginTransaction();
             NodeImpl ql[] = selectAndLock(inSeq.toNodeSet());
             IndexListener listener = new IndexListener(ql);
             NodeImpl node;
@@ -82,20 +86,16 @@ public class Update extends Modification {
             AttrImpl attribute;
             ElementImpl parent;
             DocumentImpl doc = null;
-            Collection collection = null, prevCollection = null;
             DocumentSet modifiedDocs = new DocumentSet();
             for (int i = 0; i < ql.length; i++) {
                 node = ql[i];
                 doc = (DocumentImpl) node.getOwnerDocument();
                 doc.setIndexListener(listener);
                 modifiedDocs.add(doc);
-                collection = doc.getCollection();
                 if (!doc.getPermissions().validate(context.getUser(),
                         Permission.UPDATE))
                         throw new XPathException(getASTNode(),
                                 "permission to update document denied");
-                if (prevCollection != null && collection != prevCollection)
-                        doc.getBroker().saveCollection(prevCollection);
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
 						NodeListImpl content = new NodeListImpl();
@@ -108,13 +108,13 @@ public class Update extends Modification {
 								content.add(text);
 							}
 						}
-                        ((ElementImpl) node).update(content);
+                        ((ElementImpl) node).update(transaction, content);
                         break;
                     case Node.TEXT_NODE:
                         parent = (ElementImpl) node.getParentNode();
                     	text = new TextImpl(contentSeq.getStringValue());
                         text.setOwnerDocument(doc);
-                        parent.updateChild(node, text);
+                        parent.updateChild(transaction, node, text);
                         break;
                     case Node.ATTRIBUTE_NODE:
                         parent = (ElementImpl) node.getParentNode();
@@ -126,16 +126,16 @@ public class Update extends Modification {
                         AttrImpl attr = (AttrImpl) node;
                         attribute = new AttrImpl(attr.getQName(), contentSeq.getStringValue());
                         attribute.setOwnerDocument(doc);
-                        parent.updateChild(node, attribute);
+                        parent.updateChild(transaction, node, attribute);
                         break;
                     default:
                         throw new XPathException(getASTNode(), "unsupported node-type");
                 }
                 doc.setLastModified(System.currentTimeMillis());
-                prevCollection = collection;
+                context.getBroker().storeDocument(transaction, doc);
             }
-            if (doc != null) doc.getBroker().saveCollection(collection);
-            checkFragmentation(modifiedDocs);
+            checkFragmentation(transaction, modifiedDocs);
+            transact.commit(transaction);
         } catch (LockException e) {
             throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (PermissionDeniedException e) {

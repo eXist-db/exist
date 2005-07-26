@@ -30,6 +30,8 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -86,48 +88,46 @@ public class Insert extends Modification {
 		if (contentSeq.getLength() == 0)
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         contentSeq = deepCopy(contentSeq);
+        
         try {
+            TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+            Txn transaction = transact.beginTransaction();
             NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
             IndexListener listener = new IndexListener(ql);
             NodeImpl node;
             NodeImpl parent;
             DocumentImpl doc = null;
-            Collection collection = null, prevCollection = null;
             DocumentSet modifiedDocs = new DocumentSet();
-            int len = contentSeq.getLength();
-            LOG.debug("found " + len + " nodes to insert");
             NodeList contentList = seq2nodeList(contentSeq);
             for (int i = 0; i < ql.length; i++) {
                 node = ql[i];
                 doc = (DocumentImpl) node.getOwnerDocument();
                 doc.setIndexListener(listener);
-                collection = doc.getCollection();
-                if (prevCollection != null && collection != prevCollection)
-                        doc.getBroker().saveCollection(prevCollection);
                 if (!doc.getPermissions().validate(context.getUser(),
                         Permission.UPDATE))
-                        throw new XPathException(getASTNode(),
-                                "permission to remove document denied");
+                    throw new XPathException(getASTNode(),
+                        "permission to remove document denied");
                 modifiedDocs.add(doc);
 				if (mode == INSERT_APPEND) {
-					node.appendChildren(contentList, -1);
+					node.appendChildren(transaction, contentList, -1);
 				} else {
 	                parent = (NodeImpl) node.getParentNode();
 	                switch (mode) {
 	                    case INSERT_BEFORE:
-	                        parent.insertBefore(contentList, node);
+	                        parent.insertBefore(transaction, contentList, node);
 	                        break;
 	                    case INSERT_AFTER:
-	                        ((NodeImpl) parent).insertAfter(contentList, node);
+	                        ((NodeImpl) parent).insertAfter(transaction, contentList, node);
 	                        break;
 	                }
 				}
                 doc.clearIndexListener();
                 doc.setLastModified(System.currentTimeMillis());
-                prevCollection = collection;
+                context.getBroker().storeDocument(transaction, doc);
             }
-            if (doc != null) doc.getBroker().saveCollection(collection);
-            checkFragmentation(modifiedDocs);
+            checkFragmentation(transaction, modifiedDocs);
+
+            transact.commit(transaction);
         } catch (PermissionDeniedException e) {
 			throw new XPathException(getASTNode(), e.getMessage(), e);
 		} catch (EXistException e) {
