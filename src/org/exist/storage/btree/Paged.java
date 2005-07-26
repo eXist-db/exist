@@ -231,6 +231,15 @@ public abstract class Paged {
 		return fileHeader;
 	}
 
+	public void closeAndRemove() {
+		try {
+			raf.close();
+		} catch (IOException e) {
+			LOG.warn("Failed to close data file: " + file.getAbsolutePath());
+		}
+		file.delete();
+	}
+	
 	/**
 	 *  getFreePage returns the first free Page from secondary storage. If no
 	 *  Pages are available, the file is grown as appropriate.
