@@ -2009,7 +2009,7 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
             TransactionManager transact = brokerPool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
 			doc.setUserLock(null);
-			broker.saveCollection(transaction, doc.getCollection());
+			broker.storeDocument(transaction, doc);
             transact.commit(transaction);
 			return true;
 		} finally {
