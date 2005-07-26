@@ -30,6 +30,8 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Occurrences;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -98,12 +100,16 @@ public class LocalIndexQueryService implements IndexQueryService {
 	 */
 	public void configureCollection(String configData) throws XMLDBException {
 		DBBroker broker = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
         try {
             broker = pool.get(user);
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
-            mgr.addConfiguration(broker, parent.getCollection(), configData);
+            mgr.addConfiguration(txn, broker, parent.getCollection(), configData);
+            transact.commit(txn);
             System.out.println("Added config for collection " + parent.getCollection().getName());
         } catch (CollectionConfigurationException e) {
+            transact.abort(txn);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);

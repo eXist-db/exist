@@ -34,6 +34,7 @@ import javax.xml.transform.OutputKeys;
 import junit.framework.TestCase;
 
 import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.SecurityManager;
@@ -119,11 +120,12 @@ public class DOMIndexerTest extends TestCase {
         DBBroker broker = null;
         try {
             broker = pool.get(user);
-            Collection collection = broker.getOrCreateCollection("/db/test");
-            org.exist.dom.DocumentImpl doc = 
-                collection.addDocument(broker, "test.xml", XML, "text/xml");
+            Collection collection = broker.getOrCreateCollection(null, "/db/test");
+            IndexInfo info = collection.validate(null, broker, "test.xml", XML);
+            collection.store(null, broker, info, XML, false);
+            org.exist.dom.DocumentImpl doc = info.getDocument();
             broker.flush();
-            broker.saveCollection(collection);
+            broker.saveCollection(null, collection);
             System.out.println("testStore(): " + doc.printTreeLevelOrder());
         } finally {
             pool.release(broker);

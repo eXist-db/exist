@@ -22,7 +22,7 @@
  */
 package org.exist.storage;
 
-import org.dbxml.core.data.Value;
+import org.exist.storage.btree.Value;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 

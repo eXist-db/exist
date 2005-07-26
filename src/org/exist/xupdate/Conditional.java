@@ -33,6 +33,7 @@ import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -65,7 +66,7 @@ public class Conditional extends Modification {
 	/* (non-Javadoc)
 	 * @see org.exist.xupdate.Modification#process()
 	 */
-	public long process() throws PermissionDeniedException, LockException,
+	public long process(Txn transaction) throws PermissionDeniedException, LockException,
 			EXistException, XPathException {
 		LOG.debug("Processing xupdate:if ...");
 		XQuery xquery = broker.getXQueryService();
@@ -98,7 +99,7 @@ public class Conditional extends Modification {
 		if(seq.effectiveBooleanValue()) {
 			long mods = 0;
 			for (int i = 0; i < modifications.size(); i++) {
-				mods += ((Modification)modifications.get(i)).process();
+				mods += ((Modification)modifications.get(i)).process(transaction);
 				broker.flush();
 			}
 			LOG.debug(mods + " modifications processed.");

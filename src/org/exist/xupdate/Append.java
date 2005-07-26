@@ -32,6 +32,8 @@ import org.exist.dom.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.NodeList;
@@ -64,7 +66,7 @@ public class Append extends Modification {
 	/*
 	 * @see org.exist.xupdate.Modification#process()
 	 */
-	public long process() throws PermissionDeniedException, LockException,
+	public long process(Txn transaction) throws PermissionDeniedException, LockException,
 		EXistException, XPathException {
 	    NodeList children = content;
 	    if(children.getLength() == 0)
@@ -73,7 +75,6 @@ public class Append extends Modification {
 	    try {
 	        NodeImpl ql[] = selectAndLock();
 			IndexListener listener = new IndexListener(ql);
-			Collection collection = null, prevCollection = null;
 			DocumentImpl doc = null;
 			DocumentSet modifiedDocs = new DocumentSet();
 			NodeImpl node;
@@ -82,20 +83,14 @@ public class Append extends Modification {
 				doc = (DocumentImpl) node.getOwnerDocument();
 				doc.setIndexListener(listener);
 				modifiedDocs.add(doc);
-				collection = doc.getCollection();
-				if (prevCollection != null && collection != prevCollection) {
-					broker.saveCollection(prevCollection);
-				}
 				if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 					throw new PermissionDeniedException("permission to update document denied");
-                node.appendChildren(children, child);
+                node.appendChildren(transaction, children, child);
                 doc.clearIndexListener();
                 doc.setLastModified(System.currentTimeMillis());
-				prevCollection = collection;
+                broker.storeDocument(transaction, doc);
 			}
-			if (doc != null)
-				broker.saveCollection(collection);
-			checkFragmentation(modifiedDocs);
+			checkFragmentation(transaction, modifiedDocs);
 			return ql.length;
 	    } finally {
 	        // release all acquired locks

@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
+import org.exist.storage.txn.Txn;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -135,7 +136,7 @@ public class NodeImpl implements Node, QNameable {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 
-	public void appendChildren(NodeList nodes, int child) throws DOMException {
+	public void appendChildren(Txn transaction, NodeList nodes, int child) throws DOMException {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
 		        "Cannot append children to a node of type " + nodeType);
 	}
@@ -393,11 +394,11 @@ public class NodeImpl implements Node, QNameable {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 
-	public void insertAfter(NodeList nodes, Node refChild) throws DOMException {
+	public void insertAfter(Txn transaction, NodeList nodes, Node refChild) throws DOMException {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 
-	public void insertBefore(NodeList nodes, Node refChild) throws DOMException {
+	public void insertBefore(Txn transaction, NodeList nodes, Node refChild) throws DOMException {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 	/**
@@ -423,19 +424,26 @@ public class NodeImpl implements Node, QNameable {
 		return;
 	}
 
-	/**
-	 * @see org.w3c.dom.Node#removeChild(org.w3c.dom.Node)
-	 */
-	public Node removeChild(Node node) throws DOMException {
-		return null;
-	}
+	public Node removeChild(Node oldChild)
+    throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "remove child is not supported. Use XUpdate instead.");
+    }
 
+    public Node removeChild(Txn transaction, Node oldChild)
+    throws DOMException {
+        return null;
+    }
+    
 	/**
 	 * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
 	 */
 	public Node replaceChild(Node newChild, Node oldChild) throws DOMException {
 		return null;
 	}
+
+	public Node replaceChild(Txn transaction, Node newChild, Node oldChild) throws DOMException {
+        return null;
+    }
 
 	public byte[] serialize() {
 		return null;
@@ -578,7 +586,7 @@ public class NodeImpl implements Node, QNameable {
 		 * @param newChild
 		 * @throws DOMException
 		 */
-	public void updateChild(Node oldChild, Node newChild) throws DOMException {
+	public void updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
 		throw new DOMException(
 			DOMException.NO_MODIFICATION_ALLOWED_ERR,
 			"method not allowed on this node type");

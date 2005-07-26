@@ -15,6 +15,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
@@ -58,6 +60,8 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 		throws XMLDBException {
 		long start = System.currentTimeMillis();
 		DocumentSet docs = new DocumentSet();
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		DBBroker broker = null;
 		org.exist.collections.Collection c = parent.getCollection();
 		try {
@@ -66,8 +70,10 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				docs = c.allDocs(broker, docs, true, true);
 			} else {
 				DocumentImpl doc = c.getDocument(broker, resource);
-				if(doc == null)
+				if(doc == null) {
+                    transact.abort(transaction);
 					throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource not found: " + resource);
+                }
 				docs.add(doc);
 			}
 			if(processor == null)
@@ -80,10 +86,10 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;
 			for (int i = 0; i < modifications.length; i++) {
-				mods += modifications[i].process();
+				mods += modifications[i].process(transaction);
 				broker.flush();
 			}
-            //broker.sync();
+            transact.commit(transaction);
 
             //Cluster event send
             //TODO: fix with a new Service Binding implementation
@@ -96,18 +102,24 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
             	"ms.");
 			return mods;
 		} catch (ParserConfigurationException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (IOException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (SAXException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (PermissionDeniedException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				e.getMessage());
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch(Exception e) {
+            transact.abort(transaction);
 			e.printStackTrace();
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} finally {

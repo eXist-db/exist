@@ -33,7 +33,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;

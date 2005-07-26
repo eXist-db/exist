@@ -33,12 +33,13 @@ import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
+import org.exist.storage.StorageAddress;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.store.StorageAddress;
-import org.exist.util.Lock;
-import org.exist.util.MultiReadReentrantLock;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.MultiReadReentrantLock;
+import org.exist.storage.txn.Txn;
 import org.exist.util.SyntaxException;
 import org.exist.xquery.DescendantSelector;
 import org.exist.xquery.NodeSelector;
@@ -117,9 +118,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	protected int treeLevelOrder[] = new int[15];
 
 	protected transient long treeLevelStartPoints[] = new long[15];
-
-	// has document-metadata been loaded?
-	protected transient boolean complete = true;
 	
 	//private transient User lockOwner = null;
 	private transient int lockOwnerId = 0;
@@ -214,7 +212,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     }
     
     public String getMimeType() {
-        checkAvail();
         return mimeType;
     }
     
@@ -379,7 +376,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * @see org.w3c.dom.Node#getFirstChild()
 	 */
 	public Node getFirstChild() {
-		checkAvail();
 		if(children == 0)
 		    return null;
 		long address = childList[0];
@@ -389,12 +385,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public long getFirstChildAddress() {
 		if(children == 0)
 			return -1;
-		checkAvail();
 		return childList[0];
 	}
 	
 	public NodeList getChildNodes() {
-		checkAvail();
 		NodeListImpl list = new NodeListImpl();
 		Node child;
 		for (int i = 0; i < children; i++) {
@@ -435,7 +429,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public DocumentType getDoctype() {
-		checkAvail();
 		return docType;
 	}
 
@@ -444,7 +437,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 */
 
 	public Element getDocumentElement() {
-		checkAvail();
 		NodeList cl = getChildNodes();
 		for (int i = 0; i < cl.getLength(); i++)
 			if (cl.item(i).getNodeType() == Node.ELEMENT_NODE)
@@ -478,12 +470,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public String getName() {
 		return collection.getName() + '/' + fileName;
-	}
-	
-	protected void checkAvail() {
-		if (!complete)
-			broker.readDocumentMetadata(this);
-		complete = true;
 	}
 
 	public org.w3c.dom.DOMImplementation getImplementation() {
@@ -578,38 +564,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return false;
 	}
 
-	public void read(VariableByteInput istream) throws IOException, EOFException {
-		docId = istream.readInt();
-		fileName = istream.readUTF();
-		children = istream.readInt();
-		internalAddress = StorageAddress.createPointer(istream.readInt(), istream.readShort());
-		maxDepth = istream.readInt();
-		treeLevelOrder = new int[maxDepth + 1];
-		for (int i = 0; i < maxDepth; i++) {
-			treeLevelOrder[i] = istream.readInt();
-		}
-		final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
-		final int uid = istream.readInt();
-		final int gid = istream.readInt();
-		final int perm = (istream.readInt() & 0777);
-		if (secman == null) {
-			permissions.setOwner(SecurityManager.DBA_USER);
-			permissions.setGroup(SecurityManager.DBA_GROUP);
-		} else {
-			permissions.setOwner(secman.getUser(uid));
-			permissions.setGroup(secman.getGroup(gid).getName());
-		}
-		permissions.setPermissions(perm);
-		lockOwnerId = istream.readInt();
-//		lockOwner = (lockId > 0 ? secman.getUser(lockId) : null);
-		
-		try {
-			calculateTreeLevelStartPoints();
-		} catch (EXistException e) {
-		}
-		complete = false;
-	}
-
 	public void setBroker(DBBroker broker) {
 		this.broker = broker;
 	}
@@ -692,42 +646,38 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void setVersion(String version) {
 	}
 
-	public void write(VariableByteOutputStream ostream) throws IOException {
-		ostream.writeByte(getResourceType());
-		ostream.writeInt(docId);
-		ostream.writeUTF(fileName);
-		ostream.writeInt(children);
-		ostream.writeInt(StorageAddress.pageFromPointer(internalAddress));
-		ostream.writeShort(StorageAddress.tidFromPointer(internalAddress));
-		ostream.writeInt(maxDepth);
-		for (int i = 0; i < maxDepth; i++) {
-			//System.out.println("k[" + i + "] = " + treeLevelOrder[i]);
-			ostream.writeInt(treeLevelOrder[i]);
-		}
-		SecurityManager secman = broker.getBrokerPool().getSecurityManager();
-		if (secman == null) {
-			ostream.writeInt(1);
-			ostream.writeInt(1);
-		} else {
-			User user = secman.getUser(permissions.getOwner());
-			Group group = secman.getGroup(permissions.getOwnerGroup());
-			ostream.writeInt(user.getUID());
-			ostream.writeInt(group.getId());
-		}
-		ostream.writeInt(permissions.getPermissions());
-		if(lockOwnerId > 0)
-			ostream.writeInt(lockOwnerId);
-		else
-			ostream.writeInt(0);
-	}
-
 	public int reindexRequired() {
 		return reindex;
 	}
 
-	public byte[] serialize() {
-		final VariableByteOutputStream ostream = new VariableByteOutputStream(7);
+    public void write(VariableByteOutputStream ostream) throws IOException {
 		try {
+            ostream.writeInt(docId);
+            ostream.writeUTF(fileName);
+            ostream.writeInt(StorageAddress.pageFromPointer(internalAddress));
+            ostream.writeShort(StorageAddress.tidFromPointer(internalAddress));
+            SecurityManager secman = broker.getBrokerPool().getSecurityManager();
+            if (secman == null) {
+                ostream.writeInt(1);
+                ostream.writeInt(1);
+            } else {
+                User user = secman.getUser(permissions.getOwner());
+                Group group = secman.getGroup(permissions.getOwnerGroup());
+                ostream.writeInt(user.getUID());
+                ostream.writeInt(group.getId());
+            }
+            ostream.writeInt(permissions.getPermissions());
+            if(lockOwnerId > 0)
+                ostream.writeInt(lockOwnerId);
+            else
+                ostream.writeInt(0);
+            
+            ostream.writeInt(maxDepth);
+            for (int i = 0; i < maxDepth; i++) {
+                //System.out.println("k[" + i + "] = " + treeLevelOrder[i]);
+                ostream.writeInt(treeLevelOrder[i]);
+            }
+            ostream.writeInt(children);
 			if(children > 0) {
 			    for(int i = 0; i < children; i++) {
 					ostream.writeInt(StorageAddress.pageFromPointer(childList[i]));
@@ -739,24 +689,39 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			ostream.writeLong(lastModified);
             ostream.writeUTF(mimeType);
 			ostream.writeInt(pageCount);
-			final byte[] data = ostream.toByteArray();
-			ostream.close();
-			return data;
 		} catch (IOException e) {
 			LOG.warn("io error while writing document data", e);
-			return null;
 		}
 	}
 
-	public void deserialize(byte[] data) {
-		VariableByteArrayInput istream = new VariableByteArrayInput(data);
+    public void read(VariableByteInput istream) throws IOException, EOFException {
 		try {
-//		    byte signature = istream.readByte();
-//		    if(signature != DOCUMENT_NODE_SIGNATURE) {
-//		        LOG.error("Could not read document metadata for document " + fileName +
-//		                " ( " + docId + "): not a metadata node.");
-//		        return;
-//		    }
+            docId = istream.readInt();
+            fileName = istream.readUTF();
+            internalAddress = StorageAddress.createPointer(istream.readInt(), istream.readShort());
+
+            final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
+            final int uid = istream.readInt();
+            final int gid = istream.readInt();
+            final int perm = (istream.readInt() & 0777);
+            if (secman == null) {
+                permissions.setOwner(SecurityManager.DBA_USER);
+                permissions.setGroup(SecurityManager.DBA_GROUP);
+            } else {
+                permissions.setOwner(secman.getUser(uid));
+                Group group = secman.getGroup(gid);
+                if (group != null)
+                    permissions.setGroup(group.getName());
+            }
+            permissions.setPermissions(perm);
+            lockOwnerId = istream.readInt();
+            
+            maxDepth = istream.readInt();
+            treeLevelOrder = new int[maxDepth + 1];
+            for (int i = 0; i < maxDepth; i++) {
+                treeLevelOrder[i] = istream.readInt();
+            }
+            children = istream.readInt();
 			childList = new long[children];
 			for (int i = 0; i < children; i++) { 
 				childList[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
@@ -772,6 +737,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			LOG.warn("IO error while reading document data for document " + fileName, e);
 			LOG.warn("Document address is " + StorageAddress.toString(getAddress()));
 		}
+        
+        try {
+            calculateTreeLevelStartPoints();
+        } catch (EXistException e) {
+        }
 	}
 
 	public void setReindexRequired(int level) {
@@ -807,7 +777,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeImpl#updateChild(org.w3c.dom.Node, org.w3c.dom.Node)
 	 */
-	public void updateChild(Node oldChild, Node newChild) throws DOMException {
+	public void updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
 		if (!(oldChild instanceof NodeImpl))
 			throw new DOMException(
 				DOMException.WRONG_DOCUMENT_ERR,
@@ -823,19 +793,19 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 				throw new DOMException(
 					DOMException.INVALID_MODIFICATION_ERR,
 					"a node replacing the document root needs to be an element");
-			broker.removeNode(old, old.getPath(), null);
+			broker.removeNode(transaction, old, old.getPath(), null);
 			broker.endRemove();
 			newNode.gid = old.gid;
-			broker.insertAfter(previous, newNode);
+			broker.insertAfter(null, previous, newNode);
 			NodePath path = newNode.getPath();
-			broker.index(newNode, path);
+			broker.index(transaction, newNode, path);
 			broker.endElement(newNode, path, null);
 			broker.flush();
 		} else {
-			broker.removeNode(old, old.getPath(), null);
+			broker.removeNode(transaction, old, old.getPath(), null);
 			broker.endRemove();
 			newNode.gid = 0;
-			broker.insertAfter(previous, newNode);
+			broker.insertAfter(transaction, previous, newNode);
 		}
 	}
 
@@ -860,12 +830,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		last = childList[idx];
 		NodeImpl prev = (NodeImpl) broker.objectWith(new NodeProxy(this, 0, last));
 		for (int i = 0; i < nodes.getLength(); i++) {
-			prev = (NodeImpl) appendChild(prev, nodes.item(i));
+			prev = (NodeImpl) appendChild(null, prev, nodes.item(i));
 			++children;
 			resizeChildList();
 			childList[++idx] = prev.internalAddress;
 		}
-		broker.storeDocument(this);
+		broker.storeDocument(null, this);
 	}
 
 	public void insertAfter(NodeList nodes, Node refChild) throws DOMException {
@@ -886,15 +856,15 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "reference node not found");
 		NodeImpl prev = getLastNode((NodeImpl) broker.objectWith(new NodeProxy(this, 0, last)));
 		for (int i = 0; i < nodes.getLength(); i++) {
-			prev = (NodeImpl) appendChild(prev, nodes.item(i));
+			prev = (NodeImpl) appendChild(null, prev, nodes.item(i));
 			++children;
 			resizeChildList();
 			childList[idx] = prev.internalAddress;
 		}
-		broker.storeDocument(this);
+		broker.storeDocument(null, this);
 	}
 
-	private Node appendChild(NodeImpl last, Node child) throws DOMException {
+	private Node appendChild(Txn transaction, NodeImpl last, Node child) throws DOMException {
 		// String ns, prefix;
 		// Attr attr;
 		switch (child.getNodeType()) {
@@ -904,12 +874,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 				pi.setData(((ProcessingInstruction) child).getData());
 				pi.setOwnerDocument(this);
 				//insert the node
-				broker.insertAfter(last, pi);
+				broker.insertAfter(transaction, last, pi);
 				return pi;
 			case Node.COMMENT_NODE :
 				final CommentImpl comment = new CommentImpl(0, ((Comment) child).getData());
 				comment.setOwnerDocument(this);
-				broker.insertAfter(last, comment);
+				broker.insertAfter(transaction, last, comment);
 				return comment;
 			default :
 				throw new DOMException(
@@ -922,7 +892,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * @return
 	 */
 	public long getCreated() {
-		checkAvail();
 		return created;
 	}
 
@@ -930,7 +899,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * @return
 	 */
 	public long getLastModified() {
-		checkAvail();
 		return lastModified;
 	}
 
@@ -979,7 +947,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * @return
 	 */
 	public int getContentLength() {
-	    checkAvail();
 	    return pageCount * broker.getPageSize();
 	}
 	
@@ -989,7 +956,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * @return
 	 */
 	public int getPageCount() {
-	    checkAvail();
 	    return pageCount;
 	}
 	

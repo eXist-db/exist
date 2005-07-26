@@ -22,8 +22,7 @@ package org.exist.xmldb.test.concurrent;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
+import java.io.FileWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 
@@ -73,83 +72,94 @@ public class DBUtils {
         return generateXMLFile(elementCnt, attrCnt, wordList, false);
     }
     
-    public static File generateXMLFile(int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
-        File file = File.createTempFile(Thread.currentThread().getName(), ".xml");
-        if(file.exists() && !file.canWrite())
-            throw new IllegalArgumentException("Cannot write to output file " + file.getAbsolutePath());
-        
-        System.out.println("Generating XML file " + file.getAbsolutePath());
-        Writer writer = new BufferedWriter(
-                new OutputStreamWriter( new FileOutputStream(file), "UTF-8") );
-        
-        XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, 3, wordList, namespaces);
-        gen.generateXML(writer);
-        writer.close();
-        return file;
-    }
-    
-    public static Collection addCollection(Collection parent, String name)
-    throws XMLDBException {
-        CollectionManagementService service = getCollectionManagementService(
-                parent);
-        
-        return service.createCollection(name);
-    }
-    
-    public static void removeCollection(Collection parent, String name) throws XMLDBException {
-        CollectionManagementService service = getCollectionManagementService(
-                parent);
-        service.removeCollection(name);
-    }
-    
-    public static CollectionManagementService getCollectionManagementService(
-            Collection col) throws XMLDBException {
-        return (CollectionManagementService)col.getService(
-                "CollectionManagementService", "1.0");
-    }
-    
-    public static void addXMLResource(Collection col, String resourceId, File file) throws XMLDBException {
-        XMLResource res = (XMLResource)col.createResource(
-                resourceId, "XMLResource");
-        res.setContent(file);
-        col.storeResource(res);
-    }
-    
-    public static void addXMLResource(Collection col, String resourceId, String contents) throws XMLDBException {
-        XMLResource res = (XMLResource)col.createResource(
-                resourceId, "XMLResource");
-        res.setContent(contents);
-        col.storeResource(res);
-    }
-    
-    public static ResourceSet query(Collection collection, String xpath)
-    throws XMLDBException {
+	public static File generateXMLFile(int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
+		File file = File.createTempFile(Thread.currentThread().getName(), ".xml");
+		if(file.exists() && !file.canWrite())
+			throw new IllegalArgumentException("Cannot write to output file " + file.getAbsolutePath());
+		
+		System.out.println("Generating XML file " + file.getAbsolutePath());
+		Writer writer = new BufferedWriter(new FileWriter(file));
+		
+		XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, 3, wordList, namespaces);
+		gen.generateXML(writer);
+		writer.close();
+		return file;
+	}
+	
+	public static Collection addCollection(Collection parent, String name)
+	throws XMLDBException
+	{
+		CollectionManagementService service = getCollectionManagementService(
+				parent);
+		
+		return service.createCollection(name);
+	}
+	
+	public static void removeCollection(Collection parent, String name) throws XMLDBException {
+		CollectionManagementService service = getCollectionManagementService(
+				parent);
+		service.removeCollection(name);
+	}
+	
+	public static CollectionManagementService getCollectionManagementService(
+	        Collection col) throws XMLDBException {
+	        return (CollectionManagementService)col.getService(
+	            "CollectionManagementService", "1.0");
+	    }
+
+	public static void addXMLResource(Collection col, String resourceId, File file) throws XMLDBException {
+		XMLResource res = (XMLResource)col.createResource(
+				resourceId, "XMLResource");
+		res.setContent(file);
+		col.storeResource(res);
+	}
+	
+	public static void addXMLResource(Collection col, String resourceId, String contents) throws XMLDBException {
+		XMLResource res = (XMLResource)col.createResource(
+				resourceId, "XMLResource");
+		res.setContent(contents);
+		col.storeResource(res);
+	}
+	
+	public static ResourceSet query(Collection collection, String xpath)
+	throws XMLDBException
+	{
+		XPathQueryService service = getQueryService(collection);
+		return service.query(xpath);
+	}
+	
+    public static ResourceSet queryResource(Collection collection, String resource, String xpath)
+    throws XMLDBException
+    {
         XPathQueryService service = getQueryService(collection);
-        return service.query(xpath);
+        return service.queryResource(resource, xpath);
     }
     
-    public static ResourceSet xquery(Collection collection, String xquery)
-    throws XMLDBException {
-        XQueryService service = getXQueryService(collection);
-        Source source = new StringSource(xquery);
-        return service.execute(source);
-    }
-    
-    public static XPathQueryService getQueryService(Collection collection)
-    throws XMLDBException {
-        return (XPathQueryService) collection.getService(
-                "XPathQueryService", "1.0");
-    }
-    
-    public static XQueryService getXQueryService(Collection collection)
-    throws XMLDBException {
-        return (XQueryService) collection.getService(
-                "XQueryService", "1.0");
-    }
-    
-    public static String[] wordList(Collection root) throws XMLDBException {
-        IndexQueryService service = (IndexQueryService)
-        root.getService("IndexQueryService", "1.0");
+	public static ResourceSet xquery(Collection collection, String xquery)
+	throws XMLDBException
+	{
+		XQueryService service = getXQueryService(collection);
+		Source source = new StringSource(xquery);
+		return service.execute(source);
+	}
+	
+	public static XPathQueryService getQueryService(Collection collection)
+	throws XMLDBException
+	{
+		return (XPathQueryService) collection.getService(
+				"XPathQueryService", "1.0");
+	}
+
+	public static XQueryService getXQueryService(Collection collection)
+	throws XMLDBException
+	{
+		return (XQueryService) collection.getService(
+				"XQueryService", "1.0");
+	}
+	
+	public static String[] wordList(Collection root) throws XMLDBException {
+		IndexQueryService service = (IndexQueryService)
+		root.getService("IndexQueryService", "1.0");
         ArrayList list = new ArrayList();
         String alphas = "abcdefghijklmnopqrstuvwxyz";
         for (int i = 0; i < alphas.length(); i++) {

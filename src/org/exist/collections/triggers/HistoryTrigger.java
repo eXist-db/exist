@@ -66,9 +66,9 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
         
         // create the destination document
         try {
-            Collection destination = broker.getOrCreateCollection(path);
-            broker.saveCollection(destination);
-            broker.copyResource(doc, destination, name);
+            Collection destination = broker.getOrCreateCollection(null, path);
+            broker.saveCollection(null, destination);
+            broker.copyResource(null, doc, destination, name);
         }
         catch(PermissionDeniedException exception) {
             throw new TriggerException(exception);

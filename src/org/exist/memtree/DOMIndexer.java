@@ -36,6 +36,7 @@ import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.Txn;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
@@ -56,13 +57,15 @@ public class DOMIndexer {
 	public final static QName ROOT_QNAME = new QName("temp", Serializer.EXIST_NS, "exist");
 	
     private DBBroker broker;
+    private Txn transaction;
     private DocumentImpl doc;
     private org.exist.dom.DocumentImpl targetDoc;
     private Stack stack = new Stack();
     private TextImpl text = new TextImpl();
     
-    public DOMIndexer(DBBroker broker, DocumentImpl doc, org.exist.dom.DocumentImpl targetDoc) {
+    public DOMIndexer(DBBroker broker, Txn transaction, DocumentImpl doc, org.exist.dom.DocumentImpl targetDoc) {
         this.broker = broker;
+        this.transaction = transaction;
         this.doc = doc;
         this.targetDoc = targetDoc;
     }
@@ -107,7 +110,7 @@ public class DOMIndexer {
         path.addComponent(ROOT_QNAME);
         
         stack.push(elem);
-        broker.store(elem, path);
+        broker.store(transaction, elem, path);
         targetDoc.appendChild(elem);
         elem.setChildCount(0);
         
@@ -156,7 +159,7 @@ public class DOMIndexer {
             if(stack.empty()) {
                 initElement(nodeNr, elem);
                 stack.push(elem);
-                broker.store(elem, currentPath);
+                broker.store(transaction, elem, currentPath);
                 targetDoc.appendChild(elem);
                 elem.setChildCount(0);
             } else {
@@ -165,7 +168,7 @@ public class DOMIndexer {
                 initElement(nodeNr, elem);
                 last.appendChildInternal(elem);
                 stack.push(elem);
-                broker.store(elem, currentPath);
+                broker.store(transaction, elem, currentPath);
                 elem.setChildCount(0);
             }
             currentPath.addComponent(elem.getQName());
@@ -179,7 +182,7 @@ public class DOMIndexer {
             );
             text.setOwnerDocument(targetDoc);
             last.appendChildInternal(text);
-            broker.store(text, null);
+            broker.store(transaction, text, null);
             text.clear();
         } else if (doc.nodeKind[nodeNr] == Node.COMMENT_NODE) {
             CommentImpl comment = 
@@ -188,13 +191,13 @@ public class DOMIndexer {
             comment.setOwnerDocument(targetDoc);
             if (stack.empty()) {
                 comment.setGID(1);
-                broker.store(comment, null);
+                broker.store(transaction, comment, null);
                 targetDoc.appendChild(comment);
             } else {
                 ElementImpl last =
                     (ElementImpl) stack.peek();
                 last.appendChildInternal(comment);
-                broker.store(comment, null);
+                broker.store(transaction, comment, null);
             }
         } else if (doc.nodeKind[nodeNr] == Node.PROCESSING_INSTRUCTION_NODE) {
             ProcessingInstructionImpl pi = new ProcessingInstructionImpl();
@@ -205,13 +208,13 @@ public class DOMIndexer {
                     doc.alphaLen[nodeNr]));
             if (stack.empty()) {
                 pi.setGID(1);
-                broker.store(pi, null);
+                broker.store(transaction, pi, null);
                 targetDoc.appendChild(pi);
             } else {
                 ElementImpl last =
                     (ElementImpl) stack.peek();
                 last.appendChildInternal(pi);
-                broker.store(pi, null);
+                broker.store(transaction, pi, null);
             }
         }
     }
@@ -259,7 +262,7 @@ public class DOMIndexer {
                 AttrImpl attrib = new AttrImpl(qn, doc.attrValue[attr]);
                 attrib.setOwnerDocument(targetDoc);
                 elem.appendChildInternal(attrib);
-                broker.store(attrib, path);
+                broker.store(transaction, attrib, path);
                 ++attr;
             }
         }

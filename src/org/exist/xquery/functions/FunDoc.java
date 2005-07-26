@@ -27,7 +27,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.util.Lock;
+import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;

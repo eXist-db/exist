@@ -5,6 +5,8 @@
  */
 package org.exist.util;
 
+import java.nio.ByteBuffer;
+
 public class FixedByteArray implements ByteArray {
 
 	private byte[] data;
@@ -17,12 +19,20 @@ public class FixedByteArray implements ByteArray {
 		this.len = len;
 	}
 
+    public FixedByteArray(byte[] data) {
+        this(data, 0, data.length);
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.util.ByteArray#setLength(int)
 	 */
 	public void setLength(int len) {
 		throw new RuntimeException("cannot modify fixed byte array");
 	}
+
+    public String toString() {
+        return new String(data, start, len);
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.util.ByteArray#copyTo(byte[], int)
@@ -40,6 +50,14 @@ public class FixedByteArray implements ByteArray {
 
 	public void copyTo(ByteArray other) {
 	    other.append(data, start, len);
+	}
+	
+    public void copyTo(ByteBuffer buf) {
+        buf.put(data, start, len);
+    }
+    
+	public void copyTo(int startOffset, ByteBuffer buf, int count) {
+		buf.put(data, start + startOffset, count);
 	}
 	
 	/* (non-Javadoc)

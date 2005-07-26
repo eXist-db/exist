@@ -62,9 +62,10 @@ public class ConcurrentResourceTest extends ConcurrentTestBase {
         String query1 = "distinct-values(//user/@id)";
         
 		addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R1.xml"), 100, 0, 100);
+        addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R2.xml"), 100, 0, 100);
 		addAction(new RetrieveResourceAction(URI + "/C1/C1-C2", "R1.xml"), 150, 500, 100);
-        addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 100, 1000, 200);
-        addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 100, 1000, 300);
+//        addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 100, 1000, 100);
+//        addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 100, 1000, 100);
 	}
 	
 	/* (non-Javadoc)

@@ -44,6 +44,7 @@ import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.NodePath;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.XMLChar;
@@ -76,6 +77,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		Logger.getLogger(Indexer.class);
 
 	protected DBBroker broker = null;
+    protected Txn transaction;
+    
 	protected XMLString charBuf = new XMLString();
 	protected int currentLine = 0;
 	protected NodePath currentPath = new NodePath();
@@ -119,8 +122,25 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	 *@param  broker
 	 *@exception  EXistException  
 	 */
-	public Indexer(DBBroker broker) throws EXistException {
+	public Indexer(DBBroker broker, Txn transaction) throws EXistException {
+		this(broker, transaction, false);
+	}
+
+	/**
+	 *  Create a new parser using the given database broker and
+	 * user to store the document.
+	 *
+	 *@param  broker              
+	 *@param  user                user identity
+	 *@param  replace             replace existing documents?
+	 *@param  privileged		  used by the security manager to
+	 *							  indicate that it needs privileged
+	 *                            access to the db.
+	 *@exception  EXistException  
+	 */
+	public Indexer(DBBroker broker, Txn transaction, boolean priv) throws EXistException {
 		this.broker = broker;
+        this.transaction = transaction;
 		Configuration config = broker.getConfiguration();
 		String suppressWS =
 			(String) config.getProperty("indexer.suppress-whitespace");
@@ -190,7 +210,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		comment.setOwnerDocument(document);
 		if (stack.empty()) {
 			if (!validate)
-				broker.store(comment, currentPath);
+				broker.store(transaction, comment, currentPath);
 			document.appendChild(comment);
 		} else {
 			ElementImpl last = (ElementImpl) stack.peek();
@@ -207,7 +227,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			}
 			last.appendChildInternal(comment);
 			if (!validate)
-				broker.store(comment, currentPath);
+				broker.store(transaction, comment, currentPath);
 		}
 	}
 
@@ -266,7 +286,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			} else {
 				document.setOwnerDocument(document);
 				if (childCnt == null && last.getChildCount() > 0) {
-					broker.update(last);
+					broker.update(transaction, last);
 				}
 			}
 			level--;
@@ -308,7 +328,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	}
 
 	public void fatalError(SAXParseException e) throws SAXException {
-		LOG.debug("fatal error at line " + e.getLineNumber(), e);
+		LOG.debug("fatal error at line " + e.getLineNumber());
 		throw new SAXException(
 			"fatal error at line " + e.getLineNumber() + ": " + e.getMessage(),
 			e);
@@ -323,7 +343,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		pi.setOwnerDocument(document);
 		if (stack.isEmpty()) {
 			if (!validate)
-				broker.store(pi, currentPath);
+				broker.store(transaction, pi, currentPath);
 			document.appendChild(pi);
 		} else {
 			ElementImpl last = (ElementImpl) stack.peek();
@@ -343,7 +363,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			}
 			last.appendChildInternal(pi);
 			if (!validate)
-				broker.store(pi, currentPath);
+				broker.store(transaction, pi, currentPath);
 		}
 	}
 
@@ -538,7 +558,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				}
 				node.appendChildInternal(attr);
 				if (!validate)
-					broker.store(attr, currentPath);
+					broker.store(transaction, attr, currentPath);
 				attr.release();
 			}
 		}
@@ -564,11 +584,11 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				next.append(charBuf);
 			}
 		}
-		broker.store(text, currentPath);
+		broker.store(transaction, text, currentPath);
 	}
 
 	private void storeElement(ElementImpl node) {
-		broker.store(node, currentPath);
+		broker.store(transaction, node, currentPath);
         node.setChildCount(0);
 		if (GeneralRangeIndexSpec.hasQNameOrValueIndex(node.getIndexType())) {
 			XMLString contentBuf = new XMLString();

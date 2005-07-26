@@ -49,6 +49,7 @@ import javax.xml.transform.OutputKeys;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -64,9 +65,12 @@ import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.Lock;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -405,6 +409,8 @@ public class RESTServer {
         boolean enclose = true;
         String mime = "text/xml";
         String query = null;
+        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = transact.beginTransaction();
         try {
             String content = getRequestContent(request);
             InputSource src = new InputSource(new StringReader(content));
@@ -416,6 +422,7 @@ public class RESTServer {
                 docBuilder = docFactory.newDocumentBuilder();
             } catch (ParserConfigurationException e) {
                 LOG.warn(e);
+                transact.abort(transaction);
                 throw new BadRequestException(e.getMessage());
             }
             Document doc = docBuilder.parse(src);
@@ -495,8 +502,10 @@ public class RESTServer {
                     writeResponse(response, search(broker, query, path, howmany,
                             start, outputProperties, enclose, request, response),
                             outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8"));
-                } else
+                } else {
+                    transact.abort(transaction);
                     throw new BadRequestException("No query specified");
+                }
             } else if (rootNS != null && rootNS.equals(XUPDATE_NS)) {
                 LOG.debug("Got xupdate request: " + content);
                 DocumentSet docs = new DocumentSet();
@@ -508,21 +517,26 @@ public class RESTServer {
                             .getDocument(path);
                     if (xupdateDoc != null) {
                         if (!xupdateDoc.getPermissions().validate(
-                                broker.getUser(), Permission.READ))
+                                broker.getUser(), Permission.READ)) {
+                            transact.abort(transaction);
                             throw new PermissionDeniedException(
                                     "Not allowed to read collection");
+                        }
                         docs.add(xupdateDoc);
                     } else
                         broker.getAllDocuments(docs);
                 }
+                
                 XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
                 Modification modifications[] = processor.parse(new InputSource(
                         new StringReader(content)));
                 long mods = 0;
                 for (int i = 0; i < modifications.length; i++) {
-                    mods += modifications[i].process();
+                    mods += modifications[i].process(transaction);
                     broker.flush();
                 }
+                transact.commit(transaction);
+                
                 // FD : Returns an XML doc
                 writeResponse(response,
                         "<?xml version='1.0'?>\n"
@@ -531,10 +545,13 @@ public class RESTServer {
                         + "modifications processed.</exist:modifications>",
                         "UTF-8");
                 // END FD
-            } else
+            } else {
+                transact.abort(transaction);
                 throw new BadRequestException("Unknown XML root element: "
                         + root.getNodeName());
+            }
         } catch (SAXException e) {
+            transact.abort(transaction);
             Exception cause = e;
             if (e.getException() != null)
                 cause = e.getException();
@@ -544,17 +561,22 @@ public class RESTServer {
                     "SAX exception while parsing request: "
                             + cause.getMessage());
         } catch (ParserConfigurationException e) {
+            transact.abort(transaction);
             throw new BadRequestException(
                     "Parser exception while parsing request: " + e.getMessage());
         } catch (XPathException e) {
+            transact.abort(transaction);
             throw new BadRequestException(
                     "Query exception while parsing request: " + e.getMessage());
         } catch (IOException e) {
+            transact.abort(transaction);
             throw new BadRequestException(
                     "IO exception while parsing request: " + e.getMessage());
         } catch (EXistException e) {
+            transact.abort(transaction);
             throw new BadRequestException(e.getMessage());
         } catch (LockException e) {
+            transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
         }
     }
@@ -583,64 +605,73 @@ public class RESTServer {
         if (tempFile == null)
             throw new BadRequestException("No request content found for PUT");
         
+        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = transact.beginTransaction();
         try {
             int p = docPath.lastIndexOf('/');
-            if (p < 0 || p == docPath.length() - 1)
+            if (p < 0 || p == docPath.length() - 1) {
+                transact.abort(transaction);
                 throw new BadRequestException("Bad path: " + docPath);
-            else {
-                String collectionName = docPath.substring(0, p);
-                docPath = docPath.substring(p + 1);
-                Collection collection = broker.getCollection(collectionName);
-                if (collection == null) {
-                    LOG.debug("creating collection " + collectionName);
-                    collection = broker.getOrCreateCollection(collectionName);
-                    broker.saveCollection(collection);
-                }
-                String url = tempFile.toURI().toASCIIString();
-                MimeType mime;
-                String contentType = request.getContentType();
-                if (contentType != null)
-                    mime = MimeTable.getInstance().getContentType(contentType);
-                else {
-                    mime = MimeTable.getInstance().getContentTypeFor(docPath);
-                    if (mime != null)
-                        contentType = mime.getName();
-                }
-                if (mime == null)
-                    mime = MimeType.BINARY_TYPE;
-                
-                if (mime.isXMLType()) {
-                    DocumentImpl doc = collection.addDocument(broker, docPath,
-                            new InputSource(url), contentType);
-                    response.sendError(HttpServletResponse.SC_OK, "Document " + docPath + " stored.");
-                } else {
-                    byte[] chunk = new byte[4096];
-                    ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    FileInputStream is = new FileInputStream(tempFile);
-                    int l;
-                    while ((l = is.read(chunk)) > -1) {
-                        os.write(chunk, 0, l);
-                    }
-                    collection.addBinaryResource(broker, docPath, os
-                            .toByteArray(), contentType);
-                    response.sendError(HttpServletResponse.SC_OK, "Document " + docPath + " stored as binary resource.");
-                }
             }
+            String collectionName = docPath.substring(0, p);
+            docPath = docPath.substring(p + 1);
+            Collection collection = broker.getCollection(collectionName);
+            if (collection == null) {
+                LOG.debug("creating collection " + collectionName);
+                collection = broker.getOrCreateCollection(transaction, collectionName);
+                broker.saveCollection(transaction, collection);
+            }
+            String url = tempFile.toURI().toASCIIString();
+            MimeType mime;
+            String contentType = request.getContentType();
+            if (contentType != null)
+                mime = MimeTable.getInstance().getContentType(contentType);
+            else {
+                mime = MimeTable.getInstance().getContentTypeFor(docPath);
+                if (mime != null)
+                    contentType = mime.getName();
+            }
+            if (mime == null)
+                mime = MimeType.BINARY_TYPE;
+            
+            if (mime.isXMLType()) {
+                IndexInfo info = collection.validate(transaction, broker, docPath, new InputSource(url));
+                info.getDocument().setMimeType(contentType);
+                collection.store(transaction, broker, info, new InputSource(url), false);
+                response.sendError(HttpServletResponse.SC_OK, "Document " + docPath + " stored.");
+            } else {
+                byte[] chunk = new byte[4096];
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                FileInputStream is = new FileInputStream(tempFile);
+                int l;
+                while ((l = is.read(chunk)) > -1) {
+                    os.write(chunk, 0, l);
+                }
+                collection.addBinaryResource(transaction, broker, docPath, os
+                        .toByteArray(), contentType);
+                response.sendError(HttpServletResponse.SC_OK, "Document " + docPath + " stored as binary resource.");
+            }
+            transact.commit(transaction);
         } catch (SAXParseException e) {
+            transact.abort(transaction);
             throw new BadRequestException("Parsing exception at "
                     + e.getLineNumber() + "/" + e.getColumnNumber() + ": "
                     + e.toString());
         } catch (SAXException e) {
+            transact.abort(transaction);
             Exception o = e.getException();
             if (o == null)
                 o = e;
             throw new BadRequestException("Parsing exception: "
                     + o.getMessage());
         } catch (EXistException e) {
+            transact.abort(transaction);
             throw new BadRequestException("Internal error: " + e.getMessage());
         } catch (TriggerException e) {
+            transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
         } catch (LockException e) {
+            transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
         }
         return;
@@ -648,39 +679,48 @@ public class RESTServer {
 
     public void doDelete(DBBroker broker, String path, HttpServletResponse response)
             throws PermissionDeniedException, NotFoundException, IOException {
+        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        Txn txn = transact.beginTransaction();
         try {
             Collection collection = broker.getCollection(path);
             if (collection != null) {
                 // remove the collection
                 LOG.debug("removing collection " + path);
-                broker.removeCollection(collection);
+                broker.removeCollection(txn, collection);
                 response.sendError(HttpServletResponse.SC_OK, "Collection " + path + " removed.");
             } else {
                 DocumentImpl doc = (DocumentImpl) broker.getDocument(path);
-                if (doc == null)
+                if (doc == null) {
+                    transact.abort(txn);
                     throw new NotFoundException(
                             "No document or collection found " + "for path: "
                                     + path);
-                else {
+                } else {
                     // remove the document
                     LOG.debug("removing document " + path);
                     int p = path.lastIndexOf('/');
                     String docName = p < 0 || p == path.length() - 1 ? path
                             : path.substring(p + 1);
                     if (doc.getResourceType() == DocumentImpl.BINARY_FILE)
-                        doc.getCollection().removeBinaryResource(broker,
+                        doc.getCollection().removeBinaryResource(txn, broker,
                                 docName);
                     else
-                        doc.getCollection().removeDocument(broker, docName);
+                        doc.getCollection().removeDocument(txn, broker, docName);
                     response.sendError(HttpServletResponse.SC_OK, "Document " + path + " removed.");
                 }
             }
+            transact.commit(txn);
         } catch (TriggerException e) {
+            transact.abort(txn);
             throw new PermissionDeniedException("Trigger failed: "
                     + e.getMessage());
         } catch (LockException e) {
+            transact.abort(txn);
             throw new PermissionDeniedException("Could not acquire lock: "
                     + e.getMessage());
+        } catch (TransactionException e) {
+            transact.abort(txn);
+            LOG.warn("Transaction aborted: " + e.getMessage(), e);
         }
     }
 

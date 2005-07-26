@@ -6,8 +6,8 @@ package org.exist.storage.report;
 
 import java.util.Map;
 import org.exist.storage.IndexStats;
-import org.exist.storage.store.BFile;
-import org.exist.storage.store.DOMFile;
+import org.exist.storage.dom.DOMFile;
+import org.exist.storage.index.BFile;
 import org.exist.util.Configuration;
 
 /**

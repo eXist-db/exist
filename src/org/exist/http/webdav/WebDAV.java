@@ -41,8 +41,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.util.Lock;
 
 /**
  * The main class for processing WebDAV requests.

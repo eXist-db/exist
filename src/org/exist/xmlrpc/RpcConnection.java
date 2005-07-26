@@ -73,10 +73,12 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.DataBackup;
 import org.exist.storage.XQueryPool;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
-import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.util.SyntaxException;
@@ -134,45 +136,49 @@ public class RpcConnection extends Thread {
 		brokerPool = BrokerPool.getInstance();
 	}
 
-	public void createCollection(User user, String name) throws Exception,
+	public void createCollection(User user, String name, Date created) throws Exception,
 			PermissionDeniedException {
-		createCollection(user, name, null);
-	}
-
-    public void createCollection(User user, String name, Date created) throws Exception,
-    PermissionDeniedException {
-        DBBroker broker = null;
-        try {
-            broker = brokerPool.get(user);
-            Collection current = broker.getOrCreateCollection(name);
+		DBBroker broker = null;
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
+		try {
+			broker = brokerPool.get(user);
+			Collection current = broker.getOrCreateCollection(transaction, name);
             if (created != null)
-                current.setCreationTime( created.getTime());	
-            
-            LOG.debug("creating collection " + name);
-            broker.saveCollection(current);
-            broker.flush();
-            //broker.sync();
-            LOG.debug("collection " + name + " has been created");
-        } catch (Exception e) {
-            LOG.debug(e);
-            throw e;
-        } finally {
-            brokerPool.release(broker);
-        }
-    }
+                current.setCreationTime( created.getTime());
+			LOG.debug("creating collection " + name);
+			broker.saveCollection(transaction, current);
+            transact.commit(transaction);
+			broker.flush();
+			//broker.sync();
+			LOG.debug("collection " + name + " has been created");
+		} catch (Exception e) {
+		    transact.abort(transaction);
+			LOG.debug(e);
+			throw e;
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
 	
 	public void configureCollection(User user, String collName, String configuration)
 	throws EXistException {
 	    DBBroker broker = null;
 	    Collection collection = null;
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
         try {
             broker = brokerPool.get(user);
             collection = broker.openCollection(collName, Lock.READ_LOCK);
-            if (collection == null)
-				throw new EXistException("collection " + collName + " not found!");
+            if (collection == null) {
+				transact.abort(txn);
+                throw new EXistException("collection " + collName + " not found!");
+            }
             CollectionConfigurationManager mgr = brokerPool.getConfigurationManager();
-            mgr.addConfiguration(broker, collection, configuration);
+            mgr.addConfiguration(txn, broker, collection, configuration);
+            transact.commit(txn);
         } catch (CollectionConfigurationException e) {
+            transact.abort(txn);
 			throw new EXistException(e.getMessage());
 		} finally {
 		    if(collection != null)
@@ -670,13 +676,17 @@ public class RpcConnection extends Thread {
 	public int xupdate(User user, String collectionName, String xupdate)
 			throws SAXException, LockException, PermissionDeniedException, EXistException,
 			XPathException {
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
 			Collection collection = broker.getCollection(collectionName);
-			if (collection == null)
+			if (collection == null) {
+                transact.abort(transaction);
 				throw new EXistException("collection " + collectionName
 						+ " not found");
+            }
 			DocumentSet docs = collection.allDocs(broker, new DocumentSet(),
 					true, true);
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
@@ -684,13 +694,16 @@ public class RpcConnection extends Thread {
 					new StringReader(xupdate)));
 			long mods = 0;
 			for (int i = 0; i < modifications.length; i++) {
-				mods += modifications[i].process();
+				mods += modifications[i].process(transaction);
 				broker.flush();
 			}
+            transact.commit(transaction);
 			return (int) mods;
 		} catch (ParserConfigurationException e) {
+            transact.abort(transaction);
 			throw new EXistException(e.getMessage());
 		} catch (IOException e) {
+            transact.abort(transaction);
 			throw new EXistException(e.getMessage());
 		} finally {
 			brokerPool.release(broker);
@@ -700,14 +713,20 @@ public class RpcConnection extends Thread {
 	public int xupdateResource(User user, String resource, String xupdate)
 			throws SAXException, LockException, PermissionDeniedException, EXistException,
 			XPathException {
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
 			DocumentImpl doc = (DocumentImpl)broker.getDocument(resource);
-			if (doc == null)
+			if (doc == null) {
+                transact.abort(transaction);
 				throw new EXistException("document " + resource + " not found");
-			if(!doc.getPermissions().validate(user, Permission.READ))
+            }
+			if(!doc.getPermissions().validate(user, Permission.READ)) {
+                transact.abort(transaction);
 			    throw new PermissionDeniedException("Insufficient privileges to read resource");
+            }
 			DocumentSet docs = new DocumentSet();
 			docs.add(doc);
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
@@ -715,13 +734,16 @@ public class RpcConnection extends Thread {
 					new StringReader(xupdate)));
 			long mods = 0;
 			for (int i = 0; i < modifications.length; i++) {
-				mods += modifications[i].process();
+				mods += modifications[i].process(transaction);
 				broker.flush();
 			}
+            transact.commit(transaction);
 			return (int) mods;
 		} catch (ParserConfigurationException e) {
+            transact.abort(transaction);
 			throw new EXistException(e.getMessage());
 		} catch (IOException e) {
+            transact.abort(transaction);
 			throw new EXistException(e.getMessage());
 		} finally {
 			brokerPool.release(broker);
@@ -1088,49 +1110,58 @@ public class RpcConnection extends Thread {
 			boolean replace, Date created, Date modified) throws Exception {
 		DBBroker broker = null;
 		Collection collection = null;
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		try {
 			long startTime = System.currentTimeMillis();
 			broker = brokerPool.get(user);
 			int p = path.lastIndexOf('/');
-			if (p < 0 || p == path.length() - 1)
+			if (p < 0 || p == path.length() - 1) {
+                transact.abort(txn);
 				throw new EXistException("Illegal document path");
+            }
 			String collectionName = path.substring(0, p);
 			String docName = path.substring(p + 1);
 			InputSource source;
 			IndexInfo info;
 			try {
 				collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
-				if (collection == null)
+				if (collection == null) {
+                    transact.abort(txn);
 					throw new EXistException("Collection " + collectionName
 							+ " not found");
+                }
 				if (!replace) {
 					DocumentImpl old = collection.getDocument(broker, docName);
-					if (old != null)
+					if (old != null) {
+                        transact.abort(txn);
 						throw new PermissionDeniedException(
 								"Document exists and overwrite is not allowed");
+                    }
 				}
 				InputStream is = new ByteArrayInputStream(xml);
 				source = new InputSource(is);
-				info = collection.validate(broker, docName, source);
+				info = collection.validate(txn, broker, docName, source);
 			} finally {
 				if(collection != null)
 					collection.release();
 			}
-						
-			if (created != null) 
-				info.getDocument().setCreated( created.getTime());
-			
-			
-			if (modified != null)
-				info.getDocument().setLastModified( modified.getTime());
-			
-			
-			collection.store(broker, info, source, false);
+
+            if (created != null) 
+                info.getDocument().setCreated( created.getTime());
+            
+            
+            if (modified != null)
+                info.getDocument().setLastModified( modified.getTime());
+			collection.store(txn, broker, info, source, false);
+            transact.commit(txn);
+
 			LOG.debug("parsing " + path + " took "
 					+ (System.currentTimeMillis() - startTime) + "ms.");
 			documentCache.clear();
 			return true;
 		} catch (Exception e) {
+            transact.abort(txn);
 			LOG.debug(e.getMessage(), e);
 			throw e;
 		} finally {
@@ -1151,25 +1182,27 @@ public class RpcConnection extends Thread {
 	 * @throws IOException
 	 */
 	public boolean parseLocal(User user, String localFile, String docName,
-			boolean replace) throws EXistException, PermissionDeniedException, LockException,
-			SAXException, TriggerException {
+			boolean replace) throws Exception {
 		return parseLocal(user, localFile, docName, replace, null, null);		
 	}
 
 
 	public boolean parseLocal(User user, String localFile, String docName,
-			boolean replace, Date created, Date modified) throws EXistException, PermissionDeniedException, LockException,
-			SAXException, TriggerException {
+			boolean replace, Date created, Date modified) throws Exception {
 		File file = new File(localFile);
 		if (!file.canRead())
 			throw new EXistException("unable to read file " + localFile);
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		DBBroker broker = null;
 		DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get(user);
 			int p = docName.lastIndexOf('/');
-			if (p < 0 || p == docName.length() - 1)
+			if (p < 0 || p == docName.length() - 1) {
+                transact.abort(txn);
 				throw new EXistException("Illegal document path");
+            }
 			String collectionName = docName.substring(0, p);
 			docName = docName.substring(p + 1);
 			Collection collection = null;
@@ -1177,29 +1210,36 @@ public class RpcConnection extends Thread {
 			InputSource source;
 			try {
 				collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
-				if (collection == null)
+				if (collection == null) {
+                    transact.abort(txn);
 					throw new EXistException("Collection " + collectionName
 							+ " not found");
+                }
 				if (!replace) {
 					DocumentImpl old = collection.getDocument(broker, docName);
-					if (old != null)
+					if (old != null) {
+                        transact.abort(txn);
 						throw new PermissionDeniedException(
 								"Old document exists and overwrite is not allowed");
+                    }
 				}
 				source = new InputSource(file.toURI().toASCIIString());
-				info = collection.validate(broker, docName, source);
+				info = collection.validate(txn, broker, docName, source);
 			} finally {
 				if(collection != null)
 					collection.release();
 			}
-			
-			if (created != null)
-				info.getDocument().setCreated(created.getTime());
-			
-			if (modified != null)
-				info.getDocument().setLastModified(modified.getTime());
-			
-			collection.store(broker, info, source, false);
+
+            if (created != null)
+                info.getDocument().setCreated(created.getTime());
+            
+            if (modified != null)
+                info.getDocument().setLastModified(modified.getTime());
+			collection.store(txn, broker, info, source, false);
+            transact.commit(txn);
+        } catch (Exception e) {
+            transact.abort(txn);
+            throw e;
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -1213,15 +1253,17 @@ public class RpcConnection extends Thread {
 	
 	
 	public boolean storeBinary(User user, byte[] data, String docName, String mimeType,
-		boolean replace) throws EXistException, PermissionDeniedException, LockException {
+		boolean replace) throws Exception {
 		return storeBinary(user, data, docName, mimeType, replace, null, null);
 	}
 
 	public boolean storeBinary(User user, byte[] data, String docName, String mimeType,
-			boolean replace, Date created, Date modified) throws EXistException, PermissionDeniedException, LockException {
+			boolean replace, Date created, Date modified) throws Exception {
 		DBBroker broker = null;
 		DocumentImpl doc = null;
 		Collection collection = null;
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		try {
 			broker = brokerPool.get(user);
 			int p = docName.lastIndexOf('/');
@@ -1240,12 +1282,16 @@ public class RpcConnection extends Thread {
 							"Old document exists and overwrite is not allowed");
 			}
 			LOG.debug("Storing binary resource to collection " + collection.getName());
-			doc = collection.addBinaryResource(broker, docName, data, mimeType);
-				if (created != null)
-					doc.setCreated(created.getTime());
-				if (modified != null)
-					doc.setLastModified(modified.getTime());
 
+			doc = collection.addBinaryResource(txn, broker, docName, data, mimeType);
+            if (created != null)
+                doc.setCreated(created.getTime());
+            if (modified != null)
+                doc.setLastModified(modified.getTime());
+			transact.commit(txn);
+        } catch (Exception e) {
+            transact.abort(txn);
+            throw e;
 		} finally {
 			if(collection != null)
 				collection.release();
@@ -1254,10 +1300,6 @@ public class RpcConnection extends Thread {
 		documentCache.clear();
 		return doc != null;
 	}
-
-	
-	
-	
 	
 	public String upload(User user, byte[] chunk, int length, String fileName)
 			throws EXistException, IOException {
@@ -1528,26 +1570,36 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 	}
 
 	public void remove(User user, String docPath) throws Exception {
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		DBBroker broker = null;
 		Collection collection = null;
 		try {
 			broker = brokerPool.get(user);
 			int p = docPath.lastIndexOf('/');
-			if (p < 0 || p == docPath.length() - 1)
+			if (p < 0 || p == docPath.length() - 1) {
+                transact.abort(txn);
 				throw new EXistException("Illegal document path");
+            }
 			String collectionName = docPath.substring(0, p);
 			String docName = docPath.substring(p + 1);
 			collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
-			if (collection == null)
+			if (collection == null) {
+                transact.abort(txn);
 				throw new EXistException("Collection " + collectionName
 						+ " not found");
+            }
 			DocumentImpl doc = collection.getDocument(broker, docName);
-			if(doc == null)
+			if(doc == null) {
+                transact.abort(txn);
 				throw new EXistException("Document " + docPath + " not found");
+            }
+            
 			if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
-				collection.removeBinaryResource(broker, doc);
+				collection.removeBinaryResource(txn, broker, doc);
 			else
-				collection.removeDocument(broker, docName);
+				collection.removeDocument(txn, broker, docName);
+            transact.commit(txn);
 			documentCache.clear();
 		} finally {
 			if(collection != null)
@@ -1557,6 +1609,8 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 	}
 
 	public boolean removeCollection(User user, String name) throws Exception {
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		DBBroker broker = null;
 		Collection collection = null;
 		try {
@@ -1566,7 +1620,12 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 				return false;
 			LOG.debug("removing collection " + name);
 			documentCache.clear();
-			return broker.removeCollection(collection);
+			boolean removed = broker.removeCollection(txn, collection);
+            transact.commit(txn);
+            return removed;
+        } catch (Exception e) {
+            transact.abort(txn);
+            throw e;
 		} finally {
 			if(collection != null)
 				collection.getLock().release();
@@ -1710,6 +1769,8 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 		DBBroker broker = null;
 		Collection collection = null;
 		DocumentImpl doc = null;
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = brokerPool.get(user);
 			org.exist.security.SecurityManager manager = brokerPool
@@ -1730,12 +1791,13 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 					}
 					if (permissions != null && permissions.length() > 0)
 						perm.setPermissions(permissions);
-					broker.saveCollection(doc.getCollection());
+					broker.storeDocument(transaction, doc);
+                    transact.commit(transaction);
 					broker.flush();
 					return true;
-				} else
-					throw new PermissionDeniedException(
-							"not allowed to change permissions");
+				}
+				transact.abort(transaction);
+				throw new PermissionDeniedException("not allowed to change permissions");
 			} else {
 				LOG.debug("changing permissions on collection " + resource);
 				Permission perm = collection.getPermissions();
@@ -1747,22 +1809,26 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 						perm.setOwner(owner);
 						perm.setGroup(ownerGroup);
 					}
-					broker.saveCollection(collection);
+                    // keep the write lock in the transaction
+                    transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+					broker.saveCollection(transaction, collection);
+                    transact.commit(transaction);
 					broker.flush();
 					return true;
-				} else
-					throw new PermissionDeniedException(
-							"not allowed to change permissions");
+				}
+				transact.abort(transaction);
+				throw new PermissionDeniedException(
+				"not allowed to change permissions");
 			}
 		} catch (SyntaxException e) {
+            transact.abort(transaction);
 			throw new EXistException(e.getMessage());
 		} catch (PermissionDeniedException e) {
+            transact.abort(transaction);
 			throw new EXistException(e.getMessage());
 		} finally {
 			if(doc != null)
 				doc.getUpdateLock().release(Lock.WRITE_LOCK);
-			if(collection != null)
-				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -1773,6 +1839,8 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 		DBBroker broker = null;
 		Collection collection = null;
 		DocumentImpl doc = null;
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = brokerPool.get(user);
 			org.exist.security.SecurityManager manager = brokerPool
@@ -1792,36 +1860,37 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 						perm.setGroup(ownerGroup);
 					}
 					perm.setPermissions(permissions);
-					broker.saveCollection(doc.getCollection());
+					broker.storeDocument(transaction, doc);
+                    transact.commit(transaction);
 					broker.flush();
 					return true;
-				} else
-					throw new PermissionDeniedException(
-							"not allowed to change permissions");
-			} else {
-				LOG.debug("changing permissions on collection " + resource);
-				Permission perm = collection.getPermissions();
-				if (perm.getOwner().equals(user.getName())
-						|| manager.hasAdminPrivileges(user)) {
-					perm.setPermissions(permissions);
-					if (owner != null) {
-						perm.setOwner(owner);
-						perm.setGroup(ownerGroup);
-					}
-					broker.saveCollection(collection);
-					broker.flush();
-					return true;
-				} else
-					throw new PermissionDeniedException(
-							"not allowed to change permissions");
+				}
+                transact.abort(transaction);
+				throw new PermissionDeniedException("not allowed to change permissions");
 			}
+			LOG.debug("changing permissions on collection " + resource);
+			Permission perm = collection.getPermissions();
+			if (perm.getOwner().equals(user.getName())
+					|| manager.hasAdminPrivileges(user)) {
+				perm.setPermissions(permissions);
+				if (owner != null) {
+					perm.setOwner(owner);
+					perm.setGroup(ownerGroup);
+				}
+                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+				broker.saveCollection(transaction, collection);
+                transact.commit(transaction);
+				broker.flush();
+				return true;
+			}
+            transact.abort(transaction);
+			throw new PermissionDeniedException("not allowed to change permissions");
 		} catch (PermissionDeniedException e) {
+            transact.abort(transaction);
 			throw new EXistException(e.getMessage());
 		} finally {
 			if(doc != null)
 				doc.getUpdateLock().release(Lock.WRITE_LOCK);
-			if(collection != null)
-				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -1869,12 +1938,15 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 	public boolean lockResource(User user, String path, String userName) throws Exception {
 		DBBroker broker = null;
 		DocumentImpl doc = null;
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = brokerPool.get(user);
 			doc = (DocumentImpl) broker.openDocument(path, Lock.WRITE_LOCK);
-				if (doc == null)
+				if (doc == null) {
 					throw new EXistException("Resource "
 							+ path + " not found");
+                }
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException("User is not allowed to lock resource " + path);
 			org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
@@ -1886,8 +1958,12 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 				throw new PermissionDeniedException("Resource is already locked by user " +
 						lockOwner.getName());
 			doc.setUserLock(user);
-			broker.saveCollection(doc.getCollection());
+			broker.storeDocument(transaction, doc);
+            transact.commit(transaction);
 			return true;
+        } catch (Exception e) {
+            transact.abort(transaction);
+            throw e;
 		} finally {
 			if(doc != null)
 				doc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -1930,8 +2006,11 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 			if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
 				throw new PermissionDeniedException("Resource is already locked by user " +
 						lockOwner.getName());
+            TransactionManager transact = brokerPool.getTransactionManager();
+            Txn transaction = transact.beginTransaction();
 			doc.setUserLock(null);
-			broker.saveCollection(doc.getCollection());
+			broker.saveCollection(transaction, doc.getCollection());
+            transact.commit(transaction);
 			return true;
 		} finally {
 			if(doc != null)
@@ -2289,6 +2368,8 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 	public boolean moveOrCopyResource(User user, String docPath, String destinationPath, 
 			String newName, boolean move) 
 	throws EXistException, PermissionDeniedException {
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 	    DBBroker broker = null;
 	    Collection collection = null;
 	    Collection destination = null;
@@ -2297,29 +2378,39 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 			broker = brokerPool.get(user);
 			// get source document
 			int p = docPath.lastIndexOf('/');
-			if (p < 0 || p == docPath.length() - 1)
+			if (p < 0 || p == docPath.length() - 1) {
+                transact.abort(transaction);
 				throw new EXistException("Illegal document path");
+            }
 			String collectionName = docPath.substring(0, p);
 			String docName = docPath.substring(p + 1);
 			collection = broker.openCollection(collectionName, move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
-			if (collection == null)
+			if (collection == null) {
+                transact.abort(transaction);
 				throw new EXistException("Collection " + collectionName
 						+ " not found");
+            }
 			doc = collection.getDocumentWithLock(broker, docName, Lock.WRITE_LOCK);
-			if(doc == null)
+			if(doc == null) {
+                transact.abort(transaction);
 				throw new EXistException("Document " + docPath + " not found");
+            }
 			
 			// get destination collection
 			destination = broker.openCollection(destinationPath, Lock.WRITE_LOCK);
-			if(destination == null)
+			if(destination == null) {
+                transact.abort(transaction);
 			    throw new EXistException("Destination collection " + destinationPath + " not found");
+            }
 			if(move)
-				broker.moveResource(doc, destination, newName);
+				broker.moveResource(transaction, doc, destination, newName);
 			else
-				broker.copyResource(doc, destination, newName);
+				broker.copyResource(transaction, doc, destination, newName);
+            transact.commit(transaction);
 			documentCache.clear();
 			return true;
         } catch (LockException e) {
+            transact.abort(transaction);
             throw new PermissionDeniedException("Could not acquire lock on document " + docPath);
         } finally {
         	if(collection != null)
@@ -2335,6 +2426,8 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 	public boolean moveOrCopyCollection(User user, String collectionPath, String destinationPath, 
 			String newName, boolean move) 
 	throws EXistException, PermissionDeniedException {
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 	    DBBroker broker = null;
 	    Collection collection = null;
 	    Collection destination = null;
@@ -2342,21 +2435,26 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 			broker = brokerPool.get(user);
 			// get source document
 			collection = broker.openCollection(collectionPath, move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
-			if (collection == null)
+			if (collection == null) {
+                transact.abort(transaction);
 				throw new EXistException("Collection " + collectionPath
 						+ " not found");
-			
+            }
 			// get destination collection
 			destination = broker.openCollection(destinationPath, Lock.WRITE_LOCK);
-			if(destination == null)
-			    throw new EXistException("Destination collection " + destinationPath + " not found");
+			if(destination == null) {
+                transact.abort(transaction);
+                throw new EXistException("Destination collection " + destinationPath + " not found");
+            }
 			if(move)
-				broker.moveCollection(collection, destination, newName);
+				broker.moveCollection(transaction, collection, destination, newName);
 			else
-				broker.copyCollection(collection, destination, newName);
+				broker.copyCollection(transaction, collection, destination, newName);
+            transact.commit(transaction);
 			documentCache.clear();
 			return true;
         } catch (LockException e) {
+            transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
         } finally {
         	if(collection != null)

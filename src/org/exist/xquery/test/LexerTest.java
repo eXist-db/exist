@@ -11,6 +11,7 @@ import junit.framework.TestCase;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -25,6 +26,7 @@ import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Sequence;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import antlr.RecognitionException;
@@ -89,7 +91,8 @@ public class LexerTest extends TestCase {
 			// parse the xml source
 			broker = pool.get(user);
 			Collection collection = broker.getCollection("/db/test");
-			collection.addDocument(broker, "test.xml", xml, "text/xml");
+            IndexInfo info = collection.validate(null, broker, "test.xml", xml);
+            collection.store(null, broker, info, xml, false);
 
 			// parse the query into the internal syntax tree
 			XQueryContext context = new XQueryContext(broker);

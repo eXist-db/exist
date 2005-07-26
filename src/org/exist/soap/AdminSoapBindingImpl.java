@@ -9,6 +9,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.security.Permission;
@@ -17,6 +18,8 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
@@ -69,20 +72,24 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		throws RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		try {
 			broker = pool.get(session.getUser());
 			LOG.debug("creating collection " + collection);
 			org.exist.collections.Collection coll =
-				broker.getOrCreateCollection(collection);
+				broker.getOrCreateCollection(txn, collection);
 			if (coll == null) {
 				LOG.debug("failed to create collection");
 				return false;
 			}
-			broker.saveCollection(coll);
+			broker.saveCollection(txn, coll);
+            transact.commit(txn);
 			broker.flush();
 			broker.sync(Sync.MINOR_SYNC);
 			return true;
 		} catch (Exception e) {
+            transact.abort(txn);
 			LOG.debug(e.getMessage(), e);
 			throw new RemoteException(e.getMessage());
 		} finally {
@@ -94,13 +101,20 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		throws RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		try {
 			broker = pool.get(session.getUser());
 			Collection collection = broker.getCollection(name);
-			if(collection == null)
+			if(collection == null) {
+                transact.abort(txn);
 				return false;
-			return broker.removeCollection(collection);
+            }
+			boolean removed = broker.removeCollection(txn, collection);
+            transact.commit(txn);
+            return removed;
 		} catch (Exception e) {
+            transact.abort(txn);
 			LOG.debug(e.getMessage(), e);
 			throw new RemoteException(e.getMessage(), e);
 		} finally {
@@ -112,26 +126,36 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		throws RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		try {
 			broker = pool.get(session.getUser());
 			int p = path.lastIndexOf('/');
-			if (p < 0 || p == path.length() - 1)
+			if (p < 0 || p == path.length() - 1) {
+                transact.abort(txn);
 				throw new EXistException("Illegal document path");
+            }
 			String collectionName = path.substring(0, p);
 			String docName = path.substring(p + 1);
 			Collection collection = broker.getCollection(collectionName);
-			if (collection == null)
+			if (collection == null) {
+                transact.abort(txn);
 				throw new EXistException(
 					"Collection " + collectionName + " not found");
+            }
 			DocumentImpl doc = collection.getDocument(broker, docName);
 			if(doc == null)
 				throw new EXistException("Document " + docName + " not found");
+            
 			if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
-				collection.removeBinaryResource(broker, doc);
+				collection.removeBinaryResource(txn, broker, doc);
 			else
-				collection.removeDocument(broker, docName);
+				collection.removeDocument(txn, broker, docName);
+            
+            transact.commit(txn);
 			return true;
 		} catch (Exception e) {
+            transact.abort(txn);
 			LOG.debug(e.getMessage(), e);
 			throw new RemoteException(e.getMessage(), e);
 		} finally {
@@ -148,28 +172,34 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		throws RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		try {
 			broker = pool.get(session.getUser());
 			int p = path.lastIndexOf('/');
-			if (p < 0 || p == path.length() - 1)
+			if (p < 0 || p == path.length() - 1) {
+                transact.abort(txn);
 				throw new RemoteException("Illegal document path");
+            }
 			String collectionName = path.substring(0, p);
 			path = path.substring(p + 1);
 			Collection collection = broker.getCollection(collectionName);
-			if (collection == null)
+			if (collection == null) {
+                transact.abort(txn);
 				throw new EXistException("Collection " + collectionName + " not found");
+            }
 			if(!replace) {
 				DocumentImpl old = collection.getDocument(broker, path);
-				if(old != null)
+				if(old != null) {
+                    transact.abort(txn);
 					throw new RemoteException("Document exists and overwrite is not allowed");
+                }
 			}
 			long startTime = System.currentTimeMillis();
-			DocumentImpl doc =
-				collection.addDocument(
-						broker,
-						path,
-						new InputSource(new ByteArrayInputStream(data)),
-                        "text/xml");
+            IndexInfo info = collection.validate(txn, broker, path, new InputSource(new ByteArrayInputStream(data)));
+            info.getDocument().setMimeType("text/xml");
+            collection.store(txn, broker, info, new InputSource(new ByteArrayInputStream(data)), false);
+            transact.commit(txn);
 			LOG.debug(
 				"parsing "
 					+ path
@@ -177,6 +207,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 					+ (System.currentTimeMillis() - startTime)
 					+ "ms.");
 		} catch (Exception e) {
+            transact.abort(txn);
 			LOG.debug(e);
 			throw new RemoteException(e.getMessage(), e);
 		} finally {
@@ -199,12 +230,16 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		throws RemoteException {
 		DBBroker broker = null;
 		Session session = getSession(sessionId);
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(session.getUser());
 			Collection collection = broker.getCollection(collectionName);
-			if (collection == null)
+			if (collection == null) {
+                transact.abort(transaction);
 				throw new RemoteException(
 					"collection " + collectionName + " not found");
+            }
 			DocumentSet docs =
 				collection.allDocs(broker, new DocumentSet(), true, true);
 			XUpdateProcessor processor =
@@ -213,23 +248,31 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;
 			for (int i = 0; i < modifications.length; i++) {
-				mods += modifications[i].process();
+				mods += modifications[i].process(transaction);
 				broker.flush();
 			}
+            transact.commit(transaction);
 			return (int) mods;
 		} catch (ParserConfigurationException e) {
+            transact.abort(transaction);
 			throw new RemoteException(e.getMessage(), e);
 		} catch (IOException e) {
-			throw new RemoteException(e.getMessage(), e);
+            transact.abort(transaction);
+            throw new RemoteException(e.getMessage(), e);
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new RemoteException(e.getMessage(), e);
 		} catch (SAXException e) {
+            transact.abort(transaction);
 			throw new RemoteException(e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
+            transact.abort(transaction);
 			throw new RemoteException(e.getMessage(), e);
 		} catch (XPathException e) {
+            transact.abort(transaction);
 			throw new RemoteException(e.getMessage(), e);
 		} catch (LockException e) {
+            transact.abort(transaction);
 		    throw new RemoteException(e.getMessage(), e);
         } finally {
 			pool.release(broker);
@@ -246,14 +289,20 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		throws RemoteException {
 		DBBroker broker = null;
 		Session session = getSession(sessionId);
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(session.getUser());
 			DocumentImpl doc = (DocumentImpl)broker.getDocument(documentName);
-			if (doc == null)
+			if (doc == null) {
+                transact.abort(transaction);
 				throw new RemoteException(
 					"document " + documentName + " not found");
-			if(!doc.getPermissions().validate(broker.getUser(), Permission.READ))
+            }
+			if(!doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
+                transact.abort(transaction);
 				throw new RemoteException("Not allowed to read resource");
+            }
 			DocumentSet docs = new DocumentSet();
 			docs.add(doc);
 			XUpdateProcessor processor =
@@ -262,23 +311,31 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;
 			for (int i = 0; i < modifications.length; i++) {
-				mods += modifications[i].process();
+				mods += modifications[i].process(transaction);
 				broker.flush();
 			}
+            transact.commit(transaction);
 			return (int) mods;
 		} catch (ParserConfigurationException e) {
+            transact.abort(transaction);
 			throw new RemoteException(e.getMessage(), e);
 		} catch (IOException e) {
+            transact.abort(transaction);
 			throw new RemoteException(e.getMessage(), e);
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new RemoteException(e.getMessage(), e);
 		} catch (SAXException e) {
+            transact.abort(transaction);
 			throw new RemoteException(e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
+            transact.abort(transaction);
 			throw new RemoteException(e.getMessage(), e);
 		} catch (XPathException e) {
+            transact.abort(transaction);
 			throw new RemoteException(e.getMessage(), e);
 		} catch (LockException e) {
+            transact.abort(transaction);
 		    throw new RemoteException(e.getMessage(), e);
         } finally {
 			pool.release(broker);

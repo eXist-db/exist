@@ -23,7 +23,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -47,9 +46,11 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.sync.Sync;
-import org.exist.util.Lock;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
@@ -150,15 +151,20 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	protected void saveCollection() throws XMLDBException {
 		DBBroker broker = null;
 		Collection collection = null;
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = brokerPool.get(user);
 			collection = broker.openCollection(path, Lock.WRITE_LOCK);
 			if(collection == null)
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-			broker.saveCollection(collection);
+			broker.saveCollection(transaction, collection);
+            transact.commit(transaction);
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
 		} finally {
 			if(collection != null)
@@ -488,30 +494,41 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			return;
 		Collection collection = null;
 		DBBroker broker = null;
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		try {
 			String name = res.getId();
 			LOG.debug("removing " + name);
 			
 			broker = brokerPool.get(user);
 			collection = broker.openCollection(path, Lock.READ_LOCK);
-			if(collection == null)
-				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+			if(collection == null) {
+				transact.abort(txn);
+                throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+            }
 			DocumentImpl doc = collection.getDocument(broker, name);
-			if (doc == null)
-				throw new XMLDBException(
+			if (doc == null) {
+                transact.abort(txn);
+                throw new XMLDBException(
 						ErrorCodes.INVALID_RESOURCE,
 						"resource " + name + " not found");
+            }
 			if (res.getResourceType().equals("XMLResource"))
-				collection.removeDocument(broker, name);
+				collection.removeDocument(txn, broker, name);
 			else
-				collection.removeBinaryResource(broker, name);
+				collection.removeBinaryResource(txn, broker, name);
+            transact.commit(txn);
 		} catch (EXistException e) {
+            transact.abort(txn);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
+            transact.abort(txn);
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
 		} catch (TriggerException e) {
+            transact.abort(txn);
 			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
 		} catch (LockException e) {
+            transact.abort(txn);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 					"Failed to acquire lock on collections.dbx", e);
 		} finally {
@@ -552,18 +569,24 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	private void storeBinaryResource(LocalBinaryResource res) throws XMLDBException {
 	    Collection collection = null;
 		DBBroker broker = null;
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		try {
 			broker = brokerPool.get(user);
 			collection = broker.openCollection(path, Lock.WRITE_LOCK);
-			if(collection == null)
+			if(collection == null) {
+                transact.abort(txn);
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+            }
 			BinaryDocument blob =
-				collection.addBinaryResource(
+				collection.addBinaryResource(txn,
 					broker,
 					res.getId(),
 					(byte[]) res.getContent(),
                     res.getMimeType(), res.datecreated, res.datemodified  );
+            transact.commit(txn);
 		} catch (Exception e) {
+            transact.abort(txn);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				"Exception while storing binary resource: " + e.getMessage(),
@@ -577,48 +600,53 @@ public class LocalCollection extends Observable implements CollectionImpl {
 
 	private void storeXMLResource(LocalXMLResource res) throws XMLDBException {
 		DBBroker broker = null;
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
 		try {
 			broker = brokerPool.get(user);
 			String name = res.getDocumentId();
 			String uri = null;
 			if(res.file != null) uri = res.file.toURI().toASCIIString();
 			DocumentImpl newDoc;
+            IndexInfo info = null;
 			Collection collection = broker.openCollection(path, Lock.WRITE_LOCK);
-			IndexInfo info = null;
-			try {
-				if(collection == null)
-					throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-				Observer observer;
-				for (Iterator i = observers.iterator(); i.hasNext();) {
-					observer = (Observer) i.next();
-					collection.addObserver(observer);
-				}
-				if (uri != null) {
-					info = collection.validate(broker, name, new InputSource(uri));
-				} else if (res.root != null)
-					info = collection.validate(broker, name, res.root);
-				else
-					info = collection.validate(broker, name, res.content);
-			} finally {
-				collection.release();
-			}
-            info.getDocument().setMimeType(res.getMimeType());
-            
-            if (res.datecreated  != null) 
-				info.getDocument().setCreated( res.datecreated.getTime());
-			
-            if (res.datemodified != null)
-				info.getDocument().setLastModified( res.datemodified.getTime());
-			
+            try {
+    			if(collection == null) {
+    			    transact.abort(txn);
+    			    throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+    			}
+    			Observer observer;
+    			for (Iterator i = observers.iterator(); i.hasNext();) {
+    			    observer = (Observer) i.next();
+    			    collection.addObserver(observer);
+    			}
+    			if (uri != null) {
+    			    info = collection.validate(txn, broker, name, new InputSource(uri));
+    			} else if (res.root != null)
+    			    info = collection.validate(txn, broker, name, res.root);
+    			else
+    			    info = collection.validate(txn, broker, name, res.content);
+                info.getDocument().setMimeType(res.getMimeType());
+                
+                if (res.datecreated  != null) 
+    				info.getDocument().setCreated( res.datecreated.getTime());
+    			
+                if (res.datemodified != null)
+    				info.getDocument().setLastModified( res.datemodified.getTime());
+            } finally {
+                collection.release();
+            }
 			if (uri != null) {
-				collection.store(broker, info, new InputSource(uri), false);
+				collection.store(txn, broker, info, new InputSource(uri), false);
 			} else if (res.root != null) {
-				collection.store(broker, info, res.root, false);
+				collection.store(txn, broker, info, res.root, false);
 			} else {
-				collection.store(broker, info, res.content, false);
+				collection.store(txn, broker, info, res.content, false);
 			}
+            transact.commit(txn);
 			collection.deleteObservers();
 		} catch (Exception e) {
+            transact.abort(txn);
 			e.printStackTrace();
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
