@@ -34,7 +34,7 @@ import java.util.Random;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
-import org.cyberneko.html.parsers.SAXParser;
+// import org.cyberneko.html.parsers.SAXParser;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -658,8 +658,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
 
 	private void setupParser(Collection collection, LocalXMLResource res) throws XMLDBException {
 		if ( res.getMimeType().equals("text/html") ) {
-			XMLReader htmlReader = new SAXParser();
-			collection.setReader( htmlReader );
+			try {
+				Class clazz = Class.forName( "org.cyberneko.html.parsers.SAXParser" );
+				XMLReader htmlReader = (XMLReader) clazz.newInstance();
+				collection.setReader( htmlReader );
+			} catch ( Exception e) {
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+		                "please put nekohtml.jar in lib/optional/ ", e);
+			}
 		}
 	}
 
