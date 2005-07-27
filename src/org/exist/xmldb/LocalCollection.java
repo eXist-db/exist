@@ -34,6 +34,7 @@ import java.util.Random;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
+import org.cyberneko.html.parsers.SAXParser;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -621,6 +622,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
     			    collection.addObserver(observer);
     			}
     			if (uri != null) {
+    				setupParser(collection, res);
     			    info = collection.validate(txn, broker, name, new InputSource(uri));
     			} else if (res.root != null)
     			    info = collection.validate(txn, broker, name, res.root);
@@ -651,6 +653,13 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
 			brokerPool.release(broker);
+		}
+	}
+
+	private void setupParser(Collection collection, LocalXMLResource res) throws XMLDBException {
+		if ( res.getMimeType().equals("text/html") ) {
+			XMLReader htmlReader = new SAXParser();
+			collection.setReader( htmlReader );
 		}
 	}
 
