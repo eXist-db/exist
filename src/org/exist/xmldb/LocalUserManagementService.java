@@ -81,7 +81,7 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		org.exist.collections.Collection coll = null;
 		DBBroker broker = null;
-        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
@@ -128,7 +128,7 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		org.exist.collections.Collection coll = null;
 		DBBroker broker = null;
-        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
@@ -181,7 +181,7 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DocumentImpl document = null;
 		DBBroker broker = null;
-        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
@@ -212,7 +212,7 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		org.exist.collections.Collection coll = null;
 		DBBroker broker = null;
-        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
@@ -260,7 +260,7 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DocumentImpl document = null;
 		DBBroker broker = null;
-        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
@@ -302,7 +302,7 @@ public class LocalUserManagementService implements UserManagementService {
 				"need admin privileges for chown");
 		org.exist.collections.Collection coll = null;
 		DBBroker broker = null;
-        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
