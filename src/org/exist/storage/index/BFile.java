@@ -1068,6 +1068,9 @@ public class BFile extends BTree {
                     LOG.warn("page " + loggable.page + " not found!");
                     return;
                 }
+                if (page.getPageHeader().getStatus() == UNUSED)
+                	// page is obviously deleted later
+                	return;
                 final byte[] data = page.read();
                 wp = new SinglePage(page, data, true);
             }
