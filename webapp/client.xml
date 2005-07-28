@@ -132,12 +132,25 @@
       <synopsis format="linespecific">bin/client.sh -d -m /db/movies -p /home/exist/xml/movies</synopsis>
       <para>will recurse into all directories below <filename moreinfo="none">/home/exist/xml/movies</filename>. For each subdirectory, a collection will be created below the <filename moreinfo="none">/db/movies</filename> root collection, i.e. you may use this option to recursively import an entire collection tree.</para>
       <note>
-        <para>Beginning with version 1.0 beta, eXist can also store binary
-        resources in addition to XML files. The client thus tries to determine
-        if the current file is XML or not. File <filename>client.properties</filename>
-        defines two properties to specify the known file suffixes: <option>suffixes.xml</option>
-        and <option>suffixes.binary</option>.</para>
-    </note>
+		  <para>
+			  eXist can also store binary resources in addition to XML files. The client thus tries to determine if the current file is XML or not. File <filename>mime-types.xml</filename> allows to associate :
+			  <unorderedlist>
+				  <listitem> a MIME type </listitem>
+				  <listitem> an eXist type ("xml" or "binary") </listitem>
+				  <listitem> a file extension </listitem>
+			  </unorderedlist>
+			  This is also used by the eXist servers .   
+		  For example to specify that .xmap extension is used for XML files you can specify it like this in mime-types.xml :
+		  <programlisting>  
+			  <![CDATA[  
+<mime-type name="text/xml" type="xml">
+ <description>XML document</description>  
+ <extensions>.xml,.xsl,.xsd,.mods,.xmi,.xconf,.xslt,.wsdl,.x3d,.rdf,.owl,.xmap</extensions>  
+</mime-type>  
+			  ]]>
+		  </programlisting>
+		  </para>  
+	  </note>
     </section>
     <section>
       <title>Removing Collections/Documents</title>
