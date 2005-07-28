@@ -87,6 +87,11 @@ public class LogManager {
     /** the current output channel */ 
     private FileChannel channel;
     
+    private FileSyncThread syncThread;
+    
+    /** latch used to synchronize writes to the channel */
+    private Object latch = new Object();
+    
     /** the data directory where log files are written to */
     private File dir;
     
@@ -106,6 +111,9 @@ public class LogManager {
         this.dir = directory;
         this.pool = pool;
         currentBuffer = ByteBuffer.allocate(0x40000);
+        
+        syncThread = new FileSyncThread(latch);
+        syncThread.start();
         
         String logDir = (String) pool.getConfiguration().getProperty("db-connection.recovery.log-dir");
         if (logDir != null) {
@@ -167,21 +175,19 @@ public class LogManager {
     public synchronized void flushToLog(boolean fsync) {
         if (inRecovery)
             return;
-        try {
-            if (currentBuffer.position() > 0) {
-                currentBuffer.flip();
-                channel.write(currentBuffer);
-                currentBuffer.clear();
-            }
-        } catch (IOException e) {
-            LOG.warn("Flushing log file failed!", e);
-        }
-        if (fsync) {
+        synchronized (latch) {
             try {
-                channel.force(false);
+                if (currentBuffer.position() > 0) {
+                    currentBuffer.flip();
+                    channel.write(currentBuffer);
+                    currentBuffer.clear();
+                }
             } catch (IOException e) {
                 LOG.warn("Flushing log file failed!", e);
             }
+        }
+        if (fsync) {
+            syncThread.triggerSync();
         }
         try {
             if (channel.size() >= logSizeLimit)
@@ -220,13 +226,25 @@ public class LogManager {
         }
         if (LOG.isDebugEnabled())
             LOG.debug("Creating new log file: " + file.getAbsolutePath());
-        
+        close();
         try {
 			RandomAccessFile raf = new RandomAccessFile(file, "rw");
 			channel = raf.getChannel();
+            
+            syncThread.setChannel(channel);
 		} catch (FileNotFoundException e) {
 			throw new LogException("Failed to open new log file: " + file.getAbsolutePath(), e);
 		}
+    }
+    
+    public void close() {
+        if (channel != null) {
+            try {
+                channel.close();
+            } catch (IOException e) {
+                LOG.warn("Failed to close journal file", e);
+            }
+        }
     }
     
     /**
@@ -275,6 +293,10 @@ public class LogManager {
 		return new File(dir, getFileName(fileNum));
 	}
 	
+    public void shutdown() {
+        syncThread.shutdown();
+    }
+    
     /**
      * Called to signal that the db is currently in
      * recovery phase, so no log output should be written.
