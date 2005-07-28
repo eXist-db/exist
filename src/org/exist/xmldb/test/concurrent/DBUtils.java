@@ -22,7 +22,9 @@ package org.exist.xmldb.test.concurrent;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 
@@ -78,7 +80,7 @@ public class DBUtils {
 			throw new IllegalArgumentException("Cannot write to output file " + file.getAbsolutePath());
 		
 		System.out.println("Generating XML file " + file.getAbsolutePath());
-		Writer writer = new BufferedWriter(new FileWriter(file));
+		Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
 		
 		XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, 3, wordList, namespaces);
 		gen.generateXML(writer);
