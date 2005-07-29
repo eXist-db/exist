@@ -293,24 +293,26 @@ public class LogManager {
         }
         if (LOG.isDebugEnabled())
             LOG.debug("Creating new log file: " + file.getAbsolutePath());
-        close();
-        try {
-			RandomAccessFile raf = new RandomAccessFile(file, "rw");
-			channel = raf.getChannel();
-            
-            syncThread.setChannel(channel);
-		} catch (FileNotFoundException e) {
-			throw new LogException("Failed to open new log file: " + file.getAbsolutePath(), e);
-		}
+        synchronized (latch) {
+	        close();
+	        try {
+				RandomAccessFile raf = new RandomAccessFile(file, "rw");
+				channel = raf.getChannel();
+	            
+	            syncThread.setChannel(channel);
+			} catch (FileNotFoundException e) {
+				throw new LogException("Failed to open new log file: " + file.getAbsolutePath(), e);
+			}
+        }
     }
     
     public void close() {
         if (channel != null) {
-            try {
-                channel.close();
-            } catch (IOException e) {
-                LOG.warn("Failed to close journal file", e);
-            }
+        	try {
+        		channel.close();
+        	} catch (IOException e) {
+        		LOG.warn("Failed to close journal file", e);
+        	}
         }
     }
     
