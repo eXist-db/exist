@@ -65,7 +65,8 @@
 
 		<recovery enabled="yes" sync-on-commit="no" journal-dir="webapp/WEB-INF/data"/>
 		
-		<watchdog query-timeout="-1" output-size-limit="10000"/>
+		<recovery enabled="yes" sync-on-commit="no"
+            size="10M" journal-dir="webapp/WEB-INF/data"/>
 		
 		<!--system-task class="org.exist.storage.DataBackup" period="120000">
 			<parameter name="output-dir" value="backup"/>
