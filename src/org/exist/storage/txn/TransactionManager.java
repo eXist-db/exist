@@ -139,7 +139,7 @@ public class TransactionManager {
             return;
 		long txnId = nextTxnId++;
 		logManager.writeToLog(new Checkpoint(txnId));
-		logManager.flushToLog(true);
+		logManager.flushToLog(true, true);
         if (switchLogFiles)
             try {
                 logManager.switchFiles();

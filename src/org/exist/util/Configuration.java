@@ -385,9 +385,16 @@ public class Configuration implements ErrorHandler {
         }
         setProperty("db-connection.recovery.enabled", new Boolean(value));
         
-        option = recovery.getAttribute("log-dir");
+        option = recovery.getAttribute("sync-on-commit");
+        value = true;
+        if (option != null) {
+        	value = option.equals("yes");
+        }
+        setProperty("db-connection.recovery.sync-on-commit", new Boolean(value));
+        
+        option = recovery.getAttribute("journal-dir");
         if (option != null)
-            setProperty("db-connection.recovery.log-dir", option);
+            setProperty("db-connection.recovery.journal-dir", option);
     }
     
     /**

@@ -66,7 +66,7 @@ public class RecoveryTest extends TestCase {
         TestRunner.run(RecoveryTest.class);
     }
     
-    private static String directory = "/home/wolf/xml/shakespeare";
+    private static String directory = "samples/shakespeare";
     
     private static File dir = new File(directory);
     

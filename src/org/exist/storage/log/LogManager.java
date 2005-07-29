@@ -101,11 +101,20 @@ public class LogManager {
     /** temp buffer */
     private ByteBuffer currentBuffer;
     
+    /** the last LSN written by the LogManager */
+    private long currentLsn = Lsn.LSN_INVALID;
+    
+    /** stores the current LSN of the last file sync on the log file */ 
+    private long lastSyncLsn = Lsn.LSN_INVALID;
+    
     /** set to true while recovery is in progress */
     private boolean inRecovery = false;
     
     /** the {@link BrokerPool} that created this log manager */
     private BrokerPool pool;
+    
+    /** if set to true, a sync will be triggered on the log file after every commit */
+    private boolean syncOnCommit = true;
     
     public LogManager(BrokerPool pool, File directory) throws EXistException {
         this.dir = directory;
@@ -115,7 +124,14 @@ public class LogManager {
         syncThread = new FileSyncThread(latch);
         syncThread.start();
         
-        String logDir = (String) pool.getConfiguration().getProperty("db-connection.recovery.log-dir");
+        Boolean syncOpt = (Boolean) pool.getConfiguration().getProperty("db-connection.recovery.sync-on-commit");
+        if (syncOpt != null) {
+        	syncOnCommit = syncOpt.booleanValue();
+        	if (LOG.isDebugEnabled())
+        		LOG.debug("SyncOnCommit = " + syncOnCommit);
+        }
+        
+        String logDir = (String) pool.getConfiguration().getProperty("db-connection.recovery.journal-dir");
         if (logDir != null) {
             String dbHome = System.getProperty("exist.home");
             File f = new File(logDir);
@@ -131,7 +147,7 @@ public class LogManager {
                     throw new EXistException("Failed to create log output directory: " + f.getAbsolutePath());
                 }
             }
-            if (!(f.isDirectory() && f.canWrite())) {
+            if (!(f.canWrite())) {
                 throw new EXistException("Cannot write to log output directory: " + f.getAbsolutePath());
             }
             this.dir = f;
@@ -153,13 +169,13 @@ public class LogManager {
         if (required > currentBuffer.capacity() - currentBuffer.position())
             flushToLog(false);
         try {
-            final long lsn = Lsn.create(currentFile, (int) channel.position() + currentBuffer.position() + 1);
+            currentLsn = Lsn.create(currentFile, (int) channel.position() + currentBuffer.position() + 1);
             currentBuffer.put(loggable.getLogType());
             currentBuffer.putLong(loggable.getTransactionId());
             currentBuffer.putShort((short) loggable.getLogSize());
             loggable.write(currentBuffer);
             currentBuffer.putShort((short) (size + LOG_ENTRY_HEADER_LEN));
-            loggable.setLsn(lsn);
+            loggable.setLsn(currentLsn);
         } catch (IOException e) {
             throw new TransactionException("Failed to write to log", e);
         }
@@ -169,10 +185,22 @@ public class LogManager {
      * Flush the current log buffer to disk. If fsync is true, a sync will
      * be called on the file to force all changes to disk.
      * 
-     * @param fsync
+     * @param fsync forces all changes to disk if true and syncMode is set to {@link #SYNC_ON_COMMIT}.
      * @throws TransactionException
      */
-    public synchronized void flushToLog(boolean fsync) {
+    public void flushToLog(boolean fsync) {
+    	flushToLog(fsync, false);
+    }
+    
+    /**
+     * Flush the current log buffer to disk. If fsync is true, a sync will
+     * be called on the file to force all changes to disk.
+     * 
+     * @param fsync forces all changes to disk if true and syncMode is set to {@link #SYNC_ON_COMMIT}.
+     * @param forceSync force changes to disk even if syncMode doesn't require it.
+     * @throws TransactionException
+     */
+    public synchronized void flushToLog(boolean fsync, boolean forceSync) {
         if (inRecovery)
             return;
         synchronized (latch) {
@@ -186,8 +214,9 @@ public class LogManager {
                 LOG.warn("Flushing log file failed!", e);
             }
         }
-        if (fsync) {
+        if (forceSync || (fsync && syncOnCommit && currentLsn > lastSyncLsn)) {
             syncThread.triggerSync();
+            lastSyncLsn = currentLsn;
         }
         try {
             if (channel.size() >= logSizeLimit)

@@ -115,6 +115,18 @@ public class CacheManager {
         cache.setCacheManager(this);
     }
     
+    public void deregisterCache(Cache cache) {
+    	Cache next;
+    	for (int i = 0; i < caches.size(); i++) {
+            next = (Cache) caches.get(i);
+            if (cache == next) {
+            	caches.remove(i);
+            	break;
+            }
+    	}
+    	currentPageCount -= cache.getBuffers();
+    }
+    
     /**
      * Called by a cache if it wants to grow. The cache manager
      * will either deny the request, for example, if there are no spare

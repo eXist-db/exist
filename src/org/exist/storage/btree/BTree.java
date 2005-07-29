@@ -202,6 +202,11 @@ public class BTree extends Paged {
         cache.setFileName(getFile().getName());
         cacheManager.registerCache(cache);
 	}
+
+	public void closeAndRemove() {
+		super.closeAndRemove();
+		cacheManager.deregisterCache(cache);
+	}
 	
 	/**
 	 *  addValue adds a Value to the BTree and associates a pointer with it. The
