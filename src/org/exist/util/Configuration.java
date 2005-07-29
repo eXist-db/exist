@@ -376,7 +376,7 @@ public class Configuration implements ErrorHandler {
         }
     }
 
-    private void configureRecovery(NodeList nodes) {
+    private void configureRecovery(NodeList nodes) throws DatabaseConfigurationException {
         Element recovery = (Element) nodes.item(0);
         String option = recovery.getAttribute("enabled");
         boolean value = true;
@@ -395,6 +395,18 @@ public class Configuration implements ErrorHandler {
         option = recovery.getAttribute("journal-dir");
         if (option != null)
             setProperty("db-connection.recovery.journal-dir", option);
+        
+        option = recovery.getAttribute("size");
+        if (option != null) {
+        	if (option.endsWith("M") || option.endsWith("m"))
+                option = option.substring(0, option.length() - 1);
+        	try {
+				Integer size = new Integer(option);
+				setProperty("db-connection.recovery.size-limit", size);
+			} catch (NumberFormatException e) {
+				throw new DatabaseConfigurationException("size attribute in recovery section needs to be a number");
+			}
+        }
     }
     
     /**
