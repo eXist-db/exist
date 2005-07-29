@@ -291,6 +291,11 @@ public class BFile extends BTree {
             return false;
     }
 
+    public void closeAndRemove() {
+    	super.closeAndRemove();
+    	cacheManager.deregisterCache(dataCache);
+    }
+    
     private SinglePage createDataPage() {
         try {
             SinglePage page = new SinglePage();

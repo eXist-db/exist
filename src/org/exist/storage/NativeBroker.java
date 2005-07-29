@@ -194,6 +194,7 @@ public class NativeBroker extends DBBroker {
 	/** initialize database; read configuration, etc. */
 	public NativeBroker(BrokerPool pool, Configuration config) throws EXistException {
 		super(pool, config);
+		LOG.debug("Initializing broker " + hashCode());
 		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)
 			dataDir = "data";
 
@@ -274,11 +275,11 @@ public class NativeBroker extends DBBroker {
         }
         
         if ((dbWords = (BFile) config.getProperty("db-connection.words")) == null) {
-            dbWords = new BFile(pool, NativeBroker.WORDS_DBX_ID, 
+        	LOG.debug("Creating words.dbx ....\n\n");
+        	dbWords = new BFile(pool, NativeBroker.WORDS_DBX_ID, 
                     new File(dataDir + File.separatorChar + WORDS_DBX), pool.getCacheManager(), 1.5, 10, 1000);
             config.setProperty("db-connection.words", dbWords);
         }
-        LOG.debug("words.dbx size: " + dbWords.getFile().length());
         textEngine = new NativeTextEngine(this, config, dbWords);
         valueIndex = new NativeValueIndex(this, valuesDb);
         if ( qnameValueIndexation ) {
@@ -316,6 +317,11 @@ public class NativeBroker extends DBBroker {
 
     /** Observer Design Pattern: List of ContentLoadingObserver objects */
     private List contentLoadingObservers = new ArrayList();
+    
+    /** Remove all observers */
+    public void clearContentLoadingObservers() {
+    	contentLoadingObservers.clear();
+    }
     
     /** Observer Design Pattern: add an observer. */
     public void addContentLoadingObserver(ContentLoadingObserver observer) {
@@ -1250,10 +1256,10 @@ public class NativeBroker extends DBBroker {
 	 * the document if node is null.
 	 */
 	private void reindex(Txn transaction, DocumentImpl doc, boolean repairMode) {
-		LOG.debug("Reindexing document " + doc.getFileName());
+//		LOG.debug("Reindexing document " + doc.getFileName());
 		if(doc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX))
 		    doc.getCollection().setConfigEnabled(false);
-		final long start = System.currentTimeMillis();
+//		final long start = System.currentTimeMillis();
 		Iterator iterator;
 		NodeList nodes = doc.getChildNodes();
 		NodeImpl n;
@@ -1268,7 +1274,7 @@ public class NativeBroker extends DBBroker {
 		flush();
 		if(doc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX))
 		    doc.getCollection().setConfigEnabled(true);
-		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
+//		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
 	}
 	
 	public void copyResource(Txn transaction, DocumentImpl doc, Collection destination, String newName) 
@@ -1866,6 +1872,8 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         
         LOG.debug("Removing index files ...");
+        clearContentLoadingObservers();
+        
         elementsDb.closeAndRemove();
         config.setProperty("db-connection.elements", null);
         
@@ -1885,6 +1893,7 @@ public class NativeBroker extends DBBroker {
         } catch (DBException e) {
             LOG.warn("Exception during repair: " + e.getMessage(), e);
         }
+        LOG.info("Reindexing database files ...");
         reindex(null, root, true);
     }
     
