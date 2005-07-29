@@ -58,6 +58,9 @@ public class LocationStep extends Step {
 	protected int parentDeps = -1;
 	protected boolean preload = false;
 	protected boolean inUpdate = false;
+	
+	private boolean profilingEnabled = false; // true;
+	private long profilingThreshold = 5;
     
 	public LocationStep(XQueryContext context, int axis) {
 		super(context, axis);
@@ -138,6 +141,12 @@ public class LocationStep extends Step {
 				applyPredicate(contextSequence, cached.getResult());
 		}
 		Sequence temp;
+		
+		long t0 = 0;
+		if ( profilingEnabled ) {
+			t0 = System.currentTimeMillis();
+		}
+
 		switch (axis) {
 			case Constants.DESCENDANT_AXIS :
 			case Constants.DESCENDANT_SELF_AXIS :
@@ -184,6 +193,16 @@ public class LocationStep extends Step {
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
 		}
+		
+		if ( profilingEnabled ) {
+			// TODO: add indentation
+			long elapsedTime = System.currentTimeMillis() - t0;
+			if ( elapsedTime > profilingThreshold )
+			LOG.debug( "profiler>> " + elapsedTime +"ms " + " LocationStep" + 
+					", " + Constants.AXISSPECIFIERS[axis] +
+					"::" + test + ", inPredicate: " + inPredicate );
+		}
+		
 		if(contextSequence instanceof NodeSet) {
 			cached = new CachedResult((NodeSet)contextSequence, temp);
 		}
