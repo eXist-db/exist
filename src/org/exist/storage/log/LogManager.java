@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.Checkpoint;
 import org.exist.storage.txn.TransactionException;
 import org.exist.util.sanity.SanityCheck;
 
@@ -76,7 +77,11 @@ public class LogManager {
 	/** header length + trailing back link */
     public final static int LOG_ENTRY_BASE_LEN = LOG_ENTRY_HEADER_LEN + 2;
 	
-    public final static int DEFAULT_MAX_LOG_SIZE = 50000000;
+    /** default maximum journal size */
+    public final static int DEFAULT_MAX_LOG_SIZE = 10 * 1024 * 1024;
+
+    /** minimal size the journal needs to have to be replaced by a new file during a checkpoint */
+	private static final long MIN_LOG_REPLACE = 1024 * 1024;
     
     /** 
      * size limit for the log file. A checkpoint will be triggered if the log file
@@ -87,6 +92,7 @@ public class LogManager {
     /** the current output channel */ 
     private FileChannel channel;
     
+    /** Synching the journal is done by a background thread */
     private FileSyncThread syncThread;
     
     /** latch used to synchronize writes to the channel */
@@ -119,7 +125,7 @@ public class LogManager {
     public LogManager(BrokerPool pool, File directory) throws EXistException {
         this.dir = directory;
         this.pool = pool;
-        currentBuffer = ByteBuffer.allocate(0x40000);
+        currentBuffer = ByteBuffer.allocateDirect(0x40000);
         
         syncThread = new FileSyncThread(latch);
         syncThread.start();
@@ -154,6 +160,10 @@ public class LogManager {
         }
         if (LOG.isDebugEnabled())
             LOG.debug("Using log directory: " + dir.getAbsolutePath());
+        
+        Integer sizeOpt = (Integer) pool.getConfiguration().getProperty("db-connection.recovery.size-limit");
+        if (sizeOpt != null)
+        	logSizeLimit = sizeOpt.intValue() * 1024 * 1024;
     }
     
     /**
@@ -224,6 +234,34 @@ public class LogManager {
         } catch (IOException e) {
             LOG.warn("Failed to trigger checkpoint!", e);
         }
+    }
+    
+    /**
+     * Write a checkpoint record to the log and flush it. If switchLogFiles is true,
+     * a new log file will be started, but only if the log file is larger than
+     * {@link #MIN_LOG_REPLACE}. The old log is removed.
+     * 
+     * @param txnId
+     * @param switchLogFiles
+     * @throws TransactionException
+     */
+    public void checkpoint(long txnId, boolean switchLogFiles) throws TransactionException {
+    	writeToLog(new Checkpoint(txnId));
+		flushToLog(true, true);
+        try {
+			if (switchLogFiles && channel.position() > MIN_LOG_REPLACE) {
+				int last = currentFile;
+			    try {
+			        switchFiles();
+			    } catch (LogException e) {
+			        LOG.warn("Failed to create new log file: " + e.getMessage(), e);
+			    }
+			    File oldFile = getFile(last);
+			    oldFile.delete();
+			}
+		} catch (IOException e) {
+			LOG.warn("IOException while writing checkpoint", e);
+		}
     }
     
     /**

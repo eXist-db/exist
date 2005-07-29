@@ -138,14 +138,7 @@ public class TransactionManager {
         if (!enabled)
             return;
 		long txnId = nextTxnId++;
-		logManager.writeToLog(new Checkpoint(txnId));
-		logManager.flushToLog(true, true);
-        if (switchLogFiles)
-            try {
-                logManager.switchFiles();
-            } catch (LogException e) {
-                LOG.warn("Failed to create new log file: " + e.getMessage(), e);
-            }
+		logManager.checkpoint(txnId, switchLogFiles);
 	}
 	
 	public LogManager getLogManager() {
