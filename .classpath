@@ -38,7 +38,7 @@
 	<classpathentry kind="lib" path="lib/optional/excalibur-store-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-xmlutil-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/logkit-1.2.2.jar"/>
-	<classpathentry kind="lib" path="lib/core/xml-commons-resolver-CVS-20050605.jar"/>
+	<classpathentry kind="lib" path="lib/core/resolver.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-1.2-patched.jar"/>
 	<classpathentry kind="lib" path="lib/optional/castor-0.9.5-xml.jar"/>
 	<classpathentry kind="lib" path="lib/optional/isorelax.jar"/>

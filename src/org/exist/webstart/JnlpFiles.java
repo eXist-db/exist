@@ -46,7 +46,7 @@ public class JnlpFiles {
                 "jEdit-syntax\\.jar",
                 "libreadline-java\\.jar", 
                 "log4j-.*\\.jar",
-                "xml-commons-resolver-.*\\.jar",
+                "resolver.*\\.jar",
                 "xmldb\\.jar", 
                 "xmlrpc-.*-patched\\.jar"
     }; // TODO tricky, needs te be reviewed on a regular basis.
