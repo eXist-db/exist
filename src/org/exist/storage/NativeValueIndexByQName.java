@@ -27,6 +27,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
@@ -70,7 +71,8 @@ $user := $key / parent::root
 
 The way of indexing is the same as current range indices {@link NativeValueIndex}, 
 except that for each QName like <key> mentioned above, the QName will be stored .
- 
+Related test: @link org.exist.xquery.test.ValueIndexByQNameTest
+
  * @author Jean-Marc Vanel http://jmvanel.free.fr/
  */
 public class NativeValueIndexByQName extends NativeValueIndex {
@@ -247,4 +249,47 @@ public class NativeValueIndexByQName extends NativeValueIndex {
         }
         return result;
     }
+
+	public void storeAttribute(AttrImpl node, NodePath currentPath,
+			boolean index) {
+		if (qnameValueIndexation) {
+			DocumentImpl docu = (DocumentImpl) node.getOwnerDocument();
+			IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
+
+			if (idxSpec != null) {
+				QName idxQName = new QName('@' + node.getLocalName(), node
+						.getNamespaceURI());
+
+				// if (currentPath != null)
+				// currentPath.addComponent(idxQName);
+
+				RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
+				if (qnIdx != null) {
+					this.setDocument(docu);
+					this.storeAttribute(qnIdx, (AttrImpl) node);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * @see ContentLoadingObserver.markElement(ElementImpl node, NodePath
+	 *      currentPath, String content)
+	 */
+	public void markElement(ElementImpl node, NodePath currentPath,
+			String content) {
+		if (qnameValueIndexation) {
+			DocumentImpl docu = (DocumentImpl) node.getOwnerDocument();
+			IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
+
+			if (idxSpec != null) {
+				RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+				if (qnIdx != null) {
+					this.setDocument(docu);
+					this.storeElement(qnIdx.getType(), (ElementImpl) node,
+							content);
+				}
+			}
+		}
+	}
 }
