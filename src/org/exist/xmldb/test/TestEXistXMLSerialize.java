@@ -83,6 +83,7 @@ public class TestEXistXMLSerialize extends TestCase{
         c.storeResource(resource);
 
         resource = (XMLResource)c.getResource(resource.getId());
+        assertNotNull(resource);
         Node node = resource.getContentAsDOM( );
         node = node.getOwnerDocument();
         
@@ -110,6 +111,7 @@ public class TestEXistXMLSerialize extends TestCase{
     	c.storeResource(resource);
 
     	resource = (XMLResource)c.getResource(resource.getId());
+        assertNotNull(resource);
     	Node node = resource.getContentAsDOM();
     	System.out.println("Attempting serialization using XMLSerializer");
     	OutputFormat format = new OutputFormat( );
@@ -141,6 +143,7 @@ public class TestEXistXMLSerialize extends TestCase{
     	c.storeResource(resource);
 
     	resource = (XMLResource)c.getResource(resource.getId());
+        assertNotNull(resource);
     	Node node = resource.getContentAsDOM();
     	System.out.println("Attempting serialization using eXist's serializer");
     	StringWriter writer = new StringWriter();
@@ -164,6 +167,7 @@ public class TestEXistXMLSerialize extends TestCase{
     	c.storeResource(resource);
 
     	resource = (XMLResource)c.getResource(resource.getId());
+        assertNotNull(resource);
     	Node node = resource.getContentAsDOM();
     	System.out.println("Attempting serialization using eXist's SAX serializer");
     	StringWriter writer = new StringWriter();
