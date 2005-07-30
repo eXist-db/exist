@@ -36,6 +36,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.storage.btree.BTreeException;
+import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Value;
 import org.exist.storage.index.BFile;
@@ -43,6 +44,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
 import org.exist.util.LockException;
 import org.exist.util.LongLinkedList;
+import org.exist.util.ReadOnlyException;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
@@ -138,8 +140,9 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 			if ( atomic != null )
 				ret = new QNameValueIndexKeyFactory((Indexable)atomic, qname );
         } else {
-			LOG.warn("The specified type: " + Type.getTypeName(xpathType) +
-            " cannot be used as index key. It does not implement interface Indexable.");
+            LOG.warn("The specified type: '" + Type.getTypeName(xpathType) +
+            		"' and value '" + value + "'" +
+                    " cannot be used as index key. It is null or does not implement interface Indexable.");
 			atomic = null;
 		}
         return ret;      
@@ -260,9 +263,6 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 				QName idxQName = new QName('@' + node.getLocalName(), node
 						.getNamespaceURI());
 
-				// if (currentPath != null)
-				// currentPath.addComponent(idxQName);
-
 				RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
 				if (qnIdx != null) {
 					this.setDocument(docu);
@@ -292,4 +292,14 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 			}
 		}
 	}
+	
+    public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
+    	if ( qnameValueIndexation )
+    		super.dropIndex(doc);
+    }
+    
+    public void close() throws DBException {
+    	if (qnameValueIndexation)
+    		db.close();
+    }
 }
