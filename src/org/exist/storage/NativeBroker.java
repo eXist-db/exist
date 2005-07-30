@@ -97,7 +97,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  *  Main class for the native XML storage backend.
@@ -136,7 +135,7 @@ public class NativeBroker extends DBBroker {
     
     private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
 
-	private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
+	// private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
 	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
 	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
 	
@@ -994,18 +993,8 @@ public class NativeBroker extends DBBroker {
                         valueIndex.storeAttribute(valSpec, (AttrImpl) node);
                     }
                     
-                    // --move to-- NativeValueIndexByQName
-                    // TODO : qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
-                    if (idxSpec != null && qnameValueIndexation) {
-                        QName idxQName = new QName('@' + node.getLocalName(), node.getNamespaceURI());
-                        if (currentPath != null)
-                            currentPath.addComponent(idxQName);
-                        RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
-                        if (qnIdx != null) {
-                            qnameValueIndex.setDocument(doc);
-                            qnameValueIndex.storeAttribute(qnIdx, (AttrImpl) node);
-                        }
-                    }
+                    // --move to-- NativeValueIndexByQName - DONE : 
+                    qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
                     
                     // --move to-- NativeTextEngine
                     // TODO : textEngine.storeAttribute( (AttrImpl)node, currentPath, index);
@@ -1023,9 +1012,9 @@ public class NativeBroker extends DBBroker {
                         elementIndex.addRow(qname, tempProxy);
                     }
                     
-                    // --move to-- ???
-                    if (currentPath != null)
-                        currentPath.removeLastComponent();
+//                    // --move to-- ???
+//                    if (currentPath != null)
+//                        currentPath.removeLastComponent();
                     break;
                     
                 case Node.TEXT_NODE:
@@ -1367,10 +1356,10 @@ public class NativeBroker extends DBBroker {
 //        try {
 //            domDb.dump(writer);
 //        } catch (BTreeException e1) {
-//            // TODO Auto-generated catch block
+//            //  Auto-generated catch block
 //            e1.printStackTrace();
 //        } catch (IOException e1) {
-//            // TODO Auto-generated catch block
+//            //  Auto-generated catch block
 //            e1.printStackTrace();
 //        }
 //        System.out.println(writer.toString());
@@ -1381,7 +1370,7 @@ public class NativeBroker extends DBBroker {
 //            try {
 //                domDb.printFreeSpaceList();
 //            } catch (IOException e1) {
-//                // TODO Auto-generated catch block
+//                // Auto-generated catch block
 //                e1.printStackTrace();
 //            }
 			// remember this for later remove
@@ -2109,7 +2098,7 @@ public class NativeBroker extends DBBroker {
 		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final long gid = node.getGID();
 		final short nodeType = node.getNodeType();
-		final String nodeName = node.getNodeName();
+//		final String nodeName = node.getNodeName();
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
 			public Object start() {
 				final long address = node.getInternalAddress();
@@ -2137,14 +2126,10 @@ public class NativeBroker extends DBBroker {
 				        valueIndex.setDocument(doc);
 				        valueIndex.storeElement(spec.getType(), (ElementImpl) node, content);
 				    }
-				    
-				    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-					if (qnIdx != null && qnameValueIndexation) {
-						qnameValueIndex.setDocument(doc);
-				        qnameValueIndex.storeElement(qnIdx.getType(), (ElementImpl) node, content);
-					}
-				}
+				}				
+				qnameValueIndex.markElement((ElementImpl) node, currentPath, content);
 				break;
+				
 			case Node.ATTRIBUTE_NODE :
 				QName idxQName = new QName('@' + node.getLocalName(), node.getNamespaceURI());
 			    currentPath.addComponent(idxQName);
@@ -2577,10 +2562,10 @@ public class NativeBroker extends DBBroker {
 	    checkAvailableMemory();
         
         final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
-        final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
+//        final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
         final IndexSpec idxSpec = 
             doc.getCollection().getIdxConf(this);
-        final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
+//        final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
         final long gid = node.getGID();
         if (gid < 0) {
             LOG.debug("illegal node: " + gid + "; " + node.getNodeName());
@@ -3021,7 +3006,7 @@ public class NativeBroker extends DBBroker {
         /**
          * Log4J Logger for this class
          */
-        private static final Logger LOG = Logger.getLogger(NodeRef.class);
+//        private static final Logger LOG = Logger.getLogger(NodeRef.class);
 
 		public NodeRef() {
 			data = new byte[12];
