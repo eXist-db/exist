@@ -304,7 +304,7 @@
     <!-- Run JUnit tests                                                    -->
 	<!-- ================================================================== -->
     <target name="test"
-            depends="test-prepare,test-local,test-concurrent,test-remote,test-wrapup,test-shutdown-server"
+            depends="test-prepare,test-recovery, test-local,test-concurrent,test-remote,test-wrapup,test-shutdown-server"
             description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->
@@ -358,6 +358,7 @@
                     <exclude name="**/xquery/test/*.java"/>
                     <exclude name="**/xmlrpc/test/*.java"/>
                     <exclude name="**/http/test/*.java"/>
+                	<exclude name="**/storage/test/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
@@ -379,6 +380,18 @@
         </junit>
     </target>
 
+	<target name="test-recovery">
+		<echo message="-----------------"/>
+        <echo message="Concurrency tests"/>
+        <echo message="-----------------"/>
+        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="no">
+            <classpath refid="classpath.core"/>
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+            <test name="org.exist.storage.AllTests" todir="${junit.reports.dat}"/>
+        </junit>
+	</target>
+	
     <!-- Helper target for starting server -->
     <target name="start-server">
         <echo message="---------------------------------------"/>
