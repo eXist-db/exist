@@ -1877,7 +1877,7 @@ public class NativeBroker extends DBBroker {
         config.setProperty("db-connection.values", null);
         
         if (qnameValueIndexation) {
-            valuesDb.closeAndRemove();
+            valuesDbQname.closeAndRemove();
             config.setProperty("db-connection2.values", null);
         }
         LOG.debug("Recreating index files ...");
@@ -1963,11 +1963,12 @@ public class NativeBroker extends DBBroker {
                 lock.release();
             }
             
-            textEngine.dropIndex(collection);
-            elementIndex.dropIndex(collection);
-            valueIndex.dropIndex(collection);
-            if ( qnameValueIndexation )
-                qnameValueIndex.dropIndex(collection);
+            notifyDropIndex(collection);
+//            textEngine.dropIndex(collection);
+//            elementIndex.dropIndex(collection);
+//            valueIndex.dropIndex(collection);
+//            qnameValueIndex.dropIndex(collection);
+            
             LOG.debug("removing resources ...");
             for (Iterator i = collection.iterator(this); i.hasNext();) {
                 final DocumentImpl doc = (DocumentImpl) i.next();
@@ -2155,14 +2156,17 @@ public class NativeBroker extends DBBroker {
 				    if(spec != null) {
 				        valueIndex.setDocument(doc);
 				        valueIndex.storeAttribute(spec, (AttrImpl) node);
-				    }
-				    
-					RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
-					if (qnIdx != null && qnameValueIndexation) {
-						qnameValueIndex.setDocument(doc);
-						qnameValueIndex.storeAttribute(qnIdx, (AttrImpl) node);
-					}
+				    }				    
+//					RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
+//					if (qnIdx != null && qnameValueIndexation) {
+//						qnameValueIndex.setDocument(doc);
+//						qnameValueIndex.storeAttribute(qnIdx, (AttrImpl) node);
+//					}
 				}
+				
+                qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, true);
+
+				
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
 				if (((AttrImpl) node).getType() == AttrImpl.ID) {
@@ -2544,8 +2548,11 @@ public class NativeBroker extends DBBroker {
 			elementsDb.close();
 			valuesDb.close();
 			collectionsDb.close();
-            if (qnameValueIndexation)
-                valuesDbQname.close();
+			
+//            if (qnameValueIndexation)
+//                valuesDbQname.close();
+			qnameValueIndex.close();
+			
 		} catch (Exception e) {
 			LOG.debug(e);
 			e.printStackTrace();
@@ -2632,8 +2639,8 @@ public class NativeBroker extends DBBroker {
 	public void endElement(final NodeImpl node, NodePath currentPath, String content) {
 	    final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 	    final NodeProxy tempProxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
-	    final IndexSpec idxSpec = 
-		    doc.getCollection().getIdxConf(this);
+//	    final IndexSpec idxSpec = 
+//		    doc.getCollection().getIdxConf(this);
 		
 		final int indexType = ((ElementImpl) node).getIndexType();
 		tempProxy.setIndexType(indexType);
@@ -2649,12 +2656,15 @@ public class NativeBroker extends DBBroker {
 		}
 		
 		if ( RangeIndexSpec.hasQNameIndex(indexType) ) {
-			RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+//			RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
 			if (content == null)
 				content = getNodeValue(tempProxy, false);
-			qnameValueIndex.setDocument(doc);
-			qnameValueIndex.storeElement(qnIdx.getType(), 
-					(ElementImpl) node, content.toString());
+			
+//			qnameValueIndex.setDocument(doc);
+//			qnameValueIndex.storeElement(qnIdx.getType(), 
+//					(ElementImpl) node, content.toString());
+			
+			qnameValueIndex.markElement((ElementImpl) node, currentPath, content);
 		}
 		
 		// save element by calling ElementIndex
