@@ -914,6 +914,7 @@ implements Comparable, EntityResolver, Cacheable {
 			} else {
 			    document.getUpdateLock().acquire(Lock.WRITE_LOCK);
 			    document.setDocId(broker.getNextDocId(transaction, this));
+                addDocument(transaction, broker, document);
 			}
 
 			indexer.setValidating(false);
