@@ -153,4 +153,9 @@ public class TransactionManager {
             LOG.warn("Exception during reindex: " + e.getMessage(), e);
         }
     }
+    
+    public void shutdown() {
+        if (enabled)
+            logManager.shutdown();
+    }
 }
