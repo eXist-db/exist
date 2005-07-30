@@ -706,8 +706,10 @@ public class BrokerPool {
         if (broker != null)
             broker.shutdown();
         try {
-            if (!FORCE_CORRUPTION)
+            if (!FORCE_CORRUPTION) {
                 txnManager.checkpoint(false);
+                txnManager.shutdown();
+            }
         } catch (TransactionException e) {
             LOG.warn(e.getMessage(), e);
         }
