@@ -25,8 +25,8 @@ public class ValueIndexByQNameTest extends ValueIndexTest {
 //    	"		<create path=\"//item/price\" type=\"xs:double\"/>" + 
 //    	"		<create path=\"//item/price/@specialprice\" type=\"xs:boolean\"/>" + 
 //    	"		<create path=\"//item/x:rating\" type=\"xs:double\"/>" +
-    	"		<create qname='xx:test' type='xs:integer' />" +
-    	"       <create path='mixed' type='xs:string' />" +
+    	"		<create qname='@xx:test' type='xs:integer' />" +
+    	"       <create qname='mixed' type='xs:string' />" +
     	"	</index>" + 
     	"</collection>";
     
