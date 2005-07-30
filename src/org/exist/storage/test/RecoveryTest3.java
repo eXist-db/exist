@@ -76,7 +76,7 @@ public class RecoveryTest3 extends TestCase {
             IndexInfo info;
             
             // store some documents.
-            for (int i = 0; i < files.length && i < 500; i++) {
+            for (int i = 0; i < files.length && i < 2000; i++) {
                 f = files[i];
                 try {
                     info = test.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
@@ -96,6 +96,8 @@ public class RecoveryTest3 extends TestCase {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
         
+        BrokerPool.FORCE_CORRUPTION = true;
+        
         System.out.println("testRead() ...\n");
         
         File files[] = dir.listFiles();
@@ -103,8 +105,6 @@ public class RecoveryTest3 extends TestCase {
         DBBroker broker = null;
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            
-            BrokerPool.FORCE_CORRUPTION = true;
             
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
@@ -128,7 +128,7 @@ public class RecoveryTest3 extends TestCase {
             IndexInfo info;
             
             // store some documents.
-            for (int i = 0; i < files.length && i < 500; i++) {
+            for (int i = 0; i < files.length && i < 2000; i++) {
                 f = files[i];
                 try {
                     info = test.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));

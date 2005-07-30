@@ -1085,10 +1085,11 @@ public class BFile extends BTree {
                     LOG.warn("page " + loggable.page + " not found!");
                     return;
                 }
-                if (page.getPageHeader().getStatus() == UNUSED)
+                final byte[] data = page.read();
+                if (page.getPageHeader().getStatus() == UNUSED) {
                 	// page is obviously deleted later
                 	return;
-                final byte[] data = page.read();
+                }
                 wp = new SinglePage(page, data, true);
             }
             if (wp.ph.getLsn() > -1 && requiresRedo(loggable, wp)) {
@@ -1142,6 +1143,7 @@ public class BFile extends BTree {
             DataPage firstPage = (DataPage) dataCache.get(loggable.pageNum);
             if (firstPage == null) {
                 final Page page = getPage(loggable.pageNum);
+                page.read();
                 if (page.getPageHeader().getLsn() < 0 || requiresRedo(loggable, page)) {
                     reuseDeleted(page);
                     BFilePageHeader ph = (BFilePageHeader) page.getPageHeader();
@@ -1349,7 +1351,8 @@ public class BFile extends BTree {
         try {
             value.copyTo(page.data, len);
         } catch (RuntimeException e) {
-            LOG.warn("Len: " + len + " ; value: " + value.size() + "; max: " + fileHeader.getWorkSize());
+            LOG.warn("Storage error in page: " + page.getPageNum() +
+                    "; len: " + len + " ; value: " + value.size() + "; max: " + fileHeader.getWorkSize());
             throw e;
         }
         len += value.size();
@@ -1405,17 +1408,17 @@ public class BFile extends BTree {
             DataPage dp = (DataPage) dataCache.get(newPage);
             if (dp == null) {
                 final Page page = getPage(newPage);
+                byte[] data = page.read();
                 if (page.getPageHeader().getLsn() < 0 || requiresRedo(loggable, page)) {
                     reuseDeleted(page);
                     BFilePageHeader ph = (BFilePageHeader) page.getPageHeader();
                     ph.setStatus(RECORD);
                     ph.setDataLength(0);
                     ph.setDataLen(fileHeader.getWorkSize());
-                    byte[] data = new byte[fileHeader.getWorkSize()];
+                    data = new byte[fileHeader.getWorkSize()];
                     ph.nextTID = 32;
                     dp = new SinglePage(page, data, true);
                 } else {
-                    byte[] data = page.read();
                     dp = new SinglePage(page, data, true);
                 }
             }
