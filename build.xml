@@ -304,7 +304,7 @@
     <!-- Run JUnit tests                                                    -->
 	<!-- ================================================================== -->
     <target name="test"
-            depends="test-prepare,test-recovery, test-local, test-concurrent,test-remote,test-wrapup,test-shutdown-server"
+            depends="test-prepare,test-recovery, test-local, test-concurrent, test-remote, test-wrapup,test-shutdown-server"
             description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->
@@ -312,7 +312,7 @@
     <property name="junit.reports.html" value="${junit.reports}/report/html"/>
 
     <!-- Seperate target for creating folders -->
-    <target name="test-prepare">
+    <target name="test-prepare" depends="jar">
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx,*.log"/>
         </delete>
@@ -336,7 +336,7 @@
     </target>
 
     <!-- Test set 1 : local database instance -->
-    <target name="test-local" depends="jar">
+    <target name="test-local">
         <echo message="------------------------------------------"/>
         <echo message="Running tests on a local database instance"/>
         <echo message="------------------------------------------"/>
