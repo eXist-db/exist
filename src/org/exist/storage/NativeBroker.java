@@ -963,6 +963,11 @@ public class NativeBroker extends DBBroker {
                 case Node.ATTRIBUTE_NODE :
                     boolean indexAttribs = false;
                     
+    				QName idxQName = new QName('@' + node.getLocalName(), node
+    						.getNamespaceURI());
+    				if (currentPath != null)
+    					currentPath.addComponent(idxQName);
+    				
                     // --move to-- NativeElementIndex NativeValueIndex NativeTextEngine
                     if(index && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
                         indexType |= RangeIndexSpec.TEXT;
@@ -1013,8 +1018,8 @@ public class NativeBroker extends DBBroker {
                     }
                     
 //                    // --move to-- ???
-//                    if (currentPath != null)
-//                        currentPath.removeLastComponent();
+                    if (currentPath != null)
+                        currentPath.removeLastComponent();
                     break;
                     
                 case Node.TEXT_NODE:
@@ -1379,8 +1384,7 @@ public class NativeBroker extends DBBroker {
 			// dropping old structure index
 			elementIndex.dropIndex(doc);
 			valueIndex.dropIndex(doc);
-			if ( qnameValueIndexation )
-				qnameValueIndex.dropIndex(doc);
+			qnameValueIndex.dropIndex(doc);
 			
 			// dropping dom index
 			NodeRef ref = new NodeRef(doc.getDocId());

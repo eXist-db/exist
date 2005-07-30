@@ -720,8 +720,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
             }
         }
         if(!(atomic instanceof Indexable)) {
-            LOG.warn("The specified type: " + Type.getTypeName(xpathType) +
-                    " cannot be used as index key. It does not implement interface Indexable.");
+            LOG.warn("The specified type: '" + Type.getTypeName(xpathType) +
+            		"' and value '" + value + "'" +
+                    " cannot be used as index key. It is null or does not implement interface Indexable.");
             atomic = null;
         }
         return atomic;        
