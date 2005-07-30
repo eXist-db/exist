@@ -87,6 +87,6 @@ public class RemoveValueLoggable extends AbstractBFileLoggable {
     }
     
     public String dump() {
-        return super.dump() + " - remove value from page " + page;
+        return super.dump() + " - remove value with tid " + tid + " from page " + page;
     }
 }

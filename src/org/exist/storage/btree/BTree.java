@@ -443,6 +443,7 @@ public class BTree extends Paged {
 			// node is not yet loaded. Load it
 			try {
 				Page p = getPage(loggable.pageNum);
+                p.read();
 				if ((p.getPageHeader().getStatus() == BRANCH ||
 						p.getPageHeader().getStatus() == LEAF) &&
 						requiresRedo(loggable, p)) {

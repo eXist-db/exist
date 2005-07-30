@@ -2211,6 +2211,7 @@ public class DOMFile extends BTree implements Lockable {
 	protected void redoWriteOverflow(WriteOverflowPageLoggable loggable) {
 		try {
 			Page page = getPage(loggable.pageNum);
+            page.read();
 			PageHeader ph = page.getPageHeader();
 			reuseDeleted(page);
 			ph.setStatus(RECORD);
@@ -2235,6 +2236,7 @@ public class DOMFile extends BTree implements Lockable {
 	protected void undoWriteOverflow(WriteOverflowPageLoggable loggable) {
 		try {
 			Page page = getPage(loggable.pageNum);
+            page.read();
 			PageHeader ph = page.getPageHeader();
 			unlinkPages(page);
 		} catch (IOException e) {
@@ -2246,6 +2248,7 @@ public class DOMFile extends BTree implements Lockable {
 	protected void redoRemoveOverflow(RemoveOverflowLoggable loggable) {
 		try {
 			Page page = getPage(loggable.pageNum);
+            page.read();
 			PageHeader ph = page.getPageHeader();
 			if (ph.getLsn() > -1 && requiresRedo(loggable, page)) {
 				unlinkPages(page);
@@ -2260,6 +2263,7 @@ public class DOMFile extends BTree implements Lockable {
 	protected void undoRemoveOverflow(RemoveOverflowLoggable loggable) {
 		try {
 			Page page = getPage(loggable.pageNum);
+            page.read();
 			PageHeader ph = page.getPageHeader();
 			reuseDeleted(page);
 			ph.setStatus(RECORD);

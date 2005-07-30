@@ -94,6 +94,6 @@ public class StoreValueLoggable extends AbstractBFileLoggable {
     }
     
     public String dump() {
-        return super.dump() + " - stored value on page " + page;
+        return super.dump() + " - stored value with tid " + tid + " on page " + page;
     }
 }
