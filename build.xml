@@ -382,9 +382,9 @@
     </target>
 
 	<target name="test-recovery">
-		<echo message="-----------------"/>
-        <echo message="Concurrency tests"/>
-        <echo message="-----------------"/>
+		<echo message="--------------"/>
+        <echo message="Recovery tests"/>
+        <echo message="--------------"/>
         <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="no">
             <classpath refid="classpath.core"/>
             <formatter type="plain"/>
