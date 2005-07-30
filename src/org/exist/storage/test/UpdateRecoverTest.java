@@ -436,6 +436,11 @@ public class UpdateRecoverTest extends TestCase {
         Resource res = test.getResource("test_xmldb.xml");
         assertNotNull("Document should not be null", res);
         System.out.println(res.getContent());
+        
+        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
+        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
+            root.getService("CollectionManagementService", "1.0");
+        mgr.removeCollection("test");
     }
     
     protected BrokerPool startDB() throws Exception {

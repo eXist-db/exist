@@ -37,7 +37,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.filters.StringInputStream;
+//import org.apache.tools.ant.filters.StringInputStream;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.parsers.SAXParser;
@@ -487,7 +487,8 @@ public abstract class GenericSchemaService implements SchemaService {
       DocumentBuilder docBuilder = factory.newDocumentBuilder();
       ValidationErrorHandler errorHandler = new ValidationErrorHandler();
       docBuilder.setErrorHandler(errorHandler);
-      Document document = docBuilder.parse(new StringInputStream(contents));
+      InputSource source = new InputSource(new StringReader(contents));
+      Document document = docBuilder.parse(source);
       Set namespaces = new TreeSet();
       findNamespaces(document.getDocumentElement(), namespaces);
       SchemaService schemaService = (SchemaService) getParentCollection().getService("SchemaService", "1.0");
@@ -518,7 +519,8 @@ public abstract class GenericSchemaService implements SchemaService {
       }
       docBuilder = factory.newDocumentBuilder();
       docBuilder.setErrorHandler(errorHandler);
-      docBuilder.parse(new StringInputStream(contents));
+      source = new InputSource(new StringReader(contents));
+      docBuilder.parse(source);
       if (errorHandler.getErrors().size() > 0)
         throw errorHandler.toException();
       return true;
@@ -540,7 +542,7 @@ public abstract class GenericSchemaService implements SchemaService {
 	    
 	    ValidationErrorHandler errorHandler = new ValidationErrorHandler();
 	    parser.setErrorHandler(errorHandler);
-	    parser.parse(new InputSource(new StringInputStream(contents)));
+	    parser.parse(new InputSource(new StringReader(contents)));
 	    if (errorHandler.getErrors().size() > 0)
 	      throw errorHandler.toException();
 	    return true;
