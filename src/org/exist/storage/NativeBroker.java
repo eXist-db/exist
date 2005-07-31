@@ -958,6 +958,8 @@ public class NativeBroker extends DBBroker {
                     // --move to-- NativeValueIndex NativeValueIndexByQName NativeTextEngine
                     // CAUTION TODO setIndexType( newIndexType | getIndexType() );
                     ((ElementImpl) node).setIndexType(indexType);
+                    
+                    qnameValueIndex.startElement((ElementImpl)node, currentPath, index);
                     break;
                     
                 case Node.ATTRIBUTE_NODE :
@@ -975,7 +977,7 @@ public class NativeBroker extends DBBroker {
                     }
                     
                     // --move to-- NativeElementIndex
-                    // TODO : elementIndex.markNode(node, currentPath, index);
+                    // TODO : elementIndex.storeAttribute(node, currentPath, index);
                     elementIndex.setDocument(doc);
                     NodeProxy tempProxy =
                         new NodeProxy(doc, gid, address);
@@ -998,7 +1000,6 @@ public class NativeBroker extends DBBroker {
                         valueIndex.storeAttribute(valSpec, (AttrImpl) node);
                     }
                     
-                    // --move to-- NativeValueIndexByQName - DONE : 
                     qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
                     
                     // --move to-- NativeTextEngine
@@ -1007,7 +1008,7 @@ public class NativeBroker extends DBBroker {
                         textEngine.storeAttribute(ftIdx, (AttrImpl) node);
                                         
                     // --move to-- NativeElementIndex
-                    // TODO : elementIndex.markNode(node, currentPath, index);
+                    // TODO : elementIndex.storeAttribute(node, currentPath, index);
                     // if the attribute has type ID, store the ID-value
                     // to the element index as well
                     if (((AttrImpl) node).getType() == AttrImpl.ID) {
@@ -2132,7 +2133,7 @@ public class NativeBroker extends DBBroker {
 				        valueIndex.storeElement(spec.getType(), (ElementImpl) node, content);
 				    }
 				}				
-				qnameValueIndex.markElement((ElementImpl) node, currentPath, content);
+				qnameValueIndex.removeElement((ElementImpl) node, currentPath, content);
 				break;
 				
 			case Node.ATTRIBUTE_NODE :
@@ -2567,7 +2568,7 @@ public class NativeBroker extends DBBroker {
 	 *@param  currentPath  path expression which points to this node's
 	 *      element-parent or to itself if it is an element (currently used by
 	 *      the Broker to determine if a node's content should be
-	 *      fulltext-indexed).
+	 *      fulltext-indexed).  @param index switch to activate fulltext indexation
 	 */
 	public void store(final Txn transaction, final NodeImpl node, NodePath currentPath, boolean index) {
 	    checkAvailableMemory();
@@ -2646,7 +2647,7 @@ public class NativeBroker extends DBBroker {
 		tempProxy.setIndexType(indexType);
 		
 		node.getQName().setNameType(ElementValue.ELEMENT);
-		
+		// TODO move_to NativeValueIndexByQName
 		if (RangeIndexSpec.hasRangeIndex(indexType)) {
 				if (content == null)
 					content = getNodeValue(tempProxy, false);
@@ -2655,6 +2656,7 @@ public class NativeBroker extends DBBroker {
 						(ElementImpl) node, content.toString());
 		}
 		
+		// TODO move_to NativeValueIndex		
 		if ( RangeIndexSpec.hasQNameIndex(indexType) ) {
 //			RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
 			if (content == null)
@@ -2664,14 +2666,15 @@ public class NativeBroker extends DBBroker {
 //			qnameValueIndex.storeElement(qnIdx.getType(), 
 //					(ElementImpl) node, content.toString());
 			
-			qnameValueIndex.markElement((ElementImpl) node, currentPath, content);
+			qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
 		}
 		
+//		 TODO move_to NativeValueIndex; name change (See ContentLoadingObserver ): addRow() --> endElement()
 		// save element by calling ElementIndex
 		elementIndex.setDocument(doc);
 		elementIndex.addRow(node.getQName(), tempProxy);
 	}
-	
+	/** store Document entry into its collection. */
 	public void storeDocument(final Txn transaction, final DocumentImpl doc) {
         Lock lock = collectionsDb.getLock();
         try {
@@ -2783,6 +2786,7 @@ public class NativeBroker extends DBBroker {
                 elementsDb.printStatistics();
 				valuesDb.printStatistics();
 				domDb.printStatistics();
+				valuesDbQname.printStatistics();
 			}
 		} catch (DBException dbe) {
 			dbe.printStackTrace();

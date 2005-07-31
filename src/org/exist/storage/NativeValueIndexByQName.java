@@ -77,7 +77,7 @@ Related test: @link org.exist.xquery.test.ValueIndexByQNameTest
 
  * @author Jean-Marc Vanel http://jmvanel.free.fr/
  */
-public class NativeValueIndexByQName extends NativeValueIndex {
+public class NativeValueIndexByQName extends NativeValueIndex implements ContentLoadingObserver {
 
 	private final static Logger LOG = Logger.getLogger(NativeValueIndexByQName.class);
 
@@ -272,11 +272,8 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 		}
 	}
 	
-	/**
-	 * @see ContentLoadingObserver.markElement(ElementImpl node, NodePath
-	 *      currentPath, String content)
-	 */
-	public void markElement(ElementImpl node, NodePath currentPath,
+	/**	 */
+	private void localMarkElement(ElementImpl node, NodePath currentPath,
 			String content) {
 		if (qnameValueIndexation) {
 			DocumentImpl docu = (DocumentImpl) node.getOwnerDocument();
@@ -293,6 +290,15 @@ public class NativeValueIndexByQName extends NativeValueIndex {
 		}
 	}
 	
+	public void endElement(ElementImpl node, NodePath currentPath, String content) {
+		localMarkElement(node, currentPath, content);	
+	}
+	
+	public void removeElement( ElementImpl node, NodePath currentPath, String content ) {
+		localMarkElement(node, currentPath, content);	
+	}
+
+	
     public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
     	if ( qnameValueIndexation )
     		super.dropIndex(doc);
@@ -302,4 +308,10 @@ public class NativeValueIndexByQName extends NativeValueIndex {
     	if (qnameValueIndexation)
     		db.close();
     }
+
+	public void startElement(ElementImpl node, NodePath currentPath, boolean index) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
