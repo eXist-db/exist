@@ -104,6 +104,9 @@ public class LogManager {
     /** the current log file number */
     private int currentFile = 0;
     
+    /** used to keep track of the current position in the file */
+    private int inFilePos = 0;
+    
     /** temp buffer */
     private ByteBuffer currentBuffer;
     
@@ -179,17 +182,13 @@ public class LogManager {
         final int required = size + LOG_ENTRY_BASE_LEN;
         if (required > currentBuffer.capacity() - currentBuffer.position())
             flushToLog(false);
-        try {
-            currentLsn = Lsn.create(currentFile, (int) channel.position() + currentBuffer.position() + 1);
-            currentBuffer.put(loggable.getLogType());
-            currentBuffer.putLong(loggable.getTransactionId());
-            currentBuffer.putShort((short) loggable.getLogSize());
-            loggable.write(currentBuffer);
-            currentBuffer.putShort((short) (size + LOG_ENTRY_HEADER_LEN));
-            loggable.setLsn(currentLsn);
-        } catch (IOException e) {
-            throw new TransactionException("Failed to write to log", e);
-        }
+        currentLsn = Lsn.create(currentFile, inFilePos + currentBuffer.position() + 1);
+        currentBuffer.put(loggable.getLogType());
+        currentBuffer.putLong(loggable.getTransactionId());
+        currentBuffer.putShort((short) loggable.getLogSize());
+        loggable.write(currentBuffer);
+        currentBuffer.putShort((short) (size + LOG_ENTRY_HEADER_LEN));
+        loggable.setLsn(currentLsn);
     }
     
     /**
@@ -220,6 +219,8 @@ public class LogManager {
                     currentBuffer.flip();
                     channel.write(currentBuffer);
                     currentBuffer.clear();
+                    
+                    inFilePos = (int) channel.position();
                 }
             } catch (IOException e) {
                 LOG.warn("Flushing log file failed!", e);
@@ -305,6 +306,7 @@ public class LogManager {
 				throw new LogException("Failed to open new log file: " + file.getAbsolutePath(), e);
 			}
         }
+        inFilePos = 0;
     }
     
     public void close() {
