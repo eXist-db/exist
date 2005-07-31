@@ -65,7 +65,7 @@ public class AttrList {
 	
 	public String getValue(QName name) {
 		for(int i = 0; i < size; i++) {
-			if(names[i].equals(name))
+			if(names[i].equalsSimple(name))
 				return values[i];
 		}
 		return null;
