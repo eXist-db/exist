@@ -940,12 +940,12 @@ public class NativeBroker extends DBBroker {
                         RangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
                         if(spec != null)
                             indexType = spec.getIndexType();
-                        RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-
-                        // --move to-- NativeValueIndexByQName
-                        if (qnIdx != null && qnameValueIndexation) {
-                            indexType |= RangeIndexSpec.QNAME_INDEX;
-                        }
+                        
+//                        // --move to-- NativeValueIndexByQName
+//                        RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+//                        if (qnIdx != null && qnameValueIndexation) {
+//                            indexType |= RangeIndexSpec.QNAME_INDEX;
+//                        }
                     }
                     
                     // --move to-- NativeTextEngine
@@ -955,8 +955,7 @@ public class NativeBroker extends DBBroker {
                         indexType |= RangeIndexSpec.MIXED_CONTENT;
                     }
                     
-                    // --move to-- NativeValueIndex NativeValueIndexByQName NativeTextEngine
-                    // CAUTION TODO setIndexType( newIndexType | getIndexType() );
+                    // --move to-- NativeValueIndex NativeTextEngine
                     ((ElementImpl) node).setIndexType(indexType);
                     
                     qnameValueIndex.startElement((ElementImpl)node, currentPath, index);
