@@ -143,23 +143,24 @@ public class LogManager {
             File f = new File(logDir);
             if ((!f.isAbsolute()) && dbHome != null) {
                 logDir = dbHome + File.separatorChar + logDir;
+                f = new File(logDir);
             }
             if (!f.exists()) {
                 if (LOG.isDebugEnabled())
-                    LOG.debug("Log directory does not exist. Creating " + f.getAbsolutePath());
+                    LOG.debug("Output directory for journal files does not exist. Creating " + f.getAbsolutePath());
                 try {
                     f.mkdir();
                 } catch (SecurityException e) {
-                    throw new EXistException("Failed to create log output directory: " + f.getAbsolutePath());
+                    throw new EXistException("Failed to create output directory: " + f.getAbsolutePath());
                 }
             }
             if (!(f.canWrite())) {
-                throw new EXistException("Cannot write to log output directory: " + f.getAbsolutePath());
+                throw new EXistException("Cannot write to journal output directory: " + f.getAbsolutePath());
             }
             this.dir = f;
         }
         if (LOG.isDebugEnabled())
-            LOG.debug("Using log directory: " + dir.getAbsolutePath());
+            LOG.debug("Using directory for the journal: " + dir.getAbsolutePath());
         
         Integer sizeOpt = (Integer) pool.getConfiguration().getProperty("db-connection.recovery.size-limit");
         if (sizeOpt != null)
