@@ -41,6 +41,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
+import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -91,8 +92,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 
     /**
      * Add an index entry for the given QName and NodeProxy.
-     * Added entries are written to the list of pending entries. Call
-     * {@link #flush()} to flush all pending entries.
+     * Added entries are written to the list of pending entries.
+     * {@link #flush()} is called later to flush all pending entries.
      */
     public void addRow(QName qname, NodeProxy proxy) {
         ArrayList buf;
@@ -128,7 +129,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs,
             QName qname, NodeSelector selector) {
-    	final long start = System.currentTimeMillis();
+//    	final long start = System.currentTimeMillis();
         final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(),
                 256);
         final SymbolTable symbols = broker.getSymbols();
@@ -235,7 +236,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         collections.add(collection);
         TreeMap map = new TreeMap();
         VariableByteArrayInput is;
-        int docId;
+//        int docId;
         int len;
         // required for namespace lookups
         XQueryContext context = new XQueryContext(broker);
@@ -272,7 +273,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             .start(), val[1].getLength());
                     try {
                         while (is.available() > 0) {
-                            docId = is.readInt();
+//                            docId = 
+                            	is.readInt();
                             len = is.readInt();
                             oc.addOccurrences(len);
                             is.skip(len * 4);
@@ -431,13 +433,13 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             }
 
             Value key;
-            Value value;
+//            Value value;
             VariableByteInput is;
             VariableByteOutputStream os;
             int len;
             int docId;
-            long delta;
-            long address;
+//            long delta;
+//            long address;
             boolean changed;
             for (int i = 0; i < elements.size(); i++) {
                 key = (Value) elements.get(i);
@@ -496,9 +498,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         NodeProxy p;
         VariableByteInput is = null;
         int len, docId;
-        byte[] data;
+//        byte[] data;
         Value ref;
-        Value val;
+//        Value val;
         short sym, nsSym;
         short collectionId = oldDoc.getCollection().getId();
         long delta, last, gid, address;
@@ -728,7 +730,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         QName qname;
         ArrayList idList;
         int count = 1, len;
-        String name;
+//        String name;
         ElementValue ref;
         Map.Entry entry;
         // get collection id for this collection
@@ -818,9 +820,32 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     public void printStatistics() {
         dbElement.printStatistics();
     }
+
+	public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void endElement(int xpathType, ElementImpl node, String content) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void removeElement(ElementImpl node, NodePath currentPath, String content) {
+		// TODO Auto-generated method stub
+		
+	}
     
-    public void storeElement(int xpathType, ElementImpl node, String content) {
-    //	TODO
-    }
+
 
 }

@@ -40,7 +40,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
@@ -276,7 +276,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             int len;
             int docId;
             long delta;
-            long address;
+//            long address;
             boolean changed;
             for (int i = 0; i < elements.size(); i++) {
                 key = (Value) elements.get(i);
@@ -347,10 +347,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
         LongLinkedList oldList, idList;
         VariableByteInput is = null;
         int len, docId;
-        byte[] data;
+//        byte[] data;
         Value ref;
-        Value val;
-        short sym, nsSym;
+//        Value val;
+//        short sym, nsSym;
         short collectionId = oldDoc.getCollection().getId();
         long gid, prevId, cid, address;
         long ids[];
@@ -452,7 +452,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         byte[] data;
         Value ref;
         Value val;
-        short sym, nsSym;
+//        short sym, nsSym;
         short collectionId = doc.getCollection().getId();
         long delta, last, gid;
         try {
@@ -902,7 +902,29 @@ private final class IndexScanCallback implements BTreeCallback{
         }
     }
 
-public void addRow(QName qname, NodeProxy proxy) {
+public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+	// TODO Auto-generated method stub
+	
+}
+
+public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+	// TODO Auto-generated method stub
+	
+}
+
+public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
+	// TODO Auto-generated method stub
+	
+}
+
+public void endElement(int xpathType, ElementImpl node, String content) {
+	// TODO Auto-generated method stub
+	
+}
+
+public void removeElement(ElementImpl node, NodePath currentPath, String content) {
+	// TODO Auto-generated method stub
+	
 }
 
 }

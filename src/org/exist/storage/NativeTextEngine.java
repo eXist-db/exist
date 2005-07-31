@@ -46,7 +46,6 @@ import org.exist.dom.Match;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.security.PermissionDeniedException;
@@ -260,7 +259,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 //				long start = System.currentTimeMillis();
 		DocumentImpl doc;
 		Value ref;
-		byte[] data;
+//		byte[] data;
 		long gid;
 		int docId;
 		int len;
@@ -427,7 +426,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	}
 
 	public String[] getIndexTerms(DocumentSet docs, TermMatcher matcher) {
-		long start = System.currentTimeMillis();
+//		long start = System.currentTimeMillis();
 		Value ref;
 		Collection collection;
 		short collectionId;
@@ -541,13 +540,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				collect(words, j);
 			}
 			String word;
-			Value val;
+//			Value val;
 			WordRef ref;
 			VariableByteInput is = null;
 			VariableByteOutputStream os;
 			int len;
 			int docId;
-			long delta;
+//			long delta;
 			byte section;
 			short collectionId = doc.getCollection().getId();
 			boolean changed;
@@ -652,6 +651,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	 *                IndexPaths object passed in by the broker
 	 * @param text
 	 *                the text node to be indexed
+	 * @param onetoken
+	 *                if true, given text is indexed as a whole
+	 *                if false, it is indexed token by token
 	 * @return boolean indicates if all of the text content has been added to
 	 *            the index
 	 */
@@ -661,7 +663,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		TextToken token;
 		CharSequence word;
 		final long gid = text.getGID();
-		if (onetoken == true) {
+		if ( onetoken ) {
 			invIdx.setDocument(doc);
 			String sal= text.getXMLString().transformToLower().toString() ;
 			invIdx.addText(sal, gid);			
@@ -759,10 +761,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			TermFrequencyList idList;
 			TermFrequencyList.TermFreq[] ids;
 			byte[] data;
-			long last, gid;
+			long last; // , gid;
 			long delta;
 			byte section;
-			NodeProxy p;
+//			NodeProxy p;
 			WordRef ref;
 			TermFrequencyList newList;
 			int freq = 1;
@@ -886,7 +888,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		    long last, gid, delta;
 		    int freq = 1;
 		    byte section;
-		    NodeProxy p;
+//		    NodeProxy p;
 		    WordRef ref;
 		    VariableByteInput is = null;
 		    Lock lock = dbWords.getLock();
@@ -1000,9 +1002,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			Map.Entry entry;
 			String word;
 			TermFrequencyList idList;
-			TermFrequencyList.TermFreq id;
+//			TermFrequencyList.TermFreq id;
 			TermFrequencyList.TermFreq[] ids;
-			byte[] data;
+//			byte[] data;
 			long prevId;
 			long delta;
 			for (int k = 0; k < 2; k++) {
@@ -1137,7 +1139,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				}
 				if (is == null)
 					return true;
-				int k = 0;
+//				int k = 0;
 				int docId;
 				int len;
 				long gid;
@@ -1236,7 +1238,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				return true;
 			try {
 				int docId;
-				byte section;
+//				byte section;
 				int len;
 				int freq = 1;
 				long gid;
@@ -1245,7 +1247,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				boolean docAdded;
 				while (is.available() > 0) {
 					docId = is.readInt();
-					section = is.readByte();
+//					section = 
+						is.readByte();
 					len = is.readInt();
 					if ((doc = docs.getDoc(docId)) == null) {
 						is.skip(termFreq ? len * 2 : len);
@@ -1389,19 +1392,35 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		}
 	}
 
-	public void storeElement(int xpathType, ElementImpl node, String content) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void addRow(QName qname, NodeProxy proxy) {
+		// TODO Auto-generated method stu	
 	}
 
 	public void setDocument(DocumentImpl document) {
+	}
+
+	public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void endElement(int xpathType, ElementImpl node, String content) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void removeElement(ElementImpl node, NodePath currentPath, String content) {
+		// TODO Auto-generated method stub
+		
 	}
 }
