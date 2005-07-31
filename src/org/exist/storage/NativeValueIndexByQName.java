@@ -253,6 +253,10 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
         return result;
     }
 
+    
+    /** Methods from interface ContentLoadingObserver
+     *  --------------------------------------------- */
+    
 	public void storeAttribute(AttrImpl node, NodePath currentPath,
 			boolean index) {
 		if (qnameValueIndexation) {
@@ -309,9 +313,22 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     		db.close();
     }
 
-	public void startElement(ElementImpl node, NodePath currentPath, boolean index) {
-		// TODO Auto-generated method stub
-		
-	}
+    /** updates the index type of given node according to the Index By QName config. */
+	public void startElement(ElementImpl node, NodePath currentPath,
+			boolean index) {
+		if (qnameValueIndexation) {
+			DocumentImpl docu = (DocumentImpl) node.getOwnerDocument();
+			IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
 
+			if (idxSpec != null) {
+				RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+				if (qnIdx != null) {
+					int newIndexType = RangeIndexSpec.QNAME_INDEX;
+					ElementImpl elementImpl = (ElementImpl) node;
+					elementImpl.setIndexType( newIndexType
+							| elementImpl.getIndexType());
+				}
+			}
+		}
+	}
 }
