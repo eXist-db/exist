@@ -83,4 +83,6 @@ public interface ResponseWrapper {
 	public void setLocale(Locale arg0);
 	
 	public void sendRedirect(String arg0) throws IOException;
+	
+	public long getDateHeader(String name);
 }

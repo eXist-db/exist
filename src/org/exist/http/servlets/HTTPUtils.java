@@ -38,7 +38,7 @@ import org.exist.xquery.value.Sequence;
 public class HTTPUtils {
     private final static Logger LOG = Logger.getLogger(XQuery.class);
 
-    /** Guessing last modification time for an XQuery result; 
+    /** Feature "Guess last modification time for an XQuery result"; 
      *  the HTTP header Last-Modified is filled with most recent time stamp among all 
      *  XQuery documents appearing in the actual response.
      *  Note however, that the actual response can be influenced, through tests in the query,
@@ -70,9 +70,14 @@ public class HTTPUtils {
 					JavaObjectValue value = (JavaObjectValue) var.getValue()
 							.itemAt(0);
 					if (value != null
-							&& value.getObject() instanceof ResponseWrapper)
-						((ResponseWrapper) value.getObject()).setDateHeader(
+							&& value.getObject() instanceof ResponseWrapper) {
+						// have to take in account that if the header has allready been explicitely set 
+						// by the XQuery script, we should not modify it .
+						ResponseWrapper responseWrapper = ((ResponseWrapper) value.getObject());
+						if ( responseWrapper.getDateHeader("Last-Modified") != 0 )
+							responseWrapper.setDateHeader(
 								"Last-Modified", mostRecentDocumentTime);
+					}
 				}
 			}
 		} catch (Exception e) {
