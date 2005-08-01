@@ -495,11 +495,11 @@
         </delete>
         <delete dir="${src.webapp}/WEB-INF/data/backup"/>
         <delete dir="samples/classes"/>
-        <delete file="examples.jar"/>
-        <delete file="exist.jar"/>
-        <delete file="exist-optional.jar"/>
-        <delete file="start.jar"/>
-        <delete dir="${dist}"/>
+        <delete failonerror="no" file="examples.jar"/>
+        <delete failonerror="no" file="exist.jar"/>
+        <delete failonerror="no" file="exist-optional.jar"/>
+        <delete failonerror="no" file="start.jar"/>
+        <delete failonerror="no" dir="${dist}"/>
         <ant antfile="build.xml" dir="tools/wrapper" target="clean"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean"/>
     </target>
@@ -822,13 +822,26 @@
                 output="installer/${project.name}-snapshot-${DSTAMP}.jar"
                 basedir="." izPackDir="${izpack.dir}"
                 installerType="standard"/>
-        <jar update="yes" destfile="${inst-jar}">
-            <manifest>
+
+    	<mkdir dir="installer/temp"/>
+		<tstamp/>
+		<unjar src="installer/${project.name}-snapshot-${DSTAMP}.jar"
+			dest="installer/temp"/>
+		<delete>
+			<fileset dir="installer/temp">
+				<include name="META-INF/EXIST.*"/>
+			</fileset>
+		</delete>
+        <delete file="installer/${project.name}-snapshot-${DSTAMP}.jar"/>
+		<jar destfile="installer/${project.name}-snapshot-${DSTAMP}.jar"
+			basedir="installer/temp" compress="yes" update="yes">
+			<manifest>
                 <attribute name="Main-Class" value="org.exist.izpack.CommandLineInstaller"/>
             </manifest>
-        </jar>
+		</jar>
+		<delete dir="installer/temp"/>
     </target>
-
+		
     <target depends="prepare-installer" name="cvs-build">
         <echo message="Calling IzPack to create installer ..."/>
         <izpack input="installer/install.xml"
