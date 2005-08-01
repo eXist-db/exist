@@ -126,7 +126,7 @@ public class ReplaceTest extends AbstractUpdateTest {
                 proc.reset();
             }
 //            mgr.commit(transaction);
-            pool.getTransactionManager().getLogManager().flushToLog(true);
+            pool.getTransactionManager().getJournal().flushToLog(true);
         } finally {
             pool.release(broker);
         }

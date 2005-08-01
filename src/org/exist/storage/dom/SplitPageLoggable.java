@@ -25,9 +25,9 @@ import java.nio.ByteBuffer;
 
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
-import org.exist.storage.log.AbstractLoggable;
-import org.exist.storage.log.LogException;
-import org.exist.storage.log.Loggable;
+import org.exist.storage.journal.AbstractLoggable;
+import org.exist.storage.journal.LogException;
+import org.exist.storage.journal.Loggable;
 import org.exist.storage.txn.Txn;
 
 /**

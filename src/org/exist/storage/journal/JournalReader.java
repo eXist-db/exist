@@ -20,7 +20,7 @@
  *  
  *  $Id$
  */
-package org.exist.storage.log;
+package org.exist.storage.journal;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,16 +32,16 @@ import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
 
 /**
- * Read log entries from a log file. This class is used during recovery to scan the
- * last log file. It uses a memory-mapped byte buffer on the file.
- * Log entries can be read forward (during redo) or backward (during undo). 
+ * Read log entries from the journal file. This class is used during recovery to scan the
+ * last journal file. It uses a memory-mapped byte buffer on the file.
+ * Journal entries can be read forward (during redo) or backward (during undo). 
  * 
  * @author wolf
  *
  */
-public class LogReader {
+public class JournalReader {
 	
-    private static final Logger LOG = Logger.getLogger(LogReader.class);
+    private static final Logger LOG = Logger.getLogger(JournalReader.class);
     
 	private MappedByteBuffer mapped;
 	private FileChannel fc;
@@ -56,7 +56,7 @@ public class LogReader {
      * @param fileNumber
      * @throws LogException
      */
-	public LogReader(DBBroker broker, File file, int fileNumber) throws LogException {
+	public JournalReader(DBBroker broker, File file, int fileNumber) throws LogException {
         this.broker = broker;
 		this.fileNumber = fileNumber;
 		try {
@@ -75,7 +75,7 @@ public class LogReader {
      * @throws LogException if an entry could not be read due to an inconsistency on disk.
      */
 	public Loggable nextEntry() throws LogException {
-		if (mapped.position() + LogManager.LOG_ENTRY_BASE_LEN > mapped.capacity())
+		if (mapped.position() + Journal.LOG_ENTRY_BASE_LEN > mapped.capacity())
 			return null;
 		return readEntry();
 	}
@@ -121,7 +121,7 @@ public class LogReader {
         loggable.setLsn(lsn);
         loggable.read(mapped);
         final short prevLink = mapped.getShort();
-        if (prevLink != size + LogManager.LOG_ENTRY_HEADER_LEN) {
+        if (prevLink != size + Journal.LOG_ENTRY_HEADER_LEN) {
             LOG.warn("Bad pointer to previous: prevLink = " + prevLink + "; size = " + size + 
                     "; transactId = " + transactId);
             throw new LogException("Bad pointer to previous in entry: " + loggable.dump());

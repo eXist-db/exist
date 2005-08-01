@@ -148,7 +148,7 @@ public class CopyResourceTest extends TestCase {
 					"new_test2.xml");
 			broker.saveCollection(transaction, root);
 
-			pool.getTransactionManager().getLogManager().flushToLog(true);
+			pool.getTransactionManager().getJournal().flushToLog(true);
 		} finally {
 			pool.release(broker);
 		}

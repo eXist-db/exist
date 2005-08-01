@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.storage.log;
+package org.exist.storage.journal;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,56 +38,56 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.util.sanity.SanityCheck;
 
 /**
- * Manages the journalling log. The database uses one central log file for
- * all data files. If the file exceeds the predefined maximum size, a new file is created.
- * Every log file has a unique log number, which keeps growing during the lifetime of the db.
- * The name of the log file is the log file number. The file with the highest log file
+ * Manages the journalling log. The database uses one central journal for
+ * all data files. If the journal exceeds the predefined maximum size, a new file is created.
+ * Every journal file has a unique number, which keeps growing during the lifetime of the db.
+ * The name of the file corresponds to the file number. The file with the highest
  * number will be used for recovery.
  * 
- * A buffer is used to temporarily buffer log entries. To guarantee log consistency, the buffer will be flushed
- * and the log file is synched after every commit or whenever a db page is written to disk.
+ * A buffer is used to temporarily buffer journal entries. To guarantee consistency, the buffer will be flushed
+ * and the journal is synched after every commit or whenever a db page is written to disk.
  * 
- * Each log entry has the structure:
+ * Each entry has the structure:
  * 
  * <pre>[byte: entryType, long: transactionId, short length, byte[] data, short backLink]</pre>
  * 
  * <ul>
  *  <li>entryType is a unique id that identifies the log record. Entry types are registered via the 
- * {@link org.exist.storage.log.LogEntryTypes} class.</li>
+ * {@link org.exist.storage.journal.LogEntryTypes} class.</li>
  *  <li>transactionId: the id of the transaction that created the record.</li>
  *  <li>length: the length of the log entry data.</li>
- *  <li>data: the payload data provided by the {@link org.exist.storage.log.Loggable} object.</li>
+ *  <li>data: the payload data provided by the {@link org.exist.storage.journal.Loggable} object.</li>
  *  <li>backLink: offset to the start of the record. Used when scanning the log file backwards.</li>
  * </ul>
  * 
  * @author wolf
  */
-public class LogManager {
+public class Journal {
     /**
      * Logger for this class
      */
-    private static final Logger LOG = Logger.getLogger(LogManager.class);
+    private static final Logger LOG = Logger.getLogger(Journal.class);
 
     public final static String LOG_FILE_SUFFIX = "log";
     public final static String BAK_FILE_SUFFIX = ".bak";
     
-    /** the length of the header of each log entry: entryType + transactionId + length */
+    /** the length of the header of each entry: entryType + transactionId + length */
     public final static int LOG_ENTRY_HEADER_LEN = 11;
 	
 	/** header length + trailing back link */
     public final static int LOG_ENTRY_BASE_LEN = LOG_ENTRY_HEADER_LEN + 2;
 	
     /** default maximum journal size */
-    public final static int DEFAULT_MAX_LOG_SIZE = 10 * 1024 * 1024;
+    public final static int DEFAULT_MAX_SIZE = 10 * 1024 * 1024;
 
     /** minimal size the journal needs to have to be replaced by a new file during a checkpoint */
-	private static final long MIN_LOG_REPLACE = 1024 * 1024;
+	private static final long MIN_REPLACE = 1024 * 1024;
     
     /** 
-     * size limit for the log file. A checkpoint will be triggered if the log file
+     * size limit for the journal file. A checkpoint will be triggered if the file
      * exceeds this size limit.
      */
-    private int logSizeLimit = DEFAULT_MAX_LOG_SIZE;
+    private int journalSizeLimit = DEFAULT_MAX_SIZE;
     
     /** the current output channel */ 
     private FileChannel channel;
@@ -98,10 +98,10 @@ public class LogManager {
     /** latch used to synchronize writes to the channel */
     private Object latch = new Object();
     
-    /** the data directory where log files are written to */
+    /** the data directory where journal files are written to */
     private File dir;
     
-    /** the current log file number */
+    /** the current file number */
     private int currentFile = 0;
     
     /** used to keep track of the current position in the file */
@@ -110,22 +110,22 @@ public class LogManager {
     /** temp buffer */
     private ByteBuffer currentBuffer;
     
-    /** the last LSN written by the LogManager */
+    /** the last LSN written by the JournalManager */
     private long currentLsn = Lsn.LSN_INVALID;
     
-    /** stores the current LSN of the last file sync on the log file */ 
+    /** stores the current LSN of the last file sync on the file */ 
     private long lastSyncLsn = Lsn.LSN_INVALID;
     
     /** set to true while recovery is in progress */
     private boolean inRecovery = false;
     
-    /** the {@link BrokerPool} that created this log manager */
+    /** the {@link BrokerPool} that created this manager */
     private BrokerPool pool;
     
     /** if set to true, a sync will be triggered on the log file after every commit */
     private boolean syncOnCommit = true;
     
-    public LogManager(BrokerPool pool, File directory) throws EXistException {
+    public Journal(BrokerPool pool, File directory) throws EXistException {
         this.dir = directory;
         this.pool = pool;
         currentBuffer = ByteBuffer.allocateDirect(0x40000);
@@ -167,11 +167,11 @@ public class LogManager {
         
         Integer sizeOpt = (Integer) pool.getConfiguration().getProperty("db-connection.recovery.size-limit");
         if (sizeOpt != null)
-        	logSizeLimit = sizeOpt.intValue() * 1024 * 1024;
+        	journalSizeLimit = sizeOpt.intValue() * 1024 * 1024;
     }
     
     /**
-     * Write a log entry to the log.
+     * Write a log entry to the journalling log.
      * 
      * @param loggable
      * @throws TransactionException
@@ -192,7 +192,7 @@ public class LogManager {
     }
     
     /**
-     * Flush the current log buffer to disk. If fsync is true, a sync will
+     * Flush the current buffer to disk. If fsync is true, a sync will
      * be called on the file to force all changes to disk.
      * 
      * @param fsync forces all changes to disk if true and syncMode is set to {@link #SYNC_ON_COMMIT}.
@@ -203,7 +203,7 @@ public class LogManager {
     }
     
     /**
-     * Flush the current log buffer to disk. If fsync is true, a sync will
+     * Flush the current buffer to disk. If fsync is true, a sync will
      * be called on the file to force all changes to disk.
      * 
      * @param fsync forces all changes to disk if true and syncMode is set to {@link #SYNC_ON_COMMIT}.
@@ -231,7 +231,7 @@ public class LogManager {
             lastSyncLsn = currentLsn;
         }
         try {
-            if (channel.size() >= logSizeLimit)
+            if (channel.size() >= journalSizeLimit)
                 pool.triggerCheckpoint();
         } catch (IOException e) {
             LOG.warn("Failed to trigger checkpoint!", e);
@@ -239,9 +239,9 @@ public class LogManager {
     }
     
     /**
-     * Write a checkpoint record to the log and flush it. If switchLogFiles is true,
-     * a new log file will be started, but only if the log file is larger than
-     * {@link #MIN_LOG_REPLACE}. The old log is removed.
+     * Write a checkpoint record to the journal and flush it. If switchLogFiles is true,
+     * a new journal will be started, but only if the file is larger than
+     * {@link #MIN_REPLACE}. The old log is removed.
      * 
      * @param txnId
      * @param switchLogFiles
@@ -251,12 +251,12 @@ public class LogManager {
     	writeToLog(new Checkpoint(txnId));
 		flushToLog(true, true);
         try {
-			if (switchLogFiles && channel.position() > MIN_LOG_REPLACE) {
+			if (switchLogFiles && channel.position() > MIN_REPLACE) {
 				int last = currentFile;
 			    try {
 			        switchFiles();
 			    } catch (LogException e) {
-			        LOG.warn("Failed to create new log file: " + e.getMessage(), e);
+			        LOG.warn("Failed to create new journal: " + e.getMessage(), e);
 			    }
 			    File oldFile = getFile(last);
 			    oldFile.delete();
@@ -267,7 +267,7 @@ public class LogManager {
     }
     
     /**
-     * Set the log file number of the last log file used.
+     * Set the file number of the last file used.
      * 
      * @param fileNum the log file number
      */
@@ -276,7 +276,7 @@ public class LogManager {
     }
     
     /**
-     * Create a new log file with a larger log file number
+     * Create a new journal with a larger file number
      * than the previous file.
      * 
      * @throws LogException
@@ -287,14 +287,14 @@ public class LogManager {
         File file = new File(dir, fname);
         if (file.exists()) {
             if (LOG.isDebugEnabled())
-                LOG.debug("Log file " + file.getAbsolutePath() + " already exists. Copying it.");
+                LOG.debug("Journal file " + file.getAbsolutePath() + " already exists. Copying it.");
             boolean renamed = file.renameTo(new File(file.getAbsolutePath() + BAK_FILE_SUFFIX));
             if (renamed && LOG.isDebugEnabled())
                 LOG.debug("Old file renamed to " + file.getAbsolutePath());
             file = new File(dir, fname);
         }
         if (LOG.isDebugEnabled())
-            LOG.debug("Creating new log file: " + file.getAbsolutePath());
+            LOG.debug("Creating new journal: " + file.getAbsolutePath());
         synchronized (latch) {
 	        close();
 	        try {
@@ -303,7 +303,7 @@ public class LogManager {
 	            
 	            syncThread.setChannel(channel);
 			} catch (FileNotFoundException e) {
-				throw new LogException("Failed to open new log file: " + file.getAbsolutePath(), e);
+				throw new LogException("Failed to open new journal: " + file.getAbsolutePath(), e);
 			}
         }
         inFilePos = 0;
@@ -314,13 +314,13 @@ public class LogManager {
         	try {
         		channel.close();
         	} catch (IOException e) {
-        		LOG.warn("Failed to close journal file", e);
+        		LOG.warn("Failed to close journal", e);
         	}
         }
     }
     
     /**
-     * Find the log file with the highest log file number.
+     * Find the journal file with the highest file number.
      * 
      * @param files
      * @return
@@ -341,7 +341,7 @@ public class LogManager {
 	}
 
     /**
-     * Returns all log files found in the data directory.
+     * Returns all journal files found in the data directory.
      * 
      * @return
      */
@@ -356,7 +356,7 @@ public class LogManager {
 	
     /**
      * Returns the file corresponding to the specified
-     * log file number.
+     * file number.
      * 
      * @param fileNum
      * @return
@@ -371,7 +371,7 @@ public class LogManager {
     
     /**
      * Called to signal that the db is currently in
-     * recovery phase, so no log output should be written.
+     * recovery phase, so no output should be written.
      * 
      * @param value
      */
@@ -380,7 +380,7 @@ public class LogManager {
     }
     
     /**
-     * Translate a log file number into a file name.
+     * Translate a file number into a file name.
      * 
      * @param fileNum
      * @return

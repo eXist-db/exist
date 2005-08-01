@@ -142,7 +142,7 @@ public class RecoveryTest extends TestCase {
             
             test.removeBinaryResource(transaction, broker, doc);
             
-            transact.getLogManager().flushToLog(true);
+            transact.getJournal().flushToLog(true);
             
             DOMFile domDb = ((NativeBroker)broker).getDOMFile();
             Writer writer = new StringWriter();

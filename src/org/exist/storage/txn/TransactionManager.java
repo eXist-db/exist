@@ -29,8 +29,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.log.LogException;
-import org.exist.storage.log.LogManager;
+import org.exist.storage.journal.Journal;
+import org.exist.storage.journal.LogException;
 import org.exist.storage.recovery.RecoveryManager;
 
 /**
@@ -51,12 +51,7 @@ public class TransactionManager {
 
     private long nextTxnId = 0;
 
-    /**
-     *  
-     * @uml.property name="logManager"
-     * @uml.associationEnd multiplicity="(1 1)"
-     */
-    private LogManager logManager;
+    private Journal journal;
     
     private boolean enabled;
     
@@ -69,7 +64,7 @@ public class TransactionManager {
     public TransactionManager(BrokerPool pool, File dataDir, boolean transactionsEnabled) throws EXistException {
         enabled = transactionsEnabled;
         if (enabled)
-            logManager = new LogManager(pool, dataDir);
+            journal = new Journal(pool, dataDir);
     }
     
     /**
@@ -80,7 +75,7 @@ public class TransactionManager {
      * @throws EXistException
      */
 	public boolean runRecovery(DBBroker broker) throws EXistException {
-		RecoveryManager recovery = new RecoveryManager(broker, logManager);
+		RecoveryManager recovery = new RecoveryManager(broker, journal);
 		return recovery.recover();
 	}
 	
@@ -96,7 +91,7 @@ public class TransactionManager {
             return null;
         long txnId = nextTxnId++;
         try {
-            logManager.writeToLog(new TxnStart(txnId));
+            journal.writeToLog(new TxnStart(txnId));
         } catch (TransactionException e) {
             LOG.warn("Failed to create transaction. Error writing to log file.", e);
         }
@@ -113,8 +108,8 @@ public class TransactionManager {
         if (!enabled)
             return;
         if (enabled) {
-            logManager.writeToLog(new TxnCommit(txn.getId()));
-            logManager.flushToLog(true);
+            journal.writeToLog(new TxnCommit(txn.getId()));
+            journal.flushToLog(true);
         }
         txn.releaseAll();
     }
@@ -125,7 +120,7 @@ public class TransactionManager {
     
     /**
      * Create a new checkpoint. A checkpoint fixes the current database state. All dirty pages
-     * are written to disk and the log file is cleaned.
+     * are written to disk and the journal file is cleaned.
      * 
      * This method is called from 
      * {@link org.exist.storage.BrokerPool} within pre-defined periods. It
@@ -134,15 +129,15 @@ public class TransactionManager {
      * 
      * @throws TransactionException
      */
-	public void checkpoint(boolean switchLogFiles) throws TransactionException {
+	public void checkpoint(boolean switchFiles) throws TransactionException {
         if (!enabled)
             return;
 		long txnId = nextTxnId++;
-		logManager.checkpoint(txnId, switchLogFiles);
+		journal.checkpoint(txnId, switchFiles);
 	}
 	
-	public LogManager getLogManager() {
-		return logManager;
+	public Journal getJournal() {
+		return journal;
 	}
     
     public void reindex(DBBroker broker) {
@@ -156,6 +151,6 @@ public class TransactionManager {
     
     public void shutdown() {
         if (enabled)
-            logManager.shutdown();
+            journal.shutdown();
     }
 }

@@ -24,7 +24,7 @@ package org.exist.storage.btree;
 import java.nio.ByteBuffer;
 
 import org.exist.storage.DBBroker;
-import org.exist.storage.log.LogException;
+import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
 
 /**

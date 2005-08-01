@@ -26,12 +26,12 @@ import java.io.File;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
-import org.exist.storage.log.LogEntryTypes;
-import org.exist.storage.log.LogException;
-import org.exist.storage.log.LogManager;
-import org.exist.storage.log.LogReader;
-import org.exist.storage.log.Loggable;
-import org.exist.storage.log.Lsn;
+import org.exist.storage.journal.Journal;
+import org.exist.storage.journal.JournalReader;
+import org.exist.storage.journal.LogEntryTypes;
+import org.exist.storage.journal.LogException;
+import org.exist.storage.journal.Loggable;
+import org.exist.storage.journal.Lsn;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Checkpoint;
 import org.exist.util.ProgressBar;
@@ -53,10 +53,10 @@ public class RecoveryManager {
      * @uml.property name="logManager"
      * @uml.associationEnd multiplicity="(1 1)"
      */
-	private LogManager logManager;
+	private Journal logManager;
 	private DBBroker broker;
     
-	public RecoveryManager(DBBroker broker, LogManager log) {
+	public RecoveryManager(DBBroker broker, Journal log) {
         this.broker = broker;
 		this.logManager = log;
 	}
@@ -75,12 +75,12 @@ public class RecoveryManager {
         boolean recoveryRun = false;
 		File files[] = logManager.getFiles();
         // find the last log file in the data directory
-		int lastNum = LogManager.findLastFile(files);
+		int lastNum = Journal.findLastFile(files);
 		if (-1 < lastNum) {
             // load the last log file
 			File last = logManager.getFile(lastNum);
 			// scan the last log file and record the last checkpoint found
-			LogReader reader = new LogReader(broker, last, lastNum);
+			JournalReader reader = new JournalReader(broker, last, lastNum);
             try {
     			Checkpoint lastCheckpoint = null;
     			long lastLsn = -1;
@@ -131,7 +131,7 @@ public class RecoveryManager {
      * @param lastLsn
      * @throws LogException
      */
-    private void doRecovery(File last, LogReader reader, long lastLsn) throws LogException {
+    private void doRecovery(File last, JournalReader reader, long lastLsn) throws LogException {
         if (LOG.isDebugEnabled())
             LOG.debug("Running recovery ...");
         logManager.setInRecovery(true);

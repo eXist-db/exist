@@ -104,7 +104,7 @@ public class AppendTest extends AbstractUpdateTest {
                 modifications[0].process(transaction);
                 proc.reset();
             }
-            pool.getTransactionManager().getLogManager().flushToLog(true);
+            pool.getTransactionManager().getJournal().flushToLog(true);
         } finally {
             pool.release(broker);
         }

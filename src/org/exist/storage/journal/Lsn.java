@@ -19,12 +19,12 @@
  *  
  *  $Id$
  */
-package org.exist.storage.log;
+package org.exist.storage.journal;
 
 /**
- * Log Sequence Number: identifies a log record within the log file.
+ * Log Sequence Number: identifies a log record within the journal file.
  * A LSN is represented by a Java long and consists of the file number
- * of the log file and an offset into the file.
+ * of the journal file and an offset into the file.
  * 
  * @author wolf
  */

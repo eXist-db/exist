@@ -19,35 +19,92 @@
  *  
  *  $Id$
  */
-package org.exist.storage.log;
+package org.exist.storage.journal;
 
 import java.nio.ByteBuffer;
 
 /**
  * Interface to be implemented by all objects that can be written or read
- * from the log.
+ * from the journalling log.
  * 
  * @author wolf
  */
 public interface Loggable {
     
+	/**
+	 * Returns the type id of the log entry. This is the type registered
+	 * with class {@link LogEntryTypes}. The returned id is used by
+	 * {@link JournalReader} to find the correct Loggable instance
+	 * that can handle the entry. 
+	 * 
+	 * @return
+	 */
     public byte getLogType();
     
+    /**
+     * Returns the transaction id of the transaction to which the
+     * logged operation belongs.
+     * 
+     * @return
+     */
     public long getTransactionId();
     
+    /**
+     * Returns the {@link Lsn} of the entry.
+     * 
+     * @return
+     */
     public long getLsn();
     
+    /**
+     * Set the {@link Lsn} of the entry.
+     * 
+     * @param lsn
+     */
     public void setLsn(long lsn);
     
+    /**
+     * Write this entry to the specified ByteBuffer.
+     * 
+     * @param out
+     */
     public void write(ByteBuffer out);
     
+    /**
+     * Read the entry.
+     * 
+     * @param in
+     */
     public void read(ByteBuffer in);
     
+    /**
+     * Returns the size of the work load of this
+     * entry.
+     * 
+     * @return
+     */
     public int getLogSize();
 	
+    /**
+     * Redo the underlying operation. This method is
+     * called by {@link org.exist.storage.recovery.RecoveryManager}.
+     * 
+     * @throws LogException
+     */
     public void redo() throws LogException;
     
+    /**
+     * Undo, i.e. roll back, the underlying operation. The method
+     * is called by {@link org.exist.storage.recovery.RecoveryManager}.
+     * 
+     * @throws LogException
+     */
     public void undo() throws LogException;
     
+    /**
+     * Returns a description of the entry for debugging purposes.
+     * 
+     * @return
+     */
 	public String dump();
 }

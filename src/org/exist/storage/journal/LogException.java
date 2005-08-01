@@ -20,7 +20,7 @@
  *  
  *  $Id$
  */
-package org.exist.storage.log;
+package org.exist.storage.journal;
 
 import org.exist.EXistException;
 

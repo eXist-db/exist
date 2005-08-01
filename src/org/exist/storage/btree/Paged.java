@@ -56,7 +56,7 @@ import java.io.RandomAccessFile;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
-import org.exist.storage.log.Lsn;
+import org.exist.storage.journal.Lsn;
 import org.exist.util.ByteConversion;
 
 /**

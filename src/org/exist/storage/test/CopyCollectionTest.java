@@ -150,7 +150,7 @@ public class CopyCollectionTest extends TestCase {
             
             broker.copyCollection(transaction, test, dest, "test3");
 
-            pool.getTransactionManager().getLogManager().flushToLog(true);
+            pool.getTransactionManager().getJournal().flushToLog(true);
         } finally {
             pool.release(broker);
         }
