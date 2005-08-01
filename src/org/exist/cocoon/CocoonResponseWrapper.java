@@ -23,7 +23,9 @@
 package org.exist.cocoon;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import org.apache.cocoon.environment.Cookie;
 import org.apache.cocoon.environment.Response;
@@ -113,14 +115,28 @@ public class CocoonResponseWrapper implements ResponseWrapper {
 		return response.getLocale();
 	}
 
+	/** Note: all this is pasted from class HttpResponseWrapper,
+	 * but response is from a different class; no simple re-use of code possible.  :-( */
+	private Map dateHeaders = new HashMap();
 	/**
-	 * @param arg0
+	 * @param name
 	 * @param arg1
 	 */
-	public void setDateHeader(String arg0, long arg1) {
-		response.setDateHeader(arg0, arg1);
+	public void setDateHeader(String name, long arg1) {
+		dateHeaders.put(name, Long.valueOf(arg1) );
+		response.setDateHeader(name, arg1);
 	}
-
+	/** @return the value of Date Header corresponding to given name,
+	 * 0 if none has been set. */
+	public long getDateHeader(String name) {
+		long ret = 0;
+		Long val = (Long)dateHeaders.get(name);
+		if ( val != null )
+			ret = val.longValue();
+		return ret;
+	}
+	
+	
 	/**
 	 * @param arg0
 	 * @param arg1
