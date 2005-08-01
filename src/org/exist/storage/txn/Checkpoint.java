@@ -26,8 +26,8 @@ import java.text.DateFormat;
 import java.util.Date;
 
 import org.exist.storage.DBBroker;
-import org.exist.storage.log.AbstractLoggable;
-import org.exist.storage.log.LogEntryTypes;
+import org.exist.storage.journal.AbstractLoggable;
+import org.exist.storage.journal.LogEntryTypes;
 
 /**
  * @author wolf

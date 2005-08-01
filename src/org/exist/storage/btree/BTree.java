@@ -60,10 +60,10 @@ import org.exist.storage.CacheManager;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRDCache;
-import org.exist.storage.log.LogEntryTypes;
-import org.exist.storage.log.LogException;
-import org.exist.storage.log.LogManager;
-import org.exist.storage.log.Loggable;
+import org.exist.storage.journal.Journal;
+import org.exist.storage.journal.LogEntryTypes;
+import org.exist.storage.journal.LogException;
+import org.exist.storage.journal.Loggable;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ArrayUtils;
@@ -143,7 +143,7 @@ public class BTree extends Paged {
 	private BTreeFileHeader fileHeader;
 	
     /** The LogManager for writing the transaction log */
-    protected LogManager logManager;
+    protected Journal logManager;
     
     protected byte fileId;
     
@@ -160,7 +160,7 @@ public class BTree extends Paged {
 		fileHeader.setTotalCount(0);
         isTransactional = pool.isTransactional();
         if (isTransactional)
-            logManager = pool.getTransactionManager().getLogManager();
+            logManager = pool.getTransactionManager().getJournal();
 	}
 
 	public BTree(BrokerPool pool, byte fileId, CacheManager cacheManager, File file, int growthThreshold) {
@@ -884,7 +884,7 @@ public class BTree extends Paged {
 					}
 					return -1;
 				default :
-					throw new BTreeException("Invalid Page Type In addValue");
+					throw new BTreeException("Invalid Page Type In addValue: " + ph.getStatus());
 			}
 		}
 

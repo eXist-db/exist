@@ -45,11 +45,11 @@ import org.exist.storage.cache.LRUCache;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.storage.journal.LogEntryTypes;
+import org.exist.storage.journal.Loggable;
+import org.exist.storage.journal.Lsn;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
-import org.exist.storage.log.LogEntryTypes;
-import org.exist.storage.log.Loggable;
-import org.exist.storage.log.Lsn;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteArray;
@@ -1000,6 +1000,9 @@ public class BFile extends BTree {
      * Methods used by recovery and transaction management
      * --------------------------------------------------------------------------------- */
     
+    /**
+     * Write loggable to the journal and update the LSN in the page header.
+     */
     private void writeToLog(Loggable loggable, DataPage page) {
         try {
             logManager.writeToLog(loggable);
@@ -2495,9 +2498,9 @@ public class BFile extends BTree {
 		    		LOG.error("Problematic tid found: " + tid + "; trying to recover ...");
 		    		short[] t = new short[tid + 1];
 		    		Arrays.fill(t, (short)-1);
-		        	System.arraycopy(offsets, 0, t, 0, offsets.length);
-		        	offsets = t;
-		        	ph.nextTID = (short)(tid + 1);
+		    		System.arraycopy(offsets, 0, t, 0, offsets.length);
+		    		offsets = t;
+		    		ph.nextTID = (short)(tid + 1);
 		    	}
 		    	offsets[tid] = (short)(pos + 2);
 		    	pos += ByteConversion.byteToInt(data, pos + 2) + 6;

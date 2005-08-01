@@ -19,9 +19,11 @@
  *  
  *  $Id$
  */
-package org.exist.storage.log;
+package org.exist.storage.journal;
 
 /**
+ * Abstract implementation of the Loggable interface.
+ * 
  * @author wolf
  *
  */
@@ -31,6 +33,12 @@ public abstract class AbstractLoggable implements Loggable {
     protected byte type;
     protected long lsn;
     
+    /**
+     * Default constructor: initialize entry type and transaction id.
+     * 
+     * @param type
+     * @param transactionId
+     */
     public AbstractLoggable(byte type, long transactionId) {
         this.type = type;
         this.transactId = transactionId;
@@ -60,6 +68,10 @@ public abstract class AbstractLoggable implements Loggable {
         // do nothing
     }
     
+    /**
+     * Default implementation returns the current LSN plus the
+     * class name of the Loggable instance. 
+     */
 	public String dump() {
 		return '[' + Lsn.dump(getLsn()) + "] " + getClass().getName() + ' ';
 	}

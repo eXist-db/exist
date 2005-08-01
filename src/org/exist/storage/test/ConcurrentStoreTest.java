@@ -174,7 +174,7 @@ public class ConcurrentStoreTest extends TestCase {
                 
                 transact.commit(transaction);
                 
-                transact.getLogManager().flushToLog(true);
+                transact.getJournal().flushToLog(true);
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());

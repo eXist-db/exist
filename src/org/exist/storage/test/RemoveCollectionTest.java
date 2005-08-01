@@ -79,7 +79,7 @@ public class RemoveCollectionTest extends TestCase {
             
             broker.removeCollection(transaction, test);
             
-            transact.getLogManager().flushToLog(true);
+            transact.getJournal().flushToLog(true);
         } finally {
             pool.release(broker);
         }

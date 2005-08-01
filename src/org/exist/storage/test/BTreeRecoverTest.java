@@ -99,7 +99,7 @@ public class BTreeRecoverTest extends TestCase {
             idx = new IndexQuery(IndexQuery.GT, new NativeBroker.NodeRef(500, 600));
             domDb.remove(txn, idx, null);
             
-            mgr.getLogManager().flushToLog(true);
+            mgr.getJournal().flushToLog(true);
             
             Writer writer = new StringWriter();
             domDb.dump(writer);

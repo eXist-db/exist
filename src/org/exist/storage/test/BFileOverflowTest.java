@@ -90,7 +90,7 @@ public class BFileOverflowTest extends TestCase {
        
             collectionsDb.remove(txn, key);
             
-            mgr.getLogManager().flushToLog(true);
+            mgr.getJournal().flushToLog(true);
             
         } finally {
             pool.release(broker);

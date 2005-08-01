@@ -20,7 +20,7 @@
  *  
  *  $Id$
  */
-package org.exist.storage.log;
+package org.exist.storage.journal;
 
 import java.lang.reflect.Constructor;
 
@@ -31,9 +31,9 @@ import org.exist.storage.txn.TxnStart;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 
 /**
- * Registry for log entry types. All classes that can be read from or written to the log
+ * Registry for log entry types. All classes that can be read from or written to the journal
  * have to be registered here. The recovery manager uses this information to create
- * the correct {@link org.exist.storage.log.Loggable} object when reading the log.
+ * the correct {@link org.exist.storage.journal.Loggable} object when reading the log.
  * 
  * @author wolf
  */

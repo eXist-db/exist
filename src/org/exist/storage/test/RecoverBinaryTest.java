@@ -78,7 +78,7 @@ public class RecoverBinaryTest extends TestCase {
 //            transaction = transact.beginTransaction();
 //            root.removeBinaryResource(transaction, broker, doc);
             
-            transact.getLogManager().flushToLog(true);
+            transact.getJournal().flushToLog(true);
         } finally {
             pool.release(broker);
         }

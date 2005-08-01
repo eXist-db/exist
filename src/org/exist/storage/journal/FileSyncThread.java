@@ -19,13 +19,13 @@
  *  
  *  $Id$
  */
-package org.exist.storage.log;
+package org.exist.storage.journal;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 
 /**
- * Sync the current log file by calling {@link java.nio.channels.FileChannel#force(boolean)}.
+ * Sync the current journal file by calling {@link java.nio.channels.FileChannel#force(boolean)}.
  * This operation is quite expensive, so we delegate it to a background thread. The main
  * logging thread can continue to write into the log buffer and does not need to wait until
  * the force operation returns. 
@@ -60,7 +60,7 @@ public class FileSyncThread extends Thread {
     
     /**
      * Set the channel opened on the current journal file.
-     * Called by {@link LogManager} when it switches to
+     * Called by {@link Journal} when it switches to
      * a new file.
      * 
      * @param channel

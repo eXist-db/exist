@@ -120,7 +120,7 @@ public class DOMFileRecoverTest extends TestCase {
             domDb.remove(txn, idx, null);
             domDb.removeAll(txn, firstToRemove);
             
-            mgr.getLogManager().flushToLog(true);
+            mgr.getJournal().flushToLog(true);
             
             Writer writer = new StringWriter();
             domDb.dump(writer);
