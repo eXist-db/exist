@@ -2098,7 +2098,6 @@ public class NativeBroker extends DBBroker {
      * @param document
      */
     private void removeDocMetadata(final Txn transaction, final DocumentImpl document) {
-        SanityCheck.THROW_ASSERT(transaction != null);
         // remove document metadata
         Lock lock = collectionsDb.getLock();
         try {
