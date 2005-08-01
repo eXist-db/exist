@@ -149,6 +149,40 @@
                 amount of time (in milliseconds) the database will wait for running
                 processes to complete upon database shutdown.</para>
 			</section>
+			<section>
+				<title>recovery</title>
+				<para>Configures journalling and recovery: with recovery enabled,
+				the database can recover from an unclean database shutdown caused
+				by a power failure, OS reboot, hanging processes etc. For this to work,
+				all db operations have to be logged to a journal file. The settings here
+				allow to configure the location of the journal file, its size and other
+					parameters.</para>
+				<itemizedlist>
+					<listitem><para><option>enabled</option>: set to yes to enable
+					automatic recovery.</para></listitem>
+					<listitem><para><option>size</option>: allowed maximum size of
+					the journal file. Once the journal reaches the limit, a checkpoint
+					will be triggered and the journal will be cleaned. However, the
+					database needs to wait for running transactions to return before
+					it can process the checkpoint. If one of these transactions writes
+					a lot of data, the journal file will grow until the transaction
+					completed. This means that the size limit is not enforced in all
+						cases.</para>
+					</listitem>						
+					<listitem><para><option>journal-dir</option>: the directory where
+					journal files will be written. Defaults to the data directory
+					if not specified.</para></listitem>
+					<listitem><para><option>sync-on-commit</option>: should the database
+					force a file sync on the journal after every commit? Setting this
+					to "yes" protects the journal against operating system failures.
+					However, it also implies a performance penalty, especially on windows.
+					If set to "no", eXist will rely on the operating system to flush
+					out the journal contents to disk. In the worst case of a complete
+					system failure, some committed transactions might not have been
+					written to the journal and will thus be rolled back.</para>
+					</listitem>
+				</itemizedlist>
+			</section>			 
             <section>
                 <title>watchdog</title>
                 <para>Global configuration for the query watchdog: the watchdog
