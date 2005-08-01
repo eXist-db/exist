@@ -84,5 +84,7 @@ public interface ResponseWrapper {
 	
 	public void sendRedirect(String arg0) throws IOException;
 	
+	/** @return the value of Date Header corresponding to given name,
+	 * 0 if none has been set. */
 	public long getDateHeader(String name);
 }

@@ -74,7 +74,7 @@ public class HTTPUtils {
 						// have to take in account that if the header has allready been explicitely set 
 						// by the XQuery script, we should not modify it .
 						ResponseWrapper responseWrapper = ((ResponseWrapper) value.getObject());
-						if ( responseWrapper.getDateHeader("Last-Modified") != 0 )
+						if ( responseWrapper.getDateHeader("Last-Modified") == 0 )
 							responseWrapper.setDateHeader(
 								"Last-Modified", mostRecentDocumentTime);
 					}
