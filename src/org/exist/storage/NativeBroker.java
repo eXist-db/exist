@@ -214,11 +214,6 @@ public class NativeBroker extends DBBroker {
 				domDb =
 					new DOMFile(pool, new File(dataDir + File.separatorChar + DOM_DBX),
 						pool.getCacheManager());
-				if (!domDb.exists()) {
-					LOG.info("creating dom.dbx");
-					domDb.create();
-				} else
-					domDb.open();
 
 				config.setProperty("db-connection.dom", domDb);
 				if (!readOnly)
@@ -234,11 +229,6 @@ public class NativeBroker extends DBBroker {
 					new CollectionStore(pool, new File(dataDir + File.separatorChar + COLLECTIONS_DBX),
                             pool.getCacheManager());
 
-				if (!collectionsDb.exists()) {
-					LOG.info("creating collections.dbx");
-					collectionsDb.create();
-				} else
-					collectionsDb.open();
 				config.setProperty("db-connection.collections", collectionsDb);
 				if (!readOnly)
 					readOnly = collectionsDb.isReadOnly();
