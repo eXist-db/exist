@@ -331,4 +331,8 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 			}
 		}
 	}
+
+	public void removeAttribute(AttrImpl attr, NodePath currentPath, boolean index) {
+		storeAttribute( attr, currentPath, index );
+	}
 }
