@@ -1,0 +1,82 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-04 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ *  $Id$
+ */
+package org.exist.http.servlets;
+
+
+import org.apache.log4j.Logger;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.xquery.Variable;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.value.Sequence;
+
+/** A place holder for static utility functions related to HTTP. 
+ * @author jmv */
+public class HTTPUtils {
+    private final static Logger LOG = Logger.getLogger(XQuery.class);
+
+    /** Guessing last modification time for an XQuery result; 
+     *  the HTTP header Last-Modified is filled with most recent time stamp among all 
+     *  XQuery documents appearing in the actual response.
+     *  Note however, that the actual response can be influenced, through tests in the query,
+     *  by documents more recent. */
+    public static void addLastModifiedHeader(Sequence result,
+			XQueryContext context) {
+		try {
+			DocumentSet documentSet = result.getDocumentSet();
+			long mostRecentDocumentTime = 0;
+			for (int i = 0; i < documentSet.getLength(); i++) {
+				DocumentImpl doc = (DocumentImpl) documentSet.item(i);
+				if (doc != null) {
+					mostRecentDocumentTime = Math.max(doc.getLastModified(),
+							mostRecentDocumentTime);
+					LOG.debug("getFileName: " + doc.getFileName() + ", "
+							+ doc.getLastModified());
+				}
+			}
+			LOG.debug("mostRecentDocumentTime: " + mostRecentDocumentTime);
+
+			if (mostRecentDocumentTime > 0) {
+				RequestModule myModule = (RequestModule) context
+						.getModule(RequestModule.NAMESPACE_URI);
+				
+				// response servlet object is read from global variable $response
+				Variable var = myModule
+						.resolveVariable(RequestModule.RESPONSE_VAR);
+				if (var != null) {
+					JavaObjectValue value = (JavaObjectValue) var.getValue()
+							.itemAt(0);
+					if (value != null
+							&& value.getObject() instanceof ResponseWrapper)
+						((ResponseWrapper) value.getObject()).setDateHeader(
+								"Last-Modified", mostRecentDocumentTime);
+				}
+			}
+		} catch (Exception e) {
+			LOG.debug(e);
+		}
+	}
+}
