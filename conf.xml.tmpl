@@ -62,8 +62,6 @@
 			    operations to complete before it forces a shutdown.
         -->
 		<pool min="1" max="20" sync-period="120000" wait-before-shutdown="120000"/>
-
-		<recovery enabled="yes" sync-on-commit="no" journal-dir="webapp/WEB-INF/data"/>
 		
 		<recovery enabled="yes" sync-on-commit="no"
             size="10M" journal-dir="webapp/WEB-INF/data"/>
