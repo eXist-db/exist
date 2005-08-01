@@ -333,6 +333,36 @@ public class NativeBroker extends DBBroker {
     
     // ============ dispatch the various events to indexing classes ==========
 
+    private void notifyStartElement(ElementImpl elem, NodePath currentPath, boolean index) {
+        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+            observer.startElement(elem, currentPath, index);
+        }
+	}
+  
+	private void notifyStoreAttribute(AttrImpl attr, NodePath currentPath, boolean index) {
+        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+            observer.storeAttribute( attr, currentPath, index );
+        }	
+	}
+	
+
+	private void notifyStoreText(TextImpl text, NodePath currentPath, boolean index ) {
+        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+            observer.storeText(text, currentPath, index);
+        }
+	}
+	
+
+	private void notifyRemoveElement(ElementImpl elem, NodePath currentPath, String content) {
+        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+            observer.removeElement(elem, currentPath, content);
+        }
+	}
+	
     private void notifyDropIndex(DocumentImpl doc) throws ReadOnlyException {
         for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
             ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
@@ -958,7 +988,8 @@ public class NativeBroker extends DBBroker {
                     // --move to-- NativeValueIndex NativeTextEngine
                     ((ElementImpl) node).setIndexType(indexType);
                     
-                    qnameValueIndex.startElement((ElementImpl)node, currentPath, index);
+                    // qnameValueIndex.startElement((ElementImpl)node, currentPath, index);
+                    notifyStartElement((ElementImpl)node, currentPath, index);
                     break;
                     
                 case Node.ATTRIBUTE_NODE :
@@ -999,7 +1030,8 @@ public class NativeBroker extends DBBroker {
                         valueIndex.storeAttribute(valSpec, (AttrImpl) node);
                     }
                     
-                    qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
+                    // qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
+                    notifyStoreAttribute( (AttrImpl)node, currentPath, index);
                     
                     // --move to-- NativeTextEngine
                     // TODO : textEngine.storeAttribute( (AttrImpl)node, currentPath, index);
@@ -1035,11 +1067,14 @@ public class NativeBroker extends DBBroker {
                                 : ftIdx.preserveContent(currentPath));
                         textEngine.storeText(ftIdx, (TextImpl) node, valore);
                     }
+                    
+                    notifyStoreText( (TextImpl)node, currentPath, index );
+                    // storeText( TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
                     break;
             }
         }
-        
-        /** Stores this node into the database, if it's an element */
+
+		/** Stores this node into the database, if it's an element */
         public void store() {
             if (!repairMode && nodeType == Node.ELEMENT_NODE && level <= depth) {
                 new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -2132,7 +2167,8 @@ public class NativeBroker extends DBBroker {
 				        valueIndex.storeElement(spec.getType(), (ElementImpl) node, content);
 				    }
 				}				
-				qnameValueIndex.removeElement((ElementImpl) node, currentPath, content);
+				// qnameValueIndex.removeElement((ElementImpl) node, currentPath, content);
+				notifyRemoveElement( (ElementImpl) node, currentPath, content );
 				break;
 				
 			case Node.ATTRIBUTE_NODE :
@@ -2164,7 +2200,8 @@ public class NativeBroker extends DBBroker {
 //					}
 				}
 				
-                qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, true);
+				qnameValueIndex.removeAttribute( (AttrImpl)node, currentPath, true);
+                // qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, true);
 
 				
 				// if the attribute has type ID, store the ID-value
@@ -2646,7 +2683,7 @@ public class NativeBroker extends DBBroker {
 		tempProxy.setIndexType(indexType);
 		
 		node.getQName().setNameType(ElementValue.ELEMENT);
-		// TODO move_to NativeValueIndexByQName
+		// TODO move_to NativeValueIndex
 		if (RangeIndexSpec.hasRangeIndex(indexType)) {
 				if (content == null)
 					content = getNodeValue(tempProxy, false);
@@ -2655,7 +2692,7 @@ public class NativeBroker extends DBBroker {
 						(ElementImpl) node, content.toString());
 		}
 		
-		// TODO move_to NativeValueIndex		
+		// TODO move_to NativeValueIndexByQName	
 		if ( RangeIndexSpec.hasQNameIndex(indexType) ) {
 //			RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
 			if (content == null)
@@ -2666,9 +2703,10 @@ public class NativeBroker extends DBBroker {
 //					(ElementImpl) node, content.toString());
 			
 			qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
+			// notifyEndElement((ElementImpl) node, currentPath, content);
 		}
 		
-//		 TODO move_to NativeValueIndex; name change (See ContentLoadingObserver ): addRow() --> endElement()
+//		 TODO move_to NativeElementIndex; name change (See ContentLoadingObserver ): addRow() --> endElement()
 		// save element by calling ElementIndex
 		elementIndex.setDocument(doc);
 		elementIndex.addRow(node.getQName(), tempProxy);
