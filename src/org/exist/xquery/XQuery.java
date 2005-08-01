@@ -27,6 +27,7 @@ import java.io.Reader;
 import java.io.StringReader;
 
 import org.apache.log4j.Logger;
+import org.exist.http.servlets.HTTPUtils;
 import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
@@ -135,13 +136,16 @@ public class XQuery {
         	Sequence result = expression.eval(contextSequence);
         	expression.reset();
         	context.reset();
+        	HTTPUtils.addLastModifiedHeader( result, context );
         	return result;
         } finally {
         	broker.getBrokerPool().getXQueryMonitor().queryCompleted(context.getWatchDog());
         }
     }
     
-    public Sequence execute(String expression, Sequence contextSequence) throws XPathException {
+
+
+	public Sequence execute(String expression, Sequence contextSequence) throws XPathException {
 		XQueryContext context = new XQueryContext(broker);
 		CompiledXQuery compiled = compile(context, new StringReader(expression));
 		return execute(compiled, null);
