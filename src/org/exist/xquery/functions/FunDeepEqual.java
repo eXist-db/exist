@@ -24,29 +24,14 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.GeneralComparison;
-import org.exist.xquery.Module;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 /**
  * Implements the fn:deep-equal library function.
- * @linkplain http://www.w3.org/TR/xpath-functions/#func-deep-equal
- * 
+ *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 public class FunDeepEqual extends Function {
@@ -73,70 +58,61 @@ public class FunDeepEqual extends Function {
 		int length = args[0].getLength();
 		if (length != args[1].getLength()) return BooleanValue.FALSE;
 		for (int i=0; i<length; i++) {
-			if ( ! deepEquals( args[0].itemAt(i),
-					           args[1].itemAt(i)) )
-				return BooleanValue.FALSE;
+			if (!deepEquals(args[0].itemAt(i), args[1].itemAt(i))) return BooleanValue.FALSE;
 		}
 		return BooleanValue.TRUE;
 	}
 	
 	private boolean deepEquals(Item a, Item b) {
 		try {
-			boolean aSubTypeOfATOMIC = Type.subTypeOf(a.getType(), Type.ATOMIC);
-			boolean bSubTypeOfATOMIC = Type.subTypeOf(b.getType(), Type.ATOMIC);
-			
-			// if at least one is atomic type
-			if (aSubTypeOfATOMIC || bSubTypeOfATOMIC) {	
-
-				// if one ist not atomic type
-				if ( !aSubTypeOfATOMIC || !bSubTypeOfATOMIC )
-					return false;
-				
-				// both are atomic: call the algo. that is being used for the eq operator
+			final boolean aAtomic = Type.subTypeOf(a.getType(), Type.ATOMIC);
+			final boolean bAtomic = Type.subTypeOf(b.getType(), Type.ATOMIC);
+			if (aAtomic || bAtomic) {
+				if (!aAtomic || !bAtomic) return false;
 				try {
-					return GeneralComparison.compareAtomic( context.getDefaultCollator(),
-						(AtomicValue)a, (AtomicValue)b, 
-						context.isBackwardsCompatible(), Constants.TRUNC_NONE, Constants.EQ );
-				}
-				// the eq operator throws an exception if types are not comparable, deep-equal must not
-				catch( XPathException e) {
+					return GeneralComparison.compareAtomic(
+						context.getDefaultCollator(), (AtomicValue) a, (AtomicValue) b, 
+						context.isBackwardsCompatible(), Constants.TRUNC_NONE, Constants.EQ);
+				} catch (XPathException e) {
 					return false;
 				}
-				
-			} else {	// both are not atomic types
-				
-//				assert Type.subTypeOf(a.getType(), Type.NODE);
-//				assert Type.subTypeOf(b.getType(), Type.NODE);
-				if (a.getType() != b.getType()) return false;
-				NodeValue nva = (NodeValue) a, nvb = (NodeValue) b;
+			}
+//		assert Type.subTypeOf(a.getType(), Type.NODE);
+//		assert Type.subTypeOf(b.getType(), Type.NODE);
+			if (a.getType() != b.getType()) return false;
+			NodeValue nva = (NodeValue) a, nvb = (NodeValue) b;
+			if (nva == nvb) return true;
+			try {
 				if (nva.equals(nvb)) return true;		// shortcut!
-				Node na, nb;
-				switch(a.getType()) {
-					case Type.DOCUMENT:
-						// NodeValue.getNode() doesn't seem to work for document nodes
-						na = nva instanceof Node ? (Node) nva : ((NodeProxy) nva).getDocument();
-						nb = nvb instanceof Node ? (Node) nvb : ((NodeProxy) nvb).getDocument();
-						return compareContents(na, nb);
-					case Type.ELEMENT:
-						na = nva.getNode(); nb = nvb.getNode();
-						return compareElements(na, nb);
-					case Type.ATTRIBUTE:
-						na = nva.getNode(); nb = nvb.getNode();
-						return
-							compareNames(na, nb)
-							&& safeEquals(na.getNodeValue(), nb.getNodeValue());
-					case Type.PROCESSING_INSTRUCTION:
-					case Type.NAMESPACE:
-						na = nva.getNode(); nb = nvb.getNode();
-						return
-							safeEquals(na.getNodeName(), nb.getNodeName())
-							&& safeEquals(nva.getStringValue(), nvb.getStringValue());
-					case Type.TEXT:
-					case Type.COMMENT:
-						return safeEquals(nva.getStringValue(), nvb.getStringValue());
-					
-					default: throw new RuntimeException("unexpected item type " + Type.getTypeName(a.getType()));
-				}
+			} catch (XPathException e) {
+				// apparently incompatible values, do manual comparison
+			}
+			Node na, nb;
+			switch(a.getType()) {
+				case Type.DOCUMENT:
+					// NodeValue.getNode() doesn't seem to work for document nodes
+					na = nva instanceof Node ? (Node) nva : ((NodeProxy) nva).getDocument();
+					nb = nvb instanceof Node ? (Node) nvb : ((NodeProxy) nvb).getDocument();
+					return compareContents(na, nb);
+				case Type.ELEMENT:
+					na = nva.getNode(); nb = nvb.getNode();
+					return compareElements(na, nb);
+				case Type.ATTRIBUTE:
+					na = nva.getNode(); nb = nvb.getNode();
+					return
+						compareNames(na, nb)
+						&& safeEquals(na.getNodeValue(), nb.getNodeValue());
+				case Type.PROCESSING_INSTRUCTION:
+				case Type.NAMESPACE:
+					na = nva.getNode(); nb = nvb.getNode();
+					return
+						safeEquals(na.getNodeName(), nb.getNodeName())
+						&& safeEquals(nva.getStringValue(), nvb.getStringValue());
+				case Type.TEXT:
+				case Type.COMMENT:
+					return safeEquals(nva.getStringValue(), nvb.getStringValue());
+				
+				default: throw new RuntimeException("unexpected item type " + Type.getTypeName(a.getType()));
 			}
 		} catch (XPathException e) {
             e.printStackTrace();
@@ -193,9 +169,8 @@ public class FunDeepEqual extends Function {
 	private boolean compareNames(Node a, Node b) {
 		if (a.getLocalName() != null || b.getLocalName() != null) {
 			return safeEquals(a.getNamespaceURI(), b.getNamespaceURI()) && safeEquals(a.getLocalName(), b.getLocalName());
-		} else {
-			return safeEquals(a.getNodeName(), b.getNodeName());
 		}
+		return safeEquals(a.getNodeName(), b.getNodeName());
 	}
 	
 	private boolean safeEquals(Object a, Object b) {
