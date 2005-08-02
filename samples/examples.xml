@@ -107,7 +107,7 @@ return
 (:  This script accesses the mondial database, which can be
     found at http://dbis.informatik.uni-goettingen.de/Mondial/ :)
 
-let $country := /mondial/country[name = 'spain']
+let $country := /mondial/country[name = 'Spain']
 for $province in $country/province
 order by $province/name
 return
