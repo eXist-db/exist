@@ -875,6 +875,7 @@
         <replace dir="${build.docs.src}" summary="true"
                 includes="*.xml">
             <replacefilter token="index.xml" value="index.html"/>
+        	<replacefilter token="acknowledge.xml" value="acknowledge.html"/>
             <replacefilter token="ant-tasks.xml" value="ant-tasks.html"/>
             <replacefilter token="changes.xml" value="changes.html"/>
             <replacefilter token="client.xml" value="client.html"/>
