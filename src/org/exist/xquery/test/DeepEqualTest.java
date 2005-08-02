@@ -1,17 +1,11 @@
 package org.exist.xquery.test;
 
-import org.exist.xmldb.CollectionManagementServiceImpl;
-import org.exist.xmldb.RemoteCollectionManagementService;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.*;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.*;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
-
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
+
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.*;
+import org.xmldb.api.modules.*;
 
 
 public class DeepEqualTest extends TestCase {
@@ -249,6 +243,14 @@ public class DeepEqualTest extends TestCase {
 		assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
 	}
 	
+	public void testForLoop() throws XMLDBException {
+		ResourceSet rs = query.query("let $set := <root><b>test</b><c><a>test</a></c><d><a>test</a></d></root>, $test := <c><a>test</a></c> for $node in $set/* return deep-equal($node, $test)");
+		assertEquals(3, rs.getSize());
+		assertEquals("false", rs.getResource(0).getContent());
+		assertEquals("true", rs.getResource(1).getContent());
+		assertEquals("false", rs.getResource(2).getContent());
+	}
+	
 	private void assertQuery(boolean expected, String q) throws XMLDBException {
 		ResourceSet rs = query.query(q);
 		assertEquals(1, rs.getSize());
@@ -265,12 +267,12 @@ public class DeepEqualTest extends TestCase {
 	private Collection setupTestCollection() throws XMLDBException {
 		Collection root = DatabaseManager.getCollection(URI, "admin", "");
 		CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-		Collection c = root.getChildCollection("test");
-		if(c != null) rootcms.removeCollection("test");
+		Collection cc = root.getChildCollection("test");
+		if(cc != null) rootcms.removeCollection("test");
 		rootcms.createCollection("test");
-		c = DatabaseManager.getCollection(URI+"/test", "admin", "");
-		assertNotNull(c);
-		return c;
+		cc = DatabaseManager.getCollection(URI+"/test", "admin", "");
+		assertNotNull(cc);
+		return cc;
 	}
 
 	protected void setUp() {
