@@ -517,7 +517,7 @@ public class BrokerPool {
                 LOG.debug("Data directory " + dataDir + " does not exist. Creating one ...");
             }
             try {
-                dir.mkdir();
+                dir.mkdirs();
             } catch (SecurityException e) {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("Cannot create data directory: " + dir.getAbsolutePath() + ". Switching to read-only mode.");

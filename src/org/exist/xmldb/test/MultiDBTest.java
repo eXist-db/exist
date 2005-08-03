@@ -113,7 +113,7 @@ public class MultiDBTest extends TestCase {
         Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         for (int i = 0; i < INSTANCE_COUNT; i++) {
             File dir = new File(testDir, "db" + i);
-            dir.mkdir();
+            dir.mkdirs();
             File conf = new File(dir, "conf.xml");
             FileOutputStream os = new FileOutputStream(conf);
             os.write(CONFIG.getBytes("UTF-8"));
