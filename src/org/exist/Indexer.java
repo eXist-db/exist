@@ -549,7 +549,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				attr.setOwnerDocument(document);
 				if (attributes.getType(i).equals(ATTR_ID_TYPE)) {
 					attr.setType(AttrImpl.ID);
-				} else if (attr.getQName().compareTo(AttrImpl.XML_ID_QNAME) == 0) {
+				} else if (attr.getQName().equalsSimple(AttrImpl.XML_ID_QNAME)) {
 					// an xml:id attribute. Normalize the attribute and set its type to ID
 					attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
 					if (!XMLChar.isValidNCName(attr.getValue()))
