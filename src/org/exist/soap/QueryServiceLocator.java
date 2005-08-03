@@ -2,7 +2,7 @@
  * QueryServiceLocator.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2RC2 Nov 16, 2004 (12:19:44 EST) WSDL2Java emitter.
+ * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
  */
 
 package org.exist.soap;
@@ -15,6 +15,10 @@ public class QueryServiceLocator extends org.apache.axis.client.Service implemen
 
     public QueryServiceLocator(org.apache.axis.EngineConfiguration config) {
         super(config);
+    }
+
+    public QueryServiceLocator(java.lang.String wsdlLoc, javax.xml.namespace.QName sName) throws javax.xml.rpc.ServiceException {
+        super(wsdlLoc, sName);
     }
 
     // Use to get a proxy class for Query
@@ -118,10 +122,12 @@ public class QueryServiceLocator extends org.apache.axis.client.Service implemen
     * Set the endpoint address for the specified port name.
     */
     public void setEndpointAddress(java.lang.String portName, java.lang.String address) throws javax.xml.rpc.ServiceException {
-        if ("Query".equals(portName)) {
+        
+if ("Query".equals(portName)) {
             setQueryEndpointAddress(address);
         }
-        else { // Unknown Port Name
+        else 
+{ // Unknown Port Name
             throw new javax.xml.rpc.ServiceException(" Cannot set Endpoint Address for Unknown Port" + portName);
         }
     }

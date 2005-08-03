@@ -18,6 +18,7 @@
       <parameter name="wsdlServicePort" value="Admin"/>
       <parameter name="className" value="org.exist.soap.AdminSoapBindingSkeleton"/>
       <parameter name="wsdlPortType" value="Admin"/>
+      <parameter name="typeMappingVersion" value="1.2"/>
       <parameter name="allowedMethods" value="*"/>
       <parameter name="scope" value="Session"/>
 
