@@ -67,7 +67,7 @@ public class DataBackup implements SystemTask {
             throw new EXistException("Cannot write backup files to " + f.getAbsolutePath() +
                     ". It should be a writable directory.");
         else
-            f.mkdir();
+            f.mkdirs();
         dest = f.getAbsolutePath();
         LOG.debug("Setting backup data directory: " + dest);
     }

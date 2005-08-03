@@ -64,7 +64,7 @@ public class EXistService extends ServiceMBeanSupport implements EXistServiceMBe
         File dataDir = new File(eXistHomeDir, "data");
         if (!dataDir.exists()) {
             LOG.info("creating data dir in eXist home");
-            dataDir.mkdir();
+            dataDir.mkdirs();
         }
 
         confFile = new File(eXistHome, "conf.xml").getAbsolutePath();

@@ -139,7 +139,7 @@ public class Journal {
         	if (LOG.isDebugEnabled())
         		LOG.debug("SyncOnCommit = " + syncOnCommit);
         }
-        
+                        
         String logDir = (String) pool.getConfiguration().getProperty("db-connection.recovery.journal-dir");
         if (logDir != null) {
             String dbHome = System.getProperty("exist.home");
@@ -152,7 +152,7 @@ public class Journal {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Output directory for journal files does not exist. Creating " + f.getAbsolutePath());
                 try {
-                    f.mkdir();
+                    f.mkdirs();
                 } catch (SecurityException e) {
                     throw new EXistException("Failed to create output directory: " + f.getAbsolutePath());
                 }
@@ -161,6 +161,7 @@ public class Journal {
                 throw new EXistException("Cannot write to journal output directory: " + f.getAbsolutePath());
             }
             this.dir = f;
+            
         }
         if (LOG.isDebugEnabled())
             LOG.debug("Using directory for the journal: " + dir.getAbsolutePath());
