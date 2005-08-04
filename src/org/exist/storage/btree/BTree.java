@@ -51,6 +51,7 @@ package org.exist.storage.btree;
  */
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Arrays;
 
@@ -888,7 +889,7 @@ public class BTree extends Paged {
 			}
 		}
 
-		public void promoteValue(Txn transaction, Value value, long rightPointer)
+		public void promoteValue(Txn transaction, Value value, BTreeNode rightNode)
 			throws IOException, BTreeException {
 			int idx = Arrays.binarySearch(values, value);
 			if (idx < 0)
@@ -900,7 +901,15 @@ public class BTree extends Paged {
             System.arraycopy(ptrs, 0, oldPtrs, 0, ptrs.length);
             
 			setValues(insertArrayValue(values, value, idx));
-			setPointers(ArrayUtils.insertArrayLong(ptrs, rightPointer, idx + 1));
+			setPointers(ArrayUtils.insertArrayLong(ptrs, rightNode.page.getPageNum(), idx + 1));
+			if (transaction != null && isTransactional) {
+                Loggable log = new SetParentLoggable(transaction, fileId, rightNode.page.getPageNum(), 
+                        page.getPageNum());
+                writeToLog(log, rightNode);
+            }
+            rightNode.setParent(this);
+            rightNode.saved = false;
+            cache.add(rightNode);
             
             if (transaction != null && isTransactional) {
                 Loggable log = new UpdatePageLoggable(transaction, fileId, page.getPageNum(), values, ptrs);
@@ -997,6 +1006,7 @@ public class BTree extends Paged {
                 
 				rNode.setValues(rightVals);
 				rNode.setPointers(rightPtrs);
+				rNode.setAsParent(transaction);
 				rNode.recalculateDataLen();
 				cache.add(rNode);
                 
@@ -1029,9 +1039,10 @@ public class BTree extends Paged {
                 
 				rNode.setValues(rightVals);
 				rNode.setPointers(rightPtrs);
+				rNode.setAsParent(transaction);
 				rNode.recalculateDataLen();
 				cache.add(rNode);
-				parent.promoteValue(transaction, separator, rNode.page.getPageNum());
+				parent.promoteValue(transaction, separator, rNode);
 				if(rNode.mustSplit()) {
 					LOG.debug(getFile().getName() + " right node requires second split: " + rNode.getDataLen());
 					rNode.split(transaction);
@@ -1044,6 +1055,22 @@ public class BTree extends Paged {
 			}
 		}
 
+		/** Set the parent-link in all child nodes to point to this node */
+		private void setAsParent(Txn transaction) {
+			if (ph.getStatus() == BRANCH) {
+				for (int i = 0; i < ptrs.length; i++) {
+					BTreeNode node = getBTreeNode(ptrs[i], this);
+					if (transaction != null && isTransactional) {
+	                    Loggable log = new SetParentLoggable(transaction, fileId, node.page.getPageNum(), 
+	                            page.getPageNum());
+	                    writeToLog(log, node);
+	                }
+					node.setParent(this);
+					cache.add(node);
+				}
+			}
+		}
+		
 		/////////////////////////////////////////////////////////////////
 
 		public long findValue(Value value) throws IOException, BTreeException {
@@ -1085,6 +1112,15 @@ public class BTree extends Paged {
                 dumpValue(writer, values[i]);
             }
             writer.write('\n');
+            
+            if (ph.getStatus() == BRANCH) {
+            	writer.write("-----------------------------------------------------------------------------------------\n");
+            	writer.write(page.getPageNum() + " POINTERS: ");
+                for (int i = 0; i < ptrs.length; i++) {
+                	writer.write(ptrs[i] + " ");
+                }
+                writer.write('\n');
+            }
             writer.write("-----------------------------------------------------------------------------------------\n");
             if (ph.getStatus() == BRANCH) {
                 for (int i = 0; i < ptrs.length; i++) {
