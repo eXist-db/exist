@@ -1017,7 +1017,7 @@ public class BFile extends BTree {
         if (wp == null) {
             final Page page = getPage(pos);
             final byte[] data = page.read();
-            if (page.getPageHeader().getStatus() == UNUSED)
+            if (page.getPageHeader().getStatus() < RECORD)
                 return null;
             if (page.getPageHeader().getStatus() == MULTI_PAGE)
                 return new OverflowPage(page, data);
@@ -1033,7 +1033,7 @@ public class BFile extends BTree {
         if (wp == null) {
             final Page page = getPage(pos);
             final byte[] data = page.read();
-            if (page.getPageHeader().getStatus() == UNUSED)
+            if (page.getPageHeader().getStatus() < RECORD)
                 return null;
             return new SinglePage(page, data, true);
         }  else
@@ -1089,7 +1089,7 @@ public class BFile extends BTree {
                     return;
                 }
                 final byte[] data = page.read();
-                if (page.getPageHeader().getStatus() == UNUSED) {
+                if (page.getPageHeader().getStatus() < RECORD) {
                 	// page is obviously deleted later
                 	return;
                 }
@@ -1123,7 +1123,7 @@ public class BFile extends BTree {
                     return;
                 }
                 final byte[] data = page.read();
-                if (page.getPageHeader().getStatus() == UNUSED)
+                if (page.getPageHeader().getStatus() < RECORD)
                     return;
                 wp = new SinglePage(page, data, false);
             }
@@ -1315,7 +1315,7 @@ public class BFile extends BTree {
                     return;
                 }
                 final byte[] data = page.read();
-                if (page.getPageHeader().getStatus() == UNUSED)
+                if (page.getPageHeader().getStatus() < RECORD)
                     return;
                 wp = new SinglePage(page, data, true);
             }
