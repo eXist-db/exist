@@ -3,6 +3,12 @@ package org.exist.cluster;
 
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.exist.cluster.ClusterEvent;
+import org.exist.cluster.ClusterException;
+
+import java.io.DataOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * Created by Francesco Mondora.
@@ -16,12 +22,22 @@ public class CreateCollectionClusterEvent extends ClusterEvent {
 
     String parent;
     String collectionName;
+    private static final long serialVersionUID = 0L;
 
     public CreateCollectionClusterEvent(String parent, String collectionName) {
         this.parent = parent;
         this.collectionName = collectionName;
     }
 
+    public String getCollectionName()
+    {
+        return this.collectionName;
+    }
+
+    public String getParent()
+    {
+        return this.parent;
+    }
     /**
      * Execute the current command.
      */
@@ -38,6 +54,8 @@ public class CreateCollectionClusterEvent extends ClusterEvent {
     }
 
     public int hashCode() {
-        return this.collectionName.hashCode() ^ this.parent.hashCode() ;
+        return this.collectionName.hashCode() ^
+               this.parent.hashCode() ^
+               this.getClass().getName().hashCode() ;
     }
 }

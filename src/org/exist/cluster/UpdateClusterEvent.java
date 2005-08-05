@@ -4,12 +4,17 @@ package org.exist.cluster;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
+import org.exist.cluster.ClusterEvent;
+import org.exist.cluster.ClusterException;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 /**
  * Created by Francesco Mondora.
  *
  * @author Francesco Mondora aka Makkina
- * @author Michele Danieli aka mdanieli
  *         Date: 14-dic-2004
  *         Time: 15.57.25
  *         Revision $Revision$
