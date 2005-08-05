@@ -27,7 +27,6 @@ import java.io.Reader;
 import java.io.StringReader;
 
 import org.apache.log4j.Logger;
-import org.exist.http.servlets.HTTPUtils;
 import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
@@ -35,6 +34,7 @@ import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
 
 import antlr.RecognitionException;

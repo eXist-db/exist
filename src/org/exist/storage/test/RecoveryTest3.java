@@ -40,13 +40,24 @@ import org.exist.util.Configuration;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+/**
+ * TestCase: add a larger number of documents into a collection,
+ * crash the database, restart, remove the collection and add some
+ * more documents.
+ * 
+ * This test needs quite a few documents to be in the collection. Change
+ * the directory path below to point to a directory with at least 1000 docs.
+ * 
+ * @author wolf
+ *
+ */
 public class RecoveryTest3 extends TestCase {
 
     public static void main(String[] args) {
         TestRunner.run(RecoveryTest3.class);
     }
     
-    private static String directory = "/home/wolf/xml/movies";
+    private static String directory = "s:/xml/movies";
     
     private static File dir = new File(directory);
     

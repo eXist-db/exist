@@ -20,12 +20,13 @@
  * 
  *  $Id$
  */
-package org.exist.http.servlets;
+package org.exist.xquery.util;
 
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -53,8 +54,8 @@ public class HTTPUtils {
 				if (doc != null) {
 					mostRecentDocumentTime = Math.max(doc.getLastModified(),
 							mostRecentDocumentTime);
-					LOG.debug("getFileName: " + doc.getFileName() + ", "
-							+ doc.getLastModified());
+//					LOG.debug("getFileName: " + doc.getFileName() + ", "
+//							+ doc.getLastModified());
 				}
 			}
 			LOG.debug("mostRecentDocumentTime: " + mostRecentDocumentTime);
