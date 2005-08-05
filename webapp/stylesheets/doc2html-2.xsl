@@ -434,6 +434,13 @@
         </div>
     </xsl:template>
     
+    <xsl:template match="warning">
+        <div class="warning">
+            <h4><xsl:value-of select="title"/></h4>
+            <xsl:apply-templates select="p"/>    
+        </div>
+    </xsl:template>
+    
     <xsl:include href="xmlsource.xsl"/>
     
 </xsl:stylesheet>

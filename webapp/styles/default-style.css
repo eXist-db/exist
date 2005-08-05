@@ -413,3 +413,19 @@ div.example_title {
     margin-left: 15px;
     margin-right: 15px;
 }
+
+.warning {
+    border: 1px solid red;
+    margin-left: 25px;
+    margin-right: 25px;
+}
+
+.warning p {
+    font-size: smaller;
+}
+
+.warning h4 {
+    font-size: smaller;
+    font-weight: bold;
+    color: red;
+}
