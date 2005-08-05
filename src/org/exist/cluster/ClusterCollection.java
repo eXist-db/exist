@@ -1,14 +1,11 @@
 //$Id$
 package org.exist.cluster;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
+import java.io.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observer;
+import java.net.URL;
 
 import org.exist.EXistException;
 import org.exist.Indexer;
@@ -37,8 +34,10 @@ import org.xml.sax.XMLReader;
 /**
  * Created by Francesco Mondora.
  *
+ * TODO ... verify TRANSACTION IN CLUSTER
  * @author Francesco Mondora aka Makkina
  * @author Michele Danieli aka cinde
+ * @author Nicola Breda aka maiale
  *
  *         Date: Aug 31, 2004
  *         Time: 8:45:47 AM
@@ -73,8 +72,7 @@ public final class ClusterCollection extends Collection {
     public void removeDocument(Txn transaction, DBBroker broker, String docname) throws PermissionDeniedException, TriggerException, LockException {
         collection.removeDocument(transaction, broker, docname);
         try {
-            ClusterClient cc = new ClusterClient();
-            cc.sendClusterEvent(new RemoveClusterEvent(docname, this.getName()));
+            ClusterComunication.getInstance().removeDocument(this.getName(), docname);
         } catch (ClusterException e) {
             e.printStackTrace();
         }
@@ -103,46 +101,54 @@ public final class ClusterCollection extends Collection {
 
         collection.store(transaction, broker, info, source, privileged);
 
+
         InputStream is = source.getByteStream();
-        Reader cs = null;
+        Reader cs = source.getCharacterStream();
+        String uri = null;
 
         String content = "";
         try {
             byte b[] = new byte[1];
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             if (is != null) {
-                //System.out.println("IS is: " + is);
 
                 is.reset();
                 while (is.read(b) != -1) {
                     bos.write(b);
                 }
-            } else {
-                cs = source.getCharacterStream();
-                // System.out.println("CS is: " + cs);
+            } else if(cs!=null) {
+
                 if (cs != null) {
                     cs.reset();
                     int c;
                     while ((c = cs.read()) != -1) {
-// System.out.print((char)c);
                         bos.write(c);
                     }
                 }
+            }else {
+                uri = source.getSystemId();
+                URL url = new URL(uri);
+                BufferedReader br = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()));
+                StringBuffer buffer = new StringBuffer();
+                String line = null;
+                while((line=br.readLine())!=null){
+                    buffer.append(line).append(System.getProperty("line.separator"));
+                }
+                content = buffer.toString();
             }
 
 
             bos.flush();
             bos.close();
-            content = bos.toString();
+            if(uri==null){
+                content = bos.toString();
+            }
         } catch (IOException e) {
-            // e.printStackTrace();
+             e.printStackTrace();
         }
 
         try {
-            // if (ClusterAwareMain.hasToBePublished(content)) {
-            ClusterClient cc = new ClusterClient();
-            cc.sendClusterEvent(new StoreClusterEvent(content, this.getName(), document.getName().substring(this.getName().length() + 1)));
-            //}
+            ClusterComunication.getInstance().storeDocument(this.getName(), document.getName().substring(this.getName().length() + 1), content);
         } catch (ClusterException e) {
             e.printStackTrace();
         }
@@ -169,9 +175,7 @@ public final class ClusterCollection extends Collection {
             collection.addCollection(child);
     		final int p = child.getName().lastIndexOf('/') + 1;
     		final String childName = child.getName().substring(p);
-            ClusterEvent c = new CreateCollectionClusterEvent( this.getName(), childName );
-            ClusterClient cc = new ClusterClient();
-            cc.sendClusterEvent(c);
+            ClusterComunication.getInstance().addCollection(this.getName(),childName);
         } catch (ClusterException e) {
             e.printStackTrace();
         }
