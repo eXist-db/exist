@@ -101,6 +101,17 @@
 				</emphasis>
 			</p>
 
+			<warning>
+                <title>Health Warning</title>
+                <p>The 1.0 beta2 release is truly ancient now. There were
+                lots of bug fixes and feature enhancements during the past months,
+                so using beta2 cannot be recommended any more. Please download
+                a newer development snapshot. Recent development snapshots can
+                be regarded as stable. A new official "stable" release is in
+                preparation, but as usual, we lack the
+                time to complete the documentation. Any help will be welcome!</p>
+            </warning>
+
 			<table cellpadding="5" cellspacing="5">
 				<tr>
 					<th align="left">Stable version</th>
