@@ -4,6 +4,10 @@ package org.exist.cluster;
 import org.apache.log4j.Logger;
 import org.xmldb.api.base.XMLDBException;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 
 /**
  * Created by Francesco Mondora.
@@ -19,7 +23,8 @@ public class RemoveClusterEvent extends ClusterEvent{
 	
     private static final long serialVersionUID = 1L;
 	static Logger  log = Logger.getLogger( RemoveClusterEvent.class );
-    protected RemoveClusterEvent(String documentName, String collectionName) {
+
+    public RemoveClusterEvent(String documentName, String collectionName) {
         super(documentName, collectionName);
     }
 
@@ -38,8 +43,6 @@ public class RemoveClusterEvent extends ClusterEvent{
 
         }
     }
-
-
 
     public int hashCode() {
         int e = documentName.hashCode();
