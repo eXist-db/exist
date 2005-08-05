@@ -1,5 +1,5 @@
 //$Id$
-// package org.exist.cluster.journal;
+package org.exist.cluster.journal;
 
 import org.exist.cluster.ClusterEvent;
 
