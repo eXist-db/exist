@@ -555,6 +555,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 					if (!XMLChar.isValidNCName(attr.getValue()))
 						throw new SAXException("Value of xml:id attribute is not a valid NCName: " + attr.getValue());
 					attr.setType(AttrImpl.ID);
+					if (attr.getValue().equals("BRIEFE"))
+                		LOG.warn("Indexing BRIEFE");
 				}
 				node.appendChildInternal(attr);
 				if (!validate)
