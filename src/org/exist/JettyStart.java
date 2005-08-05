@@ -28,6 +28,8 @@ import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.ShutdownListener;
+import org.exist.cluster.ClusterException;
+import org.exist.cluster.ClusterComunication;
 import org.mortbay.jetty.Server;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
@@ -35,6 +37,7 @@ import org.xmldb.api.base.Database;
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
  * handlers to cleanly shut down the database and the webserver.
+ * If database is NATIVE-CLUSTER, Clustercomunication is configured and started.
  * 
  * @author wolf
  */
@@ -74,7 +77,10 @@ public class JettyStart {
 			Database xmldb = new DatabaseImpl();
 			xmldb.setProperty("create-database", "false");
 			DatabaseManager.registerDatabase(xmldb);
-		} catch (Exception e) {
+
+            configureCluster(config);
+
+        } catch (Exception e) {
 			System.err.println("configuration error: " + e.getMessage());
 			e.printStackTrace();
 			return;
@@ -137,7 +143,11 @@ public class JettyStart {
 						try {
 							// stop the server
 							server.stop();
-						} catch (InterruptedException e) {
+                            ClusterComunication cluster = ClusterComunication.getInstance();
+                            if(cluster!=null){
+                                cluster.stop();
+                            }
+                        } catch (InterruptedException e) {
 							e.printStackTrace();
 						}
 						System.exit(0);
@@ -146,4 +156,12 @@ public class JettyStart {
 			}
 		}
 	}
+
+     private void configureCluster(Configuration c) throws ClusterException {
+        String database = (String)c.getProperty("database");
+        if(! database.equalsIgnoreCase("NATIVE-CLUSTER"))
+            return;
+
+        ClusterComunication.configure(c);
+    }
 }
