@@ -3,10 +3,13 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.cluster.ClusterCollection;
+import org.exist.cluster.ClusterComunication;
+import org.exist.cluster.ClusterException;
 import org.exist.collections.Collection;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.apache.log4j.Logger;
 
 /**
  * Created by Francesco Mondora.
@@ -18,6 +21,9 @@ import org.exist.util.Configuration;
  *         Revision $Revision$
  */
 public class NativeClusterBroker extends NativeBroker {
+
+    private static final Logger LOG = Logger.getLogger(NativeClusterBroker.class);
+
     public NativeClusterBroker(BrokerPool pool, Configuration config) throws EXistException {
         super(pool, config);
     }
@@ -59,7 +65,23 @@ public class NativeClusterBroker extends NativeBroker {
         return c==null?null:new ClusterCollection(c);
 
     }
-    
+
+    public void sync(int syncEvent)
+    {
+        super.sync(syncEvent);
+        try
+        {
+            ClusterComunication cm = ClusterComunication.getInstance();
+            if ( cm !=null) //waiting initialize CLusterCommunication
+                cm.synch();
+        }
+        catch (ClusterException e)
+        {
+            //TODO verify if DB must be declared disaligned
+            LOG.warn("ERROR IN JOURNAL SYNCHRONIZATION",e);
+        }
+    }
+
     public int getBackendType() {
         return NATIVE_CLUSTER;
     }
