@@ -25,10 +25,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
+import java.util.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
@@ -39,6 +36,7 @@ import org.apache.log4j.Logger;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.exist.memtree.SAXAdapter;
 import org.exist.storage.IndexSpec;
+import org.exist.storage.NativeBroker;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -180,6 +178,17 @@ public class Configuration implements ErrorHandler {
             if (xquery.getLength() > 0) {
                 configureXQuery((Element) xquery.item(0));
             }
+
+            /*
+            CLUSTER CONFIGURATION...
+            */
+            NodeList clusters = doc.getElementsByTagName("cluster");
+			if(clusters.getLength() > 0) {
+                configureClister((Element)clusters.item(0));
+            }
+            /*
+            END CLUSTER CONFIGURATION....
+            */
         } catch (SAXException e) {
             LOG.warn("error while reading config file: " + file, e);
             throw new DatabaseConfigurationException(e.getMessage());
@@ -192,26 +201,72 @@ public class Configuration implements ErrorHandler {
         }
     }
 
+    private void configureClister(Element cluster) {
+        String protocol = cluster.getAttribute("protocol");
+        if(protocol != null) {
+            config.put("cluster.protocol", protocol);
+        }
+        String user = cluster.getAttribute("dbaUser");
+        if(user != null) {
+            config.put("cluster.user", user);
+        }
+        String pwd = cluster.getAttribute("dbaPassword");
+        if(pwd != null) {
+            config.put("cluster.pwd", pwd);
+        }
+        String dir = cluster.getAttribute("journalDir");
+        if(dir != null) {
+            config.put("cluster.journalDir", dir);
+        }
+        String excludedColl = cluster.getAttribute("exclude");
+        ArrayList list = new ArrayList();
+        if(excludedColl != null) {
+            String[] excl = excludedColl.split(",");
+            for(int i=0;i<excl.length;i++){
+                list.add(excl[i]);
+            }
+        }
+        if(!list.contains(NativeBroker.TEMP_COLLECTION))
+            list.add(NativeBroker.TEMP_COLLECTION);
+        config.put("cluster.exclude", list);
+
+        /*Cluster parameters for test*/
+        String maxStore = cluster.getAttribute("journalMaxItem");
+        if(maxStore == null || maxStore.trim().length()==0) {
+            maxStore = "65000";
+        }
+        config.put("cluster.journal.maxStore", Integer.valueOf(maxStore));
+        String shift = cluster.getAttribute("journalIndexShift");
+        if(shift == null || shift.trim().length()==0 ) {
+            shift = "100";
+        }
+        config.put("cluster.journal.shift", Integer.valueOf(shift));
+
+        System.out.println("IN CONFIGURE");
+        System.out.println("cluster.journal.maxStore " + this.getProperty("cluster.journal.maxStore"));
+        System.out.println("cluster.journal.shift " + this.getProperty("cluster.journal.shift"));
+    }
+
     private void configureXQuery(Element xquery) throws DatabaseConfigurationException {
-		NodeList builtins = xquery.getElementsByTagName("builtin-modules");
-		if (builtins.getLength() > 0) {
-			Element elem = (Element) builtins.item(0);
-			NodeList modules = elem.getElementsByTagName("module");
-			String moduleList[][] = new String[modules.getLength()][2];
-			for (int i = 0; i < modules.getLength(); i++) {
-				elem = (Element) modules.item(i);
-				String uri = elem.getAttribute("uri");
-				String clazz = elem.getAttribute("class");
-				if (uri == null)
-					throw new DatabaseConfigurationException("element 'module' requires an attribute 'uri'");
-				if (clazz == null)
-					throw new DatabaseConfigurationException("element 'module' requires an attribute 'class'");
-				moduleList[i][0] = uri;
-				moduleList[i][1] = clazz;
-			}
-			config.put("xquery.modules", moduleList);
-		}
-	}
+        NodeList builtins = xquery.getElementsByTagName("builtin-modules");
+        if (builtins.getLength() > 0) {
+            Element elem = (Element) builtins.item(0);
+            NodeList modules = elem.getElementsByTagName("module");
+            String moduleList[][] = new String[modules.getLength()][2];
+            for (int i = 0; i < modules.getLength(); i++) {
+                elem = (Element) modules.item(i);
+                String uri = elem.getAttribute("uri");
+                String clazz = elem.getAttribute("class");
+                if (uri == null)
+                    throw new DatabaseConfigurationException("element 'module' requires an attribute 'uri'");
+                if (clazz == null)
+                    throw new DatabaseConfigurationException("element 'module' requires an attribute 'class'");
+                moduleList[i][0] = uri;
+                moduleList[i][1] = clazz;
+            }
+            config.put("xquery.modules", moduleList);
+        }
+    }
 
 	public Object getProperty(String name) {
         return config.get(name);
