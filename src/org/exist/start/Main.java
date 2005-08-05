@@ -286,9 +286,6 @@ public class Main {
             } else if (args[0].equals("shutdown")) {
                 _classname = "org.exist.ServerShutdown";
                 _mode = "other";
-            } else if (args[0].equals("cluster")) {
-                _classname = "org.exist.ClusterStart";
-                _mode = "cluster";
             } else {
                 _classname = args[0];
                 _mode = "other";
