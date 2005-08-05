@@ -93,6 +93,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
+import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -301,6 +302,8 @@ public class RpcConnection extends Thread {
 
 		    long start = System.currentTimeMillis();
 		    Sequence result = xquery.execute(compiled, contextSet);
+		    // pass last modified date to the HTTP response
+		    HTTPUtils.addLastModifiedHeader( result, context );
 		    LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
 		    return new QueryResult(context, result);
 		} catch (XPathException e) {
