@@ -67,6 +67,13 @@
     <!-- Status generator for eXist                            -->
     <!--#######################################################-->
     <map:generator label="content,data" name="exist-status" src="org.exist.cocoon.StatusGenerator"/>
+
+      <!--#######################################################-->
+      <!-- Cluster topology generator for eXist                            -->
+      <!--#######################################################-->
+      <map:generator label="content,data" name="exist-cluster" src="org.exist.cluster.cocoon.ClusterGenerator"/>
+
+      <map:generator label="content,data" name="cluster-info" src="org.exist.cluster.cocoon.ClusterInfoGenerator"/>
 </map:generators>
 
   <!--+
@@ -652,6 +659,27 @@
             <map:match pattern="">
                 <map:redirect-to uri="/exist/index.xml"/>
             </map:match>
+
+            <!-- *********** All Cluster information *************** -->
+             <map:match pattern="cluster">
+                 <map:generate type="exist-cluster"/>
+                 <map:transform type="cinclude"/>
+                 <map:transform src="stylesheets/cluster.xsl">
+                     <map:parameter name="use-request-parameters"
+                             value="true"/>
+                 </map:transform>
+                 <map:serialize type="html"/>
+             </map:match>
+
+            <!-- *********** Single node of cluster information *************** -->
+             <map:match pattern="clusterinfo">
+                 <map:generate type="cluster-info"/>
+                 <map:transform type="cinclude"/>
+                 <map:transform src="stylesheets/clusterinfo.xsl">
+                     <map:parameter name="use-request-parameters" value="true"/>
+                 </map:transform>
+                 <map:serialize type="html"/>
+             </map:match>
 
             <map:match pattern="index.xml">
                 <map:generate src="index.xml"/>
