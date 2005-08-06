@@ -125,8 +125,10 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			binary = !("text/xml".equals(mimeType) || "application/xml".equals(mimeType));
 		} else if (docName != null){
 		    MimeType mime = MimeTable.getInstance().getContentTypeFor(docName);
-            if (mime != null)
+            if (mime != null) {
                 mimeType = mime.getName();
+                binary = !mime.isXMLType();
+            }
         }
 		
 		Item item =
