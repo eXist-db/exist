@@ -120,10 +120,10 @@ public class JettyStart {
 	public void shutdown() {
 		BrokerPool.stopAll(false);
 	}
-	
+
 	/**
 	 * This class gets called after the database received a shutdown request.
-	 *  
+	 *
 	 * @author wolf
 	 */
 	private static class ShutdownListenerImpl implements ShutdownListener {
@@ -159,7 +159,7 @@ public class JettyStart {
 
      private void configureCluster(Configuration c) throws ClusterException {
         String database = (String)c.getProperty("database");
-        if(! database.equalsIgnoreCase("NATIVE-CLUSTER"))
+        if(! database.equalsIgnoreCase("NATIVE_CLUSTER"))
             return;
 
         ClusterComunication.configure(c);
