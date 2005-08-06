@@ -72,7 +72,9 @@ public final class ClusterCollection extends Collection {
     public void removeDocument(Txn transaction, DBBroker broker, String docname) throws PermissionDeniedException, TriggerException, LockException {
         collection.removeDocument(transaction, broker, docname);
         try {
-            ClusterComunication.getInstance().removeDocument(this.getName(), docname);
+            ClusterComunication cluster = ClusterComunication.getInstance();
+            if(cluster!=null)
+                cluster.removeDocument(this.getName(), docname);
         } catch (ClusterException e) {
             e.printStackTrace();
         }
@@ -148,7 +150,9 @@ public final class ClusterCollection extends Collection {
         }
 
         try {
-            ClusterComunication.getInstance().storeDocument(this.getName(), document.getName().substring(this.getName().length() + 1), content);
+            ClusterComunication cluster = ClusterComunication.getInstance();
+            if(cluster!=null)
+                cluster.storeDocument(this.getName(), document.getName().substring(this.getName().length() + 1), content);
         } catch (ClusterException e) {
             e.printStackTrace();
         }
@@ -175,7 +179,10 @@ public final class ClusterCollection extends Collection {
             collection.addCollection(child);
     		final int p = child.getName().lastIndexOf('/') + 1;
     		final String childName = child.getName().substring(p);
-            ClusterComunication.getInstance().addCollection(this.getName(),childName);
+            System.out.println("________ ADDDING COLLECTION " + child.getName() +" TO " + this.getName() );
+            ClusterComunication cluster = ClusterComunication.getInstance();
+            if(cluster!=null)
+                cluster.addCollection(this.getName(),childName);
         } catch (ClusterException e) {
             e.printStackTrace();
         }
