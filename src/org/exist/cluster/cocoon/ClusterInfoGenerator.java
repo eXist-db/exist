@@ -143,6 +143,8 @@ public class ClusterInfoGenerator extends AbstractGenerator {
             inner = new AttributesImpl();
             inner.addAttribute("", "name", "name", "CDATA", "protocol");
             String protocol = (String) conf.getProperty("cluster.protocol");
+            if(protocol==null)
+                protocol = ClusterComunication.DEFAULT_PROTOCOL_STACK;
             StringBuffer prot = new StringBuffer();
             for(int i=0;i<protocol.length();i+=70){
                 prot.append(protocol.substring(i,Math.min(i+70,protocol.length())));
