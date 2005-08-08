@@ -31,7 +31,7 @@ declare variable $message
         </mail>
 };
 
-if(mail:send-email($message, ()))then
+if(mail:send-email($message, (), ()))then
 (
         <h1>Sent Message OK :-)</h1>
 )

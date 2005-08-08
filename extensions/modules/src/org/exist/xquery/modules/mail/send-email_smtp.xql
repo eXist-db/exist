@@ -31,7 +31,7 @@ declare variable $message
         </mail>
 };
 
-if(mail:send-email($message, "smtp-server.domain.com"))then
+if(mail:send-email($message, "smtp-server.domain.com", ()))then
 (
         <h1>Sent Message OK :-)</h1>
 )
