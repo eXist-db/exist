@@ -67,14 +67,18 @@ import org.w3c.dom.Node;
  */
 public class SendEmail extends BasicFunction
 {
+	//TODO: Feature - Add an option to execute the function Asynchronously as Socket operations for SMTP can be slow (Sendmail seems fast enough). Will require placing the SMTP code in a thread.
+	//TODO: Feature - Add a facility for the user to add their own message headers.
+	//TODO: Feature - Add attachment support, will need base64 encoding etc...
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("send-email", MailModule.NAMESPACE_URI, MailModule.PREFIX),
-			"Sends an email $a through the SMTP Server $b, or if $b is () tries to use the local sendmail program. $a is the email in the following format <mail><from/><to/><cc/><bcc/><subject/><message><text/><xhtml/></message></mail>.",
+			"Sends an email $a through the SMTP Server $b, or if $b is () tries to use the local sendmail program. $a is the email in the following format <mail><from/><to/><cc/><bcc/><subject/><message><text/><xhtml/></message></mail>. $c defines the charset value used in the \"Content-Type\" message header (Defaults to UTF-8)",
 			new SequenceType[]
 			{
 				new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 			},
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
@@ -102,7 +106,7 @@ public class SendEmail extends BasicFunction
 			if(args[1].getLength() > 0)
 			{
 				//SMTP
-				if(SendSMTP(theMail, args[1].getStringValue()))
+				if(SendSMTP(theMail, args[1].getStringValue(), args[2].getStringValue()))
 				{
 					return(BooleanValue.TRUE);
 				}
@@ -110,7 +114,7 @@ public class SendEmail extends BasicFunction
 			else
 			{
 				//Sendmail
-				if(SendSendmail(theMail))
+				if(SendSendmail(theMail, args[2].getStringValue()))
 				{
 					return(BooleanValue.TRUE);
 				}
@@ -127,7 +131,7 @@ public class SendEmail extends BasicFunction
 	
 	
 	//Sends an email using the system's sendmail binary
-	private boolean SendSendmail(mail aMail)
+	private boolean SendSendmail(mail aMail, String ContentType_Charset)
 	{
 		try
 		{	
@@ -162,7 +166,7 @@ public class SendEmail extends BasicFunction
 			PrintWriter out = new PrintWriter(p.getOutputStream());
 			
 			//Send the Message
-			WriteMessage(out, aMail);
+			WriteMessage(out, aMail, ContentType_Charset);
 			
 			//Close the stdOut
 			out.close();
@@ -179,7 +183,7 @@ public class SendEmail extends BasicFunction
 	}
 	
 	//Sends an email using an SMTP Server
-	private boolean SendSMTP(mail aMail, String SMTPServer)
+	private boolean SendSMTP(mail aMail, String SMTPServer, String ContentType_Charset)
 	{
 		final int TCP_PROTOCOL_SMTP = 25;									//SMTP Protocol
 		String SMTPResult = "";												//Holds the server Result code when an SMTP Command is executed
@@ -280,7 +284,7 @@ public class SendEmail extends BasicFunction
 			}
 			
 			//Send the Message
-			WriteMessage(out, aMail);
+			WriteMessage(out, aMail, ContentType_Charset);
 			
 			//Get end message response, should be "250 blah blah"
 			SMTPResult = in.readLine();
@@ -302,7 +306,7 @@ public class SendEmail extends BasicFunction
 	
 	
 	//Writes an email payload (Headers + Body) from a mail object
-	private void WriteMessage(PrintWriter out, mail aMail) throws IOException
+	private void WriteMessage(PrintWriter out, mail aMail, String ContentType_Charset) throws IOException
 	{
 			String Version = eXistVersion();									//Version of eXist
 			String MultipartBoundary = "eXist.multipart." + Version;			//Multipart Boundary
@@ -337,13 +341,27 @@ public class SendEmail extends BasicFunction
 				
 				//send the text part first 
 				out.println("--" + MultipartBoundary);
-				out.println("Content-Type: text/plain; charset=UTF-8");
+				if(ContentType_Charset == "")
+				{
+					out.println("Content-Type: text/plain; charset=UTF-8");
+				}
+				else
+				{
+					out.println("Content-Type: text/plain; charset=" + ContentType_Charset);
+				}
 				out.println("Content-Transfer-Encoding: quoted-printable");
 				out.println(aMail.getText());
 				
 				//send the html part next
 				out.println("--" + MultipartBoundary);
-				out.println("Content-Type: text/html; charset=UTF-8");
+				if(ContentType_Charset == "")
+				{
+					out.println("Content-Type: text/plain; charset=UTF-8");
+				}
+				else
+				{
+					out.println("Content-Type: text/plain; charset=" + ContentType_Charset);
+				}
 				out.println("Content-Transfer-Encoding: quoted-printable");
 				out.println(aMail.getXHTML());
 				
@@ -357,7 +375,14 @@ public class SendEmail extends BasicFunction
 				if(!aMail.getText().toString().equals(""))
 				{
 					//Yes, text email
-					out.println("Content-Type: text/plain; charset=\"UTF-8\"");
+					if(ContentType_Charset == "")
+					{
+						out.println("Content-Type: text/plain; charset=UTF-8");
+					}
+					else
+					{
+						out.println("Content-Type: text/plain; charset=" + ContentType_Charset);
+					}
 					out.println("Content-Transfer-Encoding: quoted-printable");
 					
 					//now send the trxt message
@@ -367,7 +392,14 @@ public class SendEmail extends BasicFunction
 				else
 				{
 					//No, HTML email
-					out.println("Content-Type: text/html; charset=\"UTF-8\"");
+					if(ContentType_Charset == "")
+					{
+						out.println("Content-Type: text/plain; charset=UTF-8");
+					}
+					else
+					{
+						out.println("Content-Type: text/plain; charset=" + ContentType_Charset);
+					}
 					out.println("Content-Transfer-Encoding: quoted-printable");
 					
 					//now send the html message
