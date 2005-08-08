@@ -45,13 +45,13 @@ public class FunEscapeURI extends BasicFunction {
             new QName("escape-uri", Module.BUILTIN_FUNCTION_NS),
             "This function applies the URI escaping rules defined in section 2 " +
             "of [RFC 2396] as amended by [RFC 2732], with one exception, to " +
-            "the string supplied as $uri-part, which typically represents all or part " +
+            "the string supplied as $a, which typically represents all or part " +
             "of a URI. The effect of the function is to escape a set of identified " +
             "characters in the string. Each such character is replaced in the string " +
             "by an escape sequence, which is formed by encoding the character " +
             "as a sequence of octets in UTF-8, and then representing each of these " +
             "octets in the form %HH, where HH is the hexadecimal representation " +
-            "of the octet.",
+            "of the octet. $b indicates whether to escape reserved characters.",
             new SequenceType[] {
                  new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
                  new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
