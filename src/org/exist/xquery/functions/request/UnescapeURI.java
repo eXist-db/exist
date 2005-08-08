@@ -44,7 +44,7 @@ public class UnescapeURI extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("unescape-uri", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns an un-escaped URL escaped string identified by $a with the encoding scheme $b. Decodes encoded sensitive characters from a URL, for example '%2F' becomes '/', e.g. does the oposite to escape-uri()",
+			"Returns an un-escaped URL escaped string identified by $a with the encoding scheme indicated by the string $b (e.g. UTF-8). Decodes encoded sensitive characters from a URL, for example '%2F' becomes '/', e.g. does the oposite to escape-uri()",
 			new SequenceType[]
 			{
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
