@@ -70,7 +70,8 @@ public class SendEmail extends BasicFunction
 	//TODO: Feature - Add an option to execute the function Asynchronously as Socket operations for SMTP can be slow (Sendmail seems fast enough). Will require placing the SMTP code in a thread.
 	//TODO: Feature - Add a facility for the user to add their own message headers.
 	//TODO: Feature - Add attachment support, will need base64 encoding etc...
-
+	//TODO: Read the location of sendmail from the configuration file. Can vary from system to system 
+	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("send-email", MailModule.NAMESPACE_URI, MailModule.PREFIX),
