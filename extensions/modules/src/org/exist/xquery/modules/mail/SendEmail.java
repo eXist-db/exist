@@ -70,7 +70,7 @@ public class SendEmail extends BasicFunction
 	//TODO: Feature - Add an option to execute the function Asynchronously as Socket operations for SMTP can be slow (Sendmail seems fast enough). Will require placing the SMTP code in a thread.
 	//TODO: Feature - Add a facility for the user to add their own message headers.
 	//TODO: Feature - Add attachment support, will need base64 encoding etc...
-	//TODO: Read the location of sendmail from the configuration file. Can vary from system to system 
+	//TODO: Read the location of sendmail from the configuration file. Can vary from system to system
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -204,7 +204,7 @@ public class SendEmail extends BasicFunction
 			SMTPResult = in.readLine();
 			if(!SMTPResult.substring(0, 3).toString().equals("220"))
 			{
-				System.out.println("Error - SMTP Server not ready!");
+				System.err.println("Error - SMTP Server not ready!");
 				return(false);
 			}
 				
@@ -216,7 +216,7 @@ public class SendEmail extends BasicFunction
 			SMTPResult = in.readLine();
 			if(!SMTPResult.substring(0, 3).toString().equals("250"))
 			{
-				System.out.println("Error - SMTP HELO Failed: " + SMTPResult);
+				System.err.println("Error - SMTP HELO Failed: " + SMTPResult);
 				return(false);
 			}
 			
@@ -238,7 +238,7 @@ public class SendEmail extends BasicFunction
 			SMTPResult = in.readLine();
 			if(!SMTPResult.substring(0, 3).toString().equals("250"))
 			{
-				System.out.println("Error - SMTP MAIL FROM failed: " + SMTPResult);
+				System.err.println("Error - SMTP MAIL FROM failed: " + SMTPResult);
 				return(false);
 			}
 			
@@ -267,7 +267,7 @@ public class SendEmail extends BasicFunction
 				SMTPResult = in.readLine();
 				if(!SMTPResult.substring(0, 3).toString().equals("250"))
 				{
-					System.out.println("Error - SMTP RCPT TO failed: " + SMTPResult);
+					System.err.println("Error - SMTP RCPT TO failed: " + SMTPResult);
 				}
 			}
 			
@@ -280,7 +280,7 @@ public class SendEmail extends BasicFunction
 			SMTPResult = in.readLine();
 			if(!SMTPResult.substring(0, 3).toString().equals("354"))
 			{
-				System.out.println("Error - SMTP DATA failed: " + SMTPResult);
+				System.err.println("Error - SMTP DATA failed: " + SMTPResult);
 				return(false);
 			}
 			
@@ -291,7 +291,7 @@ public class SendEmail extends BasicFunction
 			SMTPResult = in.readLine();
 			if(!SMTPResult.substring(0, 3).toString().equals("250"))
 			{
-				System.out.println("Error - Message not accepted: " + SMTPResult);
+				System.err.println("Error - Message not accepted: " + SMTPResult);
 				return(false);
 			}
 		}
