@@ -73,7 +73,7 @@ public class Main {
 				"specify the directory to use for backups."),
 			new CLOptionDescriptor(
 				"restore",
-				CLOptionDescriptor.ARGUMENT_OPTIONAL,
+				CLOptionDescriptor.ARGUMENT_REQUIRED,
 				RESTORE_OPT,
 				"read the specified restore file and restore the " + "resources described there."),
 			new CLOptionDescriptor(
