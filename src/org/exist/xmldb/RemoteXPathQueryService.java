@@ -177,10 +177,14 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 
     public void setNamespace( String prefix, String namespace )
              throws XMLDBException {
+    	if (prefix == null)
+    		prefix = "";
         namespaceMappings.put(prefix, namespace);
     }
 
     public String getNamespace( String prefix ) throws XMLDBException {
+    	if (prefix == null)
+    		prefix = "";
         return (String)namespaceMappings.get(prefix);
     }
 
