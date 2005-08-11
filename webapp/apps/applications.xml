@@ -1,183 +1,269 @@
-<applications
-    xmlns="http://exist-db.org/"
-    using="http://exist-db.org/"
+<applications xmlns="http://exist-db.org/" using="http://exist-db.org/"
     xmlns:dc="http://purl.org/dc/elements/1.1/"
-    xmlns:html="http://www.w3.org/1999/xhtml"
->
+    xmlns:html="http://www.w3.org/1999/xhtml">
 
- <application>
-     <dc:creator>Jean-Marc Vanel</dc:creator>
-     <creator-site>http://jmvanel.free.fr/</creator-site>
-     <dc:identifier>http://wwbota.free.fr/</dc:identifier>
-     <dc:rights>GPL</dc:rights>
-     <dc:title>Botanical Database</dc:title>
-     <dc:subject>biology</dc:subject>
-     <dc:subject>taxonomy</dc:subject>
-     <dc:subject>botany</dc:subject>
-     <dc:description> Search engine for Flora of China descriptions.
-          Aims at being a computer-aided identification tool for specimens.
-     </dc:description>
-     <dc:publisher> Worldwide Botanical Knowledge </dc:publisher>
-     <dc:format>eXist distribution add-on: Cocoon sub-sitemap</dc:format>
+    <application>
+        <dc:creator>Jean-Marc Vanel</dc:creator>
+        <creator-site>http://jmvanel.free.fr/</creator-site>
+        <dc:identifier>http://wwbota.free.fr/</dc:identifier>
+        <dc:rights>GPL</dc:rights>
+        <dc:title>Botanical Database</dc:title>
+        <dc:subject>biology</dc:subject>
+        <dc:subject>taxonomy</dc:subject>
+        <dc:subject>botany</dc:subject>
+        <dc:description>
+            Search engine for Flora of China descriptions. Aims at being
+            a computer-aided identification tool for specimens.
+        </dc:description>
+        <dc:publisher>Worldwide Botanical Knowledge</dc:publisher>
+        <dc:format>
+            eXist distribution add-on: Cocoon sub-sitemap
+        </dc:format>
 
-  <dev-site>http://wwbota.free.fr/</dev-site>
-  <production-site>http://jmvanel.free.fr/protea.html</production-site>
-  <status>production</status>
-  <feature-used>XQuery</feature-used>
-  <feature-used>Cocoon</feature-used>
-  <database size="30Mb" documents="1" updates="rare" security='read for all' />
-  <dev-notes> XSP pages, XSLT styles, java classes interpreting user input and generating XQuery </dev-notes>
-  <submitter />
- </application>
+        <dev-site>http://wwbota.free.fr/</dev-site>
+        <production-site>
+            http://jmvanel.free.fr/protea.html
+        </production-site>
+        <status>production</status>
+        <feature-used>XQuery</feature-used>
+        <feature-used>Cocoon</feature-used>
+        <database size="30Mb" documents="1" updates="rare"
+            security='read for all' />
+        <dev-notes>
+            XSP pages, XSLT styles, java classes interpreting user input
+            and generating XQuery
+        </dev-notes>
+        <submitter />
+    </application>
 
-  <application>
-    <dc:creator> Divstrat Pty Ltd </dc:creator>
-    <dc:identifier>http://www.divstrat.com.au/ds_webfiles_17/ds_Xunami.html</dc:identifier>
-    <dc:rights>(c)2004 Divstrat</dc:rights>
-    <dc:title>Xunami</dc:title>
-    <dc:subject>multimedia</dc:subject>
-    <dc:subject>indexing</dc:subject>
-    <dc:subject>retrieval</dc:subject>
-    <dc:subject>multi-lingual</dc:subject>
-    <dc:description>Xunami is a web-based, multi-lingual, digital multimedia, indexing and retrieval system</dc:description>
-    <dc:publisher>Divstrat Pty Ltd</dc:publisher>
-    <dc:format>Web application, Webstart download, CD, HTML pages</dc:format>
+    <application>
+        <dc:creator>Divstrat Pty Ltd</dc:creator>
+        <dc:identifier>
+            http://www.divstrat.com.au/ds_webfiles_17/ds_Xunami.html
+        </dc:identifier>
+        <dc:rights>(c)2004 Divstrat</dc:rights>
+        <dc:title>Xunami</dc:title>
+        <dc:subject>multimedia</dc:subject>
+        <dc:subject>indexing</dc:subject>
+        <dc:subject>retrieval</dc:subject>
+        <dc:subject>multi-lingual</dc:subject>
+        <dc:description>
+            Xunami is a web-based, multi-lingual, digital multimedia,
+            indexing and retrieval system
+        </dc:description>
+        <dc:publisher>Divstrat Pty Ltd</dc:publisher>
+        <dc:format>
+            Web application, Webstart download, CD, HTML pages
+        </dc:format>
 
-    <dev-site>http://www.divstrat.com.au/</dev-site>
-    <third-party-feature-used>Quicktime for Java</third-party-feature-used>
-    <third-party-feature-used>Jakarta Tomcat</third-party-feature-used>
-    <third-party-feature-used>JDOM</third-party-feature-used>
-    <third-party-feature-used>Jaxen</third-party-feature-used>
-    <third-party-feature-used>Alloy LNF</third-party-feature-used>
+        <dev-site>http://www.divstrat.com.au/</dev-site>
+        <third-party-feature-used>
+            Quicktime for Java
+        </third-party-feature-used>
+        <third-party-feature-used>
+            Jakarta Tomcat
+        </third-party-feature-used>
+        <third-party-feature-used>JDOM</third-party-feature-used>
+        <third-party-feature-used>Jaxen</third-party-feature-used>
+        <third-party-feature-used>Alloy LNF</third-party-feature-used>
 
-    <datatype-stored targetnamespace="urn:mpeg:mpeg7:schema:2001">MPEG-7</datatype-stored>
-    <datatype-stored targetnamespace="http://purl.org/dc/elements/1.1/">Dublin Core</datatype-stored>
-    <database updates="frequent" security="multi-level"></database>
-    <dev-notes>Java, Servlets, JSP, Trax XSLT transforms,Swing GUI, HTML GUI</dev-notes>
-    <submitter>mailto:jvp@divstrat.com.au</submitter>
-  </application>
+        <datatype-stored targetnamespace="urn:mpeg:mpeg7:schema:2001">
+            MPEG-7
+        </datatype-stored>
+        <datatype-stored
+            targetnamespace="http://purl.org/dc/elements/1.1/">
+            Dublin Core
+        </datatype-stored>
+        <database updates="frequent" security="multi-level"></database>
+        <dev-notes>
+            Java, Servlets, JSP, Trax XSLT transforms,Swing GUI, HTML
+            GUI
+        </dev-notes>
+        <submitter>mailto:jvp@divstrat.com.au</submitter>
+    </application>
 
 
- <application>
-   <dc:creator> Music Techonology Group (Barcelona, SPAIN) </dc:creator>
-   <dc:identifier>http://www.iua.upf.es/mtg/opendrama</dc:identifier>
-   <dc:title>MPEG-7 web browser</dc:title>
-   <dc:subject>multimedia</dc:subject>
-   <dc:subject>indexing</dc:subject>
-   <dc:subject>retrieval</dc:subject>
-   <dc:description>A system to search and retrieve information of operatic data, based on MPEG-7 standard.</dc:description>
-   <dc:format>Web application</dc:format>
+    <application>
+        <dc:creator>
+            Music Techonology Group (Barcelona, SPAIN)
+        </dc:creator>
+        <dc:identifier>
+            http://www.iua.upf.es/mtg/opendrama
+        </dc:identifier>
+        <dc:title>MPEG-7 web browser</dc:title>
+        <dc:subject>multimedia</dc:subject>
+        <dc:subject>indexing</dc:subject>
+        <dc:subject>retrieval</dc:subject>
+        <dc:description>
+            A system to search and retrieve information of operatic
+            data, based on MPEG-7 standard.
+        </dc:description>
+        <dc:format>Web application</dc:format>
 
-   <demo-site>http://www.iua.upf.es/mtg/opendrama/</demo-site>
-   <dev-site>http://www.iua.upf.es/mtg/</dev-site>
-   <third-party-feature-used>Quicktime for Java</third-party-feature-used>
-   <datatype-stored targetnamespace="urn:mpeg:mpeg7:schema:2001">MPEG-7</datatype-stored>
-   <dev-notes>PHP, Sablotron XSLT, Javascript</dev-notes>
-   <submitter>mailto:ocelma@iua.upf.es</submitter>
-  </application>
-  
-  <application>
-    <dc:creator>SozioNet Project, Darmstadt University of Technology, Dpt. of Sociology</dc:creator>
-    <dc:identifier>http://www.sozionet.org</dc:identifier>
-    <dc:title>SozioNet</dc:title>
-    <dc:subject>social science</dc:subject>
-    <dc:subject>metadata creation</dc:subject>
-    <dc:subject>metadata harvesting</dc:subject>
-    <dc:description>Inspired by successful projects like MathNet or SOSIG, SozioNet provides access to freely 
-    available web resources with relevance to social science. It is based on a network of social science institutions 
-    and scientists, to agree on and establish common metadata standards, and to provide a general infrastructure 
-    for metadata creation, harvesting and retrieval. All SozioNet components, including the user interface for 
-    metadata creation and the harvesting framework, are entirely based on XML and rely on eXist as 
-    storage backend.</dc:description>
-    <dc:format>Web application</dc:format>
-    <feature-used>XQuery</feature-used>
-    <feature-used>Cocoon</feature-used>
-    <production-site>http://www.sozionet.org</production-site>
-    <status>production</status>
-    <third-party-feature-used>Cocoon XMLForms</third-party-feature-used>
-    <third-party-feature-used>Apache Avalon</third-party-feature-used>
-    <datatype-stored>RDF</datatype-stored>
-    <datatype-stored targetnamespace="http://purl.org/dc/elements/1.1/">Dublin Core</datatype-stored>
-    <datatype-stored>OWL</datatype-stored>
-    <datatype-stored>MODS</datatype-stored>
-    <dev-notes>The query interface served as 
-    a testbed for eXist's XQuery implementation. It is itself completely written in XQuery.</dev-notes>
-  </application>
-  
-  <application>
-    <dc:title>Weblounge</dc:title>
-    <dc:identifier>http://www.o2it.ch/products/weblounge</dc:identifier>
-    <dc:description>Weblounge provides a highly scalable, multilingual web content management system, featuring 
-    eXist as its powerful storage backend. Thanks to eXist's extensive support of xml, xquery and xupdate, the 
-    system is capable of easily exporting its data, providing unlimited undo steps while editing and offering 
-    webdav access to the files repository, again using eXist as the backing storage for the dav properties.</dc:description>
-    <dc:creator>O2 IT Engineering</dc:creator>
-    <dc:rights>Copyright by O2 IT Engineering</dc:rights>
-    <dev-site>http://www.o2it.ch</dev-site>
-  </application>
-  
-  <application>
-    <dc:title>MyCoRe</dc:title>
-    <dc:description>
-        MyCoRe is an Open Source project for the development of Digital Library and archive solutions 
-        (or, put more generally, "Content Repositories" >> CoRe). In the MyCoRe project a group of universities is 
-        working on the development of a shared software core for such applications. This core will be adjustable to 
-        local requirements and easy to modify. This is expressed by the "My" in MyCoRe, which represents the local 
-        adaptability. On the basis of this core which will be available under the open source GNU General Public License, 
-        specific local applications will emerge at the participating institutes. The technical base of the system is 
-        formed of Java class libraries, XML technology and the database backend IBM Content Manager and IBM DB2 
-        or an native XML Database System (eXist) and a relational database system such as MySQl or Postgresql.
-    </dc:description>
-    <dc:subject>metadata</dc:subject>
-    <dc:subject>internal filesystem</dc:subject>
-    <dc:subject>hierarchical classification system</dc:subject>
-    <dc:subject>workflow</dc:subject>
-    <dc:subject>workbasket</dc:subject>
-    <dc:subject>distributed search</dc:subject>
-    <dc:subject>OAI</dc:subject>
-    <dc:subject>Z39.50</dc:subject>
-    <dc:format>Web application</dc:format>
-    <dc:identifier>http://www.mycore.de</dc:identifier>
-    <dc:creator>MyCoRe Project</dc:creator>
-    <dc:rights>GPL</dc:rights>
-    <demo-site>http://mycoresample.rz.uni-greifswald.de/docportal/</demo-site>
-  </application>
-  <application>
+        <demo-site>http://www.iua.upf.es/mtg/opendrama/</demo-site>
+        <dev-site>http://www.iua.upf.es/mtg/</dev-site>
+        <third-party-feature-used>
+            Quicktime for Java
+        </third-party-feature-used>
+        <datatype-stored targetnamespace="urn:mpeg:mpeg7:schema:2001">
+            MPEG-7
+        </datatype-stored>
+        <dev-notes>PHP, Sablotron XSLT, Javascript</dev-notes>
+        <submitter>mailto:ocelma@iua.upf.es</submitter>
+    </application>
+
+    <application>
+        <dc:creator>
+            SozioNet Project, Darmstadt University of Technology, Dpt.
+            of Sociology
+        </dc:creator>
+        <dc:identifier>http://www.sozionet.org</dc:identifier>
+        <dc:title>SozioNet</dc:title>
+        <dc:subject>social science</dc:subject>
+        <dc:subject>metadata creation</dc:subject>
+        <dc:subject>metadata harvesting</dc:subject>
+        <dc:description>
+            Inspired by successful projects like MathNet or SOSIG,
+            SozioNet provides access to freely available web resources
+            with relevance to social science. It is based on a network
+            of social science institutions and scientists, to agree on
+            and establish common metadata standards, and to provide a
+            general infrastructure for metadata creation, harvesting and
+            retrieval. All SozioNet components, including the user
+            interface for metadata creation and the harvesting
+            framework, are entirely based on XML and rely on eXist as
+            storage backend.
+        </dc:description>
+        <dc:format>Web application</dc:format>
+        <feature-used>XQuery</feature-used>
+        <feature-used>Cocoon</feature-used>
+        <production-site>http://www.sozionet.org</production-site>
+        <status>production</status>
+        <third-party-feature-used>
+            Cocoon XMLForms
+        </third-party-feature-used>
+        <third-party-feature-used>
+            Apache Avalon
+        </third-party-feature-used>
+        <datatype-stored>RDF</datatype-stored>
+        <datatype-stored
+            targetnamespace="http://purl.org/dc/elements/1.1/">
+            Dublin Core
+        </datatype-stored>
+        <datatype-stored>OWL</datatype-stored>
+        <datatype-stored>MODS</datatype-stored>
+        <dev-notes>
+            The query interface served as a testbed for eXist's XQuery
+            implementation. It is itself completely written in XQuery.
+        </dev-notes>
+    </application>
+
+    <application>
+        <dc:title>Weblounge</dc:title>
+        <dc:identifier>
+            http://www.o2it.ch/products/weblounge
+        </dc:identifier>
+        <dc:description>
+            Weblounge provides a highly scalable, multilingual web
+            content management system, featuring eXist as its powerful
+            storage backend. Thanks to eXist's extensive support of xml,
+            xquery and xupdate, the system is capable of easily
+            exporting its data, providing unlimited undo steps while
+            editing and offering webdav access to the files repository,
+            again using eXist as the backing storage for the dav
+            properties.
+        </dc:description>
+        <dc:creator>O2 IT Engineering</dc:creator>
+        <dc:rights>Copyright by O2 IT Engineering</dc:rights>
+        <dev-site>http://www.o2it.ch</dev-site>
+    </application>
+
+    <application>
+        <dc:title>MyCoRe</dc:title>
+        <dc:description>
+            MyCoRe is an Open Source project for the development of
+            Digital Library and archive solutions (or, put more
+            generally, "Content Repositories" >> CoRe). In the MyCoRe
+            project a group of universities is working on the
+            development of a shared software core for such applications.
+            This core will be adjustable to local requirements and easy
+            to modify. This is expressed by the "My" in MyCoRe, which
+            represents the local adaptability. On the basis of this core
+            which will be available under the open source GNU General
+            Public License, specific local applications will emerge at
+            the participating institutes. The technical base of the
+            system is formed of Java class libraries, XML technology and
+            the database backend IBM Content Manager and IBM DB2 or an
+            native XML Database System (eXist) and a relational database
+            system such as MySQl or Postgresql.
+        </dc:description>
+        <dc:subject>metadata</dc:subject>
+        <dc:subject>internal filesystem</dc:subject>
+        <dc:subject>hierarchical classification system</dc:subject>
+        <dc:subject>workflow</dc:subject>
+        <dc:subject>workbasket</dc:subject>
+        <dc:subject>distributed search</dc:subject>
+        <dc:subject>OAI</dc:subject>
+        <dc:subject>Z39.50</dc:subject>
+        <dc:format>Web application</dc:format>
+        <dc:identifier>http://www.mycore.de</dc:identifier>
+        <dc:creator>MyCoRe Project</dc:creator>
+        <dc:rights>GPL</dc:rights>
+        <demo-site>
+            http://mycoresample.rz.uni-greifswald.de/docportal/
+        </demo-site>
+    </application>
+    <application>
         <dc:creator>Keith Campbell</dc:creator>
         <creator-site>http://www.nutritionadvocate.com/</creator-site>
         <dc:title>Content Management System</dc:title>
         <dc:subject>health</dc:subject>
         <dc:subject>nutrition</dc:subject>
         <dc:subject>newsletter</dc:subject>
-        <dc:description>A site about nutrition and health and how nutrition relates to disease and
-            health. Nutrition research, health news, and intelligent articles and commentary to
-            create greater awareness of nutrition and its relationship to health.</dc:description>
+        <dc:description>
+            A site about nutrition and health and how nutrition relates
+            to disease and health. Nutrition research, health news, and
+            intelligent articles and commentary to create greater
+            awareness of nutrition and its relationship to health.
+        </dc:description>
         <dc:publisher>Nutrition Advocate, Inc.</dc:publisher>
         <dc:format>eXist standalone distribution</dc:format>
-        <production-site>http://www.nutritionadvocate.com/</production-site>
+        <production-site>
+            http://www.nutritionadvocate.com/
+        </production-site>
         <status>production</status>
         <feature-used>XQuery,XML-RPC</feature-used>
         <third-party-feature-used>Tomcat</third-party-feature-used>
-        <database size="5Mb" documents="200" updates="rare" security="read for all"/>
-        <dev-notes>XSLT styles, java classes interpreting user input and generating
-            XQuery, Apache serving static XHTML content</dev-notes>
+        <database size="5Mb" documents="200" updates="rare"
+            security="read for all" />
+        <dev-notes>
+            XSLT styles, java classes interpreting user input and
+            generating XQuery, Apache serving static XHTML content
+        </dev-notes>
         <submitter>Keith Campbell</submitter>
     </application>
     <application>
-         <dc:creator>Bruno Pinaud</dc:creator>
-         <dc:title>GVSR: Graph Visualisation Software References</dc:title>
-         <dc:subject>Computer science</dc:subject>
-         <dc:subject>directory</dc:subject>
-         <dc:subject>Graph drawing software</dc:subject>
-         <dc:description> A directory for referencing software
-	which can draw and manipulate graphs.
-         </dc:description>
-        <production-site>http://hulk.performanse.fr/GVSR</production-site>
+        <dc:creator>Bruno Pinaud</dc:creator>
+        <dc:title>
+            GVSR: Graph Visualisation Software References
+        </dc:title>
+        <dc:subject>Computer science</dc:subject>
+        <dc:subject>directory</dc:subject>
+        <dc:subject>Graph drawing software</dc:subject>
+        <dc:description>
+            A directory for referencing software which can draw and
+            manipulate graphs.
+        </dc:description>
+        <production-site>
+            http://hulk.performanse.fr/GVSR
+        </production-site>
         <status>production</status>
         <feature-used>XQuery</feature-used>
         <feature-used>XUpdate</feature-used>
-	<database size="220kb" documents="50" updates="frequent"/>
-        <dev-notes> JSP under tomcat, XQuery based search-engine </dev-notes>
+        <database size="220kb" documents="50" updates="frequent" />
+        <dev-notes>
+            JSP under tomcat, XQuery based search-engine
+        </dev-notes>
         <submitter />
     </application>
     <application>
@@ -187,7 +273,15 @@
         <dc:subject>assessment</dc:subject>
         <dc:subject>evaluation</dc:subject>
         <dc:description>
-            Web based generic data capture and evaluation tool. The system allows to define a master data dictionary represented as a tree, multiple user input forms based on the dictionary, and multiple evaluation algorithms calculating "results". The results represent, for example, certification categories or total score based on the data entered. They will be used for certification data capture, evaluation and automatic assignment of categories (stars) for rural tourist accommodations in Latvia.
+            Web based generic data capture and evaluation tool. The
+            system allows to define a master data dictionary represented
+            as a tree, multiple user input forms based on the
+            dictionary, and multiple evaluation algorithms calculating
+            "results". The results represent, for example, certification
+            categories or total score based on the data entered. They
+            will be used for certification data capture, evaluation and
+            automatic assignment of categories (stars) for rural tourist
+            accommodations in Latvia.
         </dc:description>
         <dc:format>war</dc:format>
         <dev-site>http://adm.celotajs.lv/prj/sic</dev-site>
@@ -195,11 +289,40 @@
         <feature-used>XQuery</feature-used>
         <feature-used>XQuery update extensions</feature-used>
         <third-party-feature-used>Jetty</third-party-feature-used>
-        <third-party-feature-used>Orbeon PresentationServer</third-party-feature-used>
-        <database updates="frequent"/> 
+        <third-party-feature-used>
+            Orbeon PresentationServer
+        </third-party-feature-used>
+        <database updates="frequent" />
         <dev-notes>
-            Orbeon PresentationServer based application backed by eXist native xml database
+            Orbeon PresentationServer based application backed by eXist
+            native xml database
         </dev-notes>
         <submitter>ampatspell@gmail.com</submitter>
+    </application>
+
+    <application>
+        <dc:title>TELOTA - Project Of The Month</dc:title>
+        <dc:description>
+            Initiative to inspirit the electronic life of the academy.
+            Every m onth the data of a selected academy project is
+            processed, (re-)structured and presented on the web to give
+            scientists and the interested public a new view in the
+            extensive knowl edge inventory of the academy. We use eXist
+            as backend for web applications in several projects, like
+            dictionarie s and digital editions as well as storage tool
+            in local applications for improving workfl ow. Two exemplary
+            demonstrations are listed below.
+        </dc:description>
+        <dc:creator>Alexander Czmiel</dc:creator>
+        <creator-site>http://www.bbaw.de/pom.html</creator-site>
+        <dc:publisher>
+            Berlin-Brandenburg Academy of Sciences and Humanities
+        </dc:publisher>
+        <dc:subject>humanities</dc:subject>
+        <dc:subject>dictionaries</dc:subject>
+        <dc:subject>digital editions</dc:subject>
+        <demo-site>http://pom.bbaw.de/JDG/</demo-site>
+        <demo-site>http://www.dwds.de/</demo-site>
+        <dev-notes>XQuery, Java, XSLT, Perl</dev-notes>
     </application>
 </applications>
