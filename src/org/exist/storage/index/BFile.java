@@ -1160,7 +1160,8 @@ public class BFile extends BTree {
                     firstPage.setDirty(true);
                 }
             }
-            firstPage.getPageHeader().setLsn(loggable.getLsn());
+            if (firstPage.getPageHeader().getLsn() < 0 || requiresRedo(loggable, firstPage))
+                firstPage.getPageHeader().setLsn(loggable.getLsn());
             dataCache.add(firstPage);
         } catch (IOException e) {
             LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
@@ -1354,8 +1355,10 @@ public class BFile extends BTree {
         try {
             value.copyTo(page.data, len);
         } catch (RuntimeException e) {
-            LOG.warn("Storage error in page: " + page.getPageNum() +
-                    "; len: " + len + " ; value: " + value.size() + "; max: " + fileHeader.getWorkSize());
+            LOG.warn(getFile().getName() + ": storage error in page: " + page.getPageNum() +
+                    "; len: " + len + " ; value: " + value.size() + "; max: " + fileHeader.getWorkSize() +
+                    "; status: " + page.ph.getStatus());
+            LOG.debug(page.printContents());
             throw e;
         }
         len += value.size();
@@ -1425,7 +1428,7 @@ public class BFile extends BTree {
                     dp = new SinglePage(page, data, true);
                 }
             }
-            if (loggable != null)
+            if ((dp.getPageHeader().getLsn() < 0 || requiresRedo(loggable, dp)) && loggable != null)
                 dp.getPageHeader().setLsn(loggable.getLsn());
             dp.setDirty(true);
             dataCache.add(dp);
@@ -2545,7 +2548,9 @@ public class BFile extends BTree {
         	StringBuffer buf = new StringBuffer();
         	for(short i = 0; i < offsets.length; i++) {
                 if (offsets[i] > -1) {
-                    buf.append('[').append(i).append(", ").append(offsets[i]).append(']');
+                    buf.append('[').append(i).append(", ").append(offsets[i]);
+                    short len = ByteConversion.byteToShort(data, offsets[i]);
+                    buf.append(", ").append(len).append(']');
                 }
         	}
         	return buf.toString();
