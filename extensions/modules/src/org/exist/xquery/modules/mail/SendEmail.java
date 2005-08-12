@@ -179,7 +179,7 @@ public class SendEmail extends BasicFunction
 		}
 		
 		//Message Sent Succesfully
-		System.out.println("send-email() message sent using Sendmail " + new Date());
+		LOG.info("send-email() message sent using Sendmail " + new Date());
 		return(true);
 	}
 	
@@ -204,7 +204,7 @@ public class SendEmail extends BasicFunction
 			SMTPResult = in.readLine();
 			if(!SMTPResult.substring(0, 3).toString().equals("220"))
 			{
-				System.err.println("Error - SMTP Server not ready!");
+				LOG.error("Error - SMTP Server not ready!");
 				return(false);
 			}
 				
@@ -216,7 +216,7 @@ public class SendEmail extends BasicFunction
 			SMTPResult = in.readLine();
 			if(!SMTPResult.substring(0, 3).toString().equals("250"))
 			{
-				System.err.println("Error - SMTP HELO Failed: " + SMTPResult);
+				LOG.error("Error - SMTP HELO Failed: " + SMTPResult);
 				return(false);
 			}
 			
@@ -238,7 +238,7 @@ public class SendEmail extends BasicFunction
 			SMTPResult = in.readLine();
 			if(!SMTPResult.substring(0, 3).toString().equals("250"))
 			{
-				System.err.println("Error - SMTP MAIL FROM failed: " + SMTPResult);
+				LOG.error("Error - SMTP MAIL FROM failed: " + SMTPResult);
 				return(false);
 			}
 			
@@ -267,7 +267,7 @@ public class SendEmail extends BasicFunction
 				SMTPResult = in.readLine();
 				if(!SMTPResult.substring(0, 3).toString().equals("250"))
 				{
-					System.err.println("Error - SMTP RCPT TO failed: " + SMTPResult);
+					LOG.error("Error - SMTP RCPT TO failed: " + SMTPResult);
 				}
 			}
 			
@@ -280,7 +280,7 @@ public class SendEmail extends BasicFunction
 			SMTPResult = in.readLine();
 			if(!SMTPResult.substring(0, 3).toString().equals("354"))
 			{
-				System.err.println("Error - SMTP DATA failed: " + SMTPResult);
+				LOG.error("Error - SMTP DATA failed: " + SMTPResult);
 				return(false);
 			}
 			
@@ -291,7 +291,7 @@ public class SendEmail extends BasicFunction
 			SMTPResult = in.readLine();
 			if(!SMTPResult.substring(0, 3).toString().equals("250"))
 			{
-				System.err.println("Error - Message not accepted: " + SMTPResult);
+				LOG.error("Error - Message not accepted: " + SMTPResult);
 				return(false);
 			}
 		}
@@ -301,7 +301,7 @@ public class SendEmail extends BasicFunction
 		}
 		
 		//Message Sent Succesfully
-		System.out.println("send-email() message sent using SMTP " + new Date());
+		LOG.info("send-email() message sent using SMTP " + new Date());
 		return(true);
 	}
 	
