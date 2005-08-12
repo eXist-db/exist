@@ -357,11 +357,11 @@ public class SendEmail extends BasicFunction
 				out.println("--" + MultipartBoundary);
 				if(ContentType_Charset == "")
 				{
-					out.println("Content-Type: text/plain; charset=UTF-8");
+					out.println("Content-Type: text/html; charset=UTF-8");
 				}
 				else
 				{
-					out.println("Content-Type: text/plain; charset=" + ContentType_Charset);
+					out.println("Content-Type: text/html; charset=" + ContentType_Charset);
 				}
 				out.println("Content-Transfer-Encoding: quoted-printable");
 				out.println(aMail.getXHTML());
@@ -392,14 +392,14 @@ public class SendEmail extends BasicFunction
 				}
 				else
 				{
-					//No, HTML email
+					//No, its a HTML email
 					if(ContentType_Charset == "")
 					{
-						out.println("Content-Type: text/plain; charset=UTF-8");
+						out.println("Content-Type: text/html; charset=UTF-8");
 					}
 					else
 					{
-						out.println("Content-Type: text/plain; charset=" + ContentType_Charset);
+						out.println("Content-Type: text/html; charset=" + ContentType_Charset);
 					}
 					out.println("Content-Transfer-Encoding: quoted-printable");
 					
