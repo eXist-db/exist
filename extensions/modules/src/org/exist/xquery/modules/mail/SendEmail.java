@@ -63,7 +63,7 @@ import org.w3c.dom.Node;
 
 
 /**
- * @author Adam Retter (adam.retter@devon.gov.uk)
+ * @author Adam Retter <adam.retter@devon.gov.uk>
  */
 public class SendEmail extends BasicFunction
 {
@@ -71,6 +71,7 @@ public class SendEmail extends BasicFunction
 	//TODO: Feature - Add a facility for the user to add their own message headers.
 	//TODO: Feature - Add attachment support, will need base64 encoding etc...
 	//TODO: Read the location of sendmail from the configuration file. Can vary from system to system
+	//TODO: Include a <!DOCTYPE declaration at the start of the HTML - XHTML 1.1 ?
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
