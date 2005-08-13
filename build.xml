@@ -601,7 +601,7 @@
 	<!-- Create .war file                                                   -->
 	<!-- ================================================================== -->
     <target name="dist-war" depends="webapps" description="Create war file">
-        <war destfile="${dist}/exist.war"  webxml="webapp/WEB-INF/web.xml">
+        <war destfile="${dist}/exist-${DSTAMP}.war"  webxml="webapp/WEB-INF/web.xml">
                 
             <!-- Add files to WEB-INF/lib -->
             <lib dir=".">
