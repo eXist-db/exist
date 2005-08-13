@@ -21,8 +21,10 @@
 package org.exist.storage;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -49,548 +51,594 @@ import org.exist.xmldb.ShutdownListener;
 
 /**
  * This class controls all available instances of the database.
- * Use it to configure, start and stop database instances. You may
- * have multiple instances defined, each using its own configuration,
- * database directory etc.. To define multiple instances, pass an
- * identification string to the static method configure() and use
- * getInstance(id) to retrieve an instance.
- * 
+ * Use it to configure, start and stop database instances. 
+ * You may have multiple instances defined, each using its own configuration. 
+ * To define multiple instances, pass an identification string to {@link #configure(String, int, int, Configuration)}
+ * and use {@link #getInstance(String)} to retrieve an instance.
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author  Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
+//TODO : in the future, separate the design between the Map of DBInstances and their non static implementation 
 public class BrokerPool {
 
 	private final static Logger LOG = Logger.getLogger(BrokerPool.class);
 	
 	private final static TreeMap instances = new TreeMap();
 	
-	private static boolean registerShutdownHook = true;
+	/**
+	 * The id of a default database instance for those who are too lazy to provide parameters ;-). 
+	 */
+	//TODO : rename as DEFAULT_DB_INSTANCE_ID ?
+	public final static String DEFAULT_INSTANCE = "exist";		
 	
-	private final static ShutdownThread shutdownThread = new ShutdownThread();
+	//TODO : inline the class ? or... make it configurable ?
+    // WM: inline. I don't think users need to be able to overwrite this.
+    // They can register their own shutdown hooks any time.
+	private final static Thread shutdownHook = new Thread() {
+	    /**
+	     * Make sure that all instances are cleanly shut down.
+	     */     
+	    public void run() {
+	        LOG.info("Executing shutdown thread");
+	        BrokerPool.stopAll(true);
+	    }   
+    };
 	
-	/**	size of the internal buffer for collection objects */
-	public final static int COLLECTION_BUFFER_SIZE = 128;
-	
-	public final static String DEFAULT_INSTANCE = "exist";
-        
-    public final static long MAX_SHUTDOWN_WAIT = 45000;
-
-    public static boolean FORCE_CORRUPTION = false;
+	//TODO : make this defaut value configurable ? useless if we have a registerShutdownHook(Thread aThread) method (null = deregister)
+	private static boolean registerShutdownHook = true;	
     
 	/**
-     * Should a shutdown hook be registered with the JVM? If set to true, method
-     * {@link #configure(String, int, int, Configuration)} will register a shutdown thread
-	 * which takes care to shut down the database if the application receives a kill or term
-	 * signal. However, this is unnecessary if the calling application has already registered
-	 * a shutdown hook.
-	 *  
-	 * @param register
+     * Whether of not the JVM should run the shutdown thread.
+	 * @param register <code>true</code> if the JVM should run the thread
 	 */
+    //TODO : rename as activateShutdownHook ? or registerShutdownHook(Thread aThread)
+    // WM: it is probably not necessary to allow users to register their own hook. This method
+    // is only used once, by class org.exist.JettyStart, which registers its own hook.
 	public final static void setRegisterShutdownHook(boolean register) {
+		/*
+		 * TODO : call Runtime.getRuntime().removeShutdownHook or Runtime.getRuntime().registerShutdownHook 
+		 * depending of the value of register
+		 * Since Java doesn't provide a convenient way to know if a shutdown hook has been registrered, 
+		 * we may have to catch IllegalArgumentException
+		 */
+		//TODO : check that the JVM is not shutting down
 		registerShutdownHook = register;
 	}
 	
+	//TODO : make it non-static since every database instance may have its own policy.
+	//TODO : make a defaut value that could be overwritten by the configuration
+    // WM: this is only used by junit tests to test the recovery process.
+    /**
+     * For testing only: triggers a database corruption by disabling the page caches. The effect is
+     * similar to a sudden power loss or the jvm being killed. The flag is used by some
+     * junit tests to test the recovery process.
+     */
+	public static boolean FORCE_CORRUPTION = false;  	
+	
+	/**
+	 *  Creates and configures a default database instance and adds it to the pool. 
+	 *  Call this before calling {link #getInstance()}. 
+	 * If a default database instance already exists, the new configuration is ignored.
+	 * @param minBrokers The minimum number of concurrent brokers for handling requests on the database instance.
+	 * @param maxBrokers The maximum number of concurrent brokers for handling requests on the database instance.
+	 * @param config The configuration object for the database instance
+	 * @throws EXistException
+	 *@exception  EXistException If the initialization fails.	
+	 */
+	//TODO : in the future, we should implement a Configurable interface	
 	public final static void configure(int minBrokers, int maxBrokers, Configuration config)
 		throws EXistException {
 		configure(DEFAULT_INSTANCE, minBrokers, maxBrokers, config);
 	}
 
 	/**
-	 *  Configure a new BrokerPool instance. Call this before calling getInstance().
-	 *
-	 *@param  id The name to identify this database instance. You may have more
-	 *	than one instance with different configurations.
-	 *@param  minBrokers Minimum number of database brokers to start during initialization.
-	 *@param  maxBrokers Maximum number of database brokers available to handle requests.
-	 *@param  config The configuration object used by this instance.
-	 *@exception  EXistException thrown if initialization fails.
+	 *  Creates and configures a database instance and adds it to the pool. 
+	 *  Call this before calling {link #getInstance()}. 
+	 * If a database instance with the same name already exists, the new configuration is ignored.
+	 * @param id A <strong>unique</strong> name for the database instance. 
+	 * It is possible to have more than one database instance (with different configurations for example).
+	 * @param minBrokers The minimum number of concurrent brokers for handling requests on the database instance.
+	 * @param maxBrokers The maximum number of concurrent brokers for handling requests on the database instance.
+	 * @param config The configuration object for the database instance
+	 * @throws EXistException If the initialization fails.	
 	 */
+	//TODO : in the future, we should implement a Configurable interface	
 	public final static void configure(
 		String id,
 		int minBrokers,
 		int maxBrokers,
 		Configuration config)
 		throws EXistException {
+		//Check if there is a database instance in the pool with the same id
 		BrokerPool instance = (BrokerPool) instances.get(id);
 		if (instance == null) {
-			LOG.debug("configuring database instance '" + id + "' ...");
+			LOG.debug("configuring database instance '" + id + "'...");
+			//Create the instance
 			instance = new BrokerPool(id, minBrokers, maxBrokers, config);
+			//Add it to the pool
 			instances.put(id, instance);
-			if(instances.size() == 1) {
-				if(registerShutdownHook) {
-					LOG.debug("registering shutdown hook");
+			//We now have at leant an instance...
+			if(instances.size() == 1) {	
+				//... and a ShutdownHook may be interesting
+				if(registerShutdownHook) {		
 					try {
-						Runtime.getRuntime().addShutdownHook(shutdownThread);
+						//... currently an eXist-specific one. TODO : make it configurable ?
+						Runtime.getRuntime().addShutdownHook(shutdownHook);
+						LOG.debug("shutdown hook registered");						
 					} catch(IllegalArgumentException e) {
-						LOG.debug("shutdown hook already registered");
+						LOG.warn("shutdown hook already registered");
 					}
 				}
 			}
+		//TODO : throw an exception here rather than silently ignore an *explicit* parameter ?
+        // WM: maybe throw an exception. Users can check if a db is already configured.
 		} else
-			LOG.warn("instance with id " + id + " already configured");
+			LOG.warn("database instance '" + id + "' is already configured");
 	}
+	
+	/** Returns whether or not the default database instance is configured.
+	 * @return <code>true</code> if it is configured
+	 */
+	//TODO : in the future, we should implement a Configurable interface
+	public final static boolean isConfigured() {
+		return isConfigured(DEFAULT_INSTANCE);
+	}	
 
+	/** Returns whether or not a database instance is configured.
+	 * @param id The name of the database instance
+	 * @return <code>true</code> if it is configured
+	 */
+	//TODO : in the future, we should implement a Configurable interface	
 	public final static boolean isConfigured(String id) {
+		//Check if there is a database instance in the pool with the same id
 		BrokerPool instance = (BrokerPool) instances.get(id);
+		//No : it *can't* be configured
 		if (instance == null)
 			return false;
+		//Yes : it *may* be configured
 		return instance.isInstanceConfigured();
 	}
 
-	public final static boolean isConfigured() {
-		return isConfigured(DEFAULT_INSTANCE);
-	}
-
-	/**
-	 *  Singleton method. Get the BrokerPool for a specified database instance.
-	 *
-	 *@return        The instance.
-	 *@exception  EXistException  thrown if the instance has not been configured.
+	/**Returns a broker pool for the default database instance.
+	 * @return The broker pool
+	 * @throws EXistException If the database instance is not available (not created, stopped or not configured)
 	 */
-	public final static BrokerPool getInstance(String id) throws EXistException {
-                BrokerPool instance = (BrokerPool) instances.get(id);
-                if (instance != null)
-                        return instance;
-                else
-                	throw new EXistException("instance with id " + id + " has not been configured yet");
-        }
-
-    /**
-     * Returns the default database instance, i.e. the instance configured for id
-     * {@link #DEFAULT_INSTANCE}.
-     * 
-     * @return
-     * @throws EXistException
-     */
 	public final static BrokerPool getInstance() throws EXistException {
 		return getInstance(DEFAULT_INSTANCE);
-	}
+	}	
 
+	/**Returns a broker pool for a database instance.
+	 * @param id The name of the database instance
+	 * @return The broker pool
+	 * @throws EXistException If the instance is not available (not created, stopped or not configured)
+	 */
+	public final static BrokerPool getInstance(String id) throws EXistException {
+		//Check if there is a database instance in the pool with the same id
+        BrokerPool instance = (BrokerPool) instances.get(id);
+        if (instance != null)
+        	//TODO : call isConfigured(id) and throw an EXistException if relevant ?
+        	return instance;
+        else        	
+        	throw new EXistException("database instance '" + id + "' is not available");
+    }
+
+	/** Returns an iterator over the database instances.
+	 * @return The iterator
+	 */
 	public final static Iterator getInstances() {
 		return instances.values().iterator();
 	}
 
-	/**
-	 *  Shutdown running brokers. After calling this method, the BrokerPool is
-	 *  no longer configured. You have to configure it again by calling
-	 *  configure().
+	/** Stops the default database instance. After calling this method, it is
+	 *  no longer configured.
+	 * @throws EXistException If the default database instance is not available (not created, stopped or not configured) 
 	 */
-	public final static void stop(String id) throws EXistException {
-		BrokerPool instance = (BrokerPool) instances.get(id);
-		if (instance != null) {
-			instance.shutdown();
-		} else
-			throw new EXistException("instance with id " + " is not available");
-	}
-
 	public final static void stop() throws EXistException {
 		stop(DEFAULT_INSTANCE);
 	}
 
+	/** Stops the given database instance. After calling this method, it is
+	 *  no longer configured.
+	 * @param id The name of the database instance
+	 * @throws EXistException If the database instance is not available (not created, stopped or not configured)
+	 */
+	public final static void stop(String id) throws EXistException {		
+		BrokerPool instance = (BrokerPool) instances.get(id);
+		if (instance == null)
+			throw new EXistException("database instance '" + id + "' is not available");
+		instance.shutdown();	
+	}
+
+	/** Stops all the database instances. After calling this method, the database instances are
+	 *  no longer configured.
+	 * @param killed <code>true</code> when invoked by an exiting JVM
+	 */
 	public final static void stopAll(boolean killed) {
+		//Create a temporary vector
 		Vector tmpInstances = new Vector();
 		for (Iterator i = instances.values().iterator(); i.hasNext();) {
+			//and feed it with the living database instances
 			tmpInstances.add(i.next());
 		}
 		BrokerPool instance;
+		//Iterate over the living database instances
 		for (Iterator i = tmpInstances.iterator(); i.hasNext();) {
 			instance = (BrokerPool) i.next();
 			if (instance.conf != null)
+				//Shut them down
 				instance.shutdown(killed);
 		}
+		//Clear the living instances container : they are all sentenced to death...
 		instances.clear();
 	}
-
-	private int max = 15;
-	private int min = 1;
-    
-    /**
-     * @uml.associationEnd multiplicity="(0 1)"
-     */
-	protected Configuration conf = null;
-    
-	private int brokers = 0;
 	
-	private Stack pool = new Stack();
-	private Map threads = new HashMap();
+	/* END OF STATIC IMPLEMENTATION */	
+	
+    /**
+	 * Default values
+	 */	
+	//TODO : make them static when we have 2 classes
+	private final int DEFAULT_MIN_BROKERS = 1;
+	private final int DEFAULT_MAX_BROKERS = 15;	 
+    public final long DEFAULT_SYNCH_PERIOD = 120000;
+    public final long DEFAULT_MAX_SHUTDOWN_WAIT = 45000;    
+	//TODO : move this default setting to org.exist.collections.CollectionCache ? 
+	public final int DEFAULT_COLLECTION_BUFFER_SIZE = 128;
+	
+    /**
+     * <code>true</code> if the database instance is able to handle transactions. 
+     */    
+    private boolean transactionsEnabled;   	
+
+	/**
+	 * The name of the database instance
+	 */
 	private String instanceId;
-	private boolean syncRequired = false;
-    private boolean checkpoint = false;
-	private int syncEvent = 0;
+
+    /**
+	 * <code>true</code> if the database instance is not yet initialized
+	 */
+	//TODO : let's be positive and rename it as initialized ? 
 	private boolean initializing = true;
 	
-    /**
-     * Set to true if this database instance is running in read-only mode.
-     */
-    private boolean isReadOnly = false;
-    
-    /**
-     * Is this database instance transactional?
-     */
-    private boolean isTransactional = true;
-    
 	/**
-	 * During shutdown: max. time to wait (in ms.) for running jobs to return
+	 * The number of brokers for the database instance 
 	 */
-	private long maxShutdownWait = MAX_SHUTDOWN_WAIT;
-
-    /**
-     * The security manager for this database instance. 
-     *  
-     * @uml.property name="secManager"
-     * @uml.associationEnd multiplicity="(1 1)"
-     */
-    private SecurityManager secManager = null;
-
+	private int brokersCount = 0;
 	
-    /**
-     * The global manager for access to collection configuration files.
-     * 
-     * @uml.associationEnd multiplicity="(1 1)"
-     */
-	private CollectionConfigurationManager collectionConfig = null;
-	
-    /**
-     * Global transaction management.
-     * 
-     * @uml.associationEnd multiplicity="(1 1)"
-     */
-    private TransactionManager txnManager = null;
-    
-    private CacheManager cacheManager;
-    
 	/**
-	 * SyncDaemon is a daemon thread which periodically triggers a cache sync.
+	 * The minimal number of brokers for the database instance 
+	 */
+	private int minBrokers;
+	
+	/**
+	 * The maximal number of brokers for the database instance 
+	 */
+	private int maxBrokers;
+
+	/**
+	 * The number of inactive brokers for the database instance 
+	 */	
+	private Stack inactiveBrokers = new Stack();
+	
+	/**
+	 * The number of active brokers for the database instance 
+	 */	
+	private Map activeBrokers = new HashMap();
+	
+	/** The configuration object for the database instance
+     */
+	protected Configuration conf = null;    
+
+	/**
+	 * <code>true</code> if a cache synchronization event is scheduled
+	 */
+	//TODO : rename as syncScheduled ?
+	//TODO : alternatively, delete this member and create a Sync.NOSYNC event
+	private boolean syncRequired = false;	
+	
+	/**
+	 * The kind of scheduled cache synchronization event. 
+	 * One of {@link org.exist.storage.Sync#MINOR_SYNC} or {@link org.exist.storage.Sync#MINOR_SYNC}
+	 */
+	private int syncEvent = 0;	
+	
+    private boolean checkpoint = false;		
+	
+    /**
+     * <code>true</code> if the database instance is running in read-only mode.
+     */
+    //TODO : this should be computed by the DBrokers depending of their configuration/capabilities
+    //TODO : for now, this member is used for recovery management
+    private boolean isReadOnly;    
+
+    /**
+     * The transaction manager of the database instance.
+     */
+    private TransactionManager transactionManager = null;
+   
+	/**
+	 * Delay (in ms) for running jobs to return when the database instance shuts down.
+	 */
+	private long maxShutdownWait;
+
+    /**
+	 * The daemon which periodically triggers system tasks and cache synchronization on the database instance.
 	 */
 	private SyncDaemon syncDaemon;
-	
+
 	/**
-	 * Stack for pending system maintenance tasks.
-	 */
-	private Stack waitingTasks = new Stack();
-	
-	/**
-	 * ShutdownListener will be notified when the database instance shuts down.
+	 * The listener that is notified when the database instance shuts down.
 	 */
 	private ShutdownListener shutdownListener = null;
-	
+
 	/**
-	 * The global pool for compiled XQuery expressions.
-     * 
-     * @uml.associationEnd multiplicity="(1 1)"
+     * The security manager of the database instance. 
+     */
+    private SecurityManager securityManager = null;	
+    
+	/**
+	 * The system maintenance tasks of the database instance.
 	 */
-	private XQueryPool xqueryCache;
-	
-	private XQueryMonitor monitor;
+    //TODO : maybe not the most appropriate container...
+    // WM: yes, only used in initialization. Don't need a synchronized collection here
+    private List systemTasks = new ArrayList();
+    //TODO : remove when SystemTask has a getPeriodicity() method
+    private Vector systemTasksPeriods = new Vector();
 	
 	/**
-	 * The global collection cache.
-     * 
-     * @uml.associationEnd multiplicity="(1 1)"
+	 * The pending system maintenance tasks of the database instance.
 	 */
-	protected CollectionCache collectionsCache;
+	private Stack waitingSystemTasks = new Stack();
+
+	/**
+	 * The cache in which the database instance may store items.
+	 */	
+	
+	private CacheManager cacheManager;
+
+	/**
+	 * The pool in which the database instance's <strong>compiled</strong> XQueries are stored.
+	 */
+	private XQueryPool xQueryPool;
 	
 	/**
-	 * Global pool for SAX XMLReader instances.
+	 * The monitor in which the database instance's strong>running</strong> XQueries are managed.
+	 */
+	private XQueryMonitor xQueryMonitor;
+
+    /**
+     * The global manager for accessing collection configuration files from the database instance.
+     */
+	private CollectionConfigurationManager collectionConfigurationManager = null;				
+	
+	/**
+     * The cache in which the database instance's collections are stored.
+     */
+	protected CollectionCache collectionCache;
+	
+	/**
+	 * The pool in which the database instance's readers are stored.
 	 */
 	protected XMLReaderPool xmlReaderPool;
 	
+	//TODO : is another value possible ? If no, make it static
+    // WM: no, we need one lock per database instance. Otherwise we would lock another database.
 	private Lock globalXUpdateLock = new ReentrantReadWriteLock("xupdate");
 
-	/**
-	 *  Constructor for the BrokerPool object
-	 *
-	 *@exception  EXistException  Description of the Exception
-	 */
-	public BrokerPool(String id, int minBrokers, int maxBrokers, Configuration config)
+	/** Creates and configures the database instance. 
+	 * @param instanceId A name for the database instance.
+	 * @param minBrokers The minimum number of concurrent brokers for handling requests on the database instance.
+	 * @param maxBrokers The maximum number of concurrent brokers for handling requests on the database instance.
+	 * @param conf The configuration object for the database instance
+	 * @throws EXistException If the initialization fails.
+    */
+	//TODO : shouldn't this constructor be private ? as such it *must* remain under configure() control !
+	//TODO : Then write a configure(int minBrokers, int maxBrokers, Configuration conf) method
+	// WM: yes, could be private.
+	public BrokerPool(String instanceId, int minBrokers, int maxBrokers, Configuration conf)
 		throws EXistException {
-		instanceId = id;
-		min = minBrokers;
-		max = maxBrokers;
-		Integer minInt = (Integer) config.getProperty("db-connection.pool.min");
-		Integer maxInt = (Integer) config.getProperty("db-connection.pool.max"); 
-		Long syncInt = (Long) config.getProperty("db-connection.pool.sync-period");
-		Long maxWaitInt = (Long) config.getProperty("db-connection.pool.shutdown-wait");
-		if (minInt != null)
-			min = minInt.intValue();
-		if (maxInt != null)
-			max = maxInt.intValue();
-		long syncPeriod = 120000;
-		if (syncInt != null)
-			syncPeriod = syncInt.longValue();
-		if (maxWaitInt != null) {
-			maxShutdownWait = maxWaitInt.longValue();
-			LOG.info("Max. wait during shutdown: " + maxShutdownWait);
-		}
-		LOG.info("Instances: min = " + min + "; max = " + max + "; sync = " + syncPeriod);
-        
-		conf = config;
+		
+		Integer anInteger;
+		Long aLong;
+		Boolean aBoolean;
+		
+		//TODO : ensure that the instance name is unique ?
+        //WM: needs to be done in the configure method.
+		this.instanceId = instanceId;
+		
+		//TODO : find a nice way to (re)set the default values
+		//TODO : create static final members for configuration keys
+		this.minBrokers = DEFAULT_MIN_BROKERS;
+		this.maxBrokers = DEFAULT_MAX_BROKERS;
+		//TODO : make a member of it ? or, better, use a SystemTask (see below)
+		long syncPeriod = DEFAULT_SYNCH_PERIOD;
+		this.maxShutdownWait = DEFAULT_MAX_SHUTDOWN_WAIT;
+		//TODO : read from configuration
+		this.transactionsEnabled = true;
+		
+		this.minBrokers = minBrokers;
+		this.maxBrokers = maxBrokers;
+		/*
+		 * strange enough, the settings provided by the constructor may be overriden
+		 * by the ones *explicitely* provided by the constructor
+		 * TODO : consider a private constructor BrokerPool(String instanceId) then configure(int minBrokers, int maxBrokers, Configuration config)
+		 */		
+		anInteger = (Integer) conf.getProperty("db-connection.pool.min");
+		if (anInteger != null)
+			this.minBrokers = anInteger.intValue();		
+		anInteger = (Integer) conf.getProperty("db-connection.pool.max"); 
+		if (anInteger != null)
+			this.maxBrokers = anInteger.intValue();		
+		//TODO : sanity check : minBrokers shall be lesser than or equal to maxBrokers
+		//TODO : sanity check : minBrokers shall be positive
+		LOG.info("database instance '" + instanceId + "' will have between " + this.minBrokers + " and " + this.maxBrokers + " brokers");
+		
+		//TODO : use the periodicity of a SystemTask (see below)
+		aLong = (Long) conf.getProperty("db-connection.pool.sync-period");
+		if (aLong != null)
+			/*this.*/syncPeriod = aLong.longValue();
+		//TODO : sanity check : the synch period should be reasonible
+		LOG.info("database instance '" + instanceId + "' will be synchronized every " + /*this.*/syncPeriod + " ms");
 
-		syncDaemon = new SyncDaemon();
+		//TODO : move this to initialize ?
+		syncDaemon = new SyncDaemon();		
+
+		aLong = (Long) conf.getProperty("db-connection.pool.shutdown-wait");		
+		if (aLong != null) {
+			this.maxShutdownWait = aLong.longValue();			
+		}
+		//TODO : sanity check : the shutdown period should be reasonible
+		LOG.info("database instance '" + instanceId + "' will wait  " + this.maxShutdownWait + " ms during shutdown");
+
+		aBoolean = (Boolean) conf.getProperty("db-connection.recovery.enabled");
+		if (aBoolean != null) {
+			this.transactionsEnabled = aBoolean.booleanValue();
+        }
+		LOG.info("database instance '" + instanceId + "' is enabled for transactions : " + this.transactionsEnabled);
+		
+		//How ugly : needs refactoring...
+		Configuration.SystemTaskConfig systemTasksConfigs[] = (Configuration.SystemTaskConfig[]) conf.getProperty("db-connection.system-task-config");
+		if (systemTasksConfigs != null) {
+	        for (int i = 0; i < systemTasksConfigs.length; i++) {
+	        	try {
+		            Class clazz = Class.forName(systemTasksConfigs[i].getClassName());
+		            SystemTask task = (SystemTask) clazz.newInstance();	
+		            if (!(task instanceof SystemTask))
+		            	//TODO : shall we ignore the exception ?		            	
+		            	throw new EXistException("'" + task.getClass().getName() + "' is not an instance of org.exist.storage.SystemTask");
+		            task.configure(conf, systemTasksConfigs[i].getProperties());
+		            systemTasks.add(task);
+		            //TODO : remove when SystemTask has a getPeriodicity() method
+		            systemTasksPeriods.add(new Long(systemTasksConfigs[i].getPeriod()));
+		            LOG.info("added system task instance '" + task.getClass().getName() + "' to be executed every " +  systemTasksConfigs[i].getPeriod() + " ms");
+	        	}
+	        	catch (ClassNotFoundException e) {
+	        		//TODO : shall we ignore the exception ?
+	        		throw new EXistException("system task class '" + systemTasksConfigs[i].getClassName() + "' not found");
+	        	}
+	        	catch (InstantiationException e) {
+	        		//TODO : shall we ignore the exception ?
+	        		throw new EXistException("system task '" + systemTasksConfigs[i].getClassName() + "' can not be instantiated");
+	        	}
+	        	catch (IllegalAccessException e) {
+	        		//TODO : shall we ignore the exception ?
+	        		throw new EXistException("system task '" + systemTasksConfigs[i].getClassName() + "' can not be accessed");
+	        	}
+	        }
+			//TODO : why not add a default Sync task here if there is no instanceof Sync in systemTasks ?
+		}		
+		
+		//TODO : since we need one :-( (see above)	
+		this.isReadOnly = !canReadDataDir(conf);
+
+		//Configuration is valid, save it
+		this.conf = conf;
+		
+		//TODO : in the future, we should implement an Initializable interface
 		initialize();
+		
+		//TODO : move this to initialize ?
         if (syncPeriod > 0)
+        	//TODO : why not automatically register Sync in system tasks ? 
             syncDaemon.executePeriodically(1000, new Sync(this, syncPeriod), false);
 	}
-
-    public String getId() {
-    	return instanceId;
-    }
-
-	/**
-	 *  Number of database instances currently active, i.e. busy.
-	 *
-	 *@return
-	 */
-	public int active() {
-		return threads.size();
-	}
-
-	/**
-	 *  Number of database instances currently available to serve requests.
-	 */
-	public int available() {
-		return pool.size();
-	}
-
-	/**
-	 * Returns the configuration object for this database
-	 * instance.
-	 */
-	public Configuration getConfiguration() {
-		return conf;
-	}
-
-	/**
-	 * Returns the global collections cache. Collection objects
-	 * are shared within one database instance.
-	 * 
-	 * @return
-	 */
-	public CollectionCache getCollectionsCache() {
-		return collectionsCache;
-	}
 	
-    public CacheManager getCacheManager() {
-        return cacheManager;
-    }
-    
-	public XMLReaderPool getParserPool() {
-		return xmlReaderPool;
-	}
+	//TODO : create a canReadJournalDir() method in the *relevant* class. The two directories may be different.
+    protected boolean canReadDataDir(Configuration conf) throws EXistException {
+        String dataDir = (String) conf.getProperty("db-connection.data-dir");
+        if (dataDir == null) 
+        	dataDir = "data"; //TODO : DEFAULT_DATA_DIR
 
-    /**
-     * Returns the global XQuery pool for this database instance.
-     * 
-     * @return
-     */
-    public XQueryPool getXQueryPool() {
-        return xqueryCache;
-    }
-
-    public XQueryMonitor getXQueryMonitor() {
-    	return monitor;
-    }
-
-    public CollectionConfigurationManager getConfigurationManager() {
-        return collectionConfig;
-    }
-
-    public TransactionManager getTransactionManager() {
-        return txnManager;
-    }
-    
-    /**
-     * Returns the global update lock for this database instance.
-     * This lock is used by XUpdate operations to avoid that
-     * concurrent XUpdate requests modify the database until all
-     * document locks have been correctly set.
-     *  
-     * @return
-     */
-    public Lock getGlobalUpdateLock() {
-        return globalXUpdateLock;
-    }
-
-    /**
-     *  Returns the security manager responsible for this pool
-     *
-     *@return    The securityManager value
-     */
-    public org.exist.security.SecurityManager getSecurityManager() {
-    	return secManager;
-    }
-
-    public SyncDaemon getSyncDaemon() {
-        return syncDaemon;
-    }
-	
-    /**
-     * Does this database instance support transactions?
-     * 
-     * @return
-     */
-    public boolean isTransactional() {
-        return !isReadOnly && isTransactional;
-    }
-    
-    protected DBBroker createBroker() throws EXistException {
-		DBBroker broker = BrokerFactory.getInstance(this, conf);
-		//Thread.dumpStack();
-		LOG.debug(
-			"database " + instanceId + ": created new instance of " + broker.getClass().getName());
-		pool.push(broker);
-		brokers++;
-		broker.setId(broker.getClass().getName() + '_' + brokers);
-		return broker;
-	}
-
-	/**
-	 *  Get a DBBroker instance from the pool.
-	 */
-	public DBBroker get() throws EXistException {
-		if (!isInstanceConfigured())
-			throw new EXistException("database instance is not available");
-		DBBroker broker = (DBBroker)threads.get(Thread.currentThread());
-		if(broker != null) {
-			// the thread already holds a reference to a broker object
-			broker.incReferenceCount();
-			return broker;
-		}
-		synchronized(this) {
-			if (pool.isEmpty()) {
-				if (brokers < max)
-					createBroker();
-				else
-					while (pool.isEmpty()) {
-						LOG.debug("waiting for broker instance to become available");
-						try {
-							this.wait();
-						} catch (InterruptedException e) {
-						}
-					}
-			}
-			broker = (DBBroker) pool.pop();
-			threads.put(Thread.currentThread(), broker);
-			broker.incReferenceCount();
-			this.notifyAll();
-			return broker;
-		}
-	}
-
-	/**
-	 * Get a DBBroker instance and set its current user to user.
-	 *  
-	 * @param user
-	 * @return
-	 * @throws EXistException
-	 */
-	public DBBroker get(User user) throws EXistException {
-		DBBroker broker = get();
-		broker.setUser(user);
-		return broker;
-	}
-	
-	/**
-	 * Reload the security manager. This method is called whenever the
-	 * users.xml file has been changed.
-	 * 
-	 * @param broker
-	 */
-	public void reloadSecurityManager(DBBroker broker) {
-		LOG.debug("reloading security manager");
-		secManager = new org.exist.security.SecurityManager(this, broker);
-	}
-
-    /**
-     * Initialize the data directory. If the directory does not exist, try to create
-     * one. Switch to read-only mode if creation fails or write is not allowed.
-     * 
-     * @throws EXistException
-     */
-    protected File initDataDir() throws EXistException {
-        String dataDir;
-        if ((dataDir = (String) conf.getProperty("db-connection.data-dir")) == null)
-            dataDir = "data";
-        File dir = new File(dataDir);
+        File dir = new File(dataDir);        
         if (!dir.exists()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Data directory " + dataDir + " does not exist. Creating one ...");
-            }
             try {
-                dir.mkdirs();
-            } catch (SecurityException e) {
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Cannot create data directory: " + dir.getAbsolutePath() + ". Switching to read-only mode.");
-                }
-                isReadOnly = true;
+            	//TODO : shall we force the creation ? use a parameter to decide ? 
+            	LOG.info("Data directory '" + dir.getAbsolutePath() + "' does not exist. Creating one ...");
+                dir.mkdirs();                
+            } catch (SecurityException e) {            	
+                LOG.info("Cannot create data directory '" + dir.getAbsolutePath() + "'. Switching to read-only mode.");                
+                return false;
             }
+        }        
+    	//Save it for further use.
+        //TODO : "data-dir" has sense for *native* brokers
+    	conf.setProperty("db-connection.data-dir", dataDir);
+    	if (!dir.canWrite()) {            
+            LOG.info("Cannot write to data directory: " + dir.getAbsolutePath() + ". Switching to read-only mode.");
+            return false;
         }
-        if (!dir.canWrite()) {
-            if (LOG.isInfoEnabled()) {
-                LOG.info("Cannot write to data directory: " + dir.getAbsolutePath() + ". Switching to read-only mode.");
-            }
-            isReadOnly = true;
-        }
-        return dir;
-    }
-    
-	/**
-	 *  Initialize the current instance.
-	 *
-	 *@exception  EXistException  Description of the Exception
+        return true;
+    }	
+	
+	/**Initializes the database instance.
+	 * @throws EXistException
 	 */
 	protected void initialize() throws EXistException {
         if (LOG.isDebugEnabled())
-            LOG.debug("initializing database " + instanceId);
-        // set flag to indicate that we are initializing
+            LOG.debug("initializing database instance '" + instanceId + "'...");
+        
+        //Flag to indicate that we are initializing
 		initializing = true;
         
-        
+		//REFACTOR : construct then configure
         cacheManager = new CacheManager(conf);
-        xqueryCache = new XQueryPool(conf);
-        monitor = new XQueryMonitor();
+        //REFACTOR : construct then configure
+        xQueryPool = new XQueryPool(conf);
+        //REFACTOR : construct then... configure
+        xQueryMonitor = new XQueryMonitor();
+        //REFACTOR : construct then... configure
         xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
-        
-        // check if recovery and transactions should be enabled
-        if (conf.getProperty("db-connection.recovery.enabled") != null) {
-            isTransactional = ((Boolean) conf.getProperty("db-connection.recovery.enabled")).booleanValue();
-        }
-        
-        // initialize the data directory to see if we have to run in read-only mode
-        File dataDir = initDataDir();
-        
-		// initialize transaction management
-        txnManager = new TransactionManager(this, dataDir, isTransactional());
-		
-		// create a first broker to initialize the security manager
+        //REFACTOR : construct then... configure
+        collectionCache = new CollectionCache(this, DEFAULT_COLLECTION_BUFFER_SIZE, 20);
+        //REFACTOR : construct then... configure
+        //TODO : journal directory *may* be different from "db-connection.data-dir"
+        transactionManager = new TransactionManager(this, new File((String) conf.getProperty("db-connection.data-dir")), isTransactional());		
+
+        //TODO : replace the following code by get()/release() statements ?
+        // WM: I would rather tend to keep this broker reserved as a system broker.
+        // create a first broker to initialize the security manager
 		createBroker();
-		DBBroker broker = (DBBroker) pool.peek();
+		//TODO : this broker is *not* marked as active and *might* be reused by another process ! Is it intended ?
+        // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
+		DBBroker broker = (DBBroker) inactiveBrokers.peek();
         
 		// run recovery
         boolean recovered = false;
-		if (isTransactional())
-			recovered = txnManager.runRecovery(broker);
+		if (isTransactional()) {
+			recovered = transactionManager.runRecovery(broker);
 		
-        collectionsCache = new CollectionCache(this, COLLECTION_BUFFER_SIZE, 20);
-        
-        if (!recovered) {
-            Txn txn = txnManager.beginTransaction();
-            try {
-                broker.getOrCreateCollection(txn, "/db");
-                txnManager.commit(txn);
-            } catch (PermissionDeniedException e) {
-                txnManager.abort(txn);
+            if (!recovered) {
+                Txn txn = transactionManager.beginTransaction();
+                try {
+                	//TODO : use a root collection final member
+                    broker.getOrCreateCollection(txn, "/db");
+                    transactionManager.commit(txn);
+                } catch (PermissionDeniedException e) {
+                    transactionManager.abort(txn);
+                }
             }
         }
+        
+        //TODO : from there, rethink the sequence of calls.
+        // WM: attention: a small change in the sequence of calls can break
+        // either normal startup or recovery.
         
         // remove old temporary docs
 		broker.cleanUpAll();
         
-        // create the security manager
-		secManager = new org.exist.security.SecurityManager(this, broker);
+        //create the security manager
+		//TODO : why only the first broker has a security manager ? Global or attached to each broker ?
+        // WM: there's only one security manager per BrokerPool, but it needs a DBBroker instance to read
+        // the /db/system collection.
+		securityManager = new org.exist.security.SecurityManager(this, broker);
 		initializing = false;
 		
-		collectionConfig = new CollectionConfigurationManager(broker);
+		//TODO : other brokers don't have one. Don't know if they need one though...
+        // WM: there's only one CollectionConfigurationManager per BrokerPool. The passed DBBroker
+        // is needed to initialize/read the /db/system/config collection.
+		collectionConfigurationManager = new CollectionConfigurationManager(broker);
         
         if (recovered) {
             try {
@@ -600,170 +648,557 @@ public class BrokerPool {
                 LOG.warn("Error during recovery: " + e.getMessage(), e);
             }
         }
-		// now create remaining brokers
-		for (int i = 1; i < min; i++)
-			createBroker();
-        registerSystemTasks();
+		
+        //Create the minimal number of brokers required by the configuration 
+		for (int i = 1; i < minBrokers; i++)
+			createBroker();        
+		//Schedule the system tasks	            
+	    for (int i = 0; i < systemTasks.size(); i++) {
+	    	//TODO : remove first argument when SystemTask has a getPeriodicity() method
+	        initSystemTask((Long)systemTasksPeriods.elementAt(i), (SystemTask)systemTasks.get(i));
+	    }		
+		
         if (LOG.isDebugEnabled())
-            LOG.debug("database engine " + instanceId + " initialized.");
+            LOG.debug("database instance '" + instanceId + "' initialized");
 	}
+	    
+	//TODO : remove the period argument when SystemTask has a getPeriodicity() method
+	//TODO : make it protected ?
+    private void initSystemTask(Long period, SystemTask task) throws EXistException {
+        try {
+            LOG.debug("Scheduling system maintenance task " + task.getClass().getName() + " every " + period + " ms");
+            syncDaemon.executePeriodically(period.longValue(), new SystemTaskRunnable(this, task), false);
+        } catch (Exception e) {
+			LOG.warn(e.getMessage(), e);
+            throw new EXistException("Failed to initialize system maintenance task: " + e.getMessage());
+        }		    
+    }  	
 
     /**
-	 * Returns true while the database is initializing
-	 * the database files and the security manager.
+	 * Whether or not the database instance is being initialized. 
 	 * 
-	 * @return
+	 * @return <code>true</code> is the database instance is being initialized
 	 */
+	//	TODO : let's be positive and rename it as isInitialized ? 
 	protected boolean isInitializing() {
 		return initializing;
+	}	
+
+    /** Returns the database instance's id.
+     * @return The id
+     */
+    public String getId() {
+    	return instanceId;
+    }    
+
+	/**
+	 *  Returns the number of brokers currently serving requests for the database instance. 
+	 *
+	 *@return The brokers count
+	 */
+    //TODO : rename as getActiveBrokers ?
+	public int active() {
+		return activeBrokers.size();
+	}
+
+	/**
+	 * Returns the number of inactive brokers for the database instance.
+	 *@return The brokers count
+	 */
+	//TODO : rename as getInactiveBrokers ?
+	public int available() {
+		return inactiveBrokers.size();
+	}
+	
+	//TODO : getMin() method ?
+	
+	/**
+	 *  Returns the maximal number of brokers for the database instance.
+	 *
+	 *@return The brokers count
+	 */
+	//TODO : rename as getMaxBrokers ?
+	public int getMax() {
+		return maxBrokers;
+	}	
+	 
+	/**
+	 * Returns whether the database instance has been configured.
+	 *
+	 *@return <code>true</code> if the datbase instance is configured
+	 */
+	public final boolean isInstanceConfigured() {
+		return conf != null;
+	}	
+	
+	/**
+	 * Returns the configuration object for the database instance.
+	 *@return The configuration
+	 */
+	public Configuration getConfiguration() {
+		return conf;
+	}	
+	
+	//TODO : rename as setShutdwonListener ?
+	public void registerShutdownListener(ShutdownListener listener) {
+		//TODO : check that we are not shutting down
+		shutdownListener = listener;
+	}
+	
+	 /**
+     *  Returns the database instance's security manager
+     *
+     *@return    The security manager
+     */   
+    public SecurityManager getSecurityManager() {
+    	return securityManager;
+    }
+
+    /** Returns the daemon which periodically executes system tasks, including cache synchronization, on the database instance.
+     * @return The daemon
+     */
+    public SyncDaemon getSyncDaemon() {
+        return syncDaemon;
+    }
+	
+    /**
+     * Returns whether transactions can be handled by the database instance.
+     * 
+     * @return <code>true</code> if transactions can be handled
+     */
+    public boolean isTransactional() {
+    	//TODO : confusion between dataDir and a so-called "journalDir" !
+        return !isReadOnly && transactionsEnabled;
+    }	
+	
+    public TransactionManager getTransactionManager() {
+        return this.transactionManager;
+    }	
+    
+    /** 
+     * Returns a manager for accessing the database instance's collection configuration files.
+     * @return The manager
+     */
+    public CollectionConfigurationManager getConfigurationManager() {
+        return collectionConfigurationManager;
+    }        
+
+    /**
+     * Returns a cache in which the database instance's collections are stored.
+     * 
+     * @return The cache
+	 */
+    //TODO : rename as getCollectionCache ?
+	public CollectionCache getCollectionsCache() {		
+		return collectionCache;
 	}
 	
 	/**
-	 * Release a DBBroker instance into the pool.
-	 * 
+     * Returns a cache in which the database instance's may store items.
+     * 
+     * @return The cache
+	 */	
+    public CacheManager getCacheManager() {
+        return cacheManager;
+    }
+
+    /**
+     * Returns a pool in which the database instance's <strong>compiled</strong> XQueries are stored.
+     * 
+     * @return The pool
+     */
+    public XQueryPool getXQueryPool() {
+        return xQueryPool;
+    }
+
+    /**
+     * Returns a monitor in which the database instance's <strong>running</strong> XQueries are managed.
+     * 
+     * @return The monitor
+     */
+    public XQueryMonitor getXQueryMonitor() {
+    	return xQueryMonitor;
+    }  
+    
+	/**
+     * Returns a pool in which the database instance's readers are stored.
+     * 
+     * @return The pool
+	 */
+	public XMLReaderPool getParserPool() {
+		return xmlReaderPool;
+	}    
+    
+    /**
+     * Returns the global update lock for the database instance.
+     * This lock is used by XUpdate operations to avoid that
+     * concurrent XUpdate requests modify the database until all
+     * document locks have been correctly set.
+     *  
+     * @return The global lock
+     */
+	//TODO : rename as getUpdateLock ?
+    public Lock getGlobalUpdateLock() {
+        return globalXUpdateLock;
+    } 
+    
+    /** Creates an inactive broker for the database instance.
+     * @return The broker
+     * @throws EXistException
+     */
+    protected DBBroker createBroker() throws EXistException {
+    	//TODO : in the future, don't pass the whole configuration, just the part relevant to brokers
+		DBBroker broker = BrokerFactory.getInstance(this, this.getConfiguration());
+		inactiveBrokers.push(broker);
+		brokersCount++;
+		broker.setId(broker.getClass().getName() + '_' + brokersCount);
+		LOG.debug(
+			"created broker '" + broker.getId() + " for database instance '" + instanceId);		
+		return broker;
+	}
+
+	/** Returns an active broker for the database instance.
+	 * @return The broker
+	 * @throws EXistException If the instance is not available (stopped or not configured)
+	 */
+    //TODO : rename as getBroker ? getInstance (when refactored) ?
+	public DBBroker get() throws EXistException {
+		if (!isInstanceConfigured())			
+			throw new EXistException("database instance '" + instanceId + "' is not available");
+		
+		//Try to get an active broker
+		DBBroker broker = (DBBroker)activeBrokers.get(Thread.currentThread());
+		//Use it...
+		//TOUNDERSTAND (pb) : why not pop a broker from the inactive ones rather than maintaining reference counters ?
+        // WM: a thread may call this more than once in the sequence of operations, i.e. calls to get/release can
+        // be nested. Returning a new broker every time would lead to a deadlock condition if two threads have
+        // to wait for a broker to become available. We thus use reference counts and return
+        // the same broker instance for each thread.
+		if(broker != null) {
+			//increase its number of uses
+			broker.incReferenceCount();
+			return broker;
+			//TODO : share the code with what is below (including notifyAll) ?
+            // WM: notifyAll is not necessary if we don't have to wait for a broker.
+		}
+		//No active broker : get one ASAP
+		synchronized(this) {
+			//Are there any available brokers ?
+			if (inactiveBrokers.isEmpty()) {
+				//There are no available brokers. If allowed... 
+				if (brokersCount < maxBrokers)
+					//... create one
+					createBroker();
+				else
+					//... or wait until there is one available
+					while (inactiveBrokers.isEmpty()) {
+						LOG.debug("waiting for a broker to become available");
+						try {
+							this.wait();
+						} catch (InterruptedException e) {
+						}
+					}
+			}
+			broker = (DBBroker) inactiveBrokers.pop();			
+			//activate the broker
+			activeBrokers.put(Thread.currentThread(), broker);
+			broker.incReferenceCount();
+			//Inform the other threads that we have a new-comer 
+			this.notifyAll();
+			return broker;
+		}
+	}
+
+	/**
+	 * Returns an active broker for the database instance and sets its current user.
+	 *  
+	 * @param user The user
+	 * @return The broker
+	 * @throws EXistException
+	 */
+	//TODO : rename as getBroker ? getInstance (when refactored) ?
+	public DBBroker get(User user) throws EXistException {
+		DBBroker broker = get();
+		broker.setUser(user);
+		return broker;
+	}
+	
+	/**
+	 * Releases a broker for the database instance. If it is no more used, make if invactive.
 	 * If there are pending system maintenance tasks,
 	 * the method will block until these tasks have finished. 
 	 * 
-	 *@param  broker  the DBBroker object to release
+	 *@param  broker  The broker to be released
 	 */
+	//TODO : rename as releaseBroker ? releaseInstance (when refactored) ?
 	public void release(DBBroker broker) {
+		//TODO : Is this test accurate ?
+        // might be null as release() is often called within a finally block
 		if (broker == null)
 			return;
+		//TOUNDERSTAND (pb) : why maintain reference counters rather than pushing the brokers to the stack ?
+		//TODO : first check that the broker is active ! If not, return immediately.
 		broker.decReferenceCount();
 		if(broker.getReferenceCount() > 0) {
-			// broker still has references. Keep it
+			//it is still in use and thus can't be marked as inactive
 			return;  
-		}
+		}		
+		//Broker is no more used : inactivate it
 		synchronized (this) {
-		    threads.remove(Thread.currentThread());
-			pool.push(broker);
-			if(threads.size() == 0) {
+		    activeBrokers.remove(Thread.currentThread());
+			inactiveBrokers.push(broker);
+			//If the database is now idle, do some useful stuff
+			if(activeBrokers.size() == 0) {
+				//TODO : use a "clean" dedicated method (we have some below) ?
 				if (syncRequired) {
+					//Note that the broker is not yet really inactive ;-)
 					sync(broker, syncEvent);
-					syncRequired = false;
-                    checkpoint = false;
-				}
-				
-                // process any waiting system tasks
-				processWaitingTasks(broker);
+					this.syncRequired = false;
+                    this.checkpoint = false;
+				}				
+                processWaitingTasks(broker);
 			}
+			//Inform the other threads that someone is gone
 			this.notifyAll();
 		}
 	}
 
 	/**
-	 * Write buffers to disk. release() calls this
-	 * method after a specified period of time
-	 * to flush buffers.
+	 * Reloads the security manager of the database instance. This method is called for example when the
+	 * <code>users.xml</code> file has been changed.
 	 * 
-	 * @param broker
+	 * @param A broker responsible for executing the job
 	 */
-	public void sync(DBBroker broker, int syncEvent) {
+	//TOUNDERSTAND (pb) : why do we need a broker here ? Why not get and release one when we're done?
+    // WM: this is called from the Collection.store() methods to signal that /db/system/users.xml has changed.
+    // A broker is already available in these methods, so we use it here.
+	public void reloadSecurityManager(DBBroker broker) {
+		securityManager = new SecurityManager(this, broker);
+		LOG.debug("Security manager reloaded");
+	}
+
+    /**
+     * Executes a waiting cache synchronization for the database instance.
+	 * @param broker A broker responsible for executing the job 
+	 * @param syncEvent One of {@link org.exist.storage.Sync#MINOR_SYNC} or {@link org.exist.storage.Sync#MINOR_SYNC}
+	 */
+	//TODO : rename as runSync ? executeSync ?
+	//TOUNDERSTAND (pb) : *not* synchronized, so... "executes" or, rather, "schedules" ? "executes" (WM)
+	//TOUNDERSTAND (pb) : why do we need a broker here ? Why not get and release one when we're done ?
+    // WM: the method will always be under control of the BrokerPool. It is guaranteed that no
+    // other brokers are active when it is called. That's why we don't need to synchronize here.
+	//TODO : make it protected ?
+	private void sync(DBBroker broker, int syncEvent) {
 		broker.sync(syncEvent);
+		//TODO : strange that it is set *after* the sunc method has been called.
 		broker.setUser(SecurityManager.SYSTEM_USER);
 		broker.cleanUp();
-
         if (syncEvent == Sync.MAJOR_SYNC) {
             try {
                 if (!FORCE_CORRUPTION)
-                    txnManager.checkpoint(checkpoint);
+                    transactionManager.checkpoint(checkpoint);
             } catch (TransactionException e) {
                 LOG.warn(e.getMessage(), e);
             }
             cacheManager.checkCaches();
-        }  
+        }   
+        //TODO : touch this.syncEvent and syncRequired ?
 	}
+	
+	/**
+	 * Schedules a cache synchronization for the database instance. If the database instance is idle,
+	 * the cache synchronization will be run immediately. Otherwise, the task will be deffered 
+	 * until all running threads have returned.
+	 * @param syncEvent One of {@link org.exist.storage.Sync#MINOR_SYNC} or {@link org.exist.storage.Sync#MINOR_SYNC}   
+	 */
+	public void triggerSync(int syncEvent) {
+		//TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ? "schedules" (WM)
+		synchronized (this) {
+			//Are there available brokers ?
+		    // TOUNDERSTAND (pb) : the trigger is ignored !
+            // WM: yes, it seems wrong!!
+//			if(inactiveBrokers.size() == 0)
+//				return;
+			//TODO : switch on syncEvent and throw an exception if it is inaccurate ?
+			//Is the database instance idle ?
+			if (inactiveBrokers.size() == brokersCount) {
+				//Borrow a broker
+				//TODO : this broker is *not* marked as active and may be reused by another process !
+                // No other brokers are running at this time, so there's no risk.
+				//TODO : use get() then release the broker ?
+                // No, might lead to a deadlock.
+				DBBroker broker = (DBBroker) inactiveBrokers.peek();
+				//Do the synchonization job
+				sync(broker, syncEvent);
+				syncRequired = false;
+			} else {
+				//Put the synchonization job into the queue
+				//TODO : check that we don't replace high priority Sync.MAJOR_SYNC by a lesser priority sync !
+				this.syncEvent = syncEvent;
+				syncRequired = true;
+			}
+		}
+	}   
 
+    /**
+     * Executes a system maintenance task for the database instance. The database will be stopped
+     * during its execution (TODO : how ?).
+     * @param broker A broker responsible for executing the task 
+     * @param task The task
+     */
+	//TODO : rename as executeSystemTask ?
+	//TOUNDERSTAND (pb) : *not* synchronized, so... "executes" or, rather, "schedules" ?
+	// WM: no other brokers will be running when this method is called, so there's no need to synchronize.
+    //TOUNDERSTAND (pb) : why do we need a broker here ? Why not get and release one when we're done ?
+    // WM: get/release may lead to deadlock!
+	//TODO : make it protected ?
+    private void runSystemTask(DBBroker broker, SystemTask task) {
+    	try {
+    		//Flush everything
+    		//TOUNDERSTAND (pb) : are we sure that this sync will be executed (see comments above) ?
+            // WM: tried to fix it
+    		sync(broker, Sync.MAJOR_SYNC);
+            LOG.debug("Running system maintenance task: " + task.getClass().getName());
+    		task.execute(broker);
+    	} catch(EXistException e) {
+    		LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
+    	}
+    }          
+   
+	/**
+	 * Schedules a system maintenance task for the database instance. If the database is idle,
+	 * the task will be run immediately. Otherwise, the task will be deffered 
+	 * until all running threads have returned.   
+     * @param task The task
+     */
+    //TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ?
+    public void triggerSystemTask(SystemTask task) {    	
+    	synchronized(this) {
+    		//Are there available brokers ?
+    	    // TOUNDERSTAND (pb) : the trigger is ignored !
+            // WM: yes, commented out
+//    		if(inactiveBrokers.size() == 0)
+//    			return;
+			//TODO : check task and throw an exception if inaccurate
+			//Is the database instance idle ?    		
+    		if(inactiveBrokers.size() == brokersCount) {
+    			//Borrow a broker
+    			//TODO : this broker is *not* marked as active and may be reused by another process !
+                // WM: No other broker will be running at this point
+    			//TODO : use get() then release the broker ? WM: deadlock risk here!
+    			DBBroker broker = (DBBroker) inactiveBrokers.peek();
+    			//Do the job
+    			runSystemTask(broker, task);
+    		} else
+    			//Put the task into the queue
+                waitingSystemTasks.push(task);
+    	}
+    }
+    
+    /**
+     * Executes waiting system maintenance tasks for the database instance.
+     * @param broker A broker responsible for executing the task
+     */
+    //TOUNDERSTAND (pb) : *not* synchronized, so... "executes" or, rather, "schedules" ?
+    //TOUNDERSTAND (pb) : why do we need a broker here ? Why not get and release one when we're done ?
+    // WM: same as above: no other broker is active while we are calling this 
+    //TODO : make it protected ?
+    private void processWaitingTasks(DBBroker broker) {
+        while (!waitingSystemTasks.isEmpty()) {
+            SystemTask task = (SystemTask) waitingSystemTasks.pop();
+            runSystemTask(broker, task);
+        }
+    }   
+
+	/**
+	 * Shuts downs the database instance
+	 */
 	public synchronized void shutdown() {
 		shutdown(false);
 	}
 	
-	/**  Shutdown all brokers. */
+	/**
+	 * Shuts downs the database instance
+	 * @param killed <code>true</code> when the JVM is (cleanly) exiting
+	 */
 	public synchronized void shutdown(boolean killed) {
+		//Notify all running tasks that we are shutting down
 		syncDaemon.shutDown();
-		monitor.killAll(500);
+		//Notify all running XQueries that we are shutting down
+		xQueryMonitor.killAll(500);
+		//TODO : close other objects using varying methods ? set them to null ?
+		//cacheManager.something();
+		//xQueryPool.something();
+		//collectionConfigurationManager.something();
+		//collectionCache.something();
+		//xmlReaderPool.close();	
+		
 		long waitStart = System.currentTimeMillis();
-		while (threads.size() > 0) {
+		//Are there active brokers ?
+		while (activeBrokers.size() > 0) {
 			try {
+				//Wait until they become inactive...
 				this.wait(1000);
 			} catch (InterruptedException e) {
 			}
+			//...or force the shutdown
 			if(System.currentTimeMillis() - waitStart > maxShutdownWait) {
 				LOG.debug("Not all threads returned. Forcing shutdown ...");
 				break;
 			}
 		}
 		LOG.debug("calling shutdown ...");
+		
+		//TODO : replace the following code by get()/release() statements ?
+        // WM: deadlock risk if not all brokers returned properly.
 		DBBroker broker = null;
-		if(pool.isEmpty())
+		if (inactiveBrokers.isEmpty())
 			try {
 				broker = createBroker();
 			} catch (EXistException e) {
 				LOG.warn("could not create instance for shutdown. Giving up.");
 			}
 		else
-			broker = (DBBroker)pool.peek();
+			//TODO : this broker is *not* marked as active and may be reused by another process !
+			//TODO : use get() then release the broker ?
+		    // WM: deadlock risk if not all brokers returned properly.
+			broker = (DBBroker)inactiveBrokers.peek();
+		//TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
+        // WM: yes, the database files are shared, so only one broker is needed to close them for all
         if (broker != null)
             broker.shutdown();
+        
+        //TODO : use dedicated method here, probably elsewhere ?
         try {
             if (!FORCE_CORRUPTION) {
-                txnManager.checkpoint(false);
-                txnManager.shutdown();
+                transactionManager.checkpoint(false);
+                //TOUNDERSTAND (pb) : not called if FORCE_CORRUPTION is true ?
+                // WM: yes, this will truncate the log file and thus make the tests more realistic ;-)
+                transactionManager.shutdown();
             }
         } catch (TransactionException e) {
             LOG.warn(e.getMessage(), e);
-        }
-		LOG.debug("shutdown!");
+        }		
+		
+		//Invalidate the configuration
 		conf = null;
+		//Clear the living instances container
 		instances.remove(instanceId);
+		
+		LOG.info("shutdown complete !");
+		
+		//Last instance closes the house...
+		//TOUNDERSTAND (pb) : !killed or, rather, killed ?
+        // TODO: WM: check usage of killed!
 		if(instances.size() == 0 && !killed) {
 			LOG.debug("removing shutdown hook");
-			Runtime.getRuntime().removeShutdownHook(shutdownThread);
+			Runtime.getRuntime().removeShutdownHook(shutdownHook);
 		}
 		if (shutdownListener != null)
 			shutdownListener.shutdown(instanceId, instances.size());
 	}
 
-	/**
-		 *  Returns maximum of concurrent Brokers.
-		 *
-		 *@return    The max value
-		 */
-	public int getMax() {
-		return max;
-	}
-
-	/**
-	 *  Has this BrokerPool been configured?
-	 *
-	 *@return    The configured value
-	 */
-	public final boolean isInstanceConfigured() {
-		return conf != null;
-	}
-
-	/**
-	 * Trigger a synchronize event. If the database is idle,
-	 * the sync will be run immediately. Otherwise, we wait
-	 * until all running threads have returned.
-	 * 
-	 * @param event
-	 */
-	public void triggerSync(int event) {
-		synchronized (this) {
-			if(pool.size() == 0)
-				return;
-			if (pool.size() == brokers) {
-				DBBroker broker = (DBBroker) pool.peek();
-				sync(broker, event);
-				syncRequired = false;
-			} else {
-				syncEvent = event;
-				syncRequired = true;
-			}
-		}
-	}
-    
+	//TODO : move this elsewhere
     public void triggerCheckpoint() {
         synchronized (this) {
             syncEvent = Sync.MAJOR_SYNC;
@@ -771,122 +1206,28 @@ public class BrokerPool {
             checkpoint = true;
         }
     }
-
-	public void registerShutdownListener(ShutdownListener listener) {
-		shutdownListener = listener;
-	}
-
-	/**
-     * Schedule a system maintenance task for execution.
-     * The task will be executed immediately if the database
-     * is currently idle. Otherwise, the task will be registered
-     * and called by {@link #release(DBBroker)} once all running 
-     * threads have returned.
-     * 
-     * @param task
-     */
-    public void triggerSystemTask(SystemTask task) {
-    	synchronized(this) {
-    		if(pool.size() == 0)
-    			return;
-    		if(pool.size() == brokers) {
-                // pool is idle: execute the task immediately
-    			DBBroker broker = (DBBroker) pool.peek();
-    			runSystemTask(broker, task);
-    		} else
-                // put the task into the queue
-                waitingTasks.push(task);
-    	}
-    }
-
-    private void processWaitingTasks(DBBroker broker) {
-        while (!waitingTasks.isEmpty()) {
-            SystemTask task = (SystemTask) waitingTasks.pop();
-            runSystemTask(broker, task);
-        }
-    }
     
-    /**
-     * Executes a waiting maintenance task. The database will be stopped
-     * during its execution.
-     */
-    private void runSystemTask(DBBroker broker, SystemTask task) {
-    	try {
-    		sync(broker, Sync.MAJOR_SYNC);
-            LOG.debug("Running system maintenance task: " + task.getClass().getName());
-    		task.execute(broker);
-    	} catch(EXistException e) {
-    		LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
-    	}
-    }
-
-    private void registerSystemTasks() throws EXistException {
-        Configuration.SystemTaskConfig taskList[] = (Configuration.SystemTaskConfig[]) 
-            conf.getProperty("db-connection.system-task-config");
-        if (taskList == null)
-            return;
-        for (int i = 0; i < taskList.length; i++) {
-            initSystemTask(taskList[i]);
-        }
-    }
-
-    private void initSystemTask(Configuration.SystemTaskConfig taskConf) throws EXistException {
-        try {
-            Class clazz = Class.forName(taskConf.getClassName());
-            SystemTask task = (SystemTask) clazz.newInstance();
-            task.configure(conf, taskConf.getProperties());
-            LOG.debug("Scheduling system task: " + taskConf.getClassName() + "; period = " + taskConf.getPeriod());
-            syncDaemon.executePeriodically(taskConf.getPeriod(), new SystemTaskRunnable(this, task), false);
-        } catch (Exception e) {
-			LOG.warn(e.getMessage(), e);
-            throw new EXistException("Failed to register system task: " + e.getMessage());
-        }
-    }
-
+	/** A wrapper class for executing a database instance's system task.
+	 */    
+    //TODO : make it protected ?
     private static class SystemTaskRunnable implements Runnable {
         SystemTask task;
         BrokerPool pool;
         
+        /** Creates a wrapper for executing a database instance's system task.
+         * @param pool The database instance
+         * @param task The system task
+         */
         public SystemTaskRunnable(BrokerPool pool, SystemTask task) {
             this.pool = pool;
             this.task = task;
         }
         
-        /* (non-Javadoc)
-         * @see java.lang.Runnable#run()
-         */
+        /** Runs the wrapper for executing a system task.
+         */        
         public void run() {
+        	LOG.debug("Running system task '" + task.getClass().getName() + "'");
             pool.triggerSystemTask(task);
         }
-    }
-	
-	protected static class ShutdownThread extends Thread {
-
-		/**  Constructor for the ShutdownThread object */
-		public ShutdownThread() {
-			super();
-		}
-
-		/**  Main processing method for the ShutdownThread object */
-		public void run() {
-			LOG.debug("shutdown forced");
-			BrokerPool.stopAll(true);
-		}
-	}
-
-    /**
-     *  
-     * @uml.property name="transactionManager"
-     * @uml.associationEnd multiplicity="(0 1)" inverse="brokerPool:org.exist.storage.txn.TransactionManager"
-     */
-    private TransactionManager transactionManager;
-
-    /**
-     *  
-     * @uml.property name="transactionManager"
-     */
-    public void setTransactionManager(TransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
-    }
-
+    }	
 }
