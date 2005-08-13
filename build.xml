@@ -117,7 +117,7 @@
                 destdir="${build.classes}" encoding="UTF-8"
                 optimize="${build.optimize}" srcdir="${src}"
                 source="${build.compiler.source}" target="${build.compiler.target}">
-			<!-- jmv target="1.4" -->
+
             <include name="org/**"/>
             <include name="org/exist/schema/**"/>
             <exclude name="org/exist/http/realm/**"/>
@@ -136,7 +136,8 @@
         <echo message="Compiling Tomcat Realm"/>
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
                 destdir="${build.classes}" encoding="UTF-8"
-                optimize="${build.optimize}" srcdir="${src}" source="1.4">
+                optimize="${build.optimize}" srcdir="${src}" 
+                source="${build.compiler.source}" target="${build.compiler.target}">
             <include name="org/exist/http/realm/**"/>
             <classpath>
                 <path refid="classpath.core"/>
@@ -197,9 +198,10 @@
         <delete failonerror="false" dir="${build}/examples"/>
         <mkdir dir="${build}/examples"/>
         <javac debug="${build.debug}"
-                deprecation="${build.deprecation}"
-                destdir="${build}/examples" srcdir="${samples}"
-                encoding="UTF-8">
+               deprecation="${build.deprecation}"
+               destdir="${build}/examples" srcdir="${samples}"
+               source="${build.compiler.source}" target="${build.compiler.target}"
+               encoding="UTF-8">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -316,7 +318,7 @@
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx,*.log"/>
         </delete>
-    	<delete dir="${junit.reports}"/>
+        <delete dir="${junit.reports}"/>
         <mkdir dir="${junit.reports}"/>
         <mkdir dir="${junit.reports.dat}"/>
         <mkdir dir="${junit.reports.html}"/>
@@ -341,8 +343,8 @@
         <echo message="Running tests on a local database instance"/>
         <echo message="------------------------------------------"/>
 
-		<junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
-			<sysproperty key="exist.home" value="${basedir}" />
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
+            <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
@@ -359,7 +361,7 @@
                     <exclude name="**/xquery/test/*.java"/>
                     <exclude name="**/xmlrpc/test/*.java"/>
                     <exclude name="**/http/test/*.java"/>
-                	<exclude name="**/storage/test/*.java"/>
+                    <exclude name="**/storage/test/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
@@ -381,8 +383,8 @@
         </junit>
     </target>
 
-	<target name="test-recovery">
-		<echo message="--------------"/>
+    <target name="test-recovery">
+        <echo message="--------------"/>
         <echo message="Recovery tests"/>
         <echo message="--------------"/>
         <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="no">
@@ -391,7 +393,7 @@
             <formatter type="xml"/>
             <test name="org.exist.storage.test.AllTests" todir="${junit.reports.dat}"/>
         </junit>
-	</target>
+    </target>
 	
     <!-- Helper target for starting server -->
     <target name="start-server">
@@ -488,6 +490,7 @@
         <echo message="Cleaning"/>
         <echo message="-------------------------"/>
         <delete dir="${build}"/>
+        <delete dir="${dist.dir}"/>
         <delete quiet="true">
             <fileset dir="log" includes="*"/>
             <fileset dir="tmp" includes="*"/>
@@ -582,10 +585,15 @@
     <!-- Prepare webapp                                                     -->
     <!-- ================================================================== -->
     <target depends="jar,extension-modules,samples" name="webapps">
-        <delete dir="dist"/>
-        <mkdir dir="${webapp.dir}"/>
+        <mkdir dir="dist"/>
+        
+        <!-- When there are no java docs, create empty file -->
+        <mkdir dir="webapp/api"/>
+        <touch file="webapp/api/index.html"/>
+        
         <mkdir dir="webapp/WEB-INF/data"/>
         <mkdir dir="webapp/WEB-INF/logs"/>
+        
         <chmod file="webapp/bin/client.sh" perm="+x"/>
     </target>
 
@@ -593,9 +601,9 @@
 	<!-- Create .war file                                                   -->
 	<!-- ================================================================== -->
     <target name="dist-war" depends="webapps" description="Create war file">
-        <war basedir="${webapp.dir}"
-                destfile="${dist}/${project.name}-${project.version}.war"
-                webxml="webapp\WEB-INF\web.xml">
+        <war destfile="${dist}/exist.war"  webxml="webapp/WEB-INF/web.xml">
+                
+            <!-- Add files to WEB-INF/lib -->
             <lib dir=".">
                 <include name="exist.jar"/>
                 <include name="exist-optional.jar"/>
@@ -611,27 +619,42 @@
             <lib dir="${lib.endorsed}">
                 <include name="*.jar"/>
             </lib>
+            
+            <!-- Add configuration files to WEB-INF -->
             <webinf dir=".">
                 <include name="client.properties"/>
                 <include name="backup.properties"/>
             </webinf>
+            
+            <!-- Add files context root ('/') -->
             <fileset dir="webapp">
                 <exclude name="**/*~"/>
                 <exclude name="WEB-INF/web.xml"/>
                 <exclude name="WEB-INF/data/*.dbx"/>
                 <exclude name="**/*.log"/>
             </fileset>
-            <fileset dir=".">
+            <zipfileset dir="samples" prefix="samples">
+                <include name="**"/>
+                <exclude name="**/*~"/>
+                <exclude name="xupdate/**"/>
+                <exclude name="test.xml"/>
+                <exclude name="**/.*"/>
+            </zipfileset>
+            
+            <!-- Not needed for war file -->
+            <!-- <fileset dir=".">
                 <include name="start.jar"/>
                 <include name="examples.jar"/>
-            </fileset>
-            <fileset dir=".">
-                <include name="samples/**"/>
-                <exclude name="samples/**/*~"/>
-                <exclude name="samples/xupdate/**"/>
-                <exclude name="samples/test.xml"/>
-                <exclude name="samples/**/.*"/>
-            </fileset>
+            </fileset> -->
+            
+            <!-- Add additional information -->
+            <manifest>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Build-Timestamp" value="${DSTAMP}"/>
+                <attribute name="Project-Name" value="${project.name}"/>
+                <attribute name="Project-Version" value="${project.version}"/>
+            </manifest>
+
         </war>
     </target>
     
@@ -823,25 +846,25 @@
                 basedir="." izPackDir="${izpack.dir}"
                 installerType="standard"/>
 
-    	<mkdir dir="installer/temp"/>
-		<tstamp/>
-		<unjar src="installer/${project.name}-snapshot-${DSTAMP}.jar"
-			dest="installer/temp"/>
-		<delete>
-			<fileset dir="installer/temp">
-				<include name="META-INF/EXIST.*"/>
-			</fileset>
-		</delete>
+        <mkdir dir="installer/temp"/>
+        <tstamp/>
+        <unjar src="installer/${project.name}-snapshot-${DSTAMP}.jar"
+                dest="installer/temp"/>
+        <delete>
+            <fileset dir="installer/temp">
+                <include name="META-INF/EXIST.*"/>
+            </fileset>
+        </delete>
         <delete file="installer/${project.name}-snapshot-${DSTAMP}.jar"/>
-		<jar destfile="installer/${project.name}-snapshot-${DSTAMP}.jar"
-			basedir="installer/temp" compress="yes" update="yes">
-			<manifest>
+        <jar destfile="installer/${project.name}-snapshot-${DSTAMP}.jar"
+                basedir="installer/temp" compress="yes" update="yes">
+            <manifest>
                 <attribute name="Main-Class" value="org.exist.izpack.CommandLineInstaller"/>
             </manifest>
-		</jar>
-		<delete dir="installer/temp"/>
+        </jar>
+        <delete dir="installer/temp"/>
     </target>
-		
+
     <target depends="prepare-installer" name="cvs-build">
         <echo message="Calling IzPack to create installer ..."/>
         <izpack input="installer/install.xml"
@@ -875,7 +898,7 @@
         <replace dir="${build.docs.src}" summary="true"
                 includes="*.xml">
             <replacefilter token="index.xml" value="index.html"/>
-        	<replacefilter token="acknowledge.xml" value="acknowledge.html"/>
+            <replacefilter token="acknowledge.xml" value="acknowledge.html"/>
             <replacefilter token="ant-tasks.xml" value="ant-tasks.html"/>
             <replacefilter token="changes.xml" value="changes.html"/>
             <replacefilter token="client.xml" value="client.html"/>
