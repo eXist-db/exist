@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -711,15 +712,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	final class InvertedIndex {
 
 		private DocumentImpl doc = null;
-		private Map words[] = new TreeMap[2];
+		private Map words[] = new HashMap[2];
 		private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
 		public InvertedIndex() {
 			// To distinguish between attribute values and text, we use
 			// two maps: words[0] collects text, words[1] stores attribute
 			// values.
-			words[0] = new TreeMap();
-			words[1] = new TreeMap();
+			words[0] = new HashMap(2048);
+			words[1] = new HashMap(2048);
 		}
 
 		public void addText(CharSequence word, long gid) {
