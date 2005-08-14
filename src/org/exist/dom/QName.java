@@ -69,6 +69,7 @@ public class QName implements Comparable {
 
 	public QName(QName other) {
 	    this(other.localName_, other.namespaceURI_, other.prefix_);
+	    nameType_ = other.nameType_;
 	}
 	
 	public String getLocalName() {
@@ -176,12 +177,10 @@ public class QName implements Comparable {
 	 * @see java.lang.Object#hashCode()
 	 */
 	public int hashCode() {
-		int hash = 31 + localName_.hashCode();
-		if(namespaceURI_ != null)
-			hash += 31*hash + namespaceURI_.hashCode();
-		if(prefix_ != null)
-			hash += 31*hash + prefix_.hashCode();
-		return hash;
+		int h = nameType_ + 31 + localName_.hashCode();
+		h += 31*h + (namespaceURI_ == null ? 1 : namespaceURI_.hashCode());
+		h += 31*h + (prefix_ == null ? 1 : prefix_.hashCode());
+		return h;
 	}
 	
 	/**

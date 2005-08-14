@@ -93,6 +93,7 @@ public class QNamePool extends AbstractHashtable {
 			// duplicate value
 			return values[idx];
 		}
+//		System.out.println("Hash collision: " + value + " with " + values[idx]);
 		int rehashVal = rehash(idx);
 		int rehashCnt = 1;
 		for (int i = 0; i < tabSize; i++) {

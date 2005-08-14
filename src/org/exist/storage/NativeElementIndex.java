@@ -97,9 +97,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      */
     public void addRow(QName qname, NodeProxy proxy) {
         ArrayList buf;
-        if (elementIds.containsKey(qname))
-            buf = (ArrayList) elementIds.get(qname);
-        else {
+        buf = (ArrayList) elementIds.get(qname);
+        if (buf == null) {
             buf = new ArrayList(50);
             elementIds.put(qname, buf);
         }
