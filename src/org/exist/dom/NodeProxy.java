@@ -1023,6 +1023,19 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         return NodeSetHelper.selectPreceding(this, preceding);
     }
     
+    public NodeSet directSelectAttribute(QName qname) {
+        if (nodeType != -1 && nodeType != Node.ELEMENT_NODE)
+            return NodeSet.EMPTY_SET;
+        NodeImpl node = (NodeImpl) getNode();
+        if (node.getNodeType() != Node.ELEMENT_NODE)
+            return NodeSet.EMPTY_SET;
+        AttrImpl attr = (AttrImpl)
+            ((ElementImpl) node).getAttributeNodeNS(qname.getNamespaceURI(), qname.getLocalName());
+        if (attr == null)
+            return NodeSet.EMPTY_SET;
+        return new NodeProxy(doc, attr.getGID(), Node.ATTRIBUTE_NODE, attr.getInternalAddress());
+    }
+    
 	private final static class SingleNodeIterator implements Iterator, SequenceIterator {
 
 		private boolean hasNext = true;

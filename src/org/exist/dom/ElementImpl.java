@@ -43,6 +43,7 @@ import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.Signatures;
+import org.exist.storage.dom.NodeIterator;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -704,13 +705,18 @@ public class ElementImpl extends NamedNode implements Element {
     public Attr getAttributeNodeNS(String namespaceURI, String localName) {
         // altheim: 2003-12-02
         long start = firstChildID();
-        for (long i = start; i < start + children; i++) {
-            Node child = ownerDocument.getNode(i);
+        NodeProxy p = new NodeProxy(ownerDocument, gid, internalAddress);
+        Iterator iter = ownerDocument.broker.getNodeIterator(p);
+        iter.next();
+        for (long i = start; i < start + attributes && iter.hasNext(); i++) {
+            NodeImpl child = (NodeImpl) iter.next();
+            child.setGID(i);
             if (child != null
                     && child.getNodeType() == Node.ATTRIBUTE_NODE
                     && (child.getNamespaceURI() == null
                     || child.getNamespaceURI().equals(namespaceURI))
                     && child.getLocalName().equals(localName)) {
+                
                 return (Attr) child;
             }
         }
