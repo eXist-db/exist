@@ -415,6 +415,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return NodeSetHelper.selectSiblings(this, siblings, mode);
 	}
 
+    public NodeSet directSelectAttribute(QName qname) {
+        return NodeSetHelper.directSelectAttributes(this, qname);
+    }
+    
 	/**
 	 * Check if the node identified by its node id has an ancestor contained in this node set
 	 * and return the ancestor found.

@@ -371,4 +371,13 @@ public class NodeSetHelper {
         }
         return result;
     }
+    
+    public static NodeSet directSelectAttributes(NodeSet set, QName qname) {
+        NodeSet result = new ExtArrayNodeSet();
+        for (Iterator i = set.iterator(); i.hasNext(); ) {
+            NodeProxy n = (NodeProxy) i.next();
+            result.addAll(n.directSelectAttribute(qname));
+        }
+        return result;
+    }
 }

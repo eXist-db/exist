@@ -283,6 +283,8 @@ public interface NodeSet extends Sequence, NodeList {
 	
     public NodeSet getAncestors(boolean rememberContext, boolean includeSelf);
     
+    public NodeSet directSelectAttribute(QName qname);
+    
 	/**
 	 * If all nodes in this set have an index, returns the common
 	 * supertype used to build the index, e.g. xs:integer or xs:string.
