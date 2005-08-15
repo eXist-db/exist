@@ -148,6 +148,8 @@ public class FunctionCall extends Function {
      * @throws XPathException
      */
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {
+        if (context.isProfilingEnabled())
+            context.getProfiler().start(this, functionDef.toString());
         functionDef.setArguments(seq);
         LocalVariable mark = context.markLocalVariables();
         try {
@@ -161,6 +163,8 @@ public class FunctionCall extends Function {
 			throw e;
 		} finally {
 			context.popLocalVariables(mark);
+            if (context.isProfilingEnabled())
+                context.getProfiler().end(this, functionDef.toString());
 		}
     }
 
