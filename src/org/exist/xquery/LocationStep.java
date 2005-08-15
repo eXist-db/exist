@@ -58,9 +58,6 @@ public class LocationStep extends Step {
 	protected int parentDeps = -1;
 	protected boolean preload = false;
 	protected boolean inUpdate = false;
-	
-	private boolean profilingEnabled = false; // true;
-	private long profilingThreshold = 5;
     
 	public LocationStep(XQueryContext context, int axis) {
 		super(context, axis);
@@ -264,7 +261,7 @@ public class LocationStep extends Step {
 		if (test.isWildcardTest()) {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
-        } else if(contextSet.getLength() == 1) {
+        } else if(!(contextSet instanceof VirtualNodeSet) && contextSet.getLength() == 1) {
             return contextSet.directSelectAttribute(test.getName());
         } else if(preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
