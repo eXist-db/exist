@@ -142,9 +142,8 @@ public class LocationStep extends Step {
 		}
 		Sequence temp;
 		
-		long t0 = 0;
-		if ( profilingEnabled ) {
-			t0 = System.currentTimeMillis();
+		if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
+			context.getProfiler().start(this);
 		}
 
 		switch (axis) {
@@ -194,13 +193,11 @@ public class LocationStep extends Step {
 				throw new IllegalArgumentException("Unsupported axis specified");
 		}
 		
-		if ( profilingEnabled ) {
-			// TODO: add indentation
-			long elapsedTime = System.currentTimeMillis() - t0;
-			if ( elapsedTime > profilingThreshold )
-			LOG.debug( "profiler>> " + elapsedTime +"ms " + " LocationStep" + 
-					", " + Constants.AXISSPECIFIERS[axis] +
-					"::" + test + ", inPredicate: " + inPredicate );
+		if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
+			context.getProfiler().end(this, " LocationStep" + 
+			        ", " + Constants.AXISSPECIFIERS[axis] +
+			        "::" + test + ", inPredicate: " + inPredicate
+			);
 		}
 		
 		if(contextSequence instanceof NodeSet) {
@@ -267,6 +264,8 @@ public class LocationStep extends Step {
 		if (test.isWildcardTest()) {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
+        } else if(contextSet.getLength() == 1) {
+            return contextSet.directSelectAttribute(test.getName());
         } else if(preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {

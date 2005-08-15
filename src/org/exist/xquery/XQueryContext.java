@@ -228,8 +228,22 @@ public class XQueryContext {
 	 * code to unlock documents after the query has completed.
 	 */
 	private boolean lockDocumentsOnLoad = false;
+    
+    /**
+     * Documents locked during the query.
+     */
 	private DocumentSet lockedDocuments = null;
 	
+    /**
+     * Is profiling enabled?
+     */
+    private boolean profile = false;
+    
+    /**
+     * The profiler instance used by this context.
+     */
+    private Profiler profiler = new Profiler();
+    
 	protected XQueryContext() {
 		builder = new MemTreeBuilder(this);
 		builder.startDocument();
@@ -241,6 +255,23 @@ public class XQueryContext {
 		loadDefaults(broker.getConfiguration());
 	}
 	
+    /**
+     * @return true if profiling is enabled for this context.
+     */
+    public boolean isProfilingEnabled() {
+        return profile;
+    }
+    
+    /**
+     * Returns the {@link Profiler} instance of this context 
+     * if profiling is enabled.
+     * 
+     * @return the profiler instance.
+     */
+    public Profiler getProfiler() {
+        return profiler;
+    }
+    
 	/**
 	 * Called from the XQuery compiler to set the root expression
 	 * for this context.
@@ -599,6 +630,7 @@ public class XQueryContext {
 		lastVar = null;
 		fragmentStack = new Stack();
 		watchdog.reset();
+        profiler.reset();
 		for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
 			Module module = (Module)i.next();
 			module.reset();
@@ -1301,9 +1333,13 @@ public class XQueryContext {
 		pragmas.add(pragma);
 		
 		// check predefined pragmas
-		if(Pragma.TIMEOUT_QNAME.compareTo(qn) == 0)
+        if (Pragma.PROFILE_QNAME.compareTo(qn) == 0) {
+            // configure profiling
+            profiler.configure(pragma);
+            profile = profiler.isEnabled();
+        } else if(Pragma.TIMEOUT_QNAME.compareTo(qn) == 0)
 			watchdog.setTimeoutFromPragma(pragma);
-		if(Pragma.OUTPUT_SIZE_QNAME.compareTo(qn) == 0)
+        else if(Pragma.OUTPUT_SIZE_QNAME.compareTo(qn) == 0)
 			watchdog.setMaxNodesFromPragma(pragma);
 	}
 	
