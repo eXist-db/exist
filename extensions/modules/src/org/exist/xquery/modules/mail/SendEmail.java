@@ -48,9 +48,11 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.Vector;
 
 import javax.xml.transform.dom.DOMSource;
@@ -71,7 +73,6 @@ public class SendEmail extends BasicFunction
 	//TODO: Feature - Add a facility for the user to add their own message headers.
 	//TODO: Feature - Add attachment support, will need base64 encoding etc...
 	//TODO: Read the location of sendmail from the configuration file. Can vary from system to system
-	//TODO: Include a <!DOCTYPE declaration at the start of the HTML - XHTML 1.1 ?
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -327,7 +328,7 @@ public class SendEmail extends BasicFunction
 			{	
 				out.println("BCC: " + aMail.getBCC(x));
 			}
-			out.println("Date: " + new Date());
+			out.println("Date: " + getDateRFC822());
 			out.println("Subject: " + aMail.getSubject());
 			out.println("X-Mailer: eXist " + Version + " util:send-email()");
 			out.println("MIME-Version: 1.0");
@@ -365,6 +366,7 @@ public class SendEmail extends BasicFunction
 					out.println("Content-Type: text/html; charset=" + ContentType_Charset);
 				}
 				out.println("Content-Transfer-Encoding: quoted-printable");
+				out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">");
 				out.println(aMail.getXHTML());
 				
 				//Emd multipart message
@@ -406,6 +408,7 @@ public class SendEmail extends BasicFunction
 					
 					//now send the html message
 					out.println();
+					out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">");
 					out.println(aMail.getXHTML());
 				}
 			}
@@ -518,6 +521,183 @@ public class SendEmail extends BasicFunction
 		
 		//Return the mail object
 		return(theMail);
+	}
+	
+	//Returns the current date and time in an RFC822 format, suitable for an email Date Header
+	private String getDateRFC822()
+	{
+		String dateString = new String();
+		Calendar rightNow = Calendar.getInstance();
+		
+		//Day of the week
+		switch(rightNow.get(Calendar.DAY_OF_WEEK))
+		{
+			case Calendar.MONDAY:
+			{
+				dateString = "Mon";
+				break;
+			}
+			case Calendar.TUESDAY:
+			{
+				dateString = "Tue";
+				break;
+			}
+			case Calendar.WEDNESDAY:
+			{
+				dateString = "Wed";
+				break;
+			}
+			case Calendar.THURSDAY:
+			{
+				dateString = "Thu";
+				break;
+			}
+			case Calendar.FRIDAY:
+			{
+				dateString = "Fri";
+				break;
+			}
+			case Calendar.SATURDAY:
+			{
+				dateString = "Sat";
+				break;
+			}
+			case Calendar.SUNDAY:
+			{
+				dateString = "Sun";
+				break;
+			}
+		}
+		dateString += ", ";
+		
+		//Date 
+		dateString += rightNow.get(Calendar.DAY_OF_MONTH);
+		dateString += " ";
+		
+		//Month
+		switch(rightNow.get(Calendar.MONTH))
+		{
+			case Calendar.JANUARY:
+			{
+				dateString += "Jan";
+				break;
+			}
+			case Calendar.FEBRUARY:
+			{
+				dateString += "Feb";
+				break;
+			}
+			case Calendar.MARCH:
+			{
+				dateString += "Mar";
+				break;
+			}
+			case Calendar.APRIL:
+			{
+				dateString += "Apr";
+				break;
+			}
+			case Calendar.MAY:
+			{
+				dateString += "May";
+				break;
+			}
+			case Calendar.JUNE:
+			{
+				dateString += "Jun";
+				break;
+			}
+			case Calendar.JULY:
+			{
+				dateString += "Jul";
+				break;
+			}
+			case Calendar.AUGUST:
+			{
+				dateString += "Aug";
+				break;
+			}
+			case Calendar.SEPTEMBER:
+			{
+				dateString += "Sep";
+				break;
+			}
+			case Calendar.OCTOBER:
+			{
+				dateString += "Oct";
+				break;
+			}
+			case Calendar.NOVEMBER:
+			{
+				dateString += "Nov";
+				break;
+			}
+			case Calendar.DECEMBER:
+			{
+				dateString += "Dec";
+				break;
+			}
+		}
+		dateString += " ";
+		
+		//Year
+		dateString += rightNow.get(Calendar.YEAR);
+		dateString += " ";
+		
+		//Time
+		dateString += rightNow.get(Calendar.HOUR_OF_DAY) + ":" + rightNow.get(Calendar.MINUTE) + ":" + rightNow.get(Calendar.SECOND);
+		dateString += " ";
+		
+		//TimeZone Correction
+		String tzSign = new String();
+		String tzHours = new String();
+		String tzMinutes = new String();
+		
+		TimeZone thisTZ = TimeZone.getDefault();
+		int TZOffset = thisTZ.getOffset(rightNow.get(Calendar.DATE)); //get timezone offset in milliseconds
+	    TZOffset = (TZOffset / 1000); //convert to seconds
+	    TZOffset = (TZOffset / 60); //convert to minutes
+	    
+	    //Sign
+	    if(TZOffset > 1)
+	    {
+	    	tzSign = "+";
+	    }
+	    else
+	    {
+	    	tzSign = "-";
+	    }
+	    
+	    //Calc Hours and Minutes?
+	    if(TZOffset >= 60 || TZOffset <= -60)
+	    {
+	    	//Minutes and Hours
+	    	tzHours += (TZOffset / 60); //hours
+	    	if(tzHours.length() == 1)  // do we need to prepend a 0
+	    	{
+	    		tzHours = "0" + tzHours;
+	    	}
+	    	
+	    	tzMinutes += (TZOffset % 60); //minutes
+	    	if(tzMinutes.length() == 1)  // do we need to prepend a 0
+	    	{
+	    		tzMinutes = "0" + tzMinutes;
+	    	}
+	    }
+	    else
+	    {
+	    	//Just Minutes
+	    	tzHours = "00";
+	    	tzMinutes += TZOffset;
+	    	if(tzMinutes.length() == 1)  // do we need to prepend a 0
+	    	{
+	    		tzMinutes = "0" + tzMinutes;
+	    	}
+	    }
+	    
+		dateString += tzSign + tzHours + tzMinutes;
+		
+		return(dateString);
 	}
 	
 	//Class that Represents an email
