@@ -184,7 +184,7 @@ public class Configuration implements ErrorHandler {
             */
             NodeList clusters = doc.getElementsByTagName("cluster");
 			if(clusters.getLength() > 0) {
-                configureClister((Element)clusters.item(0));
+                configureCluster((Element)clusters.item(0));
             }
             /*
             END CLUSTER CONFIGURATION....
@@ -201,7 +201,7 @@ public class Configuration implements ErrorHandler {
         }
     }
 
-    private void configureClister(Element cluster) {
+    private void configureCluster(Element cluster) {
         String protocol = cluster.getAttribute("protocol");
         if(protocol != null) {
             config.put("cluster.protocol", protocol);
