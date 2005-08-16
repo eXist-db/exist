@@ -372,11 +372,11 @@ public class NodeSetHelper {
         return result;
     }
     
-    public static NodeSet directSelectAttributes(NodeSet set, QName qname) {
+    public static NodeSet directSelectAttributes(NodeSet set, QName qname, boolean rememberContext) {
         NodeSet result = new ExtArrayNodeSet();
         for (Iterator i = set.iterator(); i.hasNext(); ) {
             NodeProxy n = (NodeProxy) i.next();
-            result.addAll(n.directSelectAttribute(qname));
+            result.addAll(n.directSelectAttribute(qname, rememberContext));
         }
         return result;
     }

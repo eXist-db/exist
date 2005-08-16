@@ -283,7 +283,7 @@ public interface NodeSet extends Sequence, NodeList {
 	
     public NodeSet getAncestors(boolean rememberContext, boolean includeSelf);
     
-    public NodeSet directSelectAttribute(QName qname);
+    public NodeSet directSelectAttribute(QName qname, boolean rememberContext);
     
 	/**
 	 * If all nodes in this set have an index, returns the common

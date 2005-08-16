@@ -1023,7 +1023,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         return NodeSetHelper.selectPreceding(this, preceding);
     }
     
-    public NodeSet directSelectAttribute(QName qname) {
+    public NodeSet directSelectAttribute(QName qname, boolean rememberContext) {
         if (nodeType != -1 && nodeType != Node.ELEMENT_NODE)
             return NodeSet.EMPTY_SET;
         NodeImpl node = (NodeImpl) getNode();
@@ -1033,7 +1033,12 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             ((ElementImpl) node).getAttributeNodeNS(qname.getNamespaceURI(), qname.getLocalName());
         if (attr == null)
             return NodeSet.EMPTY_SET;
-        return new NodeProxy(doc, attr.getGID(), Node.ATTRIBUTE_NODE, attr.getInternalAddress());
+        NodeProxy child = new NodeProxy(doc, attr.getGID(), Node.ATTRIBUTE_NODE, attr.getInternalAddress());
+        if (rememberContext)
+            child.addContextNode(this);
+        else
+            child.copyContext(this);
+        return child;
     }
     
 	private final static class SingleNodeIterator implements Iterator, SequenceIterator {

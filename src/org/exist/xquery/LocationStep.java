@@ -190,22 +190,22 @@ public class LocationStep extends Step {
 				throw new IllegalArgumentException("Unsupported axis specified");
 		}
 		
-		if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
-			context.getProfiler().end(this, " LocationStep" + 
-			        ", " + Constants.AXISSPECIFIERS[axis] +
-			        "::" + test + ", inPredicate: " + inPredicate
-			);
-		}
-		
 		if(contextSequence instanceof NodeSet) {
 			cached = new CachedResult((NodeSet)contextSequence, temp);
 		}
 		// remove duplicate nodes
 		temp.removeDuplicates();
-		return
+		temp =
 			(predicates.size() == 0)
 				? temp
 				: applyPredicate(contextSequence, temp);
+        if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
+            context.getProfiler().end(this, " LocationStep" + 
+                    ", " + Constants.AXISSPECIFIERS[axis] +
+                    "::" + test + ", found: " + temp.getLength()
+            );
+        }
+        return temp;
 	}
 
 	/**
@@ -262,7 +262,7 @@ public class LocationStep extends Step {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
         } else if(!(contextSet instanceof VirtualNodeSet) && contextSet.getLength() == 1) {
-            return contextSet.directSelectAttribute(test.getName());
+            return contextSet.directSelectAttribute(test.getName(), inPredicate);
         } else if(preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
