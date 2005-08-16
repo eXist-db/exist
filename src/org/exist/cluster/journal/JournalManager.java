@@ -9,9 +9,9 @@ import org.exist.util.Configuration;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.TreeSet;
-import java.util.ArrayList;
 
 /**
  * Manage the Journal
@@ -27,10 +27,10 @@ public class JournalManager {
 
     private static final String JOURNAL_INDEX_FILE = "jei.jbx";
     private static final String JOURNAL_STORAGE_FILE_EXTENSION = ".jbx";
-    public static  int JOURNAL_STORAGE_FILE_MAX_SIZE = 1024 * 1024 * 10;  //TODO renderlo configurabile
+    public static int JOURNAL_STORAGE_FILE_MAX_SIZE = 1024 * 1024 * 10;  //TODO renderlo configurabile
     private static final int JOURNAL_INDEX_TRUNK_SIZE = 5 * 4;  //item[ID,START,END,COUNT]
     private static final int JOURNAL_INDEX_FIRST_TRUNK_SIZE = 4 + 4 + 4; //header size []
-    public static  int REALIGN_MAX_BLOCK_SIZE = 20;
+    public static int REALIGN_MAX_BLOCK_SIZE = 20;
 
     private static Logger log = Logger.getLogger(JournalManager.class);
 
@@ -71,16 +71,21 @@ public class JournalManager {
             lastIdSaved = header[0];
             maxIdSaved = header[1];
             counter = header[2];
+            checkNewJournal();
         }
     }
 
-    private void writeInitialHeader()
-    {
+    private void checkNewJournal() {
+        if (lastIdSaved == -1)
+            isNewJournal = true;
+    }
+
+    private void writeInitialHeader() {
         try {
             RandomAccessFile raf = new RandomAccessFile(indexFile, "rws");
-            raf.writeInt( lastIdSaved );
-            raf.writeInt( maxIdSaved );
-            raf.writeInt( counter );
+            raf.writeInt(lastIdSaved);
+            raf.writeInt(maxIdSaved);
+            raf.writeInt(counter);
             raf.close();
         } catch (Exception e) {
             throw new RuntimeException("Error create initila header");
@@ -95,7 +100,7 @@ public class JournalManager {
     public int getLastIdSaved() {
         if (lastIdSaved > -1)
             return lastIdSaved;
-        else if (isNewJournal)
+        else if (isNewJournal||journalDisabled)
             return -1;
         else
             return getHeaderData()[0];
@@ -104,7 +109,7 @@ public class JournalManager {
     public int getMaxIdSaved() {
         if (maxIdSaved > -1)
             return maxIdSaved;
-        else if (isNewJournal)
+        else if (isNewJournal||journalDisabled)
             return -1;
         else
             return getHeaderData()[1];
@@ -113,7 +118,7 @@ public class JournalManager {
     public int getCounter() {
         if (counter > -1)
             return counter;
-        else if (isNewJournal)
+        else if (isNewJournal||journalDisabled)
             return 1;
         else
             return getHeaderData()[2];
@@ -136,9 +141,12 @@ public class JournalManager {
 
     public boolean isProcessed(ClusterEvent event) {
 
+        if(journalDisabled)
+            return false;
+
         int id = event.getId();
 
-        if(queue.contains(event))
+        if (queue.contains(event))
             return true;
 
         try {
@@ -149,7 +157,7 @@ public class JournalManager {
             int counter = raf.readInt();
             raf.close();
 
-            return event.getCounter()==counter;
+            return event.getCounter() == counter;
 
         } catch (Exception e) {
             return false;
@@ -239,7 +247,7 @@ public class JournalManager {
 
             System.out.println(">>>>>>>>>> ID " + id);
             System.out.println(">>>>>>>>>> COUNTER " + counter);
-            if (((id > maxIdSaved)&&(this.counter==counter)) || (this.counter==counter-1)) {
+            if (((id > maxIdSaved) && (this.counter == counter)) || (this.counter == counter - 1)) {
                 maxIdSaved = id;
             }
 
@@ -311,22 +319,24 @@ public class JournalManager {
 
     public ArrayList getNextEvents(int[] header, int[] myHeader, Integer start) {
 
+        if(journalDisabled)
+            return null;
+
         System.out.println("Get next events : lastIdSaved " + header[0] + " maxId " + header[1] + " counter:" + header[2]);
         System.out.println("Get next events saved : lastIdSaved " + myHeader[0] + " maxId " + myHeader[1] + " counter:" + myHeader[2]);
-        if(header[0]==myHeader[0] && header[1]==myHeader[1] &&  header[2]==myHeader[2])
-        {
+        if (header[0] == myHeader[0] && header[1] == myHeader[1] && header[2] == myHeader[2]) {
             System.out.println("Return empty arraylist");
             return new ArrayList(); //same header
         }
-        System.out.println("Start :" + start.intValue() );
-        if( start.intValue() == -1 ) {
-            return getStart( header[0] , myHeader );
+        System.out.println("Start :" + start.intValue());
+        if (start.intValue() == -1) {
+            return getStart(header[0], myHeader);
         } else {
-            return getEvents(start.intValue() , myHeader );
+            return getEvents(start.intValue(), myHeader);
         }
     }
 
-    private ArrayList getEvents(int last, int[] myHeader) { //TODO ... problema di fissare il max escludendo nuovi eventi
+    private ArrayList getEvents(int last, int[] myHeader) {
 
         ArrayList events = new ArrayList();
 
@@ -335,36 +345,36 @@ public class JournalManager {
             int pos = last;
             System.out.println("INITIAL POS = " + pos);
 
-            if ( last == myHeader[1] )
+            if (last == myHeader[1])
                 return null; //the max saved id is reached
-            while(true){
-                raf.seek(JOURNAL_INDEX_FIRST_TRUNK_SIZE + pos * JOURNAL_INDEX_TRUNK_SIZE+4);
+            while (true) {
+                raf.seek(JOURNAL_INDEX_FIRST_TRUNK_SIZE + pos * JOURNAL_INDEX_TRUNK_SIZE + 4);
                 int start = raf.readInt();
                 int end = raf.readInt();
                 int file = raf.readInt();
                 int count = raf.readInt();
-                if((pos<=myHeader[1] && count==myHeader[2]) || (pos>myHeader[1] && count==myHeader[2]-1)){
-                    ClusterEvent event = readFromStorage(end,start,file);
+                if ((pos <= myHeader[1] && count == myHeader[2]) || (pos > myHeader[1] && count == myHeader[2] - 1)) {
+                    ClusterEvent event = readFromStorage(end, start, file);
                     events.add(event);
                     System.out.println("Add element " + event.getId());
                 }
 
-                if(events.size()>=REALIGN_MAX_BLOCK_SIZE)
+                if (events.size() >= REALIGN_MAX_BLOCK_SIZE)
                     break;
 
-                if(pos==myHeader[1])
+                if (pos == myHeader[1])
                     break;
 
-                pos +=1;
-                int size = (((int)raf.length()-12)/20)-1;
-                if(pos>size){
+                pos += 1;
+                int size = (((int) raf.length() - 12) / 20) - 1;
+                if (pos > size) {
                     pos = 0;
                 }
 
             }
 
             raf.close();
-            return events.size()!=0?events:null;
+            return events.size() != 0 ? events : null;
 
         } catch (Exception e) {
             log.error("Error reading journal file ... " + e);
@@ -376,12 +386,12 @@ public class JournalManager {
     private synchronized ArrayList getStart(int last, int[] myHeader) {
         ArrayList events = new ArrayList();
         try {
-            int pos = last<0?0:last;
+            int pos = last < 0 ? 0 : last;
             final int c = myHeader[2];
             final int m = myHeader[1];
 
             RandomAccessFile raf = new RandomAccessFile(indexFile, "r");
-            while(true) {
+            while (true) {
                 raf.seek(JOURNAL_INDEX_FIRST_TRUNK_SIZE + pos * JOURNAL_INDEX_TRUNK_SIZE);
                 int id = raf.readInt();
                 int start = raf.readInt();
@@ -389,28 +399,28 @@ public class JournalManager {
                 int file = raf.readInt();
                 int count = raf.readInt();
 
-                if((pos < m && count == c) || (pos > m && count == c-1) ){
-                    ClusterEvent event = readFromStorage(end,start,file);
-                    events.add(0,event);
+                if ((pos < m && count == c) || (pos > m && count == c - 1)) {
+                    ClusterEvent event = readFromStorage(end, start, file);
+                    events.add(0, event);
                     System.out.println("Add element " + event.getId());
                 }
 
-                if(events.size()>=REALIGN_MAX_BLOCK_SIZE)
+                if (events.size() >= REALIGN_MAX_BLOCK_SIZE)
                     break;
 
 
-                pos -=1;
-                System.out.println("Pos : " + pos   );
+                pos -= 1;
+                System.out.println("Pos : " + pos);
                 System.out.println("COUNER =  " + c);
-                if(pos<0 && c!=1){
-                    pos = (((int)raf.length() - 12)/20)-1;
-                    if(pos<=m)
+                if (pos < 0 && c != 1) {
+                    pos = (((int) raf.length() - 12) / 20) - 1;
+                    if (pos <= m)
                         break;
-                }else if(pos<0){
+                } else if (pos < 0) {
                     break;
                 }
 
-                if(pos==myHeader[1])
+                if (pos == myHeader[1])
                     break;
 
 
@@ -421,11 +431,11 @@ public class JournalManager {
             raf.close();
 
 
-            return events.size()!=0?events:getEvents( last<0?0:last, myHeader) ;
+            return events.size() != 0 ? events : getEvents(last < 0 ? 0 : last, myHeader);
 
         } catch (Exception e) {
             log.error("Error reading journal file ... " + e);
-            throw new RuntimeException("Error reading journal file ",e);
+            throw new RuntimeException("Error reading journal file ", e);
         }
     }
 
@@ -436,8 +446,8 @@ public class JournalManager {
             if (!(o1 instanceof ClusterEvent))
                 return 1;
 
-            ClusterEvent ev = (ClusterEvent)o;
-            ClusterEvent ev1 = (ClusterEvent)o1;
+            ClusterEvent ev = (ClusterEvent) o;
+            ClusterEvent ev1 = (ClusterEvent) o1;
 
             int counter = ev.getCounter();
             int counter1 = ev1.getCounter();
@@ -446,10 +456,10 @@ public class JournalManager {
             int id1 = ev1.getId();
 
 
-            if(counter==counter1)
+            if (counter == counter1)
                 return id - id1;
 
-            return counter-counter1;
+            return counter - counter1;
 
         }
     }
