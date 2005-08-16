@@ -50,7 +50,7 @@ public class ClusterComunication implements MembershipListener {
 
 
     public static final String DEFAULT_PROTOCOL_STACK =
-            "UDP(mcast_addr=228.1.2.3;mcast_port=45566;ip_ttl=32;loopback=false):" +
+            "UDP(mcast_addr=228.1.2.3;mcast_port=45566;ip_ttl=32;loopback=true):" +
             "PING(timeout=3000;num_initial_members=6):" +
             "FD(timeout=3000):" +
             "VERIFY_SUSPECT(timeout=1500):" +
@@ -104,6 +104,8 @@ public class ClusterComunication implements MembershipListener {
             if (protocol == null)
                 protocol = DEFAULT_PROTOCOL_STACK;
 
+            System.out.println("PROTOCOL \n" + protocol);
+
             channel = new JChannel(protocol);
 
             disp = new RpcDispatcher(channel, null, c, c);
@@ -149,8 +151,8 @@ public class ClusterComunication implements MembershipListener {
 
     public void viewAccepted(View view) {
         this.coordinatorAddress = view.getCreator(); // The master address of the cluster
-        log.info("COordinator : " + coordinator + " localAddress : " + localAddress);
         boolean coordinator = coordinatorAddress.equals(localAddress);
+        log.info("COordinator : " + coordinator + " localAddress : " + localAddress);
         if(coordinator)
             log.info("***************** I'M MASTER!!!!!!!!!");
         //Per evitare problematiche di sincronizzazione in caso di failure - il nuovo master sposta in avanti i suoi indici
@@ -286,6 +288,12 @@ public class ClusterComunication implements MembershipListener {
         if (excludedCollection.contains(resource))
             return; //avoid to propagate the internal collection for example temp.
         remoteInvocation(new UpdateClusterEvent(resource, name, xupdate));
+    }
+
+    public void removeCollection(String parent, String collection) throws ClusterException {
+        if (excludedCollection.contains(collection)|| excludedCollection.contains(parent + "/" + collection))
+            return; //avoid to propagate the internal collection for example temp.
+        remoteInvocation(new RemoveCollectionClusterEvent(parent, collection));
     }
 
     private void remoteInvocation(ClusterEvent event) throws ClusterException {
@@ -464,6 +472,10 @@ public class ClusterComunication implements MembershipListener {
 
     public ConsoleInfo getConsoleProperties() throws ClusterException{
         String port = System.getProperty("jetty.port");
+
+        if(port==null)
+            port = "8080";   //TODO ... verify how to retrieve default port
+
         ConsoleInfo info = new ConsoleInfo();
         info.setProperty("port",port);
         return info;
@@ -475,4 +487,5 @@ public class ClusterComunication implements MembershipListener {
         channel.disconnect();
         instance = null;
     }
+
 }

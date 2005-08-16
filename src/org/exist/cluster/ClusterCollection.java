@@ -189,6 +189,19 @@ public final class ClusterCollection extends Collection {
 
     }
 
+
+    public void removeCollection(String name) throws LockException {
+        try {
+            collection.removeCollection(name);
+            System.out.println("REMOVED COLLECTION " +name);
+            ClusterComunication cluster = ClusterComunication.getInstance();
+            if(cluster!=null)
+                cluster.removeCollection(this.getName(),name);
+        } catch (ClusterException e) {
+            e.printStackTrace();
+        }
+    }
+
     public boolean hasChildCollection(String name) {
         return collection.hasChildCollection(name);
     }
@@ -296,11 +309,6 @@ public final class ClusterCollection extends Collection {
             throws IOException {
         collection.read(broker, istream);
     }
-
-    public void removeCollection(String name) throws LockException {
-        collection.removeCollection(name);
-    }
-
 
     public void removeBinaryResource(Txn transaction, DBBroker broker,
                                      String docname) throws PermissionDeniedException, LockException {
