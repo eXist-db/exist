@@ -71,6 +71,9 @@
                 <listitem>
                     <para><ulink href="ant-tasks.xml">Ant Tasks</ulink>: how to automate tasks with Ant.</para>
                 </listitem>
+                <listitem>
+                    <para><ulink href="cluster.xml">Cluster configuration</ulink>: how to configure cluster environment.</para>
+                </listitem>
             </unorderedlist>
             
             <para>Further documentation can be found in the <ulink url="http://wiki.exist-db.org">Wiki</ulink>.
