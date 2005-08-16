@@ -261,7 +261,8 @@ public class LocationStep extends Step {
 		if (test.isWildcardTest()) {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
-        } else if(!(contextSet instanceof VirtualNodeSet) && contextSet.getLength() == 1) {
+        } else if(axis == Constants.ATTRIBUTE_AXIS &&
+                !(contextSet instanceof VirtualNodeSet) && contextSet.getLength() == 1) {
             return contextSet.directSelectAttribute(test.getName(), inPredicate);
         } else if(preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
