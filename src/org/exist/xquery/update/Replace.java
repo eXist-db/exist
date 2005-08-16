@@ -103,6 +103,9 @@ public class Replace extends Modification {
                         throw new PermissionDeniedException(
                                 "permission to update document denied");
                 parent = (ElementImpl) node.getParentNode();
+                if (parent == null)
+                    throw new XPathException(getASTNode(), "The root element of a document can not be replaced with 'update replace'. " +
+                            "Please consider removing the document or use 'update value' to just replace the children of the root.");
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
                         temp = contentSeq.itemAt(0);
