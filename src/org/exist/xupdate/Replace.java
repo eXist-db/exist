@@ -77,6 +77,9 @@ public class Replace extends Modification {
                         throw new PermissionDeniedException(
                                 "permission to update document denied");
                 parent = (ElementImpl) node.getParentNode();
+                if (parent == null)
+                    throw new EXistException("The root element of a document can not be replaced with 'xu:replace'. " +
+                        "Please consider removing the document or use 'xu:update' to just replace the children of the root.");
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
                         if (modifications == 0) modifications = 1;
@@ -93,8 +96,7 @@ public class Replace extends Modification {
                     case Node.ATTRIBUTE_NODE:
                         AttrImpl attr = (AttrImpl) node;
                         temp = children.item(0);
-                        attribute = new AttrImpl(attr.getQName(), temp
-                                .getNodeValue());
+                        attribute = new AttrImpl(attr.getQName(), temp.getNodeValue());
                         attribute.setOwnerDocument(doc);
                         parent.updateChild(transaction, node, attribute);
                         break;
