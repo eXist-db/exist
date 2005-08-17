@@ -1,5 +1,6 @@
-
 package org.exist.storage.analysis;
+
+import org.exist.util.XMLString;
 
 public class TextToken {
 	
@@ -70,7 +71,6 @@ public class TextToken {
         this.end = end;
     }
 
-
     /**
      *  Constructor for the Token object
      *
@@ -87,6 +87,14 @@ public class TextToken {
 		this.end = start;
 	}
 
+    public int startOffset() {
+        return start;
+    }
+    
+    public int endOffset() {
+        return end;
+    }
+    
 	public boolean isAlpha() {
 		return tokenType == ALPHA;
 	}
@@ -99,6 +107,10 @@ public class TextToken {
         end++;
     }
 
+    public void consume(TextToken token) {
+        this.end = token.end;
+    }
+    
     public char getChar() {
         return tokenText.charAt( start );
     }
@@ -114,9 +126,11 @@ public class TextToken {
         if(start >= tokenText.length() || end > tokenText.length())
             throw new StringIndexOutOfBoundsException("start: " + start +
                 "; end=" + end + "; text=" + tokenText);
+        if (tokenText instanceof XMLString)
+            return ((XMLString) tokenText).substring(start, end - start);
         return tokenText.subSequence( start, end ).toString();
     }
-
+    
     public int getType() {
         return tokenType;
     }
@@ -127,6 +141,36 @@ public class TextToken {
 	
     public void setText( String text ) {
         tokenText = text;
+    }
+    
+    public int length() {
+        return end - start;
+    }
+    
+    public int hashCode() {
+        int h = 0;
+        for (int i = start; i < end; i++) {
+            h = 31*h + tokenText.charAt(i);
+        }
+        return h;
+    }
+    
+    public boolean equals(Object obj) {
+        String other = obj.toString();
+        int len = end - start;
+        if (len == other.length()) {
+            int j = start;
+            for (int i = 0; i < len; i++) {
+                if (tokenText.charAt(j++) != other.charAt(i))
+                    return false;
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    public String toString() {
+        return getText();
     }
 }
 

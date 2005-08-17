@@ -186,7 +186,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				}
 				tokenizer.setText(s);
 				while (null != (token = tokenizer.nextToken())) {
-					word = token.getText().toString();
+					word = token.getText();
 					if (stoplist.contains(word))
 						continue;
 					words.add(word.toLowerCase());
@@ -662,25 +662,23 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		final DocumentImpl doc = (DocumentImpl) text.getOwnerDocument();
 		tokenizer.setText(text.getXMLString().transformToLower());
 		TextToken token;
-		CharSequence word;
 		final long gid = text.getGID();
 		if ( onetoken ) {
 			invIdx.setDocument(doc);
-			String sal= text.getXMLString().transformToLower().toString() ;
-			invIdx.addText(sal, gid);			
+			String sal= text.getXMLString().transformToLower().toString();
+            token = new TextToken(TextToken.ALPHA, sal, 0, sal.length());
+			invIdx.addText(token, gid);			
 		} else {
 			while (null != (token = tokenizer.nextToken())) {
 				if (idx != null && idx.getIncludeAlphaNum() == false
 						&& token.isAlpha() == false) {
 					continue;
 				}
-				word = token.getCharSequence();
-				//			word = token.getText();
-				if (stoplist.contains(word) || word.length() > MAX_WORD_LENGTH) {
+				if (stoplist.contains(token) || token.length() > MAX_WORD_LENGTH) {
 					continue;
 				}
 				invIdx.setDocument(doc);
-				invIdx.addText(word, gid);
+				invIdx.addText(token, gid);
 			}
 		}
 	}
@@ -712,23 +710,23 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	final class InvertedIndex {
 
 		private DocumentImpl doc = null;
-		private Map words[] = new TreeMap[2];
+		private Map words[] = new HashMap[2];
 		private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
 		public InvertedIndex() {
 			// To distinguish between attribute values and text, we use
 			// two maps: words[0] collects text, words[1] stores attribute
 			// values.
-			words[0] = new TreeMap();
-			words[1] = new TreeMap();
+			words[0] = new HashMap(512);
+			words[1] = new HashMap(256);
 		}
 
-		public void addText(CharSequence word, long gid) {
-			TermFrequencyList buf = (TermFrequencyList) words[0].get(word);
+		public void addText(TextToken token, long gid) {
+			TermFrequencyList buf = (TermFrequencyList) words[0].get(token);
 			if (buf == null) {
 				buf = new TermFrequencyList();
 				buf.add(gid);
-				words[0].put(word.toString(), buf);
+				words[0].put(token.getText(), buf);
 			} else if (buf.getLast() == gid) {
 				buf.incLastTerm();
 			} else {
