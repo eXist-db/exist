@@ -177,7 +177,7 @@ public final class XMLString implements CharSequence, Comparable {
         length_ = 0;
     }
     
-	private final void ensureCapacity(int capacity) {
+	private void ensureCapacity(int capacity) {
 		if (value_ == null)
 			//value_ = new char[capacity];
 			value_ = CharArrayPool.getCharArray(capacity);
@@ -193,7 +193,7 @@ public final class XMLString implements CharSequence, Comparable {
 		}
 	}
 
-	private final static boolean isWhiteSpace(char ch) {
+	private static boolean isWhiteSpace(char ch) {
 		return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
 	}
 
@@ -260,8 +260,8 @@ public final class XMLString implements CharSequence, Comparable {
 	    }
 	    if (anObject instanceof XMLString) {
 	        XMLString anotherString = (XMLString) anObject;
-	        int n = length_;
-	        if (n == anotherString.length_) {
+	        if (length_ == anotherString.length_) {
+                int n = length_;
 	            char v1[] = value_;
 	            char v2[] = anotherString.value_;
 	            int i = start_;
@@ -273,30 +273,29 @@ public final class XMLString implements CharSequence, Comparable {
 	            }
 	            return true;
 	        }
-	    }
+	    } else {
+	        String anotherString = anObject.toString();
+            if (length_ == anotherString.length()) {
+                int j = start_;
+                for (int i = 0; i < length_; i++) {
+                    if (value_[j++] != anotherString.charAt(i))
+                        return false;
+                }
+                return true;
+            }
+        }
 	    return false;
 	}
-	
-    /*
-     * @see hashCode()
-     */
-	private int hash = 0;
 	
     /*
      * @see java.lang.Object#hashCode()
      */
 	public int hashCode() {
-	    int h = hash;
-	    if (h == 0) {
-	        int off = start_;
-	        char val[] = value_;
-	        int len = length_;
-	        
-	        for (int i = 0; i < len; i++) {
-	            h = 31 * h + val[off++];
-	        }
-	        hash = h;
-	    }
-	    return h;
+        int off = start_;
+        int h = 0;
+        for (int i = 0; i < length_; i++) {
+            h = 31*h + value_[off++];
+        }
+        return h;
 	}
 }

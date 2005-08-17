@@ -36,7 +36,6 @@ public class SimpleTokenizer implements Tokenizer {
 			token = new TextToken(TextToken.ALPHA, text, pos);
 		else
 			token.setType(TextToken.ALPHA);
-		int oldPos = pos;
 		// consume letters
 		char ch = LA(1);
 		int count = 0;
@@ -64,7 +63,6 @@ public class SimpleTokenizer implements Tokenizer {
 		if (Character.isDigit(ch)) {
 			// found non-letter character
 			// call alphanum()
-			//pos = oldPos;
 			return alphanum(token, allowWildcards);
 		}
 		return token;
@@ -140,6 +138,7 @@ public class SimpleTokenizer implements Tokenizer {
 				case ':' :
 				case '.' :
 				case '@' :
+                case '/' :
 					token = p();
 					break;
 				default :
@@ -156,101 +155,92 @@ public class SimpleTokenizer implements Tokenizer {
 
 	public TextToken nextToken(boolean wildcards) {
 		try {
-		while (true) {
-			TextToken token = nextTerminalToken(wildcards);
-			TextToken next;
-			StringBuffer buf;
-			int oldPos = pos;
-			boolean found;
-			char LA1 = LA(1);
-			switch (token.getType()) {
-				case TextToken.EOF :
-					return null;
-				case TextToken.ALPHA :
-					found = false;
-					// text with apostrophe like Peter's
-					if (LA1 == '\'') {
-						consume();
-						buf = new StringBuffer(token.getText());
-						next = nextTerminalToken(wildcards);
-						if (next != null
-							&& next.getType() == TextToken.ALPHA) {
-							buf.append('\'');
-							buf.append(next.getText());
-							return new TextToken(
-								TextToken.ALPHA,
-								buf.toString());
-						}
-						pos = oldPos;
-					}
-					// text with some alphanumeric sequence attached 
-					// like Q/22/A4.5 or 12/09/1989
-					switch (LA1) {
-						case '_' :
-						case ':' :
-						case '.' :
-						case '/' :
-							if (LA(2) == (char) - 1
-								|| Character.isWhitespace(LA(2))) {
-								consume();
-								break;
-							}
-							found = false;
-							buf = new StringBuffer(token.getText());
-							while ((next = nextTerminalToken(wildcards))
-								!= null) {
-								if (next.getType() == TextToken.EOF
-									|| next.getType() == TextToken.WS)
-									break;
-								if(next.getType() == TextToken.P &&
-								   (LA(1) == (char)-1 || Character.isWhitespace(LA(1))))
-								   break;
-								if(next.getType() == TextToken.ALPHANUM)
-									found = true;
-								buf.append(next.getText());
-							}
-							if (found)
-								token =
-									new TextToken(
-										TextToken.ALPHANUM,
-										buf.toString());
-							else
-								pos = oldPos;
-					}
-					return token;
-				case TextToken.ALPHANUM :
-					switch (LA1) {
-						case '/' :
-						case '*' :
-						case ',' :
-						case '-' :
-						case '_' :
-						case ':' :
-						case '.' :
-						case '@' :
-							if (LA(2) == (char) - 1
-								|| Character.isWhitespace(LA(2))) {
-								consume();
-								break;
-							}
-							buf = new StringBuffer(token.getText());
-							while ((next = nextTerminalToken(wildcards))
-								!= null) {
-								if (next.getType() == TextToken.EOF
-									|| next.getType() == TextToken.WS)
-									break;
-								buf.append(next.getText());
-							}
-							token =
-								new TextToken(
-									TextToken.ALPHANUM,
-									buf.toString());
-					}
-					return token;
-				default :
-					// fall through to start of while loop
-			}
-		}
+		    while (true) {
+		        TextToken token = nextTerminalToken(wildcards);
+		        TextToken next;
+		        int oldPos = pos;
+		        char LA1 = LA(1);
+                
+		        switch (token.getType()) {
+		            case TextToken.EOF :
+		                return null;
+		            case TextToken.ALPHA :
+		                switch (LA1) {
+		                    // text with apostrophe like Peter's
+                            case '\'' :
+                                consume();
+                                next = nextTerminalToken(wildcards);
+                                if (next != null
+                                        && next.getType() == TextToken.ALPHA) {
+                                    return new TextToken(TextToken.ALPHA, text, token.startOffset(), next.endOffset());
+                                }
+                                pos = oldPos;
+                                break;
+                            // text with some alphanumeric sequence attached
+                            // handles URL's, email addresses, dates or general sequences like
+                            // like Q/22/A4.5 or 12/09/1989
+		                    case '_' :
+		                    case ':' :
+		                    case '.' :
+		                    case '/' :
+                            case '@' :
+		                        if (LA(2) == (char) - 1
+		                                || Character.isWhitespace(LA(2))) {
+		                            consume();
+		                            break;
+		                        }
+		                        TextToken last = null;
+		                        while ((next = nextTerminalToken(wildcards))
+		                                != null) {
+		                            if (next.getType() == TextToken.EOF
+		                                    || next.getType() == TextToken.WS)
+		                                break;
+		                            if(next.getType() == TextToken.P &&
+		                                    (LA(2) == (char)-1 || Character.isWhitespace(LA(2))))
+		                                break;
+		                            last = next;
+		                        }
+		                        if (last != null)
+		                            token =
+		                                new TextToken(
+		                                        TextToken.ALPHANUM,
+		                                        text, token.startOffset(), last.endOffset());
+		                        else
+		                            pos = oldPos;
+		                }
+		                return token;
+		            case TextToken.ALPHANUM :
+		                switch (LA1) {
+		                    case '/' :
+		                    case '*' :
+		                    case ',' :
+		                    case '-' :
+		                    case '_' :
+		                    case ':' :
+		                    case '.' :
+		                    case '@' :
+		                        if (LA(2) == (char) - 1
+		                                || Character.isWhitespace(LA(2))) {
+		                            consume();
+		                            break;
+		                        }
+		                        TextToken last = null;
+		                        while ((next = nextTerminalToken(wildcards)) != null) {
+		                            if (next.getType() == TextToken.EOF
+		                                    || next.getType() == TextToken.WS)
+		                                break;
+		                            last = next;
+		                        }
+		                        if (last != null)
+		                            token = new TextToken(TextToken.ALPHANUM, text, token.startOffset(), last.endOffset());
+		                        else
+		                            token = new TextToken(TextToken.ALPHANUM, text, token.startOffset(), pos);
+		                }
+		                return token;
+		            default :
+		                // fall through to start of while loop
+		        }
+		    }
 		} catch (Exception e) {
 			System.out.println("text: " + text);
 			e.printStackTrace();
@@ -346,21 +336,13 @@ public class SimpleTokenizer implements Tokenizer {
     }
 	
 	public static void main(String args[]) {
-		String t1 = "\u30A8\u30FB\u31A1\uACFF\u2FAA\u312A\u3045";
-		String t2 = "選官盍若究出世法以選佛邪師善其言毅欲超";
-		String t3 = "문자 사용 상의 오류를 찾아내기 위해 검증된 중국어 판을 재검토하고, 보다 읽기 쉽게 하기 위해 언어적 표현을 다듬는다.";
-//		for(int i = 0; i < t2.length(); i++) {
-//			char ch = t2.charAt(i);
-//			System.out.print(
-//				Integer.toHexString(ch) + ' '
-//			);
-//		}
+        String t1 = "\u4ED6\u4E3A\u8FD9\u9879\u5DE5\u7A0B\u6295\u5165\u4E86\u5341\u4E09\u5E74\u65F6\u95F4\u3002";
 		SimpleTokenizer tokenizer = new SimpleTokenizer();
-		tokenizer.setText(t2);
-		TextToken token = tokenizer.nextToken(true);
+		tokenizer.setText(t1);
+		TextToken token = tokenizer.nextToken(false);
 		while(token != null && token.getType() != TextToken.EOF) {
-			//System.out.println(token.getText());
-			token = tokenizer.nextToken(true);
+			System.out.println(token.getText());
+			token = tokenizer.nextToken(false);
 		}
 	}
 }
