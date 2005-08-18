@@ -51,7 +51,8 @@ public class ValueIndexTest extends TestCase {
     	"			<include path=\"//item/name\"/>" + 
     	"			<include path=\"//item/mixed\"/>" + 
     	"		</fulltext>" + 
-    	"		<create path=\"//item/itemno\" type=\"xs:integer\"/>" + 
+    	"		<create path=\"//item/itemno\" type=\"xs:integer\"/>" +
+    	"		<create path=\"//item/@id\" type=\"xs:string\"/>" +
     	"		<create path=\"//item/name\" type=\"xs:string\"/>" + 
     	"		<create path=\"//item/stock\" type=\"xs:integer\"/>" + 
     	"		<create path=\"//item/price\" type=\"xs:double\"/>" + 
@@ -99,6 +100,7 @@ public class ValueIndexTest extends TestCase {
         configureCollection();
         XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "src/org/exist/xquery/test/items.xml");
         
+        queryResource(service, "items.xml", "//item[@id = 'i2']", 1);
         queryResource(service, "items.xml", "//item[name = 'Racing Bicycle']", 1);
         queryResource(service, "items.xml", "//item[name > 'Racing Bicycle']", 4);
         queryResource(service, "items.xml", "//item[itemno = 3]", 1);
@@ -121,7 +123,7 @@ public class ValueIndexTest extends TestCase {
         String append =
             "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
             "<xu:append select=\"/items\">" +
-            "<item>" +
+            "<item id=\"i100\">" +
             "<itemno>10</itemno>" +
             "<name>New Item</name>" +
             "<price>55.50</price>" +
@@ -138,7 +140,7 @@ public class ValueIndexTest extends TestCase {
         long mods = update.updateResource("items.xml", append);
 		assertEquals(mods, 1);
         queryResource(query, "items.xml", "//item[price = 55.50]", 1);
-        
+        queryResource(query, "items.xml", "//item[@id = 'i100']",1);
         mods = update.updateResource("items.xml", remove);
 		assertEquals(mods, 1);
         queryResource(query, "items.xml", "//item[itemno = 7]", 0);
