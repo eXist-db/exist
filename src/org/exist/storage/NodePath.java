@@ -132,22 +132,26 @@ public class NodePath {
     }
     
     private void addComponent(Map namespaces, String component) {
+    	boolean isAttribute = false;
+    	if (component.startsWith("@")) {
+    		isAttribute = true;
+    		component = component.substring(1);
+    	}
         String prefix = QName.extractPrefix(component);
-        if(prefix == null) {
-            addComponent(new QName(component, ""));
-            return;
-        }  
         String localName = QName.extractLocalName(component);
-        if(prefix.startsWith("@")) {
-            prefix = prefix.substring(1);
-            localName = "@" + localName;
+        String namespaceURI = "";
+        if (prefix != null) {
+	        namespaceURI = (String) namespaces.get(prefix);
+	        if(namespaceURI == null) {
+	            LOG.error("No namespace URI defined for prefix: " + prefix);
+	            prefix = null;
+	            namespaceURI = "";
+	        }
         }
-        String namespaceURI = (String) namespaces.get(prefix);
-        if(namespaceURI == null) {
-            LOG.error("No namespace URI defined for prefix: " + prefix);
-            addComponent(new QName(localName, ""));
-        }
-        addComponent(new QName(localName, namespaceURI, prefix));
+        QName qn = new QName(localName, namespaceURI, prefix);
+        if (isAttribute)
+        	qn.setNameType(ElementValue.ATTRIBUTE);
+        addComponent(qn);
     }
     
     private void init( Map namespaces, String path ) {
