@@ -264,10 +264,7 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 			IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
 
 			if (idxSpec != null) {
-				QName idxQName = new QName('@' + node.getLocalName(), node
-						.getNamespaceURI());
-
-				RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
+				RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
 				if (qnIdx != null) {
 					this.setDocument(docu);
 					this.storeAttribute(qnIdx, (AttrImpl) node);
