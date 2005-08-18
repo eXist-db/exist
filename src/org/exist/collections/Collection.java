@@ -863,9 +863,10 @@ implements Comparable, EntityResolver, Cacheable {
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("Database is read-only");
 		DocumentImpl document, oldDoc = null;
+		boolean oldDocLocked = false;
 		try {
 			getLock().acquire(Lock.WRITE_LOCK);
-			oldDoc = getDocument(broker, name);
+			oldDoc = (DocumentImpl)documents.get(name);
 			document = new DocumentImpl(broker, name,	this);
 		
 			checkPermissions(transaction, broker, name, oldDoc);
@@ -904,6 +905,8 @@ implements Comparable, EntityResolver, Cacheable {
 			// new document is valid: remove old document 
 			if (oldDoc != null) {
 				LOG.debug("removing old document " + oldDoc.getFileName());
+				oldDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+				oldDocLocked = true;
 				if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
 					broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
 				else
@@ -922,16 +925,16 @@ implements Comparable, EntityResolver, Cacheable {
 				trigger.setValidating(false);
 			return info;
 		} catch(EXistException e) {
-		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    if(oldDocLocked) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 		    throw e;
 		} catch(SAXException e) {
-		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    if(oldDocLocked) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 		    throw e;
 		} catch(PermissionDeniedException e) {
-		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    if(oldDocLocked) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 		    throw e;
 		} catch(TriggerException e) {
-		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    if(oldDocLocked) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 		    throw e;
 		} finally {
 			getLock().release();
@@ -989,6 +992,7 @@ implements Comparable, EntityResolver, Cacheable {
 	private IndexInfo determineTreeStructure(Txn transaction, DBBroker broker, String name, DocumentImpl document, 
             DocumentImpl oldDoc, XMLReader reader, InputSource source) 
     throws LockException, EXistException, SAXException, PermissionDeniedException, TriggerException {
+		boolean oldDocLocked = false;
 		try {
 			checkPermissions(transaction, broker, name, oldDoc);
 			
@@ -1017,6 +1021,7 @@ implements Comparable, EntityResolver, Cacheable {
 			if (oldDoc != null) {
 				LOG.debug("removing old document " + oldDoc.getFileName());
                 oldDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                oldDocLocked = true;
 				if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
 					broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
 				else {
@@ -1036,16 +1041,16 @@ implements Comparable, EntityResolver, Cacheable {
 				trigger.setValidating(false);
 			return info;
 		} catch(EXistException e) {
-		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    if(oldDocLocked) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 		    throw e;
 		} catch(SAXException e) {
-		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    if(oldDocLocked) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 		    throw e;
 		} catch(PermissionDeniedException e) {
-		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    if(oldDocLocked) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 		    throw e;
 		} catch(TriggerException e) {
-		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    if(oldDocLocked) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 		    throw e;
 		}
 	}
