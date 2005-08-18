@@ -133,6 +133,14 @@ public class FunMatches extends Function {
 		return Type.BOOLEAN;
     }
     
+    public void analyze(Expression parent, int flags) throws XPathException {
+    	//  call analyze for each argument
+        inPredicate = (flags & IN_PREDICATE) > 0;
+        for(int i = 0; i < getArgumentCount(); i++) {
+            getArgument(i).analyze(this, flags);
+        }
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
@@ -163,7 +171,6 @@ public class FunMatches extends Function {
      */
     private Sequence evalWithIndex(Sequence contextSequence, Item contextItem, Sequence input) throws XPathException {
         String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
-		
         NodeSet nodes = input.toNodeSet();
         
         int flags = 0; 
@@ -178,7 +185,6 @@ public class FunMatches extends Function {
 		int indexType = nodes.getIndexType();
 		if(Type.subTypeOf(indexType, Type.STRING)) {
 		    DocumentSet docs = nodes.getDocumentSet();
-		    LOG.debug("Using index ...");
 		    try {
 				return context.getBroker().getValueIndex().match(docs, nodes, pattern, 
 						DBBroker.MATCH_REGEXP, flags, caseSensitive);
