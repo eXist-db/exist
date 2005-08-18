@@ -41,22 +41,24 @@ public class QNameRangeIndexSpec extends RangeIndexSpec {
             throw new DatabaseConfigurationException("Unknown type: " + typeStr);
         }
         
-        String prefix = QName.extractPrefix(name);
-        if (prefix == null) {
-        	qname = new QName(name, "");
-        } else {
-	        String localName = QName.extractLocalName(name);
-	        if(prefix.startsWith("@")) {
-	            prefix = prefix.substring(1);
-	            localName = "@" + localName;
-	        }
-	        String namespaceURI = (String) namespaces.get(prefix);
-	        if(namespaceURI == null) {
-	            throw new DatabaseConfigurationException("No namespace defined for prefix: " + prefix +
-	            		" in index definition");
-	        }
-	        qname = new QName(localName, namespaceURI, prefix);
+        boolean isAttribute = false;
+        if (name.startsWith("@")) {
+            isAttribute = true;
+            name = name.substring(1);
         }
+        String prefix = QName.extractPrefix(name);
+        String localName = QName.extractLocalName(name);
+        String namespaceURI = "";
+        if (prefix != null) {
+            namespaceURI = (String) namespaces.get(prefix);
+            if(namespaceURI == null) {
+                throw new DatabaseConfigurationException("No namespace defined for prefix: " + prefix +
+                    " in index definition");
+            }
+        }
+        qname = new QName(localName, namespaceURI, prefix);
+        if (isAttribute)
+            qname.setNameType(ElementValue.ATTRIBUTE);
 	}
 
 	public QName getQName() {
