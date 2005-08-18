@@ -958,8 +958,9 @@ public class NativeBroker extends DBBroker {
                         
                         // --move to-- NativeValueIndex
                         RangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-                        if(spec != null)
+                        if(spec != null) {
                             indexType = spec.getIndexType();
+                        }
                         
 //                        // --move to-- NativeValueIndexByQName
 //                        RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
@@ -985,10 +986,11 @@ public class NativeBroker extends DBBroker {
                 case Node.ATTRIBUTE_NODE :
                     boolean indexAttribs = false;
                     
-    				QName idxQName = new QName('@' + node.getLocalName(), node
-    						.getNamespaceURI());
+//    				QName idxQName = new QName('@' + node.getLocalName(), node
+//    						.getNamespaceURI());
+                    QName qname = node.getQName();
     				if (currentPath != null)
-    					currentPath.addComponent(idxQName);
+    					currentPath.addComponent(qname);
     				
                     // --move to-- NativeElementIndex NativeValueIndex NativeTextEngine
                     if(index && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
@@ -996,23 +998,13 @@ public class NativeBroker extends DBBroker {
                         indexAttribs = true;
                     }
                     
-                    // --move to-- NativeElementIndex
-                    // TODO : elementIndex.storeAttribute(node, currentPath, index);
-                    elementIndex.setDocument(doc);
-                    NodeProxy tempProxy =
-                        new NodeProxy(doc, gid, address);
-                    tempProxy.setIndexType(indexType);
-                    QName qname = node.getQName();
-                    qname.setNameType(ElementValue.ATTRIBUTE);
-                    elementIndex.addRow(qname, tempProxy);
-                    
                     // --move to-- NativeValueIndex
                     // TODO : valueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
                     GeneralRangeIndexSpec valSpec = null;
                     if (idxSpec != null) {
                         valSpec = idxSpec.getIndexByPath(currentPath);
                         if(valSpec != null) {
-                            indexType = valSpec.getIndexType();
+                            indexType |= valSpec.getIndexType();
                         }
                     }
                     if (valSpec != null) {
@@ -1027,7 +1019,16 @@ public class NativeBroker extends DBBroker {
                     // TODO : textEngine.storeAttribute( (AttrImpl)node, currentPath, index);
                     if (indexAttribs && !isTemp )
                         textEngine.storeAttribute(ftIdx, (AttrImpl) node);
-                                        
+                    
+//                  --move to-- NativeElementIndex
+                    // TODO : elementIndex.storeAttribute(node, currentPath, index);
+                    elementIndex.setDocument(doc);
+                    NodeProxy tempProxy =
+                        new NodeProxy(doc, gid, address);
+                    tempProxy.setIndexType(indexType);
+                    qname.setNameType(ElementValue.ATTRIBUTE);
+                    elementIndex.addRow(qname, tempProxy);
+                    
                     // --move to-- NativeElementIndex
                     // TODO : elementIndex.storeAttribute(node, currentPath, index);
                     // if the attribute has type ID, store the ID-value
@@ -2161,8 +2162,7 @@ public class NativeBroker extends DBBroker {
 				break;
 				
 			case Node.ATTRIBUTE_NODE :
-				QName idxQName = new QName('@' + node.getLocalName(), node.getNamespaceURI());
-			    currentPath.addComponent(idxQName);
+			    currentPath.addComponent(node.getQName());
 				elementIndex.setDocument(doc);
 				qname = node.getQName();
 				qname.setNameType(ElementValue.ATTRIBUTE);
