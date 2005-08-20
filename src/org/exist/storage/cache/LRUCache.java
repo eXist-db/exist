@@ -239,8 +239,10 @@ public class LRUCache implements Cache {
     }
 
     public int getLoad() {
-        if (hitsOld == -1)
-            return -1;
+        if (hitsOld == 0) {
+            hitsOld = hits;
+            return Integer.MAX_VALUE;
+        }
         int load = hits - hitsOld;
         hitsOld = hits;
         return load;
