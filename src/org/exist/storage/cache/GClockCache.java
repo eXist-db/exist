@@ -48,7 +48,7 @@ public class GClockCache implements Cache {
 	protected Long2ObjectHashMap map;
 	protected int used = 0;
 	protected int hits = 0 ;
-    protected int hitsOld = -1;
+    protected int hitsOld = 0;
 	protected int fails = 0 ;
     protected double growthFactor;
     protected int growthThreshold;
@@ -219,8 +219,10 @@ public class GClockCache implements Cache {
     }
 
     public int getLoad() {
-        if (hitsOld == -1)
-            return -1;
+        if (hitsOld == 0) {
+            hitsOld = hits;
+            return Integer.MAX_VALUE;
+        }
         int load = hits - hitsOld;
         hitsOld = hits;
         return load;
