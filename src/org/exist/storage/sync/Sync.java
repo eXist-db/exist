@@ -29,4 +29,8 @@ public class Sync implements Runnable {
 			pool.triggerSync(MINOR_SYNC);
 		}
 	}
+    
+    public void restart() {
+        lastMajorSync = System.currentTimeMillis();
+    }
 }
