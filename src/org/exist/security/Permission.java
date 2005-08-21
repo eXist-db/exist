@@ -298,17 +298,18 @@ public class Permission {
      *@return    Description of the Return Value
      */
     public String toString() {
-        StringBuffer buf = new StringBuffer();
-        buf.append( ( permissions & ( READ << 6 ) ) == 0 ? '-' : 'r' );
-        buf.append( ( permissions & ( WRITE << 6 ) ) == 0 ? '-' : 'w' );
-        buf.append( ( permissions & ( UPDATE << 6 ) ) == 0 ? '-' : 'u' );
-        buf.append( ( permissions & ( READ << 3 ) ) == 0 ? '-' : 'r' );
-        buf.append( ( permissions & ( WRITE << 3 ) ) == 0 ? '-' : 'w' );
-        buf.append( ( permissions & ( UPDATE << 3 ) ) == 0 ? '-' : 'u' );
-        buf.append( ( permissions & READ ) == 0 ? '-' : 'r' );
-        buf.append( ( permissions & WRITE ) == 0 ? '-' : 'w' );
-        buf.append( ( permissions & UPDATE ) == 0 ? '-' : 'u' );
-        return buf.toString();
+        final char ch[] = {
+                ( permissions & ( READ << 6 ) ) == 0 ? '-' : 'r',
+                ( permissions & ( WRITE << 6 ) ) == 0 ? '-' : 'w',
+                ( permissions & ( UPDATE << 6 ) ) == 0 ? '-' : 'u',
+                ( permissions & ( READ << 3 ) ) == 0 ? '-' : 'r',
+                ( permissions & ( WRITE << 3 ) ) == 0 ? '-' : 'w',
+                ( permissions & ( UPDATE << 3 ) ) == 0 ? '-' : 'u',
+                ( permissions & READ ) == 0 ? '-' : 'r',
+                ( permissions & WRITE ) == 0 ? '-' : 'w',
+                ( permissions & UPDATE ) == 0 ? '-' : 'u'
+        };
+        return new String(ch);
     }
 
 
