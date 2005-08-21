@@ -36,17 +36,21 @@ public class RemoveValueLoggable extends AbstractBFileLoggable {
     protected long page;
     protected short tid;
     protected byte[] oldData;
+    protected int offset = 0;
+    protected int len;
     
     /**
      * @param type
      * @param fileId
      * @param transaction
      */
-    public RemoveValueLoggable(Txn transaction, byte fileId, long page, short tid, byte[] oldData) {
+    public RemoveValueLoggable(Txn transaction, byte fileId, long page, short tid, byte[] oldData, int offset, int len) {
         super(BFile.LOG_REMOVE_VALUE, fileId, transaction);
         this.page = page;
         this.tid = tid;
         this.oldData = oldData;
+        this.offset = offset;
+        this.len = len;
     }
 
     /**
@@ -61,21 +65,21 @@ public class RemoveValueLoggable extends AbstractBFileLoggable {
         super.write(out);
         out.putInt((int) page);
         out.putShort(tid);
-        out.putShort((short) oldData.length);
-        out.put(oldData);
+        out.putShort((short) len);
+        out.put(oldData, offset, len);
     }
     
     public void read(ByteBuffer in) {
         super.read(in);
         page = in.getInt();
         tid = in.getShort();
-        int len = in.getShort();
+        len = in.getShort();
         oldData = new byte[len];
         in.get(oldData);
     }
     
     public int getLogSize() {
-        return super.getLogSize() + oldData.length + 8;
+        return super.getLogSize() + len + 8;
     }
     
     public void redo() throws LogException {
