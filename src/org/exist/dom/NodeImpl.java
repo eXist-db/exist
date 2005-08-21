@@ -70,6 +70,18 @@ public class NodeImpl implements Node, QNameable {
 		this.gid = gid;
 	}
 
+    /**
+     * Copy constructor: creates a copy of the other node.
+     * 
+     * @param other
+     */
+    public NodeImpl(NodeImpl other) {
+        this.nodeType = other.nodeType;
+        this.gid = other.gid;
+        this.internalAddress = other.internalAddress;
+        this.ownerDocument = other.ownerDocument;
+    }
+    
 	/**
 	 * Read a node from the specified byte array.
 	 * 

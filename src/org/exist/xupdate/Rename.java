@@ -87,15 +87,15 @@ public class Rename extends Modification {
                 parent = (NodeImpl) node.getParentNode();
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
-                        ((ElementImpl) node).setNodeName(new QName(newName, "",
-                                null));
-                        parent.updateChild(transaction, node, node);
+                        ElementImpl newElem = new ElementImpl((ElementImpl) node);
+                        newElem.setNodeName(new QName(newName, "", null));
+                        parent.updateChild(transaction, node, newElem);
                         modificationCount++;
                         break;
                     case Node.ATTRIBUTE_NODE:
-                        ((AttrImpl) node).setNodeName(new QName(newName, "",
-                                null));
-                        parent.updateChild(transaction, node, node);
+                        AttrImpl newAttr = new AttrImpl((AttrImpl) node);
+                        newAttr.setNodeName(new QName(newName, "", null));
+                        parent.updateChild(transaction, node, newAttr);
                         modificationCount++;
                         break;
                     default:
