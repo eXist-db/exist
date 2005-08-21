@@ -368,6 +368,8 @@ public class BrokerPool {
 	 */
 	private SyncDaemon syncDaemon;
 
+    private Sync sync;
+    
 	/**
 	 * The listener that is notified when the database instance shuts down.
 	 */
@@ -540,9 +542,11 @@ public class BrokerPool {
 		initialize();
 		
 		//TODO : move this to initialize ?
-        if (syncPeriod > 0)
-        	//TODO : why not automatically register Sync in system tasks ? 
-            syncDaemon.executePeriodically(1000, new Sync(this, syncPeriod), false);
+        if (syncPeriod > 0) {
+        	//TODO : why not automatically register Sync in system tasks ?
+            sync = new Sync(this, syncPeriod);
+            syncDaemon.executePeriodically(60000, sync, false);
+        }
 	}
 	
 	//TODO : create a canReadJournalDir() method in the *relevant* class. The two directories may be different.
@@ -1001,7 +1005,8 @@ public class BrokerPool {
                 LOG.warn(e.getMessage(), e);
             }
             cacheManager.checkCaches();
-        }   
+            sync.restart();
+        }
         //TODO : touch this.syncEvent and syncRequired ?
 	}
 	
@@ -1200,6 +1205,8 @@ public class BrokerPool {
 
 	//TODO : move this elsewhere
     public void triggerCheckpoint() {
+        if (syncRequired)
+            return;
         synchronized (this) {
             syncEvent = Sync.MAJOR_SYNC;
             syncRequired = true;
