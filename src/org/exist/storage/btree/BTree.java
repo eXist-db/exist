@@ -1,6 +1,30 @@
 package org.exist.storage.btree;
 
 /*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-05 The eXist Project
+ *  http://exist-db.org
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ *  
+ *  This file is in part based on code from the dbXML Group. The original license
+ *  statement is included below:
+ *  
+ *  -------------------------------------------------------------------------------------------------
  *  dbXML License, Version 1.0
  *
  *  Copyright (c) 1999-2001 The dbXML Group, L.L.C.
@@ -46,8 +70,6 @@ package org.exist.storage.btree;
  *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *  $Id$
  */
 import java.io.File;
 import java.io.IOException;
@@ -65,29 +87,20 @@ import org.exist.storage.journal.LogException;
 import org.exist.storage.journal.Loggable;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ArrayUtils;
 import org.exist.util.ByteConversion;
 import org.exist.xquery.TerminatedException;
 
 /**
- *  BTree represents a Variable Magnitude Simple-Prefix B+Tree File. A BTree is
- *  a bit flexible in that it can be used for set or map-based indexing.
- *  HashFiler uses the BTree as a set for producing RecordSet entries. The
- *  Indexers use BTree as a map for indexing entity and attribute values in
- *  Documents. <br>
- *  <br>
- *  For those who don't know how a Simple-Prefix B+Tree works, the primary
- *  distinction is that instead of promoting actual keys to branch pages, when
- *  leaves are split, a shortest-possible separator is generated at the pivot.
- *  That separator is what is promoted to the parent branch (and continuing up
- *  the list). As a result, actual keys and pointers can only be found at the
- *  leaf level. This also affords the index the ability to ignore costly merging
- *  and redistribution of pages when deletions occur. Deletions only affect leaf
- *  pages in this implementation, and so it is entirely possible for a leaf page
- *  to be completely empty after all of its keys have been removed. <br>
- *  <br>
- *  Also, the Variable Magnitude attribute means that the btree attempts to
- *  store as many values and pointers on one page as is possible.
+ *  A general purpose B+-tree which stores binary keys as instances of
+ *  {@link org.exist.storage.btree.Value}. The actual value data is not
+ *  stored in the B+tree itself. Instead, we use long pointers to record the
+ *  storage address of the value. This class has no methods to locate or
+ *  modify data records. Data handling is in the responsibilty of the 
+ *  proper subclasses: {@link org.exist.storage.index.BFile} and
+ *  {@link org.exist.storage.dom.DOMFile}.
+ *  
+ *  Both, branch and leaf nodes are represented by the inner class 
+ *  {@link org.exist.storage.btree.BTree.BTreeNode}.
  */
 public class BTree extends Paged {
 
@@ -302,6 +315,17 @@ public class BTree extends Paged {
         remove(null, query, callback);
     }
     
+    /**
+     * Search for keys matching the given {@link IndexQuery} and
+     * remove them from the node. Every match is reported 
+     * to the specified {@link BTreeCallback}.
+     * 
+     * @param query
+     * @param callback
+     * @throws IOException
+     * @throws BTreeException
+     * @throws TerminatedException
+     */
 	public void remove(Txn transaction, IndexQuery query, BTreeCallback callback)
 		throws IOException, BTreeException, TerminatedException {
 		if (query != null && query.getOperator() == IndexQuery.TRUNC_RIGHT) {
@@ -315,7 +339,14 @@ public class BTree extends Paged {
 		getRootNode().remove(transaction, query, callback);
 	}
 
-	private BTreeNode getBTreeNode(long page, BTreeNode parent) {
+    /**
+     * Read a node from the given page.
+     * 
+     * @param page
+     * @param parent
+     * @return
+     */
+	private BTreeNode getBTreeNode(long page) {
 		try {
 			BTreeNode node = (BTreeNode) cache.get(page);
 			if (node == null) {
@@ -332,6 +363,14 @@ public class BTree extends Paged {
 		}
 	}
 
+    /**
+     * Create a new node with the given status and parent.
+     * 
+     * @param transaction
+     * @param status
+     * @param parent
+     * @return
+     */
 	private BTreeNode createBTreeNode(Txn transaction, byte status, BTreeNode parent) {
 		try {
 			Page p = getFreePage();
@@ -354,18 +393,34 @@ public class BTree extends Paged {
 		}
 	}
 
+    /**
+     * Set the root node of the tree.
+     * 
+     * @param rootNode
+     * @throws IOException
+     */
 	protected void setRootNode(BTreeNode rootNode) throws IOException {
 		fileHeader.setRootPage(rootNode.page.getPageNum());
 		fileHeader.write();
 		cache.add(rootNode, 2);
 	}
 
+    /**
+     * Create the root node.
+     * 
+     * @param transaction
+     * @return
+     * @throws IOException
+     */
 	protected long createRootNode(Txn transaction) throws IOException {
 		BTreeNode root = createBTreeNode(transaction, LEAF, null);
 		setRootNode(root);
 		return root.page.getPageNum();
 	}
 
+    /**
+     * @return the root node.
+     */
 	protected BTreeNode getRootNode() {
 		try {
 			BTreeNode node = (BTreeNode) cache.get(fileHeader.getRootPage());
@@ -382,20 +437,19 @@ public class BTree extends Paged {
 		}
 	}
 
+    /**
+     * Print a dump of the tree to the given writer. For debug only!
+     * @param writer
+     * @throws IOException
+     * @throws BTreeException
+     */
     public void dump(Writer writer) throws IOException, BTreeException {
         BTreeNode root = getRootNode();
         LOG.debug("ROOT = " + root.page.getPageNum());
         root.dump(writer);
     }
-    
-    /**
-     * @see org.exist.storage.btree.Paged#drop()
-     */
-    public boolean drop() throws DBException {
-        return getFile().delete();
-    }
 
-    /**
+    /*
      * @see org.exist.storage.btree.Paged#flush()
      */
 	public boolean flush() throws DBException {
@@ -404,7 +458,7 @@ public class BTree extends Paged {
 		return true;
 	}
 
-    /**
+    /*
      * @see org.exist.storage.btree.Paged#close()
      */
 	public boolean close() throws DBException {
@@ -467,7 +521,7 @@ public class BTree extends Paged {
 	}
     
     protected void redoInsertValue(InsertValueLoggable loggable) throws LogException {
-        BTreeNode node = getBTreeNode(loggable.pageNum, null);
+        BTreeNode node = getBTreeNode(loggable.pageNum);
         if (requiresRedo(loggable, node.page)) {
             node.insertKey(loggable.key, loggable.idx);
             node.insertPointer(loggable.pointer, loggable.idx);
@@ -487,7 +541,7 @@ public class BTree extends Paged {
     }
     
     protected void redoUpdateValue(UpdateValueLoggable loggable) throws LogException {
-        BTreeNode node = getBTreeNode(loggable.pageNum, null);
+        BTreeNode node = getBTreeNode(loggable.pageNum);
         if (requiresRedo(loggable, node.page)) {
             node.ptrs[loggable.idx] = loggable.pointer;
             node.ph.setLsn(loggable.getLsn());
@@ -505,7 +559,7 @@ public class BTree extends Paged {
     }
     
     protected void redoRemoveValue(RemoveValueLoggable loggable) throws LogException {
-        BTreeNode node = getBTreeNode(loggable.pageNum, null);
+        BTreeNode node = getBTreeNode(loggable.pageNum);
         if (node.page.getPageHeader().getLsn() > -1 && requiresRedo(loggable, node.page)) {
             node.removeKey(loggable.idx);
             node.removePointer(loggable.idx);
@@ -525,7 +579,7 @@ public class BTree extends Paged {
     }
     
     protected void redoUpdatePage(UpdatePageLoggable loggable) throws LogException {
-        BTreeNode node = getBTreeNode(loggable.pageNum, null);
+        BTreeNode node = getBTreeNode(loggable.pageNum);
         if (requiresRedo(loggable, node.page)) {
             node.keys = loggable.values;
             node.nKeys = loggable.values.length;
@@ -537,7 +591,7 @@ public class BTree extends Paged {
     }
     
     protected void redoSetParent(SetParentLoggable loggable) throws LogException {
-        BTreeNode node = getBTreeNode(loggable.pageNum, null);
+        BTreeNode node = getBTreeNode(loggable.pageNum);
         if (requiresRedo(loggable, node.page)) {
             node.ph.parentPage = loggable.parentNum;
             node.ph.setLsn(loggable.getLsn());
@@ -586,8 +640,10 @@ public class BTree extends Paged {
 		private int refCount = 0;
 		private int timestamp = 0;
 		
+        /** does this node need to be saved? */
 		private boolean saved = true;
 
+        /** the computed raw data size required by this node */
 		private int currentDataLen = -1;
 		
 		public BTreeNode(Page page, boolean newPage) {
@@ -619,7 +675,7 @@ public class BTree extends Paged {
          */
 		public BTreeNode getParent() {
 			if (-1 < ph.parentPage) {
-				return getBTreeNode(ph.parentPage, null);
+				return getBTreeNode(ph.parentPage);
 			} else {
                 return null;
             }
@@ -858,7 +914,7 @@ public class BTree extends Paged {
          */
 		private BTreeNode getChildNode(int idx) throws IOException {
 			if (ph.getStatus() == BRANCH && idx >= 0 && idx < nPtrs)
-				return getBTreeNode(ptrs[idx], this);
+				return getBTreeNode(ptrs[idx]);
 			else
 				return null;
 		}
@@ -1115,7 +1171,7 @@ public class BTree extends Paged {
 		private void setAsParent(Txn transaction) {
 			if (ph.getStatus() == BRANCH) {
 				for (int i = 0; i < nPtrs; i++) {
-					BTreeNode node = getBTreeNode(ptrs[i], this);
+					BTreeNode node = getBTreeNode(ptrs[i]);
 					if (transaction != null && isTransactional) {
 	                    Loggable log = new SetParentLoggable(transaction, fileId, node.page.getPageNum(), 
 	                            page.getPageNum());
