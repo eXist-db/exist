@@ -1,8 +1,31 @@
 package org.exist.storage.btree;
 
 /*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-05 The eXist Project
+ *  http://exist-db.org
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ *  
+ *  This file is in part based on code from the dbXML Group. The original license
+ *  statement is included below:
+ *  
+ *  -------------------------------------------------------------------------------------------------
  *  dbXML License, Version 1.0
- *
  *
  *  Copyright (c) 1999-2001 The dbXML Group, L.L.C.
  *  All rights reserved.
@@ -47,8 +70,6 @@ package org.exist.storage.btree;
  *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *  $Id$
  */
 import java.io.File;
 import java.io.IOException;
@@ -60,9 +81,8 @@ import org.exist.storage.journal.Lsn;
 import org.exist.util.ByteConversion;
 
 /**
- *  Paged is a paged file foundation that is used by both the BTree class and
- *  the HashFiler. It provides flexible paged I/O and page caching
- *  functionality.
+ *  Paged is a paged file foundation that is used by the BTree class and
+ *  its subclasses.
  */
 
 public abstract class Paged {
@@ -107,31 +127,16 @@ public abstract class Paged {
 		return PAGE_SIZE;
 	}
 
-	public static Value[] deleteArrayValue(Value[] vals, int idx) {
-		Value[] newVals = new Value[vals.length - 1];
-		if (idx > 0)
-			System.arraycopy(vals, 0, newVals, 0, idx);
-		if (idx < newVals.length)
-			System.arraycopy(vals, idx + 1, newVals, idx, newVals.length - idx);
-		return newVals;
-	}
-
-	// These are a bunch of utility methods for subclasses
-
-	public static Value[] insertArrayValue(Value[] vals, Value val, int idx) {
-		Value[] newVals = new Value[vals.length + 1];
-		if (idx > 0)
-			System.arraycopy(vals, 0, newVals, 0, idx);
-		newVals[idx] = val;
-		if (idx < vals.length)
-			System.arraycopy(vals, idx, newVals, idx + 1, vals.length - idx);
-		return newVals;
-	}
-
 	public final boolean isReadOnly() {
 		return readOnly;
 	}
 
+    /**
+     * Close the underlying files.
+     * 
+     * @return
+     * @throws DBException
+     */
 	public boolean close() throws DBException {
 		try {
 			raf.close();
@@ -196,14 +201,17 @@ public abstract class Paged {
 	 */
 	public abstract PageHeader createPageHeader();
 
-	public boolean drop() throws DBException {
-		return true;
-	}
-
 	public boolean exists() {
 		return !fileIsNew;
 	}
 
+    /**
+     * Flush all dirty pages to disk. This will synch all
+     * caches.
+     * 
+     * @return
+     * @throws DBException
+     */
 	public boolean flush() throws DBException {
 		try {
 			if(fileHeader.isDirty() && !readOnly)
@@ -231,6 +239,11 @@ public abstract class Paged {
 		return fileHeader;
 	}
 
+    /**
+     * Completely close down the instance and
+     * all underlying resources and caches.
+     *
+     */
 	public void closeAndRemove() {
 		try {
 			raf.close();
