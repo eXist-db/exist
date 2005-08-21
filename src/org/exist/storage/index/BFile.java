@@ -744,20 +744,19 @@ public class BFile extends BTree {
         int l = ByteConversion.byteToInt(data, offset);
         
         if (isTransactional && transaction != null) {
-            byte[] oldData = new byte[l];
-            System.arraycopy(data, offset + 4, oldData, 0, l);
-            Loggable loggable = new RemoveValueLoggable(transaction, fileId, page.getPageNum(), tid, oldData);
+            Loggable loggable = new RemoveValueLoggable(transaction, fileId, page.getPageNum(), tid, data, offset + 4, l);
             writeToLog(loggable, page);
         }
         
+        BFilePageHeader ph = page.getPageHeader();
         int end = offset + 4 + l;
-        int len = page.getPageHeader().getDataLength();
+        int len = ph.getDataLength();
         // remove old value
         System.arraycopy(data, end, data, offset - 2, len - end);
-        page.getPageHeader().setDirty(true);
-        page.getPageHeader().decRecordCount();
+        ph.setDirty(true);
+        ph.decRecordCount();
         len = len - l - 6;
-        page.getPageHeader().setDataLength(len);
+        ph.setDataLength(len);
         page.setDirty(true);
         // if this page is empty, remove it
         if (len == 0) {
