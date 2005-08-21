@@ -60,6 +60,11 @@ public class NamedNode extends NodeImpl implements QNameable {
         this.nodeName = qname;
     }
     
+    public NamedNode(NamedNode other) {
+        super(other);
+        this.nodeName = other.nodeName;
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.dom.NodeImpl#getQName()
      */

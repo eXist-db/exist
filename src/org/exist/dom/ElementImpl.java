@@ -116,6 +116,15 @@ public class ElementImpl extends NamedNode implements Element {
         super(Node.ELEMENT_NODE, gid, nodeName);
     }
 
+    public ElementImpl(ElementImpl other) {
+        super(other);
+        this.children = other.children;
+        this.attributes = other.attributes;
+        this.namespaceMappings = other.namespaceMappings;
+        this.indexType = other.indexType;
+        this.position = other.position;
+    }
+    
     /**
      * Reset this element to its initial state.
      *

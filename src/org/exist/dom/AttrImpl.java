@@ -49,7 +49,6 @@ public class AttrImpl extends NamedNode implements Attr {
 	public final static int ID = 1;
 	
 	protected int attributeType = CDATA;
-    protected ElementImpl ownerElement = null;
     protected String value = null;
 
     public AttrImpl() {
@@ -65,6 +64,12 @@ public class AttrImpl extends NamedNode implements Attr {
 		this.value = value;
     }
 
+    public AttrImpl(AttrImpl other) {
+        super(other);
+        this.attributeType = other.attributeType;
+        this.value = other.value;
+    }
+    
     public static NodeImpl deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
     	int next = start;
         byte idSizeType = (byte) ( data[next] & 0x3 );

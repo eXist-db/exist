@@ -42,6 +42,7 @@ import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
@@ -77,7 +78,15 @@ public class Rename extends Modification {
 		Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.getLength() == 0)
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
-		String newName = contentSeq.itemAt(0).getStringValue();
+        
+        QName newQName;
+        Item item = contentSeq.itemAt(0);
+        if (item.getType() == Type.QNAME) {
+            newQName = ((QNameValue) item).getQName();
+        } else {
+            newQName = QName.parse(context, item.getStringValue());
+        }
+
 		try {
             TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
             Txn transaction = transact.beginTransaction();
@@ -99,14 +108,14 @@ public class Rename extends Modification {
                 parent = (NodeImpl) node.getParentNode();
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
-                        ((ElementImpl) node).setNodeName(new QName(newName, "",
-                                null));
-                        parent.updateChild(transaction, node, node);
+                        ElementImpl newElem = new ElementImpl((ElementImpl) node);
+                        newElem.setNodeName(newQName);
+                        parent.updateChild(transaction, node, newElem);
                         break;
                     case Node.ATTRIBUTE_NODE:
-                        ((AttrImpl) node).setNodeName(new QName(newName, "",
-                                null));
-                        parent.updateChild(transaction, node, node);
+                        AttrImpl newAttr = new AttrImpl((AttrImpl) node);
+                        newAttr.setNodeName(newQName);
+                        parent.updateChild(transaction, node, newAttr);
                         break;
                     default:
                         throw new XPathException(getASTNode(), "unsupported node-type");
