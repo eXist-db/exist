@@ -36,16 +36,21 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
     protected Value values[];
     protected long pointers[];
     protected long pageNum;
+    protected int nValues;
+    protected int nPointers;
     
     /**
      * @param type
      * @param transaction
      */
-    public UpdatePageLoggable(Txn transaction, byte fileId, long pageNum, Value values[], long pointers[]) {
+    public UpdatePageLoggable(Txn transaction, byte fileId, long pageNum, Value values[], int nValues, 
+            long pointers[], int nPointers) {
         super(BTree.LOG_UPDATE_PAGE, fileId, transaction);
         this.pageNum = pageNum;
         this.values = values;
+        this.nValues = nValues;
         this.pointers = pointers;
+        this.nPointers = nPointers;
     }
 
     /**
@@ -63,14 +68,14 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
     public void write(ByteBuffer out) {
         super.write(out);
         out.putLong(pageNum);
-        out.putShort((short) values.length);
-        for (int i = 0; i < values.length; i++) {
+        out.putShort((short) nValues);
+        for (int i = 0; i < nValues; i++) {
             out.putShort((short) values[i].getLength());
             out.put(values[i].data(), values[i].start(), values[i].getLength());
         }
         
-        out.putShort((short) pointers.length);
-        for (int i = 0; i < pointers.length; i++) {
+        out.putShort((short) nPointers);
+        for (int i = 0; i < nPointers; i++) {
             out.putLong(pointers[i]);
         }
     }
@@ -81,20 +86,20 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
     public void read(ByteBuffer in) {
         super.read(in);
         pageNum = in.getLong();
-        int len = in.getShort();
-        values = new Value[len];
+        nValues = in.getShort();
+        values = new Value[nValues];
         int dataLen;
         byte[] data;
-        for (int i = 0; i < len; i++) {
+        for (int i = 0; i < nValues; i++) {
             dataLen = in.getShort();
             data = new byte[dataLen];
             in.get(data);
             values[i] = new Value(data);
         }
         
-        len = in.getShort();
-        pointers = new long[len];
-        for (int i = 0; i < len; i++) {
+        nPointers = in.getShort();
+        pointers = new long[nPointers];
+        for (int i = 0; i < nPointers; i++) {
             pointers[i] = in.getLong();
         }
     }
@@ -103,8 +108,8 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
      * @see org.exist.storage.log.Loggable#getLogSize()
      */
     public int getLogSize() {
-        int len = super.getLogSize() + 12 + (pointers.length * 8);
-        for (int i = 0; i < values.length; i++)
+        int len = super.getLogSize() + 12 + (nPointers * 8);
+        for (int i = 0; i < nValues; i++)
             len += values[i].getLength() + 2;
         return len;
     }
