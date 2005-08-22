@@ -127,23 +127,5 @@ public class RemoteResourceSet implements ResourceSet {
             return getResource( pos++ );
         }
     }
-    
-	/* (non-Javadoc)
-	 * @see java.lang.Object#finalize()
-	 */
-	protected void finalize() throws Throwable {
-		try {
-			Vector params = new Vector(1);
-			params.addElement(new Integer(handle));
-			XmlRpcClient rpcClient = collection.getClient();
-			if(rpcClient != null)
-				rpcClient.execute("releaseQueryResult", params);
-		} catch(XmlRpcException e) {
-			e.printStackTrace();
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 }
 
