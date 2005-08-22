@@ -324,68 +324,69 @@ public class NativeBroker extends DBBroker {
     // ============ dispatch the various events to indexing classes ==========
 
     private void notifyStartElement(ElementImpl elem, NodePath currentPath, boolean index) {
-        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+        // WM: don't use an iterator here. The method may be called a few million times for a single document. 
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.startElement(elem, currentPath, index);
         }
 	}
   
 	private void notifyStoreAttribute(AttrImpl attr, NodePath currentPath, boolean index) {
-        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.storeAttribute( attr, currentPath, index );
         }	
 	}
 	
 
 	private void notifyStoreText(TextImpl text, NodePath currentPath, boolean index ) {
-        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.storeText(text, currentPath, index);
         }
 	}
 	
 
 	private void notifyRemoveElement(ElementImpl elem, NodePath currentPath, String content) {
-        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.removeElement(elem, currentPath, content);
         }
 	}
 	
     private void notifyDropIndex(DocumentImpl doc) throws ReadOnlyException {
-        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.dropIndex(doc);
         }
     }
     private void notifyDropIndex(Collection collection) {
-        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.dropIndex(collection);
         }
     }
     private void notifyFlush() {
-        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.flush();
         }
     }
     private void notifyRemove() {
-        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.remove();
         }
     }
     private void notifyReindex(final DocumentImpl oldDoc, final NodeImpl node) {
-        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.reindex(oldDoc, node);
         }
     }
     private void notifySync() {
-        for (Iterator iter = contentLoadingObservers.iterator(); iter.hasNext();) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) iter.next();
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.sync();
         }
     }
@@ -916,6 +917,7 @@ public class NativeBroker extends DBBroker {
         private FulltextIndexSpec ftIdx;
         private int depth;
         private int level;
+        
         /** overall switch to activate fulltext indexation */
         private boolean index = true;
         private boolean repairMode = false;
@@ -1023,8 +1025,7 @@ public class NativeBroker extends DBBroker {
 //                  --move to-- NativeElementIndex
                     // TODO : elementIndex.storeAttribute(node, currentPath, index);
                     elementIndex.setDocument(doc);
-                    NodeProxy tempProxy =
-                        new NodeProxy(doc, gid, address);
+                    final NodeProxy tempProxy = new NodeProxy(doc, gid, address);
                     tempProxy.setIndexType(indexType);
                     qname.setNameType(ElementValue.ATTRIBUTE);
                     elementIndex.addRow(qname, tempProxy);
@@ -1923,6 +1924,8 @@ public class NativeBroker extends DBBroker {
         if (!collection.getPermissions().validate(user, Permission.WRITE))
             throw new PermissionDeniedException("not allowed to remove collection");
         
+        long start = System.currentTimeMillis();
+        
         final boolean isRoot = collection.getParentPath() == null;
         
         final CollectionCache collectionsCache = pool.getCollectionsCache();
@@ -1998,7 +2001,7 @@ public class NativeBroker extends DBBroker {
             LOG.debug("removing resources ...");
             for (Iterator i = collection.iterator(this); i.hasNext();) {
                 final DocumentImpl doc = (DocumentImpl) i.next();
-                LOG.debug("removing document " + doc.getFileName());
+//                LOG.debug("removing document " + doc.getFileName());
                 new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                     public Object start() {
                         if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -2018,7 +2021,6 @@ public class NativeBroker extends DBBroker {
                             IndexQuery query =
                                 new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
                             domDb.remove(transaction, query, null);
-                            domDb.flush();
                         } catch (BTreeException e) {
                             LOG.warn("btree error while removing document", e);
                         } catch (DBException e) {
@@ -2036,6 +2038,8 @@ public class NativeBroker extends DBBroker {
                 freeDocument(transaction, doc.getDocId());
             }
         }
+        if (LOG.isDebugEnabled())
+            LOG.debug("Removing collection took " + (System.currentTimeMillis() - start));
         return true;
     }
 
@@ -2070,7 +2074,6 @@ public class NativeBroker extends DBBroker {
 				public Object start() {
 					try {
 						domDb.remove(transaction, idx, null);
-						domDb.flush();
 					} catch (BTreeException e) {
                         LOG.warn("start() - " + "error while removing doc", e);
 					} catch (DBException e) {
@@ -2664,7 +2667,8 @@ public class NativeBroker extends DBBroker {
 	 */
 	public void endElement(final NodeImpl node, NodePath currentPath, String content) {
 	    final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
-	    final NodeProxy tempProxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
+//	    tempProxy.reset(doc, node.getGID(), node.getInternalAddress());
+        final NodeProxy tempProxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
 //	    final IndexSpec idxSpec = 
 //		    doc.getCollection().getIdxConf(this);
 		
@@ -2779,6 +2783,17 @@ public class NativeBroker extends DBBroker {
 
 	public void sync(int syncEvent) {
 		try {
+            new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+                public Object start() {
+                    try {
+                        domDb.flush();
+                    } catch (DBException e) {
+                        LOG.warn("error while flushing dom.dbx", e);
+                    }
+                    return null;
+                }
+            }
+            .run();
 			if(syncEvent == Sync.MAJOR_SYNC) {
                 Lock lock = collectionsDb.getLock();
                 try {
@@ -2789,17 +2804,6 @@ public class NativeBroker extends DBBroker {
                 } finally {
                     lock.release();
                 }
-                new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-                    public Object start() {
-                        try {
-                            domDb.flush();
-                        } catch (DBException e) {
-                            LOG.warn("error while flushing dom.dbx", e);
-                        }
-                        return null;
-                    }
-                }
-                .run();
                 notifySync();
 				System.gc();
 				Runtime runtime = Runtime.getRuntime();
