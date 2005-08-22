@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
@@ -58,6 +59,7 @@ import org.exist.util.FixedByteArray;
 import org.exist.util.IndexCallback;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
+import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
 
@@ -335,19 +337,22 @@ public class BFile extends BTree {
      * @throws BTreeException
      */
     public void removeAll(IndexQuery query) throws IOException, BTreeException {
+        // first collect the values to remove, then sort them by their page number
+        // and remove them.
         try {
-            remove(query, new BTreeCallback() {
-
-                public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-                    try {
-                        remove(pointer);
-                        return true;
-                    } catch (ReadOnlyException e) {
-                        LOG.debug("file is read-only");
-                        return false;
-                    }
+            RemoveCallback cb = new RemoveCallback(); 
+            remove(query, cb);
+            LOG.debug("Found " + cb.count + " items to remove.");
+            if (cb.count == 0)
+                return;
+            Arrays.sort(cb.pointers, 0, cb.count - 1);
+            for (int i = 0; i < cb.count; i++) {
+                try {
+                    remove(cb.pointers[i]);
+                } catch (ReadOnlyException e) {
+                    LOG.warn("Database is read-only. Cannot remove items.");
                 }
-            });
+            }
         } catch (TerminatedException e) {
             // Should never happen during remove
 
@@ -357,6 +362,21 @@ public class BFile extends BTree {
         }
     }
 
+    private class RemoveCallback implements BTreeCallback {
+        long[] pointers = new long[128];
+        int count = 0;
+        
+        public boolean indexInfo(Value value, long pointer) throws TerminatedException {
+            if (count == pointers.length) {
+                long[] np = new long[count * 2];
+                System.arraycopy(pointers, 0, np, 0, count);
+                pointers = np;
+            }
+            pointers[count++] = pointer;
+            return true;
+        }
+    }
+    
     public ArrayList findEntries(IndexQuery query) throws IOException,
             BTreeException, TerminatedException {
         FindCallback cb = new FindCallback(FindCallback.BOTH);
@@ -1970,15 +1990,15 @@ public class BFile extends BTree {
             long next = firstPage.getPageNum();
             SinglePage page = firstPage;
             do {
-                next = page.getPageHeader().getNextInChain();
+                next = page.ph.getNextInChain();
                 if (isTransactional && transaction != null) {
-                    int dataLen = page.getPageHeader().getDataLength();
+                    int dataLen = page.ph.getDataLength();
                     if (dataLen > fileHeader.getWorkSize())
                         dataLen = fileHeader.getWorkSize();
                     Loggable loggable = new OverflowRemoveLoggable(fileId, transaction, 
-                            page.getPageHeader().getStatus(), page.getPageNum(),
+                            page.ph.getStatus(), page.getPageNum(),
                             page.getData(), dataLen, 
-                            page.getPageHeader().getNextInChain());
+                            page.ph.getNextInChain());
                     writeToLog(loggable, page);
                 }
                 
@@ -1986,7 +2006,7 @@ public class BFile extends BTree {
                 page.setDirty(true);
                 dataCache.remove(page);
                 page.delete();
-                if (next > 0) page = (SinglePage) getDataPage(next, false);
+                if (next > 0) page = getSinglePage(next);
             } while (next > 0);
         }
 
