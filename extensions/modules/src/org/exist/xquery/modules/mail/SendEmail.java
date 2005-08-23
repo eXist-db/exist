@@ -314,22 +314,25 @@ public class SendEmail extends BasicFunction
 			String Version = eXistVersion();									//Version of eXist
 			String MultipartBoundary = "eXist.multipart." + Version;			//Multipart Boundary
 			
+			if(ContentType_Charset == "")										//set default charset if requied
+				ContentType_Charset = "UTF-8";								
+				
 			//write the message headers
-			out.println("From: " + aMail.getFrom());
+			out.println("From: " + encode(aMail.getFrom(), ContentType_Charset));
 			for(int x = 0; x < aMail.countTo(); x++)
 			{	
-				out.println("To: " + aMail.getTo(x));
+				out.println("To: " + encode(aMail.getTo(x), ContentType_Charset));
 			}
 			for(int x = 0; x < aMail.countCC(); x++)
 			{	
-				out.println("CC: " + aMail.getCC(x));
+				out.println("CC: " + encode(aMail.getCC(x), ContentType_Charset));
 			}
 			for(int x = 0; x < aMail.countBCC(); x++)
 			{	
-				out.println("BCC: " + aMail.getBCC(x));
+				out.println("BCC: " + encode(aMail.getBCC(x), ContentType_Charset));
 			}
 			out.println("Date: " + getDateRFC822());
-			out.println("Subject: " + aMail.getSubject());
+			out.println("Subject: " + encode(aMail.getSubject(), ContentType_Charset));
 			out.println("X-Mailer: eXist " + Version + " util:send-email()");
 			out.println("MIME-Version: 1.0");
 			
@@ -340,34 +343,20 @@ public class SendEmail extends BasicFunction
 				out.println("Content-Type: multipart/alternative; boundary=\"" + MultipartBoundary + "\";");
 				
 				//Mime warning
-				out.println("Error your mail client is not MIME Compatible");
+				out.println(encode("Error your mail client is not MIME Compatible", ContentType_Charset));
 				
 				//send the text part first 
 				out.println("--" + MultipartBoundary);
-				if(ContentType_Charset == "")
-				{
-					out.println("Content-Type: text/plain; charset=UTF-8");
-				}
-				else
-				{
-					out.println("Content-Type: text/plain; charset=" + ContentType_Charset);
-				}
+				out.println("Content-Type: text/plain; charset=" + ContentType_Charset);
 				out.println("Content-Transfer-Encoding: quoted-printable");
 				out.println(aMail.getText());
 				
 				//send the html part next
 				out.println("--" + MultipartBoundary);
-				if(ContentType_Charset == "")
-				{
-					out.println("Content-Type: text/html; charset=UTF-8");
-				}
-				else
-				{
-					out.println("Content-Type: text/html; charset=" + ContentType_Charset);
-				}
+				out.println("Content-Type: text/html; charset=" + ContentType_Charset);
 				out.println("Content-Transfer-Encoding: quoted-printable");
-				out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">");
-				out.println(aMail.getXHTML());
+				out.println(encode("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">", ContentType_Charset));
+				out.println(encode(aMail.getXHTML(), ContentType_Charset));
 				
 				//Emd multipart message
 				out.println("--" + MultipartBoundary + "--");
@@ -379,37 +368,23 @@ public class SendEmail extends BasicFunction
 				if(!aMail.getText().toString().equals(""))
 				{
 					//Yes, text email
-					if(ContentType_Charset == "")
-					{
-						out.println("Content-Type: text/plain; charset=UTF-8");
-					}
-					else
-					{
-						out.println("Content-Type: text/plain; charset=" + ContentType_Charset);
-					}
+					out.println("Content-Type: text/plain; charset=" + ContentType_Charset);
 					out.println("Content-Transfer-Encoding: quoted-printable");
 					
 					//now send the trxt message
 					out.println();
-					out.println(aMail.getText());
+					out.println(encode(aMail.getText(), ContentType_Charset));
 				}
 				else
 				{
 					//No, its a HTML email
-					if(ContentType_Charset == "")
-					{
-						out.println("Content-Type: text/html; charset=UTF-8");
-					}
-					else
-					{
-						out.println("Content-Type: text/html; charset=" + ContentType_Charset);
-					}
+					out.println("Content-Type: text/html; charset=" + ContentType_Charset);
 					out.println("Content-Transfer-Encoding: quoted-printable");
 					
 					//now send the html message
 					out.println();
-					out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">");
-					out.println(aMail.getXHTML());
+					out.println(encode("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">", ContentType_Charset));
+					out.println(encode(aMail.getXHTML(), ContentType_Charset));
 				}
 			}
 			
@@ -698,6 +673,19 @@ public class SendEmail extends BasicFunction
 		dateString += tzSign + tzHours + tzMinutes;
 		
 		return(dateString);
+	}
+	
+	//encodes a string to the charset
+	private String encode (String str, String ContentType_Charset)
+	{
+		try
+		{
+			return new String(str.getBytes(), ContentType_Charset);
+		}
+		catch(java.io.UnsupportedEncodingException e)
+		{
+			return str;
+		}
 	}
 	
 	//Class that Represents an email
