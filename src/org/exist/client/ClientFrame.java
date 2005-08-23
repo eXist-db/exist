@@ -401,10 +401,19 @@ public class ClientFrame extends JFrame
             }
         });
         fileMenu.add(item);
+        
+        item = new JMenuItem("Rename", KeyEvent.VK_R);
+        item.setAccelerator(KeyStroke.getKeyStroke("control R"));
+        item.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		renameAction(e);
+        	}
+        });
+		fileMenu.add(item);
         fileMenu.addSeparator();
         
-        item = new JMenuItem("Reindex collection", KeyEvent.VK_R);
-        item.setAccelerator(KeyStroke.getKeyStroke("control R"));
+        item = new JMenuItem("Reindex collection", KeyEvent.VK_I);
+        item.setAccelerator(KeyStroke.getKeyStroke("control I"));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 reindexAction(e);
@@ -851,6 +860,47 @@ public class ClientFrame extends JFrame
             }
         };
         new Thread(moveTask).start();
+    }
+    
+    private void renameAction(ActionEvent ev) {
+        final ResourceDescriptor[] res = getSelectedResources();
+        
+        String[] collections = null;
+        try {
+            Collection root = client.getCollection("/db");
+            Vector collectionsVec = getCollections(root, new Vector());
+            collections = new String[collectionsVec.size()];
+            collectionsVec.toArray(collections);
+        } catch (XMLDBException e) {
+            showErrorMessage(e.getMessage(), e);
+            return;
+        }
+        
+        Object val = JOptionPane.showInputDialog(this, "Please enter a new filename", "Rename", JOptionPane.QUESTION_MESSAGE);
+		
+        if(val == null)
+            return;
+        final String destinationFilename = (String)val;
+        Runnable renameTask = new Runnable() {
+            public void run() {
+                try {
+                    CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+                    client.current.getService("CollectionManagementService", "1.0");
+                    for(int i = 0; i < res.length; i++) {
+                        setStatus("Renaming " + res[i].getName() + " to " + destinationFilename + "...");
+                        if(res[i].isCollection())
+                            service.move(res[i].getName(), null, destinationFilename);
+                        else
+                            service.moveResource(res[i].getName(), null, destinationFilename);
+                    }
+                    client.reloadCollection();
+                } catch (XMLDBException e) {
+                    showErrorMessage(e.getMessage(), e);
+                }
+                setStatus("Rename completed.");
+            }
+        };
+        new Thread(renameTask).start();
     }
     
     private void copyAction(ActionEvent ev) {

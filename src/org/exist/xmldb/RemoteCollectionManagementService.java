@@ -119,8 +119,15 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public void move(String collectionPath, String destinationPath, String newName) throws XMLDBException {
         if(!collectionPath.startsWith("/db"))
             collectionPath = parent.getPath() + '/' + collectionPath;
-        if(!destinationPath.startsWith("/db"))
-            destinationPath = parent.getPath() + '/' + destinationPath;
+        if(destinationPath != null)
+        {
+        	if(!destinationPath.startsWith("/db"))
+        		destinationPath = parent.getPath() + '/' + destinationPath;
+        }
+        else
+        {
+        	destinationPath = parent.getPath();
+        }
         if(newName == null) {
             int p = collectionPath.lastIndexOf(('/'));
             newName = collectionPath.substring(p + 1);
@@ -148,8 +155,15 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public void moveResource(String resourcePath, String destinationPath, String newName) throws XMLDBException {
         if(!resourcePath.startsWith("/db"))
             resourcePath = parent.getPath() + '/' + resourcePath;
-        if(!destinationPath.startsWith("/db"))
-            destinationPath = parent.getPath() + '/' + destinationPath;
+        if(destinationPath != null)
+        {
+        	if(!destinationPath.startsWith("/db"))
+        		destinationPath = parent.getPath() + '/' + destinationPath;
+        }
+        else
+        {
+        	destinationPath = parent.getPath();
+        }
         if(newName == null) {
             int p = resourcePath.lastIndexOf(('/'));
             newName = resourcePath.substring(p + 1);
