@@ -158,8 +158,15 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             String newName) throws XMLDBException {
         if(!collectionPath.startsWith("/db"))
             collectionPath = parent.getPath() + '/' + collectionPath;
-        if(!destinationPath.startsWith("/db"))
-            destinationPath = parent.getPath() + '/' + destinationPath;
+        if(destinationPath != null)
+        {
+        	if(!destinationPath.startsWith("/db"))
+        		destinationPath = parent.getPath() + '/' + destinationPath;
+        }
+        else
+        {
+        	destinationPath = parent.getPath();
+        }
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
@@ -205,8 +212,15 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             String newName) throws XMLDBException {
         if(!resourcePath.startsWith("/db"))
             resourcePath = parent.getPath() + '/' + resourcePath;
-        if(!destinationPath.startsWith("/db"))
-            destinationPath = parent.getPath() + '/' + destinationPath;
+        if(destinationPath != null)
+        {
+        	if(!destinationPath.startsWith("/db"))
+        		destinationPath = parent.getPath() + '/' + destinationPath;
+        }
+        else
+        {
+        	destinationPath = parent.getPath();
+        }
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
