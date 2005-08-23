@@ -47,6 +47,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 import org.exist.util.FastStringBuffer;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
@@ -117,6 +118,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	private boolean inModification = false;
 	private boolean inAttribute = false;
     private boolean preserveWhitespace = false;
+    private boolean preserveWhitespaceTemp = false;
     private Stack spaceStack = null;
 	
 	private Modification modification = null;
@@ -148,6 +150,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		this.broker = broker;
 		this.documentSet = docs;
 		namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
+		Configuration config = broker.getConfiguration();
+		Boolean temp;
+		if ((temp = (Boolean) config.getProperty("indexer.preserve-whitespace-mixed-content"))
+			!= null)
+			preserveWhitespaceTemp = temp.booleanValue();
 	}
 
 	public XUpdateProcessor() throws ParserConfigurationException {
@@ -199,7 +206,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	 */
 	public void startDocument() throws SAXException {
         // The default...
-        this.preserveWhitespace = false;
+        this.preserveWhitespace = preserveWhitespaceTemp;
         this.spaceStack = new Stack();
         this.spaceStack.push("default");
 	}
@@ -586,7 +593,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
             this.preserveWhitespace = true;
         } else if ("default".equals(wsSetting)) {
             this.spaceStack.push(wsSetting);
-            this.preserveWhitespace = false;
+            this.preserveWhitespace = preserveWhitespaceTemp;
         }
         // Otherwise, don't change what's currently in effect!
     }
@@ -598,7 +605,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
             this.spaceStack.pop();
             if (0 == this.spaceStack.size()) {
                 // This is the default...
-                this.preserveWhitespace = false;
+                this.preserveWhitespace = preserveWhitespaceTemp;
             } else {
                 this.preserveWhitespace = ("preserve".equals(this.spaceStack.peek()));
             }
