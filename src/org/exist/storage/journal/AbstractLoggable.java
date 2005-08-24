@@ -44,6 +44,10 @@ public abstract class AbstractLoggable implements Loggable {
         this.transactId = transactionId;
     }
     
+    public void clear(long transactionId) {
+        this.transactId = transactionId;
+    }
+    
     public byte getLogType() {
         return type;
     }

@@ -185,6 +185,7 @@ public class CacheManager {
             if (cache.getGrowthFactor() > 1.0) {
                 load = cache.getLoad();
                 if (cache.getBuffers() > minSize && load < SHRINK_THRESHOLD) {
+                    LOG.debug("Shrinking cache: " + cache.getBuffers());
                     currentPageCount -= cache.getBuffers();
                     cache.resize(getDefaultInitialSize());
                     currentPageCount += getDefaultInitialSize();

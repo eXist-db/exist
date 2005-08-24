@@ -462,8 +462,8 @@ public final class ClusterCollection extends Collection {
     /* (non-Javadoc)
 	 * @see org.exist.storage.cache.Cacheable#release()
 	 */
-    public boolean sync() {
-        return collection.sync();
+    public boolean sync(boolean syncJournal) {
+        return collection.sync(syncJournal);
     }
 
     /* (non-Javadoc)

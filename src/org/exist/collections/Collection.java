@@ -1526,7 +1526,7 @@ implements Comparable, EntityResolver, Cacheable {
 	/* (non-Javadoc)
 	 * @see org.exist.storage.cache.Cacheable#release()
 	 */
-	public boolean sync() {
+	public boolean sync(boolean syncJournal) {
 	    return false;
 	}
 	

@@ -545,7 +545,7 @@ public class BrokerPool {
         if (syncPeriod > 0) {
         	//TODO : why not automatically register Sync in system tasks ?
             sync = new Sync(this, syncPeriod);
-            syncDaemon.executePeriodically(10000, sync, false);
+            syncDaemon.executePeriodically(2500, sync, false);
         }
 	}
 	
