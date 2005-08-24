@@ -50,6 +50,7 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(GetRequestData.signature, GetRequestData.class),
 		new FunctionDef(CreateSession.signature, CreateSession.class),
 		new FunctionDef(RequestURI.signature, RequestURI.class),
+		new FunctionDef(RequestURL.signature, RequestURL.class),
 		new FunctionDef(RedirectTo.signature, RedirectTo.class),
 		new FunctionDef(EncodeURL.signature, EncodeURL.class),
 		new FunctionDef(GetUploadedFile.signature, GetUploadedFile.class),

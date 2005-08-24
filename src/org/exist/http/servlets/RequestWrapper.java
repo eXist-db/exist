@@ -80,6 +80,8 @@ public interface RequestWrapper {
 	
 	public String getRequestURI();
 	
+	public StringBuffer getRequestURL();
+	
 	public String getScheme();
 	
 	public String getServerName();
