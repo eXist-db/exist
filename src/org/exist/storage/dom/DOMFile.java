@@ -163,9 +163,11 @@ public class DOMFile extends BTree implements Lockable {
 
 	private DocumentImpl currentDocument = null;
 
+    private final AddValueLoggable addValueLog = new AddValueLoggable();
+    
 	public DOMFile(BrokerPool pool, File file, CacheManager cacheManager)
 			throws DBException {
-		super(pool, NativeBroker.DOM_DBX_ID, cacheManager, 1000);
+		super(pool, NativeBroker.DOM_DBX_ID, true, cacheManager, 1000);
 		lock = new ReentrantReadWriteLock("dom.dbx");
 		fileHeader = (BTreeFileHeader) getFileHeader();
 		fileHeader.setPageCount(0);
@@ -277,9 +279,8 @@ public class DOMFile extends BTree implements Lockable {
 		// "; len = " + valueLen + "; dataLen = " + page.data.length);
 
 		if (isTransactional && transaction != null) {
-			AddValueLoggable loggable = new AddValueLoggable(transaction, page
-					.getPageNum(), tid, value);
-			writeToLog(loggable, page.page);
+            addValueLog.clear(transaction, page.getPageNum(), tid, value);
+			writeToLog(addValueLog, page.page);
 		}
 
 		ByteConversion.shortToByte(tid, page.data, page.len);
@@ -1150,6 +1151,8 @@ public class DOMFile extends BTree implements Lockable {
 	 *                           Description of the Exception
 	 */
 	public boolean flush() throws DBException {
+        if (isTransactional)
+            logManager.flushToLog(true);
 		if (!BrokerPool.FORCE_CORRUPTION) {
 			super.flush();
 			dataCache.flush();
@@ -2843,10 +2846,10 @@ public class DOMFile extends BTree implements Lockable {
 					+ hexDump(data);
 		}
 
-		public boolean sync() {
+		public boolean sync(boolean syncJournal) {
 			if (isDirty()) {
 				write();
-                if (isTransactional)
+                if (isTransactional && syncJournal)
                     logManager.flushToLog(true);
 				return true;
 			}
