@@ -108,7 +108,7 @@ public class UpdateRecoverTest extends TestCase {
             
             DocumentSet docs = new DocumentSet();
             docs.add(info.getDocument());
-            XUpdateProcessor proc = new XUpdateProcessor();
+            XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
             
             String xupdate;
             Modification modifications[];

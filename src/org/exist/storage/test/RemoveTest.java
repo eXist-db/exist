@@ -58,7 +58,7 @@ public class RemoveTest extends AbstractUpdateTest {
             IndexInfo info = init(broker, mgr);
             DocumentSet docs = new DocumentSet();
             docs.add(info.getDocument());
-            XUpdateProcessor proc = new XUpdateProcessor();
+            XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
             
             Txn transaction = mgr.beginTransaction();
             
