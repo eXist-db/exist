@@ -157,6 +157,12 @@ public class StandaloneServer {
         if (props.getProperty("xmlrpc.enabled").equalsIgnoreCase("yes"))
         	System.out.println("XMLRPC:\t\tlocalhost:" + httpPort + "/xmlrpc");
     }
+    
+    public boolean isStarted() {
+    	if (httpServer == null)
+    		return false;
+    	return httpServer.isStarted();    	
+    }
 
     /**
 	 * @param home
