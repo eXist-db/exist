@@ -40,324 +40,294 @@ import org.apache.cocoon.servlet.multipart.Part;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
 
-/**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+/** A wrapper for requests processed by Cocoon.
+ * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class CocoonRequestWrapper implements RequestWrapper {
 
-	private Request request;
-	private HttpServletRequest httpRequest = null;
+	private Request cocoonRequest;
+	private HttpServletRequest servletRequest = null;
 	
 	/**
-	 * 
+	 * Constructs a wrapper for the given Cocoon request.
+	 * @param cocoonRequest The request as viewed by Cocoon.
 	 */
-	public CocoonRequestWrapper(Request request) {
-		this.request = request;
+	public CocoonRequestWrapper(Request cocoonRequest) {
+		this.cocoonRequest = cocoonRequest;
 	}
 
-	public CocoonRequestWrapper(Request request, HttpServletRequest httpRequest) {
-		this.request = request;
-		this.httpRequest = httpRequest;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.http.servlets.RequestWrapper#getInputStream()
+	/** Constructs a wrapper for the given Cocoon request.
+	 * @param cocoonRequest The request as viewed by Cocoon.
+	 * @param httpRequest The request as viewed by Cocoon's servlet
 	 */
+	public CocoonRequestWrapper(Request cocoonRequest, HttpServletRequest servletRequest) {
+		this.cocoonRequest = cocoonRequest;
+		this.servletRequest = servletRequest;
+	}	
+	 
+	/** 
+	 * @see javax.servlet.http.HttpServletRequest#getInputStream()
+	 */	
 	public InputStream getInputStream() throws IOException {
-		if(httpRequest == null)
+		if(servletRequest == null)
 			throw new IOException("Request input stream is only available " +
 				"within a servlet environment");
-		return httpRequest.getInputStream();
+		return servletRequest.getInputStream();
 	}
 	
 	/**
-	 * @param arg0
-	 * @return
+	 * @see org.apache.cocoon.environment.Request#get(String)
 	 */
 	public Object get(String arg0) {
-		return request.get(arg0);
+		return cocoonRequest.get(arg0);
 	}
 
 	/**
-	 * @return
+	 * @see org.apache.cocoon.environment.Request#getCharacterEncoding()
 	 */
 	public String getCharacterEncoding() {
-		return request.getCharacterEncoding();
+		return cocoonRequest.getCharacterEncoding();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getContentLength()
 	 */
 	public int getContentLength() {
-		return request.getContentLength();
+		return cocoonRequest.getContentLength();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getContentType()
 	 */
 	public String getContentType() {
-		return request.getContentType();
+		return cocoonRequest.getContentType();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getContextPath()
 	 */
 	public String getContextPath() {
-		return request.getContextPath();
+		return cocoonRequest.getContextPath();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getCookieMap()
 	 */
 	public Map getCookieMap() {
-		return request.getCookieMap();
+		return cocoonRequest.getCookieMap();
 	}
 
-	/**
-	 * @param arg0
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getHeader(String)
 	 */
 	public String getHeader(String arg0) {
-		return request.getHeader(arg0);
+		return cocoonRequest.getHeader(arg0);
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getHeaderNames()
 	 */
 	public Enumeration getHeaderNames() {
-		return request.getHeaderNames();
+		return cocoonRequest.getHeaderNames();
 	}
 
-	/**
-	 * @param arg0
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getHeaders(String)
 	 */
 	public Enumeration getHeaders(String arg0) {
-		return request.getHeaders(arg0);
+		return cocoonRequest.getHeaders(arg0);
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getMethod()
 	 */
 	public String getMethod() {
-		return request.getMethod();
+		return cocoonRequest.getMethod();
 	}
 
-	/**
-	 * @param arg0
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getParameter(String)
 	 */
 	public String getParameter(String arg0) {
-		return request.getParameter(arg0);
+		return cocoonRequest.getParameter(arg0);
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getParameterNames()
 	 */
 	public Enumeration getParameterNames() {
-		return request.getParameterNames();
+		return cocoonRequest.getParameterNames();
 	}
 
-	/**
-	 * @param arg0
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getParameterValues(String)
 	 */
 	public String[] getParameterValues(String arg0) {
-		return request.getParameterValues(arg0);
+		return cocoonRequest.getParameterValues(arg0);
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getPathInfo()
 	 */
 	public String getPathInfo() {
-		return request.getPathInfo();
+		return cocoonRequest.getPathInfo();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getPathTranslated()
 	 */
 	public String getPathTranslated() {
-		return request.getPathTranslated();
+		return cocoonRequest.getPathTranslated();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getProtocol()
 	 */
 	public String getProtocol() {
-		return request.getProtocol();
+		return cocoonRequest.getProtocol();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getQueryString()
 	 */
 	public String getQueryString() {
-		return request.getQueryString();
+		return cocoonRequest.getQueryString();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getRemoteAddr()
 	 */
 	public String getRemoteAddr() {
-		return request.getRemoteAddr();
+		return cocoonRequest.getRemoteAddr();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getRemoteHost()
 	 */
 	public String getRemoteHost() {
-		return request.getRemoteHost();
+		return cocoonRequest.getRemoteHost();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getRemoteUser()
 	 */
 	public String getRemoteUser() {
-		return request.getRemoteUser();
+		return cocoonRequest.getRemoteUser();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getRequestedSessionId()
 	 */
 	public String getRequestedSessionId() {
-		return request.getRequestedSessionId();
+		return cocoonRequest.getRequestedSessionId();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getRequestURI()
 	 */
 	public String getRequestURI() {
-		return request.getRequestURI();
+		return cocoonRequest.getRequestURI();
 	}
+	
+	/**@see javax.servlet.http.HttpServletRequest#getRequestURL()
+	 */
+	public StringBuffer getRequestURL() {
+		//TODO : check accuracy
+		if (this.servletRequest == null) 
+			return null;
+		return this.servletRequest.getRequestURL();
+	}	
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getScheme()
 	 */
 	public String getScheme() {
-		return request.getScheme();
+		return cocoonRequest.getScheme();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getServerName()
 	 */
 	public String getServerName() {
-		return request.getServerName();
+		return cocoonRequest.getServerName();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getServerPort()
 	 */
 	public int getServerPort() {
-		return request.getServerPort();
+		return cocoonRequest.getServerPort();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getServletPath()()
 	 */
 	public String getServletPath() {
-		return request.getServletPath();
+		return cocoonRequest.getServletPath();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getSession()
 	 */
 	public SessionWrapper getSession() {
-		Session session = request.getSession();
+		Session session = cocoonRequest.getSession();
 		if(session == null)
 			return null;
 		else
 			return new CocoonSessionWrapper(session);
 	}
 
-	/**
-	 * @param arg0
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getSession(boolean)
 	 */
 	public SessionWrapper getSession(boolean arg0) {
-		Session session = request.getSession(arg0);
+		Session session = cocoonRequest.getSession(arg0);
 		if(session == null)
 			return null;
 		else
 			return new CocoonSessionWrapper(session);
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getSitemapURI()
 	 */
 	public String getSitemapURI() {
-		return request.getSitemapURI();
+		return cocoonRequest.getSitemapURI();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#getUserPrincipal()
 	 */
 	public Principal getUserPrincipal() {
-		return request.getUserPrincipal();
+		return cocoonRequest.getUserPrincipal();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#isRequestedSessionIdFromCookie()
 	 */
 	public boolean isRequestedSessionIdFromCookie() {
-		return request.isRequestedSessionIdFromCookie();
+		return cocoonRequest.isRequestedSessionIdFromCookie();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#isRequestedSessionIdFromURL()
 	 */
 	public boolean isRequestedSessionIdFromURL() {
-		return request.isRequestedSessionIdFromURL();
+		return cocoonRequest.isRequestedSessionIdFromURL();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#isRequestedSessionIdValid()
 	 */
 	public boolean isRequestedSessionIdValid() {
-		return request.isRequestedSessionIdValid();
+		return cocoonRequest.isRequestedSessionIdValid();
 	}
 
-	/**
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#isSecure()
 	 */
 	public boolean isSecure() {
-		return request.isSecure();
+		return cocoonRequest.isSecure();
 	}
 
-	/**
-	 * @param arg0
-	 * @return
+	/**@see org.apache.cocoon.environment.Request#isUserInRole(String)
 	 */
 	public boolean isUserInRole(String arg0) {
-		return request.isUserInRole(arg0);
+		return cocoonRequest.isUserInRole(arg0);
 	}
 
-	/**
-	 * @param arg0
+	/**@see org.apache.cocoon.environment.Request#removeAttribute(String)
 	 */
 	public void removeAttribute(String arg0) {
-		request.removeAttribute(arg0);
+		cocoonRequest.removeAttribute(arg0);
 	}
 
-	/**
-	 * @param arg0
-	 * @param arg1
+	/**@see org.apache.cocoon.environment.Request#setAttribute(String, Object)
 	 */
 	public void setAttribute(String arg0, Object arg1) {
-		request.setAttribute(arg0, arg1);
+		cocoonRequest.setAttribute(arg0, arg1);
 	}
 
-	/**
-	 * @param arg0
-	 * @throws java.io.UnsupportedEncodingException
+	/**@see org.apache.cocoon.environment.Request#setCharacterEncoding(String)
 	 */
 	public void setCharacterEncoding(String arg0) throws UnsupportedEncodingException {
-		request.setCharacterEncoding(arg0);
+		cocoonRequest.setCharacterEncoding(arg0);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.http.servlets.RequestWrapper#getFileUploadParam(java.lang.String)
+	/* 
+	 * @see org.apache.cocoon.environment.Request#getFileUploadParam(String)
 	 */
 	public File getFileUploadParam(String parameter) {
-		 Object param = request.get(parameter);
+		 Object param = cocoonRequest.get(parameter);
 		 if(param == null)
 		 	return null;
 		 if(param instanceof Part) {
@@ -382,11 +352,11 @@ public class CocoonRequestWrapper implements RequestWrapper {
 		 return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.http.servlets.RequestWrapper#getUploadedFileName(java.lang.String)
+	/* 
+	 * @see org.apache.cocoon.environment.Request#getUploadedFileName(String)
 	 */
 	public String getUploadedFileName(String parameter) {
-		 Object param = request.get(parameter);
+		 Object param = cocoonRequest.get(parameter);
 		 if(param == null)
 		 	return null;
 		 if(param instanceof Part) {

@@ -42,40 +42,43 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
 
-/**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+/** A wrapper for requests processed by a servlet.
+ * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class HttpRequestWrapper implements RequestWrapper {
     
-    private HttpServletRequest request;
+    private HttpServletRequest servletRequest;
     private String formEncoding = null;
     private String containerEncoding = null;
     
     private Hashtable params = null;
     
-    /**
-     *
+	/**
+	 * Constructs a wrapper for the given servlet request.
+     * @param servletRequest The request as viewed by the servlet
+     * @param formEncoding The encoding of the request's forms
+     * @param containerEncoding The encoding of the servlet
      */
-    public HttpRequestWrapper(HttpServletRequest request, String formEncoding,
+    public HttpRequestWrapper(HttpServletRequest servletRequest, String formEncoding,
             String containerEncoding) {
-        this.request = request;
+        this.servletRequest = servletRequest;
         this.formEncoding = formEncoding;
         this.containerEncoding = containerEncoding;
-        if(FileUpload.isMultipartContent(request)) {
-            parseMultipartContent(request);
+        if(FileUpload.isMultipartContent(servletRequest)) {
+            parseMultipartContent();
         }
-    }
-    
+    }    
     
     /**
-     * @param request2
+     * Parses multi-part requests in order to set the parameters. 
      */
-    private void parseMultipartContent(HttpServletRequest request) {
+    private void parseMultipartContent() {
         DiskFileUpload upload = new DiskFileUpload();
         upload.setSizeThreshold(0);
         try {
             this.params = new Hashtable();
-            List items = upload.parseRequest(request);
+            List items = upload.parseRequest(this.servletRequest);
             for(Iterator i = items.iterator(); i.hasNext(); ) {
                 FileItem next = (FileItem) i.next();
                 Object old = params.get(next.getFieldName());
@@ -97,79 +100,95 @@ public class HttpRequestWrapper implements RequestWrapper {
         }
     }
     
-    
-        /* (non-Javadoc)
-         * @see org.exist.http.servlets.RequestWrapper#getInputStream()
-         */
-    public InputStream getInputStream() throws IOException {
-        return request.getInputStream();
+    /**
+     * @param obj
+     * @return
+     */
+    private FileItem getFileItem(Object obj) {
+        if(obj instanceof List)
+            return (FileItem)((List)obj).get(0);
+        else
+            return (FileItem)obj;
     }
     
     /**
+     * @param value
      * @return
+     */
+    private String decode(String value) {
+        if(containerEncoding == null)
+        	//TODO : use file.encoding system property ?
+            containerEncoding = "ISO-8859-1";
+        if(containerEncoding.equals(formEncoding))
+            return value;
+        try {
+            byte[] bytes = value.getBytes(containerEncoding);
+            return new String(bytes, formEncoding);
+        } catch (UnsupportedEncodingException e) {
+            return value;
+        }
+    }    
+    
+    /** @see javax.servlet.http.HttpServletRequest#getInputStream()
+     */
+    public InputStream getInputStream() throws IOException {
+        return servletRequest.getInputStream();
+    }
+    
+    /** @see javax.servlet.http.HttpServletRequest#getCharacterEncoding()
      */
     public String getCharacterEncoding() {
-        return request.getCharacterEncoding();
+        return servletRequest.getCharacterEncoding();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getContentLength()
      */
     public int getContentLength() {
-        return request.getContentLength();
+        return servletRequest.getContentLength();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getContentType()
      */
     public String getContentType() {
-        return request.getContentType();
+        return servletRequest.getContentType();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getContextPath()
      */
     public String getContextPath() {
-        return request.getContextPath();
+        return servletRequest.getContextPath();
     }
     
-    /**
-     * @param arg0
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getHeader(String)
      */
     public String getHeader(String arg0) {
-        return request.getHeader(arg0);
+        return servletRequest.getHeader(arg0);
     }
     
-    /**
+    /**@see javax.servlet.http.HttpServletRequest#getCharacterEncoding()
      * @return
      */
     public Enumeration getHeaderNames() {
-        return request.getHeaderNames();
+        return servletRequest.getHeaderNames();
     }
     
-    /**
-     * @param arg0
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getHeaders(String)
      */
     public Enumeration getHeaders(String arg0) {
-        return request.getHeaders(arg0);
+        return servletRequest.getHeaders(arg0);
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getMethod()
      */
     public String getMethod() {
-        return request.getMethod();
+        return servletRequest.getMethod();
     }
     
-    /**
-     * @param arg0
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
     public String getParameter(String name) {
         if(params == null) {
-            String value = request.getParameter(name);
+            String value = servletRequest.getParameter(name);
             if(formEncoding == null || value == null)
                 return value;
             return decode(value);
@@ -193,39 +212,35 @@ public class HttpRequestWrapper implements RequestWrapper {
         }
     }
     
+    /**@see javax.servlet.http.HttpServletRequest#getParameter(String)
+     */
     public File getFileUploadParam(String name) {
         if(params == null)
             return null;
         Object o = params.get(name);
         if(o == null)
             return null;
-        FileItem item = getItem(o);
+        FileItem item = getFileItem(o);
         if(item.isFormField())
             return null;
         return ((DefaultFileItem)item).getStoreLocation();
     }
     
-    public String getUploadedFileName(String name) {
-        
-        if(params == null){
-            return null;
-        }
-        
+    /**@see javax.servlet.http.HttpServletRequest#getParameter(String)
+     */
+    public String getUploadedFileName(String name) {        
+        if(params == null)
+            return null;        
         Object o = params.get(name);
-        if(o == null){
-            return null;
-        }
-        
-        FileItem item = getItem(o);
-        if(item.isFormField()){
-            return null;
-        }
-        
+        if(o == null)
+            return null;        
+        FileItem item = getFileItem(o); 
+        if(item.isFormField())
+            return null;        
         // Get filename from FileItem
-        String itemName=item.getName();
-        if(itemName == null){
+        String itemName = item.getName();
+        if(itemName == null)
             return null;
-        }
         
         // Several browsers, e.g. MSIE send a full path of the LOCALLY stored
         // file instead of the filename alone.
@@ -245,44 +260,23 @@ public class HttpRequestWrapper implements RequestWrapper {
         return documentName;
     }
     
-    private FileItem getItem(Object obj) {
-        if(obj instanceof List)
-            return (FileItem)((List)obj).get(0);
-        else
-            return (FileItem)obj;
-    }
     
-    private String decode(String value) {
-        if(containerEncoding == null)
-            containerEncoding = "ISO-8859-1";
-        if(containerEncoding.equals(formEncoding))
-            return value;
-        try {
-            byte[] bytes = value.getBytes(containerEncoding);
-            return new String(bytes, formEncoding);
-        } catch (UnsupportedEncodingException e) {
-            return value;
-        }
-    }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getParameterNames(String)
      */
     public Enumeration getParameterNames() {
         if(params == null)
-            return request.getParameterNames();
+            return servletRequest.getParameterNames();
         else {
             return params.keys();
         }
     }
     
-    /**
-     * @param arg0
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getParameterValues(String)
      */
     public String[] getParameterValues(String key) {
         if(params == null) {
-            String[] values = request.getParameterValues(key);
+            String[] values = servletRequest.getParameterValues(key);
             if(formEncoding == null || values == null)
                 return values;
             for(int i = 0; i < values.length; i++) {
@@ -319,184 +313,162 @@ public class HttpRequestWrapper implements RequestWrapper {
         }
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getPathInfo()
      */
     public String getPathInfo() {
-        return request.getPathInfo();
+        return servletRequest.getPathInfo();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getPathTranslated()
      */
     public String getPathTranslated() {
-        return request.getPathTranslated();
+        return servletRequest.getPathTranslated();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getProtocol()
      */
     public String getProtocol() {
-        return request.getProtocol();
+        return servletRequest.getProtocol();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getQueryString()
      */
     public String getQueryString() {
-        return request.getQueryString();
+        return servletRequest.getQueryString();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getRemoteAddr()
      */
     public String getRemoteAddr() {
-        return request.getRemoteAddr();
+        return servletRequest.getRemoteAddr();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getRemoteHost()
      */
     public String getRemoteHost() {
-        return request.getRemoteHost();
+        return servletRequest.getRemoteHost();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getRemoteUser()
      */
     public String getRemoteUser() {
-        return request.getRemoteUser();
+        return servletRequest.getRemoteUser();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getRequestedSessionId()
      */
     public String getRequestedSessionId() {
-        return request.getRequestedSessionId();
+        return servletRequest.getRequestedSessionId();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getRequestURI()
      */
     public String getRequestURI() {
-        return request.getRequestURI();
+        return servletRequest.getRequestURI();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getRequestURL()
+     */
+    public StringBuffer getRequestURL() {
+        return servletRequest.getRequestURL();
+    }    
+    
+    /**@see javax.servlet.http.HttpServletRequest#getScheme()
      */
     public String getScheme() {
-        return request.getScheme();
+        return servletRequest.getScheme();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getServerName()
      */
     public String getServerName() {
-        return request.getServerName();
+        return servletRequest.getServerName();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getServerPort()
      */
     public int getServerPort() {
-        return request.getServerPort();
+        return servletRequest.getServerPort();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getServletPath()
      */
     public String getServletPath() {
-        return request.getServletPath();
+        return servletRequest.getServletPath();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getSession()
      */
     public SessionWrapper getSession() {
-        HttpSession session = request.getSession();
+        HttpSession session = servletRequest.getSession();
         if(session == null)
             return null;
         else
             return new HttpSessionWrapper(session);
     }
     
-    /**
-     * @param arg0
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getSession(boolean)
      */
     public SessionWrapper getSession(boolean arg0) {
-        HttpSession session = request.getSession(arg0);
+        HttpSession session = servletRequest.getSession(arg0);
         if(session == null)
             return null;
         else
             return new HttpSessionWrapper(session);
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#getUserPrincipal()
      */
     public Principal getUserPrincipal() {
-        return request.getUserPrincipal();
+        return servletRequest.getUserPrincipal();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#isRequestedSessionIdFromCookie()
      */
     public boolean isRequestedSessionIdFromCookie() {
-        return request.isRequestedSessionIdFromCookie();
+        return servletRequest.isRequestedSessionIdFromCookie();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#isRequestedSessionIdFromURL()
      */
     public boolean isRequestedSessionIdFromURL() {
-        return request.isRequestedSessionIdFromURL();
+        return servletRequest.isRequestedSessionIdFromURL();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#isRequestedSessionIdValid()
      */
     public boolean isRequestedSessionIdValid() {
-        return request.isRequestedSessionIdValid();
+        return servletRequest.isRequestedSessionIdValid();
     }
     
-    /**
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#isSecure()
      */
     public boolean isSecure() {
-        return request.isSecure();
+        return servletRequest.isSecure();
     }
     
-    /**
-     * @param arg0
-     * @return
+    /**@see javax.servlet.http.HttpServletRequest#isUserInRole(String)
      */
     public boolean isUserInRole(String arg0) {
-        return request.isUserInRole(arg0);
+        return servletRequest.isUserInRole(arg0);
     }
     
-    /**
-     * @param arg0
+    /**@see javax.servlet.http.HttpServletRequest#removeAttribute(String)
      */
     public void removeAttribute(String arg0) {
-        request.removeAttribute(arg0);
+        servletRequest.removeAttribute(arg0);
     }
     
-    /**
-     * @param arg0
-     * @param arg1
+    /**@see javax.servlet.http.HttpServletRequest#setAttribute(String, Object)
      */
     public void setAttribute(String arg0, Object arg1) {
-        request.setAttribute(arg0, arg1);
+        servletRequest.setAttribute(arg0, arg1);
     }
     
-    /**
-     * @param arg0
-     * @throws java.io.UnsupportedEncodingException
+    /**@see javax.servlet.http.HttpServletRequest#setCharacterEncoding(String)
      */
     public void setCharacterEncoding(String arg0) throws UnsupportedEncodingException {
-        request.setCharacterEncoding(arg0);
+        servletRequest.setCharacterEncoding(arg0);
     }
     
 }
