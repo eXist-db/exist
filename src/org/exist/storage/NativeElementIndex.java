@@ -134,7 +134,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final SymbolTable symbols = broker.getSymbols();
         DocumentImpl doc;
         int docId;
-        int len;
+        int len, size;
         short collectionId;
         long gid;
         VariableByteInput is = null;
@@ -167,8 +167,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             		docId = is.readInt();
 //                    debug.append("D" + docId + ": ");
             		len = is.readInt();
+                    size = is.readFixedInt();
             		if ((doc = docs.getDoc(docId)) == null) {
-            			is.skip(len * 4);
+                        is.skipBytes(size);
             			continue;
             		}
             		gid = 0;
@@ -235,8 +236,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         collections.add(collection);
         TreeMap map = new TreeMap();
         VariableByteArrayInput is;
-//        int docId;
-        int len;
+        int len, size;
         // required for namespace lookups
         XQueryContext context = new XQueryContext(broker);
         final Lock lock = dbElement.getLock();
@@ -271,12 +271,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     is = new VariableByteArrayInput(val[1].data(), val[1]
                             .start(), val[1].getLength());
                     try {
-                        while (is.available() > 0) {
-//                            docId = 
-                            	is.readInt();
+                        while (is.available() > 0) { 
+                        	is.readInt();
                             len = is.readInt();
+                            size = is.readFixedInt();
                             oc.addOccurrences(len);
-                            is.skip(len * 4);
+                            is.skipBytes(size);
                         }
                     } catch (EOFException e) {
                     } catch (IOException e) {
@@ -361,6 +361,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     while (is.available() > 0) {
                         docId = is.readInt();
                         len = is.readInt();
+                        is.readFixedInt();
                         if (docId == doc.getDocId()) {
                             for (int j = 0; j < len; j++) {
                                 delta = is.readLong();
@@ -432,32 +433,30 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             }
 
             Value key;
-//            Value value;
             VariableByteInput is;
-            VariableByteOutputStream os;
-            int len;
+            int len, size;
             int docId;
-//            long delta;
-//            long address;
             boolean changed;
             for (int i = 0; i < elements.size(); i++) {
                 key = (Value) elements.get(i);
                 is = dbElement.getAsStream(key);
-                os = new VariableByteOutputStream();
+                os.clear();
                 changed = false;
                 try {
                     while (is.available() > 0) {
                         docId = is.readInt();
                         len = is.readInt();
+                        size = is.readFixedInt();
                         if (docId != doc.getDocId()) {
                             // copy data to new buffer
                             os.writeInt(docId);
                             os.writeInt(len);
+                            os.writeFixedInt(size);
                             is.copyTo(os, len * 4);
                         } else {
                             changed = true;
                             // skip
-                            is.skip(len * 4);
+                            is.skipBytes(size);
                         }
                     }
                 } catch (EOFException e) {
@@ -496,7 +495,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         List oldList = new ArrayList(), idList;
         NodeProxy p;
         VariableByteInput is = null;
-        int len, docId;
+        int len, size, lenOffset, docId;
 //        byte[] data;
         Value ref;
 //        Value val;
@@ -530,11 +529,13 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             while (is.available() > 0) {
                                 docId = is.readInt();
                                 len = is.readInt();
+                                size = is.readFixedInt();
                                 if (docId != oldDoc.getDocId()) {
                                     // section belongs to another document:
                                     // copy data to new buffer
                                     os.writeInt(docId);
                                     os.writeInt(len);
+                                    os.writeFixedInt(size);
                                     is.copyTo(os, len * 4);
                                 } else {
                                     // copy nodes to new list
@@ -570,6 +571,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     len = idList.size();
                     os.writeInt(doc.getDocId());
                     os.writeInt(len);
+                    lenOffset = os.position();
+                    os.writeFixedInt(0);
                     last = 0;
                     for (int j = 0; j < len; j++) {
                         p = (NodeProxy) idList.get(j);
@@ -578,13 +581,14 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         os.writeLong(delta);
                         StorageAddress.write(p.getInternalAddress(), os);
                     }
-                    //data = os.toByteArray();
+                    
+                    os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+                    
                     if (is == null)
                         dbElement.put(ref, os.data());
                     else {
                         address = ((BFile.PageInputStream) is).getAddress();
                         dbElement.update(address, ref, os.data());
-                        //dbElement.update(val.getAddress(), ref, data);
                     }
                 } catch (LockException e) {
                     LOG.error("could not acquire lock for index on " + qname);
@@ -610,7 +614,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         List newList = new ArrayList(), idList;
         NodeProxy p;
         VariableByteArrayInput is;
-        int len, docId;
+        int len, size, docId, lenOffset;
         byte[] data;
         Value ref;
         Value val;
@@ -646,11 +650,13 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             while (is.available() > 0) {
                                 docId = is.readInt();
                                 len = is.readInt();
+                                size = is.readFixedInt();
                                 if (docId != doc.getDocId()) {
                                     // section belongs to another document:
                                     // copy data to new buffer
                                     os.writeInt(docId);
                                     os.writeInt(len);
+                                    os.writeFixedInt(size);
                                     try {
                                         is.copyTo(os, len * 4);
                                     } catch(EOFException e) {
@@ -685,6 +691,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     len = newList.size();
                     os.writeInt(doc.getDocId());
                     os.writeInt(len);
+                    lenOffset = os.position();
+                    os.writeFixedInt(0);
                     last = 0;
                     for (int j = 0; j < len; j++) {
                         p = (NodeProxy) newList.get(j);
@@ -693,6 +701,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         os.writeLong(delta);
                         StorageAddress.write(p.getInternalAddress(), os);
                     }
+                    
+                    os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+                    
                     if (val == null) {
                     	dbElement.put(ref, os.data());
                     } else {
@@ -735,6 +746,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         // get collection id for this collection
         long prevId;
         long cid;
+        int lenOffset;
         short collectionId = doc.getCollection().getId();
         Lock lock = dbElement.getLock();
         try {
@@ -747,6 +759,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 len = idList.size();
                 os.writeInt(doc.getDocId());
                 os.writeInt(len);
+                lenOffset = os.position();
+                os.writeFixedInt(0);
+                
                 prevId = 0;
                 for (int j = 0; j < len; j++) {
                     proxy = (NodeProxy) idList.get(j);
@@ -755,6 +770,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     os.writeLong(cid);
                     StorageAddress.write(proxy.getInternalAddress(), os);
                 }
+                
+                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+                
                 if (qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
                     short sym = broker.getSymbols().getSymbol(
                             qname.getLocalName());
