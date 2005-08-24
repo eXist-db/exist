@@ -637,6 +637,12 @@ public class FastByteBuffer implements ByteArray {
 			buf.put(m_array[stopChunk], startColumn, stopColumn - startColumn);
 	}
 	
+    public void set(int position, byte b) {
+        int chunk = position >>> m_chunkBits;
+        int column = position & m_chunkMask;
+        m_array[chunk][column] = b;
+    }
+    
     /**
      *  Get the length of the list. Synonym for size().
      *
@@ -749,4 +755,3 @@ public class FastByteBuffer implements ByteArray {
         return ( m_lastChunk << m_chunkBits ) + m_firstFree;
     }
 }
-

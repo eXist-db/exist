@@ -64,6 +64,13 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         return i;
     }
 
+    public int readFixedInt() throws IOException {
+        return ( readByte() & 0xff ) |
+        ( ( readByte() & 0xff ) << 8 ) |
+        ( ( readByte() & 0xff ) << 16 ) |
+        ( ( readByte() & 0xff ) << 24 );
+    }
+    
     public long readLong() throws IOException {
         byte b = readByte();
         long i = b & 0177;

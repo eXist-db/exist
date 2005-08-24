@@ -89,6 +89,8 @@ public interface VariableByteInput {
      */
     public int readInt() throws IOException;
 
+    public int readFixedInt() throws IOException;
+    
     /**
      * Read a long value in variable byte encoding.
      * 
