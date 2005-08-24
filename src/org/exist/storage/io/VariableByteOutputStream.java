@@ -14,7 +14,7 @@ import org.exist.util.FastByteBuffer;
  */
 public class VariableByteOutputStream extends OutputStream {
 
-	protected ByteArray buf;
+	protected FastByteBuffer buf;
 
 	public VariableByteOutputStream() {
 		super();
@@ -37,6 +37,10 @@ public class VariableByteOutputStream extends OutputStream {
 	public void flush() throws IOException {
 	}
 
+    public int position() {
+        return buf.size();
+    }
+    
 	public byte[] toByteArray() {
 		byte[] b = new byte[buf.size()];
 		buf.copyTo(b, 0);
@@ -83,6 +87,28 @@ public class VariableByteOutputStream extends OutputStream {
 		buf.append((byte) i);
 	}
 
+    public void writeFixedInt(int i) {
+        buf.append((byte) ( ( i >>> 0 ) & 0xff ));
+        buf.append((byte) ( ( i >>> 8 ) & 0xff ));
+        buf.append((byte) ( ( i >>> 16 ) & 0xff ));
+        buf.append((byte) ( ( i >>> 24 ) & 0xff ));
+    }
+    
+    public void writeFixedInt(int position, int i) {
+        buf.set(position, (byte) ( ( i >>> 0 ) & 0xff ));
+        buf.set(position + 1, (byte) ( ( i >>> 8 ) & 0xff ));
+        buf.set(position + 2, (byte) ( ( i >>> 16 ) & 0xff ));
+        buf.set(position + 3, (byte) ( ( i >>> 24 ) & 0xff ));
+    }
+    
+    public void writeInt(int position, int i) {
+        while ((i & ~0177) != 0) {
+            buf.set(position++, (byte) ((i & 0177) | 0200));
+            i >>>= 7;
+        }
+        buf.set(position, (byte) i);
+    }
+    
 	public void writeLong(long l) {
 		while ((l & ~0177) != 0) {
 			buf.append((byte) ((l & 0177) | 0200));

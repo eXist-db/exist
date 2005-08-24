@@ -107,7 +107,14 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
         }
         return i;
     }
-
+    
+    public int readFixedInt() throws IOException {
+        return ( data[position++] & 0xff ) |
+            ( ( data[position++] & 0xff ) << 8 ) |
+            ( ( data[position++] & 0xff ) << 16 ) |
+            ( ( data[position++] & 0xff ) << 24 );
+    }
+    
     public long readLong() throws IOException {
         if (position == end) throw new EOFException();
         byte b = data[position++];
@@ -139,7 +146,7 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
     }
     
     public void skipBytes(long count) throws IOException {
-        for(long i = 0; i < count && position < end; i++, position++)
-            ;
+        for(long i = 0; i < count && position < end; i++)
+            position++;
     }
 }
