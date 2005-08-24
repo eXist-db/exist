@@ -57,7 +57,7 @@ public class RecoveryTest3 extends TestCase {
         TestRunner.run(RecoveryTest3.class);
     }
     
-    private static String directory = "s:/xml/movies";
+    private static String directory = "/home/wolf/xml/movies";
     
     private static File dir = new File(directory);
     
@@ -87,7 +87,7 @@ public class RecoveryTest3 extends TestCase {
             IndexInfo info;
             
             // store some documents.
-            for (int i = 0; i < files.length && i < 2000; i++) {
+            for (int i = 0; i < files.length && i < 5000; i++) {
                 f = files[i];
                 try {
                     info = test.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
@@ -139,7 +139,7 @@ public class RecoveryTest3 extends TestCase {
             IndexInfo info;
             
             // store some documents.
-            for (int i = 0; i < files.length && i < 2000; i++) {
+            for (int i = 0; i < files.length && i < 5000; i++) {
                 f = files[i];
                 try {
                     info = test.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
