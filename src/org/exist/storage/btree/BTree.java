@@ -161,7 +161,7 @@ public class BTree extends Paged {
     
     protected boolean isTransactional;
     
-	protected BTree(BrokerPool pool, byte fileId, CacheManager cacheManager, int growthThreshold) {
+	protected BTree(BrokerPool pool, byte fileId, boolean transactional, CacheManager cacheManager, int growthThreshold) {
 		super();
         this.cacheManager = cacheManager;
         this.buffers = cacheManager.getDefaultInitialSize();
@@ -170,13 +170,13 @@ public class BTree extends Paged {
 		fileHeader = (BTreeFileHeader) getFileHeader();
 		fileHeader.setPageCount(0);
 		fileHeader.setTotalCount(0);
-        isTransactional = pool.isTransactional();
+        isTransactional = transactional && pool.isTransactional();
         if (isTransactional)
             logManager = pool.getTransactionManager().getJournal();
 	}
 
-	public BTree(BrokerPool pool, byte fileId, CacheManager cacheManager, File file, int growthThreshold) {
-        this(pool, fileId, cacheManager, growthThreshold);
+	public BTree(BrokerPool pool, byte fileId, boolean transactional, CacheManager cacheManager, File file, int growthThreshold) {
+        this(pool, fileId, transactional, cacheManager, growthThreshold);
 		setFile(file);
 	}
 
@@ -615,7 +615,7 @@ public class BTree extends Paged {
 	protected final class BTreeNode implements Cacheable {
 		
         /** defines the default size for the keys array */
-        private final static int DEFAULT_INITIAL_ENTRIES = 64;
+        private final static int DEFAULT_INITIAL_ENTRIES = 32;
         
         /** the underlying Page object that stores the node's data */
 		private Page page;
@@ -728,11 +728,11 @@ public class BTree extends Paged {
 		/**
          * @see org.exist.storage.cache.Cacheable#sync()
          */
-		public boolean sync() {
+		public boolean sync(boolean syncJournal) {
 			if(isDirty())
 				try {
 					write();
-                    if (isTransactional)
+                    if (isTransactional && syncJournal)
                         logManager.flushToLog(true);
 					return true;
 				} catch (IOException e) {

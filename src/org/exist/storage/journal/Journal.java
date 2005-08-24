@@ -214,6 +214,23 @@ public class Journal {
     public synchronized void flushToLog(boolean fsync, boolean forceSync) {
         if (inRecovery)
             return;
+        flushBuffer();
+        if (forceSync || (fsync && syncOnCommit && currentLsn > lastSyncLsn)) {
+            syncThread.triggerSync();
+            lastSyncLsn = currentLsn;
+        }
+        try {
+            if (channel.size() >= journalSizeLimit)
+                pool.triggerCheckpoint();
+        } catch (IOException e) {
+            LOG.warn("Failed to trigger checkpoint!", e);
+        }
+    }
+
+    /**
+     * 
+     */
+    private void flushBuffer() {
         synchronized (latch) {
             try {
                 if (currentBuffer.position() > 0) {
@@ -227,16 +244,6 @@ public class Journal {
                 LOG.warn("Flushing log file failed!", e);
             }
         }
-        if (forceSync || (fsync && syncOnCommit && currentLsn > lastSyncLsn)) {
-            syncThread.triggerSync();
-            lastSyncLsn = currentLsn;
-        }
-        try {
-            if (channel.size() >= journalSizeLimit)
-                pool.triggerCheckpoint();
-        } catch (IOException e) {
-            LOG.warn("Failed to trigger checkpoint!", e);
-        }
     }
     
     /**
@@ -249,18 +256,24 @@ public class Journal {
      * @throws TransactionException
      */
     public void checkpoint(long txnId, boolean switchLogFiles) throws TransactionException {
+        LOG.debug("Checkpoint reached");
     	writeToLog(new Checkpoint(txnId));
-		flushToLog(true, true);
+        if (switchLogFiles)
+            // if we switch files, we don't need to sync.
+            // the file will be removed anyway.
+            flushBuffer();
+        else
+            flushToLog(true, true);
         try {
 			if (switchLogFiles && channel.position() > MIN_REPLACE) {
-				int last = currentFile;
+                File oldFile = getFile(currentFile);
+                RemoveThread rt = new RemoveThread(channel, oldFile);
 			    try {
 			        switchFiles();
 			    } catch (LogException e) {
 			        LOG.warn("Failed to create new journal: " + e.getMessage(), e);
 			    }
-			    File oldFile = getFile(last);
-			    oldFile.delete();
+			    rt.start();
 			}
 		} catch (IOException e) {
 			LOG.warn("IOException while writing checkpoint", e);
@@ -390,5 +403,26 @@ public class Journal {
         String hex = Integer.toHexString(fileNum);
         hex = "0000000000".substring(hex.length()) + hex;
         return hex + '.' + LOG_FILE_SUFFIX;
+    }
+    
+    private static class RemoveThread extends Thread {
+        
+        FileChannel channel;
+        File file;
+        
+        RemoveThread(FileChannel channel, File file) {
+            super("RemoveJournalThread");
+            this.channel = channel;
+            this.file = file;
+        }
+        
+        public void run() {
+            try {
+                channel.close();
+            } catch (IOException e) {
+                LOG.warn("Exception while closing journal file: " + e.getMessage(), e);
+            }
+            file.delete();
+        }
     }
 }

@@ -112,7 +112,7 @@ public class LRUCache implements Cache {
 		while(next != null) {
 			cacheable = (Cacheable)next.getValue();
 			if(cacheable.isDirty()) {
-				cacheable.sync();
+				cacheable.sync(false);
 			}
 			next = next.getNext();
 		}
@@ -179,7 +179,7 @@ public class LRUCache implements Cache {
 		do {
 			Cacheable cached = (Cacheable)next.getValue();
 			if(cached.allowUnload() && cached.getKey() != item.getKey()) {
-				cached.sync();
+				cached.sync(true);
 				map.remove(next.getKey());
 				removed = true;
 			} else {
@@ -190,7 +190,7 @@ public class LRUCache implements Cache {
 				}
 			}
 		} while(!removed);
-        if (++replacements > growthThreshold) {
+        if (growthFactor > 1.0 && ++replacements > growthThreshold) {
             cacheManager.requestMem(this);
             replacements = 0;
         }

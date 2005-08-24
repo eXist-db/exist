@@ -95,7 +95,7 @@ public interface Cacheable {
 	 * collected. All unwritten data should be flushed
 	 * to disk.
 	 */
-	public boolean sync();
+	public boolean sync(boolean syncJournal);
 	
 	/**
 	 * Is it safe to unload the Cacheable from the cache?

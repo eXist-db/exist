@@ -937,7 +937,7 @@ public abstract class Paged {
 				throw new IOException(e.getMessage());
 			}
 		}
-		
+        
 		public void setPageNum(long pageNum) {
 			this.pageNum = pageNum;
 			offset = fileHeader.headerSize + (pageNum * fileHeader.pageSize);
@@ -948,27 +948,27 @@ public abstract class Paged {
 		}
 		
 		private final void write(byte[] data) throws IOException {
-			
-			if(data == null) {
-				// Removed page: fill with 0
-				Arrays.fill(tempPageData, (byte)0);
-                header.setLsn(Lsn.LSN_INVALID);
-            }
-
-			// Write out the header
-			header.write(tempPageData, 0);
-			header.dirty = false;
-
-			if(data != null) {
-				if(data.length > fileHeader.workSize)
-					throw new IOException("page: " + getPageInfo() + ": data length too large: " + data.length);
-				else
-					System.arraycopy(data, 0, tempPageData, fileHeader.pageHeaderSize, data.length);
-			}
-			if (raf.getFilePointer() != offset)
-				raf.seek(offset);
-			//raf.write(data);
-			raf.write(tempPageData);
+            
+		    if(data == null) {
+		        // Removed page: fill with 0
+		        Arrays.fill(tempPageData, (byte)0);
+		        header.setLsn(Lsn.LSN_INVALID);
+		    }
+		    
+		    // Write out the header
+		    header.write(tempPageData, 0);
+		    header.dirty = false;
+		    
+		    if(data != null) {
+		        if(data.length > fileHeader.workSize)
+		            throw new IOException("page: " + getPageInfo() + ": data length too large: " + data.length);
+		        else
+		            System.arraycopy(data, 0, tempPageData, fileHeader.pageHeaderSize, data.length);
+		    }
+		    if (raf.getFilePointer() != offset)
+		        raf.seek(offset);
+		    //raf.write(data);
+		    raf.write(tempPageData);
 		}
 		
 		/* (non-Javadoc)

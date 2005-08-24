@@ -98,7 +98,7 @@ public class ClockCache implements Cache {
 		old = items[bucket];
 		if (old != null) {
 			map.remove(old.getKey());
-			old.sync();
+			old.sync(true);
 		}
 		items[bucket] = item;
 		map.put(item.getKey(), item);
@@ -149,7 +149,7 @@ public class ClockCache implements Cache {
 	public void flush() {
 	    int written = 0;
 		for(int i = 0; i < count; i++) {
-			if(items[i] != null && items[i].sync())
+			if(items[i] != null && items[i].sync(false))
 				++written;
 		}
 //		LOG.debug(written + " pages written to disk");

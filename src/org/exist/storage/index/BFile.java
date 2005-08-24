@@ -139,8 +139,9 @@ public class BFile extends BTree {
     
     protected int maxValueSize;
     
-    public BFile(BrokerPool pool, byte fileId, File file, CacheManager cacheManager, double cacheGrowth, int thresholdBTree, int thresholdData) throws DBException {
-        super(pool, fileId, cacheManager, file, thresholdBTree);
+    public BFile(BrokerPool pool, byte fileId, boolean transactional, File file, CacheManager cacheManager, 
+            double cacheGrowth, int thresholdBTree, int thresholdData) throws DBException {
+        super(pool, fileId, transactional, cacheManager, file, thresholdBTree);
         fileHeader = (BFileHeader) getFileHeader();
         dataCache = new LRUCache(64, cacheGrowth, thresholdData);
         dataCache.setFileName(file.getName());
@@ -399,6 +400,8 @@ public class BFile extends BTree {
     }
 
     public boolean flush() throws DBException {
+        if (isTransactional)
+            logManager.flushToLog(true);
         dataCache.flush();
         super.flush();
         return true;
@@ -1689,11 +1692,11 @@ public class BFile extends BTree {
          * 
          * @see org.exist.storage.cache.Cacheable#release()
          */
-        public boolean sync() {
+        public boolean sync(boolean syncJournal) {
             if (isDirty()) {
                 try {
                     write();
-                    if (isTransactional)
+                    if (isTransactional && syncJournal)
                         logManager.flushToLog(true);
                     return true;
                 } catch (IOException e) {
@@ -2299,6 +2302,13 @@ public class BFile extends BTree {
             return i;
         }
 
+        public int readFixedInt() throws IOException {
+            return ( readByte() & 0xff ) |
+            ( ( readByte() & 0xff ) << 8 ) |
+            ( ( readByte() & 0xff ) << 16 ) |
+            ( ( readByte() & 0xff ) << 24 );
+        }
+        
         public final long readLong() throws IOException {
             if (offset == pageLen) advance();
             byte b = nextPage.data[offset++];
@@ -2321,7 +2331,8 @@ public class BFile extends BTree {
 
         public final void skipBytes(long count) throws IOException {
             for(long i = 0; i < count; i++) {
-                if(offset++ == pageLen) advance();
+                if (offset == pageLen) advance();
+                offset++;
             }
         }
         

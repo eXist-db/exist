@@ -26,7 +26,7 @@ public class CollectionStore extends BFile {
 	 * @throws DBException 
 	 */
 	public CollectionStore(BrokerPool pool, File file, CacheManager cacheManager) throws DBException {
-		super(pool, NativeBroker.COLLECTIONS_DBX_ID, file, cacheManager, 1.25, 100, 1000);
+		super(pool, NativeBroker.COLLECTIONS_DBX_ID, true, file, cacheManager, 1.25, 100, 1000);
 	}
 	
 	

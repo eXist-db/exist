@@ -115,7 +115,7 @@ public class GClockCache implements Cache {
 	public void flush() {
 	    int written = 0;
 		for (int i = 0; i < count; i++) {
-			if (items[i] != null && items[i].sync())
+			if (items[i] != null && items[i].sync(false))
 			    ++written;
 		}
 //		LOG.debug(written + " pages written to disk");
@@ -150,7 +150,7 @@ public class GClockCache implements Cache {
 				if (old != null) {
 					//LOG.debug(fileName + " replacing " + old.getKey() + " for " + item.getKey());
 					map.remove(old.getKey());
-					old.sync();
+					old.sync(true);
 				} else {
 					used++;
 				}

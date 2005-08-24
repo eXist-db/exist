@@ -83,7 +83,7 @@ public class CollectionCache extends LRDCache {
 			pool.getConfigurationManager().invalidate(old.getName());
 			map.remove(old.getKey());
 			names.remove(old.getName());
-			old.sync();
+			old.sync(true);
 		}
 		items[bucket] = item;
 		map.put(item.getKey(), item);
