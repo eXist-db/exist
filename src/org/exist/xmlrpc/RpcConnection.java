@@ -1901,6 +1901,8 @@ public Hashtable execute(User user, String xpath, Hashtable parameters) throws E
 	public boolean setUser(User user, String name, String passwd,
 			Vector groups, String home) throws EXistException,
 			PermissionDeniedException {
+        if (passwd.length() == 0)
+            passwd = null;
 		org.exist.security.SecurityManager manager = brokerPool
 				.getSecurityManager();
 		if(name.equals(org.exist.security.SecurityManager.GUEST_USER) &&
