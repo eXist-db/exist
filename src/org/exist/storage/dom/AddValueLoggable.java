@@ -36,7 +36,11 @@ public class AddValueLoggable extends AbstractLoggable {
 	protected long pageNum;
 	protected short tid;
 	protected byte[] value;
-	
+
+    public AddValueLoggable() {
+        super(DOMFile.LOG_ADD_VALUE, 0);
+    }
+    
     public AddValueLoggable(Txn transaction, long pageNum, short tid, byte[] value) {
         this(DOMFile.LOG_ADD_VALUE, transaction, pageNum, tid, value);
     }
@@ -56,7 +60,14 @@ public class AddValueLoggable extends AbstractLoggable {
 		super(id, transactionId);
 		this.domDb = ((NativeBroker)broker).getDOMFile();
 	}
-
+ 
+    public void clear(Txn transaction, long pageNum, short tid, byte[] value) {
+        super.clear(transaction.getId());
+        this.pageNum = pageNum;
+        this.tid = tid;
+        this.value = value;
+    }
+    
 	public void write(ByteBuffer out) {
 		out.putInt((int)pageNum);
 		out.putShort(tid);
