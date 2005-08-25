@@ -4,9 +4,14 @@ $Id$
  */
 package org.exist.xmldb.test;
 
+import java.net.BindException;
+import java.util.Iterator;
+
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.exist.StandaloneServer;
+import org.mortbay.util.MultiException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -17,10 +22,13 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-/**
+/** A test case for accessing DOMS remotely
  * @author jmv
+ * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class DOMTestJUnit extends TestCase {
+	
+	private static StandaloneServer server = null;
 	private static String driver = "org.exist.xmldb.DatabaseImpl";
 	private static String baseURI = "xmldb:exist://localhost:8088/xmlrpc/db";
 
@@ -37,13 +45,9 @@ public class DOMTestJUnit extends TestCase {
 		super(name);
 	}
 
-	/*
-	 * @see TestCase#setUp()
-	 */
 	protected void setUp() throws Exception {
-		System.out.println("Running setUp ...");
-
-		// Starting database
+		//Don't worry about closing the server : the shutdown hook will do the job
+		initServer();
 		System.setProperty("exist.initdb", "true");
 		Class dbc = Class.forName(driver);
 		database = (Database) dbc.newInstance();
@@ -58,6 +62,34 @@ public class DOMTestJUnit extends TestCase {
 			"<properties><property key=\"type\">Table</property></properties>");
 		rootColl.storeResource(r);
 	}
+	
+	private void initServer() throws Exception {
+		if (server == null) {
+			server = new StandaloneServer();
+			if (!server.isStarted()) {			
+				try {				
+					System.out.println("Starting standalone server...");
+					String[] args = {};
+					server.run(args);
+					while (!server.isStarted()) {
+						Thread.sleep(1000);
+					}
+				} catch (MultiException e) {
+					boolean rethrow = true;
+					Iterator i = e.getExceptions().iterator();
+					while (i.hasNext()) {
+						Exception e0 = (Exception)i.next();
+						if (e0 instanceof BindException) {
+							System.out.println("A server is running already !");
+							rethrow = false;
+							break;
+						}
+					}
+					if (rethrow) throw e;
+				}
+			}
+		}
+	}	
 	
 	/** test Update of an existing document through DOM */
 	public void testDOMUpdate() throws XMLDBException{
@@ -91,5 +123,7 @@ public class DOMTestJUnit extends TestCase {
 	
 	public static void main(String[] args) {
 		TestRunner.run(DOMTestJUnit.class);
+		//Explicit shutdown for the shutdown hook
+		System.exit(0);		
 	}
 }
