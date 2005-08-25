@@ -1411,7 +1411,8 @@ public class NativeBroker extends DBBroker {
 			// dropping old structure index
 			elementIndex.dropIndex(doc);
 			valueIndex.dropIndex(doc);
-			qnameValueIndex.dropIndex(doc);
+			if (qnameValueIndex != null)
+				qnameValueIndex.dropIndex(doc);
 			
 			// dropping dom index
 			NodeRef ref = new NodeRef(doc.getDocId());
@@ -2192,7 +2193,8 @@ public class NativeBroker extends DBBroker {
 //					}
 				}
 				
-				qnameValueIndex.removeAttribute( (AttrImpl)node, currentPath, true);
+				if (qnameValueIndex != null)
+					qnameValueIndex.removeAttribute( (AttrImpl)node, currentPath, true);
                 // qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, true);
 
 				
@@ -2580,7 +2582,8 @@ public class NativeBroker extends DBBroker {
 			
 //            if (qnameValueIndexation)
 //                valuesDbQname.close();
-			qnameValueIndex.close();
+			if (qnameValueIndex != null)
+				qnameValueIndex.close();
 			
 		} catch (Exception e) {
 			LOG.debug(e);
@@ -2695,7 +2698,8 @@ public class NativeBroker extends DBBroker {
 //			qnameValueIndex.storeElement(qnIdx.getType(), 
 //					(ElementImpl) node, content.toString());
 			
-			qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
+			if (qnameValueIndex != null)
+				qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
 			// notifyEndElement((ElementImpl) node, currentPath, content);
 		}
 		
@@ -2816,7 +2820,8 @@ public class NativeBroker extends DBBroker {
                 elementsDb.printStatistics();
 				valuesDb.printStatistics();
 				domDb.printStatistics();
-				valuesDbQname.printStatistics();
+				if (valuesDbQname != null)
+					valuesDbQname.printStatistics();
 			}
 		} catch (DBException dbe) {
 			dbe.printStackTrace();
