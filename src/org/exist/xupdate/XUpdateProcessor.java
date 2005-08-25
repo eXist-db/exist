@@ -150,11 +150,14 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		this.broker = broker;
 		this.documentSet = docs;
 		namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
-		Configuration config = broker.getConfiguration();
-		Boolean temp;
-		if ((temp = (Boolean) config.getProperty("indexer.preserve-whitespace-mixed-content"))
-			!= null)
-			preserveWhitespaceTemp = temp.booleanValue();
+		//TODO : move this to a dedicated configure() method.
+		if (broker != null) {
+			Configuration config = broker.getConfiguration();
+			Boolean temp;
+			if ((temp = (Boolean) config.getProperty("indexer.preserve-whitespace-mixed-content"))
+				!= null)
+				preserveWhitespaceTemp = temp.booleanValue();
+		}
 	}
 
 	public XUpdateProcessor() throws ParserConfigurationException {
