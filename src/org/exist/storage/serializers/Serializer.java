@@ -683,7 +683,7 @@ public abstract class Serializer implements XMLReader {
 				LOG.debug("item " + i + " not found");
 				continue;
 			}
-			if (Type.subTypeOf(item.getType(), Type.ELEMENT)) {
+			if (Type.subTypeOf(item.getType(), Type. NODE)) {
 				NodeValue node = (NodeValue) item;
 				serializeToReceiver(node, false);
 			} else {
