@@ -20,35 +20,40 @@
  */
 package org.exist.xmlrpc.test;
 
+import java.net.BindException;
 import java.net.MalformedURLException;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Vector;
 
 import javax.xml.transform.OutputKeys;
 
 import junit.framework.TestCase;
+import junit.textui.TestRunner;
 
 import org.apache.xmlrpc.WebServer;
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
+import org.exist.StandaloneServer;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.xmldb.test.DOMTestJUnit;
+import org.mortbay.util.MultiException;
+
+import org.custommonkey.xmlunit.*;
 
 /**
  * JUnit test for XMLRPC interface methods.
- * 
- * This test assumes that the XMLRPC server is running at port 8081
- * of the local host. The server is normally started from Ant before calling
- * the test.
- * 
  * @author wolf
+ * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
-public class XmlRpcTest extends TestCase {
-    
+public class XmlRpcTest extends XMLTestCase {    
+	
+	private static StandaloneServer server = null;
     private final static String URI = "http://localhost:8088/xmlrpc";
     
     private final static String XML_DATA =
     	"<test>" +
-    	"<para>ääööüüÄÄÖÖÜÜßß</para>" +
+    	"<para>\u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF</para>" +
 		"<para>\uC5F4\uB2E8\uACC4</para>" +
     	"</test>";
     
@@ -63,15 +68,42 @@ public class XmlRpcTest extends TestCase {
     
     private final static String TARGET_COLLECTION = "/db/xmlrpc/";
  
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(new XmlRpcTest("XmlRpcTest"));
-	}
-
-	private WebServer webServer = null;
-	
 	public XmlRpcTest(String name) {
 		super(name);
 	}
+	
+	protected void setUp() throws Exception {
+		//Don't worry about closing the server : the shutdown hook will do the job
+		initServer();		
+	}
+	
+	private void initServer() throws Exception {
+		if (server == null) {
+			server = new StandaloneServer();
+			if (!server.isStarted()) {			
+				try {				
+					System.out.println("Starting standalone server...");
+					String[] args = {};
+					server.run(args);
+					while (!server.isStarted()) {
+						Thread.sleep(1000);
+					}
+				} catch (MultiException e) {
+					boolean rethrow = true;
+					Iterator i = e.getExceptions().iterator();
+					while (i.hasNext()) {
+						Exception e0 = (Exception)i.next();
+						if (e0 instanceof BindException) {
+							System.out.println("A server is running already !");
+							rethrow = false;
+							break;
+						}
+					}
+					if (rethrow) throw e;
+				}
+			}
+		}
+	}	
 	
 	public void testStore() throws Exception {
 		System.out.println("Creating collection " + TARGET_COLLECTION);
@@ -130,9 +162,10 @@ public class XmlRpcTest extends TestCase {
 		XmlRpcClient xmlrpc = getClient();
         Hashtable result = (Hashtable) xmlrpc.execute( "queryP", params );
         Vector resources = (Vector)result.get("results");
+        //TODO : check the number of resources before !
         assertEquals(resources.size(), 2);
         String value = (String)resources.elementAt(0);
-        assertEquals(value, "ääööüüÄÄÖÖÜÜßß");
+        assertEquals(value, "\u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF");
         System.out.println("Result1: " + value);
         value = (String)resources.elementAt(1);
         assertEquals(value, "\uC5F4\uB2E8\uACC4");
@@ -152,14 +185,14 @@ public class XmlRpcTest extends TestCase {
         assertNotNull(result);
         assertTrue(result.length > 0);
         System.out.println(new String(result, "UTF-8"));
-	}
+	}	
 	
 	public void testQueryWithStylesheet() throws Exception {
 		Hashtable options = new Hashtable();
 		options.put(EXistOutputKeys.STYLESHEET, "test.xsl");
 		options.put(EXistOutputKeys.STYLESHEET_PARAM + ".testparam", "Test");
 		options.put(OutputKeys.OMIT_XML_DECLARATION, "yes");
-		
+		//TODO : check the number of resources before !
 		Vector params = new Vector();
 		String query = "//para[1]";
 		params.addElement(query.getBytes("UTF-8"));
@@ -177,8 +210,8 @@ public class XmlRpcTest extends TestCase {
         assertTrue(item.length > 0);
         String out = new String(item, "UTF-8");
         System.out.println("Received: " + out);
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-        		"<p>Test: ääööüüÄÄÖÖÜÜßß</p>", out);
+        assertXMLEqual("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+        		"<p>Test: \u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF</p>", out);
 	}
 	
 	public void testExecuteQuery() throws Exception {
@@ -196,6 +229,7 @@ public class XmlRpcTest extends TestCase {
         Integer hits = (Integer) xmlrpc.execute( "getHits", params );
         assertNotNull(hits);
         System.out.println("Found: " + hits.intValue());
+        
         assertEquals(hits.intValue(), 2);
         
         params.addElement(new Integer(0));
@@ -214,14 +248,14 @@ public class XmlRpcTest extends TestCase {
 	public void testCollectionWithAccents() throws Exception {
 		System.out.println("Creating collection with accents in name ...");
 		Vector params = new Vector();
-		params.addElement("/db/Città");
+		params.addElement("/db/Citt\u00E0");
 		XmlRpcClient xmlrpc = getClient();
 		xmlrpc.execute( "createCollection", params );
 		
 		System.out.println("Storing document " + XML_DATA);
 		params.clear();
 		params.addElement(XML_DATA);
-		params.addElement("/db/Città/test.xml");
+		params.addElement("/db/Citt\u00E0/test.xml");
 		params.addElement(new Integer(1));
 		
 		Boolean result = (Boolean)xmlrpc.execute("parse", params);
@@ -235,13 +269,13 @@ public class XmlRpcTest extends TestCase {
 		String colWithAccent = null;
 		for (int i = 0; i < collections.size(); i++) {
 			String childName = (String) collections.elementAt(i);
-			if(childName.equals("Città"))
+			if(childName.equals("Citt\u00E0"))
 				colWithAccent = childName;
 			System.out.println("Child collection: " + childName);
 		}
 		assertNotNull("added collection not found", colWithAccent);
 		
-		System.out.println("Retrieving document /db/Città/test.xml");
+		System.out.println("Retrieving document /db/Citt\u00E0/test.xml");
 		Hashtable options = new Hashtable();
         options.put("indent", "yes");
         options.put("encoding", "UTF-8");
@@ -263,4 +297,10 @@ public class XmlRpcTest extends TestCase {
 		xmlrpc.setBasicAuthentication("admin", "");
 		return xmlrpc;
 	}
+
+	public static void main(String[] args) {
+		TestRunner.run(XmlRpcTest.class);
+		//Explicit shutdown for the shutdown hook
+		System.exit(0);		
+	}	
 }

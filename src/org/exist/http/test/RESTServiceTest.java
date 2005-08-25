@@ -29,26 +29,34 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.Iterator;
+
+import org.exist.StandaloneServer;
+import org.exist.xmldb.test.RemoteCollectionTest;
+import org.mortbay.util.MultiException;
 
 import junit.framework.TestCase;
+import junit.textui.TestRunner;
 
-/**
+/** A test case for accessing a remote server via REST-Style Web API.
  * @author wolf
+ * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class RESTServiceTest extends TestCase {
 
+	private static StandaloneServer server = null;
 	private final static String SERVER_URI = "http://localhost:8088";
-	
-	private final static String RESOURCE_URI = SERVER_URI + "/db/test/test.xml";
-	private final static String COLLECTION_URI = SERVER_URI + "/db/test";
+	private final static String COLLECTION_URI = SERVER_URI + "/db/test";	
+	private final static String RESOURCE_URI = SERVER_URI + "/db/test/test.xml";	
 	
 	private final static String XML_DATA =
 		"<test>" +
-		"<para>ääüüööÄÄÖÖÜÜ</para>" +
+		"<para>\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC</para>" +
 		"</test>";
 	
 	private final static String XUPDATE =
@@ -68,13 +76,46 @@ public class RESTServiceTest extends TestCase {
 		"<text>" +
 		"xquery version \"1.0\";" +
 		"(::pragma exist:serialize indent=no ::)" +
-		"//para[. = 'ääüüööÄÄÖÖÜÜ']/text()" +
+		"//para[. = '\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC']/text()" +
 		"</text>" +
 		"</query>";
 	
 	public RESTServiceTest(String name) {
 		super(name);
 	}
+
+	protected void setUp() throws Exception {
+		//Don't worry about closing the server : the shutdown hook will do the job
+		initServer();
+	}    
+	
+	private void initServer() throws Exception {
+		if (server == null) {
+			server = new StandaloneServer();
+			if (!server.isStarted()) {			
+				try {				
+					System.out.println("Starting standalone server...");
+					String[] args = {};
+					server.run(args);
+					while (!server.isStarted()) {
+						Thread.sleep(1000);
+					}
+				} catch (MultiException e) {
+					boolean rethrow = true;
+					Iterator i = e.getExceptions().iterator();
+					while (i.hasNext()) {
+						Exception e0 = (Exception)i.next();
+						if (e0 instanceof BindException) {
+							System.out.println("A server is running already !");
+							rethrow = false;
+							break;
+						}
+					}
+					if (rethrow) throw e;
+				}
+			}
+		}
+	} 			
 	
 	public void testPut() throws IOException {
 		System.out.println("--- Storing document ---");
@@ -113,7 +154,7 @@ public class RESTServiceTest extends TestCase {
 	}
 	
 	public void testQueryGet() throws IOException {
-		String uri = COLLECTION_URI + "?_query=" + URLEncoder.encode("doc('/db/test/test.xml')//para[. = 'ääüüööÄÄÖÖÜÜ']/text()", "UTF-8");
+		String uri = COLLECTION_URI + "?_query=" + URLEncoder.encode("doc('/db/test/test.xml')//para[. = '\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC']/text()", "UTF-8");
 		HttpURLConnection connect = getConnection(uri);
 		connect.setRequestMethod("GET");
 		connect.connect();
@@ -123,6 +164,31 @@ public class RESTServiceTest extends TestCase {
 		
 		System.out.println(readResponse(connect.getInputStream()));
 	}
+	
+	public void testRequestModule() throws IOException {
+		String uri = COLLECTION_URI + "?_query=request:request-uri()&_wrap=no";
+		HttpURLConnection connect = getConnection(uri);
+		connect.setRequestMethod("GET");
+		connect.connect();
+		
+		int r = connect.getResponseCode();
+		assertEquals("Server returned response code " + r, 200, r);
+	
+		String response = readResponse(connect.getInputStream()).trim();
+		assertEquals(response,"/db/test");
+		
+		uri = COLLECTION_URI + "?_query=request:request-url()&_wrap=no";
+		connect = getConnection(uri);
+		connect.setRequestMethod("GET");
+		connect.connect();
+		
+		r = connect.getResponseCode();
+		assertEquals("Server returned response code " + r, 200, r);
+		
+		response = readResponse(connect.getInputStream()).trim();
+		//TODO : the server name may have been renamed by the Web server
+		assertEquals(response, SERVER_URI + "/db/test");		
+	}	
 	
 	protected void doGet() throws IOException {
 		System.out.println("--- Retrieving document ---");
@@ -166,18 +232,9 @@ public class RESTServiceTest extends TestCase {
 		return (HttpURLConnection)u.openConnection();
 	}
 	
-	/*
-	 * @see TestCase#setUp()
-	 */
-	protected void setUp() throws Exception {
-		super.setUp();
-	}
-
-	/*
-	 * @see TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
-
+    public static void main(String[] args) {
+		TestRunner.run(RESTServiceTest.class);
+		//Explicit shutdown for the shutdown hook
+		System.exit(0);
+	}	
 }

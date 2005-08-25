@@ -32,6 +32,7 @@ public class RemoteTests {
 	public static Test suite() {
 		TestSuite suite = new TestSuite("Remote tests for org.exist.xmldb.test");
 		suite.addTest(new TestSuite(RemoteCollectionTest.class));
+		suite.addTest(new TestSuite(RemoteDatabaseImplTest.class));		
 		suite.addTest(new TestSuite(DOMTestJUnit.class));
 		return suite;
 	}

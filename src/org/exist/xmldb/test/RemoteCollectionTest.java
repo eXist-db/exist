@@ -4,11 +4,13 @@ $Id$
  */
 package org.exist.xmldb.test;
 
+import java.net.BindException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import junit.textui.TestRunner;
 
+import org.exist.StandaloneServer;
 import org.exist.schema.RemoteSchemaService;
 import org.exist.xmldb.RemoteCollectionManagementService;
 import org.exist.xmldb.RemoteDatabaseInstanceManager;
@@ -16,33 +18,63 @@ import org.exist.xmldb.RemoteIndexQueryService;
 import org.exist.xmldb.RemoteUserManagementService;
 import org.exist.xmldb.RemoteXPathQueryService;
 import org.exist.xmldb.RemoteXUpdateQueryService;
+import org.mortbay.util.MultiException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
 
-/** WORK IN PROGRESS !!!
+/** A test case for accessing collections remotely
  * @author jmv
+ * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class RemoteCollectionTest extends RemoteDBTest {
 
+	private static StandaloneServer server = null;
 	private final static String XML_CONTENT = "<xml/>";
 	private final static String BINARY_CONTENT = "TEXT";
 	
-	/**
-	 * @param name
-	 */
 	public RemoteCollectionTest(String name) {
 		super(name);
-	}
+	}	
 	
 	protected void setUp() throws Exception {
+		//Don't worry about closing the server : the shutdown hook will do the job
+		initServer();
 		setUpRemoteDatabase();
 	}
 
   	protected void tearDown() throws Exception {
 	    removeCollection();
 	}
+  	
+	private void initServer() throws Exception {
+		if (server == null) {
+			server = new StandaloneServer();
+			if (!server.isStarted()) {			
+				try {				
+					System.out.println("Starting standalone server...");
+					String[] args = {};
+					server.run(args);
+					while (!server.isStarted()) {
+						Thread.sleep(1000);
+					}
+				} catch (MultiException e) {
+					boolean rethrow = true;
+					Iterator i = e.getExceptions().iterator();
+					while (i.hasNext()) {
+						Exception e0 = (Exception)i.next();
+						if (e0 instanceof BindException) {
+							System.out.println("A server is running already !");
+							rethrow = false;
+							break;
+						}
+					}
+					if (rethrow) throw e;
+				}
+			}
+		}
+	}  	
 
     public void testIndexQueryService() {
 		// TODO .............
@@ -116,10 +148,6 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	        
 	}
 	
-    /**
-     * @param xmlnames
-     * @param string
-     */
     private void createResources(ArrayList names, String type) throws XMLDBException {
         for (Iterator i = names.iterator(); i.hasNext(); ) {
             Resource res = getCollection().createResource((String) i.next(), type);
@@ -132,6 +160,8 @@ public class RemoteCollectionTest extends RemoteDBTest {
     }
 
     public static void main(String[] args) {
-    	TestRunner.run(RemoteCollectionTest.class);
+		TestRunner.run(RemoteCollectionTest.class);
+		//Explicit shutdown for the shutdown hook
+		System.exit(0);
 	}
 }
