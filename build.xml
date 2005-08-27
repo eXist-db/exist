@@ -318,7 +318,11 @@
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx,*.log"/>
         </delete>
-        <delete dir="${junit.reports}"/>
+        
+        <!-- <delete dir="${junit.reports}"/> -->
+        <delete dir="${junit.reports.dat}"/>
+        <delete dir="${junit.reports.html}"/>
+
         <mkdir dir="${junit.reports}"/>
         <mkdir dir="${junit.reports.dat}"/>
         <mkdir dir="${junit.reports.html}"/>
@@ -497,6 +501,11 @@
             <fileset dir="tmp" includes="*"/>
             <fileset dir="${src.webapp}/WEB-INF/logs" includes="*"/>
         </delete>
+        
+        <!-- <delete dir="${junit.reports}"/> -->
+        <delete dir="${junit.reports.dat}"/>
+        <delete dir="${junit.reports.html}"/>
+        
         <delete dir="${src.webapp}/WEB-INF/data/backup"/>
         <delete dir="samples/classes"/>
         <delete failonerror="no" file="examples.jar"/>
