@@ -205,20 +205,21 @@ public abstract class Paged {
 		return !fileIsNew;
 	}
 
-    /**
-     * Flush all dirty pages to disk. This will synch all
-     * caches.
-     * 
-     * @return
+    /* Flushes {@link org.exist.storage.btree.Paged#flush()dirty data} to the disk and cleans up the cache. 
+	 * @return <code>true</code> if something has actually been cleaned
      * @throws DBException
      */
 	public boolean flush() throws DBException {
+		boolean flushed = false;
 		try {
-			if(fileHeader.isDirty() && !readOnly)
+			if(fileHeader.isDirty() && !readOnly) {
 				fileHeader.write();
+				flushed = true;
+			}
 		} catch (IOException ioe) {
+			//TODO : this exception is *silently* ignored ?
 		}
-		return true;
+		return flushed;
 	}
 
 	/**
@@ -652,9 +653,9 @@ public abstract class Paged {
 		}
 
 		/**
-		 *  Gets the dirty attribute of the FileHeader object
+		 * Returns whether this page has been modified or not.
 		 *
-		 *@return    The dirty value
+		 *@return    <code>true</code> if this page has been modified
 		 */
 		public final boolean isDirty() {
 			return dirty;

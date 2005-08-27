@@ -46,10 +46,11 @@ public class CollectionStore extends BFile {
     }
     
     public boolean flush() throws DBException {
+    	boolean flushed = false;
         if (!BrokerPool.FORCE_CORRUPTION) {
-            dataCache.flush();
-            super.flush();
+            flushed = flushed | dataCache.flush();
+            flushed = flushed | super.flush();
         }
-        return true;
+        return flushed;
     }
 }

@@ -88,7 +88,7 @@ public interface Cache {
 	 * This gives the items a chance to write all
 	 * unwritten data to disk.
 	 */
-	public void flush();
+	public boolean flush();
 	
 	/**
 	 * Get the size of this cache.

@@ -106,16 +106,18 @@ public class LRUCache implements Cache {
 	/* (non-Javadoc)
 	 * @see org.exist.storage.cache.Cache#flush()
 	 */
-	public void flush() {
+	public boolean flush() {
+		boolean flushed = false;
 		Cacheable cacheable;
 		SequencedLongHashMap.Entry next = map.getFirstEntry();
 		while(next != null) {
 			cacheable = (Cacheable)next.getValue();
 			if(cacheable.isDirty()) {
-				cacheable.sync(false);
+				flushed = flushed | cacheable.sync(false);
 			}
 			next = next.getNext();
 		}
+		return flushed;
 	}
 
 	
