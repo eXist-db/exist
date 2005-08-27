@@ -25,6 +25,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -399,12 +400,17 @@ public class BFile extends BTree {
         query(query, cb);
     }
 
+    /* Flushes {@link org.exist.storage.btree.Paged#flush()dirty data} to the disk and cleans up the cache. 
+	 * @return <code>true</code> if something has actually been cleaned
+	 */
     public boolean flush() throws DBException {
+    	boolean flushed = false;
+    	//TODO : consider log operation as a flush ?
         if (isTransactional)
             logManager.flushToLog(true);
-        dataCache.flush();
-        super.flush();
-        return true;
+        flushed = flushed | dataCache.flush();
+        flushed = flushed | super.flush();
+        return flushed;
     }
 
     public BufferStats getDataBufferStats() {
@@ -417,12 +423,24 @@ public class BFile extends BTree {
 
     public void printStatistics() {
         super.printStatistics();
+        NumberFormat nf = NumberFormat.getPercentInstance();
         StringBuffer buf = new StringBuffer();
-        buf.append(getFile().getName()).append(" DATA ");
-        buf.append(dataCache.getBuffers()).append(" / ");
-        buf.append(dataCache.getUsedBuffers()).append(" / ");
-        buf.append(dataCache.getHits()).append(" / ");
-        buf.append(dataCache.getFails());
+        buf.append(getFile().getName()).append(" DATA ");        
+        buf.append("Buffers occupation : ");
+        if (dataCache.getBuffers() == 0 && dataCache.getUsedBuffers() == 0)
+        	buf.append("N/A");
+        else
+        	buf.append(nf.format(dataCache.getUsedBuffers()/dataCache.getBuffers()));
+        buf.append(" (out of " + dataCache.getBuffers() + ")");
+        //buf.append(dataCache.getBuffers()).append(" / ");
+        //buf.append(dataCache.getUsedBuffers()).append(" / ");
+        buf.append(" Cache efficiency : ");
+        if (dataCache.getHits() == 0 && dataCache.getFails() == 0)
+        	buf.append("N/A");
+        else
+        	buf.append(nf.format(dataCache.getHits()/(dataCache.getHits() + dataCache.getFails())));        
+        //buf.append(dataCache.getHits()).append(" / ");
+        //buf.append(dataCache.getFails());
         LOG.info(buf.toString());
     }
 

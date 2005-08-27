@@ -74,6 +74,7 @@ package org.exist.storage.btree;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.text.NumberFormat;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
@@ -449,13 +450,14 @@ public class BTree extends Paged {
         root.dump(writer);
     }
 
-    /*
-     * @see org.exist.storage.btree.Paged#flush()
-     */
+	/* Flush the dirty data to the disk and cleans up the cache. 
+	 * @see org.exist.storage.btree.Paged#flush()
+	 * @return <code>true</code> if something had to be cleaned
+	 */
 	public boolean flush() throws DBException {
-		cache.flush();
-		super.flush();
-		return true;
+		boolean flushed = cache.flush();
+		flushed = flushed | super.flush();
+		return flushed;
 	}
 
     /*
@@ -1994,12 +1996,24 @@ public class BTree extends Paged {
 	}
 
 	public void printStatistics() {
+		NumberFormat nf = NumberFormat.getPercentInstance();
 		StringBuffer buf = new StringBuffer();
 		buf.append(getFile().getName()).append(" INDEX ");
-		buf.append(cache.getBuffers()).append(" / ");
-		buf.append(cache.getUsedBuffers()).append(" / ");
-		buf.append(cache.getHits()).append(" / ");
-		buf.append(cache.getFails());
+        buf.append("Buffers occupation : ");
+        if (cache.getBuffers() == 0 && cache.getUsedBuffers() == 0)
+        	buf.append("N/A");
+        else
+        	buf.append(nf.format(cache.getUsedBuffers()/cache.getBuffers()));
+        buf.append(" (out of " + cache.getBuffers() + ")");		
+		//buf.append(cache.getBuffers()).append(" / ");
+		//buf.append(cache.getUsedBuffers()).append(" / ");
+        buf.append(" Cache efficiency : ");
+        if (cache.getHits() == 0 && cache.getFails() == 0)
+        	buf.append("N/A");
+        else
+        	buf.append(nf.format(cache.getHits() / (cache.getFails() + cache.getHits())));        
+		//buf.append(cache.getHits()).append(" / ");
+		//buf.append(cache.getFails());
 		LOG.info(buf.toString());
 	}
 

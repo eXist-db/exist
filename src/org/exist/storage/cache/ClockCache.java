@@ -146,13 +146,17 @@ public class ClockCache implements Cache {
 	/* (non-Javadoc)
 	 * @see org.exist.storage.cache.Cache#flush()
 	 */
-	public void flush() {
+	public boolean flush() {
+		boolean flushed = false;
 	    int written = 0;
 		for(int i = 0; i < count; i++) {
-			if(items[i] != null && items[i].sync(false))
+			if(items[i] != null && items[i].sync(false)) {
 				++written;
+				flushed = true;
+			}
 		}
-//		LOG.debug(written + " pages written to disk");
+		//LOG.debug(written + " pages written to disk");
+		return flushed;
 	}
 
 	public boolean hasDirtyItems() {
