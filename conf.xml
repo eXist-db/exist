@@ -47,7 +47,7 @@
     buffer settings for elements_buffers and words_buffers if you have
     some more memory to waste. -->
 	<db-connection database="native" files="webapp/WEB-INF/data"
-		pageSize="4096" cacheSize="64M" free_mem_min="5">
+		pageSize="4096" cacheSize="96M" free_mem_min="5">
     
         <!-- Settings for the database connection pool:
             - sync-period
@@ -62,9 +62,9 @@
 			    operations to complete before it forces a shutdown.
         -->
 		<pool min="1" max="20" sync-period="120000" wait-before-shutdown="120000"/>
-
-		<recovery enabled="yes" sync-on-commit="no"
-            size="10M" journal-dir="webapp/WEB-INF/data"/>
+		
+		<recovery enabled="yes" sync-on-commit="no" group-commit="no"
+            size="100M" journal-dir="webapp/WEB-INF/data"/>
 		
 		<!--system-task class="org.exist.storage.DataBackup" period="120000">
 			<parameter name="output-dir" value="backup"/>
@@ -180,7 +180,7 @@
 		configuration for a collection.
         -->
         <index>
-			<fulltext default="all" attributes="false">
+			<fulltext default="all" attributes="true">
 				<exclude path="/auth"/>
 			</fulltext>
 		</index>
