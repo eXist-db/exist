@@ -229,7 +229,7 @@ public class SequencedLongHashMap extends AbstractHashtable {
             }
             next = next.nextDup;
         }
-		throw new RuntimeException("Key " + key + " not found");
+		return null;
 	}
 	
 	/**
