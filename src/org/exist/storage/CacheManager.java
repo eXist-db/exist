@@ -51,15 +51,21 @@ public class CacheManager {
      * The maximum fraction of the total memory that can
      * be used by a single cache.
      */
-    public final static double MAX_MEM_USE = 0.75;
+    public final static double MAX_MEM_USE = 0.9;
     
     /**
      * The minimum size a cache needs to have to be
      * considered for shrinking, defined in terms of a fraction
      * of the overall memory.  
      */
-    public final static double SHRINK_FACTOR = 0.2;
+    public final static double MIN_SHRINK_FACTOR = 0.5;
     
+    /**
+     * The amount by which a large cache will be shrinked if
+     * other caches request a resize.
+     */
+    public final static double SHRINK_FACTOR = 0.7;
+     
     /**
      * The minimum number of pages that must be read from a
      * cache between check intervals to be not considered for 
@@ -67,7 +73,7 @@ public class CacheManager {
      * with high load will never be shrinked.
      */
     public final static int SHRINK_THRESHOLD = 10000;
-        
+    
     /** Caches maintained by this class */
     private List caches = new ArrayList();
     
@@ -87,6 +93,14 @@ public class CacheManager {
      * single cache.
      */
     private int maxCacheSize;
+    
+    /**
+     * Signals that a resize had been requested by a cache, but
+     * the request could not be accepted during normal operations.
+     * The manager might try to shrink the largest cache during the
+     * next sync event.
+     */
+    private Cache lastRequest = null;
     
     public CacheManager(Configuration config) {
         int pageSize, cacheSize;
@@ -140,6 +154,8 @@ public class CacheManager {
      */
     public int requestMem(Cache cache) {
         if (currentPageCount >= totalPageCount) {
+            if (cache.getBuffers() < maxCacheSize)
+                lastRequest = cache;
             // no free pages available
             return -1;
         }
@@ -157,6 +173,8 @@ public class CacheManager {
                 if (currentPageCount + newCacheSize > totalPageCount)
                     // new cache size exceeds total: adjust
                     newCacheSize = cache.getBuffers() + (totalPageCount - currentPageCount);
+                LOG.debug("Growing cache " + cache.getFileName() + " (a " + cache.getClass().getName() +  
+                        ") from " + cache.getBuffers() + " to " + newCacheSize);
                 currentPageCount -= cache.getBuffers();
                 // resize the cache
                 cache.resize(newCacheSize);
@@ -169,15 +187,15 @@ public class CacheManager {
     }
     
     /**
-     * Called from the global sync event to check if caches can
+     * Called from the global major sync event to check if caches can
      * be shrinked. To be shrinked, the size of a cache needs to be
-     * larger than the factor defined by {@link #SHRINK_FACTOR} 
+     * larger than the factor defined by {@link #MIN_SHRINK_FACTOR} 
      * and its load needs to be lower than {@link #SHRINK_THRESHOLD}.
      *
      * If shrinked, the cache will be reset to the default initial cache size.
      */
     public void checkCaches() {
-        int minSize = (int) (totalPageCount * SHRINK_FACTOR);
+        int minSize = (int) (totalPageCount * MIN_SHRINK_FACTOR);
         Cache cache;
         int load;
         for (int i = 0; i < caches.size(); i++) {
@@ -185,13 +203,40 @@ public class CacheManager {
             if (cache.getGrowthFactor() > 1.0) {
                 load = cache.getLoad();
                 if (cache.getBuffers() > minSize && load < SHRINK_THRESHOLD) {
-                    LOG.debug("Shrinking cache: " + cache.getBuffers());
+                    LOG.debug("Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + 
+                        ") to " + cache.getBuffers());
                     currentPageCount -= cache.getBuffers();
                     cache.resize(getDefaultInitialSize());
                     currentPageCount += getDefaultInitialSize();
                 }
             }
         }
+    }
+    
+    /**
+     * Called from the global minor sync event to check if a smaller
+     * cache wants to be resized. If a huge cache is availabe, the method
+     * might decide to shrink this cache by a certain amount to make
+     * room for the smaller cache to grow.
+     */
+    public void checkDistribution() {
+        if (lastRequest == null)
+            return;
+        int minSize = (int) (totalPageCount * MIN_SHRINK_FACTOR);
+        Cache cache;
+        for (int i = 0; i < caches.size(); i++) {
+            cache = (Cache) caches.get(i);
+            if (cache.getBuffers() >= minSize) {
+                int newSize = (int) (cache.getBuffers() * SHRINK_FACTOR);
+                LOG.debug("Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + 
+                        ") to " + newSize);
+                currentPageCount -= cache.getBuffers();
+                cache.resize(newSize);
+                currentPageCount += newSize;
+                break;
+            }
+        }
+        lastRequest = null;
     }
     
     /**

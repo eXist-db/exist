@@ -23,6 +23,7 @@ package org.exist.storage.journal;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -32,7 +33,6 @@ import java.nio.channels.FileChannel;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Checkpoint;
 import org.exist.storage.txn.TransactionException;
 import org.exist.util.sanity.SanityCheck;
@@ -113,9 +113,12 @@ public class Journal {
     /** the last LSN written by the JournalManager */
     private long currentLsn = Lsn.LSN_INVALID;
     
+    /** the last LSN actually written to the file */
+    private long lastLsnWritten = Lsn.LSN_INVALID;
+    
     /** stores the current LSN of the last file sync on the file */ 
     private long lastSyncLsn = Lsn.LSN_INVALID;
-    
+        
     /** set to true while recovery is in progress */
     private boolean inRecovery = false;
     
@@ -128,7 +131,8 @@ public class Journal {
     public Journal(BrokerPool pool, File directory) throws EXistException {
         this.dir = directory;
         this.pool = pool;
-        currentBuffer = ByteBuffer.allocateDirect(0x40000);
+        // we use a 1 megabyte buffer:
+        currentBuffer = ByteBuffer.allocateDirect(1024 * 1024);
         
         syncThread = new FileSyncThread(latch);
         syncThread.start();
@@ -193,6 +197,15 @@ public class Journal {
     }
     
     /**
+     * Returns the last LSN physically written to the journal.
+     * 
+     * @return
+     */
+    public long lastWrittenLsn() {
+        return lastLsnWritten;
+    }
+    
+    /**
      * Flush the current buffer to disk. If fsync is true, a sync will
      * be called on the file to force all changes to disk.
      * 
@@ -235,10 +248,14 @@ public class Journal {
             try {
                 if (currentBuffer.position() > 0) {
                     currentBuffer.flip();
-                    channel.write(currentBuffer);
+                    int size = currentBuffer.remaining();
+                    while (currentBuffer.hasRemaining()) {
+                        channel.write(currentBuffer);
+                    }
                     currentBuffer.clear();
                     
-                    inFilePos = (int) channel.position();
+                    inFilePos += size;
+                    lastLsnWritten = currentLsn;
                 }
             } catch (IOException e) {
                 LOG.warn("Flushing log file failed!", e);
@@ -312,8 +329,9 @@ public class Journal {
         synchronized (latch) {
 	        close();
 	        try {
-				RandomAccessFile raf = new RandomAccessFile(file, "rw");
-				channel = raf.getChannel();
+//				RandomAccessFile raf = new RandomAccessFile(file, "rw");
+                FileOutputStream os = new FileOutputStream(file, true);
+				channel = os.getChannel();
 	            
 	            syncThread.setChannel(channel);
 			} catch (FileNotFoundException e) {

@@ -47,7 +47,7 @@ public class LRDCache extends GClockCache {
 	private int maxReferences;
 	private int ageingPeriod;
 	
-	public LRDCache(int size, double growthFactor, int growthThreshold) {
+	public LRDCache(int size, double growthFactor, double growthThreshold) {
 		super(size, growthFactor, growthThreshold);
 		maxReferences = size * 10000;
 		ageingPeriod = size * 5000;
@@ -112,9 +112,12 @@ public class LRDCache extends GClockCache {
 		items[bucket] = item;
 		map.put(item.getKey(), item);
         
-        if (cacheManager != null && ++replacements > growthThreshold) {
-            cacheManager.requestMem(this);
-            replacements = 0;
+        if (old != null) {
+            accounting.replacedPage(item);
+            if (cacheManager != null && accounting.resizeNeeded()) {
+                accounting.stats();
+                cacheManager.requestMem(this);
+            }
         }
 		return old;
 	}

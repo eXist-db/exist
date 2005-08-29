@@ -47,21 +47,22 @@ public class GClockCache implements Cache {
 	protected int size;
 	protected Long2ObjectHashMap map;
 	protected int used = 0;
-	protected int hits = 0 ;
+
     protected int hitsOld = 0;
-	protected int fails = 0 ;
+
+    protected Accounting accounting;
     protected double growthFactor;
-    protected int growthThreshold;
+
 	protected CacheManager cacheManager = null;
-    protected int replacements = 0;
     private String fileName = "unknown";
     
-	public GClockCache(int size, double growthFactor, int growthThreshold) {
+	public GClockCache(int size, double growthFactor, double growthThreshold) {
 		this.size = size;
         this.growthFactor = growthFactor;
-        this.growthThreshold = growthThreshold;
 		this.items = new Cacheable[size];
 		this.map = new Long2ObjectHashMap(size);
+        accounting = new Accounting(growthThreshold);
+        accounting.setTotalSize(size);
 	}
 
 	public void add(Cacheable item) {
@@ -91,9 +92,9 @@ public class GClockCache implements Cache {
 	public Cacheable get(long key) {
 		Cacheable item = (Cacheable) map.get(key);
 		if (item == null) {
-			fails++;
+			accounting.missesIncrement();
 		} else
-			hits++;
+			accounting.hitIncrement();
 		return item;
 	}
 
@@ -164,9 +165,12 @@ public class GClockCache implements Cache {
 			}
 		} while (!removed);
         
-        if (cacheManager != null && ++replacements > growthThreshold) {
-            cacheManager.requestMem(this);
-            replacements = 0;
+        if (old != null) {
+            accounting.replacedPage(item);
+            if (cacheManager != null && accounting.resizeNeeded()) {
+                accounting.stats();
+                cacheManager.requestMem(this);
+            }
         }
 		return old;
 	}
@@ -184,13 +188,17 @@ public class GClockCache implements Cache {
     }
     
 	public int getHits() {
-		return hits;
+		return accounting.getHits();
 	}
 
 	public int getFails() {
-		return fails;
+		return accounting.getMisses();
 	}
 
+    public int getThrashing() {
+        return accounting.getThrashing();
+    }
+    
     public void setCacheManager(CacheManager manager) {
         this.cacheManager = manager;
     }
@@ -199,7 +207,6 @@ public class GClockCache implements Cache {
         if (newSize < size) {
             shrink(newSize);
         } else {
-            LOG.debug("Growing cache " + fileName + " from " + size + " to " + newSize);
             Cacheable[] newItems = new Cacheable[newSize];
             Long2ObjectHashMap newMap = new Long2ObjectHashMap(newSize);
             for (int i = 0; i < count; i++) {
@@ -209,8 +216,9 @@ public class GClockCache implements Cache {
             this.size = newSize;
             this.map = newMap;
             this.items = newItems;
+            accounting.reset();
+            accounting.setTotalSize(size);
         }
-        this.replacements = 0;
     }
     
     protected void shrink(int newSize) {
@@ -220,19 +228,25 @@ public class GClockCache implements Cache {
         size = newSize;
         count = 0;
         used = 0;
+        accounting.reset();
+        accounting.setTotalSize(size);
     }
 
     public int getLoad() {
         if (hitsOld == 0) {
-            hitsOld = hits;
+            hitsOld = accounting.getHits();
             return Integer.MAX_VALUE;
         }
-        int load = hits - hitsOld;
-        hitsOld = hits;
+        int load = accounting.getHits() - hitsOld;
+        hitsOld = accounting.getHits();
         return load;
     }
   
     public void setFileName(String name) {
         fileName = name;
+    }
+    
+    public String getFileName() {
+        return fileName;
     }
 }
