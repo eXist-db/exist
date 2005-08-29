@@ -168,7 +168,6 @@ public class GClockCache implements Cache {
         if (old != null) {
             accounting.replacedPage(item);
             if (cacheManager != null && accounting.resizeNeeded()) {
-                accounting.stats();
                 cacheManager.requestMem(this);
             }
         }
