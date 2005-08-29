@@ -21,11 +21,11 @@
 package org.exist.util.hashtable;
 
 /**
- * A hash map additionally providing access to entries in the order in which 
- * they were added. All entries are kept in a linked list. 
+ * A double-linked hash map additionally providing access to entries in the order in which 
+ * they were added. 
  * 
  * If a duplicate entry is added, the old entry is removed from the list and appended to the end. The
- * map thus implements a "Last Recently Used" behaviour.
+ * map thus implements a "Last Recently Used" (LRU) behaviour.
  */
 import java.util.Iterator;
 
@@ -33,14 +33,34 @@ import org.exist.util.hashtable.Long2ObjectHashMap.Long2ObjectIterator;
 
 public class SequencedLongHashMap extends AbstractHashtable {
 
+    /**
+     * Represents an entry in the map. Each entry
+     * has a link to the next and previous entries in
+     * the order in which they were inserted.
+     * 
+     * @author wolf
+     */
 	public final static class Entry {
 		
 		long key;
 		Object value;
 		
+        /** points to the next entry in insertion order. */
 		Entry next = null;
+        
+        /** points to the previous entry in insertion order. */
 		Entry prev = null;
 		
+        /** points to the prev entry if more than one key maps
+         * to the same bucket in the table.
+         */ 
+        Entry prevDup = null;
+        
+        /** points to the next entry if more than one key maps
+         * to the same bucket in the table.
+         */
+        Entry nextDup = null;
+        
 		public Entry(long key, Object value) {
 			this.key = key;
 			this.value = value;
@@ -57,14 +77,19 @@ public class SequencedLongHashMap extends AbstractHashtable {
         public Object getValue() {
             return value;
         }
+        
+        public String toString() {
+            return Long.toString(key);
+        }
 	}
-
-	private final static Entry REMOVED_ENTRY = new Entry(0, null);
 	
 	protected long[] keys;
 	protected Entry[] values;
 	
+    /** points to the first entry inserted. */
 	private Entry first = null;
+    
+    /** points to the last inserted entry. */
 	private Entry last = null;
  
 	public SequencedLongHashMap() {
@@ -79,27 +104,14 @@ public class SequencedLongHashMap extends AbstractHashtable {
 		values = new Entry[tabSize];
 	}
 
+    /**
+     * Add a new entry for the key.
+     * 
+     * @param key
+     * @param value
+     */
 	public void put(long key, Object value) {
-		Entry entry = null;
-		try {
-			entry = insert(key, value);
-		} catch (HashtableOverflowException e) {
-			Entry[] copyValues = values;
-			// enlarge the table with a prime value
-			tabSize = (int) nextPrime(tabSize + tabSize / 2);
-			keys = new long[tabSize];
-			values = new Entry[tabSize];
-			items = 0;
-
-			try {
-				for (int k = 0; k < copyValues.length; k++) {
-					if (copyValues[k] != null && copyValues[k] != REMOVED_ENTRY)
-						insert(copyValues[k].key, copyValues[k].value);
-				}
-				entry = (Entry)insert(key, value);
-			} catch (HashtableOverflowException e1) {
-			}
-		}
+		Entry entry = insert(key, value);
 		
 		if(first == null) {
 			first = entry;
@@ -111,94 +123,78 @@ public class SequencedLongHashMap extends AbstractHashtable {
 		}
 	}
 	
-	protected Entry insert(long key, Object value) throws HashtableOverflowException {
+	protected Entry insert(long key, Object value) {
 		if (value == null)
 			throw new IllegalArgumentException("Illegal value: null");
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
 			idx *= -1;
-        int bucket = -1;
 		// look for an empty bucket
 		if (values[idx] == null) {
 			keys[idx] = key;
 			values[idx] = new Entry(key, value);
 			++items;
 			return values[idx];
-		} else if (values[idx] == REMOVED_ENTRY) {
-            // remember the bucket, but continue to check
-            // for duplicate keys
-            bucket = idx;
-        } else if (keys[idx] == key) {
-			// duplicate value
-        	Entry dup = values[idx];
-			dup.value = value;
-			removeEntry(dup);
-			return dup;
-		}
-		int rehashVal = rehash(idx);
-		int rehashCnt = 1;
-		for (int i = 0; i < tabSize; i++) {
-			idx = (idx + rehashVal) % tabSize;
-            if(values[idx] == REMOVED_ENTRY) {
-            	if(bucket == -1)
-            		bucket = idx;
-			} else if (values[idx] == null) {
-                if(bucket > -1) {
-                    // store key into the empty bucket first found
-                    idx = bucket;
-                }
-				keys[idx] = key;
-				values[idx] = new Entry(key, value);
-				++items;
-				return values[idx];
-			} else if(keys[idx] == key) {
-				// duplicate value
-				Entry dup = values[idx];
-				dup.value = value;
-				removeEntry(dup);
-				return dup;
-			}
-			++rehashCnt;
-		}
-        // if the key has not been inserted yet, do it now
-        if(bucket > -1) {
-            keys[bucket] = key;
-            values[bucket] = new Entry(key, value);
-            ++items;
-            return values[bucket];
         }
-		throw new HashtableOverflowException();
+        
+        Entry next = values[idx];
+        while (next != null) {
+            if (next.key == key) {
+                // duplicate value
+                next.value = value;
+                removeEntry(next);
+                return next;
+            }
+            next = next.nextDup;
+        }
+        
+        // add a new entry to the chain
+        next = new Entry(key, value);
+        next.nextDup = values[idx];
+        values[idx].prevDup = next;
+        values[idx] = next;
+        ++items;
+        return next;
 	}
 	
+    /**
+     * Returns the value for key or null if the key
+     * is not in the map.
+     * 
+     * @param key
+     * @return
+     */
 	public Object get(long key) {
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
 			idx *= -1;
 		if (values[idx] == null)
 			return null; // key does not exist
-		else if (keys[idx] == key) {
-			if(values[idx] == REMOVED)
-				return null;
-			return values[idx].value;
-		}
-		int rehashVal = rehash(idx);
-		for (int i = 0; i < tabSize; i++) {
-			idx = (idx + rehashVal) % tabSize;
-			if (values[idx] == null) {
-				return null; // key not found
-			} else if (keys[idx] == key) {
-				if(values[idx] == REMOVED)
-					return null;
-				return values[idx].value;
-			}
-		}
-		return null;
+		
+		Entry next = values[idx];
+        while (next != null) {
+            if (next.key == key)
+                return next.value;
+            next = next.nextDup;
+        }
+        return null;
 	}
 	
+    /**
+     * Returns the first entry added to the map.
+     * 
+     * @return
+     */
 	public Entry getFirstEntry() {
 		return first;
 	}
 	
+    /**
+     * Remove the entry specified by key from the map.
+     * 
+     * @param key
+     * @return
+     */
 	public Object remove(long key) {
 		Entry entry = removeFromHashtable(key);
 		if(entry != null) {
@@ -214,29 +210,26 @@ public class SequencedLongHashMap extends AbstractHashtable {
 			idx *= -1;
 		if (values[idx] == null) {
 			return null; // key does not exist
-		} else if (keys[idx] == key) {
-			if(values[idx] == REMOVED_ENTRY)
-				return null;	// key has already been removed
-			Entry o = values[idx];
-			values[idx] = REMOVED_ENTRY;
-			--items;
-			return o;
 		}
-		int rehashVal = rehash(idx);
-		for (int i = 0; i < tabSize; i++) {
-			idx = (idx + rehashVal) % tabSize;
-			if (values[idx] == null) {
-				return null; // key not found
-			} else if (keys[idx] == key) {
-				if(values[idx] == REMOVED_ENTRY)
-					return null;	// key has already been removed
-				Entry o = values[idx];
-				values[idx] = REMOVED_ENTRY;
-				--items;
-				return o;
-			}
-		}
-		return null;
+        
+		Entry next = values[idx];
+        while (next != null) {
+            if (next.key == key) {
+                if (next.prevDup == null) {
+                    values[idx] = next.nextDup;
+                    if (values[idx] != null)
+                        values[idx].prevDup = null;
+                } else {
+                    next.prevDup.nextDup = next.nextDup;
+                    if (next.nextDup != null)
+                        next.nextDup.prevDup = next.prevDup;
+                }
+                --items;
+                return next;
+            }
+            next = next.nextDup;
+        }
+		throw new RuntimeException("Key " + key + " not found");
 	}
 	
 	/**
@@ -253,6 +246,11 @@ public class SequencedLongHashMap extends AbstractHashtable {
 		return head;
 	}
 	
+    /**
+     * Remove an entry.
+     * 
+     * @param entry
+     */
 	public void removeEntry(Entry entry) {
 		if(entry.prev == null) {
 			if(entry.next == null) {
@@ -273,25 +271,33 @@ public class SequencedLongHashMap extends AbstractHashtable {
 		entry.next = null;
 	}
 	
-	protected int rehash(int iVal) {
-		int retVal = (iVal + iVal / 2) % tabSize;
-		if (retVal == 0)
-			retVal = 1;
-		return retVal;
-	}
+    /**
+     * Clear the map.
+     */
+    public void clear() {
+        for (int i = 0; i < tabSize; i++)
+            values[i] = null;
+        items = 0;
+        first = null;
+        last = null;
+    }
 
 	protected final static int hash(long l) {
 		return (int) (l ^ (l >>> 32));
 	}
 	
 	/**
-	 * Returns an iterator over all entries in the
+	 * Returns an iterator over all keys in the
 	 * order in which they were inserted.
 	 */
 	public Iterator iterator() {
 		return new SequencedLongIterator(Long2ObjectIterator.KEYS);
 	}
 	
+    /**
+     * Returns an iterator over all values in the order
+     * in which they were inserted.
+     */
 	public Iterator valueIterator() {
 		return new SequencedLongIterator(Long2ObjectIterator.VALUES);
 	}
