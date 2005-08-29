@@ -55,6 +55,8 @@ public class TransactionManager {
     
     private boolean enabled;
     
+    private boolean groupCommit = false;
+    
     /**
      * Initialize the transaction manager using the specified data directory.
      * 
@@ -65,6 +67,12 @@ public class TransactionManager {
         enabled = transactionsEnabled;
         if (enabled)
             journal = new Journal(pool, dataDir);
+        Boolean groupOpt = (Boolean) pool.getConfiguration().getProperty("db-connection.recovery.group-commit");
+        if (groupOpt != null) {
+            groupCommit = groupOpt.booleanValue();
+            if (LOG.isDebugEnabled())
+                LOG.debug("GroupCommits = " + groupCommit);
+        }
     }
     
     /**
@@ -109,7 +117,8 @@ public class TransactionManager {
             return;
         if (enabled) {
             journal.writeToLog(new TxnCommit(txn.getId()));
-            journal.flushToLog(true);
+            if (!groupCommit)
+                journal.flushToLog(true);
         }
         txn.releaseAll();
     }
