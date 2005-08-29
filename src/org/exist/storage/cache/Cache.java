@@ -148,10 +148,12 @@ public interface Cache {
 	 * @return
 	 */
 	public int getFails();
-	
+    
     public int getLoad();
     
 	public void setFileName(String fileName);
+    
+    public String getFileName();
 	
 	public final static Logger LOG = Logger.getLogger(Cache.class);
 }

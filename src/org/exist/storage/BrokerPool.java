@@ -595,7 +595,7 @@ public class BrokerPool {
         //REFACTOR : construct then... configure
         xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
         //REFACTOR : construct then... configure
-        collectionCache = new CollectionCache(this, DEFAULT_COLLECTION_BUFFER_SIZE, 20);
+        collectionCache = new CollectionCache(this, DEFAULT_COLLECTION_BUFFER_SIZE, 0.9);
         //REFACTOR : construct then... configure
         //TODO : journal directory *may* be different from "db-connection.data-dir"
         transactionManager = new TransactionManager(this, new File((String) conf.getProperty("db-connection.data-dir")), isTransactional());		
@@ -1006,7 +1006,8 @@ public class BrokerPool {
             }
             cacheManager.checkCaches();
             sync.restart();
-        }
+        } else
+            cacheManager.checkDistribution();
         //TODO : touch this.syncEvent and syncRequired ?
 	}
 	

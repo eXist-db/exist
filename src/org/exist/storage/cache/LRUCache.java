@@ -39,25 +39,22 @@ public class LRUCache implements Cache {
 	private int max;
 	private SequencedLongHashMap map;
 	
-	private int hits = 0;
-	private int misses = 0;
+    private Accounting accounting;
 	
     private int hitsOld = -1;
-    
-    private int replacements = 0;
-    
-	private String fileName = null;;
 	
     private double growthFactor;
-    private int growthThreshold;
+    
+    private String fileName;
     
     private CacheManager cacheManager = null;
     
-	public LRUCache(int size, double growthFactor, int growthThreshold) {
-		this.max = size;
+	public LRUCache(int size, double growthFactor, double growthThreshold) {
+		max = size;
         this.growthFactor = growthFactor;
-        this.growthThreshold = growthThreshold;
-		this.map = new SequencedLongHashMap(size);
+		map = new SequencedLongHashMap(size * 2);
+        accounting = new Accounting(growthThreshold);
+        accounting.setTotalSize(max);
 	}
 	
 	/* (non-Javadoc)
@@ -90,9 +87,9 @@ public class LRUCache implements Cache {
 	public Cacheable get(long key) {
 		Cacheable obj = (Cacheable) map.get(key);
 		if(obj == null)
-			++misses;
+			accounting.missesIncrement();
 		else
-			++hits;
+			accounting.hitIncrement();
 		return obj;
 	}
 
@@ -154,16 +151,20 @@ public class LRUCache implements Cache {
 	 * @see org.exist.storage.cache.Cache#getHits()
 	 */
 	public int getHits() {
-		return hits;
+		return accounting.getHits();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.storage.cache.Cache#getFails()
 	 */
 	public int getFails() {
-		return misses;
+		return accounting.getMisses();
 	}
-
+ 
+    public int getThrashing() {
+        return accounting.getThrashing();
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.storage.cache.Cache#setFileName(java.lang.String)
 	 */
@@ -171,6 +172,10 @@ public class LRUCache implements Cache {
 		this.fileName = fileName;
 	}
 	
+    public String getFileName() {
+        return fileName;
+    }
+    
     public SequencedLongHashMap.Entry getFirst() {
         return map.getFirstEntry();
     }
@@ -192,9 +197,9 @@ public class LRUCache implements Cache {
 				}
 			}
 		} while(!removed);
-        if (growthFactor > 1.0 && ++replacements > growthThreshold) {
+        accounting.replacedPage(item);
+        if (growthFactor > 1.0 && accounting.resizeNeeded()) {
             cacheManager.requestMem(this);
-            replacements = 0;
         }
 	}
 
@@ -219,8 +224,7 @@ public class LRUCache implements Cache {
         if (newSize < max) {
             shrink(newSize);
         } else {
-            LOG.debug("Growing cache from " + max + " to " + newSize);
-            SequencedLongHashMap newMap = new SequencedLongHashMap(newSize);
+            SequencedLongHashMap newMap = new SequencedLongHashMap(newSize * 2);
             SequencedLongHashMap.Entry next = map.getFirstEntry();
             Cacheable cacheable;
             while(next != null) {
@@ -228,25 +232,28 @@ public class LRUCache implements Cache {
                 newMap.put(cacheable.getKey(), cacheable);
                 next = next.getNext();
             }
-            this.max = newSize;
-            this.map = newMap;
+            max = newSize;
+            map = newMap;
+            accounting.reset();
+            accounting.setTotalSize(max);
         }
-        this.replacements = 0;
     }
     
     private void shrink(int newSize) {
         flush();
         this.map = new SequencedLongHashMap(newSize);
         this.max = newSize;
+        accounting.reset();
+        accounting.setTotalSize(max);
     }
 
     public int getLoad() {
         if (hitsOld == 0) {
-            hitsOld = hits;
+            hitsOld = accounting.getHits();
             return Integer.MAX_VALUE;
         }
-        int load = hits - hitsOld;
-        hitsOld = hits;
+        int load = accounting.getHits() - hitsOld;
+        hitsOld = accounting.getHits();
         return load;
     }
 }

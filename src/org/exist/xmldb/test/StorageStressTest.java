@@ -28,6 +28,7 @@ import java.util.Iterator;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.exist.xmldb.IndexQueryService;
 import org.exist.StandaloneServer;
 import org.exist.xmldb.test.concurrent.DBUtils;
 import org.mortbay.util.MultiException;
@@ -52,19 +53,29 @@ public class StorageStressTest extends TestCase {
     public final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
     private final static String COLLECTION_NAME = "unit-testing-collection";
     
+    private final static String CONFIG =
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
+        "   <index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" + 
+        "       <fulltext default=\"all\" attributes=\"true\">" +  
+        "       </fulltext>" + 
+        "       <create path=\"//ELEMENT-1/@attribute-1\" type=\"xs:string\"/>" +
+        "   </index>" + 
+        "</collection>";
+    
     private Collection collection = null;
     
     public void testStore() throws Exception {
         String[] wordList = DBUtils.wordList(collection);
-        for (int i = 0; i < 50000; i++) {
-            File f = DBUtils.generateXMLFile(50, 1, wordList, false);
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 30000; i++) {
+            File f = DBUtils.generateXMLFile(50, 3, wordList, false);
             System.out.println("Storing file: " + f.getName() + "; size: " + (f.length() / 1024) + "kB");
-            XMLResource res = (XMLResource)
-                collection.createResource("test_" + i, "XMLResource");
+            Resource res = collection.createResource("test_" + i, "XMLResource");
             res.setContent(f);
             collection.storeResource(res);
             f.delete();
         }
+        System.out.println("Indexing took " + (System.currentTimeMillis() - start));
     }
     
     protected void setUp() throws Exception {
@@ -120,9 +131,13 @@ public class StorageStressTest extends TestCase {
         }
         
         File f = new File("samples/shakespeare/hamlet.xml");
-        Resource res = (Resource) collection.createResource("test1.xml", "XMLResource");
+        Resource res = collection.createResource("test1.xml", "XMLResource");
         res.setContent(f);
         collection.storeResource(res);
+        
+        IndexQueryService idxConf = (IndexQueryService)
+            collection.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(CONFIG);
     }
     
     public static void main(String[] args) {

@@ -141,7 +141,7 @@ public class BFile extends BTree {
     protected int maxValueSize;
     
     public BFile(BrokerPool pool, byte fileId, boolean transactional, File file, CacheManager cacheManager, 
-            double cacheGrowth, int thresholdBTree, int thresholdData) throws DBException {
+            double cacheGrowth, double thresholdBTree, double thresholdData) throws DBException {
         super(pool, fileId, transactional, cacheManager, file, thresholdBTree);
         fileHeader = (BFileHeader) getFileHeader();
         dataCache = new LRUCache(64, cacheGrowth, thresholdData);
@@ -1714,7 +1714,7 @@ public class BFile extends BTree {
             if (isDirty()) {
                 try {
                     write();
-                    if (isTransactional && syncJournal)
+                    if (isTransactional && syncJournal && logManager.lastWrittenLsn() < getPageHeader().getLsn())
                         logManager.flushToLog(true);
                     return true;
                 } catch (IOException e) {

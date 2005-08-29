@@ -147,7 +147,7 @@ public class BTree extends Paged {
     /** Cache of BTreeNode(s) */
     protected Cache cache;
     
-    protected int growthThreshold;
+    protected double growthThreshold;
     
     /** Size of BTreeNode cache */
     protected int buffers;
@@ -162,7 +162,7 @@ public class BTree extends Paged {
     
     protected boolean isTransactional;
     
-	protected BTree(BrokerPool pool, byte fileId, boolean transactional, CacheManager cacheManager, int growthThreshold) {
+	protected BTree(BrokerPool pool, byte fileId, boolean transactional, CacheManager cacheManager, double growthThreshold) {
 		super();
         this.cacheManager = cacheManager;
         this.buffers = cacheManager.getDefaultInitialSize();
@@ -176,7 +176,7 @@ public class BTree extends Paged {
             logManager = pool.getTransactionManager().getJournal();
 	}
 
-	public BTree(BrokerPool pool, byte fileId, boolean transactional, CacheManager cacheManager, File file, int growthThreshold) {
+	public BTree(BrokerPool pool, byte fileId, boolean transactional, CacheManager cacheManager, File file, double growthThreshold) {
         this(pool, fileId, transactional, cacheManager, growthThreshold);
 		setFile(file);
 	}

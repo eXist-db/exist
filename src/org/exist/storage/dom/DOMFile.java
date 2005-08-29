@@ -168,12 +168,12 @@ public class DOMFile extends BTree implements Lockable {
     
 	public DOMFile(BrokerPool pool, File file, CacheManager cacheManager)
 			throws DBException {
-		super(pool, NativeBroker.DOM_DBX_ID, true, cacheManager, 1000);
+		super(pool, NativeBroker.DOM_DBX_ID, true, cacheManager, 0.01);
 		lock = new ReentrantReadWriteLock("dom.dbx");
 		fileHeader = (BTreeFileHeader) getFileHeader();
 		fileHeader.setPageCount(0);
 		fileHeader.setTotalCount(0);
-        dataCache = new LRUCache(256, 0.0, 100);
+        dataCache = new LRUCache(256, 0.0, 1.0);
         dataCache.setFileName("dom.dbx");
         cacheManager.registerCache(dataCache);
 
@@ -2864,7 +2864,7 @@ public class DOMFile extends BTree implements Lockable {
 		public boolean sync(boolean syncJournal) {
 			if (isDirty()) {
 				write();
-                if (isTransactional && syncJournal)
+                if (isTransactional && syncJournal && logManager.lastWrittenLsn() < ph.getLsn())
                     logManager.flushToLog(true);
 				return true;
 			}

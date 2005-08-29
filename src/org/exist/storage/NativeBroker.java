@@ -256,17 +256,17 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */
     private void createIndexFiles() throws DBException {
-        elementsDb = createValueIndexFile(ELEMENTS_DBX_ID, false, config, dataDir, ELEMENTS_DBX, "db-connection.elements", 500 );
-        valuesDb = createValueIndexFile(VALUES_DBX_ID, false, config, dataDir, VALUES_DBX, "db-connection.values", 1000 );
+        elementsDb = createValueIndexFile(ELEMENTS_DBX_ID, false, config, dataDir, ELEMENTS_DBX, "db-connection.elements", 0.05 );
+        valuesDb = createValueIndexFile(VALUES_DBX_ID, false, config, dataDir, VALUES_DBX, "db-connection.values", 0.05 );
         if ( qnameValueIndexation ) {
                 valuesDbQname = createValueIndexFile(VALUES_QNAME_DBX_ID, false, config, dataDir, VALUES_QNAME_DBX,
-                        "db-connection2.values", 1000 );
+                        "db-connection2.values", 0.4 );
         }
         
         if ((dbWords = (BFile) config.getProperty("db-connection.words")) == null) {
         	LOG.debug("Creating words.dbx ....\n\n");
         	dbWords = new BFile(pool, NativeBroker.WORDS_DBX_ID, false, 
-                    new File(dataDir + File.separatorChar + WORDS_DBX), pool.getCacheManager(), 1.5, 10, 1000);
+                    new File(dataDir + File.separatorChar + WORDS_DBX), pool.getCacheManager(), 1.4, 0.01, 0.015);
             config.setProperty("db-connection.words", dbWords);
         }
         textEngine = new NativeTextEngine(this, config, dbWords);
@@ -290,13 +290,13 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */
     private BFile createValueIndexFile(byte id, boolean transactional, Configuration config, String dataDir, 
-            String dataFile, String propertyName, int thresholdData ) throws DBException {
+            String dataFile, String propertyName, double thresholdData ) throws DBException {
         BFile db;
         
         if ((db = (BFile) config.getProperty(propertyName))
                 == null) {
             db =
-                new BFile(pool, id, transactional, new File(dataDir + File.separatorChar + dataFile ), pool.getCacheManager(), 1.25, 50, thresholdData);
+                new BFile(pool, id, transactional, new File(dataDir + File.separatorChar + dataFile ), pool.getCacheManager(), 1.25, 0.01, thresholdData);
             
             config.setProperty(propertyName, db);
             readOnly = db.isReadOnly();
@@ -2809,7 +2809,7 @@ public class NativeBroker extends DBBroker {
                     lock.release();
                 }
                 notifySync();
-				System.gc();
+//				System.gc();
 				Runtime runtime = Runtime.getRuntime();
 				LOG.info("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
 						(runtime.maxMemory() / 1024) + "K max; " +

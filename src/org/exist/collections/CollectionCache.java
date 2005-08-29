@@ -20,7 +20,7 @@ public class CollectionCache extends LRDCache {
 	private Object2LongHashMap names;
 	private BrokerPool pool;
 	
-	public CollectionCache(BrokerPool pool, int blockBuffers, int growthThreshold) {
+	public CollectionCache(BrokerPool pool, int blockBuffers, double growthThreshold) {
 		super(blockBuffers, 1.25, growthThreshold);
         this.names = new Object2LongHashMap(blockBuffers);
 		this.pool = pool;
@@ -88,8 +88,10 @@ public class CollectionCache extends LRDCache {
 		items[bucket] = item;
 		map.put(item.getKey(), item);
         
-        if (cacheManager != null && ++replacements > growthThreshold) {
+        accounting.replacedPage(item);
+        if (cacheManager != null && accounting.resizeNeeded()) {
             cacheManager.requestMem(this);
+            accounting.stats();
         }
 		return old;
 	}
@@ -118,8 +120,9 @@ public class CollectionCache extends LRDCache {
             }
             this.size = newSize;
             this.map = newMap;
+            accounting.reset();
+            accounting.setTotalSize(size);
         }
-        this.replacements = 0;
     }
     
     
