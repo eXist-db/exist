@@ -142,7 +142,7 @@ public class ReentrantReadWriteLock implements Lock {
 	public synchronized void release() {
 		if (Thread.currentThread() != owner_)
 			throw new Error("Illegal lock usage. Thread " + 
-				Thread.currentThread() + " tried to release lock on " + id_);
+				Thread.currentThread() + " tried to release lock on " + id_ + " but owner is " + owner_);
 
 		if (--holds_ == 0) {
 //			System.out.println("thread " + owner_.getName() + " released lock on " + id_ +
