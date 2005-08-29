@@ -100,21 +100,23 @@ public class HashtableTest extends TestCase {
 			values[i] = new String("a" + keys[i]);
 			table.put(keys[i], values[i]);
 		}
+        
 		// check SequencedLongHashMap.get()
 		for(int i = 0; i < tabSize; i++) {
 			Object v = table.get(keys[i]);
 			assertEquals( values[i], v);
 		}
-		// check SequencedLongHashMap.iterator()
-		int c = 0;
-		for(Iterator i = table.iterator(); i.hasNext(); c++) {
-			Long v = (Long)i.next();
-			assertEquals(keys[c], v.longValue());
-		}
-		assertEquals(c, table.size());
 		
+		// check SequencedLongHashMap.iterator()
+        int c = 0;
+        for(Iterator i = table.iterator(); i.hasNext(); c++) {
+            Long v = (Long)i.next();
+            assertEquals(keys[c], v.longValue());
+        }
+        assertEquals(c, table.size());
+        
 		// remove 1000 random items
-		for(int i = 0; i < 1000; i++) {
+		for(int i = 0; i < 10000; i++) {
 			int k;
 			do {
 				k = rand.nextInt(tabSize - 1);
@@ -135,7 +137,7 @@ public class HashtableTest extends TestCase {
 			assertTrue("Value has been removed and should be null", values[k] != null);
 			assertEquals("Keys don't match", keys[k], v.longValue());
 		}
-		assertEquals("Hashtable size is incorrect", table.size(), values.length - 1000);
+		assertEquals("Hashtable size is incorrect", table.size(), values.length - 10000);
 		assertEquals("Hashtable size is incorrect", table.size(), c);
 		
 		System.gc();
@@ -150,13 +152,27 @@ public class HashtableTest extends TestCase {
 				table.put(keys[i], values[i]);
 			}
 		}
-		
+        assertEquals(values.length, table.size());
+        
 		// check SequencedLongHashMap.get()
 		for(int i = 0; i < tabSize; i++) {
 			Object v = table.get(keys[i]);
 			assertEquals( values[i], v);
 		}
 		
+        // update keys
+        for (int i = 0; i < tabSize; i++) {
+            Object v = table.get(keys[i]);
+            values[i] = "b" + v;
+            table.put(keys[i], values[i]);
+        }
+        
+        // check SequencedLongHashMap.get()
+        for(int i = 0; i < tabSize; i++) {
+            Object v = table.get(keys[i]);
+            assertEquals( values[i], v);
+        }
+        
 		// check SequencedLongHashMap.iterator()
 		c = 0;
 		for(Iterator i = table.iterator(); i.hasNext(); c++) {
@@ -176,4 +192,24 @@ public class HashtableTest extends TestCase {
 		System.out.println("Hashtable size: " + table.size());
 		System.out.println("maxRehash: " + table.getMaxRehash());
 	}
+    
+    public void testSequencedMap2() {
+        long[] l = { 10, 100, 50, 250, 100, 15, 35, 250, 100, 65, 45, 50, 65, 80, 90, 70, 250, 100 };
+        long[] expected = { 15, 35, 45, 50, 65, 80, 90, 70, 250, 100 };
+        SequencedLongHashMap table = new SequencedLongHashMap(tabSize);
+        for (int i = 0; i < l.length; i++) {
+            table.put(l[i], "k" + l[i]);
+        }
+        table.removeFirst();
+        SequencedLongHashMap.Entry next = table.getFirstEntry();
+        int i = 0;
+        while(next != null) {
+            assertEquals(next.getKey(), expected[i]);
+            System.out.print(next.getKey());
+            System.out.print(' ');
+            next = next.getNext();
+            i++;
+        }
+        System.out.println();
+    }
 }

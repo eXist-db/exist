@@ -131,6 +131,13 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 		return null;
 	}
 
+    public void clear() {
+        for (int i = 0; i < values.length; i++) {
+            values[i] = null;
+        }
+        items = 0;
+    }
+    
 	public Iterator iterator() {
 		return new Long2ObjectIterator(Long2ObjectIterator.KEYS);
 	}
