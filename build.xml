@@ -211,10 +211,10 @@
         </jar>
     </target>
     
-    <!-- =================================================================== -->
-    <!-- Create jar file          										   -->
-    <!-- =================================================================== -->
-    <target name="jar" depends="compile, compile-tomcat-realm" description="Create eXist jar files">
+    <!-- ================================================================== -->
+    <!-- Create unsigned jar files   									   	-->
+    <!-- ================================================================== -->
+	<target name="unsigned-jar" depends="compile, compile-tomcat-realm" description="Create eXist unisgned jar files">
         <filter token="version" value="${project.version}"/>
         <filter token="build" value="${DSTAMP}"/>
         <copy file="${src}/CatalogManager.properties" todir="${build.classes}"/>
@@ -264,8 +264,7 @@
             <exclude name="org/exist/source/CocoonSource.java"/>
             <exclude name="org/exist/*.xsl"/>
         </jar>
-
-        <echo message="Creating start.jar ..."/>
+		<echo message="Creating start.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="start.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.exist.start.Main"/>
@@ -275,7 +274,6 @@
             </manifest>
             <include name="org/exist/start/**"/>
         </jar>
-
         <echo message="Creating exist-optional.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="exist-optional.jar">
             <include name="org/exist/soap/**"/>
@@ -286,10 +284,13 @@
             <include name="org/exist/source/CocoonSource.java"/>
             <include name="org/exist/*.xsl"/>
         </jar>
+	</target>
         
-        <!-- Sign jar files -->
-        <antcall target="sign"/>
-
+    <!-- ================================================================== -->
+    <!-- Create jar file, eventually signed								   	-->
+    <!-- ================================================================== -->
+	<target name="jar" depends="unsigned-jar" description="Create eXist jar files, eventually signed" if="{sign.jars}">
+		<antcall target="sign"/>
     </target>
 
     <!-- ================================================================== -->
@@ -306,7 +307,7 @@
     <!-- Run JUnit tests                                                    -->
 	<!-- ================================================================== -->
     <target name="test"
-            depends="test-prepare,test-recovery, test-local, test-concurrent, test-remote, test-wrapup,test-shutdown-server"
+            depends="test-prepare,test-recovery, test-local, test-concurrent, test-remote, test-wrapup"
             description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->
@@ -416,7 +417,7 @@
     </target>
 
     <!-- Test set 3 : tests on remote server -->
-    <target name="test-remote" depends="jar,start-server">
+    <target name="test-remote" depends="jar">
         <mkdir dir="${junit.reports}"/>
         <echo message="--------------------------------"/>
         <echo message="Running tests on remote database"/>
@@ -500,19 +501,21 @@
             <fileset dir="log" includes="*"/>
             <fileset dir="tmp" includes="*"/>
             <fileset dir="${src.webapp}/WEB-INF/logs" includes="*"/>
-        </delete>
-        
-        <!-- <delete dir="${junit.reports}"/> -->
-        <delete dir="${junit.reports.dat}"/>
-        <delete dir="${junit.reports.html}"/>
-        
-        <delete dir="${src.webapp}/WEB-INF/data/backup"/>
+        </delete>        
+        <delete dir="${junit.reports}" />        
+    	<delete dir="${src.webapp}/api"/>
+    	<delete dir="${src.webapp}/WEB-INF/data/backup"/>
+    	<delete dir="${src.webapp}/WEB-INF/data/journal"/>
+    	<delete>
+    		<fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx"/>
+    		<fileset dir="${src.webapp}/WEB-INF/data" includes="*.log"/>
+    	</delete>
         <delete dir="samples/classes"/>
         <delete failonerror="no" file="examples.jar"/>
         <delete failonerror="no" file="exist.jar"/>
         <delete failonerror="no" file="exist-optional.jar"/>
         <delete failonerror="no" file="start.jar"/>
-        <delete failonerror="no" dir="${dist}"/>
+        <delete failonerror="no" dir="${dist}"/>    	        
         <ant antfile="build.xml" dir="tools/wrapper" target="clean"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean"/>
     </target>
