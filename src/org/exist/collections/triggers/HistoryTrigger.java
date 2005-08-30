@@ -54,8 +54,9 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
     }
     
     public void prepare(int event, DBBroker broker, String documentName, Document existingDocument) throws TriggerException{
+   	  if (existingDocument == null) return;
         // retrieve the document in question
-        DocumentImpl doc = getCollection().getDocument(broker, documentName);
+        DocumentImpl doc = (DocumentImpl) existingDocument;
       
         // construct the destination path
         String path = root + doc.getName();

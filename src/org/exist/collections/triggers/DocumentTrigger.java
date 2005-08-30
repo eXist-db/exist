@@ -74,7 +74,7 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
      * 
      * @param event the type of event that triggered this call (see the constants defined in this interface).
      * @param broker the database instance used to process the current action.
-     * @param documentName the name of the document currently processed (relative to the collection path).
+     * @param documentPath the full absolute path of the document currently processed.
      * @param existingDocument optional: if event is a {@link #UPDATE_DOCUMENT_EVENT},
      *  existingDocument will contain the Document object for the old document, which will be overwritten. Otherwise, the parameter
      *  is null.
@@ -83,7 +83,7 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
     public void prepare(
         int event,
         DBBroker broker,
-        String documentName,
+        String documentPath,
         Document existingDocument)
         throws TriggerException;
 
@@ -96,7 +96,7 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
     public void finish(
         int event,
         DBBroker broker,
-        String documentName,
+        String documentPath,
         Document document);
     
     /**

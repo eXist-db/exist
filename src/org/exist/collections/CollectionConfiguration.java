@@ -50,7 +50,7 @@ public class CollectionConfiguration {
 	private final static String INDEX_ELEMENT = "index";
 	private static final String DOCROOT_ATTRIBUTE = "root";
 	
-	private Trigger[] triggers = new Trigger[3];
+	private Trigger[] triggers = new Trigger[6];
 	
     /**
      * @uml.associationEnd multiplicity="(0 1)"
