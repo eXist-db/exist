@@ -21,25 +21,32 @@
 package org.exist.collections;
 
 import org.exist.Indexer;
+import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.serializer.DOMStreamer;
-import org.xml.sax.XMLReader;
+import org.w3c.dom.Document;
+import org.xml.sax.*;
+import org.xml.sax.ext.LexicalHandler;
 
 /**
  * Internal class used to track required fields between calls to
  * {@link org.exist.collections.Collection#validate(Txn, DBBroker, String, InputSource)} and
- * {@link org.exist.collections.Collection#store(DBBroker, IndexInfo, InputSource, boolean)}.
+ * {@link org.exist.collections.Collection#store(Txn, DBBroker, IndexInfo, InputSource, boolean)}.
  * 
  * @author wolf
  */
 public class IndexInfo {
 
-	protected Indexer indexer;
-	protected XMLReader reader = null;
-	protected DOMStreamer streamer = null;
+	private Indexer indexer;
+	private XMLReader reader;
+	private DOMStreamer streamer;
+	private DocumentTrigger trigger;
+	private int event;
 	
-	protected IndexInfo(Indexer indexer) {
+	IndexInfo(Indexer indexer) {
 		this.indexer = indexer;
 	}
 	
@@ -47,16 +54,29 @@ public class IndexInfo {
 		return indexer;
 	}
     
-	protected void setReader(XMLReader reader) {
+	void setReader(XMLReader reader, EntityResolver entityResolver) throws SAXException {
 		this.reader = reader;
+		reader.setEntityResolver(entityResolver);
+		LexicalHandler lexicalHandler = trigger == null ? indexer : trigger.getLexicalInputHandler();
+		ContentHandler contentHandler = trigger == null ? indexer : trigger.getInputHandler();
+		reader.setProperty(	"http://xml.org/sax/properties/lexical-handler", lexicalHandler);
+		reader.setContentHandler(contentHandler);
+		reader.setErrorHandler(indexer);
 	}
 	
-	protected XMLReader getReader() {
+	public XMLReader getReader() {
 		return this.reader;
 	}
 	
-	public void setDOMStreamer(DOMStreamer streamer) {
+	void setDOMStreamer(DOMStreamer streamer) {
 		this.streamer = streamer;
+		if (trigger == null) {
+			streamer.setContentHandler(indexer);
+			streamer.setLexicalHandler(indexer);
+		} else {
+			streamer.setContentHandler(trigger.getInputHandler());
+			streamer.setLexicalHandler(trigger.getLexicalInputHandler());
+		}
 	}
 	
 	public DOMStreamer getDOMStreamer() {
@@ -65,5 +85,32 @@ public class IndexInfo {
 	
 	public DocumentImpl getDocument() {
 		return indexer.getDocument();
+	}
+	
+	void setTrigger(DocumentTrigger trigger, int event) {
+		this.trigger = trigger;
+		this.event = event;
+	}
+	
+	DocumentTrigger getTrigger() {
+		return trigger;
+	}
+	
+	void prepareTrigger(DBBroker broker, String docPath, Document doc) throws TriggerException {
+		if (trigger == null) return;
+		trigger.setOutputHandler(indexer);
+		trigger.setLexicalOutputHandler(indexer);
+		trigger.setValidating(true);
+		trigger.prepare(event, broker, docPath, doc);
+	}
+	
+	void postValidateTrigger() {
+		if (trigger == null) return;
+		trigger.setValidating(false);
+	}
+	
+	void finishTrigger(DBBroker broker, String docPath, Document doc) {
+		if (trigger == null) return;
+		trigger.finish(event, broker, docPath, doc);
 	}
 }
