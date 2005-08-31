@@ -48,10 +48,12 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 	
     private final static int XML_WRITER = 0;
     private final static int XHTML_WRITER = 1;
+    private final static int TEXT_WRITER = 2;
     
     private XMLWriter writers[] = {
             new IndentingXMLWriter(),
-            new XHTMLWriter()
+            new XHTMLWriter(), 
+            new TEXTWriter()
     };
     
     
@@ -80,8 +82,11 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
         
         if ("xhtml".equalsIgnoreCase(method))
             receiver = writers[XHTML_WRITER];
+        else if("text".equalsIgnoreCase(method))
+            receiver = writers[TEXT_WRITER];
         else
             receiver = writers[XML_WRITER];
+        
         receiver.setWriter(writer);
         receiver.setOutputProperties(outputProperties);
     }
