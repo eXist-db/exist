@@ -417,15 +417,15 @@ public class TEXTWriter extends XMLWriter {
     throws IOException {
 //        boolean[] specialChars = inAttribute ? attrSpecialChars
 //                : textSpecialChars;
-        char ch = 0;
+//        char ch = 0;
         final int len = s.length();
-        int pos = 0, i;
-        while (pos < len) {
-            i = pos;
+//        int pos = 0, i;
+//        while (pos < len) {
+//            i = pos;
             
             // TODO: I am not sure about this loop.
-            while (i < len) {
-                ch = s.charAt(i);
+//            while (i < len) {
+//                ch = s.charAt(i);
 //                if (ch < 128) {
 //                    if (specialChars[ch])
 //                        break;
@@ -434,12 +434,12 @@ public class TEXTWriter extends XMLWriter {
 //                } else if (!charSet.inCharacterSet(ch) || ch == 160)
 //                    break;
 //                else
-                    i++;
-            }
-            writeCharSeq(s, pos, i);
+//                    i++;
+//            }
+            writeCharSeq(s, 0, len);
             // writer.write(s.subSequence(pos, i).toString());
-            if (i >= len)
-                return;
+//            if (i >= len)
+//                return;
 //            switch (ch) {
 //                case '<':
 //                    writer.write("&lt;");
@@ -469,9 +469,9 @@ public class TEXTWriter extends XMLWriter {
 //                default:
 //                    writeCharacterReference(ch);
 //            }
-            writeCharacterReference(ch);
-            pos = ++i;
-        }
+//            writeCharacterReference(ch);
+//            pos = ++i;
+//        }
     }
     
     private void writeCharSeq(CharSequence ch, int start, int end)
