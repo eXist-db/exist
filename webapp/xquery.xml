@@ -853,7 +853,7 @@ example:echo(("Hello", "World!"))
             
             <para>General options are:</para>
             <itemizedlist>
-                <listitem>method=xml|xhtml</listitem>
+                <listitem>method=xml|xhtml|text</listitem>
                 <listitem>media-type</listitem>
                 <listitem>encoding</listitem>
                 <listitem>doctype-public</listitem>
@@ -867,10 +867,12 @@ example:echo(("Hello", "World!"))
             
             <synopsis>declare option exist:serialize "expand-xincludes=no";</synopsis>
             
-            <para>For the output method parameter, eXist currently only recognizes two methods: xml or xhtml.
+            <para>For the output method parameter, eXist currently recognizes three methods: xml, xhtml and text.
                 Contrary to the xml method, the xhtml setting takes care to use the short form only for elements
                 that are declared empty in the xhtml dtd. For example, the <option>br</option> tag is always
-                returned as &lt;br/&gt;.</para>
+                returned as &lt;br/&gt;. <br/> The text method only returns the content of elements: 
+                &lt;A&gt;Content&lt;/A&gt; is returned as <option>Content</option>. Attributes,
+                processing instrunctions, comments etcetera are all ignored.</para>
         </section>
 		<section>
 			<title>XQuery Pragmas</title>
