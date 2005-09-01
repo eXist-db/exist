@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -50,6 +51,8 @@ public class CollectionConfiguration {
 	private final static String INDEX_ELEMENT = "index";
 	private static final String DOCROOT_ATTRIBUTE = "root";
 	
+	private static final Logger LOG = Logger.getLogger(CollectionConfiguration.class);
+
 	private Trigger[] triggers = new Trigger[6];
 	
     /**
@@ -135,21 +138,27 @@ public class CollectionConfiguration {
 		StringTokenizer tok = new StringTokenizer(eventAttr, ", ");
 		String event;
 		Trigger trigger;
+		try {
+			trigger = instantiate(broker, node, classAttr);
+		} catch (CollectionConfigurationException e) {
+			LOG.warn("failed to instantiate trigger", e);
+			return;
+		}
 		while(tok.hasMoreTokens()) {
 			event = tok.nextToken();
-			System.out.println("Registering trigger " + classAttr + " for event " + event);
+			LOG.debug("Registering trigger " + classAttr + " for event " + event);
 			if(event.equalsIgnoreCase("store")) {
-				triggers[Trigger.STORE_DOCUMENT_EVENT] = instantiate(broker, node, classAttr);
+				triggers[Trigger.STORE_DOCUMENT_EVENT] = trigger;
 			} else if(event.equalsIgnoreCase("update")) {
-				triggers[Trigger.UPDATE_DOCUMENT_EVENT] = instantiate(broker, node, classAttr);
+				triggers[Trigger.UPDATE_DOCUMENT_EVENT] = trigger;
 			} else if(event.equalsIgnoreCase("remove")) {
-				triggers[Trigger.REMOVE_DOCUMENT_EVENT] = instantiate(broker, node, classAttr);
+				triggers[Trigger.REMOVE_DOCUMENT_EVENT] = trigger;
 			} else if(event.equalsIgnoreCase("create-collection")) {
-				triggers[Trigger.CREATE_COLLECTION_EVENT] = instantiate(broker, node, classAttr);
+				triggers[Trigger.CREATE_COLLECTION_EVENT] = trigger;
 			} else if(event.equalsIgnoreCase("rename-collection")) {
-				triggers[Trigger.RENAME_COLLECTION_EVENT] = instantiate(broker, node, classAttr);
+				triggers[Trigger.RENAME_COLLECTION_EVENT] = trigger;
 			} else if(event.equalsIgnoreCase("delete-collection")) {
-				triggers[Trigger.DELETE_COLLECTION_EVENT] = instantiate(broker, node, classAttr);
+				triggers[Trigger.DELETE_COLLECTION_EVENT] = trigger;
 			} else
 				throw new CollectionConfigurationException("unknown event type '" + event + "'");
 		}
