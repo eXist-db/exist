@@ -24,6 +24,7 @@ package org.exist.cocoon;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.apache.avalon.framework.parameters.ParameterException;
 import org.apache.avalon.framework.parameters.Parameterizable;
 import org.apache.avalon.framework.parameters.Parameters;
 import org.apache.cocoon.ProcessingException;
+import org.apache.cocoon.caching.CacheableProcessingComponent;
 import org.apache.cocoon.environment.Context;
 import org.apache.cocoon.environment.ObjectModelHelper;
 import org.apache.cocoon.environment.Request;
@@ -47,6 +49,9 @@ import org.apache.cocoon.environment.http.HttpEnvironment;
 import org.apache.cocoon.generation.ServiceableGenerator;
 import org.apache.cocoon.xml.IncludeXMLConsumer;
 import org.apache.excalibur.source.Source;
+import org.apache.excalibur.source.SourceValidity;
+import org.apache.excalibur.source.impl.validity.AggregatedValidity;
+import org.apache.excalibur.source.impl.validity.ExpiresValidity;
 import org.exist.source.CocoonSource;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
@@ -76,6 +81,11 @@ import org.xmldb.api.modules.XMLResource;
  * <li><tt>create-session</tt>: if set to "true", indicates that an
  * HTTP session should be created upon the first invocation.</li>
  * <li><tt>expand-xincludes</tt></li>
+ * <li><tt>cache-validity</tt>: if specified, the XQuery content is
+ * cached until the specified delay expressed in milliseconds is elapsed
+ * or until the XQuery file is modified.  The identity of the cached content is
+ * computed using the XQuery file URI and the list of all parameters passed to
+ * the XQuery.</li>
  * 
  * The component also accept default parameters that will be declared as implicit variables in the XQuery.
  * See below an example declaration of the XQueryGenerator component with default eXist settings, and an extra user-defined parameter:
@@ -86,6 +96,7 @@ import org.xmldb.api.modules.XMLResource;
  * 		password="guest"
  *		create-session="false"
  * 		expand-xincludes="false"
+ *		cache-validity="-1"
  *		src="org.exist.cocoon.XQueryGenerator">
  *   <parameter name="myProjectURI" value="/db/myproject"/>
  * </map:generator>
@@ -98,6 +109,7 @@ import org.xmldb.api.modules.XMLResource;
  *  &lt;map:parameter name=&quot;password&quot; value=&quot;guest&quot;/&gt;
  *  &lt;map:parameter name=&quot;create-session&quot; value=&quot;false&quot;/&gt;
  *  &lt;map:parameter name=&quot;expand-xincludes&quot; value=&quot;false&quot;/&gt;
+ *  &lt;map:parameter name=&quot;cache-validity&quot; value=&quot;-1quot;/&gt;
  *  &lt;map:parameter name=&quot;myProjectURI&quot; value=&quot;/db/myproject&quot;/&gt;
  * </pre>
  * 
@@ -106,7 +118,7 @@ import org.xmldb.api.modules.XMLResource;
  *
  * @author wolf
  */
-public class XQueryGenerator extends ServiceableGenerator implements Configurable, Parameterizable {
+public class XQueryGenerator extends ServiceableGenerator implements Configurable, Parameterizable, CacheableProcessingComponent {
 	public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
 	private Source inputSource = null;
@@ -123,6 +135,10 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 	private String collectionURI;
 	private String defaultCollectionURI = "xmldb:exist:///db";
 	private final static String COLLECTION_URI = "collection";
+	
+	private long cacheValidity;
+	private long defaultCacheValidity = -1;
+	private final static String CACHE_VALIDITY = "cache-validity";
 
 	private String user;
 	private String defaultUser = "guest";
@@ -133,6 +149,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 	private final static String PASSWORD = "password";
 
 	private Map optionalParameters;
+	private Parameters componentParams;
 
 	/*
 	 * (non-Javadoc)
@@ -145,6 +162,23 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 						Parameters parameters) throws ProcessingException,
 			SAXException, IOException {
 		super.setup(resolver, objectModel, source, parameters);
+
+		/*
+		 * We don't do this directly in parameterize() because setup() can be
+		 * called multiple times and optionalParameters needs resetting to forget
+		 * sitemap parameters that may have been removed inbetween
+		 */
+		this.optionalParameters = new HashMap();
+		String paramNames[] = componentParams.getNames();
+		for (int i = 0; i < paramNames.length; i++) {
+			String param = paramNames[i];
+			try {
+				optionalParameters.put(param, componentParams.getParameter(param));
+			} catch (ParameterException e1) {
+				// Cannot happen as we iterate through existing parameters
+			}
+		}
+
 		this.objectModel = objectModel;
 		this.inputSource = resolver.resolveURI(source);
 		this.collectionURI = parameters.getParameter(COLLECTION_URI,
@@ -155,13 +189,14 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 				this.defaultCreateSession);
 		this.expandXIncludes = parameters.getParameterAsBoolean(
 				EXPAND_XINCLUDES, this.defaultExpandXIncludes);
-		String paramNames[] = parameters.getNames();
+		this.cacheValidity = parameters.getParameterAsLong(CACHE_VALIDITY, defaultCacheValidity);
+		paramNames = parameters.getNames();
 		for (int i = 0; i < paramNames.length; i++) {
 			String param = paramNames[i];
 			if (!(param.equals(COLLECTION_URI) || param.equals(USER)
 					|| param.equals(PASSWORD)
 					|| param.equals(CREATE_SESSION) || param
-					.equals(EXPAND_XINCLUDES))) {
+					.equals(EXPAND_XINCLUDES) || param.equals(CACHE_VALIDITY))) {
 				this.optionalParameters.put(param, parameters
 						.getParameter(param, ""));
 			}
@@ -304,17 +339,30 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		this.defaultExpandXIncludes = config.getAttributeAsBoolean(EXPAND_XINCLUDES, this.defaultExpandXIncludes);
 		this.defaultPassword = config.getAttribute(PASSWORD, this.defaultPassword);
 		this.defaultUser = config.getAttribute(USER, this.defaultUser);
+		this.defaultCacheValidity = config.getAttributeAsLong(CACHE_VALIDITY, this.defaultCacheValidity);
 	}
 
 	/**
 	 * @see org.apache.avalon.framework.parameters.Parameterizable#parameterize(org.apache.avalon.framework.parameters.Parameters)
 	 */
 	public void parameterize(Parameters params) throws ParameterException {
-		this.optionalParameters = new HashMap();
-		String paramNames[] = params.getNames();
-		for (int i = 0; i < paramNames.length; i++) {
-			String param = paramNames[i];
-			optionalParameters.put(param, params.getParameter(param));
+		this.componentParams = params;
+	}
+
+	public Serializable getKey() {
+		StringBuffer key = new StringBuffer();
+		key.append(optionalParameters.toString());
+		key.append(inputSource.getURI());
+		return key.toString();
+	}
+
+	public SourceValidity getValidity() {
+		if (cacheValidity != -1) {
+			AggregatedValidity v = new AggregatedValidity();
+			v.add(inputSource.getValidity());
+			v.add(new ExpiresValidity(cacheValidity));
+			return v;
 		}
+		return null;
 	}
 }
