@@ -136,7 +136,7 @@
         <echo message="Compiling Tomcat Realm"/>
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
                 destdir="${build.classes}" encoding="UTF-8"
-                optimize="${build.optimize}" srcdir="${src}" 
+                optimize="${build.optimize}" srcdir="${src}"
                 source="${build.compiler.source}" target="${build.compiler.target}">
             <include name="org/exist/http/realm/**"/>
             <classpath>
@@ -198,10 +198,10 @@
         <delete failonerror="false" dir="${build}/examples"/>
         <mkdir dir="${build}/examples"/>
         <javac debug="${build.debug}"
-               deprecation="${build.deprecation}"
-               destdir="${build}/examples" srcdir="${samples}"
-               source="${build.compiler.source}" target="${build.compiler.target}"
-               encoding="UTF-8">
+                deprecation="${build.deprecation}"
+                destdir="${build}/examples" srcdir="${samples}"
+                source="${build.compiler.source}" target="${build.compiler.target}"
+                encoding="UTF-8">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -214,7 +214,7 @@
     <!-- ================================================================== -->
     <!-- Create unsigned jar files   									   	-->
     <!-- ================================================================== -->
-	<target name="unsigned-jar" depends="compile, compile-tomcat-realm" description="Create eXist unisgned jar files">
+    <target name="unsigned-jar" depends="compile, compile-tomcat-realm" description="Create eXist unisgned jar files">
         <filter token="version" value="${project.version}"/>
         <filter token="build" value="${DSTAMP}"/>
         <copy file="${src}/CatalogManager.properties" todir="${build.classes}"/>
@@ -264,7 +264,7 @@
             <exclude name="org/exist/source/CocoonSource.java"/>
             <exclude name="org/exist/*.xsl"/>
         </jar>
-		<echo message="Creating start.jar ..."/>
+        <echo message="Creating start.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="start.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.exist.start.Main"/>
@@ -284,13 +284,13 @@
             <include name="org/exist/source/CocoonSource.java"/>
             <include name="org/exist/*.xsl"/>
         </jar>
-	</target>
+    </target>
         
     <!-- ================================================================== -->
     <!-- Create jar file, eventually signed								   	-->
     <!-- ================================================================== -->
-	<target name="jar" depends="unsigned-jar" description="Create eXist jar files, eventually signed" if="{sign.jars}">
-		<antcall target="sign"/>
+    <target name="jar" depends="unsigned-jar" description="Create eXist jar files, eventually signed" if="{sign.jars}">
+        <antcall target="sign"/>
     </target>
 
     <!-- ================================================================== -->
@@ -500,22 +500,23 @@
         <delete quiet="true">
             <fileset dir="log" includes="*"/>
             <fileset dir="tmp" includes="*"/>
-            <fileset dir="${src.webapp}/WEB-INF/logs" includes="*"/>
-        </delete>        
-        <delete dir="${junit.reports}" />        
-    	<delete dir="${src.webapp}/api"/>
-    	<delete dir="${src.webapp}/WEB-INF/data/backup"/>
-    	<delete dir="${src.webapp}/WEB-INF/data/journal"/>
-    	<delete>
-    		<fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx"/>
-    		<fileset dir="${src.webapp}/WEB-INF/data" includes="*.log"/>
-    	</delete>
+            <fileset dir="${src.webapp}/WEB-INF/logs"
+                    excludes=".DO_NOT_DELETE" includes="*"/>
+        </delete>
+        <delete dir="${junit.reports}" />
+        <delete dir="${src.webapp}/api"/>
+        <delete dir="${src.webapp}/WEB-INF/data/backup"/>
+        <delete dir="${src.webapp}/WEB-INF/data/journal"/>
+        <delete>
+            <fileset dir="${src.webapp}/WEB-INF/data"
+                    includes="*.dbx,*.log" excludes=".DO_NOT_DELETE" />
+        </delete>
         <delete dir="samples/classes"/>
         <delete failonerror="no" file="examples.jar"/>
         <delete failonerror="no" file="exist.jar"/>
         <delete failonerror="no" file="exist-optional.jar"/>
         <delete failonerror="no" file="start.jar"/>
-        <delete failonerror="no" dir="${dist}"/>    	        
+        <delete failonerror="no" dir="${dist}"/>
         <ant antfile="build.xml" dir="tools/wrapper" target="clean"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean"/>
     </target>
@@ -603,10 +604,10 @@
         <!-- When there are no java docs, create empty file -->
         <mkdir dir="webapp/api"/>
         <touch file="webapp/api/index.html"/>
-        
+
         <mkdir dir="webapp/WEB-INF/data"/>
         <mkdir dir="webapp/WEB-INF/logs"/>
-        
+
         <chmod file="webapp/bin/client.sh" perm="+x"/>
     </target>
 
@@ -614,7 +615,7 @@
 	<!-- Create .war file                                                   -->
 	<!-- ================================================================== -->
     <target name="dist-war" depends="webapps" description="Create war file">
-        <war destfile="${dist}/exist-${DSTAMP}.war"  webxml="webapp/WEB-INF/web.xml">
+        <war destfile="${dist}/exist-${DSTAMP}.war" webxml="webapp/WEB-INF/web.xml">
                 
             <!-- Add files to WEB-INF/lib -->
             <lib dir=".">
