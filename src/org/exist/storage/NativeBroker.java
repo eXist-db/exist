@@ -988,14 +988,13 @@ public class NativeBroker extends DBBroker {
                 case Node.ATTRIBUTE_NODE :
                     boolean indexAttribs = false;
                     
-//    				QName idxQName = new QName('@' + node.getLocalName(), node
-//    						.getNamespaceURI());
                     QName qname = node.getQName();
     				if (currentPath != null)
     					currentPath.addComponent(qname);
     				
                     // --move to-- NativeElementIndex NativeValueIndex NativeTextEngine
-                    if(index && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
+                    if(index && (ftIdx == null || currentPath == null || 
+                    		(ftIdx.getIncludeAttributes() && ftIdx.matchAttribute(currentPath)))) {
                         indexType |= RangeIndexSpec.TEXT;
                         indexAttribs = true;
                     }
