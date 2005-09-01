@@ -28,9 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.CacheManager;
@@ -49,7 +47,6 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.Loggable;
-import org.exist.storage.journal.Lsn;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.txn.TransactionException;
@@ -60,7 +57,6 @@ import org.exist.util.FixedByteArray;
 import org.exist.util.IndexCallback;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
-import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
 
@@ -2469,6 +2465,13 @@ public class BFile extends BTree {
                     os.writeByte(more);
                 } while ((more & 0x200) > 0);
             }
+        }
+        
+        public void copyRaw(VariableByteOutputStream os, int count) throws IOException {
+        	for(long i = 0; i < count; i++) {
+                if (offset == pageLen) advance();
+                os.writeByte(nextPage.data[offset++]);
+            }        	
         }
     }
 

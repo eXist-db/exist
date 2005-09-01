@@ -159,6 +159,11 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         }
     }
     
+    public void copyRaw(VariableByteOutputStream os, int count) throws IOException {
+    	for (int i = 0; i < count; i++) {
+    		os.buf.append((byte) read());
+    	}
+    }
     
     /* (non-Javadoc)
      * @see org.exist.storage.io.VariableByteInput#release()
