@@ -117,12 +117,10 @@ public class DatabaseImpl implements Database {
         	home = findExistHomeFromProperties();
         } else {
         	File f = new File(configuration);
+        	if (!f.isAbsolute())
+        		f = new File(new File(findExistHomeFromProperties()), configuration).getAbsoluteFile();
     		file = f.getName();
-			if ( f.isAbsolute() ) {
-				home = f.getParentFile().getAbsolutePath();
-			} else {
-	        	home = findExistHomeFromProperties();
-			}
+			home = f.getParentFile().getPath();
         }
 		System.out.println("configuring " + dbName + " using " + home + '/' + file);
         try {
