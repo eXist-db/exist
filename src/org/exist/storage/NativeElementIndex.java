@@ -452,7 +452,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             os.writeInt(docId);
                             os.writeInt(len);
                             os.writeFixedInt(size);
-                            is.copyTo(os, len * 4);
+                            is.copyRaw(os, size);
+//                            is.copyTo(os, len * 4);
                         } else {
                             changed = true;
                             // skip
@@ -658,7 +659,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                     os.writeInt(len);
                                     os.writeFixedInt(size);
                                     try {
-                                        is.copyTo(os, len * 4);
+                                        is.copyRaw(os, size);
                                     } catch(EOFException e) {
                                         LOG.error("EOF while copying: expected: " + len);
                                     }

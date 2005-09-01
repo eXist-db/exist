@@ -263,7 +263,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 //		byte[] data;
 		long gid;
 		int docId;
-		int len;
+		int len, rawSize;
 		int section;
 		int sizeHint = -1;
 		long last;
@@ -292,9 +292,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					docId = is.readInt();
 					section = is.readByte();
 					len = is.readInt();
+					rawSize = is.readFixedInt();
 					if ((doc = docs.getDoc(docId)) == null
 							|| (contextSet != null && !contextSet.containsDoc(doc))) {
-						is.skip(termFreq ? len * 2 : len);
+						is.skipBytes(rawSize);
 						continue;
 					}
 					if (contextSet != null)
@@ -546,9 +547,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			WordRef ref;
 			VariableByteInput is = null;
 			VariableByteOutputStream os;
-			int len;
+			int len, rawSize;
 			int docId;
-//			long delta;
 			byte section;
 			short collectionId = doc.getCollection().getId();
 			boolean changed;
@@ -569,16 +569,18 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 							docId = is.readInt();
 							section = is.readByte();
 							len = is.readInt();
+							rawSize = is.readFixedInt();
 							if (docId != doc.getDocId()) {
 								// copy data to new buffer
 								os.writeInt(docId);
 								os.writeByte(section);
 								os.writeInt(len);
-								is.copyTo(os, termFreq ? len * 2 : len);
+								os.writeFixedInt(rawSize);
+								is.copyRaw(os, rawSize);
 							} else {
 								changed = true;
 								// skip
-								is.skip(termFreq ? len * 2 : len);
+								is.skipBytes(rawSize);
 							}
 						}
 					} catch (EOFException e) {
@@ -755,7 +757,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			if (doc == null)
 				return;
 			final short collectionId = doc.getCollection().getId();
-			int len, docId;
+			int len, rawSize, docId;
 			Map.Entry entry;
 			String word;
 			TermFrequencyList idList;
@@ -794,6 +796,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					                docId = is.readInt();
 					                section = is.readByte();
 					                len = is.readInt();
+					                rawSize = is.readFixedInt();
 					                if (docId == doc.getDocId() && section == k) {
 					                    // copy data to new output list; skip
 					                    // removed nodes
@@ -815,7 +818,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					                    os.writeInt(docId);
 					                    os.writeByte(section);
 					                    os.writeInt(len);
-					                    is.copyTo(os, termFreq ? len * 2 : len);
+					                    os.writeFixedInt(rawSize);
+					                    is.copyRaw(os, rawSize);
 					                }
 					            }
 					        } catch (EOFException e) {
@@ -830,12 +834,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					    if(newList.getSize() > 0) {
 					    	// save the nodes remaining in the output list for the document
 						    ids = newList.toArray();
-						    //i.remove();
+
 						    Arrays.sort(ids);
 						    len = ids.length;
 						    os.writeInt(doc.getDocId());
 						    os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
 						    os.writeInt(len);
+						    rawSize = os.position();
+		                    os.writeFixedInt(0);
+		                    
 						    last = 0;
 						    for (int j = 0; j < len; j++) {
 						        delta = ids[j].l - last;
@@ -848,6 +855,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 						        	os.writeInt(ids[j].count);
 						        last = ids[j].l;
 						    }
+						    os.writeFixedInt(rawSize, os.position() - rawSize - 4);
 					    }
 					    ByteArray ndata = os.data();
 //					    LOG.debug("new size: " + ndata.size());
@@ -880,7 +888,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
 		public void reindex(DocumentImpl oldDoc, NodeImpl node) {
 		    final short collectionId = oldDoc.getCollection().getId();
-		    int len, docId;
+		    int len, rawSize, docId;
 		    Map.Entry entry;
 		    String word;
 		    TermFrequencyList idList;
@@ -909,13 +917,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                            docId = is.readInt();
 		                            section = is.readByte();
 		                            len = is.readInt();
+		                            rawSize = is.readFixedInt();
 		                            if (docId != oldDoc.getDocId() || section != k) {
 		                                // section belongs to another document:
 		                                // copy data to new buffer
 		                                os.writeInt(docId);
 		                                os.writeByte(section);
 		                                os.writeInt(len);
-		                                is.copyTo(os, termFreq ? len * 2 : len);
+		                                os.writeFixedInt(rawSize);
+		                                is.copyRaw(os, rawSize);
 		                            } else {
 		                                // copy nodes to new list
 		                                gid = 0;
@@ -954,6 +964,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                os.writeInt(oldDoc.getDocId());
 		                os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
 		                os.writeInt(len);
+		                rawSize = os.position();
+	                    os.writeFixedInt(0);
 		                last = 0;
 		                for (int j = 0; j < len; j++) {
 		                    delta = ids[j].l - last;
@@ -966,6 +978,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                    	os.writeInt(ids[j].count);
 		                    last = ids[j].l;
 		                }
+		                
+		                os.writeFixedInt(rawSize, os.position() - rawSize - 4);
+		                
 		                try {
 		                    if (is == null)
 		                        dbWords.put(ref, os.data());
@@ -998,13 +1013,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			final ProgressIndicator progress = new ProgressIndicator(
 					wordsCount, 100);
 			final short collectionId = doc.getCollection().getId();
-			int count = 1, len;
+			int count = 1, len, lenOffset;
 			Map.Entry entry;
 			String word;
 			TermFrequencyList idList;
-//			TermFrequencyList.TermFreq id;
 			TermFrequencyList.TermFreq[] ids;
-//			byte[] data;
 			long prevId;
 			long delta;
 			for (int k = 0; k < 2; k++) {
@@ -1017,6 +1030,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					os.writeInt(doc.getDocId());
 					os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
 					os.writeInt(len);
+					lenOffset = os.position();
+					os.writeFixedInt(0);
 					prevId = 0;
 					ids = idList.toArray();
 					Arrays.sort(ids);
@@ -1031,6 +1046,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 							os.writeInt(ids[m].count);
 						prevId = ids[m].l;
 					}
+					os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+					
 					flushWord(collectionId, word, os.data());
 					progress.setValue(count);
 					if (progress.changed()) {
@@ -1141,7 +1158,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					return true;
 //				int k = 0;
 				int docId;
-				int len;
+				int len, rawSize;
 				long gid;
 				long last = -1;
 				int freq = 1;
@@ -1157,8 +1174,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 						docId = is.readInt();
 						section = is.readByte();
 						len = is.readInt();
+						rawSize = is.readFixedInt();
 						if ((doc = docs.getDoc(docId)) == null) {
-							is.skip(termFreq ? len * 2 : len);
+							is.skipBytes(rawSize);
 							continue;
 						}
 						if (contextSet != null)
@@ -1239,7 +1257,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			try {
 				int docId;
 				byte section;
-				int len;
+				int len, rawSize;
 				int freq = 1;
 				long gid;
 				DocumentImpl doc;
@@ -1251,8 +1269,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					section = 
 						is.readByte();
 					len = is.readInt();
+					rawSize = is.readFixedInt();
 					if ((doc = docs.getDoc(docId)) == null) {
-						is.skip(termFreq ? len * 2 : len);
+						is.skipBytes(rawSize);
 						continue;
 					}
 					docAdded = false;

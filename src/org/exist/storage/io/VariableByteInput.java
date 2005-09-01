@@ -131,4 +131,7 @@ public interface VariableByteInput {
      */
     public void copyTo(VariableByteOutputStream os, int count)
             throws IOException;
+    
+    public void copyRaw(VariableByteOutputStream os, int bytes)
+    	throws IOException;
 }
