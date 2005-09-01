@@ -469,11 +469,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
 			current = (Collection) i.next();
 			collectionId = current.getId();
+
             if (end == null)
-                query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new WordRef(collectionId, start));
+                query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new WordRef(collectionId, start.toLowerCase()));
             else
     			query = new IndexQuery(IndexQuery.BW, new WordRef(collectionId,
-    					start), new WordRef(collectionId, end));
+    					start.toLowerCase()), new WordRef(collectionId, end.toLowerCase()));
 			try {
 				lock.acquire();
 				dbWords.query(query, cb);
@@ -491,7 +492,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		}
 		Map map = cb.map;
 		Occurrences[] result = new Occurrences[map.size()];
-		LOG.debug("Found " + result.length + " in " + (System.currentTimeMillis() - t0));
+		LOG.debug("Found " + result.length + " in " + (System.currentTimeMillis() - t0) + "ms");
 		return (Occurrences[]) map.values().toArray(result);
 	}
 
@@ -1237,16 +1238,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				return true;
 			try {
 				int docId;
-//				byte section;
+				byte section;
 				int len;
 				int freq = 1;
 				long gid;
 				DocumentImpl doc;
 				boolean include = true;
 				boolean docAdded;
+				NodeProxy p;
 				while (is.available() > 0) {
 					docId = is.readInt();
-//					section = 
+					section = 
 						is.readByte();
 					len = is.readInt();
 					if ((doc = docs.getDoc(docId)) == null) {
@@ -1259,7 +1261,18 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 						gid += is.readLong();
 						if(termFreq)
 							freq = is.readInt();
+						// fixme! Now checks the
+						// context to see what type
+						// to output, should be
+						// available info according
+						// to indexer settings?
 						if (contextSet != null) {
+							p = contextSet.parentWithChild(doc, gid, false, true);
+							if (section == ATTRIBUTE_SECTION) {
+								include = p.nodeType == Node.ATTRIBUTE_NODE;
+							} else {
+								include = p != null;
+							}
 							include = contextSet.parentWithChild(doc, gid, false, true) != null;
 						}
 						if (include) {
