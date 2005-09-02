@@ -289,7 +289,8 @@
     <!-- ================================================================== -->
     <!-- Create jar file, eventually signed								   	-->
     <!-- ================================================================== -->
-    <target name="jar" depends="unsigned-jar" description="Create eXist jar files, eventually signed" if="{sign.jars}">
+    <target name="jar" depends="unsigned-jar" description="Create eXist jar files, eventually signed" if="sign.jars">
+    	<echo message="Signing jar files ..."/>
         <antcall target="sign"/>
     </target>
 
