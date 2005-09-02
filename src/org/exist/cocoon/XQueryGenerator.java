@@ -359,7 +359,8 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 	public SourceValidity getValidity() {
 		if (cacheValidity != -1) {
 			AggregatedValidity v = new AggregatedValidity();
-			v.add(inputSource.getValidity());
+			if (inputSource.getValidity() != null)
+				v.add(inputSource.getValidity());
 			v.add(new ExpiresValidity(cacheValidity));
 			return v;
 		}
