@@ -214,17 +214,22 @@ public class Predicate extends PathExpr {
 				for(SequenceIterator i = ancestors.iterate(); i.hasNext(); ) {
 					Item item = i.nextItem();
 				    NodeProxy p = (NodeProxy)item;
+				    ContextItem contextNode = p.getContext();
+				    ArraySet temp = new ArraySet(100);
+				    while (contextNode != null) {
+				    	temp.add(contextNode.getNode());
+				    	contextNode = contextNode.getNextItem();
+				    }
+				    temp.sortInDocumentOrder();
+				    
 				    Sequence innerSeq = inner.eval(contextSequence);
 				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {
 				        Item next = j.nextItem();
 				        NumericValue v = (NumericValue)next.convertTo(Type.NUMBER);
-				        ContextItem contextNode = p.getContext();
-				        int count = 0;
-				        while(contextNode != null) {
-				        	if(++count == v.getInt())
-				        		result.add(contextNode.getNode());
-				        	contextNode = contextNode.getNextItem();
-				        }
+
+				        p = temp.getUnsorted(v.getInt() - 1);
+				        if (p != null)
+				        	result.add(p);
 				    }
 				}
 			} else {

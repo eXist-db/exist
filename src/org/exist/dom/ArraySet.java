@@ -249,6 +249,12 @@ public class ArraySet extends AbstractNodeSet {
 		return nodes[pos];
 	}
 
+	public NodeProxy getUnsorted(int pos) {
+		if (pos >= counter || pos < 0)
+			return null;
+		return nodes[pos];
+	}
+	
 	public Item itemAt(int pos) {
 		return get(pos);
 	}
