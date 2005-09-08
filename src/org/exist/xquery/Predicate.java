@@ -152,9 +152,8 @@ public class Predicate extends PathExpr {
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
 		NodeSet contextSet = contextSequence.toNodeSet();
 		boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
-		
 		NodeSet nodes =
-			super.eval(contextSequence, null).toNodeSet();
+			super.eval(contextSet, null).toNodeSet();
 		
 		/* if the predicate expression returns results from the cache
 		 * we can also return the cached result. 
