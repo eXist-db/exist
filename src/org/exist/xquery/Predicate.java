@@ -211,11 +211,12 @@ public class Predicate extends PathExpr {
 					|| mode == Constants.SELF_AXIS)) {
 				Sequence ancestors = contextSet.selectAncestorDescendant(outerSequence.toNodeSet(),
 						NodeSet.ANCESTOR, true, true);
+				ArraySet temp = new ArraySet(100);
 				for(SequenceIterator i = ancestors.iterate(); i.hasNext(); ) {
 					Item item = i.nextItem();
 				    NodeProxy p = (NodeProxy)item;
 				    ContextItem contextNode = p.getContext();
-				    ArraySet temp = new ArraySet(100);
+				    temp.reset();
 				    while (contextNode != null) {
 				    	temp.add(contextNode.getNode());
 				    	contextNode = contextNode.getNextItem();
