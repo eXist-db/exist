@@ -640,6 +640,11 @@ public class ArraySet extends AbstractNodeSet {
 		counter = ++j;
 	}
 
+	public void reset() {
+		counter = 0;
+		sorted = false;
+	}
+	
 	private final static NodeProxy[] copyNodeSet(ArraySet al, ArraySet dl) {
 		int ax = 0, dx = 0;
 		int ad = al.nodes[ax].getDocument().docId, dd = dl.nodes[dx].getDocument().docId;
