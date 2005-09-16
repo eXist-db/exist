@@ -38,12 +38,12 @@ public class DoubleValue extends NumericValue implements Indexable {
 		this.value = value;
 	}
 
-	public DoubleValue(String stringValue) throws XPathException {
+	public DoubleValue(AtomicValue otherValue) throws XPathException {
 		try {
-			value = Double.parseDouble(stringValue);
+			value = Double.parseDouble(otherValue.getStringValue());
 		} catch (NumberFormatException e) {
 			throw new XPathException(
-				"cannot convert string '" + stringValue + "' into a double");
+				"cannot convert '" + Type.getTypeName(otherValue.getType()) + "' into a double");
 		}
 	}
 

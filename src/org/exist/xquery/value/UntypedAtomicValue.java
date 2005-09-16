@@ -76,7 +76,7 @@ public class UntypedAtomicValue extends AtomicValue {
 			case Type.FLOAT :
 			case Type.DOUBLE :
 			case Type.NUMBER :
-				return new DoubleValue(value);
+				return new DoubleValue(this);
 			case Type.DECIMAL :
 				return new DecimalValue(value);
 			case Type.INTEGER :

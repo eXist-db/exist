@@ -149,7 +149,7 @@ public class StringValue extends AtomicValue implements Indexable {
 			case Type.FLOAT :
 			case Type.DOUBLE :
 			case Type.NUMBER :
-				return new DoubleValue(value);
+				return new DoubleValue(this);
 			case Type.DECIMAL :
 				return new DecimalValue(value);
 			case Type.INTEGER :
