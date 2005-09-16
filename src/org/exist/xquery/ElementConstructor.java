@@ -46,7 +46,6 @@ public class ElementConstructor extends NodeConstructor {
 	private PathExpr content = null;
 	private AttributeConstructor attributes[] = null;
 	private QName namespaceDecls[] = null;
-	private boolean isDynamic = true;
 	
 	public ElementConstructor(XQueryContext context) {
 	    super(context);
@@ -55,7 +54,6 @@ public class ElementConstructor extends NodeConstructor {
 	public ElementConstructor(XQueryContext context, String qname) {
 		super(context);
 		this.qnameExpr = new LiteralValue(context, new StringValue(qname));
-		this.isDynamic = false;
 	}
 	
 	public void setContent(PathExpr path) {
@@ -69,7 +67,7 @@ public class ElementConstructor extends NodeConstructor {
 	public void addAttribute(AttributeConstructor attr) {
 		if(attr.isNamespaceDeclaration()) {
 			if(attr.getQName().equals("xmlns"))
-				addNamespaceDecl("", attr.getLiteralValue());
+				addNamespaceDecl("xmlns", attr.getLiteralValue());
 			else
 				addNamespaceDecl(QName.extractLocalName(attr.getQName()), attr.getLiteralValue());
 		} else	if(attributes == null) {
