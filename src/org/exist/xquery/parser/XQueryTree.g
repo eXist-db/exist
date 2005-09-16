@@ -259,7 +259,14 @@ throws PermissionDeniedException, EXistException, XPathException
 				|
 				"external"
 				{
-					context.declareVariable(qname.getText(), null);
+					boolean isDeclared = false;
+					try {
+						isDeclared = context.resolveVariable(qname.getText()) != null;
+					} catch (XPathException ignoredException) {
+					}
+					
+					if (!isDeclared)
+						context.declareVariable(qname.getText(), null);
 				}
 			)
 		)
