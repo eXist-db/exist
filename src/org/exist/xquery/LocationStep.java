@@ -133,7 +133,7 @@ public class LocationStep extends Step {
 			return NodeSet.EMPTY_SET;
 		if(cached != null &&
 			cached.isValid(contextSequence)) {
-//			LOG.debug("returning cached result for " + pprint());
+//			LOG.debug("returning cached result for " + ExpressionDumper.dump(this));
 			return 
 			(predicates.size() == 0)
 			? cached.getResult() :
@@ -443,49 +443,51 @@ public class LocationStep extends Step {
 		XQueryContext context,
 		NodeSet contextSet) {
 		NodeSet result;
-		if (!test.isWildcardTest()) {
-			DocumentSet docs = getDocumentSet(contextSet);
-//			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-//				currentDocs = docs;
-//				currentSet =
-//					(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-//						ElementValue.ELEMENT, currentDocs,
-//						test.getName(), null);
-//			}
-//			result =
-//				currentSet.selectAncestors(
-//					contextSet,
-//					axis == Constants.ANCESTOR_SELF_AXIS,
-//					inPredicate);
-            NodeSelector selector = new AncestorSelector(contextSet, inPredicate, axis == Constants.ANCESTOR_SELF_AXIS);
-            result = context.getBroker().getElementIndex().findElementsByTagName(
-                    ElementValue.ELEMENT, docs, test.getName(), selector
-            );
-		} else {
-			result = new ExtArrayNodeSet();
-			NodeProxy p, ancestor;
-			for (Iterator i = contextSet.iterator(); i.hasNext();) {
-				p = (NodeProxy) i.next();
-				if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(p)) {
+		if (test.isWildcardTest()) {
+            result = new ExtArrayNodeSet();
+            NodeProxy p, ancestor;
+            for (Iterator i = contextSet.iterator(); i.hasNext();) {
+                p = (NodeProxy) i.next();
+                if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(p)) {
                     ancestor = new NodeProxy(p.getDocument(), p.gid, p.getInternalAddress());
                     if (inPredicate)
                         ancestor.addContextNode(p);
                     else
                         ancestor.copyContext(p);
-					result.add(ancestor);
+                    result.add(ancestor);
                 }
-				while ((p.gid = XMLUtil.getParentId(p.getDocument(), p.gid)) > 0) {
-					p.nodeType = Node.ELEMENT_NODE;
-					if (test.matches(p)) {
-                        ancestor = new NodeProxy(p.getDocument(), p.gid);
+                ancestor = new NodeProxy(p.getDocument(), p.gid);
+                while ((ancestor.gid = XMLUtil.getParentId(p.getDocument(), ancestor.gid)) > 0) {
+                    ancestor.nodeType = Node.ELEMENT_NODE;
+                    if (test.matches(ancestor)) {
                         if (inPredicate)
                             ancestor.addContextNode(p);
                         else
                             ancestor.copyContext(p);
-						result.add(ancestor);
+                        result.add(ancestor);
                     }
-				}
-			}
+                }
+            }
+        } else if(preloadNodeSets()) {
+            DocumentSet docs = getDocumentSet(contextSet);
+            if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+                currentDocs = docs;
+                currentSet =
+                    context.getBroker().getElementIndex().findElementsByTagName(
+                            ElementValue.ELEMENT, currentDocs,
+                            test.getName(), null);
+            }
+            result =
+                currentSet.selectAncestors(
+                        contextSet,
+                        axis == Constants.ANCESTOR_SELF_AXIS,
+                        inPredicate);
+		} else {
+            DocumentSet docs = getDocumentSet(contextSet);
+            NodeSelector selector = new AncestorSelector(contextSet, inPredicate, axis == Constants.ANCESTOR_SELF_AXIS);
+            result = context.getBroker().getElementIndex().findElementsByTagName(
+                    ElementValue.ELEMENT, docs, test.getName(), selector
+            );
 		}
 		return result;
 	}
