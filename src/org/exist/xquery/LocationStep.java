@@ -32,6 +32,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementValue;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -116,8 +117,9 @@ public class LocationStep extends Step {
         parentDeps = parent.getDependencies();
         if ((flags & IN_UPDATE) > 0)
             inUpdate = true;
-        if((flags & SINGLE_STEP_EXECUTION) > 0)
+        if((flags & SINGLE_STEP_EXECUTION) > 0) {
             preload = true;
+        }
         super.analyze(parent, flags);
     }
     
@@ -301,7 +303,7 @@ public class LocationStep extends Step {
 			return vset;
 		} else if(preloadNodeSets()) {
 			DocumentSet docs = getDocumentSet(contextSet);
-			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+			if (currentSet == null || currentDocs == null || !(docs == currentDocs || docs.equals(currentDocs))) {
                 currentDocs = docs;
                 currentSet =
                     (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
@@ -329,7 +331,7 @@ public class LocationStep extends Step {
 			return vset;
 		} else if(preloadNodeSets()){
 		    DocumentSet docs = getDocumentSet(contextSet);
-			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+			if (currentSet == null || currentDocs == null || !(docs == currentDocs || docs.equals(currentDocs))) {
                 currentDocs = docs;
                 currentSet =
                     (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
@@ -459,7 +461,6 @@ public class LocationStep extends Step {
             result = context.getBroker().getElementIndex().findElementsByTagName(
                     ElementValue.ELEMENT, docs, test.getName(), selector
             );
-//			LOG.debug("getAncestors found " + result.getLength());
 		} else {
 			result = new ExtArrayNodeSet();
 			NodeProxy p, ancestor;

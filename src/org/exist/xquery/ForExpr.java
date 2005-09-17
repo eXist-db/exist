@@ -87,12 +87,12 @@ public class ForExpr extends BindingExpression {
 		// in the chain to have access to all variables. So if the return expression
 		// is another binding expression, we just forward the order specs.
 		if(returnExpr instanceof BindingExpression) {
-		    ((BindingExpression)returnExpr).analyze(this, flags, orderBy);
+		    ((BindingExpression)returnExpr).analyze(this, flags | SINGLE_STEP_EXECUTION, orderBy);
 		} else {
 		    // analyze the order specs
 			if(orderBy != null) {
 			    for(int i = 0; i < orderBy.length; i++)
-			        orderBy[i].analyze(this, flags);
+			        orderBy[i].analyze(this, flags | SINGLE_STEP_EXECUTION);
 			}
 			returnExpr.analyze(this, flags);
 		}
