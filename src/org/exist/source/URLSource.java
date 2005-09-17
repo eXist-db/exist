@@ -103,7 +103,7 @@ public class URLSource extends AbstractSource {
 			return reader;
 		} catch (IOException e) {
 			LOG.warn("URL could not be opened: " + e.getMessage(), e);
-			return null;
+			throw e;
 		}
 	}
 
