@@ -465,6 +465,7 @@ public class LocationStep extends Step {
                         else
                             ancestor.copyContext(p);
                         result.add(ancestor);
+                        ancestor = new NodeProxy(p.getDocument(), ancestor.gid);
                     }
                 }
             }
