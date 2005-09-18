@@ -48,7 +48,6 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Serializer implementation for the native database backend.
@@ -63,7 +62,7 @@ public class NativeSerializer extends Serializer {
 
     public final static int EXIST_ID_ALL = 2;
 
-    private final static AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
+    // private final static AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
     
     private final static QName MATCH_ELEMENT = new QName("match", EXIST_NS, "exist");
     private final static QName TEXT_ELEMENT = new QName("text", EXIST_NS, "exist");
@@ -123,8 +122,10 @@ public class NativeSerializer extends Serializer {
     		serializeToReceiver(n, domIter, (DocumentImpl) n.getOwnerDocument(), n
     				.getGID(), true, p.getMatches(), new TreeSet());
     	}
-    	LOG.debug("serializing document " + ((DocumentImpl) doc).getDocId()
-    			+ "to SAX took " + (System.currentTimeMillis() - start));
+    	DocumentImpl documentImpl = (DocumentImpl) doc;
+		LOG.debug("serializing document " + documentImpl.getDocId()
+				+ " (" + documentImpl.getName() + ")"
+    			+ " to SAX took " + (System.currentTimeMillis() - start));
     	if (generateDocEvent) receiver.endDocument();
     }
     
@@ -133,7 +134,7 @@ public class NativeSerializer extends Serializer {
     throws SAXException {
         if (node == null) node = (NodeImpl) iter.next();
         if (node == null) return;
-        char ch[];
+        // char ch[];
         String cdata;
         switch (node.getNodeType()) {
         case Node.ELEMENT_NODE:
@@ -166,12 +167,12 @@ public class NativeSerializer extends Serializer {
                 attribs.addAttribute(ID_ATTRIB, Long.toString(gid));
             }
             if (first && showId > 0) {
-            	String src = doc.getCollection().getName() + '/' + doc.getFileName();
+            	// String src = doc.getCollection().getName() + '/' + doc.getFileName();
                 attribs.addAttribute(SOURCE_ATTRIB, doc.getFileName());
             }
             int children = node.getChildCount();
             int count = 0;
-            int childLen;
+            // int childLen;
             NodeImpl child = null;
             if (children > 0) gid = XMLUtil.getFirstChildId(doc, gid);
             while (count < children) {
