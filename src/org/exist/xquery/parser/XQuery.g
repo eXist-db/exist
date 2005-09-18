@@ -141,6 +141,8 @@ imaginaryTokenDefinitions
 	COMP_DOC_CONSTRUCTOR
 	;
 
+// === XPointer ===
+
 xpointer throws XPathException
 :
 	"xpointer"^ LPAREN! ex:expr RPAREN!
@@ -150,6 +152,9 @@ xpointer throws XPathException
 	{ #xpointer= #(#[XPOINTER_ID, "id"], #nc); }
 	;
 
+// === Modules ===
+
+/** top-rule */	
 xpath throws XPathException
 :
 	( module )? EOF
@@ -178,6 +183,8 @@ moduleDecl throws XPathException:
 		#moduleDecl = #(#[MODULE_DECL, prefix.getText()], uri);
 	}
 	;
+
+// === Prolog ===
 	
 prolog throws XPathException
 { boolean inSetters = true; }
@@ -258,7 +265,8 @@ varDecl throws XPathException
 :
 	decl:"declare"! "variable"! DOLLAR! varName=qName! ( typeDeclaration )?
 	(
-		LCURLY! ex:expr RCURLY!
+		LCURLY! ex:expr RCURLY! // deprecated
+		// conformant: COLON! EQ! ex:expr
 		|
 		"external"
 	)
@@ -330,9 +338,12 @@ param throws XPathException
 typeDeclaration throws XPathException: 
 	"as"^ sequenceType ;
 
+// === Types ===
+	
 sequenceType throws XPathException
 :
-	( "empty" LPAREN ) => "empty"^ LPAREN! RPAREN! | itemType ( occurrenceIndicator )?
+	( "empty" LPAREN ) => "empty"^ LPAREN! RPAREN! | itemType ( occurrenceIndicator )?  // deprecated
+	// conformant: ( "empty-sequence" LPAREN ) => "empty-sequence"^ LPAREN! RPAREN! | itemType ( occurrenceIndicator )?
 	;
 
 occurrenceIndicator
@@ -342,7 +353,8 @@ occurrenceIndicator
 
 itemType throws XPathException
 :
-	( "item" LPAREN ) => "item"^ LPAREN! RPAREN! | ( . LPAREN ) => kindTest | atomicType
+	( "empty" LPAREN ) => "empty"^ LPAREN! RPAREN! | ( . LPAREN ) => kindTest | atomicType // deprecated
+	// conformant: ( "empty-sequence" LPAREN ) => "empty-sequence"^ LPAREN! RPAREN! | ( . LPAREN ) => kindTest | atomicType
 	;
 
 singleType throws XPathException
@@ -357,6 +369,8 @@ atomicType throws XPathException
 	{ #atomicType= #[ATOMIC_TYPE, name]; }
 	;
 
+// === Expressions ===
+	
 queryBody throws XPathException: expr ;
 
 expr throws XPathException
@@ -373,6 +387,8 @@ exprSingle throws XPathException
 	| ( "update" ( "replace" | "value" | "insert" | "delete" | "rename" )) => updateExpr
 	| orExpr
 	;
+
+// === Xupdate ===
 
 updateExpr throws XPathException
 :
@@ -412,6 +428,8 @@ renameExpr throws XPathException
 	"rename" exprSingle "as"! exprSingle
 	;
 
+// === FLOWER ===
+	
 flworExpr throws XPathException
 :
 	( forClause | letClause )+ ( "where" expr )? ( orderByClause )? "return"^ exprSingle
@@ -480,7 +498,9 @@ quantifiedInVarBinding throws XPathException
 	{ #quantifiedInVarBinding = #(#[VARIABLE_BINDING, varName], #quantifiedInVarBinding); }
 	;
 
-typeswitchExpr throws XPathException
+// === Branching ===
+
+	typeswitchExpr throws XPathException
 { String varName; }:
 	"typeswitch"^ LPAREN! expr RPAREN!
 	( caseClause )+
@@ -501,6 +521,8 @@ caseVar throws XPathException
 	
 ifExpr throws XPathException: "if"^ LPAREN! expr RPAREN! "then"! exprSingle "else"! exprSingle ;
 
+// === Logical ===
+	
 orExpr throws XPathException
 :
 	andExpr ( "or"^ andExpr )*
@@ -550,6 +572,8 @@ rangeExpr throws XPathException
 	additiveExpr ( "to"^ additiveExpr )?
 	;
 
+// === Operators ===
+	
 additiveExpr throws XPathException
 :
 	multiplicativeExpr ( ( PLUS^ | MINUS^ ) multiplicativeExpr )*
@@ -597,6 +621,8 @@ intersectExceptExpr throws XPathException
 		( "intersect"^ | "except"^ ) pathExpr
 	)*
 	;
+
+// === XPath ===
 	
 pathExpr throws XPathException
 :
@@ -1001,6 +1027,8 @@ elementWithoutAttributes throws XPathException
     { #elementWithoutAttributes.copyLexInfo(#q); }
 	;
 
+// === XML ===
+	
 elementWithAttributes throws XPathException
 { String name= null; }
 :
@@ -1345,6 +1373,8 @@ reservedKeywords returns [String name]
 	"option" { name = "option"; }
 	|
 	"case" { name = "case"; }
+	|
+	"validate" { name = "validate"; }
 	;
 
 /**
