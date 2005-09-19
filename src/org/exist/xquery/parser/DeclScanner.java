@@ -281,6 +281,7 @@ public DeclScanner(ParserSharedInputState state) {
 		"end of processing instruction",
 		"CDATA section",
 		"\"collection\"",
+		"\"validate\"",
 		"start of processing instruction",
 		"CDATA section start",
 		"end of CDATA section",
