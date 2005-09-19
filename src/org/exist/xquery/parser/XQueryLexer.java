@@ -97,6 +97,7 @@ public XQueryLexer(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("option", this), new Integer(65));
 	literals.put(new ANTLRHashString("delete", this), new Integer(96));
 	literals.put(new ANTLRHashString("ne", this), new Integer(126));
+	literals.put(new ANTLRHashString("validate", this), new Integer(185));
 	literals.put(new ANTLRHashString("le", this), new Integer(128));
 	literals.put(new ANTLRHashString("greatest", this), new Integer(110));
 	literals.put(new ANTLRHashString("ancestor-or-self", this), new Integer(170));

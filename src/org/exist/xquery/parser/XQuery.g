@@ -353,8 +353,7 @@ occurrenceIndicator
 
 itemType throws XPathException
 :
-	( "empty" LPAREN ) => "empty"^ LPAREN! RPAREN! | ( . LPAREN ) => kindTest | atomicType // deprecated
-	// conformant: ( "empty-sequence" LPAREN ) => "empty-sequence"^ LPAREN! RPAREN! | ( . LPAREN ) => kindTest | atomicType
+	( "item" LPAREN ) => "item"^ LPAREN! RPAREN! | ( . LPAREN ) => kindTest | atomicType
 	;
 
 singleType throws XPathException

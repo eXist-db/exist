@@ -3007,7 +3007,14 @@ public XQueryTreeParser() {
 					match(_t,LITERAL_external);
 					_t = _t.getNextSibling();
 					
-										context.declareVariable(qname.getText(), null);
+										boolean isDeclared = false;
+										try {
+											isDeclared = context.resolveVariable(qname.getText()) != null;
+										} catch (XPathException ignoredException) {
+										}
+										
+										if (!isDeclared)
+											context.declareVariable(qname.getText(), null);
 									
 					break;
 				}
@@ -6478,6 +6485,7 @@ public XQueryTreeParser() {
 		"end of processing instruction",
 		"CDATA section",
 		"\"collection\"",
+		"\"validate\"",
 		"start of processing instruction",
 		"CDATA section start",
 		"end of CDATA section",
