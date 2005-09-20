@@ -103,24 +103,42 @@ public abstract class AbstractSequence implements Sequence {
         return DocumentSet.EMPTY_DOCUMENT_SET;
     }
     
-	/* (non-Javadoc)
+	/** See
+	 * <a <href="http://www.w3.org/TR/xquery/#id-ebv">2.4.3 Effective Boolean Value</a>
 	 * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
 		int len = getLength();
 		if (len == 0)
 			return false;
-		if (len > 1)
-			return true;
+
 		Item first = itemAt(0);
+
+//		if (len > 1)
+//			return true;
+		
+		// If operand is a sequence whose first item is a node, fn:boolean returns true.
+		int fisrtType = first.getType();
+		if ( Type.subTypeOf(fisrtType, Type.NODE ) ) {
+			return true;
+		}
+		if (len > 1)
+			throw new XPathException(
+				"error FORG0006: effectiveBooleanValue: first item not a node, and sequence length>1");
+
+		// If $arg is a singleton value of type xs:boolean or a derived from xs:boolean, fn:boolean returns $arg.
 		if(first instanceof StringValue)
 			return ((StringValue)first).effectiveBooleanValue();
 		else if(first instanceof BooleanValue)
 			return ((BooleanValue)first).getValue();
 		else if(first instanceof NumericValue)
 			return ((NumericValue)first).effectiveBooleanValue();
-		else
-			return true;
+		else {
+			// return true;
+			// In all other cases, fn:boolean raises a type error [err:FORG0006].
+			throw new XPathException(
+				"error FORG0006: effectiveBooleanValue: sequence of length 1, but not castable to a number or Boolean");
+		}
 	}
 	
 	/* (non-Javadoc)
