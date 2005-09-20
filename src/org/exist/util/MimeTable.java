@@ -132,7 +132,7 @@ public class MimeTable {
             }
         }
         if (!loaded) {
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            ClassLoader cl = MimeTable.class.getClassLoader();
             InputStream is = cl.getResourceAsStream(MIME_TYPES_XML_DEFAULT);
             if (is == null) {
                 System.err.println(LOAD_FAILED_ERR);
