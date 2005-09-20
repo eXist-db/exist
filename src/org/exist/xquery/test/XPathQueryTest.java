@@ -288,10 +288,12 @@ public class XPathQueryTest extends TestCase {
 			XQueryService service = 
 				storeXMLStringAndGetQueryService("quotes.xml", quotes);
 			
-			ResourceSet result = queryResource(service, "quotes.xml", "/test[title = '&quot;Hello&quot;']", 1);
+			// ResourceSet result = 
+			queryResource(service, "quotes.xml", "/test[title = '&quot;Hello&quot;']", 1);
 
 			service.declareVariable("content", "&quot;Hello&quot;");
-			result = queryResource(service, "quotes.xml", "/test[title = $content]", 1);
+			// result = 
+			queryResource(service, "quotes.xml", "/test[title = $content]", 1);
 		} catch (XMLDBException e) {
 			System.out.println("testQuotes(): XMLDBException: "+e);
 			fail(e.getMessage());
@@ -508,17 +510,25 @@ public class XPathQueryTest extends TestCase {
 		}
 	}
 	
-	private ResourceSet queryResource(XQueryService service, String resource, String query, 
-		int expected) throws XMLDBException {
+	/** Helper that performs an XQuery and does JUnit assertion on result size.
+	 * @see #queryResource(XQueryService, String, String, int, String)
+	 */
+	private ResourceSet queryResource(XQueryService service, String resource,
+			String query, int expected) throws XMLDBException {
 		return queryResource(service, resource, query, expected, null);
 	}
 	
-	/**
-	 * @param service
+	/** Helper that performs an XQuery and does JUnit assertion on result size.
+	 * @param service XQuery service
+	 * @param resource database resource (collection) to query
+	 * @param query
+	 * @param expected size of result
+	 * @param message for JUnit
+	 * @return a ResourceSet, allowing to do more assertions if necessary.
 	 * @throws XMLDBException
 	 */
-	private ResourceSet queryResource(XQueryService service, String resource, String query, 
-		int expected, String message) throws XMLDBException {
+	private ResourceSet queryResource(XQueryService service, String resource, 
+			String query, int expected, String message) throws XMLDBException {
 		ResourceSet result = service.queryResource(resource, query);
 		if(message == null)
 			assertEquals(expected, result.getSize());
@@ -527,8 +537,28 @@ public class XPathQueryTest extends TestCase {
 		return result;
 	}
 
-	/**
-	 * @return
+	/** For queries without associated data */
+	private ResourceSet queryAndAssert(XQueryService service, String query, 
+			int expected, String message) throws XMLDBException {
+		ResourceSet result = service.query(query);
+		if(message == null)
+			assertEquals(expected, result.getSize());
+		else
+			assertEquals(message, expected, result.getSize());
+		return result;
+	}
+	
+	/** For queries without associated data */
+	private XQueryService getQueryService() throws XMLDBException {
+		XQueryService service = (XQueryService) testCollection.getService(
+				"XPathQueryService", "1.0");
+		return service;
+	}
+	
+	/** stores XML String and get Query Service
+	 * @param documentName to be stored in the DB
+	 * @param content to be stored in the DB
+	 * @return the XQuery Service
 	 * @throws XMLDBException
 	 */
 	private XQueryService storeXMLStringAndGetQueryService(String documentName,
@@ -662,6 +692,38 @@ public class XPathQueryTest extends TestCase {
 		}
 	}
 
+	public void testSatisfies() {
+		try {
+			XQueryService service = getQueryService();
+			ResourceSet result;
+			
+			result = queryAndAssert( service,
+				"every $foo in (1,2,3) satisfies" +
+				"	let $bar := baz" +
+				"		return false() ", 
+				1,  "" );
+			assertEquals( "satisfies + FLWR expression allways false 1", "false", result.getResource(0).getContent() );
+
+			result = queryAndAssert( service,
+					"declare function local:foo() { false() };" +
+					"	every $bar in (1,2,3) satisfies" +
+					"	local:foo()",
+				1,  "" );
+			assertEquals( "satisfies + FLWR expression allways false 2", "false", result.getResource(0).getContent() );
+			
+			query = "every $x in () satisfies false()";
+			result = queryAndAssert( service, query, 1,  "" );
+			assertEquals( query, "true", result.getResource(0).getContent() );
+
+			query = "some $x in () satisfies true()";
+			result = queryAndAssert( service, query, 1,  "" );
+			assertEquals( query, "false", result.getResource(0).getContent() );
+
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}
+	}
+	
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(XPathQueryTest.class);
 	}
