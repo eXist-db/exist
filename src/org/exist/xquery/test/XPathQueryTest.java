@@ -352,9 +352,9 @@ public class XPathQueryTest extends TestCase {
 			assertEquals("boolean value of sequence with non-empty string should be true", 
 					"true", result.getResource(0).getContent());
 			
-			result = queryResource(service, "numbers.xml", "boolean((0.0, 0.0))", 1);
-			assertEquals("boolean value of sequence with two elements should be true", "true", 
-					result.getResource(0).getContent());
+//			result = queryResource(service, "numbers.xml", "boolean((0.0, 0.0))", 1);
+//			assertEquals("boolean value of sequence with two elements should be true", "true", 
+//					result.getResource(0).getContent());
 			
 			result = queryResource(service, "numbers.xml", "boolean(//item[@id = '1']/price)", 1);
 			assertEquals("boolean value of 5.6 should be true", "true", 
@@ -723,7 +723,53 @@ public class XPathQueryTest extends TestCase {
 			fail(e.getMessage());
 		}
 	}
-	
+
+	public void testConvertToBoolean() throws XMLDBException {
+
+		XQueryService service = getQueryService();
+		ResourceSet result;
+
+		try {
+			result = queryAndAssert(
+					service,
+					"let $doc := <element attribute=''/>" + "return ("
+							+ "  <true>{boolean(($doc,2,3))}</true> ,"
+							+ "  <true>{boolean(($doc/@*,2,3))}</true> ,"
+							+ "  <true>{boolean(true())}</true> ,"
+							+ "  <true>{boolean('test')}</true> ,"
+							+ "  <true>{boolean(number(1))}</true> ,"
+							+ "  <false>{boolean((0))}</false> ,"
+							+ "  <false>{boolean(false())}</false> ,"
+							+ "  <false>{boolean('')}</false> ,"
+							+ "  <false>{boolean(number(0))}</false> ,"
+							+ "  <false>{boolean(number('NaN'))}</false>" + ")",
+					10, "");
+			for (int i = 0; i < 5; i++) {
+				assertEquals("true " + (i + 1), "<true>true</true>", result
+						.getResource(i).getContent());
+			}
+			for (int i = 5; i < 10; i++) {
+				assertEquals("false " + (i + 1), "<false>false</false>", result
+						.getResource(i).getContent());
+			}
+
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}
+
+		boolean exceptionThrowed = false;
+		String message = "";
+		try {
+			result = queryAndAssert(service,
+					"let $doc := <element attribute=''/>"
+							+ "	return boolean( (1,2,$doc) )", 1, "");
+		} catch (XMLDBException e) {
+			exceptionThrowed = true;
+			message = e.getMessage();
+		}
+		assertTrue("Exception wanted: " + message, exceptionThrowed);
+	}
+
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(XPathQueryTest.class);
 	}
