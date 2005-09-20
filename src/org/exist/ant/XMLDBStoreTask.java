@@ -26,6 +26,9 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
+import org.exist.xmldb.EXistResource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -58,8 +61,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
   private FileSet fileSet = null;
   private boolean createCollection = false;
   private boolean createSubcollections = false;
-  private String type = "xml";
-
+  private String type = null;
+  
   /* (non-Javadoc)
    * @see org.apache.tools.ant.Task#execute()
    */
@@ -93,6 +96,17 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
       if (root == null)
         throw new BuildException("collection " + uri + " not found");
 
+      MimeType mime = null;
+      if (type != null) {
+          if (type.equals("xml"))
+              mime = MimeType.XML_TYPE;
+          else if (type.equals("binary"))
+              mime = MimeType.BINARY_TYPE;
+          else {
+              mime = MimeTable.getInstance().getContentType(type);
+          }
+      }
+      
       Resource res;
       File file;
       Collection col = root;
@@ -101,10 +115,13 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
       {
         log("Storing single file " + srcFile.getAbsolutePath(), Project.MSG_DEBUG);
         // single file
-        resourceType = type.equals("binary") ? "BinaryResource" : "XMLResource";
-        log("Creating resource of type " + resourceType, Project.MSG_DEBUG);
+        if (mime == null)
+            mime = MimeTable.getInstance().getContentTypeFor(srcFile.getName());
+        resourceType = mime.isXMLType() ? "XMLResource" : "BinaryResource";
+        log("Creating resource of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
         res = col.createResource(srcFile.getName(), resourceType);
         res.setContent(srcFile);
+        ((EXistResource) res).setMimeType(mime.getName());
         col.storeResource(res);
       } else
       {
@@ -114,7 +131,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
         scanner.scan();
         String[] files = scanner.getIncludedFiles();
         log("Found " + files.length + " files.\n");
-
+ 
+        MimeType currentMime = mime;
         for (int i = 0; i < files.length; i++)
         {
           file = new File(scanner.getBasedir() + File.separator + files[i]);
@@ -132,10 +150,13 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
               prevDir = relDir;
             }
           }
-          resourceType = type.equals("binary") ? "BinaryResource" : "XMLResource";
-          log("Creating resource of type " + resourceType, Project.MSG_DEBUG);
+          if (mime == null)
+              currentMime = MimeTable.getInstance().getContentTypeFor(file.getName());
+          resourceType = currentMime.isXMLType() ? "XMLResource" : "BinaryResource";
+          log("Creating resource of type " + resourceType + " with mime-type: " + currentMime.getName());
           res = col.createResource(file.getName(), resourceType);
           res.setContent(file);
+          ((EXistResource) res).setMimeType(currentMime.getName());
           col.storeResource(res);
         }
       }
@@ -170,7 +191,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
   {
     this.type = type;
   }
-
+  
   private final Collection mkcol(Collection root, String baseURI, String path, String relPath)
     throws XMLDBException
   {
