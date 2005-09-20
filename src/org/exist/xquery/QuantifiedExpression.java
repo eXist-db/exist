@@ -78,11 +78,7 @@ public class QuantifiedExpression extends BindingExpression {
 			var.setValue(contextItem.toSequence());
             var.checkType();
 			satisfiesSeq = returnExpr.eval(contextSequence);
-//			LOG.debug("satisfies returned: " + satisfiesSeq.getLength());
-			if(returnExpr.returnsType() == Type.BOOLEAN)
-				found = satisfiesSeq.effectiveBooleanValue();
-			else
-				found = satisfiesSeq.getLength() != 0;
+			found = satisfiesSeq.effectiveBooleanValue();
 			if((mode == SOME && found) || (mode == EVERY && !found))
 				break;
 		}
@@ -94,7 +90,8 @@ public class QuantifiedExpression extends BindingExpression {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("some $").display(varName).display("in");
+    	dumper.display(mode == SOME ? "some" : "every");
+        dumper.display(" $").display(varName).display(" in");
         dumper.startIndent();
         inputSequence.dump(dumper);
         dumper.endIndent().nl();
