@@ -182,7 +182,7 @@ public class DoubleValue extends NumericValue implements Indexable {
 	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
-		return !(value == 0 || value == Double.NaN);
+		return !( value == 0 || Double.isNaN(value) );
 	}
 
 	/* (non-Javadoc)
