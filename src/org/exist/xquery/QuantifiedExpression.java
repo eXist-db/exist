@@ -73,6 +73,8 @@ public class QuantifiedExpression extends BindingExpression {
 		Sequence inSeq = inputSequence.eval(contextSequence);
 		Sequence satisfiesSeq;
 		boolean found = false;
+		if ( mode == EVERY )
+			found = true;
 		for(SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
 			contextItem = i.nextItem();
 			var.setValue(contextItem.toSequence());
