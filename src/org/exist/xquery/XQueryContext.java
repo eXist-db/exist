@@ -867,14 +867,14 @@ public class XQueryContext {
 	 */
 	public Variable resolveVariable(QName qname) throws XPathException {
 		Variable var;
-		// first, check if the variable is declared in a module
-		Module module = getModule(qname.getNamespaceURI());
-		if(module != null) {
-			var = module.resolveVariable(qname);
-			if(var != null)
-				return var;
-		}
 		var = resolveLocalVariable(qname);
+		// check if the variable is declared in a module
+        Module module = getModule(qname.getNamespaceURI());
+        if(module != null) {
+            var = module.resolveVariable(qname);
+            if(var != null)
+                return var;
+        }
 //		var = (Variable) variables.get(qname);
 		if (var == null) {
 			var = (Variable) globalVariables.get(qname);
