@@ -50,7 +50,7 @@ declare function admin:panel($user as xs:string, $pass as xs:string?) as element
     $credentials is either an empty sequence or a pair (user, password).
 :)
 declare function admin:main($credentials as xs:string*) as element()+ {
-    if(not($credentials)) then
+    if(empty($credentials)) then
         admin:display-login-form()
     else
         admin:panel($credentials[1], $credentials[2])
@@ -134,7 +134,7 @@ request:create-session,
 let $logout := request:request-parameter("logout", ()),
     $s := if($logout) then request:invalidate-session() else request:create-session(),
     $credentials := admin:login(),
-    $user := if($credentials) then $credentials[1] else "not logged in"
+    $user := if(exists($credentials)) then $credentials[1] else "not logged in"
 return
 <html>
     <head>
