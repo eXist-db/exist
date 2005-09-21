@@ -118,7 +118,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 		if(docName != null && docName.length() == 0)
 			docName = null;
 		
-        String mimeType = "application/octet-stream";
+        String mimeType = "text/xml";
 		boolean binary = true;
 		if(getSignature().getArgumentCount() == 4) {
 			mimeType = args[3].getStringValue();
