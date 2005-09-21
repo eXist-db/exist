@@ -66,7 +66,7 @@ declare function users:new-user() as element()* {
         if($pass1 != $pass2) then (
             <div class="error">Passwords are not identical.</div>,
             users:correct-user(-1, $name, $grp, $home)
-        ) else if(not($groups)) then (
+        ) else if(empty($groups)) then (
             <div class="error">Please specify one group at least.</div>,
             users:correct-user(-1, $name, $grp, $home)
         ) else (
@@ -94,7 +94,7 @@ declare function users:update-user($currentUser as xs:string) as element()* {
         if(not($nopass) and $pass1 ne $pass2) then (
             <div class="error">Passwords are not identical.</div>,
             users:correct-user($uid, $name, $grp, $home)
-        ) else if(not($groups)) then (
+        ) else if(empty($groups)) then (
             <div class="error">Please specify one group at least.</div>,
             users:correct-user($uid, $name, $grp, $home)
         ) else (

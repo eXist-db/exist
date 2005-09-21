@@ -20,7 +20,7 @@ declare function md:record-full($rec as element()) as element() {
                 <p class="url"><a href="{$url}">{$url}</a></p>
         }
         {
-            if ($rec/mods:abstract) then
+            if (exists($rec/mods:abstract)) then
                 <p class="abstract">{$rec/mods:abstract/text()}</p>
             else
                 ()
@@ -48,7 +48,7 @@ declare function md:record-full($rec as element()) as element() {
 
 declare function md:show-single($label as xs:string, $node as element()?) 
 as element()* {
-    if ($node) then
+    if (exists($node)) then
         <tr>
             <th>{$label}:</th>
             <td>{$node/text()}</td>
@@ -58,14 +58,14 @@ as element()* {
 };
 
 declare function md:names-full($names as element()*) as element()* {
-    if ($names) then
+    if (exists($names)) then
         <tr>
             <th>By:</th>
             <td>
             {
                 for $name at $pos in $names
                 let $str :=
-                    if($name/mods:namePart[@type='family']) then
+                    if(exists($name/mods:namePart[@type='family'])) then
                         ($name/mods:namePart[@type='family']/text(), ", ", 
                         $name/mods:namePart[@type='given']/text())
                     else
@@ -81,7 +81,7 @@ declare function md:names-full($names as element()*) as element()* {
 };
 
 declare function md:publishers($publishers as element()*) as element()* {
-    if ($publishers) then
+    if (exists($publishers)) then
         <tr>
             <th>Publisher:</th>
             <td>
@@ -96,7 +96,7 @@ declare function md:publishers($publishers as element()*) as element()* {
 };
 
 declare function md:subjects($subjects as element()*, $auth as xs:string?) as element()* {
-    if ($subjects) then
+    if (exists($subjects)) then
         <tr>
             <th>Topics
             { if ($auth) then (<br/>, "(", $auth, "):") else ":" }
@@ -116,7 +116,7 @@ declare function md:subjects($subjects as element()*, $auth as xs:string?) as el
 };
 
 declare function md:year($rec as element()) as xs:string? {
-    if ($rec/mods:originInfo/mods:dateCreated) then
+    if (exists($rec/mods:originInfo/mods:dateCreated)) then
         concat(" (", substring($rec/mods:originInfo/mods:dateCreated, 1, 4), ")")
     else ()
 };
@@ -148,7 +148,7 @@ declare function md:names($names as element()*) as element()* {
         <span class="mods-name">
         { if ($pos > 1) then "; " else () }
         {
-            if($name/mods:namePart[@type='family']) then
+            if(exists($name/mods:namePart[@type='family'])) then
                 ($name/mods:namePart[@type='family']/text(), ", ", 
                 $name/mods:namePart[@type='given']/text())
             else

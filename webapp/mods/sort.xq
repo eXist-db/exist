@@ -6,9 +6,9 @@ declare function sort:orderByName($m as element()) as xs:string?
 {
     let $name := $m/mods:name[1],
         $order :=
-            if($name/mods:namePart[@type='family']) then
+            if(exists($name/mods:namePart[@type='family'])) then
                 concat($name/mods:namePart[@type='family'], ", ", $name/mods:namePart[@type='given'])
-            else if($name/mods:namePart) then
+            else if(exists($name/mods:namePart)) then
                 xs:string($name/mods:namePart)
             else
                 ""
