@@ -117,11 +117,7 @@ declare function f:string-list-union(
    $list as xs:string*,
    $s as xs:string ) as xs:string*
 {
-  let $contains :=
-    for $ss in $list
-      return
-        if ( $ss = $s ) then true
-        else ""
+  let $contains := some $ss in $list satisfies $ss eq $s
 
   return
     if ( $contains ) then
