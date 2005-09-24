@@ -67,7 +67,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
     }
     
     public String getPrefix() {
-    	return "xmlns";
+    	return getQName().getPrefix();
     }
 
 	public boolean getSpecified() {

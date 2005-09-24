@@ -673,7 +673,10 @@ public class DocumentImpl extends NodeImpl implements Document {
                 		QName nsQName = (QName) document.namePool
                         	.get(document.namespaceCode[ns]);
                 		receiver.addNamespaceNode(nsQName);
-                		context.declareInScopeNamespace(nsQName.getLocalName(), nsQName.getNamespaceURI());
+                        if ("xmlns".equals(nsQName.getLocalName()))
+                            context.declareInScopeNamespace("", nsQName.getNamespaceURI());
+                        else
+                            context.declareInScopeNamespace(nsQName.getLocalName(), nsQName.getNamespaceURI());
                 		++ns;
                 	}
                 }
@@ -820,7 +823,10 @@ public class DocumentImpl extends NodeImpl implements Document {
 	        			&& document.namespaceParent[ns] == nr) {
 	        		QName nsQName = (QName) document.namePool
 	                	.get(document.namespaceCode[ns]);
-	        		receiver.startPrefixMapping(nsQName.getLocalName(), nsQName.getNamespaceURI());
+                    if ("xmlns".equals(nsQName.getLocalName()))
+                        receiver.startPrefixMapping("", nsQName.getNamespaceURI());
+                    else
+                        receiver.startPrefixMapping(nsQName.getLocalName(), nsQName.getNamespaceURI());
 	        		++ns;
 	        	}
 	        }
@@ -878,7 +884,10 @@ public class DocumentImpl extends NodeImpl implements Document {
 	        			&& document.namespaceParent[ns] == nr) {
 	        		QName nsQName = (QName) document.namePool
 	                	.get(document.namespaceCode[ns]);
-	        		receiver.endPrefixMapping(nsQName.getLocalName());
+                    if ("xmlns".equals(nsQName.getLocalName()))
+                        receiver.endPrefixMapping("");
+                    else
+                        receiver.endPrefixMapping(nsQName.getLocalName());
 	        		++ns;
 	        	}
 	        }
