@@ -29,6 +29,7 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.TypeInfo;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -55,7 +56,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
      * @see org.exist.memtree.NodeImpl#getNodeType()
      */
     public short getNodeType() {
-        return NodeImpl.NAMESPACE_NODE;
+        return Node.ATTRIBUTE_NODE;
     }
 
     /* (non-Javadoc)

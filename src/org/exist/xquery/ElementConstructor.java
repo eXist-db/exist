@@ -81,14 +81,15 @@ public class ElementConstructor extends NodeConstructor {
 		}
 	}
 	
-	public void addNamespaceDecl(String prefix, String uri) {
+	public void addNamespaceDecl(String name, String uri) {
+        String prefix = "xmlns".equals(name) ? null : "xmlns";
 		if(namespaceDecls == null) {
 			namespaceDecls = new QName[1];
-			namespaceDecls[0] = new QName(prefix, uri, "xmlns");
+			namespaceDecls[0] = new QName(name, uri, prefix);
 		} else {
 			QName decls[] = new QName[namespaceDecls.length + 1];
 			System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
-			decls[namespaceDecls.length] = new QName(prefix, uri, "xmlns");
+			decls[namespaceDecls.length] = new QName(name, uri, prefix);
 			namespaceDecls = decls;
 		}
 	}
