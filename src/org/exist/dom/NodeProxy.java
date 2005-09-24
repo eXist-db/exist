@@ -277,8 +277,12 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	}
 
 	public Node getNode() {
-		if (gid == -1 && nodeType == Node.DOCUMENT_NODE) return doc;
+		if (isDocument()) return doc;
 		else return doc.getNode(this);
+	}
+
+	public boolean isDocument() {
+		return gid == -1 || nodeType == Node.DOCUMENT_NODE;
 	}
 	
 	public short getNodeType() {
@@ -286,7 +290,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	}
 
 	public String getNodeValue() {
-		return doc.getBroker().getNodeValue(this, false);
+		if ( isDocument() ) {
+			NodeImpl root = (NodeImpl) doc.getDocumentElement();
+			return doc.getBroker().getNodeValue(
+					new NodeProxy(doc, root.gid, root.internalAddress), false);
+		} else {
+			return doc.getBroker().getNodeValue(this, false);
+		}
 	}
 
     public String getNodeValueSeparated() {
