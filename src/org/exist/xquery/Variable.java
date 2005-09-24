@@ -138,13 +138,13 @@ public class Variable {
             if(requiredType != Type.ATOMIC)
                 value = convert(value);
         }
-        if(!Type.subTypeOf(value.getItemType(), requiredType))
+        if(!type.checkType(value))
         	throw new XPathException( Messages.getMessage( Error.VAR_TYPE_MISMATCH, 
         		toString(), 
         		type.toString(),
         		new SequenceType(value.getItemType(), value.getCardinality()).toString()
         		)
-        	); 
+        	);
     }
     
     private Sequence convert(Sequence seq) throws XPathException {
