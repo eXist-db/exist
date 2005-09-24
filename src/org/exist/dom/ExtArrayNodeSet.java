@@ -29,6 +29,7 @@ import org.exist.util.FastQSort;
 import org.exist.util.Range;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
 /**
@@ -76,6 +77,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     private DocumentSet cachedDocuments = null;
     
     private DocumentOrderComparator docOrderComparator = new DocumentOrderComparator();
+    
+    //  used to keep track of the type of added items.
+    private int itemType = Type.ANY_TYPE;
     
     public ExtArrayNodeSet() {
         documentIds = new int[INITIAL_DOC_SIZE];
@@ -149,6 +153,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         isSorted = false;
         isInDocumentOrder = false;
         setHasChanged();
+        checkItemType(proxy.getType());
     }
 
     /**
@@ -165,8 +170,22 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         isSorted = false;
         isInDocumentOrder = false;
         setHasChanged();
+        checkItemType(proxy.getType());
     }
 
+    private void checkItemType(int type) {
+        if(itemType == Type.NODE || itemType == type)
+            return;
+        if(itemType == Type.ANY_TYPE)
+            itemType = type;
+        else
+            itemType = Type.NODE;
+    }
+    
+    public int getItemType() {
+        return itemType;
+    }
+    
     private void setHasChanged() {
         state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
         cachedDocuments = null;
