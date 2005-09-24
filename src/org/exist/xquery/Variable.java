@@ -138,9 +138,9 @@ public class Variable {
             if(requiredType != Type.ATOMIC)
                 value = convert(value);
         }
-        if(!Type.subTypeOf(value.getItemType(), requiredType))
+        if (!type.checkType(value))
             throw new XPathException(Messages.getMessage(Error.VAR_TYPE_MISMATCH,
-                    toString(), Type.getTypeName(type.getPrimaryType()), Type.getTypeName(requiredType)));
+                    toString(), Type.getTypeName(value.getItemType()), Type.getTypeName(requiredType)));
     }
     
     private Sequence convert(Sequence seq) throws XPathException {
