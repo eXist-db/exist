@@ -242,7 +242,10 @@ public class DOMIndexer {
         while (ns < doc.nextNamespace
                 && doc.namespaceParent[ns] == nodeNr) {
             QName qn = (QName)doc.namePool.get(doc.namespaceCode[ns]);
-            map.put(qn.getLocalName(), qn.getNamespaceURI());
+            if ("xmlns".equals(qn.getLocalName()))
+                map.put("", qn.getNamespaceURI());
+            else
+                map.put(qn.getLocalName(), qn.getNamespaceURI());
             ++ns;
         }
         return map;
