@@ -28,6 +28,9 @@ import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 
 /**
+ * Represents an XQuery SequenceType and provides methods to check
+ * sequences and items against this type.
+ * 
  * @author wolf
  */
 public class SequenceType {
@@ -39,11 +42,23 @@ public class SequenceType {
 	public SequenceType() {
 	}
 
+    /**
+     * Construct a new SequenceType using the specified
+     * primary type and cardinality constants.
+     * 
+     * @param primaryType
+     * @param cardinality
+     */
 	public SequenceType(int primaryType, int cardinality) {
 		this.primaryType = primaryType;
 		this.cardinality = cardinality;
 	}
 
+    /**
+     * Returns the primary type as one of the
+     * constants defined in {@link Type}.
+     * @return
+     */
 	public int getPrimaryType() {
 		return primaryType;
 	}
@@ -52,6 +67,12 @@ public class SequenceType {
 		this.primaryType = type;
 	}
 
+    /**
+     * Returns the expected cardinality. See the constants 
+     * defined in {@link Cardinality}.
+     * 
+     * @return
+     */
 	public int getCardinality() {
 		return cardinality;
 	}
@@ -68,6 +89,32 @@ public class SequenceType {
 		this.nodeName = qname;
 	}
 
+    /**
+     * Check the specified sequence against this SequenceType.
+     *  
+     * @param seq
+     * @return
+     */
+    public boolean checkType(Sequence seq) {
+        if (nodeName != null) {
+            Item next;
+            for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                next = i.nextItem();
+                if (!checkType(next))
+                    return false;
+            }
+            return true;
+        } else {
+            return Type.subTypeOf(seq.getItemType(), primaryType);
+        }
+    }
+    
+    /**
+     * Check a single item against this SequenceType.
+     * 
+     * @param item
+     * @return
+     */
 	public boolean checkType(Item item) {
 		if(!Type.subTypeOf(item.getType(), primaryType))
 			return false;
@@ -84,6 +131,13 @@ public class SequenceType {
 		return true;
 	}
 	
+    /**
+     * Check the given type against the primary type
+     * declared in this SequenceType.
+     * 
+     * @param type
+     * @throws XPathException
+     */
 	public void checkType(int type) throws XPathException {
 		if (type == Type.EMPTY || type == Type.ITEM)
 			return;
@@ -96,6 +150,13 @@ public class SequenceType {
 					+ Type.getTypeName(type));
 	}
 
+    /**
+     * Check if the given sequence has the cardinality required
+     * by this sequence type.
+     * 
+     * @param seq
+     * @throws XPathException
+     */
 	public void checkCardinality(Sequence seq) throws XPathException {
 		int items = seq.getLength();
 		if (items > 0 && cardinality == Cardinality.EMPTY)
