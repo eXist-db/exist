@@ -68,6 +68,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	public static final int DOCUMENT_ELEMENT_GID = 1;
 	public static final int TO_BE_COMPUTED = -1;
 	public static final int UNKNOWN = -1;
+	public static final int UNKNOWN_GID = 0;
 	
 	/**
 	 * The owner document of this node.
@@ -78,7 +79,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * The unique internal node id in the document.
 	 * @link #DOCUMENT_NODE_GID means document node.
 	 */
-	public long gid = 0;
+	public long gid = UNKNOWN_GID;
 
 	/**
 	 * The internal storage address of the node in the
@@ -87,7 +88,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	private long internalAddress = UNKNOWN;
 	
 	/**
-	 * The type of this node (as defined by DOM), if known, UNKNOW
+	 * The type of this node (as defined by DOM), if known, @link #UNKNOW
 	 * otherwise.
 	 */
 	public short nodeType = UNKNOWN;
