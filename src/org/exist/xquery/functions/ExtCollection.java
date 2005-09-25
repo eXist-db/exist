@@ -121,7 +121,7 @@ public class ExtCollection extends Function {
 		    dlock = doc.getUpdateLock();
 		    try {
 		        dlock.acquire(Lock.READ_LOCK);
-		        result.add(new NodeProxy(doc, -1, Node.DOCUMENT_NODE));
+		        result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
                 if(lockOnLoad) {
                     LOG.debug("Locking document: " + doc.getName());
                     context.getLockedDocuments().add(doc);

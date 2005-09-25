@@ -130,7 +130,7 @@ public class FunDoc extends Function {
                 throw new XPathException(getASTNode(), "Insufficient privileges to read resource " + path);
             }
 			cachedPath = path;
-			cachedNode = new NodeProxy(doc, -1, Node.DOCUMENT_NODE);
+			cachedNode = new NodeProxy(doc);
             if(lockOnLoad) {
                 // add the document to the list of locked documents
                 context.getLockedDocuments().add(doc);
