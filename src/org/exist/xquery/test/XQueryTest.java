@@ -5,6 +5,7 @@ import java.io.File;
 import junit.framework.TestCase;
 
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -123,6 +124,97 @@ public class XQueryTest extends TestCase {
 			fail(e.getMessage());
 		}
 	}
+	
+	public void testTypedVariables() {
+		ResourceSet result;
+		String query;
+		boolean exceptionThrown;
+		String message;		
+		try {
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
+
+			System.out.println("testTypedVariables 1: ========" );
+			query = "let $v as element()* := ( <assign/> , <assign/> )\n" 
+				+ "let $w := <r>{ $v }</r>\n"
+				+ "let $x as element()* := $w/assign\n"
+				+ "return $x";
+			result = service.queryResource(NUMBERS_XML, query );				
+			assertEquals( "XQuery: " + query, 2, result.getSize() );
+			assertEquals( "XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeType());
+			assertEquals( "XQuery: " + query, "assign", ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeName());
+
+			System.out.println("testTypedVariables 2: ========" );
+			query = "let $v as node()* := ()\n" 
+			+ "return $v";
+			result = service.queryResource(NUMBERS_XML, query );	
+			assertEquals( "XQuery: " + query, 0, result.getSize() );
+			
+			System.out.println("testTypedVariables 3: ========" );
+			query = "let $v as item()* := ()\n" 
+			+ "return $v";
+			result = service.queryResource(NUMBERS_XML, query );
+			assertEquals( "XQuery: " + query, 0, result.getSize() );			
+
+			System.out.println("testTypedVariables 4: ========" );
+			query = "let $v as empty() := ()\n" 
+			+ "return $v";
+			result = service.queryResource(NUMBERS_XML, query );
+			assertEquals( "XQuery: " + query, 0, result.getSize() );			
+			
+			System.out.println("testTypedVariables 5: ========" );
+			query = "let $v as item() := ()\n" 
+			+ "return $v";			
+			try {
+				exceptionThrown = false;
+				result = service.queryResource(NUMBERS_XML, query );					
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue("XQuery: " + query, exceptionThrown);
+			
+			System.out.println("testTypedVariables 6: ========" );
+			query = "let $v as item()* := ( <a/> , 1 )\n" 
+			+ "return $v";
+			result = service.queryResource(NUMBERS_XML, query );
+			assertEquals( "XQuery: " + query, 2, result.getSize() );	
+			assertEquals( "XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeType());
+			assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeName());			
+			assertEquals( "XQuery: " + query, "1", ((XMLResource)result.getResource(1)).getContent());		
+			
+			System.out.println("testTypedVariables 7: ========" );
+			query = "let $v as node()* := ( <a/> , 1 )\n" 
+			+ "return $v";			
+			try {
+				exceptionThrown = false;
+				result = service.queryResource(NUMBERS_XML, query );	
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue(exceptionThrown);	
+			
+			System.out.println("testTypedVariables 8: ========" );
+			query = "let $v as item()* := ( <a/> , 1 )\n" 
+				+ "let $w as element()* := $v\n"
+				+ "return $v";		
+			try {
+				exceptionThrown = false;
+				result = service.queryResource(NUMBERS_XML, query );	
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue(exceptionThrown);				
+			
+
+		
+		} catch (XMLDBException e) {
+			System.out.println("testTypedVariables : XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}	
 	
 	private String makeString(int n){
 		StringBuffer b = new StringBuffer();
