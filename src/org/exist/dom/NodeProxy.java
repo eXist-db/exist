@@ -63,9 +63,11 @@ import org.xml.sax.SAXException;
 public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	
 	/** special value for gid: means document node */
-	public final int DOCUMENT_NODE_GID = -1;
-	public final int TO_BE_COMPUTED = -1;
-	public final int UNKNOWN = -1;
+	public static final int DOCUMENT_NODE_GID = -1;
+	/** special value for gid: means document element node */
+	public static final int DOCUMENT_ELEMENT_GID = 1;
+	public static final int TO_BE_COMPUTED = -1;
+	public static final int UNKNOWN = -1;
 	
 	/**
 	 * The owner document of this node.
