@@ -429,7 +429,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 *
 	 */
 	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent) {
-		return parentWithChild(doc, gid, directParent, false, -1);
+		return parentWithChild(doc, gid, directParent, false,
+				NodeProxy.TO_BE_COMPUTED );
 	}
 
 	/**
@@ -448,7 +449,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		long gid,
 		boolean directParent,
 		boolean includeSelf) {
-		return parentWithChild(doc, gid, directParent, includeSelf, -1);
+		return parentWithChild(doc, gid, directParent, includeSelf, 
+				NodeProxy.TO_BE_COMPUTED );
 	}
 
 	/**

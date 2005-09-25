@@ -41,7 +41,8 @@ public class DescendantOrSelfSelector extends DescendantSelector {
 	 */
 	public NodeProxy match(DocumentImpl doc, long gid) {
 		NodeProxy p;
-		if((p = context.parentWithChild(doc, gid, false, true, -1)) != null) {
+		if((p = context.parentWithChild(doc, gid, false, true,
+				NodeProxy.TO_BE_COMPUTED )) != null) {
 			NodeProxy newNode = new NodeProxy(doc, gid);
 			if (rememberContext)
 				newNode.addContextNode(p);
