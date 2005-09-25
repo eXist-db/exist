@@ -22,9 +22,17 @@
  */
 package org.exist.xquery.functions;
 
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.memtree.NodeImpl;
+import org.exist.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
@@ -40,7 +48,11 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * Implements the built-in fn:doc() function.
@@ -55,10 +67,12 @@ public class FunDoc extends Function {
 		new FunctionSignature(
 			new QName("doc", Module.BUILTIN_FUNCTION_NS),
 			"Includes one or more documents "
-				+ "into the input sequence. Currently, "
-				+ "eXist interprets each argument as a path pointing to a "
+				+ "into the input sequence. "
+				+ "eXist interprets the argument as a path pointing to a "
 				+ "document in the database, as for example, '/db/shakespeare/plays/hamlet.xml'. "
-				+ "If the path is relative, it is resolved relative to the base URI property from the static context.",
+				+ "If the path is relative, "
+				+ "it is resolved relative to the base URI property from the static context."
+				+ "Understands also standard URL's, starting with htttp:// , file:// , etc.",
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
 
@@ -73,80 +87,128 @@ public class FunDoc extends Function {
 		super(context, signature);
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.xquery.Function#getDependencies()
 	 */
 	public int getDependencies() {
 		return Dependency.CONTEXT_SET;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
-		Sequence arg =
-			getArgument(0).eval(contextSequence, contextItem);
-		if(arg.getLength() == 0)
+			throws XPathException {
+		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
+		if (arg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		String path = arg.itemAt(0).getStringValue();
 		if (path.length() == 0)
-			throw new XPathException(getASTNode(), "Invalid argument to fn:doc function: empty string is not allowed here.");
-        
-        // relative URL: add the current base URI
-		if (path.charAt(0) != '/')
-            path = context.getBaseURI() + '/' + path;
-        
-		// check if the loaded documents should remain locked
-        boolean lockOnLoad = context.lockDocumentsOnLoad();
-        Lock dlock = null;
-        
-		// if the expression occurs in a nested context, we might have cached the
-        // document set
-		if(path.equals(cachedPath) && cachedNode != null) {
-		    dlock = cachedNode.getDocument().getUpdateLock();
-		    try {
-		        // wait for pending updates by acquiring a lock
-		        dlock.acquire(Lock.READ_LOCK);
-		        return cachedNode;
-		    } catch (LockException e) {
-		        throw new XPathException(getASTNode(), "Failed to acquire lock on document " + path);
-            } finally {
-                dlock.release(Lock.READ_LOCK);
-		    }
-		}
-        
-        DocumentImpl doc = null;
-		try {
-            // try to open the document and acquire a lock
-		    doc = (DocumentImpl) context.getBroker().openDocument(path, Lock.READ_LOCK);
-		    if(doc == null) {
-//		        LOG.debug("Document " + path + " not found!");
-                return Sequence.EMPTY_SEQUENCE;
-            }
-		    if(!doc.getPermissions().validate(context.getUser(), Permission.READ)) {
-                doc.getUpdateLock().release(Lock.READ_LOCK);
-                doc = null;
-                throw new XPathException(getASTNode(), "Insufficient privileges to read resource " + path);
-            }
-			cachedPath = path;
-			cachedNode = new NodeProxy(doc);
-            if(lockOnLoad) {
-                // add the document to the list of locked documents
-                context.getLockedDocuments().add(doc);
-            }
-			return cachedNode;
-		} catch (PermissionDeniedException e) {
 			throw new XPathException(getASTNode(),
-				"Permission denied: unable to load document " + path);
-        } finally {
-            // release all locks unless lockOnLoad is true
-		    if(!lockOnLoad && doc != null)
-		        doc.getUpdateLock().release(Lock.READ_LOCK);
+					"Invalid argument to fn:doc function: empty string is not allowed here.");
+
+		if (path.matches("^[a-z]+://.*")) {
+			
+			// === standard URL ===
+			
+			return processURL(path);
+
+		} else {
+			
+			// === document in the database ===		
+		
+			// relative collection Path: add the current base URI
+			if (path.charAt(0) != '/')
+				path = context.getBaseURI() + '/' + path;
+
+			// check if the loaded documents should remain locked
+			boolean lockOnLoad = context.lockDocumentsOnLoad();
+			Lock dlock = null;
+
+			// if the expression occurs in a nested context, we might have cached the
+			// document set
+			if (path.equals(cachedPath) && cachedNode != null) {
+				dlock = cachedNode.getDocument().getUpdateLock();
+				try {
+					// wait for pending updates by acquiring a lock
+					dlock.acquire(Lock.READ_LOCK);
+					return cachedNode;
+				} catch (LockException e) {
+					throw new XPathException(getASTNode(),
+							"Failed to acquire lock on document " + path);
+				} finally {
+					dlock.release(Lock.READ_LOCK);
+				}
+			}
+
+			DocumentImpl doc = null;
+			try {
+				// try to open the document and acquire a lock
+				doc = (DocumentImpl) context.getBroker().openDocument(path,
+						Lock.READ_LOCK);
+				if (doc == null) {
+					//		        LOG.debug("Document " + path + " not found!");
+					return Sequence.EMPTY_SEQUENCE;
+				}
+				if (!doc.getPermissions().validate(context.getUser(),
+						Permission.READ)) {
+					doc.getUpdateLock().release(Lock.READ_LOCK);
+					doc = null;
+					throw new XPathException(getASTNode(),
+							"Insufficient privileges to read resource " + path);
+				}
+				cachedPath = path;
+				cachedNode = new NodeProxy(doc);
+				if (lockOnLoad) {
+					// add the document to the list of locked documents
+					context.getLockedDocuments().add(doc);
+				}
+				return cachedNode;
+			} catch (PermissionDeniedException e) {
+				throw new XPathException(getASTNode(),
+						"Permission denied: unable to load document " + path);
+			} finally {
+				// release all locks unless lockOnLoad is true
+				if (!lockOnLoad && doc != null)
+					doc.getUpdateLock().release(Lock.READ_LOCK);
+			}
 		}
 	}
 
-	/* (non-Javadoc)
+	/** process a standard URL :  http: , file: , ftp:   */
+	private Sequence processURL(String path) {
+		org.exist.memtree.DocumentImpl memtreeDoc = null;
+
+        try {
+			// we use eXist's in-memory DOM implementation
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setNamespaceAware(true);
+			InputSource src = new InputSource(path);
+			SAXParser parser = factory.newSAXParser();
+			XMLReader reader = parser.getXMLReader();
+			SAXAdapter adapter = new SAXAdapter();
+			reader.setContentHandler(adapter);
+			reader.parse(src);
+			
+			Document doc = adapter.getDocument();
+			memtreeDoc = (org.exist.memtree.DocumentImpl)doc;
+			memtreeDoc.setContext(context);
+			return memtreeDoc;		
+			
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return memtreeDoc;
+	}
+
+	/**
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {

@@ -1027,4 +1027,8 @@ public class DocumentImpl extends NodeImpl implements Document {
 		// maybe TODO - new DOM interfaces - Java 5.0
 		return null;
 	}
+	
+	public void setContext(XQueryContext context) {
+		this.context = context;
+	}
 }
