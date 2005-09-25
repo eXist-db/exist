@@ -149,7 +149,7 @@ public class ExtDocument extends Function {
                 DocumentImpl doc;
 				for (Iterator i = docs.iterator(); i.hasNext();) {
                     doc = (DocumentImpl) i.next();
-					result.add(new NodeProxy(doc, -1, Node.DOCUMENT_NODE));
+					result.add(new NodeProxy(doc)); //, -1, Node.DOCUMENT_NODE));
                     if(lockOnLoad) {
                         context.getLockedDocuments().add(doc);
                     }
