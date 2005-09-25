@@ -379,7 +379,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		if(children == 0)
 		    return null;
 		long address = childList[0];
-		return broker.objectWith(new NodeProxy(this, 1, address));
+		return broker.objectWith(new NodeProxy(this,
+				// 1,
+				NodeProxy.DOCUMENT_ELEMENT_GID, address));
 	}
 	
 	public long getFirstChildAddress() {
@@ -392,7 +394,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		NodeListImpl list = new NodeListImpl();
 		Node child;
 		for (int i = 0; i < children; i++) {
-			child = broker.objectWith(new NodeProxy(this, 1, childList[i]));
+			child = broker.objectWith(new NodeProxy(this,
+					// 1,
+					NodeProxy.DOCUMENT_ELEMENT_GID, childList[i]));
 			list.add(child);
 		}
 		return list;
