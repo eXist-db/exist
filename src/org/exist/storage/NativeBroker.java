@@ -1267,7 +1267,7 @@ public class NativeBroker extends DBBroker {
 			}
 		}
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
-			if((fullReindex || doc.getTreeLevel(node.getGID()) > doc.reindexRequired())) {
+			if((fullReindex || doc.getTreeLevel(node.getGID()) >= doc.reindexRequired())) {
 			    endElement(node, currentPath, null);
 			}
 			currentPath.removeLastComponent();
@@ -2711,6 +2711,7 @@ public class NativeBroker extends DBBroker {
 		elementIndex.setDocument(doc);
 		elementIndex.addRow(node.getQName(), tempProxy);
 	}
+    
 	/** store Document entry into its collection. */
 	public void storeDocument(final Txn transaction, final DocumentImpl doc) {
         Lock lock = collectionsDb.getLock();
