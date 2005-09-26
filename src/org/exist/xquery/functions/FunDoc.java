@@ -66,13 +66,13 @@ public class FunDoc extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("doc", Module.BUILTIN_FUNCTION_NS),
-			"Includes one or more documents "
+			"Includes a document "
 				+ "into the input sequence. "
 				+ "eXist interprets the argument as a path pointing to a "
 				+ "document in the database, as for example, '/db/shakespeare/plays/hamlet.xml'. "
 				+ "If the path is relative, "
 				+ "it is resolved relative to the base URI property from the static context."
-				+ "Understands also standard URL's, starting with htttp:// , file:// , etc.",
+				+ "Understands also standard URLs, starting with http:// , file:// , etc.",
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
 
@@ -107,11 +107,16 @@ public class FunDoc extends Function {
 			throw new XPathException(getASTNode(),
 					"Invalid argument to fn:doc function: empty string is not allowed here.");
 
+		//TODO : use a better pattern matcher (Java lacks a convenient method to achieve this)
 		if (path.matches("^[a-z]+://.*")) {
 			
 			// === standard URL ===
-			
-			return processURL(path);
+			//TODO : process pseudo-protocols URLs differently.
+			try {
+				return processURL(path);
+			} catch (XPathException e) {
+				throw new XPathException(getASTNode(), e.getMessage());
+			}
 
 		} else {
 			
@@ -147,8 +152,10 @@ public class FunDoc extends Function {
 				doc = (DocumentImpl) context.getBroker().openDocument(path,
 						Lock.READ_LOCK);
 				if (doc == null) {
-					//		        LOG.debug("Document " + path + " not found!");
-					return Sequence.EMPTY_SEQUENCE;
+					//return Sequence.EMPTY_SEQUENCE;
+					//no reason to have a behaviour different from docs obtained via URLs
+					throw new XPathException(getASTNode(),
+							"Document not found " + path);					
 				}
 				if (!doc.getPermissions().validate(context.getUser(),
 						Permission.READ)) {
@@ -176,7 +183,7 @@ public class FunDoc extends Function {
 	}
 
 	/** process a standard URL :  http: , file: , ftp:   */
-	private Sequence processURL(String path) {
+	private Sequence processURL(String path) throws XPathException {
 		org.exist.memtree.DocumentImpl memtreeDoc = null;
 
         try {
@@ -196,16 +203,12 @@ public class FunDoc extends Function {
 			return memtreeDoc;		
 			
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new XPathException(e.getMessage(), e);		
 		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new XPathException(e.getMessage(), e);	
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new XPathException(e.getMessage(), e);	
 		}
-		return memtreeDoc;
 	}
 
 	/**
