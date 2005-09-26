@@ -18,7 +18,9 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 
-public class XQueryTest extends TestCase {
+import org.custommonkey.xmlunit.*;
+
+public class XQueryTest extends XMLTestCase {
 
 	private static final String NUMBERS_XML = "numbers.xml";
 	private final static String URI = "xmldb:exist:///db";
@@ -139,7 +141,7 @@ public class XQueryTest extends TestCase {
 				+ "let $w := <r>{ $v }</r>\n"
 				+ "let $x as element()* := $w/assign\n"
 				+ "return $x";
-			result = service.queryResource(NUMBERS_XML, query );				
+			result = service.query(query);				
 			assertEquals( "XQuery: " + query, 2, result.getSize() );
 			assertEquals( "XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeType());
 			assertEquals( "XQuery: " + query, "assign", ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeName());
@@ -147,19 +149,19 @@ public class XQueryTest extends TestCase {
 			System.out.println("testTypedVariables 2: ========" );
 			query = "let $v as node()* := ()\n" 
 			+ "return $v";
-			result = service.queryResource(NUMBERS_XML, query );	
+			result = service.query(query);		
 			assertEquals( "XQuery: " + query, 0, result.getSize() );
 			
 			System.out.println("testTypedVariables 3: ========" );
 			query = "let $v as item()* := ()\n" 
 			+ "return $v";
-			result = service.queryResource(NUMBERS_XML, query );
+			result = service.query(query);		
 			assertEquals( "XQuery: " + query, 0, result.getSize() );			
 
 			System.out.println("testTypedVariables 4: ========" );
 			query = "let $v as empty() := ()\n" 
 			+ "return $v";
-			result = service.queryResource(NUMBERS_XML, query );
+			result = service.query(query);		
 			assertEquals( "XQuery: " + query, 0, result.getSize() );			
 			
 			System.out.println("testTypedVariables 5: ========" );
@@ -167,7 +169,7 @@ public class XQueryTest extends TestCase {
 			+ "return $v";			
 			try {
 				exceptionThrown = false;
-				result = service.queryResource(NUMBERS_XML, query );					
+				result = service.query(query);						
 			} catch (XMLDBException e) {
 				exceptionThrown = true;
 				message = e.getMessage();
@@ -176,8 +178,8 @@ public class XQueryTest extends TestCase {
 			
 			System.out.println("testTypedVariables 6: ========" );
 			query = "let $v as item()* := ( <a/> , 1 )\n" 
-			+ "return $v";
-			result = service.queryResource(NUMBERS_XML, query );
+				+ "return $v";
+			result = service.query(query);		
 			assertEquals( "XQuery: " + query, 2, result.getSize() );	
 			assertEquals( "XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeType());
 			assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeName());			
@@ -185,10 +187,10 @@ public class XQueryTest extends TestCase {
 			
 			System.out.println("testTypedVariables 7: ========" );
 			query = "let $v as node()* := ( <a/> , 1 )\n" 
-			+ "return $v";			
+				+ "return $v";			
 			try {
 				exceptionThrown = false;
-				result = service.queryResource(NUMBERS_XML, query );	
+				result = service.query(query);		
 			} catch (XMLDBException e) {
 				exceptionThrown = true;
 				message = e.getMessage();
@@ -201,7 +203,7 @@ public class XQueryTest extends TestCase {
 				+ "return $v";		
 			try {
 				exceptionThrown = false;
-				result = service.queryResource(NUMBERS_XML, query );	
+				result = service.query(query);		
 			} catch (XMLDBException e) {
 				exceptionThrown = true;
 				message = e.getMessage();
@@ -215,6 +217,99 @@ public class XQueryTest extends TestCase {
 			fail(e.getMessage());
 		}
 	}	
+	
+	public void testFunctionDoc() {
+		ResourceSet result;
+		String query;
+		boolean exceptionThrown;
+		String message;		
+		try {
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
+
+			System.out.println("testFunctionDoc 1: ========" );				
+			query ="doc(\"/db/test/" + NUMBERS_XML +  "\")";	
+			result = service.query(query);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );	
+			try {				
+				Node n = ((XMLResource)result.getResource(0)).getContentAsDOM();	
+				DetailedDiff d = new DetailedDiff(compareXML(numbers, n.toString()));
+				//ignore eXist namespace's attributes
+				//TODO : should be improved !
+				assertEquals(1, d.getAllDifferences().size());
+			} catch (Exception e) {
+				System.out.println("testFunctionDoc : XMLDBException: "+e);
+				fail(e.getMessage());
+			}
+			
+			System.out.println("testFunctionDoc 2: ========" );				
+			query ="doc(\"http://www.w3.org/RDF/\")";	
+			result = service.query(query);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );	
+			
+			System.out.println("testFunctionDoc 3: ========" );				
+			query = "let $v := ()\n" 
+				+ "return doc($v)";	
+			result = service.query(query);
+			assertEquals( "XQuery: " + query, 0, result.getSize() );			
+			
+			System.out.println("testFunctionDoc 4: ========" );		
+			query ="doc(\"/db/test/dummy" + NUMBERS_XML +  "\")";	
+			try {
+				exceptionThrown = false;
+				result = service.query(query);		
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue(exceptionThrown);	
+			
+			System.out.println("testFunctionDoc 5: ========" );		
+			query ="doc(\"http://www.w3.org/RDF/dummy\")";	
+			try {
+				exceptionThrown = false;
+				result = service.query(query);		
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue(exceptionThrown);				
+			
+			System.out.println("testFunctionDoc 6: ========" );				
+			query ="doc-available(\"/db/test/" + NUMBERS_XML +  "\")";	
+			result = service.query(query);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "true", result.getResource(0).getContent());
+			
+			System.out.println("testFunctionDoc 7: ========" );				
+			query ="doc-available(\"http://www.w3.org/RDF/\")";	
+			result = service.query(query);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "true", result.getResource(0).getContent());
+			
+			System.out.println("testFunctionDoc 8: ========" );				
+			query = "let $v := ()\n" 
+				+ "return doc-available($v)";	
+			result = service.query(query); 
+			//Ici
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());
+			
+			System.out.println("testFunctionDoc 9: ========" );		
+			query ="doc-available(\"/db/test/dummy" + NUMBERS_XML +  "\")";	
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());	
+			
+			System.out.println("testFunctionDoc 10: ========" );		
+			query ="doc-available(\"http://www.w3.org/RDF/dummy\")";	
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());			
+				
+		} catch (XMLDBException e) {
+			System.out.println("testFunctionDoc : XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}		
 	
 	private String makeString(int n){
 		StringBuffer b = new StringBuffer();

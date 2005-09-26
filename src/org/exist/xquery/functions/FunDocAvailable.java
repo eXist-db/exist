@@ -22,7 +22,18 @@
  */
 package org.exist.xquery.functions;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.lock.Lock;
+import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -31,39 +42,36 @@ import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.DocUtils;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * Implements the built-in fn:doc() function.
- * 
- * This will be replaced by XQuery's fn:doc() function.
+ * Implements the XQuery's fn:doc-available() function.
  * 
  * @author wolf
+ * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
-public class FunDoc extends Function {
+public class FunDocAvailable extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("doc", Module.BUILTIN_FUNCTION_NS),
-			"Includes a document "
-				+ "into the input sequence. "
+			new QName("doc-available", Module.BUILTIN_FUNCTION_NS),
+			"Returns whether or not a document is available. "
 				+ "eXist interprets the argument as a path pointing to a "
 				+ "document in the database, as for example, '/db/shakespeare/plays/hamlet.xml'. "
 				+ "If the path is relative, "
 				+ "it is resolved relative to the base URI property from the static context."
 				+ "Understands also standard URLs, starting with http:// , file:// , etc.",
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 	
-	/**
-	 * @param context
-	 * @param signature
-	 */
-	public FunDoc(XQueryContext context) {
-		super(context, signature);
+	
+	
+	public FunDocAvailable(XQueryContext context) {
+		super(context, signature);		
 	}
 
 	/**
@@ -76,25 +84,22 @@ public class FunDoc extends Function {
 	/**
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {		
 		
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if (arg.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
+			return BooleanValue.FALSE;
 		
-		String path = arg.itemAt(0).getStringValue();		
+		String path = arg.itemAt(0).getStringValue();
 		
 		try {
-			Sequence seq = DocUtils.getDocument(this.context, path);
-			if (seq == Sequence.EMPTY_SEQUENCE)
-				throw new XPathException(getASTNode(), path + " is not an XML document");		
-			return seq;
+			return BooleanValue.valueOf(DocUtils.isDocumentAvailable(this.context, path));
 		}
 		catch (Exception e) {
 			throw new XPathException(getASTNode(), e.getMessage());			
 		}
 		
-	}
+	}	
 
 	/**
 	 * @see org.exist.xquery.PathExpr#resetState()
