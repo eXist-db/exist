@@ -905,8 +905,10 @@ public class DocumentImpl extends NodeImpl implements Document {
         }
         DocumentImpl expandedDoc = expandRefs();
         org.exist.dom.DocumentImpl doc = context.storeTemporaryDoc(expandedDoc);
-        NodeList cl = doc.getDocumentElement().getChildNodes();
+        org.exist.dom.ElementImpl root = (org.exist.dom.ElementImpl) doc.getDocumentElement();
+        NodeList cl = root.getChildNodes();
         storedNodes = new Int2ObjectHashMap();
+        storedNodes.put(0, new NodeProxy(doc, root.getGID(), root.getInternalAddress()));
         top = 1;
         int i = 0;
         while(top > 0 && i < cl.getLength()) {
