@@ -1242,8 +1242,8 @@ public class NativeBroker extends DBBroker {
 		    index(transaction, node, currentPath, repairMode);
 		else
 		    reindex(transaction, node, currentPath);
+		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		if (node.hasChildNodes()) {
-			final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 			final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());
 			if (firstChildId < 0) {
 				LOG.fatal(
@@ -1266,9 +1266,11 @@ public class NativeBroker extends DBBroker {
 				scanNodes(transaction, iterator, child, currentPath, fullReindex, repairMode);
 			}
 		}
-		if(node.getNodeType() == Node.ELEMENT_NODE) {
-		    endElement(node, currentPath, null);
-		    currentPath.removeLastComponent();
+		if (node.getNodeType() == Node.ELEMENT_NODE) {
+			if((fullReindex || doc.getTreeLevel(node.getGID()) > doc.reindexRequired())) {
+			    endElement(node, currentPath, null);
+			}
+			currentPath.removeLastComponent();
 		}
 	}
 

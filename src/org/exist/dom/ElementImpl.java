@@ -146,13 +146,12 @@ public class ElementImpl extends NamedNode implements Element {
                                        int len,
                                        DocumentImpl doc,
                                        boolean pooled) {
-        byte attrSizeType = (byte) ((data[start] & 0x0C) >> 0x2);
         byte idSizeType = (byte) (data[start] & 0x03);
         boolean hasNamespace = (data[start] & 0x10) == 0x10;
 
         int children = ByteConversion.byteToInt(data, start + 1);
-        short attributes = (short) Signatures.read(attrSizeType, data, start + 5);
-        int next = start + 5 + Signatures.getLength(attrSizeType);
+        short attributes = ByteConversion.byteToShort(data, start + 5);
+        int next = start + 7;
         int end = start + len;
         short id = (short) Signatures.read(idSizeType, data, next);
         next += Signatures.getLength(idSizeType);
@@ -329,6 +328,7 @@ public class ElementImpl extends NamedNode implements Element {
 	                appendChildren(transaction, firstChildID() + 1, last, getPath(), attribs, true);
 	            }
 	        }
+	        attributes += attribs.getLength();
 	        ownerDocument.broker.update(transaction, this);
 	        ownerDocument.broker.reindex(transaction, prevDoc, ownerDocument, null);
     	}
@@ -928,10 +928,10 @@ public class ElementImpl extends NamedNode implements Element {
                     ? ownerDocument.getSymbols().getNSSymbol(nodeName.getNamespaceURI())
                     : 0;
 
-            final byte attrSizeType = Signatures.getSizeType(attributes);
+//            final byte attrSizeType = Signatures.getSizeType(attributes);
             final byte idSizeType = Signatures.getSizeType(id);
             byte signature =
-                    (byte) ((Signatures.Elem << 0x5) | (attrSizeType << 0x2) | idSizeType);
+                    (byte) ((Signatures.Elem << 0x5) | idSizeType);
             int prefixLen = 0;
             if (hasNamespace) {
                 prefixLen =
@@ -942,8 +942,7 @@ public class ElementImpl extends NamedNode implements Element {
                 signature |= 0x10;
             }
             byte[] data =
-                    ByteArrayPool.getByteArray(5
-                    + Signatures.getLength(attrSizeType)
+                    ByteArrayPool.getByteArray(7
                     + Signatures.getLength(idSizeType)
                     + (hasNamespace ? prefixLen + 4 : 0)
                     + (prefixData != null ? prefixData.length : 0));
@@ -951,8 +950,8 @@ public class ElementImpl extends NamedNode implements Element {
             data[next++] = signature;
             ByteConversion.intToByte(children, data, next);
             next += 4;
-            Signatures.write(attrSizeType, attributes, data, next);
-            next += Signatures.getLength(attrSizeType);
+            ByteConversion.shortToByte(attributes, data, next);
+            next += 2;
             Signatures.write(idSizeType, id, data, next);
             next += Signatures.getLength(idSizeType);
             if (hasNamespace) {
@@ -1445,6 +1444,7 @@ public class ElementImpl extends NamedNode implements Element {
 					ownerDocument.broker.removeNode(transaction, old, old.getPath(), null);
 					if(old.gid < lastChild) ownerDocument.reindex = level + 1;
 					children--;
+					attributes--;
 				}
 			} finally {
 				ownerDocument.broker.endRemove();
@@ -1459,7 +1459,7 @@ public class ElementImpl extends NamedNode implements Element {
 			    else
 			        appendChildren(transaction, firstChildID() + 1, new NodeImplRef(this), getPath(), appendList, true);
 			}
-			
+			attributes += appendList.getLength();
 		} finally {
 			ownerDocument.broker.update(transaction, this);
 			ownerDocument.broker.reindex(transaction, prevDoc, ownerDocument, null);
