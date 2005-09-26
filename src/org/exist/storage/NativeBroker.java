@@ -516,9 +516,10 @@ public class NativeBroker extends DBBroker {
 		if (name.endsWith("/") && name.length() > 1)
 			name = name.substring(0, name.length() - 1);
 
+		Collection collection = null;
 		CollectionCache collectionsCache = pool.getCollectionsCache();
 		synchronized(collectionsCache) {
-			Collection collection = collectionsCache.get(name);
+			collection = collectionsCache.get(name);
 			if(collection == null) {
 				VariableByteInput is = null;
 				Lock lock = collectionsDb.getLock();
@@ -541,8 +542,8 @@ public class NativeBroker extends DBBroker {
 							is = collectionsDb.getAsStream(addr);
 						}
 						if (is == null) {
-                            return null;
-                        }
+				                        return null;
+                        			}
 						collection.read(this, is);
 					} catch (IOException ioe) {
 						LOG.warn(ioe.getMessage(), ioe);
@@ -554,15 +555,6 @@ public class NativeBroker extends DBBroker {
 					lock.release();
 				}
 			}
-			if(lockMode != Lock.NO_LOCK) {
-				try {
-//					LOG.debug("acquiring lock on " + collection.getName());
-					collection.getLock().acquire(lockMode);
-//					LOG.debug("lock acquired");
-				} catch (LockException e1) {
-					LOG.warn("Could not acquire lock on collection " + name);
-				}
-			}
 			if(!pool.isInitializing())
 				// don't cache the collection during initialization: SecurityManager is not yet online
 				collectionsCache.add(collection);
@@ -572,8 +564,18 @@ public class NativeBroker extends DBBroker {
 			//					+ " took "
 			//					+ (System.currentTimeMillis() - start)
 			//					+ "ms.");
-			return collection;
 		}
+
+		if(lockMode != Lock.NO_LOCK) {
+			try {
+//					LOG.debug("acquiring lock on " + collection.getName());
+				collection.getLock().acquire(lockMode);
+//					LOG.debug("lock acquired");
+			} catch (LockException e1) {
+				LOG.warn("Could not acquire lock on collection " + name);
+			}
+		}
+		return collection;
 	}
 	
 	public Iterator getDOMIterator(NodeProxy proxy) {
