@@ -320,8 +320,10 @@
                     keyword. For example, the expression</para>
                     <synopsis format="linespecific">//SPEECH[match-all(LINE, 'li[vf]e')]</synopsis>
                     <para>will match 'live', 'life', but not 'lives'.</para>
-                    <para>eXist uses <ulink
-                                url="http://jakarta.apache.org/oro/">Apache's ORO library </ulink> for regular expressions. A complete description of the supported regexp syntax can be found in the documentation of the library.</para>
+                    <para>eXist uses the <ulink
+                                url="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/package-summary.html">java.util.regex API</ulink> for regular expressions. 
+                                A description of the supported regexp syntax can be found on the <ulink
+                                url="http://java.sun.com/docs/books/tutorial/extra/regex/">Sun Java Tutorial</ulink>.</para>
                 </section>
             </section>
             <section id="xmldb">
