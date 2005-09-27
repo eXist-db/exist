@@ -331,6 +331,26 @@ public class XQueryTest extends XMLTestCase {
 			}
 			//assertTrue(exceptionThrown);
 			
+			//TODO : this should not work (variable redeclaration)
+			System.out.println("testModule 4: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
+				+ "(:: redefine variable ::)\n"
+				+ "declare variable $blah:param  {\"value-2\"};\n"			
+				+ "$blah:param";
+			try {
+				exceptionThrown = false;			
+				result = service.query(query);
+				printResult(result);				
+				assertEquals( "XQuery: " + query, 1, result.getSize() );
+//				The earliest
+				assertEquals( "XQuery: " + query, "value-1", ((XMLResource)result.getResource(0)).getContent());
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			//assertTrue(exceptionThrown);			
+			
 		} catch (XMLDBException e) {
 			System.out.println("testTypedVariables : XMLDBException: "+e);
 			fail(e.getMessage());
