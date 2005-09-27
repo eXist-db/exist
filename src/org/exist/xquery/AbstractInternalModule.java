@@ -141,6 +141,10 @@ public abstract class AbstractInternalModule implements InternalModule {
 		return (Variable)mGlobalVariables.get(qname);
 	}
 	
+    public boolean isVarDeclared(QName qname) {
+        return mGlobalVariables.get(qname) != null;
+    }
+    
 	public void reset() {
 	}
 }

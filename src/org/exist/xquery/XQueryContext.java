@@ -315,8 +315,15 @@ public class XQueryContext {
 		// for the prefix
 		if(prevURI != null)
 		    prefixes.remove(prevURI);
-		namespaces.put(prefix, uri);
-		prefixes.put(uri, prefix);
+        if (uri.length() == 0) {
+            // if an empty namespace is specified, 
+            // remove any existing mapping for this namespace
+            prefixes.remove(uri);
+            namespaces.remove(prefix);
+        } else {
+    		namespaces.put(prefix, uri);
+    		prefixes.put(uri, prefix);
+        }
 	}
 
 	public void declareNamespaces(Map namespaceMap) {
@@ -869,29 +876,26 @@ public class XQueryContext {
 	 */
 	public Variable resolveVariable(QName qname) throws XPathException {
     	Variable var;
-        
-		// check if the variable is declared local
-		var = resolveLocalVariable(qname);
-        
-		// check if the variable is declared in a module
-		if (var == null){
-            Module module = getModule(qname.getNamespaceURI());
-            if(module != null) 
-                var = module.resolveVariable(qname);
-        }
-        
-//		var = (Variable) variables.get(qname);
-
-		// check if the variable is declared global
-		if (var == null) 
-			var = (Variable) globalVariables.get(qname);
-		
-		if (var == null)
-			throw new XPathException("variable $\"" + qname + "\" is not bound");
-        
-		return var;
+    	
+    	// check if the variable is declared local
+    	var = resolveLocalVariable(qname);
+    	
+    	// check if the variable is declared in a module
+    	if (var == null){
+    	    Module module = getModule(qname.getNamespaceURI());
+    	    if(module != null) {
+    	        var = module.resolveVariable(qname);
+    	    }
+    	}
+    	
+    	// check if the variable is declared global
+    	if (var == null) 
+    	    var = (Variable) globalVariables.get(qname);
+    	if (var == null)
+    	    throw new XPathException("variable $\"" + qname + "\" is not bound");
+    	return var;
 	}
-
+    
 	private Variable resolveLocalVariable(QName qname) throws XPathException {
         LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable) contextStack.peek();
 		for(LocalVariable var = lastVar; var != null; var = var.before) {
@@ -903,6 +907,15 @@ public class XQueryContext {
 		return null;
 	}
 	
+    public boolean isVarDeclared(QName qname) {
+        Module module = getModule(qname.getNamespaceURI());
+        if(module != null) {
+            if (module.isVarDeclared(qname))
+                return true;
+        }
+        return globalVariables.get(qname) != null;
+    }
+    
 	/**
 	 * Turn on/off XPath 1.0 backwards compatibility.
 	 * 
@@ -1279,6 +1292,8 @@ public class XQueryContext {
         	throw new XPathException(
         		"error found while loading module from " + location + ": " + e.getMessage(),
         		e);
+        } catch (Exception e) {
+            throw new XPathException("Internal error while loading module: " + location, e);
         }
         declareModuleVars(module);
         return module;

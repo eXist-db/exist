@@ -142,6 +142,12 @@ public class ExternalModuleImpl implements ExternalModule {
 		mGlobalVariables.put(qname, decl);
 	}
 	
+    public boolean isVarDeclared(QName qname) {
+        if (mGlobalVariables.get(qname) != null)
+            return true;
+        return mStaticVariables.get(qname) != null;
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
 	 */

@@ -124,6 +124,8 @@ public interface Module {
 	
     public Variable declareVariable(Variable var);
     
+    public boolean isVarDeclared(QName qname);
+    
 	/**
 	 * Reset the module's internal state for being reused.
 	 *
