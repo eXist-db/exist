@@ -183,7 +183,7 @@ public class XQueryTest extends XMLTestCase {
 			assertEquals( "XQuery: " + query, "foo3", ((XMLResource)result.getResource(0)).getContent());
 			
 			try {
-				exceptionThrown = false;
+				message = "";
 				System.out.println("testVariable 4 ========" );
 				query = "xquery version \"1.0\";\n" 				
 					+ "declare variable $a {\"1st instance\"};\n"
@@ -191,10 +191,20 @@ public class XQueryTest extends XMLTestCase {
 					+ "$a";
 				result = service.query(query);
 			} catch (XMLDBException e) {
-				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			assertTrue(exceptionThrown);
+			assertTrue(message.contains("XQST0049"));
+						
+			System.out.println("testVariable 5: ========" );
+			query = "xquery version \"1.0\";\n" 				
+				+ "declare namespace param=\"param\";\n"				
+				+ "declare function param:f() { $param:a };\n"
+				+ "declare variable $param:a {\"a\"};\n"
+				+ "param:f()";				
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(0)).getContent());
 			
 		} catch (XMLDBException e) {
 			System.out.println("testVariable : XMLDBException: "+e);
@@ -428,7 +438,6 @@ public class XQueryTest extends XMLTestCase {
 			}
 			//assertTrue(exceptionThrown);
 			
-//			TODO : this should not work (binding same prefix to same URI)
 			System.out.println("testNamespace 2: ========" );
 			query = "xquery version \"1.0\";\n" 
 				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
@@ -436,20 +445,13 @@ public class XQueryTest extends XMLTestCase {
 				+ "declare namespace blah=\"blah\";\n"		
 				+ "$blah:param";
 			try {
-				exceptionThrown = false;			
+				message = "";			
 				result = service.query(query);
-				printResult(result);			
-				assertEquals( "XQuery: " + query, 1, result.getSize() );
-				//The earliest !
-				assertEquals( "XQuery: " + query, "value-1", ((XMLResource)result.getResource(0)).getContent());
 			} catch (XMLDBException e) {
-                e.printStackTrace();
-				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			assertTrue(exceptionThrown);
-			
-//			TODO : this should not work (binding same prefix to different URI)
+			assertTrue(message.contains("XQST0033"));
+
 			System.out.println("testNamespace 3: ========" );
 			query = "xquery version \"1.0\";\n" 
 				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
@@ -458,17 +460,12 @@ public class XQueryTest extends XMLTestCase {
 				+ "declare variable $blah:param  {\"value-2\"};\n"			
 				+ "$blah:param";
 			try {
-				exceptionThrown = false;			
+				message = "";			
 				result = service.query(query);
-				printResult(result);				
-				assertEquals( "XQuery: " + query, 1, result.getSize() );
-//					The latest !!!
-				assertEquals( "XQuery: " + query, "value-2", ((XMLResource)result.getResource(0)).getContent());
 			} catch (XMLDBException e) {
-				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			assertTrue(exceptionThrown);	
+			assertTrue(message.contains("XQST0033"));
 			
 		} catch (XMLDBException e) {
 			System.out.println("testNamespace : XMLDBException: "+e);
