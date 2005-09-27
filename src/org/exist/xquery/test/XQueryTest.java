@@ -182,25 +182,6 @@ public class XQueryTest extends XMLTestCase {
 			assertEquals( "XQuery: " + query, 1, result.getSize() );
 			assertEquals( "XQuery: " + query, "foo3", ((XMLResource)result.getResource(0)).getContent());
 			
-		} catch (XMLDBException e) {
-			System.out.println("testVariable : XMLDBException: "+e);
-			fail(e.getMessage());
-		}
-	}		
-	
-	public void testVariable2() {
-		ResourceSet result;
-		String query;
-		XMLResource resu;
-		boolean exceptionThrown;
-		String message;				
-		try {
-			XPathQueryService service =
-				(XPathQueryService) testCollection.getService(
-					"XPathQueryService",
-					"1.0");
-			
-			//TODO : this should not work (variable redeclaration)
 			try {
 				exceptionThrown = false;
 				System.out.println("testVariable 4 ========" );
@@ -209,9 +190,6 @@ public class XQueryTest extends XMLTestCase {
 					+ "declare variable $a {\"2nd instance\"};\n"
 					+ "$a";				
 				result = service.query(query);
-				printResult(result);	
-				assertEquals( "XQuery: " + query, 1, result.getSize() );
-				assertEquals( "XQuery: " + query, "2nd instance", ((XMLResource)result.getResource(0)).getContent());				
 			} catch (XMLDBException e) {
 				exceptionThrown = true;
 				message = e.getMessage();
@@ -297,7 +275,7 @@ public class XQueryTest extends XMLTestCase {
 			System.out.println("testTypedVariables 8: ========" );
 			query = "let $v as item()* := ( <a/> , 1 )\n" 
 				+ "let $w as element()* := $v\n"
-				+ "return $v";		
+				+ "return $w";		
 			try {
 				exceptionThrown = false;
 				result = service.query(query);		
@@ -306,7 +284,82 @@ public class XQueryTest extends XMLTestCase {
 				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			assertTrue(exceptionThrown);			
+			assertTrue(exceptionThrown);	
+			
+			System.out.println("testTypedVariables 9: ========" );
+			query = "declare variable $v as element()* {( <assign/> , <assign/> ) };\n" 
+				+ "declare variable $w { <r>{ $v }</r> };\n"
+				+ "declare variable $x as element()* { $w/assign };\n"
+				+ "$x";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 2, result.getSize() );
+			assertEquals( "XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeType());
+			assertEquals( "XQuery: " + query, "assign", ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeName());
+			
+			System.out.println("testTypedVariables 10: ========" );
+			query = "declare variable $v as node()* { () };\n" 
+			+ "$v";
+			result = service.query(query);		
+			assertEquals( "XQuery: " + query, 0, result.getSize() );
+			
+			System.out.println("testTypedVariables 11: ========" );
+			query = "declare variable $v as item()* { () };\n" 
+			+ "$v";
+			result = service.query(query);		
+			assertEquals( "XQuery: " + query, 0, result.getSize() );			
+
+			System.out.println("testTypedVariables 12: ========" );
+			query = "declare variable $v as empty() { () };\n" 
+			+ "$v";
+			result = service.query(query);		
+			assertEquals( "XQuery: " + query, 0, result.getSize() );			
+			
+			System.out.println("testTypedVariables 13: ========" );
+			query = "declare variable $v as item() { () };\n" 
+			+ "$v";			
+			try {
+				exceptionThrown = false;
+				result = service.query(query);						
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue("XQuery: " + query, exceptionThrown);
+			
+			System.out.println("testTypedVariables 14: ========" );
+			query = "declare variable $v as item()* { ( <a/> , 1 ) }; \n" 
+				+ "$v";
+			result = service.query(query);		
+			assertEquals( "XQuery: " + query, 2, result.getSize() );	
+			assertEquals( "XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeType());
+			assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeName());			
+			assertEquals( "XQuery: " + query, "1", ((XMLResource)result.getResource(1)).getContent());		
+			
+			System.out.println("testTypedVariables 15: ========" );
+			query = "declare variable $v as node()* { ( <a/> , 1 ) };\n" 
+				+ "$v";			
+			try {
+				exceptionThrown = false;
+				result = service.query(query);		
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue(exceptionThrown);	
+			
+			System.out.println("testTypedVariables 16: ========" );
+			query = "declare variable $v as item()* { ( <a/> , 1 ) };\n" 
+				+ "declare variable $w as element()* { $v };\n"
+				+ "$w";		
+			try {
+				exceptionThrown = false;
+				result = service.query(query);		
+				result = service.query(query);		
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue(exceptionThrown);				
 
 		
 		} catch (XMLDBException e) {
@@ -341,6 +394,86 @@ public class XQueryTest extends XMLTestCase {
 			fail(e.getMessage());
 		}
 	}	
+	
+	public void bugtestNamespace() {
+		ResourceSet result;
+		String query;
+		XMLResource resu;
+		boolean exceptionThrown;
+		String message;				
+		try {
+			Resource doc = testCollection.createResource(MODULE_NAME, "BinaryResource");
+			doc.setContent(module);	
+			((EXistResource) doc).setMimeType("application/xquery");
+			testCollection.storeResource(doc);
+			
+			XPathQueryService service =
+				(XPathQueryService) testCollection.getService(
+					"XPathQueryService",
+					"1.0");
+			
+			//TODO : this should not work (empty namespace)
+			System.out.println("testNamespace 1: ========" );
+			query = "xquery version \"1.0\";\n" 				
+				+ "(:: empty namespace ::)\n"
+				+ "declare namespace blah=\"\";\n"					
+				+ "\"OK\"";
+			try {
+				exceptionThrown = false;			
+				result = service.query(query);
+				printResult(result);
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			//assertTrue(exceptionThrown);
+			
+//			TODO : this should not work (binding same prefix to same URI)
+			System.out.println("testNamespace 2: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
+				+ "(:: redefine existing prefix ::)\n"
+				+ "declare namespace blah=\"blah\";\n"		
+				+ "$blah:param";
+			try {
+				exceptionThrown = false;			
+				result = service.query(query);
+				printResult(result);			
+				assertEquals( "XQuery: " + query, 1, result.getSize() );
+				//The earliest !
+				assertEquals( "XQuery: " + query, "value-1", ((XMLResource)result.getResource(0)).getContent());
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			//assertTrue(exceptionThrown);
+			
+//			TODO : this should not work (binding same prefix to different URI)
+			System.out.println("testNamespace 3: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
+				+ "(:: redefine existing prefix ::)\n"
+				+ "declare namespace blah=\"bla\";\n"
+				+ "declare variable $blah:param  {\"value-2\"};\n"			
+				+ "$blah:param";
+			try {
+				exceptionThrown = false;			
+				result = service.query(query);
+				printResult(result);				
+				assertEquals( "XQuery: " + query, 1, result.getSize() );
+//					The latest !!!
+				assertEquals( "XQuery: " + query, "value-2", ((XMLResource)result.getResource(0)).getContent());
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			//assertTrue(exceptionThrown);	
+			
+		} catch (XMLDBException e) {
+			System.out.println("testNamespace : XMLDBException: "+e);
+			fail(e.getMessage());
+		}			
+	}
 
 	public void testModule() {
 		ResourceSet result;
@@ -358,72 +491,17 @@ public class XQueryTest extends XMLTestCase {
 				(XPathQueryService) testCollection.getService(
 					"XPathQueryService",
 					"1.0");
-
-			//TODO : this should not work (empty namespace)
+			
 			System.out.println("testModule 1: ========" );
 			query = "xquery version \"1.0\";\n" 
 				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
-				+ "(:: empty namespace ::)\n"
-				+ "declare namespace blah=\"\";\n"
-				+ "declare variable $blah:param  {\"value-2\"};\n"			
-				+ "$blah:param";
-			try {
-				exceptionThrown = false;			
-				result = service.query(query);
-				printResult(result);
-				assertEquals( "XQuery: " + query, 1, result.getSize() );
-//				The latest
-				assertEquals( "XQuery: " + query, "value-2", ((XMLResource)result.getResource(0)).getContent());
-			} catch (XMLDBException e) {
-				exceptionThrown = true;
-				message = e.getMessage();
-			}
-			assertTrue(exceptionThrown);
+				+ "$blah:param";			
+			result = service.query(query);	
+			printResult(result);	
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "value-1", ((XMLResource)result.getResource(0)).getContent());
 			
-			//TODO : this should not work (namespace redefinition as same)
 			System.out.println("testModule 2: ========" );
-			query = "xquery version \"1.0\";\n" 
-				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
-				+ "(:: redefine namespace ::)\n"
-				+ "declare namespace blah=\"blah\";\n"
-				+ "declare variable $blah:param  {\"value-2\"};\n"			
-				+ "$blah:param";
-			try {
-				exceptionThrown = false;			
-				result = service.query(query);
-				printResult(result);			
-				assertEquals( "XQuery: " + query, 1, result.getSize() );
-				//The earliest !
-				assertEquals( "XQuery: " + query, "value-1", ((XMLResource)result.getResource(0)).getContent());
-			} catch (XMLDBException e) {
-				exceptionThrown = true;
-				message = e.getMessage();
-			}
-			//assertTrue(exceptionThrown);
-			
-			//TODO : this should not work (namespace redefinition as different)
-			System.out.println("testModule 3: ========" );
-			query = "xquery version \"1.0\";\n" 
-				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
-				+ "(:: redefine namespace ::)\n"
-				+ "declare namespace blah=\"bla\";\n"
-				+ "declare variable $blah:param  {\"value-2\"};\n"			
-				+ "$blah:param";
-			try {
-				exceptionThrown = false;			
-				result = service.query(query);
-				printResult(result);				
-				assertEquals( "XQuery: " + query, 1, result.getSize() );
-//				The latest !!!
-				assertEquals( "XQuery: " + query, "value-2", ((XMLResource)result.getResource(0)).getContent());
-			} catch (XMLDBException e) {
-				exceptionThrown = true;
-				message = e.getMessage();
-			}
-			//assertTrue(exceptionThrown);
-			
-			//TODO : this should not work (variable redeclaration)
-			System.out.println("testModule 4: ========" );
 			query = "xquery version \"1.0\";\n" 
 				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
 				+ "(:: redefine variable ::)\n"
@@ -431,15 +509,36 @@ public class XQueryTest extends XMLTestCase {
 				+ "$blah:param";
 			try {
 				exceptionThrown = false;			
-				result = service.query(query);
-				printResult(result);				
-				assertEquals( "XQuery: " + query, 1, result.getSize() );
-//				The earliest
-				assertEquals( "XQuery: " + query, "value-1", ((XMLResource)result.getResource(0)).getContent());
+				result = service.query(query);	
+				printResult(result);	
 			} catch (XMLDBException e) {
 				exceptionThrown = true;
-				message = e.getMessage();
-			}
+				message = e.getMessage();				
+			}			
+			assertTrue(exceptionThrown);
+			
+			System.out.println("testModule 3: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
+				+ "declare namespace blah2=\"blah\";\n"		
+				+ "$blah2:param";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "value-1", ((XMLResource)result.getResource(0)).getContent());	
+			
+			System.out.println("testModule 4: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace blah=\"bla\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"					
+				+ "$blah:param";
+			try {
+				exceptionThrown = false;			
+				result = service.query(query);	
+				printResult(result);	
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();				
+			}			
 			assertTrue(exceptionThrown);			
 			
 		} catch (XMLDBException e) {
@@ -447,7 +546,6 @@ public class XQueryTest extends XMLTestCase {
 			fail(e.getMessage());
 		}
 	}	
-	
 	
 	public void testFunctionDoc() {
 		ResourceSet result;
