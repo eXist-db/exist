@@ -218,6 +218,34 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}	
 	
+	public void testPrecedence() {
+		ResourceSet result;
+		String query;
+		boolean exceptionThrown;
+		String message;		
+		try {
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
+	
+			System.out.println("testPrecedence 1: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "declare namespace blah=\"blah\";\n"
+				+ "declare variable $blah:param  {\"value-1\"};\n"
+				+ "let $blah:param := \"value-2\"\n"
+				+ "(:: FLWOR expressions have a higher precedence than the comma operator ::)\n"
+				+ "return $blah:param, $blah:param ";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 2, result.getSize() );
+			assertEquals( "XQuery: " + query, "value-2", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "value-1", ((XMLResource)result.getResource(1)).getContent());
+		
+		} catch (XMLDBException e) {
+			System.out.println("testTypedVariables : XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}	
+
+	
 	public void testFunctionDoc() {
 		ResourceSet result;
 		String query;
