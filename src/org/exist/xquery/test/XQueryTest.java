@@ -133,7 +133,7 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}
 	
-	public void bugtestVariable() {
+	public void testVariable() {
 		ResourceSet result;
 		String query;
 		XMLResource resu;
@@ -149,7 +149,7 @@ public class XQueryTest extends XMLTestCase {
             query = "xquery version \"1.0\";\n"                 
                 + "declare namespace param=\"param\";\n"
                 + "declare variable $param:a {\"a\"};\n"
-                + "declare function param:a(){$param:a};\n"
+                + "declare function param:a() {$param:a};\n"
                 + "let $param:a := \"b\" \n"
                 + "return ($param:a, $param:a)";            
             result = service.query(query);
@@ -162,7 +162,7 @@ public class XQueryTest extends XMLTestCase {
 			query = "xquery version \"1.0\";\n" 				
 				+ "declare namespace param=\"param\";\n"
 				+ "declare variable $param:a {\"a\"};\n"
-				+ "declare function param:a(){$param:a};\n"
+				+ "declare function param:a() {$param:a};\n"
 				+ "let $param:a := \"b\" \n"
 				+ "return param:a(), param:a()";				
 			result = service.query(query);
@@ -171,10 +171,39 @@ public class XQueryTest extends XMLTestCase {
 			assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(0)).getContent());
 			assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(1)).getContent());
 			
+            System.out.println("testVariable 3: ========" );
+			query = "declare variable $foo {\"foo1\"};\n"				
+				+ "let $foo := \"foo2\" \n"
+				+ "for $bar in (1 to 1) \n"
+				+ "  let $foo := \"foo3\" \n"
+				+ "  return $foo";				
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "foo3", ((XMLResource)result.getResource(0)).getContent());
+			
+		} catch (XMLDBException e) {
+			System.out.println("testVariable : XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}		
+	
+	public void testVariable2() {
+		ResourceSet result;
+		String query;
+		XMLResource resu;
+		boolean exceptionThrown;
+		String message;				
+		try {
+			XPathQueryService service =
+				(XPathQueryService) testCollection.getService(
+					"XPathQueryService",
+					"1.0");
+			
 			//TODO : this should not work (variable redeclaration)
 			try {
 				exceptionThrown = false;
-				System.out.println("testVariable 3: ========" );
+				System.out.println("testVariable 4 ========" );
 				query = "xquery version \"1.0\";\n" 				
 					+ "declare variable $a {\"1st instance\"};\n"
 					+ "declare variable $a {\"2nd instance\"};\n"
@@ -187,15 +216,13 @@ public class XQueryTest extends XMLTestCase {
 				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			//assertTrue("XQuery: " + query, exceptionThrown);			
-
-		
+			//assertTrue("XQuery: " + query, exceptionThrown);
 			
 		} catch (XMLDBException e) {
-			System.out.println("testTypedVariables : XMLDBException: "+e);
+			System.out.println("testVariable : XMLDBException: "+e);
 			fail(e.getMessage());
 		}
-	}		
+	}			
 	
 	public void testTypedVariables() {
 		ResourceSet result;
@@ -315,7 +342,7 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}	
 
-	public void testModule() {
+	public void bugtestModule() {
 		ResourceSet result;
 		String query;
 		XMLResource resu;
@@ -416,7 +443,7 @@ public class XQueryTest extends XMLTestCase {
 			//assertTrue(exceptionThrown);			
 			
 		} catch (XMLDBException e) {
-			System.out.println("testTypedVariables : XMLDBException: "+e);
+			System.out.println("testModule : XMLDBException: "+e);
 			fail(e.getMessage());
 		}
 	}	
