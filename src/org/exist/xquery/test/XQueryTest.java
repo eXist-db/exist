@@ -133,7 +133,7 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}
 	
-	public void testVariable() {
+	public void bugtestVariable() {
 		ResourceSet result;
 		String query;
 		XMLResource resu;
@@ -151,35 +151,44 @@ public class XQueryTest extends XMLTestCase {
                 + "declare variable $param:a {\"a\"};\n"
                 + "declare function param:a(){$param:a};\n"
                 + "let $param:a := \"b\" \n"
-                + "return ($param:a, $param:a)";
-            
+                + "return ($param:a, $param:a)";            
             result = service.query(query);
             printResult(result);
             assertEquals( "XQuery: " + query, 2, result.getSize() );
             assertEquals( "XQuery: " + query, "b", ((XMLResource)result.getResource(0)).getContent());
             assertEquals( "XQuery: " + query, "b", ((XMLResource)result.getResource(1)).getContent());
             
-			//TODO : this should not work (binding should not erase variable)
-			System.out.println("testVariable 2: ========" );
+            System.out.println("testVariable 2: ========" );
 			query = "xquery version \"1.0\";\n" 				
 				+ "declare namespace param=\"param\";\n"
 				+ "declare variable $param:a {\"a\"};\n"
 				+ "declare function param:a(){$param:a};\n"
 				+ "let $param:a := \"b\" \n"
-				+ "return param:a(), param:a()";
+				+ "return param:a(), param:a()";				
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, 2, result.getSize() );
+			assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(1)).getContent());
+			
+			//TODO : this should not work (variable redeclaration)
 			try {
-				exceptionThrown = false;			
+				exceptionThrown = false;
+				System.out.println("testVariable 3: ========" );
+				query = "xquery version \"1.0\";\n" 				
+					+ "declare variable $a {\"1st instance\"};\n"
+					+ "declare variable $a {\"2nd instance\"};\n"
+					+ "$a";				
 				result = service.query(query);
-				printResult(result);
-				assertEquals( "XQuery: " + query, 2, result.getSize() );
-				//should be "a"
-				assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(0)).getContent());
-				assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(1)).getContent());
+				printResult(result);	
+				assertEquals( "XQuery: " + query, 1, result.getSize() );
+				assertEquals( "XQuery: " + query, "2nd instance", ((XMLResource)result.getResource(0)).getContent());				
 			} catch (XMLDBException e) {
 				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			//assertTrue(exceptionThrown);	
+			//assertTrue("XQuery: " + query, exceptionThrown);			
+
 		
 			
 		} catch (XMLDBException e) {
