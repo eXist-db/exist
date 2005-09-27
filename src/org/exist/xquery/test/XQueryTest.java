@@ -133,6 +133,47 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}
 	
+	public void bugtestVariable() {
+		ResourceSet result;
+		String query;
+		XMLResource resu;
+		boolean exceptionThrown;
+		String message;				
+		try {
+			XPathQueryService service =
+				(XPathQueryService) testCollection.getService(
+					"XPathQueryService",
+					"1.0");
+
+			//TODO : this should not work (binding should not erase variable)
+			System.out.println("testVariable 1: ========" );
+			query = "xquery version \"1.0\";\n" 				
+				+ "declare namespace param=\"param\";\n"
+				+ "declare variable $param:a {\"a\"};\n"
+				+ "declare function param:a(){$param:a};\n"
+				+ "let $param:a := \"b\" \n"
+				+ "return param:a(), param:a()";
+			try {
+				exceptionThrown = false;			
+				result = service.query(query);
+				printResult(result);
+				assertEquals( "XQuery: " + query, 2, result.getSize() );
+				//should be "a"
+				assertEquals( "XQuery: " + query, "b", ((XMLResource)result.getResource(0)).getContent());
+				assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(1)).getContent());
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			//assertTrue(exceptionThrown);	
+		
+			
+		} catch (XMLDBException e) {
+			System.out.println("testTypedVariables : XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}		
+	
 	public void testTypedVariables() {
 		ResourceSet result;
 		String query;
@@ -443,7 +484,14 @@ public class XQueryTest extends XMLTestCase {
 			query ="doc-available(\"http://www.w3.org/RDF/dummy\")";	
 			assertEquals( "XQuery: " + query, 1, result.getSize() );
 			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());			
-				
+
+			System.out.println("testFunctionDoc 11: ========" );
+			//A redirected 404
+			query ="doc-available(\"http://java.sun.com/404\")";	
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());			
+
+			
 		} catch (XMLDBException e) {
 			System.out.println("testFunctionDoc : XMLDBException: "+e);
 			fail(e.getMessage());
