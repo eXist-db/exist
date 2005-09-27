@@ -64,7 +64,7 @@ public class DocUtils {
 	public static boolean isDocumentAvailable(XQueryContext context, String path) throws XPathException {
 		try {
 			setDocumentPath(context, path);
-			return (currentDocument != null);
+			return (currentDocument != null && currentDocument.effectiveBooleanValue());
 		}
 		catch (PermissionDeniedException e) {
 			return false;
