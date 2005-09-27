@@ -133,7 +133,7 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}
 	
-	public void bugtestVariable() {
+	public void testVariable() {
 		ResourceSet result;
 		String query;
 		XMLResource resu;
@@ -145,8 +145,22 @@ public class XQueryTest extends XMLTestCase {
 					"XPathQueryService",
 					"1.0");
 
+            System.out.println("testVariable 1: ========" );
+            query = "xquery version \"1.0\";\n"                 
+                + "declare namespace param=\"param\";\n"
+                + "declare variable $param:a {\"a\"};\n"
+                + "declare function param:a(){$param:a};\n"
+                + "let $param:a := \"b\" \n"
+                + "return ($param:a, $param:a)";
+            
+            result = service.query(query);
+            printResult(result);
+            assertEquals( "XQuery: " + query, 2, result.getSize() );
+            assertEquals( "XQuery: " + query, "b", ((XMLResource)result.getResource(0)).getContent());
+            assertEquals( "XQuery: " + query, "b", ((XMLResource)result.getResource(1)).getContent());
+            
 			//TODO : this should not work (binding should not erase variable)
-			System.out.println("testVariable 1: ========" );
+			System.out.println("testVariable 2: ========" );
 			query = "xquery version \"1.0\";\n" 				
 				+ "declare namespace param=\"param\";\n"
 				+ "declare variable $param:a {\"a\"};\n"
@@ -159,7 +173,7 @@ public class XQueryTest extends XMLTestCase {
 				printResult(result);
 				assertEquals( "XQuery: " + query, 2, result.getSize() );
 				//should be "a"
-				assertEquals( "XQuery: " + query, "b", ((XMLResource)result.getResource(0)).getContent());
+				assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(0)).getContent());
 				assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(1)).getContent());
 			} catch (XMLDBException e) {
 				exceptionThrown = true;
@@ -292,7 +306,7 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}	
 
-	public void bugtestModule() {
+	public void testModule() {
 		ResourceSet result;
 		String query;
 		XMLResource resu;

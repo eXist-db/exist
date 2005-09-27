@@ -55,7 +55,7 @@ public class QuantifiedExpression extends BindingExpression {
      * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
      */
     public void analyze(Expression parent, int flags, OrderSpec orderBy[]) throws XPathException {
-        LocalVariable mark = context.markLocalVariables();
+        LocalVariable mark = context.markLocalVariables(false);
 		context.declareVariable(new LocalVariable(QName.parse(context, varName, null)));
 		
 		inputSequence.analyze(this, flags);
@@ -67,7 +67,7 @@ public class QuantifiedExpression extends BindingExpression {
 	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence) throws XPathException {
         if (contextItem != null)
             contextSequence = contextItem.toSequence();
-		LocalVariable mark = context.markLocalVariables();
+		LocalVariable mark = context.markLocalVariables(false);
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
 		context.declareVariable(var);
 		Sequence inSeq = inputSequence.eval(contextSequence);

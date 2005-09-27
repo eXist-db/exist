@@ -64,7 +64,7 @@ public class ForExpr extends BindingExpression {
      */
     public void analyze(Expression parent, int flags, OrderSpec orderBy[]) throws XPathException {
         // Save the local variable stack
-		LocalVariable mark = context.markLocalVariables();
+		LocalVariable mark = context.markLocalVariables(false);
 		
 		inputSequence.analyze(this, flags);
 		
@@ -114,7 +114,7 @@ public class ForExpr extends BindingExpression {
 		Sequence resultSequence)
 		throws XPathException {
 		// Save the local variable stack
-		LocalVariable mark = context.markLocalVariables();
+		LocalVariable mark = context.markLocalVariables(false);
 		
 		// Evaluate the "in" expression
 		Sequence in = inputSequence.eval(null, null);

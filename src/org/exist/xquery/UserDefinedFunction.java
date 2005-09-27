@@ -71,7 +71,7 @@ public class UserDefinedFunction extends Function {
 		if(!inRecursion) {
 			inRecursion = true;
 			// Save the local variable stack
-			LocalVariable mark = context.markLocalVariables();
+			LocalVariable mark = context.markLocalVariables(true);
 			QName varName;
 			LocalVariable var;
 			for(Iterator i = parameters.iterator(); i.hasNext(); ) {
@@ -96,7 +96,7 @@ public class UserDefinedFunction extends Function {
 		Item contextItem)
 		throws XPathException {
 		// Save the local variable stack
-		LocalVariable mark = context.markLocalVariables();
+		LocalVariable mark = context.markLocalVariables(true);
 		
 		QName varName;
 		LocalVariable var;
