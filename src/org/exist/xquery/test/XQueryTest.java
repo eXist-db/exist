@@ -188,7 +188,7 @@ public class XQueryTest extends XMLTestCase {
 				query = "xquery version \"1.0\";\n" 				
 					+ "declare variable $a {\"1st instance\"};\n"
 					+ "declare variable $a {\"2nd instance\"};\n"
-					+ "$a";				
+					+ "$a";
 				result = service.query(query);
 			} catch (XMLDBException e) {
 				exceptionThrown = true;
@@ -395,7 +395,7 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}	
 	
-	public void bugtestNamespace() {
+	public void testNamespace() {
 		ResourceSet result;
 		String query;
 		XMLResource resu;
@@ -443,10 +443,11 @@ public class XQueryTest extends XMLTestCase {
 				//The earliest !
 				assertEquals( "XQuery: " + query, "value-1", ((XMLResource)result.getResource(0)).getContent());
 			} catch (XMLDBException e) {
+                e.printStackTrace();
 				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			//assertTrue(exceptionThrown);
+			assertTrue(exceptionThrown);
 			
 //			TODO : this should not work (binding same prefix to different URI)
 			System.out.println("testNamespace 3: ========" );
@@ -467,7 +468,7 @@ public class XQueryTest extends XMLTestCase {
 				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			//assertTrue(exceptionThrown);	
+			assertTrue(exceptionThrown);	
 			
 		} catch (XMLDBException e) {
 			System.out.println("testNamespace : XMLDBException: "+e);

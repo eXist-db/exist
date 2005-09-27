@@ -9,6 +9,8 @@
 	import java.util.ArrayList;
 	import java.util.List;
 	import java.util.Iterator;
+	import java.util.Map;
+	import java.util.HashMap;
 	import java.util.Stack;
 	import org.exist.storage.BrokerPool;
 	import org.exist.storage.DBBroker;
@@ -48,7 +50,8 @@ public class XQueryTreeParser extends antlr.TreeParser       implements XQueryTr
 	private ExternalModule myModule = null;
 	protected ArrayList exceptions= new ArrayList(2);
 	protected boolean foundError= false;
-
+	protected Map declaredNamespaces = new HashMap();
+	
 	public XQueryTreeParser(XQueryContext context) {
 		this();
 		this.context= context;
@@ -2606,7 +2609,13 @@ public XQueryTreeParser() {
 				uri = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,STRING_LITERAL);
 				_t = _t.getNextSibling();
-				context.declareNamespace(prefix.getText(), uri.getText());
+				
+								if (declaredNamespaces.get(prefix.getText()) != null)
+									throw new XPathException(prefix, "err:XQST0033: Prolog contains " +
+										"multiple declarations for namespace prefix: " + prefix.getText());
+								context.declareNamespace(prefix.getText(), uri.getText());
+								declaredNamespaces.put(prefix.getText(), uri.getText());
+							
 				_t = __t11;
 				_t = _t.getNextSibling();
 				break;
@@ -3106,12 +3115,18 @@ public XQueryTreeParser() {
 				}
 				}
 				
-						                try {
+								if (modulePrefix != null) {
+								if (declaredNamespaces.get(modulePrefix) != null)
+									throw new XPathException(i, "err:XQST0033: Prolog contains " +
+										"multiple declarations for namespace prefix: " + modulePrefix);
+								declaredNamespaces.put(modulePrefix, moduleURI.getText());
+								}
+				try {
 									context.importModule(moduleURI.getText(), modulePrefix, location);
-						                } catch(XPathException xpe) {
-						                    xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
-						                    throw xpe;
-						                }
+				} catch(XPathException xpe) {
+				xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
+				throw xpe;
+				}
 							
 				_t = __t27;
 				_t = _t.getNextSibling();

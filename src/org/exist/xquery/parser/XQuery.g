@@ -256,8 +256,11 @@ setter:
 namespaceDecl
 { String prefix = null; }
 :
-	"declare" "namespace" prefix=ncnameOrKeyword EQ! uri:STRING_LITERAL
-	{ #namespaceDecl= #(#[NAMESPACE_DECL, prefix], uri); }
+	decl:"declare" "namespace" prefix=ncnameOrKeyword EQ! uri:STRING_LITERAL
+	{ 
+		#namespaceDecl= #(#[NAMESPACE_DECL, prefix], uri);
+		#namespaceDecl.copyLexInfo(#decl);
+	}
 	;
 
 varDecl throws XPathException
