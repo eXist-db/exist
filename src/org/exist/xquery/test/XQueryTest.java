@@ -216,7 +216,7 @@ public class XQueryTest extends XMLTestCase {
 				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			//assertTrue("XQuery: " + query, exceptionThrown);
+			assertTrue(exceptionThrown);
 			
 		} catch (XMLDBException e) {
 			System.out.println("testVariable : XMLDBException: "+e);
@@ -342,7 +342,7 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}	
 
-	public void bugtestModule() {
+	public void testModule() {
 		ResourceSet result;
 		String query;
 		XMLResource resu;
@@ -378,7 +378,7 @@ public class XQueryTest extends XMLTestCase {
 				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			//assertTrue(exceptionThrown);
+			assertTrue(exceptionThrown);
 			
 			//TODO : this should not work (namespace redefinition as same)
 			System.out.println("testModule 2: ========" );
@@ -440,7 +440,7 @@ public class XQueryTest extends XMLTestCase {
 				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			//assertTrue(exceptionThrown);			
+			assertTrue(exceptionThrown);			
 			
 		} catch (XMLDBException e) {
 			System.out.println("testModule : XMLDBException: "+e);
