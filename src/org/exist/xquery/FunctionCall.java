@@ -151,7 +151,7 @@ public class FunctionCall extends Function {
         if (context.isProfilingEnabled())
             context.getProfiler().start(this, functionDef.toString());
         functionDef.setArguments(seq);
-        LocalVariable mark = context.markLocalVariables();
+        LocalVariable mark = context.markLocalVariables(true);
         try {
 			Sequence returnSeq = expression.eval(contextSequence, contextItem);
 			return returnSeq;

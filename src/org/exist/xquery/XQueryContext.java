@@ -122,6 +122,8 @@ public class XQueryContext {
 	// The last element in the linked list of local in-scope variables
 	protected LocalVariable lastVar = null;
 	
+    protected Stack contextStack = new Stack();
+    
 	// The current size of the variable stack
 	protected int variableStackSize = 0;
 	
@@ -866,26 +868,35 @@ public class XQueryContext {
 	 * @throws XPathException if the variable is unknown
 	 */
 	public Variable resolveVariable(QName qname) throws XPathException {
-		Variable var;
+    	Variable var;
+        
+		// check if the variable is declared local
 		var = resolveLocalVariable(qname);
+        
 		// check if the variable is declared in a module
-        Module module = getModule(qname.getNamespaceURI());
-        if(module != null) {
-            var = module.resolveVariable(qname);
-            if(var != null)
-                return var;
+		if (var == null){
+            Module module = getModule(qname.getNamespaceURI());
+            if(module != null) 
+                var = module.resolveVariable(qname);
         }
+        
 //		var = (Variable) variables.get(qname);
-		if (var == null) {
+
+		// check if the variable is declared global
+		if (var == null) 
 			var = (Variable) globalVariables.get(qname);
-		}
+		
 		if (var == null)
 			throw new XPathException("variable $\"" + qname + "\" is not bound");
+        
 		return var;
 	}
 
 	private Variable resolveLocalVariable(QName qname) throws XPathException {
+        LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable) contextStack.peek();
 		for(LocalVariable var = lastVar; var != null; var = var.before) {
+            if (var == end)
+                return null;
 			if(qname.equals(var.getQName()))
 				return var;
 		}
@@ -1110,7 +1121,9 @@ public class XQueryContext {
 	 * 
 	 * @return
 	 */
-	public LocalVariable markLocalVariables() {
+	public LocalVariable markLocalVariables(boolean newContext) {
+        if (newContext)
+            contextStack.push(lastVar);
 		variableStackSize++;
 		return lastVar;
 	}
@@ -1122,8 +1135,12 @@ public class XQueryContext {
 	 * @param var
 	 */
 	public void popLocalVariables(LocalVariable var) {
-		if(var != null)
+		if(var != null) {
 			var.after = null;
+            if (!contextStack.isEmpty() && var == contextStack.peek()) {
+                contextStack.pop();
+            }
+        }
 		lastVar = var;
 		variableStackSize--;
 	}

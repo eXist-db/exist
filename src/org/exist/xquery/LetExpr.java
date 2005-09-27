@@ -47,7 +47,7 @@ public class LetExpr extends BindingExpression {
 	 */
 	public void analyze(Expression parent, int flags, OrderSpec orderBy[]) throws XPathException {
         // Save the local variable stack
-		LocalVariable mark = context.markLocalVariables();
+		LocalVariable mark = context.markLocalVariables(false);
 		
 		inputSequence.analyze(this, flags);
 		
@@ -79,7 +79,7 @@ public class LetExpr extends BindingExpression {
 	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence)
 		throws XPathException {
 		// Save the local variable stack
-		LocalVariable mark = context.markLocalVariables();
+		LocalVariable mark = context.markLocalVariables(false);
 		
 		// evaluate input sequence
 		Sequence in = inputSequence.eval(null, null);

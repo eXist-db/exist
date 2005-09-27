@@ -79,11 +79,17 @@ public class ConditionalExpression extends AbstractExpression {
 		Item contextItem)
 		throws XPathException {
 		Sequence testSeq = testExpr.eval(contextSequence, contextItem);
-		if(testSeq.effectiveBooleanValue()) {
-			return thenExpr.eval(contextSequence, contextItem);
-		} else {
-			return elseExpr.eval(contextSequence, contextItem);
-		}
+        try {
+    		if(testSeq.effectiveBooleanValue()) {
+    			return thenExpr.eval(contextSequence, contextItem);
+    		} else {
+    			return elseExpr.eval(contextSequence, contextItem);
+    		}
+        } catch (XPathException e) {
+            if (e.getLine() == 0)
+                e.setASTNode(getASTNode());
+            throw e;
+        }
 	}
 
 	/* (non-Javadoc)
