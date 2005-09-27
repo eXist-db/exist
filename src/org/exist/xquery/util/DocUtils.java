@@ -21,6 +21,11 @@
  */
 package org.exist.xquery.util;
 
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -77,13 +82,23 @@ public class DocUtils {
 	  	//URLs
 		if (path.matches("^[a-z]+://.*")) {
 			try {
+				//Basic tests on the URL				
+				URL url = new URL(path);
+				URLConnection con = url.openConnection();
+				if (con instanceof HttpURLConnection) {
+					HttpURLConnection httpConnection = (HttpURLConnection)con;
+					if (httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK)
+						//TODO : return another type 
+						throw new PermissionDeniedException("Server returned code " + httpConnection.getResponseCode());	
+				}
+				
 				//TODO : process pseudo-protocols URLs more efficiently.
 				org.exist.memtree.DocumentImpl memtreeDoc = null;
 				// we use eXist's in-memory DOM implementation
 				SAXParserFactory factory = SAXParserFactory.newInstance();
 				factory.setNamespaceAware(true);				
-				//TODO : we should be able to cope with context.getBaseURI()
-				InputSource src = new InputSource(path);
+				//TODO : we should be able to cope with context.getBaseURI()				
+				InputSource src = new InputSource(con.getInputStream());
 				SAXParser parser = factory.newSAXParser();
 				XMLReader reader = parser.getXMLReader();
 				SAXAdapter adapter = new SAXAdapter();
@@ -93,7 +108,9 @@ public class DocUtils {
 				memtreeDoc = (org.exist.memtree.DocumentImpl)doc;
 				memtreeDoc.setContext(context);
 				cachedPath = path;
-				currentDocument = memtreeDoc;			
+				currentDocument = memtreeDoc;
+			} catch (MalformedURLException e) {
+				throw new XPathException(e.getMessage(), e);					
 			} catch (ParserConfigurationException e) {				
 				throw new XPathException(e.getMessage(), e);		
 			} catch (SAXException e) {
