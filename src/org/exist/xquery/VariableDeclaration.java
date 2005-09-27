@@ -67,13 +67,13 @@ public class VariableDeclaration extends AbstractExpression {
 		Module myModule = context.getModule(qn.getNamespaceURI());
 		if(myModule != null) {
             if (myModule.isVarDeclared(qn))
-                throw new XPathException("err:XQST0049: It is a static error if more than one " +
-                    "variable declared or imported by a module has the same expanded QName.");
+                throw new XPathException(getASTNode(), "err:XQST0049: It is a static error if more than one " +
+                    "variable declared or imported by a module has the same expanded QName. Variable: " + qn);
 			myModule.declareVariable(qn, null);
         } else {
             if(context.isVarDeclared(qn)) {
-                throw new XPathException("err:XQST0049: It is a static error if more than one " +
-                        "variable declared or imported by a module has the same expanded QName.");
+                throw new XPathException(getASTNode(), "err:XQST0049: It is a static error if more than one " +
+                        "variable declared or imported by a module has the same expanded QName. Variable: " + qn);
             }
 			Variable var = new Variable(qn);
 			context.declareGlobalVariable(var);
