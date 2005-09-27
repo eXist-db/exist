@@ -22,18 +22,7 @@
  */
 package org.exist.xquery.functions;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
-import org.exist.storage.lock.Lock;
-import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -66,9 +55,7 @@ public class FunDocAvailable extends Function {
 				+ "it is resolved relative to the base URI property from the static context."
 				+ "Understands also standard URLs, starting with http:// , file:// , etc.",
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
-	
-	
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));	
 	
 	public FunDocAvailable(XQueryContext context) {
 		super(context, signature);		
