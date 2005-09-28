@@ -24,6 +24,9 @@ public class XQueryTest extends XMLTestCase {
 	private static final String NUMBERS_XML = "numbers.xml";
 	private static final String MODULE1_NAME = "module1.xqm";
 	private static final String MODULE2_NAME = "module2.xqm";
+	private static final String FATHER_MODULE_NAME = "father.xqm";
+	private static final String CHILD1_MODULE_NAME = "child1.xqm";
+	private static final String CHILD2_MODULE_NAME = "child2.xqm";
 	private final static String URI = "xmldb:exist:///db";
 
 	private final static String numbers =
@@ -41,6 +44,22 @@ public class XQueryTest extends XMLTestCase {
 	private final static String module2 =
 		"module namespace foo=\"\";\n"
 		+ "declare variable $foo:bar {\"bar\"};";
+	
+	private final static String fatherModule =
+		"module namespace foo=\"foo\";\n"
+		+ "import module namespace foo1=\"foo1\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n"
+		+ "import module namespace foo2=\"foo2\" at \"" + URI + "/test/" + CHILD2_MODULE_NAME + "\";\n"
+		+ "declare variable $foo:bar { \"bar\" };\n "
+	    + "declare variable $foo:bar1 { $foo1:bar };\n"
+	    + "declare variable $foo:bar2 { $foo2:bar };\n";
+
+	private final static String child1Module =
+		"module namespace foo=\"foo1\";\n"
+		+ "declare variable $foo:bar {\"bar1\"};";	
+
+	private final static String child2Module =
+		"module namespace foo=\"foo2\";\n"
+		+ "declare variable $foo:bar {\"bar2\"};";	
 	
 	private Collection testCollection;
 	private static String attributeXML;
@@ -521,16 +540,32 @@ public class XQueryTest extends XMLTestCase {
 	}
 
 	public void testModule() {
+		Resource doc;
 		ResourceSet result;
 		String query;
 		XMLResource resu;
 		boolean exceptionThrown;
 		String message;				
 		try {
-			Resource doc = testCollection.createResource(MODULE1_NAME, "BinaryResource");
+			doc = testCollection.createResource(MODULE1_NAME, "BinaryResource");
 			doc.setContent(module1);	
 			((EXistResource) doc).setMimeType("application/xquery");
 			testCollection.storeResource(doc);
+			
+			doc = testCollection.createResource(FATHER_MODULE_NAME, "BinaryResource");
+			doc.setContent(fatherModule);	
+			((EXistResource) doc).setMimeType("application/xquery");
+			testCollection.storeResource(doc);
+
+			doc = testCollection.createResource(CHILD1_MODULE_NAME, "BinaryResource");
+			doc.setContent(child1Module);	
+			((EXistResource) doc).setMimeType("application/xquery");
+			testCollection.storeResource(doc);	
+
+			doc = testCollection.createResource(CHILD2_MODULE_NAME, "BinaryResource");
+			doc.setContent(child2Module);	
+			((EXistResource) doc).setMimeType("application/xquery");
+			testCollection.storeResource(doc);			
 			
 			XPathQueryService service =
 				(XPathQueryService) testCollection.getService(
@@ -576,6 +611,49 @@ public class XQueryTest extends XMLTestCase {
 			query = "xquery version \"1.0\";\n" 
 				+ "import module namespace blah=\"bla\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"					
 				+ "$blah:param";
+			try {
+				exceptionThrown = false;			
+				result = service.query(query);	
+				printResult(result);	
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();				
+			}			
+			assertTrue(exceptionThrown);
+			
+			System.out.println("testModule 5: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace foo=\"foo\" at \"" + URI + "/test/" + FATHER_MODULE_NAME + "\";\n"					
+				+ "$foo:bar, $foo:bar1, $foo:bar2";					
+			result = service.query(query);	
+			printResult(result);	
+			assertEquals( "XQuery: " + query, 3, result.getSize() );
+			assertEquals( "XQuery: " + query, "bar", ((XMLResource)result.getResource(0)).getContent());		
+			assertEquals( "XQuery: " + query, "bar1", ((XMLResource)result.getResource(1)).getContent());		
+			assertEquals( "XQuery: " + query, "bar2", ((XMLResource)result.getResource(2)).getContent());		
+			
+//			Non-heritance check
+			System.out.println("testModule 6: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace foo=\"foo\" at \"" + URI + "/test/" + FATHER_MODULE_NAME + "\";\n"
+				+ "declare namespace foo1=\"foo1\"; \n"
+				+ "$foo1:bar";
+			try {
+				exceptionThrown = false;			
+				result = service.query(query);	
+				printResult(result);	
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();				
+			}			
+			assertTrue(exceptionThrown);
+			
+//			Non-heritance check
+			System.out.println("testModule 7: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace foo=\"foo\" at \"" + URI + "/test/" + FATHER_MODULE_NAME + "\";\n"	
+				+ "declare namespace foo2=\"foo2\"; \n"
+				+ "$foo2:bar";
 			try {
 				exceptionThrown = false;			
 				result = service.query(query);	
