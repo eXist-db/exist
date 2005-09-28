@@ -427,7 +427,7 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}	
 	
-	public void bugtestNamespace() {
+	public void testNamespace() {
 		Resource doc;
 		ResourceSet result;
 		String query;
@@ -450,27 +450,11 @@ public class XQueryTest extends XMLTestCase {
 					"XPathQueryService",
 					"1.0");
 			
-//			TODO : this should not work (empty namespace)
 			System.out.println("testNamespace 1: ========" );
-			query = "xquery version \"1.0\";\n" 				
-				+ "(:: empty namespace ::)\n"
-				+ "declare namespace blah=\"\";\n"					
-				+ "\"OK\"";
-			try {
-				exceptionThrown = false;			
-				result = service.query(query);
-				printResult(result);
-			} catch (XMLDBException e) {
-				exceptionThrown = true;
-				message = e.getMessage();
-			}
-			//assertTrue(exceptionThrown);
-			
-			System.out.println("testNamespace 2: ========" );
 			query = "xquery version \"1.0\";\n" 
 				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"
 				+ "(:: redefine existing prefix ::)\n"
-				+ "declare namespace blah=\"blah\";\n"		
+				+ "declare namespace blah=\"bla\";\n"		
 				+ "$blah:param";
 			try {
 				message = "";			
@@ -480,11 +464,11 @@ public class XQueryTest extends XMLTestCase {
 			}
 			assertTrue(message.indexOf("XQST0033") > -1);
 
-			System.out.println("testNamespace 3: ========" );
+			System.out.println("testNamespace 2: ========" );
 			query = "xquery version \"1.0\";\n" 
 				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"
-				+ "(:: redefine existing prefix ::)\n"
-				+ "declare namespace blah=\"bla\";\n"
+				+ "(:: redefine existing prefix with same URI ::)\n"
+				+ "declare namespace blah=\"blah\";\n"
 				+ "declare variable $blah:param  {\"value-2\"};\n"			
 				+ "$blah:param";
 			try {
@@ -494,34 +478,45 @@ public class XQueryTest extends XMLTestCase {
 				message = e.getMessage();
 			}
 			assertTrue(message.indexOf("XQST0033") >  -1);
-			
-//			TODO : this should work (emty namespace allowed)
+
+			System.out.println("testNamespace 3: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace foo=\"\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"
+				+ "$foo:bar";			
 			try {
-				System.out.println("testNamespace 4: ========" );
-				query = "xquery version \"1.0\";\n" 
-					+ "import module namespace foo=\"\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n"
-					+ "$foo:bar";			
+				exceptionThrown = false;
 				result = service.query(query);	
-				printResult(result);	
-				assertEquals( "XQuery: " + query, 1, result.getSize() );
-				assertEquals( "XQuery: " + query, "bar", ((XMLResource)result.getResource(0)).getContent());
 			} catch (XMLDBException e) {
+				exceptionThrown = true;
 				message = e.getMessage();
-			}				
-			
-//			TODO : this should work (emty namespace allowed)		
+			}
+			assertTrue(exceptionThrown);		
+
+			System.out.println("testNamespace 4: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace foo=\"\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n"
+				+ "$bar";			
 			try {
-				System.out.println("testNamespace 5: ========" );
-				query = "xquery version \"1.0\";\n" 
-					+ "import module namespace foo=\"\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n"
-					+ "$bar";			
-				result = service.query(query);	
-				printResult(result);	
-				assertEquals( "XQuery: " + query, 1, result.getSize() );
-				assertEquals( "XQuery: " + query, "bar", ((XMLResource)result.getResource(0)).getContent());			
+				exceptionThrown = false;
+				result = service.query(query);					
 			} catch (XMLDBException e) {
+				exceptionThrown = true;
 				message = e.getMessage();
-			}				
+			}	
+			assertTrue(exceptionThrown);		
+			
+			System.out.println("testNamespace 5: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace foo=\"blah\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n"
+				+ "$bar";			
+			try {
+				exceptionThrown = false;
+				result = service.query(query);					
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}	
+			assertTrue(exceptionThrown);	
 			
 			//Interesting one : let's see with XQuery gurus :-)
 			//declare namespace fn="";
@@ -659,6 +654,22 @@ public class XQueryTest extends XMLTestCase {
 				result = service.query(query);	
 				printResult(result);	
 			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();				
+			}			
+			assertTrue(exceptionThrown);
+			
+			System.out.println("testModule 8: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace foo1=\"foo\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n"	
+				+ "import module namespace foo2=\"foo\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n"	
+				+ "$foo1:bar";
+			try {
+				exceptionThrown = false;			
+				result = service.query(query);	
+				printResult(result);	
+			} catch (XMLDBException e) {
+				//Should be a XQST0047 error
 				exceptionThrown = true;
 				message = e.getMessage();				
 			}			
