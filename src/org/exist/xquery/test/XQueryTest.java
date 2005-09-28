@@ -2,8 +2,6 @@ package org.exist.xquery.test;
 
 import java.io.File;
 
-import junit.framework.TestCase;
-
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
 import org.w3c.dom.Node;
@@ -24,7 +22,8 @@ import org.custommonkey.xmlunit.*;
 public class XQueryTest extends XMLTestCase {
 
 	private static final String NUMBERS_XML = "numbers.xml";
-	private static final String MODULE_NAME = "module.xqm";
+	private static final String MODULE1_NAME = "module1.xqm";
+	private static final String MODULE2_NAME = "module2.xqm";
 	private final static String URI = "xmldb:exist:///db";
 
 	private final static String numbers =
@@ -35,9 +34,13 @@ public class XQueryTest extends XMLTestCase {
 			+ "<item id='4'><price>65.54</price><stock>16</stock></item>"
 			+ "</test>";
 
-	private final static String module =
+	private final static String module1 =
 		"module namespace blah=\"blah\";\n"
 		+ "declare variable $blah:param {\"value-1\"};";
+
+	private final static String module2 =
+		"module namespace foo=\"\";\n"
+		+ "declare variable $foo:bar {\"bar\"};";
 	
 	private Collection testCollection;
 	private static String attributeXML;
@@ -193,7 +196,7 @@ public class XQueryTest extends XMLTestCase {
 			} catch (XMLDBException e) {
 				message = e.getMessage();
 			}
-			assertTrue(message.contains("XQST0049"));
+			assertTrue(message.indexOf("XQST0049") > -1);
 						
 			System.out.println("testVariable 5: ========" );
 			query = "xquery version \"1.0\";\n" 				
@@ -405,24 +408,30 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}	
 	
-	public void testNamespace() {
+	public void bugtestNamespace() {
+		Resource doc;
 		ResourceSet result;
 		String query;
 		XMLResource resu;
 		boolean exceptionThrown;
 		String message;				
 		try {
-			Resource doc = testCollection.createResource(MODULE_NAME, "BinaryResource");
-			doc.setContent(module);	
+			doc = testCollection.createResource(MODULE1_NAME, "BinaryResource");
+			doc.setContent(module1);	
 			((EXistResource) doc).setMimeType("application/xquery");
 			testCollection.storeResource(doc);
+
+			doc = testCollection.createResource(MODULE2_NAME, "BinaryResource");
+			doc.setContent(module2);	
+			((EXistResource) doc).setMimeType("application/xquery");
+			testCollection.storeResource(doc);			
 			
 			XPathQueryService service =
 				(XPathQueryService) testCollection.getService(
 					"XPathQueryService",
 					"1.0");
 			
-			//TODO : this should not work (empty namespace)
+//			TODO : this should not work (empty namespace)
 			System.out.println("testNamespace 1: ========" );
 			query = "xquery version \"1.0\";\n" 				
 				+ "(:: empty namespace ::)\n"
@@ -440,7 +449,7 @@ public class XQueryTest extends XMLTestCase {
 			
 			System.out.println("testNamespace 2: ========" );
 			query = "xquery version \"1.0\";\n" 
-				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
+				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"
 				+ "(:: redefine existing prefix ::)\n"
 				+ "declare namespace blah=\"blah\";\n"		
 				+ "$blah:param";
@@ -450,11 +459,11 @@ public class XQueryTest extends XMLTestCase {
 			} catch (XMLDBException e) {
 				message = e.getMessage();
 			}
-			assertTrue(message.contains("XQST0033"));
+			assertTrue(message.indexOf("XQST0033") > -1);
 
 			System.out.println("testNamespace 3: ========" );
 			query = "xquery version \"1.0\";\n" 
-				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
+				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"
 				+ "(:: redefine existing prefix ::)\n"
 				+ "declare namespace blah=\"bla\";\n"
 				+ "declare variable $blah:param  {\"value-2\"};\n"			
@@ -465,7 +474,45 @@ public class XQueryTest extends XMLTestCase {
 			} catch (XMLDBException e) {
 				message = e.getMessage();
 			}
-			assertTrue(message.contains("XQST0033"));
+			assertTrue(message.indexOf("XQST0033") >  -1);
+			
+//			TODO : this should work (emty namespace allowed)
+			try {
+				System.out.println("testNamespace 4: ========" );
+				query = "xquery version \"1.0\";\n" 
+					+ "import module namespace foo=\"\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n"
+					+ "$foo:bar";			
+				result = service.query(query);	
+				printResult(result);	
+				assertEquals( "XQuery: " + query, 1, result.getSize() );
+				assertEquals( "XQuery: " + query, "bar", ((XMLResource)result.getResource(0)).getContent());
+			} catch (XMLDBException e) {
+				message = e.getMessage();
+			}				
+			
+//			TODO : this should work (emty namespace allowed)		
+			try {
+				System.out.println("testNamespace 5: ========" );
+				query = "xquery version \"1.0\";\n" 
+					+ "import module namespace foo=\"\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n"
+					+ "$bar";			
+				result = service.query(query);	
+				printResult(result);	
+				assertEquals( "XQuery: " + query, 1, result.getSize() );
+				assertEquals( "XQuery: " + query, "bar", ((XMLResource)result.getResource(0)).getContent());			
+			} catch (XMLDBException e) {
+				message = e.getMessage();
+			}				
+			
+			//Interesting one : let's see with XQuery gurus :-)
+			//declare namespace fn="";
+			//fn:current-time()
+			/*
+			 If the URILiteral part of a namespace declaration is a zero-length string, 
+			 any existing namespace binding for the given prefix is removed from 
+			 the statically known namespaces. This feature provides a way 
+			 to remove predeclared namespace prefixes such as local.
+			 */
 			
 		} catch (XMLDBException e) {
 			System.out.println("testNamespace : XMLDBException: "+e);
@@ -480,8 +527,8 @@ public class XQueryTest extends XMLTestCase {
 		boolean exceptionThrown;
 		String message;				
 		try {
-			Resource doc = testCollection.createResource(MODULE_NAME, "BinaryResource");
-			doc.setContent(module);	
+			Resource doc = testCollection.createResource(MODULE1_NAME, "BinaryResource");
+			doc.setContent(module1);	
 			((EXistResource) doc).setMimeType("application/xquery");
 			testCollection.storeResource(doc);
 			
@@ -492,7 +539,7 @@ public class XQueryTest extends XMLTestCase {
 			
 			System.out.println("testModule 1: ========" );
 			query = "xquery version \"1.0\";\n" 
-				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
+				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"
 				+ "$blah:param";			
 			result = service.query(query);	
 			printResult(result);	
@@ -501,7 +548,7 @@ public class XQueryTest extends XMLTestCase {
 			
 			System.out.println("testModule 2: ========" );
 			query = "xquery version \"1.0\";\n" 
-				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
+				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"
 				+ "(:: redefine variable ::)\n"
 				+ "declare variable $blah:param  {\"value-2\"};\n"			
 				+ "$blah:param";
@@ -517,7 +564,7 @@ public class XQueryTest extends XMLTestCase {
 			
 			System.out.println("testModule 3: ========" );
 			query = "xquery version \"1.0\";\n" 
-				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"
+				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"
 				+ "declare namespace blah2=\"blah\";\n"		
 				+ "$blah2:param";
 			result = service.query(query);
@@ -527,7 +574,7 @@ public class XQueryTest extends XMLTestCase {
 			
 			System.out.println("testModule 4: ========" );
 			query = "xquery version \"1.0\";\n" 
-				+ "import module namespace blah=\"bla\" at \"" + URI + "/test/" + MODULE_NAME + "\";\n"					
+				+ "import module namespace blah=\"bla\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"					
 				+ "$blah:param";
 			try {
 				exceptionThrown = false;			
