@@ -27,6 +27,7 @@ public class XQueryTest extends XMLTestCase {
 	private static final String FATHER_MODULE_NAME = "father.xqm";
 	private static final String CHILD1_MODULE_NAME = "child1.xqm";
 	private static final String CHILD2_MODULE_NAME = "child2.xqm";
+	private static final String NAMESPACED_NAME = "namespaced.xml";
 	private final static String URI = "xmldb:exist:///db";
 
 	private final static String numbers =
@@ -55,11 +56,25 @@ public class XQueryTest extends XMLTestCase {
 
 	private final static String child1Module =
 		"module namespace foo=\"foo1\";\n"
+		+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"
 		+ "declare variable $foo:bar {\"bar1\"};";	
 
 	private final static String child2Module =
 		"module namespace foo=\"foo2\";\n"
+		+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"
 		+ "declare variable $foo:bar {\"bar2\"};";	
+	
+	private final static String namespacedDocument =
+		"<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" \n" +	 
+	         "xmlns:dc=\"http://purl.org/dc/elements/1.1/\" \n" +	         
+	         "xmlns:x=\"http://exist.sourceforge.net/dc-ext\"> \n" +	    
+	         "<rdf:Description id=\"3\"> \n" +	        
+	         	"<dc:title>title</dc:title> \n" +
+	         	"<dc:creator>creator</dc:creator> \n" +	        
+	         	"<x:place>place</x:place> \n"  +
+	         	"<x:edition>place</x:edition> \n" +
+	         "</rdf:Description> \n" +
+	         "</rdf:RDF>";
 	
 	private Collection testCollection;
 	private static String attributeXML;
@@ -443,7 +458,12 @@ public class XQueryTest extends XMLTestCase {
 			doc = testCollection.createResource(MODULE2_NAME, "BinaryResource");
 			doc.setContent(module2);	
 			((EXistResource) doc).setMimeType("application/xquery");
-			testCollection.storeResource(doc);			
+			testCollection.storeResource(doc);		
+			
+			doc = testCollection.createResource(NAMESPACED_NAME, "XMLResource");
+			doc.setContent(namespacedDocument);	
+			((EXistResource) doc).setMimeType("text/xml");
+			testCollection.storeResource(doc);					
 			
 			XPathQueryService service =
 				(XPathQueryService) testCollection.getService(
@@ -517,6 +537,23 @@ public class XQueryTest extends XMLTestCase {
 				message = e.getMessage();
 			}	
 			assertTrue(exceptionThrown);	
+			
+			System.out.println("testNamespace 6: ========" );
+			query = "declare namespace x = \"http://www.foo.com\"; \n" +
+				"let $a := doc(\"" + "/db/test/" + NAMESPACED_NAME + "\") \n" +
+                "return $a//x:edition";				
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 0, result.getSize() );
+			
+			System.out.println("testNamespace 7: ========" );
+			query = "declare namespace x = \"http://www.foo.com\"; \n" +
+			    "declare namespace y = \"http://exist.sourceforge.net/dc-ext\"; \n" +
+				"let $a := doc(\"" + "/db/test/" + NAMESPACED_NAME + "\") \n" +
+                "return $a//y:edition";				
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );			
+			assertEquals( "XQuery: " + query, "<x:edition xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:edition>",
+				((XMLResource)result.getResource(0)).getContent());			
 			
 			//Interesting one : let's see with XQuery gurus :-)
 			//declare namespace fn="";

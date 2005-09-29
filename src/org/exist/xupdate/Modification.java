@@ -161,7 +161,7 @@ public abstract class Modification {
 	/**
 	 * @param context
 	 */
-	protected void declareNamespaces(XQueryContext context) {
+	protected void declareNamespaces(XQueryContext context) throws XPathException {
 		Map.Entry entry;
 		for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
 			entry = (Map.Entry) i.next();

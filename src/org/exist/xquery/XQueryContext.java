@@ -305,25 +305,34 @@ public class XQueryContext {
 	 * @param prefix
 	 * @param uri
 	 */
-	public void declareNamespace(String prefix, String uri) {
+	public void declareNamespace(String prefix, String uri) throws XPathException {
 		if (prefix == null)
 			prefix = "";
 		if(uri == null)
 			uri = "";
 		final String prevURI = (String)namespaces.get(prefix);
-		// remove any namespace URI that has been previously declared
-		// for the prefix
-		if(prevURI != null)
-		    prefixes.remove(prevURI);
-        if (uri.length() == 0) {
+		if(prevURI == null ) {		
+			if (uri.length() > 0) {
+				namespaces.put(prefix, uri);
+				prefixes.put(uri, prefix);
+				return;
+			}
+			else {
+				//TODO : check the specs : unbinding an unbound NS may be disallowed.
+				LOG.warn("trying to unbind unbound prefix: " + prefix);
+			}
+		}
+		if (uri.length() == 0) {
             // if an empty namespace is specified, 
             // remove any existing mapping for this namespace
+        	//TODO : improve, since XML_NS can't be unbound
             prefixes.remove(uri);
             namespaces.remove(prefix);
-        } else {
-    		namespaces.put(prefix, uri);
-    		prefixes.put(uri, prefix);
-        }
+            return;
+		}
+		//Forbids rebinding the *same* prefix in a *different* namespace in this *same* context
+		if (!uri.equals(prevURI))
+			throw new XPathException("err:XQST0033: Namespace prefix: \"" + prefix + "\" is already bound to a different uri");	
 	}
 
 	public void declareNamespaces(Map namespaceMap) {
@@ -749,7 +758,9 @@ public class XQueryContext {
 			LOG.warn("error while instantiating module class " + moduleClass, e);
 		} catch (IllegalAccessException e) {
 			LOG.warn("error while instantiating module class " + moduleClass, e);
-		}
+		} catch (XPathException e) {
+			LOG.warn("error while instantiating module class " + moduleClass, e);
+		}		
 		return module;
 	}
 
@@ -1416,6 +1427,10 @@ public class XQueryContext {
 	 */
 	protected void loadDefaults(Configuration config) {
 		this.watchdog = new XQueryWatchDog(this);
+		
+		namespaces = new HashMap();
+		prefixes = new HashMap();
+		/*
 		SymbolTable syms = broker.getSymbols();
 		String[] pfx = syms.defaultPrefixList();
 		namespaces = new HashMap(pfx.length);
@@ -1424,16 +1439,22 @@ public class XQueryContext {
 		for (int i = 0; i < pfx.length; i++) {
 			sym = syms.getDefaultNamespace(pfx[i]);
 			namespaces.put(pfx[i], sym);
-			prefixes.put(sym, pfx[i]);
-		}
+			prefixes.put(sym, pfx[i]);			
+		}	
+		*/			
 
-		// default namespaces
-		declareNamespace("xml", XML_NS);
-		declareNamespace("xs", SCHEMA_NS);
-		declareNamespace("xdt", XPATH_DATATYPES_NS);
-		declareNamespace("local", XQUERY_LOCAL_NS);
-		declareNamespace("fn", Module.BUILTIN_FUNCTION_NS);
-		declareNamespace("exist", EXIST_NS);
+		try {
+			// default namespaces
+			declareNamespace("xml", XML_NS);
+			declareNamespace("xs", SCHEMA_NS);
+			declareNamespace("xdt", XPATH_DATATYPES_NS);
+			declareNamespace("local", XQUERY_LOCAL_NS);
+			declareNamespace("fn", Module.BUILTIN_FUNCTION_NS);
+			//*not* as standard NS
+			declareNamespace("exist", EXIST_NS);
+		} catch (XPathException e) {
+			//TODO : ignored because it should never happen
+		}
 
 		// load built-in modules
 		
@@ -1449,6 +1470,7 @@ public class XQueryContext {
 //				LOG.debug("Loading module " + modules[i][0]);
 				loadBuiltInModule(modules[i][0], modules[i][1]);
 			}
-		}
+		}		
+		
 	}
 }

@@ -794,7 +794,7 @@ public class RESTServer {
 	private void declareVariables(XQueryContext context, HttpServletRequest request, HttpServletResponse response) throws XPathException {
 		RequestWrapper reqw = new HttpRequestWrapper(request, formEncoding, containerEncoding);
 		ResponseWrapper respw = new HttpResponseWrapper(response);
-		context.declareNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
+		//context.declareNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
 		context.declareVariable(RequestModule.PREFIX + ":request", reqw);
 		context.declareVariable(RequestModule.PREFIX + ":response", respw);
 		context.declareVariable(RequestModule.PREFIX + ":session", reqw.getSession());
