@@ -39,6 +39,7 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.UntypedAtomicValue;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -631,7 +632,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @see org.exist.xquery.value.Sequence#getItemType()
      */
     public int getItemType() {
-        return Type.NODE;
+        return getType();
     }
     
     /* (non-Javadoc)
