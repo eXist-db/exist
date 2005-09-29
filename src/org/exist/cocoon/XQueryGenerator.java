@@ -276,7 +276,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 			service.setProperty(EXistOutputKeys.EXPAND_XINCLUDES,
 					expandXIncludes ? "yes" : "no");
 			service.setProperty("base-uri", baseURI);
-			service.setNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
+			//service.setNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
 			service.setModuleLoadPath(baseURI);
 			if(!((CollectionImpl)collection).isRemoteCollection()) {
 				HttpServletRequest httpRequest = (HttpServletRequest) objectModel

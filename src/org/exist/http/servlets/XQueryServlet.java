@@ -232,7 +232,7 @@ public class XQueryServlet extends HttpServlet {
 			service.setProperty("base-uri", baseURI);
 			service.setModuleLoadPath(moduleLoadPath);
 			String prefix = RequestModule.PREFIX;
-			service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
+			//service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
             if(!((CollectionImpl)collection).isRemoteCollection()) {
     			service.declareVariable(prefix + ":request", 
     					new HttpRequestWrapper(request, formEncoding, containerEncoding));
