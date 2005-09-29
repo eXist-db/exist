@@ -78,61 +78,66 @@ public class LetExpr extends BindingExpression {
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence)
 		throws XPathException {
-		// Save the local variable stack
-		LocalVariable mark = context.markLocalVariables(false);
-		
-		// evaluate input sequence
-		Sequence in = inputSequence.eval(null, null);
-		
-		// Declare the iteration variable
-		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
-        var.setSequenceType(sequenceType);
-		context.declareVariable(var);
-		clearContext(in);
-		var.setValue(in);
-        var.checkType();
-        
-		Sequence filtered = null;
-		if (whereExpr != null) {
-			filtered = applyWhereExpression(null);
-			// TODO: don't use returnsType here
-			if (filtered.getItemType() == Type.BOOLEAN) {
-				if (!filtered.effectiveBooleanValue())
+		try {
+			// Save the local variable stack
+			LocalVariable mark = context.markLocalVariables(false);
+			
+			// evaluate input sequence
+			Sequence in = inputSequence.eval(null, null);
+			
+			// Declare the iteration variable
+			LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
+			var.setSequenceType(sequenceType);
+			context.declareVariable(var);
+			clearContext(in);
+			var.setValue(in);
+			var.checkType();
+			
+			Sequence filtered = null;
+			if (whereExpr != null) {
+				filtered = applyWhereExpression(null);
+				// TODO: don't use returnsType here
+				if (filtered.getItemType() == Type.BOOLEAN) {
+					if (!filtered.effectiveBooleanValue())
+						return Sequence.EMPTY_SEQUENCE;
+				} else if (filtered.getLength() == 0)
 					return Sequence.EMPTY_SEQUENCE;
-			} else if (filtered.getLength() == 0)
-				return Sequence.EMPTY_SEQUENCE;
-		}
-		
-		// Check if we can speed up the processing of the "order by" clause.
-		boolean fastOrderBy = checkOrderSpecs(in);
-		
-		//	PreorderedValueSequence applies the order specs to all items
-		// in one single processing step
-		if(fastOrderBy) {
-			in = new PreorderedValueSequence(orderSpecs, in.toNodeSet());
-		}
-		
-		// Otherwise, if there's an order by clause, wrap the result into
-		// an OrderedValueSequence. OrderedValueSequence will compute
-		// order expressions for every item when it is added to the result sequence.
-		if(resultSequence == null) {
+			}
+			
+			// Check if we can speed up the processing of the "order by" clause.
+			boolean fastOrderBy = checkOrderSpecs(in);
+			
+			//	PreorderedValueSequence applies the order specs to all items
+			// in one single processing step
+			if(fastOrderBy) {
+				in = new PreorderedValueSequence(orderSpecs, in.toNodeSet());
+			}
+			
+			// Otherwise, if there's an order by clause, wrap the result into
+			// an OrderedValueSequence. OrderedValueSequence will compute
+			// order expressions for every item when it is added to the result sequence.
+			if(resultSequence == null) {
+				if(orderSpecs != null && !fastOrderBy)
+					resultSequence = new OrderedValueSequence(orderSpecs, in.getLength());
+				else
+					resultSequence = new ValueSequence();
+			}
+			
+			if(returnExpr instanceof BindingExpression) {
+				((BindingExpression)returnExpr).eval(null, null, resultSequence);
+			} else {
+				in = returnExpr.eval(null);
+				resultSequence.addAll(in);
+			}
 			if(orderSpecs != null && !fastOrderBy)
-				resultSequence = new OrderedValueSequence(orderSpecs, in.getLength());
-			else
-				resultSequence = new ValueSequence();
+				((OrderedValueSequence)resultSequence).sort();
+			
+			// Restore the local variable stack
+			context.popLocalVariables(mark);
+		} catch (XPathException e) {
+			// add stack trace information (line numbers)
+			throw new XPathException(getASTNode(), e.getMessage(), e);
 		}
-		
-		if(returnExpr instanceof BindingExpression) {
-			((BindingExpression)returnExpr).eval(null, null, resultSequence);
-		} else {
-			in = returnExpr.eval(null);
-			resultSequence.addAll(in);
-		}
-		if(orderSpecs != null && !fastOrderBy)
-			((OrderedValueSequence)resultSequence).sort();
-		
-		// Restore the local variable stack
-		context.popLocalVariables(mark);
 		return resultSequence;
 	}
 
