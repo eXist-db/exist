@@ -177,7 +177,7 @@ public class DatabaseImpl implements Database {
     private Collection getRemoteCollection(String user, String password, String c) throws XMLDBException {
         // use remote database via XML-RPC
         mode = REMOTE;
-        String address = DEFAULT_HOST;
+        String address = null;
         if ( user == null ) {
             user = "guest";
             password = "guest";
@@ -190,10 +190,10 @@ public class DatabaseImpl implements Database {
             if(address.charAt(address.length() - 1) == '/')
             	address = address.substring(0, address.length() - 1);
             c = c.substring( p );
-        }
-        else
+        } else
             throw new XMLDBException( ErrorCodes.INVALID_DATABASE,
-                "malformed url: " + address );
+                "Malformed URI: cannot determine host or collection part in URI: " + c +
+                ". The collection path should always start with /db.");
         XmlRpcClient rpcClient = getRpcClient(user, password, address);
         return readCollection( c, rpcClient, address );
     }
