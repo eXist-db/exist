@@ -100,6 +100,11 @@ public class ExtCollection extends Function {
             // document set
 		    return cached;
         }
+        
+        if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
+            context.getProfiler().start(this, "fn:collection: loading documents");
+        }
+        
 		// check if the loaded documents should remain locked
         boolean lockOnLoad = context.lockDocumentsOnLoad();
         
@@ -108,8 +113,10 @@ public class ExtCollection extends Function {
 		for (int i = 0; i < args.size(); i++) {
 			String next = (String)args.get(i);
 		    Collection coll = context.getBroker().getCollection(next);
+            context.getProfiler().start(this, "fn:collection: loading collection: " + args.get(i));
 		    if(coll != null)
 		    	coll.allDocs(context.getBroker(), docs, includeSubCollections, true);
+            context.getProfiler().end(this, "fn:collection: loading collection: " + args.get(i));
 		}
         
         // iterate through all docs and create the node set
@@ -135,6 +142,10 @@ public class ExtCollection extends Function {
 		}
 		cached = result;
 		cachedArgs = args;
+        
+        if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
+            context.getProfiler().end(this, "fn:collection: loading documents");
+        }
 		return result;
 	}
 	
