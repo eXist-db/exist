@@ -47,7 +47,7 @@ public class DescendantSelector implements NodeSelector {
 	public NodeProxy match(DocumentImpl doc, long gid) {
 		NodeProxy p;
 		if((p = context.parentWithChild(doc, gid, false, false,
-				NodeProxy.TO_BE_COMPUTED )) != null) {
+				NodeProxy.UNKNOWN_NODE_LEVEL )) != null) {
 		    NodeProxy newNode = new NodeProxy(doc, gid);
 			if (rememberContext)
 				newNode.addContextNode(p);
