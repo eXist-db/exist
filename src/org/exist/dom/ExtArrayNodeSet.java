@@ -27,6 +27,7 @@ import java.util.Iterator;
 import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
 import org.exist.util.Range;
+import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -202,7 +203,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * @see org.exist.dom.NodeSet#iterator()
      */
     public Iterator iterator() {
-        sort();
+        if (!isSorted())
+            sort();
         return new ExtArrayIterator();
     }
 
@@ -222,7 +224,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
      */
     public SequenceIterator unorderedIterator() {
-        sort();
+        if (!isSorted())
+            sort();
         return new ExtArrayIterator();
     }
 
@@ -269,7 +272,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * @see org.exist.xquery.value.Sequence#getLength()
      */
     public int getLength() {
-        sort(); // sort to remove duplicates
+        if (!isSorted())
+            sort(); // sort to remove duplicates
         return size;
     }
 
@@ -358,6 +362,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         return part.getChildrenInSet(parent, mode, rememberContext);
     }
 
+    private boolean isSorted() {
+        return isSorted || isInDocumentOrder;
+    }
+    
     public void sort() {
 //              long start = System.currentTimeMillis();
         if (isSorted)
@@ -617,6 +625,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                             array[i].addContextNode(parent);
                         else
                             array[i].copyContext(parent);
+                        array[i].addMatches(parent);
                         result.add(array[i], range.getDistance());
                         break;
                     case NodeSet.ANCESTOR :
@@ -624,6 +633,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                             parent.addContextNode(array[i]);
                         else
                             parent.copyContext(array[i]);
+                        parent.addMatches(array[i]);
                         result.add(parent, 1);
                         break;
                 }
