@@ -71,7 +71,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	public static final int UNKNOWN_NODE_LEVEL = -1;
 	public static final int UNKNOWN_NODE_TYPE = -1;
 	public static final int UNKNOWN_NODE_GID = 0;
-	public static final int UNKNOWN_NODE_ADDRESS = 0;
+	public static final int UNKNOWN_NODE_ADDRESS = -1;
 	
 	/**
 	 * The owner document of this node.
