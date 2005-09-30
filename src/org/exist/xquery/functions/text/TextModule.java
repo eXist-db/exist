@@ -42,7 +42,9 @@ public class TextModule extends AbstractInternalModule {
 		new FunctionDef(TextRank.signature, TextRank.class),
 		new FunctionDef(MatchCount.signature, MatchCount.class),
         new FunctionDef(IndexTerms.signature, IndexTerms.class),
-        new FunctionDef(HighlightMatches.signature, HighlightMatches.class)
+        new FunctionDef(HighlightMatches.signature, HighlightMatches.class),
+        new FunctionDef(KWICDisplay.signatures[0], KWICDisplay.class),
+        new FunctionDef(KWICDisplay.signatures[1], KWICDisplay.class)
 	};
 	
 	/**
