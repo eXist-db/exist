@@ -63,14 +63,16 @@ import org.xml.sax.SAXException;
  */
 public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	
-	/** special value for gid: means document node */
-	public static final int DOCUMENT_NODE_GID = -1;
-	/** special value for gid: means document element node */
+	/* 
+	 * Special values for nodes gid :
+	 * Chosen in order to facilitate fast arithmetic computations
+	 */	
+	public static final int DOCUMENT_NODE_GID = -1;	
+	public static final int UNKNOWN_NODE_GID = 0;	
 	public static final int DOCUMENT_ELEMENT_GID = 1;
 	
 	public static final int UNKNOWN_NODE_LEVEL = -1;
-	public static final int UNKNOWN_NODE_TYPE = -1;
-	public static final int UNKNOWN_NODE_GID = 0;
+	public static final int UNKNOWN_NODE_TYPE = -1;	
 	public static final int UNKNOWN_NODE_ADDRESS = -1;
 	
 	/**
@@ -82,6 +84,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * The unique internal id of this node in the document, if known.
 	 * @link #UNKNOWN_NODE_GID
 	 * @link #DOCUMENT_NODE_GID
+	 * @link #DOCUMENT_ELEMENT_GID
 	 */
 	public long gid = UNKNOWN_NODE_GID;
 
