@@ -191,13 +191,12 @@ public abstract class AbstractSequence implements Sequence {
 	
 	public void setSelfAsContext() {
 		Item next;
+        NodeValue node;
 		for (SequenceIterator i = unorderedIterator(); i.hasNext();) {
 			next = i.nextItem();
 			if(Type.subTypeOf(next.getType(), Type.NODE)) {
-				if (next instanceof NodeProxy) {
-					NodeProxy n = (NodeProxy)next;
-					n.addContextNode(n);
-				}
+                node = (NodeValue) next;
+                node.addContextNode(node);
 			}
 		}
 	}

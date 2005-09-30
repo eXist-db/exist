@@ -655,7 +655,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public NodeSet union(NodeSet other) {
-		ArraySet result = new ArraySet(getLength() + other.getLength());
+        ExtArrayNodeSet result = new ExtArrayNodeSet();
 		result.addAll(other);
 		NodeProxy p, c;
 		for (Iterator i = iterator(); i.hasNext();) {

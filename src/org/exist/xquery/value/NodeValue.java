@@ -78,6 +78,8 @@ public interface NodeValue extends Item, Sequence {
 	 */
 	public int getImplementationType();
 	
+    public void addContextNode(NodeValue node);
+    
 	public Node getNode();
 	
 	public Document getOwnerDocument();

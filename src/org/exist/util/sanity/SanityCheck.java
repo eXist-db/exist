@@ -73,6 +73,18 @@ public class SanityCheck {
         showTrace(failure);
     }
     
+    public final static void PRINT_STACK(int level) {
+        StackTraceElement elements[] = new Exception("Trace").getStackTrace();
+        if (level > elements.length)
+            level = elements.length;
+        StringBuffer buf = new StringBuffer();
+        for (int i = 1; i < level; i++) {
+            buf.append('\n');
+            buf.append(elements[i].toString());
+        }
+        LOG.debug(buf.toString());
+    }
+    
     private final static void showTrace(AssertFailure failure) {
         StringWriter sout = new StringWriter();
         PrintWriter out = new PrintWriter(sout);

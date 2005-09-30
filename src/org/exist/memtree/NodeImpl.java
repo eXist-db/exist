@@ -170,6 +170,9 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 		return document.getNode(next);
 	}
 
+    public void addContextNode(NodeValue node) {
+    }
+    
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */

@@ -432,19 +432,6 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		}
 	}
 
-	public void printMatches(Match m) {
-		System.out.print(gid);
-		System.out.print(": ");
-		Match next = m;
-		while (next != null) {
-			System.out.print(next.getMatchingTerm() + " [" + next.getNodeId() + "] ");
-			System.out.print("-> " + (next.nextMatch == null ? "null" : next.nextMatch.getMatchingTerm()));
-			System.out.print(" ");
-			next = next.nextMatch;
-		}
-		System.out.println();
-	}
-
 	/**
 	 * Add a node to the list of context nodes for this node.
 	 * 
@@ -463,22 +450,25 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * context nodes returned by the filter expression and compare them to its context
 	 * node set.
 	 */
-	public void addContextNode(NodeProxy node) {
-		if (context == null) {
-			context = new ContextItem(node);
-			return;
-		}
-		ContextItem next = context;
-		while (next != null) {
-			if (next.getNode().gid == node.gid)
-				break;
-			if (next.getNextItem() == null) {
-				next.setNextItem(new ContextItem(node));
-				break;
-			}
-			next = next.getNextItem();
-		}
-	}
+    public void addContextNode(NodeValue node) {
+        if (node.getImplementationType() != NodeValue.PERSISTENT_NODE)
+            return;
+        NodeProxy proxy = (NodeProxy) node;
+        if (context == null) {
+            context = new ContextItem(proxy);
+            return;
+        }
+        ContextItem next = context;
+        while (next != null) {
+            if (next.getNode().gid == proxy.gid)
+                break;
+            if (next.getNextItem() == null) {
+                next.setNextItem(new ContextItem(proxy));
+                break;
+            }
+            next = next.getNextItem();
+        }
+    }
 
 	public void printContext() {
 		ContextItem next = context;

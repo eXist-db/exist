@@ -22,7 +22,10 @@
  */
 package org.exist.storage.serializers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -42,6 +45,8 @@ import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
+import org.exist.util.FastQSort;
+import org.exist.util.XMLString;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.xquery.value.Type;
@@ -142,18 +147,14 @@ public class NativeSerializer extends Serializer {
 	        if (((ElementImpl) node).declaresNamespacePrefixes()) {
 	        	// declare namespaces used by this element
 	        	String prefix, uri;
-	        	for (Iterator i = ((ElementImpl) node).getPrefixes(); i
-	        	.hasNext();) {
+	        	for (Iterator i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
 	        		prefix = (String) i.next();
 	        		if (prefix.length() == 0) {
-	        			defaultNS = ((ElementImpl) node)
-						.getNamespaceForPrefix(prefix);
+	        			defaultNS = ((ElementImpl) node).getNamespaceForPrefix(prefix);
 	        			receiver.startPrefixMapping("", defaultNS);
 	        			namespaces.add(defaultNS);
 	        		} else {
-	        			uri = ((ElementImpl) node)
-						.getNamespaceForPrefix(prefix);
-	        			if (uri.equals(EXIST_NS)) continue;
+	        			uri = ((ElementImpl) node).getNamespaceForPrefix(prefix);
 	        			receiver.startPrefixMapping(prefix, uri);
 	        			namespaces.add(uri);
 	        		}
@@ -220,9 +221,8 @@ public class NativeSerializer extends Serializer {
                 }
                 receiver.startElement(TEXT_ELEMENT, tattribs);
             }
-            if ((getHighlightingMode() & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES
-                    && (cdata = processText((TextImpl) node, gid, match)) != null)
-                textToReceiver(cdata, receiver);
+            if ((getHighlightingMode() & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES)
+                textToReceiver((TextImpl) node, gid, match);
             else {
                 receiver.characters(((TextImpl) node).getXMLString());
             }
@@ -283,7 +283,7 @@ public class NativeSerializer extends Serializer {
                     expr.append("\\b(");
                 }
                 if (expr.length() > 5) expr.append('|');
-                expr.append(next.getMatchingTerm());
+                expr.append("");
             }
             next = next.getNextMatch();
         }
@@ -296,31 +296,48 @@ public class NativeSerializer extends Serializer {
         return data;
     }
 
-    private final String processText(TextImpl text, long gid, Match match) {
-        if (match == null) return null;
-        // prepare a regular expression to mark match-terms
-        StringBuffer expr = null;
-        Match next = match;
-        while (next != null) {
-            if (next.getNodeId() == gid) {
-                if (expr == null) {
-                    expr = new StringBuffer();
-                    expr.append("\\b(");
+    private final void textToReceiver(TextImpl text, long gid, Match match) throws SAXException {
+        if (match == null) {
+            receiver.characters(text.getXMLString());
+        } else {
+            List offsets = null;
+            Match next = match;
+            while (next != null) {
+                if (next.getNodeId() == gid) {
+                    if (offsets == null)
+                        offsets = new ArrayList();
+                    int freq = next.getFrequency();
+                    for (int i = 0; i < freq; i++) {
+                        offsets.add(next.getOffset(i));
+                    }
                 }
-                if (expr.length() > 5) expr.append('|');
-                expr.append(next.getMatchingTerm());
+                next = next.getNextMatch();
             }
-            next = next.getNextMatch();
+            
+            if (offsets != null) {
+                FastQSort.sort(offsets, 0, offsets.size() - 1);
+                
+                XMLString str = text.getXMLString();
+                Match.Offset offset;
+                int pos = 0;
+                for (int i = 0; i < offsets.size(); i++) {
+                    offset = (Match.Offset) offsets.get(i);
+                    if (offset.getOffset() > pos) {
+                        receiver.characters(str.substring(pos, offset.getOffset() - pos));
+                    }
+                    receiver.startElement(MATCH_ELEMENT, null);
+                    receiver.characters(str.substring(offset.getOffset(), offset.getLength()));
+                    receiver.endElement(MATCH_ELEMENT);
+                    pos = offset.getOffset() + offset.getLength();
+                }
+                if (pos < str.length())
+                    receiver.characters(str.substring(pos, str.length() - pos));
+            } else {
+                receiver.characters(text.getXMLString());
+            }
         }
-        if (expr != null) {
-            expr.append(")\\b");
-            Pattern pattern = Pattern.compile(expr.toString(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-            Matcher matcher = pattern.matcher(text.getData());
-            return matcher.replaceAll("||$1||");
-        } else
-            return null;
     }
-
+    
     private final void textToReceiver(String data, Receiver receiver)
             throws SAXException {
         int p0 = 0, p1;

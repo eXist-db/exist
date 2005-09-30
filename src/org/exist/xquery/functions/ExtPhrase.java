@@ -128,6 +128,8 @@ public class ExtPhrase extends ExtFulltext {
 				// if current gid has not been previously processed
 				if(!matchGid.contains(new Long(gid))) {
 					NodeProxy mcurrent = new NodeProxy(current.doc, gid);
+                    Match match = null;
+                    int firstOffset = -1;
 					// add it in gid array
 					matchGid.add(new Long(gid));
 					value = mcurrent.getNodeValue();
@@ -144,29 +146,37 @@ public class ExtPhrase extends ExtFulltext {
 							j++;
 							if (j == terms.length) {
 								// all terms found
+                                if (match == null)
+                                    match = new Match(gid, matchTerm);
+                                if (firstOffset < 0)
+                                    firstOffset = token.startOffset();
+                                match.addOffset(firstOffset, token.endOffset() - firstOffset);
 								frequency++;
 								// start again on fist term
 								j=0;
 								term = terms[j];
 								continue;
-							} else
+							} else {
 								term = terms[j];
+                                if (firstOffset < 0)
+                                    firstOffset = token.startOffset();
+                            }
 						} else if (j > 0 && word.equalsIgnoreCase(terms[0])) {
 							// first search term found: start again
 							j=1;
 							term = terms[j];
+                            firstOffset = token.startOffset();
 							continue;
 						} else {
 							//	reset
 							j = 0;
+                            firstOffset = -1;
 							term = terms[j];
 						}
 					}
 					// if phrase found
 					if(frequency!=0) {
 						// add new match to current
-						Match match = new Match(matchTerm, gid);
-						match.setFrequency(frequency); 
 						current.addMatch(match);
 						// add current to result
 						r.add(current);
@@ -256,10 +266,10 @@ public class ExtPhrase extends ExtFulltext {
 								if(matchTable.containsKey(matchTerm)) {
 									// previously found matchTerm
 									Match match = (Match)(matchTable.get(matchTerm));
-									match.setFrequency((match.getFrequency())+1	);
+                                    match.addOffset(token.startOffset(), matchTerm.length());
 								} else {
-									Match match = new Match(matchTerm, gid);
-									match.setFrequency(1);
+									Match match = new Match(gid, matchTerm);
+                                    match.addOffset(token.startOffset(), matchTerm.length());
 									matchTable.put(matchTerm,match);
 								}
 								// start again on fist term
