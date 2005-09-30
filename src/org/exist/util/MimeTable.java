@@ -59,8 +59,8 @@ public class MimeTable {
     private static final String FILE_LOAD_FAILED_ERR = "Failed to load mime-type table from ";
     private static final String LOAD_FAILED_ERR = "Failed to load mime-type table from class loader";
     
-    private static final String MIME_TYPES_XML_DEFAULT = "org/exist/util/mime-types.xml";
     private static final String MIME_TYPES_XML = "mime-types.xml";
+    private static final String MIME_TYPES_XML_DEFAULT = "org/exist/util/" + MIME_TYPES_XML;    
     
     private static MimeTable instance = null;
     
@@ -114,10 +114,10 @@ public class MimeTable {
         boolean loaded = false;
         String home = System.getProperty("exist.home");
         if (home != null) {
-            File f = new File(home + File.separatorChar + MIME_TYPES_XML);
+            File f = new File(home + File.separator + MIME_TYPES_XML);
             if (f.canRead()) {
                 try {
-                    System.err.println("Loading mime table from file " + f.getAbsolutePath());
+                    System.out.println("Loading mime table from file " + f.getAbsolutePath());
                     loadMimeTypes(new FileInputStream(f));
                     loaded = true;
                 } catch (FileNotFoundException e) {

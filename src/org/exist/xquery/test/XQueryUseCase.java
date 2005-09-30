@@ -81,18 +81,18 @@ public class XQueryUseCase {
 			}
 		});
 		for(int i = 0; i < files.length; i++) {
-			System.err.println("processing use-case: " + files[i].getAbsolutePath());
-			System.err.println("========================================================================");
+			System.out.println("processing use-case: " + files[i].getAbsolutePath());
+			System.out.println("========================================================================");
 			String query = readQuery(files[i]);
-			System.err.println(query);
-			System.err.println("_________________________________________________________________________________");
+			System.out.println(query);
+			System.out.println("_________________________________________________________________________________");
 			XQueryService service = (XQueryService)root.getService("XQueryService", "1.0");
 			ResourceSet results;
 			try {
 				results = service.query(query);
 				for(int j = 0; j < results.getSize(); j++) {
 					String output = (String)results.getResource(j).getContent();
-					System.err.println(output);
+					System.out.println(output);
 				}
 			} catch (Exception e) {
 				Throwable cause = e.getCause();
@@ -107,7 +107,7 @@ public class XQueryUseCase {
 				// rethrow for JUnit reporting
 				throw e;
 			}
-			System.err.println("========================================================================");
+			System.out.println("========================================================================");
 		}
 	}
 	
