@@ -148,7 +148,7 @@ public class NodeSetHelper {
 						sizeHint = dl.getSizeHint(lastDoc);
 					}
 					if ((p = al.parentWithChild(n.getDocument(), n.gid, false, includeSelf,
-							NodeProxy.TO_BE_COMPUTED ))
+							NodeProxy.UNKNOWN_NODE_LEVEL ))
 						!= null) {
 						if (rememberContext)
 							n.addContextNode(p);
@@ -167,7 +167,7 @@ public class NodeSetHelper {
 						sizeHint = al.getSizeHint(lastDoc);
 					}
 					p = al.parentWithChild(n.getDocument(), n.gid, false, includeSelf,
-							NodeProxy.TO_BE_COMPUTED );
+							NodeProxy.UNKNOWN_NODE_LEVEL );
 					if (p != null) {
 						if (rememberContext)
 							p.addContextNode(n);

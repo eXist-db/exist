@@ -406,9 +406,17 @@ public class XQueryTest extends XMLTestCase {
 				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			assertTrue(exceptionThrown);				
-
-		
+			assertTrue(exceptionThrown);
+			
+			System.out.println("testTypedVariables 15: ========" );
+			query = "let $v as document-node() :=  doc(\"" + "/db/test/" + NUMBERS_XML + "\") \n" 
+				+ "return $v";
+			result = service.query(query);		
+			assertEquals( "XQuery: " + query, 1, result.getSize() );	
+			//TODO : no way to test the node type ?
+			//assertEquals( "XQuery: " + query, Node.DOCUMENT_NODE, ((XMLResource)result.getResource(0)));
+			assertEquals( "XQuery: " + query, "test", ((XMLResource)result.getResource(0)).getContentAsDOM().getNodeName());			
+				
 		} catch (XMLDBException e) {
 			System.out.println("testTypedVariables : XMLDBException: "+e);
 			fail(e.getMessage());

@@ -833,7 +833,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "reference node not found");
 		last = childList[idx];
 		NodeImpl prev = (NodeImpl) broker.objectWith(
-				new NodeProxy(this, NodeProxy.UNKNOWN_GID, last));
+				new NodeProxy(this, NodeProxy.UNKNOWN_NODE_GID, last));
 		for (int i = 0; i < nodes.getLength(); i++) {
 			prev = (NodeImpl) appendChild(null, prev, nodes.item(i));
 			++children;
@@ -860,7 +860,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		if (last < 0)
 			throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "reference node not found");
 		NodeImpl prev = getLastNode( (NodeImpl) broker.objectWith(
-				new NodeProxy(this, NodeProxy.UNKNOWN_GID, last)) );
+				new NodeProxy(this, NodeProxy.UNKNOWN_NODE_GID, last)) );
 		for (int i = 0; i < nodes.getLength(); i++) {
 			prev = (NodeImpl) appendChild(null, prev, nodes.item(i));
 			++children;

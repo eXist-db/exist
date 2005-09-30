@@ -67,9 +67,11 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	public static final int DOCUMENT_NODE_GID = -1;
 	/** special value for gid: means document element node */
 	public static final int DOCUMENT_ELEMENT_GID = 1;
-	public static final int TO_BE_COMPUTED = -1;
-	public static final int UNKNOWN = -1;
-	public static final int UNKNOWN_GID = 0;
+	
+	public static final int UNKNOWN_NODE_LEVEL = -1;
+	public static final int UNKNOWN_NODE_TYPE = -1;
+	public static final int UNKNOWN_NODE_GID = 0;
+	public static final int UNKNOWN_NODE_ADDRESS = 0;
 	
 	/**
 	 * The owner document of this node.
@@ -77,22 +79,24 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	public DocumentImpl doc = null;
 
 	/**
-	 * The unique internal node id in the document.
-	 * @link #DOCUMENT_NODE_GID means document node.
+	 * The unique internal id of this node in the document, if known.
+	 * @link #UNKNOWN_NODE_GID
+	 * @link #DOCUMENT_NODE_GID
 	 */
-	public long gid = UNKNOWN_GID;
+	public long gid = UNKNOWN_NODE_GID;
 
 	/**
-	 * The internal storage address of the node in the
-	 * dom.dbx node store. This field is optional.
+	 * The internal storage address of this node in the
+	 * dom.dbx file, if known.
+	 * @link #UNKNOWN_NODE_ADDRESS
 	 */
-	private long internalAddress = UNKNOWN;
+	private long internalAddress = UNKNOWN_NODE_ADDRESS;
 	
 	/**
-	 * The type of this node (as defined by DOM), if known, @link #UNKNOW
-	 * otherwise.
+	 * The type of this node (as defined by DOM), if known. 
+	 * @link #UNKNOWN_NODE_TYPE
 	 */
-	public short nodeType = UNKNOWN;
+	public short nodeType = UNKNOWN_NODE_TYPE;
 
 	/**
 	 * The first {@link Match} object associated with this node.
@@ -177,14 +181,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	
 	public int compareTo(Object other) {
 		if(!(other instanceof NodeProxy))
-			return 1;
-		final NodeProxy p = (NodeProxy) other;
-		return compareTo(p);
+			throw new RuntimeException("cannot compare NodeProxy with " + other.getClass().getName());
+		return compareTo((NodeProxy) other);
 	}
 
 	public boolean equals(Object other) {
 		if (!(other instanceof NodeProxy))
-			throw new RuntimeException("cannot compare nodes from different implementations");
+			throw new RuntimeException("cannot compare NodeProxy with " + other.getClass().getName());
 		NodeProxy node = (NodeProxy) other;
 		if (node.doc.getDocId() == doc.getDocId() && node.gid == gid)
 			return true;
@@ -193,7 +196,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 
 	public boolean equals(NodeValue other) throws XPathException {
 		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
-			throw new XPathException("cannot compare persistent node with in-memory node");
+			throw new XPathException("cannot compare persistent node with in-memory node");		
 		NodeProxy node = (NodeProxy) other;
 		if (node.doc.getDocId() == doc.getDocId() && node.gid == gid)
 			return true;
@@ -519,8 +522,9 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 				return Type.COMMENT;
 			case Node.DOCUMENT_NODE:
 			    return Type.DOCUMENT;
+			//unknown type
 			default :
-				return Type.NODE; // unknown type
+				return Type.NODE;
 		}
 	}
 
@@ -811,7 +815,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public NodeProxy parentWithChild(DocumentImpl doc, long gid,
             boolean directParent, boolean includeSelf) {
         return parentWithChild(doc, gid, directParent, includeSelf, 
-        		TO_BE_COMPUTED );
+        		UNKNOWN_NODE_LEVEL );
     }
     
 	/* (non-Javadoc)
@@ -959,7 +963,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      */
     public NodeSet deepIntersection(NodeSet other) {
         NodeProxy p = other.parentWithChild(this, false, true, 
-        		TO_BE_COMPUTED );
+        		UNKNOWN_NODE_LEVEL );
         if(p == null)
             return NodeSet.EMPTY_SET;
         if(p.gid != gid)
@@ -997,7 +1001,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public NodeSet selectParentChild(NodeSet al, int mode,
             boolean rememberContext) {
         NodeProxy p = al.parentWithChild(this, true, false,
-        		TO_BE_COMPUTED );
+        		UNKNOWN_NODE_LEVEL );
         if(p != null) {
             if(mode == DESCENDANT) {
 				if (rememberContext)
@@ -1051,7 +1055,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     }
     
     public NodeSet directSelectAttribute(QName qname, boolean rememberContext) {
-        if (nodeType != UNKNOWN && nodeType != Node.ELEMENT_NODE)
+        if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
             return NodeSet.EMPTY_SET;
         NodeImpl node = (NodeImpl) getNode();
         if (node.getNodeType() != Node.ELEMENT_NODE)
