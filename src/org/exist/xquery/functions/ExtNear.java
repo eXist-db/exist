@@ -142,7 +142,6 @@ public class ExtNear extends ExtFulltext {
 				} // that else MAY cause the distance count to be off by one but i'm not sure
 				if (-1 < distance)
 					++distance;
-
 			}
 		}
 //		LOG.debug("found " + r.getLength());

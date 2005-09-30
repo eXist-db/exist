@@ -42,40 +42,89 @@ package org.exist.dom;
  */
 public class Match implements Comparable {
 	
-	private String matchTerm;
+    public final static class Offset implements Comparable {
+        private int offset;
+        private int length;
+        
+        private Offset(int offset, int length) {
+            this.offset = offset;
+            this.length = length;
+        }
+        
+        public int getOffset() {
+            return offset;
+        }
+        
+        public void setOffset(int offset) {
+            this.offset = offset;
+        }
+        
+        public int getLength() {
+            return length;
+        }
+        
+        public int compareTo(Object other) {
+            final int otherOffset = ((Offset) other).offset;
+            return offset == otherOffset ? 0 : (offset > otherOffset ? 1 : -1);
+        }
+    }
+    
 	private long nodeId;
-	private int frequency = 1;
-	
+    private String matchTerm;
+    
+    private int[] offsets;
+    private int[] lengths;
+    
+	private int currentOffset = 0;
+    
 	protected Match nextMatch = null;
 	protected Match prevMatch = null;
 	
-	public Match(String matchTerm, long nodeId) {
-		this.matchTerm = matchTerm;
+    public Match(long nodeId, String matchTerm) {
+        this( nodeId, matchTerm, 1);
+    }
+    
+	public Match(long nodeId, String matchTerm, int frequency) {
 		this.nodeId = nodeId;
+        this.matchTerm = matchTerm;
+		this.offsets = new int[frequency];
+        this.lengths = new int[frequency];
 	}
 	
 	public Match(Match match) {
-		this.matchTerm = match.matchTerm;
 		this.nodeId = match.nodeId;
-		this.frequency = match.frequency;
-	}
-	
-	public String getMatchingTerm() {
-		return matchTerm;
+        this.matchTerm = match.matchTerm;
+		this.offsets = match.offsets;
+        this.lengths = match.lengths;
+        this.currentOffset = match.currentOffset;
 	}
 	
 	public long getNodeId() {
 		return nodeId;
 	}
 	
-	public void setFrequency(int freq) {
-		this.frequency = freq;
-	}
-	
 	public int getFrequency() {
-		return frequency;
+		return currentOffset;
 	}
 	
+    public void addOffset(int offset, int length) {
+        if (currentOffset == offsets.length) {
+            int noffsets[] = new int[currentOffset + 1];
+            System.arraycopy(offsets, 0, noffsets, 0, currentOffset);
+            offsets = noffsets;
+            
+            int nlengths[] = new int[currentOffset + 1];
+            System.arraycopy(lengths, 0, nlengths, 0, currentOffset);
+            lengths = nlengths;
+        }
+        offsets[currentOffset] = offset;
+        lengths[currentOffset++] = length;
+    }
+    
+    public Offset getOffset(int pos) {
+        return new Offset(offsets[pos], lengths[pos]);
+    }
+    
 	public Match getNextMatch() {
 		return nextMatch;
 	}
@@ -83,8 +132,8 @@ public class Match implements Comparable {
 	public boolean equals(Object other) {
 		if(!(other instanceof Match))
 			return false;
-		return ((Match)other).matchTerm.equals(matchTerm) &&
-			((Match)other).nodeId == nodeId;
+        return ((Match)other).matchTerm.equals(matchTerm) &&
+            ((Match)other).nodeId == nodeId;
 	}
 	
 	/**
@@ -95,6 +144,6 @@ public class Match implements Comparable {
 	 */
 	public int compareTo(Object o) {
 		Match other = (Match)o;
-		return matchTerm.compareTo(other.matchTerm);
+        return matchTerm.compareTo(other.matchTerm);
 	}
 }

@@ -133,6 +133,10 @@ public final class XMLString implements CharSequence, Comparable {
 		return length_;
 	}
 
+    public final int startOffset() {
+        return start_;
+    }
+    
 	public final String substring(int start, int count) {
 		if (start < 0 || count < 0 || start >= length_ || start + count > length_)
 			throw new StringIndexOutOfBoundsException();
