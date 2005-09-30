@@ -48,26 +48,26 @@ public class FtQueryTest extends XMLTestCase {
         XQueryService service = (XQueryService)
             testCollection.getService("XQueryService", "1.0");
         ResourceSet result = service.query("//SPEECH[LINE &= 'love']");
-        assertEquals(result.getSize(), 160);
+        assertEquals(160, result.getSize());
         result = service.query("//SPEECH[LINE &= 'thou']");
-        assertEquals(result.getSize(), 290);
+        assertEquals(290, result.getSize());
         result = service.query("//SPEECH[LINE &= 'thou']");
-        assertEquals(result.getSize(), 290);
+        assertEquals(290, result.getSize());
         result = service.query("//SPEECH[LINE &= 'fenny snake']/LINE[1]");
-        assertEquals(result.getSize(), 1);
+        assertEquals(1, result.getSize());
         assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a fenny snake,</LINE>");
         result = service.query("//SPEECH[LINE &= 'god*']");
-        assertEquals(result.getSize(), 79);
+        assertEquals(79, result.getSize());
         result = service.query("//SPEECH[LINE &= 'god in heaven']");
-        assertEquals(result.getSize(), 2);
+        assertEquals(2, result.getSize());
         result = service.query("//SPEECH[SPEAKER &= 'Nurse']");
-        assertEquals(result.getSize(), 90);
+        assertEquals(90, result.getSize());
         result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[mods:title &= 'self*']");
-        assertEquals(result.getSize(), 2);
+        assertEquals(2, result.getSize());
         result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[mods:title &= 'self employed']");
-        assertEquals(result.getSize(), 1);
+        assertEquals(1, result.getSize());
         result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[match-all(mods:title, '.*ploy.*')]");
-        assertEquals(result.getSize(), 3);
+        assertEquals(3, result.getSize());
     }
     
     public void testFtScan() throws Exception {
@@ -89,15 +89,15 @@ public class FtQueryTest extends XMLTestCase {
             testCollection.getService("XQueryService", "1.0");
         String query = queryBody + "t:index-terms(collection(\'/db\'), \'is\', util:function(\'f:term-callback\', 2), 1000)";
         ResourceSet result = service.query(query);
-        assertEquals(result.getSize(), 7);
+        assertEquals(7, result.getSize());
         
         query = queryBody + "t:index-terms(collection(\'/db\')//LINE, \'is\', util:function(\'f:term-callback\', 2), 1000)";
         result = service.query(query);
-        assertEquals(result.getSize(), 6);
+        assertEquals(6, result.getSize());
         
         query = queryBody + "t:index-terms(collection(\'/db\')//mods:title, \'s\', util:function(\'f:term-callback\', 2), 1000)";
         result = service.query(query);
-        assertEquals(result.getSize(), 20);
+        assertEquals(20, result.getSize());
     }
     
     public void testFtUpdate() throws Exception {
