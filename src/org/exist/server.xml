@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    Configures the stand-alone server: the stand-alone server is a minimal
+    webserver with just three services enabled by default:
+    webdav, xmlrpc, rest.
+-->
+<server port="8088">
+    <!-- 
+        Enable the WebDAV, XML-RPC and REST services.
+        The context attribute specifies to which context path
+        the service will be mapped. Specify an url-pattern as 
+        for a servlet-mapping. Example: /xmlrpc/* forwards all 
+        paths beginning with /xmlrpc to the xmlrpc service.
+    -->
+    <webdav enabled="yes" context="/webdav/*"/>
+    <xmlrpc enabled="yes" context="/xmlrpc/*"/>
+    <rest enabled="yes" context="/*">
+        <!-- 
+            Special params: set form-encoding and container-encoding. If they
+            are set to different encodings, eXist may need to recode form parameters.
+        --> 
+        <param name="form-encoding" value="UTF-8"/>
+        <param name="container-encoding" value="UTF-8"/>
+    </rest>
+</server>
