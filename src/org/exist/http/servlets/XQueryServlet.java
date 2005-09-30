@@ -42,6 +42,7 @@ import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.XQueryService;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Item;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -244,7 +245,8 @@ public class XQueryServlet extends HttpServlet {
 			ResourceSet result = service.execute(source);
 			String mediaType = service.getProperty(OutputKeys.MEDIA_TYPE);
 			if (mediaType != null) {
-				response.setContentType(mediaType + "; charset=" + formEncoding);
+                if (!response.isCommitted())
+                    response.setContentType(mediaType + "; charset=" + formEncoding);
 			}
 			for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
 				Resource res = i.nextResource();
@@ -274,18 +276,17 @@ public class XQueryServlet extends HttpServlet {
 		out.print("<html><head>");
 		out.print("<title>XQueryServlet Error</title>");
 		out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></head>");
-		out.print("<body><h1>Error found</h1>");
+		out.print("<body><div id=\"container\"><h1>Error found</h1>");
         Throwable t = e.getCause();
-        if (t instanceof XPathException)
-            out.println(((XPathException)t).getMessageAsHTML());
-        else {
-            out.print("<div class='message'><h2>Message:");
+        if (t instanceof XPathException) {
+            XPathException xe = (XPathException) t;
+            out.println(xe.getMessageAsHTML());
+        } else {
+            out.print("<h2>Message:");
             out.print(message);
-            out.print("</h2></div>");
+            out.print("</h2>");
         }
-		out.print("<h2>Exception Stacktrace:</h2>");
-		out.print("<div class='exception'>");
-		e.printStackTrace(out);
+        out.print(HTTPUtils.printStackTraceHTML(t));
 		out.print("</div></body></html>");
 	}
 	
