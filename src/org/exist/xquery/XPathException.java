@@ -74,14 +74,7 @@ public class XPathException extends Exception {
     public void addFunctionCall(UserDefinedFunction def, XQueryAST ast) {
         if (callStack == null)
             callStack = new ArrayList();
-        StringBuffer msg = new StringBuffer();
-        msg.append(def.toString());
-        msg.append(" [");
-        msg.append(ast.getLine());
-        msg.append(", ");
-        msg.append(ast.getColumn());
-        msg.append("]");
-        callStack.add(msg.toString());
+        callStack.add(new FunctionStackElement(def, ast));
     }
 	
     public void prependMessage(String msg) {
@@ -119,7 +112,6 @@ public class XPathException extends Exception {
         if(message == null)
             message = "";
 		message = message.replaceAll("\r?\n", "<br/>");
-        buf.append("<div class=\"message\">");
         buf.append("<h2>").append(message);
         if (getLine() > 0) {
             buf.append(" [at line ");
@@ -130,14 +122,35 @@ public class XPathException extends Exception {
         }
         buf.append("</h2>");
         if (callStack != null) {
-            buf.append("<p>In call to function:</p>");
-            buf.append("<ul class=\"trace\">");
+            buf.append("<table id=\"xquerytrace\">");
+            buf.append("<caption>XQuery Stack Trace</caption>");
+            FunctionStackElement e;
             for (Iterator i = callStack.iterator(); i.hasNext(); ) {
-                buf.append("<li>").append(i.next()).append("</li>");
+                e = (FunctionStackElement) i.next();
+                buf.append("<tr><td class=\"func\">").append(e.function).append("</td>");
+                buf.append("<td class=\"lineinfo\">").append(e.ast.getLine()).append(':').append(e.ast.getColumn()).append("</td>");
+                buf.append("</tr>");
             }
-            buf.append("</ul>");
+            buf.append("</table>");
         }
-        buf.append("</div>");
         return buf.toString();
+    }
+    
+    private static class FunctionStackElement {
+        String function;
+        XQueryAST ast;
+        
+        FunctionStackElement(UserDefinedFunction func, XQueryAST ast) {
+            this.function = func.toString();
+            this.ast = ast;
+        }
+        
+        public String toString() {
+            StringBuffer buf = new StringBuffer();
+            buf.append(function).append(" [");
+            buf.append(ast.getLine()).append(":");
+            buf.append(ast.getColumn()).append(']');
+            return buf.toString();
+        }
     }
 }
