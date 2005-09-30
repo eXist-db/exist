@@ -155,7 +155,7 @@ public class ForExpr extends BindingExpression {
 		boolean fastExec = whereExpr != null &&
 			( whereExpr.getDependencies() & Dependency.CONTEXT_ITEM ) == 0 &&
 			at == null &&
-			in.getItemType() == Type.NODE;
+			Type.subTypeOf( in.getItemType() , Type.NODE);
 		
 		// If possible, apply the where expression ahead of the iteration
 		if(fastExec) {
