@@ -26,26 +26,44 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
+import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpc;
+import org.exist.memtree.SAXAdapter;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.ShutdownListener;
 import org.mortbay.http.HttpContext;
 import org.mortbay.http.HttpServer;
 import org.mortbay.http.SocketListener;
+import org.mortbay.http.handler.ForwardHandler;
 import org.mortbay.http.handler.NotFoundHandler;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.util.MultiException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 
@@ -61,8 +79,9 @@ import org.xmldb.api.base.Database;
  */
 public class StandaloneServer {
 
+    private final static Logger LOG = Logger.getLogger(StandaloneServer.class);
+    
     //  command-line options
-    private static final String PROPERTY_FILE = "server.properties";
 	private final static int HELP_OPT = 'h';
     private final static int DEBUG_OPT = 'd';
     private final static int HTTP_PORT_OPT = 'p';
@@ -81,6 +100,7 @@ public class StandaloneServer {
     
     private static Properties DEFAULT_PROPERTIES = new Properties();
     static {
+        DEFAULT_PROPERTIES.setProperty("port", "8088");
     	DEFAULT_PROPERTIES.setProperty("webdav.enabled", "yes");
     	DEFAULT_PROPERTIES.setProperty("rest.enabled", "yes");
     	DEFAULT_PROPERTIES.setProperty("xmlrpc.enabled", "yes");
@@ -91,11 +111,20 @@ public class StandaloneServer {
     
     private HttpServer httpServer;
     
+    private Map forwarding = new HashMap();
+    
     public StandaloneServer() {
     }
     
     public void run(String[] args) throws Exception {
         printNotice();
+        
+        String home = System.getProperty( "exist.home" );
+        if ( home == null )
+            home = System.getProperty( "user.dir" );
+        
+        Properties props = new Properties(DEFAULT_PROPERTIES);
+        
         CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
         if(optParser.getErrorString() != null) {
             System.err.println( "ERROR: " + optParser.getErrorString());
@@ -104,7 +133,6 @@ public class StandaloneServer {
         List opt = optParser.getArguments();
         int size = opt.size();
         CLOption option;
-        int httpPort = 8088;
         int threads = 5;
         for(int i = 0; i < size; i++) {
             option = (CLOption)opt.get(i);
@@ -116,12 +144,7 @@ public class StandaloneServer {
                     XmlRpc.setDebug(true);
                     break;
                 case HTTP_PORT_OPT :
-                    try {
-                        httpPort = Integer.parseInt( option.getArgument() );
-                    } catch( NumberFormatException e ) {
-                        System.err.println("option -p requires a numeric argument");
-                        return;
-                    }
+                    props.setProperty("port", option.getArgument());
                     break;
                 case THREADS_OPT :
                     try {
@@ -133,18 +156,24 @@ public class StandaloneServer {
                     break;
             }
         }
-        String home = System.getProperty( "exist.home" );
-        if ( home == null )
-            home = System.getProperty( "user.dir" );
+        
+        configure(props);
+        
+        int httpPort = 8088;
+        try {
+            httpPort = Integer.parseInt(props.getProperty("port"));
+        } catch( NumberFormatException e ) {
+            System.err.println("port needs to be number");
+            return;
+        }
+        
         System.out.println( "Loading configuration from " + home +
-            File.separatorChar + "conf.xml" );
+                File.separatorChar + "conf.xml" );
         Configuration config = new Configuration( "conf.xml", home );
         BrokerPool.configure( 1, threads, config );
         BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl());
         initXMLDB();
-        
-        Properties props = loadProperties(home);
-        
+            
         startHTTPServer(httpPort, props);
         
         System.out.println("\nServer launched ...");
@@ -163,35 +192,6 @@ public class StandaloneServer {
     		return false;
     	return httpServer.isStarted();    	
     }
-
-    /**
-	 * @param home
-	 * @return
-     * @throws IOException 
-	 */
-	private Properties loadProperties(String home) throws IOException {
-		Properties properties = new Properties(DEFAULT_PROPERTIES);
-		File propFile;
-		if (home == null)
-			propFile = new File(PROPERTY_FILE);
-		else
-			propFile = new File(home
-					+ System.getProperty("file.separator", "/")
-					+ PROPERTY_FILE);
-
-		InputStream pin;
-		if (propFile.canRead())
-			pin = new FileInputStream(propFile);
-		else
-			pin = StandaloneServer.class
-					.getResourceAsStream(PROPERTY_FILE);
-
-		if (pin != null) {
-			System.out.println("Loading properties from " + propFile.getAbsolutePath());
-			properties.load(pin);
-		}
-		return properties;
-	}
 
 	/**
      * 
@@ -227,20 +227,38 @@ public class StandaloneServer {
         
         ServletHandler servletHandler = new ServletHandler();
         if (props.getProperty("rest.enabled").equalsIgnoreCase("yes")) {
+            String path = props.getProperty("rest.context", "/*");
         	ServletHolder restServlet = 
-        		servletHandler.addServlet("EXistServlet", "/*", "org.exist.http.servlets.EXistServlet");
-        	restServlet.setInitParameter("form-encoding", props.getProperty("rest.form.encoding"));
-        	restServlet.setInitParameter("container-encoding", props.getProperty("rest.container.encoding"));
+        		servletHandler.addServlet("EXistServlet", path, "org.exist.http.servlets.EXistServlet");
+        	restServlet.setInitParameter("form-encoding", props.getProperty("rest.form-encoding"));
+        	restServlet.setInitParameter("container-encoding", props.getProperty("rest.container-encoding"));
         }
         if (props.getProperty("webdav.enabled").equalsIgnoreCase("yes")) {
+            String path = props.getProperty("webdav.context", "/webdav/*");
         	ServletHolder davServlet =
-        		servletHandler.addServlet("WebDAV", "/webdav/*", "org.exist.http.servlets.WebDAVServlet");
+        		servletHandler.addServlet("WebDAV", path, "org.exist.http.servlets.WebDAVServlet");
         	davServlet.setInitParameter("authentication", props.getProperty("webdav.authentication"));
         }
         if(props.getProperty("xmlrpc.enabled").equalsIgnoreCase("yes")) {
-            ServletHolder rpcServlet =
-                servletHandler.addServlet("RpcServlet", "/xmlrpc/*", "org.exist.xmlrpc.RpcServlet");
+            String path = props.getProperty("xmlrpc.context", "/xmlrpc/*");
+            servletHandler.addServlet("RpcServlet", path, "org.exist.xmlrpc.RpcServlet");
         }
+        
+        if (forwarding.size() > 0) {
+            ForwardHandler forward = new ForwardHandler();
+            
+            for (Iterator i = forwarding.keySet().iterator(); i.hasNext(); ) {
+                String path = (String) i.next();
+                String destination = (String) forwarding.get(path);
+                if (path.length() == 0)
+                    forward.setRootForward(destination);
+                else
+                    forward.addForward(path, destination);
+            }
+        
+            context.addHandler(forward);
+        }
+        
         context.addHandler(servletHandler);
         context.addHandler(new NotFoundHandler());
         httpServer.addContext(context);
@@ -263,6 +281,111 @@ public class StandaloneServer {
     public void shutdown() {
 		BrokerPool.stopAll(false);
 	}
+    
+    private void configure(Properties properties) throws ParserConfigurationException, SAXException, IOException {
+        // try to read configuration from file. Guess the location if
+        // necessary
+        InputStream is = null;
+        String file = "server.xml";
+        String dbHome = System.getProperty("exist.home");
+        File f = new File(file);
+        if ((!f.isAbsolute()) && dbHome != null) {
+            file = dbHome + File.separatorChar + file;
+            f = new File(file);
+        }
+        if (!f.canRead()) {
+            is = StandaloneServer.class.getClassLoader().getResourceAsStream("org/exist/server.xml");
+            if (is == null)
+                throw new IOException("Server configuration not found!");
+        } else {
+            is = new FileInputStream(f);
+        }
+        
+        // initialize xml parser
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setValidating(false);
+        InputSource src = new InputSource(is);
+        SAXParser parser = factory.newSAXParser();
+        XMLReader reader = parser.getXMLReader();
+        SAXAdapter adapter = new SAXAdapter();
+        reader.setContentHandler(adapter);
+        reader.parse(src);
+        
+        Document doc = adapter.getDocument();
+        Element root = doc.getDocumentElement();
+        if (!root.getLocalName().equals("server")) {
+            LOG.warn("Configuration should have a root element <server>");
+            return;
+        }
+        String port = root.getAttribute("port");
+        if (port != null && port.length() > 0)
+            properties.setProperty("port", port);
+        
+        NodeList cl = root.getChildNodes();
+        for (int i = 0; i < cl.getLength(); i++) {
+            Node node = cl.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                Element elem = (Element) node;
+                String name = elem.getLocalName();
+                if ("rest".equals(name)) {
+                    parseDefaultAttrs(properties, elem, "rest");
+                    parseParams(properties, elem, "rest");
+                } else if ("webdav".equals(name))
+                    parseDefaultAttrs(properties, elem, "webdav");
+                else if ("xmlrpc".equals(name))
+                    parseDefaultAttrs(properties, elem, "xmlrpc");
+                else if ("forwarding".equals(name))
+                    configureForwards(elem);
+            }
+        }
+    }
+
+    private void parseParams(Properties properties, Element root, String prefix) {
+        NodeList cl = root.getChildNodes();
+        for (int i = 0; i < cl.getLength(); i++) {
+            Node node = cl.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE && "param".equals(node.getLocalName())) {
+                Element elem = (Element) node;
+                String name = elem.getAttribute("name");
+                String value = elem.getAttribute("value");
+                if (name != null && name.length() > 0)
+                    properties.setProperty(prefix + '.' + name, value);
+            }
+        }
+    }
+
+    private void configureForwards(Element root) {
+        NodeList cl = root.getChildNodes();
+        for (int i = 0; i < cl.getLength(); i++) {
+            Node node = cl.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                Element elem = (Element) node;
+                String name = elem.getLocalName();
+                if ("root".equals(name)) {
+                    String dest = elem.getAttribute("destination");
+                    forwarding.put("", dest);
+                } else if ("forward".equals(name)) {
+                    String path = elem.getAttribute("path");
+                    String dest = elem.getAttribute("destination");
+                    forwarding.put(path, dest);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param properties
+     * @param elem
+     */
+    private void parseDefaultAttrs(Properties properties, Element elem, String prefix) {
+        String attr = elem.getAttribute("enabled");
+        if (attr != null && attr.length() > 0)
+            properties.setProperty(prefix + ".enabled", attr);
+        attr = elem.getAttribute("context");
+        if (attr != null && attr.length() > 0)
+            properties.setProperty(prefix + ".context", attr);
+    }
     
     class ShutdownListenerImpl implements ShutdownListener {
 
