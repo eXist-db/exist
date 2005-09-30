@@ -79,19 +79,19 @@ public class CompareDocuments {
         }
 
         if (show) {
-            System.err.print(space);
+            System.out.print(space);
             switch (node1.getNodeType()) {
                 case Node.ATTRIBUTE_NODE:
-                    System.err.print("@");
+                    System.out.print("@");
                 default:
             }
-            System.err.print(node1 + "[" + node1.getChildNodes().getLength() + "] <==> "); 
+            System.out.print(node1 + "[" + node1.getChildNodes().getLength() + "] <==> "); 
             switch (node2.getNodeType()) {
                 case Node.ATTRIBUTE_NODE:
-                    System.err.print("@");
+                    System.out.print("@");
                 default:
             }
-            System.err.println(node2 + "[" + node2.getChildNodes().getLength() + "]");
+            System.out.println(node2 + "[" + node2.getChildNodes().getLength() + "]");
         }
         if (node1.getNodeType()!=node2.getNodeType()) {
             throw new Exception("different node types ("+
