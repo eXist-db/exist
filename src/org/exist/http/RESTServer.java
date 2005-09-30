@@ -256,7 +256,8 @@ public class RESTServer {
                     	String result = executeXQuery(broker, resource, request, response, outputProperties);
                     	encoding = outputProperties.getProperty(OutputKeys.ENCODING, encoding);
                     	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-                        response.setContentType(mimeType);
+                        if (!response.isCommitted())
+                            response.setContentType(mimeType);
                         writeResponse(response, result, encoding);
                     } catch (XPathException e) {
                         response.setContentType("text/html");
@@ -1019,7 +1020,7 @@ public class RESTServer {
     throws IOException {
 //        response.setCharacterEncoding(encoding);
 		String contentType = response.getContentType();
-		if (contentType != null && contentType.indexOf(';') < 0)
+		if (!response.isCommitted() && contentType != null && contentType.indexOf(';') < 0)
 			response.setContentType(contentType + "; charset=" + encoding);
 		
         OutputStream is = response.getOutputStream();
