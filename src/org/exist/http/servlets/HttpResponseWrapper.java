@@ -23,6 +23,7 @@
 package org.exist.http.servlets;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -147,4 +148,8 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public void setLocale(Locale arg0) {
 		response.setLocale(arg0);
 	}
+
+    public OutputStream getOutputStream() throws IOException {
+        return response.getOutputStream();
+    }
 }

@@ -23,6 +23,7 @@
 package org.exist.cocoon;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -166,4 +167,7 @@ public class CocoonResponseWrapper implements ResponseWrapper {
 	public void sendRedirect(String arg0) throws IOException {
 	}
 
+    public OutputStream getOutputStream() throws IOException {
+        return null;
+    }
 }

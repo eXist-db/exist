@@ -23,6 +23,7 @@
 package org.exist.http.servlets;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Locale;
 
 /**
@@ -87,4 +88,6 @@ public interface ResponseWrapper {
 	/** @return the value of Date Header corresponding to given name,
 	 * 0 if none has been set. */
 	public long getDateHeader(String name);
+    
+    public OutputStream getOutputStream() throws IOException;
 }

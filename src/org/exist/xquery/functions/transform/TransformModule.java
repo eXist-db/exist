@@ -35,7 +35,8 @@ public class TransformModule extends AbstractInternalModule {
 	public final static String PREFIX = "transform";
 	
 	private final static FunctionDef functions[] = {
-		new FunctionDef(Transform.signature, Transform.class)
+		new FunctionDef(Transform.signatures[0], Transform.class),
+        new FunctionDef(Transform.signatures[1], Transform.class)
 	};
 	
 	public TransformModule() {

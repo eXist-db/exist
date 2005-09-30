@@ -22,8 +22,11 @@
  */
 package org.exist.xquery.functions.transform;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -35,18 +38,21 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.http.servlets.ResponseWrapper;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
@@ -56,12 +62,16 @@ import org.exist.storage.lock.Lock;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Element;
@@ -73,7 +83,7 @@ import org.xml.sax.SAXException;
  */
 public class Transform extends BasicFunction {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
 			"Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +
@@ -86,7 +96,19 @@ public class Transform extends BasicFunction {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)),
+        new FunctionSignature(
+            new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
+            "Applies an XSL stylesheet to the node tree passed as first argument. The parameters are the same " +
+            "as for the transform function. stream-transform can only be used within a servlet context. Instead " +
+            "of returning the transformed document fragment, it directly streams its output to the servlet's output stream. " +
+            "It should thus be the last statement in the XQuery.",
+            new SequenceType[] {
+                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+                new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
+            new SequenceType(Type.ITEM, Cardinality.EMPTY))
+    };
 
 	private Map cache = new HashMap();
 	
@@ -94,7 +116,7 @@ public class Transform extends BasicFunction {
 	 * @param context
 	 * @param signature
 	 */
-	public Transform(XQueryContext context) {
+	public Transform(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -111,7 +133,67 @@ public class Transform extends BasicFunction {
 		if(args[2].getLength() > 0)
 			options = ((NodeValue)args[2].itemAt(0)).getNode();
 		
-		SAXTransformerFactory factory = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
+		TransformerHandler handler = createHandler(stylesheetItem, options);
+        if (isCalledAs("transform")) {
+            ValueSequence seq = new ValueSequence();
+    		context.pushDocumentContext();
+    		MemTreeBuilder builder = context.getDocumentBuilder();
+    		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+    		SAXResult result = new SAXResult(receiver);
+    		handler.setResult(result);
+    		try {
+    			handler.startDocument();
+    			inputNode.toSAX(context.getBroker(), handler);
+    			handler.endDocument();
+    		} catch (SAXException e) {
+    			throw new XPathException(getASTNode(), "SAX exception while transforming node: " + e.getMessage(), e);
+    		}
+    		Node next = builder.getDocument().getFirstChild();
+            while (next != null) {
+                seq.add((NodeValue) next);
+                next = next.getNextSibling();
+            }
+    		context.popDocumentContext();
+    		return seq;
+        } else {
+            RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
+            // request object is read from global variable $request
+            Variable respVar = myModule.resolveVariable(RequestModule.RESPONSE_VAR);
+            if(respVar == null)
+                throw new XPathException(getASTNode(), "No request object found in the current XQuery context.");
+            if(respVar.getValue().getItemType() != Type.JAVA_OBJECT)
+                throw new XPathException(getASTNode(), "Variable $response is not bound to an Java object.");
+            JavaObjectValue respValue = (JavaObjectValue)
+                respVar.getValue().itemAt(0);
+            if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName()))
+                throw new XPathException(getASTNode(), signatures[1].toString() + 
+                        " can only be used within the EXistServlet or XQueryServlet");
+            ResponseWrapper response = (ResponseWrapper) respValue.getObject();
+            try {
+                OutputStream os = new BufferedOutputStream(response.getOutputStream());
+                StreamResult result = new StreamResult(os);
+                handler.setResult(result);
+                handler.startDocument();
+                inputNode.toSAX(context.getBroker(), handler);
+                handler.endDocument();
+            } catch (SAXException e) {
+                throw new XPathException(getASTNode(), "SAX exception while transforming node: " + e.getMessage(), e);
+            } catch (IOException e) {
+                throw new XPathException(getASTNode(), "IO exception while transforming node: " + e.getMessage(), e);
+            }
+            return Sequence.EMPTY_SEQUENCE;
+        }
+	}
+
+    /**
+     * @param stylesheetItem
+     * @param options
+     * @return
+     * @throws TransformerFactoryConfigurationError
+     * @throws XPathException
+     */
+    private TransformerHandler createHandler(Item stylesheetItem, Node options) throws TransformerFactoryConfigurationError, XPathException {
+        SAXTransformerFactory factory = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
 		TransformerHandler handler;
 		try {
 			Templates templates;
@@ -128,28 +210,8 @@ public class Transform extends BasicFunction {
 		} catch (TransformerConfigurationException e) {
 			throw new XPathException("Unable to set up transformer: " + e.getMessage(), e);
 		}
-		
-		context.pushDocumentContext();
-		MemTreeBuilder builder = context.getDocumentBuilder();
-		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-		SAXResult result = new SAXResult(receiver);
-		handler.setResult(result);
-		try {
-			handler.startDocument();
-			inputNode.toSAX(context.getBroker(), handler);
-			handler.endDocument();
-		} catch (SAXException e) {
-			throw new XPathException("SAX exception while transforming node: " + e.getMessage(), e);
-		}
-        ValueSequence seq = new ValueSequence();
-		Node next = builder.getDocument().getFirstChild();
-        while (next != null) {
-            seq.add((NodeValue) next);
-            next = next.getNextSibling();
-        }
-		context.popDocumentContext();
-		return seq;
-	}
+        return handler;
+    }
 
 	private void parseParameters(Node options, Transformer handler) throws XPathException {
 		if(options.getNodeType() == Node.ELEMENT_NODE && options.getLocalName().equals("parameters")) {
