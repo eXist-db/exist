@@ -85,4 +85,24 @@ public class HTTPUtils {
 			LOG.debug(e);
 		}
 	}
+    
+    public static String printStackTraceHTML(Throwable e) {
+        StringBuffer buf = new StringBuffer();
+        StackTraceElement[] trace = e.getStackTrace();
+        buf.append("<table id=\"javatrace\">");
+        buf.append("<caption>Java Stack Trace:</caption>");
+        buf.append("<tr><th>Class Name</th><th>Method Name</th><th>File Name</th><th>Line</th></tr>");
+        for (int i = 0; i < trace.length && i < 20; i++) {
+            buf.append("<tr>");
+            buf.append("<td class=\"class\">").append(trace[i].getClassName()).append("</td>");
+            buf.append("<td class=\"method\">").append(trace[i].getMethodName()).append("</td>");
+            buf.append("<td class=\"file\">").append(trace[i].getFileName() == null ? "Unknown" : trace[i].getFileName()).append("</td>");
+            buf.append("<td class=\"line\">");
+            buf.append(trace[i].getLineNumber() < 0 ? "Unavailable" : Integer.toString(trace[i].getLineNumber()));
+            buf.append("</td>");
+            buf.append("</tr>");
+        }
+        buf.append("</table>");
+        return buf.toString();
+    }
 }
