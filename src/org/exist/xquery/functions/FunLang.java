@@ -66,7 +66,7 @@ public class FunLang extends Function {
 		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		if (contextSequence.getItemType() != Type.NODE)
+		if (!(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)))
 			return Sequence.EMPTY_SEQUENCE;
 		String lang =
 			getArgument(0)

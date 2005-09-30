@@ -384,41 +384,39 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			if (qr == null)
 				throw new RemoteException("result set unknown or timed out");
 			String xml[] = null;
-			switch (qr.getItemType()) {
-				case Type.NODE :
-					NodeList resultSet = (NodeSet)qr;
-					ArraySet hitsByDoc = new ArraySet(50);
-					NodeProxy p;
-					String path;
-					for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
-						p = (NodeProxy) i.next();
-						path = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
-						if (path.equals(docPath))
-							hitsByDoc.add(p);
-					}
-					--start;
-					if (start < 0 || start > hitsByDoc.getLength())
-						throw new RemoteException(
-							"index " + start + "out of bounds (" + hitsByDoc.getLength() + ")");
-					if (start + howmany >= hitsByDoc.getLength())
-						howmany = hitsByDoc.getLength() - start;
-					Serializer serializer = broker.getSerializer();
-					serializer.reset();
-					serializer.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
-					serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, xinclude ? "yes" : "no");
-					serializer.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, highlight);
+			if (Type.subTypeOf(qr.getItemType(), Type.NODE)) {
+				NodeList resultSet = (NodeSet)qr;
+				ArraySet hitsByDoc = new ArraySet(50);
+				NodeProxy p;
+				String path;
+				for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
+					p = (NodeProxy) i.next();
+					path = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
+					if (path.equals(docPath))
+						hitsByDoc.add(p);
+				}
+				--start;
+				if (start < 0 || start > hitsByDoc.getLength())
+					throw new RemoteException(
+						"index " + start + "out of bounds (" + hitsByDoc.getLength() + ")");
+				if (start + howmany >= hitsByDoc.getLength())
+					howmany = hitsByDoc.getLength() - start;
+				Serializer serializer = broker.getSerializer();
+				serializer.reset();
+				serializer.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
+				serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, xinclude ? "yes" : "no");
+				serializer.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, highlight);
 
-					xml = new String[howmany];
-					for (int i = 0; i < howmany; i++) {
-						NodeProxy proxy = ((NodeSet) hitsByDoc).get(start);
-						if (proxy == null)
-							throw new RuntimeException("not found: " + start);
-						xml[i] = serializer.serialize(proxy);
-					}
-					break;
-				default :
-					throw new RemoteException("result set is not a node list");
+				xml = new String[howmany];
+				for (int i = 0; i < howmany; i++) {
+					NodeProxy proxy = ((NodeSet) hitsByDoc).get(start);
+					if (proxy == null)
+						throw new RuntimeException("not found: " + start);
+					xml[i] = serializer.serialize(proxy);
+				}
 			}
+			else
+				throw new RemoteException("result set is not a node list");
 			return xml;
 		} catch (Exception e) {
 			LOG.warn(e);
