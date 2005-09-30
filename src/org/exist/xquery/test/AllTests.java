@@ -45,6 +45,7 @@ public class AllTests {
 		suite.addTestSuite(SeqOpTest.class);
 		suite.addTestSuite(XMLNodeAsXQueryParameterTest.class);
 		suite.addTestSuite(OpNumericTest.class);
+        suite.addTestSuite(FtQueryTest.class);
 //		suite.addTestSuite(XQueryUseCasesTest.class);
 		//$JUnit-END$
 		return suite;
