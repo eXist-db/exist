@@ -21,18 +21,17 @@
  */
 package org.exist.xquery.functions.text;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.exist.dom.Match;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.storage.serializers.NativeSerializer;
-import org.exist.util.serializer.Receiver;
+import org.exist.storage.serializers.Serializer;
+import org.exist.util.FastQSort;
+import org.exist.util.XMLString;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionCall;
@@ -48,9 +47,6 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.DOMException;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 public class HighlightMatches extends BasicFunction {
 
@@ -63,16 +59,20 @@ public class HighlightMatches extends BasicFunction {
             "and highlight matches to the user. However, this is not always possible, so Instead of using an XSLT " +
             "to post-process the serialized output, the " +
             "highlight-matches function provides direct access to the matching portions of the text within XQuery. " +
-            "The function takes a sequence of text nodes as first argument and a callback function (defined with " +
-            "util:function) as second parameter. Text nodes without matches will be returned as they are. However, if the text " +
-            "contains a match marker, the matching character sequence is reported to the callback function, and the " +
+            "The function takes a sequence of text nodes as first argument $a and a callback function (defined with " +
+            "util:function) as second parameter $b. $c may contain a sequence of additional values that will be passed " +
+            "to the callback functions third parameter. Text nodes without matches will be returned as they are. However, " +
+            "if the text contains a match marker, the matching character sequence is reported to the callback function, and the " +
             "result of the function call is inserted into the resulting node set where the matching sequence occurred. For example, " +
             "you can use this to mark all matching terms with a <span class=\"highlight\">abc</span>.",
             new SequenceType[]{
                     new SequenceType(Type.TEXT, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE)
+                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
+                    new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
+    
+    private final static QName MATCH_ELEMENT = new QName("match", Serializer.EXIST_NS, "exist");
     
     public HighlightMatches(XQueryContext context) {
         super(context, signature);
@@ -82,8 +82,9 @@ public class HighlightMatches extends BasicFunction {
             throws XPathException {
         if (args[0].getLength() == 0)
             return Sequence.EMPTY_SEQUENCE;
-        FunctionReference ref = (FunctionReference) args[1].itemAt(0);
-        FunctionCall call = ref.getFunctionCall();
+        
+        FunctionReference func = (FunctionReference) args[1].itemAt(0);
+        FunctionCall call = func.getFunctionCall();
         
         context.pushDocumentContext();
         
@@ -95,62 +96,67 @@ public class HighlightMatches extends BasicFunction {
                 result.add(v);
             } else {
                 NodeProxy p = (NodeProxy) v;
-                String s = processText((TextImpl) p.getNode(), p.getMatches());
-                display(s, builder, call, result);
+                processText(builder, p, result, call, args[2]);
             }
         }
         context.popDocumentContext();
         return result;
     }
 
-    private final String processText(TextImpl text, Match match) {
-        if (match == null) return null;
-        // prepare a regular expression to mark match-terms
-        StringBuffer expr = null;
-        Match next = match;
-        while (next != null) {
-            if (next.getNodeId() == text.getGID()) {
-                if (expr == null) {
-                    expr = new StringBuffer();
-                    expr.append("\\b(");
-                }
-                if (expr.length() > 5) expr.append('|');
-                expr.append(next.getMatchingTerm());
-            }
-            next = next.getNextMatch();
-        }
-        if (expr != null) {
-            expr.append(")\\b");
-            Pattern pattern = Pattern.compile(expr.toString(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-            Matcher matcher = pattern.matcher(text.getData());
-            return matcher.replaceAll("||$1||");
-        }
-        return null;
-    }
-    
-    private final void display(String data, MemTreeBuilder builder, FunctionCall call, Sequence result)
-    throws XPathException {
-        int p0 = 0, p1;
-        boolean inTerm = false;
+    private final void processText(MemTreeBuilder builder, NodeProxy proxy, Sequence result, 
+            FunctionCall callback, Sequence extraArgs) 
+    throws DOMException, XPathException {
+        TextImpl text = (TextImpl) proxy.getNode();
+        Match match = proxy.getMatches();
         int nodeNr;
-        Sequence params[] = new Sequence[1];
-        while (p0 < data.length()) {
-            p1 = data.indexOf("||", p0);
-            if (p1 < 0) {
-                nodeNr = builder.characters(data.substring(p0));
-                result.add(builder.getDocument().getNode(nodeNr));
-                break;
+        if (match == null) {
+            nodeNr = builder.characters(text.getXMLString());
+            result.add(builder.getDocument().getNode(nodeNr));
+        } else {
+            List offsets = null;
+            Match next = match;
+            while (next != null) {
+                if (next.getNodeId() == text.getGID()) {
+                    if (offsets == null)
+                        offsets = new ArrayList();
+                    int freq = next.getFrequency();
+                    for (int i = 0; i < freq; i++) {
+                        offsets.add(next.getOffset(i));
+                    }
+                }
+                next = next.getNextMatch();
             }
-            if (inTerm) {
-                params[0] = new StringValue(data.substring(p0, p1));
-                result.addAll(call.evalFunction(null, null, params));
-                inTerm = false;
+            
+            if (offsets != null) {
+                FastQSort.sort(offsets, 0, offsets.size() - 1);
+                
+                XMLString str = text.getXMLString();
+                Match.Offset offset;
+                int pos = 0;
+                for (int i = 0; i < offsets.size(); i++) {
+                    offset = (Match.Offset) offsets.get(i);
+                    if (offset.getOffset() > pos) {
+                        nodeNr = builder.characters(str.substring(pos, offset.getOffset() - pos));
+                        result.add(builder.getDocument().getNode(nodeNr));
+                    }
+                    
+                    Sequence params[] = { 
+                            new StringValue(str.substring(offset.getOffset(), offset.getLength())),
+                            proxy,
+                            extraArgs
+                    };
+                    result.addAll(callback.evalFunction(null, null, params));
+                    
+                    pos = offset.getOffset() + offset.getLength();
+                }
+                if (pos < str.length()) {
+                    nodeNr = builder.characters(str.substring(pos, str.length() - pos));
+                    result.add(builder.getDocument().getNode(nodeNr));
+                }
             } else {
-                inTerm = true;
-                nodeNr = builder.characters(data.substring(p0, p1));
+                nodeNr = builder.characters(text.getXMLString());
                 result.add(builder.getDocument().getNode(nodeNr));
             }
-            p0 = p1 + 2;
         }
     }
 }
