@@ -53,6 +53,8 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DocumentImpl document = null;
 		DBBroker broker = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
 			document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
@@ -64,8 +66,10 @@ public class LocalUserManagementService implements UserManagementService {
 						+ document.getPermissions().getOwner());
 
 			document.setPermissions(perm);
-			collection.saveCollection();
+            broker.storeDocument(transaction, document);
+            transact.commit(transaction);
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				e.getMessage(),
@@ -343,15 +347,18 @@ public class LocalUserManagementService implements UserManagementService {
 				"need admin privileges for chown");
 		DocumentImpl document = null;
 		DBBroker broker = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
 			document = ((AbstractEXistResource) res).openDocument(broker, Lock.WRITE_LOCK);
 			Permission perm = document.getPermissions();
 			perm.setOwner(u);
 			perm.setGroup(group);
-			collection.saveCollection();
-			broker.flush();
+            broker.storeDocument(transaction, document);
+            transact.commit(transaction);
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
 					e.getMessage(),
@@ -387,6 +394,8 @@ public class LocalUserManagementService implements UserManagementService {
 	public void lockResource(Resource res, User u) throws XMLDBException {
 		DocumentImpl doc = null;
 		DBBroker broker = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
 			doc = ((AbstractEXistResource) res).openDocument(broker, Lock.WRITE_LOCK);
@@ -408,8 +417,10 @@ public class LocalUserManagementService implements UserManagementService {
 							"Resource is already locked by user " + lockOwner.getName());
 			}
 			doc.setUserLock(u);
-			collection.saveCollection();
+            broker.storeDocument(transaction, doc);
+            transact.commit(transaction);
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 					e.getMessage(), e);
 		} finally {
@@ -421,6 +432,8 @@ public class LocalUserManagementService implements UserManagementService {
 	public void unlockResource(Resource res) throws XMLDBException {
 		DocumentImpl doc = null;
 		DBBroker broker = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
 			doc = ((AbstractEXistResource) res).openDocument(broker, Lock.WRITE_LOCK);
@@ -434,8 +447,10 @@ public class LocalUserManagementService implements UserManagementService {
 						"Resource is already locked by user " + lockOwner.getName());
 			}
 			doc.setUserLock(null);
-			collection.saveCollection();
+            broker.storeDocument(transaction, doc);
+            transact.commit(transaction);
 		} catch (EXistException e) {
+            transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 					e.getMessage(), e);
 		} finally {
