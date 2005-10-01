@@ -33,6 +33,8 @@ public class RestoreDialog extends JDialog {
 	JTextArea messages;
 	JProgressBar progress;
 
+    Observer progressObserver = new UploadProgressObserver();
+    
 	/**
 	 * @param owner
 	 * @param title
@@ -135,7 +137,7 @@ public class RestoreDialog extends JDialog {
 	}
 	
 	public Observer getObserver() {
-		return new UploadProgressObserver();
+		return progressObserver;
 	}
 
 	class UploadProgressObserver implements Observer {

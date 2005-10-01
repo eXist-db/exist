@@ -106,7 +106,7 @@ implements Comparable, EntityResolver, Cacheable {
 
 	private CatalogResolver resolver;
 
-	private List observers = null;
+	private Observer[] observers = null;
 
     /**
      *  
@@ -905,13 +905,11 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @param indexer
 	 */
 	private void addObserversToIndexer(DBBroker broker, Indexer indexer) {
-		Observer observer;
 		broker.deleteObservers();
 		if (observers != null) {
-			for (Iterator i = observers.iterator(); i.hasNext(); ) {
-				observer = (Observer) i.next();
-				indexer.addObserver(observer);
-				broker.addObserver(observer);
+            for (int i = 0; i < observers.length; i++) {
+				indexer.addObserver(observers[i]);
+				broker.addObserver(observers[i]);
 			}
 		}
 	}
@@ -1249,18 +1247,34 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @see java.util.Observable#addObserver(java.util.Observer)
 	 */
 	public void addObserver(Observer o) {
-		if (observers == null)
-			observers = new ArrayList(1);
-		if (!observers.contains(o))
-			observers.add(o);
+        if (hasObserver(o)) return;
+		if (observers == null) {
+			observers = new Observer[1];
+            observers[0] = o;
+        } else {
+             Observer n[] = new Observer[observers.length + 1];
+             System.arraycopy(observers, 0, n, 0, observers.length);
+             n[observers.length] = o;
+             observers = n;
+        }
 	}
 
+    private boolean hasObserver(Observer o) {
+        if (observers == null)
+            return false;
+        for (int i = 0; i < observers.length; i++) {
+            if (observers[i] == o)
+                return true;
+        }
+        return false;
+    }
+    
 	/* (non-Javadoc)
 	 * @see java.util.Observable#deleteObservers()
 	 */
 	public void deleteObservers() {
 		if (observers != null)
-			observers.clear();
+			observers = null;
 	}
 
 	/* (non-Javadoc)
