@@ -406,6 +406,12 @@ public class NativeBroker extends DBBroker {
 		return out.toString();
 	}
 
+    public void deleteObservers() {
+        super.deleteObservers();
+        textEngine.deleteObservers();
+        elementIndex.deleteObservers();
+    }
+    
 	public void addObserver(Observer o) {
 		super.addObserver(o);
 		textEngine.addObserver(o);
