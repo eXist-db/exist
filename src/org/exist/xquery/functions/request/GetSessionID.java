@@ -39,17 +39,17 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.StringValue;
 
 /**
- * Returns an attribute stored in the current session or an empty sequence
- * if the attribute does not exist.
+ * Returns the ID of the current session or an empty sequence
+ * if there is no session.
  * 
- * @author wolf
+ * @author Adam Retter <adam.retter@devon.gov.uk>
  */
 public class GetSessionID extends Function
 {
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("get-session-id", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns the ID of the current session.",
+			"Returns the ID of the current session or an empty sequence if there is no session.",
 			null,
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 	);
