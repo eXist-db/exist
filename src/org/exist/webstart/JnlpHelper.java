@@ -59,15 +59,15 @@ public class JnlpHelper {
         // Format URL: "http://host:8080/CONTEXT/webstart/exist.jnlp"
         _currentUrl = _request.getRequestURL().toString();
         
-        // Find position of "/CONTEXT", construct URL to exist Base URL
-        String contextPath = _request.getContextPath();
-        int posContextInUrl=_currentUrl.indexOf(contextPath);
-        _existBaseUrl = _currentUrl.substring(0, posContextInUrl) + contextPath;
+        // Find BaseUrl http://host:8080/CONTEXT
+        int webstartPos = _currentUrl.indexOf("/webstart");
+        _existBaseUrl = _currentUrl.substring(0, webstartPos);
         
-        // Find URL to ...../webstart for first line jnlp-file
-        int position = _currentUrl.lastIndexOf("/");
-        _codeBase = _currentUrl.substring(0, position+1);
-        _href = _currentUrl.substring(position+1);
+        // Find codeBase for jarfiles http://host:8080/CONTEXT/webstart
+        _codeBase = _existBaseUrl+"/webstart";
+        
+         // Reconstruct location http://host:8080/CONTEXT/webstart.exist.jnlp
+        _href = _currentUrl;
         
         // Find URL to connect to with client       
         _startUrl = _existBaseUrl.replaceFirst("http:", "xmldb:exist:") + "/xmlrpc";
