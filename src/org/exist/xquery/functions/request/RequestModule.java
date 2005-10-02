@@ -42,6 +42,7 @@ public class RequestModule extends AbstractInternalModule {
 	
 	public static final FunctionDef[] functions = {
 		new FunctionDef(SessionAttributes.signature, SessionAttributes.class),
+		new FunctionDef(GetSessionID.signature, GetSessionID.class),
 		new FunctionDef(GetSessionAttribute.signature, GetSessionAttribute.class),
 		new FunctionDef(SetSessionAttribute.signature, SetSessionAttribute.class),
 		new FunctionDef(InvalidateSession.signature, InvalidateSession.class),
