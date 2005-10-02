@@ -136,7 +136,9 @@ public class LetExpr extends BindingExpression {
 			context.popLocalVariables(mark);
 		} catch (XPathException e) {
 			// add stack trace information (line numbers)
-			throw new XPathException(getASTNode(), e.getMessage(), e);
+            if (e.getLine() == 0)
+                e.setASTNode(getASTNode());
+            throw e;
 		}
 		return resultSequence;
 	}
