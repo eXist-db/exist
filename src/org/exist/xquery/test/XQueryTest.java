@@ -520,39 +520,36 @@ public class XQueryTest extends XMLTestCase {
 				+ "import module namespace foo=\"\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"
 				+ "$foo:bar";			
 			try {
-				exceptionThrown = false;
+				message = "";	
 				result = service.query(query);	
 			} catch (XMLDBException e) {
-				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			assertTrue(exceptionThrown);		
+			assertTrue(message.indexOf("does not match namespace URI") > -1);
 
 			System.out.println("testNamespace 4: ========" );
 			query = "xquery version \"1.0\";\n" 
 				+ "import module namespace foo=\"\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n"
 				+ "$bar";			
 			try {
-				exceptionThrown = false;
+				message = "";	
 				result = service.query(query);					
 			} catch (XMLDBException e) {
-				exceptionThrown = true;
 				message = e.getMessage();
 			}	
-			assertTrue(exceptionThrown);		
+			assertTrue(message.indexOf("No namespace defined for prefix") > -1);
 			
 			System.out.println("testNamespace 5: ========" );
 			query = "xquery version \"1.0\";\n" 
 				+ "import module namespace foo=\"blah\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n"
 				+ "$bar";			
 			try {
-				exceptionThrown = false;
+				message = "";
 				result = service.query(query);					
 			} catch (XMLDBException e) {
-				exceptionThrown = true;
 				message = e.getMessage();
 			}	
-			assertTrue(exceptionThrown);	
+			assertTrue(message.indexOf("No namespace defined for prefix") > -1);	
 			
 			System.out.println("testNamespace 6: ========" );
 			query = "declare namespace x = \"http://www.foo.com\"; \n" +
@@ -591,8 +588,6 @@ public class XQueryTest extends XMLTestCase {
 		Resource doc;
 		ResourceSet result;
 		String query;
-		XMLResource resu;
-		boolean exceptionThrown;
 		String message;				
 		try {
 			doc = testCollection.createResource(MODULE1_NAME, "BinaryResource");
@@ -636,14 +631,12 @@ public class XQueryTest extends XMLTestCase {
 				+ "declare variable $blah:param  {\"value-2\"};\n"			
 				+ "$blah:param";
 			try {
-				exceptionThrown = false;			
+				message = "";	
 				result = service.query(query);	
-				printResult(result);	
 			} catch (XMLDBException e) {
-				exceptionThrown = true;
 				message = e.getMessage();				
 			}			
-			assertTrue(exceptionThrown);
+			assertTrue(message.indexOf("XQST0049") > -1);
 			
 			System.out.println("testModule 3: ========" );
 			query = "xquery version \"1.0\";\n" 
@@ -660,14 +653,12 @@ public class XQueryTest extends XMLTestCase {
 				+ "import module namespace blah=\"bla\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"					
 				+ "$blah:param";
 			try {
-				exceptionThrown = false;			
+				message = "";				
 				result = service.query(query);	
-				printResult(result);	
 			} catch (XMLDBException e) {
-				exceptionThrown = true;
 				message = e.getMessage();				
 			}			
-			assertTrue(exceptionThrown);
+			assertTrue(message.indexOf("does not match namespace URI") > -1);
 			
 			System.out.println("testModule 5: ========" );
 			query = "xquery version \"1.0\";\n" 
@@ -687,14 +678,12 @@ public class XQueryTest extends XMLTestCase {
 				+ "declare namespace foo1=\"foo1\"; \n"
 				+ "$foo1:bar";
 			try {
-				exceptionThrown = false;			
-				result = service.query(query);	
-				printResult(result);	
+				message = "";				
+				result = service.query(query);		
 			} catch (XMLDBException e) {
-				exceptionThrown = true;
 				message = e.getMessage();				
 			}			
-			assertTrue(exceptionThrown);
+			assertTrue(message.indexOf("is not bound") > -1);
 			
 //			Non-heritance check
 			System.out.println("testModule 7: ========" );
@@ -703,14 +692,12 @@ public class XQueryTest extends XMLTestCase {
 				+ "declare namespace foo2=\"foo2\"; \n"
 				+ "$foo2:bar";
 			try {
-				exceptionThrown = false;			
+				message = "";			
 				result = service.query(query);	
-				printResult(result);	
 			} catch (XMLDBException e) {
-				exceptionThrown = true;
 				message = e.getMessage();				
 			}			
-			assertTrue(exceptionThrown);
+			assertTrue(message.indexOf("is not bound") > -1);
 			
 			System.out.println("testModule 8: ========" );
 			query = "xquery version \"1.0\";\n" 
@@ -718,15 +705,13 @@ public class XQueryTest extends XMLTestCase {
 				+ "import module namespace foo2=\"foo\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n"	
 				+ "$foo1:bar";
 			try {
-				exceptionThrown = false;			
-				result = service.query(query);	
-				printResult(result);	
-			} catch (XMLDBException e) {
-				//Should be a XQST0047 error
-				exceptionThrown = true;
+				message = "";			
+				result = service.query(query);						
+			} catch (XMLDBException e) {				
 				message = e.getMessage();				
-			}			
-			assertTrue(exceptionThrown);			
+			}	
+//			Should be a XQST0047 error
+			assertTrue(message.indexOf("does not match namespace URI") > -1);
 			
 		} catch (XMLDBException e) {
 			System.out.println("testModule : XMLDBException: "+e);
