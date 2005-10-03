@@ -22,11 +22,27 @@
 		<pathelement path="${java.class.path}"/>
     </path>
 	
+	<uptodate property="parser.uptodate"
+		srcfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
+		targetfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.java"/>
+	
+	<target depends="prepare" name="antlr" unless="parser.uptodate">
+        <echo message="Running ANTLR to generate XQuery parser"/>
+		<antlr target="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
+                outputdirectory="${src}/org/exist/xquery/modules/simpleql"
+                traceparser="${antlr.traceParser}"
+                tracelexer="${antlr.traceLexer}">
+            <classpath>
+                <path refid="classpath.core"/>
+            </classpath>
+        </antlr>
+	</target>
+		
 	<target name="prepare">
 		<mkdir dir="${classes}"/>
 	</target>
 	
-	<target name="compile" depends="prepare">
+	<target name="compile" depends="prepare, antlr">
 		<echo message="---------------------------"/>
         <echo message="Compiling extension modules"/>
         <echo message="---------------------------"/>
