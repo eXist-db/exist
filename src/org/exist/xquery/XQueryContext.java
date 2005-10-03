@@ -1303,6 +1303,9 @@ public class XQueryContext {
         	throw new XPathException(
         		"error found while loading module from " + location + ": " + e.getMessage(),
         		e);
+        } catch (XPathException e) {
+            e.prependMessage("Error while loading module " + location + ": ");
+            throw e;
         } catch (Exception e) {
             throw new XPathException("Internal error while loading module: " + location, e);
         }
