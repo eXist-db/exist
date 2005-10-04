@@ -1312,7 +1312,7 @@ public class ElementImpl extends NamedNode implements Element {
             }
             if (child.getNodeType() == Node.ELEMENT_NODE)
                 path.addComponent(child.getQName());
-            removeAll(transaction, child, path);
+            ownerDocument.getBroker().removeAll(transaction, child, path);
             if (child.getNodeType() == Node.ELEMENT_NODE)
                 path.removeLastComponent();
         }
