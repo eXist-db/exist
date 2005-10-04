@@ -70,12 +70,23 @@ public class FunctionFactory {
 				near.setASTNode(ast);
 				near.addTerm(e1);
 				near.setPath((PathExpr) params.get(0));
+
 				if (params.size() > 2) {
-					p1 = (PathExpr) params.get(2);
-					if (p1.getLength() == 0)
-						throw new XPathException(ast, "Distance argument to near is empty");
-					near.setDistance(p1);
+				    p1 = (PathExpr) params.get(2);
+				    if (p1.getLength() == 0) {
+					throw new XPathException(ast, "Max distance argument to near is empty");
+				    }
+				    near.setMaxDistance(p1);
+				    
+				    if (params.size() == 4) {
+					p1 = (PathExpr) params.get(3);
+					if (p1.getLength() == 0) {
+					    throw new XPathException(ast, "Min distance argument to near is empty");
+					}
+					near.setMinDistance(p1);
+				    }
 				}
+				
 				step = near;
 			}
 	
