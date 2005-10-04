@@ -48,7 +48,14 @@ public class NodePath {
     
     public NodePath() {
     }
-        
+    
+    public NodePath(NodePath other) {
+        components = new QName[other.components.length];
+        System.arraycopy(other.components, 0, components, 0, other.components.length);
+        pos = other.pos;
+        includeDescendants = other.includeDescendants;
+    }
+    
     /**
      * 
      */
