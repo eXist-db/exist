@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observer;
+import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1280,6 +1281,85 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+    public void removeAll(Txn transaction, NodeImpl node, NodePath currentPath) {
+        Iterator iterator = 
+            getNodeIterator(new NodeProxy((DocumentImpl)node.getOwnerDocument(), node.getGID(), node.getInternalAddress()));
+        iterator.next();
+        Stack stack = new Stack();
+        collectForRemove(stack, iterator, node, currentPath);
+        RemovedNode next;
+        while (!stack.isEmpty()) {
+            next = (RemovedNode) stack.pop();
+            removeNode(transaction, next.node, next.path, next.content);
+        }
+    }
+    
+    private void collectForRemove(Stack stack, Iterator iterator, NodeImpl node, NodePath currentPath) {
+        RemovedNode removed;
+        switch (node.getNodeType()) {
+            case Node.ELEMENT_NODE:
+                DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
+                String content = null;
+                IndexSpec idxSpec = 
+                    doc.getCollection().getIdxConf(this);
+                if (idxSpec != null) {
+                    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+                    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+                    if (spec != null || qnIdx != null) {
+                        NodeProxy p = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
+                        content = getNodeValue(p, false);
+                    }
+                }
+                removed = new RemovedNode(node, new NodePath(currentPath), content);
+                stack.push(removed);
+
+                if (node.hasChildNodes()) {
+                    final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());
+                    if (firstChildId < 0) {
+                        LOG.fatal(
+                            "no child found: expected = "
+                                + node.getChildCount()
+                                + "; node = "
+                                + node.getNodeName()
+                                + "; gid = "
+                                + node.getGID());
+                        throw new IllegalStateException("wrong node id");
+                    }
+                    final long lastChildId = firstChildId + node.getChildCount();
+                    NodeImpl child;
+                    for (long gid = firstChildId; gid < lastChildId; gid++) {
+                        child = (NodeImpl) iterator.next();
+                        if(child == null)
+                            LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
+                                    "; last = " + lastChildId + "; children = " + node.getChildCount());
+                        child.setGID(gid);
+                        if (child.getNodeType() == Node.ELEMENT_NODE)
+                            currentPath.addComponent(((ElementImpl) child).getQName());
+                        collectForRemove(stack, iterator, child, currentPath);
+                        if (child.getNodeType() == Node.ELEMENT_NODE)
+                            currentPath.removeLastComponent();
+                    }
+                }
+                break;
+            default :
+                removed = new RemovedNode(node, new NodePath(currentPath), null);
+                stack.push(removed);
+                break;
+        }
+    }
+    
+    private final static class RemovedNode {
+        NodeImpl node;
+        String content;
+        NodePath path;
+        
+        RemovedNode(NodeImpl node, NodePath path, String content) {
+            this.node = node;
+            this.path = path;
+            this.content = content;
+        }
+    }
+    
 	/**
 	 * Reindex the nodes in the document. This method will either reindex all
 	 * descendant nodes of the passed node, or all nodes below some level of

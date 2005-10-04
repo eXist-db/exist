@@ -635,6 +635,8 @@ public abstract class DBBroker extends Observable {
 		throw new RuntimeException("not implemented");
 	}
 
+    public abstract void removeAll(Txn transaction, NodeImpl node, NodePath currentPath);
+    
 	public void endRemove() {
 		throw new RuntimeException("not implemented");
 	}

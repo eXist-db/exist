@@ -1381,7 +1381,8 @@ public class ElementImpl extends NamedNode implements Element {
         final int level = ownerDocument.getTreeLevel(gid);
         final DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
         final long lastChild = lastChildID();
-        removeAll(transaction, old, old.getPath());
+//        removeAll(transaction, old, old.getPath());
+        ownerDocument.broker.removeAll(transaction, old, old.getPath());
         --children;
         ownerDocument.broker.endRemove();
         ownerDocument.broker.update(transaction, this);
