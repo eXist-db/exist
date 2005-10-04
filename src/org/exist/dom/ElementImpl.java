@@ -1484,7 +1484,7 @@ public class ElementImpl extends NamedNode implements Element {
             previous = this;
         else
             previous = getLastNode(previous);
-        removeAll(transaction, old, old.getPath());
+        ownerDocument.broker.removeAll(transaction, old, old.getPath());
         ownerDocument.broker.endRemove();
         appendChild(transaction, old.gid, new NodeImplRef(previous), getPath(), newChild, true);
         // reindex if required
