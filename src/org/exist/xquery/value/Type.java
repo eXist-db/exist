@@ -65,7 +65,8 @@ public class Type {
 	public final static int BOOLEAN = 23;
 	public final static int QNAME = 24;
 	public final static int ANY_URI = 25;
-	
+	public final static int BASE64_BINARY = 26;
+    
 	public final static int NUMBER = 30;
 	public final static int INTEGER = 31;
 	public final static int DECIMAL = 32;
@@ -136,7 +137,8 @@ public class Type {
 		defineSubType(ATOMIC, DATE);
 		defineSubType(ATOMIC, TIME);
 		defineSubType(ATOMIC, DURATION);
-		
+		defineSubType(ATOMIC, BASE64_BINARY);
+        
 		defineSubType(DURATION, YEAR_MONTH_DURATION);
 		defineSubType(DURATION, DAY_TIME_DURATION);
 		
@@ -219,7 +221,8 @@ public class Type {
 		defineBuiltInType(STRING, "xs:string");
 		defineBuiltInType(QNAME, "xs:QName");
 		defineBuiltInType(ANY_URI, "xs:anyURI");
-		
+		defineBuiltInType(BASE64_BINARY, "xs:base64Binary");
+        
 		defineBuiltInType(DATE_TIME, "xs:dateTime");
 		defineBuiltInType(DATE, "xs:date");
 		defineBuiltInType(TIME, "xs:time");
