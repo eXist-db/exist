@@ -201,4 +201,12 @@ public class Profiler {
             this.start = System.currentTimeMillis();
         }
     }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void setVerbosity(int verbosity) {
+        this.verbosity = verbosity;
+    }
 }

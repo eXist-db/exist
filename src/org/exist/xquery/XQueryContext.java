@@ -235,11 +235,6 @@ public class XQueryContext {
      * Documents locked during the query.
      */
 	private DocumentSet lockedDocuments = null;
-	
-    /**
-     * Is profiling enabled?
-     */
-    private boolean profile = false;
     
     /**
      * The profiler instance used by this context.
@@ -261,7 +256,7 @@ public class XQueryContext {
      * @return true if profiling is enabled for this context.
      */
     public boolean isProfilingEnabled() {
-        return profile;
+        return profiler.isEnabled();
     }
     
     /**
@@ -1382,7 +1377,6 @@ public class XQueryContext {
         if (Pragma.PROFILE_QNAME.compareTo(qn) == 0) {
             // configure profiling
             profiler.configure(pragma);
-            profile = profiler.isEnabled();
         } else if(Pragma.TIMEOUT_QNAME.compareTo(qn) == 0)
 			watchdog.setTimeoutFromPragma(pragma);
         else if(Pragma.OUTPUT_SIZE_QNAME.compareTo(qn) == 0)
