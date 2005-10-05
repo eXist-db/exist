@@ -69,22 +69,22 @@ public class CatchFunction extends Function {
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         Sequence exceptionClasses = getArgument(0).eval(contextSequence, contextItem);
         try {
-            context.pushDocumentContext();
+//            context.pushDocumentContext();
             try {
                 Sequence result = getArgument(1).eval(contextSequence, contextItem);
                 return result;
             } finally {
-                context.popDocumentContext();
+//                context.popDocumentContext();
             }
         } catch(Exception e) {
-            context.popDocumentContext();
+//            context.popDocumentContext();
             context.getWatchDog().reset();
             for(SequenceIterator i = exceptionClasses.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
                 try {
                     Class exClass = Class.forName(next.getStringValue());
                     if(exClass.getName().equals(e.getClass().getName()) || exClass.isInstance(e)) {
-                        LOG.debug("Calling exception handler to process " + e.getClass().getName(), e);
+                        LOG.debug("Calling exception handler to process " + e.getClass().getName());
                         UtilModule myModule =
                 			(UtilModule) context.getModule(UtilModule.NAMESPACE_URI);
                         myModule.declareVariable(UtilModule.EXCEPTION_QNAME, new StringValue(e.getClass().getName()));
@@ -92,7 +92,7 @@ public class CatchFunction extends Function {
                         return getArgument(2).eval(contextSequence, contextItem);
                     }
                 } catch (Exception e2) {
-                    LOG.warn(e2);
+                    LOG.warn("Exception in handler: " + e2.getMessage(), e2);
                 }
             }
             // this type of exception is not caught: throw again
