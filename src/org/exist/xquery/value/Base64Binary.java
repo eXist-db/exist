@@ -80,4 +80,13 @@ public class Base64Binary extends AtomicValue {
             return 0;
         return Integer.MAX_VALUE;
     }
+    
+    public Object toJavaObject(Class target) throws XPathException {
+        if(target.isAssignableFrom(Base64Binary.class))
+            return this;
+        if (target.isArray() && target == Byte.class)
+            return data;
+        throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +
+            " to Java object of type " + target.getName());
+    }
 }
