@@ -277,6 +277,10 @@ public abstract class AtomicValue implements Item, Sequence {
 		// ignore
 	}
 	
+	public void clearContext() {
+		// ignore
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#setSelfAsContext()
 	 */

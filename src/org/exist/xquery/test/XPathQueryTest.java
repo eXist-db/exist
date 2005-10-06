@@ -3,8 +3,9 @@ package org.exist.xquery.test;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import junit.framework.TestCase;
+import javax.xml.transform.OutputKeys;
 
+import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -19,7 +20,7 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XQueryService;
 
-public class XPathQueryTest extends TestCase {
+public class XPathQueryTest extends XMLTestCase {
 
 	private final static String URI = "xmldb:exist:///db";
 	
@@ -264,6 +265,38 @@ public class XPathQueryTest extends TestCase {
 		}
 	}
 
+	public void testPredicates() throws Exception {
+		String numbers =
+			"<test>"
+				+ "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
+				+ "<item id='2'><price>7.4</price><stock>43</stock></item>"
+				+ "<item id='3'><price>18.4</price><stock>5</stock></item>"
+				+ "<item id='4'><price>65.54</price><stock>16</stock></item>"
+				+ "</test>";
+		try {
+			XQueryService service = 
+				storeXMLStringAndGetQueryService("numbers.xml", numbers);
+			service.setProperty(OutputKeys.INDENT, "no");
+			ResourceSet result = queryResource(service, "numbers.xml", "/test/item[2]/price/text()", 1);
+			assertEquals("7.4", result.getResource(0).getContent().toString());
+			
+			result = queryResource(service, "numbers.xml", "/test/item[5]", 0);
+			
+			result = queryResource(service, "numbers.xml", "/test/item[@id='4'][1]/price[1]/text()", 1);
+			assertEquals("65.54",
+					result.getResource(0).getContent().toString());
+			
+			result = queryResource(service, "numbers.xml", "for $i in //item return " +
+					"<item>{$i/price, $i/stock}</item>", 4);
+			assertXMLEqual("<item><price>5.6</price><stock>22</stock></item>",
+					result.getResource(0).getContent().toString());
+			assertXMLEqual("<item><price>65.54</price><stock>16</stock></item>",
+					result.getResource(3).getContent().toString());
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}
+	}
+	
 	public void testStrings() {
 		try {
 			XQueryService service = 

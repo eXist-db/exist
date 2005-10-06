@@ -131,19 +131,22 @@ public class LocationStep extends Step {
 			contextSequence = contextItem.toSequence();
 		if(contextSequence == null || contextSequence.getLength() == 0)
 			return NodeSet.EMPTY_SET;
+        
+        if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
+            context.getProfiler().start(this, Constants.AXISSPECIFIERS[axis] + "::" + test);
+        }
+        
 		if(cached != null &&
 			cached.isValid(contextSequence)) {
-//			LOG.debug("returning cached result for " + ExpressionDumper.dump(this));
+            if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
+                context.getProfiler().end(this, "Returning cached result. Length: " + cached.getResult().getLength());
+            }
 			return 
 			(predicates.size() == 0)
 			? cached.getResult() :
 				applyPredicate(contextSequence, cached.getResult());
 		}
 		Sequence temp;
-		
-		if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
-			context.getProfiler().start(this);
-		}
 
 		switch (axis) {
 			case Constants.DESCENDANT_AXIS :
@@ -193,7 +196,7 @@ public class LocationStep extends Step {
 		}
 		
 		if(contextSequence instanceof NodeSet) {
-			cached = new CachedResult((NodeSet)contextSequence, temp);
+//			cached = new CachedResult((NodeSet)contextSequence, temp);
 		}
 		// remove duplicate nodes
 		temp.removeDuplicates();

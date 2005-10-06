@@ -22,6 +22,7 @@ package org.exist.xquery.value;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.DocumentSet;
@@ -187,6 +188,15 @@ public abstract class AbstractSequence implements Sequence {
 		if(getLength() > 0)
 			return itemAt(0).toJavaObject(target);
 		return null;
+	}
+	
+	public void clearContext() {
+		Item next;
+		for (SequenceIterator i = unorderedIterator(); i.hasNext(); ) {
+			next = i.nextItem();
+			if (next instanceof NodeProxy)
+				((NodeProxy)next).clearContext();
+		}
 	}
 	
 	public void setSelfAsContext() {

@@ -200,6 +200,14 @@ public interface Sequence {
 	 */
 	public void setIsCached(boolean cached);
 	
+	/**
+	 * For every item in the sequence, clear any context-dependant
+	 * information that is stored during query processing. This
+	 * feature is used for node sets, which may store information
+	 * about their context node.
+	 */
+	public void clearContext();
+	
 	public void setSelfAsContext();
     
     public boolean isPersistentSet();
