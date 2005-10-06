@@ -746,4 +746,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
     public boolean isPersistentSet() {
         return false;
     }
+
+	public void clearContext() {
+		// ignored for in-memory nodes		
+	}
 }

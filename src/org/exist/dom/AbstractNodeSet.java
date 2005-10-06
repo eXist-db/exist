@@ -784,6 +784,14 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	    return hasMixedContent;
 	}
     
+	public void clearContext() {
+		NodeProxy p;
+		for (Iterator i = iterator(); i.hasNext(); ) {
+			p = (NodeProxy) i.next();
+			p.clearContext();
+		}
+	}
+	
     /* (non-Javadoc)
      * @see org.exist.xquery.value.AbstractSequence#isPersistentSet()
      */
