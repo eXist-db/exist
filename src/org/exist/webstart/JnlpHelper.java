@@ -70,7 +70,10 @@ public class JnlpHelper {
         _href = _currentUrl;
         
         // Find URL to connect to with client       
-        _startUrl = _existBaseUrl.replaceFirst("http:", "xmldb:exist:") + "/xmlrpc";
+        _startUrl = _existBaseUrl
+                        .replaceFirst("http:", "xmldb:exist:")
+                        .replaceAll("-", "%2D") + "/xmlrpc";
+
     }
     
     /**
