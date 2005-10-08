@@ -1291,10 +1291,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         is.skip(freq);
 						if (contextSet != null) {
 							p = contextSet.parentWithChild(doc, gid, false, true);
-							if (section == ATTRIBUTE_SECTION) {
-								include = p.nodeType == Node.ATTRIBUTE_NODE;
-							} else {
-								include = p != null;
+							if (p != null) {
+								if (section == ATTRIBUTE_SECTION) {
+									include = p.nodeType == Node.ATTRIBUTE_NODE;
+								} else {
+									include = p != null;
+								}
 							}
 							include = contextSet.parentWithChild(doc, gid, false, true) != null;
 						}
