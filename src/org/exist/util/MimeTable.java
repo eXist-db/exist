@@ -107,7 +107,7 @@ public class MimeTable {
         int p = fileName.lastIndexOf('.');
         if (p < 0 || p + 1 == fileName.length())
             return null;
-        return fileName.substring(p);
+        return fileName.substring(p).toLowerCase();
     }
     
     private void load() {
@@ -213,7 +213,7 @@ public class MimeTable {
                     String extList = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
                     StringTokenizer tok = new StringTokenizer(extList, ", ");
                     while (tok.hasMoreTokens()) {
-                        String ext = tok.nextToken();
+                        String ext = tok.nextToken().toLowerCase();
                         if (!extensions.containsKey(ext))
                             extensions.put(ext, mime);
                     }
