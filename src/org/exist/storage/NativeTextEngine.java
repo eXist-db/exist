@@ -1298,7 +1298,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 									include = p != null;
 								}
 							}
-							include = contextSet.parentWithChild(doc, gid, false, true) != null;
 						}
 						if (include) {
 							if (oc == null) {
