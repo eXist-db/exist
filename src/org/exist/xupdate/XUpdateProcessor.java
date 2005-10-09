@@ -394,9 +394,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					for(int i = 0; i < contents.getLength(); i++) {
 						Node n = contents.item(i);
 						String ns = n.getNamespaceURI();
+						String nname = ns == null ? n.getNodeName() : n.getLocalName();
 						if(ns == null) ns = "";
+						// check for duplicate attributes
 						if(n.getNodeType() == Node.ATTRIBUTE_NODE &&
-								n.getLocalName().equals(name) &&
+								nname.equals(name) &&
 								ns.equals(namespace))
 							throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified twice");
 					}
