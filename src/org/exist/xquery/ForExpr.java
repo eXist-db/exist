@@ -36,6 +36,8 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import sun.security.action.GetLongAction;
+
 /**
  * Represents an XQuery "for" expression.
  * 
@@ -113,6 +115,11 @@ public class ForExpr extends BindingExpression {
 		Item contextItem,
 		Sequence resultSequence)
 		throws XPathException {
+
+        context.getProfiler().start(this, "for expression: " + 
+        		// " line " +getASTNode().getLine() +
+        		ExpressionDumper.dump(this) );
+
 		// Save the local variable stack
 		LocalVariable mark = context.markLocalVariables(false);
 		
@@ -236,6 +243,9 @@ public class ForExpr extends BindingExpression {
 		
 		// restore the local variable stack
 		context.popLocalVariables(mark);
+		
+        context.getProfiler().end(  this, "for expression: " + this );
+
 		return resultSequence;
 	}
 
