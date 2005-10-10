@@ -129,9 +129,12 @@ public class EvalFunction extends BasicFunction {
 			LOG.debug("Found " + sequence.getLength() + " for " + expr);
 			LOG.debug("Query took " + (System.currentTimeMillis() - start));
 			return sequence;
-		} catch (RecognitionException e) {
-			throw new XPathException("error found while executing eval expression: " + e.getMessage(), 
-					e.getLine(), e.getColumn());
+		} catch (RecognitionException e) {			
+			throw new XPathException( getASTNode(),
+				"error found while executing eval expression: " 
+					+ " \"" + expr + " \" - "
+					+ e.getMessage()
+			);
 		} catch (TokenStreamException e) {
 			throw new XPathException(getASTNode(), e.getMessage(), e);
 		} finally {
