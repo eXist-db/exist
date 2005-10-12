@@ -115,12 +115,26 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 	 * @see org.xml.sax.ContentHandler#startDocument()
 	 */
 	public void startDocument() throws SAXException {
+		try
+		{
+			receiver.startDocument();
+		}
+		catch (TransformerException e) {
+			throw new SAXException(e.getMessage(), e);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#endDocument()
 	 */
 	public void endDocument() throws SAXException {
+		try
+		{
+			receiver.endDocument();
+		}
+		catch (TransformerException e) {
+			throw new SAXException(e.getMessage(), e);
+		}
 	}
 
 	/* (non-Javadoc)
