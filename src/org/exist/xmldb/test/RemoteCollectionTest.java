@@ -82,7 +82,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
 
 	public void testGetServices() throws XMLDBException {
 	    Service[] services = getCollection().getServices();
-	    assertEquals(7, services.length);
+	    assertEquals(8, services.length);
 	    assertEquals(RemoteXPathQueryService.class, services[0].getClass());
 	    assertEquals(RemoteCollectionManagementService.class, services[1].getClass());
 	    assertEquals(RemoteUserManagementService.class, services[2].getClass());
