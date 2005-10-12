@@ -459,9 +459,9 @@ public abstract class Serializer implements XMLReader {
 	}
 
 	protected void setPrettyPrinter(Writer writer, boolean xmlDecl) {
-		outputProperties.setProperty(
-			OutputKeys.OMIT_XML_DECLARATION,
-			xmlDecl ? "no" : "yes");
+		//outputProperties.setProperty(			//Hmmm, what was this meant to do? Just seemed to set omit-xml-declaration="yes". Seems better without it - delirium
+		//	OutputKeys.OMIT_XML_DECLARATION,
+		//	xmlDecl ? "no" : "yes");
         xmlout = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 		xmlout.setOutput(writer, outputProperties);
 		if (getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes")
