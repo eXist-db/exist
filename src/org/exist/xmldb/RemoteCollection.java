@@ -39,6 +39,7 @@ import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.schema.RemoteSchemaService;
 import org.exist.security.Permission;
+import org.exist.validation.service.RemoteValidationService;
 import org.exist.xmlrpc.RpcServer;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -203,11 +204,13 @@ public class RemoteCollection implements CollectionImpl {
 			return new RemoteXUpdateQueryService(this);
 		if (name.equals("SchemaService"))
 			return new RemoteSchemaService(this);
+		if (name.equals("ValidationService"))
+			return new RemoteValidationService(this, rpcClient);
 		throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
 	}
 
 	public Service[] getServices() throws XMLDBException {
-		Service[] services = new Service[7];
+		Service[] services = new Service[8];
 		services[0] = new RemoteXPathQueryService(this);
 		services[1] = new RemoteCollectionManagementService(this, rpcClient);
 		services[2] = new RemoteUserManagementService(this);
@@ -215,6 +218,7 @@ public class RemoteCollection implements CollectionImpl {
 		services[4] = new RemoteIndexQueryService(rpcClient, this);
 		services[5] = new RemoteXUpdateQueryService(this);
 		services[6] = new RemoteSchemaService(this);
+        services[7] = new RemoteValidationService(this, rpcClient);
 		return services;
 	}
 
