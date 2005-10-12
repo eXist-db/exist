@@ -122,6 +122,7 @@ public class XMLWriter {
 		tagIsOpen = false;
 		tagIsEmpty = true;
 		declarationWritten = false;
+		doctypeWritten = false;
 	}
 
 	public void endDocument() throws TransformerException {
