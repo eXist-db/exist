@@ -16,8 +16,7 @@ import junit.framework.TestSuite;
  *
  * @author wessels
  */
-public class EntityResolverTest extends TestCase {
-    
+public class EntityResolverTest extends TestCase {  
     
     public EntityResolverTest(String testName) {
         super(testName);
@@ -34,8 +33,10 @@ public class EntityResolverTest extends TestCase {
     }
     
     protected void setUp() throws Exception {
-        
         //
     }
     
+    public void testDummyTestmethod() throws Exception {
+        //
+    }
 }
