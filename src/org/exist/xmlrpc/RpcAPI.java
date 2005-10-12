@@ -802,5 +802,8 @@ public interface RpcAPI {
 	throws EXistException, PermissionDeniedException;
 	
 	boolean dataBackup(User user, String dest) throws PermissionDeniedException;
+    
+    /// DWES
+    boolean isValid(User user, String name)	throws EXistException, PermissionDeniedException;
 
 }

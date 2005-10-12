@@ -83,6 +83,7 @@ import org.exist.util.ProgressBar;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.validation.service.ValidationService;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
@@ -326,10 +327,10 @@ public class InteractiveClient {
                         + childResources[j];
             } else
                 resources[i] = childResources[j];
-
+            
             Date lastModificationTime = ((EXistResource)res).getLastModificationTime();
             resources[i] += "\t" + lastModificationTime;
-            	
+            
             if (startGUI) {
                 tableData.add(new ResourceDescriptor.Document(
                         childResources[j],
@@ -966,6 +967,17 @@ public class InteractiveClient {
                     else
                         messageln("there were errors.");
                 }
+                //new DWES
+            }  else if (args[0].equalsIgnoreCase("validate_")) {
+                if (args.length < 2)
+                    messageln("missing document name.");
+                else {
+                    ValidationService validationService = (ValidationService) current.getService("ValidationService", "1.0");
+                    if (validationService.validateResource(args[1]))
+                        messageln("document is valid.");
+                    else
+                        messageln("document is not valid.");
+                }
                 
             }  else if (args[0].equalsIgnoreCase("putschema")) {
                 if (args.length < 2) {
@@ -1142,16 +1154,16 @@ public class InteractiveClient {
         
         public void run() {
             try {
-                // Collection collection = 
+                // Collection collection =
                 DatabaseManager.getCollection(
-                        properties.getProperty("uri") + path, 
+                        properties.getProperty("uri") + path,
                         properties.getProperty("user"),
                         properties.getProperty("password"));
                 XPathQueryService service = (XPathQueryService) current
                         .getService("XPathQueryService", "1.0");
                 service.setProperty(OutputKeys.INDENT, "yes");
                 service.setProperty(OutputKeys.ENCODING,
-                		properties.getProperty("encoding"));
+                        properties.getProperty("encoding"));
                 Random r = new Random(System.currentTimeMillis());
                 String query;
                 for (int i = 0; i < 10; i++) {
@@ -1367,12 +1379,12 @@ public class InteractiveClient {
         long start0 = System.currentTimeMillis();
         long bytes = 0;
         MimeType mimeType;
-		for (int i = 0; i < files.length; i++) {
+        for (int i = 0; i < files.length; i++) {
             if (files[i].isDirectory())
                 continue;
-			start = System.currentTimeMillis();
+            start = System.currentTimeMillis();
             mimeType = MimeTable.getInstance().getContentTypeFor(files[i].getName());
-			if(mimeType == null)
+            if(mimeType == null)
                 mimeType = MimeType.BINARY_TYPE;
             document = current.createResource(files[i].getName(),
                     mimeType.getXMLDBType());

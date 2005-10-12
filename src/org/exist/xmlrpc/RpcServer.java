@@ -1870,4 +1870,21 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
 	         pool.release(con);
 	     }
     }
+    
+    // DWES
+     public boolean isValid(User user, String name) throws EXistException, PermissionDeniedException{
+         boolean retVal=false;
+         RpcConnection con = pool.get();
+	     try {
+	         retVal = con.isValid(user,name);
+
+	     } catch (Exception e) {
+	         handleException(e);
+
+	     } finally {
+	         pool.release(con);
+	     }
+         
+         return retVal;
+     }
 }
