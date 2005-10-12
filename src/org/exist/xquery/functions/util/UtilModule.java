@@ -65,7 +65,8 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(Serialize.signature, Serialize.class),
         new FunctionDef(BinaryDoc.signature, BinaryDoc.class),
         new FunctionDef(Profile.signatures[0], Profile.class),
-        new FunctionDef(Profile.signatures[1], Profile.class)
+        new FunctionDef(Profile.signatures[1], Profile.class),
+        new FunctionDef(SystemTime.signature, SystemTime.class)
 	};
 	
 	public final static QName EXCEPTION_QNAME = 
