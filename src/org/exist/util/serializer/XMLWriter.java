@@ -340,7 +340,8 @@ public class XMLWriter {
 			writer.write("<!DOCTYPE ");
 			writer.write(name);
 			if (publicId != null) {
-				writer.write(" PUBLIC \"" + publicId + "\"");
+				//writer.write(" PUBLIC \"" + publicId + "\"");
+				writer.write(" PUBLIC \"" + publicId.replace("&#160;", " ") + "\"");	//workaround for XHTML doctype, declare does not allow spaces so use &#160; instead and then replace each &#160; with a space here - delirium 
 			}
 			if (systemId != null) {
                 if (publicId == null)
