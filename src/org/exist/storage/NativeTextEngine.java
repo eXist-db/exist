@@ -1290,6 +1290,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 						freq = is.readInt();
                         is.skip(freq);
 						if (contextSet != null) {
+							include = false;
 							p = contextSet.parentWithChild(doc, gid, false, true);
 							if (p != null) {
 								if (section == ATTRIBUTE_SECTION) {
