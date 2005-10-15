@@ -129,7 +129,7 @@ public class LocationStep extends Step {
 		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		if(contextSequence == null || contextSequence.getLength() == 0)
+		if(contextSequence == null)
 			return NodeSet.EMPTY_SET;
         
         if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
