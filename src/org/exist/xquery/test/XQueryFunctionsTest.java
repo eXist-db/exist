@@ -116,6 +116,24 @@ public class XQueryFunctionsTest extends TestCase {
 		}
 	}
 	
+	public void testDistinctValues() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			result 	= service.query( "declare variable $c { distinct-values(('a', 'a')) }; $c" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "a", r );	
+			
+			result 	= service.query( "declare variable $c { distinct-values((<a>a</a>, <b>a</b>)) }; $c" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "a", r );				
+		
+		} catch (XMLDBException e) {
+			System.out.println("testTokenize(): " + e);
+			fail(e.getMessage());
+		}
+	}	
+	
 	/*
 	 * @see TestCase#setUp()
 	 */
