@@ -156,6 +156,30 @@ public class XQueryFunctionsTest extends TestCase {
 			System.out.println("testTokenize(): " + e);
 			fail(e.getMessage());
 		}
+	}	
+	
+	public void testAvg() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			result 	= service.query( "declare variable $c { avg((2, 2)) }; $c" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "2", r );	
+			
+			result 	= service.query( "declare variable $c { avg((<a>2</a>, <b>2</b>)) }; $c" );
+			r 		= (String) result.getResource(0).getContent();
+			//Any untyped atomic values in the resulting sequence 
+			//(typically, values extracted from nodes in a schemaless document)
+			//are converted to xs:double values ([MK Xpath 2.0], p. 301)
+			assertEquals( "2.0", r );	
+			
+			result 	= service.query( "declare variable $c { avg(()) }; $c" );		
+			assertEquals( 0, result.getSize());				
+
+		} catch (XMLDBException e) {
+			System.out.println("testTokenize(): " + e);
+			fail(e.getMessage());
+		}
 	}		
 	
 	/*

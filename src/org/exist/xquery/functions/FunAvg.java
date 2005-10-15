@@ -70,15 +70,19 @@ public class FunAvg extends Function {
 			return Sequence.EMPTY_SEQUENCE;
 
 		SequenceIterator iter = inner.iterate();
-		AtomicValue next = (AtomicValue) iter.nextItem();
-		if (!Type.subTypeOf(next.getType(), Type.NUMBER))
-			next = next.convertTo(Type.DOUBLE);
-		ComputableValue sum = (ComputableValue) next;
+		Item nextItem;
+		AtomicValue nextValue;
+		nextItem = iter.nextItem();
+		nextValue = nextItem.atomize();
+		if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
+			nextValue = nextValue.convertTo(Type.DOUBLE);
+		ComputableValue sum = (ComputableValue) nextValue;
 		while (iter.hasNext()) {
-			next = (AtomicValue) iter.nextItem();
-			if (!Type.subTypeOf(next.getType(), Type.NUMBER))
-				next = next.convertTo(Type.DOUBLE);
-			sum = sum.plus((NumericValue) next);
+			nextItem = iter.nextItem();
+			nextValue = nextItem.atomize();
+			if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
+				nextValue = nextValue.convertTo(Type.DOUBLE);
+			sum = sum.plus((NumericValue) nextValue);
 		}
 		return sum.div(new IntegerValue(inner.getLength()));
 	}
