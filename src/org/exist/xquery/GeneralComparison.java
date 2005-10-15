@@ -347,7 +347,8 @@ public class GeneralComparison extends BinaryOp {
 	        // if key does not implement Indexable, we can't use the index
 	        if(key instanceof Indexable && Type.subTypeOf(key.getType(), indexType)) {
 	        	if(truncation != Constants.TRUNC_NONE) {
-	        	    LOG.debug("Using value index for key: " +  Type.getTypeName(key.getType()) + ": " 
+	        		if (context.isProfilingEnabled())
+	        			context.getProfiler().message(this, "Using value index for key: " +  Type.getTypeName(key.getType()) + ": " 
                             + key.getStringValue());
 					try {
 						result = context.getBroker().getValueIndex().match(docs, nodes, rightSeq.getStringValue().replace('%', '*'), 
@@ -356,8 +357,9 @@ public class GeneralComparison extends BinaryOp {
 						throw new XPathException(getASTNode(), e.getMessage(), e);
 					}
 	        	} else {
-		            LOG.debug("Using value index for key: " + Type.getTypeName(key.getType()) + ": " 
-							+ key.getStringValue());
+	        		if (context.isProfilingEnabled())
+	        			context.getProfiler().message(this, "Using value index for key: " +  Type.getTypeName(key.getType()) + ": " 
+                            + key.getStringValue());
 		            result = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
 				}
 	        } else
