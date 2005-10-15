@@ -66,6 +66,8 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(BinaryDoc.signature, BinaryDoc.class),
         new FunctionDef(Profile.signatures[0], Profile.class),
         new FunctionDef(Profile.signatures[1], Profile.class),
+        new FunctionDef(PrologFunctions.signatures[0], PrologFunctions.class),
+        new FunctionDef(PrologFunctions.signatures[1], PrologFunctions.class),
         new FunctionDef(SystemTime.signature, SystemTime.class)
 	};
 	
