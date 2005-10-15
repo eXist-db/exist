@@ -136,7 +136,7 @@ public class Profiler {
             
             if (message != null) {
                 buf.setLength(0);
-                printPosition(e);
+                printPosition(e.expr);
                 buf.append('\t');
                 buf.append("START\t\t- ");
                 buf.append(message);
@@ -165,7 +165,7 @@ public class Profiler {
         
         long elapsed = System.currentTimeMillis() - e.start;
         buf.setLength(0);
-        printPosition(e);
+        printPosition(e.expr);
         buf.append("\tEND\t");
         buf.append(elapsed);
         buf.append("ms - ");
@@ -174,6 +174,25 @@ public class Profiler {
         log.debug(buf.toString());
     }
 
+    /**
+     * Print out a single profiling message for the given 
+     * expression object.
+     * 
+     * @param expr
+     * @param message
+     */
+    public final void message(Expression expr, String message) {
+    	if (!enabled)
+    		return;
+    	
+    	buf.setLength(0);
+    	printPosition(expr);
+    	buf.append("\tMSG\t");
+    	if (message != null)
+    		buf.append(message);
+    	log.debug(buf.toString());
+    }
+    
     public void reset() {
         queryStarted = false;
     }
@@ -181,8 +200,8 @@ public class Profiler {
     /**
      * @param e
      */
-    private void printPosition(ProfiledExpr e) {
-        XQueryAST ast = e.expr.getASTNode();
+    private void printPosition(Expression expr) {
+        XQueryAST ast = expr.getASTNode();
         if (ast != null) {
             buf.append('[');
             buf.append(ast.getColumn());
