@@ -74,9 +74,12 @@ package org.exist.storage.btree;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
+import org.exist.storage.journal.LogException;
 import org.exist.storage.journal.Lsn;
 import org.exist.util.ByteConversion;
 
@@ -96,6 +99,7 @@ public abstract class Paged {
 	protected static int PAGE_SIZE = 4096;
 	
 	private RandomAccessFile raf;
+	private FileLock fileLock;
 	private File file;
 	private FileHeader fileHeader;
 	private boolean readOnly = false;
@@ -110,7 +114,7 @@ public abstract class Paged {
 		tempHeaderData = new byte[fileHeader.pageHeaderSize];
 	}
 
-	public Paged(File file) {
+	public Paged(File file) throws DBException {
 		this();
 		setFile(file);
 	}
@@ -372,7 +376,7 @@ public abstract class Paged {
 	 *
 	 *@param  file  The File
 	 */
-	protected final void setFile(final File file) {
+	protected final void setFile(final File file) throws DBException {
 		this.file = file;
 		fileIsNew = !file.exists();
 		try {
@@ -382,8 +386,14 @@ public abstract class Paged {
 				readOnly = true;
 				raf = new RandomAccessFile(file, "r");
 			}
-		} catch (Exception e) {
-            e.printStackTrace();
+			
+			FileChannel channel = raf.getChannel();			
+			if (channel.tryLock() == null)
+				throw new DBException("Failed to open database file: " + file.getAbsolutePath() +
+						". It is locked by another process.");
+		} catch (IOException e) {
+			LOG.warn("An exception occured while opening database file " + file.getAbsolutePath() +
+					": " + e.getMessage(), e);
 		}
 	}
 
