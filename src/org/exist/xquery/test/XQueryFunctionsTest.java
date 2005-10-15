@@ -180,7 +180,57 @@ public class XQueryFunctionsTest extends TestCase {
 			System.out.println("testTokenize(): " + e);
 			fail(e.getMessage());
 		}
-	}		
+	}	
+	
+	public void testMin() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			result 	= service.query( "declare variable $c { min((1, 2)) }; $c" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "1", r );	
+			
+			result 	= service.query( "declare variable $c { min((<a>1</a>, <b>2</b>)) }; $c" );
+			r 		= (String) result.getResource(0).getContent();
+			//Any untyped atomic values in the resulting sequence 
+			//(typically, values extracted from nodes in a schemaless document)
+			//are converted to xs:double values ([MK Xpath 2.0], p. 372)
+			assertEquals( "1", r );	
+			
+			result 	= service.query( "declare variable $c { min(()) }; $c" );		
+			assertEquals( 0, result.getSize());	
+			
+
+		} catch (XMLDBException e) {
+			System.out.println("testTokenize(): " + e);
+			fail(e.getMessage());
+		}
+	}	
+	
+	public void testMax() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			result 	= service.query( "declare variable $c { max((1, 2)) }; $c" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "2", r );	
+			
+			result 	= service.query( "declare variable $c { max((<a>1</a>, <b>2</b>)) }; $c" );
+			r 		= (String) result.getResource(0).getContent();
+			//Any untyped atomic values in the resulting sequence 
+			//(typically, values extracted from nodes in a schemaless document)
+			//are converted to xs:double values ([MK Xpath 2.0], p. 370)
+			assertEquals( "2", r );	
+			
+			result 	= service.query( "declare variable $c { max(()) }; $c" );		
+			assertEquals( 0, result.getSize());	
+			
+
+		} catch (XMLDBException e) {
+			System.out.println("testTokenize(): " + e);
+			fail(e.getMessage());
+		}
+	}	
 	
 	/*
 	 * @see TestCase#setUp()
