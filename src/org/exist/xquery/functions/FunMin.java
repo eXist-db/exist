@@ -31,6 +31,7 @@ import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
@@ -83,18 +84,23 @@ public class FunMin extends CollatingFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		Collator collator = getCollator(contextSequence, contextItem, 2);
 		SequenceIterator iter = arg.iterate();
-		AtomicValue min = (AtomicValue) iter.nextItem();
-		AtomicValue current;
+		Item nextItem;
+		AtomicValue nextValue;
+		nextItem = iter.nextItem();
+		nextValue = nextItem.atomize();
+		AtomicValue min = nextValue;
 		while (iter.hasNext()) {
-			current = (AtomicValue) iter.nextItem();
-			if (current.getType() == Type.ATOMIC)
-				current = current.convertTo(Type.DOUBLE);
-			if (Type.subTypeOf(current.getType(), Type.NUMBER)
-				&& ((NumericValue) current).isNaN())
+			nextItem = iter.nextItem();
+			nextValue = nextItem.atomize();
+			if (nextValue.getType() == Type.ATOMIC)
+				nextValue = nextValue.convertTo(Type.DOUBLE);
+			if (Type.subTypeOf(nextValue.getType(), Type.NUMBER)
+				&& ((NumericValue) nextValue).isNaN())
 				return DoubleValue.NaN;
 
-			min = min.min(collator, current);
+			min = min.min(collator, nextValue);
 		}
+//		TODO : return a ComputableValue ?
 		return min;
 	}
 

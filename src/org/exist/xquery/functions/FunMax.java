@@ -88,20 +88,25 @@ public class FunMax extends CollatingFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		Collator collator = getCollator(contextSequence, contextItem, 2);
 		SequenceIterator iter = arg.unorderedIterator();
-		AtomicValue max = (AtomicValue)iter.nextItem();
+		Item nextItem;
+		AtomicValue nextValue;
+		nextItem = iter.nextItem();
+		nextValue = nextItem.atomize();
+		AtomicValue max = nextValue;
 		if(max.getType() == Type.ATOMIC)
-			max = max.convertTo(Type.DOUBLE);
-		AtomicValue current;
+			max = max.convertTo(Type.DOUBLE);		
 		while(iter.hasNext()) {
-			current = (AtomicValue)iter.nextItem();
-			if(current.getType() == Type.ATOMIC)
-				current = current.convertTo(Type.DOUBLE);
-			if(Type.subTypeOf(current.getType(), Type.NUMBER) &&
-				((NumericValue)current).isNaN())
+			nextItem = iter.nextItem();
+			nextValue = nextItem.atomize();
+			if(nextValue.getType() == Type.ATOMIC)
+				nextValue = nextValue.convertTo(Type.DOUBLE);
+			if(Type.subTypeOf(nextValue.getType(), Type.NUMBER) &&
+				((NumericValue)nextValue).isNaN())
 				return DoubleValue.NaN;
 				
-			max = max.max(collator, current);
+			max = max.max(collator, nextValue);
 		}
+//		TODO : return a ComputableValue ?
 		return max;
 	}
 }
