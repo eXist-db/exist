@@ -209,7 +209,6 @@ public class NativeBroker extends DBBroker {
 		Paged.setPageSize(pageSize);
 
 		try {
-			createIndexFiles();
 
 			if ((domDb = (DOMFile) config.getProperty("db-connection.dom")) == null) {
 				domDb =
@@ -235,6 +234,8 @@ public class NativeBroker extends DBBroker {
 					readOnly = collectionsDb.isReadOnly();
             }
             
+			createIndexFiles();
+			
 			if (readOnly)
 				LOG.info("database runs in read-only mode");
 			

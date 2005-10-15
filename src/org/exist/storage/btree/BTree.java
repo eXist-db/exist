@@ -162,7 +162,8 @@ public class BTree extends Paged {
     
     protected boolean isTransactional;
     
-	protected BTree(BrokerPool pool, byte fileId, boolean transactional, CacheManager cacheManager, double growthThreshold) {
+	protected BTree(BrokerPool pool, byte fileId, boolean transactional, CacheManager cacheManager, double growthThreshold)
+	throws DBException {
 		super();
         this.cacheManager = cacheManager;
         this.buffers = cacheManager.getDefaultInitialSize();
@@ -176,7 +177,8 @@ public class BTree extends Paged {
             logManager = pool.getTransactionManager().getJournal();
 	}
 
-	public BTree(BrokerPool pool, byte fileId, boolean transactional, CacheManager cacheManager, File file, double growthThreshold) {
+	public BTree(BrokerPool pool, byte fileId, boolean transactional, CacheManager cacheManager, File file, double growthThreshold) 
+	throws DBException {
         this(pool, fileId, transactional, cacheManager, growthThreshold);
 		setFile(file);
 	}

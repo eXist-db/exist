@@ -333,9 +333,15 @@ public class Journal {
                 FileOutputStream os = new FileOutputStream(file, true);
 				channel = os.getChannel();
 	            
+				if (channel.tryLock() == null)
+					throw new LogException("Failed to open journal file: " + file.getAbsolutePath() +
+							". It is locked by another process.");
 	            syncThread.setChannel(channel);
 			} catch (FileNotFoundException e) {
 				throw new LogException("Failed to open new journal: " + file.getAbsolutePath(), e);
+			} catch (IOException e) {
+				throw new LogException("Failed to open new journal: " + file.getAbsolutePath() +
+						". It might be used by another process.", e);
 			}
         }
         inFilePos = 0;

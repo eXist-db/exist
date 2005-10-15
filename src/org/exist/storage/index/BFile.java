@@ -829,7 +829,7 @@ public class BFile extends BTree {
         	fileHeader.removeFreeSpace(space);
     }
 
-    public void setLocation(String location) {
+    public void setLocation(String location) throws DBException {
         setFile(new File(location + ".dbx"));
     }
 
