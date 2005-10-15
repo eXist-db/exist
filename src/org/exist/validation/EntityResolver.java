@@ -94,18 +94,23 @@ public class EntityResolver  implements XMLEntityResolver {
         int type=0;
         
         if( xrid.getNamespace() !=null ){
+            logger.debug("Resolving namespace '"+xrid.getNamespace()+"'.");
             type=DatabaseResources.GRAMMAR_XSD;
             resourcePath = databaseResources.getGrammarPath(type, xrid.getNamespace() );
             
         } else if ( xrid.getPublicId() !=null ){
+            logger.debug("Resolving publicId '"+xrid.getPublicId()+"'.");
             type=DatabaseResources.GRAMMAR_DTD;
             resourcePath = databaseResources.getGrammarPath(type,  xrid.getPublicId() );
             
         } else {
-            // Fast escape; otherwise valiation is slow!
+            // Fast escape; no logging, otherwise validation is slow!
             return null;
-            
+           
         }
+        
+        // TODO: if resourcepath = null then default resolver must be checked.
+        
                 
         if(resourcePath == null || resourcePath.equals("NONE") ){
             logger.debug("Resource not found in database");
