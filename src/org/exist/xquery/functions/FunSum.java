@@ -77,18 +77,22 @@ public class FunSum extends Function {
 		if (inner.getLength() == 0)
 			return zero;
 
+		Item nextItem;
+		AtomicValue nextValue;
 		SequenceIterator iter = inner.iterate();
-		AtomicValue next = (AtomicValue) iter.nextItem();
-		if (!Type.subTypeOf(next.getType(), Type.NUMBER))
-			next = next.convertTo(Type.DOUBLE);
-		ComputableValue sum = (ComputableValue) next;
+		nextItem = iter.nextItem();
+		nextValue = nextItem.atomize();
+		if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
+			nextValue = nextValue.convertTo(Type.DOUBLE);
+		ComputableValue sum = (ComputableValue) nextValue;
 		while (iter.hasNext()) {
-			next = (AtomicValue) iter.nextItem();
-			if (!Type.subTypeOf(next.getType(), Type.NUMBER))
-				next = next.convertTo(Type.DOUBLE);
-			if(((NumericValue)next).isNaN())
+			nextItem = iter.nextItem();
+			nextValue = nextItem.atomize();
+			if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
+				nextValue = nextValue.convertTo(Type.DOUBLE);
+			if(((NumericValue)nextValue).isNaN())
 				return DoubleValue.NaN;
-			sum = sum.plus((NumericValue) next);
+			sum = sum.plus((NumericValue) nextValue);
 		}
 		return sum;
 	}

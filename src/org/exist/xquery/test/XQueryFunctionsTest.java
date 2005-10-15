@@ -134,6 +134,30 @@ public class XQueryFunctionsTest extends TestCase {
 		}
 	}	
 	
+	public void testSum() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			result 	= service.query( "declare variable $c { sum((1, 2)) }; $c" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "3", r );	
+			
+			result 	= service.query( "declare variable $c { sum((<a>1</a>, <b>2</b>)) }; $c" );
+			r 		= (String) result.getResource(0).getContent();
+			//Any untyped atomic values in the sequence are converted to xs:double values ([MK Xpath 2.0], p. 432)
+			assertEquals( "3.0", r );	
+			
+			result 	= service.query( "declare variable $c { sum((), 3) }; $c" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "3", r );			
+			
+
+		} catch (XMLDBException e) {
+			System.out.println("testTokenize(): " + e);
+			fail(e.getMessage());
+		}
+	}		
+	
 	/*
 	 * @see TestCase#setUp()
 	 */
