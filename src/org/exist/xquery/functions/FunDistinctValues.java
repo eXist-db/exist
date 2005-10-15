@@ -87,9 +87,11 @@ public class FunDistinctValues extends Function {
 		Sequence values = getArgument(0).eval(contextSequence);
 		TreeSet set = new TreeSet(new ValueComparator(context.getCollator(null)));
 		ValueSequence result = new ValueSequence();
+		Item item;
 		AtomicValue value;
 		for (SequenceIterator i = values.iterate(); i.hasNext();) {
-			value = (AtomicValue) i.nextItem();
+			item = i.nextItem();
+			value = item.atomize();
 			if (!set.contains(value)) {
 				set.add(value);
 				result.add(value);
