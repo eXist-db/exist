@@ -81,11 +81,8 @@ public class ResourceThread extends Thread {
         
         try {
             broker = brokerPool.get(SecurityManager.SYSTEM_USER);
-        } catch (EXistException ex){
-            logger.error(ex);
-        }
-        
-        try{
+            
+            
             DocumentImpl doc = broker.openDocument(resourceId, Lock.READ_LOCK);
             
             if(doc==null){
@@ -100,16 +97,21 @@ public class ResourceThread extends Thread {
             writer.flush();
             writer.close();
             
+        } catch (EXistException ex){
+            logger.error(ex);
         } catch (PermissionDeniedException ex){
             logger.error(ex);
         } catch (SAXException ex){
             logger.error(ex);
         } catch (IOException ex){
             logger.error(ex);
+        } finally {
+            if(brokerPool!=null){
+                brokerPool.release(broker);
+            }
         }
         
-        //TODO part of finally statement!
-        brokerPool.release(broker); 
+        
         logger.debug("Writing XML resource ready." );
     }
     

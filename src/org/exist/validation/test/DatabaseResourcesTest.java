@@ -24,29 +24,33 @@ package org.exist.validation.test;
 
 import java.io.File;
 import java.io.FileInputStream;
+
 import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
 import org.exist.validation.internal.DatabaseResources;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Database;
+
 
 /**
+ *  "DatabaseResources.class "jUnit tests.
  *
- * @author wessels
+ * @author dizzzz
  */
 public class DatabaseResourcesTest extends TestCase {
+    
+    private final static String ABOOKFILES="samples/validation/addressbook";
     
     private String eXistHome = null;
     private BrokerPool pool = null;
     private Validator validator = null;
-    private DatabaseResources dbr = null;
-    private final static String ABOOKFILES="samples/validation/addressbook";
+    private DatabaseResources dbResources = null;
+    
     
     public DatabaseResourcesTest(String testName) {
         super(testName);
@@ -54,21 +58,23 @@ public class DatabaseResourcesTest extends TestCase {
     
     protected void setUp() throws Exception {
         System.out.println(">>> setUp");
-        eXistHome = System.getProperty("exist.home");
+        
+        if(eXistHome==null){
+            eXistHome = System.getProperty("exist.home");
+        }
         
         if(pool==null){
             pool = startDB();
         }
         
-        
         if(validator==null){
             validator = new Validator(pool);
         }
         
-        if(dbr==null){
-            dbr = validator.getDatabaseResources();
+        if(dbResources==null){
+            dbResources = validator.getDatabaseResources();
         }
-             
+        
         System.out.println("<<<\n");
     }
     
@@ -96,7 +102,7 @@ public class DatabaseResourcesTest extends TestCase {
     
     protected void tearDown() throws Exception {
         System.out.println(">>> tearDown");
-        // TODO why o why 
+        // TODO why o why, tell me why to leave this one out
         //BrokerPool.stopAll(false);
         System.out.println("<<<\n");
     }
@@ -106,10 +112,9 @@ public class DatabaseResourcesTest extends TestCase {
         
         System.out.println(">>> testInsertGrammar");
         
-//        Validator va = new Validator(pool);
-//        DatabaseResources ga = va.getDatabaseResources();
-        
-        Assert.assertTrue( dbr.insertGrammar( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") , DatabaseResources.GRAMMAR_XSD , "addressbook.xsd") );
+        Assert.assertTrue( dbResources.insertGrammar( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
+                DatabaseResources.GRAMMAR_XSD,
+                "addressbook.xsd") );
         
         System.out.println("<<<");
     }
@@ -118,40 +123,59 @@ public class DatabaseResourcesTest extends TestCase {
         
         System.out.println(">>> testInsertTestDocuments");
         
-//        Validator va = new Validator(pool);
-//        DatabaseResources ga = va.getDatabaseResources();
-        
         Assert.assertTrue(
-                dbr.insertDocumentInDatabase( new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml") ,
-                                             "/db",
-                                             "addressbook_valid.xml") );
+                dbResources.insertDocumentInDatabase( new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml") ,
+                "/db",
+                "addressbook_valid.xml") );
         Assert.assertTrue(
-                dbr.insertDocumentInDatabase( new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml") , 
-                                             "/db", 
-                                             "addressbook_invalid.xml") );
+                dbResources.insertDocumentInDatabase( new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml") ,
+                "/db",
+                "addressbook_invalid.xml") );
         
         System.out.println("<<<");
     }
     
     
     
-    public void testIsGrammarInDatabase() throws Exception{
+    public void testIsGrammarInDatabase() throws Exception {
         System.out.println(">>> testIsGrammarInDatabase");
         
-//        Validator va = new Validator(pool);
-//        DatabaseResources ga = va.getDatabaseResources();
-        
-        Assert.assertTrue( dbr.hasGrammar( DatabaseResources.GRAMMAR_XSD, "http://jmvanel.free.fr/xsd/addressBook" ) );
+        Assert.assertTrue( dbResources.hasGrammar( DatabaseResources.GRAMMAR_XSD,
+                "http://jmvanel.free.fr/xsd/addressBook" ) );
         System.out.println("<<<");
     }
     
     
-    public void testIsGrammarNotInDatabase() throws Exception{
+    public void testIsGrammarNotInDatabase() throws Exception {
         System.out.println(">>> testIsGrammarNotInDatabase");
-//        Validator va = new Validator(pool);
-//        DatabaseResources ga = va.getDatabaseResources();
-        Assert.assertFalse( dbr.hasGrammar( DatabaseResources.GRAMMAR_XSD, "http://jmvanel.free.fr/xsd/addressBooky" ) );
+        
+        Assert.assertFalse( dbResources.hasGrammar( DatabaseResources.GRAMMAR_XSD,
+                "http://jmvanel.free.fr/xsd/addressBooky" ) );
+        
         System.out.println("<<<");
     }
+    
+    public void testValidDocument() throws Exception {
+        System.out.println(">>> testValidDocument");
+        
+        ValidationReport report = validator.validate(
+                new FileInputStream(ABOOKFILES +"/addressbook_valid.xml") );
+        
+        Assert.assertFalse( report.hasErrorsAndWarnings() );
+        
+        System.out.println("<<<");
+    }
+    
+    public void testInvalidDocument() throws Exception {
+        System.out.println(">>> testValidDocument");
+        
+        ValidationReport report = validator.validate(
+                new FileInputStream(ABOOKFILES +"/addressbook_invalid.xml") );
+        
+        Assert.assertTrue( report.hasErrorsAndWarnings() );
+        
+        System.out.println("<<<");
+    }
+    
     
 }
