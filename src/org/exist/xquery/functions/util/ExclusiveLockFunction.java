@@ -35,8 +35,8 @@ public class ExclusiveLockFunction extends LockFunction {
 		new FunctionSignature(
 			new QName("exclusive-lock", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Puts an exclusive lock on the owner documents of all nodes in the first argument $a. " +
-			"Then calls the expression in the second argument $b and releases the acquired locks after" +
-			"its completion.",
+			"Then evaluates the expressions in the second argument $b and releases the acquired locks after" +
+			"their completion.",
 			new SequenceType[] {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
 				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)

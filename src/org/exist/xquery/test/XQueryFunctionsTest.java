@@ -248,12 +248,87 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals( "2", r );	
 			r 		= (String) result.getResource(2).getContent();
 			assertEquals( "3", r );	
+		
+			query = "let $query1 := (<a/>)\n" +
+				"let $query2 := (2, 3)\n" +
+				"let $a := util:exclusive-lock((),($query1, $query2))\n" +
+				"return $a";
+			result 	= service.query( query );			
+			assertEquals( 3, result.getSize());	
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "<a/>", r );	
+			r 		= (String) result.getResource(1).getContent();
+			assertEquals( "2", r );	
+			r 		= (String) result.getResource(2).getContent();
+			assertEquals( "3", r );	
+			
+			query = "let $query1 := (<a/>)\n" +
+				"let $query2 := (2, 3)\n" +
+				"let $a := util:exclusive-lock((),($query1, $query2))\n" +
+				"return $a";
+			result 	= service.query( query );			
+			assertEquals( 3, result.getSize());	
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "<a/>", r );	
+			r 		= (String) result.getResource(1).getContent();
+			assertEquals( "2", r );	
+			r 		= (String) result.getResource(2).getContent();
+			assertEquals( "3", r );				
 			
 		} catch (XMLDBException e) {
 			System.out.println("testTokenize(): " + e);
 			fail(e.getMessage());
 		}
 	}	
+	
+	public void testSharedLock() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			String query = "let $query1 := (<a/>)\n" +
+				"let $query2 := (2, 3)\n" +
+				"let $a := util:shared-lock(//*,($query1, $query2))\n" +
+				"return $a";
+			result 	= service.query( query );			
+			assertEquals( 3, result.getSize());	
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "<a/>", r );	
+			r 		= (String) result.getResource(1).getContent();
+			assertEquals( "2", r );	
+			r 		= (String) result.getResource(2).getContent();
+			assertEquals( "3", r );	
+			
+			query = "let $query1 := (<a/>)\n" +
+				"let $query2 := (2, 3)\n" +
+				"let $a := util:shared-lock((),($query1, $query2))\n" +
+				"return $a";
+			result 	= service.query( query );			
+			assertEquals( 3, result.getSize());	
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "<a/>", r );	
+			r 		= (String) result.getResource(1).getContent();
+			assertEquals( "2", r );	
+			r 		= (String) result.getResource(2).getContent();
+			assertEquals( "3", r );				
+			
+			query = "let $query1 := (<a/>)\n" +
+				"let $query2 := (2, 3)\n" +
+				"let $a := util:shared-lock((),($query1, $query2))\n" +
+				"return $a";
+			result 	= service.query( query );			
+			assertEquals( 3, result.getSize());	
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "<a/>", r );	
+			r 		= (String) result.getResource(1).getContent();
+			assertEquals( "2", r );	
+			r 		= (String) result.getResource(2).getContent();
+			assertEquals( "3", r );		
+			
+		} catch (XMLDBException e) {
+			System.out.println("testTokenize(): " + e);
+			fail(e.getMessage());
+		}
+	}		
 	
 	/*
 	 * @see TestCase#setUp()
