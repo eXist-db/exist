@@ -263,9 +263,9 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals( "3", r );	
 			
 			query = "let $query1 := (<a/>)\n" +
-				"let $query2 := (2, 3)\n" +
-				"let $a := util:exclusive-lock((),($query1, $query2))\n" +
-				"return $a";
+			"let $query2 := (2, 3)\n" +
+			"let $a := util:exclusive-lock((),($query1, $query2))\n" +
+			"return $a";
 			result 	= service.query( query );			
 			assertEquals( 3, result.getSize());	
 			r 		= (String) result.getResource(0).getContent();
@@ -273,7 +273,13 @@ public class XQueryFunctionsTest extends TestCase {
 			r 		= (String) result.getResource(1).getContent();
 			assertEquals( "2", r );	
 			r 		= (String) result.getResource(2).getContent();
-			assertEquals( "3", r );				
+			assertEquals( "3", r );		
+		
+			query = "let $a := util:exclusive-lock(//*,<root/>)\n" +
+				"return $a";
+			result 	= service.query( query );			
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "<root/>", r );					
 			
 		} catch (XMLDBException e) {
 			System.out.println("testExclusiveLock(): " + e);
@@ -322,7 +328,13 @@ public class XQueryFunctionsTest extends TestCase {
 			r 		= (String) result.getResource(1).getContent();
 			assertEquals( "2", r );	
 			r 		= (String) result.getResource(2).getContent();
-			assertEquals( "3", r );		
+			assertEquals( "3", r );	
+			
+			query = "let $a := util:shared-lock(//*,<root/>)\n" +
+				"return $a";
+			result 	= service.query( query );			
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "<root/>", r );	
 			
 		} catch (XMLDBException e) {
 			System.out.println("testSharedLock(): " + e);
