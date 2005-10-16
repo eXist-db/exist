@@ -43,7 +43,7 @@ public class GrammarPool implements XMLGrammarPool {
     
     /**  Constructs a grammar pool with a default number of buckets. */
     public GrammarPool() {
-        logger.info("Initializing GrammarPool");
+        logger.info("Initializing GrammarPool.");
         pool = new XMLGrammarPoolImpl();
     }
     
@@ -82,7 +82,7 @@ public class GrammarPool implements XMLGrammarPool {
      * state of the object.
      */
     public void unlockPool() {
-        logger.debug("Unlock grammarpool");
+        logger.debug("Unlock grammarpool.");
         pool.unlockPool();
     }
     
@@ -105,11 +105,11 @@ public class GrammarPool implements XMLGrammarPool {
         }
         
         if(xgd.getNamespace()!=null){
-            logger.debug("Got namespace "+xgd.getNamespace());
+            logger.debug("Retrieve grammar for namespace '"+xgd.getNamespace()+"'.");
         }
         
         if(xgd.getPublicId()!=null){
-            logger.debug("Got publicId "+xgd.getPublicId());
+            logger.debug("Retrieve grammar for publicId '"+xgd.getPublicId()+"'.");
         }
                
         return pool.retrieveGrammar(xgd);
@@ -120,7 +120,7 @@ public class GrammarPool implements XMLGrammarPool {
      * cacheGrammars(String, Grammar[[]) method is called.
      */
     public void lockPool() {
-        logger.debug("Lock grammarpool");
+        logger.debug("Lock grammarpool.");
         pool.lockPool();
     }
     
@@ -128,7 +128,7 @@ public class GrammarPool implements XMLGrammarPool {
      *  Removes all grammars from the pool.
      */
     public void clear() {
-        logger.debug("Clear grammarpool");
+        logger.debug("Clear grammarpool.");
         pool.clear();
     }
     

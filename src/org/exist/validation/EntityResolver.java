@@ -113,7 +113,7 @@ public class EntityResolver  implements XMLEntityResolver {
         
                 
         if(resourcePath == null || resourcePath.equals("NONE") ){
-            logger.debug("Resource not found in database");
+            logger.debug("Resource not found in database.");
             return null;
         }
         
@@ -123,7 +123,7 @@ public class EntityResolver  implements XMLEntityResolver {
                 new ByteArrayInputStream( databaseResources.getGrammar(type, resourcePath) ) ) ;
         
         if(rd==null){
-            logger.debug("No grammar found.");
+            logger.debug("Grammar not found.");
             return null;
         }
         

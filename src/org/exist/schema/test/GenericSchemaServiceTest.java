@@ -87,6 +87,7 @@ public class GenericSchemaServiceTest extends TestCase {
     rootCollection = DatabaseManager.getCollection(URI, "admin", null);
     if (rootCollection == null)
       throw new Exception("Could not connect to database.");
+    
 
   }
 
