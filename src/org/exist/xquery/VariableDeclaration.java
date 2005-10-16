@@ -78,6 +78,7 @@ public class VariableDeclaration extends AbstractExpression {
 			Variable var = new Variable(qn);
 			context.declareGlobalVariable(var);
 		}
+		expression.analyze(this, flags);
     }
     
 	/* (non-Javadoc)
@@ -90,9 +91,14 @@ public class VariableDeclaration extends AbstractExpression {
 		QName qn = QName.parse(context, qname, null);
 		Module myModule = context.getModule(qn.getNamespaceURI());
 		
+		if (context.isProfilingEnabled(2))
+			context.getProfiler().start(this, "Global variable declaration: " + qn);
 		// declare the variable
-		Sequence seq = expression.eval(contextSequence, contextItem);
+		Sequence seq = expression.eval(null, null);
 
+		if (context.isProfilingEnabled(2))
+			context.getProfiler().end(this, "Global variable declaration: " + qn);
+		
 		if(myModule != null) {
 			Variable var = myModule.declareVariable(qn, seq);
             var.setSequenceType(sequenceType);
@@ -106,7 +112,7 @@ public class VariableDeclaration extends AbstractExpression {
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}
-
+	
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
@@ -133,7 +139,7 @@ public class VariableDeclaration extends AbstractExpression {
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
-		return expression.getDependencies();
+		return Dependency.CONTEXT_SET;
 	}
 
 	/* (non-Javadoc)

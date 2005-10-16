@@ -259,6 +259,10 @@ public class XQueryContext {
         return profiler.isEnabled();
     }
     
+    public boolean isProfilingEnabled(int verbosity) {
+    	return profiler.isEnabled() && profiler.verbosity() >= verbosity;
+    }
+    
     /**
      * Returns the {@link Profiler} instance of this context 
      * if profiling is enabled.
