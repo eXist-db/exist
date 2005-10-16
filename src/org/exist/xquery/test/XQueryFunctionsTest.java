@@ -276,7 +276,7 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals( "3", r );				
 			
 		} catch (XMLDBException e) {
-			System.out.println("testTokenize(): " + e);
+			System.out.println("testExclusiveLock(): " + e);
 			fail(e.getMessage());
 		}
 	}	
@@ -325,7 +325,7 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals( "3", r );		
 			
 		} catch (XMLDBException e) {
-			System.out.println("testTokenize(): " + e);
+			System.out.println("testSharedLock(): " + e);
 			fail(e.getMessage());
 		}
 	}		
