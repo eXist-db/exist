@@ -135,7 +135,7 @@ public class IndentingXMLWriter extends XMLWriter {
 	 * @see org.exist.util.serializer.XMLWriter#comment(java.lang.String)
 	 */
 	public void comment(CharSequence data) throws TransformerException {
-		super.comment(data);
+		super.comment(data);	
 		afterTag = true;
 	}
 	
@@ -144,8 +144,15 @@ public class IndentingXMLWriter extends XMLWriter {
 	 */
 	public void processingInstruction(String target, String data)
 		throws TransformerException {
-		super.processingInstruction(target, data);
+		super.processingInstruction(target, data);	
 		afterTag = true;
+	}
+	
+	public void documentType(String name, String publicId, String systemId)
+		throws TransformerException {	
+		super.documentType(name, publicId, systemId);	
+		super.characters("\n");
+		sameline = false;
 	}
 	
 	/* (non-Javadoc)
