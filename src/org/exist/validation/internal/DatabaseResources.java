@@ -110,11 +110,6 @@ public class DatabaseResources {
         try {
             broker = brokerPool.get(SecurityManager.SYSTEM_USER);
             
-        } catch (EXistException ex){
-            logger.error(ex);
-        }
-        
-        try{
             TransactionManager transact = brokerPool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
             
@@ -124,14 +119,23 @@ public class DatabaseResources {
             transact.commit(transaction);
             
             insertIsSuccessfull=true;
+            
         } catch (PermissionDeniedException ex){
             logger.error(ex);
             
         } catch (TransactionException ex){
             logger.error(ex);
+            
+        } catch (EXistException ex){
+            logger.error(ex);
+        } finally {
+            if(brokerPool!=null){
+                brokerPool.release(broker);
+            }
+            
         }
         
-        brokerPool.release(broker);
+        
         
         return insertIsSuccessfull;
     }
@@ -174,14 +178,6 @@ public class DatabaseResources {
             baseFolder = DTDBASE;
         }
         
-        DBBroker broker = null;
-        try {
-            
-            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
-        } catch (EXistException ex){
-            logger.error("Error while initializing EnityResolver", ex);
-        }
-        
         String collection=null;
         String document=null;
         int separatorPos = path.lastIndexOf("/");
@@ -196,7 +192,17 @@ public class DatabaseResources {
         logger.info("document="+document);
         logger.info("collection="+collection);
         
-        try{
+        return insertDocumentInDatabase(file,  collection, document);
+    }
+    
+    public boolean insertDocumentInDatabase(File file, String collection, String document){
+        
+        boolean insertIsSuccesfull=false;
+        
+        DBBroker broker = null;
+        try {
+            
+            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
             
             TransactionManager transact = brokerPool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
@@ -212,12 +218,11 @@ public class DatabaseResources {
             
             insertIsSuccesfull=true;
             
-//        }
+        } catch (EXistException ex){
+            logger.error(ex);
         } catch (PermissionDeniedException ex){
             logger.error(ex);
         } catch (SAXException ex){
-            logger.error(ex);
-        } catch (EXistException ex){
             logger.error(ex);
         } catch (TriggerException ex){
             logger.error(ex);
@@ -225,9 +230,11 @@ public class DatabaseResources {
             logger.error(ex);
         } catch(FileNotFoundException ex){
             logger.error(ex);
+        } finally {
+            if(brokerPool!=null){
+                brokerPool.release(broker);
+            }
         }
-        
-        brokerPool.release(broker);
         return insertIsSuccesfull;
     }
     
@@ -308,11 +315,8 @@ public class DatabaseResources {
         try {
             
             broker = brokerPool.get(SecurityManager.SYSTEM_USER);
-        } catch (EXistException ex){
-            logger.error("Error while initializing EnityResolver", ex);
-        }
         
-        try{
+
             if(isBinary){
                 BinaryDocument binDoc = (BinaryDocument) broker.openDocument(path, Lock.READ_LOCK);
                 data = broker.getBinaryResourceData(binDoc);
@@ -330,9 +334,13 @@ public class DatabaseResources {
             logger.error("Error opening document", ex);
         } catch (SAXException ex){
             logger.error("Error serializing document", ex);
+        }  catch (EXistException ex){
+            logger.error(ex);
+        } finally {
+            if(brokerPool!=null){
+                brokerPool.release(broker);
+            } 
         }
-        
-        brokerPool.release(broker);
         
         return data;
     }

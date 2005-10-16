@@ -74,7 +74,7 @@ public class Validator {
      *  Setup Validator object with brokerpool as centre.
      */
     public Validator( BrokerPool pool ){
-        logger.info("Initializing Validator");
+        logger.info("Initializing Validator.");
         
         if(brokerPool==null){
             this.brokerPool = pool;
@@ -142,7 +142,7 @@ public class Validator {
      */
     public ValidationReport validate(Reader reader) {
         
-        logger.debug("Start validation");
+        logger.debug("Start validation.");
         long start = System.currentTimeMillis();
         
         ValidationReport report = new ValidationReport();
@@ -158,9 +158,9 @@ public class Validator {
             xmlReader.setErrorHandler( report );
             
             
-            logger.debug("Parse begin");
+            logger.debug("Parse begin.");
             xmlReader.parse(source);
-            logger.debug("Parse end");
+            logger.debug("Parse end.");
             
             if( report.hasErrors() ){
                 logger.debug( "Parse errors \n" + report.getErrorReport() )  ;
