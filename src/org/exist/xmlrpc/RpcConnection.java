@@ -2489,9 +2489,17 @@ public class RpcConnection extends Thread {
         }
     }
     
-    // TODO DWES
+    /**
+     *   Validate if specified document is Valid.
+     *
+     * @param user      Name of user
+     * @param docPath   Path to XML document in database
+     * @throws java.lang.Exception  Generic exception
+     * @throws PermissionDeniedException  User is not allowed to perform action.
+     * @return TRUE if document is valid, FALSE if not or errors or.....
+     */
     public boolean isValid(User user, String docPath)
-                                   throws Exception, PermissionDeniedException {
+                                   throws PermissionDeniedException, Exception{
         boolean retVal=false;
         DBBroker broker = null;
         
