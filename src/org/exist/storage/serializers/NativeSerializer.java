@@ -111,7 +111,7 @@ public class NativeSerializer extends Serializer {
     	NodeList children = doc.getChildNodes();
     	if (generateDocEvent) receiver.startDocument();
 		if (doc.getDoctype()!=null){
-			if (getProperty(EXistOutputKeys.OUPUT_DOCTYPE, "no").equals("yes")) {
+			if (getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no").equals("yes")) {
 				final NodeImpl n = (NodeImpl) doc.getDoctype();
 				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), n
 						.getGID(), true, null, new TreeSet());
