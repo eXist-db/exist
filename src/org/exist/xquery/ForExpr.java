@@ -36,7 +36,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
-import sun.security.action.GetLongAction;
+// import sun.security.action.GetLongAction;
 
 /**
  * Represents an XQuery "for" expression.
