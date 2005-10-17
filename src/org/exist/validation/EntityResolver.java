@@ -101,7 +101,7 @@ public class EntityResolver  implements XMLEntityResolver {
         } else if ( xrid.getPublicId() !=null ){
             logger.debug("Resolving publicId '"+xrid.getPublicId()+"'.");
             type=DatabaseResources.GRAMMAR_DTD;
-            resourcePath = databaseResources.getGrammarPath(type,  xrid.getPublicId() );
+            resourcePath =  databaseResources.DTDBASE+"/"+ databaseResources.getGrammarPath(type,  xrid.getPublicId() );
             
         } else {
             // Fast escape; no logging, otherwise validation is slow!
@@ -116,6 +116,8 @@ public class EntityResolver  implements XMLEntityResolver {
             logger.debug("Resource not found in database.");
             return null;
         }
+        
+        logger.debug("resourcePath="+resourcePath);
         
         // TODO make this streaming, fortunately the grammarfiles are small.
         // Get grammar from database
