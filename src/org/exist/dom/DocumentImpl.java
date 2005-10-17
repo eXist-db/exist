@@ -71,6 +71,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	
 	public final static byte DOCUMENT_NODE_SIGNATURE = 0x0F;
 	
+    public final static byte HAS_DOCTYPE = 1;
+    
 	private transient NodeIndexListener listener = NullNodeIndexListener.INSTANCE;
 
 	protected transient DBBroker broker = null;
@@ -688,7 +690,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 					ostream.writeShort(StorageAddress.tidFromPointer(childList[i]));
 			    }
 			}
-			((DocumentTypeImpl) docType).write(ostream);
+            if (docType != null) {
+                ostream.writeByte(HAS_DOCTYPE);
+                ((DocumentTypeImpl) docType).write(ostream);
+            } else
+                ostream.writeByte((byte) 0);
+            
 			ostream.writeLong(created);
 			ostream.writeLong(lastModified);
             ostream.writeUTF(mimeType);
@@ -730,8 +737,13 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			for (int i = 0; i < children; i++) { 
 				childList[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
 			}
-			docType = new DocumentTypeImpl();
-			((DocumentTypeImpl) docType).read(istream);
+            
+            if (istream.readByte() == HAS_DOCTYPE) { 
+                docType = new DocumentTypeImpl();
+			    ((DocumentTypeImpl) docType).read(istream);
+            } else
+                docType = null;
+            
 			created = istream.readLong();
 			lastModified = istream.readLong();
             mimeType = istream.readUTF();
