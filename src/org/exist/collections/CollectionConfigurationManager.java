@@ -195,7 +195,7 @@ public class CollectionConfigurationManager {
 	    	CollectionConfiguration config = (CollectionConfiguration) cache.get(collectionPath);
 	    	if (config != null) {
 	    		config.getCollection().invalidateConfiguration();
-	    		cache.remove(config);
+	    		cache.remove(collectionPath);
 	    	}
 		}
     }
