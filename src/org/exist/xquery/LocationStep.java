@@ -262,37 +262,42 @@ public class LocationStep extends Step {
 	protected NodeSet getAttributes(
 		XQueryContext context,
 		NodeSet contextSet) {
-		NodeSet result;
+		NodeSet result = null;
 		if (test.isWildcardTest()) {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
         } else if(axis == Constants.ATTRIBUTE_AXIS &&
                 !(contextSet instanceof VirtualNodeSet) && contextSet.getLength() == 1) {
-            return contextSet.directSelectAttribute(test.getName(), inPredicate);
-        } else if(preloadNodeSets()) {
-            DocumentSet docs = getDocumentSet(contextSet);
-            if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-                currentDocs = docs;
-                currentSet =
-                    (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-                        ElementValue.ATTRIBUTE,
-                        currentDocs,
-                        test.getName(), null);
-            }
-            if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                result = currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, inPredicate);
-            else
-                result = currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
-		} else {
-			NodeSelector selector;
-			if(axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-				selector = new DescendantSelector(contextSet, inPredicate);
-			else
-				selector = new ChildSelector(contextSet, inPredicate);
-			DocumentSet docs = getDocumentSet(contextSet);
-			result = context.getBroker().getElementIndex().getAttributesByName(
-		            docs, test.getName(), selector);
-		}
+            NodeProxy proxy = contextSet.get(0);
+            if (proxy.getInternalAddress() != -1)
+                result = contextSet.directSelectAttribute(test.getName(), inPredicate);
+        }
+        if (result == null) {
+            if(preloadNodeSets()) {
+                DocumentSet docs = getDocumentSet(contextSet);
+                if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+                    currentDocs = docs;
+                    currentSet =
+                        (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
+                            ElementValue.ATTRIBUTE,
+                            currentDocs,
+                            test.getName(), null);
+                }
+                if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                    result = currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, inPredicate);
+                else
+                    result = currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
+    		} else {
+    			NodeSelector selector;
+    			if(axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+    				selector = new DescendantSelector(contextSet, inPredicate);
+    			else
+    				selector = new ChildSelector(contextSet, inPredicate);
+    			DocumentSet docs = getDocumentSet(contextSet);
+    			result = context.getBroker().getElementIndex().getAttributesByName(
+    		            docs, test.getName(), selector);
+    		}
+        }
 		return result;
 	}
 
