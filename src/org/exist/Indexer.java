@@ -413,16 +413,16 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	public void startDocument() {
 		if (!validate) {
 			progress = new ProgressIndicator(currentLine, 100);
-			if (document.getDoctype() == null) {
-				// we don't know the doctype
-				// set it to the root node's tag name
-				final DocumentTypeImpl dt =
-					new DocumentTypeImpl(
-						rootNode.getTagName(),
-						null,
-						document.getFileName());
-				document.setDocumentType(dt);
-			}
+//			if (document.getDoctype() == null) {
+//				// we don't know the doctype
+//				// set it to the root node's tag name
+//				final DocumentTypeImpl dt =
+//					new DocumentTypeImpl(
+//						rootNode.getTagName(),
+//						null,
+//						document.getFileName());
+//				document.setDocumentType(dt);
+//			}
 			document.setChildCount(0);
             elementCnt = 0;
 		}
