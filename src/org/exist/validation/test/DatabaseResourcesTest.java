@@ -45,6 +45,7 @@ import org.exist.validation.internal.DatabaseResources;
 public class DatabaseResourcesTest extends TestCase {
     
     private final static String ABOOKFILES="samples/validation/addressbook";
+    private final static String DTDFILES="samples/validation/dtd";
     
     private String eXistHome = null;
     private BrokerPool pool = null;
@@ -108,7 +109,7 @@ public class DatabaseResourcesTest extends TestCase {
     }
     
     
-    public void testInsertGrammar() throws Exception {
+    public void testInsertXsdGrammar() throws Exception {
         
         System.out.println(">>> testInsertGrammar");
         
@@ -118,6 +119,26 @@ public class DatabaseResourcesTest extends TestCase {
         
         System.out.println("<<<");
     }
+
+
+        
+    public void bugTestInsertDtdGrammar() throws Exception {
+        
+        System.out.println(">>> testInsertDtdGrammar");
+        
+        Assert.assertTrue( dbResources.insertGrammar( new File(eXistHome , DTDFILES+"/play.dtd") ,
+                DatabaseResources.GRAMMAR_DTD,
+                "play.dtd") );
+        
+        Assert.assertTrue(
+                dbResources.insertDocumentInDatabase( new File(eXistHome , DTDFILES+"/catalog.xml") ,
+                "/db/system/grammar/dtd",
+                "catalog.xml") );
+        
+        System.out.println("<<<");
+    }
+
+
     
     public void testInsertTestDocuments() throws Exception {
         
@@ -127,10 +148,22 @@ public class DatabaseResourcesTest extends TestCase {
                 dbResources.insertDocumentInDatabase( new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml") ,
                 "/db",
                 "addressbook_valid.xml") );
+        
         Assert.assertTrue(
                 dbResources.insertDocumentInDatabase( new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml") ,
                 "/db",
                 "addressbook_invalid.xml") );
+
+        Assert.assertTrue(
+                dbResources.insertDocumentInDatabase( new File(eXistHome , DTDFILES+"/hamlet_valid.xml") ,
+                "/db",
+                "hamlet_valid.xml") );
+        
+        Assert.assertTrue(
+                dbResources.insertDocumentInDatabase( new File(eXistHome , DTDFILES+"/hamlet_invalid.xml") ,
+                "/db",
+                "hamlet_invalid.xml") );
+
         
         System.out.println("<<<");
     }

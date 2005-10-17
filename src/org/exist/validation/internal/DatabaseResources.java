@@ -70,10 +70,10 @@ public class DatabaseResources {
     private final static Logger logger = Logger.getLogger(DatabaseResources.class);
     
     /** Path to grammar in database  */
-    private String GRAMMERBASE = "/db/system/grammar";
-    private String XSDBASE = GRAMMERBASE + "/xsd";
-    private String DTDBASE = GRAMMERBASE + "/dtd";
-    private String DTDCATALOG = DTDBASE + "/catalog.xml";
+    public String GRAMMERBASE = "/db/system/grammar";
+    public String XSDBASE = GRAMMERBASE + "/xsd";
+    public String DTDBASE = GRAMMERBASE + "/dtd";
+    public String DTDCATALOG = DTDBASE + "/catalog.xml";
     
     public static int GRAMMAR_UNKNOWN = 0;
     public static int GRAMMAR_XSD = 1;
@@ -83,7 +83,7 @@ public class DatabaseResources {
             +"<catalog>\n"
             +"<!-- Warning this file is regenerated at every start -->\n"
             +"<!-- Will be fixed in the near future -->\n"
-            +"<!-- <public publicId=\"-//PLAY//EN\" uri=\"entities/play.dtd\"/> -->\n"
+            +"<public publicId=\"-//PLAY//EN\" uri=\"play.dtd\"/>\n"
             +"</catalog>";
     
     /**
@@ -98,7 +98,7 @@ public class DatabaseResources {
         insertCollection(GRAMMERBASE);
         insertCollection(XSDBASE);
         insertCollection(DTDBASE);
-        insertGrammar( new StringReader(CATALOGCONTENT), GRAMMAR_DTD, "catalog.xml");
+        insertGrammar( new StringReader(CATALOGCONTENT), GRAMMAR_DTD, "catalog_example.xml");
         
     }
     
@@ -195,7 +195,12 @@ public class DatabaseResources {
         return insertDocumentInDatabase(file,  collection, document);
     }
     
-    public boolean insertDocumentInDatabase(File file, String collection, String document){
+    public boolean insertDocumentInDatabase(File file, String collectionName, String documentName){
+        
+        // TODO make compatible for Binary (dtd) and schemas (xml)
+        // See org.exist.xmldb.test.CreateCollectionsTest
+        
+        // org.exist.storage.test.RecoveryTest RecoverBinaryTest
         
         boolean insertIsSuccesfull=false;
         
@@ -207,13 +212,12 @@ public class DatabaseResources {
             TransactionManager transact = brokerPool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
             
-            Collection test = broker.getOrCreateCollection(transaction, collection);
-            broker.saveCollection(transaction, test);
+            Collection collection = broker.getOrCreateCollection(transaction, collectionName);
+            broker.saveCollection(transaction, collection);
             
-            
-            IndexInfo info = test.validate( transaction, broker, document , new InputSource( new FileReader(file) ) );
-            test.store(transaction, broker, info, new InputSource( new FileReader(file) ), false);
-            
+            IndexInfo info = collection.validate( transaction, broker, documentName , new InputSource( new FileReader(file) ) );
+            collection.store(transaction, broker, info, new InputSource( new FileReader(file) ), false);
+   
             transact.commit(transaction);
             
             insertIsSuccesfull=true;
@@ -287,7 +291,7 @@ public class DatabaseResources {
         } else if(type==GRAMMAR_DTD){
             query = "let $top := doc('"+DTDCATALOG+"') "+
                     "let $dtds := $top//public[@publicId = \""+id+"\"]/@uri " +
-                    "return if($dtds) then document-uri($dtds[1]) else \"NONE\"" ;
+                    "return if($dtds) then $dtds[1] else \"NONE\"" ;
         }
         logger.info(query);
         return query;

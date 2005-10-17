@@ -90,6 +90,9 @@ public class ResourceThread extends Thread {
             } else {
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();
+                
+                // Doctype info must be serialized too.
+                serializer.setProperty("output-doctype","yes");
                 serializer.serialize(doc, writer);
                 doc.getUpdateLock().release(Lock.READ_LOCK);
             }
