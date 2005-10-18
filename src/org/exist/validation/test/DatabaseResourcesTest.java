@@ -113,27 +113,48 @@ public class DatabaseResourcesTest extends TestCase {
         
         System.out.println(">>> testInsertGrammar");
         
-        Assert.assertTrue( dbResources.insertGrammar( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
-                DatabaseResources.GRAMMAR_XSD,
-                "addressbook.xsd") );
+        Assert.assertTrue( dbResources.insertSchema( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
+                           "addressbook.xsd") );
         
         System.out.println("<<<");
     }
 
-
+    public void testInsertXsdGrammar2() throws Exception {
         
-    public void bugTestInsertDtdGrammar() throws Exception {
+        System.out.println(">>> testInsertGrammar");
+        
+        Assert.assertTrue( dbResources.insertSchema( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
+                           "/other/path/addressbook.xsd") );
+        
+        Assert.assertTrue( dbResources.insertSchema( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
+                           "another/path/addressbook.xsd") );
+        
+        System.out.println("<<<");
+    }
+        
+    public void testInsertDtdGrammar() throws Exception {
         
         System.out.println(">>> testInsertDtdGrammar");
         
-        Assert.assertTrue( dbResources.insertGrammar( new File(eXistHome , DTDFILES+"/play.dtd") ,
-                DatabaseResources.GRAMMAR_DTD,
-                "play.dtd") );
+        Assert.assertTrue( dbResources.insertDtd( new File(eXistHome , DTDFILES+"/play.dtd") ,
+                           "play.dtd") );
         
         Assert.assertTrue(
-                dbResources.insertDocumentInDatabase( new File(eXistHome , DTDFILES+"/catalog.xml") ,
-                "/db/system/grammar/dtd",
-                "catalog.xml") );
+                dbResources.insertCatalog( new File(eXistHome , DTDFILES+"/catalog.xml") )
+                );
+        
+        System.out.println("<<<");
+    }
+    
+    public void testInsertDtdGrammar2() throws Exception {
+        
+        System.out.println(">>> testInsertDtdGrammar2");
+        
+        Assert.assertTrue( dbResources.insertDtd( new File(eXistHome , DTDFILES+"/play.dtd") ,
+                           "/other/path/play.dtd") );
+        
+        Assert.assertTrue( dbResources.insertDtd( new File(eXistHome , DTDFILES+"/play.dtd") ,
+                           "anothother/path/play.dtd") );
         
         System.out.println("<<<");
     }
@@ -145,24 +166,20 @@ public class DatabaseResourcesTest extends TestCase {
         System.out.println(">>> testInsertTestDocuments");
         
         Assert.assertTrue(
-                dbResources.insertDocumentInDatabase( new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml") ,
-                "/db",
-                "addressbook_valid.xml") );
+                dbResources.insertDocument( new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml") ,
+                false, "/db", "addressbook_valid.xml") );
         
         Assert.assertTrue(
-                dbResources.insertDocumentInDatabase( new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml") ,
-                "/db",
-                "addressbook_invalid.xml") );
+                dbResources.insertDocument( new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml") ,
+                false, "/db", "addressbook_invalid.xml") );
 
         Assert.assertTrue(
-                dbResources.insertDocumentInDatabase( new File(eXistHome , DTDFILES+"/hamlet_valid.xml") ,
-                "/db",
-                "hamlet_valid.xml") );
+                dbResources.insertDocument( new File(eXistHome , DTDFILES+"/hamlet_valid.xml") ,
+                false, "/db", "hamlet_valid.xml") );
         
         Assert.assertTrue(
-                dbResources.insertDocumentInDatabase( new File(eXistHome , DTDFILES+"/hamlet_invalid.xml") ,
-                "/db",
-                "hamlet_invalid.xml") );
+                dbResources.insertDocument( new File(eXistHome , DTDFILES+"/hamlet_invalid.xml") ,
+                false, "/db", "hamlet_invalid.xml") );
 
         
         System.out.println("<<<");
@@ -188,27 +205,62 @@ public class DatabaseResourcesTest extends TestCase {
         System.out.println("<<<");
     }
     
-    public void testValidDocument() throws Exception {
-        System.out.println(">>> testValidDocument");
+    public void testXsdValidDocument() throws Exception {
+        System.out.println(">>> testXsdValidDocument");
         
         ValidationReport report = validator.validate(
                 new FileInputStream(ABOOKFILES +"/addressbook_valid.xml") );
         
         Assert.assertFalse( report.hasErrorsAndWarnings() );
         
+        System.out.println(report.getErrorReport());
+        System.out.println(report.getWarningReport());
+        
         System.out.println("<<<");
     }
     
-    public void testInvalidDocument() throws Exception {
-        System.out.println(">>> testValidDocument");
+    public void testXsdInvalidDocument() throws Exception {
+        System.out.println(">>> testXsdInvalidDocument");
         
         ValidationReport report = validator.validate(
                 new FileInputStream(ABOOKFILES +"/addressbook_invalid.xml") );
         
         Assert.assertTrue( report.hasErrorsAndWarnings() );
         
+        System.out.println(report.getErrorReport());
+        System.out.println(report.getWarningReport());
+        
         System.out.println("<<<");
     }
+    
+    public void testDtdValidDocument() throws Exception {
+        System.out.println(">>> testDtdValidDocument");
+        
+        ValidationReport report = validator.validate(
+                new FileInputStream(DTDFILES +"/hamlet_valid.xml") );
+        
+        Assert.assertFalse( report.hasErrorsAndWarnings() );
+        
+        System.out.println(report.getErrorReport());
+        System.out.println(report.getWarningReport());
+        
+        System.out.println("<<<");
+    }
+    
+    public void testDtdInvalidDocument() throws Exception {
+        System.out.println(">>> testDtdInvalidDocument");
+        
+        ValidationReport report = validator.validate(
+                new FileInputStream(DTDFILES +"/hamlet_invalid.xml") );
+        
+        Assert.assertTrue( report.hasErrorsAndWarnings() );
+        
+        System.out.println(report.getErrorReport());
+        System.out.println(report.getWarningReport());
+        
+        System.out.println("<<<");
+    }
+    
     
     
 }

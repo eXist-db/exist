@@ -92,12 +92,12 @@ public class ValidationServiceTest  extends TestCase {
                 service.getVersion(),   "1.0" );
     }
     
-    public void testValidDocument() throws XMLDBException {
+    public void testXsdValidDocument() throws XMLDBException {
         
         Assert.assertTrue( service.validateResource("/db/addressbook_valid.xml") );
     }
     
-    public void testInvalidDocument() throws XMLDBException {
+    public void testXsdInvalidDocument() throws XMLDBException {
         
         Assert.assertFalse( service.validateResource("/db/addressbook_invalid.xml") );
     }
@@ -105,5 +105,15 @@ public class ValidationServiceTest  extends TestCase {
     public void testNonexistingDocument() throws XMLDBException {
         
         Assert.assertFalse( service.validateResource("/db/foobar.xml") );
+    }
+    
+    public void testDtdValidDocument() throws XMLDBException {
+        
+        Assert.assertTrue( service.validateResource("/db/hamlet_valid.xml") );
+    }
+    
+    public void testDtdInvalidDocument() throws XMLDBException {
+        
+        Assert.assertFalse( service.validateResource("/db/hamlet_invalid.xml") );
     }
 }
