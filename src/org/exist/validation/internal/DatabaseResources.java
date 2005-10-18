@@ -22,7 +22,9 @@
 
 package org.exist.validation.internal;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -95,14 +97,16 @@ public class DatabaseResources {
         this.brokerPool = pool;
         
         // TODO this must be performed once.... and earlier...
-        insertCollection(GRAMMERBASE);
-        insertCollection(XSDBASE);
-        insertCollection(DTDBASE);
-        insertGrammar( new StringReader(CATALOGCONTENT), GRAMMAR_DTD, "catalog_example.xml");
+        createCollection(GRAMMERBASE);
+        createCollection(XSDBASE);
+        createCollection(DTDBASE);
+        insertCatalog(
+                convertToFile(new StringReader(CATALOGCONTENT)),
+                "catalog_example.xml");
         
     }
     
-    public boolean insertCollection(String path){
+    public boolean createCollection(String path){
         
         boolean insertIsSuccessfull=false;
         
@@ -134,19 +138,14 @@ public class DatabaseResources {
             }
             
         }
-        
-        
-        
         return insertIsSuccessfull;
     }
     
-    
-    public boolean insertGrammar(Reader reader, int type, String path){
+    private File convertToFile(Reader reader){
+        File tmpFile = null;
         
-        boolean insertIsSuccessfull=false;
-        
-        try{
-            File tmpFile = File.createTempFile("InsertGrammar","tmp");
+        try {
+            tmpFile = File.createTempFile("InsertGrammar","tmp");
             FileWriter fw = new FileWriter(tmpFile);
             
             // Transfer bytes from in to out
@@ -157,52 +156,80 @@ public class DatabaseResources {
             }
             reader.close();
             fw.close();
-            
-            insertIsSuccessfull = insertGrammar(tmpFile, type, path);
-            tmpFile.delete();
-        } catch (IOException ex){
+        } catch (IOException ex) {
             logger.error(ex);
         }
-        return insertIsSuccessfull;
+        
+        tmpFile.deleteOnExit();
+        
+        return tmpFile;
     }
     
-    public boolean insertGrammar(File file, int type, String path){
+    private String getDocumentName(String path){
         
-        boolean insertIsSuccesfull = false;
+        String docName = null;
         
-        // Path = subpath/doc.xml
-        String baseFolder=null;
-        if(type==GRAMMAR_XSD){
-            baseFolder = XSDBASE;
-        } else {
-            baseFolder = DTDBASE;
-        }
-        
-        String collection=null;
-        String document=null;
         int separatorPos = path.lastIndexOf("/");
         if(separatorPos==-1){
-            document=path;
-            collection=baseFolder ;
+            docName=path;
+            
         } else {
-            document=path.substring(separatorPos+1);
-            collection=baseFolder + "/" +path.substring(0, separatorPos);
+            docName=path.substring(separatorPos+1);
         }
         
-        logger.info("document="+document);
-        logger.info("collection="+collection);
-        
-        return insertDocumentInDatabase(file,  collection, document);
+        return docName;
     }
     
-    public boolean insertDocumentInDatabase(File file, String collectionName, String documentName){
+    private String getCollectionPath(String path){
         
-        // TODO make compatible for Binary (dtd) and schemas (xml)
-        // See org.exist.xmldb.test.CreateCollectionsTest
+        String pathName = null;
         
-        // org.exist.storage.test.RecoveryTest RecoverBinaryTest
+        int separatorPos = path.lastIndexOf("/");
+        if(separatorPos==-1){
+            // no path
+            pathName="/";
+            
+        } else {
+            pathName=path.substring(0, separatorPos);
+        }
         
-        boolean insertIsSuccesfull=false;
+        if(!pathName.startsWith("/")){
+            pathName="/"+pathName;
+        }
+        
+        return pathName;
+        
+    }
+    
+    public boolean insertSchema(File file, String path){
+        
+        String collection = XSDBASE + getCollectionPath(path);
+        
+        return insertDocument(file, false, collection, getDocumentName(path));
+    }
+    
+    public boolean insertDtd(File file, String path){
+        String collection = DTDBASE + getCollectionPath(path);
+        
+        return insertDocument(file, true, collection, getDocumentName(path));
+    }
+    
+    public boolean insertCatalog(File file){
+        String collection = DTDBASE;
+        
+        return insertDocument(file, false, collection, "catalog.xml");
+    }
+    
+    public boolean insertCatalog(File file, String catalogName){
+        String collection = DTDBASE;
+        
+        return insertDocument(file, false, collection, catalogName);
+    }
+    
+    public boolean insertDocument( File file, boolean isBinary,
+            String collectionName, String documentName){
+        
+        boolean insertIsSuccesfull = false;
         
         DBBroker broker = null;
         try {
@@ -215,9 +242,24 @@ public class DatabaseResources {
             Collection collection = broker.getOrCreateCollection(transaction, collectionName);
             broker.saveCollection(transaction, collection);
             
-            IndexInfo info = collection.validate( transaction, broker, documentName , new InputSource( new FileReader(file) ) );
-            collection.store(transaction, broker, info, new InputSource( new FileReader(file) ), false);
-   
+            if(isBinary){
+                FileInputStream is = new FileInputStream(file);
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                byte[] buf = new byte[512];
+                int count = 0;
+                while ((count = is.read(buf)) > -1) {
+                    os.write(buf, 0, count);
+                }
+                
+                // TODO : call mime-type stuff.
+                BinaryDocument doc =
+                        collection.addBinaryResource(transaction, broker,
+                        documentName, os.toByteArray(), "text/text");
+                
+            } else {
+                IndexInfo info = collection.validate( transaction, broker, documentName , new InputSource( new FileReader(file) ) );
+                collection.store(transaction, broker, info, new InputSource( new FileReader(file) ), false);
+            }
             transact.commit(transaction);
             
             insertIsSuccesfull=true;
@@ -234,14 +276,94 @@ public class DatabaseResources {
             logger.error(ex);
         } catch(FileNotFoundException ex){
             logger.error(ex);
+        } catch(IOException ex){
+            logger.error(ex);
         } finally {
             if(brokerPool!=null){
                 brokerPool.release(broker);
             }
         }
         return insertIsSuccesfull;
+        
     }
     
+//    
+//    public boolean insertGrammar(File file, int type, String path){
+//        
+//        boolean insertIsSuccesfull = false;
+//        
+//        // Path = subpath/doc.xml
+//        String baseFolder=null;
+//        if(type==GRAMMAR_XSD){
+//            baseFolder = XSDBASE;
+//        } else {
+//            baseFolder = DTDBASE;
+//        }
+//        
+//        String collection=null;
+//        String document=null;
+//        int separatorPos = path.lastIndexOf("/");
+//        if(separatorPos==-1){
+//            document=path;
+//            collection=baseFolder ;
+//        } else {
+//            document=path.substring(separatorPos+1);
+//            collection=baseFolder + "/" +path.substring(0, separatorPos);
+//        }
+//        
+//        logger.info("document="+document);
+//        logger.info("collection="+collection);
+//        
+//        return insertDocumentInDatabase(file,  collection, document);
+//    }
+//    
+//    public boolean insertDocumentInDatabase(File file, String collectionName, String documentName){
+//        
+//        // TODO make compatible for Binary (dtd) and schemas (xml)
+//        // See org.exist.xmldb.test.CreateCollectionsTest
+//        
+//        // org.exist.storage.test.RecoveryTest RecoverBinaryTest
+//        
+//        boolean insertIsSuccesfull=false;
+//        
+//        DBBroker broker = null;
+//        try {
+//            
+//            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
+//            
+//            TransactionManager transact = brokerPool.getTransactionManager();
+//            Txn transaction = transact.beginTransaction();
+//            
+//            Collection collection = broker.getOrCreateCollection(transaction, collectionName);
+//            //broker.saveCollection(transaction, collection);
+//            
+//            IndexInfo info = collection.validate( transaction, broker, documentName , new InputSource( new FileReader(file) ) );
+//            collection.store(transaction, broker, info, new InputSource( new FileReader(file) ), false);
+//            
+//            transact.commit(transaction);
+//            
+//            insertIsSuccesfull=true;
+//            
+//        } catch (EXistException ex){
+//            logger.error(ex);
+//        } catch (PermissionDeniedException ex){
+//            logger.error(ex);
+//        } catch (SAXException ex){
+//            logger.error(ex);
+//        } catch (TriggerException ex){
+//            logger.error(ex);
+//        } catch(LockException ex){
+//            logger.error(ex);
+//        } catch(FileNotFoundException ex){
+//            logger.error(ex);
+//        } finally {
+//            if(brokerPool!=null){
+//                brokerPool.release(broker);
+//            }
+//        }
+//        return insertIsSuccesfull;
+//    }
+//    
     
     public boolean hasGrammar(int type, String id){
         return !getGrammarPath(type, id).equalsIgnoreCase("NONE");
@@ -319,8 +441,8 @@ public class DatabaseResources {
         try {
             
             broker = brokerPool.get(SecurityManager.SYSTEM_USER);
-        
-
+            
+            
             if(isBinary){
                 BinaryDocument binDoc = (BinaryDocument) broker.openDocument(path, Lock.READ_LOCK);
                 data = broker.getBinaryResourceData(binDoc);
@@ -343,7 +465,7 @@ public class DatabaseResources {
         } finally {
             if(brokerPool!=null){
                 brokerPool.release(broker);
-            } 
+            }
         }
         
         return data;
