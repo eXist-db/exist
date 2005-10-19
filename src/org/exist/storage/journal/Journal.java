@@ -405,6 +405,10 @@ public class Journal {
 	
     public void shutdown() {
         syncThread.shutdown();
+        try {
+			syncThread.join();
+		} catch (InterruptedException e) {
+		}
     }
     
     /**

@@ -84,7 +84,7 @@ public class FileSyncThread extends Thread {
      */
     public synchronized void shutdown() {
         shutdown = true;
-        triggerSync();
+        notifyAll();
     }
     
     /**
