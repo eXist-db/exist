@@ -668,8 +668,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				XMLReader htmlReader = (XMLReader) clazz.newInstance();
 				collection.setReader( htmlReader );
 			} catch ( Exception e) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-		                "please put nekohtml.jar in lib/optional/ ", e);
+				LOG.info("nekohtml parser not found. If you want to parse non-wellformed HTML files, put nekohtml.jar into " +
+						"directory lib/optional/");
 			}
 		}
 	}
