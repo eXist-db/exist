@@ -389,8 +389,9 @@ public abstract class Paged {
 			
 			FileChannel channel = raf.getChannel();			
 			if (channel.tryLock() == null)
-				throw new DBException("Failed to open database file: " + file.getAbsolutePath() +
-						". It is locked by another process.");
+				readOnly = true;
+//				throw new DBException("Failed to open database file: " + file.getAbsolutePath() +
+//						". It is locked by another process.");
 		} catch (IOException e) {
 			LOG.warn("An exception occured while opening database file " + file.getAbsolutePath() +
 					": " + e.getMessage(), e);
