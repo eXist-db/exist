@@ -229,7 +229,6 @@ public class Journal {
             return;
         flushBuffer();
         if (forceSync || (fsync && syncOnCommit && currentLsn > lastSyncLsn)) {
-        	Thread.dumpStack();
             syncThread.triggerSync();
             lastSyncLsn = currentLsn;
         }
