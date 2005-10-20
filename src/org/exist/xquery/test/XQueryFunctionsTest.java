@@ -110,6 +110,34 @@ public class XQueryFunctionsTest extends TestCase {
 			result 	= service.query( "count ( tokenize('a/b/' , '/') )" );
 			r 		= (String) result.getResource(0).getContent();
 			assertEquals( "3", r );
+			
+			result 	= service.query( "count ( tokenize('' , '/') )" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "0", r );
+			
+			result 	= service.query(
+				"let $res := fn:tokenize('abracadabra', '(ab)|(a)')" +
+				"let $reference := ('', 'r', 'c', 'd', 'r', '')" +
+				"return fn:deep-equal($res, $reference)" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "true", r );
+			
+		} catch (XMLDBException e) {
+			System.out.println("testTokenize(): " + e);
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testDeepEqual() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {	
+			result 	= service.query(
+			"let $res := ('a', 'b')" +
+			"let $reference := ('a', 'b')" +
+			"return fn:deep-equal($res, $reference)" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "true", r );
 		} catch (XMLDBException e) {
 			System.out.println("testTokenize(): " + e);
 			fail(e.getMessage());
