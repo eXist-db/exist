@@ -350,7 +350,7 @@ public abstract class Serializer implements XMLReader {
 		if (templates != null)
 			applyXSLHandler(writer);
 		else
-			setPrettyPrinter(writer, true);
+			setPrettyPrinter(writer, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no")); //setPrettyPrinter(writer, false);
 		
 		serializeToReceiver(doc, true);
 		releasePrettyPrinter();
@@ -363,7 +363,7 @@ public abstract class Serializer implements XMLReader {
 		if (templates != null)
 			applyXSLHandler(out);
 		else
-			setPrettyPrinter(out, false);
+			setPrettyPrinter(out, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no")); //setPrettyPrinter(out, false);
 		serializeToReceiver(n, true);
 		releasePrettyPrinter();
 		return out.toString();
@@ -382,7 +382,7 @@ public abstract class Serializer implements XMLReader {
 		if (templates != null)
 			applyXSLHandler(out);
 		else
-			setPrettyPrinter(out, false);
+			setPrettyPrinter(out, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no")); //setPrettyPrinter(out, false);
 		serializeToReceiver(p, false);
 		releasePrettyPrinter();
 		return out.toString();
@@ -459,9 +459,9 @@ public abstract class Serializer implements XMLReader {
 	}
 
 	protected void setPrettyPrinter(Writer writer, boolean xmlDecl) {
-		//outputProperties.setProperty(			//Hmmm, what was this meant to do? Just seemed to set omit-xml-declaration="yes". Seems better without it - delirium
-		//	OutputKeys.OMIT_XML_DECLARATION,
-		//	xmlDecl ? "no" : "yes");
+		outputProperties.setProperty(	
+			OutputKeys.OMIT_XML_DECLARATION,
+			xmlDecl ? "no" : "yes");
         xmlout = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 		xmlout.setOutput(writer, outputProperties);
 		if (getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes")
