@@ -159,7 +159,9 @@ public class TransactionManager {
     }
     
     public void shutdown() {
-        if (enabled)
-            journal.shutdown();
+        if (enabled) {
+        	long txnId = nextTxnId++;
+            journal.shutdown(txnId);
+        }
     }
 }

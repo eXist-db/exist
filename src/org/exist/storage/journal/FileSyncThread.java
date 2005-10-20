@@ -84,7 +84,7 @@ public class FileSyncThread extends Thread {
      */
     public synchronized void shutdown() {
         shutdown = true;
-        notifyAll();
+        interrupt();
     }
     
     /**
@@ -104,7 +104,7 @@ public class FileSyncThread extends Thread {
      */
     public void run() {
         while (!shutdown) {
-            synchronized (this) {
+            synchronized (this) { 
                 try {
                     wait();
                 } catch (InterruptedException e) {
@@ -113,11 +113,9 @@ public class FileSyncThread extends Thread {
                 if (syncTriggered) {
                     sync();
                 }
-                
-                if (shutdown)
-                    break;
             }
         }
+        // shutdown: sync the file and close it
         sync();
         closeChannel();
     }

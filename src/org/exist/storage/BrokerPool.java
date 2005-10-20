@@ -1174,17 +1174,7 @@ public class BrokerPool {
         if (broker != null)
             broker.shutdown();
         
-        //TODO : use dedicated method here, probably elsewhere ?
-        try {
-            if (!FORCE_CORRUPTION) {
-                transactionManager.checkpoint(false);
-                //TOUNDERSTAND (pb) : not called if FORCE_CORRUPTION is true ?
-                // WM: yes, this will truncate the log file and thus make the tests more realistic ;-)
-                transactionManager.shutdown();
-            }
-        } catch (TransactionException e) {
-            LOG.warn(e.getMessage(), e);
-        }		
+        transactionManager.shutdown();
 		
 		//Invalidate the configuration
 		conf = null;
