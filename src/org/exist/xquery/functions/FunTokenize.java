@@ -38,7 +38,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
-/**
+/** @see http://www.w3.org/TR/xpath-functions/#func-tokenize
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class FunTokenize extends FunMatches {
@@ -74,7 +74,7 @@ public class FunTokenize extends FunMatches {
 		super(context, signature);
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
@@ -83,6 +83,8 @@ public class FunTokenize extends FunMatches {
 		if (stringArg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		String string = stringArg.getStringValue();
+		if ( string.length() == 0 )
+			return Sequence.EMPTY_SEQUENCE;
 		String pattern =
 			translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
 		
