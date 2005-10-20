@@ -44,6 +44,7 @@ import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.NodePath;
+import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.ProgressIndicator;
@@ -441,7 +442,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		for (int i = 0; i < attributes.getLength(); i++) {
 			attrNS = attributes.getURI(i);
 			attrQName = attributes.getQName(i);
-			if (attrQName.startsWith("xmlns"))
+			if (attrQName.startsWith("xmlns") || attrNS.equals(Serializer.EXIST_NS))
 				--attrLength;
 		}
 
@@ -536,7 +537,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			attrLocalName = attributes.getLocalName(i);
 			attrQName = attributes.getQName(i);
 			// skip xmlns-attributes and attributes in eXist's namespace
-			if (attrQName.startsWith("xmlns"))
+			if (attrQName.startsWith("xmlns") || attrNS.equals(Serializer.EXIST_NS))
 				--attrLength;
 			else {
 				p = attrQName.indexOf(':');
