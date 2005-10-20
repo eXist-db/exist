@@ -33,6 +33,7 @@ public class AllTests {
     public static Test suite() {
         TestSuite suite = new TestSuite("Test for org.exist.storage.test");
         //$JUnit-BEGIN$
+        suite.addTestSuite(ShutdownTest.class);
         suite.addTestSuite(CollectionTest.class);
         suite.addTestSuite(CopyResourceTest.class);
         suite.addTestSuite(MoveResourceTest.class);

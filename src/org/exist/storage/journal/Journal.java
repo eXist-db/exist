@@ -229,6 +229,7 @@ public class Journal {
             return;
         flushBuffer();
         if (forceSync || (fsync && syncOnCommit && currentLsn > lastSyncLsn)) {
+        	Thread.dumpStack();
             syncThread.triggerSync();
             lastSyncLsn = currentLsn;
         }
@@ -403,7 +404,22 @@ public class Journal {
 		return new File(dir, getFileName(fileNum));
 	}
 	
-    public void shutdown() {
+	/**
+	 * Shut down the journal. This will write a checkpoint record
+	 * to the log, so recovery manager knows the file has been
+	 * closed in a clean way.
+	 * 
+	 * @param txnId
+	 */
+    public void shutdown(long txnId) {
+    	if (!BrokerPool.FORCE_CORRUPTION) {
+	    	try {
+				writeToLog(new Checkpoint(txnId));
+			} catch (TransactionException e) {
+				LOG.error("An error occurred while closing the journal file: " + e.getMessage(), e);
+			}
+			flushBuffer();
+    	}
         syncThread.shutdown();
         try {
 			syncThread.join();
