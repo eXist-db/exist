@@ -521,7 +521,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			// calculate parent's gid
 			pid = XMLUtil.getParentId(p.getDocument(), p.gid);
 			if (pid > -1) {
-				if (parent == null || pid != parent.gid)
+				if (parent == null || parent.doc.getDocId() != p.getDocument().getDocId() || pid != parent.gid)
 					parent = new NodeProxy(p.getDocument(), pid, Node.ELEMENT_NODE);
 				if (rememberContext)
 					parent.addContextNode(p);
