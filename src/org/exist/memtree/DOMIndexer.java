@@ -93,6 +93,8 @@ public class DOMIndexer {
                     targetDoc.setTreeLevelOrder(doc.treeLevel[i] + 1, length);
             }
         }
+        // increase computed max depth by one
+        targetDoc.setMaxDepth(targetDoc.getMaxDepth() + 1);
         targetDoc.calculateTreeLevelStartPoints(true);
     }
     
