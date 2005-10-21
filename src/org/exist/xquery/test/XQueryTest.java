@@ -24,6 +24,8 @@ public class XQueryTest extends XMLTestCase {
 	private static final String NUMBERS_XML = "numbers.xml";
 	private static final String MODULE1_NAME = "module1.xqm";
 	private static final String MODULE2_NAME = "module2.xqm";
+	private static final String MODULE3_NAME = "module3.xqm";
+	private static final String MODULE4_NAME = "module4.xqm";
 	private static final String FATHER_MODULE_NAME = "father.xqm";
 	private static final String CHILD1_MODULE_NAME = "child1.xqm";
 	private static final String CHILD2_MODULE_NAME = "child2.xqm";
@@ -45,6 +47,18 @@ public class XQueryTest extends XMLTestCase {
 	private final static String module2 =
 		"module namespace foo=\"\";\n"
 		+ "declare variable $foo:bar {\"bar\"};";
+
+	private final static String module3 =
+		"module namespace foo=\"foo\";\n"
+		+ "declare variable $bar:bar {\"bar\"};";
+
+	private final static String module4 =
+		"module namespace foo=\"foo\";\n"
+		//An external prefix in the statically known namespaces
+		+ "declare variable $exist:bar external;\n"
+		+ "declare function foo:bar() {\n"
+	    + "$exist:bar\n"
+	    + "};";
 	
 	private final static String fatherModule =
 		"module namespace foo=\"foo\";\n"
@@ -595,6 +609,16 @@ public class XQueryTest extends XMLTestCase {
 			((EXistResource) doc).setMimeType("application/xquery");
 			testCollection.storeResource(doc);
 			
+			doc = testCollection.createResource(MODULE3_NAME, "BinaryResource");
+			doc.setContent(module3);	
+			((EXistResource) doc).setMimeType("application/xquery");
+			testCollection.storeResource(doc);		
+
+			doc = testCollection.createResource(MODULE4_NAME, "BinaryResource");
+			doc.setContent(module4);	
+			((EXistResource) doc).setMimeType("application/xquery");
+			testCollection.storeResource(doc);		
+			
 			doc = testCollection.createResource(FATHER_MODULE_NAME, "BinaryResource");
 			doc.setContent(fatherModule);	
 			((EXistResource) doc).setMimeType("application/xquery");
@@ -712,6 +736,36 @@ public class XQueryTest extends XMLTestCase {
 			}	
 //			Should be a XQST0047 error
 			assertTrue(message.indexOf("does not match namespace URI") > -1);
+
+			System.out.println("testModule 9: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE3_NAME + "\";\n"		
+				+ "$bar:bar";
+			try {
+				message = "";			
+				result = service.query(query);						
+			} catch (XMLDBException e) {				
+				message = e.getMessage();				
+			}
+			assertTrue(message.indexOf("No namespace defined for prefix") > -1);
+			
+			System.out.println("testModule 10: ========" );
+			query = "xquery version \"1.0\";\n" 
+				+ "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE4_NAME + "\";\n"		
+				+ "foo:bar()";
+			try {
+				message = "";			
+				result = service.query(query);
+				//WARNING !
+				//This result is false ! The external vairable has not been resolved
+				//Furthermore it is not in the module's namespace !
+				printResult(result);	
+				assertEquals( "XQuery: " + query, 0, result.getSize() );
+			} catch (XMLDBException e) {				
+				message = e.getMessage();				
+			}
+			//This is the good result !
+			//assertTrue(message.indexOf("XQST0048") > -1);
 			
 		} catch (XMLDBException e) {
 			System.out.println("testModule : XMLDBException: "+e);

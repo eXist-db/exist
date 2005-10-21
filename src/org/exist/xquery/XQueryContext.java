@@ -857,10 +857,11 @@ public class XQueryContext {
 		}
 		Sequence val = XPathUtil.javaObjectToXPath(value, this);
 		var = (Variable)globalVariables.get(qn);
-		if(var == null) {
+		if(var == null) {			
 			var = new Variable(qn);
 			globalVariables.put(qn, var);
 		}
+		//TODO : should we allow global variable *re*declaration ?
 		var.setValue(val);
 		return var;
 	}
@@ -902,7 +903,7 @@ public class XQueryContext {
     	if (var == null) 
     	    var = (Variable) globalVariables.get(qname);
     	if (var == null)
-    	    throw new XPathException("variable $\"" + qname + "\" is not bound");
+    	    throw new XPathException("variable $" + qname + " is not bound");
     	return var;
 	}
     
