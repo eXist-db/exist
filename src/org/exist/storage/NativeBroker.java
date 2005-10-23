@@ -2877,6 +2877,8 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public void sync(int syncEvent) {
+        if (isReadOnly())
+            return;
 		try {
             new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                 public Object start() {

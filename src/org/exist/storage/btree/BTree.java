@@ -466,7 +466,8 @@ public class BTree extends Paged {
      * @see org.exist.storage.btree.Paged#close()
      */
 	public boolean close() throws DBException {
-		flush();
+        if (!isReadOnly())
+            flush();
 		super.close();
 		return true;
 	}
