@@ -980,7 +980,8 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	public boolean close() throws DBException {
-		flush();
+        if (!isReadOnly())
+            flush();
 		super.close();
 		return true;
 	}
