@@ -103,6 +103,12 @@ public class EntityResolver  implements XMLEntityResolver {
             type=DatabaseResources.GRAMMAR_DTD;
             resourcePath =  databaseResources.DTDBASE+"/"+ databaseResources.getGrammarPath(type,  xrid.getPublicId() );
             
+            // Fix, remove leading path
+            if(resourcePath.endsWith(DatabaseResources.NOGRAMMAR)){
+                resourcePath=DatabaseResources.NOGRAMMAR;
+            }
+            
+            
         } else {
             // Fast escape; no logging, otherwise validation is slow!
             return null;
