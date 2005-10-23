@@ -34,6 +34,9 @@ import junit.framework.TestSuite;
  */
 public class ApacheXmlComponentsTest extends TestCase {  
     
+    public static String XERCESVERSION = "Xerces-J 2.7.1";
+    public static String XALANVERSION = "Xalan Java 2.7.0";
+    
     public ApacheXmlComponentsTest(String testName) {
         super(testName);
     }
@@ -58,21 +61,27 @@ public class ApacheXmlComponentsTest extends TestCase {
      public void testXercesVersion() throws Exception {
 
          String version = org.apache.xerces.impl.Version.getVersion();
-         System.out.println("'"+version+"'");
          
-         Assert.assertEquals("Incorrect Xerces version !"+
-                             "please put correct jar in endorsed folder",
-                             "Xerces-J 2.7.1",  version);
+         System.out.println("Xerces");
+         System.out.println("Required version '"+XERCESVERSION+"'");
+         System.out.println("Found version '"+version+"'");
+         
+         Assert.assertEquals("Incorrect Xerces version! "+
+                             "Please put correct jar in endorsed folder",
+                             XERCESVERSION,  version);
          
      }
      
      public void testXalanVersion() throws Exception {
          
          String version = org.apache.xalan.Version.getVersion();
-         System.out.println("'"+version+"'");
          
-         Assert.assertEquals("Incorrect Xalan version !"+
-                             "please put correct jar in endorsed folder", 
-                             "Xalan Java 2.7.0", version);
+         System.out.println("Xalan");
+         System.out.println("Required version '"+XALANVERSION+"'");
+         System.out.println("Found version '"+version+"'");
+         
+         Assert.assertEquals("Incorrect Xalan version! "+
+                             "Please put correct jar in endorsed folder", 
+                             XALANVERSION, version);
      }
 }
