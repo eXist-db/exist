@@ -32,7 +32,7 @@ import org.exist.util.XMLString;
 import org.exist.util.serializer.encodings.CharacterSet;
 
 /**
- * Write PLAIN TEXT to a writer. This class defines methods similar to SAX. 
+ * Write PLAIN TEXT to a writer. This class defines methods similar to SAX.
  * It deals with opening and closing tags, writing attributes and so on: they
  * are all ignored. Only real content is written!
  *
@@ -45,50 +45,17 @@ import org.exist.util.serializer.encodings.CharacterSet;
 public class TEXTWriter extends XMLWriter {
     
     protected final static Properties defaultProperties = new Properties();
-//    static {
-//        defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-//    }
     
     protected Writer writer = null;
     
     protected CharacterSet charSet = null;
     
-//    protected boolean tagIsOpen = false;
-//    
-//    protected boolean tagIsEmpty = true;
-//    
-//    protected boolean declarationWritten = false;
-//    
-//    protected boolean doctypeWritten = false;
-    
     protected Properties outputProperties;
     
     private char[] charref = new char[10];
     
-//    private static boolean[] textSpecialChars;
-//    
-//    private static boolean[] attrSpecialChars;
-    
-//    static {
-//        textSpecialChars = new boolean[128];
-//        Arrays.fill(textSpecialChars, false);
-//        textSpecialChars['<'] = true;
-//        textSpecialChars['>'] = true;
-//        // textSpecialChars['\r'] = true;
-//        textSpecialChars['&'] = true;
-//        
-//        attrSpecialChars = new boolean[128];
-//        Arrays.fill(attrSpecialChars, false);
-//        attrSpecialChars['<'] = true;
-//        attrSpecialChars['>'] = true;
-//        attrSpecialChars['\r'] = true;
-//        attrSpecialChars['\n'] = true;
-//        attrSpecialChars['\t'] = true;
-//        attrSpecialChars['&'] = true;
-//        attrSpecialChars['"'] = true;
-//    }
-    
     public TEXTWriter() {
+        // empty
     }
     
     public TEXTWriter(Writer writer) {
@@ -118,364 +85,102 @@ public class TEXTWriter extends XMLWriter {
      */
     public void setWriter(Writer writer) {
         this.writer = writer;
-//        tagIsOpen = false;
-//        tagIsEmpty = true;
-//        declarationWritten = false;
+        
     }
     
     public void startDocument() throws TransformerException {
-//        tagIsOpen = false;
-//        tagIsEmpty = true;
-//        declarationWritten = false;
+        // empty
     }
     
     public void endDocument() throws TransformerException {
+        // empty
     }
     
     public void startElement(String qname) throws TransformerException {
-//        if (!declarationWritten)
-//            writeDeclaration();
-//        if (!doctypeWritten)
-//            writeDoctype(qname.toString());
-//        try {
-//            if (tagIsOpen)
-//                closeStartTag(false);
-//            writer.write('<');
-//            writer.write(qname);
-//            tagIsOpen = true;
-//        } catch (IOException e) {
-//            throw new TransformerException(e.getMessage(), e);
-//        }
+        // empty
     }
     
     public void startElement(QName qname) throws TransformerException {
-//        if (!declarationWritten)
-//            writeDeclaration();
-//        if (!doctypeWritten)
-//            writeDoctype(qname.toString());
-//        try {
-//            if (tagIsOpen)
-//                closeStartTag(false);
-//            writer.write('<');
-//            if (qname.getPrefix() != null && qname.getPrefix().length() > 0) {
-//                writer.write(qname.getPrefix());
-//                writer.write(':');
-//            }
-//            writer.write(qname.getLocalName());
-//            tagIsOpen = true;
-//        } catch (IOException e) {
-//            throw new TransformerException(e.getMessage(), e);
-//        }
+        // empty
     }
     
     public void endElement(String qname) throws TransformerException {
-//        try {
-//            if (tagIsOpen)
-//                closeStartTag(true);
-//            else {
-//                writer.write("</");
-//                writer.write(qname);
-//                writer.write('>');
-//            }
-//        } catch (IOException e) {
-//            throw new TransformerException(e.getMessage(), e);
-//        }
+        // empty
     }
     
     public void endElement(QName qname) throws TransformerException {
-//        try {
-//            if (tagIsOpen)
-//                closeStartTag(true);
-//            else {
-//                writer.write("</");
-//                if (qname.getPrefix() != null && qname.getPrefix().length() > 0) {
-//                    writer.write(qname.getPrefix());
-//                    writer.write(':');
-//                }
-//                writer.write(qname.getLocalName());
-//                writer.write('>');
-//            }
-//        } catch (IOException e) {
-//            throw new TransformerException(e.getMessage(), e);
-//        }
+        // empty
     }
     
-    public void namespace(String prefix, String nsURI)
-    throws TransformerException {
-//        if ((nsURI == null || nsURI.length() == 0)
-//        && (prefix == null || prefix.length() == 0))
-//            return;
-//        try {
-//            if (!tagIsOpen)
-//                throw new TransformerException(
-//                        "Found a namespace declaration outside an element");
-//            writer.write(' ');
-//            writer.write("xmlns");
-//            if (prefix != null && prefix.length() > 0) {
-//                writer.write(':');
-//                writer.write(prefix);
-//            }
-//            writer.write("=\"");
-//            writeChars(nsURI, true);
-//            writer.write('"');
-//        } catch (IOException e) {
-//            throw new TransformerException(e.getMessage(), e);
-//        }
+    public void namespace(String prefix, String nsURI) throws TransformerException {
+        // empty
     }
     
-    public void attribute(String qname, String value)
-    throws TransformerException {
-//        try {
-//            if (!tagIsOpen) {
-//                characters(value);
-//                return;
-//                // throw new TransformerException("Found an attribute outside an
-//                // element");
-//            }
-//            writer.write(' ');
-//            writer.write(qname);
-//            writer.write("=\"");
-//            writeChars(value, true);
-//            writer.write('"');
-//        } catch (IOException e) {
-//            throw new TransformerException(e.getMessage(), e);
-//        }
+    public void attribute(String qname, String value) throws TransformerException {
+        // empty
     }
     
-    public void attribute(QName qname, String value)
-    throws TransformerException {
-//        try {
-//            if (!tagIsOpen) {
-//                characters(value);
-//                return;
-//                // throw new TransformerException("Found an attribute outside an
-//                // element");
-//            }
-//            writer.write(' ');
-//            if (qname.getPrefix() != null && qname.getPrefix().length() > 0) {
-//                writer.write(qname.getPrefix());
-//                writer.write(':');
-//            }
-//            writer.write(qname.getLocalName());
-//            writer.write("=\"");
-//            writeChars(value, true);
-//            writer.write('"');
-//        } catch (IOException e) {
-//            throw new TransformerException(e.getMessage(), e);
-//        }
+    public void attribute(QName qname, String value) throws TransformerException {
+        // empty
     }
     
     public void characters(CharSequence chars) throws TransformerException {
-//        if (!declarationWritten)
-//            writeDeclaration();
+        
         try {
-//            if (tagIsOpen)
-//                closeStartTag(false);
             writeChars(chars, false);
         } catch (IOException e) {
             throw new TransformerException(e.getMessage(), e);
         }
     }
     
-    public void characters(char[] ch, int start, int len)
-    throws TransformerException {
-//        if (!declarationWritten)
-//            writeDeclaration();
+    public void characters(char[] ch, int start, int len) throws TransformerException {
+        
         XMLString s = new XMLString(ch, start, len);
         characters(s);
         s.release();
     }
     
-    public void processingInstruction(String target, String data)
-    throws TransformerException {
-//        if (!declarationWritten)
-//            writeDeclaration();
-//        try {
-//            if (tagIsOpen)
-//                closeStartTag(false);
-//            writer.write("<?");
-//            writer.write(target);
-//            if (data != null && data.length() > 0) {
-//                writer.write(' ');
-//                writeChars(data, false);
-//            }
-//            writer.write("?>");
-//        } catch (IOException e) {
-//            throw new TransformerException(e.getMessage(), e);
-//        }
+    public void processingInstruction(String target, String data) throws TransformerException {
+        // empty
     }
     
     public void comment(CharSequence data) throws TransformerException {
-//        if (!declarationWritten)
-//            writeDeclaration();
-//        try {
-//            if (tagIsOpen)
-//                closeStartTag(false);
-//            writer.write("<!--");
-//            writeChars(data, false);
-//            writer.write("-->");
-//        } catch (IOException e) {
-//            throw new TransformerException(e.getMessage(), e);
-//        }
+        // empty
     }
     
-    public void cdataSection(char[] ch, int start, int len)
-    throws TransformerException {
-//        if (tagIsOpen)
-//            closeStartTag(false);
+    public void cdataSection(char[] ch, int start, int len) throws TransformerException {
+        
         try {
-//            writer.write("<![CDATA[");
             writer.write(ch, start, len);
-//            writer.write("]]>");
+            
         } catch (IOException e) {
             throw new TransformerException(e.getMessage(), e);
         }
     }
     
-    public void documentType(String name, String publicId, String systemId)
-    throws TransformerException {
-//        if (!declarationWritten)
-//            writeDeclaration();
-//        
-//        if (publicId == null && systemId == null)
-//            return;
-//        
-//        try {
-//            writer.write("<!DOCTYPE ");
-//            writer.write(name);
-//            if (publicId != null) {
-//                writer.write(" PUBLIC \"" + publicId + "\"");
-//            }
-//            if (systemId != null) {
-//                if (publicId == null)
-//                    writer.write(" SYSTEM");
-//                writer.write(" \"" + systemId + "\"");
-//            }
-//            writer.write(">");
-//        } catch (IOException e) {
-//            throw new TransformerException(e.getMessage(), e);
-//        }
-//        doctypeWritten = true;
+    public void documentType(String name, String publicId, String systemId) throws TransformerException {
+        // empty
     }
     
     protected void closeStartTag(boolean isEmpty) throws TransformerException {
-//        try {
-//            if (tagIsOpen) {
-//                if (isEmpty)
-//                    writer.write("/>");
-//                else
-//                    writer.write('>');
-//                tagIsOpen = false;
-//            }
-//        } catch (IOException e) {
-//            throw new TransformerException(e.getMessage(), e);
-//        }
+        // empty
     }
     
     protected void writeDeclaration() throws TransformerException {
-//        if (declarationWritten)
-//            return;
-//        if (outputProperties == null)
-//            outputProperties = defaultProperties;
-//        declarationWritten = true;
-//        String omitXmlDecl = outputProperties.getProperty(
-//                OutputKeys.OMIT_XML_DECLARATION, "yes");
-//        if (omitXmlDecl.equals("no")) {
-//            String version = outputProperties.getProperty(OutputKeys.VERSION, "1.0");
-//            String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
-//            String encoding = outputProperties.getProperty(OutputKeys.ENCODING,
-//                    "UTF-8");
-//            try {
-//                writer.write("<?xml version=\"");
-//                writer.write(version);
-//                writer.write("\" encoding=\"");
-//                writer.write(encoding);
-//                writer.write('"');
-//                if (standalone != null) {
-//                    writer.write(" standalone=\"");
-//                    writer.write(standalone);
-//                    writer.write('"');
-//                }
-//                writer.write("?>\n");
-//            } catch (IOException e) {
-//                throw new TransformerException(e.getMessage(), e);
-//            }
-//        }
+        // empty
     }
     
     protected void writeDoctype(String rootElement) throws TransformerException {
-//        if (doctypeWritten)
-//            return;
-//        String publicId = outputProperties.getProperty(OutputKeys.DOCTYPE_PUBLIC);
-//        String systemId = outputProperties.getProperty(OutputKeys.DOCTYPE_SYSTEM);
-//        if (publicId != null || systemId != null)
-//            documentType(rootElement, publicId, systemId);
-//        doctypeWritten = true;
+        // empty
     }
     
-    private final void writeChars(CharSequence s, boolean inAttribute)
-    throws IOException {
-//        boolean[] specialChars = inAttribute ? attrSpecialChars
-//                : textSpecialChars;
-//        char ch = 0;
+    private final void writeChars(CharSequence s, boolean inAttribute) throws IOException {
+        
         final int len = s.length();
-//        int pos = 0, i;
-//        while (pos < len) {
-//            i = pos;
-            
-            // TODO: I am not sure about this loop.
-//            while (i < len) {
-//                ch = s.charAt(i);
-//                if (ch < 128) {
-//                    if (specialChars[ch])
-//                        break;
-//                    else
-//                        i++;
-//                } else if (!charSet.inCharacterSet(ch) || ch == 160)
-//                    break;
-//                else
-//                    i++;
-//            }
-            writeCharSeq(s, 0, len);
-            // writer.write(s.subSequence(pos, i).toString());
-//            if (i >= len)
-//                return;
-//            switch (ch) {
-//                case '<':
-//                    writer.write("&lt;");
-//                    break;
-//                case '>':
-//                    writer.write("&gt;");
-//                    break;
-//                case '&':
-//                    writer.write("&amp;");
-//                    break;
-//                case '\r':
-//                    writer.write("&#xD;");
-//                    break;
-//                case '\n':
-//                    writer.write("&#xA;");
-//                    break;
-//                case '\t':
-//                    writer.write("&#x9;");
-//                    break;
-//                case '"':
-//                    writer.write("&#34;");
-//                    break;
-//                    // non-breaking space:
-//                case 160:
-//                    writer.write("&#160;");
-//                    break;
-//                default:
-//                    writeCharacterReference(ch);
-//            }
-//            writeCharacterReference(ch);
-//            pos = ++i;
-//        }
+        writeCharSeq(s, 0, len);
     }
     
-    private void writeCharSeq(CharSequence ch, int start, int end)
-    throws IOException {
+    private void writeCharSeq(CharSequence ch, int start, int end) throws IOException {
         for (int i = start; i < end; i++) {
             writer.write(ch.charAt(i));
         }
