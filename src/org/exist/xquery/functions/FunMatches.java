@@ -184,9 +184,10 @@ public class FunMatches extends Function {
         // get the type of a possible index
 		int indexType = nodes.getIndexType();
 		if(Type.subTypeOf(indexType, Type.STRING)) {
-			LOG.debug("Using xs:string index for fn:matches. Regex: " + pattern);
 		    DocumentSet docs = nodes.getDocumentSet();
 		    try {
+		    	if (context.isProfilingEnabled())
+		    		context.getProfiler().message(this, "Using index for fn:matches. Regex: " + pattern);
 				return context.getBroker().getValueIndex().match(docs, nodes, pattern, 
 						DBBroker.MATCH_REGEXP, flags, caseSensitive);
 			} catch (EXistException e) {
