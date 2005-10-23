@@ -77,6 +77,9 @@ public class DatabaseResources {
     public String DTDBASE = GRAMMERBASE + "/dtd";
     public String DTDCATALOG = DTDBASE + "/catalog.xml";
     
+    public static String NOGRAMMAR = "NONE";
+    
+    
     public static int GRAMMAR_UNKNOWN = 0;
     public static int GRAMMAR_XSD = 1;
     public static int GRAMMAR_DTD = 2;
@@ -286,84 +289,7 @@ public class DatabaseResources {
         return insertIsSuccesfull;
         
     }
-    
-//    
-//    public boolean insertGrammar(File file, int type, String path){
-//        
-//        boolean insertIsSuccesfull = false;
-//        
-//        // Path = subpath/doc.xml
-//        String baseFolder=null;
-//        if(type==GRAMMAR_XSD){
-//            baseFolder = XSDBASE;
-//        } else {
-//            baseFolder = DTDBASE;
-//        }
-//        
-//        String collection=null;
-//        String document=null;
-//        int separatorPos = path.lastIndexOf("/");
-//        if(separatorPos==-1){
-//            document=path;
-//            collection=baseFolder ;
-//        } else {
-//            document=path.substring(separatorPos+1);
-//            collection=baseFolder + "/" +path.substring(0, separatorPos);
-//        }
-//        
-//        logger.info("document="+document);
-//        logger.info("collection="+collection);
-//        
-//        return insertDocumentInDatabase(file,  collection, document);
-//    }
-//    
-//    public boolean insertDocumentInDatabase(File file, String collectionName, String documentName){
-//        
-//        // TODO make compatible for Binary (dtd) and schemas (xml)
-//        // See org.exist.xmldb.test.CreateCollectionsTest
-//        
-//        // org.exist.storage.test.RecoveryTest RecoverBinaryTest
-//        
-//        boolean insertIsSuccesfull=false;
-//        
-//        DBBroker broker = null;
-//        try {
-//            
-//            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
-//            
-//            TransactionManager transact = brokerPool.getTransactionManager();
-//            Txn transaction = transact.beginTransaction();
-//            
-//            Collection collection = broker.getOrCreateCollection(transaction, collectionName);
-//            //broker.saveCollection(transaction, collection);
-//            
-//            IndexInfo info = collection.validate( transaction, broker, documentName , new InputSource( new FileReader(file) ) );
-//            collection.store(transaction, broker, info, new InputSource( new FileReader(file) ), false);
-//            
-//            transact.commit(transaction);
-//            
-//            insertIsSuccesfull=true;
-//            
-//        } catch (EXistException ex){
-//            logger.error(ex);
-//        } catch (PermissionDeniedException ex){
-//            logger.error(ex);
-//        } catch (SAXException ex){
-//            logger.error(ex);
-//        } catch (TriggerException ex){
-//            logger.error(ex);
-//        } catch(LockException ex){
-//            logger.error(ex);
-//        } catch(FileNotFoundException ex){
-//            logger.error(ex);
-//        } finally {
-//            if(brokerPool!=null){
-//                brokerPool.release(broker);
-//            }
-//        }
-//        return insertIsSuccesfull;
-//    }
-//    
+     
     
     public boolean hasGrammar(int type, String id){
         return !getGrammarPath(type, id).equalsIgnoreCase("NONE");
@@ -409,13 +335,15 @@ public class DatabaseResources {
         if(type==GRAMMAR_XSD){
             query = "let $top := collection('"+XSDBASE+"') " +
                     "let $schemas := $top/xs:schema[ @targetNamespace = \"" + id+ "\" ] "+
-                    "return if($schemas) then document-uri($schemas[1]) else \"NONE\" " ;
+                    "return if($schemas) then document-uri($schemas[1]) else \""+NOGRAMMAR+"\" " ;
         } else if(type==GRAMMAR_DTD){
             query = "let $top := doc('"+DTDCATALOG+"') "+
                     "let $dtds := $top//public[@publicId = \""+id+"\"]/@uri " +
-                    "return if($dtds) then $dtds[1] else \"NONE\"" ;
+                    "return if($dtds) then $dtds[1] else \""+NOGRAMMAR+"\"" ;
+        } else {
+            logger.error("Unknown grammar type, not able to find query.");
         }
-        logger.info(query);
+
         return query;
     }
     
