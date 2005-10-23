@@ -75,6 +75,10 @@ public class TransactionManager {
         }
     }
     
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+    
     /**
      * Run a database recovery if required. This method is called once during
      * startup from {@link org.exist.storage.BrokerPool}.
@@ -124,7 +128,8 @@ public class TransactionManager {
     }
 	
     public void abort(Txn txn) {
-        txn.releaseAll();
+        if (enabled)
+            txn.releaseAll();
     }
     
     /**

@@ -608,6 +608,11 @@ public class BrokerPool {
         // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
 		DBBroker broker = (DBBroker) inactiveBrokers.peek();
         
+        if (broker.isReadOnly()) {
+            transactionManager.setEnabled(false);
+            isReadOnly = true;
+        }
+        
 		// run recovery
         boolean recovered = false;
 		if (isTransactional()) {
