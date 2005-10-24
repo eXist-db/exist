@@ -71,6 +71,7 @@ import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.DataBackup;
+import org.exist.storage.NativeBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
@@ -798,8 +799,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!name.startsWith("/"))
                 name = '/' + name;
-            if (!name.startsWith("/db"))
-                name = "/db" + name;
+            /*if (!name.startsWith("/db"))
+                name = "/db" + name;*/
+            name = NativeBroker.checkPath(name, "/db");
             collection = broker.openCollection(name, Lock.READ_LOCK);
             Vector vec = new Vector();
             if (collection == null) {
@@ -829,8 +831,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!collectionName.startsWith("/"))
                 collectionName = '/' + collectionName;
-            if (!collectionName.startsWith("/db"))
-                collectionName = "/db" + collectionName;
+            /*if (!collectionName.startsWith("/db"))
+                collectionName = "/db" + collectionName;*/
+            collectionName = NativeBroker.checkPath(collectionName, "/db");
             collection = broker.openCollection(collectionName, Lock.READ_LOCK);
             return collection.getDocumentCount();
         } finally {
@@ -848,8 +851,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!collectionName.startsWith("/"))
                 collectionName = '/' + collectionName;
-            if (!collectionName.startsWith("/db"))
-                collectionName = "/db" + collectionName;
+            /*if (!collectionName.startsWith("/db"))
+                collectionName = "/db" + collectionName;*/
+            collectionName = NativeBroker.checkPath(collectionName, "/db");
             collection = broker.openCollection(collectionName, Lock.READ_LOCK);
             String id;
             Random rand = new Random();
@@ -881,8 +885,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!name.startsWith("/"))
                 name = '/' + name;
-            if (!name.startsWith("/db"))
-                name = "/db" + name;
+            /*if (!name.startsWith("/db"))
+                name = "/db" + name;*/
+            name = NativeBroker.checkPath(name, "/db");
             collection = broker.openCollection(name, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("Collection " + name + " not found");
@@ -920,8 +925,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!name.startsWith("/"))
                 name = '/' + name;
-            if (!name.startsWith("/db"))
-                name = "/db" + name;
+            /*if (!name.startsWith("/db"))
+                name = "/db" + name;*/
+            name = NativeBroker.checkPath(name, "/db");
             collection = broker.openCollection(name, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("Collection " + name + " not found");
@@ -970,8 +976,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!name.startsWith("/"))
                 name = '/' + name;
-            if (!name.startsWith("/db"))
-                name = "/db" + name;
+            /*if (!name.startsWith("/db"))
+                name = "/db" + name;*/
+            name = NativeBroker.checkPath(name, "/db");
             Collection collection = broker.openCollection(name, Lock.READ_LOCK);
             Permission perm = null;
             if (collection == null) {
@@ -1003,8 +1010,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!collectionPath.startsWith("/"))
                 collectionPath = '/' + collectionPath;
-            if (!collectionPath.startsWith("/db"))
-                collectionPath = "/db" + collectionPath;
+            /*if (!collectionPath.startsWith("/db"))
+                collectionPath = "/db" + collectionPath;*/
+            collectionPath = NativeBroker.checkPath(collectionPath, "/db");
             collection = broker.openCollection(collectionPath, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("collection " + collectionPath
@@ -1025,8 +1033,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!documentPath.startsWith("/"))
                 documentPath = '/' + documentPath;
-            if (!documentPath.startsWith("/db"))
-                documentPath = "/db" + documentPath;
+            /*if (!documentPath.startsWith("/db"))
+                documentPath = "/db" + documentPath;*/
+            documentPath = NativeBroker.checkPath(documentPath, "/db");
             doc = (DocumentImpl) broker.openDocument(documentPath, Lock.READ_LOCK);
             if (doc == null) {
                 LOG.debug("document " + documentPath + " not found!");
