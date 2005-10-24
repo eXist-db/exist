@@ -32,6 +32,14 @@
         </layout>
     </appender>
 
+	<appender name="exist.profiling" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/profile.log"/>
+        <param name="MaximumFileSize" value="500000"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
+        </layout>
+    </appender>
+    
     <!-- the following appenders write to NULL  -->
     <appender name="null" class="org.apache.log4j.varia.NullAppender">
         <layout class="org.apache.log4j.PatternLayout">
@@ -46,9 +54,14 @@
         <param name="MaxNumberOfRecords" value="1000"/>
     </appender>
 
+	<category name="xquery.profiling" additivity="false">
+		<priority value="debug"/>
+		<appender-ref ref="exist.profiling"/>
+	</category>
+	
     <category name="org.exist.xmldb" additivity="false">
         <priority value="debug"/>
-        <appender-ref ref="exist.xmldb"/>
+        <appender-ref ref="console"/>
     </category>
 
     <category name="org.mortbay" additivity="false">
@@ -70,6 +83,6 @@
 
     <root>
         <priority value="debug"/>
-        <appender-ref ref="exist.core"/>
+        <appender-ref ref="console"/>
     </root>
 </log4j:configuration>
