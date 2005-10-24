@@ -22,6 +22,7 @@
  * $Id$
  */
 package org.exist.storage;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -44,6 +45,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.SymbolTable;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteInputStream;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -71,7 +73,9 @@ public abstract class DBBroker extends Observable {
     public final static int NATIVE = 0;
     public final static int NATIVE_CLUSTER = 1;
     
-    public final static String TEMP_COLLECTION ="/db/system/temp";
+    public final static String ROOT_COLLECTION = "/db";
+    
+    public final static String TEMP_COLLECTION = ROOT_COLLECTION + "/system/temp";
     
 	protected final static Logger LOG = Logger.getLogger(DBBroker.class);
 	

@@ -622,7 +622,7 @@ public class BrokerPool {
                 Txn txn = transactionManager.beginTransaction();
                 try {
                 	//TODO : use a root collection final member
-                    broker.getOrCreateCollection(txn, "/db");
+                    broker.getOrCreateCollection(txn, DBBroker.ROOT_COLLECTION);
                     transactionManager.commit(txn);
                 } catch (PermissionDeniedException e) {
                     transactionManager.abort(txn);
