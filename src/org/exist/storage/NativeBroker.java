@@ -3158,7 +3158,7 @@ public class NativeBroker extends DBBroker {
 	{
 		if(currentPath != null)
 		{
-			if((!currentPath.startsWith(ROOT_COLLECTION + "/")) && (!currentPath.contentEquals(ROOT_COLLECTION)))
+			if((!currentPath.startsWith(ROOT_COLLECTION + "/")) && (!currentPath.equals(ROOT_COLLECTION)))
 			{
 				if(currentPath.startsWith("/"))
 				{
