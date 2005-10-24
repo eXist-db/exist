@@ -957,7 +957,8 @@ public class InteractiveClient {
             else if (args[0].equalsIgnoreCase("quit")) {
                 return false;
                 
-            }  else if (args[0].equalsIgnoreCase("validate")) {
+            }  // TODO remove for new snapshot
+                else if (args[0].equalsIgnoreCase("validate_")) {
                 if (args.length < 2)
                     messageln("missing document name.");
                 else {
@@ -967,8 +968,8 @@ public class InteractiveClient {
                     else
                         messageln("there were errors.");
                 }
-                //new DWES
-            }  else if (args[0].equalsIgnoreCase("validate_")) {
+                // TODO new by dizzzz
+            }  else if (args[0].equalsIgnoreCase("validate")) {
                 if (args.length < 2)
                     messageln("missing document name.");
                 else {
