@@ -91,7 +91,7 @@ public class XQueryTriggerTest extends XMLTestCase {
         "</xu:update>" +
       "</xu:modifications>";
     
-    private final static String MODIFIED_DOCUMENT_CONTENT = DOCUMENT_CONTENT.replace("18.4", "15.2");
+//    private final static String MODIFIED_DOCUMENT_CONTENT = DOCUMENT_CONTENT.replace("18.4", "15.2");
     
     private final static String LOG_NAME = "XQueryTriggerLog.xml";
     
