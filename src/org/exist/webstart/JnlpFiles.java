@@ -41,9 +41,10 @@ public class JnlpFiles {
     // regexp patterns to be more robust for version changes
     private String jars[] = new String[]{
                 "antlr\\.jar", 
-                 "commons-pool-.*\\.jar",
+                "commons-pool-.*\\.jar",
                 "excalibur-cli-.*\\.jar", 
                 "jEdit-syntax\\.jar",
+                "jgroups-all\\.jar", 
                 "libreadline-java\\.jar", 
                 "log4j-.*\\.jar",
                 "resolver.*\\.jar",
