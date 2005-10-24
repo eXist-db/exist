@@ -145,9 +145,7 @@ public class NativeBroker extends DBBroker {
      */
     private static final Logger LOG = Logger.getLogger(NativeBroker.class);
 
-    private static final long TEMP_FRAGMENT_TIMEOUT = 300000;
-    
-	private static final String ROOT_COLLECTION = "/db";
+    private static final long TEMP_FRAGMENT_TIMEOUT = 300000;	
 	
 	/** default buffer size setting */
 	protected final static int BUFFERS = 256;
@@ -620,9 +618,9 @@ public class NativeBroker extends DBBroker {
 	public Document getDocument(String fileName) throws PermissionDeniedException {
 		if (!fileName.startsWith("/"))
 			fileName = '/' + fileName;
-		/*if (!fileName.startsWith("/db"))
+		/*if (!fileName.startsWith(ROOT_COLLECTION))
 		    fileName = "/db" + fileName;*/
-		fileName = NativeBroker.checkPath(fileName, "/db");
+		fileName = NativeBroker.checkPath(fileName, ROOT_COLLECTION);
 
 		int pos = fileName.lastIndexOf('/');
 		String collName = fileName.substring(0, pos);
@@ -648,9 +646,9 @@ public class NativeBroker extends DBBroker {
 	public DocumentImpl openDocument(String docPath, int lockMode) throws PermissionDeniedException {
 		if (!docPath.startsWith("/"))
 			docPath = '/' + docPath;
-		/*if (!docPath.startsWith("/db"))
+		/*if (!docPath.startsWith(ROOT_COLLECTION))
 		    docPath = "/db" + docPath;*/
-		docPath = NativeBroker.checkPath(docPath, "/db");
+		docPath = NativeBroker.checkPath(docPath, ROOT_COLLECTION);
 
 		int pos = docPath.lastIndexOf('/');
 		String collName = docPath.substring(0, pos);
@@ -1757,7 +1755,7 @@ public class NativeBroker extends DBBroker {
 				Collection sub;
 				Collection current = getCollection(ROOT_COLLECTION);
 				if (current == null) {
-					LOG.debug("creating root collection /db");
+					LOG.debug("creating root collection " + ROOT_COLLECTION);
 					current = new Collection(collectionsDb, ROOT_COLLECTION);
 					current.getPermissions().setPermissions(0777);
 					current.getPermissions().setOwner(user);
@@ -3160,7 +3158,7 @@ public class NativeBroker extends DBBroker {
 	{
 		if(currentPath != null)
 		{
-			if((!currentPath.startsWith("/db/")) && (!currentPath.contentEquals("/db")))
+			if((!currentPath.startsWith(ROOT_COLLECTION + "/")) && (!currentPath.contentEquals(ROOT_COLLECTION)))
 			{
 				if(currentPath.startsWith("/"))
 				{
