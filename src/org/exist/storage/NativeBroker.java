@@ -620,8 +620,9 @@ public class NativeBroker extends DBBroker {
 	public Document getDocument(String fileName) throws PermissionDeniedException {
 		if (!fileName.startsWith("/"))
 			fileName = '/' + fileName;
-		if (!fileName.startsWith("/db"))
-		    fileName = "/db" + fileName;
+		/*if (!fileName.startsWith("/db"))
+		    fileName = "/db" + fileName;*/
+		fileName = NativeBroker.checkPath(fileName, "/db");
 
 		int pos = fileName.lastIndexOf('/');
 		String collName = fileName.substring(0, pos);
@@ -647,8 +648,9 @@ public class NativeBroker extends DBBroker {
 	public DocumentImpl openDocument(String docPath, int lockMode) throws PermissionDeniedException {
 		if (!docPath.startsWith("/"))
 			docPath = '/' + docPath;
-		if (!docPath.startsWith("/db"))
-		    docPath = "/db" + docPath;
+		/*if (!docPath.startsWith("/db"))
+		    docPath = "/db" + docPath;*/
+		docPath = NativeBroker.checkPath(docPath, "/db");
 
 		int pos = docPath.lastIndexOf('/');
 		String collName = docPath.substring(0, pos);
@@ -3147,6 +3149,33 @@ public class NativeBroker extends DBBroker {
                 return null;
         }
     }
+    
+    /*
+     * if the currentPath is null return the parentPath else 
+     * 	if the currentPath doesnt not start with "/db/" and is not equal to "/db" then adjust the path to start with the parentPath
+     * 
+     * Fix to Jens collection/resource name problem by deliriumsky
+     */
+    public static String checkPath(String currentPath, String parentPath)
+	{
+		if(currentPath != null)
+		{
+			if((!currentPath.startsWith("/db/")) && (!currentPath.contentEquals("/db")))
+			{
+				if(currentPath.startsWith("/"))
+				{
+					currentPath = parentPath + currentPath;
+				}
+				else
+				{
+					currentPath = parentPath + '/' + currentPath;
+				}
+			}
+			
+			return(currentPath);
+		}
+		return(parentPath);
+	}
 
 	public final static class NodeRef extends Value {
         /**

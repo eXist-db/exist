@@ -27,6 +27,7 @@ import java.util.Vector;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.dom.QName;
+import org.exist.storage.NativeBroker;
 import org.exist.util.Occurrences;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -51,8 +52,9 @@ public class RemoteIndexQueryService implements IndexQueryService {
     
     /** @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String) */
     public void reindexCollection(String collectionPath) throws XMLDBException {
-        String path = (collectionPath.startsWith("/db") ? collectionPath : 
-    		parent.getPath() + '/' + collectionPath);
+        /*String path = (collectionPath.startsWith("/db") ? collectionPath : 
+    		parent.getPath() + '/' + collectionPath);*/
+    	String path = NativeBroker.checkPath(collectionPath, parent.getPath());
 		Vector params = new Vector();
 		params.addElement(path);
 		try {

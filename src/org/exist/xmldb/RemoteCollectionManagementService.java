@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+import org.exist.storage.NativeBroker;
 import org.w3c.dom.Document;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -117,17 +118,19 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
      * @see org.exist.xmldb.CollectionManagementServiceImpl#move(java.lang.String, java.lang.String, java.lang.String)
      */
     public void move(String collectionPath, String destinationPath, String newName) throws XMLDBException {
-        if(!collectionPath.startsWith("/db"))
-            collectionPath = parent.getPath() + '/' + collectionPath;
-        if(destinationPath != null)
+      /*  if(!collectionPath.startsWith("/db/"))
+            collectionPath = parent.getPath() + '/' + collectionPath;*/
+    	collectionPath = NativeBroker.checkPath(collectionPath, parent.getPath());
+        /*if(destinationPath != null)
         {
-        	if(!destinationPath.startsWith("/db"))
+        	if(!destinationPath.startsWith("/db/"))
         		destinationPath = parent.getPath() + '/' + destinationPath;
         }
         else
         {
         	destinationPath = parent.getPath();
-        }
+        }*/
+    	destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
             int p = collectionPath.lastIndexOf(('/'));
             newName = collectionPath.substring(p + 1);
@@ -153,17 +156,19 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
      * @see org.exist.xmldb.CollectionManagementServiceImpl#moveResource(java.lang.String, java.lang.String, java.lang.String)
      */
     public void moveResource(String resourcePath, String destinationPath, String newName) throws XMLDBException {
-        if(!resourcePath.startsWith("/db"))
-            resourcePath = parent.getPath() + '/' + resourcePath;
-        if(destinationPath != null)
+        /*if(!resourcePath.startsWith("/db/"))
+            resourcePath = parent.getPath() + '/' + resourcePath;*/
+    	resourcePath = NativeBroker.checkPath(resourcePath, parent.getPath());
+        /*if(destinationPath != null)
         {
-        	if(!destinationPath.startsWith("/db"))
+        	if(!destinationPath.startsWith("/db/"))
         		destinationPath = parent.getPath() + '/' + destinationPath;
         }
         else
         {
         	destinationPath = parent.getPath();
-        }
+        }*/
+    	destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
             int p = resourcePath.lastIndexOf(('/'));
             newName = resourcePath.substring(p + 1);
@@ -190,10 +195,12 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
 	 */
 	public void copy(String collectionPath, String destinationPath, String newName)
 			throws XMLDBException {
-		if(!collectionPath.startsWith("/db"))
-            collectionPath = parent.getPath() + '/' + collectionPath;
-        if(!destinationPath.startsWith("/db"))
-            destinationPath = parent.getPath() + '/' + destinationPath;
+		/*if(!collectionPath.startsWith("/db/"))
+            collectionPath = parent.getPath() + '/' + collectionPath;*/
+		collectionPath = NativeBroker.checkPath(collectionPath, parent.getPath());
+        /*if(!destinationPath.startsWith("/db/"))
+            destinationPath = parent.getPath() + '/' + destinationPath;*/
+		destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
             int p = collectionPath.lastIndexOf(('/'));
             newName = collectionPath.substring(p + 1);
@@ -218,12 +225,15 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     /* (non-Javadoc)
      * @see org.exist.xmldb.CollectionManagementServiceImpl#copyResource(java.lang.String, java.lang.String, java.lang.String)
      */
+	
     public void copyResource(String resourcePath, String destinationPath,
             String newName) throws XMLDBException {
-    	if(!resourcePath.startsWith("/db"))
-            resourcePath = parent.getPath() + '/' + resourcePath;
-        if(!destinationPath.startsWith("/db"))
-            destinationPath = parent.getPath() + '/' + destinationPath;
+    	/*if(!resourcePath.startsWith("/db/"))
+            resourcePath = parent.getPath() + '/' + resourcePath;*/
+    	resourcePath = NativeBroker.checkPath(resourcePath, parent.getPath());
+        /*if(!destinationPath.startsWith("/db/"))
+            destinationPath = parent.getPath() + '/' + destinationPath;*/
+    	destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
             int p = resourcePath.lastIndexOf(('/'));
             newName = resourcePath.substring(p + 1);

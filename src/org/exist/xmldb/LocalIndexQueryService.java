@@ -29,6 +29,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NativeBroker;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -79,8 +80,9 @@ public class LocalIndexQueryService implements IndexQueryService {
      * @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String)
      */
     public void reindexCollection(String collectionPath) throws XMLDBException {
-        String path = (collectionPath.startsWith("/db") ? collectionPath : 
-    		parent.getPath() + '/' + collectionPath);
+        /*String path = (collectionPath.startsWith("/db/") ? collectionPath : 
+    		parent.getPath() + '/' + collectionPath);*/
+    	String path = NativeBroker.checkPath(collectionPath, parent.getPath());
         DBBroker broker = null;
         try {
             broker = pool.get(user);

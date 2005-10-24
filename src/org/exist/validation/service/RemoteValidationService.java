@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 
+import org.exist.storage.NativeBroker;
 import org.exist.validation.Validator;
 import org.exist.xmldb.RemoteCollection;
 
@@ -61,8 +62,9 @@ public class RemoteValidationService implements ValidationService {
     public boolean validateResource(String id) throws XMLDBException {
         logger.info("Validating resource '"+id+"'");
         boolean documentIsValid=false;
-        if(!id.startsWith("/db"))
-            id = remoteCollection.getPath() + '/' + id;
+        /*if(!id.startsWith("/db"))
+            id = remoteCollection.getPath() + '/' + id;*/
+        id = NativeBroker.checkPath(id, remoteCollection.getPath());
         
         Vector params = new Vector();
         params.addElement( id );
