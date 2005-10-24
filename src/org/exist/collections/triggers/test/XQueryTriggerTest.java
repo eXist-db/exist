@@ -20,6 +20,8 @@
 
 package org.exist.collections.triggers.test;
 
+import javax.xml.transform.OutputKeys;
+
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.xmldb.api.DatabaseManager;
@@ -91,8 +93,9 @@ public class XQueryTriggerTest extends XMLTestCase {
         "</xu:update>" +
       "</xu:modifications>";
     
-//    private final static String MODIFIED_DOCUMENT_CONTENT = DOCUMENT_CONTENT.replace("18.4", "15.2");
-    
+
+    private final static String MODIFIED_DOCUMENT_CONTENT = DOCUMENT_CONTENT.replaceAll("<price>18.4</price>", "<price>15.2</price>");
+   
     private final static String LOG_NAME = "XQueryTriggerLog.xml";
     
     private final static String EMPTY_LOG = "<events/>";
@@ -187,8 +190,10 @@ public class XQueryTriggerTest extends XMLTestCase {
 			idxConf.configureCollection(EMPTY_CONFIG);			
 
 	        XPathQueryService service = (XPathQueryService) testCollection
-    			.getService("XPathQueryService", "1.0");	        
-	        
+    			.getService("XPathQueryService", "1.0");
+	        //TODO : understand why it is necessary !
+	        service.setProperty(OutputKeys.INDENT, "no");
+	        	        
 	        result = service.query("/events/event[@id = 'trigger1']");
 	        assertEquals(2, result.getSize());
 	        
@@ -206,9 +211,8 @@ public class XQueryTriggerTest extends XMLTestCase {
 	        
 	        //TODO : consistent URI !	        
 	        result = service.query("/events/event[@id = 'trigger1']/document/test");
-	        assertEquals(1, result.getSize());
-	        //TODO : comparison fails !
-	        //assertXMLEqual(DOCUMENT_CONTENT, result.getResource(0).getContent().toString());
+	        assertEquals(1, result.getSize());	        	        
+	        assertXMLEqual(DOCUMENT_CONTENT, ((XMLResource)result.getResource(0)).getContent().toString());
 	        
     	} catch (Exception e) {
     		fail(e.getMessage());
@@ -234,6 +238,8 @@ public class XQueryTriggerTest extends XMLTestCase {
 
 	        XPathQueryService service = (XPathQueryService) testCollection
     		.getService("XPathQueryService", "1.0");	        
+	        //TODO : understand why it is necessary !
+	        service.setProperty(OutputKeys.INDENT, "no");
 
 	        result = service.query("/events/event[@id = 'trigger2']");
 	        assertEquals(2, result.getSize());
@@ -252,10 +258,9 @@ public class XQueryTriggerTest extends XMLTestCase {
 	        
 	        //TODO : consistent URI !	        
 	        result = service.query("/events/event[@id = 'trigger2']/document/test");
-	        assertEquals(2, result.getSize());
-	        //TODO : comparison fails !
-	        //assertXMLEqual(DOCUMENT_CONTENT, result.getResource(0).getContent().toString());	        
-	        //assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(1).getContent().toString());
+	        assertEquals(2, result.getSize());	        
+	        assertXMLEqual(DOCUMENT_CONTENT, result.getResource(0).getContent().toString());	        
+	        assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(1).getContent().toString());
 
     	} catch (Exception e) {
     		fail(e.getMessage());
@@ -278,7 +283,9 @@ public class XQueryTriggerTest extends XMLTestCase {
 			idxConf.configureCollection(EMPTY_CONFIG);
 			
 	        XPathQueryService service = (XPathQueryService) testCollection
-	        	.getService("XPathQueryService", "1.0");   
+	        	.getService("XPathQueryService", "1.0");
+	        //TODO : understand why it is necessary !
+	        service.setProperty(OutputKeys.INDENT, "no");        
 
 	        result = service.query("/events/event[@id = 'trigger3']");
 	        assertEquals(2, result.getSize());
@@ -298,7 +305,8 @@ public class XQueryTriggerTest extends XMLTestCase {
 	        //TODO : consistent URI !	        
 	        result = service.query("/events/event[@id = 'trigger3']/document/test");
 	        assertEquals(1, result.getSize());
-	        //TODO : comparison fails !
+	        assertXMLEqual(DOCUMENT_CONTENT, result.getResource(0).getContent().toString());
+	        //TODO : use when we have working update triggers
 	        //assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(0).getContent().toString());        
 			
     	} catch (Exception e) {
