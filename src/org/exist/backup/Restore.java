@@ -139,15 +139,6 @@ public class Restore extends DefaultHandler {
 				reader.parse(is);
 			}
 		}
-		
-		// at the end of the restore process, set the admin password to the
-		// password restored from the backup. Up to here, we still used the old password.
-		Collection root = DatabaseManager.getCollection(uri + "/db", username, pass);
-		UserManagementService service =
-			(UserManagementService) root.getService("UserManagementService", "1.0");
-		User admin = service.getUser(SecurityManager.DBA_USER);
-		admin.setPasswordDigest(adminPass);
-		service.updateUser(admin);
 	}
 
 	/**
@@ -290,24 +281,6 @@ public class Restore extends DefaultHandler {
 					service.chmod(res, Integer.parseInt(perms, 8));
 					if(dialog != null)
 						dialog.displayMessage("restored " + name);
-					
-					/* if we restored /db/system/users.xml, the admin password
-					 * may have changed, so we will get a permission denied
-					 * exception when continuing with the restore. We thus set
-					 * the password back to the old one and change it to the 
-					 * new one at the very end of the restore.
-					 */
-					if (SecurityManager.SYSTEM.equals(current.getName()) && 
-							SecurityManager.ACL_FILE.equals(name) &&
-							SecurityManager.DBA_USER.equals(username)) {
-						User admin = service.getUser(SecurityManager.DBA_USER);
-						adminPass = admin.getPassword();
-						admin.setPassword(pass);
-						try {
-							service.updateUser(admin);
-						} catch (XMLDBException e) {
-						}
-					}
 				} catch (Exception e) {
                     if (dialog != null) { 
                             dialog.displayMessage("Failed to restore resource '" + name + "'\nfrom file '" +
