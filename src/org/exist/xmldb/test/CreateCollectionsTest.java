@@ -216,8 +216,8 @@ public class CreateCollectionsTest extends TestCase {
         	cms.setCollection(rootColl);
         	cms.removeCollection("dummy1");
         	printChildren(rootColl);
-			assertTrue("number of child collections should be 2", 
-				rootColl.getChildCollectionCount()==2);
+        	c1 = rootColl.getChildCollection("dummy1");
+        	assertNull(c1);
 		} catch(Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
