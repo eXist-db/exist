@@ -29,12 +29,11 @@
             Define a forwarding for requests to the server root, i.e.
             if you access the server without specifying a path.
         -->
-        <root destination="/dfb/dfb.xq"/>
+        <!--root destination="/db/admin/admin.xql"/-->
         <!-- 
             Other forwardings: all requests to the specified path
             will be forwarded to the destination.
         -->
         <forward path="/admin" destination="/db/admin/admin.xql"/>
-        <forward path="/dfb" destination="/db/dfb/dfb.xq"/>
     </forwarding>
 </server>
