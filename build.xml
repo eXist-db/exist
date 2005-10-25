@@ -624,6 +624,7 @@
             <lib dir="${lib.core}">
                 <include name="*"/>
                 <exclude name="javax.servlet.jar"/>
+            	<exclude name="*.so"/>
             </lib>
             <lib dir="${lib.optional}">
                 <include name="*.jar"/>
@@ -636,6 +637,7 @@
             <webinf dir=".">
                 <include name="client.properties"/>
                 <include name="backup.properties"/>
+            	<include name="server.xml"/>
             </webinf>
             
             <!-- Add files context root ('/') -->
