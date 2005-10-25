@@ -125,6 +125,8 @@ public class StandaloneServer {
         
         Properties props = new Properties(DEFAULT_PROPERTIES);
         
+        configure(props);
+        
         CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
         if(optParser.getErrorString() != null) {
             System.err.println( "ERROR: " + optParser.getErrorString());
@@ -156,8 +158,6 @@ public class StandaloneServer {
                     break;
             }
         }
-        
-        configure(props);
         
         int httpPort = 8088;
         try {
