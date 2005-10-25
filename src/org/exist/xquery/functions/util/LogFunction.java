@@ -66,7 +66,13 @@ public class LogFunction extends BasicFunction {
 		if(args[1].getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		String priority = args[0].getStringValue();
+		
+		// add line of the log statement
 		StringBuffer buf = new StringBuffer();
+		buf.append("(Line: ");
+		buf.append(getASTNode().getLine());
+		buf.append(") ");
+		
 		for(SequenceIterator i = args[1].unorderedIterator(); i.hasNext(); ) {
 			Item next = i.nextItem();
 			if (Type.subTypeOf(next.getType(), Type.NODE)) {
