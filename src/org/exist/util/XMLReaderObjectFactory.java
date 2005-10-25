@@ -84,7 +84,6 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 				saxFactory.setFeature("http://apache.org/xml/features/validation/schema",
 						validation == VALIDATION_AUTO
 								|| validation == VALIDATION_ENABLED);
-                System.out.println("Validation turned on");
 			} catch (SAXNotRecognizedException e1) {
 				// ignore: feature only recognized by xerces
 			} catch (SAXNotSupportedException e1) {
