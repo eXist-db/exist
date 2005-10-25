@@ -86,8 +86,9 @@ public class FunDoc extends Function {
 		
 		try {
 			Sequence seq = DocUtils.getDocument(this.context, path);
-			if (seq == Sequence.EMPTY_SEQUENCE)
-				throw new XPathException(getASTNode(), path + " is not an XML document");		
+//			TODO: we still need a final decision about this. Also check base-uri.
+//			if (seq == Sequence.EMPTY_SEQUENCE)
+//				throw new XPathException(getASTNode(), path + " is not an XML document");
 			return seq;
 		}
 		catch (Exception e) {
