@@ -156,22 +156,26 @@ public class Profiler {
         if (!enabled)
             return;
         
-        ProfiledExpr e = (ProfiledExpr) stack.pop();
-        if (e.expr != expr) {
-            log.warn("Error: the object passed to end() does not correspond to the expression on top of the stack.");
-            stack.clear();
-            return;
-        }
-        
-        long elapsed = System.currentTimeMillis() - e.start;
-        buf.setLength(0);
-        printPosition(e.expr);
-        buf.append("\tEND\t");
-        buf.append(elapsed);
-        buf.append("ms - ");
-        if (message != null)
-            buf.append(message);
-        log.debug(buf.toString());
+        try {
+			ProfiledExpr e = (ProfiledExpr) stack.pop();
+			if (e.expr != expr) {
+			    log.warn("Error: the object passed to end() does not correspond to the expression on top of the stack.");
+			    stack.clear();
+			    return;
+			}
+			
+			long elapsed = System.currentTimeMillis() - e.start;
+			buf.setLength(0);
+			printPosition(e.expr);
+			buf.append("\tEND\t");
+			buf.append(elapsed);
+			buf.append("ms - ");
+			if (message != null)
+			    buf.append(message);
+			log.debug(buf.toString());
+		} catch (RuntimeException e) {
+			log.debug("Profiler: could not pop from expression stack - " + expr + " - "+ message);
+		}
     }
 
     /**
