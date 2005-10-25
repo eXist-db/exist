@@ -135,7 +135,7 @@ public class FtQueryTest extends XMLTestCase {
                 (CollectionManagementService) root.getService(
                     "CollectionManagementService",
                     "1.0");
-            testCollection = service.createCollection("test");
+            testCollection = service.createCollection("testft");
             assertNotNull(testCollection);
 
             for (int i = 0; i < FILES.length; i++) {
@@ -143,7 +143,8 @@ public class FtQueryTest extends XMLTestCase {
                     (XMLResource) testCollection.createResource(
                             FILES[i], "XMLResource" );
                 doc.setContent(new File(SHAKES_DIR, FILES[i]));
-                testCollection.storeResource(doc);
+                testCollection.storeResource(doc);                
+                assertNotNull(testCollection.getResource(FILES[i]));
             }
             
             File modsFiles[] = MODS_DIR.listFiles();
@@ -151,9 +152,10 @@ public class FtQueryTest extends XMLTestCase {
                 if (modsFiles[i].isFile()) {
                     XMLResource doc =
                         (XMLResource) testCollection.createResource(
-                                modsFiles[i].getName(), "XMLResource" );
+                        		modsFiles[i].getName(), "XMLResource" );
                     doc.setContent(modsFiles[i]);
                     testCollection.storeResource(doc);
+                    assertNotNull(testCollection.getResource(modsFiles[i].getName()));
                 }
             }
         } catch (ClassNotFoundException e) {
@@ -177,7 +179,7 @@ public class FtQueryTest extends XMLTestCase {
             (CollectionManagementService) root.getService(
                 "CollectionManagementService",
                 "1.0");
-        service.removeCollection("test");
+        service.removeCollection("testft");
         
         DatabaseManager.deregisterDatabase(database);
         DatabaseInstanceManager dim =
