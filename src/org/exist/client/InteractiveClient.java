@@ -71,7 +71,6 @@ import org.apache.xerces.parsers.DOMParser;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.exist.dom.XMLUtil;
-import org.exist.schema.SchemaService;
 import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.util.CollectionScanner;
@@ -957,18 +956,6 @@ public class InteractiveClient {
             else if (args[0].equalsIgnoreCase("quit")) {
                 return false;
                 
-            }  // TODO remove for new snapshot
-                else if (args[0].equalsIgnoreCase("validate_")) {
-                if (args.length < 2)
-                    messageln("missing document name.");
-                else {
-                    SchemaService schemaService = (SchemaService) current.getService("SchemaService", "1.0");
-                    if (schemaService.validateResource(args[1]))
-                        messageln("validated ok.");
-                    else
-                        messageln("there were errors.");
-                }
-                // TODO new by dizzzz
             }  else if (args[0].equalsIgnoreCase("validate")) {
                 if (args.length < 2)
                     messageln("missing document name.");
@@ -979,15 +966,6 @@ public class InteractiveClient {
                     else
                         messageln("document is not valid.");
                 }
-                
-            }  else if (args[0].equalsIgnoreCase("putschema")) {
-                if (args.length < 2) {
-                    messageln("missing schema file name.");
-                } else {
-                    importSchema(args[1]);
-                    getResources();
-                }
-                return true;
                 
             } else {
                 messageln("unknown command");
@@ -1050,34 +1028,7 @@ public class InteractiveClient {
             messageln("XMLDB error: " + ex.getMessage());
         }
     }
-    
-    /**
-     * @param String filename of the file that contains the schema
-     */
-    private void importSchema(String filename) throws XMLDBException {
-        SchemaService schemaService = (SchemaService) current.getService("SchemaService", "1.0");
-        if (schemaService != null) {
-            String schemaContents = null;
-            try {
-                DOMParser parser = new DOMParser();
-                parser.parse(filename);
-                Document document = parser.getDocument();
-                StringWriter sw = new StringWriter();
-                XMLSerializer serializer = new XMLSerializer(sw, new OutputFormat(document, "UTF-8", true));
-                serializer.serialize(document);
-                schemaContents = sw.toString();
-                
-                schemaService.putSchema(schemaContents);
-                messageln("imported schema in file \"" + filename + "\".");
-                
-            } catch (SAXException saxEx) {
-                messageln("Unable to parse schema in " + filename + ": " + saxEx.getMessage());
-            } catch (IOException ioEx) {
-                messageln("Uable to parse schema in " + filename + ": " + ioEx.getMessage());
-            }
-        }
-    }
-    
+        
     private final ResourceSet find(String xpath) throws XMLDBException {
         if (xpath.charAt(xpath.length() - 1) == '\n')
             xpath = xpath.substring(0, xpath.length() - 1);
