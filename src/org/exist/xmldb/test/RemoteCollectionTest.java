@@ -11,7 +11,7 @@ import java.util.Iterator;
 import junit.textui.TestRunner;
 
 import org.exist.StandaloneServer;
-import org.exist.schema.RemoteSchemaService;
+import org.exist.validation.service.RemoteValidationService;
 import org.exist.xmldb.RemoteCollectionManagementService;
 import org.exist.xmldb.RemoteDatabaseInstanceManager;
 import org.exist.xmldb.RemoteIndexQueryService;
@@ -82,14 +82,14 @@ public class RemoteCollectionTest extends RemoteDBTest {
 
 	public void testGetServices() throws XMLDBException {
 	    Service[] services = getCollection().getServices();
-	    assertEquals(8, services.length);
+	    assertEquals(7, services.length);
 	    assertEquals(RemoteXPathQueryService.class, services[0].getClass());
 	    assertEquals(RemoteCollectionManagementService.class, services[1].getClass());
 	    assertEquals(RemoteUserManagementService.class, services[2].getClass());
 	    assertEquals(RemoteDatabaseInstanceManager.class, services[3].getClass());
 	    assertEquals(RemoteIndexQueryService.class, services[4].getClass());
 	    assertEquals(RemoteXUpdateQueryService.class, services[5].getClass());
-	    assertEquals(RemoteSchemaService.class, services[6].getClass());
+	    assertEquals(RemoteValidationService.class, services[6].getClass());
 	}
 	
 	public void testIsRemoteCollection() throws XMLDBException {
