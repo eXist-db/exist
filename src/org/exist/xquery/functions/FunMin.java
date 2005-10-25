@@ -79,6 +79,8 @@ public class FunMin extends CollatingFunction {
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
+		if (contextItem != null)
+			contextSequence = contextItem.toSequence();
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if (arg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
