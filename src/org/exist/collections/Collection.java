@@ -844,7 +844,7 @@ implements Comparable, EntityResolver, Cacheable {
 
 			info.prepareTrigger(broker, getName() + "/" + docName, oldDoc);
 
-			LOG.debug("validating document " + name);
+			LOG.debug("Scanning document " + name);
 			doValidate.run(info);
 			
 			document.setMaxDepth(document.getMaxDepth() + 1);
