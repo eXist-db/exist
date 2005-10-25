@@ -1,3 +1,4 @@
+
 package org.exist.xquery.functions;
 
 import java.util.HashMap;
@@ -73,9 +74,11 @@ public class FunInScopePrefixes extends BasicFunction {
 			prefix = element.getPrefix();
 			prefixes.put(prefix == null ? "" : prefix, namespaceURI);
 		}
-		for (Iterator i = element.getPrefixes(); i.hasNext(); ) {
-			prefix = (String) i.next();
-			prefixes.put(prefix, element.getNamespaceForPrefix(prefix));
+		if (element.declaresNamespacePrefixes()) { 
+			for (Iterator i = element.getPrefixes(); i.hasNext(); ) {
+				prefix = (String) i.next();
+				prefixes.put(prefix, element.getNamespaceForPrefix(prefix));
+			}
 		}
 	}
 	

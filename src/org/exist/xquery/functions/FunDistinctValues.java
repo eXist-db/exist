@@ -51,9 +51,9 @@ public class FunDistinctValues extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("distinct-values", Module.BUILTIN_FUNCTION_NS),
+			new QName("distinct-values", ModuleImpl.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
 			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
-			new SequenceType(Type.ATOMIC, Cardinality.ONE));
+			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE));
 
 	public FunDistinctValues(XQueryContext context) {
 		super(context, signature);
