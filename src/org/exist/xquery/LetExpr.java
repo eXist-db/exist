@@ -54,7 +54,7 @@ public class LetExpr extends BindingExpression {
 		// Declare the iteration variable
         LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
         inVar.setSequenceType(sequenceType);
-		context.declareVariable(inVar);
+		context.declareVariableBinding(inVar);
 		
 		if(whereExpr != null) {
 		    whereExpr.analyze(this, flags | IN_PREDICATE | IN_WHERE_CLAUSE);
@@ -88,7 +88,7 @@ public class LetExpr extends BindingExpression {
 			// Declare the iteration variable
 			LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
 			var.setSequenceType(sequenceType);
-			context.declareVariable(var);
+			context.declareVariableBinding(var);
 			clearContext(in);
 			var.setValue(in);
 			var.checkType();

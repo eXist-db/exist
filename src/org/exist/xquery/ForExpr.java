@@ -73,13 +73,13 @@ public class ForExpr extends BindingExpression {
 		// Declare the iteration variable
         LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
         inVar.setSequenceType(sequenceType);
-		context.declareVariable(inVar);
+		context.declareVariableBinding(inVar);
 		
 		// Declare positional variable
 		if(positionalVariable != null) {
 			LocalVariable posVar = new LocalVariable(QName.parse(context, positionalVariable, null));
             posVar.setSequenceType(POSITIONAL_VAR_TYPE);
-            context.declareVariable(posVar);
+            context.declareVariableBinding(posVar);
         }
         
 		if(whereExpr != null) {
@@ -130,14 +130,14 @@ public class ForExpr extends BindingExpression {
 		// Declare the iteration variable
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
         var.setSequenceType(sequenceType);
-		context.declareVariable(var);
+		context.declareVariableBinding(var);
 		
 		// Declare positional variable
 		LocalVariable at = null;
 		if(positionalVariable != null) {
 			at = new LocalVariable(QName.parse(context, positionalVariable, null));
             at.setSequenceType(POSITIONAL_VAR_TYPE);
-			context.declareVariable(at);
+			context.declareVariableBinding(at);
 		}
 		
 		// Assign the whole input sequence to the bound variable.
