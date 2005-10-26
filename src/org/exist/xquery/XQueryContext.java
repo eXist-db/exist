@@ -809,7 +809,7 @@ public class XQueryContext {
 	 * @return
 	 * @throws XPathException
 	 */
-	public LocalVariable declareVariable(LocalVariable var) throws XPathException {
+	public LocalVariable declareVariableBinding(LocalVariable var) throws XPathException {
 		if(lastVar == null)
 			lastVar = var;
 		else {

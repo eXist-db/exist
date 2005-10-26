@@ -77,7 +77,7 @@ public class UserDefinedFunction extends Function {
 			for(Iterator i = parameters.iterator(); i.hasNext(); ) {
 				varName = (QName)i.next();
 				var = new LocalVariable(varName);
-				context.declareVariable(var);
+				context.declareVariableBinding(var);
 			}
 			
 			body.analyze(this, flags);
@@ -106,7 +106,7 @@ public class UserDefinedFunction extends Function {
 			varName = (QName)i.next();
 			var = new LocalVariable(varName);
 			var.setValue(currentArguments[j]);
-			context.declareVariable(var);
+			context.declareVariableBinding(var);
 		}
 		Sequence result = body.eval(contextSequence, contextItem);
 		
