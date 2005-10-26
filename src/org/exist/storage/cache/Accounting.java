@@ -163,6 +163,6 @@ public class Accounting {
     }
     
     public void stats() {
-        System.out.println("hits: " + hits + "; misses: " + misses + "; thrashing: " + thrashing + "; thrashing: " + getThrashing());
+        System.out.println("hits: " + hits + "; misses: " + misses + "; thrashing: " + getThrashing() + "; thrashing period: " + checkPeriod);
     }
 }

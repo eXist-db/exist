@@ -212,7 +212,7 @@ public class XQueryTest extends XMLTestCase {
 			assertEquals( "XQuery: " + query, 1, result.getSize() );
 			assertEquals( "XQuery: " + query, "<a/>", ((XMLResource)result.getResource(0)).getContent());
 
-			System.out.println("testCombiningNodeSequences 1: ========" );
+			System.out.println("testCombiningNodeSequences 2: ========" );
 			query = "let $a := <a/> \n" +
 			"let $aa := ($a, $a) \n" +
 			"for $b in ($aa union $aa \n)" +
@@ -222,7 +222,7 @@ public class XQueryTest extends XMLTestCase {
 			assertEquals( "XQuery: " + query, 1, result.getSize() );
 			assertEquals( "XQuery: " + query, "<a/>", ((XMLResource)result.getResource(0)).getContent());
 			
-			System.out.println("testCombiningNodeSequences 1: ========" );
+			System.out.println("testCombiningNodeSequences 3: ========" );
 			query = "let $a := <a/> \n" +
 			"let $aa := ($a, $a) \n" +
 			"for $b in ($aa except $aa \n)" +
