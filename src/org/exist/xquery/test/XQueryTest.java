@@ -192,6 +192,52 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}
 	
+	public void testCombiningNodeSequences() {
+		ResourceSet result;
+		String query;
+		
+		try {
+			XPathQueryService service =
+				(XPathQueryService) testCollection.getService(
+					"XPathQueryService",
+					"1.0");
+			
+			System.out.println("testCombiningNodeSequences 1: ========" );
+			query = "let $a := <a/> \n" +
+			"let $aa := ($a, $a) \n" +
+			"for $b in ($aa intersect $aa \n)" +
+			"return $b";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<a/>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testCombiningNodeSequences 1: ========" );
+			query = "let $a := <a/> \n" +
+			"let $aa := ($a, $a) \n" +
+			"for $b in ($aa union $aa \n)" +
+			"return $b";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<a/>", ((XMLResource)result.getResource(0)).getContent());
+			
+			System.out.println("testCombiningNodeSequences 1: ========" );
+			query = "let $a := <a/> \n" +
+			"let $aa := ($a, $a) \n" +
+			"for $b in ($aa except $aa \n)" +
+			"return $b";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, 0, result.getSize() );
+
+			
+		} catch (XMLDBException e) {
+			System.out.println("testCombiningNodeSequences(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}	
+	
 	public void testVariable() {
 		ResourceSet result;
 		String query;
