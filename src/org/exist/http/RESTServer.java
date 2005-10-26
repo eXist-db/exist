@@ -541,7 +541,7 @@ public class RESTServer {
                 // FD : Returns an XML doc
                 writeResponse(response,
                         "<?xml version='1.0'?>\n"
-                        + "<exist:modifications mlns:exist='" + NS
+                        + "<exist:modifications xmlns:exist='" + NS
                         + "' count='" + mods + "'>" + mods
                         + "modifications processed.</exist:modifications>",
                         "UTF-8");
