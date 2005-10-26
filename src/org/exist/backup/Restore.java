@@ -20,6 +20,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.EXistResource;
@@ -75,8 +76,10 @@ public class Restore extends DefaultHandler {
 		// check if /db/system is in the backup. We have to process
 		// this first to create users.
 		File dir = contents.getParentFile();
+		//TODO : use DBBroker's named constants
 		if (dir.isDirectory() && dir.getName().equals("db")) {
 			File sys =
+				//TODO : use DBBroker's named constants
 				new File(
 					dir.getAbsolutePath()
 						+ File.separatorChar
@@ -85,7 +88,7 @@ public class Restore extends DefaultHandler {
 						+ "__contents__.xml");
 			// put /db/system on top of the stack
 			if (sys.canRead()) {
-				System.out.println("found /db/system. It will be processed first.");
+				System.out.println("found " + DBBroker.SYSTEM_COLLECTION + ". It will be processed first.");
 				stack.push(sys);
 			}
 		}

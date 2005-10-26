@@ -72,9 +72,9 @@ public class DatabaseResources {
     private final static Logger logger = Logger.getLogger(DatabaseResources.class);
     
     /** Path to grammar in database  */
-    public String GRAMMERBASE = "/db/system/grammar";
-    public String XSDBASE = GRAMMERBASE + "/xsd";
-    public String DTDBASE = GRAMMERBASE + "/dtd";
+    public String GRAMMARBASE = DBBroker.SYSTEM_COLLECTION +"/grammar";
+    public String XSDBASE = GRAMMARBASE + "/xsd";
+    public String DTDBASE = GRAMMARBASE + "/dtd";
     public String DTDCATALOG = DTDBASE + "/catalog.xml";
     
     public static String NOGRAMMAR = "NONE";
@@ -100,7 +100,7 @@ public class DatabaseResources {
         this.brokerPool = pool;
         
         // TODO this must be performed once.... and earlier...
-        createCollection(GRAMMERBASE);
+        createCollection(GRAMMARBASE);
         createCollection(XSDBASE);
         createCollection(DTDBASE);
         insertCatalog(

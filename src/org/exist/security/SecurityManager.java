@@ -62,7 +62,6 @@ public class SecurityManager {
 	public final static String DBA_USER = "admin";
 	public final static String GUEST_GROUP = "guest";
 	public final static String GUEST_USER = "guest";
-	public final static String SYSTEM = "/db/system";
 	
 	public final static User SYSTEM_USER = new User(DBA_USER, null, DBA_GROUP);
 	
@@ -91,9 +90,9 @@ public class SecurityManager {
         Txn txn = transact.beginTransaction();
 		DBBroker broker = sysBroker;
 		try {
-			Collection sysCollection = broker.getCollection(SYSTEM);
+			Collection sysCollection = broker.getCollection(DBBroker.SYSTEM_COLLECTION);
 			if (sysCollection == null) {
-				sysCollection = broker.getOrCreateCollection(txn, SYSTEM);
+				sysCollection = broker.getOrCreateCollection(txn, DBBroker.SYSTEM_COLLECTION);
 				sysCollection.setPermissions(0770);
 				broker.saveCollection(txn, sysCollection);
 			}
@@ -304,7 +303,7 @@ public class SecurityManager {
 		broker.sync(Sync.MAJOR_SYNC);
 		try {
 			broker.setUser(getUser(DBA_USER));
-			Collection sysCollection = broker.getCollection(SYSTEM);
+			Collection sysCollection = broker.getCollection(DBBroker.SYSTEM_COLLECTION);
             String data = buf.toString();
             IndexInfo info = sysCollection.validate(transaction, broker, ACL_FILE, data);
             DocumentImpl doc = info.getDocument();

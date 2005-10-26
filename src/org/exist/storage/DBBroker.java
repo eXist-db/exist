@@ -74,8 +74,8 @@ public abstract class DBBroker extends Observable {
     public final static int NATIVE_CLUSTER = 1;
     
     public final static String ROOT_COLLECTION = "/db";
-    
-    public final static String TEMP_COLLECTION = ROOT_COLLECTION + "/system/temp";
+    public final static String SYSTEM_COLLECTION = ROOT_COLLECTION + "/system";    
+    public final static String TEMP_COLLECTION = SYSTEM_COLLECTION + "/temp";
     
 	protected final static Logger LOG = Logger.getLogger(DBBroker.class);
 	
