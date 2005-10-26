@@ -50,7 +50,9 @@ public class Intersection extends CombiningExpression {
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
 			Sequence lval = left.eval(contextSequence, contextItem);
+			lval.removeDuplicates();
 			Sequence rval = right.eval(contextSequence, contextItem);
+			rval.removeDuplicates();
 			if(lval.getLength() == 0 || rval.getLength() == 0)
 			    return Sequence.EMPTY_SEQUENCE;
 			if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
@@ -68,6 +70,7 @@ public class Intersection extends CombiningExpression {
                     if (set.contains(next))
                         result.add(next);
                 }
+                result.removeDuplicates();
                 return result;
             }
 	}

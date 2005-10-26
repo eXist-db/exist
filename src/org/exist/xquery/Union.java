@@ -37,7 +37,9 @@ public class Union extends CombiningExpression {
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		Sequence lval = left.eval(contextSequence, contextItem);
+		lval.removeDuplicates();
 		Sequence rval = right.eval(contextSequence, contextItem);
+		rval.removeDuplicates();
 		long start = System.currentTimeMillis();
 		if(lval.getLength() == 0)
 		    return rval;
@@ -53,6 +55,7 @@ public class Union extends CombiningExpression {
             result.addAll(lval);
             result.addAll(rval);
             result.sortInDocumentOrder();
+            result.removeDuplicates();
             return result;
         }
 	}
