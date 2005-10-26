@@ -802,7 +802,7 @@ implements Comparable, EntityResolver, Cacheable {
 //			broker.checkTree(document);
 			LOG.debug("document stored.");
 			// if we are running in privileged mode (e.g. backup/restore), notify the SecurityManager about changes
-			if (getName().equals(SecurityManager.SYSTEM) && document.getFileName().equals(SecurityManager.ACL_FILE)
+			if (getName().equals(DBBroker.SYSTEM_COLLECTION) && document.getFileName().equals(SecurityManager.ACL_FILE)
 			        && privileged == false) {
 			    // inform the security manager that system data has changed
 			    LOG.debug("users.xml changed");
@@ -1112,7 +1112,7 @@ implements Comparable, EntityResolver, Cacheable {
 	        return null;
 	    if (configuration != null)
 	    	return configuration;
-		if (!"/db/system".equals(name)) {
+		if (!name.equals(DBBroker.SYSTEM_COLLECTION)) {
 		    CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
             collectionConfEnabled = false;
 		    try {
