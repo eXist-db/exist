@@ -81,13 +81,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
             String collectionURI = args[0].getStringValue();
             if (null != collectionURI) {
                 try {
-                	/*
-                	 * !collectionURI.startsWith("xmldb:") or  or 
-                    or 
-
-                	 */
-                	
-                    if (!collectionURI.startsWith("xmldb:"))
+                	if (!collectionURI.startsWith("xmldb:"))
                     {
                         // Must be a LOCAL collection
                         collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI);
