@@ -58,7 +58,7 @@ public class ExtCollection extends Function {
 			new QName("collection", Module.BUILTIN_FUNCTION_NS),
             "Includes the documents contained in the specified collection " +
             "into the input sequence. eXist interprets the arguments as absolute paths " +
-            "pointing to database collections, as for example, '/db/test'. Documents " +
+            "pointing to database collections, as for example, '/db/shakespeare/plays'. Documents " +
             "located in subcollections of a collection are included into the input " +
             "set.",
 			new SequenceType[] {

@@ -49,11 +49,11 @@ public class FunDocAvailable extends Function {
 		new FunctionSignature(
 			new QName("doc-available", Module.BUILTIN_FUNCTION_NS),
 			"Returns whether or not a document is available. "
-				+ "eXist interprets the argument as a path pointing to a "
+				+ "EXist interprets the argument as a path pointing to a "
 				+ "document in the database, as for example, '/db/shakespeare/plays/hamlet.xml'. "
 				+ "If the path is relative, "
 				+ "it is resolved relative to the base URI property from the static context."
-				+ "Understands also standard URLs, starting with http:// , file:// , etc.",
+				+ "Understands also standard URLs, starting with http://, file://, etc.",
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));	
 	

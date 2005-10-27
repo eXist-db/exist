@@ -48,13 +48,12 @@ public class FunDoc extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("doc", Module.BUILTIN_FUNCTION_NS),
-			"Includes a document "
-				+ "into the input sequence. "
-				+ "eXist interprets the argument as a path pointing to a "
+			"Includes a document into the input sequence. "
+				+ "EXist interprets the argument as a path pointing to a "
 				+ "document in the database, as for example, '/db/shakespeare/plays/hamlet.xml'. "
 				+ "If the path is relative, "
 				+ "it is resolved relative to the base URI property from the static context."
-				+ "Understands also standard URLs, starting with http:// , file:// , etc.",
+				+ "Understands also standard URLs, starting with http://, file://, etc.",
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
 	
