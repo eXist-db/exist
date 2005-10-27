@@ -43,7 +43,7 @@ import org.w3c.dom.Document;
  */
 public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger {
 
-    protected String root = "/db/history";
+    protected String root = DBBroker.ROOT_COLLECTION  + "/history";
 
     public void configure(DBBroker broker, Collection parent, Map parameters) 
       throws CollectionConfigurationException {
