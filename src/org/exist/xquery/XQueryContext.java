@@ -241,7 +241,7 @@ public class XQueryContext {
      */
     private Profiler profiler = new Profiler();
     
-    //For holding XQuery Context variables from setXQVar() and getXQVar()
+    //For holding XQuery Context variables from setXQueryContextVar() and getXQueryContextVar()
     HashMap XQueryContextVars = new HashMap();
     
     //set an XQuery Context variable; called by context:set-var()
