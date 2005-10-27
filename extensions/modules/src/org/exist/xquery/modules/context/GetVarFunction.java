@@ -48,7 +48,7 @@ public class GetVarFunction extends Function {
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)
+			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
 	);
 		
 	
