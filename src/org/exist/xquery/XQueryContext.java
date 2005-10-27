@@ -241,6 +241,23 @@ public class XQueryContext {
      */
     private Profiler profiler = new Profiler();
     
+    //For holding XQuery Context variables from setXQVar() and getXQVar()
+    HashMap XQueryContextVars = new HashMap();
+    
+    //set an XQuery Context variable; called by context:set-var()
+    public void setXQueryContextVar(String name, Object XQvar)
+    {
+    	XQueryContextVars.put(name, XQvar);
+    }
+    
+    //get an XQuery Context variable; called by context:get-var()
+    public Object getXQueryContextVar(String name)
+    {
+    	return(XQueryContextVars.get(name));
+    }
+    
+    
+    
 	protected XQueryContext() {
 		builder = new MemTreeBuilder(this);
 		builder.startDocument();
