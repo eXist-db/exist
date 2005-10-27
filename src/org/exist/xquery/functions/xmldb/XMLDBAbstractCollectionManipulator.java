@@ -81,10 +81,33 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
             String collectionURI = args[0].getStringValue();
             if (null != collectionURI) {
                 try {
-                    if (!collectionURI.startsWith("xmldb:")) {
+                	/*
+                	 * !collectionURI.startsWith("xmldb:") or  or 
+                    or 
+
+                	 */
+                	
+                    if (!collectionURI.startsWith("xmldb:"))
+                    {
                         // Must be a LOCAL collection
                         collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI);
-                    } else {
+                    }
+                    else if(collectionURI.startsWith("xmldb:exist:///"))
+                    {
+                    	// Must be a LOCAL collection
+                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI.replace("xmldb:exist://", ""));
+                    }
+                    else if(collectionURI.startsWith("xmldb:exist://localhost"))
+                    {
+                    	// Must be a LOCAL collection
+                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI.replace("xmldb:exist://localhost", ""));
+                    }
+                    else if(collectionURI.startsWith("xmldb:exist://127.0.0.1"))
+                    {
+                    	// Must be a LOCAL collection
+                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI.replace("xmldb:exist://127.0.0.1", ""));
+                    }
+                    else {
                         // Right now, the collection is retrieved as GUEST. Need to figure out how to
                         // get user information into the URL?
                         collection = org.xmldb.api.DatabaseManager.getCollection(collectionURI);
