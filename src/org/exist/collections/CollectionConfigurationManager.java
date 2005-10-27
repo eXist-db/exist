@@ -52,7 +52,7 @@ public class CollectionConfigurationManager {
 
 	private static final Logger LOG = Logger.getLogger(CollectionConfigurationManager.class);
 	
-    public final static String CONFIG_COLLECTION = "/db/system/config";
+    public final static String CONFIG_COLLECTION = DBBroker.SYSTEM_COLLECTION + "/config";
     
 	private BrokerPool pool;
 	
@@ -114,7 +114,7 @@ public class CollectionConfigurationManager {
     	CollectionConfiguration conf = new CollectionConfiguration(collection);
         boolean configFound = false;
     	String path = collection.getName() + '/';
-    	int p = "/db".length();
+    	int p = DBBroker.ROOT_COLLECTION.length();
     	String next;
     	Collection coll = null;
     	while(p != -1) {

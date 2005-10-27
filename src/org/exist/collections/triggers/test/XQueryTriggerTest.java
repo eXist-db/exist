@@ -22,6 +22,7 @@ package org.exist.collections.triggers.test;
 
 import javax.xml.transform.OutputKeys;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.xmldb.api.DatabaseManager;
@@ -41,7 +42,7 @@ import org.custommonkey.xmlunit.*;
  */
 public class XQueryTriggerTest extends XMLTestCase {
 	
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String TEST_COLLECTION = "testXQueryTrigger";
 
     private String CONFIG =
@@ -198,11 +199,11 @@ public class XQueryTriggerTest extends XMLTestCase {
 	        assertEquals(2, result.getSize());
 	        
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1'][collectionName = '" + "/db" +  "/" + TEST_COLLECTION + "']");
+	        result = service.query("/events/event[@id = 'trigger1'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "']");
 	        assertEquals(2, result.getSize());	        
 
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1'][documentName = '" + "/db" +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
+	        result = service.query("/events/event[@id = 'trigger1'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
 	        assertEquals(2, result.getSize());	        
 
 	        //TODO : consistent URI !	        
@@ -245,11 +246,11 @@ public class XQueryTriggerTest extends XMLTestCase {
 	        assertEquals(2, result.getSize());
 	        
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger2'][collectionName = '" + "/db" +  "/" + TEST_COLLECTION + "']");
+	        result = service.query("/events/event[@id = 'trigger2'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "']");
 	        assertEquals(2, result.getSize());	        
 
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger2'][documentName = '" + "/db" +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
+	        result = service.query("/events/event[@id = 'trigger2'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
 	        assertEquals(2, result.getSize());	        
 
 	        //TODO : consistent URI !	        
@@ -291,11 +292,11 @@ public class XQueryTriggerTest extends XMLTestCase {
 	        assertEquals(2, result.getSize());
 	        
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3'][collectionName = '" + "/db" +  "/" + TEST_COLLECTION + "']");
+	        result = service.query("/events/event[@id = 'trigger3'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "']");
 	        assertEquals(2, result.getSize());	        
 
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3'][documentName = '" + "/db" +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
+	        result = service.query("/events/event[@id = 'trigger3'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
 	        assertEquals(2, result.getSize());	        
 
 	        //TODO : consistent URI !	        

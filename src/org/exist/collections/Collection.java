@@ -527,9 +527,9 @@ implements Comparable, EntityResolver, Cacheable {
 	 *is the root collection.
 	 */
 	public String getParentPath() {
-		if (name.equals("/db"))
+		if (name.equals(DBBroker.ROOT_COLLECTION))
 			return null;
-		String parent = (name.lastIndexOf("/") < 1 ? "/db" : name.substring(0,
+		String parent = (name.lastIndexOf("/") < 1 ? DBBroker.ROOT_COLLECTION : name.substring(0,
 				name.lastIndexOf("/")));
 		return parent;
 	}
