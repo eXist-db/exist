@@ -255,8 +255,10 @@ public class Predicate extends PathExpr {
 				    	    temp = p.getParents(false);
 				    		break;
 				    	case Constants.ANCESTOR_AXIS:
+				    	   temp = contextSet.selectAncestors(p, false, false);
+				    		break;
 				    	case Constants.ANCESTOR_SELF_AXIS:
-				    	    temp = contextSet.selectAncestors(p, false, false);
+				    	   temp = contextSet.selectAncestors(p, true, false);
 				    		break;
 				    	case Constants.SELF_AXIS:
 				    	    temp = p;
