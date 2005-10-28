@@ -2366,12 +2366,20 @@ public class NativeBroker extends DBBroker {
 	    if (readOnly)
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 	    Collection collection = doc.getCollection();
+	    	    
 	    if(!collection.getPermissions().validate(user, Permission.WRITE))
 	        throw new PermissionDeniedException("Insufficient privileges to move resource " +
 	                doc.getFileName());
 	    if(!doc.getPermissions().validate(user, Permission.WRITE))
 	        throw new PermissionDeniedException("Insufficient privileges to move resource " +
 	                doc.getFileName());
+      
+	    if (doc.getUserLock() != null) {
+           if(!(doc.getUserLock().getName()).equals(user.getName()))
+     	    	throw new PermissionDeniedException("Cannot move the resource because is locked by another user " +
+     	               doc.getFileName());
+	    }
+ 	    
 	    if(newName == null) {
             int p = doc.getFileName().lastIndexOf('/');
             newName = doc.getFileName().substring(p + 1);
