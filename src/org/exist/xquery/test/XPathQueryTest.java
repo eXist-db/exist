@@ -239,6 +239,30 @@ public class XPathQueryTest extends XMLTestCase {
 		}
 	}
 	
+	public void testAncestorIndex() {
+		try {
+			XQueryService service = 
+				storeXMLStringAndGetQueryService("nested2.xml", nested2);
+			
+			queryResource(service, "nested2.xml", "//ChildB/ancestor::*[1]/self::ChildA", 1);
+			queryResource(service, "nested2.xml", "//ChildB/ancestor::*[2]/self::RootElement", 1);
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	public void bugtestAncestorPosition() {
+		try {
+			XQueryService service = 
+				storeXMLStringAndGetQueryService("nested2.xml", nested2);
+			
+			queryResource(service, "nested2.xml", "//ChildB/ancestor::*[position() = 1]/self::ChildA", 1);
+			queryResource(service, "nested2.xml", "//ChildB/ancestor::*[position() = 2]/self::RootElement", 1);
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}
+	}
+	
 	public void testNumbers() {
 		try {
 			XQueryService service = 
