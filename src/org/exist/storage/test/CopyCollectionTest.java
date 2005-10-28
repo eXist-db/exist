@@ -48,6 +48,8 @@ public class CopyCollectionTest extends TestCase {
     public static void main(String[] args) {
         TestRunner.run(CopyCollectionTest.class);
     }
+    
+    private static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
 
     public void testStore() throws Exception {
         BrokerPool.FORCE_CORRUPTION = true;
@@ -63,11 +65,11 @@ public class CopyCollectionTest extends TestCase {
             System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction,
-                    "/db/test");
+            		TEST_COLLECTION);
             broker.saveCollection(transaction, root);
 
             Collection test = broker.getOrCreateCollection(transaction,
-                    "/db/test/test2");
+            		TEST_COLLECTION + "/test2");
             broker.saveCollection(transaction, test);
     
             File f = new File("samples/biblio.rdf");
@@ -77,7 +79,7 @@ public class CopyCollectionTest extends TestCase {
                     .toASCIIString()), false);
             
             Collection dest = broker.getOrCreateCollection(transaction,
-                "/db/destination");
+                DBBroker.ROOT_COLLECTION + "/destination");
             broker.saveCollection(transaction, dest);
             
             broker.copyCollection(transaction, test, dest, "test3");
@@ -103,7 +105,7 @@ public class CopyCollectionTest extends TestCase {
             DocumentImpl doc;
             String data;
             
-            doc = broker.openDocument("/db/destination/test3/test.xml", Lock.READ_LOCK);
+            doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/destination/test3/test.xml", Lock.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             data = serializer.serialize(doc);
             System.out.println(data);
@@ -127,11 +129,11 @@ public class CopyCollectionTest extends TestCase {
             System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction,
-                    "/db/test");
+            		TEST_COLLECTION);
             broker.saveCollection(transaction, root);
 
             Collection test = broker.getOrCreateCollection(transaction,
-                    "/db/test/test2");
+            		TEST_COLLECTION + "/test2");
             broker.saveCollection(transaction, test);
     
             File f = new File("samples/biblio.rdf");
@@ -145,7 +147,7 @@ public class CopyCollectionTest extends TestCase {
             transaction = transact.beginTransaction();
             
             Collection dest = broker.getOrCreateCollection(transaction,
-                "/db/destination");
+                DBBroker.ROOT_COLLECTION + "/destination");
             broker.saveCollection(transaction, dest);
             
             broker.copyCollection(transaction, test, dest, "test3");
@@ -168,7 +170,7 @@ public class CopyCollectionTest extends TestCase {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.openDocument("/db/destination/test3/test.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/destination/test3/test.xml", Lock.READ_LOCK);
             assertNotNull("Document should be null", doc);
         } finally {
             pool.release(broker);
@@ -179,15 +181,15 @@ public class CopyCollectionTest extends TestCase {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
         
-        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
+        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
         CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
             root.getService("CollectionManagementService", "1.0");
         org.xmldb.api.base.Collection test = root.getChildCollection("test");
         if (test == null)
-            test = mgr.createCollection("/db/test");
+            test = mgr.createCollection(TEST_COLLECTION);
         org.xmldb.api.base.Collection test2 = test.getChildCollection("test2");
         if (test2 == null)
-            test2 = mgr.createCollection("/db/test/test2");
+            test2 = mgr.createCollection(TEST_COLLECTION + "/test2");
         
         File f = new File("samples/biblio.rdf");
         Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
@@ -198,19 +200,19 @@ public class CopyCollectionTest extends TestCase {
         if (dest == null)
             dest = mgr.createCollection("destination");
         
-        mgr.copy("/db/test/test2", "/db/destination", "test3");
+        mgr.copy(TEST_COLLECTION + "/test2", DBBroker.ROOT_COLLECTION + "/destination", "test3");
     }
     
     public void testXMLDBRead() throws Exception {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
         
-        org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist:///db/destination/test3", "admin", "");
+        org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist://"+ DBBroker.ROOT_COLLECTION + "/destination/test3", "admin", "");
         Resource res = test.getResource("test_xmldb.xml");
         assertNotNull("Document should not be null", res);
         System.out.println(res.getContent());
         
-        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
+        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
         CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
             root.getService("CollectionManagementService", "1.0");
         mgr.removeCollection("destination");

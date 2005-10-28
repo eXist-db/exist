@@ -18,6 +18,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.exist.storage.DBBroker;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -120,7 +122,7 @@ public class CreateBackupDialog extends JPanel {
 	private Vector getAllCollections() {
 		Vector list = new Vector();
 		try {
-			Collection root = DatabaseManager.getCollection(uri + "/db", user, passwd);
+			Collection root = DatabaseManager.getCollection(uri + DBBroker.ROOT_COLLECTION, user, passwd);
 			getAllCollections(root, list);
 		} catch (XMLDBException e) {
 			e.printStackTrace();

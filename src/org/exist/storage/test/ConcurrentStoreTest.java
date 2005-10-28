@@ -43,12 +43,14 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class ConcurrentStoreTest extends TestCase {
-
+	
     public static void main(String[] args) {
         TestRunner.run(ConcurrentStoreTest.class);
     }
     
+    //TODO : revisit !
     private static String directory = "/home/wolf/xml/shakespeare";
+    private static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
     
     private static File dir = new File(directory);
     
@@ -79,9 +81,9 @@ public class ConcurrentStoreTest extends TestCase {
         DBBroker broker = null;
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            test = broker.getCollection("/db/test/test1");
+            test = broker.getCollection(TEST_COLLECTION+ "/test1");
             assertNotNull(test);
-            test2 = broker.getCollection("/db/test/test2");
+            test2 = broker.getCollection(TEST_COLLECTION + "/test2");
             assertNotNull(test2);
             System.out.println("Contents of collection " + test.getName() + ":");
             for (Iterator i = test.iterator(broker); i.hasNext(); ) {
@@ -102,13 +104,13 @@ public class ConcurrentStoreTest extends TestCase {
             
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, "/db/test");
+            Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
             broker.saveCollection(transaction, root);
             
-            test = broker.getOrCreateCollection(transaction, "/db/test/test1");
+            test = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test1");
             broker.saveCollection(transaction, test);
             
-            test2 = broker.getOrCreateCollection(transaction, "/db/test/test2");
+            test2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
             broker.saveCollection(transaction, test2);
             
             transact.commit(transaction);

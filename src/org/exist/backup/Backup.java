@@ -35,6 +35,7 @@ import javax.swing.JFrame;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.security.Permission;
+import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -76,7 +77,7 @@ public class Backup {
 	}
 
 	public Backup(String user, String pass, String backupDir) {
-		this(user, pass, backupDir, "xmldb:exist:///db");
+		this(user, pass, backupDir, "xmldb:exist://" + DBBroker.ROOT_COLLECTION);
 	}
 
 	public String encode(String enco) {		

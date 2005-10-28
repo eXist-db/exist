@@ -75,11 +75,10 @@ public class Restore extends DefaultHandler {
 
 		// check if /db/system is in the backup. We have to process
 		// this first to create users.
-		File dir = contents.getParentFile();
-		//TODO : use DBBroker's named constants
-		if (dir.isDirectory() && dir.getName().equals("db")) {
-			File sys =
-				//TODO : use DBBroker's named constants
+		File dir = contents.getParentFile();	
+		//TODO : find a way to make a corespondance with DBRoker's named constants
+		if (dir.isDirectory() && dir.getName().equals("db" + File.separatorChar + "system")) {
+			File sys =				
 				new File(
 					dir.getAbsolutePath()
 						+ File.separatorChar
@@ -88,7 +87,8 @@ public class Restore extends DefaultHandler {
 						+ "__contents__.xml");
 			// put /db/system on top of the stack
 			if (sys.canRead()) {
-				System.out.println("found " + DBBroker.SYSTEM_COLLECTION + ". It will be processed first.");
+//				TODO : find a way to make a corespondance with DBRoker's named constants
+				System.out.println("found 'db" + File.separatorChar + "system'. It will be processed first.");
 				stack.push(sys);
 			}
 		}
@@ -303,12 +303,13 @@ public class Restore extends DefaultHandler {
 	}
 
 	private final CollectionImpl mkcol(String collPath, Date created) throws XMLDBException {
-		if (collPath.startsWith("/db"))
-			collPath = collPath.substring("/db".length());
+		if (collPath.startsWith(DBBroker.ROOT_COLLECTION))
+			collPath = collPath.substring(DBBroker.ROOT_COLLECTION.length());
 		CollectionManagementServiceImpl mgtService;
 		Collection c;
-		Collection current = DatabaseManager.getCollection(uri + "/db", username, pass);
-		String p = "/db", token;
+		Collection current = DatabaseManager.getCollection(uri + DBBroker.ROOT_COLLECTION, username, pass);
+		String p = DBBroker.ROOT_COLLECTION, token;
+		//TODO : use dedicated shared code !
 		StringTokenizer tok = new StringTokenizer(collPath, "/");
 		while (tok.hasMoreTokens()) {
 			token = tok.nextToken();
