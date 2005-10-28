@@ -468,8 +468,7 @@ public class XQueryTest extends XMLTestCase {
 				+ "$w";		
 			try {
 				exceptionThrown = false;
-				result = service.query(query);		
-				result = service.query(query);		
+				result = service.query(query);						
 			} catch (XMLDBException e) {
 				exceptionThrown = true;
 				message = e.getMessage();
@@ -516,7 +515,201 @@ public class XQueryTest extends XMLTestCase {
 			System.out.println("testTypedVariables : XMLDBException: "+e);
 			fail(e.getMessage());
 		}
-	}	
+	}
+	
+	public void testImprobableAxesAndNodeTestsCombinations() {
+		ResourceSet result;
+		String query;
+		boolean exceptionThrown;
+		String message;		
+		try {
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
+	
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 1: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/self::comment() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 2: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/parent::comment() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());	
+			
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 3: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/ancestor::comment() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
+			
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 4: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/ancestor-or-self::comment() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());			
+
+//			This one is intercepted by the parser
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 5: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/attribute::comment() return <z>{$a}</z>";
+			try {
+				exceptionThrown = false;
+				result = service.query(query);						
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue(exceptionThrown);
+			
+//			This one is intercepted by the parser
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 6: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/namespace::comment() return <z>{$a}</z>";
+			try {
+				exceptionThrown = false;
+				result = service.query(query);						
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue(exceptionThrown);			
+				
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 7: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/self::attribute() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 8: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/parent::attribute() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());	
+			
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 9: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/ancestor::attribute() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
+			
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 10: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/ancestor-or-self::attribute() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());	
+
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 11: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/child::attribute() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
+			
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 12: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/descendant::attribute() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());	
+			
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 13: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/descendant-or-self::attribute() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
+			
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 14: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/preceding::attribute() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());	
+			
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 15: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/preceding-sibling::attribute() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());	
+			
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 16: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/following::attribute() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());	
+			
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 17: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/following-sibling::attribute() return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
+			
+//			This one is intercepted by the parser
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 18: ========" );
+			query = "let $a := <x>a<!--b-->c</x>/namespace::attribute() return <z>{$a}</z>";
+			try {
+				exceptionThrown = false;
+				result = service.query(query);						
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue(exceptionThrown);			
+			
+			//TODO : uncomment when PI are OK
+			
+			/*
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 19: ========" );
+			query = "let $a := <x>a<?foo ?>c</x>/self::processing-instruction('foo') return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 20: ========" );
+			query = "let $a := <x>a<?foo ?>c</x>/parent::processing-instruction('foo') return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());	
+			
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 21: ========" );
+			query = "let $a := <x>a<?foo ?>c</x>/ancestor::processing-instruction('foo') return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
+			
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 22: ========" );
+			query = "let $a := <x>a<?foo ?>c</x>/ancestor-or-self::processing-instruction('foo') return <z>{$a}</z>";
+			result = service.query(query);				
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());	
+			*/		
+
+//			This one is intercepted by the parser
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 23: ========" );
+			query = "let $a := <x>a<?foo ?>c</x>/attribute::processing-instruction('foo') return <z>{$a}</z>";
+			try {
+				exceptionThrown = false;
+				result = service.query(query);						
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue(exceptionThrown);
+			
+//			This one is intercepted by the parser
+			System.out.println("testImprobableAxesAndNodeTestsCombinations 24: ========" );
+			query = "let $a := <x>a<?foo ?>c</x>/namespace::processing-instruction('foo') return <z>{$a}</z>";
+			try {
+				exceptionThrown = false;
+				result = service.query(query);						
+			} catch (XMLDBException e) {
+				exceptionThrown = true;
+				message = e.getMessage();
+			}
+			assertTrue(exceptionThrown);	
+			
+		} catch (XMLDBException e) {
+ 			System.out.println("testTypedVariables : XMLDBException: "+e);
+			fail(e.getMessage());
+		}		
+		
+	}
 	
 	public void testNamespace() {
 		Resource doc;

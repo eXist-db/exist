@@ -159,9 +159,14 @@ public class LocationStep extends Step {
 			case Constants.CHILD_AXIS :
 				temp =
 					getChildren(context, contextSequence.toNodeSet());
-				break;
-			case Constants.ANCESTOR_AXIS :
+				break;			
 			case Constants.ANCESTOR_SELF_AXIS :
+				//Avoid unnecessary tests
+				if (test.getType() != Type.ELEMENT)	{
+					temp = NodeSet.EMPTY_SET;
+					break;
+				}
+			case Constants.ANCESTOR_AXIS :
 				temp =
 					getAncestors(context, contextSequence.toNodeSet());
 				break;
@@ -219,8 +224,15 @@ public class LocationStep extends Step {
 	 * @return
 	 */
 	protected Sequence getSelf(XQueryContext context, NodeSet contextSet) {
+		
+		//TODO : move to eval() ?
+		//Avoid unnecessary tests
+		int testType = test.getType();
+		if (testType != Type.NODE && testType != Type.ELEMENT )	
+			return NodeSet.EMPTY_SET;
+		
 		if(test.isWildcardTest()) {
-			if(test.getType() == Type.NODE) {
+			if(testType == Type.NODE) {
 				if (inPredicate) {
 					if (contextSet instanceof VirtualNodeSet) {
 						((VirtualNodeSet) contextSet).setInPredicate(true);
@@ -270,7 +282,7 @@ public class LocationStep extends Step {
         } else if(axis == Constants.ATTRIBUTE_AXIS &&
                 !(contextSet instanceof VirtualNodeSet) && contextSet.getLength() == 1) {
             NodeProxy proxy = contextSet.get(0);
-            if (proxy.getInternalAddress() != -1)
+            if (proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
                 result = contextSet.directSelectAttribute(test.getName(), inPredicate);
         }
         if (result == null) {
@@ -450,7 +462,8 @@ public class LocationStep extends Step {
     
 	protected NodeSet getAncestors(
 		XQueryContext context,
-		NodeSet contextSet) {
+		NodeSet contextSet) {		
+
 		NodeSet result;
 		if (test.isWildcardTest()) {
             result = new ExtArrayNodeSet();
@@ -505,8 +518,13 @@ public class LocationStep extends Step {
 	protected NodeSet getParents(
 		XQueryContext context,
 		NodeSet contextSet) {
-		if (test.getType() != Type.ELEMENT)
+		
+		//TODO : move to eval() ?
+		//Avoid unnecessary tests
+		int testType = test.getType();
+		if (testType != Type.NODE && testType != Type.ELEMENT )	
 			return NodeSet.EMPTY_SET;
+		
 		if(test.isWildcardTest()) {
 			return contextSet.getParents(inPredicate);
 		} else {
