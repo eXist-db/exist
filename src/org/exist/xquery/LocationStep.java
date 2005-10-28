@@ -505,6 +505,8 @@ public class LocationStep extends Step {
 	protected NodeSet getParents(
 		XQueryContext context,
 		NodeSet contextSet) {
+		if (test.getType() != Type.ELEMENT)
+			return NodeSet.EMPTY_SET;
 		if(test.isWildcardTest()) {
 			return contextSet.getParents(inPredicate);
 		} else {
