@@ -89,17 +89,17 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                     else if(collectionURI.startsWith("xmldb:exist:///"))
                     {
                     	// Must be a LOCAL collection
-                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI.replace("xmldb:exist://", ""));
+                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI.replaceFirst("xmldb:exist://", ""));
                     }
                     else if(collectionURI.startsWith("xmldb:exist://localhost"))
                     {
                     	// Must be a LOCAL collection
-                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI.replace("xmldb:exist://localhost", ""));
+                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI.replaceFirst("xmldb:exist://localhost", ""));
                     }
                     else if(collectionURI.startsWith("xmldb:exist://127.0.0.1"))
                     {
                     	// Must be a LOCAL collection
-                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI.replace("xmldb:exist://127.0.0.1", ""));
+                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI.replaceFirst("xmldb:exist://127.0.0.1", ""));
                     }
                     else {
                         // Right now, the collection is retrieved as GUEST. Need to figure out how to
