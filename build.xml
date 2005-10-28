@@ -787,6 +787,8 @@
                 <exclude name="test.xml"/>
             </fileset>
         </copy>
+    	<copy file="${src}/org/exist/util/mime-types.xml"
+    		todir="${dist.dir}"/>
         <fixcrlf eol="crlf" includes="**/*.bat" srcdir="${dist.dir}/bin"/>
         <fixcrlf eof="remove" eol="lf" includes="**/*.sh" srcdir="${dist.dir}/bin"/>
         <fixcrlf eol="crlf" includes="build.bat" srcdir="${dist.dir}"/>
