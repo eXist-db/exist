@@ -229,7 +229,8 @@ public class LocationStep extends Step {
 						NodeProxy p;
 						for (Iterator i = contextSet.iterator(); i.hasNext();) {
 							p = (NodeProxy) i.next();
-							p.addContextNode(p);
+							if (test.matches(p))
+								p.addContextNode(p);
 						}
 					}
 				}
