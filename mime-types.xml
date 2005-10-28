@@ -50,6 +50,10 @@
         <description>ZIP archive</description>
         <extensions>.zip</extensions>
     </mime-type>
+    <mime-type name="application/msword" type="binary">
+    	<description>Microsoft Word Document</description>
+    	<extensions>.doc</extensions>
+    </mime-type>
     <mime-type name="text/plain" type="binary">
         <description>Plain text</description>
         <extensions>.txt,.text,.java,.dtd</extensions>
