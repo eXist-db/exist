@@ -48,6 +48,7 @@ import junit.framework.TestCase;
 
 public abstract class AbstractUpdateTest extends TestCase {
 
+	protected static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
     protected static String TEST_XML = 
         "<?xml version=\"1.0\"?>" +
         "<products/>";
@@ -67,8 +68,8 @@ public abstract class AbstractUpdateTest extends TestCase {
             DocumentImpl doc;
             String data;
             
-            doc = broker.openDocument("/db/test/test2/test.xml", Lock.READ_LOCK);
-            assertNotNull("Document /db/test/test2/test.xml should not be null", doc);
+            doc = broker.openDocument(TEST_COLLECTION + "/test2/test.xml", Lock.READ_LOCK);
+            assertNotNull("Document "+ TEST_COLLECTION + "/test2/test.xml should not be null", doc);
             data = serializer.serialize(doc);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
@@ -90,10 +91,10 @@ public abstract class AbstractUpdateTest extends TestCase {
         
         System.out.println("Transaction started ...");
         
-        Collection root = broker.getOrCreateCollection(transaction, "/db/test");
+        Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
         broker.saveCollection(transaction, root);
         
-        Collection test = broker.getOrCreateCollection(transaction, "/db/test/test2");
+        Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
         broker.saveCollection(transaction, test);
         
         IndexInfo info = test.validate(transaction, broker, "test.xml", TEST_XML);

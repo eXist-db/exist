@@ -55,6 +55,7 @@ public class CollectionTest extends TestCase {
 
     private static String docs[] = { "hamlet.xml", "r_and_j.xml", "macbeth.xml" };
     
+    private static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
     private static String TEST_XML =
         "<?xml version=\"1.0\"?>" +
         "<test>" +
@@ -78,10 +79,10 @@ public class CollectionTest extends TestCase {
             
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, "/db/test");
+            Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
             broker.saveCollection(transaction, root);
             
-            Collection test = broker.getOrCreateCollection(transaction, "/db/test/test2");
+            Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
             broker.saveCollection(transaction, test);
             transact.commit(transaction);
             
@@ -104,7 +105,7 @@ public class CollectionTest extends TestCase {
             btree.dump(writer);
             System.out.println(writer.toString());
             
-            Collection test = broker.getCollection("/db/test/test2");
+            Collection test = broker.getCollection(TEST_COLLECTION + "/test2");
             assertNotNull(test);
             System.out.println("Contents of collection " + test.getName() + ":");
             for (Iterator i = test.iterator(broker); i.hasNext(); ) {

@@ -16,6 +16,7 @@ import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -213,7 +214,7 @@ public class Main {
 						properties.setProperty("backup-dir", dialog.getBackupDir());
 					}
 				} else
-					optionBackup = "/db";
+					optionBackup = DBBroker.ROOT_COLLECTION;
 			}
 			if (optionBackup != null) {
 				Backup backup =
@@ -271,7 +272,7 @@ public class Main {
 		try {
 			Collection root =
 				DatabaseManager.getCollection(
-					properties.getProperty("uri", "xmldb:exist://") + "/db",
+					properties.getProperty("uri", "xmldb:exist://") + DBBroker.ROOT_COLLECTION,
 					properties.getProperty("user", "admin"),
 					optionPass);
 			shutdown(root);
