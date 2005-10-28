@@ -42,6 +42,12 @@ public class TypeTest implements NodeTest {
 			case Type.ATTRIBUTE :
 				domType = Node.ATTRIBUTE_NODE;
 				break;
+			case Type.COMMENT :
+				domType = Node.COMMENT_NODE;
+				break;
+			case Type.PROCESSING_INSTRUCTION :
+				domType = Node.PROCESSING_INSTRUCTION_NODE;
+				break;
 			case Type.NODE :
 			default :
 				return true;
@@ -61,7 +67,6 @@ public class TypeTest implements NodeTest {
 		if(type == Type.ITEM || type == Type.NODE) {
 			if(type == Type.NODE)
 				return true;
-			System.out.println("loading " + proxy.gid);
 			Node node = proxy.getNode();
 			return matches(node);
 		} else
