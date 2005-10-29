@@ -92,7 +92,12 @@ public class Variable {
     }
     
 	public String toString() {
-		return "$" + qname.toString();
+		StringBuffer result = new StringBuffer();
+		result.append("$" + qname.toString());
+		result.append(" ");
+		result.append(Type.getTypeName(getType()));
+		result.append(Cardinality.toString(getCardinality()));
+		return result.toString();
 	}
 	
 	public int getDependencies(XQueryContext context) {
