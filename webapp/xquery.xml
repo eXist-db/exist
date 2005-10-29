@@ -274,7 +274,7 @@
                     should occur next to each other. Other values for the maximum and minimal distance may be specified 
                     in the optional third argument. As a special case, if the string in the second argument contains only 
                     one token, any distance value in the third and fourth argument are ignored, and the function performs
-					identically to the &= operator. An example:</para>
+					identically to the &amp;= operator. An example:</para>
                     <synopsis format="linespecific">document()//SPEECH[near(., 'love marriage', 25)</synopsis>
                     <para>will return any SPEECH elements containing the words "love" and "marriage" and less 
                     than 25 words between them.</para>
