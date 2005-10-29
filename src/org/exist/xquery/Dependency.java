@@ -52,5 +52,25 @@ public class Dependency {
 	 * The default dependencies: just CONTEXT_SET is set.
 	 */
 	public final static int DEFAULT_DEPENDENCIES = CONTEXT_SET;
+	
+	public final static String getDependenciesName(int dependencies) {
+		if (dependencies == NO_DEPENDENCY) return
+			"NO_DEPENDENCY";
+		StringBuffer result = new StringBuffer();
+		result.append("[");
+		if ((dependencies & CONTEXT_SET) != 0) 
+			result.append("CONTEXT_SET | ");
+		if ((dependencies & CONTEXT_ITEM) != 0) 
+			result.append("CONTEXT_ITEM | ");
+		if ((dependencies & LOCAL_VARS) != 0) 
+			result.append("LOCAL_VARS | ");
+		if ((dependencies & CONTEXT_VARS) != 0) 
+			result.append("CONTEXT_VARS | ");
+		if ((dependencies & CONTEXT_POSITION) != 0) 
+			result.append("CONTEXT_POSITION | ");	
+		result.delete(result.length() - 3, result.length());
+		result.append("]");
+		return result.toString();
+	}	
 
 }

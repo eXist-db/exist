@@ -86,4 +86,8 @@ public class EmptySequence extends AbstractSequence {
     public void removeDuplicates() {
         // nothing to do
     }
+    
+    public String toString() {
+    	return "()";
+    }
 }

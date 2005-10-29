@@ -229,6 +229,23 @@ public class ValueSequence extends AbstractSequence {
 		noDuplicates = true;
 	}
 	
+	public String toString() {
+		StringBuffer result = new StringBuffer();
+		result.append("(");
+		boolean morethanOne = false;
+		for (SequenceIterator i = iterate(); i.hasNext(); ) {
+			Item next = i.nextItem();
+			if (morethanOne) {
+				result.append(", ");
+				morethanOne = true;
+			}
+			result.append(next.toString());						
+		}
+		result.append(")");
+		return result.toString();
+		
+	}
+	
 	private class ValueSequenceIterator implements SequenceIterator {
 		
 		private int pos = 0;
