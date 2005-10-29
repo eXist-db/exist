@@ -69,7 +69,7 @@ public class OpOr extends LogicalOp {
             return;
         getExpression(0).dump(dumper);
         for (int i = 1; i < getLength(); i++) {
-            dumper.display(" or ");
+            dumper.display(") or (");
             getExpression(i).dump(dumper);
         }
     }

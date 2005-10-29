@@ -72,16 +72,16 @@ public class QuantifiedExpression extends BindingExpression {
 		context.declareVariableBinding(var);
 		Sequence inSeq = inputSequence.eval(contextSequence);
 		Sequence satisfiesSeq;
-		boolean found = false;
-		if ( mode == EVERY )
-			found = true;
+		boolean found = (mode == EVERY) ? true : false;
 		for(SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
 			contextItem = i.nextItem();
 			var.setValue(contextItem.toSequence());
             var.checkType();
 			satisfiesSeq = returnExpr.eval(contextSequence);
 			found = satisfiesSeq.effectiveBooleanValue();
-			if((mode == SOME && found) || (mode == EVERY && !found))
+			if((mode == SOME ) && found)
+				break;
+			if ((mode == EVERY) && !found)
 				break;
 		}
 		context.popLocalVariables(mark);
