@@ -103,6 +103,20 @@ public class QuantifiedExpression extends BindingExpression {
         dumper.endIndent();
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append(mode == SOME ? "some" : "every");
+    	result.append(" $").append(varName).append(" in");
+    	result.append(" ");
+    	result.append(inputSequence.toString());
+    	result.append(" ");
+    	result.append("satisfies");
+    	result.append(" ");
+    	result.append(returnExpr.toString());
+    	result.append(" ");
+    	return result.toString();
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

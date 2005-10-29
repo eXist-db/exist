@@ -80,6 +80,17 @@ public class LiteralValue extends AbstractExpression {
             value.dump(dumper);
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+        if(Type.subTypeOf(value.getType(), Type.STRING)) {
+        	result.append("\"");
+        	result.append(value.toString());
+        	result.append("\"");
+        } else
+        	result.append(value.toString());
+        return result.toString();
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

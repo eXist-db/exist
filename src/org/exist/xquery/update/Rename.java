@@ -152,5 +152,14 @@ public class Rename extends Modification {
 		value.dump(dumper);
 		dumper.nl().endIndent();
 	}
+	
+	public String toString() {
+		StringBuffer result = new StringBuffer();
+		result.append("update rename ");		
+		result.append(select.toString());		
+		result.append(" to ");		
+		result.append(value.toString());
+		return result.toString();
+	}	
 
 }

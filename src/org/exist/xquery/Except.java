@@ -79,4 +79,12 @@ public class Except extends CombiningExpression {
         dumper.display(" except ");
         right.dump(dumper);
     }
+   
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append(left.toString());
+    	result.append(" except ");
+    	result.append(right.toString());
+    	return result.toString();
+    }    
 }

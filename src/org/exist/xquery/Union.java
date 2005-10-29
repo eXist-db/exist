@@ -68,4 +68,12 @@ public class Union extends CombiningExpression {
         dumper.display(" union ");
         right.dump(dumper);
     }
+    
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append(left.toString());
+    	result.append(" union ");
+    	result.append(right.toString());
+    	return result.toString();
+    }    
 }

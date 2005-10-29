@@ -109,6 +109,14 @@ public class CastableExpression extends AbstractExpression {
         dumper.display(Type.getTypeName(requiredType));
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append(expression.toString());
+    	result.append(" castable as ");
+    	result.append(Type.getTypeName(requiredType));
+    	return result.toString();
+    }    
+    
 	public void resetState() {
 		expression.resetState();
 	}

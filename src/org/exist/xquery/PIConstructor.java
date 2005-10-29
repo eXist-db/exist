@@ -79,4 +79,14 @@ public class PIConstructor extends NodeConstructor {
         dumper.display(data);
         dumper.endIndent().nl().display("}");
     }
+    
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("processing-instruction { ");
+    	result.append(target.toString());
+    	result.append(" } { ");        
+    	result.append(data.toString());
+    	result.append(" }");
+    	return result.toString();
+    }    
 }

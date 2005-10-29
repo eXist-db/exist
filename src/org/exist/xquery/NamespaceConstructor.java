@@ -95,4 +95,13 @@ public class NamespaceConstructor extends NodeConstructor {
         uri.dump(dumper);
         dumper.display(" }");
     }
+    
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("namespace ").append(prefix);
+    	result.append("{ ");
+    	result.append(uri.toString());
+    	result.append(" }");
+    	return result.toString();
+    }    
 }

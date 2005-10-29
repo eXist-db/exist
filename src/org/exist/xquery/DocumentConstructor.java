@@ -123,5 +123,13 @@ public class DocumentConstructor extends NodeConstructor {
         dumper.endIndent();
         dumper.nl().display('}');
     }
+    
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("document { ");
+    	result.append(content.toString());       
+    	result.append(" }");
+    	return result.toString();
+    }    
 
 }

@@ -123,4 +123,12 @@ public class NodeComparison extends BinaryOp {
         dumper.display(' ').display(Constants.OPS[relation]).display(' ');
         getRight().dump(dumper);
     }
+    
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append(getLeft().toString());
+    	result.append(' ').append(Constants.OPS[relation]).append(' ');
+    	result.append(getRight().toString());
+    	return result.toString();
+    }    
 }

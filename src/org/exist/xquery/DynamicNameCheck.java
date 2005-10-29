@@ -102,5 +102,14 @@ public class DynamicNameCheck extends AbstractExpression {
         if(dumper.verbosity() > 1)
             dumper.display(')');
 	}
+	
+	public String toString() {
+		StringBuffer result = new StringBuffer();
+		result.append(Type.getTypeName(test.nodeType));
+		result.append('(');
+		result.append(expression.toString());
+		result.append(')');
+		return result.toString();
+	}	
 
 }

@@ -561,6 +561,14 @@ public class GeneralComparison extends BinaryOp {
         getRight().dump(dumper);
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append(getLeft().toString());
+    	result.append(' ').append(Constants.OPS[relation]).append(' ');
+    	result.append(getRight().toString());
+    	return result.toString();
+    }    
+    
 	protected void switchOperands() {
 		switch (relation) {
 			case Constants.GT :

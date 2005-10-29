@@ -126,5 +126,9 @@ public class Delete extends Modification {
 		// TODO Auto-generated method stub
 
 	}
+	
+	public String toString() {
+		return "'Delete' string representation";
+	}	
 
 }

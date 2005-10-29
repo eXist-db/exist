@@ -206,6 +206,32 @@ public class ElementConstructor extends NodeConstructor {
         dumper.display("}");
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("element { ");
+    	result.append(qnameExpr.toString());
+    	result.append(" } { ");        
+        if(attributes != null) {
+			AttributeConstructor attr;
+			for(int i = 0; i < attributes.length; i++) {
+			    if(i > 0)
+			    	result.append(" ");
+				attr = (AttributeConstructor)attributes[i];
+				result.append(attr.toString());
+			}
+		}
+        if(content != null) {
+            for(Iterator i = content.steps.iterator(); i.hasNext(); ) {
+                Expression expr = (Expression) i.next();
+                result.append(expr.toString());
+                if(i.hasNext())
+                	result.append(" ");
+            }
+        }        
+        result.append(" }");
+        return result.toString();
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
 	 */

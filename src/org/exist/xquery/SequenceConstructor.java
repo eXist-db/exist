@@ -76,6 +76,17 @@ public class SequenceConstructor extends PathExpr {
         dumper.nl().display(")");
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("( ");        
+        for(Iterator i = steps.iterator(); i.hasNext(); ) {
+        	result.append(((Expression) i.next()).toString());
+        	result.append(", ");
+        }        
+        result.append(" )");
+        return result.toString();
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

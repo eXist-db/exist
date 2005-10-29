@@ -79,4 +79,16 @@ public class OpAnd extends LogicalOp {
             getExpression(i).dump(dumper);
         }
     }
+    
+    public String toString() {        
+    	if (getLength() == 0)
+            return "";
+    	StringBuffer result = new StringBuffer();
+    	result.append(getExpression(0).toString());
+        for (int i = 1; i < getLength(); i++) {
+        	result.append(") and (");
+        	result.append(getExpression(i).toString());
+        }
+        return result.toString();
+    }    
 }

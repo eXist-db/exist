@@ -142,6 +142,22 @@ public class AttributeConstructor extends NodeConstructor {
         dumper.nl().display("}");
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("attribute { ").append(qname);
+    	result.append(" } {");        
+        Object next;
+		for(Iterator i = contents.iterator(); i.hasNext(); ) {
+			next = i.next();
+			if(next instanceof Expression)
+				result.append(((Expression)next).toString());
+			else
+				result.append(next.toString());
+		}      
+		result.append(" }");
+		return result.toString();
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeConstructor#resetState()
 	 */
