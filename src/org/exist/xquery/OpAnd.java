@@ -75,7 +75,7 @@ public class OpAnd extends LogicalOp {
             return;
         getExpression(0).dump(dumper);
         for (int i = 1; i < getLength(); i++) {
-            dumper.display(" and ");
+            dumper.display(") and (");
             getExpression(i).dump(dumper);
         }
     }

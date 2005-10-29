@@ -192,18 +192,24 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      */
     public void dump(ExpressionDumper dumper) {
 //        dumper.startIndent();
-        Expression next;
+        Expression next = null;
         int count = 0;
         for (Iterator iter = steps.iterator(); iter.hasNext(); count++) {
-            next = (Expression) iter.next();
+        	next = (Expression) iter.next(); 
+        	//Open a first parenthesis
+        	if (next instanceof LogicalOp)
+        		dumper.display('(');
             if(count > 0) {
                 if(next instanceof Step)
-                    dumper.display('/');
+                	dumper.display('/');
                 else
                     dumper.nl();
             }
-            next.dump(dumper);
+            next.dump(dumper);           
         }
+        //Close the last parenthesis
+        if (next instanceof LogicalOp)
+    		dumper.display(')');
 //        dumper.endIndent();
     }
     
