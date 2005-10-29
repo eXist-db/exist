@@ -27,6 +27,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -184,7 +185,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	
 	public int compareTo(Object other) {
 		if(!(other instanceof NodeProxy))
-			throw new RuntimeException("cannot compare NodeProxy with " + other.getClass().getName());
+			return 1;
 		return compareTo((NodeProxy) other);
 	}
 
