@@ -30,6 +30,7 @@ import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.exist.EXistException;
 import org.exist.security.User;
+import org.exist.storage.DBBroker;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.xmldb.api.base.Collection;
@@ -185,7 +186,7 @@ public class DatabaseImpl implements Database {
             password = "";
         // try to figure out server address
         int p = 0;
-        if ( ( p = c.indexOf( "/db", 2 ) ) > -1 ) {
+        if ( ( p = c.indexOf( DBBroker.ROOT_COLLECTION, 2 ) ) > -1 ) {
             address = "http://" + c.substring( 2, p );
             if(address.charAt(address.length() - 1) == '/')
             	address = address.substring(0, address.length() - 1);

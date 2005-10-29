@@ -128,7 +128,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		this.brokerPool = brokerPool;
 		this.path = name;
 		if (path == null)
-			path = "/db";
+			path = DBBroker.ROOT_COLLECTION;
 		getCollection();
 	}
 
@@ -301,7 +301,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	}
 	
 	public org.xmldb.api.base.Collection getParentCollection() throws XMLDBException {
-		if (getName().equals("/db"))
+		if (getName().equals(DBBroker.ROOT_COLLECTION))
 			return null;
 		if (parent == null) {
 			// load the collection to check if it is valid

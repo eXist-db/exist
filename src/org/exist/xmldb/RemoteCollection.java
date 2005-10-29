@@ -38,6 +38,7 @@ import java.util.Vector;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
+import org.exist.storage.DBBroker;
 import org.exist.validation.service.RemoteValidationService;
 import org.exist.xmlrpc.RpcServer;
 import org.xmldb.api.base.Collection;
@@ -146,7 +147,7 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public Collection getParentCollection() throws XMLDBException {
-	    if(parent == null && !name.equals("/db")) {
+	    if(parent == null && !name.equals(DBBroker.ROOT_COLLECTION)) {
 	        String parentName = name.substring(0, name.lastIndexOf('/'));
 	        return new RemoteCollection(rpcClient, null, parentName);
 	    }
@@ -158,7 +159,7 @@ public class RemoteCollection implements CollectionImpl {
 		    if(name != null)
 		        return name;
 		    else
-		        return "/db";
+		        return DBBroker.ROOT_COLLECTION;
 		}
 		return name;
 	}

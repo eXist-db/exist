@@ -8,6 +8,8 @@ package org.exist.xmldb.test.concurrent;
 
 import java.io.File;
 
+import org.exist.storage.DBBroker;
+
 /**
  * @author wolf
  *
@@ -16,7 +18,7 @@ import java.io.File;
  */
 public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
 
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	
 	private final static String QUERY =
 		"//ELEMENT[@attribute-1]";
