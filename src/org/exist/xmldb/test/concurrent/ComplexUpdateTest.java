@@ -1,5 +1,6 @@
 package org.exist.xmldb.test.concurrent;
 
+import org.exist.storage.DBBroker;
 import org.xmldb.api.modules.XMLResource;
 
 /**
@@ -7,7 +8,7 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class ComplexUpdateTest extends ConcurrentTestBase {
 
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	
 	private final static String XML =
 		"<TEST><USER-SESSION-DATA version=\"0\"/></TEST>";

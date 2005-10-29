@@ -23,6 +23,7 @@ package org.exist.xmldb.test.concurrent;
 
 import java.io.File;
 
+import org.exist.storage.DBBroker;
 import org.exist.storage.NativeElementIndex;
 
 /**
@@ -30,7 +31,7 @@ import org.exist.storage.NativeElementIndex;
  */
 public class ConcurrentQueryTest extends ConcurrentTestBase {
 
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(ConcurrentQueryTest.class);

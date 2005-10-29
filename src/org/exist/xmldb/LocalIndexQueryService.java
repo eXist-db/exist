@@ -80,7 +80,7 @@ public class LocalIndexQueryService implements IndexQueryService {
      * @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String)
      */
     public void reindexCollection(String collectionPath) throws XMLDBException {
-        /*String path = (collectionPath.startsWith("/db/") ? collectionPath : 
+        /*String path = (collectionPath.startsWith(DBBroker.ROOT_COLLECTION + "/") ? collectionPath : 
     		parent.getPath() + '/' + collectionPath);*/
     	String path = NativeBroker.checkPath(collectionPath, parent.getPath());
         DBBroker broker = null;
