@@ -269,10 +269,12 @@
                     similar to the <command moreinfo="none">&amp;=</command> operator, but it additionally pays 
                     attention to the order of search terms and their distance in the source document. The syntax is:</para>
                     <synopsis format="linespecific">near(node-list, 'string of keywords' [, max-distance])</synopsis>
-                    <para>The functions measures the distance between two search terms by counting the words in 
+                    <para>The function measures the distance between two search terms by counting the words in 
                     between them. A maximum distance of 1 is assumed by default, which means that the search terms 
-                    should occur next to each other. Other values may be specified in the optional third argument, 
-                    e.g.:</para>
+                    should occur next to each other. Other values for the maximum and minimal distance may be specified 
+                    in the optional third argument. As a special case, if the string in the second argument contains only 
+                    one token, any distance value in the third and fourth argument are ignored, and the function performs
+					identically to the &= operator. An example:</para>
                     <synopsis format="linespecific">document()//SPEECH[near(., 'love marriage', 25)</synopsis>
                     <para>will return any SPEECH elements containing the words "love" and "marriage" and less 
                     than 25 words between them.</para>
