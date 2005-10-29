@@ -85,6 +85,15 @@ public class DynamicTypeCheck extends AbstractExpression {
             dumper.display(')');
     }
     
+    public String toString() {
+        StringBuffer result = new StringBuffer();
+        result.append(Type.getTypeName(requiredType));
+        result.append('(');        
+        result.append(expression.toString());
+        result.append(')');
+        return result.toString();
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

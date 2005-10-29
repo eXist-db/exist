@@ -117,6 +117,17 @@ public class ConditionalExpression extends AbstractExpression {
         dumper.endIndent();
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("if ( ");
+    	result.append(testExpr.toString());       
+    	result.append(" ) then ");        
+    	result.append(thenExpr.toString());        
+    	result.append(" else ");       
+    	result.append(elseExpr.toString());
+        return result.toString();
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

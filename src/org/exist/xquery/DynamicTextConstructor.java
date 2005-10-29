@@ -87,5 +87,13 @@ public class DynamicTextConstructor extends NodeConstructor {
         dumper.endIndent();
         dumper.nl().display("}");
     }
+    
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("text { ");        
+    	result.append(content.toString());        
+    	result.append(" }");
+    	return result.toString();
+    }    
 
 }

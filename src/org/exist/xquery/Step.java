@@ -84,6 +84,7 @@ public abstract class Step extends AbstractExpression {
             dumper.display( Constants.AXISSPECIFIERS[axis] );
         dumper.display( "::" );
         if ( test != null )
+        	//TODO : toString() or... dump ?
             dumper.display( test.toString() );
         else
             dumper.display( "node()" );
@@ -94,6 +95,24 @@ public abstract class Step extends AbstractExpression {
                 dumper.display( ']' );
             }
     }
+    
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+        if ( axis > -1 )
+        	result.append( Constants.AXISSPECIFIERS[axis] );
+        result.append( "::" );
+        if ( test != null )
+        	result.append( test.toString() );
+        else
+        	result.append( "node()" );
+        if ( predicates.size() > 0 )
+            for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
+            	result.append( '[' );
+            	result.append(( (Predicate) i.next() ).toString());
+                result.append( ']' );
+            }
+        return result.toString();
+    }    
     
     public int returnsType() {
         return Type.NODE;

@@ -26,6 +26,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
@@ -284,6 +285,38 @@ public class ForExpr extends BindingExpression {
         dumper.endIndent().nl();
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("for ");           
+        result.append("$").append(varName);
+        if(positionalVariable != null)
+        	result.append(" at ").append(positionalVariable);
+        if(sequenceType != null)
+        	result.append(" as ").append(sequenceType);
+        result.append(" in ");
+        result.append(inputSequence.toString());
+        result.append(" ");
+        if(whereExpr != null) {
+        	result.append("where");
+        	result.append(" ");
+        	result.append(whereExpr.toString());
+        	result.append(" ");
+        }
+        if(orderSpecs != null) {
+        	result.append("order by ");
+            for(int i = 0; i < orderSpecs.length; i++) {
+                if(i > 0)
+                	result.append(", ");
+                result.append(orderSpecs[i].toString());
+            }
+            result.append(" ");
+        }
+        result.append("return");
+        result.append(" ");
+        result.append(returnExpr.toString());
+        result.append("");
+        return result.toString();
+    }
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

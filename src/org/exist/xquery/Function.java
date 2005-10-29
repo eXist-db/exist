@@ -402,6 +402,20 @@ public abstract class Function extends PathExpr {
         dumper.display(')');
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append(getName());
+    	result.append('(');
+        for (Iterator i = steps.iterator(); i.hasNext();) {
+			Expression e = (Expression) i.next();
+			result.append(e.toString());
+			if(i.hasNext())
+				result.append(", ");
+        }
+        result.append(')');   
+        return result.toString();
+    }
+    
 	public void setASTNode(XQueryAST ast) {
 		this.astNode = ast;
 	}

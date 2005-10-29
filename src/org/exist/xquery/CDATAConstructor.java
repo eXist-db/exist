@@ -68,4 +68,9 @@ public class CDATAConstructor extends NodeConstructor {
     public void dump(ExpressionDumper dumper) {
         dumper.display("<![CDATA[").display(cdata).display("]]>");
     }
+    
+    public String toString() {
+        return "<![CDATA[" + cdata.toString() + "]]>";
+    }
+    
 }

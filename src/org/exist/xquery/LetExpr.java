@@ -162,6 +162,7 @@ public class LetExpr extends BindingExpression {
             for(int i = 0; i < orderSpecs.length; i++) {
                 if(i > 0)
                     dumper.display(", ");
+                //TODO : toString() or... dump ?
                 dumper.display(orderSpecs[i].toString());
             }
         }
@@ -170,4 +171,27 @@ public class LetExpr extends BindingExpression {
         returnExpr.dump(dumper);
         dumper.endIndent();
     }
+    
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("let ");        
+    	result.append("$").append(varName);
+    	result.append(" := ");
+    	result.append(inputSequence.toString());        
+        if(whereExpr != null) {
+        	result.append(" where ");
+        	result.append(whereExpr.toString());
+        }
+        if(orderSpecs != null) {
+        	result.append(" order by ");
+            for(int i = 0; i < orderSpecs.length; i++) {
+                if(i > 0)
+                	result.append(", ");
+                result.append(orderSpecs[i].toString());
+            }
+        }
+        result.append("return ");       
+        result.append(returnExpr.toString());
+        return result.toString();
+    }    
 }

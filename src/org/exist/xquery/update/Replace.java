@@ -157,4 +157,13 @@ public class Replace extends Modification {
 		value.dump(dumper);
 		dumper.nl().endIndent();
 	}
+	
+	public String toString() {
+		StringBuffer result = new StringBuffer();
+		result.append("update replace ");		
+		result.append(select.toString());
+		result.append(" with ");
+		result.append(value.toString());
+		return result.toString();
+	}	
 }

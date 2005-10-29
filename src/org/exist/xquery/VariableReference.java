@@ -82,6 +82,10 @@ public class VariableReference extends AbstractExpression {
         dumper.display('$').display(qname);
     }
     
+    public String toString() {
+        return "$" + qname;
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

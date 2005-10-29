@@ -88,6 +88,14 @@ public class InstanceOfExpression extends AbstractExpression {
         dumper.display(type.toString());
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append(expression);
+    	result.append(" instance of ");
+    	result.append(type.toString());
+    	return result.toString();
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

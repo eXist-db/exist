@@ -128,6 +128,18 @@ public class VariableDeclaration extends AbstractExpression {
         dumper.nl().display('}').nl();
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("declare variable $").append(qname);
+        if(sequenceType != null) {
+        	result.append(" as ").append(sequenceType.toString());
+        }
+        result.append("{ ");
+        result.append(expression.toString());        
+        result.append(" }");
+        return result.toString();
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

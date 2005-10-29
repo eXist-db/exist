@@ -83,6 +83,14 @@ public class TextConstructor extends NodeConstructor {
         dumper.nl().display("}");
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("text { ");
+    	result.append(text.toString());
+        result.append(" }");
+        return result.toString();
+    }    
+    
 	protected final static boolean isWhiteSpace(char ch) {
 		return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
 	}

@@ -110,4 +110,12 @@ public class EnclosedExpr extends PathExpr {
         dumper.endIndent();
         dumper.nl().display("}");
     }
+    
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("{ ");    	
+    	result.append(super.toString());        
+    	result.append(" }");
+    	return result.toString();
+    }    
 }

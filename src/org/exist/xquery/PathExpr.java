@@ -213,6 +213,29 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 //        dumper.endIndent();
     }
     
+    public String toString() { 
+    	StringBuffer result = new StringBuffer();
+    	Expression next = null;
+    	int count = 0;
+    	for (Iterator iter = steps.iterator(); iter.hasNext(); count++) {
+    		next = (Expression) iter.next(); 
+    		// Open a first parenthesis
+    		if (next instanceof LogicalOp)
+    			result.append('(');
+    		if(count > 0) {
+    			if(next instanceof Step)
+    				result.append('/');
+    			else
+    				result.append(' ');
+    		}
+    		result.append(next.toString());           
+    	}
+    	// Close the last parenthesis
+    	if (next instanceof LogicalOp)
+    		result.append(')');
+    	return result.toString();
+    }
+    
     public int returnsType() {
         if (steps.size() == 0) return Type.NODE;
         int rtype = ((Expression) steps.get(steps.size() - 1)).returnsType();

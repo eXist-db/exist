@@ -63,4 +63,9 @@ public class CommentConstructor extends NodeConstructor {
     public void dump(ExpressionDumper dumper) {
         dumper.nl().display("comment { ").display(data).display(" }");
     }
+    
+    public String toString() {
+        return "comment { " + data.toString() + " }";
+    }
+    
 }

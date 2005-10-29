@@ -150,6 +150,14 @@ public class OpNumeric extends BinaryOp {
         getRight().dump(dumper);
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append(getLeft().toString());
+    	result.append(' ').append(Constants.OPS[operator]).append(' ');
+    	result.append(getRight());
+    	return result.toString();
+    }    
+    
     // excerpt from operator mapping table in XQuery 1.0 section B.2
     // http://www.w3.org/TR/xquery/#mapping
     private static final int[] OP_TABLE = {

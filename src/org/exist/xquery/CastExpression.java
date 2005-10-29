@@ -105,6 +105,14 @@ public class CastExpression extends AbstractExpression {
         dumper.display(Type.getTypeName(requiredType));
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append(expression.toString());
+    	result.append(" cast as ");
+    	result.append(Type.getTypeName(requiredType));
+    	return result.toString();
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

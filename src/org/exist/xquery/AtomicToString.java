@@ -81,6 +81,14 @@ public class AtomicToString extends AbstractExpression {
         dumper.display(")");
     }
     
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("xs:string(");
+    	result.append(expression.toString());
+    	result.append(")");
+    	return result.toString();
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

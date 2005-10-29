@@ -96,6 +96,10 @@ public class RootNode extends Step {
         dumper.display("/ROOT");
     }
     
+    public String toString() {
+        return "/ROOT";
+    }    
+    
     /*
      * (non-Javadoc)
      * 

@@ -97,6 +97,17 @@ public class FilteredExpression extends AbstractExpression {
         }
     }
     
+    public String toString() {
+        StringBuffer result = new StringBuffer();
+        result.append(expression.toString());
+        for (Iterator i = predicates.iterator(); i.hasNext();) {
+        	result.append('[');
+        	result.append(((Expression)i.next()).toString());
+            result.append(']');
+        }
+        return result.toString();
+    }    
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

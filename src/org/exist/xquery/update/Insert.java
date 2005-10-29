@@ -175,4 +175,23 @@ public class Insert extends Modification {
         select.dump(dumper);
         dumper.nl().endIndent();
 	}
+	
+	public String toString() {
+		StringBuffer result = new StringBuffer();
+		result.append("update insert ");        
+		result.append(value.toString());        
+        switch (mode) {
+            case INSERT_AFTER:
+            	result.append(" following ");
+                break;
+            case INSERT_BEFORE:
+            	result.append(" preceding ");
+                break;
+            case INSERT_APPEND:
+            	result.append(" into ");
+                break;
+        }        
+        result.append(select.toString());
+        return result.toString();
+	}	
 }

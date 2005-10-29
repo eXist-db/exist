@@ -83,4 +83,12 @@ public class Intersection extends CombiningExpression {
         dumper.display(" intersect ");
         right.dump(dumper);
     }
+    
+    public String toString() {
+        StringBuffer result = new StringBuffer();
+        result.append(left.toString());
+        result.append(" intersect ");
+        result.append(right.toString());
+        return result.toString();
+    }    
 }

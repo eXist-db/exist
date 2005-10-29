@@ -110,4 +110,14 @@ public class DynamicAttributeConstructor extends NodeConstructor {
         dumper.endIndent();
         dumper.nl().display("}");
     }
+    
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("attribute { ");
+    	result.append(qnameExpr.toString());
+    	result.append(" } { ");        
+    	result.append(valueExpr.toString());        
+    	result.append(" }");
+    	return result.toString();
+    }    
 }
