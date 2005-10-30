@@ -2017,7 +2017,7 @@ public class DOMFile extends BTree implements Lockable {
 	protected void redoUpdateValue(UpdateValueLoggable loggable) {
 		DOMPage page = getCurrentPage(loggable.pageNum);
 		DOMFilePageHeader ph = page.getPageHeader();
-		if (requiresRedo(loggable, page)) {
+		if (ph.getLsn() > -1 && requiresRedo(loggable, page)) {
 			RecordPos rec = page.findRecord(ItemId.getId(loggable.tid));
             SanityCheck.THROW_ASSERT(rec != null, "tid " + ItemId.getId(loggable.tid) + " not found on page " + page.getPageNum() +
                     "; contents: " + debugPageContents(page));
