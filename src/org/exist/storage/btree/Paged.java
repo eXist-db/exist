@@ -73,6 +73,7 @@ package org.exist.storage.btree;
  */
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -227,6 +228,23 @@ public abstract class Paged {
 	}
 
 	/**
+	 * Backup the entire contents of the underlying file to 
+	 * an output stream.
+	 * 
+	 * @param os
+	 * @throws IOException
+	 */
+	public void backupToStream(OutputStream os) throws IOException {
+		raf.seek(0);
+		
+		byte[] buf = new byte[1024];
+        int len;
+        while ((len = raf.read(buf)) > 0) {
+            os.write(buf, 0, len);
+        }
+	}
+	
+	/**
 	 *  getFile returns the file object for this Paged.
 	 *
 	 *@return    The File
@@ -234,7 +252,7 @@ public abstract class Paged {
 	public final File getFile() {
 		return file;
 	}
-	
+	 
 	/**
 	 *  getFileHeader returns the FileHeader
 	 *
