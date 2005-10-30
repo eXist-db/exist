@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.Collator;
 import java.util.Iterator;
 import java.util.List;
@@ -149,6 +150,16 @@ public abstract class DBBroker extends Observable {
 		}
 	}
 
+	public void backupSymbolsTo(OutputStream os) throws IOException {
+		FileInputStream fis = new FileInputStream(symbols.getFile());
+		byte[] buf = new byte[1024];
+        int len;
+        while ((len = fis.read(buf)) > 0) {
+            os.write(buf, 0, len);
+        }
+        fis.close();
+	}
+	
 	public SymbolTable getSymbols() {
 		return symbols;
 	}
