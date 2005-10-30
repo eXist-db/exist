@@ -617,18 +617,19 @@
                 
             <!-- Add files to WEB-INF/lib -->
             <lib dir=".">
+                <include name="start.jar"/>
                 <include name="exist.jar"/>
                 <include name="exist-optional.jar"/>
                 <include name="exist-modules.jar"/>
             </lib>
             <lib dir="${lib.core}">
-                <include name="*"/>
+                <include name="*.jar"/>
                 <exclude name="javax.servlet.jar"/>
-            	<exclude name="*.so"/>
             </lib>
             <lib dir="${lib.optional}">
                 <include name="*.jar"/>
             </lib>
+            <!-- The following jars should not be here, but in 'endorsed' -->
             <lib dir="${lib.endorsed}">
                 <include name="*.jar"/>
             </lib>
