@@ -25,6 +25,7 @@ package org.exist.storage;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.storage.btree.Paged;
 import org.exist.util.Configuration;
 
 import java.text.SimpleDateFormat;
@@ -33,7 +34,6 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry; 
-import java.io.File;
 import java.io.*;
 
 public class DataBackup implements SystemTask {
@@ -73,60 +73,38 @@ public class DataBackup implements SystemTask {
     }
     
 	public void execute(DBBroker broker) throws EXistException {
-		Configuration config = broker.getConfiguration();
+		if (!(broker instanceof NativeBroker))
+			throw new EXistException("DataBackup system task can only be used " +
+					"with the native storage backend");
+		NativeBroker nbroker = (NativeBroker) broker;
 		
-		String dataDir = (String) config.getProperty("db-connection.data-dir");
 		LOG.debug("Backing up data files ...");
-
-		File dir = new File(dataDir);
-		 FilenameFilter filter = new FilenameFilter() {
-	        public boolean accept(File dir, String name) {
-	            return name.endsWith(".dbx");
-	        }
-	    };
-	    String[] filenames = dir.list(filter);
-		try {
-			compressFiles(dataDir + File.separatorChar,filenames);
-		} catch (Exception e) {
-			e.printStackTrace();
+		
+		String creationDate = creationDateFormat.format(new Date());
+        String outFilename = dest + File.separatorChar + creationDate + ".zip";
+        
+        // Create the ZIP file
+        LOG.debug("Archiving data files into: " + outFilename);
+        
+        try {
+			ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
+			byte[] fileIds = nbroker.getStorageFileIds();
+			for (int i = 0; i < fileIds.length; i++) {
+				Paged paged = nbroker.getStorage(fileIds[i]);
+				
+				// create a new entry and copy the paged file contents to it
+				out.putNextEntry(new ZipEntry(paged.getFile().getName()));
+				paged.backupToStream(out);
+				
+				// Complete the entry
+	            out.closeEntry();
+			}
+			
+			// close the zip file
+			out.close();
+		} catch (IOException e) {
+			LOG.warn("An IO error occurred while backing up data files: " + e.getMessage(), e);
 		}
 	}
-
-	 void compressFiles(String datadir, String[] filenames) throws IOException {
-	     String creationDate = creationDateFormat.format(new Date());
-         String outFilename = dest + File.separatorChar + creationDate + ".zip";
-         
-	    // Create a buffer for reading the files
-	    byte[] buf = new byte[1024];
-	    
-	    try {
-	        // Create the ZIP file
-            LOG.debug("Archiving data files into: " + outFilename);
-            
-	        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
-	    
-	        // Compress the files
-	        for (int i=0; i<filenames.length; i++) {
-	            FileInputStream in = new FileInputStream(datadir+filenames[i]);
-	    
-	            // Add ZIP entry to output stream.
-	            out.putNextEntry(new ZipEntry(filenames[i]));
-	    
-	            // Transfer bytes from the file to the ZIP file
-	            int len;
-	            while ((len = in.read(buf)) > 0) {
-	                out.write(buf, 0, len);
-	            }
-	    
-	            // Complete the entry
-	            out.closeEntry();
-	            in.close();
-	        }
-	    
-	        // Complete the ZIP file
-	        out.close();
-	    } catch (IOException e) {
-	    }
-	 }
 }
 

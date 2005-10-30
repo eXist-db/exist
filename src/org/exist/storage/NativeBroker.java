@@ -26,6 +26,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.channels.WritableByteChannel;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -133,6 +134,11 @@ public class NativeBroker extends DBBroker {
     private static final String DOM_DBX = "dom.dbx";
     private static final String COLLECTIONS_DBX = "collections.dbx";
     private static final String WORDS_DBX = "words.dbx";
+    
+    private static final byte[] ALL_STORAGE_FILES = {
+    	COLLECTIONS_DBX_ID, ELEMENTS_DBX_ID, VALUES_DBX_ID,
+    	VALUES_QNAME_DBX_ID, WORDS_DBX_ID, DOM_DBX_ID
+    };
     
     private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
 
@@ -1874,7 +1880,6 @@ public class NativeBroker extends DBBroker {
 					LOG.debug("Node " + p.gid + " not found in document " + p.getDocument().getName() +
 							"; docId = " + p.getDocument().getDocId());
 //					LOG.debug(domDb.debugPages(p.doc));
-					Thread.dumpStack();
 //					return null;
 					return objectWith(p.getDocument(), p.gid); // retry?
 				}
@@ -3147,13 +3152,23 @@ public class NativeBroker extends DBBroker {
         switch (id) {
             case COLLECTIONS_DBX_ID :
                 return collectionsDb;
+            case ELEMENTS_DBX_ID :
+            	return elementsDb;
+            case WORDS_DBX_ID :
+            	return dbWords;
             case VALUES_DBX_ID :
                 return valuesDb;
+            case VALUES_QNAME_DBX_ID :
+            	return valuesDbQname;
             case DOM_DBX_ID :
                 return domDb;
             default:
                 return null;
         }
+    }
+    
+    public byte[] getStorageFileIds() {
+    	return ALL_STORAGE_FILES;
     }
     
     /*
