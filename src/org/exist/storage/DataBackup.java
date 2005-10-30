@@ -100,6 +100,11 @@ public class DataBackup implements SystemTask {
 	            out.closeEntry();
 			}
 			
+			// backup the symbols.dbx file (not included above)
+			out.putNextEntry(new ZipEntry(broker.getSymbols().getFile().getName()));
+			broker.backupSymbolsTo(out);
+			out.closeEntry();
+			
 			// close the zip file
 			out.close();
 		} catch (IOException e) {
