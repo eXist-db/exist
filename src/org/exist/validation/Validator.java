@@ -60,7 +60,10 @@ public class Validator {
     private static SAXParserFactory saxFactory = null;
     private static BrokerPool brokerPool ;
     
-    // Xerces feature and property names
+    // Required Xerces version.
+    public final static String XERCESVERSION = "Xerces-J 2.7.1";
+    
+    // Xerces feature and property names    
     final static String FEATURE_DYNAMIC
             ="http://apache.org/xml/features/validation/dynamic";
     final static String FEATURE_SCHEMA
@@ -78,6 +81,23 @@ public class Validator {
         
         if(brokerPool==null){
             this.brokerPool = pool;
+        }
+        
+        // Check xerces version
+        try{
+            String version = org.apache.xerces.impl.Version.getVersion();
+            
+            if(!XERCESVERSION.equals(version)){
+                logger.error("Xerces version mismatch! eXist requires '"
+                             + XERCESVERSION+"' but found '"+version+"'. "
+                             + "Please add correct Xerces libraries to the "
+                             + "endorsed folder of your JRE or webcontainer.");
+            }
+            
+        } catch (Exception ex){
+            logger.error("Could not determine Xerces version. "                             
+                         + "Please add correct Xerces libraries to the "
+                         + "endorsed folder of your JRE or webcontainer.");
         }
         
         

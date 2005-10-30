@@ -26,6 +26,7 @@ import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.exist.validation.Validator;
 
 /**
  *  Class for testing xerces and xalan configuration.
@@ -34,7 +35,6 @@ import junit.framework.TestSuite;
  */
 public class ApacheXmlComponentsTest extends TestCase {  
     
-    public static String XERCESVERSION = "Xerces-J 2.7.1";
     public static String XALANVERSION = "Xalan Java 2.7.0";
     
     public ApacheXmlComponentsTest(String testName) {
@@ -63,12 +63,12 @@ public class ApacheXmlComponentsTest extends TestCase {
          String version = org.apache.xerces.impl.Version.getVersion();
          
          System.out.println("Xerces");
-         System.out.println("Required version '"+XERCESVERSION+"'");
+         System.out.println("Required version '"+Validator.XERCESVERSION+"'");
          System.out.println("Found version '"+version+"'");
          
          Assert.assertEquals("Incorrect Xerces version! "+
                              "Please put correct jar in endorsed folder",
-                             XERCESVERSION,  version);
+                             Validator.XERCESVERSION,  version);
          
      }
      
