@@ -144,6 +144,22 @@ public class XQueryFunctionsTest extends TestCase {
 		}
 	}
 	
+	public void testCompare() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {	
+			result 	= service.query("fn:compare(\"Strasse\", \"Stra\u00DFe\")");
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "-1", r );
+			//result 	= service.query("fn:compare(\"Strasse\", \"Stra\u00DFe\", \"java:GermanCollator\")");
+			//r 		= (String) result.getResource(0).getContent();
+			//assertEquals( "0", r );			
+		} catch (XMLDBException e) {
+			System.out.println("testTokenize(): " + e);
+			fail(e.getMessage());
+		}
+	}	
+	
 	public void testDistinctValues() throws XPathException {
 		ResourceSet result 		= null;
 		String		r			= "";
