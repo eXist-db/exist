@@ -6,13 +6,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import junit.framework.TestCase;
 
 import org.exist.dom.XMLUtil;
+import org.exist.storage.DBBroker;
 import org.exist.util.XMLFilenameFilter;
 import org.xmldb.api.*;
 import org.xmldb.api.base.*;
@@ -20,7 +19,7 @@ import org.xmldb.api.modules.*;
 
 public class CreateCollectionsTest extends TestCase {
 
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
 	public Collection root = null;
@@ -197,7 +196,7 @@ public class CreateCollectionsTest extends TestCase {
 	
 	public void testMultipleCreates() {
 		try {
-        	Collection rootColl = DatabaseManager.getCollection("xmldb:exist:///db");
+        	Collection rootColl = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION);
         	CollectionManagementService cms = (CollectionManagementService)
 				rootColl.getService("CollectionManagementService", "1.0");
 			assertNotNull(cms);

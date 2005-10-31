@@ -90,7 +90,7 @@ public class DOMIndexerTest extends TestCase {
         "       <section>" +
         "           <title>Section 2</title>" +
         "           <para>First paragraph in second section.</para>" +
-        "           {collection('/db/test')//f:item[@itemno='2']/f:name}" +
+        "           {collection('" + DBBroker.ROOT_COLLECTION + "/test')//f:item[@itemno='2']/f:name}" +
         "       </section>" +
         "   ) " +
         "return" +
