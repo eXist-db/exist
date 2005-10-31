@@ -20,6 +20,8 @@
 
 package org.exist.xquery.functions;
 
+import java.text.Collator;
+
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
@@ -34,18 +36,27 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-public class FunStartsWith extends Function {
+public class FunStartsWith extends CollatingFunction {
 
-	public final static FunctionSignature signature =
-				new FunctionSignature(
-					new QName("starts-with", Module.BUILTIN_FUNCTION_NS),
-					new SequenceType[] {
-						 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-						 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
-					},
-					new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
+	public final static FunctionSignature signatures[] = {
+		new FunctionSignature (
+			new QName("starts-with", Module.BUILTIN_FUNCTION_NS),
+			new SequenceType[] {
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			},
+			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)),
+		new FunctionSignature (
+			new QName("starts-with", Module.BUILTIN_FUNCTION_NS),
+			new SequenceType[] {
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE))
+	};
 					
-	public FunStartsWith(XQueryContext context) {
+	public FunStartsWith(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
@@ -53,11 +64,12 @@ public class FunStartsWith extends Function {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 
-		Sequence s1 = getArgument(0).eval(contextSequence);
-		Sequence s2 = getArgument(1).eval(contextSequence);
-		if(s1.getLength() == 0 || s2.getLength() == 0)
+		String s1 = getArgument(0).eval(contextSequence).getStringValue();
+		String s2 = getArgument(1).eval(contextSequence).getStringValue();
+		if(s1.length() == 0 || s2.length() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		if(Collations.startsWith(context.getDefaultCollator(), s1.getStringValue(), s2.getStringValue()))
+		Collator collator = getCollator(contextSequence, contextItem, 3);
+		if(Collations.startsWith(collator, s1, s2))
 			return BooleanValue.TRUE;
 		else
 			return BooleanValue.FALSE;

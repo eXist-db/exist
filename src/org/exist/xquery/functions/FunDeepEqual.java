@@ -44,6 +44,7 @@ public class FunDeepEqual extends Function {
 					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
 			},
 			new SequenceType(Type.BOOLEAN, Cardinality.ONE));
+//	TODO: collation as argument
 
 	public FunDeepEqual(XQueryContext context) {
 		super(context, signature);
