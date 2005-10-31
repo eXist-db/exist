@@ -9,6 +9,7 @@ package org.exist.xmldb.test;
 import org.apache.xpath.XPathAPI;
 import org.apache.xpath.objects.XObject;
 import org.xmldb.api.base.CompiledExpression;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -131,7 +132,7 @@ public class DTMHandleTest extends TestCase {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $root := xdb:collection(\"" + eXistUrl + "/db\", \"admin\", \"admin\"),");
+		query.append("let $root := xdb:collection(\"" + eXistUrl + DBBroker.ROOT_COLLECTION + "\", \"admin\", \"admin\"),");
 		query.append("$doc := xdb:store($root, $document, $survey)");
 		query.append("return <result/>");
 
@@ -151,7 +152,7 @@ public class DTMHandleTest extends TestCase {
 	private final Node load(XQueryService service, String document) throws XMLDBException {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
-		query.append("let $survey := document(concat(\"/db/\", $document))");
+		query.append("let $survey := document(concat(\"" + DBBroker.ROOT_COLLECTION + "/\", $document))");
 		query.append("return ($survey)");
 			
 		service.declareVariable("document", document);
@@ -199,7 +200,7 @@ public class DTMHandleTest extends TestCase {
 	 * @throws XMLDBException on database error
 	 */
 	private final XQueryService getXQueryService(Database db) throws XMLDBException {
-		Collection collection = DatabaseManager.getCollection(eXistUrl + "/db", "admin", "admin");
+		Collection collection = DatabaseManager.getCollection(eXistUrl + DBBroker.ROOT_COLLECTION, "admin", "admin");
 		if (collection != null) {
 			XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
 			collection.close();

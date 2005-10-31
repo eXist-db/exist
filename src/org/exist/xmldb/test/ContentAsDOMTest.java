@@ -30,6 +30,7 @@ import javax.xml.transform.stream.StreamResult;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
@@ -50,7 +51,7 @@ import org.xmldb.api.modules.XQueryService;
 public class ContentAsDOMTest extends TestCase {
 
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
-    private final static String ROOT_URI = "xmldb:exist:///db";
+    private final static String ROOT_URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     
     private final static String XML =
         "<root><test>ABCDEF</test></root>";

@@ -11,6 +11,7 @@ import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
 import org.exist.StandaloneServer;
+import org.exist.storage.DBBroker;
 import org.mortbay.util.MultiException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -30,7 +31,7 @@ public class DOMTestJUnit extends TestCase {
 	
 	private static StandaloneServer server = null;
 	private static String driver = "org.exist.xmldb.DatabaseImpl";
-	private static String baseURI = "xmldb:exist://localhost:8088/xmlrpc/db";
+	private static String baseURI = "xmldb:exist://localhost:8088/xmlrpc" + DBBroker.ROOT_COLLECTION;
 
 	private static String username = "admin";
 	private static String password = "";

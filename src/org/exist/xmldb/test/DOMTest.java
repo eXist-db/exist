@@ -10,6 +10,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -32,7 +33,7 @@ import org.xmldb.api.modules.XPathQueryService;
 public class DOMTest {
 
 	private static String driver = "org.exist.xmldb.DatabaseImpl";
-	private static String baseURI = "xmldb:exist:///db";
+	private static String baseURI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 
 	private static String username = "admin";
 	private static String password = "";

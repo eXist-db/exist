@@ -1,7 +1,7 @@
 package org.exist.xmldb.test;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionManagementServiceImpl;
-import org.exist.xmldb.RemoteCollectionManagementService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.base.Database;
@@ -16,7 +16,7 @@ import junit.textui.TestRunner;
 
 public class CopyMoveTest extends TestCase {
 
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
 	public static void main(String[] args) {
