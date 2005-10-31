@@ -54,6 +54,7 @@ public class FunDistinctValues extends Function {
 			new QName("distinct-values", ModuleImpl.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
 			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
 			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE));
+//	TODO: collation as argument
 
 	public FunDistinctValues(XQueryContext context) {
 		super(context, signature);
