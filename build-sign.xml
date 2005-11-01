@@ -67,11 +67,25 @@
         </signjar>
     </target>
     
-    <!-- Generate FAKE KEYS for signing JAR-files -->
+    <!-- Generate FAKE CERTIFICATE for signing JAR-files -->
     <target name="jnlp-keygen" unless="keystore.present"
             description="Generate keystore for signing jars." depends="jnlp-prepare">
         <genkey alias="${keystore.alias}" storepass="${keystore.password}"
                 keystore="${keystore.file}" validity="${keystore.validity}">
+            <dname>
+                <param name="CN" value="eXist XML database"/>
+                <param name="OU" value="Anonymous"/>
+                <param name="O" value="exist-db.org"/>
+                <param name="C" value="DE"/>
+            </dname>
+        </genkey>
+    </target>
+    
+    <!-- Generate FAKE CERTIFICATE for SSL -->
+    <target name="jetty-keygen" description="Generate keystore for jetty.">
+        <genkey alias="jetty" storepass="${keystore.password}"
+                keystore="tools/jetty/etc/demokeystore"
+                validity="${keystore.validity}">
             <dname>
                 <param name="CN" value="eXist XML database"/>
                 <param name="OU" value="Anonymous"/>
