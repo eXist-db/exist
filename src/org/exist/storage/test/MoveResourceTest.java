@@ -64,11 +64,11 @@ public class MoveResourceTest extends TestCase {
 			System.out.println("Transaction started ...");
 
 			Collection root = broker.getOrCreateCollection(transaction,
-					"/db/test");
+					DBBroker.ROOT_COLLECTION + "/test");
 			broker.saveCollection(transaction, root);
 
 			Collection test = broker.getOrCreateCollection(transaction,
-					"/db/test/test2");
+					DBBroker.ROOT_COLLECTION + "/test/test2");
 			broker.saveCollection(transaction, test);
 
 			File f = new File("samples/shakespeare/r_and_j.xml");
@@ -103,7 +103,7 @@ public class MoveResourceTest extends TestCase {
 	        DocumentImpl doc;
 	        String data;
 	        
-	        doc = broker.openDocument("/db/test/new_test.xml", Lock.READ_LOCK);
+	        doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/new_test.xml", Lock.READ_LOCK);
 	        assertNotNull("Document should not be null", doc);
 	        data = serializer.serialize(doc);
 //	        System.out.println(data);
@@ -112,7 +112,7 @@ public class MoveResourceTest extends TestCase {
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
             
-            Collection root = broker.openCollection("/db/test", Lock.WRITE_LOCK);
+            Collection root = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.WRITE_LOCK);
             transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
             
             broker.removeCollection(transaction, root);
@@ -137,11 +137,11 @@ public class MoveResourceTest extends TestCase {
 //			System.out.println("Transaction started ...");
 //
 //			Collection root = broker.getOrCreateCollection(transaction,
-//					"/db/test");
+//					DBBroker.ROOT_COLLECTION +  "/test");
 //			broker.saveCollection(transaction, root);
 //
 //			Collection test = broker.getOrCreateCollection(transaction,
-//					"/db/test/test2");
+//					DBBroker.ROOT_COLLECTION + "/test/test2");
 //			broker.saveCollection(transaction, test);
 //
 //			File f = new File("samples/shakespeare/r_and_j.xml");
@@ -179,13 +179,13 @@ public class MoveResourceTest extends TestCase {
 //	        DocumentImpl doc;
 //	        String data;
 //	        
-//	        doc = broker.openDocument("/db/test/test2/test2.xml", Lock.READ_LOCK);
+//	        doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/test2.xml", Lock.READ_LOCK);
 //	        assertNotNull("Document should not be null", doc);
 //	        data = serializer.serialize(doc);
 //	        System.out.println(data);
 //	        doc.getUpdateLock().release(Lock.READ_LOCK);
 //	        
-//	        doc = broker.openDocument("/db/test/new_test2.xml", Lock.READ_LOCK);
+//	        doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/test/new_test2.xml", Lock.READ_LOCK);
 //	        assertNull("Document should not exist", doc);
 //	    } finally {
 //	        pool.release(broker);
@@ -196,7 +196,7 @@ public class MoveResourceTest extends TestCase {
 //		BrokerPool.FORCE_CORRUPTION = false;
 //	    BrokerPool pool = startDB();
 //	    
-//	    org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
+//	    org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION + , "admin", "");
 //	    CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
 //	    	root.getService("CollectionManagementService", "1.0");
 //	    org.xmldb.api.base.Collection test = root.getChildCollection("test");
@@ -211,14 +211,14 @@ public class MoveResourceTest extends TestCase {
 //	    res.setContent(f);
 //	    test2.storeResource(res);
 //	    
-//	    mgr.moveResource("/db/test/test2/test3.xml", "/db/test", "new_test3.xml");
+//	    mgr.moveResource(DBBroker.ROOT_COLLECTION +  "/test/test2/test3.xml", DBBroker.ROOT_COLLECTION + "/test", "new_test3.xml");
 //	}
 //	
 //	public void testXMLDBRead() throws Exception {
 //		BrokerPool.FORCE_CORRUPTION = false;
 //	    BrokerPool pool = startDB();
 //	    
-//	    org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
+//	    org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION +  "/test", "admin", "");
 //	    Resource res = test.getResource("new_test3.xml");
 //	    assertNotNull("Document should not be null", res);
 //	    System.out.println(res.getContent());

@@ -65,11 +65,11 @@ public class CopyResourceTest extends TestCase {
 			System.out.println("Transaction started ...");
 
 			Collection root = broker.getOrCreateCollection(transaction,
-					"/db/test");
+					DBBroker.ROOT_COLLECTION + "/test");
 			broker.saveCollection(transaction, root);
 
 			Collection test = broker.getOrCreateCollection(transaction,
-					"/db/test/test2");
+					DBBroker.ROOT_COLLECTION +  "/test/test2");
 			broker.saveCollection(transaction, test);
 
 			File f = new File("samples/shakespeare/r_and_j.xml");
@@ -103,7 +103,7 @@ public class CopyResourceTest extends TestCase {
 			DocumentImpl doc;
 			String data;
 
-			doc = broker.openDocument("/db/test/new_test.xml", Lock.READ_LOCK);
+			doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/new_test.xml", Lock.READ_LOCK);
 			assertNotNull("Document should not be null", doc);
 			data = serializer.serialize(doc);
 			System.out.println(data);
@@ -127,11 +127,11 @@ public class CopyResourceTest extends TestCase {
 			System.out.println("Transaction started ...");
 
 			Collection root = broker.getOrCreateCollection(transaction,
-					"/db/test");
+					DBBroker.ROOT_COLLECTION + "/test");
 			broker.saveCollection(transaction, root);
 
 			Collection test = broker.getOrCreateCollection(transaction,
-					"/db/test/test2");
+					DBBroker.ROOT_COLLECTION + "/test/test2");
 			broker.saveCollection(transaction, test);
 
 			File f = new File("samples/shakespeare/r_and_j.xml");
@@ -169,14 +169,14 @@ public class CopyResourceTest extends TestCase {
 			DocumentImpl doc;
 			String data;
 
-			doc = broker.openDocument("/db/test/test2/test2.xml",
+			doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/test/test2/test2.xml",
 					Lock.READ_LOCK);
 			assertNotNull("Document should not be null", doc);
 			data = serializer.serialize(doc);
 			System.out.println(data);
 			doc.getUpdateLock().release(Lock.READ_LOCK);
 
-			doc = broker.openDocument("/db/test/new_test2.xml", Lock.READ_LOCK);
+			doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/test/new_test2.xml", Lock.READ_LOCK);
 			assertNull("Document should not exist", doc);
 		} finally {
 			pool.release(broker);
