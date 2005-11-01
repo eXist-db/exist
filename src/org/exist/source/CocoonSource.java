@@ -40,7 +40,8 @@ import org.exist.storage.DBBroker;
 public class CocoonSource extends AbstractSource {
 
     private Source inputSource;
-
+    private SourceValidity validity;
+    
     private boolean checkEncoding = false;
     
     private String encoding = "UTF-8";
@@ -50,6 +51,7 @@ public class CocoonSource extends AbstractSource {
      */
     public CocoonSource(Source source, boolean checkXQEncoding) {
         inputSource = source;
+        validity = inputSource.getValidity();
         checkEncoding = checkXQEncoding;
     }
 
@@ -59,9 +61,9 @@ public class CocoonSource extends AbstractSource {
      * @see org.exist.source.Source#isValid()
      */
     public int isValid(DBBroker broker) {
-    	SourceValidity validity = inputSource.getValidity();
-    	if (validity == null)
+    	if (validity == null) {
     		return UNKNOWN;
+    	}
         int valid = validity.isValid();
         switch (valid) {
             case SourceValidity.UNKNOWN:
@@ -79,7 +81,6 @@ public class CocoonSource extends AbstractSource {
      * @see org.exist.source.Source#isValid(org.exist.source.Source)
      */
     public int isValid(org.exist.source.Source other) {
-    	SourceValidity validity = inputSource.getValidity();
     	SourceValidity validityOther = ((CocoonSource) other).inputSource.getValidity();
     	if (validity == null || validityOther == null) {
     		// if one of the validity objects is null, we fall back to comparing the content
