@@ -286,7 +286,13 @@ public class XQueryServlet extends HttpServlet {
             out.print(message);
             out.print("</h2>");
         }
-        out.print(HTTPUtils.printStackTraceHTML(t));
+        
+        if(t!=null){
+            // t can be null
+            out.print(HTTPUtils.printStackTraceHTML(t));
+        }
+            
+        
 		out.print("</div></body></html>");
 	}
 	
