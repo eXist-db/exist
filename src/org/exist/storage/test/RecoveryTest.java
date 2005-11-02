@@ -90,10 +90,10 @@ public class RecoveryTest extends TestCase {
             
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, "/db/test");
+            Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
             broker.saveCollection(transaction, root);
             
-            Collection test = broker.getOrCreateCollection(transaction, "/db/test/test2");
+            Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
             broker.saveCollection(transaction, test);
             
             
@@ -170,20 +170,20 @@ public class RecoveryTest extends TestCase {
             DocumentImpl doc;
             String data;
             
-            doc = broker.openDocument("/db/test/test2/hamlet.xml", Lock.READ_LOCK);
-            assertNotNull("Document /db/test/test2/hamlet.xml should not be null", doc);
+            doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/hamlet.xml", Lock.READ_LOCK);
+            assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", doc);
             data = serializer.serialize(doc);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
-            doc = broker.openDocument("/db/test/test2/test_string.xml", Lock.READ_LOCK);
-            assertNotNull("Document /db/test/test2/test_string.xml should not be null", doc);
+            doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/test_string.xml", Lock.READ_LOCK);
+            assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", doc);
             data = serializer.serialize(doc);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
-            doc = broker.openDocument("/db/test/test2/" + files[files.length - 1].getName(), Lock.READ_LOCK);
-            assertNull("Document /db/test/test2/" + files[files.length - 1].getName() + " should not exist anymore", doc);
+            doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/" + files[files.length - 1].getName(), Lock.READ_LOCK);
+            assertNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/'" + files[files.length - 1].getName() + " should not exist anymore", doc);
             
             XQuery xquery = broker.getXQueryService();
             Sequence seq = xquery.execute("//SPEECH[LINE &= 'king']", null);
@@ -193,7 +193,7 @@ public class RecoveryTest extends TestCase {
                 System.out.println(serializer.serialize((NodeValue) next));
             }
             
-            BinaryDocument binDoc = (BinaryDocument) broker.openDocument("/db/test/test2/binary.txt", Lock.READ_LOCK);
+            BinaryDocument binDoc = (BinaryDocument) broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/binary.txt", Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
             data = new String(broker.getBinaryResourceData(binDoc));
             System.out.println(data);
@@ -206,7 +206,7 @@ public class RecoveryTest extends TestCase {
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
             
-            Collection root = broker.openCollection("/db/test", Lock.WRITE_LOCK);
+            Collection root = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.WRITE_LOCK);
             transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
             
             broker.removeCollection(transaction, root);

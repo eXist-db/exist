@@ -58,7 +58,7 @@ public class RecoverBinaryTest extends TestCase {
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
             
-            Collection root = broker.getOrCreateCollection(transaction, "/db/test");
+            Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
             broker.saveCollection(transaction, root);
     
             FileInputStream is = new FileInputStream("LICENSE");
@@ -91,7 +91,7 @@ public class RecoverBinaryTest extends TestCase {
         DBBroker broker = null;
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            BinaryDocument binDoc = (BinaryDocument) broker.openDocument("/db/test/binary.txt", Lock.READ_LOCK);
+            BinaryDocument binDoc = (BinaryDocument) broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/binary.txt", Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
             String data = new String(broker.getBinaryResourceData(binDoc));
             System.out.println(data);
