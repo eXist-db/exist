@@ -40,6 +40,13 @@ as element()+
                                 {
                                     if ($current instance of element()) then
                                         <xml-source>{$current}</xml-source>
+                                    (: TODO : revisit :)
+                                    else if ($current instance of attribute()) then
+                                    	concat("attribute ", local-name($current), " { ", data($current), " }")
+									else if ($current instance of processing-instruction()) then
+                                    	concat("processing-instruction { ", name($current), " } { ", data($current), " }")                                 	                                     
+									else if ($current instance of comment()) then
+                                    	concat("comment { ", data($current), " }")                                    	                                     
                                     else
                                         string($current)
                                 }
@@ -157,14 +164,14 @@ declare function f:handleException() as element()+
 
 declare function f:eval($query as xs:string) as element()+
 {
-	let $startTime := current-time(),
+	let $startTime := util:system-time(),
 		$collection := request:request-parameter("collection", ())
 	return
 		util:catch("org.exist.xquery.TerminatedException",
             util:catch("org.exist.xquery.XPathException",
                 let	$result := util:eval($query, $collection),
                     $count := count($result),
-                    $queryTime := current-time() - $startTime
+                    $queryTime := util:system-time() - $startTime
                 return (
                     <p>Found {$count} hits in
                     {seconds-from-duration($queryTime)} seconds.
