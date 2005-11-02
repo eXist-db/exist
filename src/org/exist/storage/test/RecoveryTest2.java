@@ -83,10 +83,10 @@ public class RecoveryTest2 extends TestCase {
             
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, "/db/test");
+            Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
             broker.saveCollection(transaction, root);
             
-            Collection test = broker.getOrCreateCollection(transaction, "/db/test/test2");
+            Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
             broker.saveCollection(transaction, test);
             
             System.out.println("Contents of dom.dbx:\n\n");
@@ -128,7 +128,7 @@ public class RecoveryTest2 extends TestCase {
             DocumentImpl doc;
             String data;
             
-            doc = broker.openDocument("/db/test/test2/terms-eng.xml", Lock.READ_LOCK);
+            doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/terms-eng.xml", Lock.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             data = serializer.serialize(doc);
             System.out.println(data);

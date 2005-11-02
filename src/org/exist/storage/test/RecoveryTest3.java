@@ -74,10 +74,10 @@ public class RecoveryTest3 extends TestCase {
             
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, "/db/test");
+            Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
             broker.saveCollection(transaction, root);
             
-            Collection test = broker.getOrCreateCollection(transaction, "/db/test/test2");
+            Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
             broker.saveCollection(transaction, test);
             
             
@@ -120,7 +120,7 @@ public class RecoveryTest3 extends TestCase {
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
             
-            Collection root = broker.openCollection("/db/test", Lock.WRITE_LOCK);
+            Collection root = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.WRITE_LOCK);
             transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
             
             broker.removeCollection(transaction, root);
@@ -129,10 +129,10 @@ public class RecoveryTest3 extends TestCase {
             
             transaction = transact.beginTransaction();
             
-            root = broker.getOrCreateCollection(transaction, "/db/test");
+            root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
             broker.saveCollection(transaction, root);
             
-            Collection test = broker.getOrCreateCollection(transaction, "/db/test/test2");
+            Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
             broker.saveCollection(transaction, test);
             
             File f;
