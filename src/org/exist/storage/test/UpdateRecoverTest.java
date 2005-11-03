@@ -92,10 +92,10 @@ public class UpdateRecoverTest extends TestCase {
             
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, "/db/test");
+            Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
             broker.saveCollection(transaction, root);
             
-            Collection test = broker.getOrCreateCollection(transaction, "/db/test/test2");
+            Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
             broker.saveCollection(transaction, test);
             
             IndexInfo info;
@@ -287,8 +287,8 @@ public class UpdateRecoverTest extends TestCase {
             DocumentImpl doc;
             String data;
             
-            doc = broker.openDocument("/db/test/test2/test.xml", Lock.READ_LOCK);
-            assertNotNull("Document /db/test/test2/test.xml should not be null", doc);
+            doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/test.xml", Lock.READ_LOCK);
+            assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", doc);
             data = serializer.serialize(doc);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
@@ -301,15 +301,15 @@ public class UpdateRecoverTest extends TestCase {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
         
-        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
+        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
         CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
             root.getService("CollectionManagementService", "1.0");
         org.xmldb.api.base.Collection test = root.getChildCollection("test");
         if (test == null)
-            test = mgr.createCollection("/db/test");
+            test = mgr.createCollection(DBBroker.ROOT_COLLECTION + "/test");
         org.xmldb.api.base.Collection test2 = test.getChildCollection("test2");
         if (test2 == null)
-            test2 = mgr.createCollection("/db/test/test2");
+            test2 = mgr.createCollection(DBBroker.ROOT_COLLECTION + "/test/test2");
         
         Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
         res.setContent(TEST_XML);
@@ -432,12 +432,12 @@ public class UpdateRecoverTest extends TestCase {
     public void testXMLDBRead() throws Exception {
         BrokerPool.FORCE_CORRUPTION = false;
         
-        org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist:///db/test/test2", "admin", "");
+        org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist:// " + DBBroker.ROOT_COLLECTION + "/test/test2", "admin", "");
         Resource res = test.getResource("test_xmldb.xml");
         assertNotNull("Document should not be null", res);
         System.out.println(res.getContent());
         
-        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
+        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
         CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
             root.getService("CollectionManagementService", "1.0");
         mgr.removeCollection("test");

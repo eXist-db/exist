@@ -62,10 +62,10 @@ public class RemoveCollectionTest extends TestCase {
             
             System.out.println("Transaction started ...");
             
-            Collection test = broker.getOrCreateCollection(transaction, "/db/test");
+            Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
             broker.saveCollection(transaction, test);
             
-            Collection test2 = broker.getOrCreateCollection(transaction, "/db/test/test2");
+            Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
             broker.saveCollection(transaction, test2);
             
             File f = new File("samples/biblio.rdf");
@@ -95,11 +95,11 @@ public class RemoveCollectionTest extends TestCase {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            Collection test = broker.openCollection("/db/test", Lock.READ_LOCK);
-            assertNotNull("Collection /db/test not found", test);
+            Collection test = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.READ_LOCK);
+            assertNotNull("Collection '" + DBBroker.ROOT_COLLECTION +  "/test' not found", test);
             
-            DocumentImpl doc = broker.openDocument("/db/test/biblio.rdf", Lock.READ_LOCK);
-            assertNotNull("Document /db/test/biblio.rdf should not be null", doc);
+            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/biblio.rdf", Lock.READ_LOCK);
+            assertNotNull("Document '" + DBBroker.ROOT_COLLECTION +  "/test/biblio.rdf' should not be null", doc);
             String data = serializer.serialize(doc);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);

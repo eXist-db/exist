@@ -120,7 +120,7 @@ public class DOMIndexerTest extends TestCase {
         DBBroker broker = null;
         try {
             broker = pool.get(user);
-            Collection collection = broker.getOrCreateCollection(null, "/db/test");
+            Collection collection = broker.getOrCreateCollection(null, DBBroker.ROOT_COLLECTION + "/test");
             IndexInfo info = collection.validate(null, broker, "test.xml", XML);
             collection.store(null, broker, info, XML, false);
             org.exist.dom.DocumentImpl doc = info.getDocument();
