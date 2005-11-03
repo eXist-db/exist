@@ -93,8 +93,8 @@ public class RemoveTest extends AbstractUpdateTest {
             DocumentImpl doc;
             String data;
             
-            doc = broker.openDocument("/db/test/test2/test.xml", Lock.READ_LOCK);
-            assertNotNull("Document /db/test/test2/test.xml should not be null", doc);
+            doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/test/test2/test.xml", Lock.READ_LOCK);
+            assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", doc);
             data = serializer.serialize(doc);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);

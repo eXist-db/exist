@@ -49,7 +49,7 @@ public class ShutdownTest extends TestCase {
             
             System.out.println("Transaction started ...");
             
-            Collection test = broker.getOrCreateCollection(transaction, "/db/test");
+            Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
             broker.saveCollection(transaction, test);
             
             File files[] = dir.listFiles(new FilenameFilter() {
