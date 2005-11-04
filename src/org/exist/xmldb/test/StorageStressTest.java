@@ -28,6 +28,7 @@ import java.util.Iterator;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.StandaloneServer;
 import org.exist.xmldb.test.concurrent.DBUtils;
@@ -119,7 +120,7 @@ public class StorageStressTest extends TestCase {
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
         
-        Collection rootCollection = DatabaseManager.getCollection(URI + "/db", "admin", null);
+        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
         
         Collection childCollection = rootCollection.getChildCollection(COLLECTION_NAME);
         if (childCollection == null) {

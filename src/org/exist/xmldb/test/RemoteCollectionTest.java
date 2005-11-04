@@ -11,6 +11,7 @@ import java.util.Iterator;
 import junit.textui.TestRunner;
 
 import org.exist.StandaloneServer;
+import org.exist.storage.DBBroker;
 import org.exist.validation.service.RemoteValidationService;
 import org.exist.xmldb.RemoteCollectionManagementService;
 import org.exist.xmldb.RemoteDatabaseInstanceManager;
@@ -97,7 +98,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	}
 	
 	public void testGetPath() throws XMLDBException {
-	    assertEquals("/db/" + getTestCollectionName(), getCollection().getPath());
+	    assertEquals(DBBroker.ROOT_COLLECTION + "/" + getTestCollectionName(), getCollection().getPath());
 	}
 	
 	public void testCreateResource() throws XMLDBException {

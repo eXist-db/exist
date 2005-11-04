@@ -27,6 +27,7 @@ import junit.textui.TestRunner;
 
 import org.exist.StandaloneServer;
 import org.exist.security.Permission;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.UserManagementService;
 import org.mortbay.util.MultiException;
 import org.xmldb.api.DatabaseManager;
@@ -89,7 +90,7 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
         Database database = (Database) cl.newInstance();
         DatabaseManager.registerDatabase(database);
 
-        Collection rootCollection = DatabaseManager.getCollection(URI + "/db", "admin", null);
+        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
 
         CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
                 "CollectionManagementService", "1.0");
@@ -101,7 +102,7 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
             p.setPermissions("user=+read,+write,group=-read,-write,other=-read,-write");
             ums.setPermissions(adminCollection, p);
 
-            Collection guestCollection = DatabaseManager.getCollection(URI + "/db/" + ADMIN_COLLECTION_NAME, "guest",
+            Collection guestCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION + "/" + ADMIN_COLLECTION_NAME, "guest",
                     "guest");
 
             Resource resource = guestCollection.createResource("testguest", "BinaryResource");
