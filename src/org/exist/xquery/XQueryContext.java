@@ -326,29 +326,41 @@ public class XQueryContext {
 			prefix = "";
 		if(uri == null)
 			uri = "";
+		if (prefix.equals("xml") || prefix.equals("xmlns"))
+			throw new XPathException("err:XQST0070: Namespace predefined prefix: \"" + prefix + "\" is already bound");
+		if (uri.equals(XML_NS))
+			throw new XPathException("err:XQST0070: Namespace URI: \"" + uri + "\" must be bound to the 'xml' prefix");
 		final String prevURI = (String)namespaces.get(prefix);
-		if(prevURI == null ) {		
+		//This prefix was not bound
+		if(prevURI == null ) {
+			//Bind it
 			if (uri.length() > 0) {
 				namespaces.put(prefix, uri);
 				prefixes.put(uri, prefix);
 				return;
 			}
+			//Nothing to bind
 			else {
-				//TODO : check the specs : unbinding an unbound NS may be disallowed.
+				//TODO : check the specs : unbinding an NS which is not already bound may be disallowed.
 				LOG.warn("trying to unbind unbound prefix: " + prefix);
 			}
 		}
-		if (uri.length() == 0) {
-            // if an empty namespace is specified, 
-            // remove any existing mapping for this namespace
-        	//TODO : improve, since XML_NS can't be unbound
-            prefixes.remove(uri);
-            namespaces.remove(prefix);
-            return;
+		else
+		//This prefix was bound
+		{	
+			//Unbind it
+			if (uri.length() == 0) {
+	            // if an empty namespace is specified, 
+	            // remove any existing mapping for this namespace
+	        	//TODO : improve, since XML_NS can't be unbound
+	            prefixes.remove(uri);
+	            namespaces.remove(prefix);
+	            return;
+			}
+			//Forbids rebinding the *same* prefix in a *different* namespace in this *same* context
+			if (!uri.equals(prevURI))
+				throw new XPathException("err:XQST0033: Namespace prefix: \"" + prefix + "\" is already bound to a different uri");
 		}
-		//Forbids rebinding the *same* prefix in a *different* namespace in this *same* context
-		if (!uri.equals(prevURI))
-			throw new XPathException("err:XQST0033: Namespace prefix: \"" + prefix + "\" is already bound to a different uri");	
 	}
 
 	public void declareNamespaces(Map namespaceMap) {
