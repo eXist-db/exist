@@ -19,6 +19,7 @@ import junit.framework.TestCase;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+import org.exist.storage.DBBroker;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.w3c.dom.Document;
@@ -64,7 +65,7 @@ public class TestEXistXMLSerialize extends TestCase{
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
-        c = DatabaseManager.getCollection("xmldb:exist:///db");
+        c = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION);
     }
 
     public void tearDown() throws Exception{

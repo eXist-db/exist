@@ -24,6 +24,7 @@ package org.exist.xmldb.test;
 
 import org.apache.xpath.XPathAPI;
 import org.xmldb.api.base.CompiledExpression;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
@@ -139,7 +140,7 @@ public class TreeLevelOrderTest extends TestCase {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $root := xdb:collection(\"" + eXistUrl + "/db\", \"admin\", \"admin\"),");
+		query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', 'admin', 'admin'),");
 		query.append("$doc := xdb:store($root, $document, $survey)");
 		query.append("return <result/>");
 

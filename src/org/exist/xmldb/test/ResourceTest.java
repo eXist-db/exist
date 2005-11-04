@@ -12,6 +12,7 @@ import junit.framework.TestCase;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+import org.exist.storage.DBBroker;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -28,7 +29,7 @@ import org.xmldb.api.modules.XMLResource;
 
 public class ResourceTest extends TestCase {
 
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
 	/**

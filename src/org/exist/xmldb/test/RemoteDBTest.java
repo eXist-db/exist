@@ -22,6 +22,7 @@ package org.exist.xmldb.test;
 
 import junit.framework.TestCase;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.RemoteCollection;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -53,7 +54,7 @@ public abstract class RemoteDBTest extends TestCase {
         Database database = (Database) cl.newInstance();
         DatabaseManager.registerDatabase(database);
         //Get the root collection...
-        Collection rootCollection = DatabaseManager.getCollection(URI + "/db", "admin", null);
+        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
         //... and work from it
         Collection childCollection = rootCollection.getChildCollection(COLLECTION_NAME);
         if (childCollection == null) {
@@ -62,14 +63,14 @@ public abstract class RemoteDBTest extends TestCase {
             setCollection((RemoteCollection) cms.createCollection(COLLECTION_NAME));
         } else {
         /*        	
-            throw new Exception("Cannot run test because the collection /db/" + COLLECTION_NAME + " already "
+            throw new Exception("Cannot run test because the collection '"+ DBBroker.ROOT_COLLECTION + "/" + COLLECTION_NAME + " already "
                     + "exists. If it is a left-over of a previous test run, please remove it manually.");
         */
         }
     }
 
     protected void removeCollection() throws XMLDBException, Exception {
-        Collection rootCollection = DatabaseManager.getCollection(URI + "/db", "admin", null);
+        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
         CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
                 "CollectionManagementService", "1.0");
         cms.removeCollection(COLLECTION_NAME);
