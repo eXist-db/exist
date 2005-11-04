@@ -149,7 +149,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		this.builder = factory.newDocumentBuilder();
 		this.broker = broker;
 		this.documentSet = docs;
-		namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
+		//namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
 		//TODO : move this to a dedicated configure() method.
 		if (broker != null) {
 			Configuration config = broker.getConfiguration();
@@ -793,6 +793,6 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		this.variables.clear();
 		this.namespaces.clear();
 		this.conditionals.clear();
-		this.namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
+		//this.namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
 	}
 }
