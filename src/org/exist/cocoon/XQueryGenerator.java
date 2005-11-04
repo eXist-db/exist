@@ -60,6 +60,7 @@ import org.exist.xmldb.XQueryService;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -321,9 +322,9 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
         Object obj = session.getAttribute(attribute);
         if(obj == null)
             return null;
-        if(obj instanceof Item)
+        if(obj instanceof Sequence)
             try {
-                return ((Item)obj).getStringValue();
+                return ((Sequence)obj).getStringValue();
             } catch (XPathException e) {
                 return null;
             }
