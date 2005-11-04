@@ -14,6 +14,7 @@ import org.apache.cocoon.environment.Session;
 import org.apache.cocoon.environment.SourceResolver;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -96,9 +97,9 @@ public class XMLDBSessionLoginAction extends ServiceableAction
 		Object obj = session.getAttribute(attribute);
 		if(obj == null)
 			return null;
-		if(obj instanceof Item)
+		if(obj instanceof Sequence)
 			try {
-				return ((Item)obj).getStringValue();
+				return ((Sequence)obj).getStringValue();
 			} catch (XPathException e) {
 				return null;
 			}
