@@ -1476,7 +1476,8 @@ public class XQueryContext {
 
 		try {
 			// default namespaces
-			declareNamespace("xml", XML_NS);
+			namespaces.put("xml", XML_NS);
+			prefixes.put(XML_NS, "xml");			
 			declareNamespace("xs", SCHEMA_NS);
 			declareNamespace("xdt", XPATH_DATATYPES_NS);
 			declareNamespace("local", XQUERY_LOCAL_NS);
