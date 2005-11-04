@@ -22,7 +22,6 @@ package org.exist.xquery.value;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.DocumentSet;
@@ -36,6 +35,11 @@ import org.exist.xquery.XPathException;
  */
 public abstract class AbstractSequence implements Sequence {
 
+	/** To retain compatibility with eXist versions before september 20th 2005 ,
+	 * for conversion to boolean;
+	 * @see http://cvs.sourceforge.net/viewcvs.py/exist/eXist-1.0/src/org/exist/xquery/value/AbstractSequence.java?r1=1.11&r2=1.12 */
+	private static final boolean OLD_EXIST_VERSION_COMPATIBILITY = false;
+	
 	protected AbstractSequence() {
 	}
 	
@@ -113,17 +117,20 @@ public abstract class AbstractSequence implements Sequence {
 		if (len == 0)
 			return false;
 
-		Item first = itemAt(0);
+		if ( OLD_EXIST_VERSION_COMPATIBILITY )
+			if (len > 1)
+				return true;
 
-//		if (len > 1)
-//			return true;
+		Item first = itemAt(0);
 		
 		// If operand is a sequence whose first item is a node, fn:boolean returns true.
 		int fisrtType = first.getType();
 		if ( Type.subTypeOf(fisrtType, Type.NODE ) ) {
 			return true;
 		}
-		if (len > 1)
+
+		if ( ! OLD_EXIST_VERSION_COMPATIBILITY )
+			if (len > 1)
 			throw new XPathException(
 				"error FORG0006: effectiveBooleanValue: first item not a node, and sequence length>1");
 
@@ -135,7 +142,8 @@ public abstract class AbstractSequence implements Sequence {
 		else if(first instanceof NumericValue)
 			return ((NumericValue)first).effectiveBooleanValue();
 		else {
-			// return true;
+			if ( OLD_EXIST_VERSION_COMPATIBILITY )
+				return true;
 			// In all other cases, fn:boolean raises a type error [err:FORG0006].
 			throw new XPathException(
 				"error FORG0006: effectiveBooleanValue: sequence of length 1, but not castable to a number or Boolean");
