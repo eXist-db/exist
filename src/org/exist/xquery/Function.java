@@ -393,11 +393,12 @@ public abstract class Function extends PathExpr {
     public void dump(ExpressionDumper dumper) {
         dumper.display(getName());
         dumper.display('(');
+        boolean moreThanOne = false;
         for (Iterator i = steps.iterator(); i.hasNext();) {
 			Expression e = (Expression) i.next();
+			if (moreThanOne) dumper.display(", ");
+			moreThanOne = true;			
 			e.dump(dumper);
-			if(i.hasNext())
-			    dumper.display(", ");
         }
         dumper.display(')');
     }
@@ -406,11 +407,12 @@ public abstract class Function extends PathExpr {
     	StringBuffer result = new StringBuffer();
     	result.append(getName());
     	result.append('(');
+    	boolean moreThanOne = false;
         for (Iterator i = steps.iterator(); i.hasNext();) {
 			Expression e = (Expression) i.next();
-			result.append(e.toString());
-			if(i.hasNext())
-				result.append(", ");
+			if (moreThanOne) result.append(", ");
+			moreThanOne = true;
+			result.append(e.toString());				
         }
         result.append(')');   
         return result.toString();

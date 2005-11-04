@@ -314,7 +314,6 @@ public class ForExpr extends BindingExpression {
         result.append("return");
         result.append(" ");
         result.append(returnExpr.toString());
-        result.append("");
         return result.toString();
     }
 	/* (non-Javadoc)
