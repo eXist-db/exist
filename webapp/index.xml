@@ -101,57 +101,16 @@
 				</emphasis>
 			</p>
 
-			<warning>
-                <title>Health Warning</title>
-                <p>The 1.0 beta2 release is truly ancient now. There were
-                lots of bug fixes and feature enhancements during the past months,
-                so using beta2 cannot be recommended any more. Please download
-                a newer development snapshot. Recent development snapshots can
-                be regarded as stable. A new official "stable" release is in
-                preparation, but as usual, we lack the
-                time to complete the documentation. Any help will be welcome!</p>
-            </warning>
-
 			<table cellpadding="5" cellspacing="5">
 				<tr>
-					<th align="left">Stable version</th>
-				</tr>
-				<tr>
-					<td>
-						<a
-							href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.jar">
-							eXist-1.0b2-build-1107.jar
-						</a>
-					</td>
-					<td>
-						Installer based on IzPack. Highly recommended.
-						Includes source. Run with
-						<tt>java -jar eXist-1.0b2.jar</tt>
-						.
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<a
-							href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.war">
-							eXist-1.0b2-build-1107.war
-						</a>
-					</td>
-					<td>
-						Web application archive, ready to be installed
-						into an existing servlet-engine like Tomcat or
-						Jetty.
-					</td>
-				</tr>
-				<tr>
 					<th align="left" colspan="2">
-						Development Snapshots
+						Snapshots
 					</th>
 				</tr>
 				<tr>
 				    <td>
-				    	<a href="http://prdownloads.sourceforge.net/exist/eXist-snapshot-20050314.jar">
-				    	eXist-snapshot-20050314.jar
+				    	<a href="http://prdownloads.sourceforge.net/exist/eXist-snapshot-20051026.jar">
+				    	eXist-snapshot-20051026.jar
 				    	</a>
 				   	</td>
 				   	<td>
@@ -181,6 +140,50 @@
 				        announced via the <link href="http://sourceforge.net/mail/?group_id=17691">mailing list
 				        </link> and the <link href="http://wiki.exist-db.org">Wiki</link>.
 				    </td>
+				</tr>
+				<tr>
+					<th align="left" colspan="2">Last "official" stable version</th>
+				</tr>
+				<tr>
+					<th colspan="2">
+						<warning>
+			                <title>Health Warning</title>
+			                <p>The 1.0 beta2 release is truly ancient now. There were
+			                lots of bug fixes and feature enhancements during the past months,
+			                so using beta2 cannot be recommended any more. Please download
+			                a newer development snapshot. Recent development snapshots can
+			                be regarded as stable. A new official "stable" release is in
+			                preparation, but as usual, we lack the
+			                time to complete the documentation. Any help will be welcome!</p>
+			            </warning>
+		            </th>
+	            </tr>
+				<tr>
+					<td>
+						<a
+							href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.jar">
+							eXist-1.0b2-build-1107.jar
+						</a>
+					</td>
+					<td>
+						Installer based on IzPack. Highly recommended.
+						Includes source. Run with
+						<tt>java -jar eXist-1.0b2.jar</tt>
+						.
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<a
+							href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.war">
+							eXist-1.0b2-build-1107.war
+						</a>
+					</td>
+					<td>
+						Web application archive, ready to be installed
+						into an existing servlet-engine like Tomcat or
+						Jetty.
+					</td>
 				</tr>
 				<tr>
 					<th align="left" colspan="2">Other tools</th>
