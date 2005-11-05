@@ -27,8 +27,8 @@ import java.util.regex.PatternSyntaxException;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -45,7 +45,7 @@ public class FunTokenize extends FunMatches {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("tokenize", Module.BUILTIN_FUNCTION_NS),
+			new QName("tokenize", Function.BUILTIN_FUNCTION_NS),
 			"This function breaks the input string $a into a sequence of strings, "
 				+ "treating any substring that matches pattern $b as a separator. The "
 				+ "separators themselves are not returned.",
@@ -55,7 +55,7 @@ public class FunTokenize extends FunMatches {
 			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
 		),
 		new FunctionSignature(
-			new QName("tokenize", Module.BUILTIN_FUNCTION_NS),
+			new QName("tokenize", Function.BUILTIN_FUNCTION_NS),
 			"This function breaks the input string $a into a sequence of strings, "
 				+ "treating any substring that matches pattern $b as a separator. The "
 				+ "separators themselves are not returned.",

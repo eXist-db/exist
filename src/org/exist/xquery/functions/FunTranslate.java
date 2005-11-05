@@ -26,7 +26,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -42,7 +41,7 @@ public class FunTranslate extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("translate", Module.BUILTIN_FUNCTION_NS),
+			new QName("translate", Function.BUILTIN_FUNCTION_NS),
 			"Returns the value of $a modified so that every character in the value of $a " +
 			"that occurs at some position N in the value of $b has been replaced by " +
 			"the character that occurs at position N in the value of $c.",

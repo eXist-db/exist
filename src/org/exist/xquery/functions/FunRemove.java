@@ -17,7 +17,7 @@ public class FunRemove extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("remove", Module.BUILTIN_FUNCTION_NS),
+			new QName("remove", Function.BUILTIN_FUNCTION_NS),
 			"Returns a new sequence constructed from the value of the target sequence" +
 			"with the item at the position specified removed.",
 			new SequenceType[] {

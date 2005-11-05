@@ -20,12 +20,10 @@
 
 package org.exist.xquery.functions;
 
-import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -35,7 +33,6 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
-import org.w3c.dom.ProcessingInstruction;
 
 /**
  * xpath-library function: local-name(object)
@@ -45,12 +42,12 @@ public class FunNamespaceURI extends Function {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("namespace-uri", Module.BUILTIN_FUNCTION_NS),
+				new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
 				new SequenceType[0],
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				true),
 		new FunctionSignature(
-			new QName("namespace-uri", Module.BUILTIN_FUNCTION_NS),
+			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 			true)

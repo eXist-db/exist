@@ -27,8 +27,8 @@ import java.util.regex.PatternSyntaxException;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -44,7 +44,7 @@ public class FunReplace extends FunMatches {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("replace", Module.BUILTIN_FUNCTION_NS),
+			new QName("replace", Function.BUILTIN_FUNCTION_NS),
 			"The function returns the xs:string that is obtained by replacing all non-overlapping "
 				+ "substrings of $a that match the given pattern $b with an occurrence of the $c replacement string.",
 			new SequenceType[] {
@@ -55,7 +55,7 @@ public class FunReplace extends FunMatches {
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 		),
 		new FunctionSignature(
-			new QName("replace", Module.BUILTIN_FUNCTION_NS),
+			new QName("replace", Function.BUILTIN_FUNCTION_NS),
 			"The function returns the xs:string that is obtained by replacing all non-overlapping "
 				+ "substrings of $a that match the given pattern $b with an occurrence of the $c replacement string.",
 			new SequenceType[] {

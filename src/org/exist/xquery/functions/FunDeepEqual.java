@@ -38,7 +38,7 @@ public class FunDeepEqual extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("deep-equal", Module.BUILTIN_FUNCTION_NS),
+			new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE), 
 					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)

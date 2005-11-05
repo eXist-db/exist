@@ -10,6 +10,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -25,7 +26,7 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("namespace-uri-for-prefix", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("namespace-uri-for-prefix", Function.BUILTIN_FUNCTION_NS),
 			"Returns the namespace URI of one of the in-scope namespaces for $b, identified by its namespace prefix. " +
 			"If $b has an in-scope namespace whose namespace prefix is equal to $a, it returns the namespace " +
 			"URI of that namespace. If $b is the zero-length string or the empty sequence, " +

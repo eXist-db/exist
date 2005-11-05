@@ -25,8 +25,8 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.QNameValue;
@@ -42,7 +42,7 @@ public class FunQName extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("QName", Module.BUILTIN_FUNCTION_NS),
+			new QName("QName", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:QName with the namespace URI given in $a. If $a is the empty " +
 			"string or the empty sequence, it represents 'no namespace'. The prefix in $b " +
 			"is retained in the returned xs:QName value. The local name in the result is " +

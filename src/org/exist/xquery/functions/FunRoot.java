@@ -29,14 +29,12 @@ import org.exist.memtree.NodeImpl;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Node;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -45,14 +43,14 @@ public class FunRoot extends Function {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("root", Module.BUILTIN_FUNCTION_NS),
+			new QName("root", Function.BUILTIN_FUNCTION_NS),
 			"Returns the root of the tree to which the context node belongs. This will usually, "
 				+ "but not necessarily, be a document node.",
 			new SequenceType[0],
 			new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
 		),
 		new FunctionSignature(
-			new QName("root", Module.BUILTIN_FUNCTION_NS),
+			new QName("root", Function.BUILTIN_FUNCTION_NS),
 			"Returns the root of the tree to which $arg belongs. This will usually, "
 				+ "but not necessarily, be a document node.",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},

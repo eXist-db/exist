@@ -24,7 +24,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DoubleValue;
@@ -41,12 +40,12 @@ public class FunNumber extends Function {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("number", Module.BUILTIN_FUNCTION_NS),
+				new QName("number", Function.BUILTIN_FUNCTION_NS),
 				new SequenceType[0],
 				new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
 		),
 		new FunctionSignature(
-			new QName("number", Module.BUILTIN_FUNCTION_NS),
+			new QName("number", Function.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				 new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)

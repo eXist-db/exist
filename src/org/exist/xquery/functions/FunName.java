@@ -24,7 +24,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -44,14 +43,14 @@ public class FunName extends Function {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("name", Module.BUILTIN_FUNCTION_NS),
+			new QName("name", Function.BUILTIN_FUNCTION_NS),
 			"Returns the name of a node, as an xs:string that is " +
 			"either the zero-length string, or has the lexical form of an xs:QName",
 			new SequenceType[0],
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 		),
 		new FunctionSignature(
-			new QName("name", Module.BUILTIN_FUNCTION_NS),
+			new QName("name", Function.BUILTIN_FUNCTION_NS),
 			"Returns the name of a node, as an xs:string that is " +
 			"either the zero-length string, or has the lexical form of an xs:QName",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },

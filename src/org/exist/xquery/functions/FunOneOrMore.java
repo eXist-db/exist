@@ -26,7 +26,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -43,7 +42,7 @@ public class FunOneOrMore extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("one-or-more", Module.BUILTIN_FUNCTION_NS),
+			new QName("one-or-more", Function.BUILTIN_FUNCTION_NS),
 			"Returns the argument sequence if it contains one or more items. Otherwise, " +
 			"raises an error.",
 			new SequenceType[] {

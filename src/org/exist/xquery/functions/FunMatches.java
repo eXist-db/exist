@@ -40,7 +40,6 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.RegexTranslator;
@@ -62,7 +61,7 @@ public class FunMatches extends Function {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("matches", Module.BUILTIN_FUNCTION_NS),
+			new QName("matches", Function.BUILTIN_FUNCTION_NS),
 			"Returns true if the first argument string matches the regular expression specified " +
 			"by the second argument. This function is optimized internally if a range index of type xs:string " +
 			"is defined on the nodes passed to the first argument.",
@@ -73,7 +72,7 @@ public class FunMatches extends Function {
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
 		),
 		new FunctionSignature(
-			new QName("matches", Module.BUILTIN_FUNCTION_NS),
+			new QName("matches", Function.BUILTIN_FUNCTION_NS),
 			"Returns true if the first argument string matches the regular expression specified " +
 			"by the second argument. This function is optimized internally if a range index of type xs:string " +
 			"is defined on the nodes passed to the first argument.",

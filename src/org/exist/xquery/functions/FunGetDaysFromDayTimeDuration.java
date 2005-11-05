@@ -26,7 +26,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DurationValue;
@@ -43,7 +42,7 @@ public class FunGetDaysFromDayTimeDuration extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("days-from-duration", Module.BUILTIN_FUNCTION_NS),
+			new QName("days-from-duration", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer representing the days component in the canonical lexical " +
 			"representation of the value of $a. The result may be negative.",
 			new SequenceType[] {

@@ -27,7 +27,7 @@ public class FunId extends Function {
 
 	public final static FunctionSignature signature =
 			new FunctionSignature(
-				new QName("id", Module.BUILTIN_FUNCTION_NS),
+				new QName("id", Function.BUILTIN_FUNCTION_NS),
 				new SequenceType[] {
 					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
 				new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE));

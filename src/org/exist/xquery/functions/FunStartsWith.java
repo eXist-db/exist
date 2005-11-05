@@ -27,7 +27,6 @@ import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.BooleanValue;
@@ -40,14 +39,14 @@ public class FunStartsWith extends CollatingFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature (
-			new QName("starts-with", Module.BUILTIN_FUNCTION_NS),
+			new QName("starts-with", Function.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 			},
 			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)),
 		new FunctionSignature (
-			new QName("starts-with", Module.BUILTIN_FUNCTION_NS),
+			new QName("starts-with", Function.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),

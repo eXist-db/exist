@@ -32,7 +32,6 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -49,7 +48,7 @@ public class FunConcat extends Function {
 	
 	public final static FunctionSignature signature =
 			new FunctionSignature(
-				new QName("concat", Module.BUILTIN_FUNCTION_NS),
+				new QName("concat", Function.BUILTIN_FUNCTION_NS),
 				"Accepts two or more xdt:anyAtomicType arguments and converts them " +
 				"to xs:string. Returns the xs:string that is the concatenation of the values " +
 				"of its arguments after conversion. If any of the arguments is the empty sequence, " +

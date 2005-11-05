@@ -26,12 +26,11 @@ import java.text.Collator;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
@@ -47,14 +46,14 @@ public class FunMin extends CollatingFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("min", Module.BUILTIN_FUNCTION_NS),
+			new QName("min", Function.BUILTIN_FUNCTION_NS),
 			"Selects an item from the input sequence $a whose value is less than or equal to " +
 			"the value of every other item in the input sequence.",
 			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
 			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
 		),
 		new FunctionSignature(
-			new QName("min", Module.BUILTIN_FUNCTION_NS),
+			new QName("min", Function.BUILTIN_FUNCTION_NS),
 			"Selects an item from the input sequence $a whose value is less than or equal to " +
 			"the value of every other item in the input sequence. The collation specified in $b is " +
 			"used for string comparisons.",

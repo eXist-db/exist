@@ -23,20 +23,18 @@
 package org.exist.xquery.functions;
 
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.GeneralComparison;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -53,7 +51,7 @@ public class FunIndexOf extends BasicFunction {
 
 	public final static FunctionSignature fnIndexOf[] = {
 			new FunctionSignature(
-					new QName("index-of", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+					new QName("index-of", Function.BUILTIN_FUNCTION_NS),
 					"Returns a sequence of positive integers giving the positions within the sequence " +
 					"$a of items that are equal to $b. If the value of $a is the empty sequence, or if " +
 					"no item in $a matches $b, then the empty sequence is returned.",
@@ -64,7 +62,7 @@ public class FunIndexOf extends BasicFunction {
 					new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)
 			),
 			new FunctionSignature(
-					new QName("index-of", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+					new QName("index-of", Function.BUILTIN_FUNCTION_NS),
 					"Returns a sequence of positive integers giving the positions within the sequence " +
 					"$a of items that are equal to $b. If the value of $a is the empty sequence, or if " +
 					"no item in $a matches $b, then the empty sequence is returned. Values are compared " +

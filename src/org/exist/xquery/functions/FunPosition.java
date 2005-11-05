@@ -25,7 +25,6 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.IntegerValue;
@@ -42,7 +41,7 @@ public class FunPosition extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("position", Module.BUILTIN_FUNCTION_NS),
+			new QName("position", Function.BUILTIN_FUNCTION_NS),
 			null,
 			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 	

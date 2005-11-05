@@ -4,7 +4,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -22,7 +21,7 @@ public class FunReverse extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("reverse", Module.BUILTIN_FUNCTION_NS),
+			new QName("reverse", Function.BUILTIN_FUNCTION_NS),
 			"Reverses the order of items in a sequence.  If the argument is an empty" +
 			"sequence, the empty sequence is returned.",
 			new SequenceType[] {new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)},

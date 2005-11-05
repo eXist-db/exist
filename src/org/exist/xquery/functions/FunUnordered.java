@@ -26,7 +26,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -45,7 +44,7 @@ public class FunUnordered extends Function {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("unordered", Module.BUILTIN_FUNCTION_NS),
+			new QName("unordered", Function.BUILTIN_FUNCTION_NS),
 			"Takes a sequence as input and returns an arbitrary implementation dependent permutation " +
 			"of the input sequence. Currently, this has no effect in eXist, but it might be used for future optimizations.",
 			new SequenceType[] {

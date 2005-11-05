@@ -28,7 +28,7 @@ import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
+import org.exist.xquery.Function;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -41,7 +41,7 @@ public class FunContains extends CollatingFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("contains", Module.BUILTIN_FUNCTION_NS),
+			new QName("contains", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:boolean indicating whether or not the value of $arg1 " +
 			"contains (at the beginning, at the end, or anywhere within) at least " +
 			"one sequence of collation units that provides a minimal match to the " +
@@ -52,7 +52,7 @@ public class FunContains extends CollatingFunction {
 			},
 			new SequenceType(Type.BOOLEAN, Cardinality.ONE)),
 		new FunctionSignature(
-			new QName("contains", Module.BUILTIN_FUNCTION_NS),
+			new QName("contains", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:boolean indicating whether or not the value of $arg1 " +
 			"contains (at the beginning, at the end, or anywhere within) at least " +
 			"one sequence of collation units that provides a minimal match to the " +

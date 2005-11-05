@@ -25,6 +25,7 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -38,7 +39,7 @@ public class FunStringToCodepoints extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-				new QName("string-to-codepoints", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+				new QName("string-to-codepoints", Function.BUILTIN_FUNCTION_NS),
 				"Returns the sequence of code points that constitute an xs:string. If $a is a zero-length " +
 				"string or the empty sequence, the empty sequence is returned.",
 				new SequenceType[] {

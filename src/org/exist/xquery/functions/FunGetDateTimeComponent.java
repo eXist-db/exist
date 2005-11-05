@@ -26,12 +26,11 @@ import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
+import org.exist.xquery.Function;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.DateValue;
-import org.exist.xquery.value.DayTimeDurationValue;
 import org.exist.xquery.value.DecimalValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -45,7 +44,7 @@ public class FunGetDateTimeComponent extends BasicFunction {
 
 	public final static FunctionSignature fnGetDayFromDateTime =
 		new FunctionSignature(
-			new QName("day-from-dateTime", Module.BUILTIN_FUNCTION_NS),
+			new QName("day-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 1 and 31, both inclusive, representing " +
 			"the day component in the localized value of $a.",
 			new SequenceType[] { new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE)},
@@ -53,7 +52,7 @@ public class FunGetDateTimeComponent extends BasicFunction {
 	
 	public final static FunctionSignature fnGetMonthFromDateTime =
 		new FunctionSignature(
-			new QName("month-from-dateTime", Module.BUILTIN_FUNCTION_NS),
+			new QName("month-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 1 and 12, both inclusive, representing the month " +
 			"component in the localized value of $a.",
 			new SequenceType[] {  new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE) },
@@ -61,7 +60,7 @@ public class FunGetDateTimeComponent extends BasicFunction {
 	
 	public final static FunctionSignature fnGetYearFromDateTime =
 		new FunctionSignature(
-			new QName("year-from-dateTime", Module.BUILTIN_FUNCTION_NS),
+			new QName("year-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer representing the year in the localized value of $a. The value may be negative.",
 			new SequenceType[] {
 				 new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE)
@@ -70,7 +69,7 @@ public class FunGetDateTimeComponent extends BasicFunction {
 	
 	public final static FunctionSignature fnHoursFromDateTime =
 		new FunctionSignature(
-			new QName("hours-from-dateTime", Module.BUILTIN_FUNCTION_NS),
+			new QName("hours-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 0 and 23, both inclusive, representing the " +
 			"value of the hours component in the localized value of $arg.",
 			new SequenceType[] { new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE)},
@@ -78,7 +77,7 @@ public class FunGetDateTimeComponent extends BasicFunction {
 	
 	public final static FunctionSignature fnMinutesFromDateTime =
 		new FunctionSignature(
-			new QName("minutes-from-dateTime", Module.BUILTIN_FUNCTION_NS),
+			new QName("minutes-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer value between 0 to 59, both inclusive, representing the value of " +
 			"the minutes component in the localized value of $arg.",
 			new SequenceType[] { new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE)},
@@ -86,7 +85,7 @@ public class FunGetDateTimeComponent extends BasicFunction {
 	
 	public final static FunctionSignature fnSecondsFromDateTime =
 		new FunctionSignature(
-			new QName("seconds-from-dateTime", Module.BUILTIN_FUNCTION_NS),
+			new QName("seconds-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:decimal value between 0 and 60.999..., both inclusive, representing the " +
 			"seconds and fractional seconds in the localized value of $arg. Note that the value can be " +
 			"greater than 60 seconds to accommodate occasional leap seconds used to keep human time " +
@@ -96,7 +95,7 @@ public class FunGetDateTimeComponent extends BasicFunction {
 	
 	public final static FunctionSignature fnTimezoneFromDateTime =
 		new FunctionSignature(
-			new QName("timezone-from-dateTime", Module.BUILTIN_FUNCTION_NS),
+			new QName("timezone-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns the timezone component of $arg if any. If $arg has a timezone component, " +
 			"then the result is an xdt:dayTimeDuration that indicates deviation from UTC; its value may " +
 			"range from +14:00 to -14:00 hours, both inclusive. Otherwise, the result is the empty sequence.",

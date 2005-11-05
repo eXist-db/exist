@@ -26,11 +26,9 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DateValue;
-import org.exist.xquery.value.DayTimeDurationValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -44,7 +42,7 @@ public class FunGetDateComponent extends Function {
 
 	public final static FunctionSignature fnGetDayFromDate =
 		new FunctionSignature(
-			new QName("day-from-date", Module.BUILTIN_FUNCTION_NS),
+			new QName("day-from-date", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 1 and 31, both inclusive, representing " +
 			"the day component in the localized value of $a.",
 			new SequenceType[] { new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE)},
@@ -52,7 +50,7 @@ public class FunGetDateComponent extends Function {
 	
 	public final static FunctionSignature fnGetMonthFromDate =
 		new FunctionSignature(
-			new QName("month-from-date", Module.BUILTIN_FUNCTION_NS),
+			new QName("month-from-date", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 1 and 12, both inclusive, representing the month " +
 			"component in the localized value of $a.",
 			new SequenceType[] {  new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE) },
@@ -60,7 +58,7 @@ public class FunGetDateComponent extends Function {
 	
 	public final static FunctionSignature fnGetYearFromDate =
 		new FunctionSignature(
-			new QName("year-from-date", Module.BUILTIN_FUNCTION_NS),
+			new QName("year-from-date", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer representing the year in the localized value of $a. The value may be negative.",
 			new SequenceType[] {
 				 new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE)
@@ -69,7 +67,7 @@ public class FunGetDateComponent extends Function {
 	
 	public final static FunctionSignature fnGetTimezoneFromDate =
 		new FunctionSignature(
-			new QName("timezone-from-date", Module.BUILTIN_FUNCTION_NS),
+			new QName("timezone-from-date", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer representing the year in the localized value of $a. The value may be negative.",
 			new SequenceType[] {
 				 new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE)

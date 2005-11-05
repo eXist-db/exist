@@ -23,7 +23,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -36,7 +35,7 @@ public class FunFloor extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("floor", Module.BUILTIN_FUNCTION_NS),
+			new QName("floor", Function.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				 new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_MORE)},
 			new SequenceType(Type.NUMBER, Cardinality.ONE));
