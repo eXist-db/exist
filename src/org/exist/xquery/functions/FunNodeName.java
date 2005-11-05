@@ -22,7 +22,6 @@
  */
 package org.exist.xquery.functions;
 
-import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
 import org.exist.xquery.Cardinality;
@@ -48,7 +47,7 @@ public class FunNodeName extends Function {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("node-name", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("node-name", Function.BUILTIN_FUNCTION_NS),
 			" Returns an expanded-QName for node kinds that can have names. For other kinds " +
 			"of nodes it returns the empty sequence. If $a is the empty sequence, the " +
 			"empty sequence is returned.",

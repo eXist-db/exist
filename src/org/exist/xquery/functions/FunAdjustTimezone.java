@@ -8,14 +8,14 @@ public class FunAdjustTimezone extends BasicFunction {
 
 	public final static FunctionSignature fnAdjustDateTimeToTimezone[] = {
 		new FunctionSignature(
-			new QName("adjust-dateTime-to-timezone", Module.BUILTIN_FUNCTION_NS),
+			new QName("adjust-dateTime-to-timezone", Function.BUILTIN_FUNCTION_NS),
 			"Adjusts an xs:dateTime value to the implicit timezone of the current locale.",
 			new SequenceType[] { 
 					new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE)
 			},
 			new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE)),
 		new FunctionSignature(
-				new QName("adjust-dateTime-to-timezone", Module.BUILTIN_FUNCTION_NS),
+				new QName("adjust-dateTime-to-timezone", Function.BUILTIN_FUNCTION_NS),
 				"Adjusts an xs:dateTime value to a specific timezone, or to no timezone at all. " +
 				"If $b is the empty sequence, returns an xs:dateTime without a timezone.",
 				new SequenceType[] { 
@@ -27,14 +27,14 @@ public class FunAdjustTimezone extends BasicFunction {
 
 	public final static FunctionSignature fnAdjustDateToTimezone[] = {
 		new FunctionSignature(
-			new QName("adjust-date-to-timezone", Module.BUILTIN_FUNCTION_NS),
+			new QName("adjust-date-to-timezone", Function.BUILTIN_FUNCTION_NS),
 			"Adjusts an xs:date value to the implicit timezone of the current locale.",
 			new SequenceType[] { 
 					new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE)
 			},
 			new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE)),
 		new FunctionSignature(
-				new QName("adjust-date-to-timezone", Module.BUILTIN_FUNCTION_NS),
+				new QName("adjust-date-to-timezone", Function.BUILTIN_FUNCTION_NS),
 				"Adjusts an xs:date value to a specific timezone, or to no timezone at all. " +
 				"If $b is the empty sequence, returns an xs:date without a timezone.",
 				new SequenceType[] { 
@@ -46,14 +46,14 @@ public class FunAdjustTimezone extends BasicFunction {
 	
 	public final static FunctionSignature fnAdjustTimeToTimezone[] = {
 		new FunctionSignature(
-			new QName("adjust-time-to-timezone", Module.BUILTIN_FUNCTION_NS),
+			new QName("adjust-time-to-timezone", Function.BUILTIN_FUNCTION_NS),
 			"Adjusts an xs:time value to the implicit timezone of the current locale.",
 			new SequenceType[] { 
 					new SequenceType(Type.TIME, Cardinality.ZERO_OR_ONE)
 			},
 			new SequenceType(Type.TIME, Cardinality.ZERO_OR_ONE)),
 		new FunctionSignature(
-				new QName("adjust-time-to-timezone", Module.BUILTIN_FUNCTION_NS),
+				new QName("adjust-time-to-timezone", Function.BUILTIN_FUNCTION_NS),
 				"Adjusts an xs:time value to a specific timezone, or to no timezone at all. " +
 				"If $b is the empty sequence, returns an xs:time without a timezone.",
 				new SequenceType[] { 

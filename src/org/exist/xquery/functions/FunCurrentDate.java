@@ -34,7 +34,7 @@ import org.exist.xquery.value.*;
 public class FunCurrentDate extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("current-date", Module.BUILTIN_FUNCTION_NS),
+			new QName("current-date", Function.BUILTIN_FUNCTION_NS),
 			"Returns the xs:date (with timezone) that is current at some "
 				+ "time during the evaluation of a query or transformation in which "
 				+ "fn:current-date() is executed.",

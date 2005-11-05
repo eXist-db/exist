@@ -4,7 +4,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.IntegerValue;
@@ -18,7 +17,7 @@ public class FunRoundHalfToEven extends Function {
 
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
-					new QName("round-half-to-even", Module.BUILTIN_FUNCTION_NS),
+					new QName("round-half-to-even", Function.BUILTIN_FUNCTION_NS),
 					"The first signature of this function produces the same " + 
 					"result as the second signature with $b=0.",
 					new SequenceType[] { 
@@ -26,7 +25,7 @@ public class FunRoundHalfToEven extends Function {
 					new SequenceType(Type.NUMBER, Cardinality.EXACTLY_ONE)),
 			
 			new FunctionSignature(new QName("round-half-to-even",
-					Module.BUILTIN_FUNCTION_NS),
+					Function.BUILTIN_FUNCTION_NS),
 					"The value returned is the nearest (that is, numerically closest) " +
 					"numeric to $a that is a multiple of ten to the power of minus "+
 					"$b. If two such values are equally near (e.g. if the "+

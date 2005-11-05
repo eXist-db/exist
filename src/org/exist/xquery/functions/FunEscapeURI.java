@@ -25,8 +25,8 @@ import org.exist.dom.QName;
 import org.exist.util.UTF8;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
@@ -42,7 +42,7 @@ public class FunEscapeURI extends BasicFunction {
 
     public final static FunctionSignature signature =
         new FunctionSignature(
-            new QName("escape-uri", Module.BUILTIN_FUNCTION_NS),
+            new QName("escape-uri", Function.BUILTIN_FUNCTION_NS),
             "This function applies the URI escaping rules defined in section 2 " +
             "of [RFC 2396] as amended by [RFC 2732], with one exception, to " +
             "the string supplied as $a, which typically represents all or part " +

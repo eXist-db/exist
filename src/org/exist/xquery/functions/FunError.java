@@ -25,7 +25,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
+import org.exist.xquery.Function;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -41,13 +41,13 @@ public class FunError extends BasicFunction {
 
 	public final static FunctionSignature signature[] = {
 		new FunctionSignature(
-			new QName("error", Module.BUILTIN_FUNCTION_NS),
+			new QName("error", Function.BUILTIN_FUNCTION_NS),
 			"Indicates that an irrecoverable error has occurred. The "
 				+ "script will terminate immediately with an exception.",
 			null,
 			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
 		new FunctionSignature(
-			new QName("error", Module.BUILTIN_FUNCTION_NS),
+			new QName("error", Function.BUILTIN_FUNCTION_NS),
 			"Indicates that an irrecoverable error has occurred. The "
 				+ "script will terminate immediately with an exception.",
             new SequenceType[] {
@@ -55,7 +55,7 @@ public class FunError extends BasicFunction {
 			},
 			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
 		new FunctionSignature(
-			new QName("error", Module.BUILTIN_FUNCTION_NS),
+			new QName("error", Function.BUILTIN_FUNCTION_NS),
 			"Indicates that an irrecoverable error has occurred. The "
 				+ "script will terminate immediately with an exception.",
             new SequenceType[] {
@@ -64,7 +64,7 @@ public class FunError extends BasicFunction {
 			},
 			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
 		new FunctionSignature(
-			new QName("error", Module.BUILTIN_FUNCTION_NS),
+			new QName("error", Function.BUILTIN_FUNCTION_NS),
 			"Indicates that an irrecoverable error has occurred. The "
 				+ "script will terminate immediately with an exception.",
             new SequenceType[] {

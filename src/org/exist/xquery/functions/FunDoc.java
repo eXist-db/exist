@@ -27,7 +27,6 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.DocUtils;
@@ -47,7 +46,7 @@ public class FunDoc extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("doc", Module.BUILTIN_FUNCTION_NS),
+			new QName("doc", Function.BUILTIN_FUNCTION_NS),
 			"Includes a document into the input sequence. "
 				+ "EXist interprets the argument as a path pointing to a "
 				+ "document in the database, as for example, '/db/shakespeare/plays/hamlet.xml'. "

@@ -27,7 +27,6 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.IntegerValue;
@@ -43,7 +42,7 @@ public class FunItemAt extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("item-at", Module.BUILTIN_FUNCTION_NS),
+			new QName("item-at", Function.BUILTIN_FUNCTION_NS),
 			"Returns the item in the first argument sequence that is located at the position " +
 			"specified by the second argument. Deprecated. Use $x[1] instead.",
 			new SequenceType[] {

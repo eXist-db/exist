@@ -42,7 +42,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.dom.SymbolTable;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -170,7 +169,7 @@ public class XQueryContext {
     
 	protected String moduleLoadPath = ".";
 	
-	protected String defaultFunctionNamespace = Module.BUILTIN_FUNCTION_NS;
+	protected String defaultFunctionNamespace = Function.BUILTIN_FUNCTION_NS;
 
 	/**
 	 * The default collation URI
@@ -1481,7 +1480,7 @@ public class XQueryContext {
 			declareNamespace("xs", SCHEMA_NS);
 			declareNamespace("xdt", XPATH_DATATYPES_NS);
 			declareNamespace("local", XQUERY_LOCAL_NS);
-			declareNamespace("fn", Module.BUILTIN_FUNCTION_NS);
+			declareNamespace("fn", Function.BUILTIN_FUNCTION_NS);
 			//*not* as standard NS
 			declareNamespace("exist", EXIST_NS);
 		} catch (XPathException e) {
@@ -1493,7 +1492,7 @@ public class XQueryContext {
 		// these modules are loaded dynamically. It is not an error if the
 		// specified module class cannot be found in the classpath.
 		loadBuiltInModule(
-			Module.BUILTIN_FUNCTION_NS,
+			Function.BUILTIN_FUNCTION_NS,
 			"org.exist.xquery.functions.ModuleImpl");
 		
 		String modules[][] = (String[][]) config.getProperty("xquery.modules");

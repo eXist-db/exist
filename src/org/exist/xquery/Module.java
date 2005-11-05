@@ -44,12 +44,6 @@ import org.exist.dom.QName;
  */
 public interface Module {
 
-	/** 
-	 * XQuery/XPath 2.0 function namespace.
-	 */
-	public final static String BUILTIN_FUNCTION_NS =
-		"http://www.w3.org/2003/05/xpath-functions";
-	
 	/**
 	 * Namespace for the built-in xmldb module.
 	 */

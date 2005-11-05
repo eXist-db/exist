@@ -23,6 +23,7 @@
 package org.exist.xquery.functions;
 
 import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionDef;
 
 /**
@@ -30,8 +31,6 @@ import org.exist.xquery.FunctionDef;
  */
 public class ModuleImpl extends AbstractInternalModule {
 
-	public final static String NAMESPACE_URI = "http://www.w3.org/2003/05/xpath-functions";
-	
 	public final static String PREFIX = "";
 	
 	public final static FunctionDef[] functions = {
@@ -187,7 +186,7 @@ public class ModuleImpl extends AbstractInternalModule {
 	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {
-		return NAMESPACE_URI;
+		return Function.BUILTIN_FUNCTION_NS;
 	}
 
 	/* (non-Javadoc)

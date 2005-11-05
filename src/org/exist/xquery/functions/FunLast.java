@@ -26,7 +26,6 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.IntegerValue;
@@ -44,7 +43,7 @@ public class FunLast extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("last", Module.BUILTIN_FUNCTION_NS),
+			new QName("last", Function.BUILTIN_FUNCTION_NS),
 			null,
 			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 

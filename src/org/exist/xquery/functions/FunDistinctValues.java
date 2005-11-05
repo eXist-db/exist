@@ -31,7 +31,6 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -51,7 +50,7 @@ public class FunDistinctValues extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("distinct-values", ModuleImpl.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
+			new QName("distinct-values", Function.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
 			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
 			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE));
 //	TODO: collation as argument

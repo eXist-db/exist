@@ -35,7 +35,7 @@ public class FunCurrentDateTime extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("current-dateTime", Module.BUILTIN_FUNCTION_NS),
+			new QName("current-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns the xs:dateTime (with timezone) that is current at some time "
 				+ "during the evaluation of a query or transformation in which fn:current-dateTime() "
 				+ "is executed.",

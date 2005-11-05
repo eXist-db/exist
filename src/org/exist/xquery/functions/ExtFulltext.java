@@ -36,7 +36,6 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -59,7 +58,7 @@ public class ExtFulltext extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("contains", Module.BUILTIN_FUNCTION_NS),
+			new QName("contains", Function.BUILTIN_FUNCTION_NS),
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE) },
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
 		);

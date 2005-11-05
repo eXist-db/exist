@@ -24,6 +24,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -35,14 +36,14 @@ public class FunTrueOrFalse extends BasicFunction {
 
 	public final static FunctionSignature fnTrue =
 			new FunctionSignature(
-				new QName("true", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+				new QName("true", Function.BUILTIN_FUNCTION_NS),
                 "Always returns the boolean value true",
 				null,
 				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 	
 	public final static FunctionSignature fnFalse =
 		new FunctionSignature(
-			new QName("false", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("false", Function.BUILTIN_FUNCTION_NS),
             "Always returns the boolean value false",
 			null,
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));

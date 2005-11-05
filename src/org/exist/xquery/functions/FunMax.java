@@ -23,7 +23,6 @@
 package org.exist.xquery.functions;
 
 import java.text.Collator;
-import java.util.Iterator;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
@@ -47,7 +46,7 @@ public class FunMax extends CollatingFunction {
 
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
-					new QName("max", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+					new QName("max", Function.BUILTIN_FUNCTION_NS),
 					"Selects an item from the input sequence $a whose value " +
 					"is greater than or equal to the value of every other item in the " +
 					"input sequence.",
@@ -57,7 +56,7 @@ public class FunMax extends CollatingFunction {
 					new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
 			),
 			new FunctionSignature(
-					new QName("max", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+					new QName("max", Function.BUILTIN_FUNCTION_NS),
 					"Selects an item from the input sequence $a whose value " +
 					"is greater than or equal to the value of every other item in the " +
 					"input sequence. The collation URI specified in $b will be used for " +

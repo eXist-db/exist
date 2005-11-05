@@ -25,8 +25,8 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
@@ -44,7 +44,7 @@ public class QNameFunctions extends BasicFunction {
 
 	public final static FunctionSignature prefixFromQName =
 		new FunctionSignature(
-				new QName("prefix-from-QName", Module.BUILTIN_FUNCTION_NS),
+				new QName("prefix-from-QName", Function.BUILTIN_FUNCTION_NS),
 				"Returns an xs:NCName representing the prefix of $a. If $a is the empty " +
 				"sequence, returns the empty sequence.",
 				new SequenceType[] {
@@ -54,7 +54,7 @@ public class QNameFunctions extends BasicFunction {
 	
 	public final static FunctionSignature localNameFromQName =
 		new FunctionSignature(
-				new QName("local-name-from-QName", Module.BUILTIN_FUNCTION_NS),
+				new QName("local-name-from-QName", Function.BUILTIN_FUNCTION_NS),
 				"Returns an xs:NCName representing the local part of $a. If $a is the empty " +
 				"sequence, returns the empty sequence.",
 				new SequenceType[] {
@@ -64,7 +64,7 @@ public class QNameFunctions extends BasicFunction {
 	
 	public final static FunctionSignature namespaceURIFromQName =
 		new FunctionSignature(
-				new QName("namespace-uri-from-QName", Module.BUILTIN_FUNCTION_NS),
+				new QName("namespace-uri-from-QName", Function.BUILTIN_FUNCTION_NS),
 				"Returns the namespace URI for $a. If $a is the empty " +
 				"sequence, returns the empty sequence.",
 				new SequenceType[] {

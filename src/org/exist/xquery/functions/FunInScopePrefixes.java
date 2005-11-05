@@ -9,9 +9,9 @@ import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -28,7 +28,7 @@ public class FunInScopePrefixes extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("in-scope-prefixes", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("in-scope-prefixes", Function.BUILTIN_FUNCTION_NS),
 			"Returns the prefixes of the in-scope namespaces for $a. For namespaces that have " +
 			"a prefix, it returns the prefix as an xs:NCName. For the default namespace, which has " +
 			"no prefix, it returns the zero-length string.",
