@@ -76,9 +76,21 @@
                 </listitem>
             </unorderedlist>
             
-            <para>Further documentation can be found in the <ulink url="http://wiki.exist-db.org">Wiki</ulink>.
-            </para>
         </section>
+        <section>
+        	<title>Documentation on the Wiki</title>
+        	
+        	<para>Further documentation can be found in the <ulink url="http://wiki.exist-db.org">Wiki</ulink>.
+        	Among other things, have a look at:</para>
+            
+            <unorderedlist>
+            	<listitem>
+                    <para><ulink href="http://wiki.exist-db.org/space/NewSchemaValidation">
+                    New Schema Validation</ulink>.</para>
+                </listitem>
+			</unorderedlist>
+		</section>
+		
         <section>
             <title>Articles</title>
             

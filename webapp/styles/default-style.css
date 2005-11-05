@@ -416,8 +416,7 @@ div.example_title {
 
 .warning {
     border: 1px solid red;
-    margin-left: 25px;
-    margin-right: 25px;
+    padding: 7px;
 }
 
 .warning p {
@@ -428,4 +427,5 @@ div.example_title {
     font-size: smaller;
     font-weight: bold;
     color: red;
+    margin: 0;
 }
