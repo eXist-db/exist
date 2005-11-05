@@ -266,7 +266,7 @@ public class RemoteCollection implements CollectionImpl {
 		} catch (XmlRpcException xre) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
 		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "an io error occurred", ioe);
+			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "An IO error occurred: " + ioe.getMessage(), ioe);
 		}
 	}
 
@@ -286,7 +286,7 @@ public class RemoteCollection implements CollectionImpl {
 		} catch (XmlRpcException xre) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
 		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "an io error occurred", ioe);
+			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "An IO error occurred: " + ioe.getMessage(), ioe);
 		}
 		String docName = (String) hash.get("name");
 		if(docName == null)
@@ -329,7 +329,7 @@ public class RemoteCollection implements CollectionImpl {
 		} catch (XmlRpcException xre) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
 		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "an io error occurred", ioe);
+			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "An IO error occurred: " + ioe.getMessage(), ioe);
 		}
 		Vector collections = (Vector) collection.get("collections");
 		permissions =

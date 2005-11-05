@@ -967,7 +967,7 @@ implements Comparable, EntityResolver, Cacheable {
 		} else if (!getPermissions().validate(broker.getUser(),
 				Permission.WRITE))
 			throw new PermissionDeniedException(
-					"Not allowed to write to collection " + getName());
+					"User '" + broker.getUser().getName() + "' not allowed to write to collection '" + getName() + "'");
 	}
 
 	private DocumentTrigger setupTriggers(DBBroker broker, String name, boolean update) {

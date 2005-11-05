@@ -1782,7 +1782,7 @@ public class NativeBroker extends DBBroker {
 					} else {
 						if (!current.getPermissions().validate(user, Permission.WRITE)) {
 							LOG.debug("permission denied to create collection " + path);
-							throw new PermissionDeniedException("not allowed to write to collection");
+							throw new PermissionDeniedException("User '"+ user.getName() + "' not allowed to write to collection '" + current.getName() + "'");
 						}
 						LOG.debug("creating collection " + path);
 						sub = new Collection(collectionsDb, path);
@@ -2018,7 +2018,7 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         
         if (!collection.getPermissions().validate(user, Permission.WRITE))
-            throw new PermissionDeniedException("not allowed to remove collection");
+            throw new PermissionDeniedException("User '"+ user.getName() + "' not allowed to remove collection '" + collection.getName() + "'");
         
         long start = System.currentTimeMillis();
         
