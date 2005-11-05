@@ -26,6 +26,7 @@ import org.exist.backup.CreateBackupDialog;
 import org.exist.backup.Restore;
 import org.exist.security.Permission;
 import org.exist.security.User;
+import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.MimeTable;
 import org.exist.xmldb.CollectionImpl;
@@ -827,7 +828,7 @@ public class ClientFrame extends JFrame
         
         String[] collections = null;
         try {
-            Collection root = client.getCollection("/db");
+            Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
             Vector collectionsVec = getCollections(root, new Vector());
             collections = new String[collectionsVec.size()];
             collectionsVec.toArray(collections);
@@ -867,7 +868,7 @@ public class ClientFrame extends JFrame
         
         String[] collections = null;
         try {
-            Collection root = client.getCollection("/db");
+            Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
             Vector collectionsVec = getCollections(root, new Vector());
             collections = new String[collectionsVec.size()];
             collectionsVec.toArray(collections);
@@ -908,7 +909,7 @@ public class ClientFrame extends JFrame
         
         String[] collections = null;
         try {
-            Collection root = client.getCollection("/db");
+            Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
             Vector collectionsVec = getCollections(root, new Vector());
             collections = new String[collectionsVec.size()];
             collectionsVec.toArray(collections);

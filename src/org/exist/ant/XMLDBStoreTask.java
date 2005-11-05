@@ -26,6 +26,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
+import org.exist.storage.DBBroker;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.EXistResource;
@@ -74,7 +75,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
       throw new BuildException("no file set specified");
 
     registerDatabase();
-    int p = uri.indexOf("/db");
+    int p = uri.indexOf(DBBroker.ROOT_COLLECTION);
     if (p < 0)
       throw new BuildException("invalid uri: " + uri);
     try
