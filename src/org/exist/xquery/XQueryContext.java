@@ -327,9 +327,9 @@ public class XQueryContext {
 		if(uri == null)
 			uri = "";
 		if (prefix.equals("xml") || prefix.equals("xmlns"))
-			throw new XPathException("err:XQST0070: Namespace predefined prefix: \"" + prefix + "\" is already bound");
+			throw new XPathException("err:XQST0070: Namespace predefined prefix '" + prefix + "' can not be bound");
 		if (uri.equals(XML_NS))
-			throw new XPathException("err:XQST0070: Namespace URI: \"" + uri + "\" must be bound to the 'xml' prefix");
+			throw new XPathException("err:XQST0070: Namespace URI '" + uri + "' must be bound to the 'xml' prefix");
 		final String prevURI = (String)namespaces.get(prefix);
 		//This prefix was not bound
 		if(prevURI == null ) {
@@ -342,7 +342,7 @@ public class XQueryContext {
 			//Nothing to bind
 			else {
 				//TODO : check the specs : unbinding an NS which is not already bound may be disallowed.
-				LOG.warn("trying to unbind unbound prefix: " + prefix);
+				LOG.warn("Unbinding unbound prefix '" + prefix + "'");
 			}
 		}
 		else
@@ -359,7 +359,7 @@ public class XQueryContext {
 			}
 			//Forbids rebinding the *same* prefix in a *different* namespace in this *same* context
 			if (!uri.equals(prevURI))
-				throw new XPathException("err:XQST0033: Namespace prefix: \"" + prefix + "\" is already bound to a different uri");
+				throw new XPathException("err:XQST0033: Namespace prefix '" + prefix + "' is already bound to a different uri '" + prevURI + "'");
 		}
 	}
 
