@@ -2,12 +2,11 @@ xquery version "1.0";
 
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace dc="http://purl.org/dc/elements/1.1/";
-declare namespace fn="http://exist-db.org/local-functions";
 declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 declare namespace x="http://exist.sourceforge.net/dc-ext";
 
 (: Map query field parameter to xpath selection :)
-declare function fn:query-field($field as xs:string) as xs:string
+declare function local:query-field($field as xs:string) as xs:string
 {
     if ($field = "au") then
         "dc:creator|(dc:editor|dc:contributor)"
@@ -24,10 +23,10 @@ declare function fn:query-field($field as xs:string) as xs:string
 };
 
 (: Create filter expression from query term, field and mode :)
-declare function fn:filter-expr($term as xs:string, $field as xs:string,
+declare function local:filter-expr($term as xs:string, $field as xs:string,
 $mode as xs:string) as xs:string
 {
-    let $f := fn:query-field($field),
+    let $f := local:query-field($field),
         $t := concat("'", $term, "'")
     return
         if ($mode = "near") then
@@ -39,7 +38,7 @@ $mode as xs:string) as xs:string
 };
 
 (: Map order parameter to xpath for order by clause :)
-declare function fn:order-expr($field as xs:string) as xs:string
+declare function local:order-expr($field as xs:string) as xs:string
 {
 	if ($field = "creator") then
 		"(dc:creator|dc:editor)[1], $r/dc:title"
@@ -50,12 +49,12 @@ declare function fn:order-expr($field as xs:string) as xs:string
 };
 
 (: Assemble the query string :)
-declare function fn:build-query($term1 as xs:string, $orderby as xs:string) 
+declare function local:build-query($term1 as xs:string, $orderby as xs:string) 
 as xs:string
 {
     let $field1 := request:request-parameter("field1", "any"),
         $mode1 := request:request-parameter("mode1", "all"),
-		$expr1 := fn:filter-expr($term1, $field1, $mode1),
+		$expr1 := local:filter-expr($term1, $field1, $mode1),
 		$term2 := request:request-parameter("term2", ""),
 		$expr :=
 			if ($term2 = "") then $expr1
@@ -64,18 +63,18 @@ as xs:string
 					$mode2 := request:request-parameter("mode2", "all")
 				return
 					concat($expr1, " and ", 
-						fn:filter-expr($term2, $field2, $mode2)),
+						local:filter-expr($term2, $field2, $mode2)),
 		$t := request:set-session-attribute("query", $expr)
     return
         concat("for $r in document()//rdf:Description[",
             $expr, "] order by $r/",
-            fn:order-expr($orderby), " return $r")
+            local:order-expr($orderby), " return $r")
 };
 
 (:  display creators: if there's more than one creator, output the
     first one and add "et al."
 :)
-declare function fn:get-creators($i as element()) as xs:string
+declare function local:get-creators($i as element()) as xs:string
 {
     let $creators := for $c in $i/(dc:creator|dc:editor) return $c,
         $count := count($creators)
@@ -89,7 +88,7 @@ declare function fn:get-creators($i as element()) as xs:string
 };
 
 (: Display a single record from the query results :)
-declare function fn:display-details($hits as node()+)
+declare function local:display-details($hits as node()+)
 as element()
 {
     let $count := count($hits),
@@ -104,7 +103,7 @@ as element()
 };
 
 (: Present an overview of query results :)
-declare function fn:display-summary($hits as node()+)
+declare function local:display-summary($hits as node()+)
 as element()
 {
     let $count := count($hits),
@@ -117,7 +116,7 @@ as element()
             {
                 for $p in $start to $end
                 let $current := item-at($hits, $p)
-                let $creators := fn:get-creators($current)
+                let $creators := local:get-creators($current)
                 return
                     <item>
                         <year>{$current/dc:date}</year>
@@ -129,23 +128,23 @@ as element()
 };
 
 (: 	Call display-summary or display-details :)
-declare function fn:display($hits as node()+)
+declare function local:display($hits as node()+)
 as element()
 {
     let $mode := request:request-parameter("display", "summary")
     return
         if ($mode = "summary") then
-            fn:display-summary($hits)
+            local:display-summary($hits)
         else
-            fn:display-details($hits)
+            local:display-details($hits)
 };
 
 (: Re-order the search results :)
-declare function fn:reorder($query as xs:string, $orderby as xs:string)
+declare function local:reorder($query as xs:string, $orderby as xs:string)
 as element()
 {
 	let $expr := concat("for $r in document()//rdf:Description[",
-					$query, "] order by $r/", fn:order-expr($orderby),
+					$query, "] order by $r/", local:order-expr($orderby),
 					" return $r"),
 		$hits := util:eval($expr),
 		$s := request:set-session-attribute(
@@ -155,10 +154,10 @@ as element()
 		if (empty($hits)) then
 			<p>Nothing found!</p>
 		else
-			fn:display($hits)
+			local:display($hits)
 };
 
-declare function fn:main() as element()+
+declare function local:main() as element()+
 {
     let $term1 := request:request-parameter("term1", ""),
         $previous := request:get-session-attribute("results"),
@@ -167,14 +166,14 @@ declare function fn:main() as element()+
     return
         if(string-length($term1) = 0) then
 			if ($orderby != "") then
-				fn:reorder($queryOld, $orderby)
+				local:reorder($queryOld, $orderby)
             else if (exists($previous)) then
-                fn:display($previous)
+                local:display($previous)
             else
                 <p>Please enter one or more search terms.
                 <a href="biblio.xml">Back to query form!</a></p>
         else
-            let $query := fn:build-query($term1, "creator"),
+            let $query := local:build-query($term1, "creator"),
                 $hits := util:eval( $query ),
                 $s := request:set-session-attribute("results", $hits)
             return
@@ -183,7 +182,7 @@ declare function fn:main() as element()+
                     <a href="biblio.xml">Back to query form!</a>
                     </p>
                 else
-                    fn:display($hits)
+                    local:display($hits)
 };
 
 <document xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -195,7 +194,7 @@ declare function fn:main() as element()+
         <section title="Library Search">
             { let $start := current-time() return
 				(
-					fn:main(),
+					local:main(),
             		<p><small>Request served in 
 					{seconds-from-duration(current-time()-$start)}
 					seconds. <a href="source/biblio.xq">View Source</a>.
