@@ -39,7 +39,6 @@ import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -67,12 +66,10 @@ import javax.xml.transform.OutputKeys;
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLUtil;
-import org.apache.xerces.parsers.DOMParser;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.User;
+import org.exist.storage.DBBroker;
 import org.exist.util.CollectionScanner;
 import org.exist.util.DirectoryScanner;
 import org.exist.util.MimeTable;
@@ -154,7 +151,7 @@ public class InteractiveClient {
     protected Collection current = null;
     protected int nextInSet = 1;
     protected int maxResults = 10;
-    protected String path = "/db";
+    protected String path = DBBroker.ROOT_COLLECTION;
     protected Properties properties;
     
     protected String[] resources = null;
@@ -438,17 +435,17 @@ public class InteractiveClient {
                 String tempPath = newPath;
                 Collection temp;
                 if (args.length < 2 || args[1] == null) {
-                    tempPath = "/db";
+                    tempPath = DBBroker.ROOT_COLLECTION;
                     temp = DatabaseManager.getCollection(properties
                             .getProperty("uri")
-                            + "/db", properties.getProperty("user"), properties
+                            + DBBroker.ROOT_COLLECTION, properties.getProperty("user"), properties
                             .getProperty("password"));
                 } else {
                     if (args[1].equals("..")) {
-                        tempPath = newPath.equals("/db") ? "/db" : tempPath
+                        tempPath = newPath.equals(DBBroker.ROOT_COLLECTION) ? DBBroker.ROOT_COLLECTION : tempPath
                                 .substring(0, newPath.lastIndexOf("/"));
                         if (tempPath.length() == 0)
-                            tempPath = "/db";
+                            tempPath = DBBroker.ROOT_COLLECTION;
                     } else if (args[1].startsWith("/"))
                         tempPath = args[1];
                     else
@@ -1474,11 +1471,11 @@ public class InteractiveClient {
     
     private void mkcol(String collPath) throws XMLDBException {
         System.out.println("creating " + collPath);
-        if (collPath.startsWith("/db"))
-            collPath = collPath.substring("/db".length());
+        if (collPath.startsWith(DBBroker.ROOT_COLLECTION))
+            collPath = collPath.substring(DBBroker.ROOT_COLLECTION.length());
         CollectionManagementService mgtService;
         Collection c;
-        String p = "/db", token;
+        String p = DBBroker.ROOT_COLLECTION, token;
         StringTokenizer tok = new StringTokenizer(collPath, "/");
         while (tok.hasMoreTokens()) {
             token = tok.nextToken();

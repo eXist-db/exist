@@ -62,6 +62,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -245,7 +246,7 @@ public class QueryDialog extends JFrame {
         
 		final Vector data= new Vector();
 		try {
-			Collection root = client.getCollection("/db");
+			Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
 			data.addElement(collection.getName());
 			getCollections(root, collection, data);
 		} catch (XMLDBException e) {
