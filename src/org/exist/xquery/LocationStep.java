@@ -34,13 +34,10 @@ import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
-import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
-
-import sun.security.action.GetBooleanAction;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
