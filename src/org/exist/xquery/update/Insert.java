@@ -23,13 +23,14 @@
 package org.exist.xquery.update;
 
 import org.exist.EXistException;
-import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.NotificationService;
+import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -93,6 +94,7 @@ public class Insert extends Modification {
             TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
             Txn transaction = transact.beginTransaction();
             NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
+            NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
             IndexListener listener = new IndexListener(ql);
             NodeImpl node;
             NodeImpl parent;
@@ -124,6 +126,7 @@ public class Insert extends Modification {
                 doc.clearIndexListener();
                 doc.setLastModified(System.currentTimeMillis());
                 context.getBroker().storeDocument(transaction, doc);
+                notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
             checkFragmentation(transaction, modifiedDocs);
 

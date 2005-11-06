@@ -1879,7 +1879,7 @@ public class NativeBroker extends DBBroker {
 				if (val == null) {
 					LOG.debug("Node " + p.gid + " not found in document " + p.getDocument().getName() +
 							"; docId = " + p.getDocument().getDocId());
-//					LOG.debug(domDb.debugPages(p.doc));
+//					LOG.debug(domDb.debugPages(p.doc, true));
 //					return null;
 					return objectWith(p.getDocument(), p.gid); // retry?
 				}

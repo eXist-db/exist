@@ -23,7 +23,6 @@
 package org.exist.xquery.update;
 
 import org.exist.EXistException;
-import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -32,6 +31,8 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.NotificationService;
+import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -96,6 +97,7 @@ public class Rename extends Modification {
             NodeImpl node;
             NodeImpl parent;
             IndexListener listener = new IndexListener(ql);
+            NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
             for (int i = 0; i < ql.length; i++) {
                 node = ql[i];
                 doc = (DocumentImpl) node.getOwnerDocument();
@@ -124,6 +126,7 @@ public class Rename extends Modification {
                 doc.clearIndexListener();
                 doc.setLastModified(System.currentTimeMillis());
                 context.getBroker().storeDocument(transaction, doc);
+                notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
             checkFragmentation(transaction, modifiedDocs);
             transact.commit(transaction);

@@ -23,7 +23,6 @@
 package org.exist.xquery.update;
 
 import org.exist.EXistException;
-import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -33,6 +32,8 @@ import org.exist.dom.NodeListImpl;
 import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.NotificationService;
+import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -76,12 +77,12 @@ public class Update extends Modification {
 		if (contentSeq.getLength() == 0)
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
 		try {
+			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
             TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
             Txn transaction = transact.beginTransaction();
             NodeImpl ql[] = selectAndLock(inSeq.toNodeSet());
             IndexListener listener = new IndexListener(ql);
             NodeImpl node;
-            Node temp;
             TextImpl text;
             AttrImpl attribute;
             ElementImpl parent;
@@ -133,6 +134,7 @@ public class Update extends Modification {
                 }
                 doc.setLastModified(System.currentTimeMillis());
                 context.getBroker().storeDocument(transaction, doc);
+                notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
             checkFragmentation(transaction, modifiedDocs);
             transact.commit(transaction);
