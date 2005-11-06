@@ -54,6 +54,10 @@ public class IndexInfo {
 		return indexer;
 	}
     
+	int getEvent() {
+		return event;
+	}
+	
 	void setReader(XMLReader reader, EntityResolver entityResolver) throws SAXException {
 		this.reader = reader;
 		reader.setEntityResolver(entityResolver);

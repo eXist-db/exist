@@ -22,6 +22,24 @@
  */
 package org.exist.collections;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.TreeMap;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.log4j.Logger;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.exist.EXistException;
@@ -32,12 +50,15 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.security.*;
+import org.exist.security.Group;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
+import org.exist.storage.UpdateListener;
 import org.exist.storage.cache.Cacheable;
-import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
@@ -49,14 +70,12 @@ import org.exist.util.SyntaxException;
 import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.serializer.DOMStreamer;
 import org.w3c.dom.Node;
-import org.xml.sax.*;
-import org.xml.sax.ext.LexicalHandler;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-import java.io.*;
-import java.net.URL;
-import java.util.*;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 
 /**
  * This class represents a collection in the database. A collection maintains a list of 
@@ -123,9 +142,6 @@ implements Comparable, EntityResolver, Cacheable {
 	private int refCount = 0;
 	private int timestamp = 0;
 	
-	// the collection store where this collections is stored.
-	private CollectionStore db;
-	
 	private Lock lock = null;
 	
 	/** user-defined Reader */
@@ -134,9 +150,8 @@ implements Comparable, EntityResolver, Cacheable {
     /** is this a temporary collection? */
     private boolean isTempCollection = false;
     
-	public Collection(CollectionStore db, String name) {
+	public Collection(String name) {
 		setName(name);
-		this.db = db;
 		lock = new ReentrantReadWriteLock(name);
 	}
 
@@ -298,7 +313,6 @@ implements Comparable, EntityResolver, Cacheable {
 			getLock().acquire(Lock.READ_LOCK);
 			Collection child;
 			String childName;
-			long addr;
             Iterator i = subcollections.iterator();
 			while (i.hasNext() ) {
 				childName = (String) i.next();
@@ -598,7 +612,6 @@ implements Comparable, EntityResolver, Cacheable {
 			throws IOException {
 		collectionId = istream.readShort();
 		final int collLen = istream.readInt();
-		String sub;
 		subcollections = new ObjectHashSet(collLen);
 		for (int i = 0; i < collLen; i++)
 			subcollections.add(istream.readUTF());
@@ -680,6 +693,7 @@ implements Comparable, EntityResolver, Cacheable {
     	    if (trigger != null && triggersEnabled) {
     	        trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, getName() + "/" + docname, null);
     	    }
+    	    broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
         } finally {
             getLock().release();
         }
@@ -816,6 +830,8 @@ implements Comparable, EntityResolver, Cacheable {
       collectionConfEnabled = true;
 		broker.deleteObservers();
 		info.finishTrigger(broker, document.getName(), document);
+		broker.getBrokerPool().getNotificationService().notifyUpdate(document, 
+				(info.getEvent() == Trigger.UPDATE_DOCUMENT_EVENT ? UpdateListener.UPDATE : UpdateListener.ADD));
 	}
 	
 	private IndexInfo validateInternal(Txn transaction, DBBroker broker, String docName, ValidateBlock doValidate) 
@@ -865,7 +881,7 @@ implements Comparable, EntityResolver, Cacheable {
 			} else {
 			    document.getUpdateLock().acquire(Lock.WRITE_LOCK);
 			    document.setDocId(broker.getNextDocId(transaction, this));
-             addDocument(transaction, broker, document);
+			    addDocument(transaction, broker, document);
 			}
 
 			indexer.setValidating(false);
