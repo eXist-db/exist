@@ -173,7 +173,7 @@ public class XQueryTriggerTest extends XMLTestCase {
         }    	
     }
 
-    public void testStoreDocument() throws Exception {
+    public void testStoreDocument() {
     	
     	ResourceSet result;
     	
@@ -216,13 +216,12 @@ public class XQueryTriggerTest extends XMLTestCase {
 	        assertXMLEqual(DOCUMENT_CONTENT, ((XMLResource)result.getResource(0)).getContent().toString());
 	        
     	} catch (Exception e) {
-    		fail(e.getMessage());
-    		throw e;
+    		fail(e.getMessage());    		
     	}
 			
     }
 
-    public void bugtestUpdateDocument() throws Exception {
+    public void bugtestUpdateDocument() {
     	
     	ResourceSet result;
     	
@@ -264,13 +263,12 @@ public class XQueryTriggerTest extends XMLTestCase {
 	        assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(1).getContent().toString());
 
     	} catch (Exception e) {
-    		fail(e.getMessage());
-    		throw e;
+    		fail(e.getMessage());    		
     	}	
         
     }
     
-    public void testDeleteDocument() throws Exception {
+    public void testDeleteDocument() {
     	
     	ResourceSet result;
     	
@@ -311,8 +309,7 @@ public class XQueryTriggerTest extends XMLTestCase {
 	        //assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(0).getContent().toString());        
 			
     	} catch (Exception e) {
-    		fail(e.getMessage());
-    		throw e;
+    		fail(e.getMessage());    		
     	}	
     }
     

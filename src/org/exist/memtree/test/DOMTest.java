@@ -14,11 +14,10 @@ import javax.xml.parsers.SAXParserFactory;
 import junit.framework.TestCase;
 
 import org.exist.dom.QName;
-import org.exist.memtree.*;
-import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.memtree.DocumentImpl;
+import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.serializer.DOMSerializer;
-import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -31,9 +30,8 @@ import org.xml.sax.XMLReader;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class DOMTest extends TestCase {
-
-	private final static String file = "samples/biblio.rdf";
-	private final static String xml =
+	
+	private final static String XML =
 		"<test count=\"1\" value=\"5543\" xmlns:x=\"http://foo.org\" xmlns=\"http://bla.org\"><x:title id=\"s1\">My title</x:title><paragraph>First paragraph</paragraph>"
 			+ "<section><title>subsection</title></section></test>";
 
@@ -45,21 +43,26 @@ public class DOMTest extends TestCase {
 		super(name);
 	}
 	
-	public void testDocumentBuilder() throws Exception {
-		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver();
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		factory.setNamespaceAware(true);
-		XMLReader reader = factory.newSAXParser().getXMLReader();
-		reader.setContentHandler(receiver);
-		reader.parse(new InputSource(new StringReader(xml)));
-
-		Document doc = receiver.getDocument();
-		Node node = doc.getFirstChild();
-
-		StringWriter writer = new StringWriter();
-		DOMSerializer serializer = new DOMSerializer(writer, null);
-		serializer.serialize(node);
-		System.out.println(writer.toString());
+	public void testDocumentBuilder() {
+		try {
+			DocumentBuilderReceiver receiver = new DocumentBuilderReceiver();
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setNamespaceAware(true);
+			XMLReader reader = factory.newSAXParser().getXMLReader();
+			reader.setContentHandler(receiver);
+			reader.parse(new InputSource(new StringReader(XML)));
+	
+			Document doc = receiver.getDocument();
+			Node node = doc.getFirstChild();
+			assertNotNull(node);
+	
+			StringWriter writer = new StringWriter();
+			DOMSerializer serializer = new DOMSerializer(writer, null);
+			serializer.serialize(node);
+			System.out.println(writer.toString());
+    	} catch (Exception e) {
+    		fail(e.getMessage()); 
+    	}			
 	}
 	
 	public void testGetChildNodes1() {

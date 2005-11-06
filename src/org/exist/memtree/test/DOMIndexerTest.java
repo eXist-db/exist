@@ -21,12 +21,10 @@
  */
 package org.exist.memtree.test;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Properties;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
@@ -49,7 +47,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -96,12 +93,13 @@ public class DOMIndexerTest extends TestCase {
         "return" +
         "   <result>{$a/title, $a/f:name, $a}</result>";
     
-    public void testIndexer() throws Exception {
-        DocumentImpl doc = parse(XML);
-        BrokerPool pool = BrokerPool.getInstance();
-        User user = pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
-        DBBroker broker = null;
-        try {
+    public void testIndexer() {
+    	BrokerPool pool = null;
+    	DBBroker broker = null;  
+    	try {
+	        DocumentImpl doc = parse(XML);
+	        pool = BrokerPool.getInstance();
+	        User user = pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);	              
             broker = pool.get(user);
             org.exist.dom.DocumentImpl targetDoc = broker.storeTemporaryDoc(doc);
             System.out.println("testIndexer(): " + targetDoc.printTreeLevelOrder());
@@ -109,16 +107,19 @@ public class DOMIndexerTest extends TestCase {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             System.out.println(serializer.serialize(targetDoc));
+    	} catch (Exception e) {
+    		fail(e.getMessage());        	           
         } finally {
-            pool.release(broker);
+        	if (pool != null) pool.release(broker);
         }
     }
     
-    public void testStore() throws Exception {
-        BrokerPool pool = BrokerPool.getInstance();
-        User user = pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
-        DBBroker broker = null;
-        try {
+    public void testStore() {
+    	BrokerPool pool = null;
+    	DBBroker broker = null;    
+    	try {
+    		pool = BrokerPool.getInstance();
+	        User user = pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);	            
             broker = pool.get(user);
             Collection collection = broker.getOrCreateCollection(null, DBBroker.ROOT_COLLECTION + "/test");
             IndexInfo info = collection.validate(null, broker, "test.xml", XML);
@@ -127,15 +128,18 @@ public class DOMIndexerTest extends TestCase {
             broker.flush();
             broker.saveCollection(null, collection);
             System.out.println("testStore(): " + doc.printTreeLevelOrder());
+    	} catch (Exception e) {
+    		fail(e.getMessage());                
         } finally {
-            pool.release(broker);
+        	if (pool != null) pool.release(broker);
         }
     }
     
-    public void testXQuery() throws Exception {
-        BrokerPool pool = BrokerPool.getInstance();
-        DBBroker broker = null;
+    public void testXQuery() {
+    	BrokerPool pool = null;
+    	DBBroker broker = null;  
         try {
+        	pool = BrokerPool.getInstance();	         
             broker = pool.get(SecurityManager.SYSTEM_USER);
             XQuery xquery = broker.getXQueryService();
             Sequence result = xquery.execute(XQUERY, null);
@@ -151,6 +155,8 @@ public class DOMIndexerTest extends TestCase {
             }
             serializer.endDocument();
             System.out.println(out.toString());
+    	} catch (Exception e) {
+    		fail(e.getMessage());             
         } finally {
             pool.release(broker);
         }
@@ -159,7 +165,7 @@ public class DOMIndexerTest extends TestCase {
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
      */
-    protected void setUp() throws Exception {
+    protected void setUp() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -176,26 +182,31 @@ public class DOMIndexerTest extends TestCase {
     /* (non-Javadoc)
      * @see junit.framework.TestCase#tearDown()
      */
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         BrokerPool.stopAll(false);
     }
     
-    protected DocumentImpl parse(String input) throws ParserConfigurationException, SAXException, IOException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setNamespaceAware(true);
-//        factory.setFeature("http://apache.org/xml/features/validation/schema", true);
-//        factory.setFeature("http://apache.org/xml/features/validation/dynamic", true);
-        InputSource src = new InputSource(new StringReader(input));
-        SAXParser parser = factory.newSAXParser();
-        XMLReader reader = parser.getXMLReader();
-        SAXAdapter adapter = new SAXAdapter();
-        reader.setContentHandler(adapter);
-        reader.setProperty(
-                "http://xml.org/sax/properties/lexical-handler",
-                adapter);
-        reader.parse(src);
-        
-        DocumentImpl doc = (DocumentImpl) adapter.getDocument();
-        return doc;
+    protected DocumentImpl parse(String input) {
+        try {
+	    	SAXParserFactory factory = SAXParserFactory.newInstance();
+	        factory.setNamespaceAware(true);
+	//        factory.setFeature("http://apache.org/xml/features/validation/schema", true);
+	//        factory.setFeature("http://apache.org/xml/features/validation/dynamic", true);
+	        InputSource src = new InputSource(new StringReader(input));
+	        SAXParser parser = factory.newSAXParser();
+	        XMLReader reader = parser.getXMLReader();
+	        SAXAdapter adapter = new SAXAdapter();
+	        reader.setContentHandler(adapter);
+	        reader.setProperty(
+	                "http://xml.org/sax/properties/lexical-handler",
+	                adapter);
+	        reader.parse(src);
+	        
+	        return (DocumentImpl) adapter.getDocument();
+	        
+    	} catch (Exception e) {
+    		fail(e.getMessage()); 
+    	}
+    	return null;
     }
 }
