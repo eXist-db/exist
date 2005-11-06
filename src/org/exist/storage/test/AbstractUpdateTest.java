@@ -21,30 +21,24 @@
  */
 package org.exist.storage.test;
 
-import org.exist.EXistException;
+import junit.framework.TestCase;
+
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
-import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
-import org.exist.util.LockException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.xml.sax.SAXException;
-
-import junit.framework.TestCase;
 
 public abstract class AbstractUpdateTest extends TestCase {
 
@@ -53,14 +47,15 @@ public abstract class AbstractUpdateTest extends TestCase {
         "<?xml version=\"1.0\"?>" +
         "<products/>";
 
-    public void testRead() throws Exception {
-        BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
+    public void testRead() {        
+    	BrokerPool.FORCE_CORRUPTION = false;         
         
-        System.out.println("testRead() ...\n");
-        
+        BrokerPool pool = null;
         DBBroker broker = null;
         try {
+        	System.out.println("testRead() ...\n");  
+        	
+        	pool = startDB();
             broker = pool.get(SecurityManager.SYSTEM_USER);
             Serializer serializer = broker.getSerializer();
             serializer.reset();
@@ -69,7 +64,7 @@ public abstract class AbstractUpdateTest extends TestCase {
             String data;
             
             doc = broker.openDocument(TEST_COLLECTION + "/test2/test.xml", Lock.READ_LOCK);
-            assertNotNull("Document "+ TEST_COLLECTION + "/test2/test.xml should not be null", doc);
+            assertNotNull("Document '"+ TEST_COLLECTION + "/test2/test.xml' should not be null", doc);
             data = serializer.serialize(doc);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
@@ -81,30 +76,39 @@ public abstract class AbstractUpdateTest extends TestCase {
                 Item next = i.nextItem();
                 System.out.println(serializer.serialize((NodeValue) next));
             }
+        } catch (Exception e) {            
+            fail(e.getMessage());
         } finally {
-            pool.release(broker);
+            if (pool != null) pool.release(broker);
         }
     }
 
-    protected IndexInfo init(DBBroker broker, TransactionManager mgr) throws Exception {
-        Txn transaction = mgr.beginTransaction();
-        
-        System.out.println("Transaction started ...");
-        
-        Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
-        broker.saveCollection(transaction, root);
-        
-        Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
-        broker.saveCollection(transaction, test);
-        
-        IndexInfo info = test.validate(transaction, broker, "test.xml", TEST_XML);
-        test.store(transaction, broker, info, TEST_XML, false);
-
-        mgr.commit(transaction);
-        return info;
+    protected IndexInfo init(DBBroker broker, TransactionManager mgr) {
+    	IndexInfo info = null;
+    	try {
+    		
+        	Txn transaction = mgr.beginTransaction();        
+        	System.out.println("Transaction started ...");
+	        
+	        Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
+	        broker.saveCollection(transaction, root);
+	        
+	        Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
+	        broker.saveCollection(transaction, test);
+	        
+	        info = test.validate(transaction, broker, "test.xml", TEST_XML);
+	        test.store(transaction, broker, info, TEST_XML, false);
+	
+	        mgr.commit(transaction);	
+	        System.out.println("Transaction commited ...");
+	        
+	    } catch (Exception e) {            
+	        fail(e.getMessage());
+	    }  
+	    return info;
     }
     
-    protected BrokerPool startDB() throws Exception {
+    protected BrokerPool startDB() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -114,13 +118,16 @@ public abstract class AbstractUpdateTest extends TestCase {
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
         } catch (Exception e) {
-            e.printStackTrace();
             fail(e.getMessage());
         }
         return null;
     }
 
-    protected void tearDown() throws Exception {
-        BrokerPool.stopAll(false);
+    protected void tearDown() {
+    	try {
+    		BrokerPool.stopAll(false);
+        } catch (Exception e) {            
+            fail(e.getMessage());
+        }
     }    
 }

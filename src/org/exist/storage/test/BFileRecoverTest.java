@@ -21,9 +21,11 @@
  */
 package org.exist.storage.test;
 
-import java.io.File;
 import java.io.StringWriter;
 import java.io.Writer;
+
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
 
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
@@ -37,9 +39,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.FixedByteArray;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
 /**
  * @author wolf
  *
@@ -52,7 +51,7 @@ public class BFileRecoverTest extends TestCase {
     
     private BrokerPool pool;
     
-    public void testAdd() throws Exception {
+    public void testAdd() {
         TransactionManager mgr = pool.getTransactionManager();
         DBBroker broker = null;
         try {
@@ -83,12 +82,14 @@ public class BFileRecoverTest extends TestCase {
             Writer writer = new StringWriter();
             collectionsDb.dump(writer);
             System.out.println(writer.toString());
+        } catch (Exception e) {            
+            fail(e.getMessage());            
         } finally {
             pool.release(broker);
         }
     }
     
-    public void testRead() throws Exception {
+    public void testRead() {
         BrokerPool.FORCE_CORRUPTION = false;
         DBBroker broker = null;
         try {
@@ -107,12 +108,14 @@ public class BFileRecoverTest extends TestCase {
                 else
                     System.out.println(new String(value.data(), value.start(), value.getLength(), "UTF-8"));
             }
+        } catch (Exception e) {            
+            fail(e.getMessage());            
         } finally {
             pool.release(broker);
         }
     }
     
-    protected void setUp() throws Exception {
+    protected void setUp() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -121,13 +124,12 @@ public class BFileRecoverTest extends TestCase {
             Configuration config = new Configuration(file, home);
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {            
             fail(e.getMessage());
         }
     }
 
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         BrokerPool.stopAll(false);
     }
 
