@@ -26,7 +26,6 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.channels.WritableByteChannel;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -91,7 +90,6 @@ import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
-import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.StringValue;
@@ -538,7 +536,7 @@ public class NativeBroker extends DBBroker {
 				try {
 					lock.acquire(Lock.READ_LOCK);
 					
-					collection = new Collection(collectionsDb, name);
+					collection = new Collection(name);
 					Value key = null;
 					if (addr == -1) {
 						try {
@@ -1762,7 +1760,7 @@ public class NativeBroker extends DBBroker {
 				Collection current = getCollection(ROOT_COLLECTION);
 				if (current == null) {
 					LOG.debug("creating root collection " + ROOT_COLLECTION);
-					current = new Collection(collectionsDb, ROOT_COLLECTION);
+					current = new Collection(ROOT_COLLECTION);
 					current.getPermissions().setPermissions(0777);
 					current.getPermissions().setOwner(user);
 					current.getPermissions().setGroup(user.getPrimaryGroup());
@@ -1785,7 +1783,7 @@ public class NativeBroker extends DBBroker {
 							throw new PermissionDeniedException("User '"+ user.getName() + "' not allowed to write to collection '" + current.getName() + "'");
 						}
 						LOG.debug("creating collection " + path);
-						sub = new Collection(collectionsDb, path);
+						sub = new Collection(path);
 						sub.getPermissions().setOwner(user);
 						sub.getPermissions().setGroup(user.getPrimaryGroup());
 						sub.setId(getNextCollectionId(transaction));
