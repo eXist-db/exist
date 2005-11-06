@@ -3,7 +3,6 @@ package org.exist.xmldb.test;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -13,9 +12,14 @@ import junit.framework.TestCase;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.DBBroker;
 import org.exist.util.XMLFilenameFilter;
-import org.xmldb.api.*;
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.Service;
+import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
 
 public class CreateCollectionsTest extends TestCase {
 
@@ -36,18 +40,15 @@ public class CreateCollectionsTest extends TestCase {
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
 
-			// try to get collection
+			// get root collection
 			root = DatabaseManager.getCollection(URI);
-		} catch (ClassNotFoundException e) {
-		} catch (InstantiationException e) {
-		} catch (IllegalAccessException e) {
-		} catch (XMLDBException e) {
-			e.printStackTrace();
+			assertNotNull(root);			
+		} catch (Exception e) {
+			fail(e.getMessage());
 		}
 	}
 
-	public void testCreateCollection() {
-		assertNotNull(root);
+	public void testCreateCollection() {		
 		try {
 			System.out.println(
 				"Created Collection: "
@@ -140,59 +141,52 @@ public class CreateCollectionsTest extends TestCase {
 			assertTrue("After storing binary resource, data out==data in", 
 					Arrays.equals(dataStored, data) );
 			
-		} catch (XMLDBException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {			
 			fail(e.getMessage());
 		}
 	}
 
-	private XMLResource storeResourceFromFile(
-		File file,
-		Collection testCollection)
-		throws XMLDBException, IOException {
-		System.out.println("storing " + file.getAbsolutePath());
-		XMLResource res;
-		String xml;
-		res =
-			(XMLResource) testCollection.createResource(
-				file.getName(),
-				"XMLResource");
-		assertNotNull("storeResourceFromFile", res);
-		xml = XMLUtil.readFile(file, "UTF-8");
-		res.setContent(xml);
-		testCollection.storeResource(res);
-		System.out.println("stored " + file.getAbsolutePath());
-		return res;
+	private XMLResource storeResourceFromFile(File file, Collection testCollection) {
+		XMLResource res = null;
+		try {
+			System.out.println("storing " + file.getAbsolutePath());			
+			String xml;
+			res = (XMLResource) testCollection.createResource(file.getName(), "XMLResource");
+			assertNotNull("storeResourceFromFile", res);
+			xml = XMLUtil.readFile(file, "UTF-8");
+			res.setContent(xml);
+			testCollection.storeResource(res);
+			System.out.println("stored " + file.getAbsolutePath());			
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+        return res;
 	}
 
-	private byte[] storeBinaryResourceFromFile(
-			File file,
-			Collection testCollection)
-			throws XMLDBException, IOException {
+	private byte[] storeBinaryResourceFromFile(File file, Collection testCollection) {
+		byte[] data = null;
+		try {
 			System.out.println("storing " + file.getAbsolutePath());
 
-			Resource res =
-				(BinaryResource) testCollection.createResource(
-					file.getName(),
-					"BinaryResource" );
+			Resource res = (BinaryResource)testCollection.createResource(file.getName(), "BinaryResource");
 			assertNotNull("store binary Resource From File", res);
 			
 			// Get an array of bytes from the file:
 			 FileInputStream istr = new FileInputStream(file); 
 			 BufferedInputStream bstr = new BufferedInputStream( istr ); // promote
 			 int size = (int) file.length();  // get the file size (in bytes)
-			 byte[] data = new byte[size]; // allocate byte array of right size
+			 data = new byte[size]; // allocate byte array of right size
 			 bstr.read( data, 0, size );   // read into byte array
 			 bstr.close();
 			 
 			res.setContent(data);
 			testCollection.storeResource(res);
 			System.out.println("stored " + file.getAbsolutePath());
-			return data;
-		}
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }			
+		return data;
+	}
 	
 	public void testMultipleCreates() {
 		try {
@@ -217,22 +211,24 @@ public class CreateCollectionsTest extends TestCase {
         	printChildren(rootColl);
         	c1 = rootColl.getChildCollection("dummy1");
         	assertNull(c1);
-		} catch(Exception e) {
-			e.printStackTrace();
+		} catch(Exception e) {			
 			fail(e.getMessage());
 		}
 	}
 
-    private static void printChildren(Collection c) throws XMLDBException {
-        System.out.print("Children of " + c.getName() + ":");
-        String[] names = c.listChildCollections();
-        for (int i = 0; i < names.length; i++)
-            System.out.print(" " + names[i]);
-        System.out.println();
+    private static void printChildren(Collection c) {
+        try{
+        	System.out.print("Children of " + c.getName() + ":");	        
+	        String[] names = c.listChildCollections();
+	        for (int i = 0; i < names.length; i++)
+	            System.out.print(" " + names[i]);
+	        System.out.println();
+		} catch(Exception e) {			
+			fail(e.getMessage());
+		}	        
     }
     
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(CreateCollectionsTest.class);
-		//junit.swingui.TestRunner.run(LexerTest.class);
 	}
 }

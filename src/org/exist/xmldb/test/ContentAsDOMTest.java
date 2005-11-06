@@ -68,30 +68,34 @@ public class ContentAsDOMTest extends TestCase {
         super(name);
     }
     
-    public void testGetContentAsDOM() throws Exception {
-        XQueryService service = (XQueryService) root.getService("XQueryService", "1.0");
-        ResourceSet result = service.query(XQUERY);
-        for(long i = 0; i < result.getSize(); i++) {
-            XMLResource r = (XMLResource) result.getResource(i);
-            
-            System.out.println("Output of getContent():");
-            System.out.println(r.getContent());
-            
-            System.out.println("Output of getContentAsDOM():");
-            Node node = r.getContentAsDOM();
-            Transformer t = TransformerFactory.newInstance().newTransformer();
-            t.setOutputProperty(OutputKeys.INDENT, "yes");
-            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            DOMSource source = new DOMSource(node);
-            StreamResult output = new StreamResult(System.out);
-            t.transform(source, output);
+    public void testGetContentAsDOM() {
+        try {
+        	XQueryService service = (XQueryService) root.getService("XQueryService", "1.0");        
+	        ResourceSet result = service.query(XQUERY);
+	        for(long i = 0; i < result.getSize(); i++) {
+	            XMLResource r = (XMLResource) result.getResource(i);
+	            
+	            System.out.println("Output of getContent():");
+	            System.out.println(r.getContent());
+	            
+	            System.out.println("Output of getContentAsDOM():");
+	            Node node = r.getContentAsDOM();
+	            Transformer t = TransformerFactory.newInstance().newTransformer();
+	            t.setOutputProperty(OutputKeys.INDENT, "yes");
+	            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+	            DOMSource source = new DOMSource(node);
+	            StreamResult output = new StreamResult(System.out);
+	            t.transform(source, output);
+	        }
+        } catch (Exception e) {
+            fail(e.getMessage());            
         }
     }
     
     /*
      * @see TestCase#setUp()
      */
-    protected void setUp() throws Exception {
+    protected void setUp() {
         try {
             // initialize driver
             Class cl = Class.forName(DRIVER);
@@ -103,24 +107,25 @@ public class ContentAsDOMTest extends TestCase {
             Resource resource = root.createResource("test.xml", "XMLResource");
             resource.setContent(XML);
             root.storeResource(resource);
-        } catch (ClassNotFoundException e) {
-        } catch (InstantiationException e) {
-        } catch (IllegalAccessException e) {
-        } catch (XMLDBException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            fail(e.getMessage());
         }
     }
 
     /*
      * @see TestCase#tearDown()
      */
-    protected void tearDown() throws Exception {
-        Resource resource = root.getResource("test.xml");
-        assertNotNull("text.xml not found", resource);
-        root.removeResource(resource);
-        DatabaseInstanceManager mgr = (DatabaseInstanceManager)
-            root.getService("DatabaseInstanceManager", "1.0");
-        mgr.shutdown();
+    protected void tearDown() {
+    	try {
+	        Resource resource = root.getResource("test.xml");
+	        assertNotNull("text.xml not found", resource);
+	        root.removeResource(resource);
+	        DatabaseInstanceManager mgr = (DatabaseInstanceManager)
+	            root.getService("DatabaseInstanceManager", "1.0");
+	        mgr.shutdown();
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
     
     public static void main(String[] args) {
