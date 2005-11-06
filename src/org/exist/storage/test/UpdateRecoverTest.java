@@ -432,7 +432,7 @@ public class UpdateRecoverTest extends TestCase {
     public void testXMLDBRead() throws Exception {
         BrokerPool.FORCE_CORRUPTION = false;
         
-        org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist:// " + DBBroker.ROOT_COLLECTION + "/test/test2", "admin", "");
+        org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION + "/test/test2", "admin", "");
         Resource res = test.getResource("test_xmldb.xml");
         assertNotNull("Document should not be null", res);
         System.out.println(res.getContent());
