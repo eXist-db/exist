@@ -1,7 +1,5 @@
 package org.exist.storage.io.test;
 
-import java.io.EOFException;
-import java.io.IOException;
 import java.util.Random;
 
 import junit.framework.TestCase;
@@ -56,64 +54,66 @@ public class VariableByteStreamTest extends TestCase {
 				s = is.readShort();
 				assertEquals(s, values[j]);
 			}
-		} catch (EOFException e) {
-			fail("Exception: " + e);
-		} catch(IOException e) {
-			fail("Exception: " + e);
+		} catch (Exception e) {
+			fail(e.getMessage());
 		}
 	}
 	
-	public void testCopyTo() throws IOException {
-	    Random rand = new Random(System.currentTimeMillis());
-	    int valuesWritten = 0;
-	    int dataLen = 0;
-	    VariableByteOutputStream os = new VariableByteOutputStream();
-	    for(int i = 0; i < 1000; i++) {
-	        int count = rand.nextInt(0xfff);
-	        os.writeShort((short)count);
-	        dataLen += 2;
-	        for(int j = 0; j < count; j++) {
-	            int next = rand.nextInt(0xff);
-	            os.writeShort((short) next);
-	            valuesWritten++;
-	            dataLen += 2;
-	        }
-	    }
-	    
-	    byte[] data = os.toByteArray();
-	    System.out.println(valuesWritten + " values written");
-		System.out.println("compressed data length: " + data.length + "; original: " + dataLen);
-		
-		int valuesCopied = 0;
-		dataLen = 0;
-		VariableByteArrayInput is = new VariableByteArrayInput(data);
-		os = new VariableByteOutputStream();
-		while(is.available() > 0) {
-		    int count = is.readShort();
-		    boolean skip = rand.nextBoolean();
-		    if(skip)
-		        is.skip(count);
-		    else {
-		        os.writeShort(count);
-		        is.copyTo(os, count);
-		        valuesCopied += count;
-		        dataLen += 2 * count + 2;
+	public void testCopyTo() {
+		try {
+		    Random rand = new Random(System.currentTimeMillis());
+		    int valuesWritten = 0;
+		    int dataLen = 0;
+		    VariableByteOutputStream os = new VariableByteOutputStream();
+		    for(int i = 0; i < 1000; i++) {
+		        int count = rand.nextInt(0xfff);
+		        os.writeShort((short)count);
+		        dataLen += 2;
+		        for(int j = 0; j < count; j++) {
+		            int next = rand.nextInt(0xff);
+		            os.writeShort((short) next);
+		            valuesWritten++;
+		            dataLen += 2;
+		        }
 		    }
-		}
-		data = os.toByteArray();
-		System.out.println("copied " + valuesCopied + " values; skipped " + (valuesWritten - valuesCopied));
-		System.out.println("compressed data length: " + data.length + "; original: " + dataLen);
-		
-		int valuesRead = 0;
-		is = new VariableByteArrayInput(data);
-		while(is.available() > 0) {
-		    int count = is.readShort();
-		    for(int i = 0; i < count; i++) {
-		        is.readShort();
-		        valuesRead++;
-		    }
-		}
-		assertEquals(valuesRead, valuesCopied);
+		    
+		    byte[] data = os.toByteArray();
+		    System.out.println(valuesWritten + " values written");
+			System.out.println("compressed data length: " + data.length + "; original: " + dataLen);
+			
+			int valuesCopied = 0;
+			dataLen = 0;
+			VariableByteArrayInput is = new VariableByteArrayInput(data);
+			os = new VariableByteOutputStream();
+			while(is.available() > 0) {
+			    int count = is.readShort();
+			    boolean skip = rand.nextBoolean();
+			    if(skip)
+			        is.skip(count);
+			    else {
+			        os.writeShort(count);
+			        is.copyTo(os, count);
+			        valuesCopied += count;
+			        dataLen += 2 * count + 2;
+			    }
+			}
+			data = os.toByteArray();
+			System.out.println("copied " + valuesCopied + " values; skipped " + (valuesWritten - valuesCopied));
+			System.out.println("compressed data length: " + data.length + "; original: " + dataLen);
+			
+			int valuesRead = 0;
+			is = new VariableByteArrayInput(data);
+			while(is.available() > 0) {
+			    int count = is.readShort();
+			    for(int i = 0; i < count; i++) {
+			        is.readShort();
+			        valuesRead++;
+			    }
+			}
+			assertEquals(valuesRead, valuesCopied);
+		} catch (Exception e) {
+			fail(e.getMessage()); 
+		}		
 	}
 	
 	public static void main(String args[]) {

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import junit.framework.TestCase;
 
 import org.exist.cluster.ClusterEvent;
-import org.exist.cluster.ClusterException;
 import org.exist.cluster.CreateCollectionClusterEvent;
 import org.exist.cluster.RemoveClusterEvent;
 import org.exist.cluster.StoreClusterEvent;
@@ -22,32 +21,30 @@ public class JournalManagerTest extends TestCase{
 
     Configuration configuration;
 
-    protected void setUp() throws Exception {
-        configuration = new Configuration("conf.xml", "." );
-        File temp = new File("test");
-        String[] files = temp.list();
-        for( int i=0; i<files.length; i++)
-        {
-            String fName = files[i];
-            if( fName.indexOf("jbx") > 0 )
-            {
-                File f = new File(temp, fName);
-                f.delete();
-            }
-        }
+    protected void setUp() {
+    	try  {
+	        configuration = new Configuration("conf.xml", "." );
+	        File temp = new File("test");
+	        String[] files = temp.list();
+	        for( int i=0; i<files.length; i++)
+	        {
+	            String fName = files[i];
+	            if( fName.indexOf("jbx") > 0 )
+	            {
+	                File f = new File(temp, fName);
+	                f.delete();
+	            }
+	        }
+    	} catch (Exception e) {
+    		fail(e.getMessage());    		
+    	}	        
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    public void testWriteEventJournal() throws Exception
-    {
+    public void testWriteEventJournal() {
         saveEvent( new JournalManager( configuration ), 0 );
     }
 
-    public void testWriteRead() throws Exception
-    {
+    public void testWriteRead() {
         JournalManager journal = new JournalManager( configuration );
         saveEvent( journal , 0 );
         ClusterEvent ev = readEvent( journal, 0 );
@@ -57,8 +54,7 @@ public class JournalManagerTest extends TestCase{
         assertEquals("Wrong collectionName value", "test", ((CreateCollectionClusterEvent)ev).getCollectionName());
     }
 
-    public void testMultiShuffleWriteRead() throws Exception
-    {
+    public void testMultiShuffleWriteRead() {
         JournalManager journal = new JournalManager( configuration );
         saveEvent( journal , 0 );
         saveEvent( journal , "test1", 1 );
@@ -83,8 +79,7 @@ public class JournalManagerTest extends TestCase{
         assertEquals("Wrong collectionName value", "test2", ((CreateCollectionClusterEvent)ev).getCollectionName());
     }
 
-    public void testMultiShuffleWriteReadMultiEvents() throws Exception
-    {
+    public void testMultiShuffleWriteReadMultiEvents() {
         JournalManager journal = new JournalManager( configuration );
         saveEvent( journal , 0 );
         saveEvent( journal , "test1", 1 );
@@ -119,8 +114,7 @@ public class JournalManagerTest extends TestCase{
         assertEquals("Wrong collectionName value", "collection", ((RemoveClusterEvent)ev).getCollectionName());
     }
 
-    public void testMultiShuffleWriteReadStoreDocument() throws Exception
-    {
+    public void testMultiShuffleWriteReadStoreDocument() {
         JournalManager journal = new JournalManager( configuration );
         String content = getExternalXML();
         StoreClusterEvent s = new StoreClusterEvent( content, "name", "docu");
@@ -160,8 +154,7 @@ public class JournalManagerTest extends TestCase{
     }
 
 
-    public void testMultiShuffleWriteReadWithQueue() throws Exception
-    {
+    public void testMultiShuffleWriteReadWithQueue() {
         JournalManager journal = new JournalManager( configuration );
         saveEvent( journal , 0 );
         saveEvent( journal , "test1", 1 );
@@ -187,8 +180,7 @@ public class JournalManagerTest extends TestCase{
     }
 
 
-    public void testMultiShuffleWriteReadWithRotation() throws Exception
-    {
+    public void testMultiShuffleWriteReadWithRotation() {
         JournalManager journal = new JournalManager( configuration );
         String content = getExternalXML();
         StoreClusterEvent s = new StoreClusterEvent( content, "name", "docu");
@@ -241,8 +233,7 @@ public class JournalManagerTest extends TestCase{
         assertEquals("Wrong counter",2,journal.getCounter());
     }
 
-    public void testRetrieveEvents() throws Exception
-    {
+    public void testRetrieveEvents() {
        JournalManager journal = new JournalManager( configuration );
        saveEvent( journal , 0 );
        saveEvent( journal , "test1", 1 );
@@ -268,27 +259,27 @@ public class JournalManagerTest extends TestCase{
         
     }
 
-    public void testRotation() throws Exception
-    {
+    public void testRotation() {
       //TODO: aggiungere test sulla rotazione....... opportuno creare una classe a parte di test.
     }
 
-    private void saveEvent(JournalManager journal,  int idTest)  throws ClusterException
-    {
+    private void saveEvent(JournalManager journal,  int idTest) {
         saveEvent(journal, "test", idTest);
     }
 
-    private void saveEvent(JournalManager journal, String collectionName, int idTest)  throws ClusterException
-    {
+    private void saveEvent(JournalManager journal, String collectionName, int idTest) {
         CreateCollectionClusterEvent ev = new CreateCollectionClusterEvent( DBBroker.ROOT_COLLECTION + "/test", collectionName);
         ev.setId(idTest);
         saveEvent(journal, ev);
     }
 
-    private void saveEvent(JournalManager journal, ClusterEvent ev)  throws ClusterException
-    {
-        journal.enqueEvent( ev );
-        journal.squeueEvent();
+    private void saveEvent(JournalManager journal, ClusterEvent ev) {
+    	try {
+	        journal.enqueEvent( ev );
+	        journal.squeueEvent();
+    	} catch (Exception e) {
+    		fail(e.getMessage());    		
+    	}		        
     }
 
 
