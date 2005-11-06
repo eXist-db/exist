@@ -32,11 +32,15 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementValue;
+import org.exist.storage.NotificationService;
+import org.exist.storage.UpdateListener;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
+
+import sun.security.action.GetBooleanAction;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
@@ -51,6 +55,8 @@ public class LocationStep extends Step {
 
 	protected NodeSet currentSet = null;
 	protected DocumentSet currentDocs = null;
+	protected UpdateListener listener = null;
+	
 	protected Expression parent = null;
 	
 	// Fields for caching the last result
@@ -201,7 +207,8 @@ public class LocationStep extends Step {
 		}
 		
 		if(contextSequence instanceof NodeSet) {
-//			cached = new CachedResult((NodeSet)contextSequence, temp);
+			cached = new CachedResult((NodeSet)contextSequence, temp);
+			registerUpdateListener();
 		}
 		// remove duplicate nodes
 		temp.removeDuplicates();
@@ -279,11 +286,11 @@ public class LocationStep extends Step {
 		if (test.isWildcardTest()) {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
-        } else if(axis == Constants.ATTRIBUTE_AXIS &&
-                !(contextSet instanceof VirtualNodeSet) && contextSet.getLength() == 1) {
-            NodeProxy proxy = contextSet.get(0);
-            if (proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
-                result = contextSet.directSelectAttribute(test.getName(), inPredicate);
+//        } else if(axis == Constants.ATTRIBUTE_AXIS &&
+//                !(contextSet instanceof VirtualNodeSet) && contextSet.getLength() == 1) {
+//            NodeProxy proxy = contextSet.get(0);
+//            if (proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
+//                result = contextSet.directSelectAttribute(test.getName(), inPredicate);
         }
         if (result == null) {
             if(preloadNodeSets()) {
@@ -295,6 +302,7 @@ public class LocationStep extends Step {
                             ElementValue.ATTRIBUTE,
                             currentDocs,
                             test.getName(), null);
+                    registerUpdateListener();
                 }
                 if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
                     result = currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, inPredicate);
@@ -323,6 +331,7 @@ public class LocationStep extends Step {
 			vset.setInPredicate(inPredicate);
 			return vset;
 		} else if(preloadNodeSets()) {
+			LOG.debug("Preload node sets for: " + toString());
 			DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs == currentDocs || docs.equals(currentDocs))) {
                 currentDocs = docs;
@@ -331,6 +340,7 @@ public class LocationStep extends Step {
                         ElementValue.ELEMENT,
                         currentDocs,
                         test.getName(), null);
+                registerUpdateListener();
             }
             return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
 		} else {
@@ -359,6 +369,7 @@ public class LocationStep extends Step {
                         ElementValue.ELEMENT,
                         currentDocs,
                         test.getName(), null);
+                registerUpdateListener();
             }
             return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, 
                     axis == Constants.DESCENDANT_SELF_AXIS, inPredicate);
@@ -386,6 +397,7 @@ public class LocationStep extends Step {
 					(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
 						ElementValue.ELEMENT, currentDocs,
 						test.getName(), null);
+				registerUpdateListener();
 			}
 			result = currentSet.selectSiblings(
 				contextSet,
@@ -436,6 +448,7 @@ public class LocationStep extends Step {
 					(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
 						ElementValue.ELEMENT, currentDocs,
 						test.getName(), null);
+				registerUpdateListener();
 			}
 			result = currentSet.selectFollowing(contextSet);
 		}
@@ -454,6 +467,7 @@ public class LocationStep extends Step {
                     (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
                         ElementValue.ELEMENT, currentDocs,
                         test.getName(), null);
+                registerUpdateListener();
             }
             result = currentSet.selectPreceding(contextSet);
         }
@@ -499,6 +513,7 @@ public class LocationStep extends Step {
                     context.getBroker().getElementIndex().findElementsByTagName(
                             ElementValue.ELEMENT, currentDocs,
                             test.getName(), null);
+                registerUpdateListener();
             }
             result =
                 currentSet.selectAncestors(
@@ -544,6 +559,37 @@ public class LocationStep extends Step {
 	    return ds;
 	}
 	
+	protected void registerUpdateListener() {
+		if (listener == null) {
+			listener = new UpdateListener() {
+				public void documentUpdated(DocumentImpl document, int event) {
+					if (event == UpdateListener.ADD) {
+						// clear all
+						currentDocs = null;
+						currentSet = null;
+						cached = null;
+					} else {
+						if (currentDocs != null && currentDocs.contains(document.getDocId())) {
+							currentDocs = null;
+							currentSet = null;
+						}
+						if (cached != null && cached.getResult().getDocumentSet().contains(document.getDocId()))
+							cached = null;
+					}
+				};
+			};
+			NotificationService service = context.getBroker().getBrokerPool().getNotificationService();
+			service.subscribe(listener);
+		}
+	}
+	
+	protected void deregisterUpdateListener() {
+		if (listener != null) {
+			NotificationService service = context.getBroker().getBrokerPool().getNotificationService();
+			service.unsubscribe(listener);
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Step#resetState()
 	 */
@@ -552,5 +598,5 @@ public class LocationStep extends Step {
 		currentSet = null;
 		currentDocs = null;
 		cached = null;
-	} 
+	}
 }

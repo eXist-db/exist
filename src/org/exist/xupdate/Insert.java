@@ -23,14 +23,14 @@ package org.exist.xupdate;
 import java.util.Map;
 
 import org.exist.EXistException;
-import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.NotificationService;
+import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
@@ -77,6 +77,7 @@ public class Insert extends Modification {
         try {
             NodeImpl[] ql = selectAndLock();
             IndexListener listener = new IndexListener(ql);
+            NotificationService notifier = broker.getBrokerPool().getNotificationService();
             NodeImpl node;
             NodeImpl parent;
             DocumentImpl doc = null;
@@ -105,6 +106,7 @@ public class Insert extends Modification {
                 doc.clearIndexListener();
                 doc.setLastModified(System.currentTimeMillis());
                 broker.storeDocument(transaction, doc);
+                notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
             checkFragmentation(transaction, modifiedDocs);
             return ql.length;

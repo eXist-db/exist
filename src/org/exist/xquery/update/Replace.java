@@ -32,6 +32,8 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.NotificationService;
+import org.exist.storage.UpdateListener;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -86,6 +88,7 @@ public class Replace extends Modification {
             Txn transaction = transact.beginTransaction();
             NodeImpl ql[] = selectAndLock(inSeq.toNodeSet());
             IndexListener listener = new IndexListener(ql);
+            NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
             NodeImpl node;
             Item temp;
             TextImpl text;
@@ -131,6 +134,7 @@ public class Replace extends Modification {
                 }
                 doc.setLastModified(System.currentTimeMillis());
                 context.getBroker().storeDocument(transaction, doc);
+                notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
             checkFragmentation(transaction, modifiedDocs);
             transact.commit(transaction);

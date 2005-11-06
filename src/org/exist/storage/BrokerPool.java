@@ -380,6 +380,12 @@ public class BrokerPool {
      */
     private SecurityManager securityManager = null;	
     
+    /**
+     * The global notification service used to subscribe
+     * to document updates.
+     */
+    private NotificationService notificationService = null;
+    
 	/**
 	 * The system maintenance tasks of the database instance.
 	 */
@@ -596,6 +602,9 @@ public class BrokerPool {
         xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
         //REFACTOR : construct then... configure
         collectionCache = new CollectionCache(this, DEFAULT_COLLECTION_BUFFER_SIZE, 0.9);
+        
+        notificationService = new NotificationService();
+        
         //REFACTOR : construct then... configure
         //TODO : journal directory *may* be different from "db-connection.data-dir"
         transactionManager = new TransactionManager(this, new File((String) conf.getProperty("db-connection.data-dir")), isTransactional());		
@@ -770,6 +779,10 @@ public class BrokerPool {
         return syncDaemon;
     }
 	
+    public NotificationService getNotificationService() {
+    	return notificationService;
+    }
+    
     /**
      * Returns whether transactions can be handled by the database instance.
      * 
