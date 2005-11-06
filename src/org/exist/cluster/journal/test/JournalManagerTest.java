@@ -1,14 +1,20 @@
 //$Id$
 package org.exist.cluster.journal.test;
 
-import junit.framework.TestCase;
-import org.exist.cluster.*;
-import org.exist.cluster.journal.JournalManager;
-import org.exist.cluster.journal.JournalIdGenerator;
-import org.exist.util.Configuration;
-
 import java.io.File;
 import java.util.ArrayList;
+
+import junit.framework.TestCase;
+
+import org.exist.cluster.ClusterEvent;
+import org.exist.cluster.ClusterException;
+import org.exist.cluster.CreateCollectionClusterEvent;
+import org.exist.cluster.RemoveClusterEvent;
+import org.exist.cluster.StoreClusterEvent;
+import org.exist.cluster.journal.JournalIdGenerator;
+import org.exist.cluster.journal.JournalManager;
+import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 
 /**
  */
@@ -47,7 +53,7 @@ public class JournalManagerTest extends TestCase{
         ClusterEvent ev = readEvent( journal, 0 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 0, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test", ((CreateCollectionClusterEvent)ev).getCollectionName());
     }
 
@@ -61,19 +67,19 @@ public class JournalManagerTest extends TestCase{
         ClusterEvent ev = readEvent( journal, 0 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 0, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test", ((CreateCollectionClusterEvent)ev).getCollectionName());
 
         ev = readEvent( journal, 3 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 3, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION +  "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test3", ((CreateCollectionClusterEvent)ev).getCollectionName());
 
         ev = readEvent( journal, 2 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 2, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test2", ((CreateCollectionClusterEvent)ev).getCollectionName());
     }
 
@@ -91,19 +97,19 @@ public class JournalManagerTest extends TestCase{
         ClusterEvent ev = readEvent( journal, 0 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 0, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test", ((CreateCollectionClusterEvent)ev).getCollectionName());
 
         ev = readEvent( journal, 3 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 3, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION +  "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test3", ((CreateCollectionClusterEvent)ev).getCollectionName());
 
         ev = readEvent( journal, 2 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 2, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test2", ((CreateCollectionClusterEvent)ev).getCollectionName());
 
         ev = readEvent( journal, 4 );
@@ -131,7 +137,7 @@ public class JournalManagerTest extends TestCase{
         ClusterEvent ev = readEvent( journal, 0 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 0, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test3", ((CreateCollectionClusterEvent)ev).getCollectionName());
 
         ev = readEvent( journal, 3 );
@@ -143,13 +149,13 @@ public class JournalManagerTest extends TestCase{
         ev = readEvent( journal, 2 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 2, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test2", ((CreateCollectionClusterEvent)ev).getCollectionName());
 
         ev = readEvent( journal, 4 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 4, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test4", ((CreateCollectionClusterEvent)ev).getCollectionName());
     }
 
@@ -164,19 +170,19 @@ public class JournalManagerTest extends TestCase{
         ClusterEvent ev = readEvent( journal, 0 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 0, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test", ((CreateCollectionClusterEvent)ev).getCollectionName());
 
         ev = readEvent( journal, 3 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 3, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test3", ((CreateCollectionClusterEvent)ev).getCollectionName());
 
         ev = readEvent( journal, 2 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 2, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test2", ((CreateCollectionClusterEvent)ev).getCollectionName());
     }
 
@@ -208,7 +214,7 @@ public class JournalManagerTest extends TestCase{
         ClusterEvent ev = readEvent( journal, 0 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 0, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test3", ((CreateCollectionClusterEvent)ev).getCollectionName());
 
         ev = readEvent( journal, 3 );
@@ -227,7 +233,7 @@ public class JournalManagerTest extends TestCase{
         ev = readEvent( journal, 4 );
         assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
         assertEquals("Wrong id", 4, ev.getId());
-        assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
         assertEquals("Wrong collectionName value", "test4", ((CreateCollectionClusterEvent)ev).getCollectionName());
 
         assertEquals("Wrong lastIdSaved",2,journal.getLastIdSaved());
@@ -256,7 +262,7 @@ public class JournalManagerTest extends TestCase{
        ClusterEvent ev = (ClusterEvent) events.get(2);
        assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
        assertEquals("Wrong id", 2 , ev.getId());
-       assertEquals("Wrong parent value", "/db/test", ((CreateCollectionClusterEvent)ev).getParent());
+       assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());
        assertEquals("Wrong collectionName value", "test2", ((CreateCollectionClusterEvent)ev).getCollectionName());
 
         
@@ -274,7 +280,7 @@ public class JournalManagerTest extends TestCase{
 
     private void saveEvent(JournalManager journal, String collectionName, int idTest)  throws ClusterException
     {
-        CreateCollectionClusterEvent ev = new CreateCollectionClusterEvent( "/db/test", collectionName);
+        CreateCollectionClusterEvent ev = new CreateCollectionClusterEvent( DBBroker.ROOT_COLLECTION + "/test", collectionName);
         ev.setId(idTest);
         saveEvent(journal, ev);
     }
@@ -322,7 +328,7 @@ public class JournalManagerTest extends TestCase{
                 "\t</typedef>\n" +
                 "\t\n" +
                 "\t<target name=\"store\" xmlns:xmldb=\"http://exist-db.org/ant\">\n" +
-                "        <xmldb:store uri=\"xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays\"\n" +
+                "        <xmldb:store uri=\"xmldb:exist://localhost:8080/exist/xmlrpc" + DBBroker.ROOT_COLLECTION + "/shakespeare/plays\"\n" +
                 "\t\t\tcreatecollection=\"true\">\n" +
                 "            <fileset dir=\"samples/shakespeare\"> \n" +
                 "                <include name=\"*.xml\"/>\n" +
@@ -330,28 +336,28 @@ public class JournalManagerTest extends TestCase{
                 "            </fileset>\n" +
                 "\t\t</xmldb:store>\n" +
                 "\n" +
-                "        <xmldb:store uri=\"xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays\"\n" +
+                "        <xmldb:store uri=\"xmldb:exist://localhost:8080/exist/xmlrpc/" + DBBroker.ROOT_COLLECTION + "/shakespeare/plays\"\n" +
                 "\t\t\ttype=\"binary\">\n" +
                 "\t\t\t<fileset dir=\"samples/shakespeare\">\n" +
                 "\t\t\t\t<include name=\"*.css\"/>\n" +
                 "\t\t\t</fileset>\n" +
                 "\t\t</xmldb:store>\n" +
                 "\t\t\n" +
-                "        <xmldb:store uri=\"xmldb:exist://localhost:8080/exist/xmlrpc/db/library\"\n" +
+                "        <xmldb:store uri=\"xmldb:exist://localhost:8080/exist/xmlrpc/" + DBBroker.ROOT_COLLECTION + "/library\"\n" +
                 "\t\t\tcreatecollection=\"true\">\n" +
                 "\t\t\t<fileset dir=\"samples\" includes=\"biblio.rdf\"/>\n" +
                 "\t\t</xmldb:store>\n" +
                 "\n" +
-                "        <xmldb:store uri=\"xmldb:exist://localhost:8080/exist/xmlrpc/db/xinclude\"\n" +
+                "        <xmldb:store uri=\"xmldb:exist://localhost:8080/exist/xmlrpc"+ DBBroker.ROOT_COLLECTION + "/xinclude\"\n" +
                 "\t\t\tcreatecollection=\"true\">\n" +
                 "\t\t\t<fileset dir=\"samples/xinclude\" includes=\"**.xml\"/>\n" +
                 "        </xmldb:store>\n" +
                 "\n" +
-                "        <xmldb:store uri=\"xmldb:exist://localhost:8080/exist/xmlrpc/db\">\n" +
+                "        <xmldb:store uri=\"xmldb:exist://localhost:8080/exist/xmlrpc" + DBBroker.ROOT_COLLECTION + "\">\n" +
                 "            <fileset dir=\"samples\" includes=\"examples.xml\"/>\n" +
                 "        </xmldb:store>\n" +
                 "\n" +
-                "\t\t<xmldb:store uri=\"xmldb:exist://localhost:8080/exist/xmlrpc/db/mods\">\n" +
+                "\t\t<xmldb:store uri=\"xmldb:exist://localhost:8080/exist/xmlrpc" + DBBroker.ROOT_COLLECTION + "/mods\">\n" +
                 "            <fileset dir=\"mods\" includes=\"**.xml\"/>\n" +
                 "        </xmldb:store>\n" +
                 "\t</target>\n" +

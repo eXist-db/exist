@@ -90,8 +90,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
       Collection root = null;
       if (createCollection)
       {
-        root = DatabaseManager.getCollection(baseURI + "/db");
-        root = mkcol(root, baseURI, "/db", path);
+        root = DatabaseManager.getCollection(baseURI + DBBroker.ROOT_COLLECTION);
+        root = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION, path);
       } else
         root = DatabaseManager.getCollection(uri, user, password);
       if (root == null)
@@ -147,7 +147,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
             relDir = relDir.replace(File.separatorChar, '/');
             if (createSubcollections && (prevDir == null || (!relDir.equals(prevDir))))
             {
-              col = mkcol(root, baseURI, "/db" + path, relDir);
+              col = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION + path, relDir);
               prevDir = relDir;
             }
           }

@@ -73,7 +73,7 @@ public class Restore extends DefaultHandler {
 
 		stack.push(contents);
 
-		// check if /db/system is in the backup. We have to process
+		// check if the system collection is in the backup. We have to process
 		// this first to create users.
 		File dir = contents.getParentFile();	
 		//TODO : find a way to make a corespondance with DBRoker's named constants
@@ -85,9 +85,9 @@ public class Restore extends DefaultHandler {
 						+ "system"
 						+ File.separatorChar
 						+ "__contents__.xml");
-			// put /db/system on top of the stack
+			// put the system collection on top of the stack
 			if (sys.canRead()) {
-//				TODO : find a way to make a corespondance with DBRoker's named constants
+				//TODO : find a way to make a corespondance with DBRoker's named constants
 				System.out.println("found 'db" + File.separatorChar + "system'. It will be processed first.");
 				stack.push(sys);
 			}
