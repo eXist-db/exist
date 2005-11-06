@@ -26,13 +26,10 @@ import java.io.StringReader;
 import junit.textui.TestRunner;
 
 import org.exist.collections.IndexInfo;
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.xupdate.Modification;
@@ -45,12 +42,13 @@ public class AppendTest extends AbstractUpdateTest {
         TestRunner.run(AppendTest.class);
     }
     
-    public void testUpdate() throws Exception {
+    public void testUpdate() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDB();
-        
+        BrokerPool pool = null;       
         DBBroker broker = null;
+        
         try {
+        	pool = startDB();
             broker = pool.get(SecurityManager.SYSTEM_USER);
             
             TransactionManager mgr = pool.getTransactionManager();
@@ -105,8 +103,10 @@ public class AppendTest extends AbstractUpdateTest {
                 proc.reset();
             }
             pool.getTransactionManager().getJournal().flushToLog(true);
+        } catch (Exception e) {            
+            fail(e.getMessage());            
         } finally {
-            pool.release(broker);
+            if (pool != null) pool.release(broker);
         }
     }
 

@@ -23,8 +23,9 @@ package org.exist.storage.test;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Iterator;
-import java.util.List;
+
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
 
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
@@ -39,9 +40,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
 import org.exist.xquery.TerminatedException;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 
 /**
  * Tests transaction management and basic recovery for the BTree base class.
@@ -58,7 +56,7 @@ public class BTreeRecoverTest extends TestCase {
     private BrokerPool pool;
     private int count = 0;
     
-    public void testAdd() throws Exception {
+    public void testAdd() {
         System.out.println("Add some random data and force db corruption ...\n");
         
         TransactionManager mgr = pool.getTransactionManager();
@@ -104,12 +102,14 @@ public class BTreeRecoverTest extends TestCase {
             Writer writer = new StringWriter();
             domDb.dump(writer);
             System.out.println(writer.toString());
+        } catch (Exception e) {            
+            fail(e.getMessage());              
         } finally {
             pool.release(broker);
         }
     }
     
-    public void testGet() throws Exception {
+    public void testGet() {
         System.out.println("Recover and read the data ...\n");
         TransactionManager mgr = pool.getTransactionManager();
         DBBroker broker = null;
@@ -127,12 +127,14 @@ public class BTreeRecoverTest extends TestCase {
             Writer writer = new StringWriter();
             domDb.dump(writer);
             System.out.println(writer.toString());
+        } catch (Exception e) {            
+            fail(e.getMessage());              
         } finally {
             pool.release(broker);
         }
     }
     
-    protected void setUp() throws Exception {
+    protected void setUp() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -141,17 +143,21 @@ public class BTreeRecoverTest extends TestCase {
             Configuration config = new Configuration(file, home);
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {            
             fail(e.getMessage());
         }
     }
 
-    protected void tearDown() throws Exception {
-        BrokerPool.stopAll(false);
+    protected void tearDown() {
+    	try {
+	        BrokerPool.stopAll(false);
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  
+	    }
     }
     
     private final class IndexCallback implements BTreeCallback {
+    	
         public boolean indexInfo(Value value, long pointer)
                 throws TerminatedException {
             System.out.println(ByteConversion.byteToLong(value.data(), value.start() + 4) + " -> " + pointer);

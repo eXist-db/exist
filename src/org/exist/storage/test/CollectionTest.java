@@ -21,31 +21,23 @@
  */
 package org.exist.storage.test;
 
-import java.io.File;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
+
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.btree.BTree;
-import org.exist.storage.dom.DOMFile;
-import org.exist.storage.index.BFile;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
-import org.xml.sax.InputSource;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 
 /**
  * @author wolf
@@ -67,16 +59,15 @@ public class CollectionTest extends TestCase {
         TestRunner.run(CollectionTest.class);
     }
     
-    public void testStore() throws Exception {
+    public void testStore() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDB();
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
-            
+            broker = pool.get(SecurityManager.SYSTEM_USER);            
             TransactionManager transact = pool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
             
+            Txn transaction = transact.beginTransaction();            
             System.out.println("Transaction started ...");
             
             Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
@@ -84,14 +75,17 @@ public class CollectionTest extends TestCase {
             
             Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
             broker.saveCollection(transaction, test);
-            transact.commit(transaction);
             
+            transact.commit(transaction);
+            System.out.println("Transaction commited ...");
+        } catch (Exception e) {            
+            fail(e.getMessage());              
         } finally {
             pool.release(broker);
         }
     }
     
-    public void testRead() throws Exception {
+    public void testRead() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
         
@@ -112,12 +106,14 @@ public class CollectionTest extends TestCase {
                 DocumentImpl next = (DocumentImpl) i.next();
                 System.out.println("- " + next.getName());
             }
+        } catch (Exception e) {            
+            fail(e.getMessage());              
         } finally {
             pool.release(broker);
         }
     }
     
-    protected BrokerPool startDB() throws Exception {
+    protected BrokerPool startDB() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -126,14 +122,17 @@ public class CollectionTest extends TestCase {
             Configuration config = new Configuration(file, home);
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {           
             fail(e.getMessage());
         }
         return null;
     }
 
-    protected void tearDown() throws Exception {
-        BrokerPool.stopAll(false);
+    protected void tearDown() {
+    	try {
+	        BrokerPool.stopAll(false);
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  
+	    }
     }
 }

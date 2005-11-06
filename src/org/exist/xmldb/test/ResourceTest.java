@@ -173,22 +173,26 @@ public class ResourceTest extends TestCase {
 		}
 	}
 
-	private void removeDocument(String id) throws XMLDBException {
-		XMLResource resource = resourceForId(id);
-
-		if (null != resource) {
-			Collection collection = null;
-
-			try {
-				collection = DatabaseManager.getCollection(URI + "/test");
-				collection.removeResource(resource);
-			} finally {
-				closeCollection(collection);
+	private void removeDocument(String id) {		
+		try {
+			XMLResource resource = resourceForId(id);
+	
+			if (null != resource) {
+				Collection collection = null;
+	
+				try {
+					collection = DatabaseManager.getCollection(URI + "/test");
+					collection.removeResource(resource);
+				} finally {
+					closeCollection(collection);
+				}
 			}
-		}
+		} catch (Exception e) {			
+			fail(e.getMessage());
+		}			
 	}
 
-	private XMLResource addResource(String id, String content) throws XMLDBException {
+	private XMLResource addResource(String id, String content) {
 		Collection collection = null;
 		XMLResource result = null;
 
@@ -197,6 +201,8 @@ public class ResourceTest extends TestCase {
 			result = (XMLResource) collection.createResource(id, XMLResource.RESOURCE_TYPE);
 			result.setContent(content);
 			collection.storeResource(result);
+		} catch (Exception e) {
+			fail(e.getMessage());					
 		} finally {
 			closeCollection(collection);
 		}
@@ -204,24 +210,30 @@ public class ResourceTest extends TestCase {
 		return result;
 	}
 
-	private XMLResource resourceForId(String id) throws XMLDBException {
+	private XMLResource resourceForId(String id) {
 		Collection collection = null;
 		XMLResource result = null;
 
 		try {
 			collection = DatabaseManager.getCollection(URI + "/test");
 			result = (XMLResource) collection.getResource(id);
+		} catch (Exception e) {
+			fail(e.getMessage());	
 		} finally {
 			closeCollection(collection);
 		}
-
+		
 		return result;
 	}
 
-	private void closeCollection(Collection collection) throws XMLDBException {
-		if (null != collection) {
-			collection.close();
-		}
+	private void closeCollection(Collection collection) {
+		try {
+			if (null != collection) {
+				collection.close();
+			}
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}			
 	}
 
 	private String xmlForTest() {
@@ -238,11 +250,8 @@ public class ResourceTest extends TestCase {
 			Database database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
-		} catch (ClassNotFoundException e) {
-		} catch (InstantiationException e) {
-		} catch (IllegalAccessException e) {
-		} catch (XMLDBException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			fail(e.getMessage());
 		}
 	}
 	

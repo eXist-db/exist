@@ -21,8 +21,8 @@
  */
 package org.exist.storage.test;
 
-import java.io.StringWriter;
-import java.io.Writer;
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
 
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
@@ -36,9 +36,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.FixedByteArray;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
 /**
  * @author wolf
  *
@@ -51,7 +48,7 @@ public class BFileOverflowTest extends TestCase {
     
     private BrokerPool pool;
     
-    public void testAdd() throws Exception {
+    public void testAdd() {
         TransactionManager mgr = pool.getTransactionManager();
         DBBroker broker = null;
         try {
@@ -79,8 +76,7 @@ public class BFileOverflowTest extends TestCase {
             mgr.commit(txn);
             
             // start a new transaction that will not be committed and thus undone
-            txn = mgr.beginTransaction();
-            
+            txn = mgr.beginTransaction();            
             
             for (int i = 1001; i < 2001; i++) {
                 String value = "_HELLO_" + i;
@@ -91,13 +87,15 @@ public class BFileOverflowTest extends TestCase {
             collectionsDb.remove(txn, key);
             
             mgr.getJournal().flushToLog(true);
-            
+
+        } catch (Exception e) {
+            fail(e.getMessage());            
         } finally {
             pool.release(broker);
         }
     }
     
-    public void testRead() throws Exception {
+    public void testRead() {
         BrokerPool.FORCE_CORRUPTION = false;
         DBBroker broker = null;
         try {
@@ -107,12 +105,14 @@ public class BFileOverflowTest extends TestCase {
             Value key = new Value("test".getBytes());
             Value val = collectionsDb.get(key);
             System.out.println(new String(val.data(), val.start(), val.getLength()));
+        } catch (Exception e) {
+            fail(e.getMessage());
         } finally {
             pool.release(broker);
         }
     }
     
-    protected void setUp() throws Exception {
+    protected void setUp() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -122,12 +122,11 @@ public class BFileOverflowTest extends TestCase {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
         } catch (Exception e) {
-            e.printStackTrace();
             fail(e.getMessage());
         }
     }
 
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         BrokerPool.stopAll(false);
     }
 
