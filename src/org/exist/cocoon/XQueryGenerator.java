@@ -25,9 +25,9 @@ package org.exist.cocoon;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -59,7 +59,6 @@ import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.XQueryService;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -168,8 +167,11 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		 * We don't do this directly in parameterize() because setup() can be
 		 * called multiple times and optionalParameters needs resetting to forget
 		 * sitemap parameters that may have been removed inbetween
+		 * 
+		 * The map must be sorted so that getKey() always returns the same
+		 * object for any given oder of parameters.
 		 */
-		this.optionalParameters = new HashMap();
+		this.optionalParameters = new TreeMap();
 		String paramNames[] = componentParams.getNames();
 		for (int i = 0; i < paramNames.length; i++) {
 			String param = paramNames[i];
