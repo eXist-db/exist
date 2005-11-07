@@ -183,9 +183,8 @@ public class ConcurrentStoreTest extends TestCase {
 //              Don't commit...
                 transact.getJournal().flushToLog(true);
                 System.out.println("Transaction interrupted ...");
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail(e.getMessage());
+    	    } catch (Exception e) {            
+    	        fail(e.getMessage()); 
             } finally {
                 pool.release(broker);
             }

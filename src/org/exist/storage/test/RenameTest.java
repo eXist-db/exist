@@ -44,22 +44,28 @@ public class RenameTest extends AbstractUpdateTest {
         TestRunner.run(RenameTest.class);
     }
     
-    public void testUpdate() throws Exception {
+    public void testUpdate() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDB();
-        
+        BrokerPool pool = null;        
         DBBroker broker = null;
         try {
+        	pool = startDB();
+        	assertNotNull(pool);
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            
+            assertNotNull(broker);            
             TransactionManager mgr = pool.getTransactionManager();
+            assertNotNull(mgr);
             
             IndexInfo info = init(broker, mgr);
+            assertNotNull(info);
             DocumentSet docs = new DocumentSet();
             docs.add(info.getDocument());
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
+            assertNotNull(proc);
             
             Txn transaction = mgr.beginTransaction();
+            assertNotNull(transaction);
+            System.out.println("Transaction started ...");
             
             String xupdate;
             Modification modifications[];
@@ -80,17 +86,22 @@ public class RenameTest extends AbstractUpdateTest {
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
                 modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
                 modifications[0].process(transaction);
                 proc.reset();
             }
             
             DOMFile domDb = ((NativeBroker) broker).getDOMFile();
+            assertNotNull(domDb);
             System.out.println(domDb.debugPages(info.getDocument(), false));
             
             mgr.commit(transaction);
+            System.out.println("Transaction commited ...");
             
             // the following transaction will not be committed and thus undone during recovery
             transaction = mgr.beginTransaction();
+            assertNotNull(transaction);
+            System.out.println("Transaction started ...");
             
             // rename elements
             xupdate =
@@ -100,9 +111,15 @@ public class RenameTest extends AbstractUpdateTest {
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
             modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+            assertNotNull(modifications);
             modifications[0].process(transaction);
             proc.reset();
+            
+//          Don't commit...            
             pool.getTransactionManager().getJournal().flushToLog(true);
+            System.out.println("Transaction interrupted ...");
+	    } catch (Exception e) {            
+	        fail(e.getMessage());               
         } finally {
             pool.release(broker);
         }
