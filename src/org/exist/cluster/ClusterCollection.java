@@ -162,7 +162,7 @@ public final class ClusterCollection extends Collection {
 
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
 			String name, byte[] data, String mimeType) throws EXistException,
-            PermissionDeniedException, LockException {
+            PermissionDeniedException, LockException, TriggerException {
         return collection.addBinaryResource(transaction, broker, name, data, mimeType);
     }
 
@@ -310,13 +310,13 @@ public final class ClusterCollection extends Collection {
         collection.read(broker, istream);
     }
 
-    public void removeBinaryResource(Txn transaction, DBBroker broker,
-                                     String docname) throws PermissionDeniedException, LockException {
+    public void removeBinaryResource(Txn transaction, DBBroker broker, String docname) 
+    	throws PermissionDeniedException, LockException, TriggerException {
         collection.removeBinaryResource(transaction, broker, docname);
     }
 
-    public void removeBinaryResource(Txn transaction, DBBroker broker,
-                                     DocumentImpl doc) throws PermissionDeniedException, LockException {
+    public void removeBinaryResource(Txn transaction, DBBroker broker, DocumentImpl doc) 
+    	throws PermissionDeniedException, LockException, TriggerException {
         collection.removeBinaryResource(transaction, broker, doc);
     }
 

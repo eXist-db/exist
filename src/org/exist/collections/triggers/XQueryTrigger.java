@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
+import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeSet;
 import org.exist.memtree.SAXAdapter;
@@ -64,6 +65,10 @@ public class XQueryTrigger extends FilteringTrigger {
 	 */
 	public void prepare(int event, DBBroker broker, Txn transaction, String documentName, DocumentImpl existingDocument)
 		throws TriggerException {
+		
+		//TODO : think
+		if (existingDocument == null) return;
+		if (existingDocument instanceof BinaryDocument) return;
 		
 		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for document : '" + documentName + "'");
 		
@@ -131,6 +136,11 @@ public class XQueryTrigger extends FilteringTrigger {
      * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
      */
     public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document) {
+    	
+		//TODO : think
+    	if (document == null) return;
+    	if (document instanceof BinaryDocument) return;
+    	
     	LOG.debug("Finishing " + eventToString(event) + "XQuery trigger for document : '" + document.getName() + "'");
 
 		if (query == null)
