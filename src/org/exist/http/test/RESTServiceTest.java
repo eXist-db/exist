@@ -22,26 +22,21 @@
 package org.exist.http.test;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.io.Writer;
 import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Iterator;
 
-import org.exist.StandaloneServer;
-import org.exist.xmldb.test.RemoteCollectionTest;
-import org.mortbay.util.MultiException;
-
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
+
+import org.exist.StandaloneServer;
+import org.mortbay.util.MultiException;
 
 /** A test case for accessing a remote server via REST-Style Web API.
  * @author wolf
@@ -84,152 +79,191 @@ public class RESTServiceTest extends TestCase {
 		super(name);
 	}
 
-	protected void setUp() throws Exception {
+	protected void setUp() {
 		//Don't worry about closing the server : the shutdown hook will do the job
-		initServer();
-	}    
-	
-	private void initServer() throws Exception {
-		if (server == null) {
-			server = new StandaloneServer();
-			if (!server.isStarted()) {			
-				try {				
-					System.out.println("Starting standalone server...");
-					String[] args = {};
-					server.run(args);
-					while (!server.isStarted()) {
-						Thread.sleep(1000);
-					}
-				} catch (MultiException e) {
-					boolean rethrow = true;
-					Iterator i = e.getExceptions().iterator();
-					while (i.hasNext()) {
-						Exception e0 = (Exception)i.next();
-						if (e0 instanceof BindException) {
-							System.out.println("A server is running already !");
-							rethrow = false;
-							break;
+		try {
+			if (server == null) {
+				server = new StandaloneServer();
+				if (!server.isStarted()) {			
+					try {				
+						System.out.println("Starting standalone server...");
+						String[] args = {};
+						server.run(args);
+						while (!server.isStarted()) {
+							Thread.sleep(1000);
 						}
+					} catch (MultiException e) {
+						boolean rethrow = true;
+						Iterator i = e.getExceptions().iterator();
+						while (i.hasNext()) {
+							Exception e0 = (Exception)i.next();
+							if (e0 instanceof BindException) {
+								System.out.println("A server is running already !");
+								rethrow = false;
+								break;
+							}
+						}
+						if (rethrow) throw e;
 					}
-					if (rethrow) throw e;
 				}
 			}
-		}
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }
 	} 			
 	
-	public void testPut() throws IOException {
-		System.out.println("--- Storing document ---");
-		HttpURLConnection connect = getConnection(RESOURCE_URI);
-		connect.setRequestMethod("PUT");
-		connect.setDoOutput(true);
-		connect.setRequestProperty("ContentType", "text/xml");
-		
-		Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
-		writer.write(XML_DATA);
-		writer.close();
-		
-		connect.connect();
-		int r = connect.getResponseCode();
-		assertEquals("Server returned response code " + r, 200, r);
-		
-		doGet();
+	public void testPut() {
+		try {
+			System.out.println("--- Storing document ---");
+			HttpURLConnection connect = getConnection(RESOURCE_URI);
+			connect.setRequestMethod("PUT");
+			connect.setDoOutput(true);
+			connect.setRequestProperty("ContentType", "text/xml");
+			
+			Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
+			writer.write(XML_DATA);
+			writer.close();
+			
+			connect.connect();
+			int r = connect.getResponseCode();
+			assertEquals("Server returned response code " + r, 200, r);
+			
+			doGet();
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }
 	}
 	
-	public void testXUpdate() throws IOException {
-		HttpURLConnection connect = preparePost(XUPDATE);
-		connect.connect();
-		int r = connect.getResponseCode();
-		assertEquals("Server returned response code " + r, 200, r);
-		
-		doGet();
+	public void testXUpdate() {
+		try {
+			HttpURLConnection connect = preparePost(XUPDATE);
+			connect.connect();
+			int r = connect.getResponseCode();
+			assertEquals("Server returned response code " + r, 200, r);
+			
+			doGet();
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }
 	}
 	
-	public void testQueryPost() throws IOException {
-		HttpURLConnection connect = preparePost(QUERY_REQUEST);
-		connect.connect();
-		int r = connect.getResponseCode();
-		assertEquals("Server returned response code " + r, 200, r);
-		
-		System.out.println(readResponse(connect.getInputStream()));
+	public void testQueryPost() {
+		try {
+			HttpURLConnection connect = preparePost(QUERY_REQUEST);
+			connect.connect();
+			int r = connect.getResponseCode();
+			assertEquals("Server returned response code " + r, 200, r);
+			
+			System.out.println(readResponse(connect.getInputStream()));
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }
 	}
 	
-	public void testQueryGet() throws IOException {
-		String uri = COLLECTION_URI + "?_query=" + URLEncoder.encode("doc('/db/test/test.xml')//para[. = '\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC']/text()", "UTF-8");
-		HttpURLConnection connect = getConnection(uri);
-		connect.setRequestMethod("GET");
-		connect.connect();
-		
-		int r = connect.getResponseCode();
-		assertEquals("Server returned response code " + r, 200, r);
-		
-		System.out.println(readResponse(connect.getInputStream()));
+	public void testQueryGet() {
+		try {
+			String uri = COLLECTION_URI + "?_query=" + URLEncoder.encode("doc('/db/test/test.xml')//para[. = '\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC']/text()", "UTF-8");
+			HttpURLConnection connect = getConnection(uri);
+			connect.setRequestMethod("GET");
+			connect.connect();
+			
+			int r = connect.getResponseCode();
+			assertEquals("Server returned response code " + r, 200, r);
+			
+			System.out.println(readResponse(connect.getInputStream()));
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }
 	}
 	
-	public void testRequestModule() throws IOException {
-		String uri = COLLECTION_URI + "?_query=request:request-uri()&_wrap=no";
-		HttpURLConnection connect = getConnection(uri);
-		connect.setRequestMethod("GET");
-		connect.connect();
+	public void testRequestModule() {
+		try {
+			String uri = COLLECTION_URI + "?_query=request:request-uri()&_wrap=no";
+			HttpURLConnection connect = getConnection(uri);
+			connect.setRequestMethod("GET");
+			connect.connect();
+			
+			int r = connect.getResponseCode();
+			assertEquals("Server returned response code " + r, 200, r);
 		
-		int r = connect.getResponseCode();
-		assertEquals("Server returned response code " + r, 200, r);
-	
-		String response = readResponse(connect.getInputStream()).trim();
-		assertEquals(response,"/db/test");
-		
-		uri = COLLECTION_URI + "?_query=request:request-url()&_wrap=no";
-		connect = getConnection(uri);
-		connect.setRequestMethod("GET");
-		connect.connect();
-		
-		r = connect.getResponseCode();
-		assertEquals("Server returned response code " + r, 200, r);
-		
-		response = readResponse(connect.getInputStream()).trim();
-		//TODO : the server name may have been renamed by the Web server
-		assertEquals(response, SERVER_URI + "/db/test");		
+			String response = readResponse(connect.getInputStream()).trim();
+			assertEquals(response,"/db/test");
+			
+			uri = COLLECTION_URI + "?_query=request:request-url()&_wrap=no";
+			connect = getConnection(uri);
+			connect.setRequestMethod("GET");
+			connect.connect();
+			
+			r = connect.getResponseCode();
+			assertEquals("Server returned response code " + r, 200, r);
+			
+			response = readResponse(connect.getInputStream()).trim();
+			//TODO : the server name may have been renamed by the Web server
+			assertEquals(response, SERVER_URI + "/db/test");	
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }
 	}	
 	
-	protected void doGet() throws IOException {
-		System.out.println("--- Retrieving document ---");
-		HttpURLConnection connect = getConnection(RESOURCE_URI);
-		connect.setRequestMethod("GET");
-		connect.connect();
-		
-		int r = connect.getResponseCode();
-		assertEquals("Server returned response code " + r, 200, r);
-		
-		System.out.println(readResponse(connect.getInputStream()));
+	protected void doGet() {
+		try {
+			System.out.println("--- Retrieving document ---");
+			HttpURLConnection connect = getConnection(RESOURCE_URI);
+			connect.setRequestMethod("GET");
+			connect.connect();
+			
+			int r = connect.getResponseCode();
+			assertEquals("Server returned response code " + r, 200, r);
+			
+			System.out.println(readResponse(connect.getInputStream()));
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }
 	}
 	
-	protected HttpURLConnection preparePost(String content) throws IOException {
-		HttpURLConnection connect = getConnection(RESOURCE_URI);
-		connect.setRequestMethod("POST");
-		connect.setDoOutput(true);
-		connect.setRequestProperty("ContentType", "text/xml");
-		
-		Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
-		writer.write(content);
-		writer.close();
-		
-		return connect;
+	protected HttpURLConnection preparePost(String content) {
+		try {
+			HttpURLConnection connect = getConnection(RESOURCE_URI);
+			connect.setRequestMethod("POST");
+			connect.setDoOutput(true);
+			connect.setRequestProperty("ContentType", "text/xml");
+			
+			Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
+			writer.write(content);
+			writer.close();
+			
+			return connect;
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }
+	    return null;
 	}
 	
-	protected String readResponse(InputStream is) throws IOException {
-		BufferedReader reader = 
-			new BufferedReader(new InputStreamReader(is, "UTF-8"));
-		String line;
-		StringBuffer out = new StringBuffer();
-		while((line = reader.readLine()) != null) {
-			out.append(line);
-			out.append("\r\n");
-		}
-		return out.toString();
+	protected String readResponse(InputStream is) {
+		try {
+			BufferedReader reader = 
+				new BufferedReader(new InputStreamReader(is, "UTF-8"));
+			String line;
+			StringBuffer out = new StringBuffer();
+			while((line = reader.readLine()) != null) {
+				out.append(line);
+				out.append("\r\n");
+			}
+			return out.toString();
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }
+	    return null;
 	}
 	
-	protected HttpURLConnection getConnection(String url) throws IOException {
-		URL u = new URL(url);
-		return (HttpURLConnection)u.openConnection();
+	protected HttpURLConnection getConnection(String url) {
+		try {
+			URL u = new URL(url);
+			return (HttpURLConnection)u.openConnection();
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }
+	    return null;
 	}
 	
     public static void main(String[] args) {

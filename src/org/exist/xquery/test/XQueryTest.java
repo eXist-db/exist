@@ -1,11 +1,20 @@
 package org.exist.xquery.test;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
+import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -1034,20 +1043,15 @@ public class XQueryTest extends XMLTestCase {
 			} catch (Exception e) {
 				System.out.println("testFunctionDoc : XMLDBException: "+e);
 				fail(e.getMessage());
-			}
+			}			
 			
 			System.out.println("testFunctionDoc 2: ========" );				
-			query ="doc(\"http://www.w3.org/RDF/\")";	
-			result = service.query(query);
-			assertEquals( "XQuery: " + query, 1, result.getSize() );	
-			
-			System.out.println("testFunctionDoc 3: ========" );				
 			query = "let $v := ()\n" 
 				+ "return doc($v)";	
 			result = service.query(query);
 			assertEquals( "XQuery: " + query, 0, result.getSize() );			
 			
-			System.out.println("testFunctionDoc 4: ========" );		
+			System.out.println("testFunctionDoc 3: ========" );		
 			query ="doc(\"/db/test/dummy" + NUMBERS_XML +  "\")";	
 			try {
 				exceptionThrown = false;
@@ -1058,9 +1062,69 @@ public class XQueryTest extends XMLTestCase {
 			}
 			//TODO : to be decided !
 			//assertTrue(exceptionThrown);
-			assertEquals(0, result.getSize());
+			assertEquals(0, result.getSize());						
 			
-			System.out.println("testFunctionDoc 5: ========" );		
+			System.out.println("testFunctionDoc 4: ========" );				
+			query ="doc-available(\"/db/test/" + NUMBERS_XML +  "\")";	
+			result = service.query(query);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "true", result.getResource(0).getContent());			
+			
+			System.out.println("testFunctionDoc 5: ========" );				
+			query = "let $v := ()\n" 
+				+ "return doc-available($v)";	
+			result = service.query(query); 
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());
+			
+			System.out.println("testFunctionDoc 6: ========" );		
+			query ="doc-available(\"/db/test/dummy" + NUMBERS_XML +  "\")";	
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());				
+			
+		} catch (XMLDBException e) {
+			System.out.println("testFunctionDoc : XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}	
+	
+	//This test only works if there is an Internet access
+	public void testFunctionDocExternal() {
+		boolean hasInternetAccess = false;
+		ResourceSet result;
+		String query;
+		boolean exceptionThrown;
+		String message;		
+		
+		//Checking that we have an Internet Aceess
+		try {
+			URL url = new URL("http://www.w3.org/");
+			URLConnection con = url.openConnection();
+			if (con instanceof HttpURLConnection) {
+				HttpURLConnection httpConnection = (HttpURLConnection)con;
+				hasInternetAccess = (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK);
+			}
+		} catch (MalformedURLException e) {
+			fail("Stupid error... " + e.getMessage());					
+		} catch (IOException e) {	
+			//Ignore
+		}
+		
+		if (!hasInternetAccess) {
+			System.out.println("No Internet access: skipping 'testFunctionDocExternal' tests");
+			return;
+		}
+		
+		try {
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
+			
+			System.out.println("testFunctionDocExternal 1: ========" );				
+			query ="doc(\"http://www.w3.org/RDF/\")";	
+			result = service.query(query);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );			
+			
+			System.out.println("testFunctionDocExternal 2: ========" );		
 			query ="doc(\"http://www.w3.org/RDF/dummy\")";	
 			try {
 				exceptionThrown = false;
@@ -1069,49 +1133,31 @@ public class XQueryTest extends XMLTestCase {
 				exceptionThrown = true;
 				message = e.getMessage();
 			}
-			assertTrue(exceptionThrown);				
+			assertTrue(exceptionThrown);		
 			
-			System.out.println("testFunctionDoc 6: ========" );				
-			query ="doc-available(\"/db/test/" + NUMBERS_XML +  "\")";	
-			result = service.query(query);
-			assertEquals( "XQuery: " + query, 1, result.getSize() );
-			assertEquals( "XQuery: " + query, "true", result.getResource(0).getContent());
-			
-			System.out.println("testFunctionDoc 7: ========" );				
+			System.out.println("testFunctionDocExternal 3: ========" );				
 			query ="doc-available(\"http://www.w3.org/RDF/\")";	
 			result = service.query(query);
 			assertEquals( "XQuery: " + query, 1, result.getSize() );
-			assertEquals( "XQuery: " + query, "true", result.getResource(0).getContent());
-			
-			System.out.println("testFunctionDoc 8: ========" );				
-			query = "let $v := ()\n" 
-				+ "return doc-available($v)";	
-			result = service.query(query); 
-			assertEquals( "XQuery: " + query, 1, result.getSize() );
-			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());
-			
-			System.out.println("testFunctionDoc 9: ========" );		
-			query ="doc-available(\"/db/test/dummy" + NUMBERS_XML +  "\")";	
-			assertEquals( "XQuery: " + query, 1, result.getSize() );
-			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());	
-			
-			System.out.println("testFunctionDoc 10: ========" );		
-			query ="doc-available(\"http://www.w3.org/RDF/dummy\")";	
+			assertEquals( "XQuery: " + query, "true", result.getResource(0).getContent());			
+						
+			System.out.println("testFunctionDocExternal 4: ========" );		
+			query ="doc-available(\"http://www.404brain.net/true404\")";	
+			result = service.query(query);
 			assertEquals( "XQuery: " + query, 1, result.getSize() );
 			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());			
 
-			System.out.println("testFunctionDoc 11: ========" );
+			System.out.println("testFunctionDocExternal 5: ========" );
 			//A redirected 404
 			query ="doc-available(\"http://java.sun.com/404\")";	
 			assertEquals( "XQuery: " + query, 1, result.getSize() );
-			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());			
-
+			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());		
 			
 		} catch (XMLDBException e) {
 			System.out.println("testFunctionDoc : XMLDBException: "+e);
 			fail(e.getMessage());
 		}
-	}		
+	}			
 	
 	private String makeString(int n){
 		StringBuffer b = new StringBuffer();

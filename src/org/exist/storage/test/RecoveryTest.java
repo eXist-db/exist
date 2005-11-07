@@ -28,13 +28,10 @@ import java.io.Writer;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
-import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -45,7 +42,6 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
-import org.exist.util.LockException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -77,40 +73,47 @@ public class RecoveryTest extends TestCase {
         "  <para>Hello World!</para>" +
         "</test>";
     
-    public void testStore() throws Exception {
+    public void testStore() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDB();
-        
+        BrokerPool pool = null;        
         DBBroker broker = null;
         try {
+        	pool = startDB();
+        	assertNotNull(pool);
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            
+            assertNotNull(broker);            
             TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);
             Txn transaction = transact.beginTransaction();
-            
+            assertNotNull(transaction);            
             System.out.println("Transaction started ...");
             
             Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
-            broker.saveCollection(transaction, test);
+            Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
+            broker.saveCollection(transaction, test2);
             
             
             File files[] = dir.listFiles();
+            assertNotNull(files);
             
             File f;
             IndexInfo info;
             
-            BinaryDocument doc = test.addBinaryResource(transaction, broker, "binary.txt", "Some text data".getBytes(), null);
+            BinaryDocument doc = test2.addBinaryResource(transaction, broker, "binary.txt", "Some text data".getBytes(), null);
+            assertNotNull(doc);
             
             // store some documents. Will be replaced below
             for (int i = 0; i < files.length; i++) {
                 f = files[i];
                 try {
-                    info = test.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
-                    test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                    info = test2.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    assertNotNull(info);
+                    test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
+//                	TODO : why pass invalid couments ?
                     System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
                 }
             }
@@ -119,74 +122,85 @@ public class RecoveryTest extends TestCase {
             for (int i = 0; i < files.length; i++) {
                 f = files[i];
                 try {
-                    info = test.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
-                    test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                    info = test2.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    assertNotNull(info);
+                    test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
+//                	TODO : why pass invalid couments ?
                     System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
                 }
             }
     
-            info = test.validate(transaction, broker, "test_string.xml", TEST_XML);
-            test.store(transaction, broker, info, TEST_XML, false);
+            info = test2.validate(transaction, broker, "test_string.xml", TEST_XML);
+            assertNotNull(info);
             
+            test2.store(transaction, broker, info, TEST_XML, false);            
             // remove last document
-            test.removeDocument(transaction, broker, files[files.length - 1].getName());
-            
+            test2.removeDocument(transaction, broker, files[files.length - 1].getName());            
             
             transact.commit(transaction);
             
             // the following transaction will not be committed. It will thus be rolled back by recovery
             transaction = transact.beginTransaction();
+            System.out.println("Transaction commited ...");
             
-            test.removeDocument(transaction, broker, files[0].getName());
+            test2.removeDocument(transaction, broker, files[0].getName());            
+            test2.removeBinaryResource(transaction, broker, doc);
             
-            test.removeBinaryResource(transaction, broker, doc);
-            
+//          Don't commit...            
             transact.getJournal().flushToLog(true);
+            System.out.println("Transaction interrupted ...");
             
             DOMFile domDb = ((NativeBroker)broker).getDOMFile();
+            assertNotNull(domDb);
             Writer writer = new StringWriter();
             domDb.dump(writer);
             System.out.println(writer.toString());
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	        
         } finally {
-            pool.release(broker);
+        	if (pool != null) pool.release(broker);
         }
     }
     
-    public void testRead() throws Exception {
+    public void testRead() {
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
+        BrokerPool pool = null;
+        DBBroker broker = null;           
         
-        System.out.println("testRead() ...\n");
-        
-        File files[] = dir.listFiles();
-        
-        DBBroker broker = null;
         try {
+        	System.out.println("testRead() ...\n");
+        	pool = startDB();
+        	assertNotNull(pool);
             broker = pool.get(SecurityManager.SYSTEM_USER);
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc;
-            String data;
-            
-            doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/hamlet.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/hamlet.xml", Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", doc);
-            data = serializer.serialize(doc);
+            String data = serializer.serialize(doc);
+            assertNotNull(data);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
             doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/test_string.xml", Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", doc);
             data = serializer.serialize(doc);
-            System.out.println(data);
+            assertNotNull(data);
+            System.out.println(data);            
             doc.getUpdateLock().release(Lock.READ_LOCK);
+            
+            File files[] = dir.listFiles();
+            assertNotNull(files);
             
             doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/" + files[files.length - 1].getName(), Lock.READ_LOCK);
             assertNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/'" + files[files.length - 1].getName() + " should not exist anymore", doc);
             
             XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
             Sequence seq = xquery.execute("//SPEECH[LINE &= 'king']", null);
+            assertNotNull(seq);
             System.out.println("Found: " + seq.getLength());
             for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
@@ -196,28 +210,36 @@ public class RecoveryTest extends TestCase {
             BinaryDocument binDoc = (BinaryDocument) broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/binary.txt", Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
             data = new String(broker.getBinaryResourceData(binDoc));
+            assertNotNull(data);
             System.out.println(data);
             
             DOMFile domDb = ((NativeBroker)broker).getDOMFile();
+            assertNotNull(domDb);
             Writer writer = new StringWriter();
             domDb.dump(writer);
             System.out.println(writer.toString());
             
             TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);
             Txn transaction = transact.beginTransaction();
+            assertNotNull(transaction);
+            System.out.println("Transaction started ...");
             
             Collection root = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.WRITE_LOCK);
-            transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
-            
+            assertNotNull(root);
+            transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);            
             broker.removeCollection(transaction, root);
             
             transact.commit(transaction);
+            System.out.println("Transaction commited ...");
+	    } catch (Exception e) {            
+	        fail(e.getMessage());             
         } finally {
-            pool.release(broker);
+        	if (pool != null) pool.release(broker);
         }
     }
     
-    protected BrokerPool startDB() throws Exception {
+    protected BrokerPool startDB() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -226,14 +248,13 @@ public class RecoveryTest extends TestCase {
             Configuration config = new Configuration(file, home);
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {            
             fail(e.getMessage());
         }
         return null;
     }
 
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         BrokerPool.stopAll(false);
     }
 }

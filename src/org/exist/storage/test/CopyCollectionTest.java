@@ -51,174 +51,207 @@ public class CopyCollectionTest extends TestCase {
     
     private static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
 
-    public void testStore() throws Exception {
+    public void testStore() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDB();
-
         DBBroker broker = null;
+        
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
 
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
-
             System.out.println("Transaction started ...");
 
-            Collection root = broker.getOrCreateCollection(transaction,
-            		TEST_COLLECTION);
+            Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
             broker.saveCollection(transaction, root);
 
-            Collection test = broker.getOrCreateCollection(transaction,
-            		TEST_COLLECTION + "/test2");
+            Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
             broker.saveCollection(transaction, test);
     
             File f = new File("samples/biblio.rdf");
             IndexInfo info = test.validate(transaction, broker, "test.xml",
                     new InputSource(f.toURI().toASCIIString()));
-            test.store(transaction, broker, info, new InputSource(f.toURI()
-                    .toASCIIString()), false);
+            test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
             
-            Collection dest = broker.getOrCreateCollection(transaction,
-                DBBroker.ROOT_COLLECTION + "/destination");
+            Collection dest = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/destination");
             broker.saveCollection(transaction, dest);
             
             broker.copyCollection(transaction, test, dest, "test3");
 
             transact.commit(transaction);
+            System.out.println("Transaction commited ...");
+            
+	    } catch (Exception e) {            
+	        fail(e.getMessage());              
         } finally {
             pool.release(broker);
         }
     }
     
-    public void testRead() throws Exception {
+    public void testRead() {
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
-        
-        System.out.println("testRead() ...\n");
-        
+        BrokerPool pool = null;
         DBBroker broker = null;
+        
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+        	System.out.println("testRead() ...\n");  
+        	pool = startDB();
+        	assertNotNull(pool);
+        	broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+            
             Serializer serializer = broker.getSerializer();
-            serializer.reset();
-            
-            DocumentImpl doc;
-            String data;
-            
-            doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/destination/test3/test.xml", Lock.READ_LOCK);
-            assertNotNull("Document should not be null", doc);
-            data = serializer.serialize(doc);
-            System.out.println(data);
-            doc.getUpdateLock().release(Lock.READ_LOCK);
-        } finally {
-            pool.release(broker);
-        }
-    }
-    
-    public void testStoreAborted() throws Exception {
-        BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDB();
-
-        DBBroker broker = null;
-        try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
-
-            TransactionManager transact = pool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-
-            System.out.println("Transaction started ...");
-
-            Collection root = broker.getOrCreateCollection(transaction,
-            		TEST_COLLECTION);
-            broker.saveCollection(transaction, root);
-
-            Collection test = broker.getOrCreateCollection(transaction,
-            		TEST_COLLECTION + "/test2");
-            broker.saveCollection(transaction, test);
-    
-            File f = new File("samples/biblio.rdf");
-            IndexInfo info = test.validate(transaction, broker, "test.xml",
-                    new InputSource(f.toURI().toASCIIString()));
-            test.store(transaction, broker, info, new InputSource(f.toURI()
-                    .toASCIIString()), false);
-            
-            transact.commit(transaction);
-            
-            transaction = transact.beginTransaction();
-            
-            Collection dest = broker.getOrCreateCollection(transaction,
-                DBBroker.ROOT_COLLECTION + "/destination");
-            broker.saveCollection(transaction, dest);
-            
-            broker.copyCollection(transaction, test, dest, "test3");
-
-            pool.getTransactionManager().getJournal().flushToLog(true);
-        } finally {
-            pool.release(broker);
-        }
-    }
-    
-    public void testReadAborted() throws Exception {
-        BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
-        
-        System.out.println("testRead() ...\n");
-        
-        DBBroker broker = null;
-        try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
-            Serializer serializer = broker.getSerializer();
-            serializer.reset();
+            serializer.reset(); 
             
             DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/destination/test3/test.xml", Lock.READ_LOCK);
+            assertNotNull("Document should not be null", doc);
+            String data = serializer.serialize(doc);
+            System.out.println(data);
+            doc.getUpdateLock().release(Lock.READ_LOCK);                
+	    } catch (Exception e) {            
+	        fail(e.getMessage());              
+        } finally {
+            if (pool != null) pool.release(broker);
+        }
+    }
+    
+    public void testStoreAborted() {
+        BrokerPool.FORCE_CORRUPTION = true;
+        BrokerPool pool = null;
+
+        DBBroker broker = null;
+        try {
+        	pool = startDB();
+        	assertNotNull(pool);
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+            TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);
+            Txn transaction = transact.beginTransaction();
+            assertNotNull(transaction);
+            System.out.println("Transaction started ...");
+
+            Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
+            assertNotNull(root);
+            broker.saveCollection(transaction, root);
+
+            Collection test2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
+            assertNotNull(test2);
+            broker.saveCollection(transaction, test2);
+    
+            File f = new File("samples/biblio.rdf");
+            assertNotNull(f);
+            IndexInfo info = test2.validate(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
+            test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+            
+            transact.commit(transaction);
+            System.out.println("Transaction commited ...");
+            
+            transaction = transact.beginTransaction();
+            System.out.println("Transaction started ...");
+            
+            Collection dest = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/destination");
+            assertNotNull(dest);
+            broker.saveCollection(transaction, dest);            
+            broker.copyCollection(transaction, test2, dest, "test3");
+
+//          Don't commit...
+            transact.getJournal().flushToLog(true);
+            System.out.println("Transaction interrupted ...");            
+	    } catch (Exception e) {            
+	        fail(e.getMessage());              
+        } finally {
+            if (pool != null) pool.release(broker);
+        }
+    }
+    
+    public void testReadAborted() {
+        BrokerPool.FORCE_CORRUPTION = false;
+        BrokerPool pool = null;
+        DBBroker broker = null;
+       
+        try {
+        	System.out.println("testReadAborted() ...\n");
+        	pool = startDB();
+        	assertNotNull(pool);
+        	broker = pool.get(SecurityManager.SYSTEM_USER);
+        	assertNotNull(broker);
+        	
+            Serializer serializer = broker.getSerializer();
+            serializer.reset();            
+            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/destination/test3/test.xml", Lock.READ_LOCK);
             assertNotNull("Document should be null", doc);
+	    } catch (Exception e) {            
+	        fail(e.getMessage());              
         } finally {
             pool.release(broker);
         }
     }
     
-    public void testXMLDBStore() throws Exception {
+    public void testXMLDBStore() {
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
-        
-        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
-        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
-            root.getService("CollectionManagementService", "1.0");
-        org.xmldb.api.base.Collection test = root.getChildCollection("test");
-        if (test == null)
-            test = mgr.createCollection(TEST_COLLECTION);
-        org.xmldb.api.base.Collection test2 = test.getChildCollection("test2");
-        if (test2 == null)
-            test2 = mgr.createCollection(TEST_COLLECTION + "/test2");
-        
-        File f = new File("samples/biblio.rdf");
-        Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
-        res.setContent(f);
-        test2.storeResource(res);
-        
-        org.xmldb.api.base.Collection dest = root.getChildCollection("destination");
-        if (dest == null)
-            dest = mgr.createCollection("destination");
-        
-        mgr.copy(TEST_COLLECTION + "/test2", DBBroker.ROOT_COLLECTION + "/destination", "test3");
+        BrokerPool pool = null;
+        try {
+        	pool = startDB();
+        	assertNotNull(pool);
+	        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
+	        assertNotNull(root);
+	        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
+	            root.getService("CollectionManagementService", "1.0");
+	        assertNotNull(mgr);
+	        org.xmldb.api.base.Collection test = root.getChildCollection("test");
+	        if (test == null)
+	            test = mgr.createCollection(TEST_COLLECTION);
+	        assertNotNull(test);
+	        org.xmldb.api.base.Collection test2 = test.getChildCollection("test2");
+	        if (test2 == null)
+	            test2 = mgr.createCollection(TEST_COLLECTION + "/test2");
+	        assertNotNull(test2);
+	        
+	        File f = new File("samples/biblio.rdf");
+	        assertNotNull(f);
+	        Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
+	        assertNotNull(res);
+	        res.setContent(f);
+	        test2.storeResource(res);
+	        
+	        org.xmldb.api.base.Collection dest = root.getChildCollection("destination");	        
+	        if (dest == null)
+	            dest = mgr.createCollection("destination");
+	        assertNotNull(dest);
+	        
+	        mgr.copy(TEST_COLLECTION + "/test2", DBBroker.ROOT_COLLECTION + "/destination", "test3");
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }
     }
     
-    public void testXMLDBRead() throws Exception {
+    public void testXMLDBRead() {    	
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
+        BrokerPool pool = null;
         
-        org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist://"+ DBBroker.ROOT_COLLECTION + "/destination/test3", "admin", "");
-        Resource res = test.getResource("test_xmldb.xml");
-        assertNotNull("Document should not be null", res);
-        System.out.println(res.getContent());
-        
-        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
-        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
-            root.getService("CollectionManagementService", "1.0");
-        mgr.removeCollection("destination");
+        try {
+        	pool = startDB();
+        	assertNotNull(pool);
+	        org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist://"+ DBBroker.ROOT_COLLECTION + "/destination/test3", "admin", "");
+	        assertNotNull(test);
+	        Resource res = test.getResource("test_xmldb.xml");
+	        assertNotNull("Document should not be null", res);
+	        System.out.println(res.getContent());
+	        
+	        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
+	        assertNotNull(root);
+	        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
+	            root.getService("CollectionManagementService", "1.0");
+	        assertNotNull(mgr);
+	        mgr.removeCollection("destination");
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }        
     }
     
-    protected BrokerPool startDB() throws Exception {
+    protected BrokerPool startDB() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -233,14 +266,13 @@ public class CopyCollectionTest extends TestCase {
             DatabaseManager.registerDatabase(database);
 
             return BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {            
             fail(e.getMessage());
         }
         return null;
     }
 
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         BrokerPool.stopAll(false);
     }
 }

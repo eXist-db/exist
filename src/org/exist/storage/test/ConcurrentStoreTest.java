@@ -57,24 +57,28 @@ public class ConcurrentStoreTest extends TestCase {
     private BrokerPool pool;
     private Collection test, test2;
     
-    public synchronized void testStore() throws Exception {
-        BrokerPool.FORCE_CORRUPTION = true;
-        pool = startDB();
-        setupCollections();
-        
-        Thread t1 = new StoreThread1();
-        t1.start();
-        
-        wait(8000);
-        
-        Thread t2 = new StoreThread2();
-        t2.start();
-        
-        t1.join();
-        t2.join();
+    public synchronized void testStore() {
+    	try {
+	        BrokerPool.FORCE_CORRUPTION = true;
+	        pool = startDB();
+	        setupCollections();
+	        
+	        Thread t1 = new StoreThread1();
+	        t1.start();
+	        
+	        wait(8000);
+	        
+	        Thread t2 = new StoreThread2();
+	        t2.start();
+	        
+	        t1.join();
+	        t2.join();
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  
+	    }
     }
     
-    public void testRead() throws Exception {
+    public void testRead() {
         BrokerPool.FORCE_CORRUPTION = false;
         pool = startDB();
         
@@ -90,12 +94,14 @@ public class ConcurrentStoreTest extends TestCase {
                 DocumentImpl next = (DocumentImpl) i.next();
                 System.out.println("- " + next.getName());
             }
+	    } catch (Exception e) {            
+	        fail(e.getMessage());              
         } finally {
             pool.release(broker);
         }
     }
     
-    protected void setupCollections() throws Exception {
+    protected void setupCollections() {
         DBBroker broker = null;
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
@@ -115,15 +121,14 @@ public class ConcurrentStoreTest extends TestCase {
             
             transact.commit(transaction);
         } catch (Exception e) {
-            transact.abort(transaction);
-            e.printStackTrace();
+            transact.abort(transaction);            
             fail(e.getMessage());
         } finally {
             pool.release(broker);
         }
     }
     
-    protected BrokerPool startDB() throws Exception {
+    protected BrokerPool startDB() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -132,14 +137,13 @@ public class ConcurrentStoreTest extends TestCase {
             Configuration config = new Configuration(file, home);
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {            
             fail(e.getMessage());
         }
         return null;
     }
 
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         BrokerPool.stopAll(false);
     }
     
@@ -176,7 +180,9 @@ public class ConcurrentStoreTest extends TestCase {
                 
                 transact.commit(transaction);
                 
+//              Don't commit...
                 transact.getJournal().flushToLog(true);
+                System.out.println("Transaction interrupted ...");
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());

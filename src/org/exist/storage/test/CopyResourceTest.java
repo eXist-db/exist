@@ -47,143 +47,155 @@ public class CopyResourceTest extends TestCase {
 
 	public static void main(String[] args) {
 		TestRunner.run(CopyResourceTest.class);
-	}
+	}	
 
-	private BrokerPool pool;
-
-	public void testStore() throws Exception {
+	public void testStore() {
 		BrokerPool.FORCE_CORRUPTION = true;
-		BrokerPool pool = startDB();
-
+		BrokerPool pool = null;
 		DBBroker broker = null;
+		
 		try {
+			pool = startDB();
+			assertNotNull(pool);
 			broker = pool.get(SecurityManager.SYSTEM_USER);
-
+			assertNotNull(broker);			
 			TransactionManager transact = pool.getTransactionManager();
+			assertNotNull(transact);
 			Txn transaction = transact.beginTransaction();
-
+			assertNotNull(transaction);
 			System.out.println("Transaction started ...");
 
-			Collection root = broker.getOrCreateCollection(transaction,
-					DBBroker.ROOT_COLLECTION + "/test");
+			Collection root = broker.getOrCreateCollection(transaction,	DBBroker.ROOT_COLLECTION + "/test");
+			assertNotNull(root);
 			broker.saveCollection(transaction, root);
 
-			Collection test = broker.getOrCreateCollection(transaction,
-					DBBroker.ROOT_COLLECTION +  "/test/test2");
-			broker.saveCollection(transaction, test);
+			Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION +  "/test/test2");
+			assertNotNull(test2);
+			broker.saveCollection(transaction, test2);
 
 			File f = new File("samples/shakespeare/r_and_j.xml");
-			IndexInfo info = test.validate(transaction, broker, "test.xml",
-					new InputSource(f.toURI().toASCIIString()));
-			test.store(transaction, broker, info, new InputSource(f.toURI()
-					.toASCIIString()), false);
+			assertNotNull(f);
+			IndexInfo info = test2.validate(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
+			assertNotNull(info);
+			test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 
-			broker.copyResource(transaction, info.getDocument(), root,
-					"new_test.xml");
+			broker.copyResource(transaction, info.getDocument(), root, "new_test.xml");
 			broker.saveCollection(transaction, root);
 
 			transact.commit(transaction);
+			System.out.println("Transaction commited ...");
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 	      			
 		} finally {
-			pool.release(broker);
+			if (pool != null) pool.release(broker);
 		}
 	}
 
-	public void testRead() throws Exception {
+	public void testRead() {
 		BrokerPool.FORCE_CORRUPTION = false;
-		BrokerPool pool = startDB();
-
-		System.out.println("testRead() ...\n");
-
+		BrokerPool pool = null;
 		DBBroker broker = null;
+		
 		try {
+			System.out.println("testRead() ...\n");
+			pool = startDB();
+			assertNotNull(pool);
 			broker = pool.get(SecurityManager.SYSTEM_USER);
+			assertNotNull(broker);
 			Serializer serializer = broker.getSerializer();
 			serializer.reset();
 
-			DocumentImpl doc;
-			String data;
-
-			doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/new_test.xml", Lock.READ_LOCK);
+			DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/new_test.xml", Lock.READ_LOCK);
 			assertNotNull("Document should not be null", doc);
-			data = serializer.serialize(doc);
+			String data = serializer.serialize(doc);
+			assertNotNull(data);
 			System.out.println(data);
 			doc.getUpdateLock().release(Lock.READ_LOCK);
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 			
 		} finally {
 			pool.release(broker);
 		}
 	}
 
-	public void testStoreAborted() throws Exception {
+	public void testStoreAborted() {
 		BrokerPool.FORCE_CORRUPTION = true;
-		BrokerPool pool = startDB();
-
+		BrokerPool pool = null;
 		DBBroker broker = null;
 		try {
+			pool = startDB();
+			assertNotNull(pool);
 			broker = pool.get(SecurityManager.SYSTEM_USER);
-
+			assertNotNull(broker);
 			TransactionManager transact = pool.getTransactionManager();
+			assertNotNull(transact);
 			Txn transaction = transact.beginTransaction();
-
+			assertNotNull(transaction);
 			System.out.println("Transaction started ...");
 
-			Collection root = broker.getOrCreateCollection(transaction,
-					DBBroker.ROOT_COLLECTION + "/test");
+			Collection root = broker.getOrCreateCollection(transaction,	DBBroker.ROOT_COLLECTION + "/test");
+			assertNotNull(root);
 			broker.saveCollection(transaction, root);
 
-			Collection test = broker.getOrCreateCollection(transaction,
-					DBBroker.ROOT_COLLECTION + "/test/test2");
-			broker.saveCollection(transaction, test);
+			Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
+			assertNotNull(test2);
+			broker.saveCollection(transaction, test2);
 
 			File f = new File("samples/shakespeare/r_and_j.xml");
-			IndexInfo info = test.validate(transaction, broker, "test2.xml",
-					new InputSource(f.toURI().toASCIIString()));
-			test.store(transaction, broker, info, new InputSource(f.toURI()
-					.toASCIIString()), false);
+			assertNotNull(f);
+			IndexInfo info = test2.validate(transaction, broker, "test2.xml", new InputSource(f.toURI().toASCIIString()));
+			assertNotNull(info);
+			test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 
 			transact.commit(transaction);
+			System.out.println("Transaction commited ...");
 
 			transaction = transact.beginTransaction();
+			System.out.println("Transaction started ...");
 
-			broker.copyResource(transaction, info.getDocument(), root,
-					"new_test2.xml");
+			broker.copyResource(transaction, info.getDocument(), root, "new_test2.xml");
 			broker.saveCollection(transaction, root);
-
+			
+//			Don't commit...
 			pool.getTransactionManager().getJournal().flushToLog(true);
+			System.out.println("Transaction interrupted ...");
+	    } catch (Exception e) {            
+	        fail(e.getMessage());			
 		} finally {
-			pool.release(broker);
+			if (pool != null) pool.release(broker);
 		}
 	}
 
-	public void testReadAborted() throws Exception {
+	public void testReadAborted() {
 		BrokerPool.FORCE_CORRUPTION = false;
-		BrokerPool pool = startDB();
-
-		System.out.println("testRead() ...\n");
-
-		DBBroker broker = null;
+		BrokerPool pool = null;
+		DBBroker broker = null;		
 		try {
+			System.out.println("testReadAborted() ...\n");
+			pool = startDB();
+			assertNotNull(pool);
 			broker = pool.get(SecurityManager.SYSTEM_USER);
+			assertNotNull(broker);
 			Serializer serializer = broker.getSerializer();
 			serializer.reset();
 
-			DocumentImpl doc;
-			String data;
-
-			doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/test/test2/test2.xml",
-					Lock.READ_LOCK);
+			DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/test/test2/test2.xml",	Lock.READ_LOCK);
 			assertNotNull("Document should not be null", doc);
-			data = serializer.serialize(doc);
+			String data = serializer.serialize(doc);
+			assertNotNull(data);
 			System.out.println(data);
 			doc.getUpdateLock().release(Lock.READ_LOCK);
 
 			doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/test/new_test2.xml", Lock.READ_LOCK);
 			assertNull("Document should not exist", doc);
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  			
 		} finally {
 			pool.release(broker);
 		}
 	}
 
-	protected BrokerPool startDB() throws Exception {
+	protected BrokerPool startDB() {
 		String home, file = "conf.xml";
 		home = System.getProperty("exist.home");
 		if (home == null)
@@ -192,14 +204,13 @@ public class CopyResourceTest extends TestCase {
 			Configuration config = new Configuration(file, home);
 			BrokerPool.configure(1, 5, config);
 			return BrokerPool.getInstance();
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception e) {			
 			fail(e.getMessage());
 		}
 		return null;
 	}
 
-	protected void tearDown() throws Exception {
+	protected void tearDown() {
 		BrokerPool.stopAll(false);
 	}
 }

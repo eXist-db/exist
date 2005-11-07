@@ -50,80 +50,89 @@ public class MoveResourceTest extends TestCase {
 		TestRunner.run(MoveResourceTest.class);
 	}
 
-	public void testStore() throws Exception {
+	public void testStore() {
 		BrokerPool.FORCE_CORRUPTION = true;
-		BrokerPool pool = startDB();
-
+		BrokerPool pool = null;
 		DBBroker broker = null;
 		try {
+			pool = startDB();
+			assertNotNull(pool);
 			broker = pool.get(SecurityManager.SYSTEM_USER);
-
+			assertNotNull(broker);
 			TransactionManager transact = pool.getTransactionManager();
+			assertNotNull(transact);
 			Txn transaction = transact.beginTransaction();
-
+			assertNotNull(transaction);
 			System.out.println("Transaction started ...");
 
-			Collection root = broker.getOrCreateCollection(transaction,
-					DBBroker.ROOT_COLLECTION + "/test");
+			Collection root = broker.getOrCreateCollection(transaction,	DBBroker.ROOT_COLLECTION + "/test");
+			assertNotNull(root);
 			broker.saveCollection(transaction, root);
 
-			Collection test = broker.getOrCreateCollection(transaction,
-					DBBroker.ROOT_COLLECTION + "/test/test2");
-			broker.saveCollection(transaction, test);
+			Collection test2 = broker.getOrCreateCollection(transaction,	DBBroker.ROOT_COLLECTION + "/test/test2");
+			assertNotNull(test2);
+			broker.saveCollection(transaction, test2);
 
 			File f = new File("samples/shakespeare/r_and_j.xml");
-			IndexInfo info = test.validate(transaction, broker, "test.xml",
-					new InputSource(f.toURI().toASCIIString()));
-			test.store(transaction, broker, info, new InputSource(f.toURI()
-					.toASCIIString()), false);
+			assertNotNull(f);
+			IndexInfo info = test2.validate(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
+			assertNotNull(info);
+			test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 			
             System.out.println("Moving document test.xml to new_test.xml ...");
-			broker.moveResource(transaction, info.getDocument(), root,
-					"new_test.xml");
+			broker.moveResource(transaction, info.getDocument(), root, "new_test.xml");
 			broker.saveCollection(transaction, root);
             
 			transact.commit(transaction);
+			System.out.println("Transaction commited ...");
+		} catch (Exception e) {            
+	        fail(e.getMessage());  			
 		} finally {
 			pool.release(broker);
 		}
 	}
 
-	public void testRead() throws Exception {
+	public void testRead() {
 	    BrokerPool.FORCE_CORRUPTION = false;
-	    BrokerPool pool = startDB();
-	    
-	    System.out.println("testRead() ...\n");
-	    
+	    BrokerPool pool = null;
 	    DBBroker broker = null;
 	    try {
+	    	System.out.println("testRead() ...\n");
+	    	pool = startDB();
+	    	assertNotNull(pool);
 	        broker = pool.get(SecurityManager.SYSTEM_USER);
+	        assertNotNull(broker);
 	        Serializer serializer = broker.getSerializer();
 	        serializer.reset();
 	        
-	        DocumentImpl doc;
-	        String data;
-	        
-	        doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/new_test.xml", Lock.READ_LOCK);
+	        DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/new_test.xml", Lock.READ_LOCK);
 	        assertNotNull("Document should not be null", doc);
-	        data = serializer.serialize(doc);
+	        String data = serializer.serialize(doc);
+	        assertNotNull(data);
 //	        System.out.println(data);
 	        doc.getUpdateLock().release(Lock.READ_LOCK);
             
             TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);
             Txn transaction = transact.beginTransaction();
+            assertNotNull(transaction);
+            System.out.println("Transaction started ...");
             
             Collection root = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.WRITE_LOCK);
-            transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
-            
-            broker.removeCollection(transaction, root);
+            assertNotNull(root);
+            transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);            
+            broker.removeCollection(transaction, root); 
             
             transact.commit(transaction);
+            System.out.println("Transaction commited ...");
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  	
 	    } finally {
 	        pool.release(broker);
 	    }
 	}
 	
-//	public void testStoreAborted() throws Exception {
+//	public void testStoreAborted() {
 //		BrokerPool.FORCE_CORRUPTION = true;
 //		BrokerPool pool = startDB();
 //
@@ -164,7 +173,7 @@ public class MoveResourceTest extends TestCase {
 //		}
 //	}
 	
-//	public void testReadAborted() throws Exception {
+//	public void testReadAborted() {
 //	    BrokerPool.FORCE_CORRUPTION = false;
 //	    BrokerPool pool = startDB();
 //	    
@@ -192,7 +201,7 @@ public class MoveResourceTest extends TestCase {
 //	    }
 //	}
 //	
-//	public void testXMLDBStore() throws Exception {
+//	public void testXMLDBStore() {
 //		BrokerPool.FORCE_CORRUPTION = false;
 //	    BrokerPool pool = startDB();
 //	    
@@ -214,7 +223,7 @@ public class MoveResourceTest extends TestCase {
 //	    mgr.moveResource(DBBroker.ROOT_COLLECTION +  "/test/test2/test3.xml", DBBroker.ROOT_COLLECTION + "/test", "new_test3.xml");
 //	}
 //	
-//	public void testXMLDBRead() throws Exception {
+//	public void testXMLDBRead() {
 //		BrokerPool.FORCE_CORRUPTION = false;
 //	    BrokerPool pool = startDB();
 //	    
@@ -224,7 +233,7 @@ public class MoveResourceTest extends TestCase {
 //	    System.out.println(res.getContent());
 //	}
 	
-	protected BrokerPool startDB() throws Exception {
+	protected BrokerPool startDB() {
 		String home, file = "conf.xml";
 		home = System.getProperty("exist.home");
 		if (home == null)
@@ -239,14 +248,13 @@ public class MoveResourceTest extends TestCase {
 			DatabaseManager.registerDatabase(database);
 
 			return BrokerPool.getInstance();
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception e) {			
 			fail(e.getMessage());
 		}
 		return null;
 	}
 
-	protected void tearDown() throws Exception {
+	protected void tearDown() {
 		BrokerPool.stopAll(false);
 	}
 }

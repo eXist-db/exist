@@ -49,19 +49,25 @@ public class RecoverBinaryTest extends TestCase {
     
     private BrokerPool pool;
     
-    public void testStore() throws Exception {
+    public void testStore() {
+    	BrokerPool.FORCE_CORRUPTION = true;
         DBBroker broker = null;
         try {
+        	assertNotNull(pool);
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            BrokerPool.FORCE_CORRUPTION = true;
-            
+            assertNotNull(broker);
             TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);
             Txn transaction = transact.beginTransaction();
+            assertNotNull(transaction);
+            System.out.println("Transaction started ...");
             
             Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            assertNotNull(root);
             broker.saveCollection(transaction, root);
     
             FileInputStream is = new FileInputStream("LICENSE");
+            assertNotNull(is);
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             byte[] buf = new byte[512];
             int count = 0;
@@ -69,38 +75,46 @@ public class RecoverBinaryTest extends TestCase {
                 os.write(buf, 0, count);
             }
             BinaryDocument doc = 
-				root.addBinaryResource(transaction, broker, "binary.txt", os.toByteArray(), 
-						"text/text");
+				root.addBinaryResource(transaction, broker, "binary.txt", os.toByteArray(),	"text/text");
+            assertNotNull(doc);
             
             transact.commit(transaction);
+            System.out.println("Transaction commited ...");
             
             // the following transaction will not be committed. It will thus be rolled back by recovery
 //            transaction = transact.beginTransaction();
 //            root.removeBinaryResource(transaction, broker, doc);
             
+            //TODO : remove ?
             transact.getJournal().flushToLog(true);
+		} catch (Exception e) {            
+	        fail(e.getMessage());             
         } finally {
-            pool.release(broker);
+            if (pool != null) pool.release(broker);
         }
     }
     
-    public void testLoad() throws Exception {
+    public void testLoad() {
         BrokerPool.FORCE_CORRUPTION = false;
-        System.out.println("testRead() ...\n");
-        
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+        	System.out.println("testRead() ...\n");
+        	assertNotNull(pool);
+        	broker = pool.get(SecurityManager.SYSTEM_USER);
+        	assertNotNull(broker);
             BinaryDocument binDoc = (BinaryDocument) broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/binary.txt", Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
             String data = new String(broker.getBinaryResourceData(binDoc));
+            assertNotNull(data);
             System.out.println(data);
-        } finally {
-            pool.release(broker);
+		} catch (Exception e) {            
+	        fail(e.getMessage());
+	    } finally {
+            if (pool != null) pool.release(broker);
         }
     }
     
-    protected void setUp() throws Exception {
+    protected void setUp() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -109,13 +123,12 @@ public class RecoverBinaryTest extends TestCase {
             Configuration config = new Configuration(file, home);
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {            
             fail(e.getMessage());
         }
     }
 
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         BrokerPool.stopAll(false);
     }
 }
