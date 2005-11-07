@@ -18,13 +18,39 @@
     <ci:include src="sidebar.xml"/>
     <chapter id="webdav">
         <title>WebDAV</title>
+        
+        <section id="webdav">
+            <title>Introducing WebDAV</title>
+            <para>Beginning with version 1.0b2, eXist has its own WebDAV implementation.
+            WebDAV 	makes it possible to manage database collections in eXist just 
+			like directories in a file system. You may copy, remove, view 
+			or edit files with any application supporting the WebDAV 
+			protocol, including, for example, Windows Explorer, <ulink 
+            url="http://www.webdav.org/cadaver">cadaver</ulink>, 
+<ulink url="http://www.konqueror.org/">KDE Konqueror</ulink>, 
+<ulink url="http://www.oxygenxml.com/">OxygenXML</ulink>, 
+            <ulink url="http://www.altova.com/">XML Spy</ulink> and many others.</para>
+			            
+            <para>In the default installation, the WebDAV server listens on 
+            <ulink url="http://localhost:8080/exist/webdav/db">http://localhost:8080/exist/webdav/db</ulink>.
+            The implementation is not yet complete. In particular, the LOCK, UNLOCK and
+            PROPSET methods are missing. However, most WebDAV clients should work
+            well.</para>
+            
+            <note>
+                <para>By default, the WebDAV server tries to use HTTP Digest Authentication
+                as required by the standard. However, some Windows clients refuse
+                to accept this, so the server has a fallback option and uses Basic Authentication
+                if the client insists on it.</para>
+            </note>
+        </section>
 
         <section>
             <title>WinXP Webfolder</title>
 
             <para>Perform the following steps in Internet Explorer:
-	            <itemizedlist>
-	                <listitem>Select <command>File -> Open</command>.</listitem>
+                <itemizedlist>
+                    <listitem>Select <command>File -> Open</command>.</listitem>
                     <listitem>Fill in URL like <command>http://localhost:8080/exist/webdav/db/</command>
 	                 or <command>https://localhost:8443/exist/webdav/db/</command>.</listitem>
                     <listitem>Check "Open as Web Folder".</listitem>
@@ -44,27 +70,27 @@
 
             <para>This enables you to access eXist from almost any windowsXP application 
                   that supports 'Network Places' in the standard File dialog:
-            	<screenshot><graphic fileref="resources/webdav_xp_mnp0.png"/>
+                <screenshot><graphic fileref="resources/webdav_xp_mnp0.png"/>
                 </screenshot>
             </para>
             <para>First, go to "My Network Places", click "Add.."
-						<screenshot>
-							<graphic fileref="resources/webdav_xp_mnp1.png"/>
+                <screenshot>
+                    <graphic fileref="resources/webdav_xp_mnp1.png"/>
                 </screenshot>
             </para>
             <para>Then select the service provider. 
-						<screenshot>
-							<graphic fileref="resources/webdav_xp_mnp2.png"/>
+                <screenshot>
+                    <graphic fileref="resources/webdav_xp_mnp2.png"/>
                 </screenshot>
             </para>
             <para>Then fill the URL of exist e.g. http://localhost:8080/exist/webdav/db/.
-						<screenshot>
-							<graphic fileref="resources/webdav_xp_mnp3.png"/>
+                <screenshot>
+                    <graphic fileref="resources/webdav_xp_mnp3.png"/>
                 </screenshot>
             </para>
             <para>Finally click on icon to access eXist.
-						<screenshot>
-							<graphic fileref="resources/webdav_xp_mnp4.png"/>
+                <screenshot>
+                    <graphic fileref="resources/webdav_xp_mnp4.png"/>
                 </screenshot>
 
             </para>
@@ -93,7 +119,7 @@
                 			valid certification path to requested target.</para>
                 <para>You'll need to add the Server certificate to your trusted certificates keystore 
 								(<a href="http://java.sun.com/j2se/1.5.0/docs/guide/security/jsse/JSSERefGuide.html#CustomizingStores">more info</a>). 
-											</para>
+                </para>
             </note>
 
             <note>
@@ -132,8 +158,8 @@
             <title>KDE Konqueror</title>
 
             <para>Enter an URL like 
-            <command>webdav://localhost:8080/exist/webdav/db</command>. Use  
-            <command>webdavs://</command> for webDAV over SSL.
+                <command>webdav://localhost:8080/exist/webdav/db</command>. Use  
+                <command>webdavs://</command> for webDAV over SSL.
                 <screenshot>
                     <graphic fileref="resources/webdav_konqueror.png"/>
                 </screenshot>
