@@ -495,7 +495,7 @@ jar xfv ../exist.war]]></screen>
 			
             <screenshot>
                 <title>Database collection opened in KDE Konqueror</title>
-                <graphic fileref="webdav1.png"/>
+                <graphic fileref="resources/webdav_konqueror.png"/>
             </screenshot>
             
             <para>In the default installation, the WebDAV server listens on 
