@@ -691,7 +691,7 @@ implements Comparable, EntityResolver, Cacheable {
     	    broker.removeDocument(transaction, doc);
     	    documents.remove(docname);
     	    if (trigger != null && triggersEnabled) {
-    	        trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, null);
+    	        trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc);
     	    }
     	    broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
         } finally {
