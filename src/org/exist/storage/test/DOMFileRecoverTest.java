@@ -55,27 +55,31 @@ public class DOMFileRecoverTest extends TestCase {
 	
 	private BrokerPool pool;
 	
-	public void testAdd() throws Exception {
-        System.out.println("Add some random data and force db corruption ...\n");
-        
-		TransactionManager mgr = pool.getTransactionManager();
+	public void testAdd() {		
+		BrokerPool.FORCE_CORRUPTION = true;
 		DBBroker broker = null;
 		try {
+			System.out.println("Add some random data and force db corruption ...\n");
 			broker = pool.get(SecurityManager.SYSTEM_USER);
+			assertNotNull(broker);
+			//TODO : is this necessary ?
             broker.flush();
+			TransactionManager mgr = pool.getTransactionManager();
+			assertNotNull(mgr);
 			Txn txn = mgr.beginTransaction();
+			assertNotNull(txn);
 			System.out.println("Transaction started ...");
             
             DOMFile domDb = ((NativeBroker) broker).getDOMFile();
+            assertNotNull(domDb);
             domDb.setOwnerObject(this);
-            
-            BrokerPool.FORCE_CORRUPTION = true;
             
             // put 1000 values into the btree
             long firstToRemove = -1;
             for (int i = 1; i <= 10000; i++) {
                 byte[] data = ("Value" + i).getBytes();
                 long addr = domDb.put(txn, new NativeBroker.NodeRef(500, i), data);
+//              TODO : test addr ?
                 if (i == 1)
                     firstToRemove = addr;
             }
@@ -84,7 +88,9 @@ public class DOMFileRecoverTest extends TestCase {
             
             // remove all
             NativeBroker.NodeRef ref = new NativeBroker.NodeRef(500);
+            assertNotNull(ref);
             IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+            assertNotNull(idx);
             domDb.remove(txn, idx, null);
             domDb.removeAll(txn, firstToRemove);
             
@@ -92,25 +98,32 @@ public class DOMFileRecoverTest extends TestCase {
             for (int i = 1; i <= 10000; i++) {
                 byte[] data = ("Value" + i).getBytes();
                 long addr = domDb.put(txn, new NativeBroker.NodeRef(500, i), data);
+//              TODO : test addr ?
             }
             
             domDb.closeDocument();
             mgr.commit(txn);
+            System.out.println("Transaction commited ...");
             
             txn = mgr.beginTransaction();
+            System.out.println("Transaction started ...");
             
             // put 1000 new values into the btree
             for (int i = 1; i <= 1000; i++) {
                 byte[] data = ("Value" + i).getBytes();
                 long addr = domDb.put(txn, new NativeBroker.NodeRef(501, i), data);
+//              TODO : test addr ?                
                 if (i == 1)
                     firstToRemove = addr;
-            }
+            }            
+            
             domDb.closeDocument();
             mgr.commit(txn);
+            System.out.println("Transaction commited ...");
             
             // the following transaction is not committed and will be rolled back during recovery
             txn = mgr.beginTransaction();
+            System.out.println("Transaction started ...");
             
             for (int i = 1; i <= 200; i++) {
                 domDb.remove(txn, new NativeBroker.NodeRef(500, i));
@@ -120,32 +133,44 @@ public class DOMFileRecoverTest extends TestCase {
             domDb.remove(txn, idx, null);
             domDb.removeAll(txn, firstToRemove);
             
+//          Don't commit...
             mgr.getJournal().flushToLog(true);
+            System.out.println("Transaction interrupted ...");
             
             Writer writer = new StringWriter();
             domDb.dump(writer);
             System.out.println(writer.toString());
+	    } catch (Exception e) {            
+	        fail(e.getMessage());               
 		} finally {
 			pool.release(broker);
 		}
 	}
 	
-    public void testGet() throws Exception {
-        System.out.println("Recover and read the data ...\n");
-        TransactionManager mgr = pool.getTransactionManager();
+    public void testGet() {
+        
         DBBroker broker = null;
         try {
+        	System.out.println("Recover and read the data ...\n");        	
             broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+            TransactionManager mgr = pool.getTransactionManager();
+            assertNotNull(mgr);
             
             DOMFile domDb = ((NativeBroker) broker).getDOMFile();
+            assertNotNull(domDb);
             domDb.setOwnerObject(this);
             
             IndexQuery query = new IndexQuery(IndexQuery.GT, new NativeBroker.NodeRef(500));
+            assertNotNull(query);
             List keys = domDb.findKeys(query);
+            assertNotNull(keys);
             int count = 0;
             for (Iterator i = keys.iterator(); i.hasNext(); count++) {
                 Value key = (Value) i.next();
+                assertNotNull(key);
                 Value value = domDb.get(key);
+                assertNotNull(value);
                 System.out.println(new String(value.data(), value.start(), value.getLength()));
             }
             System.out.println("Values read: " + count);
@@ -153,12 +178,14 @@ public class DOMFileRecoverTest extends TestCase {
             Writer writer = new StringWriter();
             domDb.dump(writer);
             System.out.println(writer.toString());
+	    } catch (Exception e) {            
+	        fail(e.getMessage());             
         } finally {
             pool.release(broker);
         }
     }
     
-	protected void setUp() throws Exception {
+	protected void setUp() {
 		String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -173,7 +200,7 @@ public class DOMFileRecoverTest extends TestCase {
         }
 	}
 
-	protected void tearDown() throws Exception {
+	protected void tearDown() {
 		BrokerPool.stopAll(false);
 	}
 }
