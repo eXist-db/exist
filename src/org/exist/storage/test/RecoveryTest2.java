@@ -70,27 +70,32 @@ public class RecoveryTest2 extends TestCase {
         "  <para>Hello World!</para>" +
         "</test>";
     
-    public void testStore() throws Exception {
+    public void testStore() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDB();
-        
+        BrokerPool pool = null;        
         DBBroker broker = null;
         try {
+        	pool = startDB();
+        	assertNotNull(pool);
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            
+            assertNotNull(broker);            
             TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);
             Txn transaction = transact.beginTransaction();
-            
+            assertNotNull(transaction);            
             System.out.println("Transaction started ...");
             
             Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            assertNotNull(root); 
             broker.saveCollection(transaction, root);
             
-            Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
-            broker.saveCollection(transaction, test);
+            Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
+            assertNotNull(test2); 
+            broker.saveCollection(transaction, test2);
             
             System.out.println("Contents of dom.dbx:\n\n");
             DOMFile domDb = ((NativeBroker)broker).getDOMFile();
+            assertNotNull(domDb); 
             Writer writer = new StringWriter();
             domDb.dump(writer);
             System.out.println(writer.toString());
@@ -100,45 +105,54 @@ public class RecoveryTest2 extends TestCase {
             
             // store some documents. Will be replaced below
             File dir = new File(xmlDir);
+            assertNotNull(dir); 
             File[] docs = dir.listFiles();
+            assertNotNull(docs); 
             for (int i = 0; i < docs.length; i++) {
                 f = docs[i];
-                info = test.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
-                test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                assertNotNull(f); 
+                info = test2.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                assertNotNull(info); 
+                test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
             }
             
             transact.commit(transaction);
+            System.out.println("Transaction commited ...");
+            
+	    } catch (Exception e) {            
+	        fail(e.getMessage());          
         } finally {
-            pool.release(broker);
+        	if (pool != null) pool.release(broker);
         }
     }
     
-    public void testRead() throws Exception {
+    public void testRead() {
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
-        
-        System.out.println("testRead() ...\n");
-        
+        BrokerPool pool = null;
         DBBroker broker = null;
         try {
+        	System.out.println("testRead() ...\n");
+        	pool = startDB();
+        	assertNotNull(pool);
             broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc;
-            String data;
-            
-            doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/terms-eng.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/terms-eng.xml", Lock.READ_LOCK);
             assertNotNull("Document should not be null", doc);
-            data = serializer.serialize(doc);
+            String data = serializer.serialize(doc);
+            assertNotNull(data);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
-        } finally {
-            pool.release(broker);
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    } finally {
+	    	if (pool != null) pool.release(broker);
         }    
     }
     
-    protected BrokerPool startDB() throws Exception {
+    protected BrokerPool startDB() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -147,14 +161,13 @@ public class RecoveryTest2 extends TestCase {
             Configuration config = new Configuration(file, home);
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {            
             fail(e.getMessage());
         }
         return null;
     }
 
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         BrokerPool.stopAll(false);
     }
 }

@@ -51,65 +51,82 @@ public class RemoveCollectionTest extends TestCase {
     
     private BrokerPool pool;
     
-    public void testStore() throws Exception {
+    public void testStore() {
+    	BrokerPool.FORCE_CORRUPTION = true;
         DBBroker broker = null;
         try {
+        	assertNotNull(pool);
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            BrokerPool.FORCE_CORRUPTION = true;
-            
+            assertNotNull(broker);                       
             TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);   
             Txn transaction = transact.beginTransaction();
-            
+            assertNotNull(transaction);   
             System.out.println("Transaction started ...");
             
             Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            assertNotNull(test);   
             broker.saveCollection(transaction, test);
             
             Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
+            assertNotNull(test2);   
             broker.saveCollection(transaction, test2);
             
             File f = new File("samples/biblio.rdf");
+            assertNotNull(f);   
             InputSource is = new InputSource(f.toURI().toASCIIString());
+            assertNotNull(is);   
             IndexInfo info = test.validate(transaction, broker, "biblio.rdf", is);
+            assertNotNull(info);   
             test.store(transaction, broker, info, is, false);
             
             transact.commit(transaction);
+            System.out.println("Transaction commited ...");
             
             transaction = transact.beginTransaction();
+            System.out.println("Transaction started ...");
             
             broker.removeCollection(transaction, test);
             
+//          Don't commit...
             transact.getJournal().flushToLog(true);
+            System.out.println("Transaction interrupted ...");
+	    } catch (Exception e) {            
+	        fail(e.getMessage());               
         } finally {
-            pool.release(broker);
+        	if (pool != null) pool.release(broker);
         }
     }
     
-    public void testRead() throws Exception {
+    public void testRead() {
         BrokerPool.FORCE_CORRUPTION = false;
-        System.out.println("testRead() ...\n");
-        
         DBBroker broker = null;
         try {
+        	System.out.println("testRead() ...\n");
+        	assertNotNull(pool);
             broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            Collection test = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.READ_LOCK);
+            Collection test = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.READ_LOCK);            
             assertNotNull("Collection '" + DBBroker.ROOT_COLLECTION +  "/test' not found", test);
             
             DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/biblio.rdf", Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION +  "/test/biblio.rdf' should not be null", doc);
             String data = serializer.serialize(doc);
+            assertNotNull(data);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             test.release();
-        } finally {
-            pool.release(broker);
+	    } catch (Exception e) {            
+	        fail(e.getMessage());   
+	    } finally {
+        	if (pool != null) pool.release(broker);
         }
     }
     
-    protected void setUp() throws Exception {
+    protected void setUp() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -118,13 +135,12 @@ public class RemoveCollectionTest extends TestCase {
             Configuration config = new Configuration(file, home);
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {            
             fail(e.getMessage());
         }
     }
 
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         BrokerPool.stopAll(false);
     }
 }

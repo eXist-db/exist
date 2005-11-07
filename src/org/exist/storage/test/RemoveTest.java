@@ -45,22 +45,28 @@ public class RemoveTest extends AbstractUpdateTest {
         TestRunner.run(RemoveTest.class);
     }
     
-    public void testUpdate() throws Exception {
+    public void testUpdate() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDB();
-        
+        BrokerPool pool = null;        
         DBBroker broker = null;
         try {
+        	pool = startDB();
+        	assertNotNull(pool);
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            
+            assertNotNull(broker);            
             TransactionManager mgr = pool.getTransactionManager();
+            assertNotNull(mgr);
             
             IndexInfo info = init(broker, mgr);
+            assertNotNull(info);
             DocumentSet docs = new DocumentSet();
             docs.add(info.getDocument());
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
+            assertNotNull(proc);
             
             Txn transaction = mgr.beginTransaction();
+            assertNotNull(transaction);
+            System.out.println("Transaction started ...");
             
             String xupdate;
             Modification modifications[];
@@ -81,26 +87,26 @@ public class RemoveTest extends AbstractUpdateTest {
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
                 modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
                 modifications[0].process(transaction);
                 proc.reset();
             }
             
             mgr.commit(transaction);
+            System.out.println("Transaction commited ...");
             
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc;
-            String data;
-            
-            doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/test/test2/test.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/test/test2/test.xml", Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", doc);
-            data = serializer.serialize(doc);
+            String data = serializer.serialize(doc);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
             // the following transaction will not be committed and thus undone during recovery
             transaction = mgr.beginTransaction();
+            System.out.println("Transaction started ...");
             
             // remove elements
             for (int i = 1; i <= 25; i++) {
@@ -111,11 +117,17 @@ public class RemoveTest extends AbstractUpdateTest {
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
                 modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
                 modifications[0].process(transaction);
                 proc.reset();
             }
+            
+//          Don't commit...            
             pool.getTransactionManager().getJournal().flushToLog(true);
-        } finally {
+            System.out.println("Transaction interrupted ...");
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  
+	    } finally {
             pool.release(broker);
         }
     }
