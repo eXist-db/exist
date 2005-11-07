@@ -64,11 +64,7 @@ public class XQueryTrigger extends FilteringTrigger {
 	 * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
 	 */
 	public void prepare(int event, DBBroker broker, Txn transaction, String documentName, DocumentImpl existingDocument)
-		throws TriggerException {
-		
-		//TODO : think
-		if (existingDocument == null) return;
-		if (existingDocument instanceof BinaryDocument) return;
+		throws TriggerException {				
 		
 		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for document : '" + documentName + "'");
 		
@@ -105,7 +101,9 @@ public class XQueryTrigger extends FilteringTrigger {
         	context.declareVariable(bindingPrefix + "collectionName", new StringValue(collection.getName()));
         	context.declareVariable(bindingPrefix + "documentName", new StringValue(documentName));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event))); 
-        	if (existingDocument == null)
+        	//if (existingDocument == null)
+        	if (existingDocument instanceof BinaryDocument)
+//        		TODO : encode in Base64 ?        		
         		context.declareVariable(bindingPrefix + "document", Sequence.EMPTY_SEQUENCE);
         	else
         		context.declareVariable(bindingPrefix + "document", (DocumentImpl)existingDocument);
@@ -135,11 +133,7 @@ public class XQueryTrigger extends FilteringTrigger {
     /* (non-Javadoc)
      * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
      */
-    public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document) {
-    	
-		//TODO : think
-    	if (document == null) return;
-    	if (document instanceof BinaryDocument) return;
+    public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document) {		
     	
     	LOG.debug("Finishing " + eventToString(event) + "XQuery trigger for document : '" + document.getName() + "'");
 
@@ -175,7 +169,14 @@ public class XQueryTrigger extends FilteringTrigger {
         	context.declareVariable(bindingPrefix + "collectionName", new StringValue(collection.getName()));
         	context.declareVariable(bindingPrefix + "documentName", new StringValue(document.getName()));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
-        	context.declareVariable(bindingPrefix + "document", (DocumentImpl)document);
+        	if (event == REMOVE_DOCUMENT_EVENT)
+//        		Document does not exist any more -> Sequence.EMPTY_SEQUENCE
+        		context.declareVariable(bindingPrefix + "document", Sequence.EMPTY_SEQUENCE);
+        	else if (document instanceof BinaryDocument)
+//        		TODO : encode in Base64 ?
+        		context.declareVariable(bindingPrefix + "document", Sequence.EMPTY_SEQUENCE);
+        	else         	
+        		context.declareVariable(bindingPrefix + "document", (DocumentImpl)document);     
 	        	        
         } catch (XPathException e) {
         	//Should never be reached
@@ -211,8 +212,7 @@ public class XQueryTrigger extends FilteringTrigger {
 		setOutputHandler(originalOutputHandler);
 		
 		if (!isValidating())
-				return;		
-		
+				return;				
 		
         XQueryContext context = service.newContext();
         //TODO : futher initializations ?
