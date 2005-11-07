@@ -74,6 +74,9 @@
                 <listitem>
                     <para><ulink href="cluster.xml">Cluster configuration</ulink>: how to configure cluster environment.</para>
                 </listitem>
+                <listitem>
+                    <para><ulink href="webDAV.xml">WebDAV</ulink>: how to setup your favourite webDAV enabled application.</para>
+                </listitem>
             </unorderedlist>
             
         </section>
