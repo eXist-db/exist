@@ -32,16 +32,12 @@ import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
 import org.exist.http.servlets.Authenticator;
 import org.exist.http.servlets.BasicAuthenticator;
 import org.exist.http.servlets.DigestAuthenticator;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
 
 /**
@@ -108,7 +104,7 @@ public class WebDAV {
 			return;
 		String path = request.getPathInfo();
 		if(path == null || path.length() == 0 || path.equals("/")) {
-			response.sendRedirect(request.getRequestURI() + "/db");
+			response.sendRedirect(request.getRequestURI() + DBBroker.ROOT_COLLECTION);
 			return;
 		}
 		if(path.endsWith("/"))

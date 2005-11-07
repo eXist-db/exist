@@ -53,6 +53,7 @@ import org.apache.excalibur.source.SourceValidity;
 import org.apache.excalibur.source.impl.validity.AggregatedValidity;
 import org.apache.excalibur.source.impl.validity.ExpiresValidity;
 import org.exist.source.CocoonSource;
+import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.CollectionImpl;
@@ -133,7 +134,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 	private final static String EXPAND_XINCLUDES = "expand-xincludes";
 
 	private String collectionURI;
-	private String defaultCollectionURI = "xmldb:exist:///db";
+	private String defaultCollectionURI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String COLLECTION_URI = "collection";
 	
 	private long cacheValidity;

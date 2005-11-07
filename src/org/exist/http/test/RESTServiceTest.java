@@ -36,6 +36,7 @@ import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
 import org.exist.StandaloneServer;
+import org.exist.storage.DBBroker;
 import org.mortbay.util.MultiException;
 
 /** A test case for accessing a remote server via REST-Style Web API.
@@ -46,8 +47,8 @@ public class RESTServiceTest extends TestCase {
 
 	private static StandaloneServer server = null;
 	private final static String SERVER_URI = "http://localhost:8088";
-	private final static String COLLECTION_URI = SERVER_URI + "/db/test";	
-	private final static String RESOURCE_URI = SERVER_URI + "/db/test/test.xml";	
+	private final static String COLLECTION_URI = SERVER_URI + DBBroker.ROOT_COLLECTION + "/test";	
+	private final static String RESOURCE_URI = SERVER_URI + DBBroker.ROOT_COLLECTION +  "/test/test.xml";	
 	
 	private final static String XML_DATA =
 		"<test>" +
@@ -162,7 +163,7 @@ public class RESTServiceTest extends TestCase {
 	
 	public void testQueryGet() {
 		try {
-			String uri = COLLECTION_URI + "?_query=" + URLEncoder.encode("doc('/db/test/test.xml')//para[. = '\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC']/text()", "UTF-8");
+			String uri = COLLECTION_URI + "?_query=" + URLEncoder.encode("doc('"+ DBBroker.ROOT_COLLECTION + "/test/test.xml')//para[. = '\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC']/text()", "UTF-8");
 			HttpURLConnection connect = getConnection(uri);
 			connect.setRequestMethod("GET");
 			connect.connect();
@@ -187,7 +188,7 @@ public class RESTServiceTest extends TestCase {
 			assertEquals("Server returned response code " + r, 200, r);
 		
 			String response = readResponse(connect.getInputStream()).trim();
-			assertEquals(response,"/db/test");
+			assertEquals(response, DBBroker.ROOT_COLLECTION + "/test");
 			
 			uri = COLLECTION_URI + "?_query=request:request-url()&_wrap=no";
 			connect = getConnection(uri);
@@ -199,7 +200,7 @@ public class RESTServiceTest extends TestCase {
 			
 			response = readResponse(connect.getInputStream()).trim();
 			//TODO : the server name may have been renamed by the Web server
-			assertEquals(response, SERVER_URI + "/db/test");	
+			assertEquals(response, SERVER_URI + DBBroker.ROOT_COLLECTION + "/test");	
 	    } catch (Exception e) {            
 	        fail(e.getMessage()); 
 	    }

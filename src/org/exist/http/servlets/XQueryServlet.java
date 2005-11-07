@@ -38,12 +38,12 @@ import javax.xml.transform.OutputKeys;
 
 import org.exist.source.FileSource;
 import org.exist.source.Source;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.XQueryService;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.util.HTTPUtils;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -86,7 +86,7 @@ public class XQueryServlet extends HttpServlet {
 
 	public final static String DEFAULT_USER = "guest";
 	public final static String DEFAULT_PASS = "guest";
-	public final static String DEFAULT_URI = "xmldb:exist:///db";
+	public final static String DEFAULT_URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	public final static String DEFAULT_CONTENT_TYPE = "text/html";
 	

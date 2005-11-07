@@ -139,10 +139,11 @@ public class RecoveryTest extends TestCase {
             test2.removeDocument(transaction, broker, files[files.length - 1].getName());            
             
             transact.commit(transaction);
+            System.out.println("Transaction commited ...");
             
             // the following transaction will not be committed. It will thus be rolled back by recovery
             transaction = transact.beginTransaction();
-            System.out.println("Transaction commited ...");
+            System.out.println("Transaction started ...");
             
             test2.removeDocument(transaction, broker, files[0].getName());            
             test2.removeBinaryResource(transaction, broker, doc);
@@ -157,8 +158,7 @@ public class RecoveryTest extends TestCase {
             domDb.dump(writer);
             System.out.println(writer.toString());
 	    } catch (Exception e) {            
-	        fail(e.getMessage()); 
-	        
+	        fail(e.getMessage()); 	        
         } finally {
         	if (pool != null) pool.release(broker);
         }
