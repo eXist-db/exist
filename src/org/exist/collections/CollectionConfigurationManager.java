@@ -201,7 +201,7 @@ public class CollectionConfigurationManager {
     }
     
 	/**
-	 * Check if the config collection exists below /db/system. If not, create it.
+	 * Check if the config collection exists below the system collection. If not, create it.
 	 * 
 	 * @param broker
 	 * @throws EXistException
@@ -219,7 +219,7 @@ public class CollectionConfigurationManager {
     		}
     	} catch (PermissionDeniedException e) {
             transact.abort(txn);
-    		throw new EXistException("Failed to initialize /db/system/config: " + e.getMessage());
+    		throw new EXistException("Failed to initialize '" + DBBroker.SYSTEM_COLLECTION + "/config: " + e.getMessage());
     	}
     }
 }
