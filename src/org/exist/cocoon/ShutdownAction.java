@@ -10,6 +10,7 @@ import org.apache.cocoon.environment.ObjectModelHelper;
 import org.apache.cocoon.environment.Redirector;
 import org.apache.cocoon.environment.Request;
 import org.apache.cocoon.environment.SourceResolver;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -50,7 +51,7 @@ public class ShutdownAction extends ServiceableAction implements ThreadSafe {
 		}
 		if ( source == null ) {
 			getLogger().debug( "No source specified! Using default." );
-			source = "xmldb:exist:///db";
+			source = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 		}
 		Collection collection = null;
 		// try to access collection specified in source

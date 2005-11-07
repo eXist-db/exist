@@ -70,7 +70,7 @@ public class Mkcol extends AbstractWebDAVMethod {
 	            return;
 			}
 			int p = path.lastIndexOf('/');
-	        String parentPath = -1 < p ? path.substring(0, p) : "/db";
+	        String parentPath = -1 < p ? path.substring(0, p) : DBBroker.ROOT_COLLECTION;
 	        String newCollection = -1 < p ? path.substring(p + 1) : path;
 	        collection = broker.openCollection(parentPath, Lock.WRITE_LOCK);
 	        if(collection == null) {
