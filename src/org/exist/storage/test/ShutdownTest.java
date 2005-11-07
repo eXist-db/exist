@@ -30,7 +30,7 @@ public class ShutdownTest extends TestCase {
 		super(name);
 	}
 	
-	public void testShutdown() throws Exception {
+	public void testShutdown() {
 		for (int i = 0; i < 5; i++) {
 			storeAndShutdown();
 			
@@ -38,18 +38,22 @@ public class ShutdownTest extends TestCase {
 		}
 	}
 	
-	public void storeAndShutdown() throws Exception {
-		BrokerPool pool = startDB();
+	public void storeAndShutdown() {
+		BrokerPool pool = null;
 		DBBroker broker = null;
 		try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
-            
+			pool = startDB();
+			assertNotNull(pool);
+			broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
             TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);
             Txn transaction = transact.beginTransaction();
-            
+            assertNotNull(transaction);            
             System.out.println("Transaction started ...");
             
             Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            assertNotNull(test); 
             broker.saveCollection(transaction, test);
             
             File files[] = dir.listFiles(new FilenameFilter() {
@@ -59,6 +63,7 @@ public class ShutdownTest extends TestCase {
 	        		return false;
 	        	}
 	        });
+            assertNotNull(files); 
             
             File f;
             IndexInfo info;
@@ -66,8 +71,10 @@ public class ShutdownTest extends TestCase {
             // store some documents.
             for (int i = 0; i < files.length; i++) {
                 f = files[i];
+                assertNotNull(f); 
                 try {
                     info = test.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    assertNotNull(info); 
                     test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
                     System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
@@ -75,16 +82,23 @@ public class ShutdownTest extends TestCase {
             }
             
             XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery); 
             Sequence result = xquery.execute("//SPEECH[LINE &= 'love']", Sequence.EMPTY_SEQUENCE);
+            assertNotNull(result); 
             assertEquals(result.getLength(), 160);
             
             transact.commit(transaction);
+            System.out.println("Transaction commited ...");
             
             transaction = transact.beginTransaction();
+            System.out.println("Transaction started ...");
             
             broker.removeCollection(transaction, test);
             
             transact.commit(transaction);
+            System.out.println("Transaction commited ...");
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
 		} finally {
 			pool.release(broker);
 		}
@@ -105,7 +119,7 @@ public class ShutdownTest extends TestCase {
 //	        });
 //	        for (int i = 0; i < files.length; i++) {
 //	        	System.out.println("Removing " + files[i].getAbsolutePath());
-//	    		files[i].delete();
+//	    		files[i].delete();;
 //	        }
 //        } catch (Exception e) {
 //        	System.err.println("Error while deleting database files:\n" + e.getMessage());
@@ -113,7 +127,7 @@ public class ShutdownTest extends TestCase {
 //        }
 	}
 	
-	protected BrokerPool startDB() throws Exception {
+	protected BrokerPool startDB() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -122,8 +136,7 @@ public class ShutdownTest extends TestCase {
             Configuration config = new Configuration(file, home);
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {            
             fail(e.getMessage());
         }
         return null;
@@ -133,7 +146,7 @@ public class ShutdownTest extends TestCase {
 		BrokerPool.stopAll(false);
 	}
 	
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		TestRunner.run(ShutdownTest.class);
 	}
 }

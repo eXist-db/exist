@@ -42,22 +42,28 @@ public class UpdateAttributeTest extends AbstractUpdateTest {
         TestRunner.run(UpdateAttributeTest.class);
     }
     
-    public void testUpdate() throws Exception {
+    public void testUpdate() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDB();
-        
+        BrokerPool pool = null;        
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
-            
+        	pool = startDB();
+        	assertNotNull(pool);
+        	broker = pool.get(SecurityManager.SYSTEM_USER);
+        	assertNotNull(broker);            
             TransactionManager mgr = pool.getTransactionManager();
+            assertNotNull(mgr); 
             
             IndexInfo info = init(broker, mgr);
+            assertNotNull(info);
             DocumentSet docs = new DocumentSet();
             docs.add(info.getDocument());
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
+            assertNotNull(proc);
             
             Txn transaction = mgr.beginTransaction();
+            assertNotNull(transaction);
+            System.out.println("Transaction started ...");
             
             String xupdate;
             Modification modifications[];
@@ -78,14 +84,18 @@ public class UpdateAttributeTest extends AbstractUpdateTest {
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
                 modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
                 modifications[0].process(transaction);
                 proc.reset();
             }
             
             mgr.commit(transaction);
+            System.out.println("Transaction commited ...");
             
             // the following transaction will not be committed and thus undone during recovery
             transaction = mgr.beginTransaction();
+            assertNotNull(transaction);
+            System.out.println("Transaction started ...");
             
             // update attributes
             for (int i = 1; i <= 200; i++) {
@@ -96,10 +106,16 @@ public class UpdateAttributeTest extends AbstractUpdateTest {
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
                 modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
                 modifications[0].process(transaction);
                 proc.reset();
             }
+           
+            //Don't commit
             pool.getTransactionManager().getJournal().flushToLog(true);
+            System.out.println("Transaction interrupted ...");    
+        } catch (Exception e) {            
+            fail(e.getMessage());             
         } finally {
             pool.release(broker);
         }
