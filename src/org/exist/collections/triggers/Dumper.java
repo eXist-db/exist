@@ -31,7 +31,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.storage.DBBroker;
-import org.w3c.dom.Document;
+import org.exist.storage.txn.Txn;
 
 /**
  * @author wolf
@@ -56,7 +56,10 @@ public class Dumper extends FilteringTrigger {
 	 */
 	public void prepare(
 		int event,
-		DBBroker broker, String documentName, Document existingDocument)
+		DBBroker broker,
+		Txn transaction,
+		String documentName, 
+		DocumentImpl existingDocument)
 		throws TriggerException {
 		System.out.println("\nstoring document " + documentName + " into collection " + collection.getName());
 		if(existingDocument != null)
@@ -71,6 +74,6 @@ public class Dumper extends FilteringTrigger {
     /* (non-Javadoc)
      * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
      */
-    public void finish(int event, DBBroker broker, String documentName, Document document) {
+    public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document) {
     }
 }

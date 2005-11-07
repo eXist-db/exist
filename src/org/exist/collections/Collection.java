@@ -684,14 +684,14 @@ implements Comparable, EntityResolver, Cacheable {
     	    if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
     	        throw new PermissionDeniedException("Permission to remove document denied");
     	    if (trigger != null && triggersEnabled) {
-    	        trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, getName() + "/" + docname,
-    	                doc);
+    	        trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, 
+    	        		getName() + "/" + docname, doc);
     	    }
     	    
     	    broker.removeDocument(transaction, doc);
     	    documents.remove(docname);
     	    if (trigger != null && triggersEnabled) {
-    	        trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, getName() + "/" + docname, null);
+    	        trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, null);
     	    }
     	    broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
         } finally {
@@ -742,13 +742,14 @@ implements Comparable, EntityResolver, Cacheable {
             	CollectionConfiguration config = getConfiguration(broker);
 	            if (config != null) {
 	                trigger = (DocumentTrigger) config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
-	                trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, doc.getName(), doc);
+	                if (trigger != null)
+	                	trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getName(), doc);
 	            }
             }
             broker.removeBinaryResource(transaction, (BinaryDocument) doc);
             documents.remove(doc.getFileName());
             if (trigger != null) {
-            	trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, doc.getName(), doc);
+            	trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, null);
             }
         } finally {
             getLock().release();
@@ -841,7 +842,7 @@ implements Comparable, EntityResolver, Cacheable {
         
       collectionConfEnabled = true;
 		broker.deleteObservers();
-		info.finishTrigger(broker, document.getName(), document);
+		info.finishTrigger(broker, transaction, document);
 		broker.getBrokerPool().getNotificationService().notifyUpdate(document, 
 				(info.getEvent() == Trigger.UPDATE_DOCUMENT_EVENT ? UpdateListener.UPDATE : UpdateListener.ADD));
 	}
@@ -870,7 +871,7 @@ implements Comparable, EntityResolver, Cacheable {
 					setupTriggers(broker, docName, oldDoc != null),
 					oldDoc == null ? Trigger.STORE_DOCUMENT_EVENT : Trigger.UPDATE_DOCUMENT_EVENT);
 
-			info.prepareTrigger(broker, getName() + "/" + docName, oldDoc);
+			info.prepareTrigger(broker, transaction, getName() + "/" + docName, oldDoc);
 
 			LOG.debug("Scanning document " + name);
 			doValidate.run(info);
@@ -1043,10 +1044,8 @@ implements Comparable, EntityResolver, Cacheable {
 	            	event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
 	                trigger = (DocumentTrigger) config.getTrigger(event);
 	                if (trigger != null) {
-	                	trigger.prepare(event, broker, blob.getName(), blob);
-	                	LOG.debug("Using trigger: " + trigger.getClass().getName());
-	                } else
-	                	LOG.debug("No trigger found");
+	                	trigger.prepare(event, broker, transaction, blob.getName(), blob);
+	                }
 	            }
             }
             
@@ -1073,7 +1072,7 @@ implements Comparable, EntityResolver, Cacheable {
 			broker.closeDocument();
 			
 			if (trigger != null) {
-				trigger.finish(event, broker, blob.getName(), blob);
+				trigger.finish(event, broker, transaction, blob);
 			}
 			return blob;
 		} finally {

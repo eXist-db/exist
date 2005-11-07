@@ -37,7 +37,7 @@ import org.exist.storage.DBBroker;
  * found in the collection, it will be parsed and any triggers will be created and configured.
  * The {@link #configure(DBBroker, Collection, Map) configure} method is called once on each trigger.
  * 
- * Triggers listen to events. Currently, there are three events to which triggers may be
+ * Triggers listen to events. Currently, there are five events to which triggers may be
  * attached:
  * 
  * <table border="0">

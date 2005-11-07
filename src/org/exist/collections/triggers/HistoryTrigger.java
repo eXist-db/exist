@@ -10,8 +10,8 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import org.w3c.dom.Document;
 
 /**
  * This collection trigger will save all old versions of documents before
@@ -53,7 +53,7 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
         }
     }
     
-    public void prepare(int event, DBBroker broker, String documentName, Document existingDocument) throws TriggerException{
+    public void prepare(int event, DBBroker broker, Txn transaction, String documentName, DocumentImpl existingDocument) throws TriggerException{
    	  if (existingDocument == null) return;
         // retrieve the document in question
         DocumentImpl doc = (DocumentImpl) existingDocument;
@@ -67,9 +67,9 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
         
         // create the destination document
         try {
-            Collection destination = broker.getOrCreateCollection(null, path);
-            broker.saveCollection(null, destination);
-            broker.copyResource(null, doc, destination, name);
+            Collection destination = broker.getOrCreateCollection(transaction, path);
+            broker.saveCollection(transaction, destination);
+            broker.copyResource(transaction, doc, destination, name);
         }
         catch(PermissionDeniedException exception) {
             throw new TriggerException(exception);
@@ -82,8 +82,7 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
     /* (non-Javadoc)
      * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
      */
-    public void finish(int event, DBBroker broker, String documentName,
-            Document document) {
+    public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document) {
+    	super.finish(event, broker, transaction, document);
     }
-    
 }

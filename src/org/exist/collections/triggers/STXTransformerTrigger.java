@@ -40,7 +40,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
-import org.w3c.dom.Document;
+import org.exist.storage.txn.Txn;
 import org.xml.sax.SAXException;
 
 /**
@@ -108,7 +108,7 @@ public class STXTransformerTrigger extends FilteringTrigger {
 	/* (non-Javadoc)
 	 * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
 	 */
-	public void prepare(int event, DBBroker broker, String documentName, Document existingDocument) throws TriggerException {
+	public void prepare(int event, DBBroker broker, Txn transaction, String documentName, DocumentImpl existingDocument) throws TriggerException {
 			SAXResult result = new SAXResult();
 			result.setHandler(getOutputHandler());
 			result.setLexicalHandler(getLexicalOutputHandler());

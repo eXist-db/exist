@@ -15,9 +15,9 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
 /**
@@ -33,7 +33,7 @@ public class ExampleTrigger extends FilteringTrigger {
 	/* (non-Javadoc)
 	 * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
 	 */
-	public void prepare(int event, DBBroker broker, String documentName, Document existingDocument)
+	public void prepare(int event, DBBroker broker, Txn transaction, String documentName, DocumentImpl existingDocument)
 		throws TriggerException {
 		String xupdate;
 		// we react to the store and remove events
