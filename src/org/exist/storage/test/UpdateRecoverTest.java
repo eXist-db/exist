@@ -21,30 +21,24 @@
  */
 package org.exist.storage.test;
 
-import java.io.File;
 import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
+
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
 
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.security.SecurityManager;
-import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NativeBroker;
-import org.exist.storage.dom.DOMFile;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.xmldb.CollectionManagementServiceImpl;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
@@ -52,9 +46,6 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.XUpdateQueryService;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 
 /**
  * Tests recovery of XUpdate operations.
@@ -75,40 +66,46 @@ public class UpdateRecoverTest extends TestCase {
         "       <description>Milk</description>" +
         "       <price>22.50</price>" +
         "   </product>" +
-        "</products>";
+        "</products>";    
     
-    private BrokerPool pool;
-    
-    public void testStore() throws Exception {
+    public void testStore() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDB();
-        
+        BrokerPool pool = null;        
         DBBroker broker = null;
         try {
+        	pool = startDB();
+        	assertNotNull(pool);
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            
+            assertNotNull(broker);
             TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);
             Txn transaction = transact.beginTransaction();
-            
+            assertNotNull(transaction);
             System.out.println("Transaction started ...");
             
             Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
-            broker.saveCollection(transaction, test);
+            Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
+            assertNotNull(test2);
+            broker.saveCollection(transaction, test2);
             
-            IndexInfo info;
-            info = test.validate(transaction, broker, "test.xml", TEST_XML);
-            test.store(transaction, broker, info, TEST_XML, false);
+            IndexInfo info = test2.validate(transaction, broker, "test.xml", TEST_XML);
+            assertNotNull(info);
+            test2.store(transaction, broker, info, TEST_XML, false);
             
             transact.commit(transaction);
+            System.out.println("Transaction commited ...");
             
             transaction = transact.beginTransaction();
+            assertNotNull(transaction);
+            System.out.println("Transaction started ...");
             
             DocumentSet docs = new DocumentSet();
             docs.add(info.getDocument());
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
+            assertNotNull(proc);
             
             String xupdate;
             Modification modifications[];
@@ -129,6 +126,7 @@ public class UpdateRecoverTest extends TestCase {
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
                 modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
                 modifications[0].process(transaction);
                 proc.reset();
             }
@@ -145,6 +143,7 @@ public class UpdateRecoverTest extends TestCase {
               proc.setBroker(broker);
               proc.setDocumentSet(docs);
               modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+              assertNotNull(modifications);
               modifications[0].process(transaction);
               proc.reset();
           }
@@ -164,6 +163,7 @@ public class UpdateRecoverTest extends TestCase {
               proc.setBroker(broker);
               proc.setDocumentSet(docs);
               modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+              assertNotNull(modifications);
               long mods = modifications[0].process(transaction);
               System.out.println("Modifications: " + mods);
               proc.reset();
@@ -179,6 +179,7 @@ public class UpdateRecoverTest extends TestCase {
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
                 modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
                 modifications[0].process(transaction);
                 proc.reset();
             }
@@ -199,6 +200,7 @@ public class UpdateRecoverTest extends TestCase {
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
                 modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
                 modifications[0].process(transaction);
                 proc.reset();
             }
@@ -212,6 +214,7 @@ public class UpdateRecoverTest extends TestCase {
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
             modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+            assertNotNull(modifications);
             modifications[0].process(transaction);
             proc.reset();
             
@@ -225,6 +228,7 @@ public class UpdateRecoverTest extends TestCase {
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
                 modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
                 long mods = modifications[0].process(transaction);
                 System.out.println(mods + " records modified.");
                 proc.reset();
@@ -241,6 +245,7 @@ public class UpdateRecoverTest extends TestCase {
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
                 modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
                 modifications[0].process(transaction);
                 proc.reset();
             }
@@ -255,195 +260,214 @@ public class UpdateRecoverTest extends TestCase {
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
                 modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
                 long mods = modifications[0].process(transaction);
                 System.out.println(mods + " records modified.");
                 proc.reset();
-            }
-            System.out.println("FINISHED!!!!");
-//            pool.getTransactionManager().getLogManager().flushToLog(true);
+            }           
+
             transact.commit(transaction);
-            System.out.println("Transaction " + transaction.getId() + " completed");
+            System.out.println("Transaction commited ...");            
+           
         } catch (Exception e) {
-            System.out.println("EXCEPTION CAUGHT!!!!!!!!");
-            e.printStackTrace();
-            throw e;
+        	fail(e.getMessage());  
         } finally {
-            pool.release(broker);
+        	if (pool!= null) pool.release(broker);
         }
     }
     
-    public void testRead() throws Exception {
+    public void testRead() {
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
-        
-        System.out.println("testRead() ...\n");
-        
+        BrokerPool pool = null;
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+	        System.out.println("testRead() ...\n");
+	        pool = startDB();
+	        assertNotNull(pool);
+       	    broker = pool.get(SecurityManager.SYSTEM_USER);
+       	    assertNotNull(broker);
             Serializer serializer = broker.getSerializer();
+            assertNotNull(serializer);
             serializer.reset();
             
-            DocumentImpl doc;
-            String data;
-            
-            doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/test.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/test.xml", Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", doc);
-            data = serializer.serialize(doc);
+            String data = serializer.serialize(doc);
+            assertNotNull(data);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
+        } catch (Exception e) {            
+        	fail(e.getMessage());                    
         } finally {
-            pool.release(broker);
+        	if (pool!= null) pool.release(broker);
         }
     }
     
-    public void testXMLDBStore() throws Exception {
+    public void testXMLDBStore() {
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
+        BrokerPool pool = null;
+        try {
+        	pool = startDB();
+        	assertNotNull(pool);        
+        	org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
+        	assertNotNull(root);
+        	CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
+            	root.getService("CollectionManagementService", "1.0");
+        	assertNotNull(mgr);
+        	org.xmldb.api.base.Collection test = root.getChildCollection("test");
+        	if (test == null)
+        		test = mgr.createCollection(DBBroker.ROOT_COLLECTION + "/test");
+        	assertNotNull(test);
+        	org.xmldb.api.base.Collection test2 = test.getChildCollection("test2");
+        	if (test2 == null)
+        		test2 = mgr.createCollection(DBBroker.ROOT_COLLECTION + "/test/test2");
+        	assertNotNull(test2);        
+        	Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
+        	assertNotNull(res);
+        	res.setContent(TEST_XML);
+        	test2.storeResource(res);
         
-        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
-        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
-            root.getService("CollectionManagementService", "1.0");
-        org.xmldb.api.base.Collection test = root.getChildCollection("test");
-        if (test == null)
-            test = mgr.createCollection(DBBroker.ROOT_COLLECTION + "/test");
-        org.xmldb.api.base.Collection test2 = test.getChildCollection("test2");
-        if (test2 == null)
-            test2 = mgr.createCollection(DBBroker.ROOT_COLLECTION + "/test/test2");
+        	XUpdateQueryService service = (XUpdateQueryService)
+            	test2.getService("XUpdateQueryService", "1.0");
+        	assertNotNull(service);
         
-        Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
-        res.setContent(TEST_XML);
-        test2.storeResource(res);
+        	String xupdate;
         
-        XUpdateQueryService service = (XUpdateQueryService)
-            test2.getService("XUpdateQueryService", "1.0");
-        
-        String xupdate;
-        
-        System.out.println("Inserting new items  ...");
-        // insert some nodes
-        for (int i = 1; i <= 200; i++) {
-            xupdate =
-                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                "   <xu:insert-before select=\"/products/product[1]\">" +
-                "       <product>" +
-                "           <description>Product " + i + "</description>" +
-                "           <price>" + (i * 2.5) + "</price>" +
-                "           <stock>" + (i * 10) + "</stock>" +
-                "       </product>" +
-                "   </xu:insert-before>" +
-                "</xu:modifications>";
-            service.updateResource("test_xmldb.xml", xupdate);
-        }
-        
-        System.out.println("Adding attributes  ...");
-        // add attribute
-        for (int i = 1; i <= 200; i++) {
-          xupdate =
-              "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-              "   <xu:append select=\"/products/product[" + i + "]\">" +
-              "         <xu:attribute name=\"id\">" + i + "</xu:attribute>" +
-              " </xu:append>" +
-              "</xu:modifications>";
-          service.updateResource("test_xmldb.xml", xupdate);
-      }
-        
-        System.out.println("Replacing elements  ...");
-        // replace some
-        for (int i = 1; i <= 100; i++) {
-          xupdate =
-              "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-              "   <xu:replace select=\"/products/product[" + i + "]\">" +
-              "     <product id=\"" + i + "\">" +
-              "         <description>Replaced product</description>" +
-              "         <price>" + (i * 0.75) + "</price>" +
-              "     </product>" +
-              " </xu:replace>" +
-              "</xu:modifications>";
-          service.updateResource("test_xmldb.xml", xupdate);
-      }
-            
-        System.out.println("Removing some elements ...");
-        // remove some
-        for (int i = 1; i <= 100; i++) {
-            xupdate =
-                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                "   <xu:remove select=\"/products/product[last()]\"/>" +
-                "</xu:modifications>";
-            service.updateResource("test_xmldb.xml", xupdate);
-        }
-        
-        System.out.println("Appending some elements ...");
-        for (int i = 1; i <= 100; i++) {
-            xupdate =
-                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                "   <xu:append select=\"/products\">" +
-                "       <product>" +
-                "           <xu:attribute name=\"id\"><xu:value-of select=\"count(/products/product) + 1\"/></xu:attribute>" +
-                "           <description>Product " + i + "</description>" +
-                "           <price>" + (i * 2.5) + "</price>" +
-                "           <stock>" + (i * 10) + "</stock>" +
-                "       </product>" +
-                "   </xu:append>" +
-                "</xu:modifications>";
-            service.updateResource("test_xmldb.xml", xupdate);
-        }
-        
-        System.out.println("Renaming elements  ...");
-        // rename element "description" to "descript"
-        xupdate =
-            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-            "   <xu:rename select=\"/products/product/description\">descript</xu:rename>" +
-            "</xu:modifications>";
-        service.updateResource("test_xmldb.xml", xupdate);
-        
-        System.out.println("Updating attribute values ...");
-        // update attribute values
-        for (int i = 1; i <= 200; i++) {
-            xupdate =
-                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                "   <xu:update select=\"/products/product[" + i + "]/@id\">" + i + "u</xu:update>" +
-                "</xu:modifications>";
-            service.updateResource("test_xmldb.xml", xupdate);
-        }
-        System.out.println("Append new element to each item ...");
-        // append new element to records
-        for (int i = 1; i <= 200; i++) {
-            xupdate =
-                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                "   <xu:append select=\"/products/product[" + i + "]\">" +
-                "       <date><xu:value-of select=\"current-dateTime()\"/></date>" +
-                "   </xu:append>" +
-                "</xu:modifications>";
-            service.updateResource("test_xmldb.xml", xupdate);
-        }
-        
-        System.out.println("Updating element content ...");
-        // update element content
-        for (int i = 1; i <= 200; i++) {
-            xupdate =
-                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                "   <xu:update select=\"/products/product[" + i + "]/price\">19.99</xu:update>" +
-                "</xu:modifications>";
-            service.updateResource("test_xmldb.xml", xupdate);
-        }
+	        System.out.println("Inserting new items  ...");
+	        // insert some nodes
+	        for (int i = 1; i <= 200; i++) {
+	            xupdate =
+	                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+	                "   <xu:insert-before select=\"/products/product[1]\">" +
+	                "       <product>" +
+	                "           <description>Product " + i + "</description>" +
+	                "           <price>" + (i * 2.5) + "</price>" +
+	                "           <stock>" + (i * 10) + "</stock>" +
+	                "       </product>" +
+	                "   </xu:insert-before>" +
+	                "</xu:modifications>";
+	            service.updateResource("test_xmldb.xml", xupdate);
+	        }
+	        
+	        System.out.println("Adding attributes  ...");
+	        // add attribute
+	        for (int i = 1; i <= 200; i++) {
+	          xupdate =
+	              "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+	              "   <xu:append select=\"/products/product[" + i + "]\">" +
+	              "         <xu:attribute name=\"id\">" + i + "</xu:attribute>" +
+	              " </xu:append>" +
+	              "</xu:modifications>";
+	          service.updateResource("test_xmldb.xml", xupdate);
+	      }
+	        
+	        System.out.println("Replacing elements  ...");
+	        // replace some
+	        for (int i = 1; i <= 100; i++) {
+	          xupdate =
+	              "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+	              "   <xu:replace select=\"/products/product[" + i + "]\">" +
+	              "     <product id=\"" + i + "\">" +
+	              "         <description>Replaced product</description>" +
+	              "         <price>" + (i * 0.75) + "</price>" +
+	              "     </product>" +
+	              " </xu:replace>" +
+	              "</xu:modifications>";
+	          service.updateResource("test_xmldb.xml", xupdate);
+	      }
+	            
+	        System.out.println("Removing some elements ...");
+	        // remove some
+	        for (int i = 1; i <= 100; i++) {
+	            xupdate =
+	                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+	                "   <xu:remove select=\"/products/product[last()]\"/>" +
+	                "</xu:modifications>";
+	            service.updateResource("test_xmldb.xml", xupdate);
+	        }
+	        
+	        System.out.println("Appending some elements ...");
+	        for (int i = 1; i <= 100; i++) {
+	            xupdate =
+	                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+	                "   <xu:append select=\"/products\">" +
+	                "       <product>" +
+	                "           <xu:attribute name=\"id\"><xu:value-of select=\"count(/products/product) + 1\"/></xu:attribute>" +
+	                "           <description>Product " + i + "</description>" +
+	                "           <price>" + (i * 2.5) + "</price>" +
+	                "           <stock>" + (i * 10) + "</stock>" +
+	                "       </product>" +
+	                "   </xu:append>" +
+	                "</xu:modifications>";
+	            service.updateResource("test_xmldb.xml", xupdate);
+	        }
+	        
+	        System.out.println("Renaming elements  ...");
+	        // rename element "description" to "descript"
+	        xupdate =
+	            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+	            "   <xu:rename select=\"/products/product/description\">descript</xu:rename>" +
+	            "</xu:modifications>";
+	        service.updateResource("test_xmldb.xml", xupdate);
+	        
+	        System.out.println("Updating attribute values ...");
+	        // update attribute values
+	        for (int i = 1; i <= 200; i++) {
+	            xupdate =
+	                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+	                "   <xu:update select=\"/products/product[" + i + "]/@id\">" + i + "u</xu:update>" +
+	                "</xu:modifications>";
+	            service.updateResource("test_xmldb.xml", xupdate);
+	        }
+	        System.out.println("Append new element to each item ...");
+	        // append new element to records
+	        for (int i = 1; i <= 200; i++) {
+	            xupdate =
+	                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+	                "   <xu:append select=\"/products/product[" + i + "]\">" +
+	                "       <date><xu:value-of select=\"current-dateTime()\"/></date>" +
+	                "   </xu:append>" +
+	                "</xu:modifications>";
+	            service.updateResource("test_xmldb.xml", xupdate);
+	        }
+	        
+	        System.out.println("Updating element content ...");
+	        // update element content
+	        for (int i = 1; i <= 200; i++) {
+	            xupdate =
+	                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+	                "   <xu:update select=\"/products/product[" + i + "]/price\">19.99</xu:update>" +
+	                "</xu:modifications>";
+	            service.updateResource("test_xmldb.xml", xupdate);
+	        }
+        } catch (Exception e) {            
+            fail(e.getMessage());   
+        }	        
     }
     
-    public void testXMLDBRead() throws Exception {
+    public void testXMLDBRead() {
         BrokerPool.FORCE_CORRUPTION = false;
-        
-        org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION + "/test/test2", "admin", "");
-        Resource res = test.getResource("test_xmldb.xml");
-        assertNotNull("Document should not be null", res);
-        System.out.println(res.getContent());
-        
-        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
-        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
-            root.getService("CollectionManagementService", "1.0");
-        mgr.removeCollection("test");
+        try {
+	        
+        	org.xmldb.api.base.Collection test2 = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION + "/test/test2", "admin", "");
+        	assertNotNull(test2);
+        	Resource res = test2.getResource("test_xmldb.xml");
+	        assertNotNull("Document should not be null", res);
+	        System.out.println(res.getContent());
+	        
+	        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
+	        assertNotNull(root);
+	        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
+	            root.getService("CollectionManagementService", "1.0");
+	        assertNotNull(mgr);
+	        mgr.removeCollection("test");
+	        
+        } catch (Exception e) {            
+            fail(e.getMessage());   
+        }
     }
     
-    protected BrokerPool startDB() throws Exception {
+    protected BrokerPool startDB() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -458,14 +482,13 @@ public class UpdateRecoverTest extends TestCase {
             DatabaseManager.registerDatabase(database);
             
             return BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {            
             fail(e.getMessage());
         }
         return null;
     }
 
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         BrokerPool.stopAll(false);
     }
 
