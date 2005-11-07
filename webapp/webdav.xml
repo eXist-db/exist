@@ -25,10 +25,10 @@
             WebDAV 	makes it possible to manage database collections in eXist just 
 			like directories in a file system. You may copy, remove, view 
 			or edit files with any application supporting the WebDAV 
-			protocol, including, for example, Windows Explorer, <ulink 
-            url="http://www.webdav.org/cadaver">cadaver</ulink>, 
-<ulink url="http://www.konqueror.org/">KDE Konqueror</ulink>, 
-<ulink url="http://www.oxygenxml.com/">OxygenXML</ulink>, 
+			protocol, including, for example, Windows Explorer, 
+            <ulink url="http://www.webdav.org/cadaver">cadaver</ulink>, 
+            <ulink url="http://www.konqueror.org/">KDE Konqueror</ulink>, 
+            <ulink url="http://www.oxygenxml.com/">OxygenXML</ulink>, 
             <ulink url="http://www.altova.com/">XML Spy</ulink> and many others.</para>
 			            
             <para>In the default installation, the WebDAV server listens on 
