@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+
+        <title>Open Source Native XML Database</title>
+        <author>
+            <firstname>Dannes</firstname>
+            <surname>Wessels</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>dizzzz@gmx.net</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <ci:include src="sidebar.xml"/>
+    <chapter id="webdav">
+        <title>WebDAV</title>
+
+        <section>
+            <title>WinXP Webfolder</title>
+
+            <para>Perform the following steps in Internet Explorer:
+	            <itemizedlist>
+	                <listitem>Select <command>File -> Open</command>.</listitem>
+                    <listitem>Fill in URL like <command>http://localhost:8080/exist/webdav/db/</command>
+	                 or <command>https://localhost:8443/exist/webdav/db/</command>.</listitem>
+                    <listitem>Check "Open as Web Folder".</listitem>
+                    <listitem>Click OK.</listitem>
+                </itemizedlist>
+
+                <screenshot>
+                    <graphic fileref="resources/webdav_xp_webfolders.png"/>
+                </screenshot>
+
+            </para>
+
+        </section>
+
+        <section>
+            <title>WinXP My Network Places</title>
+
+            <para>This enables you to access eXist from almost any windowsXP application 
+                  that supports 'Network Places' in the standard File dialog:
+            	<screenshot><graphic fileref="resources/webdav_xp_mnp0.png"/>
+                </screenshot>
+            </para>
+            <para>First, go to "My Network Places", click "Add.."
+						<screenshot>
+							<graphic fileref="resources/webdav_xp_mnp1.png"/>
+                </screenshot>
+            </para>
+            <para>Then select the service provider. 
+						<screenshot>
+							<graphic fileref="resources/webdav_xp_mnp2.png"/>
+                </screenshot>
+            </para>
+            <para>Then fill the URL of exist e.g. http://localhost:8080/exist/webdav/db/.
+						<screenshot>
+							<graphic fileref="resources/webdav_xp_mnp3.png"/>
+                </screenshot>
+            </para>
+            <para>Finally click on icon to access eXist.
+						<screenshot>
+							<graphic fileref="resources/webdav_xp_mnp4.png"/>
+                </screenshot>
+
+            </para>
+
+        </section>
+
+
+        <section>
+            <title>OxygenXML</title>
+
+            <para>
+                <itemizedlist>
+                    <listitem>Select <command>File -> Open URL</command>.</listitem>
+                    <listitem>Fill <command>User</command> and <command>Password</command>.</listitem>
+                    <listitem>Enter <command>Server Url</command> http://localhost:8080/exist/webdav/db/.</listitem>
+                    <listitem>Click <command>Browse</command>.</listitem>
+                </itemizedlist>
+                <screenshot>
+                    <graphic fileref="resources/webdav_oxygen.png"/>
+                </screenshot>
+            </para>
+            <note>
+                <para>Note on SSL; Probably you'll het the message: Error: 
+                			sun.security.validator.ValidatorException: PKIX path building failed: 
+                			sun.security.provider.certpath.SunCertPathBuilderException: unable to find 
+                			valid certification path to requested target.</para>
+                <para>You'll need to add the Server certificate to your trusted certificates keystore 
+								(<a href="http://java.sun.com/j2se/1.5.0/docs/guide/security/jsse/JSSERefGuide.html#CustomizingStores">more info</a>). 
+											</para>
+            </note>
+
+            <note>
+                <para>Warning: when saving a document to the WebDAV server via Oxygen, remember 
+                			to double check if the document path in the File URL field at the top of the dialog 
+                			does really contain the URL to which you want to save the document. It happens very 
+                			easily that you click on another folder or resource by mistake and thus overwrite the 
+                			wrong resource. </para>
+            </note>
+
+
+        </section>
+
+        <section>
+            <title>XMLspy</title>
+
+            <para>
+                <itemizedlist>
+                    <listitem>Select <command>File -> Open URL</command>
+                    </listitem>
+                    <listitem>Enter <command>Username, Password</command>
+                    </listitem>
+                    <listitem>Enter <command>Server URL</command> without a slash on the end (otherwise you'll see 2x 'db')</listitem>
+                </itemizedlist>
+                <screenshot>
+                    <graphic fileref="resources/webdav_xmlspy.png"/>
+                </screenshot>
+            </para>
+
+
+
+
+        </section>
+
+        <section>
+            <title>KDE Konqueror</title>
+
+            <para>Enter an URL like 
+            <command>webdav://localhost:8080/exist/webdav/db</command>. Use  
+            <command>webdavs://</command> for webDAV over SSL.
+                <screenshot>
+                    <graphic fileref="resources/webdav_konqueror.png"/>
+                </screenshot>
+            </para>
+
+        </section>
+
+    </chapter>
+</book>
