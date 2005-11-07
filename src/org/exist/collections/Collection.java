@@ -700,7 +700,7 @@ implements Comparable, EntityResolver, Cacheable {
 	}
 
 	public void removeBinaryResource(Txn transaction, DBBroker broker,
-			String docname) throws PermissionDeniedException, LockException {
+			String docname) throws PermissionDeniedException, LockException, TriggerException {
         try {
             getLock().acquire(Lock.WRITE_LOCK);
     	    DocumentImpl doc = getDocument(broker, docname);
@@ -712,6 +712,7 @@ implements Comparable, EntityResolver, Cacheable {
     	                "write access to collection denied; user=" + broker.getUser().getName());
     	    if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
     	        throw new PermissionDeniedException("permission to remove document denied");
+   	    
     	    removeBinaryResource(transaction, broker, doc);
         } finally {
             getLock().release();
@@ -719,7 +720,7 @@ implements Comparable, EntityResolver, Cacheable {
 	}
 
 	public void removeBinaryResource(Txn transaction, DBBroker broker,
-			DocumentImpl doc) throws PermissionDeniedException, LockException {
+			DocumentImpl doc) throws PermissionDeniedException, LockException, TriggerException {
 		if (doc == null)
 			return;
         try {
@@ -736,8 +737,19 @@ implements Comparable, EntityResolver, Cacheable {
             if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
                 throw new PermissionDeniedException("permission to remove document denied");
             
+            DocumentTrigger trigger = null;
+            if (triggersEnabled) {
+            	CollectionConfiguration config = getConfiguration(broker);
+	            if (config != null) {
+	                trigger = (DocumentTrigger) config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
+	                trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, doc.getName(), doc);
+	            }
+            }
             broker.removeBinaryResource(transaction, (BinaryDocument) doc);
             documents.remove(doc.getFileName());
+            if (trigger != null) {
+            	trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, doc.getName(), doc);
+            }
         } finally {
             getLock().release();
         }
@@ -1007,13 +1019,13 @@ implements Comparable, EntityResolver, Cacheable {
 
 	public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
 			String name, byte[] data, String mimeType) throws EXistException,
-			PermissionDeniedException, LockException {
+			PermissionDeniedException, LockException, TriggerException {
 		return addBinaryResource(transaction, broker, name, data, mimeType, null, null);
 	}
 
 	public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
 			String name, byte[] data, String mimeType, Date created, Date modified) throws EXistException,
-			PermissionDeniedException, LockException {
+			PermissionDeniedException, LockException, TriggerException {
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("Database is read-only");
 		BinaryDocument blob = null;
@@ -1023,9 +1035,23 @@ implements Comparable, EntityResolver, Cacheable {
 		try {
 			getLock().acquire(Lock.WRITE_LOCK);
 			checkPermissions(transaction, broker, name, oldDoc);
-
+			DocumentTrigger trigger = null;
+			int event = 0;
+            if (triggersEnabled) {
+            	CollectionConfiguration config = getConfiguration(broker);
+	            if (config != null) {
+	            	event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
+	                trigger = (DocumentTrigger) config.getTrigger(event);
+	                if (trigger != null) {
+	                	trigger.prepare(event, broker, blob.getName(), blob);
+	                	LOG.debug("Using trigger: " + trigger.getClass().getName());
+	                } else
+	                	LOG.debug("No trigger found");
+	            }
+            }
+            
 			manageDocumentInformation(broker, name, oldDoc, blob );
-			
+            
 			if (oldDoc != null) {
 			    LOG.debug("removing old document " + oldDoc.getFileName());
 			    if (oldDoc instanceof BinaryDocument)
@@ -1045,6 +1071,10 @@ implements Comparable, EntityResolver, Cacheable {
             broker.storeDocument(transaction, blob);
             
 			broker.closeDocument();
+			
+			if (trigger != null) {
+				trigger.finish(event, broker, blob.getName(), blob);
+			}
 			return blob;
 		} finally {
 			getLock().release();
