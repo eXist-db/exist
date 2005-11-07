@@ -24,7 +24,9 @@ package org.exist.collections.triggers;
 import java.util.Map;
 
 import org.exist.collections.Collection;
+import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
@@ -45,6 +47,11 @@ import org.xml.sax.ext.LexicalHandler;
  *  by applying a stylesheet.</li>
  * </ol>
  * 
+ * The DocumentTrigger interface is also called for binary resources. However, in this case, the trigger can not function as
+ * a filter and the SAX-related methods are useless. Only {@link #prepare(int, DBBroker, String, Document)} and
+ * {@link #finish(int, DBBroker, String, Document)} will be called. To determine if the document is a binary resource,
+ * call {@link org.exist.dom.DocumentImpl#getResourceType()}.
+ * 
  * The general contract for a trigger is as follows:
  * 
  * <ol>
@@ -62,6 +69,9 @@ import org.xml.sax.ext.LexicalHandler;
  *  but it is not allowed to throw an exception. Throwing an exception during the storage phase will result in an
  *  invalid document in the database. Use {@link #isValidating() isValidating} in your code to check that you're
  *  in validation phase.</li>
+ *  <li>finalization: the method {@link #finish(int, DBBroker, String, Document)} is called. At this point, the document
+ *  has already been stored and is ready to be used or - for {@link #REMOVE_DOCUMENT_EVENT} - has been removed.
+ *  </li>
  * </ol>
  * 
  * @author wolf
@@ -74,6 +84,7 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
      * 
      * @param event the type of event that triggered this call (see the constants defined in this interface).
      * @param broker the database instance used to process the current action.
+     * @param transaction the current transaction context
      * @param documentPath the full absolute path of the document currently processed.
      * @param existingDocument optional: if event is a {@link #UPDATE_DOCUMENT_EVENT},
      *  existingDocument will contain the Document object for the old document, which will be overwritten. Otherwise, the parameter
@@ -83,21 +94,25 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
     public void prepare(
         int event,
         DBBroker broker,
+        Txn transaction,
         String documentPath,
-        Document existingDocument)
+        DocumentImpl existingDocument)
         throws TriggerException;
 
     /**
-     * This method is called after the operation completed.
+     * This method is called after the operation completed. At this point, the document has already
+     * been stored.
      * 
-     * FIXME: documentation  
+     * @param event the type of event that triggered this call (see the constants defined in this interface).
+     * @param broker the database instance used to process the current action.
+     * @param transaction the current transaction context
+     * @param document the stored document
      **/
-    
     public void finish(
         int event,
         DBBroker broker,
-        String documentPath,
-        Document document);
+        Txn transaction,
+        DocumentImpl document);
     
     /**
      * Returns true if the SAX parser is currently in validation phase. During validation phase, the trigger

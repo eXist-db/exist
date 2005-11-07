@@ -28,7 +28,9 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
+import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -66,8 +68,7 @@ public abstract class FilteringTrigger implements DocumentTrigger {
 	/* (non-Javadoc)
      * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
      */
-    public void finish(int event, DBBroker broker, String documentName,
-            Document document) {
+    public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document) {
     }
     
 	public void setValidating(boolean validating) {

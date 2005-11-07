@@ -23,6 +23,7 @@ package org.exist.collections.triggers;
 
 import org.exist.collections.Collection;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 
 /**
  * Interface for triggers that can be registered with collection-related events.
@@ -45,17 +46,19 @@ public interface CollectionTrigger extends Trigger {
     public void prepare(
         int event,
         DBBroker broker,
+        Txn transaction,
         Collection collection,
         String newName)
         throws TriggerException;
     
     /**
-     * This method is called after the operation has completed.  
+     * This method is called after the operation has completed.
+     *   
      **/
-    
     public void finish(
         int event,
         DBBroker broker,
+        Txn transaction,
         Collection collection,
         String newName);
 }

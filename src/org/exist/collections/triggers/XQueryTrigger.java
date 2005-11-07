@@ -6,20 +6,18 @@ import java.util.Map;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.memtree.SAXAdapter;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
-import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -64,7 +62,7 @@ public class XQueryTrigger extends FilteringTrigger {
 	/* (non-Javadoc)
 	 * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
 	 */
-	public void prepare(int event, DBBroker broker, String documentName, Document existingDocument)
+	public void prepare(int event, DBBroker broker, Txn transaction, String documentName, DocumentImpl existingDocument)
 		throws TriggerException {
 		
 		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for document : '" + documentName + "'");
@@ -132,8 +130,8 @@ public class XQueryTrigger extends FilteringTrigger {
     /* (non-Javadoc)
      * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
      */
-    public void finish(int event, DBBroker broker, String documentName, Document document) {
-    	LOG.debug("Finishing " + eventToString(event) + "XQuery trigger for document : '" + documentName + "'");
+    public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document) {
+    	LOG.debug("Finishing " + eventToString(event) + "XQuery trigger for document : '" + document.getName() + "'");
 
 		if (query == null)
 			return;
@@ -165,7 +163,7 @@ public class XQueryTrigger extends FilteringTrigger {
 	        */
         	      	
         	context.declareVariable(bindingPrefix + "collectionName", new StringValue(collection.getName()));
-        	context.declareVariable(bindingPrefix + "documentName", new StringValue(documentName));
+        	context.declareVariable(bindingPrefix + "documentName", new StringValue(document.getName()));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
         	context.declareVariable(bindingPrefix + "document", (DocumentImpl)document);
 	        	        
