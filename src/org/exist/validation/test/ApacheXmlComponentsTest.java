@@ -47,18 +47,16 @@ public class ApacheXmlComponentsTest extends TestCase {
         return suite;
     }
     
-    protected void tearDown() throws Exception {
-        //
+    protected void tearDown() {       
         System.out.println("tearDown");
     }
     
-    protected void setUp() throws Exception {
-        //
+    protected void setUp() {      
         System.out.println("setUp");
     }
     
     
-     public void testXercesVersion() throws Exception {
+     public void testXercesVersion() {
 
          String version = org.apache.xerces.impl.Version.getVersion();
          
@@ -66,13 +64,13 @@ public class ApacheXmlComponentsTest extends TestCase {
          System.out.println("Required version '"+Validator.XERCESVERSION+"'");
          System.out.println("Found version '"+version+"'");
          
-         Assert.assertEquals("Incorrect Xerces version! "+
+         assertEquals("Incorrect Xerces version! "+
                              "Please put correct jar in endorsed folder",
                              Validator.XERCESVERSION,  version);
          
      }
      
-     public void testXalanVersion() throws Exception {
+     public void testXalanVersion() {
          
          String version = org.apache.xalan.Version.getVersion();
          
@@ -80,7 +78,7 @@ public class ApacheXmlComponentsTest extends TestCase {
          System.out.println("Required version '"+XALANVERSION+"'");
          System.out.println("Found version '"+version+"'");
          
-         Assert.assertEquals("Incorrect Xalan version! "+
+         assertEquals("Incorrect Xalan version! "+
                              "Please put correct jar in endorsed folder", 
                              XALANVERSION, version);
      }

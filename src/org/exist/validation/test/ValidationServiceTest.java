@@ -42,8 +42,7 @@ public class ValidationServiceTest  extends TestCase {
     private final static String URI = "xmldb:exist:///db";
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private Collection rootCollection = null;
-    private ValidationService service = null;
-    
+    private ValidationService service = null;    
     private String eXistHome = null;
     
     public ValidationServiceTest(String testName) {
@@ -55,65 +54,86 @@ public class ValidationServiceTest  extends TestCase {
         return suite;
     }
     
-    public void setUp() throws Exception {
-        System.out.println(">>> setUp");
-        eXistHome = System.getProperty("exist.home");
-        
-        Class cl = Class.forName(DRIVER);
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        rootCollection = DatabaseManager.getCollection(URI, "admin", null);
-        if (rootCollection == null)
-            throw new Exception("Could not connect to database.");
-        
-        
-        service = getValidationService();
-        
-        System.out.println("<<<\n");
+    public void setUp() {
+    	try {
+	        System.out.println(">>> setUp");
+	        eXistHome = System.getProperty("exist.home");
+	        
+	        Class cl = Class.forName(DRIVER);
+	        Database database = (Database) cl.newInstance();
+	        database.setProperty("create-database", "true");
+	        DatabaseManager.registerDatabase(database);
+	        rootCollection = DatabaseManager.getCollection(URI, "admin", null);
+	        assertNotNull("Could not connect to database.");  
+	        service = getValidationService();        
+	        System.out.println("<<<\n");
+        } catch (Exception e) {            
+            fail(e.getMessage());  
+        }
     }
     
-    protected void tearDown() throws Exception {
-        System.out.println(">>> tearDown");
-        System.out.println("<<<\n");
+    private ValidationService getValidationService() {
+    	try {
+    		return (ValidationService) rootCollection.getService("ValidationService", "1.0");
+        } catch (Exception e) {            
+            fail(e.getMessage());  
+        }    
+        return null;
     }
     
-    private ValidationService getValidationService() throws XMLDBException {
-        return (ValidationService) rootCollection.getService("ValidationService", "1.0");
+    public void testGetName() {
+    	try {    
+        Assert.assertEquals("ValidationService check", service.getName(),  "ValidationService" );
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  
+	    }    
     }
     
-    public void testGetName() throws Exception {
-        Assert.assertEquals("ValidationService check",
-                service.getName(),  "ValidationService" );
+    public void testGetVersion() {
+    	try {    
+        assertEquals("ValidationService check", service.getVersion(),   "1.0" );
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  
+	    }    
+	 }
+    
+    public void testXsdValidDocument() {   
+    	try {   
+    		assertTrue( service.validateResource("/db/addressbook_valid.xml") );
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  
+	    }    
     }
     
-    public void testGetVersion() throws XMLDBException {
-        Assert.assertEquals("ValidationService check",
-                service.getVersion(),   "1.0" );
+    public void testXsdInvalidDocument() {
+    	try {       
+    		assertFalse( service.validateResource("/db/addressbook_invalid.xml") );
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  
+	    }    
     }
     
-    public void testXsdValidDocument() throws XMLDBException {
-        
-        Assert.assertTrue( service.validateResource("/db/addressbook_valid.xml") );
+    public void testNonexistingDocument() {
+    	try {
+    		assertFalse( service.validateResource("/db/foobar.xml") );
+        } catch (Exception e) {            
+            fail(e.getMessage());  
+        }          
     }
     
-    public void testXsdInvalidDocument() throws XMLDBException {
-        
-        Assert.assertFalse( service.validateResource("/db/addressbook_invalid.xml") );
+    public void testDtdValidDocument() {
+    	try {       
+    		assertTrue( service.validateResource("/db/hamlet_valid.xml") );
+        } catch (Exception e) {            
+            fail(e.getMessage());  
+        }    
     }
     
-    public void testNonexistingDocument() throws XMLDBException {
-        
-        Assert.assertFalse( service.validateResource("/db/foobar.xml") );
-    }
-    
-    public void testDtdValidDocument() throws XMLDBException {
-        
-        Assert.assertTrue( service.validateResource("/db/hamlet_valid.xml") );
-    }
-    
-    public void testDtdInvalidDocument() throws XMLDBException {
-        
-        Assert.assertFalse( service.validateResource("/db/hamlet_invalid.xml") );
+    public void testDtdInvalidDocument() {
+    	try {
+            assertFalse( service.validateResource("/db/hamlet_invalid.xml") );
+        } catch (Exception e) {            
+            fail(e.getMessage());  
+        }    
     }
 }
