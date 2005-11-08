@@ -28,15 +28,15 @@ public class EntityResolverTest extends TestCase {
         return suite;
     }
     
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         //
     }
     
-    protected void setUp() throws Exception {
+    protected void setUp() {
         //
     }
     
-    public void testDummyTestmethod() throws Exception {
+    public void testDummyTestmethod() {
         //
     }
 }

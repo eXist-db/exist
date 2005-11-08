@@ -35,15 +35,21 @@ public class DOMSerializerTest extends TestCase {
 		super(name);
 	}
 	
-	public void testSerialize() throws Exception {
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder builder = factory.newDocumentBuilder();
-		Document doc = builder.parse(new InputSource(file));
-		
-		StringWriter writer = new StringWriter();
-		DOMSerializer serializer = new DOMSerializer(writer, null);
-		serializer.serialize(doc.getDocumentElement());
-		System.out.println(writer.toString());
+	public void testSerialize() {
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			assertNotNull(factory);
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			assertNotNull(builder);
+			Document doc = builder.parse(new InputSource(file));
+			assertNotNull(doc);
+			StringWriter writer = new StringWriter();
+			DOMSerializer serializer = new DOMSerializer(writer, null);
+			serializer.serialize(doc.getDocumentElement());
+			System.out.println(writer.toString());
+        } catch (Exception e) {            
+            fail(e.getMessage());  
+        }
 	}
 
 }
