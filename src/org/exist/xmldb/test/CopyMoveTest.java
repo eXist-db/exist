@@ -27,10 +27,10 @@ public class CopyMoveTest extends TestCase {
 		super(name);
 	}
 	
-	public void testCopyResourceChangeName() throws XMLDBException {
-		Collection c = setupTestCollection();
-		
+	public void testCopyResourceChangeName() {	
+		Collection c =null;
 		try {
+			c = setupTestCollection();
 			XMLResource original = (XMLResource) c.createResource("original", XMLResource.RESOURCE_TYPE);
 			original.setContent("<sample/>");
 			c.storeResource(original);
@@ -40,15 +40,17 @@ public class CopyMoveTest extends TestCase {
 			XMLResource duplicate = (XMLResource) c.getResource("duplicate");
 			assertNotNull(duplicate);
 			System.out.println(duplicate.getContent());
+        } catch (Exception e) {            
+            fail(e.getMessage()); 			
 		} finally {
 			closeCollection(c);
 		}
 	}
 
-	public void testQueryCopiedResource() throws XMLDBException {
-		Collection c = setupTestCollection();
-		
+	public void testQueryCopiedResource() {		
+		Collection c = null;
 		try {
+			c = setupTestCollection();		
 			XMLResource original = (XMLResource) c.createResource("original", XMLResource.RESOURCE_TYPE);
 			original.setContent("<sample/>");
 			c.storeResource(original);
@@ -59,21 +61,28 @@ public class CopyMoveTest extends TestCase {
 			XPathQueryService xq = (XPathQueryService) c.getService("XPathQueryService", "1.0");
 			ResourceSet rs = xq.queryResource("duplicate", "/sample");
 			assertEquals(1, rs.getSize());
+        } catch (Exception e) {            
+            fail(e.getMessage()); 			
 		} finally {
 			closeCollection(c);
 		}
 	}
 
-	private Collection setupTestCollection() throws XMLDBException {
-		Collection root = DatabaseManager.getCollection(URI);
-		CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-		Collection c = root.getChildCollection("test");
-		if(c != null)
-			rootcms.removeCollection("test");
-		rootcms.createCollection("test");
-		c = DatabaseManager.getCollection(URI+"/test");
-		assertNotNull(c);
-		return c;
+	private Collection setupTestCollection() {
+		try {
+			Collection root = DatabaseManager.getCollection(URI);
+			CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+			Collection c = root.getChildCollection("test");
+			if(c != null)
+				rootcms.removeCollection("test");
+			rootcms.createCollection("test");
+			c = DatabaseManager.getCollection(URI+"/test");
+			assertNotNull(c);
+			return c;
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+		}
+	    return null;
 	}
 
 	protected void setUp() {
@@ -82,14 +91,18 @@ public class CopyMoveTest extends TestCase {
 			Database database = (Database) Class.forName(DRIVER).newInstance();
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
-		} catch (Exception e) {
-			e.printStackTrace();
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
 		}
 	}
 	
-	private void closeCollection(Collection collection) throws XMLDBException {
-		if (null != collection) {
-			collection.close();
+	private void closeCollection(Collection collection) {
+		try {
+			if (null != collection) {		
+				collection.close();
+			}
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
 		}
 	}
 	

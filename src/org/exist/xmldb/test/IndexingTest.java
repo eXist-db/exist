@@ -58,23 +58,14 @@ public class IndexingTest extends TestCase {
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	protected void setUp() throws Exception {
-		super.setUp();
+	protected void setUp() {		
 		siblingCount = 2;
 		depth = 16;
 		arity = 16;
 		randomSizes = false;
 		random = new Random(1234);
 	}
-	/**
-	 * 	 * @see junit.framework.TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
-/**
-	 * @param arg0
-	 */
+
 	public IndexingTest(String arg0) {
 		super(arg0);
 	}
@@ -320,12 +311,18 @@ public class IndexingTest extends TestCase {
 		}
 		return rlength;
 	}
-	private void dumpCatabaseContent(Node n) throws TransformerConfigurationException, TransformerFactoryConfigurationError, TransformerException {
-		Transformer t = TransformerFactory.newInstance().newTransformer();
-		DOMSource source = new DOMSource(n);
-		SAXResult result = new SAXResult(new IndexingTest.SAXHandler());
-		t.transform(source, result);
+	
+	private void dumpCatabaseContent(Node n) {
+		try {
+			Transformer t = TransformerFactory.newInstance().newTransformer();
+			DOMSource source = new DOMSource(n);
+			SAXResult result = new SAXResult(new IndexingTest.SAXHandler());
+			t.transform(source, result);
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+		}			
 	}
+	
 	class SAXHandler implements ContentHandler {
 		SAXHandler() {
 		}
