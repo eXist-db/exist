@@ -615,7 +615,7 @@ public class NativeBroker extends DBBroker {
 	 *  get a document by its file name. The document's file name is used to
 	 *  identify a document.
 	 *
-	 *@param  fileName                       absolute file name in the database; name can be given with or without the leading path /db .
+	 *@param  fileName                       absolute file name in the database; name can be given with or without the leading path /db/shakespeare.
 	 *@return                                The document value
 	 *@exception  PermissionDeniedException  
 	 */
@@ -623,7 +623,7 @@ public class NativeBroker extends DBBroker {
 		if (!fileName.startsWith("/"))
 			fileName = '/' + fileName;
 		/*if (!fileName.startsWith(ROOT_COLLECTION))
-		    fileName = "/db" + fileName;*/
+		    fileName = ROOT_COLLECTION + fileName;*/
 		fileName = NativeBroker.checkPath(fileName, ROOT_COLLECTION);
 
 		int pos = fileName.lastIndexOf('/');
@@ -651,7 +651,7 @@ public class NativeBroker extends DBBroker {
 		if (!docPath.startsWith("/"))
 			docPath = '/' + docPath;
 		/*if (!docPath.startsWith(ROOT_COLLECTION))
-		    docPath = "/db" + docPath;*/
+		    docPath = ROOT_COLLECTION + docPath;*/
 		docPath = NativeBroker.checkPath(docPath, ROOT_COLLECTION);
 
 		int pos = docPath.lastIndexOf('/');

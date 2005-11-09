@@ -62,7 +62,7 @@ public class RemoteValidationService implements ValidationService {
     public boolean validateResource(String id) throws XMLDBException {
         logger.info("Validating resource '"+id+"'");
         boolean documentIsValid=false;
-        /*if(!id.startsWith("/db"))
+        /*if(!id.startsWith(DBBroker.ROOT_COLLECTION))
             id = remoteCollection.getPath() + '/' + id;*/
         id = NativeBroker.checkPath(id, remoteCollection.getPath());
         

@@ -245,7 +245,7 @@ public abstract class DBBroker extends Observable {
 
 	/**
 	 *  Returns the database collection identified by the specified path.
-	 * The path should be absolute, e.g. /db/system.
+	 * The path should be absolute, e.g. /db/shakespeare.
 	 * 
 	 * @return collection or null if no collection matches the path
 	 */
@@ -262,7 +262,7 @@ public abstract class DBBroker extends Observable {
 	
 	/**
 	 * Open a collection for reading or writing. The collection is identified by its
-	 * absolute path, e.g. /db/system. It will be loaded and locked according to the
+	 * absolute path, e.g. /db/shakespeare. It will be loaded and locked according to the
 	 * lockMode argument. 
 	 * 
 	 * The caller should take care to release the collection lock properly.
@@ -276,7 +276,7 @@ public abstract class DBBroker extends Observable {
 	/**
 	 *  Returns the database collection identified by the specified path.
 	 * If the collection does not yet exist, it is created - including all
-	 * ancestors. The path should be absolute, e.g. /db/system.
+	 * ancestors. The path should be absolute, e.g. /db/shakespeare.
 	 * 
 	 * @return collection or null if no collection matches the path
 	 */

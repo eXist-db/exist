@@ -197,7 +197,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		try {
 			broker = pool.get(session.getUser());
 			if (path == null)
-				path = "/db";
+				path = DBBroker.ROOT_COLLECTION;
 			org.exist.collections.Collection collection = broker.getCollection(path);
 			if (collection == null)
 				throw new RemoteException("collection " + path + " not found");

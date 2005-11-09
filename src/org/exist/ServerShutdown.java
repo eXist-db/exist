@@ -17,6 +17,7 @@ import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -91,8 +92,8 @@ public class ServerShutdown {
             // create the default database
             Database database = (Database) cl.newInstance();
             DatabaseManager.registerDatabase(database);
-            if (!uri.endsWith("/db"))
-                uri = uri + "/db";
+            if (!uri.endsWith(DBBroker.ROOT_COLLECTION))
+                uri = uri + DBBroker.ROOT_COLLECTION;
             Collection root = DatabaseManager.getCollection(uri, user, passwd);
             DatabaseInstanceManager manager = (DatabaseInstanceManager) root
                     .getService("DatabaseInstanceManager", "1.0");
