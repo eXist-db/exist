@@ -649,7 +649,7 @@ public class BrokerPool {
         //create the security manager
 		//TODO : why only the first broker has a security manager ? Global or attached to each broker ?
         // WM: there's only one security manager per BrokerPool, but it needs a DBBroker instance to read
-        // the /db/system collection.
+        // the system collection.
 		securityManager = new org.exist.security.SecurityManager(this, broker);
 		initializing = false;
 		

@@ -25,6 +25,8 @@ import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import org.exist.storage.DBBroker;
 import org.exist.validation.service.ValidationService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -39,7 +41,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class ValidationServiceTest  extends TestCase {
     
-    private final static String URI = "xmldb:exist:///db";
+    private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private Collection rootCollection = null;
     private ValidationService service = null;    
@@ -99,7 +101,7 @@ public class ValidationServiceTest  extends TestCase {
     
     public void testXsdValidDocument() {   
     	try {   
-    		assertTrue( service.validateResource("/db/addressbook_valid.xml") );
+    		assertTrue( service.validateResource(DBBroker.ROOT_COLLECTION + "/addressbook_valid.xml") );
 	    } catch (Exception e) {            
 	        fail(e.getMessage());  
 	    }    
@@ -107,7 +109,7 @@ public class ValidationServiceTest  extends TestCase {
     
     public void testXsdInvalidDocument() {
     	try {       
-    		assertFalse( service.validateResource("/db/addressbook_invalid.xml") );
+    		assertFalse( service.validateResource(DBBroker.ROOT_COLLECTION + "/addressbook_invalid.xml") );
 	    } catch (Exception e) {            
 	        fail(e.getMessage());  
 	    }    
@@ -115,7 +117,7 @@ public class ValidationServiceTest  extends TestCase {
     
     public void testNonexistingDocument() {
     	try {
-    		assertFalse( service.validateResource("/db/foobar.xml") );
+    		assertFalse( service.validateResource(DBBroker.ROOT_COLLECTION + "/foobar.xml") );
         } catch (Exception e) {            
             fail(e.getMessage());  
         }          
@@ -123,7 +125,7 @@ public class ValidationServiceTest  extends TestCase {
     
     public void testDtdValidDocument() {
     	try {       
-    		assertTrue( service.validateResource("/db/hamlet_valid.xml") );
+    		assertTrue( service.validateResource(DBBroker.ROOT_COLLECTION + "/hamlet_valid.xml") );
         } catch (Exception e) {            
             fail(e.getMessage());  
         }    
@@ -131,7 +133,7 @@ public class ValidationServiceTest  extends TestCase {
     
     public void testDtdInvalidDocument() {
     	try {
-            assertFalse( service.validateResource("/db/hamlet_invalid.xml") );
+            assertFalse( service.validateResource(DBBroker.ROOT_COLLECTION + "/hamlet_invalid.xml") );
         } catch (Exception e) {            
             fail(e.getMessage());  
         }    

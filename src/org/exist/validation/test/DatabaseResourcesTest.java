@@ -31,6 +31,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
@@ -167,19 +168,19 @@ public class DatabaseResourcesTest extends TestCase {
         
         assertTrue(
                 dbResources.insertDocument( new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml") ,
-                false, "/db", "addressbook_valid.xml") );
+                false, DBBroker.ROOT_COLLECTION, "addressbook_valid.xml") );
         
         assertTrue(
                 dbResources.insertDocument( new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml") ,
-                false, "/db", "addressbook_invalid.xml") );
+                false, DBBroker.ROOT_COLLECTION, "addressbook_invalid.xml") );
 
         assertTrue(
                 dbResources.insertDocument( new File(eXistHome , DTDFILES+"/hamlet_valid.xml") ,
-                false, "/db", "hamlet_valid.xml") );
+                false, DBBroker.ROOT_COLLECTION, "hamlet_valid.xml") );
         
         assertTrue(
                 dbResources.insertDocument( new File(eXistHome , DTDFILES+"/hamlet_invalid.xml") ,
-                false, "/db", "hamlet_invalid.xml") );
+                false, DBBroker.ROOT_COLLECTION, "hamlet_invalid.xml") );
 
         
         System.out.println("<<<");
