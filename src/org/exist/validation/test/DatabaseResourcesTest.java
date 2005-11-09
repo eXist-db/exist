@@ -57,7 +57,7 @@ public class DatabaseResourcesTest extends TestCase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
+    protected void setUp() {
         System.out.println(">>> setUp");
         
         if(eXistHome==null){
@@ -85,7 +85,7 @@ public class DatabaseResourcesTest extends TestCase {
         return suite;
     }
     
-    protected BrokerPool startDB() throws Exception {
+    protected BrokerPool startDB() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -101,7 +101,7 @@ public class DatabaseResourcesTest extends TestCase {
         return null;
     }
     
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         System.out.println(">>> tearDown");
         // TODO why o why, tell me why to leave this one out
         //BrokerPool.stopAll(false);
@@ -109,51 +109,51 @@ public class DatabaseResourcesTest extends TestCase {
     }
     
     
-    public void testInsertXsdGrammar() throws Exception {
+    public void testInsertXsdGrammar() {
         
         System.out.println(">>> testInsertGrammar");
         
-        Assert.assertTrue( dbResources.insertSchema( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
+        assertTrue( dbResources.insertSchema( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
                            "addressbook.xsd") );
         
         System.out.println("<<<");
     }
 
-    public void testInsertXsdGrammar2() throws Exception {
+    public void testInsertXsdGrammar2() {
         
         System.out.println(">>> testInsertGrammar");
         
-        Assert.assertTrue( dbResources.insertSchema( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
+        assertTrue( dbResources.insertSchema( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
                            "/other/path/addressbook.xsd") );
         
-        Assert.assertTrue( dbResources.insertSchema( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
+        assertTrue( dbResources.insertSchema( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
                            "another/path/addressbook.xsd") );
         
         System.out.println("<<<");
     }
         
-    public void testInsertDtdGrammar() throws Exception {
+    public void testInsertDtdGrammar() {
         
         System.out.println(">>> testInsertDtdGrammar");
         
-        Assert.assertTrue( dbResources.insertDtd( new File(eXistHome , DTDFILES+"/play.dtd") ,
+        assertTrue( dbResources.insertDtd( new File(eXistHome , DTDFILES+"/play.dtd") ,
                            "play.dtd") );
         
-        Assert.assertTrue(
+        assertTrue(
                 dbResources.insertCatalog( new File(eXistHome , DTDFILES+"/catalog.xml") )
                 );
         
         System.out.println("<<<");
     }
     
-    public void testInsertDtdGrammar2() throws Exception {
+    public void testInsertDtdGrammar2() {
         
         System.out.println(">>> testInsertDtdGrammar2");
         
-        Assert.assertTrue( dbResources.insertDtd( new File(eXistHome , DTDFILES+"/play.dtd") ,
+        assertTrue( dbResources.insertDtd( new File(eXistHome , DTDFILES+"/play.dtd") ,
                            "/other/path/play.dtd") );
         
-        Assert.assertTrue( dbResources.insertDtd( new File(eXistHome , DTDFILES+"/play.dtd") ,
+        assertTrue( dbResources.insertDtd( new File(eXistHome , DTDFILES+"/play.dtd") ,
                            "anothother/path/play.dtd") );
         
         System.out.println("<<<");
@@ -165,19 +165,19 @@ public class DatabaseResourcesTest extends TestCase {
         
         System.out.println(">>> testInsertTestDocuments");
         
-        Assert.assertTrue(
+        assertTrue(
                 dbResources.insertDocument( new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml") ,
                 false, "/db", "addressbook_valid.xml") );
         
-        Assert.assertTrue(
+        assertTrue(
                 dbResources.insertDocument( new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml") ,
                 false, "/db", "addressbook_invalid.xml") );
 
-        Assert.assertTrue(
+        assertTrue(
                 dbResources.insertDocument( new File(eXistHome , DTDFILES+"/hamlet_valid.xml") ,
                 false, "/db", "hamlet_valid.xml") );
         
-        Assert.assertTrue(
+        assertTrue(
                 dbResources.insertDocument( new File(eXistHome , DTDFILES+"/hamlet_invalid.xml") ,
                 false, "/db", "hamlet_invalid.xml") );
 
@@ -190,7 +190,7 @@ public class DatabaseResourcesTest extends TestCase {
     public void testIsGrammarInDatabase() throws Exception {
         System.out.println(">>> testIsGrammarInDatabase");
         
-        Assert.assertTrue( dbResources.hasGrammar( DatabaseResources.GRAMMAR_XSD,
+        assertTrue( dbResources.hasGrammar( DatabaseResources.GRAMMAR_XSD,
                 "http://jmvanel.free.fr/xsd/addressBook" ) );
         System.out.println("<<<");
     }
@@ -199,7 +199,7 @@ public class DatabaseResourcesTest extends TestCase {
     public void testIsGrammarNotInDatabase() throws Exception {
         System.out.println(">>> testIsGrammarNotInDatabase");
         
-        Assert.assertFalse( dbResources.hasGrammar( DatabaseResources.GRAMMAR_XSD,
+        assertFalse( dbResources.hasGrammar( DatabaseResources.GRAMMAR_XSD,
                 "http://jmvanel.free.fr/xsd/addressBooky" ) );
         
         System.out.println("<<<");
@@ -211,7 +211,7 @@ public class DatabaseResourcesTest extends TestCase {
         ValidationReport report = validator.validate(
                 new FileInputStream(ABOOKFILES +"/addressbook_valid.xml") );
         
-        Assert.assertFalse( report.hasErrorsAndWarnings() );
+        assertFalse( report.hasErrorsAndWarnings() );
         
         System.out.println(report.getErrorReport());
         System.out.println(report.getWarningReport());
@@ -225,7 +225,7 @@ public class DatabaseResourcesTest extends TestCase {
         ValidationReport report = validator.validate(
                 new FileInputStream(ABOOKFILES +"/addressbook_invalid.xml") );
         
-        Assert.assertTrue( report.hasErrorsAndWarnings() );
+        assertTrue( report.hasErrorsAndWarnings() );
         
         System.out.println(report.getErrorReport());
         System.out.println(report.getWarningReport());
@@ -239,7 +239,7 @@ public class DatabaseResourcesTest extends TestCase {
         ValidationReport report = validator.validate(
                 new FileInputStream(DTDFILES +"/hamlet_valid.xml") );
         
-        Assert.assertFalse( report.hasErrorsAndWarnings() );
+        assertFalse( report.hasErrorsAndWarnings() );
         
         System.out.println(report.getErrorReport());
         System.out.println(report.getWarningReport());
@@ -253,7 +253,7 @@ public class DatabaseResourcesTest extends TestCase {
         ValidationReport report = validator.validate(
                 new FileInputStream(DTDFILES +"/hamlet_invalid.xml") );
         
-        Assert.assertTrue( report.hasErrorsAndWarnings() );
+        assertTrue( report.hasErrorsAndWarnings() );
         
         System.out.println(report.getErrorReport());
         System.out.println(report.getWarningReport());
