@@ -162,7 +162,7 @@ public class DatabaseResourcesTest extends TestCase {
 
 
     
-    public void testInsertTestDocuments() throws Exception {
+    public void testInsertTestDocuments() {
         
         System.out.println(">>> testInsertTestDocuments");
         
@@ -184,20 +184,17 @@ public class DatabaseResourcesTest extends TestCase {
 
         
         System.out.println("<<<");
-    }
+    }   
     
-    
-    
-    public void testIsGrammarInDatabase() throws Exception {
+    public void testIsGrammarInDatabase() {
         System.out.println(">>> testIsGrammarInDatabase");
         
         assertTrue( dbResources.hasGrammar( DatabaseResources.GRAMMAR_XSD,
                 "http://jmvanel.free.fr/xsd/addressBook" ) );
         System.out.println("<<<");
-    }
+    }   
     
-    
-    public void testIsGrammarNotInDatabase() throws Exception {
+    public void testIsGrammarNotInDatabase() {
         System.out.println(">>> testIsGrammarNotInDatabase");
         
         assertFalse( dbResources.hasGrammar( DatabaseResources.GRAMMAR_XSD,
@@ -206,62 +203,76 @@ public class DatabaseResourcesTest extends TestCase {
         System.out.println("<<<");
     }
     
-    public void testXsdValidDocument() throws Exception {
-        System.out.println(">>> testXsdValidDocument");
+    public void testXsdValidDocument() {
+        try {
+        	System.out.println(">>> testXsdValidDocument");        
         
-        ValidationReport report = validator.validate(
-                new FileInputStream(ABOOKFILES +"/addressbook_valid.xml") );
-        
-        assertFalse( report.hasErrorsAndWarnings() );
-        
-        System.out.println(report.getErrorReport());
-        System.out.println(report.getWarningReport());
-        
-        System.out.println("<<<");
+	        ValidationReport report = validator.validate(
+	                new FileInputStream(ABOOKFILES +"/addressbook_valid.xml") );
+	        
+	        assertFalse( report.hasErrorsAndWarnings() );
+	        
+	        System.out.println(report.getErrorReport());
+	        System.out.println(report.getWarningReport());
+	        
+	        System.out.println("<<<");
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }
     }
     
-    public void testXsdInvalidDocument() throws Exception {
-        System.out.println(">>> testXsdInvalidDocument");
-        
-        ValidationReport report = validator.validate(
-                new FileInputStream(ABOOKFILES +"/addressbook_invalid.xml") );
-        
-        assertTrue( report.hasErrorsAndWarnings() );
-        
-        System.out.println(report.getErrorReport());
-        System.out.println(report.getWarningReport());
-        
-        System.out.println("<<<");
+    public void testXsdInvalidDocument() {
+        try {
+	    	System.out.println(">>> testXsdInvalidDocument");
+	        
+	        ValidationReport report = validator.validate(
+	                new FileInputStream(ABOOKFILES +"/addressbook_invalid.xml") );
+	        
+	        assertTrue( report.hasErrorsAndWarnings() );
+	        
+	        System.out.println(report.getErrorReport());
+	        System.out.println(report.getWarningReport());
+	        
+	        System.out.println("<<<");
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }
     }
     
-    public void testDtdValidDocument() throws Exception {
-        System.out.println(">>> testDtdValidDocument");
-        
-        ValidationReport report = validator.validate(
-                new FileInputStream(DTDFILES +"/hamlet_valid.xml") );
-        
-        assertFalse( report.hasErrorsAndWarnings() );
-        
-        System.out.println(report.getErrorReport());
-        System.out.println(report.getWarningReport());
-        
-        System.out.println("<<<");
+    public void testDtdValidDocument() {
+        try {
+	    	System.out.println(">>> testDtdValidDocument");
+	        
+	        ValidationReport report = validator.validate(
+	                new FileInputStream(DTDFILES +"/hamlet_valid.xml") );
+	        
+	        assertFalse( report.hasErrorsAndWarnings() );
+	        
+	        System.out.println(report.getErrorReport());
+	        System.out.println(report.getWarningReport());
+	        
+	        System.out.println("<<<");
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }
     }
     
-    public void testDtdInvalidDocument() throws Exception {
-        System.out.println(">>> testDtdInvalidDocument");
-        
-        ValidationReport report = validator.validate(
-                new FileInputStream(DTDFILES +"/hamlet_invalid.xml") );
-        
-        assertTrue( report.hasErrorsAndWarnings() );
-        
-        System.out.println(report.getErrorReport());
-        System.out.println(report.getWarningReport());
-        
-        System.out.println("<<<");
-    }
-    
-    
+    public void testDtdInvalidDocument() {
+    	try {
+	        System.out.println(">>> testDtdInvalidDocument");
+	        
+	        ValidationReport report = validator.validate(
+	                new FileInputStream(DTDFILES +"/hamlet_invalid.xml") );
+	        
+	        assertTrue( report.hasErrorsAndWarnings() );
+	        
+	        System.out.println(report.getErrorReport());
+	        System.out.println(report.getWarningReport());
+	        
+	        System.out.println("<<<");
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }
+    }    
     
 }
