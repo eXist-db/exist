@@ -17,6 +17,7 @@
     <property name="lib.core" value="./lib/core"/>
     <property name="lib.optional" value="./lib/optional"/>
     <property name="lib.endorsed" value="./lib/endorsed"/>
+    <property name="lib.user" value="./lib/user"/>
     <property name="lib.tools" value="./tools/lib"/>
     <property name="build" value="./build"/>
     <property name="build.src" value="${build}/src"/>
@@ -55,6 +56,9 @@
             <include name="*.jar"/>
         </fileset>
         <fileset dir="${lib.tools}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${lib.user}">
             <include name="*.jar"/>
         </fileset>
         <pathelement path="exist.jar"/>
@@ -630,6 +634,9 @@
             <lib dir="${lib.optional}">
                 <include name="*.jar"/>
             </lib>
+            <lib dir="${lib.user}">
+                <include name="*.jar"/>
+            </lib>
             <!-- The following jars should not be here, but in 'endorsed' -->
             <lib dir="${lib.endorsed}">
                 <include name="*.jar"/>
@@ -690,6 +697,7 @@
         <mkdir dir="${dist.dir}/lib/core"/>
         <mkdir dir="${dist.dir}/lib/optional"/>
         <mkdir dir="${dist.dir}/lib/endorsed"/>
+        <mkdir dir="${dist.dir}/lib/user"/>
         <mkdir dir="${dist.dir}/tools"/>
         <mkdir dir="${dist.dir}/tools/lib"/>
         <mkdir dir="${jetty.dir}/logs"/>
@@ -757,6 +765,9 @@
         </copy>
         <copy todir="${dist.dir}/lib/endorsed">
             <fileset dir="${lib.endorsed}"/>
+        </copy>
+        <copy todir="${dist.dir}/lib/user">
+            <fileset dir="${lib.user}"/>
         </copy>
         <copy todir="${dist.dir}/tools">
             <fileset dir="tools">
