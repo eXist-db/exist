@@ -400,7 +400,7 @@ public class RpcConnection extends Thread {
         Collection collection = null;
         try {
             if (rootCollection == null)
-                rootCollection = "/db";
+                rootCollection = DBBroker.ROOT_COLLECTION;
             
             collection = broker.openCollection(rootCollection, Lock.READ_LOCK);
             if (collection == null)
@@ -489,7 +489,7 @@ public class RpcConnection extends Thread {
         Collection collection = null;
         try {
             if (rootCollection == null)
-                rootCollection = "/db";
+                rootCollection = DBBroker.ROOT_COLLECTION;
             
             collection = broker.openCollection(rootCollection, Lock.WRITE_LOCK);
             if (collection == null)
@@ -799,9 +799,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!name.startsWith("/"))
                 name = '/' + name;
-            /*if (!name.startsWith("/db"))
-                name = "/db" + name;*/
-            name = NativeBroker.checkPath(name, "/db");
+            /*if (!name.startsWith(DBBroker.ROOT_COLLECTION))
+                name = DBBroker.ROOT_COLLECTION + name;*/
+            name = NativeBroker.checkPath(name, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(name, Lock.READ_LOCK);
             Vector vec = new Vector();
             if (collection == null) {
@@ -831,9 +831,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!collectionName.startsWith("/"))
                 collectionName = '/' + collectionName;
-            /*if (!collectionName.startsWith("/db"))
-                collectionName = "/db" + collectionName;*/
-            collectionName = NativeBroker.checkPath(collectionName, "/db");
+            /*if (!collectionName.startsWith(DBBroker.ROOT_COLLECTION))
+                collectionName = DBBroker.ROOT_COLLECTION + collectionName;*/
+            collectionName = NativeBroker.checkPath(collectionName, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(collectionName, Lock.READ_LOCK);
             return collection.getDocumentCount();
         } finally {
@@ -851,9 +851,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!collectionName.startsWith("/"))
                 collectionName = '/' + collectionName;
-            /*if (!collectionName.startsWith("/db"))
-                collectionName = "/db" + collectionName;*/
-            collectionName = NativeBroker.checkPath(collectionName, "/db");
+            /*if (!collectionName.startsWith(DBBroker.ROOT_COLLECTION))
+                collectionName = DBBroker.ROOT_COLLECTION + collectionName;*/
+            collectionName = NativeBroker.checkPath(collectionName, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(collectionName, Lock.READ_LOCK);
             String id;
             Random rand = new Random();
@@ -885,9 +885,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!name.startsWith("/"))
                 name = '/' + name;
-            /*if (!name.startsWith("/db"))
-                name = "/db" + name;*/
-            name = NativeBroker.checkPath(name, "/db");
+            /*if (!name.startsWith(DBBroker.ROOT_COLLECTION))
+                name = DBBroker.ROOT_COLLECTION + name;*/
+            name = NativeBroker.checkPath(name, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(name, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("Collection " + name + " not found");
@@ -925,9 +925,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!name.startsWith("/"))
                 name = '/' + name;
-            /*if (!name.startsWith("/db"))
-                name = "/db" + name;*/
-            name = NativeBroker.checkPath(name, "/db");
+            /*if (!name.startsWith(DBBroker.ROOT_COLLECTION))
+                name = DBBroker.ROOT_COLLECTION + name;*/
+            name = NativeBroker.checkPath(name, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(name, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("Collection " + name + " not found");
@@ -976,9 +976,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!name.startsWith("/"))
                 name = '/' + name;
-            /*if (!name.startsWith("/db"))
-                name = "/db" + name;*/
-            name = NativeBroker.checkPath(name, "/db");
+            /*if (!name.startsWith(DBBroker.ROOT_COLLECTION))
+                name = DBBroker.ROOT_COLLECTION + name;*/
+            name = NativeBroker.checkPath(name, DBBroker.ROOT_COLLECTION);
             Collection collection = broker.openCollection(name, Lock.READ_LOCK);
             Permission perm = null;
             if (collection == null) {
@@ -1010,9 +1010,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!collectionPath.startsWith("/"))
                 collectionPath = '/' + collectionPath;
-            /*if (!collectionPath.startsWith("/db"))
-                collectionPath = "/db" + collectionPath;*/
-            collectionPath = NativeBroker.checkPath(collectionPath, "/db");
+            /*if (!collectionPath.startsWith(DBBroker.ROOT_COLLECTION))
+                collectionPath = DBBroker.ROOT_COLLECTION + collectionPath;*/
+            collectionPath = NativeBroker.checkPath(collectionPath, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(collectionPath, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("collection " + collectionPath
@@ -1033,9 +1033,9 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             if (!documentPath.startsWith("/"))
                 documentPath = '/' + documentPath;
-            /*if (!documentPath.startsWith("/db"))
-                documentPath = "/db" + documentPath;*/
-            documentPath = NativeBroker.checkPath(documentPath, "/db");
+            /*if (!documentPath.startsWith(DBBroker.ROOT_COLLECTION))
+                documentPath = DBBroker.ROOT_COLLECTION + documentPath;*/
+            documentPath = NativeBroker.checkPath(documentPath, DBBroker.ROOT_COLLECTION);
             doc = (DocumentImpl) broker.openDocument(documentPath, Lock.READ_LOCK);
             if (doc == null) {
                 LOG.debug("document " + documentPath + " not found!");

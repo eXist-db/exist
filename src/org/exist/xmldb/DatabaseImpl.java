@@ -194,7 +194,7 @@ public class DatabaseImpl implements Database {
         } else
             throw new XMLDBException( ErrorCodes.INVALID_DATABASE,
                 "Malformed URI: cannot determine host or collection part in URI: " + c +
-                ". The collection path should always start with /db.");
+                ". The collection path should always start with " + DBBroker.ROOT_COLLECTION + ".");
         XmlRpcClient rpcClient = getRpcClient(user, password, address);
         return readCollection( c, rpcClient, address );
     }

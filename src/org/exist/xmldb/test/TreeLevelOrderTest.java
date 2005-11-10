@@ -160,7 +160,7 @@ public class TreeLevelOrderTest extends TestCase {
 	private final Node load(XQueryService service, String document) throws XMLDBException {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
-		query.append("let $survey := document(concat(\"/db/\", $document))");
+		query.append("let $survey := document(concat('" + DBBroker.ROOT_COLLECTION + "', $document))");
 		query.append("return ($survey)");
 			
 		service.declareVariable("document", document);
@@ -208,7 +208,7 @@ public class TreeLevelOrderTest extends TestCase {
 	 * @throws XMLDBException on database error
 	 */
 	private final XQueryService getXQueryService(Database db) throws XMLDBException {
-		Collection collection = DatabaseManager.getCollection(eXistUrl + "/db", "admin", "");
+		Collection collection = DatabaseManager.getCollection(eXistUrl + DBBroker.ROOT_COLLECTION, "admin", "");
 		if (collection != null) {
 			XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
 			collection.close();
