@@ -35,6 +35,7 @@ import org.apache.xmlrpc.WebServer;
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.exist.StandaloneServer;
+import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.xmldb.test.DOMTestJUnit;
 import org.mortbay.util.MultiException;
@@ -66,7 +67,7 @@ public class XmlRpcTest extends XMLTestCase {
 		"<p><xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></p></xsl:template>" +
 		"</xsl:stylesheet>";
     
-    private final static String TARGET_COLLECTION = "/db/xmlrpc/";
+    private final static String TARGET_COLLECTION = DBBroker.ROOT_COLLECTION + "/xmlrpc/";
  
 	public XmlRpcTest(String name) {
 		super(name);
@@ -248,21 +249,21 @@ public class XmlRpcTest extends XMLTestCase {
 	public void testCollectionWithAccents() throws Exception {
 		System.out.println("Creating collection with accents in name ...");
 		Vector params = new Vector();
-		params.addElement("/db/Citt\u00E0");
+		params.addElement(DBBroker.ROOT_COLLECTION + "/Citt\u00E0");
 		XmlRpcClient xmlrpc = getClient();
 		xmlrpc.execute( "createCollection", params );
 		
 		System.out.println("Storing document " + XML_DATA);
 		params.clear();
 		params.addElement(XML_DATA);
-		params.addElement("/db/Citt\u00E0/test.xml");
+		params.addElement(DBBroker.ROOT_COLLECTION + "/Citt\u00E0/test.xml");
 		params.addElement(new Integer(1));
 		
 		Boolean result = (Boolean)xmlrpc.execute("parse", params);
 		assertTrue(result.booleanValue());
 		
 		params.clear();
-		params.addElement("/db");
+		params.addElement(DBBroker.ROOT_COLLECTION);
 
 		Hashtable collection = (Hashtable) xmlrpc.execute("describeCollection", params);
 		Vector collections = (Vector) collection.get("collections");
@@ -275,7 +276,7 @@ public class XmlRpcTest extends XMLTestCase {
 		}
 		assertNotNull("added collection not found", colWithAccent);
 		
-		System.out.println("Retrieving document /db/Citt\u00E0/test.xml");
+		System.out.println("Retrieving document '" + DBBroker.ROOT_COLLECTION + "/Citt\u00E0/test.xml'");
 		Hashtable options = new Hashtable();
         options.put("indent", "yes");
         options.put("encoding", "UTF-8");
@@ -283,7 +284,7 @@ public class XmlRpcTest extends XMLTestCase {
         options.put("process-xsl-pi", "no");
         
         params.clear();
-        params.addElement( "/db/" + colWithAccent + "/test.xml" ); 
+        params.addElement( DBBroker.ROOT_COLLECTION + "/" + colWithAccent + "/test.xml" ); 
         params.addElement( options );
         
         // execute the call
