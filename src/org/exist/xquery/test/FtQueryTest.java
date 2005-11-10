@@ -25,6 +25,7 @@ import java.io.File;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.IndexQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -35,7 +36,15 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 public class FtQueryTest extends XMLTestCase {
-
+ 
+	private final static String TEST_XML =
+		"<test-doc>" +
+			"<test-elem id=\"1\" attribute1=\"test some text\"/>" +
+			"<test-elem id=\"2\" attribute2=\"test some text\"/>" +
+			"<test-elem id=\"3\" attribute1=\"test some text\"/>" +
+			"<test-elem id=\"4\" attribute3=\"test some text\"/>" +
+		"</test-doc>";
+	
     private final static String FILES[] = { "hamlet.xml", "macbeth.xml", "r_and_j.xml" };
     
     private final static File SHAKES_DIR = new File("samples" + File.separator + "shakespeare");
@@ -45,6 +54,7 @@ public class FtQueryTest extends XMLTestCase {
     private Collection testCollection;
     
     public void testFtOperators() throws Exception {
+    	System.out.println("----- testFtOperators -----");
         XQueryService service = (XQueryService)
             testCollection.getService("XQueryService", "1.0");
         ResourceSet result = service.query("//SPEECH[LINE &= 'love']");
@@ -71,6 +81,7 @@ public class FtQueryTest extends XMLTestCase {
     }
     
     public void testFtScan() throws Exception {
+    	System.out.println("----- testFtScan -----");
         String queryBody =
             "declare namespace f=\'http://exist-db.org/xquery/test\';\n" + 
             "declare namespace mods='http://www.loc.gov/mods/v3';\n" + 
@@ -101,6 +112,7 @@ public class FtQueryTest extends XMLTestCase {
     }
     
     public void testFtUpdate() throws Exception {
+    	System.out.println("----- testFtUpdate -----");
         XQueryService service = (XQueryService)
             testCollection.getService("XQueryService", "1.0");
         service.query(
@@ -116,6 +128,53 @@ public class FtQueryTest extends XMLTestCase {
         );
         result = service.query("//SPEECH[LINE &= 'fenny snake' and SPEAKER &= 'first']");
         assertEquals(1, result.getSize());
+    }
+
+    public void testFtConfiguration() throws Exception {
+    	System.out.println("----- testFtConfiguration -----");
+    	try {
+    		// check attributes="false"
+    		String config =
+    			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+		    	"    <index>" +
+		    	"        <fulltext default=\"all\" attributes=\"false\" alphanum=\"true\">" +
+		    	"					<include path=\"//test-elem/@attribute1\"/>" +
+		    	"				</fulltext>" +
+		    	"    </index>" +
+		    	"</collection>";
+    		IndexQueryService idxConf = (IndexQueryService)
+				testCollection.getService("IndexQueryService", "1.0");
+    		idxConf.configureCollection(config);
+    		
+    		XMLResource doc =
+                (XMLResource) testCollection.createResource(
+                        "test-attributes.xml", "XMLResource");
+            doc.setContent(TEST_XML);
+            testCollection.storeResource(doc);
+            
+            XQueryService service = (XQueryService)
+            	testCollection.getService("XQueryService", "1.0");
+            String query = "//test-elem[@* &= 'some text']";
+            ResourceSet result = service.query(query);
+            assertEquals(2, result.getSize());
+            
+            // check attributes="true"
+            config =
+    			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+		    	"    <index>" +
+		    	"        <fulltext default=\"all\" attributes=\"true\" alphanum=\"true\">" +
+		    	"					<exclude path=\"//test-elem/@attribute2\"/>" +
+		    	"				</fulltext>" +
+		    	"    </index>" +
+		    	"</collection>";
+            idxConf.configureCollection(config);
+            idxConf.reindexCollection();
+            
+            result = service.query(query);
+            assertEquals(3, result.getSize());
+    	} catch(Exception e) {
+    		fail(e.getMessage());
+    	}
     }
     
     protected void setUp() {

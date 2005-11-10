@@ -77,7 +77,7 @@ public class FulltextIndexSpec {
         }
         String indexAttributes = node.getAttribute(ATTRIBUTES_ATTRIB);
 		if (indexAttributes != null && indexAttributes.length() > 0) {
-			setIncludeAttributes(indexAttributes.equals("true") || indexAttributes.equals("yes"));
+			includeAttributes = indexAttributes.equals("true") || indexAttributes.equals("yes");
 		}
 
 		String indexAlphaNum = node.getAttribute(ALPHANUM_ATTRIB);
@@ -118,24 +118,6 @@ public class FulltextIndexSpec {
 			return true;
 		return false;
 	}
-	
-    /**
-     * Include attribute values?
-     *
-     * @param index The new includeAttributes value
-     */
-    private void setIncludeAttributes( boolean index ) {
-        includeAttributes = index;
-    }
-
-    /**
-     * Include attribute values?
-     *
-     * @return The includeAttributes value
-     */
-    public boolean getIncludeAttributes(  ) {
-        return includeAttributes;
-    }
 
     /**
      * Include alpha-numeric data, i.e. numbers, serials, URLs and so on?
