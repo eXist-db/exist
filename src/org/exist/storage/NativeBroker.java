@@ -1007,8 +1007,7 @@ public class NativeBroker extends DBBroker {
     					currentPath.addComponent(qname);
     				
                     // --move to-- NativeElementIndex NativeValueIndex NativeTextEngine
-                    if(index && (ftIdx == null || currentPath == null || 
-                    		(ftIdx.getIncludeAttributes() && ftIdx.matchAttribute(currentPath)))) {
+                    if(index && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
                         indexType |= RangeIndexSpec.TEXT;
                         indexAttribs = true;
                     }
