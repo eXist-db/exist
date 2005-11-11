@@ -22,6 +22,7 @@
  */
 package org.exist.xmldb.test.concurrent;
 
+import org.exist.storage.DBBroker;
 import org.xmldb.api.base.Collection;
 
 /**
@@ -35,9 +36,9 @@ public class ConcurrentResourceTest3 extends ConcurrentTestBase {
 	
 	private final static String FILES_DIR = "/home/wolf/xml/movies";
 	
-	private final static String QUERY0 = "collection('/db')/movie";
+	private final static String QUERY0 = "collection('" + DBBroker.ROOT_COLLECTION + "')/movie";
 	
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	
 	public ConcurrentResourceTest3(String name) {
 		super(name, URI, "C1");

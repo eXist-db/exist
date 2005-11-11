@@ -23,6 +23,7 @@ package org.exist.xmldb.test.concurrent;
 
 import java.io.File;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -40,7 +41,7 @@ public class DeadlockTest extends TestCase {
             + "  <element3>value3</element3>\n"
             + "  <element4>value4</element4>\n" + "</document>\n";
 
-    private String rootCollection = "xmldb:exist:///db";
+    private String rootCollection = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     private Collection root;
     
     public void testDeadlock() throws Exception {
