@@ -38,9 +38,7 @@
 
     <application>
         <dc:creator>Divstrat Pty Ltd</dc:creator>
-        <dc:identifier>
-            http://www.divstrat.com.au/ds_webfiles_17/ds_Xunami.html
-        </dc:identifier>
+        <dc:identifier>http://www.divstrat.com.au/ds_webfiles_17/ds_Xunami.html</dc:identifier>
         <dc:rights>(c)2004 Divstrat</dc:rights>
         <dc:title>Xunami</dc:title>
         <dc:subject>multimedia</dc:subject>
@@ -87,9 +85,7 @@
         <dc:creator>
             Music Techonology Group (Barcelona, SPAIN)
         </dc:creator>
-        <dc:identifier>
-            http://www.iua.upf.es/mtg/opendrama
-        </dc:identifier>
+        <dc:identifier>http://www.iua.upf.es/mtg/opendrama</dc:identifier>
         <dc:title>MPEG-7 web browser</dc:title>
         <dc:subject>multimedia</dc:subject>
         <dc:subject>indexing</dc:subject>
@@ -160,9 +156,7 @@
 
     <application>
         <dc:title>Weblounge</dc:title>
-        <dc:identifier>
-            http://www.o2it.ch/products/weblounge
-        </dc:identifier>
+        <dc:identifier>http://www.o2it.ch/products/weblounge</dc:identifier>
         <dc:description>
             Weblounge provides a highly scalable, multilingual web
             content management system, featuring eXist as its powerful
