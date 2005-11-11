@@ -39,8 +39,8 @@ import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
+import org.exist.util.Compressor;
 import org.exist.validation.service.RemoteValidationService;
-import org.exist.xmlrpc.RpcServer;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
@@ -55,6 +55,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author wolf
  */
 public class RemoteCollection implements CollectionImpl {
+	
 	// max size of a resource to be send to the server
 	// if the resource exceeds this limit, the data is split into
 	// junks and uploaded to the server via the update() call
@@ -490,7 +491,7 @@ public class RemoteCollection implements CollectionImpl {
 			Vector params;
 			byte[] compressed;
 			while ((len = is.read(chunk)) > -1) {
-			    compressed = RpcServer.compress(chunk, len);
+			    compressed = Compressor.compress(chunk, len);
 				params = new Vector();
 				if (fileName != null)
 					params.addElement(fileName);
