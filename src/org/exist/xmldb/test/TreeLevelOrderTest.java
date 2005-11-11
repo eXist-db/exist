@@ -64,68 +64,40 @@ public class TreeLevelOrderTest extends TestCase {
 	 * <li>Accesses the document using Apache's XPathAPI</li>
 	 * </ul>
 	 */
-	public final void testTreeLevelOrder() {
+	public final void testTreeLevelOrder() {		
 		Database eXist = null;
 		String document = "survey.xml";
+		XQueryService service = null;
 
 		try {
 			eXist = registerDatabase();
-		} catch (XMLDBException e) {
-			fail("Unable to register database: "  + e.getMessage());
-		}
-
-		// Obtain XQuery service
-		XQueryService service = null;
-		try {
+			assertNotNull(eXist);
+			// Obtain XQuery service			
 			service = getXQueryService(eXist);
-			if (service == null) {
-				fail("Failed to obtain xquery service instance!");
-			}
-		} catch (XMLDBException e) {
-			fail("Failed to obtain xquery service instance: "  + e.getMessage());
-		}
-
-		// create document
-		StringBuffer xmlDocument = new StringBuffer();
-		xmlDocument.append("<survey>");
-		xmlDocument.append("<date>2004/11/24 17:42:31 GMT</date>");
-		xmlDocument.append("<from><![CDATA[tobias.wunden@o2it.ch]]></from>");
-		xmlDocument.append("<to><![CDATA[tobias.wunden@o2it.ch]]></to>");
-		xmlDocument.append("<subject><![CDATA[Test]]></subject>");
-		xmlDocument.append("<field>");
-		xmlDocument.append("<name><![CDATA[homepage]]></name>");
-		xmlDocument.append("<value><![CDATA[-]]></value>");
-		xmlDocument.append("</field>");
-		xmlDocument.append("</survey>");
-		
-		// write document to the database
-		try {
+			assertNotNull(service);
+			// create document
+			StringBuffer xmlDocument = new StringBuffer();
+			xmlDocument.append("<survey>");
+			xmlDocument.append("<date>2004/11/24 17:42:31 GMT</date>");
+			xmlDocument.append("<from><![CDATA[tobias.wunden@o2it.ch]]></from>");
+			xmlDocument.append("<to><![CDATA[tobias.wunden@o2it.ch]]></to>");
+			xmlDocument.append("<subject><![CDATA[Test]]></subject>");
+			xmlDocument.append("<field>");
+			xmlDocument.append("<name><![CDATA[homepage]]></name>");
+			xmlDocument.append("<value><![CDATA[-]]></value>");
+			xmlDocument.append("</field>");
+			xmlDocument.append("</survey>");
+			// write document to the database
 			store(xmlDocument.toString(), service, document);
-		} catch (XMLDBException e) {
-			fail("Failed to write document to database: " + e.getMessage());
-		}
-
-		// read document back from database
-		Node root = null;
-		try {
-			root = load(service, document);
-			if (root == null) {
-				fail("Document " + document + " was not found in the database!");
-			}
-		} catch (XMLDBException e) {
-			fail("Failed to write document to database: " + e.getMessage());
-		}
-
-		// issue xpath query
-		try {
+			// read document back from database
+			Node root = load(service, document);
+			assertNotNull(root);
+			// issue xpath query		
 			Node node = XPathAPI.selectSingleNode(root, "/survey/to/text()");
-			if (node != null) {
-				System.out.println("Found " + node.getNodeValue());
-			}
-		} catch (Exception e) {
-		    e.printStackTrace();
-			fail("Failed to issue xpath on root node: " + e.getMessage());
-		}
+			assertNotNull(node);			
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }
 	}
 
 	/**
@@ -136,18 +108,22 @@ public class TreeLevelOrderTest extends TestCase {
 	 * @param document the document name
 	 * @throws XMLDBException on database error
 	 */
-	private final void store(String xml, XQueryService service, String document) throws XMLDBException {
-		StringBuffer query = new StringBuffer();
-		query.append("xquery version \"1.0\";");
-		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', 'admin', 'admin'),");
-		query.append("$doc := xdb:store($root, $document, $survey)");
-		query.append("return <result/>");
-
-		service.declareVariable("survey", xml);
-		service.declareVariable("document", document);
-		CompiledExpression cQuery = service.compile(query.toString());
-		service.execute(cQuery);
+	private final void store(String xml, XQueryService service, String document) {
+		try {
+			StringBuffer query = new StringBuffer();
+			query.append("xquery version \"1.0\";");
+			query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
+			query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', 'admin', 'admin'),");
+			query.append("$doc := xdb:store($root, $document, $survey)");
+			query.append("return <result/>");
+	
+			service.declareVariable("survey", xml);
+			service.declareVariable("document", document);
+			CompiledExpression cQuery = service.compile(query.toString());
+			service.execute(cQuery);
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }					
 	}
 
 	/**
@@ -157,19 +133,23 @@ public class TreeLevelOrderTest extends TestCase {
 	 * @param document the document to load
 	 * @throws XMLDBException on database error
 	 */
-	private final Node load(XQueryService service, String document) throws XMLDBException {
-		StringBuffer query = new StringBuffer();
-		query.append("xquery version \"1.0\";");
-		query.append("let $survey := document(concat('" + DBBroker.ROOT_COLLECTION + "', $document))");
-		query.append("return ($survey)");
-			
-		service.declareVariable("document", document);
-		CompiledExpression cQuery = service.compile(query.toString());
-		ResourceSet set = service.execute(cQuery);
-		if (set != null && set.getSize() > 0) {
-			return ((XMLResource)set.getIterator().nextResource()).getContentAsDOM();
-		}
-		return null;
+	private final Node load(XQueryService service, String document) {
+		try {
+			StringBuffer query = new StringBuffer();
+			query.append("xquery version \"1.0\";");
+			query.append("let $survey := document(concat('" + DBBroker.ROOT_COLLECTION + "', $document))");
+			query.append("return ($survey)");
+				
+			service.declareVariable("document", document);
+			CompiledExpression cQuery = service.compile(query.toString());
+			ResourceSet set = service.execute(cQuery);
+			if (set != null && set.getSize() > 0) {
+				return ((XMLResource)set.getIterator().nextResource()).getContentAsDOM();
+			}			
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }	
+        return null;
 	}
 
 	/**
@@ -177,7 +157,7 @@ public class TreeLevelOrderTest extends TestCase {
 	 * 
 	 * @throws XMLDBException
 	 */
-	private final Database registerDatabase() throws XMLDBException {
+	private final Database registerDatabase() {		
 		Class driver = null;
 		String driverName = "org.exist.xmldb.DatabaseImpl";
 		try {
@@ -187,16 +167,10 @@ public class TreeLevelOrderTest extends TestCase {
 //			database.setProperty("configuration", eXistConf);
 			DatabaseManager.registerDatabase(database);
 			return database;
-		} catch (ClassNotFoundException e) {
-			System.err.println("Driver class " + driverName + " was not found!");
-			throw new XMLDBException();
-		} catch (InstantiationException e) {
-			System.err.println("Driver class " + driverName + " could not be instantiated!");
-			throw new XMLDBException();
-		} catch (IllegalAccessException e) {
-			System.err.println("Access violation when trying to instantiate XMLDB Driver " + driverName + "!");
-			throw new XMLDBException();
-		}
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }	
+        return null;
 	}
 	
 	/**
@@ -207,13 +181,17 @@ public class TreeLevelOrderTest extends TestCase {
 	 * @return the xquery service
 	 * @throws XMLDBException on database error
 	 */
-	private final XQueryService getXQueryService(Database db) throws XMLDBException {
-		Collection collection = DatabaseManager.getCollection(eXistUrl + DBBroker.ROOT_COLLECTION, "admin", "");
-		if (collection != null) {
-			XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
-			collection.close();
-			return service;
-		}
+	private final XQueryService getXQueryService(Database db) {
+		try {
+			Collection collection = DatabaseManager.getCollection(eXistUrl + DBBroker.ROOT_COLLECTION, "admin", "");
+			if (collection != null) {
+				XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
+				collection.close();
+				return service;
+			}
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 		return null;
 	}
 	
