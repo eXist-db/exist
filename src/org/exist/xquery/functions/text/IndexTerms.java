@@ -39,6 +39,9 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import java.util.HashMap;
+import java.util.Collections;
+import java.util.Vector;
 
 /**
  * @author wolf
@@ -56,10 +59,10 @@ public class IndexTerms extends BasicFunction {
             "for every term occurrence. $d defines the maximum number of terms that should be " +
             "reported. The function reference for $c can be created with the util:function " +
             "function. It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
-            "1) the current term as found in the index as xs:string, 2) a sequence containing three int " +
+            "1) the current term as found in the index as xs:string, 2) a sequence containing four int " +
             "values: a) the overall frequency of the term within the node set, b) the number of distinct " +
             "documents in the node set the term occurs in, c) the current position of the term in the whole " +
-            "list of terms returned.",
+            "list of terms returned, d) the rank of the current term in the whole list of terms returned.",
             new SequenceType[]{
                     new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
                     new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
@@ -92,11 +95,27 @@ public class IndexTerms extends BasicFunction {
             int len = (occur.length > max ? max : occur.length);
             Sequence params[] = new Sequence[2];
             ValueSequence data = new ValueSequence();
+
+	    Vector list = new Vector(len);
+	    for (int j = 0; j < len; j++) {
+		if (!list.contains(new Integer(occur[j].getOccurrences()))) {
+		    list.add(new Integer(occur[j].getOccurrences()));
+		}
+	    }
+	    Collections.sort(list);
+	    Collections.reverse(list);
+	    HashMap map = new HashMap(list.size() * 2);
+	    for (int j = 0; j < list.size(); j++) {
+		map.put((Integer) list.get(j), new Integer(j + 1));
+	    }
+
             for (int j = 0; j < len; j++) {
                 params[0] = new StringValue(occur[j].getTerm().toString());
                 data.add(new IntegerValue(occur[j].getOccurrences(), Type.UNSIGNED_INT));
                 data.add(new IntegerValue(occur[j].getDocuments(), Type.UNSIGNED_INT));
                 data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
+                data.add(new IntegerValue(((Integer) map.get(new Integer(occur[j].getOccurrences()))).intValue(), Type.UNSIGNED_INT));
+
                 params[1] = data;
                 
                 result.addAll(call.evalFunction(contextSequence, null, params));
