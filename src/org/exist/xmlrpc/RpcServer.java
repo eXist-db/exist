@@ -20,8 +20,6 @@
  */
 package org.exist.xmlrpc;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -34,9 +32,6 @@ import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import javax.xml.transform.OutputKeys;
 
@@ -46,6 +41,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.Compressor;
 import org.exist.util.Configuration;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.XPathException;
@@ -365,7 +361,7 @@ try {
                     return xml.getBytes(encoding);
                 } else {
                     LOG.debug("getdocument with compression");
-                    return compress(xml.getBytes(encoding));
+                    return Compressor.compress(xml.getBytes(encoding));
                 }
 
             } catch (UnsupportedEncodingException uee) {
@@ -374,7 +370,7 @@ try {
                     return xml.getBytes();
                 } else {
                     LOG.debug("getdocument with compression");
-                    return compress(xml.getBytes());
+                    return Compressor.compress(xml.getBytes());
                 }
 
             }
@@ -802,7 +798,7 @@ try {
         LOG.debug("Compressed upload: " + data.length);
         RpcConnection con = pool.get();
         try {
-            data = uncompress(data);
+            data = Compressor.uncompress(data);
             return con.upload(user, data, data.length, file);
         } catch (Exception e) {
             handleException(e);
@@ -1276,7 +1272,7 @@ try {
                     return xml.getBytes(encoding);
                 } else {
                     LOG.debug("get result with compression");
-                    return compress(xml.getBytes(encoding));
+                    return Compressor.compress(xml.getBytes(encoding));
                 }
             	
             } catch (UnsupportedEncodingException uee) {
@@ -1285,7 +1281,7 @@ try {
                     return xml.getBytes();
                 } else {
                     LOG.debug("get result with compression");
-                    return compress(xml.getBytes());
+                    return Compressor.compress(xml.getBytes());
                 }
             }
         } catch (Exception e) {
@@ -1778,39 +1774,6 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
             pool.release(con);
         }
     }
-
-    public static byte[] compress(byte[] whatToCompress) throws IOException {
-        return compress(whatToCompress, whatToCompress.length);
-    }
-    
-    public static byte[] compress(byte[] whatToCompress, int length) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ZipOutputStream gzos = new ZipOutputStream(baos);
-        gzos.setMethod(ZipOutputStream.DEFLATED);
-        gzos.putNextEntry(new ZipEntry(length + ""));
-        gzos.write(whatToCompress, 0, length);
-        gzos.closeEntry();
-        gzos.finish();
-        gzos.close();
-        return baos.toByteArray();
-    }
-
-    public static byte[] uncompress(byte[] whatToUncompress)
-            throws IOException {
-        ByteArrayInputStream bais = new ByteArrayInputStream(whatToUncompress);
-        ZipInputStream gzis = new ZipInputStream(bais);
-        ZipEntry zipentry = gzis.getNextEntry();
-        int len = Integer.parseInt(zipentry.getName());
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buf = new byte[512];
-        int bread;
-        while ((bread = gzis.read(buf)) != -1)
-            baos.write(buf, 0, bread);
-        gzis.closeEntry();
-        gzis.close();
-        return baos.toByteArray();
-    }
-
 
 	
 	//FIXME: Check it for possible security hole. The name of file is not generated in random mode
