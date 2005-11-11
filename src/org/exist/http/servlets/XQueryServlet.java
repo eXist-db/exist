@@ -307,6 +307,7 @@ public class XQueryServlet extends HttpServlet {
 		out.print("</div><div class='description'>");
 		out.print(description);
 		out.print("</div></body></html>");
+		out.flush();
 	}
     
 	private static final class CachedQuery {
