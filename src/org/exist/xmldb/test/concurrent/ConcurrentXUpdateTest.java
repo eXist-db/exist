@@ -22,6 +22,7 @@ package org.exist.xmldb.test.concurrent;
 
 import java.io.File;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.IndexQueryService;
 
 
@@ -32,7 +33,7 @@ import org.exist.xmldb.IndexQueryService;
  */
 public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 
 	private final static String CONFIG =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
@@ -65,7 +66,7 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 		tempFile = DBUtils.generateXMLFile(500, 10, wordList);
 		DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
     
-		String query0 = "document('/db/C1/R1.xml')/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
+		String query0 = "document('" + DBBroker.ROOT_COLLECTION + "/C1/R1.xml')/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
 		String query1 = "document()/ROOT-ELEMENT//ELEMENT-2[@attribute-2]";
         
 		addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 50, 0, 200);

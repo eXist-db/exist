@@ -21,6 +21,8 @@
  */
 package org.exist.xmldb.test.concurrent;
 
+import org.exist.storage.DBBroker;
+
 
 
 /**
@@ -28,7 +30,7 @@ package org.exist.xmldb.test.concurrent;
  */
 public class ValueIndexUpdateTest extends ConcurrentTestBase {
 
-    private final static String URI = "xmldb:exist:///db";
+    private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     
     private final static String XCONF =
         "<exist:collection xmlns:exist=\"http://exist-db.org/collection-config/1.0\">" +
