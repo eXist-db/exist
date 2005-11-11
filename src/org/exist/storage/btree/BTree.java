@@ -473,7 +473,13 @@ public class BTree extends Paged {
 	}
 
     protected void dumpValue(Writer writer, Value value) throws IOException {
-        writer.write(new String(value.getData()));
+        byte[] data = value.getData();
+        writer.write('[');
+        for (int i = 0; i < data.length; i++) {
+        	writer.write(Integer.toString(data[i]));
+        	writer.write(' ');
+        }
+        writer.write(']');
     }
     
 	/* ---------------------------------------------------------------------------------
@@ -494,7 +500,6 @@ public class BTree extends Paged {
     }
     
 	protected void redoCreateBTNode(CreateBTNodeLoggable loggable) throws LogException {
-		BTreeNode parent = null;
 		BTreeNode node = (BTreeNode) cache.get(loggable.pageNum);
 		if (node == null) {
 			// node is not yet loaded. Load it
@@ -1444,7 +1449,6 @@ public class BTree extends Paged {
                 int leftIdx = searchKey(qvals[0]);
                 int pfxIdx = searchKey(prefix);
                 
-                    boolean pos = query.getOperator() >= 0;
                     switch (ph.getStatus()) {
                         case BRANCH :
                             if (leftIdx < 0)
@@ -1473,16 +1477,16 @@ public class BTree extends Paged {
                                     break;
                                 case IndexQuery.GT :
                                     for (int i = leftIdx; i < nPtrs; i++) {
+                                    	getChildNode(i).query(query, prefix, callback);
                                         if (i < nKeys && keys[i].comparePrefix(prefix) > 0)
                                             break;
-                                        getChildNode(i).query(query, prefix, callback);
                                     }
                                     break;
                                 case IndexQuery.GEQ :
                                     for (int i = leftIdx; i < nPtrs; i++) {
+                                    	getChildNode(i).query(query, prefix, callback);
                                         if (i < nKeys && keys[i].comparePrefix(prefix) > 0)
                                             break;
-                                        getChildNode(i).query(query, prefix, callback);
                                     }
                                     break;
                             }
