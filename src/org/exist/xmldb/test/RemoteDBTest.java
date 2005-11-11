@@ -47,33 +47,37 @@ public abstract class RemoteDBTest extends TestCase {
         super(name);
     }
 
-    protected void setUpRemoteDatabase() throws Exception, ClassNotFoundException, InstantiationException,
-            IllegalAccessException, XMLDBException {
-    	//Connect to the DB
-        Class cl = Class.forName(DB_DRIVER);
-        Database database = (Database) cl.newInstance();
-        DatabaseManager.registerDatabase(database);
-        //Get the root collection...
-        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
-        //... and work from it
-        Collection childCollection = rootCollection.getChildCollection(COLLECTION_NAME);
-        if (childCollection == null) {
+    protected void setUpRemoteDatabase() {             
+    	try {
+	    	//Connect to the DB
+	        Class cl = Class.forName(DB_DRIVER);
+	        Database database = (Database) cl.newInstance();
+	        assertNotNull(database);
+	        DatabaseManager.registerDatabase(database);
+	        //Get the root collection...
+	        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
+	        assertNotNull(rootCollection);
+	        //... and work from it
+	        Collection childCollection = rootCollection.getChildCollection(COLLECTION_NAME);
+	        assertNotNull(childCollection);
             CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
                     "CollectionManagementService", "1.0");
             setCollection((RemoteCollection) cms.createCollection(COLLECTION_NAME));
-        } else {
-        /*        	
-            throw new Exception("Cannot run test because the collection '"+ DBBroker.ROOT_COLLECTION + "/" + COLLECTION_NAME + " already "
-                    + "exists. If it is a left-over of a previous test run, please remove it manually.");
-        */
-        }
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }	        
     }
 
-    protected void removeCollection() throws XMLDBException, Exception {
-        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
-        CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
-                "CollectionManagementService", "1.0");
-        cms.removeCollection(COLLECTION_NAME);
+    protected void removeCollection() {
+    	try {
+	        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
+	        assertNotNull(rootCollection);
+	        CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
+	                "CollectionManagementService", "1.0");
+	        cms.removeCollection(COLLECTION_NAME);
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }
     }
 
     public RemoteCollection getCollection() {

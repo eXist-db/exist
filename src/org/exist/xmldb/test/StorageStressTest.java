@@ -65,80 +65,91 @@ public class StorageStressTest extends TestCase {
     
     private Collection collection = null;
     
-    public void testStore() throws Exception {
-        String[] wordList = DBUtils.wordList(collection);
-        long start = System.currentTimeMillis();
-        for (int i = 0; i < 30000; i++) {
-            File f = DBUtils.generateXMLFile(50, 3, wordList, false);
-            System.out.println("Storing file: " + f.getName() + "; size: " + (f.length() / 1024) + "kB");
-            Resource res = collection.createResource("test_" + i, "XMLResource");
-            res.setContent(f);
-            collection.storeResource(res);
-            f.delete();
-        }
-        System.out.println("Indexing took " + (System.currentTimeMillis() - start));
+    public void testStore() {
+    	try {
+	        String[] wordList = DBUtils.wordList(collection);
+	        long start = System.currentTimeMillis();
+	        for (int i = 0; i < 30000; i++) {
+	            File f = DBUtils.generateXMLFile(50, 3, wordList, false);
+	            System.out.println("Storing file: " + f.getName() + "; size: " + (f.length() / 1024) + "kB");
+	            Resource res = collection.createResource("test_" + i, "XMLResource");
+	            res.setContent(f);
+	            collection.storeResource(res);
+	            f.delete();
+	        }
+	        System.out.println("Indexing took " + (System.currentTimeMillis() - start));
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }	        
     }
     
-    protected void setUp() throws Exception {
+    protected void setUp() {
     	//Don't worry about closing the server : the shutdown hook will do the job
     	initServer();
         setUpRemoteDatabase();
     }
     
-	private void initServer() throws Exception {
-		if (server == null) {
-			server = new StandaloneServer();
-			if (!server.isStarted()) {			
-				try {				
-					System.out.println("Starting standalone server...");
-					String[] args = {};
-					server.run(args);
-					while (!server.isStarted()) {
-						Thread.sleep(1000);
-					}
-				} catch (MultiException e) {
-					boolean rethrow = true;
-					Iterator i = e.getExceptions().iterator();
-					while (i.hasNext()) {
-						Exception e0 = (Exception)i.next();
-						if (e0 instanceof BindException) {
-							System.out.println("A server is running already !");
-							rethrow = false;
-							break;
+	private void initServer() {
+		try {
+			if (server == null) {
+				server = new StandaloneServer();
+				if (!server.isStarted()) {			
+					try {				
+						System.out.println("Starting standalone server...");
+						String[] args = {};
+						server.run(args);
+						while (!server.isStarted()) {
+							Thread.sleep(1000);
 						}
+					} catch (MultiException e) {
+						boolean rethrow = true;
+						Iterator i = e.getExceptions().iterator();
+						while (i.hasNext()) {
+							Exception e0 = (Exception)i.next();
+							if (e0 instanceof BindException) {
+								System.out.println("A server is running already !");
+								rethrow = false;
+								break;
+							}
+						}
+						if (rethrow) throw e;
 					}
-					if (rethrow) throw e;
 				}
 			}
-		}
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }			
 	}    
     
-    protected void setUpRemoteDatabase() throws Exception, ClassNotFoundException, InstantiationException,
-    IllegalAccessException, XMLDBException {
-        Class cl = Class.forName(DB_DRIVER);
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        
-        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
-        
-        Collection childCollection = rootCollection.getChildCollection(COLLECTION_NAME);
-        if (childCollection == null) {
-            CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
-                    "CollectionManagementService", "1.0");
-            this.collection = cms.createCollection(COLLECTION_NAME);
-        } else {
-            this.collection = childCollection;
-        }
-        
-        File f = new File("samples/shakespeare/hamlet.xml");
-        Resource res = collection.createResource("test1.xml", "XMLResource");
-        res.setContent(f);
-        collection.storeResource(res);
-        
-        IndexQueryService idxConf = (IndexQueryService)
-            collection.getService("IndexQueryService", "1.0");
-        idxConf.configureCollection(CONFIG);
+    protected void setUpRemoteDatabase() {
+    	try {
+	        Class cl = Class.forName(DB_DRIVER);
+	        Database database = (Database) cl.newInstance();
+	        database.setProperty("create-database", "true");
+	        DatabaseManager.registerDatabase(database);
+	        
+	        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
+	        
+	        Collection childCollection = rootCollection.getChildCollection(COLLECTION_NAME);
+	        if (childCollection == null) {
+	            CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
+	                    "CollectionManagementService", "1.0");
+	            this.collection = cms.createCollection(COLLECTION_NAME);
+	        } else {
+	            this.collection = childCollection;
+	        }
+	        
+	        File f = new File("samples/shakespeare/hamlet.xml");
+	        Resource res = collection.createResource("test1.xml", "XMLResource");
+	        res.setContent(f);
+	        collection.storeResource(res);
+	        
+	        IndexQueryService idxConf = (IndexQueryService)
+	            collection.getService("IndexQueryService", "1.0");
+	        idxConf.configureCollection(CONFIG);
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }	        
     }
     
     public static void main(String[] args) {
