@@ -25,6 +25,7 @@ package org.exist.xquery.functions.xmldb;
 import org.exist.dom.QName;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -47,8 +48,9 @@ public class XMLDBCollection extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("collection", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Get a reference to a collection. The collection is identified by the first argument, " +
-			"which is either a collection path like '/db' or an XMLDB URI like 'xmldb:exist://localhost:8081/db'. " +
+			"Get a reference to a collection. The first argument is either a collection path like '" +
+			DBBroker.ROOT_COLLECTION + "/shakespeare/plays' or an XMLDB URI like 'xmldb:exist://localhost:8081/" +
+			DBBroker.ROOT_COLLECTION + "/shakespeare/plays'. " +
 			"The second argument should specify the name of " +
 			"a valid user, the third is the password. The method returns a Java object " +
 			"type, which can then be used as argument to the create-collection or store " +

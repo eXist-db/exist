@@ -23,6 +23,7 @@
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -47,12 +48,12 @@ public class FunDocAvailable extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("doc-available", Function.BUILTIN_FUNCTION_NS),
-			"Returns whether or not a document is available. "
-				+ "EXist interprets the argument as a path pointing to a "
-				+ "document in the database, as for example, '/db/shakespeare/plays/hamlet.xml'. "
-				+ "If the path is relative, "
-				+ "it is resolved relative to the base URI property from the static context."
-				+ "Understands also standard URLs, starting with http://, file://, etc.",
+			"Returns whether or not the document specified in the input sequence is available. " +
+            "The arguments are either document pathes like '" +
+			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +
+			"XMLDB URIs like 'xmldb:exist://localhost:8081/" +
+			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +  
+            "standard URLs, starting with http://, file://, etc.",
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));	
 	

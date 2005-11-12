@@ -23,6 +23,7 @@
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -47,12 +48,12 @@ public class FunDoc extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("doc", Function.BUILTIN_FUNCTION_NS),
-			"Includes a document into the input sequence. "
-				+ "EXist interprets the argument as a path pointing to a "
-				+ "document in the database, as for example, '/db/shakespeare/plays/hamlet.xml'. "
-				+ "If the path is relative, "
-				+ "it is resolved relative to the base URI property from the static context."
-				+ "Understands also standard URLs, starting with http://, file://, etc.",
+			"Returns the documents specified in the input sequence. " +  
+            "The arguments are either document pathes like '" +
+			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +
+			"XMLDB URIs like 'xmldb:exist://localhost:8081/" +
+			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +  
+            "standard URLs starting with http://, file://, etc.",
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
 	
