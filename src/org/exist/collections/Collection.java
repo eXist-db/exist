@@ -871,9 +871,9 @@ implements Comparable, EntityResolver, Cacheable {
 					setupTriggers(broker, docName, oldDoc != null),
 					oldDoc == null ? Trigger.STORE_DOCUMENT_EVENT : Trigger.UPDATE_DOCUMENT_EVENT);
 
-			info.prepareTrigger(broker, transaction, getName() + "/" + docName, oldDoc);
+			info.prepareTrigger(broker, transaction, getName() + '/' + docName, oldDoc);
 
-			LOG.debug("Scanning document " + name);
+			LOG.debug("Scanning document " + getName() + '/' + docName);
 			doValidate.run(info);
 			
 			document.setMaxDepth(document.getMaxDepth() + 1);
