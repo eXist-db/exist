@@ -38,6 +38,7 @@ public class RestoreTask extends AbstractXMLDBTask
 
   private File dir = null;
   private DirSet dirSet = null;
+  private String restorePassword = null;
 
   /* (non-Javadoc)
    * @see org.apache.tools.ant.Task#execute()
@@ -63,7 +64,7 @@ public class RestoreTask extends AbstractXMLDBTask
         {
           throw new BuildException("Did not found file "+file.getAbsolutePath());
         }
-        Restore restore = new Restore(user, password, file, uri);
+        Restore restore = new Restore(user, password, restorePassword, file, uri);
         restore.restore(false, null);
       } else if (dirSet != null)
       {
@@ -83,7 +84,7 @@ public class RestoreTask extends AbstractXMLDBTask
           }
           log("Restoring from " + file.getAbsolutePath() + " ...\n");
           // TODO subdirectories as sub-collections?
-          Restore restore = new Restore(user, password, file, uri);
+          Restore restore = new Restore(user, password, restorePassword, file, uri);
           restore.restore(false, null);
         }
       }
@@ -106,5 +107,9 @@ public class RestoreTask extends AbstractXMLDBTask
   public void setDir(File dir)
   {
     this.dir = dir;
+  }
+  
+  public void setRestorePassword(String pass) {
+	  this.restorePassword = pass;
   }
 }

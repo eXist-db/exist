@@ -58,12 +58,17 @@ public class Restore extends DefaultHandler {
 
 	/**
 	 * Constructor for Restore.
+	 * @throws XMLDBException 
 	 */
-	public Restore(String user, String pass, File contents, String uri)
-		throws ParserConfigurationException, SAXException {
+	public Restore(String user, String pass, String newAdminPass, File contents, String uri)
+		throws ParserConfigurationException, SAXException, XMLDBException {
 		this.username = user;
 		this.pass = pass;
 		this.uri = uri;
+		
+		if (newAdminPass != null)
+			setAdminCredentials(newAdminPass);
+		
 		SAXParserFactory saxFactory = SAXParserFactory.newInstance();
 		saxFactory.setNamespaceAware(true);
 		saxFactory.setValidating(false);
@@ -77,7 +82,7 @@ public class Restore extends DefaultHandler {
 		// this first to create users.
 		File dir = contents.getParentFile();	
 		//TODO : find a way to make a corespondance with DBRoker's named constants
-		if (dir.isDirectory() && dir.getName().equals("db" + File.separatorChar + "system")) {
+		if (dir.isDirectory()) {
 			File sys =				
 				new File(
 					dir.getAbsolutePath()
@@ -92,11 +97,6 @@ public class Restore extends DefaultHandler {
 				stack.push(sys);
 			}
 		}
-	}
-
-	public Restore(String user, String pass, File contents)
-		throws ParserConfigurationException, SAXException {
-		this(user, pass, contents, "xmldb:exist://");
 	}
 
 	public void restore(boolean showGUI, JFrame parent)
@@ -328,6 +328,17 @@ public class Restore extends DefaultHandler {
 		return (CollectionImpl)current;
 	}
     
+	private void setAdminCredentials(String adminPassword) throws XMLDBException {
+		Collection root = DatabaseManager.getCollection(uri + DBBroker.ROOT_COLLECTION, username, pass);
+		UserManagementService mgmt = (UserManagementService)
+			root.getService("UserManagementService", "1.0");
+		User dba = mgmt.getUser(SecurityManager.DBA_USER);
+		dba.setPassword(adminPassword);
+		mgmt.updateUser(dba);
+		
+		pass = adminPassword;
+	}
+	
 	public static void showErrorMessage(String message) {
         JTextArea msgArea = new JTextArea(message);
         msgArea.setEditable(false);
