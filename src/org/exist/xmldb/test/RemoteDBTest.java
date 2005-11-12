@@ -38,7 +38,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 public abstract class RemoteDBTest extends TestCase {
 	
     protected final static String URI = "xmldb:exist://localhost:8088/xmlrpc";
-    private final static String COLLECTION_NAME = "unit-testing-collection-Citt\u00E0";
+    private final static String CHILD_COLLECTION = "unit-testing-collection-Citt\u00E0";
     public final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
 
     private RemoteCollection collection = null;
@@ -56,13 +56,15 @@ public abstract class RemoteDBTest extends TestCase {
 	        DatabaseManager.registerDatabase(database);
 	        //Get the root collection...
 	        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
-	        assertNotNull(rootCollection);
-	        //... and work from it
-	        Collection childCollection = rootCollection.getChildCollection(COLLECTION_NAME);
-	        assertNotNull(childCollection);
+	        assertNotNull(rootCollection);  
             CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
                     "CollectionManagementService", "1.0");
-            setCollection((RemoteCollection) cms.createCollection(COLLECTION_NAME));
+            //Creates the child collection
+            Collection childCollection = cms.createCollection(CHILD_COLLECTION);
+            assertNotNull(childCollection);
+            //... and work from it
+            setCollection((RemoteCollection) childCollection);
+            assertNotNull(childCollection);
         } catch (Exception e) {            
             fail(e.getMessage()); 
         }	        
@@ -74,7 +76,7 @@ public abstract class RemoteDBTest extends TestCase {
 	        assertNotNull(rootCollection);
 	        CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
 	                "CollectionManagementService", "1.0");
-	        cms.removeCollection(COLLECTION_NAME);
+	        cms.removeCollection(CHILD_COLLECTION);
         } catch (Exception e) {            
             fail(e.getMessage()); 
         }
@@ -89,6 +91,6 @@ public abstract class RemoteDBTest extends TestCase {
     }
 
     protected String getTestCollectionName() {
-        return COLLECTION_NAME;
+        return CHILD_COLLECTION;
     }
 }
