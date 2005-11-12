@@ -33,6 +33,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
@@ -54,11 +55,13 @@ public class ExtCollection extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("collection", Function.BUILTIN_FUNCTION_NS),
-            "Includes the documents contained in the specified collection " +
-            "into the input sequence. eXist interprets the arguments as absolute paths " +
-            "pointing to database collections, as for example, '/db/shakespeare/plays'. Documents " +
-            "located in subcollections of a collection are included into the input " +
-            "set.",
+            "Returns the documents contained in the collections " +
+            "specified in the input sequence. " +           
+            "The arguments are either collection pathes like '" +
+			DBBroker.ROOT_COLLECTION + "/shakespeare/plays' or " +
+			"XMLDB URIs like 'xmldb:exist://localhost:8081/" +
+			DBBroker.ROOT_COLLECTION + "/shakespeare/plays'. " +
+			"Documents contained in subcollections are also included.",
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),

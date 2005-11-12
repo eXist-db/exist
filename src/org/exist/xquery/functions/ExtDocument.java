@@ -33,6 +33,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
 import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -58,13 +59,15 @@ public class ExtDocument extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("document", Function.BUILTIN_FUNCTION_NS),
-            "Includes one or more documents " +
-            "into the input sequence. This function is specific to eXist and " +
-            "will be replaced with the corresponding fn:doc function. Currently, " +
-            "eXist interprets each argument as an absolute path pointing to a " +
-            "document in the database, as for example, '/db/shakespeare/plays/hamlet.xml'. " +
-            "If no arguments are specified, the function will load all documents in the " +
-            "database.",
+            "Returns the documents specified in the input sequence. " +  
+            "This function is specific to eXist and " +
+            "will be replaced with the corresponding fn:doc function. " +
+            "The arguments are either document pathes like '" +
+			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +
+			"XMLDB URIs like 'xmldb:exist://localhost:8081/" +
+			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml'. " +  
+            "If the input sequence is empty, " +
+            "the function will load all documents in the database.",
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
