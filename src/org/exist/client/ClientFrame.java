@@ -21,27 +21,6 @@
  */
 package org.exist.client;
 
-import org.exist.backup.Backup;
-import org.exist.backup.CreateBackupDialog;
-import org.exist.backup.Restore;
-import org.exist.security.Permission;
-import org.exist.security.User;
-import org.exist.storage.DBBroker;
-import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.util.MimeTable;
-import org.exist.xmldb.CollectionImpl;
-import org.exist.xmldb.CollectionManagementServiceImpl;
-import org.exist.xmldb.EXistResource;
-import org.exist.xmldb.IndexQueryService;
-import org.exist.xmldb.UserManagementService;
-import org.gnu.readline.Readline;
-import org.xml.sax.SAXException;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -87,6 +66,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
@@ -107,6 +88,27 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.xml.transform.OutputKeys;
+
+import org.exist.backup.Backup;
+import org.exist.backup.CreateBackupDialog;
+import org.exist.backup.Restore;
+import org.exist.security.Permission;
+import org.exist.security.User;
+import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.MimeTable;
+import org.exist.xmldb.CollectionImpl;
+import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.UserManagementService;
+import org.gnu.readline.Readline;
+import org.xml.sax.SAXException;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
 
 /** Main frame of the eXist GUI */
 public class ClientFrame extends JFrame
@@ -1076,20 +1078,32 @@ public class ClientFrame extends JFrame
                 return "__contents__.xml files";
             }
         });
-        
         if (chooser.showDialog(null, "Select backup file for restore") == JFileChooser.APPROVE_OPTION) {
-            File f = chooser.getSelectedFile();
-            String restoreFile = f.getAbsolutePath();
-            try {
-                Restore restore = new Restore(properties.getProperty("user",
-                        "admin"), properties.getProperty("password", null),
-                        new File(restoreFile), properties.getProperty("uri",
-                        "xmldb:exist://"));
-                restore.restore(true, this);
-                client.reloadCollection();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        	JPanel askPass = new JPanel(new BorderLayout());
+        	askPass.add(new JLabel("dba/admin password to use for the restore process:"), BorderLayout.NORTH);
+        	JPasswordField passInput = new JPasswordField(25);
+        	askPass.add(passInput, BorderLayout.CENTER);
+        	if (JOptionPane.showOptionDialog(this, askPass, "Admin Password",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+                    null, null, null) == JOptionPane.YES_OPTION) {
+        		String newDbaPass = passInput.getPassword().length == 0 ? null : new String(passInput.getPassword());
+	            File f = chooser.getSelectedFile();
+	            String restoreFile = f.getAbsolutePath();
+	            try {
+	                Restore restore = new Restore(properties.getProperty("user",
+	                        "admin"), properties.getProperty("password", null),
+	                        newDbaPass,
+	                        new File(restoreFile), properties.getProperty("uri",
+	                        "xmldb:exist://"));
+	                restore.restore(true, this);
+	                
+	                if (properties.getProperty("user", "admin").equals("admin") && newDbaPass != null)
+		            	properties.setProperty("password", newDbaPass);
+		            client.reloadCollection();
+	            } catch (Exception e) {
+	            	showErrorMessage("Exception: " + e.getMessage(), e);
+	            }
+        	}
         }
     }
     

@@ -34,6 +34,7 @@ public class Main {
 	private final static int HELP_OPT = 'h';
 	private final static int USER_OPT = 'u';
 	private final static int PASS_OPT = 'p';
+	private final static int DBA_PASS_OPT = 'P';
 	private final static int BACKUP_OPT = 'b';
 	private final static int BACKUP_DIR_OPT = 'd';
 	private final static int RESTORE_OPT = 'r';
@@ -61,7 +62,13 @@ public class Main {
 				"password",
 				CLOptionDescriptor.ARGUMENT_REQUIRED,
 				PASS_OPT,
-				"set password."),
+				"set the password for connecting to the database."),
+			new CLOptionDescriptor(
+				"dba-password",
+				CLOptionDescriptor.ARGUMENT_REQUIRED,
+				DBA_PASS_OPT,
+				"if the backup specifies a different password for the admin/dba user, use this option " +
+				"to specify the new password. Otherwise you will get a permission denied"),
 			new CLOptionDescriptor(
 				"backup",
 				CLOptionDescriptor.ARGUMENT_OPTIONAL,
@@ -125,6 +132,7 @@ public class Main {
 		String optionBackup = null;
 		String optionRestore = null;
 		String optionPass = null;
+		String optionDbaPass = null;
 		boolean doBackup = false;
 		boolean doRestore = false;
 		boolean guiMode = false;
@@ -145,6 +153,9 @@ public class Main {
 					break;
 				case PASS_OPT :
 					optionPass = option.getArgument();
+					break;
+				case DBA_PASS_OPT :
+					optionDbaPass = option.getArgument();
 					break;
 				case BACKUP_OPT :
 					if (option.getArgumentCount() == 1)
@@ -253,6 +264,7 @@ public class Main {
 						new Restore(
 							properties.getProperty("user", "admin"),
 							optionPass,
+							optionDbaPass,
 							new File(optionRestore),
 							properties.getProperty("uri", "xmldb:exist://"));
 					restore.restore(guiMode, null);
@@ -274,7 +286,7 @@ public class Main {
 				DatabaseManager.getCollection(
 					properties.getProperty("uri", "xmldb:exist://") + DBBroker.ROOT_COLLECTION,
 					properties.getProperty("user", "admin"),
-					optionPass);
+					optionDbaPass == null ? optionPass : optionDbaPass);
 			shutdown(root);
 		} catch (XMLDBException e1) {
 			e1.printStackTrace();
