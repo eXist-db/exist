@@ -163,9 +163,12 @@ public class LocationStep extends Step {
 				temp =
 					getChildren(context, contextSequence.toNodeSet());
 				break;			
-			case Constants.ANCESTOR_SELF_AXIS :
+			case Constants.ANCESTOR_SELF_AXIS :				
 				//Avoid unnecessary tests
-				if (test.getType() != Type.ELEMENT)	{
+//				TODO : log this costly operation into the profiler ?			
+				int testType = test.getType();
+				if (testType != Type.NODE && testType != Type.ELEMENT )	{
+//					TODO : log this shortcut into the profiler ?					
 					temp = NodeSet.EMPTY_SET;
 					break;
 				}
@@ -231,8 +234,10 @@ public class LocationStep extends Step {
 		
 		//TODO : move to eval() ?
 		//Avoid unnecessary tests
+//		TODO : log this costly operation into the profiler ?
 		int testType = test.getType();
 		if (testType != Type.NODE && testType != Type.ELEMENT )	
+//			TODO : log this shortcut into the profiler ?			
 			return NodeSet.EMPTY_SET;
 		
 		if(test.isWildcardTest()) {
@@ -533,6 +538,7 @@ public class LocationStep extends Step {
 		
 		//TODO : move to eval() ?
 		//Avoid unnecessary tests
+//		TODO : log this costly operation into the profiler ?		
 		int testType = test.getType();
 		if (testType != Type.NODE && testType != Type.ELEMENT )	
 			return NodeSet.EMPTY_SET;
