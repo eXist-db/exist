@@ -28,6 +28,7 @@ package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
 import org.exist.security.User;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.BasicFunction;
@@ -93,7 +94,7 @@ public class XMLDBCreateUser extends BasicFunction {
         	userObj.setHome(args[3].getStringValue());
         Collection collection = null;
 		try {
-            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), "/db");
+            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), DBBroker.ROOT_COLLECTION);
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 			ums.addUser(userObj);
 			
