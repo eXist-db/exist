@@ -29,22 +29,28 @@ public class ComplexUpdateTest extends ConcurrentTestBase {
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#setUp()
 	 */
-	protected void setUp() throws Exception {
-		super.setUp();
-		
-		XMLResource res = (XMLResource)getTestCollection().createResource("R01.xml", "XMLResource");
-		res.setContent(XML);
-		getTestCollection().storeResource(res);
-		getTestCollection().close();
-		
-		addAction(new ComplexUpdateAction(URI + "/complex", "R01.xml", 200), 1, 0, 0);
+	protected void setUp() {
+		try {
+			super.setUp();			
+			XMLResource res = (XMLResource)getTestCollection().createResource("R01.xml", "XMLResource");
+			res.setContent(XML);
+			getTestCollection().storeResource(res);
+			getTestCollection().close();			
+			addAction(new ComplexUpdateAction(URI + "/complex", "R01.xml", 200), 1, 0, 0);
+		} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#tearDown()
 	 */
-	protected void tearDown() throws Exception {
-		DBUtils.shutdownDB(rootColURI);
+	protected void tearDown() {
+		try {
+			DBUtils.shutdownDB(rootColURI);
+		} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 	}
 
 }

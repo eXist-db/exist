@@ -24,7 +24,6 @@ package org.exist.xmldb.test.concurrent;
 import java.io.File;
 
 import org.exist.storage.DBBroker;
-import org.exist.storage.NativeElementIndex;
 
 /**
  * @author wolf
@@ -39,7 +38,7 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
 	
 	private File tempFile;
 	
-	private XQueryAction action0, action1, action2, action3, action4, action5;
+	private XQueryAction action0, action1, action2;
 	
 	/**
 	 * @param name
@@ -53,44 +52,46 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#setUp()
 	 */
-	protected void setUp() throws Exception {
-		super.setUp();
-		
-		String[] wordList = DBUtils.wordList(rootCol);
-		tempFile = DBUtils.generateXMLFile(500, 7, wordList);
-		DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
-		
-		String query0 = "/ROOT-ELEMENT/ELEMENT/ELEMENT-1/ELEMENT-2[@attribute-3]";
-		String query1 = "distinct-values(//ELEMENT/@attribute-2)";
-		String query2 = "/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
-		
-		action0 = new XQueryAction(URI + "/C1", "R1.xml", query0);
-		action1 = new XQueryAction(URI + "/C1", "R1.xml", query1);
-		action2 = new XQueryAction(URI + "/C1", "R1.xml", query2);
-//		action3 = new XQueryAction(URI + "/C1", "R1.xml", query0);
-//		action4 = new XQueryAction(URI + "/C1", "R1.xml", query0);
-//		action5 = new XQueryAction(URI + "/C1", "R1.xml", query0);
-		
-		addAction(action0, 50, 500, 0);
-		addAction(action1, 50, 250, 0);
-		addAction(action2, 50, 0, 0);
-//		addAction(action3, 50, 0, 0);
-//		addAction(action4, 50, 0, 0);
-//		addAction(action5, 50, 0, 0);
+	protected void setUp() {
+		try {
+			super.setUp();		
+			String[] wordList = DBUtils.wordList(rootCol);
+			tempFile = DBUtils.generateXMLFile(500, 7, wordList);
+			DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
+			
+			String query0 = "/ROOT-ELEMENT/ELEMENT/ELEMENT-1/ELEMENT-2[@attribute-3]";
+			String query1 = "distinct-values(//ELEMENT/@attribute-2)";
+			String query2 = "/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
+			
+			action0 = new XQueryAction(URI + "/C1", "R1.xml", query0);
+			action1 = new XQueryAction(URI + "/C1", "R1.xml", query1);
+			action2 = new XQueryAction(URI + "/C1", "R1.xml", query2);
+	//		action3 = new XQueryAction(URI + "/C1", "R1.xml", query0);
+	//		action4 = new XQueryAction(URI + "/C1", "R1.xml", query0);
+	//		action5 = new XQueryAction(URI + "/C1", "R1.xml", query0);
+			
+			addAction(action0, 50, 500, 0);
+			addAction(action1, 50, 250, 0);
+			addAction(action2, 50, 0, 0);
+	//		addAction(action3, 50, 0, 0);
+	//		addAction(action4, 50, 0, 0);
+	//		addAction(action5, 50, 0, 0);
+		} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 	}
 	
 	/* (non-Javadoc)
      * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#tearDown()
      */
-    protected void tearDown() throws Exception {
+    protected void tearDown() {    	
         super.tearDown();
         System.out.println("Avg. query time for " + action0.getQuery() + ": " + action0.avgExecTime());
         System.out.println("Avg. query time for " + action1.getQuery() + ": " + action1.avgExecTime());
         System.out.println("Avg. query time for " + action2.getQuery() + ": " + action2.avgExecTime());
 //        System.out.println("Avg. query time for " + action3.getQuery() + ": " + action3.avgExecTime());
 //        System.out.println("Avg. query time for " + action4.getQuery() + ": " + action4.avgExecTime());
-//        System.out.println("Avg. query time for " + action5.getQuery() + ": " + action5.avgExecTime());
-        
-//        System.out.println("element index: " + NativeElementIndex.getTime());
+//        System.out.println("Avg. query time for " + action5.getQuery() + ": " + action5.avgExecTime());        
+//        System.out.println("element index: " + NativeElementIndex.getTime());	        
     }
 }

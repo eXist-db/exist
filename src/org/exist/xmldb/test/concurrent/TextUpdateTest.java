@@ -44,11 +44,14 @@ public class TextUpdateTest extends ConcurrentTestBase {
 		super(name, URI, "C1");
 	}
 	
-	protected void setUp() throws Exception {
-		super.setUp();
-		
-		DBUtils.addXMLResource(getTestCollection(), "R1.xml", XML);
-        
-		addAction(new TextUpdateAction(URI + "/C1", "R1.xml"), 1000, 0, 0);
+	protected void setUp() {
+		try {
+			super.setUp();			
+			DBUtils.addXMLResource(getTestCollection(), "R1.xml", XML);	        
+			addAction(new TextUpdateAction(URI + "/C1", "R1.xml"), 1000, 0, 0);
+		} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 	}
+		
 }

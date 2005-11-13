@@ -55,15 +55,19 @@ public class ConcurrentResourceTest2 extends ConcurrentTestBase {
     /* (non-Javadoc)
      * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#setUp()
      */
-    protected void setUp() throws Exception {
-        super.setUp();
-        
-        Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
-        addAction(new MultiResourcesAction("samples/mods", URI + "/C1/C1-C2"), 200, 0, 300);
-        addAction(new MultiResourcesAction("samples/mods", URI + "/C1/C1-C2"), 200, 0, 300);
-        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY0), 200, 200, 500);
-        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY1), 200, 300, 500);
-//        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY0), 200, 400, 500);
-//        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY1), 200, 500, 500);
+    protected void setUp() {
+    	try {
+	        super.setUp();	        
+	        Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
+	        assertNotNull(c1);
+	        addAction(new MultiResourcesAction("samples/mods", URI + "/C1/C1-C2"), 200, 0, 300);
+	        addAction(new MultiResourcesAction("samples/mods", URI + "/C1/C1-C2"), 200, 0, 300);
+	        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY0), 200, 200, 500);
+	        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY1), 200, 300, 500);
+			//addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY0), 200, 400, 500);
+			//addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY1), 200, 500, 500);
+    	} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }		        
     }
 }

@@ -38,23 +38,30 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
 		super(name, URI, "C1");
 	}
 	
-	protected void setUp() throws Exception {
-		super.setUp();
-		
-		String[] wordList = DBUtils.wordList(rootCol);
-		tempFile = DBUtils.generateXMLFile(250, 10, wordList);
-		DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
-		
-		addAction(new AttributeUpdateAction(URI + "/C1", "R1.xml", wordList), 20, 0, 0);
-//		addAction(new XQueryAction(URI + "/C1", "R1.xml", QUERY), 100, 100, 30);
+	protected void setUp() {
+		try {
+			super.setUp();		
+			String[] wordList = DBUtils.wordList(rootCol);
+			assertNotNull(wordList);
+			tempFile = DBUtils.generateXMLFile(250, 10, wordList);
+			DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);			
+			addAction(new AttributeUpdateAction(URI + "/C1", "R1.xml", wordList), 20, 0, 0);
+			//addAction(new XQueryAction(URI + "/C1", "R1.xml", QUERY), 100, 100, 30);
+		} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#tearDown()
 	 */
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		tempFile.delete();
+	protected void tearDown() {
+		try {
+			super.tearDown();
+			tempFile.delete();
+		} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 	}
 
 }

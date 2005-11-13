@@ -55,34 +55,42 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 		super(name, URI, "C1");
 	}
 	
-	protected void setUp() throws Exception {
-		super.setUp();
-		
-		IndexQueryService idxConf = (IndexQueryService)
-			getTestCollection().getService("IndexQueryService", "1.0");
-		idxConf.configureCollection(CONFIG);
-		
-		String[] wordList = DBUtils.wordList(rootCol);
-		tempFile = DBUtils.generateXMLFile(500, 10, wordList);
-		DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
-    
-		String query0 = "document('" + DBBroker.ROOT_COLLECTION + "/C1/R1.xml')/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
-		String query1 = "document()/ROOT-ELEMENT//ELEMENT-2[@attribute-2]";
-        
-		addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 50, 0, 200);
-//		addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 50, 100, 200);
-//        addAction(new MultiResourcesAction("samples/mods", URI + "/C1"), 1, 0, 300);
-//		addAction(new RetrieveResourceAction(URI + "/C1", "R1.xml"), 10, 1000, 2000);
-//		addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 100, 100, 100);
-//        addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 100, 200, 100);
+	protected void setUp() {
+		try {
+			super.setUp();		
+			IndexQueryService idxConf = (IndexQueryService)
+				getTestCollection().getService("IndexQueryService", "1.0");
+			assertNotNull(idxConf);
+			idxConf.configureCollection(CONFIG);			
+			String[] wordList = DBUtils.wordList(rootCol);
+			assertNotNull(wordList);
+			tempFile = DBUtils.generateXMLFile(500, 10, wordList);
+			DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
+	    
+			//String query0 = "document('" + DBBroker.ROOT_COLLECTION + "/C1/R1.xml')/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
+			//String query1 = "document()/ROOT-ELEMENT//ELEMENT-2[@attribute-2]";
+	        
+			addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 50, 0, 200);
+			//addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 50, 100, 200);
+			//addAction(new MultiResourcesAction("samples/mods", URI + "/C1"), 1, 0, 300);
+			//addAction(new RetrieveResourceAction(URI + "/C1", "R1.xml"), 10, 1000, 2000);
+			//addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 100, 100, 100);
+			//addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 100, 200, 100);
+		} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#tearDown()
 	 */
-	protected void tearDown() throws Exception {
-//		super.tearDown();
-	    DBUtils.shutdownDB(URI);
-		tempFile.delete();
+	protected void tearDown() {
+		try {
+			//super.tearDown();
+		    DBUtils.shutdownDB(URI);
+			tempFile.delete();
+		} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 	}
 }

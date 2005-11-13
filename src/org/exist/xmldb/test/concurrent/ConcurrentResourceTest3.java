@@ -47,11 +47,15 @@ public class ConcurrentResourceTest3 extends ConcurrentTestBase {
 	/* (non-Javadoc)
      * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#setUp()
      */
-    protected void setUp() throws Exception {
-        super.setUp();
-        
-        Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
-        addAction(new MultiResourcesAction(FILES_DIR, URI + "/C1/C1-C2"), 1, 0, 0);
-        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY0), 1500, 200, 250);
+    protected void setUp() {
+    	try {
+    		super.setUp();        
+	        Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
+	        assertNotNull(c1);
+	        addAction(new MultiResourcesAction(FILES_DIR, URI + "/C1/C1-C2"), 1, 0, 0);
+	        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY0), 1500, 200, 250);
+    	} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }		        
     }
 }
