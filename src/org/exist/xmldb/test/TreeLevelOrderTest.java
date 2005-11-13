@@ -105,8 +105,7 @@ public class TreeLevelOrderTest extends TestCase {
 	 * 
 	 * @param xml the xml document
 	 * @param service the xquery service
-	 * @param document the document name
-	 * @throws XMLDBException on database error
+	 * @param document the document name	 
 	 */
 	private final void store(String xml, XQueryService service, String document) {
 		try {
@@ -130,8 +129,7 @@ public class TreeLevelOrderTest extends TestCase {
 	 * Loads the xml document identified by <code>document</code> from the database.
 	 * 
 	 * @param service the xquery service
-	 * @param document the document to load
-	 * @throws XMLDBException on database error
+	 * @param document the document to load	 
 	 */
 	private final Node load(XQueryService service, String document) {
 		try {
@@ -154,8 +152,6 @@ public class TreeLevelOrderTest extends TestCase {
 
 	/**
 	 * Registers a new database instance and returns it.
-	 * 
-	 * @throws XMLDBException
 	 */
 	private final Database registerDatabase() {		
 		Class driver = null;
@@ -179,7 +175,6 @@ public class TreeLevelOrderTest extends TestCase {
 	 * 
 	 * @param db the database
 	 * @return the xquery service
-	 * @throws XMLDBException on database error
 	 */
 	private final XQueryService getXQueryService(Database db) {
 		try {

@@ -72,7 +72,7 @@ public abstract class ConcurrentTestBase extends TestCase {
 		return testCol;
 	}
 	
-	public void testConcurrent() throws Exception {
+	public void testConcurrent() {
 		// start all threads
 		for(int i = 0; i < actions.size(); i++) {
 			Thread t = (Thread)actions.get(i);
@@ -96,30 +96,36 @@ public abstract class ConcurrentTestBase extends TestCase {
 	/*
 	 * @see TestCase#setUp()
 	 */
-	protected void setUp() throws Exception {
-		rootCol = DBUtils.setupDB(rootColURI);
-		
-
-		testCol = rootCol.getChildCollection(testColName);
-		if(testCol != null) {
-			CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
-			mgr.removeCollection(testColName);
-		}
-		
-		testCol = DBUtils.addCollection(rootCol, testColName);
-		assertNotNull(testCol);
-		
-		DBUtils.addXMLResource(rootCol, "biblio.rdf", new File("samples/biblio.rdf"));
+	protected void setUp() {
+		try {
+			rootCol = DBUtils.setupDB(rootColURI);
+			assertNotNull(rootCol);	
+			testCol = rootCol.getChildCollection(testColName);
+			if(testCol != null) {
+				CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
+				mgr.removeCollection(testColName);
+			}			
+			testCol = DBUtils.addCollection(rootCol, testColName);
+			assertNotNull(testCol);			
+			DBUtils.addXMLResource(rootCol, "biblio.rdf", new File("samples/biblio.rdf"));
+		} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 	}
 
 	/*
 	 * @see TestCase#tearDown()
 	 */
-	protected void tearDown() throws Exception {
-		Resource res = rootCol.getResource("biblio.rdf");
-		rootCol.removeResource(res);
-		DBUtils.removeCollection(rootCol, testColName);
-		DBUtils.shutdownDB(rootColURI);
+	protected void tearDown() {
+		try {
+			Resource res = rootCol.getResource("biblio.rdf");
+			assertNotNull(res);
+			rootCol.removeResource(res);
+			DBUtils.removeCollection(rootCol, testColName);
+			DBUtils.shutdownDB(rootColURI);
+		} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 	}
 	
 	/**

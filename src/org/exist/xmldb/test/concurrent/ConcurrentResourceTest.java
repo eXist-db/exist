@@ -21,8 +21,6 @@
 */
 package org.exist.xmldb.test.concurrent;
 
-import java.io.File;
-
 import org.exist.storage.DBBroker;
 import org.xmldb.api.base.Collection;
 
@@ -39,8 +37,6 @@ public class ConcurrentResourceTest extends ConcurrentTestBase {
 		junit.textui.TestRunner.run(ConcurrentResourceTest.class);
 	}
 	
-	private File tempFile;
-	
 	/**
 	 * @param name
 	 * @param uri
@@ -53,26 +49,28 @@ public class ConcurrentResourceTest extends ConcurrentTestBase {
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#setUp()
 	 */
-	protected void setUp() throws Exception {
-		super.setUp();
-		
-		Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
-		DBUtils.addXMLResource(c1, "R1.xml", ReplaceResourceAction.XML);
-		
-        String query0 = "//user[email = 'sam@email.com']";
-        String query1 = "distinct-values(//user/@id)";
-        
-		addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R1.xml"), 100, 0, 100);
-        addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R2.xml"), 100, 0, 100);
-		addAction(new RetrieveResourceAction(URI + "/C1/C1-C2", "R1.xml"), 150, 500, 100);
-//        addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 100, 1000, 100);
-//        addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 100, 1000, 100);
+	protected void setUp() {
+		try {
+			super.setUp();		
+			Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
+			assertNotNull(c1);
+			DBUtils.addXMLResource(c1, "R1.xml", ReplaceResourceAction.XML);		
+	        //String query0 = "//user[email = 'sam@email.com']";
+	        //String query1 = "distinct-values(//user/@id)";	        
+			addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R1.xml"), 100, 0, 100);
+	        addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R2.xml"), 100, 0, 100);
+			addAction(new RetrieveResourceAction(URI + "/C1/C1-C2", "R1.xml"), 150, 500, 100);
+			//addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 100, 1000, 100);
+			//addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 100, 1000, 100);
+		} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#tearDown()
 	 */
-	protected void tearDown() throws Exception {
+	protected void tearDown() {
 		super.tearDown();
 	}
 }

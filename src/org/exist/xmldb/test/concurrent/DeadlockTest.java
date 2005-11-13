@@ -21,7 +21,8 @@
  */
 package org.exist.xmldb.test.concurrent;
 
-import java.io.File;
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -29,9 +30,6 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.modules.XMLResource;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 
 public class DeadlockTest extends TestCase {
 
@@ -44,36 +42,50 @@ public class DeadlockTest extends TestCase {
     private String rootCollection = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     private Collection root;
     
-    public void testDeadlock() throws Exception {
+    public void testDeadlock() {
         int threads = 20;
         int resources = 200;
-        
-        Thread[] writerThreads = new Thread[threads];
-        for (int i = 0; i < threads; i++) {
-            writerThreads[i] = new WriterThread(rootCollection, resources);
-            writerThreads[i].start();
-        }
-        for (int i = 0; i < threads; i++) {
-            writerThreads[i].join();
-        }
+        try {
+	        Thread[] writerThreads = new Thread[threads];
+	        for (int i = 0; i < threads; i++) {
+	            writerThreads[i] = new WriterThread(rootCollection, resources);
+	            writerThreads[i].start();
+	        }
+	        for (int i = 0; i < threads; i++) {
+	            writerThreads[i].join();
+	        }
+        } catch (Exception e) {            
+            fail(e.getMessage()); 
+        }		        
     }
     
-    protected void setUp() throws Exception {
-        String driver = "org.exist.xmldb.DatabaseImpl";
-        Class cl = Class.forName(driver);
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection(rootCollection,
-                "admin", "");
+    protected void setUp() {
+    	try {
+	        String driver = "org.exist.xmldb.DatabaseImpl";
+	        Class cl = Class.forName(driver);
+	        Database database = (Database) cl.newInstance();
+	        assertNotNull(database);
+	        database.setProperty("create-database", "true");
+	        DatabaseManager.registerDatabase(database);
+	        root = DatabaseManager.getCollection(rootCollection, "admin", "");
+	        assertNotNull(root);
+    	} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }		        
     }
     
-    protected void tearDown() throws Exception {
-        DatabaseInstanceManager manager = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        manager.shutdown();
+    protected void tearDown() {
+    	try {
+    		DatabaseInstanceManager manager = 
+    			(DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+    		assertNotNull(manager);
+    		manager.shutdown();
+    	} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }	    		
     }
     
-    public static void main(String args[]) throws Exception {
+    public static void main(String args[]) {
         TestRunner.run(DeadlockTest.class);
     }
 
@@ -82,8 +94,7 @@ public class DeadlockTest extends TestCase {
 
         protected int resources = 0;
 
-        public WriterThread(String collectionURI, int resources)
-                throws Exception {
+        public WriterThread(String collectionURI, int resources) throws Exception {
             this.collection = DatabaseManager.getCollection(collectionURI);
             this.resources = resources;
         }

@@ -50,12 +50,14 @@ public class ValueIndexUpdateTest extends ConcurrentTestBase {
         super(name, URI, "C1");
     }
     
-    protected void setUp() throws Exception {
-		super.setUp();
-		
-		DBUtils.addXMLResource(getTestCollection(), "collection.xconf", XCONF);
-		DBUtils.addXMLResource(getTestCollection(), "R1.xml", "<items/>");
-		
-		addAction(new ValueAppendAction(URI + "/C1", "R1.xml"), 50, 0, 500);
+    protected void setUp() {
+    	try {
+			super.setUp();			
+			DBUtils.addXMLResource(getTestCollection(), "collection.xconf", XCONF);
+			DBUtils.addXMLResource(getTestCollection(), "R1.xml", "<items/>");			
+			addAction(new ValueAppendAction(URI + "/C1", "R1.xml"), 50, 0, 500);
+    	} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
 	}
 }
