@@ -1,0 +1,177 @@
+body {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+#header {
+    padding: 10px 0 5px 10px;
+    border-bottom: 1px solid blue;
+    font-size: 75%;
+}
+
+#header h1 {
+	font-weight: normal;
+	font-size: 150%;
+}
+
+#header #menu {
+    margin: 0.3em 0 0 0;
+    padding: 0;
+    float: right;
+}
+
+#menu li {
+    list-style: none; 
+    float: left;
+    margin: 0;
+    white-space: nowrap;
+    padding: 0px 20px 0px 20px;
+}
+
+#menu li a {
+    color: #666666;
+}
+
+#content {
+    margin: 5px 20px 0 20px;
+    font-size: 75%;
+}
+
+#errors {
+	min-height: 2em;
+	margin-bottom: 3px;
+	color: #AF0024;
+}
+
+#top-panel {
+	border: 1px solid #FFD100;
+}
+
+#query-panel {
+	background-color: #FEFFAF;
+	padding: 3px 3px 3px 5px;
+}
+
+h2 {
+	font-size: 100%;
+}
+
+p {
+	margin-bottom: 3px;
+}
+
+label:after {
+	content: ': ';
+}
+
+label {
+	padding-right: 7px;
+}
+
+textarea {
+    height: 20%;
+    width: 100%;
+}
+
+#saved {
+	min-width: 200px;
+}
+
+fieldset {
+	border: 0;
+	text-align: right;
+	margin-top: 3px;
+}
+
+fieldset select {
+	margin-right: 20px;
+}
+
+#buttons {
+	float: left;
+}
+
+#submit {
+	margin-right: 10px;
+}
+
+#save-panel {
+	padding: 0 3px 3px 5px;
+	background-color: #FEFFAF;
+}
+
+#save-panel h2 {
+	margin: 3px 0;
+}
+
+#save-panel select, input {
+	margin-right: 5px;
+}
+
+#description, #path {
+	min-width: 400px;
+}
+
+#wrapper, #docname {
+	min-width: 250px;
+}
+
+#collection {
+	min-width: 250px;
+}
+
+#query-output {
+	background-color: #FC6;
+	margin-top: 5px;
+	padding: 0 3px 3px 5px;
+	border: 1px solid #FFD100;
+}
+
+#query-result {
+	margin-top: 10px;
+	min-height: 1em;
+}
+
+#navbar {
+	width: 100%;
+	border: 0;
+	font-size: 75%;
+	margin-bottom: 10px;
+}
+
+#previous {
+	width: 20%;
+}
+
+#current {
+	text-align: center;
+	color: white;
+	font-weight: bold;
+}
+
+#next {
+	width: 20%;
+	text-align: right;
+}
+
+#output {
+	font-size: 85%;
+	overflow: auto;
+	background-color: white;
+}
+
+.even {
+	background-color: #CDE9FF;
+}
+
+.pos {
+	float: left;
+	background-color: #ECF;
+	font-size: 160%;
+	padding: 5px;
+	margin-right: 5px;
+}
