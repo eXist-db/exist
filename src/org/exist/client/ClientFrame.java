@@ -93,7 +93,6 @@ import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
 import org.exist.backup.Restore;
 import org.exist.security.Permission;
-import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.MimeTable;
@@ -1266,48 +1265,14 @@ public class ClientFrame extends JFrame
                     // open a document for editing
                     ClientFrame.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     try {
-                        final Resource res = client.retrieve(resource
-                                .getName(), properties.getProperty(
-                                OutputKeys.INDENT, "yes"));
-                        DocumentView view = new DocumentView(client
-                                .getCollection(), res, properties);
+                        DocumentView view = new DocumentView(client, resource.getName(), properties);
                         view.setSize(new Dimension(640, 400));
-                        if (res.getResourceType().equals("XMLResource"))
-                            view.setText((String) res.getContent());
-                        else
-                            view.setText(new String((byte[]) res.getContent()));
-                        
-                        // lock the resource for editing
-                        UserManagementService service = (UserManagementService)
-                        client.current.getService("UserManagementService", "1.0");
-                        User user = service.getUser(properties.getProperty("user"));
-                        String lockOwner = service.hasUserLock(res);
-                        if(lockOwner != null) {
-                            if(JOptionPane.showConfirmDialog(ClientFrame.this,
-                                    "Resource is already locked by user " + lockOwner +
-                                    ". Should I try to relock it?",
-                                    "Resource locked",
-                                    JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
-                                view.dispose();
-                                ClientFrame.this.setCursor(Cursor.getDefaultCursor());
-                                return;
-                            }
-                        }
-                        
-                        try {
-                            service.lockResource(res, user);
-                        } catch(XMLDBException ex) {
-                            System.out.println(ex.getMessage());
-                            JOptionPane.showMessageDialog(ClientFrame.this,
-                                    "Resource cannot be locked. Opening read-only.");
-                            view.setReadOnly();
-                        }
-                        view.setVisible(true);
-                    } catch (IllegalArgumentException ex) {
-                        showErrorMessage("Illegal argument: " + ex.getMessage(), ex);
-                    } catch (XMLDBException ex) {
+                        view.viewDocument();
+                    }
+                    catch (XMLDBException ex) {
                         showErrorMessage("XMLDB error: " + ex.getMessage(), ex);
                     }
+
                     ClientFrame.this.setCursor(Cursor.getDefaultCursor());
                 }
             }

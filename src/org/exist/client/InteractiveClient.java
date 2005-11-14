@@ -20,7 +20,6 @@
  */
 package org.exist.client;
 
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -58,7 +57,6 @@ import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -986,41 +984,9 @@ public class InteractiveClient {
      */
     private void editResource(String name) {
         try {
-            
-            final Resource res = retrieve(name, properties.getProperty(
-                    OutputKeys.INDENT, "yes"));
-            DocumentView view = new DocumentView(getCollection(), res, properties);
+            DocumentView view = new DocumentView(this, name, properties);
             view.setSize(new Dimension(640, 400));
-            if (res.getResourceType().equals("XMLResource"))
-                view.setText((String) res.getContent());
-            else
-                view.setText(new String((byte[]) res.getContent()));
-            
-            // lock the resource for editing
-            UserManagementService service = (UserManagementService)
-            current.getService("UserManagementService", "1.0");
-            User user = service.getUser(properties.getProperty("user"));
-            String lockOwner = service.hasUserLock(res);
-            if((lockOwner == null) || (JOptionPane.showConfirmDialog(this.frame,
-                    "Resource is already locked by user " + lockOwner +
-                    ". Should I try to relock it?",
-                    "Resource locked",
-                    JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION)) {
-                try {
-                    service.lockResource(res, user);
-                } catch(XMLDBException ex) {
-                    System.out.println(ex.getMessage());
-                    JOptionPane.showMessageDialog(this.frame,
-                            "Resource cannot be locked. Opening read-only.");
-                    view.setReadOnly();
-                }
-                view.setVisible(true);
-            } else {
-                view.dispose();
-                this.frame.setCursor(Cursor.getDefaultCursor());
-            }
-        } catch (IllegalArgumentException ex) {
-            messageln("Illegal argument: " + ex.getMessage());
+            view.viewDocument();
         } catch (XMLDBException ex) {
             messageln("XMLDB error: " + ex.getMessage());
         }
