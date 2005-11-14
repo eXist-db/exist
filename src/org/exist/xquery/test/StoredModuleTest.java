@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.test;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.EXistResource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -45,7 +46,7 @@ public class StoredModuleTest extends TestCase {
         TestRunner.run(StoredModuleTest.class);
     }
     
-    private final static String URI = "xmldb:exist:///db";
+    private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     
     private final static String MODULE =
@@ -63,7 +64,7 @@ public class StoredModuleTest extends TestCase {
     public void testQuery() throws Exception {
         XQueryService service = (XQueryService) c.getService("XQueryService", "1.0");
         String query = "import module namespace itg-modules = \"http://localhost:80/itg/xquery\" at " +
-            "\"xmldb:exist:///db/test/test.xqm\"; itg-modules:check-coll()";
+            "\"xmldb:exist://" + DBBroker.ROOT_COLLECTION + "/test/test.xqm\"; itg-modules:check-coll()";
         
         String cols[] = { "one", "two", "three" };
         

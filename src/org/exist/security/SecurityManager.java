@@ -50,7 +50,7 @@ import org.xml.sax.SAXException;
  * There's only one SecurityManager for each database instance, which
  * may be obtained by {@link BrokerPool#getSecurityManager()}.
  * 
- * Users and groups are stored to collection /db/system in document
+ * Users and groups are stored in the system collection, in document
  * users.xml. While it is possible to edit this file by hand, it
  * may lead to unexpected results, since SecurityManager reads 
  * users.xml only during database startup and shutdown.
@@ -77,7 +77,7 @@ public class SecurityManager {
 	/**
 	 * Initialize the security manager.
 	 * 
-	 * Checks if the file /db/system/users.xml exists in the database.
+	 * Checks if the file users.xml exists in the system collection of the database.
 	 * If not, it is created with two default users: admin and guest.
 	 *  
 	 * @param pool

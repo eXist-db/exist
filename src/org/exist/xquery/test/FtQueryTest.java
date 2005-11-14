@@ -24,6 +24,7 @@ package org.exist.xquery.test;
 import java.io.File;
 
 import org.custommonkey.xmlunit.XMLTestCase;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
 import org.xmldb.api.DatabaseManager;
@@ -98,15 +99,15 @@ public class FtQueryTest extends XMLTestCase {
         
         XQueryService service = (XQueryService)
             testCollection.getService("XQueryService", "1.0");
-        String query = queryBody + "t:index-terms(collection(\'/db\'), \'is\', util:function(\'f:term-callback\', 2), 1000)";
+        String query = queryBody + "t:index-terms(collection('" + DBBroker.ROOT_COLLECTION + "'), \'is\', util:function(\'f:term-callback\', 2), 1000)";
         ResourceSet result = service.query(query);
         assertEquals(7, result.getSize());
         
-        query = queryBody + "t:index-terms(collection(\'/db\')//LINE, \'is\', util:function(\'f:term-callback\', 2), 1000)";
+        query = queryBody + "t:index-terms(collection('"  + DBBroker.ROOT_COLLECTION + "')//LINE, \'is\', util:function(\'f:term-callback\', 2), 1000)";
         result = service.query(query);
         assertEquals(6, result.getSize());
         
-        query = queryBody + "t:index-terms(collection(\'/db\')//mods:title, \'s\', util:function(\'f:term-callback\', 2), 1000)";
+        query = queryBody + "t:index-terms(collection('" + DBBroker.ROOT_COLLECTION + "')//mods:title, \'s\', util:function(\'f:term-callback\', 2), 1000)";
         result = service.query(query);
         assertEquals(20, result.getSize());
     }
@@ -186,10 +187,7 @@ public class FtQueryTest extends XMLTestCase {
             DatabaseManager.registerDatabase(database);
             
             Collection root =
-                DatabaseManager.getCollection(
-                    "xmldb:exist:///db",
-                    "admin",
-                    null);
+                DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
             CollectionManagementService service =
                 (CollectionManagementService) root.getService(
                     "CollectionManagementService",
@@ -230,10 +228,7 @@ public class FtQueryTest extends XMLTestCase {
      */
     protected void tearDown() throws Exception {
         Collection root =
-            DatabaseManager.getCollection(
-                "xmldb:exist:///db",
-                "admin",
-                null);
+            DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
         CollectionManagementService service =
             (CollectionManagementService) root.getService(
                 "CollectionManagementService",

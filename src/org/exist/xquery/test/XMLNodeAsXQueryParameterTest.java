@@ -7,6 +7,7 @@
 
 package org.exist.xquery.test;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -144,7 +145,7 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $root := xdb:collection(\"" + eXistUrl + "/db\", \"admin\", \"admin\"),");
+		query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', 'admin', 'admin'),");
 		query.append("$doc := xdb:store($root, $document, $data)");
 		query.append("return <result/>");
 
@@ -170,12 +171,12 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
 		query.append("declare variable $xupdate {");
 		query.append("<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">");
-		query.append("<xu:append select=\"xcollection('/db')/XmlNodeTest\">");
+		query.append("<xu:append select=\"xcollection('" + DBBroker.ROOT_COLLECTION + "')/XmlNodeTest\">");
 		query.append("{$data}");
 		query.append("</xu:append>");
 		query.append("</xu:modifications>");
 		query.append("};");
-		query.append("let $root := xdb:collection(\"" + eXistUrl + "/db\", \"admin\", \"admin\"),");
+		query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
 		query.append("$mods := xdb:update($root, $xupdate)");
 		query.append("return <modifications>{$mods}</modifications>");
 
@@ -194,7 +195,7 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 	private final Node load(XQueryService service, String document) throws XMLDBException {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
-		query.append("let $survey := document(concat(\"/db/\", $document))");
+		query.append("let $survey := document(concat('" + DBBroker.ROOT_COLLECTION + "', '/', $document))");
 		query.append("return ($survey)");
 
 		service.declareVariable("document", document);
@@ -241,7 +242,7 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 	 * @throws XMLDBException on database error
 	 */
 	private final XQueryService getXQueryService(Database db) throws XMLDBException {
-		Collection collection = DatabaseManager.getCollection(eXistUrl + "/db", "admin", "admin");
+		Collection collection = DatabaseManager.getCollection(eXistUrl + DBBroker.ROOT_COLLECTION, "admin", "admin");
 		if (collection != null) {
 			XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
 			collection.close();

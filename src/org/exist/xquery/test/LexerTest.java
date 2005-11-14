@@ -90,7 +90,7 @@ public class LexerTest extends TestCase {
 		try {
 			// parse the xml source
 			broker = pool.get(user);
-			Collection collection = broker.getCollection("/db/test");
+			Collection collection = broker.getCollection(DBBroker.ROOT_COLLECTION + "/test");
             IndexInfo info = collection.validate(null, broker, "test.xml", xml);
             collection.store(null, broker, info, xml, false);
 
