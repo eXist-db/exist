@@ -6,6 +6,7 @@ package org.exist.xquery.test;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xquery.XPathException;
 import org.xmldb.api.DatabaseManager;
@@ -74,7 +75,7 @@ public class ConvertionsTest extends TestCase {
 		database = (Database) cl.newInstance();
 		database.setProperty("create-database", "true");
 		DatabaseManager.registerDatabase(database);
-		root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", null);
+		root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
 		service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
 	}
 

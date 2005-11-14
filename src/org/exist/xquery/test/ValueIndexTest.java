@@ -25,6 +25,7 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.IndexQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -42,7 +43,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
  */
 public class ValueIndexTest extends TestCase {
 
-    private final static String URI = "xmldb:exist:///db";
+    private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 
     private String CONFIG =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 

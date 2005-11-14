@@ -1,5 +1,6 @@
 package org.exist.xquery.test;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
@@ -79,7 +80,7 @@ public class NodeTypeTest extends TestCase {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $root := xdb:collection(\"" + eXistUrl + "/db\", \"admin\", \"admin\"),");
+		query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
 		query.append("$doc := xdb:store($root, $document, $data)");
 		query.append("return <result/>");
 
@@ -126,7 +127,7 @@ public class NodeTypeTest extends TestCase {
 		query.append("    return\n");
 		query.append("		              ()\n");
 		
-		service.declareVariable("collection", "/db");
+		service.declareVariable("collection", DBBroker.ROOT_COLLECTION);
 		CompiledExpression cQuery = service.compile(query.toString());
 		service.execute(cQuery);
 	}
@@ -141,7 +142,7 @@ public class NodeTypeTest extends TestCase {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $root := xdb:collection(\"" + eXistUrl + "/db\", \"admin\", \"admin\"),");
+		query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
 		query.append("$mods := xdb:remove($root, \"" + doc + "\")");
 		query.append("return <modifications>{$mods}</modifications>");
 
@@ -159,7 +160,7 @@ public class NodeTypeTest extends TestCase {
 	private final Node load(XQueryService service, String document) throws XMLDBException {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
-		query.append("let $result := document(concat(\"/db/\", $document))");
+		query.append("let $result := document(concat('" + DBBroker.ROOT_COLLECTION + "', $document))");
 		query.append("return ($result)");
 
 		service.declareVariable("document", document);
@@ -207,7 +208,7 @@ public class NodeTypeTest extends TestCase {
 	 * @throws XMLDBException on database error
 	 */
 	private final XQueryService getXQueryService(Database db) throws XMLDBException {
-		Collection collection = DatabaseManager.getCollection(eXistUrl + "/db", "admin", "admin");
+		Collection collection = DatabaseManager.getCollection(eXistUrl + DBBroker.ROOT_COLLECTION, "admin", "admin");
 		if (collection != null) {
 			XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
 			collection.close();

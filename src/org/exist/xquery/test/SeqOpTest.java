@@ -1,19 +1,26 @@
 package org.exist.xquery.test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.exist.storage.DBBroker;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.*;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.modules.*;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
 
 
 public class SeqOpTest extends TestCase {
 
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
 	private XPathQueryService query;
