@@ -79,7 +79,7 @@ public class CollectionConfigurationManager {
 			if(confCol == null)
 				throw new CollectionConfigurationException("Failed to create config collection: " + path);
 			broker.saveCollection(transaction, confCol);
-			IndexInfo info = confCol.validate(transaction, broker, "collection.xconf", config);
+			IndexInfo info = confCol.validate(transaction, broker, CollectionConfiguration.COLLECTION_CONFIG_FILE, config);
 			confCol.store(transaction, broker, info, config, false);
 			broker.sync(Sync.MAJOR_SYNC);
 		} catch (PermissionDeniedException e) {
@@ -126,7 +126,7 @@ public class CollectionConfigurationManager {
     			        DocumentImpl confDoc = (DocumentImpl) i.next();
     			        if(confDoc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
     			            if(LOG.isDebugEnabled())
-    			                LOG.debug("Reading config for " + collection.getName() + " from " + confDoc.getName());
+    			                LOG.debug("Reading config for '" + collection.getName() + "' from '" + confDoc.getName() + "'");
     			            conf.read(broker, confDoc);
                             configFound = true;
     			            break;
@@ -219,7 +219,7 @@ public class CollectionConfigurationManager {
     		}
     	} catch (PermissionDeniedException e) {
             transact.abort(txn);
-    		throw new EXistException("Failed to initialize '" + DBBroker.SYSTEM_COLLECTION + "/config: " + e.getMessage());
+    		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
     	}
     }
 }
