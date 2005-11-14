@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb.test.concurrent;
 
+import org.exist.collections.CollectionConfiguration;
 import org.exist.storage.DBBroker;
 
 
@@ -53,7 +54,7 @@ public class ValueIndexUpdateTest extends ConcurrentTestBase {
     protected void setUp() {
     	try {
 			super.setUp();			
-			DBUtils.addXMLResource(getTestCollection(), "collection.xconf", XCONF);
+			DBUtils.addXMLResource(getTestCollection(), CollectionConfiguration.COLLECTION_CONFIG_FILE, XCONF);
 			DBUtils.addXMLResource(getTestCollection(), "R1.xml", "<items/>");			
 			addAction(new ValueAppendAction(URI + "/C1", "R1.xml"), 50, 0, 500);
     	} catch (Exception e) {            
