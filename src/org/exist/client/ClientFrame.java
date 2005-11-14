@@ -315,7 +315,7 @@ public class ClientFrame extends JFrame
         
         split.setRightComponent(scroll);
         
-        statusbar = new JLabel();
+        statusbar = new JLabel("eXist Admin Client connected - " + client.USER + "@" + client.URI);
         statusbar.setMinimumSize(new Dimension(400, 15));
         statusbar.setBorder(BorderFactory
                 .createBevelBorder(BevelBorder.LOWERED));
@@ -939,7 +939,7 @@ public class ClientFrame extends JFrame
                 } catch (XMLDBException e) {
                     showErrorMessage(e.getMessage(), e);
                 }
-                setStatus("Move completed.");
+                setStatus("Copy completed.");
             }
         };
         new Thread(moveTask).start();
