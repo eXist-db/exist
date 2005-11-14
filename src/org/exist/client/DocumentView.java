@@ -20,6 +20,7 @@
  */
 package org.exist.client;
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,6 +30,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Observable;
@@ -39,15 +42,21 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.border.BevelBorder;
 
+import javax.xml.transform.OutputKeys;
+
+import org.exist.security.User;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.util.ProgressIndicator;
@@ -56,6 +65,9 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 class DocumentView extends JFrame {
+	
+	protected InteractiveClient client;
+	private	 String resourceName;
 	protected Resource resource;
 	protected Collection collection;
 	protected boolean readOnly = false;
@@ -65,11 +77,14 @@ class DocumentView extends JFrame {
 	protected JProgressBar progress;
 	protected JPopupMenu popup;
 	protected Properties properties;
-	public DocumentView(Collection collection, Resource resource,
-			Properties properties) throws XMLDBException {
-		super("View Document: " + collection.getName() +'/'+ resource.getId() );
-		this.collection = collection;
-		this.resource = resource;
+	
+	public DocumentView(InteractiveClient client, String resourceName, Properties properties) throws XMLDBException
+	{
+		super("View Document: " + client.getCollection().getName() +'/'+ resourceName);
+		this.resourceName = resourceName;
+		this.resource = client.retrieve(resourceName, properties.getProperty(OutputKeys.INDENT, "yes"));
+		this.client = client;
+		this.collection = client.getCollection();
 		this.properties = properties;
 		getContentPane().setLayout(new BorderLayout());
 		setupComponents();
@@ -80,22 +95,102 @@ class DocumentView extends JFrame {
 		});
 		pack();
 	}
+	
+	public void viewDocument()
+	{
+		try{
+			if (resource.getResourceType().equals("XMLResource"))
+	            setText((String) resource.getContent());
+	        else
+	            setText(new String((byte[]) resource.getContent()));
+	        
+	        // lock the resource for editing
+	        UserManagementService service = (UserManagementService)
+	        client.current.getService("UserManagementService", "1.0");
+	        User user = service.getUser(properties.getProperty("user"));
+	        String lockOwner = service.hasUserLock(resource);
+	        if(lockOwner != null) {
+	            if(JOptionPane.showConfirmDialog(this,
+	                    "Resource is already locked by user " + lockOwner +
+	                    ". Should I try to relock it?",
+	                    "Resource locked",
+	                    JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+	                dispose();
+	                this.setCursor(Cursor.getDefaultCursor());
+	                return;
+	            }
+	        }
+	        
+	        try {
+	            service.lockResource(resource, user);
+	        } catch(XMLDBException ex) {
+	            System.out.println(ex.getMessage());
+	            JOptionPane.showMessageDialog(this,
+	                    "Resource cannot be locked. Opening read-only.");
+	            setReadOnly();
+	        }
+	        setVisible(true);
+		}
+		catch (XMLDBException ex) {
+			showErrorMessage("XMLDB error: " + ex.getMessage(), ex);
+		}
+	}
+	
+	
+	private static void showErrorMessage(String message, Throwable t) {
+        JScrollPane scroll = null;
+        JTextArea msgArea = new JTextArea(message);
+        msgArea.setBorder(BorderFactory.createTitledBorder("Message:"));
+        msgArea.setEditable(false);
+        msgArea.setBackground(null);
+        if (t != null) {
+            StringWriter out = new StringWriter();
+            PrintWriter writer = new PrintWriter(out);
+            t.printStackTrace(writer);
+            JTextArea stacktrace = new JTextArea(out.toString(), 20, 50);
+            stacktrace.setBackground(null);
+            stacktrace.setEditable(false);
+            scroll = new JScrollPane(stacktrace);
+            scroll.setPreferredSize(new Dimension(250, 300));
+            scroll.setBorder(BorderFactory
+                    .createTitledBorder("Exception Stacktrace:"));
+        }
+        JOptionPane optionPane = new JOptionPane();
+        optionPane.setMessage(new Object[]{msgArea, scroll});
+        optionPane.setMessageType(JOptionPane.ERROR_MESSAGE);
+        JDialog dialog = optionPane.createDialog(null, "Error");
+        dialog.setResizable(true);
+        dialog.pack();
+        dialog.setVisible(true);
+        return;
+    }
+	
 	public void setReadOnly() {
 		text.setEditable(false);
 		saveButton.setEnabled(false);
 		readOnly = true;
 	}
+	
 	private void close() {
+		unlockView();
+	}
+	
+	private void unlockView()
+	{
 		if (readOnly)
 			return;
-		try {
+		try
+		{
 			UserManagementService service = (UserManagementService) collection
 					.getService("UserManagementService", "1.0");
 			service.unlockResource(resource);
-		} catch (XMLDBException e) {
+		}
+		catch (XMLDBException e)
+		{
 			e.printStackTrace();
 		}
 	}
+	
 	private void setupComponents() throws XMLDBException {
 		JToolBar toolbar = new JToolBar();
 		URL url = getClass().getResource("icons/Save24.gif");
@@ -149,6 +244,21 @@ class DocumentView extends JFrame {
 			}
 		});
 		toolbar.add(button);
+		toolbar.addSeparator();
+		url = getClass().getResource("icons/Refresh24.gif");
+		button = new JButton(new ImageIcon(url));
+		button.setToolTipText("Refresh Document.");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e)  {
+			try {
+				refresh() ;
+			} catch (XMLDBException u) {
+				u.printStackTrace();
+			}
+			}
+		});
+		toolbar.add(button);
+		
 		getContentPane().add(toolbar, BorderLayout.NORTH);
 		text = new ClientTextArea(true, "XML");
 		getContentPane().add(text, BorderLayout.CENTER);
@@ -166,6 +276,7 @@ class DocumentView extends JFrame {
 		statusbar.add(progress);
 		getContentPane().add(statusbar, BorderLayout.SOUTH);
 	}
+	
 	private void save() {
 		new Thread() {
 			public void run() {
@@ -189,6 +300,7 @@ class DocumentView extends JFrame {
 			}
 		}.start();
 	}
+	
 	private void export() throws XMLDBException {
 		String workDir = properties.getProperty("working-dir", System
 				.getProperty("user.dir"));
@@ -218,13 +330,27 @@ class DocumentView extends JFrame {
 					.setProperty("working-dir", selectedDir.getAbsolutePath());
 		}
 	}
-	public void setText(String content) throws XMLDBException {
+	
+	private void refresh() throws XMLDBException
+	{	
+		//First unlock the resource
+		unlockView();
+		
+		//Reload the resource
+		this.resource = client.retrieve(resourceName, properties.getProperty(OutputKeys.INDENT, "yes"));
+		
+		//View and lock the resource
+		viewDocument();
+	}
+	
+	public void setText(String content) throws XMLDBException	{
 		text.setText("");
 		text.setText(content);
 		text.setCaretPosition(0);
 		text.scrollToCaret();
 		statusMessage.setText("Loaded " + resource.getId());
 	}
+	
 	class ProgressObserver implements Observer {
 		int mode = 0;
 		public void update(Observable o, Object arg) {
