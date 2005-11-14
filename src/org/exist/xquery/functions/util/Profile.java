@@ -45,7 +45,7 @@ public class Profile extends BasicFunction {
             new SequenceType[] {
                 new SequenceType(Type.INT, Cardinality.EXACTLY_ONE),
             },
-            new SequenceType(Type.LONG, Cardinality.EXACTLY_ONE)),
+            new SequenceType(Type.ITEM, Cardinality.EMPTY)),
         new FunctionSignature(
             new QName("disable-profiling", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Disable profiling output within the query.",

@@ -86,4 +86,11 @@ public class Pragma {
 		}
 		return null;
 	}
+	
+	public boolean equals(Object other) {
+		if (other instanceof Pragma) {
+			return qname.equalsSimple(((Pragma)other).qname);
+		}
+		return false;
+	}
 }

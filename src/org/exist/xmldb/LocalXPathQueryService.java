@@ -169,9 +169,11 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 				
 				if(compiled == null)
 				    compiled = xquery.compile(context, source);
-				checkPragmas(context);
 				try {
 				    result = xquery.execute(compiled, null);
+				    // check if serialization options have been set
+				    // via pragma or 'declare option'
+				    checkPragmas(context);
 				} finally {
 				    pool.returnCompiledXQuery(source, compiled);
 				}
