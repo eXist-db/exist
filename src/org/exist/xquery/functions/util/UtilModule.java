@@ -45,6 +45,7 @@ public class UtilModule extends AbstractInternalModule {
 		new FunctionDef(EvalFunction.signature[0], EvalFunction.class),
 		new FunctionDef(EvalFunction.signature[1], EvalFunction.class),
 		new FunctionDef(EvalInline.signature, EvalInline.class),
+		new FunctionDef(Compile.signature, Compile.class),
 		new FunctionDef(MD5.signature, MD5.class),
 		new FunctionDef(DocumentNameOrId.docIdSignature, DocumentNameOrId.class),
 		new FunctionDef(DocumentNameOrId.docNameSignature, DocumentNameOrId.class),
@@ -68,6 +69,7 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(Profile.signatures[1], Profile.class),
         new FunctionDef(PrologFunctions.signatures[0], PrologFunctions.class),
         new FunctionDef(PrologFunctions.signatures[1], PrologFunctions.class),
+        new FunctionDef(PrologFunctions.signatures[2], PrologFunctions.class),
         new FunctionDef(SystemTime.signature, SystemTime.class)
 	};
 	

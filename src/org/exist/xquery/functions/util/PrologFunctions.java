@@ -33,7 +33,15 @@ public class PrologFunctions extends BasicFunction {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.ITEM, Cardinality.EMPTY))
+			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
+		new FunctionSignature(
+			new QName("declare-option", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Dynamically declares a serialization option as with 'declare option'.",
+			new SequenceType[] {
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
 	};
 	
 	public PrologFunctions(XQueryContext context, FunctionSignature signature) {
@@ -44,6 +52,8 @@ public class PrologFunctions extends BasicFunction {
 			throws XPathException {
 		if (isCalledAs("declare-namespace"))
 			declareNamespace(args);
+		else if (isCalledAs("declare-option"))
+			declareOption(args);
 		else
 			importModule(args);
 		return Sequence.EMPTY_SEQUENCE;
@@ -64,5 +74,11 @@ public class PrologFunctions extends BasicFunction {
 		String prefix = args[1].getStringValue();
 		String location = args[2].getStringValue();
 		context.importModule(uri, prefix, location);
+	}
+	
+	private void declareOption(Sequence[] args) throws XPathException {
+		String qname = args[0].getStringValue();
+		String options = args[1].getStringValue();
+		context.addPragma(qname, options);
 	}
 }
