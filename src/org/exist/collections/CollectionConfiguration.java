@@ -200,4 +200,25 @@ public class CollectionConfiguration {
 			throw new CollectionConfigurationException(e.getMessage(), e);
 		}
 	}
+	
+	public String toString() {
+		StringBuffer result = new StringBuffer();
+		if (indexSpec != null)
+			result.append(indexSpec.toString()).append('\n');		
+		for (int i = 0 ; i < triggers.length; i++) {
+			Trigger trigger = triggers[i];
+			if (trigger != null) {
+				switch (i) {
+					case Trigger.STORE_DOCUMENT_EVENT : result.append("store document trigger");
+					case Trigger.UPDATE_DOCUMENT_EVENT : result.append("update document trigger");
+					case Trigger.REMOVE_DOCUMENT_EVENT : result.append("remove document trigger");
+					case Trigger.CREATE_COLLECTION_EVENT : result.append("create collection trigger");		
+					case Trigger.RENAME_COLLECTION_EVENT : result.append("rename collection trigger");
+					case Trigger.DELETE_COLLECTION_EVENT : result.append("delete collection trigger");		
+				}			
+				result.append('\t').append(trigger.toString()).append('\n');
+			}
+		}		
+		return result.toString();
+	}
 }
