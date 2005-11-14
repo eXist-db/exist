@@ -61,8 +61,8 @@ public class SetSerializerFunction extends Function {
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
 	{
 		String name = getArgument(0).eval(contextSequence, contextItem).getStringValue();
-		String indent = getArgument(1).eval(contextSequence, contextItem).effectiveBooleanValue(); 
-		String omitxmldeclaration = getArgument(2).eval(contextSequence, contextItem).effectiveBooleanValue();
+		boolean indent = getArgument(1).eval(contextSequence, contextItem).effectiveBooleanValue(); 
+		boolean omitxmldeclaration = getArgument(2).eval(contextSequence, contextItem).effectiveBooleanValue();
 		
 		context.setXQuerySerializer(name, indent, omitxmldeclaration);
 		
