@@ -255,7 +255,58 @@ public class XQueryContext {
     	return(XQueryContextVars.get(name));
     }
     
-    
+    //set the serializer to use for output; called by context:set-serializer()
+    public void setXQuerySerializer(String name, boolean indent, boolean omitxmldeclaration) throws XPathException
+    {
+    	Pragma pragma;
+
+    	//Has a exist:serialize pragma already been set?
+    	for(int i = 0; i < pragmas.size(); i++)
+    	{
+    		pragma = (Pragma)pragmas.get(i);
+    		if((pragma.getQName().equals("exist:serialize")) /*&& (pragma.getContents().indexOf("method") != -1)*/ )
+    		{
+    			//yes, so modify the content from the existing pragma
+    			String content = pragma.getContents();
+    			if(content.indexOf("method=") != -1)
+    			{
+    				content = content.replaceFirst("method=[^/ ]*", "method=" + name);
+    			}
+    			else
+    			{
+    				content += " method=" + name;
+    			}
+    			if(content.indexOf("indent=") != -1)
+    			{
+    				content = content.replaceFirst("indent=[^/ ]*", "indent=" + (indent ? "yes":"no"));
+    			}
+    			else
+    			{
+    				content += " indent" + (indent ? "yes":"no");
+    			}
+    			if(content.indexOf("omit-xml-declaration") != -1)
+    			{
+    				content = content.replaceFirst("omit-xml-declaration=[^/ ]*", "omit-xml-declaration=" + (omitxmldeclaration ? "yes":"no"));
+    			}
+    			else
+    			{
+    				content += " omit-xml-declaration" +  (omitxmldeclaration ? "yes":"no");
+    			}
+    			
+    			//Delete the existing serialize pragma
+    			pragmas.remove(i);
+    			
+    			//Add the new serialize pragma
+    			addPragma("exist:serialize", content);
+    			
+    			return; //done
+    		}
+    	}
+    	
+    	//no, so set a pragma for serialization
+    	addPragma("exist:serialize", "method=" + name + " indent=" + (indent ? "yes":"no") + " omit-xml-declaration=" + (omitxmldeclaration ? "yes":"no"));
+    	
+    }
     
 	protected XQueryContext() {
 		builder = new MemTreeBuilder(this);
