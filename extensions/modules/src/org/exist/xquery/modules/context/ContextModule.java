@@ -35,6 +35,7 @@ public class ContextModule extends AbstractInternalModule {
 	public final static String PREFIX = "context";
 	
 	private final static FunctionDef[] functions = {
+		new FunctionDef(SetSerializerFunction.signature, SetSerializerFunction.class),
 		new FunctionDef(SetVarFunction.signature, SetVarFunction.class),
 		new FunctionDef(GetVarFunction.signature, GetVarFunction.class)
 	};
