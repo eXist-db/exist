@@ -1455,7 +1455,21 @@ public class XQueryContext {
 		Pragma pragma = new Pragma(qn, contents);
 		if(pragmas == null)
 			pragmas = new ArrayList();
-		pragmas.add(pragma);
+		
+		// check if this overwrites an already existing pragma
+		boolean added = false;
+		Pragma old;
+		for (int i = 0; i < pragmas.size(); i++) {
+			old = (Pragma) pragmas.get(i);
+			if (old.equals(pragma)) {
+				pragmas.add(i, pragma);
+				added = true;
+				break;
+			}
+		}
+		// add the pragma to the list if it does not yet exist
+		if (!added)
+			pragmas.add(pragma);
 		
 		// check predefined pragmas
         if (Pragma.PROFILE_QNAME.compareTo(qn) == 0) {
