@@ -69,4 +69,16 @@ public class GeneralRangeIndexSpec extends RangeIndexSpec {
     protected boolean matches(NodePath otherPath) {
         return path.match(otherPath);
     }
+    
+    public String toString() {
+		StringBuffer result = new StringBuffer("General range index\n");
+		result.append("\type : ").append(Type.getTypeName(indexTypeToXPath(this.type))).append('\n');
+		result.append("\tpath : ").append(path.toString()).append('\n');
+		result.append("\thas full text index : ").append(hasFulltextIndex(this.type)).append('\n');
+		result.append("\thas mixed content : ").append(hasMixedContent(this.type)).append('\n');
+		result.append("\thas Qname index : ").append(hasQNameIndex(this.type)).append('\n');
+		result.append("\thas Qname or value index : ").append(hasQNameOrValueIndex(this.type)).append('\n');
+		result.append("\thas range index : ").append(hasRangeIndex(this.type)).append('\n');			
+  	 	return result.toString();
+    }    
 }

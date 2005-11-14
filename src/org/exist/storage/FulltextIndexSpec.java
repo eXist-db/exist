@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.exist.collections.triggers.Trigger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -200,6 +201,35 @@ public class FulltextIndexSpec {
           }
           return false;
     }
+      
+      public String toString() {
+    	  StringBuffer result = new StringBuffer("Full-text index\n");
+    	  result.append("\tincludeByDefault : ").append(includeByDefault).append('\n');
+    	  result.append("\tincludeAttributes : ").append(includeAttributes).append('\n');
+    	  result.append("\tincludeAlphaNum : ").append(includeAlphaNum).append('\n');
+    	  if (includePath != null) {
+  	  		for (int i = 0 ; i < includePath.length; i++) {
+  	  			NodePath path = includePath[i];
+  				if (path != null) 
+  					result.append("\tinclude : ").append(path.toString()).append('\n');   	  
+  	  		}
+      	  }
+    	  if (excludePath != null) {
+			for (int i = 0 ; i < excludePath.length; i++) {
+				NodePath path = excludePath[i];
+				if (path != null) 
+					result.append("\texclude : ").append(path.toString()).append('\n');   	  
+			}
+    	  }  
+    	  if (preserveContent != null) {
+    	  		for (int i = 0 ; i < preserveContent.length; i++) {
+    	  			NodePath path = preserveContent[i];
+    				if (path != null) 
+    					result.append("\tpreserve content : ").append(path.toString()).append('\n');   	  
+    	  		}
+    	  }      	  
+    	  return result.toString();
+      }
 
 
 

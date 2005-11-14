@@ -22,10 +22,12 @@
 package org.exist.storage;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.exist.collections.triggers.Trigger;
 import org.exist.dom.QName;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Attr;
@@ -215,4 +217,23 @@ public class IndexSpec {
         }
         return map;
     }
+    
+    public String toString() {
+		StringBuffer result = new StringBuffer();
+		if (ftSpec != null)
+			result.append(ftSpec.toString()).append('\n');
+		if(specs!= null) {
+			for (int i = 0 ; i < specs.length ; i++) {
+				GeneralRangeIndexSpec spec = specs[i];
+				if (spec != null)
+					result.append(spec.toString()).append('\n');
+			}
+		}		
+		Iterator i = qnameSpecs.keySet().iterator();		
+		while (i.hasNext()) {
+			result.append(qnameSpecs.get(i.next()).toString()).append('\n');
+		}		
+		return result.toString();
+    }
+    
 }
