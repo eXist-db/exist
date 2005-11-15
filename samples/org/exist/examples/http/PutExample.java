@@ -22,6 +22,7 @@
  */
 package org.exist.examples.http;
 
+import org.exist.storage.DBBroker;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,7 +50,7 @@ public class PutExample {
 		String docName =file.getName();
 		
 		try {
-			URL url = new URL("http://admin:@localhost:8080/exist/servlet/db/test/" + 
+			URL url = new URL("http://admin:@localhost:8080/exist/servlet" + DBBroker.ROOT_COLLECTION + "/test/" + 
                 docName);
 			HttpURLConnection connect =(HttpURLConnection)url.openConnection();
 			connect.setRequestMethod("PUT");

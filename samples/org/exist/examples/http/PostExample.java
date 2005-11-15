@@ -22,6 +22,7 @@
  */
 package org.exist.examples.http;
 
+import org.exist.storage.DBBroker;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -62,7 +63,7 @@ public class PostExample {
 	}
 	
 	private void doPost(String request) throws IOException {
-		URL url = new URL("http://localhost:8080/exist/servlet/db/");
+		URL url = new URL("http://localhost:8080/exist/servlet" + DBBroker.ROOT_COLLECTION + "/");
 		HttpURLConnection connect =(HttpURLConnection)url.openConnection();
 		connect.setRequestMethod("POST");
 		connect.setDoOutput(true);
