@@ -25,7 +25,7 @@ public class ConvertionsTest extends TestCase {
 	private Collection root = null;
 	private Database database = null;
 	
-	public static void main(String[] args) throws XPathException {
+	public static void main(String[] args) {
 		TestRunner.run(XQueryFunctionsTest.class);
 	}
 	
@@ -39,7 +39,7 @@ public class ConvertionsTest extends TestCase {
 	
 
 /** test conversion from QName to string */	
-	public void testQName2string() throws XPathException {
+	public void testQName2string() {
 		ResourceSet result 	= null;
 		String		r		= "";
 		String		query	= null;
@@ -69,24 +69,32 @@ public class ConvertionsTest extends TestCase {
 	/*
 	 * @see TestCase#setUp()
 	 */
-	protected void setUp() throws Exception {
-		// initialize driver
-		Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-		database = (Database) cl.newInstance();
-		database.setProperty("create-database", "true");
-		DatabaseManager.registerDatabase(database);
-		root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
-		service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
+	protected void setUp() {
+		try {
+			// initialize driver
+			Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+			database = (Database) cl.newInstance();
+			database.setProperty("create-database", "true");
+			DatabaseManager.registerDatabase(database);
+			root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+			service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  
+	    }	
 	}
 
 	/*
 	 * @see TestCase#tearDown()
 	 */
-	protected void tearDown() throws Exception {
-		DatabaseManager.deregisterDatabase(database);
-		DatabaseInstanceManager dim =
-			(DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-		dim.shutdown();
-		//System.out.println("tearDown PASSED");
+	protected void tearDown() {
+		try {
+			DatabaseManager.deregisterDatabase(database);
+			DatabaseInstanceManager dim =
+				(DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+			dim.shutdown();
+			//System.out.println("tearDown PASSED");
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  
+	    }			
 	}
 }
