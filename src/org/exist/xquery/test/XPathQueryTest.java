@@ -78,6 +78,9 @@ public class XPathQueryTest extends XMLTestCase {
 	private final static String quotes =
 		"<test><title>&quot;Hello&quot;</title></test>";
 	
+	private final static String ws =
+		"<test><parent xml:space=\"preserve\"><text> </text><text xml:space=\"default\"> </text></parent></test>";
+	
 	private Collection testCollection;
 	private String query;
 	
@@ -662,6 +665,24 @@ public class XPathQueryTest extends XMLTestCase {
 		}
 	}
 
+	public void testPreserveSpace() {
+		try {
+			XQueryService service = 
+				storeXMLStringAndGetQueryService("whitespace.xml", ws);
+
+			ResourceSet result =
+				service.queryResource("whitespace.xml", "//text");
+			assertEquals(2, result.getSize());
+
+			String item = result.getResource(0).getContent().toString();
+			assertXMLEqual("<text> </text>", item);
+			item = result.getResource(1).getContent().toString();
+			assertXMLEqual("<text xml:space=\"default\"/>", item);
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+	}
+	
 	public void testNestedElements() {
 		try {
 			XQueryService service = 
