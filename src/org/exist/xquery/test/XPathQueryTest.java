@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import javax.xml.transform.OutputKeys;
 
 import org.custommonkey.xmlunit.XMLTestCase;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -22,7 +23,7 @@ import org.xmldb.api.modules.XQueryService;
 
 public class XPathQueryTest extends XMLTestCase {
 
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	
 	private final static String nested =
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"

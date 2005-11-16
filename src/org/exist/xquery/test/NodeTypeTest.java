@@ -73,30 +73,31 @@ public class NodeTypeTest extends TestCase {
 	 * 
 	 * @param xml the xml document
 	 * @param service the xquery service
-	 * @param document the document name
-	 * @throws XMLDBException on database error
+	 * @param document the document name	 
 	 */
-	private final void store(String xml, XQueryService service, String document) throws XMLDBException {
+	private final void store(String xml, XQueryService service, String document) {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
 		query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
 		query.append("$doc := xdb:store($root, $document, $data)");
 		query.append("return <result/>");
-
-		service.declareVariable("document", document);
-		service.declareVariable("data", xml);
-		CompiledExpression cQuery = service.compile(query.toString());
-		service.execute(cQuery);
+		try {
+			service.declareVariable("document", document);
+			service.declareVariable("data", xml);
+			CompiledExpression cQuery = service.compile(query.toString());
+			service.execute(cQuery);
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}			
 	}
 
 	/**
 	 * Updates the given xml fragment in the database using XUpdate.
 	 * 
-	 * @param service the xquery service
-	 * @throws XMLDBException on database error
+	 * @param service the xquery service	
 	 */
-	private final void prepareWorkVersion(XQueryService service) throws XMLDBException {
+	private final void prepareWorkVersion(XQueryService service) {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";\n");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";\n");
@@ -127,18 +128,21 @@ public class NodeTypeTest extends TestCase {
 		query.append("    return\n");
 		query.append("		              ()\n");
 		
-		service.declareVariable("collection", DBBroker.ROOT_COLLECTION);
-		CompiledExpression cQuery = service.compile(query.toString());
-		service.execute(cQuery);
+		try {
+			service.declareVariable("collection", DBBroker.ROOT_COLLECTION);
+			CompiledExpression cQuery = service.compile(query.toString());
+			service.execute(cQuery);
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}			
 	}
 
 	/**
 	 * Updates the given xml fragment in the database using XUpdate.
 	 * 
-	 * @param service the xquery service
-	 * @throws XMLDBException on database error
+	 * @param service the xquery service	 
 	 */
-	private final void xupdateRemove(String doc, XQueryService service) throws XMLDBException {
+	private final void xupdateRemove(String doc, XQueryService service) {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
@@ -146,28 +150,35 @@ public class NodeTypeTest extends TestCase {
 		query.append("$mods := xdb:remove($root, \"" + doc + "\")");
 		query.append("return <modifications>{$mods}</modifications>");
 
-		CompiledExpression cQuery = service.compile(query.toString());
-		service.execute(cQuery);
+		try {
+			CompiledExpression cQuery = service.compile(query.toString());
+			service.execute(cQuery);
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}			
 	}
 
 	/**
 	 * Loads the xml document identified by <code>document</code> from the database.
 	 * 
 	 * @param service the xquery service
-	 * @param document the document to load
-	 * @throws XMLDBException on database error
+	 * @param document the document to load	 
 	 */
-	private final Node load(XQueryService service, String document) throws XMLDBException {
+	private final Node load(XQueryService service, String document) {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("let $result := document(concat('" + DBBroker.ROOT_COLLECTION + "', $document))");
 		query.append("return ($result)");
 
-		service.declareVariable("document", document);
-		CompiledExpression cQuery = service.compile(query.toString());
-		ResourceSet set = service.execute(cQuery);
-		if (set != null && set.getSize() > 0) {
-			return ((XMLResource)set.getIterator().nextResource()).getContentAsDOM();
+		try {
+			service.declareVariable("document", document);
+			CompiledExpression cQuery = service.compile(query.toString());
+			ResourceSet set = service.execute(cQuery);
+			if (set != null && set.getSize() > 0) {
+				return ((XMLResource)set.getIterator().nextResource()).getContentAsDOM();
+			}			
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
 		}
 		return null;
 	}
@@ -177,7 +188,7 @@ public class NodeTypeTest extends TestCase {
 	 * 
 	 * @throws XMLDBException
 	 */
-	private final Database registerDatabase() throws XMLDBException {
+	private final Database registerDatabase() {
 		Class driver = null;
 		String driverName = "org.exist.xmldb.DatabaseImpl";
 		try {
@@ -187,16 +198,10 @@ public class NodeTypeTest extends TestCase {
 //			database.setProperty("exist.home", existHome);
 			DatabaseManager.registerDatabase(database);
 			return database;
-		} catch (ClassNotFoundException e) {
-			System.err.println("Driver class " + driverName + " was not found!");
-			throw new XMLDBException();
-		} catch (InstantiationException e) {
-			System.err.println("Driver class " + driverName + " could not be instantiated!");
-			throw new XMLDBException();
-		} catch (IllegalAccessException e) {
-			System.err.println("Access violation when trying to instantiate XMLDB Driver " + driverName + "!");
-			throw new XMLDBException();
+		} catch (Exception e) {
+			fail(e.getMessage());
 		}
+		return null;
 	}
 	
 	/**
@@ -207,12 +212,16 @@ public class NodeTypeTest extends TestCase {
 	 * @return the xquery service
 	 * @throws XMLDBException on database error
 	 */
-	private final XQueryService getXQueryService(Database db) throws XMLDBException {
-		Collection collection = DatabaseManager.getCollection(eXistUrl + DBBroker.ROOT_COLLECTION, "admin", "admin");
-		if (collection != null) {
-			XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
-			collection.close();
-			return service;
+	private final XQueryService getXQueryService(Database db) {
+		try {
+			Collection collection = DatabaseManager.getCollection(eXistUrl + DBBroker.ROOT_COLLECTION, "admin", "admin");
+			if (collection != null) {
+				XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
+				collection.close();
+				return service;
+			}
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
 		}
 		return null;
 	}
@@ -256,25 +265,17 @@ public class NodeTypeTest extends TestCase {
 	 * 
 	 * @return the xquery service
 	 */
-	private XQueryService setupDatabase() {
-		Database eXist = null;
+	private XQueryService setupDatabase() {		
 		try {
-			eXist = registerDatabase();
-		} catch (XMLDBException e) {
+			Database  eXist = registerDatabase();
+			// Obtain XQuery service
+			XQueryService service = null;		
+			service = getXQueryService(eXist);
+			return service;
+		} catch (Exception e) {
 			fail("Unable to register database: "  + e.getMessage());
 		}
-
-		// Obtain XQuery service
-		XQueryService service = null;
-		try {
-			service = getXQueryService(eXist);
-			if (service == null) {
-				fail("Failed to obtain xquery service instance!");
-			}
-		} catch (Exception e) {
-			fail("Failed to obtain xquery service instance: "  + e.getMessage());
-		}
-		return service;
+		return null;
 	}
 	
 }
