@@ -29,6 +29,7 @@ import java.util.Random;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.test.concurrent.DBUtils;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
@@ -46,7 +47,7 @@ public class RemoveAppendTest extends TestCase {
         TestRunner.run(RemoveAppendTest.class);
     }
     
-    private final static String URI = "xmldb:exist:///db";
+    private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     
     private final static String XU_INSERT_START =
         "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
@@ -147,10 +148,10 @@ public class RemoveAppendTest extends TestCase {
         rootCol = DBUtils.setupDB(URI);
         
 
-        testCol = rootCol.getChildCollection("/db/test");
+        testCol = rootCol.getChildCollection(DBBroker.ROOT_COLLECTION + "/test");
         if(testCol != null) {
             CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
-            mgr.removeCollection("/db/test");
+            mgr.removeCollection(DBBroker.ROOT_COLLECTION + "/test");
         }
         
         testCol = DBUtils.addCollection(rootCol, "test");
