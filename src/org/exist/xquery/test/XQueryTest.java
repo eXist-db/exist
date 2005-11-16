@@ -7,14 +7,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import javax.xml.parsers.ParserConfigurationException;
-
+import org.custommonkey.xmlunit.DetailedDiff;
+import org.custommonkey.xmlunit.XMLTestCase;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
-import org.exist.xquery.XPathException;
-import org.w3c.dom.Node;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
+import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -25,8 +24,6 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
-
-import org.custommonkey.xmlunit.*;
 
 public class XQueryTest extends XMLTestCase {
 
@@ -39,7 +36,7 @@ public class XQueryTest extends XMLTestCase {
 	private static final String CHILD1_MODULE_NAME = "child1.xqm";
 	private static final String CHILD2_MODULE_NAME = "child2.xqm";
 	private static final String NAMESPACED_NAME = "namespaced.xml";
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 
 	private final static String numbers =
 		"<test>"
@@ -120,14 +117,9 @@ public class XQueryTest extends XMLTestCase {
 			DatabaseManager.registerDatabase(database);
 			
 			Collection root =
-				DatabaseManager.getCollection(
-					"xmldb:exist:///db",
-					"admin",
-					null);
+				DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin",	null);
 			CollectionManagementService service =
-				(CollectionManagementService) root.getService(
-					"CollectionManagementService",
-					"1.0");
+				(CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 			testCollection = service.createCollection("test");
 			assertNotNull(testCollection);
 
@@ -485,7 +477,7 @@ public class XQueryTest extends XMLTestCase {
 			assertTrue(exceptionThrown);
 			
 			System.out.println("testTypedVariables 15: ========" );
-			query = "let $v as document-node() :=  doc(\"" + "/db/test/" + NUMBERS_XML + "\") \n" 
+			query = "let $v as document-node() :=  doc('" + DBBroker.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "') \n" 
 				+ "return $v";
 			result = service.query(query);		
 			assertEquals( "XQuery: " + query, 1, result.getSize() );	
@@ -815,7 +807,7 @@ public class XQueryTest extends XMLTestCase {
 			
 			System.out.println("testNamespace 6: ========" );
 			query = "declare namespace x = \"http://www.foo.com\"; \n" +
-				"let $a := doc(\"" + "/db/test/" + NAMESPACED_NAME + "\") \n" +
+				"let $a := doc('" + DBBroker.ROOT_COLLECTION + "/test/" + NAMESPACED_NAME + "') \n" +
                 "return $a//x:edition";				
 			result = service.query(query);				
 			assertEquals( "XQuery: " + query, 0, result.getSize() );
@@ -823,7 +815,7 @@ public class XQueryTest extends XMLTestCase {
 			System.out.println("testNamespace 7: ========" );
 			query = "declare namespace x = \"http://www.foo.com\"; \n" +
 			    "declare namespace y = \"http://exist.sourceforge.net/dc-ext\"; \n" +
-				"let $a := doc(\"" + "/db/test/" + NAMESPACED_NAME + "\") \n" +
+				"let $a := doc('" + DBBroker.ROOT_COLLECTION + "/test/" + NAMESPACED_NAME + "') \n" +
                 "return $a//y:edition";				
 			result = service.query(query);				
 			assertEquals( "XQuery: " + query, 1, result.getSize() );			
@@ -1031,7 +1023,7 @@ public class XQueryTest extends XMLTestCase {
 				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 
 			System.out.println("testFunctionDoc 1: ========" );				
-			query ="doc(\"/db/test/" + NUMBERS_XML +  "\")";	
+			query ="doc('" + DBBroker.ROOT_COLLECTION + "/test/" + NUMBERS_XML +  "')";	
 			result = service.query(query);
 			assertEquals( "XQuery: " + query, 1, result.getSize() );	
 			try {				
@@ -1052,7 +1044,7 @@ public class XQueryTest extends XMLTestCase {
 			assertEquals( "XQuery: " + query, 0, result.getSize() );			
 			
 			System.out.println("testFunctionDoc 3: ========" );		
-			query ="doc(\"/db/test/dummy" + NUMBERS_XML +  "\")";	
+			query ="doc('" + DBBroker.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML +  "')";	
 			try {
 				exceptionThrown = false;
 				result = service.query(query);		
@@ -1065,7 +1057,7 @@ public class XQueryTest extends XMLTestCase {
 			assertEquals(0, result.getSize());						
 			
 			System.out.println("testFunctionDoc 4: ========" );				
-			query ="doc-available(\"/db/test/" + NUMBERS_XML +  "\")";	
+			query ="doc-available('" + DBBroker.ROOT_COLLECTION + "/test/" + NUMBERS_XML +  "')";	
 			result = service.query(query);
 			assertEquals( "XQuery: " + query, 1, result.getSize() );
 			assertEquals( "XQuery: " + query, "true", result.getResource(0).getContent());			
@@ -1078,7 +1070,7 @@ public class XQueryTest extends XMLTestCase {
 			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());
 			
 			System.out.println("testFunctionDoc 6: ========" );		
-			query ="doc-available(\"/db/test/dummy" + NUMBERS_XML +  "\")";	
+			query ="doc-available('" + DBBroker.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML +  "')";	
 			assertEquals( "XQuery: " + query, 1, result.getSize() );
 			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());				
 			

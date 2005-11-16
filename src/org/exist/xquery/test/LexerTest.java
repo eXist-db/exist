@@ -28,6 +28,7 @@ import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Sequence;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xmldb.api.base.XMLDBException;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -71,7 +72,7 @@ public class LexerTest extends TestCase {
 		localDb = true;
 	}
 
-	public void testQuery() throws XPathException {
+	public void testQuery() {
 		//String query = "document()//p[. &= '\uB2E8\uACC4']";
 		String query =
 			"document()//p[. = '\u4ED6\u4E3A\u8FD9\u9879\u5DE5\u7A0B\u6295"
@@ -121,20 +122,8 @@ public class LexerTest extends TestCase {
 			// check results
 			System.out.println("----------------------------------");
 			System.out.println("found: " + result.getLength());
-		} catch (RecognitionException e) {
-			e.printStackTrace();
-		} catch (TokenStreamException e) {
-			e.printStackTrace();
-		} catch (EXistException e) {
-			e.printStackTrace();
-		} catch (PermissionDeniedException e) {
-			e.printStackTrace();
-		} catch (SAXException e) {
-			e.printStackTrace();
-		} catch (TriggerException e) {
-			e.printStackTrace();
-		} catch (LockException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			fail(e.getMessage());
 		} finally {
 			pool.release(broker);
 		}
@@ -151,7 +140,7 @@ public class LexerTest extends TestCase {
 		//junit.swingui.TestRunner.run(LexerTest.class);
 	}
 
-	protected void setUp() throws Exception {
+	protected void setUp() {
 		if (!BrokerPool.isConfigured())
 			configure();
 	}

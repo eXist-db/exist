@@ -54,84 +54,96 @@ public class FtQueryTest extends XMLTestCase {
     private Database database;
     private Collection testCollection;
     
-    public void testFtOperators() throws Exception {
-    	System.out.println("----- testFtOperators -----");
-        XQueryService service = (XQueryService)
-            testCollection.getService("XQueryService", "1.0");
-        ResourceSet result = service.query("//SPEECH[LINE &= 'love']");
-        assertEquals(160, result.getSize());
-        result = service.query("//SPEECH[LINE &= 'thou']");
-        assertEquals(290, result.getSize());
-        result = service.query("//SPEECH[LINE &= 'thou']");
-        assertEquals(290, result.getSize());
-        result = service.query("//SPEECH[LINE &= 'fenny snake']/LINE[1]");
-        assertEquals(1, result.getSize());
-        assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a fenny snake,</LINE>");
-        result = service.query("//SPEECH[LINE &= 'god*']");
-        assertEquals(79, result.getSize());
-        result = service.query("//SPEECH[LINE &= 'god in heaven']");
-        assertEquals(2, result.getSize());
-        result = service.query("//SPEECH[SPEAKER &= 'Nurse']");
-        assertEquals(90, result.getSize());
-        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[mods:title &= 'self*']");
-        assertEquals(2, result.getSize());
-        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[mods:title &= 'self employed']");
-        assertEquals(1, result.getSize());
-        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[match-all(mods:title, '.*ploy.*')]");
-        assertEquals(3, result.getSize());
+    public void testFtOperators() {
+    	try {
+	    	System.out.println("----- testFtOperators -----");
+	        XQueryService service = (XQueryService)
+	            testCollection.getService("XQueryService", "1.0");
+	        ResourceSet result = service.query("//SPEECH[LINE &= 'love']");
+	        assertEquals(160, result.getSize());
+	        result = service.query("//SPEECH[LINE &= 'thou']");
+	        assertEquals(290, result.getSize());
+	        result = service.query("//SPEECH[LINE &= 'thou']");
+	        assertEquals(290, result.getSize());
+	        result = service.query("//SPEECH[LINE &= 'fenny snake']/LINE[1]");
+	        assertEquals(1, result.getSize());
+	        assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a fenny snake,</LINE>");
+	        result = service.query("//SPEECH[LINE &= 'god*']");
+	        assertEquals(79, result.getSize());
+	        result = service.query("//SPEECH[LINE &= 'god in heaven']");
+	        assertEquals(2, result.getSize());
+	        result = service.query("//SPEECH[SPEAKER &= 'Nurse']");
+	        assertEquals(90, result.getSize());
+	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[mods:title &= 'self*']");
+	        assertEquals(2, result.getSize());
+	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[mods:title &= 'self employed']");
+	        assertEquals(1, result.getSize());
+	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[match-all(mods:title, '.*ploy.*')]");
+	        assertEquals(3, result.getSize());
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+	}
+    
+    public void testFtScan() {
+    	try {
+	    	System.out.println("----- testFtScan -----");
+	        String queryBody =
+	            "declare namespace f=\'http://exist-db.org/xquery/test\';\n" + 
+	            "declare namespace mods='http://www.loc.gov/mods/v3';\n" + 
+	            "import module namespace t=\'http://exist-db.org/xquery/text\';\n" + 
+	            "\n" + 
+	            "declare function f:term-callback($term as xs:string, $data as xs:int+)\n" + 
+	            "as element()+ {\n" + 
+	            "    <item>\n" + 
+	            "        <term>{$term}</term>\n" + 
+	            "        <frequency>{$data[1]}</frequency>\n" + 
+	            "    </item>\n" + 
+	            "};\n" + 
+	            "\n";
+	        
+	        XQueryService service = (XQueryService)
+	            testCollection.getService("XQueryService", "1.0");
+	        String query = queryBody + "t:index-terms(collection('" + DBBroker.ROOT_COLLECTION + "'), \'is\', util:function(\'f:term-callback\', 2), 1000)";
+	        ResourceSet result = service.query(query);
+	        assertEquals(7, result.getSize());
+	        
+	        query = queryBody + "t:index-terms(collection('"  + DBBroker.ROOT_COLLECTION + "')//LINE, \'is\', util:function(\'f:term-callback\', 2), 1000)";
+	        result = service.query(query);
+	        assertEquals(6, result.getSize());
+	        
+	        query = queryBody + "t:index-terms(collection('" + DBBroker.ROOT_COLLECTION + "')//mods:title, \'s\', util:function(\'f:term-callback\', 2), 1000)";
+	        result = service.query(query);
+	        assertEquals(20, result.getSize());
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}	        
     }
     
-    public void testFtScan() throws Exception {
-    	System.out.println("----- testFtScan -----");
-        String queryBody =
-            "declare namespace f=\'http://exist-db.org/xquery/test\';\n" + 
-            "declare namespace mods='http://www.loc.gov/mods/v3';\n" + 
-            "import module namespace t=\'http://exist-db.org/xquery/text\';\n" + 
-            "\n" + 
-            "declare function f:term-callback($term as xs:string, $data as xs:int+)\n" + 
-            "as element()+ {\n" + 
-            "    <item>\n" + 
-            "        <term>{$term}</term>\n" + 
-            "        <frequency>{$data[1]}</frequency>\n" + 
-            "    </item>\n" + 
-            "};\n" + 
-            "\n";
-        
-        XQueryService service = (XQueryService)
-            testCollection.getService("XQueryService", "1.0");
-        String query = queryBody + "t:index-terms(collection('" + DBBroker.ROOT_COLLECTION + "'), \'is\', util:function(\'f:term-callback\', 2), 1000)";
-        ResourceSet result = service.query(query);
-        assertEquals(7, result.getSize());
-        
-        query = queryBody + "t:index-terms(collection('"  + DBBroker.ROOT_COLLECTION + "')//LINE, \'is\', util:function(\'f:term-callback\', 2), 1000)";
-        result = service.query(query);
-        assertEquals(6, result.getSize());
-        
-        query = queryBody + "t:index-terms(collection('" + DBBroker.ROOT_COLLECTION + "')//mods:title, \'s\', util:function(\'f:term-callback\', 2), 1000)";
-        result = service.query(query);
-        assertEquals(20, result.getSize());
-    }
-    
-    public void testFtUpdate() throws Exception {
-    	System.out.println("----- testFtUpdate -----");
-        XQueryService service = (XQueryService)
-            testCollection.getService("XQueryService", "1.0");
-        service.query(
-                "update insert <SPEAKER>First Witch</SPEAKER> preceding //SPEECH[LINE &= 'fenny snake']/SPEAKER"
-        );
-        ResourceSet result = service.query("//SPEECH[LINE &= 'fenny snake']/SPEAKER");
-        assertEquals(2, result.getSize());
-        result = service.query("//SPEECH[LINE &= 'fenny snake' and SPEAKER &= 'first']");
-        assertEquals(1, result.getSize());
-        
-        service.query(
-                "update delete //SPEECH[LINE &= 'fenny snake']/SPEAKER[2]"
-        );
-        result = service.query("//SPEECH[LINE &= 'fenny snake' and SPEAKER &= 'first']");
-        assertEquals(1, result.getSize());
+    public void testFtUpdate() {
+    	try {
+	    	System.out.println("----- testFtUpdate -----");
+	        XQueryService service = (XQueryService)
+	            testCollection.getService("XQueryService", "1.0");
+	        service.query(
+	                "update insert <SPEAKER>First Witch</SPEAKER> preceding //SPEECH[LINE &= 'fenny snake']/SPEAKER"
+	        );
+	        ResourceSet result = service.query("//SPEECH[LINE &= 'fenny snake']/SPEAKER");
+	        assertEquals(2, result.getSize());
+	        result = service.query("//SPEECH[LINE &= 'fenny snake' and SPEAKER &= 'first']");
+	        assertEquals(1, result.getSize());
+	        
+	        service.query(
+	                "update delete //SPEECH[LINE &= 'fenny snake']/SPEAKER[2]"
+	        );
+	        result = service.query("//SPEECH[LINE &= 'fenny snake' and SPEAKER &= 'first']");
+	        assertEquals(1, result.getSize());
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}	        
     }
 
-    public void testFtConfiguration() throws Exception {
+    public void testFtConfiguration() {
     	System.out.println("----- testFtConfiguration -----");
     	try {
     		// check attributes="false"
@@ -226,20 +238,24 @@ public class FtQueryTest extends XMLTestCase {
     /*
      * @see TestCase#tearDown()
      */
-    protected void tearDown() throws Exception {
-        Collection root =
-            DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
-        CollectionManagementService service =
-            (CollectionManagementService) root.getService(
-                "CollectionManagementService",
-                "1.0");
-        service.removeCollection("testft");
-        
-        DatabaseManager.deregisterDatabase(database);
-        DatabaseInstanceManager dim =
-            (DatabaseInstanceManager) testCollection.getService(
-                "DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-        System.out.println("tearDown PASSED");
+    protected void tearDown() {
+    	try {
+	        Collection root =
+	            DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+	        CollectionManagementService service =
+	            (CollectionManagementService) root.getService(
+	                "CollectionManagementService",
+	                "1.0");
+	        service.removeCollection("testft");
+	        
+	        DatabaseManager.deregisterDatabase(database);
+	        DatabaseInstanceManager dim =
+	            (DatabaseInstanceManager) testCollection.getService(
+	                "DatabaseInstanceManager", "1.0");
+	        dim.shutdown();
+	        System.out.println("tearDown PASSED");
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}
     }
 }
