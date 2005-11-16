@@ -489,7 +489,7 @@ public class ElementImpl extends NamedNode implements Element {
             case Node.ATTRIBUTE_NODE:
                 attr = (Attr) child;
                 ns = attr.getNamespaceURI();
-                prefix = (ns != null && ns.equals(Namespaces.XML_NS) ? "xml" : attr.getPrefix());
+                prefix = (Namespaces.XML_NS.equals(ns) ? "xml" : attr.getPrefix());
                 String name = attr.getLocalName();
                 if (name == null) name = attr.getName();
                 QName attrName =

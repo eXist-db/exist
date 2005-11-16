@@ -99,6 +99,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	
 	protected String ignorePrefix = null;
 	protected ProgressIndicator progress;
+	
 	protected boolean suppressWSmixed =false;
 
     /* used to record the number of children of an element during 
@@ -107,7 +108,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
      * a second time.
      */
     private int childCnt[] = new int[0x1000];
-//    private int childCnt[] = null;
     
     // the current position in childCnt
     private int elementCnt = 0;
@@ -115,7 +115,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	// reusable fields
 	private TextImpl text = new TextImpl();
 	private Stack usedElements = new Stack();
-
+	
 	/**
 	 *  Create a new parser using the given database broker and
 	 * user to store the document.
@@ -254,9 +254,12 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			if (charBuf != null && charBuf.length() > 0) {
 				// remove whitespace if the node has just a single text child,
 				// keep whitespace for mixed content.
-				final XMLString normalized =
-					last.getChildCount() == 0 ? charBuf.normalize(normalize) : 
+				final XMLString normalized;
+				if (!last.preserveSpace()) {
+					normalized = last.getChildCount() == 0 ? charBuf.normalize(normalize) : 
 						(charBuf.isWhitespaceOnly() ? null : charBuf);
+				} else
+					normalized = charBuf;
 				if (normalized != null && normalized.length() > 0) {
 					text.setData(normalized);
 					text.setOwnerDocument(document);
@@ -414,16 +417,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	public void startDocument() {
 		if (!validate) {
 			progress = new ProgressIndicator(currentLine, 100);
-//			if (document.getDoctype() == null) {
-//				// we don't know the doctype
-//				// set it to the root node's tag name
-//				final DocumentTypeImpl dt =
-//					new DocumentTypeImpl(
-//						rootNode.getTagName(),
-//						null,
-//						document.getFileName());
-//				document.setDocumentType(dt);
-//			}
 			document.setChildCount(0);
             elementCnt = 0;
 		}
@@ -483,6 +476,10 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				node.setNodeName(qn);
 			} else
 				node = new ElementImpl(qn);
+			// copy xml:space setting
+			node.setPreserveSpace(last.preserveSpace());
+			// append the node to its parent 
+			// (computes the node id and updates the parent's child count)
 			last.appendChildInternal(node);
 
 			node.setOwnerDocument(document);
@@ -548,12 +545,14 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				attr.setOwnerDocument(document);
 				if (attributes.getType(i).equals(ATTR_ID_TYPE)) {
 					attr.setType(AttrImpl.ID);
-				} else if (attr.getQName().equalsSimple(AttrImpl.XML_ID_QNAME)) {
+				} else if (attr.getQName().equalsSimple(Namespaces.XML_ID_QNAME)) {
 					// an xml:id attribute. Normalize the attribute and set its type to ID
 					attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
 					if (!XMLChar.isValidNCName(attr.getValue()))
 						throw new SAXException("Value of xml:id attribute is not a valid NCName: " + attr.getValue());
 					attr.setType(AttrImpl.ID);
+				} else if (attr.getQName().equalsSimple(Namespaces.XML_SPACE_QNAME)) {
+					node.setPreserveSpace("preserve".equals(attr.getValue()));
 				}
 				node.appendChildInternal(attr);
 				if (!validate)
