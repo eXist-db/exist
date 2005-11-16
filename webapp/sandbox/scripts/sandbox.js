@@ -62,6 +62,7 @@ var behaviourRules = {
 };
 Behaviour.register(behaviourRules);
 
+/** onLoad handler to initialize display */
 function init() {
 	var savePanel = $('save-panel');
 	document.savePanelHeight = savePanel.offsetHeight;
@@ -74,12 +75,18 @@ function init() {
     Behaviour.apply();	// we need to call behaviour again after this handler
 }
 
+/** Resize the query result output div. We want this to have a fixed height,
+ *  so it neatly fits into the browser window.
+ */
 function resize() {
 	var output = $('output');
     output.style.height = (document.body.clientHeight - output.offsetTop - 15) + "px";
 }
 
+/** Retrieve the list of stored queries and populate the select box. */
 function retrieveStored() {
+	// workaround: adding <option>'s to a select doesn't work in
+	// IE, so we replace the whole select here.
 	var ajax = new Ajax.Request("get-examples.xql", {
 		method: 'post',
 		onComplete: function(request) {
@@ -91,6 +98,9 @@ function retrieveStored() {
 	});
 }
 
+/** Retrieve a list of available collections and populate the collections
+  * select box
+  */
 function updateCollections() {
 	var ajax = new Ajax.Request("list-collections.xql", {
 		method: 'post',
@@ -103,6 +113,7 @@ function updateCollections() {
 	});
 }
 
+/** Called if the user clicked 'export'. */
 function exportData() {
 	if (!document.hitCount || document.hitCount < 1) {
 		alert("There are no records to export!");
@@ -125,6 +136,7 @@ function exportData() {
 	}
 }
 
+/** Response handler: check if an error occurred. */
 function exportResponse(request) {
 	var root = request.responseXML.documentElement;
 	if (root.nodeName == 'error') {
@@ -134,6 +146,10 @@ function exportResponse(request) {
 	}
 }
 
+/** Called if the user presses a key in the
+ *  query box. Send an AJAX request to the server and
+ *  check the query.
+ */
 function checkQuery() {
 	var query = $F('query');
 	if (query) {
@@ -144,7 +160,10 @@ function checkQuery() {
 			});
 	}
 }
-		
+	
+/** Called if the user clicked on the "send" button.
+ *  Execute the query.
+ */	
 function execQuery() {
 	$('output').innerHTML = '';
 	$('errors').innerHTML = '';
@@ -159,6 +178,9 @@ function execQuery() {
 		});
 }
 
+/** Response handler: query executed, check for errors and
+ *  initialize loading.
+ */
 function showQueryResponse(request) {
 	var root = request.responseXML.documentElement;
 	if (root.nodeName == 'error') {
@@ -181,6 +203,7 @@ function showQueryResponse(request) {
 	}
 }
 
+/** Called if user clicks on "forward" link in query results. */
 function browseNext() {
 	if (document.currentOffset > 0 && document.endOffset < document.hitCount) {
 		document.startOffset = document.currentOffset;
@@ -194,6 +217,7 @@ function browseNext() {
 	}
 }
 
+/** Called if user clicks on "previous" link in query results. */
 function browsePrevious() {
 	if (document.currentOffset > 0 && document.startOffset > 1) {
 		document.startOffset = document.startOffset - $F('howmany');
@@ -215,6 +239,9 @@ function requestFailed(request) {
 		"The request to the server failed.";
 }
 
+/** If there are more query results to load, retrieve
+ *  the next result.
+ */
 function retrieveNext() {
 	if (document.currentOffset > 0 && document.currentOffset <= document.endOffset) {
 		var params = 'num=' + document.currentOffset;
@@ -227,11 +254,13 @@ function retrieveNext() {
 	}
 }
 
+/** Response handler: insert the retrieved result. */
 function itemRetrieved(request) {
 	new Insertion.Bottom('output', request.responseText);
 	retrieveNext();
 }
 
+/** Save the current query */
 function saveQuery() {
 	var description = $F('description');
 	if (description == '') {
