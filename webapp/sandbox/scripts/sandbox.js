@@ -21,10 +21,10 @@ var behaviourRules = {
 				$('description').value = saved.options[saved.selectedIndex].text;
 			}
 	},
-	'#next-link' : function (element) {
+	'#next' : function (element) {
 			element.onclick = browseNext;
 	},
-	'#prev-link' : function (element) {
+	'#previous' : function (element) {
 			element.onclick = browsePrevious;
 	},
 	'#save' : function (element) {
@@ -42,13 +42,19 @@ var behaviourRules = {
 	},
 	'#show-options' : function (element) {
 			element.onclick = function() {
-				if ($('save-panel').style.display == 'none') {
+				var panel = $('save-panel');
+				if (!document.savePanelShow) {
 					this.innerHTML = "Hide Options";
-					new Effect.BlindDown('save-panel');
+					panel.style.display = '';
+					new Effect.Size( panel, null, document.savePanelHeight, 200, 8, 
+						{complete:function() { panel.style.overflow = "visible"; }});
 					updateCollections();
+					document.savePanelShow = true;
 				} else {
 					this.innerHTML = "Show Options";
-					new Effect.BlindUp('save-panel');
+					panel.style.overflow = "hidden";
+					new Effect.Size( panel, null, 1, 200, 8 );
+					document.savePanelShow = false;
 				}
 				return false;
 			}
@@ -57,29 +63,44 @@ var behaviourRules = {
 Behaviour.register(behaviourRules);
 
 function init() {
-    Element.hide('save-panel');
+	var savePanel = $('save-panel');
+	document.savePanelHeight = savePanel.offsetHeight;
+	document.savePanelShow = false;
+	savePanel.style.display = 'none';
+	savePanel.style.height = '1px';
+	
     resize();
-    Behaviour.apply();	// we need to call behaviour again after this handler
     retrieveStored();
+    Behaviour.apply();	// we need to call behaviour again after this handler
 }
 
 function resize() {
 	var output = $('output');
-    output.style.height = (document.body.clientHeight - output.offsetTop - 10) + "px";
+    output.style.height = (document.body.clientHeight - output.offsetTop - 15) + "px";
 }
 
 function retrieveStored() {
-	var ajax = new Ajax.Updater('saved', "get-examples.xql", {
-			method: 'post',
-			onFailure: requestFailed
-		});
+	var ajax = new Ajax.Request("get-examples.xql", {
+		method: 'post',
+		onComplete: function(request) {
+			Element.remove('saved');
+			new Insertion.Bottom('queries', request.responseText);
+			Behaviour.apply();
+		},
+		onFailure: requestFailed
+	});
 }
 
 function updateCollections() {
-	var ajax = new Ajax.Updater('collection', "list-collections.xql", {
-			method: 'post',
-			onFailure: requestFailed
-		});
+	var ajax = new Ajax.Request("list-collections.xql", {
+		method: 'post',
+		onComplete: function(request) {
+			Element.remove('collection');
+			new Insertion.Bottom('export-options', request.responseText);
+			Behaviour.apply();
+		},
+		onFailure: requestFailed
+	});
 }
 
 function exportData() {
@@ -147,7 +168,6 @@ function showQueryResponse(request) {
 		var elapsed = root.getAttribute('elapsed');
 		$('query-result').innerHTML = 
 			"Found " + hits + " in " + elapsed + " seconds.";
-	
 		document.startOffset = 1;
 		document.currentOffset = 1;
 		document.hitCount = hits;

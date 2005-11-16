@@ -4,6 +4,9 @@
     xmlns:exist="http://exist.sourceforge.net/NS/exist"
     version="1.0">
     
+    <xsl:preserve-space elements="*"/>
+    <xsl:output indent="no"/>
+    
     <xsl:template match="item">
         <div>
             <xsl:attribute name="class">
@@ -13,96 +16,62 @@
                 </xsl:choose>
             </xsl:attribute>
             <div class="pos"><xsl:value-of select="@num"/></div>
-            <xsl:apply-templates/>
+            <div class="item"><xsl:apply-templates/></div>
         </div>
     </xsl:template>
     
     <xsl:template match="text()">
         <xsl:value-of select="."/>
     </xsl:template>
+    
     <xsl:template match="processing-instruction()">
         <dd>
             <font color="darkred">&lt;?<xsl:value-of select="."/>?&gt;</font>
         </dd>
     </xsl:template>
+    
     <xsl:template match="comment()">
-        <dd>
-            <font color="grey">&lt;-- <xsl:value-of select="."/> --&gt;</font>
-        </dd>
+        <div class="xml-comment">
+            &lt;-- <xsl:value-of select="."/> --&gt;
+        </div>
     </xsl:template>
+    
     <xsl:template match="@*">
-        <xsl:text> </xsl:text>
-        <xsl:choose>
-            <xsl:when test="not(namespace-uri(.)='')">
-                <font color="purple">
-                    <xsl:value-of select="name(.)"/>
-                </font>
-            </xsl:when>
-            <xsl:otherwise>
-                <font color="red">
-                    <xsl:value-of select="name(.)"/>
-                </font>
-            </xsl:otherwise>
-        </xsl:choose> ="<font color="lime">
+        <span class="xml-attr-name" xml:space="preserve">
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="name(.)"/>
+        </span><xsl:text>="</xsl:text>
+        <span class="xml-attr-value">
             <xsl:value-of select="."/>
-        </font>" 
+        </span>
+        <xsl:text>"</xsl:text>
     </xsl:template>
+    
+    <xsl:template match="text()">
+        <span class="xml-text"><xsl:value-of select="."/></span>
+    </xsl:template>
+    
     <xsl:template match="exist:match">
-        <span style="background-color: #FFFF00">
+        <span class="xml-match">
             <xsl:apply-templates/>
         </span>
     </xsl:template>
+    
     <xsl:template match="*">
-        <div style="margin-left: 20px">
-            <font color="navy">
-                <xsl:text>&lt;</xsl:text>
-            </font>
-            <xsl:choose>
-                <xsl:when test="not(namespace-uri()='')">
-                    <font color="green">
-                        <xsl:value-of select="name()"/>
-                    </font>
-                </xsl:when>
-                <xsl:otherwise>
-                    <font color="navy">
-                        <xsl:value-of select="name()"/>
-                    </font>
-                </xsl:otherwise>
-            </xsl:choose>
+        <div class="xml-element">
+            <span class="xml-element-tag"><xsl:text>&lt;</xsl:text></span>
+            <span class="xml-element-name"><xsl:value-of select="name()"/></span>
             <xsl:apply-templates select="@*"/>
             <xsl:choose>
-                <xsl:when test="exist:match">
-                    <font color="navy"> &gt; </font>
-                    <xsl:apply-templates/>
-                    <font color="navy"> &lt;/ <xsl:value-of select="name()"/> &gt; </font>
-                </xsl:when>
-                <xsl:when test="text()">
-                    <font color="navy"> &gt; </font>
-                    <xsl:apply-templates/>
-                    <font color="navy"> &lt;/ <xsl:value-of select="name()"/> &gt; </font>
-                </xsl:when>
-                <xsl:when test="*">
-                    <font color="navy"> &gt; </font>
-                    <div>
-                        <xsl:apply-templates select="node()" />
-                    </div>
-                    <font color="navy"> &lt;/ </font>
-                    <xsl:choose>
-                        <xsl:when test="not(namespace-uri()='')">
-                            <font color="green">
-                                <xsl:value-of select="name()"/>
-                            </font>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <font color="navy">
-                                <xsl:value-of select="name()"/>
-                            </font>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                    <font color="navy"> &gt; </font>
+                <xsl:when test="count(node()) &gt; 0">
+                    <span class="xml-element-tag">&gt;</span>
+                    <xsl:apply-templates select="node()|comment()"/>
+                    <span class="xml-element-tag">&lt;/</span>                    
+                    <span class="xml-element-name"><xsl:value-of select="name()"/></span>
+                    <span class="xml-element-tag">&gt;</span>
                 </xsl:when>
                 <xsl:otherwise>
-                    <font color="navy"> /&gt; </font>
+                    <span class="xml-element-tag">/&gt;</span>
                 </xsl:otherwise>
             </xsl:choose>
         </div>

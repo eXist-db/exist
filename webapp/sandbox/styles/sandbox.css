@@ -1,5 +1,8 @@
+@import url(xml2html.css);
+
 body {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
+	overflow-y: scroll;
 }
 
 * {
@@ -42,7 +45,7 @@ body {
 }
 
 #errors {
-	min-height: 2em;
+	height: 3em;
 	margin-bottom: 3px;
 	color: #AF0024;
 }
@@ -73,12 +76,12 @@ label {
 }
 
 textarea {
-    height: 20%;
+    height: 7em;
     width: 100%;
 }
 
 #saved {
-	min-width: 200px;
+	width: 200px;
 }
 
 fieldset {
@@ -133,18 +136,18 @@ fieldset select {
 
 #query-result {
 	margin-top: 10px;
-	min-height: 1em;
+	height: 1em;
 }
 
 #navbar {
-	width: 100%;
+	width: auto;
 	border: 0;
 	font-size: 75%;
 	margin-bottom: 10px;
 }
 
 #previous {
-	width: 20%;
+	float: left;
 }
 
 #current {
@@ -154,14 +157,23 @@ fieldset select {
 }
 
 #next {
-	width: 20%;
-	text-align: right;
+	float: right;
 }
 
 #output {
 	font-size: 85%;
 	overflow: auto;
 	background-color: white;
+}
+
+.item {
+	min-height: 2.5em;
+}
+
+/* Hack for internet explorer */
+/*\*/
+* html .item {
+	height: 2.5em;
 }
 
 .even {
@@ -171,7 +183,7 @@ fieldset select {
 .pos {
 	float: left;
 	background-color: #ECF;
-	font-size: 160%;
-	padding: 5px;
+	font-size: 1.25em;
+	padding: 2px;
 	margin-right: 5px;
 }
