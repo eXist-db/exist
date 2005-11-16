@@ -36,6 +36,7 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -78,19 +79,8 @@ public class XQueryContext {
 	private static final String JAVA_URI_START = "java:";
     private static final String XMLDB_URI_START = "xmldb:exist://";
     
-    public final static String XML_NS = "http://www.w3.org/XML/1998/namespace";
-	public final static String SCHEMA_NS = "http://www.w3.org/2001/XMLSchema";
-	public final static String SCHEMA_DATATYPES_NS =
-		"http://www.w3.org/2001/XMLSchema-datatypes";
-	public final static String SCHEMA_INSTANCE_NS =
-		"http://www.w3.org/2001/XMLSchema-instance";
-	public final static String XPATH_DATATYPES_NS =
-		"http://www.w3.org/2003/05/xpath-datatypes";
-	public final static String XQUERY_LOCAL_NS =
+    public final static String XQUERY_LOCAL_NS =
 		"http://www.w3.org/2003/08/xquery-local-functions";
-	public final static String EXIST_NS =
-		"http://exist.sourceforge.net/NS/exist";
-	
 	private final static Logger LOG = Logger.getLogger(XQueryContext.class);
 
 	private static final String TEMP_STORE_ERROR = "Error occurred while storing temporary data";
@@ -378,7 +368,7 @@ public class XQueryContext {
 			uri = "";
 		if (prefix.equals("xml") || prefix.equals("xmlns"))
 			throw new XPathException("err:XQST0070: Namespace predefined prefix '" + prefix + "' can not be bound");
-		if (uri.equals(XML_NS))
+		if (uri.equals(Namespaces.XML_NS))
 			throw new XPathException("err:XQST0070: Namespace URI '" + uri + "' must be bound to the 'xml' prefix");
 		final String prevURI = (String)namespaces.get(prefix);
 		//This prefix was not bound
@@ -1540,14 +1530,14 @@ public class XQueryContext {
 
 		try {
 			// default namespaces
-			namespaces.put("xml", XML_NS);
-			prefixes.put(XML_NS, "xml");			
-			declareNamespace("xs", SCHEMA_NS);
-			declareNamespace("xdt", XPATH_DATATYPES_NS);
+			namespaces.put("xml", Namespaces.XML_NS);
+			prefixes.put(Namespaces.XML_NS, "xml");			
+			declareNamespace("xs", Namespaces.SCHEMA_NS);
+			declareNamespace("xdt", Namespaces.XPATH_DATATYPES_NS);
 			declareNamespace("local", XQUERY_LOCAL_NS);
 			declareNamespace("fn", Function.BUILTIN_FUNCTION_NS);
 			//*not* as standard NS
-			declareNamespace("exist", EXIST_NS);
+			declareNamespace("exist", Namespaces.EXIST_NS);
 		} catch (XPathException e) {
 			//TODO : ignored because it should never happen
 		}

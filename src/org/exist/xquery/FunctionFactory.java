@@ -25,6 +25,7 @@ package org.exist.xquery;
 import java.util.Iterator;
 import java.util.List;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.functions.ExtNear;
 import org.exist.xquery.functions.ExtPhrase;
@@ -153,7 +154,7 @@ public class FunctionFactory {
 			}
 		// Check if the namespace belongs to one of the schema namespaces.
 		// If yes, the function is a constructor function
-		} else if(uri.equals(XQueryContext.SCHEMA_NS) || uri.equals(XQueryContext.XPATH_DATATYPES_NS)) {
+		} else if(uri.equals(Namespaces.SCHEMA_NS) || uri.equals(Namespaces.XPATH_DATATYPES_NS)) {
 			if(params.size() != 1)
 				throw new XPathException(ast, "Wrong number of arguments for constructor function");
 			PathExpr arg = (PathExpr)params.get(0);

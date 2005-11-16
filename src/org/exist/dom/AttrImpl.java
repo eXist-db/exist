@@ -28,8 +28,6 @@ import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.util.GetNodeById;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -43,9 +41,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 public class AttrImpl extends NamedNode implements Attr {
 	
-    public final static QName XML_ID_QNAME = new QName("id", XQueryContext.XML_NS, "xml");
-    
-	public final static int CDATA = 0;
+    public final static int CDATA = 0;
 	public final static int ID = 1;
 	
 	protected int attributeType = CDATA;

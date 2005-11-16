@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 
 /**
@@ -38,10 +39,10 @@ import org.exist.dom.QName;
  */
 public class Pragma {
 
-	public final static QName TIMEOUT_QNAME = new QName("timeout", XQueryContext.EXIST_NS);
-	public final static QName OUTPUT_SIZE_QNAME = new QName("output-size-limit", XQueryContext.EXIST_NS);
-	public final static QName SERIALIZE_QNAME = new QName("serialize", XQueryContext.EXIST_NS);
-    public final static QName PROFILE_QNAME = new QName("profiling", XQueryContext.EXIST_NS);
+	public final static QName TIMEOUT_QNAME = new QName("timeout", Namespaces.EXIST_NS);
+	public final static QName OUTPUT_SIZE_QNAME = new QName("output-size-limit", Namespaces.EXIST_NS);
+	public final static QName SERIALIZE_QNAME = new QName("serialize", Namespaces.EXIST_NS);
+    public final static QName PROFILE_QNAME = new QName("profiling", Namespaces.EXIST_NS);
 	
 	private final static String paramPattern =
 		"\\s*([\\w\\.-]+)\\s*=\\s*('[^']*'|\"[^\"]*\"|[^\\s]+)";
