@@ -163,7 +163,7 @@ public class ConcurrentStoreTest extends TestCase {
                 
                 File f;
                 IndexInfo info;
-                // store some documents into /db/test
+                // store some documents into the test collection
                 for (int i = 0; i < files.length; i++) {
                     f = files[i];
                     try {

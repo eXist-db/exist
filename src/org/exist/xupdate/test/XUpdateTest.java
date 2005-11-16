@@ -9,6 +9,7 @@ import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.exist.storage.DBBroker;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.DocumentTraversal;
@@ -33,7 +34,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
  */
 public class XUpdateTest {
 
-	private final static String URI = "xmldb:exist:///db";
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 	private final static String XUPDATE_COLLECTION = "xupdate_tests";
 
