@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.exist.EXistException;
+import org.exist.Namespaces;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.GeneralRangeIndexSpec;
@@ -51,7 +52,6 @@ import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.LockException;
 import org.exist.util.UTF8;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
@@ -82,6 +82,7 @@ public class ElementImpl extends NamedNode implements Element {
     protected Map namespaceMappings = null;
 	protected int indexType = RangeIndexSpec.NO_INDEX;
 	protected int position = 0;
+	protected boolean preserveWS = false;
     
     public ElementImpl() {
         super(Node.ELEMENT_NODE);
@@ -492,7 +493,7 @@ public class ElementImpl extends NamedNode implements Element {
             case Node.ATTRIBUTE_NODE:
                 attr = (Attr) child;
                 ns = attr.getNamespaceURI();
-                prefix = (ns != null && ns.equals(XQueryContext.XML_NS) ? "xml" : attr.getPrefix());
+                prefix = (ns != null && ns.equals(Namespaces.XML_NS) ? "xml" : attr.getPrefix());
                 String name = attr.getLocalName();
                 if (name == null) name = attr.getName();
                 QName attrName =
@@ -500,7 +501,7 @@ public class ElementImpl extends NamedNode implements Element {
                 final AttrImpl attrib = new AttrImpl(attrName, attr.getValue());
                 attrib.setGID(gid);
                 attrib.setOwnerDocument(ownerDocument);
-                if (ns != null && attrName.compareTo(AttrImpl.XML_ID_QNAME) == 0) {
+                if (ns != null && attrName.compareTo(Namespaces.XML_ID_QNAME) == 0) {
 					// an xml:id attribute. Normalize the attribute and set its type to ID
 					attrib.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attrib.getValue())));
 					attrib.setType(AttrImpl.ID);
@@ -555,6 +556,14 @@ public class ElementImpl extends NamedNode implements Element {
 	
 	public int getIndexType() {
 		return indexType;
+	}
+	
+	public void setPreserveSpace(boolean preserve) {
+		this.preserveWS = preserve;
+	}
+	
+	public boolean preserveSpace() {
+		return preserveWS;
 	}
 	
     public void setPosition(int pos) {
@@ -1343,7 +1352,7 @@ public class ElementImpl extends NamedNode implements Element {
             throw new DOMException(DOMException.NOT_FOUND_ERR,
                     "node is not a child of this element");
         if (newNode.getNodeType() == Node.ATTRIBUTE_NODE) {
-        	if (newNode.getQName().equalsSimple(AttrImpl.XML_ID_QNAME)) {
+        	if (newNode.getQName().equalsSimple(Namespaces.XML_ID_QNAME)) {
 					// an xml:id attribute. Normalize the attribute and set its type to ID
         		AttrImpl attr = (AttrImpl) newNode;
         		attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
