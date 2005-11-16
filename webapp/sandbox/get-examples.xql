@@ -1,12 +1,11 @@
 xquery version "1.0";
 
-declare option exist:serialize "media-type=text/xml";
+declare option exist:serialize "media-type=text/xml omit-xml-declaration=yes";
 
-<ajax-response>
-    <option></option>
+<select id="saved" name="saved">
     {
-        for $entry in //example-queries/query
-        return
-            <option value="{$entry/code}">{$entry/description}</option>
+    for $entry in //example-queries/query
+    return
+        <option value="{$entry/code}">{$entry/description}</option>
     }
-</ajax-response>
+</select>

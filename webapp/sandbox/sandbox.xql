@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-declare option exist:serialize "method=xhtml";
+declare option exist:serialize "method=xhtml indent=no";
 
 declare namespace sandbox="http://exist-db.org/xquery/sandbox";
 
@@ -88,14 +88,15 @@ declare function sandbox:check-query($query as xs:string) as element() {
 };
 
 (:~ Retrieve a single query result. :)
-declare function sandbox:retrieve($num as xs:integer) as element() {
+declare function sandbox:retrieve($num as xs:integer) as empty() {
+    util:declare-option("exist:serialize", "media-type=text/xml omit-xml-declaration=no indent=no"),
     let $cached := request:get-session-attribute("cached")
     let $item :=
         <item num="{$num}">
             {$cached[$num]}
         </item>
     return
-        transform:transform($item, doc($sandbox:XML_HIGHLIGHT_STYLE), ())
+        transform:stream-transform($item, doc($sandbox:XML_HIGHLIGHT_STYLE), ())
 };
 
 declare function sandbox:exec-query($qu as xs:string) as element() {
@@ -124,17 +125,17 @@ declare function sandbox:display-page() as element() {
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <link type="text/css" href="styles/sandbox.css" rel="stylesheet"/>
             <script language="Javascript" type="text/javascript" src="scripts/prototype.js"/>
-            <script language="Javascript" type="text/javascript" src="scripts/scriptaculous.js"/>
+            <script language="Javascript" type="text/javascript" src="scripts/rico.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/behaviour.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/sandbox.js"/>
         </head>
         <body>
             <div id="header">
                 <ul id="menu">
-                    <li><a href="index.xml">Home</a></li>
-                    <li><a href="index.xml#download">Download</a></li>
+                    <li><a href="../index.xml">Home</a></li>
+                    <li><a href="../index.xml#download">Download</a></li>
                     <li><a href="http://wiki.exist-db.org">Wiki</a></li>
-                    <li><a href="examples.xml">Demo</a></li>
+                    <li><a href="../examples.xml">Demo</a></li>
                 </ul>
                 <h1>XQuery Sandbox</h1>
             </div>
@@ -144,9 +145,11 @@ declare function sandbox:display-page() as element() {
                 <form name="main">
                     <div id="top-panel">
                         <div id="query-panel">
-                            <p>
+                            <p id="queries">
                                 <label for="saved">Paste saved query</label>
-                                <select id="saved" name="saved"/>
+                                <select id="saved" name="saved">
+                                    <option></option>
+                                </select>
                             </p>
                             <textarea id="query" name="qu" />
                             <fieldset>
@@ -171,11 +174,11 @@ declare function sandbox:display-page() as element() {
                             <button type="button" id="save">Save</button>
                             
                             <h2>Export results to new document:</h2>
-                            <p>
-                                <label for="collection">Collection</label>
-                                <select id="collection"/>
+                            <p id="export-options">
                                 <label for="docname">Document name</label>
                                 <input type="text" id="docname"/>
+                                <label for="collection">Collection</label>
+                                <select id="collection"/>
                             </p>
                             <p>
                                 <label for="wrapper">Wrapper element</label>
@@ -187,14 +190,12 @@ declare function sandbox:display-page() as element() {
                 </form>
                 <div id="query-output">
                     <div id="query-result"/>
-                    <table id="navbar">
-                        <tr>
-                            <td id="previous"><a id="prev-link" href="#">&lt;&lt;</a></td>
-                            <td id="current"/>
-                            <td id="next"><a id="next-link" href="#">&gt;&gt;</a></td>
-                        </tr>
-                    </table>
-                    <div id="output"></div>
+                    <div id="navbar">
+                        <a id="previous" href="#">&lt;&lt;</a>
+                        <a id="next" href="#">&gt;&gt;</a>
+                        <div id="current">Query Result</div>
+                    </div>
+                    <div id="output"/>
                 </div>
             </div>
         </body>

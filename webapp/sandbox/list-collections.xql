@@ -18,6 +18,6 @@ as element()* {
     )
 };
 
-<ajax-response>
+<select id="collection">
 { sandbox:display-child-collections(xdb:collection("/db", "guest", "guest")) }
-</ajax-response>
+</select>
