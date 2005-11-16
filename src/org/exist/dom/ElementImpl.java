@@ -37,7 +37,6 @@ import java.util.TreeSet;
 
 import org.exist.EXistException;
 import org.exist.Namespaces;
-import org.exist.storage.DBBroker;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
@@ -1028,7 +1027,6 @@ public class ElementImpl extends NamedNode implements Element {
             throws SAXException {
         NodeList childNodes = getChildNodes();
         NodeImpl child = null;
-        DBBroker broker = ownerDocument.getBroker();
         AttributesImpl attributes = new AttributesImpl();
         ArrayList myPrefixes = null;
         String defaultNS = null;
@@ -1113,7 +1111,6 @@ public class ElementImpl extends NamedNode implements Element {
      *
      */
     public String toString(boolean top, TreeSet namespaces) {
-        DBBroker broker = ownerDocument.getBroker();
         StringBuffer buf = new StringBuffer();
         StringBuffer attributes = new StringBuffer();
         StringBuffer children = new StringBuffer();
@@ -1127,7 +1124,6 @@ public class ElementImpl extends NamedNode implements Element {
             buf.append(ownerDocument.getFileName());
             buf.append("\"");
         }
-        ArrayList myPrefixes = null;
         if (declaresNamespacePrefixes()) {
             // declare namespaces used by this element
             Map.Entry entry;

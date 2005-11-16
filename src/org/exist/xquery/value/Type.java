@@ -20,10 +20,10 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 
 /**
@@ -281,9 +281,9 @@ public class Type {
 	 */
 	public final static int getType(QName qname) throws XPathException {
 		String uri = qname.getNamespaceURI();
-		if (uri.equals(XQueryContext.SCHEMA_NS))
+		if (uri.equals(Namespaces.SCHEMA_NS))
 			return getType("xs:" + qname.getLocalName());
-		else if (uri.equals(XQueryContext.XPATH_DATATYPES_NS))
+		else if (uri.equals(Namespaces.XPATH_DATATYPES_NS))
 			return getType("xdt:" + qname.getLocalName());
 		else
 			return getType(qname.getLocalName());
