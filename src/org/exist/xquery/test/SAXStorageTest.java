@@ -12,7 +12,6 @@ import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.LocalCollection;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -66,8 +65,7 @@ public class SAXStorageTest extends TestCase {
 	/**
 	 * @param xquery
 	 * @param mess
-	 * @return TODO
-	 * @throws XMLDBException
+	 * @return TODO	 
 	 */
 	private ResourceSet querySingleLine(String xquery, String mess) throws XMLDBException {
 		// query a single line:
@@ -89,45 +87,55 @@ public class SAXStorageTest extends TestCase {
 	
 	/** Store in the "classical" eXist way: the XMLResource stores an XML string before
 	 * storeResource() stores it in the database.
-	 * @throws XMLDBException
-	 * @throws SAXException
 	 */
-	public void testQueryStoreContentAsSAX() throws XMLDBException, SAXException {
-		ContentHandler databaseInserter = doc.setContentAsSAX();
-		(new TabularXMLReader()).writeDocument(databaseInserter);
-		root.storeResource(doc);
-		querySingleLine("", "testQueryStoreContentAsSAX");
+	public void testQueryStoreContentAsSAX() {
+		try {
+			ContentHandler databaseInserter = doc.setContentAsSAX();
+			(new TabularXMLReader()).writeDocument(databaseInserter);
+			root.storeResource(doc);
+			querySingleLine("", "testQueryStoreContentAsSAX");
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}			
 	}
 
 	/** Store in the new way: the XMLResource stores just a File object before
 	 * storeResource() stores the SAX events in the database.
 	 * @throws XMLDBException
 */	
-	public void testQueryBigDocument() throws XMLDBException{
-		XMLReader dataSource = new TabularXMLReader();
-		storeSAXEvents(dataSource);
-		ResourceSet result = querySingleLine("", "testQueryBigDocument");
-		assertEquals(1, result.getSize());
+	public void testQueryBigDocument() {
+		try {
+			XMLReader dataSource = new TabularXMLReader();
+			storeSAXEvents(dataSource);
+			ResourceSet result = querySingleLine("", "testQueryBigDocument");
+			assertEquals(1, result.getSize());
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}			
 	}
 
 	/**
 	 * @param dataSource
 	 * @throws XMLDBException
 	 */
-	private void storeSAXEvents(XMLReader dataSource) throws XMLDBException {
-		if ( root instanceof LocalCollection ) {
-			long t0 = System.currentTimeMillis();
-			LocalCollection coll = (LocalCollection)root;
-			coll.setReader(dataSource);
-			doc.setContent(new File(FILE_STORED));
-			coll.storeResource(doc);
-			long t1 = System.currentTimeMillis();
-			System.out.println("Time for storing:  " + ( t1-t0) + " ms." );
-		}
+	private void storeSAXEvents(XMLReader dataSource) {
+		try {
+			if ( root instanceof LocalCollection ) {
+				long t0 = System.currentTimeMillis();
+				LocalCollection coll = (LocalCollection)root;
+				coll.setReader(dataSource);
+				doc.setContent(new File(FILE_STORED));
+				coll.storeResource(doc);
+				long t1 = System.currentTimeMillis();
+				System.out.println("Time for storing:  " + ( t1-t0) + " ms." );
+			}
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}			
 	}
 
 	/** arguments: lines , columns, XQuery string */
-	public static void main(String[] args) throws XMLDBException {
+	public static void main(String[] args) {
 		String xquery = "";
 		int lines = 20; int columns = 20;
 		if ( args.length >= 2 ) {
@@ -147,17 +155,25 @@ public class SAXStorageTest extends TestCase {
 		tester.storeSAXEvents(dataSource);
 		System.out.println("Stored tabular data, " +lines+" lines, "+columns+" columns");
 		
-		if ( xquery != "" ) {
-			ResourceSet result = tester.querySingleLine(xquery, "testQueryBigDocument" );
-			System.out.println("result size: " + result.getSize() );
-		}
-		shutdown( tester.root );
+		try {
+			if ( xquery != "" ) {
+				ResourceSet result = tester.querySingleLine(xquery, "testQueryBigDocument" );
+				System.out.println("result size: " + result.getSize() );
+			}
+			shutdown( tester.root );
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}			
 	}
 	
-	private static void shutdown(Collection collection) throws XMLDBException {
-		//		shutdown the database gracefully
-		DatabaseInstanceManager manager =
-			(DatabaseInstanceManager) collection.getService("DatabaseInstanceManager", "1.0");
-		manager.shutdown();
+	private static void shutdown(Collection collection) {
+		try {
+			//		shutdown the database gracefully
+			DatabaseInstanceManager manager =
+				(DatabaseInstanceManager) collection.getService("DatabaseInstanceManager", "1.0");
+			manager.shutdown();
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}			
 	}
 }

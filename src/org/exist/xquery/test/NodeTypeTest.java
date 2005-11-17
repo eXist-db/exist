@@ -185,8 +185,6 @@ public class NodeTypeTest extends TestCase {
 
 	/**
 	 * Registers a new database instance and returns it.
-	 * 
-	 * @throws XMLDBException
 	 */
 	private final Database registerDatabase() {
 		Class driver = null;
@@ -209,8 +207,7 @@ public class NodeTypeTest extends TestCase {
 	 * xquery service.
 	 * 
 	 * @param db the database
-	 * @return the xquery service
-	 * @throws XMLDBException on database error
+	 * @return the xquery service	
 	 */
 	private final XQueryService getXQueryService(Database db) {
 		try {
