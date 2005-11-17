@@ -54,6 +54,10 @@ body {
 	border: 1px solid #FFD100;
 }
 
+#maximize {
+	float: right;
+}
+
 #query-panel {
 	background-color: #FEFFAF;
 	padding: 3px 3px 3px 5px;
@@ -75,8 +79,8 @@ label {
 	padding-right: 7px;
 }
 
-textarea {
-    height: 7em;
+#query {
+    height: 170px;
     width: 100%;
 }
 

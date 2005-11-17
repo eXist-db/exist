@@ -58,7 +58,12 @@ var behaviourRules = {
 				}
 				return false;
 			}
-	}
+	},
+	'#maximize' : function (element) {
+			element.onclick = function() {
+				resizeQueryBox(false);
+			}
+	},
 };
 Behaviour.register(behaviourRules);
 
@@ -81,6 +86,22 @@ function init() {
 function resize() {
 	var output = $('output');
     output.style.height = (document.body.clientHeight - output.offsetTop - 15) + "px";
+}
+
+function resizeQueryBox(minimizeOnly) {
+	var element = $('maximize');
+	var panel = $('query');
+	if (document.quMaximized) {
+		new Effect.Size(panel, null, 170, 200, 8);
+		document.quMaximized = false;
+		element.innerHTML = "Maximize";
+	} else if (!minimizeOnly) {
+		var newHeight = (document.body.clientHeight - panel.offsetTop - 50);
+		new Effect.Size( panel, null, newHeight, 200, 8 );
+		document.quMaximized = true;
+		element.innerHTML = "Minimize";
+	}
+	return false;
 }
 
 /** Retrieve the list of stored queries and populate the select box. */
@@ -170,6 +191,7 @@ function execQuery() {
 	var query = $F('query');
 	if (query.length == 0)
 		return;
+	resizeQueryBox(true);
 	var params = 'qu=' + escape(query);
 	var ajax = new Ajax.Request("sandbox.xql", {
 			method: 'post', parameters: params, 
