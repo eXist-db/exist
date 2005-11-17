@@ -73,7 +73,7 @@ public class DatabaseResources {
     
     /** Path to grammar in database  */
     public String GRAMMARBASE = DBBroker.SYSTEM_COLLECTION +"/grammar";
-    public String XSDBASE = "/db";
+    public String XSDBASE = DBBroker.ROOT_COLLECTION; // TODO check is this ok
     public String DTDBASE = GRAMMARBASE + "/dtd";
     public String DTDCATALOG = DTDBASE + "/catalog.xml";
     
@@ -330,6 +330,8 @@ public class DatabaseResources {
         return result;
     }
     
+    // TODO precompile grammar, write queries to file. 
+    // TODO figure out how to pass parameters to compiled queries
     public String getGrammarQuery(int type, String id){ // TODO double
         String query="NOQUERY";
         if(type==GRAMMAR_XSD){

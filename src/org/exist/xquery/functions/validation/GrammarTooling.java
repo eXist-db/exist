@@ -43,6 +43,8 @@ import org.exist.xquery.value.ValueSequence;
  *   xQuery function for validation of XML instance documents
  * using grammars like XSDs and DTDs.
  *
+ * TODO: please use named constants
+ *
  * @author dizzzz
  */
 public class GrammarTooling extends BasicFunction  {
