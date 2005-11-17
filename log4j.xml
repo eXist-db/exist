@@ -10,7 +10,7 @@
          so just use it for debugging. -->
     <appender name="console" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} [%t] %-5p (%F [%M]:%L) - %m\n"/>
+            <param name="ConversionPattern" value="%d{DATE} [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
 
@@ -20,7 +20,7 @@
         <param name="MaximumFileSize" value="5000000"/>
         <param name="Encoding" value="UTF-8"/>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
 
@@ -28,7 +28,7 @@
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/xmldb.log"/>
         <param name="MaximumFileSize" value="500000"/>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
 
@@ -36,7 +36,7 @@
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/profile.log"/>
         <param name="MaximumFileSize" value="500000"/>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
     
@@ -44,7 +44,7 @@
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/validation.log"/>
         <param name="MaximumFileSize" value="500000"/>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
 
@@ -52,7 +52,7 @@
     <!-- the following appenders write to NULL  -->
     <appender name="null" class="org.apache.log4j.varia.NullAppender">
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
 
