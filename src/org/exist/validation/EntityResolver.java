@@ -98,6 +98,8 @@ public class EntityResolver  implements XMLEntityResolver {
             type=DatabaseResources.GRAMMAR_XSD;
             resourcePath = databaseResources.getGrammarPath(type, xrid.getNamespace() );
             
+            this.logXMLResourceIdentifier(xrid);
+            
         } else if ( xrid.getPublicId() !=null ){
             logger.debug("Resolving publicId '"+xrid.getPublicId()+"'.");
             type=DatabaseResources.GRAMMAR_DTD;
@@ -108,6 +110,8 @@ public class EntityResolver  implements XMLEntityResolver {
                 resourcePath=DatabaseResources.NOGRAMMAR;
             }
             
+            // TODO: remove this log statement
+            this.logXMLResourceIdentifier(xrid);
             
         } else {
             // Fast escape; no logging, otherwise validation is slow!
@@ -122,7 +126,6 @@ public class EntityResolver  implements XMLEntityResolver {
             logger.debug("Resource not found in database.");
             return null;
         }
-        
         logger.debug("resourcePath="+resourcePath);
         
         // TODO make this streaming, fortunately the grammarfiles are small.
@@ -139,4 +142,14 @@ public class EntityResolver  implements XMLEntityResolver {
                                   xrid.getBaseSystemId(), rd , "UTF-8");   
         return xis;
     }    
+    
+    private void logXMLResourceIdentifier(XMLResourceIdentifier xrid){
+        logger.info( "getPublicId="+xrid.getPublicId() );
+        logger.info( "getBaseSystemId="+xrid.getBaseSystemId() );
+        logger.info( "getExpandedSystemId="+xrid.getExpandedSystemId() );
+        logger.info( "getLiteralSystemId="+xrid.getLiteralSystemId() );
+        logger.info( "getNamespace="+xrid.getNamespace() );
+        logger.info( xrid.toString() );
+        
+    }
 }

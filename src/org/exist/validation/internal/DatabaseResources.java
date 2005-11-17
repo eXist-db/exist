@@ -73,7 +73,7 @@ public class DatabaseResources {
     
     /** Path to grammar in database  */
     public String GRAMMARBASE = DBBroker.SYSTEM_COLLECTION +"/grammar";
-    public String XSDBASE = GRAMMARBASE + "/xsd";
+    public String XSDBASE = "/db";
     public String DTDBASE = GRAMMARBASE + "/dtd";
     public String DTDCATALOG = DTDBASE + "/catalog.xml";
     

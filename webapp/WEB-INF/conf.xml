@@ -137,6 +137,8 @@
                 class="org.exist.xquery.functions.text.TextModule"/>
             <module uri="http://exist-db.org/xquery/examples"
                 class="org.exist.xquery.modules.example.ExampleModule"/>
+            <module uri="http://exist-db.org/xquery/validation"
+                class="org.exist.xquery.functions.validation.ValidationModule"/>
         </builtin-modules>
     </xquery>
 
