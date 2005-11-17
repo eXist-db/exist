@@ -161,7 +161,8 @@ public class DatabaseImpl implements Database {
     	try {
     		uri = new XmldbURI(XmldbURI.XMLDB_URI_PREFIX + xmldbURI);
     	} catch (Exception e) {    		
-    		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URI is not well formed:" + xmldbURI);   
+    		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URI is not well formed:" + 
+    				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);   
     	}
     	
     	if ("direct access".equals(uri.getApiName()))    		
@@ -172,12 +173,14 @@ public class DatabaseImpl implements Database {
     			url = new URL("http", uri.getHost(), uri.getPort(), uri.getRemoteContext());
     		} catch (MalformedURLException e) {
         		//Should never happen
-        		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URL is not well formed:" + xmldbURI);   
+        		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URL is not well formed:" + 
+        				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);   
         	}
     		return getRemoteCollectionFromXMLRPC(url, uri.getInstanceName(), user, password, uri.getCollectionName());
     	}
     	else 
-    		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URL is not well formed:" + xmldbURI);  
+    		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URL is not well formed:" + 
+    				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);  
     }    
 
     /**
@@ -347,7 +350,9 @@ public class DatabaseImpl implements Database {
     	private String remoteContext;
     	
     	//Note that we construct URIs starting with XmldbURI.XMLDB_URI_PREFIX 
-    	public XmldbURI(String xmldbURI) throws URISyntaxException, XMLDBException {        	
+    	public XmldbURI(String xmldbURI) throws URISyntaxException, XMLDBException {
+    		Pattern p;
+    		String[] split;
         	try {
         		if (!xmldbURI.startsWith(XMLDB_URI_PREFIX))
         			throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "This is not an xmldb URI :" + xmldbURI);
@@ -357,28 +362,35 @@ public class DatabaseImpl implements Database {
             		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "No instance name for xmldb URI :" + xmldbURI);
             	//TODO : consider using LOCAL_HOSTNAME
             	host = uri.getHost();
-            	port = uri.getPort();
-            	//Trim trailing slash if necessary
-            	Pattern p = Pattern.compile(".+/$");            	
-            	String normalizedPath = p.split(uri.getPath())[0];              	
-            	//TODO : use named constants            	
-            	if (normalizedPath.startsWith("/webdav")) {
+            	port = uri.getPort();         	  
+//            	TODO : use named constants  
+            	p = Pattern.compile("/webdav");
+            	split = p.split(uri.getPath(), 2);
+            	if (split.length > 1) {
             		apiName = "webdav";
-            		remoteContext = "/webdav";
-            		collectionName = normalizedPath.substring("/webdav".length());
+            		remoteContext = split[0] + "/webdav";
+            		collectionName = split[1];
             	}
-            	else if (normalizedPath.startsWith("/xmlrpc")) {
+//            	TODO : use named constants  
+            	p = Pattern.compile("/xmlrpc");
+            	split = p.split(uri.getPath(), 2);            	
+            	if (split.length > 1) {
             		apiName = "xmlrpc";
-            		remoteContext = "/xmlrpc";
-            		collectionName = normalizedPath.substring("/xmlrpc".length());
+            		remoteContext = split[0] + "/xmlrpc";
+            		collectionName = split[1];
             	}  
-            	else {
+            	//Default...
+        		if (apiName == null) { 
             		apiName = "direct access";
+            		//Warning : empty context ! What if /not_empty_context/root_collection/collection ?
             		remoteContext = "";
-            		collectionName =  normalizedPath; 
+            		collectionName =  uri.getPath(); 
             		if (port > -1)
             			throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "Local xmldb URI should not provide a port:" + xmldbURI);
             	} 
+            	//Trim trailing slash if necessary
+            	p = Pattern.compile(".+/$");            	
+            	collectionName = p.split(collectionName)[0];              	
             	//TODO in the future : check that collectionName starts with DBBroker.ROOT_COLLECTION ?
         	} catch (URISyntaxException e) {
             	uri = null;
