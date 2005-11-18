@@ -1,21 +1,10 @@
+.settings
 build
+dist
 exist-modules.jar
 exist-optional.jar
 exist.jar
 key.store
 start.jar
-extensions/modules/classes
-test/report
-tools/jetty/logs
-tools/jetty/work
-tools/wrapper/classes
-tools/wrapper/logs
-tools/wrapper/work
-tools/wrapper/classes/org
-webapp/api
-
-.exist_history
 .exist_query_history
-hs_err_pid*.log
 
-.settings
