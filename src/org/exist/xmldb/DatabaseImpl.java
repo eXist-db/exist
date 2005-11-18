@@ -170,7 +170,7 @@ public class DatabaseImpl implements Database {
     	else if ("xmlrpc".equals(uri.getApiName())){
     		URL url = null;
     		try {
-    			url = new URL("http", uri.getHost(), uri.getPort(), uri.getRemoteContext());
+    			url = new URL("http", uri.getHost(), uri.getPort(), uri.getContext());
     		} catch (MalformedURLException e) {
         		//Should never happen
         		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URL is not well formed:" + 
