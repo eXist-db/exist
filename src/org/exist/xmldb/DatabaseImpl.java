@@ -23,12 +23,9 @@ package org.exist.xmldb;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
@@ -160,6 +157,9 @@ public class DatabaseImpl implements Database {
     	XmldbURI uri = null;
     	try {
     		uri = new XmldbURI(XmldbURI.XMLDB_URI_PREFIX + xmldbURI);
+    		if (!uri.isAbsolute())
+    			throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URI is not absolute:" + 
+        				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);       			
     	} catch (Exception e) {    		
     		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URI is not well formed:" + 
     				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);   
@@ -334,83 +334,6 @@ public class DatabaseImpl implements Database {
 			currentInstanceName = value;
 		if (property.equals("configuration"))
 			configuration = value;
-    }
-    
-    public class XmldbURI {
-    	
-    	//Should be provided by org.xmldb.api package !!! 
-    	public static final String XMLDB_URI_PREFIX = "xmldb:";
-    	
-    	private URI uri;
-    	private String instanceName;
-    	private String host;
-    	private int port;    	
-    	private String collectionName;
-    	private String apiName;
-    	private String remoteContext;
-    	
-    	//Note that we construct URIs starting with XmldbURI.XMLDB_URI_PREFIX 
-    	public XmldbURI(String xmldbURI) throws URISyntaxException, XMLDBException {
-    		Pattern p;
-    		String[] split;
-        	try {
-        		if (!xmldbURI.startsWith(XMLDB_URI_PREFIX))
-        			throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "This is not an xmldb URI :" + xmldbURI);
-        		uri = new URI(xmldbURI.substring(XMLDB_URI_PREFIX.length()));
-        		instanceName = uri.getScheme();    		 
-            	if ("".equals(instanceName))
-            		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "No instance name for xmldb URI :" + xmldbURI);
-            	//TODO : consider using LOCAL_HOSTNAME
-            	host = uri.getHost();
-            	port = uri.getPort();         	  
-//            	TODO : use named constants  
-            	p = Pattern.compile("/webdav");
-            	split = p.split(uri.getPath(), 2);
-            	if (split.length > 1) {
-            		apiName = "webdav";
-            		remoteContext = split[0] + "/webdav";
-            		collectionName = split[1];
-            	}
-//            	TODO : use named constants  
-            	p = Pattern.compile("/xmlrpc");
-            	split = p.split(uri.getPath(), 2);            	
-            	if (split.length > 1) {
-            		apiName = "xmlrpc";
-            		remoteContext = split[0] + "/xmlrpc";
-            		collectionName = split[1];
-            	}  
-            	//Default...
-        		if (apiName == null) { 
-            		apiName = "direct access";
-            		//Warning : empty context ! What if /not_empty_context/root_collection/collection ?
-            		remoteContext = "";
-            		collectionName =  uri.getPath(); 
-            		if (port > -1)
-            			throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "Local xmldb URI should not provide a port:" + xmldbURI);
-            	} 
-            	//Trim trailing slash if necessary
-            	p = Pattern.compile(".+/$");            	
-            	collectionName = p.split(collectionName)[0];              	
-            	//TODO in the future : check that collectionName starts with DBBroker.ROOT_COLLECTION ?
-        	} catch (URISyntaxException e) {
-            	uri = null;
-            	throw e;        	
-	    	} catch (XMLDBException e) {
-	        	uri = null;
-	        	throw e;
-	    	}
-    	}
-    	
-    	//TODO : prefefined URIs as satic classes...
-    	
-    	public URI getURI() { return uri; }
-    	public String getInstanceName() { return (uri == null) ? null : instanceName; }
-    	public String getHost() { return  (uri == null) ? null : host; }
-    	public int getPort() { return  (uri == null) ? -1 : port; }
-    	public String getCollectionName() { return (uri == null) ? null : collectionName; }
-    	public String getApiName() { return (uri == null) ? null : apiName; }
-    	public String getRemoteContext() { return (uri == null) ? null : remoteContext; }
-  	
     }
 
 }
