@@ -53,7 +53,7 @@
     
     <xsl:template match="exist:match">
         <span class="xml-match">
-            <xsl:apply-templates/>
+            <xsl:value-of select="."/>
         </span>
     </xsl:template>
     
