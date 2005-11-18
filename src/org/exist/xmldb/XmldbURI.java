@@ -41,7 +41,7 @@ public class XmldbURI {
 	private String instanceName;
 	private String host;
 	private int port = -1; 
-	private String remoteContext;  	
+	private String context;  	
 	private String collectionName;
 	private String apiName;
 
@@ -102,7 +102,7 @@ public class XmldbURI {
 	        	if (index > lastIndex) {
 	        		apiName = "xmlrpc";        		
 	        		collectionName = path.substring(index + "/xmlrpc".length());
-	        		remoteContext = path.substring(0, index) + "/xmlrpc";
+	        		context = path.substring(0, index) + "/xmlrpc";
 	        		lastIndex = index;
 	        	}         	
 	        	//TODO : use named constants  
@@ -110,7 +110,7 @@ public class XmldbURI {
 	        	if (index > lastIndex) {
 	        		apiName = "webdav";        		
 	        		collectionName = path.substring(index + "/webdav".length());
-	        		remoteContext = path.substring(0, index) + "/webdav";
+	        		context = path.substring(0, index) + "/webdav";
 	        		lastIndex = index;
 	        	}    		
 	        	//Default : a local URI...
@@ -118,7 +118,7 @@ public class XmldbURI {
 	        		apiName = "rest-style";  
 	        		collectionName =  path; 	
 	    			//TODO : determine the context out of a clean root collection policy.
-	    			remoteContext = null;	        		        		
+	    			context = null;	        		        		
 	        	}
     		}    	
 	        else 
@@ -127,7 +127,7 @@ public class XmldbURI {
 	        		//Put the "right" URI in the message ;-)
 	        		throw new URISyntaxException(wrappedURI.toString(), "Local xmldb URI should not provide a port");
 	        	apiName = "direct access";  
-	        	remoteContext = null;
+	        	context = null;
 	        	collectionName = path; 	 
 	        }
 	    	//Trim trailing slash if necessary    	
@@ -145,8 +145,8 @@ public class XmldbURI {
 			buf.append(host);				
 		if (port > -1)
 			buf.append(":" + port);		
-		if (remoteContext != null)
-			buf.append(remoteContext);
+		if (context != null)
+			buf.append(context);
 		//TODO : eventually use a prepend.root.collection system property 		
 		if (collectionName != null)
 			buf.append(collectionName);
@@ -193,13 +193,13 @@ public class XmldbURI {
 		}
 	}
 	
-	public void setRemoteContext(String remoteContext) throws URISyntaxException {
-		String oldRemoteContext = remoteContext;
+	public void setContext(String context) throws URISyntaxException {
+		String oldContext = context;
 		try {
-			this.remoteContext = remoteContext;
+			this.context = context;
 			computeURI();
 		} catch (URISyntaxException e) {
-			this.remoteContext = oldRemoteContext;
+			this.context = oldContext;
 			throw e;
 		}
 	}
@@ -237,8 +237,8 @@ public class XmldbURI {
 		return apiName; 
 	}
 	
-	public String getRemoteContext() {		
-		return remoteContext; 
+	public String getContext() {		
+		return context; 
 	}
 	
 	public int compareTo(Object ob) throws ClassCastException {
@@ -269,15 +269,28 @@ public class XmldbURI {
 		return wrappedURI.isOpaque();
 	}
 	
-	public XmldbURI normalize() {	
-		return create(wrappedURI.normalize().toString());
+	public XmldbURI normalize() {			
+		String context = this.getContext();
+		URI uri = URI.create((context == null) ? "" : context);		
+		try {
+			XmldbURI xmldbURI = new XmldbURI(this.toString());
+			xmldbURI.setContext((uri.normalize()).toString());
+			return xmldbURI;
+		} catch (URISyntaxException e) {
+			throw new IllegalArgumentException(e.getMessage());
+		}		
+
 	}	
 	
-	public XmldbURI relativize(URI uri) {
+	public XmldbURI relativize(XmldbURI uri) {
 		if (uri == null)
-			throw new NullPointerException("The provided URI is null");				
-		URI newURI = wrappedURI.relativize(uri);
-		return create(newURI.toString());
+			throw new NullPointerException("The provided URI is null");	
+//		TODO : everything but contexts must be equal !
+		String context1 = this.getContext();
+		String context2 = uri.getContext();
+		URI uri1 = URI.create((context1 == null) ? "" : context1);
+		URI uri2 = URI.create((context2 == null) ? "" : context2);		
+		return create((uri1.relativize(uri2)).toString());		
 	}
 	
 	public XmldbURI resolve(String str) throws NullPointerException, IllegalArgumentException {	
@@ -285,16 +298,17 @@ public class XmldbURI {
 			throw new NullPointerException("The provided String is null");	
 		try {
 			XmldbURI uri = new XmldbURI(str);
-			return resolve(uri.getURI());
+			return resolve(uri);
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException(e.getMessage());
 		}
-	}
+	}	
 	
-	public XmldbURI resolve(URI uri) throws NullPointerException {	
+	public XmldbURI resolve(XmldbURI uri) throws NullPointerException {	
 		if (uri == null)
-			throw new NullPointerException("The provided URI is null");			
-		return create(wrappedURI.resolve(uri).toString());
+			throw new NullPointerException("The provided URI is null");	
+		//TODO : refactor
+		return create(wrappedURI.resolve(uri.getURI()).toString());
 	}
 	
 	public String toASCIIString() {	
