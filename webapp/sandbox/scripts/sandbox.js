@@ -63,7 +63,7 @@ var behaviourRules = {
 			element.onclick = function() {
 				resizeQueryBox(false);
 			}
-	},
+	}
 };
 Behaviour.register(behaviourRules);
 
@@ -174,7 +174,7 @@ function exportResponse(request) {
 function checkQuery() {
 	var query = $F('query');
 	if (query) {
-		var params = 'check=' + escape(query);
+		var params = 'check=' + escapeQuery(query);
 		var ajax = new Ajax.Updater('errors', "sandbox.xql", {
 				method: 'post', parameters: params, 
 				onFailure: requestFailed
@@ -192,12 +192,13 @@ function execQuery() {
 	if (query.length == 0)
 		return;
 	resizeQueryBox(true);
-	var params = 'qu=' + escape(query);
+	var params = 'qu=' + escapeQuery(query);
 	var ajax = new Ajax.Request("sandbox.xql", {
 			method: 'post', parameters: params, 
 			onComplete: showQueryResponse,
 			onFailure: requestFailed
 		});
+	$('errors').innerHTML = 'Query sent ...';
 }
 
 /** Response handler: query executed, check for errors and
@@ -221,6 +222,7 @@ function showQueryResponse(request) {
 			
 		$('current').innerHTML = "Showing items " + document.startOffset + 
 			" to " + document.endOffset;
+		$('errors').innerHTML = 'Retrieving results ...';
 		retrieveNext();
 	}
 }
@@ -273,6 +275,8 @@ function retrieveNext() {
 				onComplete: itemRetrieved,
 				onFailure: requestFailed
 			});
+	} else {
+		$('errors').innerHTML = '';
 	}
 }
 
@@ -314,4 +318,8 @@ function getElementValue(node) {
 		child = child.nextSibling;
 	}
 	return val;
+}
+
+function escapeQuery(query) {
+	return encodeURIComponent(query);
 }

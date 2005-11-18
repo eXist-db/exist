@@ -83,12 +83,12 @@ declare function sandbox:save-query($query as xs:string, $description as xs:stri
 declare function sandbox:check-query($query as xs:string) as element() {
     util:declare-option("exist:serialize", "media-type=text/xml omit-xml-declaration=no"),
     <ajax-response>
-    { util:compile($query) }
+        { util:compile($query) }
     </ajax-response>
 };
 
 (:~ Retrieve a single query result. :)
-declare function sandbox:retrieve($num as xs:integer) as empty() {
+declare function sandbox:retrieve($num as xs:integer) as element() {
     util:declare-option("exist:serialize", "media-type=text/xml omit-xml-declaration=no indent=no"),
     let $cached := request:get-session-attribute("cached")
     let $item :=
@@ -96,9 +96,10 @@ declare function sandbox:retrieve($num as xs:integer) as empty() {
             {$cached[$num]}
         </item>
     return
-        transform:stream-transform($item, doc($sandbox:XML_HIGHLIGHT_STYLE), ())
+        transform:transform($item, doc($sandbox:XML_HIGHLIGHT_STYLE), ())
 };
 
+(:~ Execute a query :)
 declare function sandbox:exec-query($qu as xs:string) as element() {
     let $startTime := util:system-time()
     let $results := util:eval($qu)
@@ -145,6 +146,7 @@ declare function sandbox:display-page() as element() {
                 <form name="main">
                     <div id="top-panel">
                         <div id="query-panel">
+                            <a href="#" id="maximize">Maximize</a>
                             <p id="queries">
                                 <label for="saved">Paste saved query</label>
                                 <select id="saved" name="saved">
