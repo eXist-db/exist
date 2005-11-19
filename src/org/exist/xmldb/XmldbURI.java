@@ -72,7 +72,12 @@ public class XmldbURI {
 		this.host = null;
 		this.port = -1;
 		this.apiName = null;		
-		if (wrappedURI.getScheme() != null) {			
+		if (wrappedURI.getScheme() == null) { 
+			context = wrappedURI.getPath();
+			collectionName = null;
+		}
+		else
+		{			
 			if (!wrappedURI.toString().startsWith(XMLDB_URI_PREFIX))
 				throw new URISyntaxException(wrappedURI.toString(), "xmldb URI scheme does not start with " + XMLDB_URI_PREFIX);
 			try {
@@ -81,59 +86,59 @@ public class XmldbURI {
 				//Put the "right" URI in the message ;-)
 				throw new URISyntaxException(wrappedURI.toString(), e.getMessage());				
 			}
-			instanceName = truncatedURI.getScheme();
-			if (instanceName == null)   
-				//Put the "right" URI in the message ;-)
-				throw new URISyntaxException(wrappedURI.toString().toString(), "xmldb URI scheme has no instance name");
-			host = truncatedURI.getHost();
-			port = truncatedURI.getPort();	
-			path = truncatedURI.getPath();
 	    	if (truncatedURI.getQuery() != null)
 	    		//Put the "right" URI in the message ;-)
 	    		throw new URISyntaxException(wrappedURI.toString(), "xmldb URI should not provide a query part");
 	    	if (truncatedURI.getFragment() != null)
 	    		//Put the "right" URI in the message ;-)    		
-	    		throw new URISyntaxException(wrappedURI.toString(), "xmldb URI should not provide a fragment part");				
-		}			
-		if (path != null) {
-			if (host != null) {  
-	    		//TODO : use named constants  
-	        	index = path.lastIndexOf("/xmlrpc");        	         	
-	        	if (index > lastIndex) {
-	        		apiName = "xmlrpc";        		
-	        		collectionName = path.substring(index + "/xmlrpc".length());
-	        		context = path.substring(0, index) + "/xmlrpc";
-	        		lastIndex = index;
-	        	}         	
-	        	//TODO : use named constants  
-	        	index = path.lastIndexOf("/webdav");        	         	
-	        	if (index > lastIndex) {
-	        		apiName = "webdav";        		
-	        		collectionName = path.substring(index + "/webdav".length());
-	        		context = path.substring(0, index) + "/webdav";
-	        		lastIndex = index;
-	        	}    		
-	        	//Default : a local URI...
-	        	if (apiName == null) {	    			
-	        		apiName = "rest-style";  
-	        		collectionName =  path; 	
-	    			//TODO : determine the context out of a clean root collection policy.
-	    			context = null;	        		        		
-	        	}
-    		}    	
-	        else 
-	        {	        	
-	        	if (port > -1)
-	        		//Put the "right" URI in the message ;-)
-	        		throw new URISyntaxException(wrappedURI.toString(), "Local xmldb URI should not provide a port");
-	        	apiName = "direct access";  
-	        	context = null;
-	        	collectionName = path; 	 
-	        }
-	    	//Trim trailing slash if necessary    	
-	    	if (collectionName != null && collectionName.length() > 1 && collectionName.endsWith("/"))    		
-	    		collectionName = collectionName.substring(0, collectionName.length() - 1);              	
-	    	//TODO : check that collectionName starts with DBBroker.ROOT_COLLECTION ?	
+	    		throw new URISyntaxException(wrappedURI.toString(), "xmldb URI should not provide a fragment part");
+			instanceName = truncatedURI.getScheme();
+			if (instanceName == null)   
+				//Put the "right" URI in the message ;-)
+				throw new URISyntaxException(wrappedURI.toString().toString(), "xmldb URI scheme has no instance name");
+			host = truncatedURI.getHost();
+			port = truncatedURI.getPort();			
+	    	path = truncatedURI.getPath();					
+			if (path != null) {
+				if (host != null) {  
+		    		//TODO : use named constants  
+		        	index = path.lastIndexOf("/xmlrpc");        	         	
+		        	if (index > lastIndex) {
+		        		apiName = "xmlrpc";        		
+		        		collectionName = path.substring(index + "/xmlrpc".length());
+		        		context = path.substring(0, index) + "/xmlrpc";
+		        		lastIndex = index;
+		        	}         	
+		        	//TODO : use named constants  
+		        	index = path.lastIndexOf("/webdav");        	         	
+		        	if (index > lastIndex) {
+		        		apiName = "webdav";        		
+		        		collectionName = path.substring(index + "/webdav".length());
+		        		context = path.substring(0, index) + "/webdav";
+		        		lastIndex = index;
+		        	}    		
+		        	//Default : a local URI...
+		        	if (apiName == null) {	    			
+		        		apiName = "rest-style";  
+		        		collectionName =  path; 	
+		    			//TODO : determine the context out of a clean root collection policy.
+		    			context = null;	        		        		
+		        	}
+	    		}    	
+		        else 
+		        {	        	
+		        	if (port > -1)
+		        		//Put the "right" URI in the message ;-)
+		        		throw new URISyntaxException(wrappedURI.toString(), "Local xmldb URI should not provide a port");
+		        	apiName = "direct access";  
+		        	context = null;
+		        	collectionName = path; 	 
+		        }
+		    	//Trim trailing slash if necessary    	
+		    	if (collectionName != null && collectionName.length() > 1 && collectionName.endsWith("/"))    		
+		    		collectionName = collectionName.substring(0, collectionName.length() - 1);              	
+		    	//TODO : check that collectionName starts with DBBroker.ROOT_COLLECTION ?	
+			}
 		}
 	}
 
@@ -157,7 +162,22 @@ public class XmldbURI {
         	wrappedURI = null;        	
         	throw e; 
     	}			
-	}	
+	}
+	
+	private void checkCompatibility(XmldbURI uri) throws IllegalArgumentException {
+		if (this.getInstanceName() != null && uri.getInstanceName() != null
+				&& !this.getInstanceName().equals(uri.getInstanceName()))
+			throw new IllegalArgumentException(this.getInstanceName() + " differs from " + uri.getInstanceName());
+		//case insensitive comparison
+		if (this.getHost() != null && uri.getHost() != null
+				&& !this.getHost().equalsIgnoreCase(uri.getHost()))
+			throw new IllegalArgumentException(this.getHost() + " differs from " + uri.getHost());
+		if (this.getPort() != -1 && uri.getPort() != -1	&& this.getPort() != uri.getPort())
+			throw new IllegalArgumentException(this.getPort() + " differs from " + uri.getPort());
+		if (this.getCollectionName() != null && uri.getCollectionName() != null
+				&& !this.getCollectionName().equals(uri.getCollectionName()))
+			throw new IllegalArgumentException(this.getCollectionName() + " differs from " + uri.getCollectionName());		
+	}
 	
 	public void setInstanceName(String instanceName) throws URISyntaxException {		 
 		String oldInstanceName = this.instanceName;
@@ -194,9 +214,15 @@ public class XmldbURI {
 	}
 	
 	public void setContext(String context) throws URISyntaxException {
-		String oldContext = context;
+		String oldContext = this.context;
 		try {
-			this.context = context;
+			//trims any trailing slash 
+	    	if (context != null && context.endsWith("/")) {   		
+	    		//include root slash if we have a host
+	    		if (this.getHost() != null)
+	    			context = context.substring(0, context.length() - 1); 
+	    	}
+			this.context = "".equals(context) ? null : context;
 			computeURI();
 		} catch (URISyntaxException e) {
 			this.context = oldContext;
@@ -271,7 +297,9 @@ public class XmldbURI {
 	
 	public XmldbURI normalize() {			
 		String context = this.getContext();
-		URI uri = URI.create((context == null) ? "" : context);		
+		if (context == null)
+			return this;
+		URI uri = URI.create(context);		
 		try {
 			XmldbURI xmldbURI = new XmldbURI(this.toString());
 			xmldbURI.setContext((uri.normalize()).toString());
@@ -284,18 +312,24 @@ public class XmldbURI {
 	
 	public XmldbURI relativize(XmldbURI uri) {
 		if (uri == null)
-			throw new NullPointerException("The provided URI is null");	
-//		TODO : everything but contexts must be equal !
+			throw new NullPointerException("The provided URI is null");			
+		checkCompatibility(uri);
 		String context1 = this.getContext();
+		if (context1 == null)
+			throw new NullPointerException("The current context is null");				
 		String context2 = uri.getContext();
-		URI uri1 = URI.create((context1 == null) ? "" : context1);
-		URI uri2 = URI.create((context2 == null) ? "" : context2);		
-		return create((uri1.relativize(uri2)).toString());		
+		if (context2 == null)
+			return this;
+		URI uri1 = URI.create(context1);
+		URI uri2 = URI.create(context2);
+		URI uri3 = uri1.relativize(uri2);
+		//returns the relative *context* (not the URI)
+		return create(uri3.toString());		
 	}
 	
 	public XmldbURI resolve(String str) throws NullPointerException, IllegalArgumentException {	
 		if (str == null)
-			throw new NullPointerException("The provided String is null");	
+			throw new NullPointerException("The provided String is null");		
 		try {
 			XmldbURI uri = new XmldbURI(str);
 			return resolve(uri);
@@ -307,8 +341,23 @@ public class XmldbURI {
 	public XmldbURI resolve(XmldbURI uri) throws NullPointerException {	
 		if (uri == null)
 			throw new NullPointerException("The provided URI is null");	
-		//TODO : refactor
-		return create(wrappedURI.resolve(uri.getURI()).toString());
+		checkCompatibility(uri);	
+		String context1 = this.getContext();
+		if (context1 == null)
+			throw new NullPointerException("The current context is null");			
+		String context2 = uri.getContext();
+		if (context2 == null)
+			return this;	
+		URI uri1 = URI.create(context1);
+		URI uri2 = URI.create(context2);
+		URI uri3 = uri1.resolve(uri2);
+		try {
+			XmldbURI xmldbURI = new XmldbURI(this.toString());
+			xmldbURI.setContext(uri3.toString());
+			return xmldbURI;
+		} catch (URISyntaxException e) {
+			throw new IllegalArgumentException(e.getMessage());
+		}	
 	}
 	
 	public String toASCIIString() {	
