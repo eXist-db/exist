@@ -87,7 +87,7 @@ public class Delete extends Modification {
                 if (!doc.getPermissions().validate(context.getUser(),
                         Permission.UPDATE)) {
                     transact.abort(transaction);    
-                    throw new PermissionDeniedException("permission to remove document denied");
+                    throw new XPathException(getASTNode(), "permission to update document denied");
                 }
                 doc.setIndexListener(listener);
                 modifiedDocs.add(doc);
