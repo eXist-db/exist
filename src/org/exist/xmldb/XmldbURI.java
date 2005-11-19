@@ -21,12 +21,13 @@
  */
 package org.exist.xmldb;
 
-import java.lang.ClassCastException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.regex.Pattern;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 
 /** A utility class for xmldb URis.
  * Since, java.net.URI is <strong>final</strong> this class acts as a wrapper.
@@ -42,7 +43,7 @@ public class XmldbURI {
 	private String host;
 	private int port = -1; 
 	private String context;  	
-	private String collectionName;
+	private String escapedCollectionName;
 	private String apiName;
 
 	/**
@@ -57,7 +58,23 @@ public class XmldbURI {
     		parseURI();
     	} catch (URISyntaxException e) {
         	wrappedURI = null;        	
-        	throw e; 
+        	throw e;     	
+    	}
+	}
+	
+	public XmldbURI(String accessURI, String collectionName) throws URISyntaxException {
+    	try {
+    		String escaped = URLEncoder.encode(collectionName, "UTF-8");    		
+    		//This is the trick : unescape slashed in order to keep java.net.URI capabilities 
+    		escaped = escaped.replaceAll("%2F", "/");
+    		wrappedURI = new URI(accessURI + escaped);    		
+    		parseURI();
+    	} catch (URISyntaxException e) {
+        	wrappedURI = null;        	
+        	throw e;     	
+    	} catch (UnsupportedEncodingException e) {
+        	wrappedURI = null;        	
+        	throw new URISyntaxException(accessURI + collectionName, e.getMessage());  	
     	}
 	}
 	
@@ -71,10 +88,10 @@ public class XmldbURI {
 		this.instanceName = null;
 		this.host = null;
 		this.port = -1;
-		this.apiName = null;		
-		if (wrappedURI.getScheme() == null) { 
+		this.apiName = null;
+		if (wrappedURI.getScheme() == null) { 			
 			context = wrappedURI.getPath();
-			collectionName = null;
+			escapedCollectionName = null;
 		}
 		else
 		{			
@@ -92,20 +109,21 @@ public class XmldbURI {
 	    	if (truncatedURI.getFragment() != null)
 	    		//Put the "right" URI in the message ;-)    		
 	    		throw new URISyntaxException(wrappedURI.toString(), "xmldb URI should not provide a fragment part");
-			instanceName = truncatedURI.getScheme();
+	    	//Is an encoded scheme ever possible ?
+	    	instanceName = truncatedURI.getScheme();
 			if (instanceName == null)   
 				//Put the "right" URI in the message ;-)
-				throw new URISyntaxException(wrappedURI.toString().toString(), "xmldb URI scheme has no instance name");
+				throw new URISyntaxException(wrappedURI.toString().toString(), "xmldb URI scheme has no instance name");			
 			host = truncatedURI.getHost();
-			port = truncatedURI.getPort();			
-	    	path = truncatedURI.getPath();					
-			if (path != null) {
+			port = truncatedURI.getPort();
+			path = truncatedURI.getPath();
+			if (path != null) {				
 				if (host != null) {  
 		    		//TODO : use named constants  
 		        	index = path.lastIndexOf("/xmlrpc");        	         	
 		        	if (index > lastIndex) {
 		        		apiName = "xmlrpc";        		
-		        		collectionName = path.substring(index + "/xmlrpc".length());
+		        		escapedCollectionName = path.substring(index + "/xmlrpc".length());
 		        		context = path.substring(0, index) + "/xmlrpc";
 		        		lastIndex = index;
 		        	}         	
@@ -113,14 +131,14 @@ public class XmldbURI {
 		        	index = path.lastIndexOf("/webdav");        	         	
 		        	if (index > lastIndex) {
 		        		apiName = "webdav";        		
-		        		collectionName = path.substring(index + "/webdav".length());
+		        		escapedCollectionName = path.substring(index + "/webdav".length());
 		        		context = path.substring(0, index) + "/webdav";
 		        		lastIndex = index;
 		        	}    		
 		        	//Default : a local URI...
 		        	if (apiName == null) {	    			
 		        		apiName = "rest-style";  
-		        		collectionName =  path; 	
+		        		escapedCollectionName =  path; 	
 		    			//TODO : determine the context out of a clean root collection policy.
 		    			context = null;	        		        		
 		        	}
@@ -132,14 +150,15 @@ public class XmldbURI {
 		        		throw new URISyntaxException(wrappedURI.toString(), "Local xmldb URI should not provide a port");
 		        	apiName = "direct access";  
 		        	context = null;
-		        	collectionName = path; 	 
+		        	escapedCollectionName = path; 	 
 		        }
 		    	//Trim trailing slash if necessary    	
-		    	if (collectionName != null && collectionName.length() > 1 && collectionName.endsWith("/"))    		
-		    		collectionName = collectionName.substring(0, collectionName.length() - 1);              	
-		    	//TODO : check that collectionName starts with DBBroker.ROOT_COLLECTION ?	
-			}
-		}
+		    	if (escapedCollectionName != null && escapedCollectionName.length() > 1 && escapedCollectionName.endsWith("/"))    		
+		    		escapedCollectionName = escapedCollectionName.substring(0, escapedCollectionName.length() - 1);              	
+		    	//TODO : check that collectionName starts with DBBroker.ROOT_COLLECTION ?					
+			}		
+		}	
+			
 	}
 
 	private void computeURI() throws URISyntaxException {		
@@ -153,8 +172,8 @@ public class XmldbURI {
 		if (context != null)
 			buf.append(context);
 		//TODO : eventually use a prepend.root.collection system property 		
-		if (collectionName != null)
-			buf.append(collectionName);
+		if (escapedCollectionName != null)
+			buf.append(escapedCollectionName);
 		try {
 			wrappedURI = new URI(buf.toString());			
 			parseURI();	
@@ -233,12 +252,22 @@ public class XmldbURI {
 	public void setCollectionName(String collectionName) throws URISyntaxException {
 		String oldCollectionName = collectionName;
 		try {
-			this.collectionName = collectionName;
+			if (collectionName == null)
+				this.escapedCollectionName = null;
+			else {
+				String escaped = URLEncoder.encode(collectionName, "UTF-8");
+				//This is the trick : unescape slashed in order to keep java.net.URI capabilities
+				escaped = escaped.replaceAll("%2F", "/");			
+				this.escapedCollectionName = escaped;
+			}
 			computeURI();
 		} catch (URISyntaxException e) {
-			this.collectionName = oldCollectionName;
+			this.escapedCollectionName = oldCollectionName;
 			throw e;
-		}
+    	} catch (UnsupportedEncodingException e) {
+        	wrappedURI = null;        	
+        	throw new URISyntaxException(this.toString(), e.getMessage());  	
+    	}
 	}
 	
 	public URI getURI() { 		
@@ -255,8 +284,15 @@ public class XmldbURI {
 	public int getPort() {		
 		return port; 
 	}
-	public String getCollectionName() {		
-		return collectionName; 
+	public String getCollectionName() {
+		if (escapedCollectionName == null)
+			return null;
+		try {
+			return URLDecoder.decode(escapedCollectionName, "UTF-8"); 
+		} catch (UnsupportedEncodingException e) {
+			//Should never happen
+			throw new IllegalArgumentException(escapedCollectionName + " can not be properly escaped");
+		}		
 	}
 	
 	public String getApiName() {		
