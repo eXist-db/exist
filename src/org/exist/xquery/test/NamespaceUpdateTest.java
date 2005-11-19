@@ -49,24 +49,6 @@ public class NamespaceUpdateTest extends TestCase {
 		}
 	}
 	
-	public void testUpdateElement() {
-		try {
-			XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
-			String query =
-				"declare namespace t='http://www.foo.com';\n" +
-				"<test xmlns='http://www.foo.com'>\n" +
-				"{\n" +
-				"	let $n := element { 'para' } { () } return $n\n" +
-				"}\n" +
-				"</test>";
-			ResourceSet result = service.query(query);
-			 assertEquals(1, result.getSize());
-			System.out.println(result.getResource(0).getContent());
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
-	}
-	
 	protected void setUp() {
 		try {
 			// initialize driver
