@@ -27,7 +27,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -40,7 +39,6 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.UntypedAtomicValue;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
