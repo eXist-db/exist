@@ -191,7 +191,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 
 	public boolean equals(Object other) {
 		if (!(other instanceof NodeProxy))
-			throw new RuntimeException("cannot compare NodeProxy with " + other.getClass().getName());
+			return false;
 		NodeProxy node = (NodeProxy) other;
 		if (node.doc.getDocId() == doc.getDocId() && node.gid == gid)
 			return true;
