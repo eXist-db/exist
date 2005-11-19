@@ -577,7 +577,7 @@ public class XmldbURITest extends TestCase {
 			XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/a/b/xmlrpc/db");	
 			URI uri = new URI("..");	
 			//Strange but it's like this
-			assertEquals("/a/", xmldbURI.resolveContext(uri).toString());		
+			assertEquals("/a/b/", xmldbURI.resolveContext(uri).toString());		
 		} catch (URISyntaxException e) {
 			fail(e.getMessage());
 		}
@@ -586,8 +586,9 @@ public class XmldbURITest extends TestCase {
 	public void testXmldbURIResolveContext2() {
 		try{
 			XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/a/b/xmlrpc/db");	
-			URI uri = new URI("../..");			
-			assertEquals("/", xmldbURI.resolveContext(uri).toString());
+			URI uri = new URI("../..");	
+			//Strange but it's like this
+			assertEquals("/a/", xmldbURI.resolveContext(uri).toString());
 		} catch (URISyntaxException e) {
 			fail(e.getMessage());
 		}
@@ -633,7 +634,6 @@ public class XmldbURITest extends TestCase {
 	public void testXmldbURINormalizeCollectionName1() {
 		try{
 			XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/./collection");			
-			//Strange but it's like this
 			assertEquals("xmldb:exist://localhost:8080/xmlrpc/db/collection", xmldbURI.normalizeCollectionName().toString());		
 		} catch (URISyntaxException e) {
 			fail(e.getMessage());

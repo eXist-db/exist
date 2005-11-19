@@ -72,6 +72,8 @@ public class XmldbURI {
     		String escaped = URLEncoder.encode(collectionName, "UTF-8");    		
     		//This is the trick : unescape slashed in order to keep java.net.URI capabilities 
     		escaped = escaped.replaceAll("%2F", "/");
+    		escaped = escaped.replaceAll("%23", "#");
+    		escaped = escaped.replaceAll("%3F", "?");
     		wrappedURI = new URI(accessURI + escaped);    		
     		parseURI();
     	} catch (URISyntaxException e) {
@@ -306,7 +308,9 @@ public class XmldbURI {
 			else {
 				String escaped = URLEncoder.encode(collectionName, "UTF-8");
 				//This is the trick : unescape slashed in order to keep java.net.URI capabilities
-				escaped = escaped.replaceAll("%2F", "/");			
+				escaped = escaped.replaceAll("%2F", "/");
+				escaped = escaped.replaceAll("%23", "#");
+				escaped = escaped.replaceAll("%3F", "?");			
 				this.escapedCollectionName = escaped;
 			}
 			recomputeURI();
@@ -375,10 +379,6 @@ public class XmldbURI {
 		if (!(ob instanceof XmldbURI))
 			return false;
 		return wrappedURI.equals(((XmldbURI)ob).getURI());
-	}
-	
-	public boolean isOpaque() {			
-		return wrappedURI.isOpaque();
 	}	
 	
 	public boolean isAbsolute() {	
@@ -412,7 +412,12 @@ public class XmldbURI {
 		String context = this.getContext();
 		if (context == null)
 			throw new NullPointerException("The current context is null");		
-		URI contextURI = URI.create(context);
+		URI contextURI;
+		//Adds a final slash if necessary
+		if (!context.endsWith("/"))
+			contextURI = URI.create(context + "/");
+		else
+			contextURI = URI.create(context);		
 		return contextURI.relativize(uri);	
 	}
 	
@@ -421,8 +426,13 @@ public class XmldbURI {
 			throw new NullPointerException("The provided URI is null");		
 		String context = this.getContext();
 		if (context == null)
-			throw new NullPointerException("The current context is null");			
-		URI contextURI = URI.create(context);
+			throw new NullPointerException("The current context is null");
+		URI contextURI;
+		//Adds a final slash if necessary
+		if (!context.endsWith("/"))
+			contextURI = URI.create(context + "/");
+		else
+			contextURI = URI.create(context);		
 		return contextURI.resolve(str);	
 	}
 	
@@ -431,8 +441,13 @@ public class XmldbURI {
 			throw new NullPointerException("The provided URI is null");		
 		String context = this.getContext();
 		if (context == null)
-			throw new NullPointerException("The current context is null");			
-		URI contextURI = URI.create(context);
+			throw new NullPointerException("The current context is null");	
+		URI contextURI;
+		//Adds a final slash if necessary
+		if (!context.endsWith("/"))
+			contextURI = URI.create(context + "/");
+		else
+			contextURI = URI.create(context);		
 		return contextURI.resolve(uri);	
 	}
 	
@@ -464,7 +479,7 @@ public class XmldbURI {
 		if (collectionName == null)
 			throw new NullPointerException("The current collection name is null");		
 		URI collectionNameURI;
-		//Trims final slash
+		//Adds a final slash if necessary
 		if (!collectionName.endsWith("/"))
 			collectionNameURI = URI.create(collectionName + "/");
 		else
@@ -479,7 +494,7 @@ public class XmldbURI {
 		if (collectionName == null)
 			throw new NullPointerException("The current collection name is null");	
 		URI collectionNameURI;
-		//Trims final slash
+		//Adds a final slash if necessary
 		if (!collectionName.endsWith("/"))
 			collectionNameURI = URI.create(collectionName + "/");
 		else
@@ -494,7 +509,7 @@ public class XmldbURI {
 		if (collectionName == null)
 			throw new NullPointerException("The current collection name is null");
 		URI collectionNameURI;
-		//Trims final slash
+		//Adds a final slash if necessary
 		if (!collectionName.endsWith("/"))
 			collectionNameURI = URI.create(collectionName + "/");
 		else
