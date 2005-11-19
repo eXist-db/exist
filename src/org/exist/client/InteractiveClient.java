@@ -40,6 +40,7 @@ import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -84,6 +85,7 @@ import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.XmldbURI;
 import org.gnu.readline.Readline;
 import org.gnu.readline.ReadlineCompleter;
 import org.gnu.readline.ReadlineLibrary;
@@ -447,11 +449,12 @@ public class InteractiveClient {
                     } else if (args[1].startsWith("/"))
                         tempPath = args[1];
                     else
-                        tempPath = tempPath + '/' + args[1];
-                    
-                    temp = DatabaseManager.getCollection(properties
-                            .getProperty("uri")
-                            + tempPath, properties.getProperty("user"),
+                        tempPath = tempPath + '/' + args[1];                    
+
+                    XmldbURI uri = new XmldbURI(properties.getProperty("uri"), tempPath);                   
+                    temp = DatabaseManager.getCollection(
+                    		uri.toString(), 
+                    		properties.getProperty("user"),
                             properties.getProperty("password"));
                 }
                 if (temp != null) {
