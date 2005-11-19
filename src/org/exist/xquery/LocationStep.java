@@ -288,11 +288,13 @@ public class LocationStep extends Step {
 		if (test.isWildcardTest()) {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
-//        } else if(axis == Constants.ATTRIBUTE_AXIS &&
-//                !(contextSet instanceof VirtualNodeSet) && contextSet.getLength() == 1) {
-//            NodeProxy proxy = contextSet.get(0);
-//            if (proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
-//                result = contextSet.directSelectAttribute(test.getName(), inPredicate);
+		// if there's just a single known node in the context, it is faster
+	    // do directly search for the attribute in the parent node.
+        } else if(axis == Constants.ATTRIBUTE_AXIS &&
+                !(contextSet instanceof VirtualNodeSet) && contextSet.getLength() == 1) {
+            NodeProxy proxy = contextSet.get(0);
+            if (proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
+                result = contextSet.directSelectAttribute(test.getName(), inPredicate);
         }
         if (result == null) {
             if(preloadNodeSets()) {
@@ -333,7 +335,7 @@ public class LocationStep extends Step {
 			vset.setInPredicate(inPredicate);
 			return vset;
 		} else if(preloadNodeSets()) {
-			LOG.debug("Preload node sets for: " + toString());
+//			LOG.debug("Preload node sets for: " + toString());
 			DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs == currentDocs || docs.equals(currentDocs))) {
                 currentDocs = docs;
