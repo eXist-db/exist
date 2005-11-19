@@ -324,6 +324,56 @@ public class XmlRpcTest extends XMLTestCase {
 	    }			
 	}
 	
+	public void testCollectionWithSpaces() {
+		try {
+			System.out.println("Creating collection with spaces in name ...");
+			Vector params = new Vector();
+			params.addElement(DBBroker.ROOT_COLLECTION + "/watch the spaces");
+			XmlRpcClient xmlrpc = getClient();
+			xmlrpc.execute( "createCollection", params );
+			
+			System.out.println("Storing document " + XML_DATA);
+			params.clear();
+			params.addElement(XML_DATA);
+			params.addElement(DBBroker.ROOT_COLLECTION + "/watch the spaces/test.xml");
+			params.addElement(new Integer(1));
+			
+			Boolean result = (Boolean)xmlrpc.execute("parse", params);
+			assertTrue(result.booleanValue());
+			
+			params.clear();
+			params.addElement(DBBroker.ROOT_COLLECTION);
+	
+			Hashtable collection = (Hashtable) xmlrpc.execute("describeCollection", params);
+			Vector collections = (Vector) collection.get("collections");
+			String colWithSpaces = null;
+			for (int i = 0; i < collections.size(); i++) {
+				String childName = (String) collections.elementAt(i);
+				if(childName.equals("watch the spaces"))
+					colWithSpaces = childName;
+				System.out.println("Child collection: " + childName);
+			}
+			assertNotNull("added collection not found", colWithSpaces);
+			
+			System.out.println("Retrieving document '" + DBBroker.ROOT_COLLECTION + "/watch the spaces/test.xml'");
+			Hashtable options = new Hashtable();
+	        options.put("indent", "yes");
+	        options.put("encoding", "UTF-8");
+	        options.put("expand-xincludes", "yes");
+	        options.put("process-xsl-pi", "no");
+	        
+	        params.clear();
+	        params.addElement( DBBroker.ROOT_COLLECTION + "/" + colWithSpaces + "/test.xml" ); 
+	        params.addElement( options );
+	        
+	        // execute the call
+			byte[] data = (byte[]) xmlrpc.execute( "getDocument", params );
+			System.out.println( new String(data, "UTF-8") );
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  
+	    }			
+	}	
+	
 	protected XmlRpcClient getClient() {
 		try {
 			XmlRpc.setEncoding("UTF-8");
