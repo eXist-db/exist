@@ -620,6 +620,125 @@ public class XmldbURITest extends TestCase {
 			fail(e.getMessage());
 		}				
 	}	
+
+	public void testXmldbURIIsCollectionNameAbsolute1() {
+		try{
+			XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db");	
+			assertTrue(xmldbURI1.isCollectionNameAbsolute());
+		} catch (URISyntaxException e) {
+			fail(e.getMessage());
+		}		
+	}
+	
+	public void testXmldbURINormalizeCollectionName1() {
+		try{
+			XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/./collection");			
+			//Strange but it's like this
+			assertEquals("xmldb:exist://localhost:8080/xmlrpc/db/collection", xmldbURI.normalizeCollectionName().toString());		
+		} catch (URISyntaxException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testXmldbURINormalizeCollectionName2() {
+		try{
+			XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/../collection");
+			XmldbURI xmldbURI2 = xmldbURI1.normalizeCollectionName();
+			assertEquals("xmldb:exist://localhost:8080/xmlrpc/collection", xmldbURI2.toString());		
+		} catch (URISyntaxException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testXmldbURINormalizeCollectionName3() {
+		try{
+			XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist:///");	
+			XmldbURI xmldbURI2  = xmldbURI1.normalizeCollectionName();
+			assertEquals("xmldb:exist:///", xmldbURI2.toString());		
+		} catch (URISyntaxException e) {
+			fail(e.getMessage());
+		}
+	}	
+	
+	public void testXmldbURIRelativizeCollectionName1() {
+		try{
+			XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/db/collection");	
+			URI uri = new URI("/db/collection");			
+			assertEquals("/db/collection", xmldbURI.relativizeCollectionName(uri).toString());		
+		} catch (URISyntaxException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testXmldbURIRelativizeCollectionName2() {
+		try{
+			XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/collection");	
+			URI uri = new URI("/db/db/collection");			
+			assertEquals("/db/db/collection", xmldbURI.relativizeCollectionName(uri).toString());		
+		} catch (URISyntaxException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testXmldbURIRelativizeCollectionName3() {
+		boolean exceptionThrown = false;
+		try{
+			XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///");	
+			URI uri = new URI("/");				
+			assertEquals("", xmldbURI.relativizeCollectionName(uri).toString());		
+		} catch (URISyntaxException e) {
+			fail(e.getMessage());
+		} catch (NullPointerException e) {
+			exceptionThrown = true;
+		}		
+	}	
+	
+	public void testXmldbURIResolveCollectionName1() {
+		try{
+			XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/a/b");	
+			URI uri = new URI("..");	
+			//Strange but it's like this
+			assertEquals("/db/a/", xmldbURI.resolveCollectionName(uri).toString());		
+		} catch (URISyntaxException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testXmldbURIResolveCollectionName2() {
+		try{
+			XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/a/b");	
+			URI uri = new URI("../..");			
+			//Strange but it's like this
+			assertEquals("/db/", xmldbURI.resolveCollectionName(uri).toString());
+		} catch (URISyntaxException e) {
+			fail(e.getMessage());
+		}
+	}	
+	
+	public void testXmldbURIResolveCollectionName3() {		
+		try{
+			//Null context here ;-)
+			XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///");	
+			URI uri = new URI("..");	
+			//Strange but it's like this
+			assertEquals("/..", xmldbURI.resolveCollectionName(uri).toString());			
+		} catch (URISyntaxException e) {
+			fail(e.getMessage());
+		}		
+	}
+	
+	public void testXmldbURIResolveCollectionName4() {		
+		try{
+			//Null context here ;-)
+			XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db");	
+			//Up and up...
+			URI uri = new URI("/../../..");					
+			//Strange but it's like this
+			assertEquals("/../../..", xmldbURI.resolveCollectionName(uri).toString());				
+		} catch (URISyntaxException e) {
+			fail(e.getMessage());
+		}				
+	}
 	
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(XmldbURITest.class);
