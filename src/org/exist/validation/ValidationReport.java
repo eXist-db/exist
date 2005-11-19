@@ -24,13 +24,11 @@ package org.exist.validation;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * Report containing all validation info (errors, warnings).
@@ -39,139 +37,148 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class ValidationReport implements ErrorHandler {
     
-    private ArrayList warnings = new ArrayList();
-    private ArrayList errors = new ArrayList();
+    private ArrayList validationReport = new ArrayList();
+    private long duration = -1;
+    
+    private ValidationReportItem getValidationReportItem(int type, SAXParseException exception){
+        
+        ValidationReportItem vri = new ValidationReportItem();
+        vri.type=type;
+        vri.lineNumber=exception.getLineNumber();
+        vri.columnNumber=exception.getColumnNumber();
+        vri.message=exception.getMessage();
+        return vri;
+    }
     
     /**
      *  Receive notification of a recoverable error.
-     * @param exception The warning information encapsulated in a 
+     * @param exception The warning information encapsulated in a
      *                      SAX parse exception.
-     * @throws SAXException Any SAX exception, possibly wrapping another 
+     * @throws SAXException Any SAX exception, possibly wrapping another
      *                      exception.
      */
     public void error(SAXParseException exception) throws SAXException {
-        addError(exception);
+        
+        validationReport.add( getValidationReportItem(ValidationReportItem.ERROR, exception) );
+        
     }
     
     /**
      *  Receive notification of a non-recoverable error.
      *
-     * @param exception     The warning information encapsulated in a 
+     * @param exception     The warning information encapsulated in a
      *                      SAX parse exception.
-     * @throws SAXException Any SAX exception, possibly wrapping another 
+     * @throws SAXException Any SAX exception, possibly wrapping another
      *                      exception.
      */
     public void fatalError(SAXParseException exception) throws SAXException {
-        addError(exception);
+        validationReport.add( getValidationReportItem(ValidationReportItem.FATAL, exception) );
     }
     
     /**
      * Receive notification of a warning.
      *
-     * @param exception     The warning information encapsulated in a 
+     * @param exception     The warning information encapsulated in a
      *                      SAX parse exception.
-     * @throws SAXException Any SAX exception, possibly wrapping another 
+     * @throws SAXException Any SAX exception, possibly wrapping another
      *                      exception.
      */
     public void warning(SAXParseException exception) throws SAXException {
-        addWarning(exception);
+        validationReport.add( getValidationReportItem(ValidationReportItem.WARNING, exception) );
     }
     
     
     /**
-     *  Add error report to list
-     * @param e Exception
+     *  Give validation information of the XML document.
+     *
+     * @return FALSE if no errors and warnings occurred.
      */
-    private void addError(SAXParseException e) {
-        getErrors().add("Error: (" + e.getLineNumber() + ", " 
-                                   + e.getColumnNumber() + "): " 
-                                   + e.getMessage());
+    public boolean isValid(){
+        return (validationReport.size()==0);
     }
     
-    /**
-     *  Get errors
-     * @return List of errors
-     */
-    public ArrayList getErrors() {
-        return errors;
-    }
-    
-    /**
-     *  Add warning report to list
-     * @param e Exception
-     */
-    private void addWarning(SAXParseException e) {
-        getWarnings().add("Warning: (" + e.getLineNumber() + ", " 
-                                       + e.getColumnNumber() + "): " 
-                                       + e.getMessage());
-    }
-    
-    /**
-     *  Get warnings
-     * @return List of warnings
-     */
-    public ArrayList getWarnings() {
-        return warnings;
-    }
-    
-    /**
-     *  Get report of all errors.
-     * @return Report of errors
-     */
-    public String getErrorReport() {
-        StringBuffer sb = new StringBuffer();
-        for (Iterator i = getErrors().iterator(); i.hasNext();){
-            sb.append( (String) i.next() + "\n" );
+    public List getValidationReport(){
+        
+        List textReport = new ArrayList();
+        
+        if( isValid() ){
+            textReport.add("Document is valid");
+        } else {
+            textReport.add("Document is not valid");
         }
-        return sb.toString();
-    }
-    
-    /**
-     *  Get report of all warnings.
-     * @return Report of warnings
-     */
-    public String getWarningReport() {
-        StringBuffer sb = new StringBuffer();
-        for (Iterator i = getWarnings().iterator(); i.hasNext();){
-            sb.append( (String) i.next() + "\n" );
+        
+        Iterator allReportItems = validationReport.iterator();
+        while(allReportItems.hasNext()){
+            ValidationReportItem ri = (ValidationReportItem) allReportItems.next();
+            
+            textReport.add( ri.toString() );   
         }
-        return sb.toString();
+        
+        textReport.add("Validated in "+duration+" millisec");
+        return textReport;
     }
     
-    
-    /**
-     *  Has validation errors.
-     * @return TRUE when there are validation errors.
-     */
-    public boolean hasErrors(){
-        return (errors.size()>0);
+    public String[] getValidationReportArray(){
+        
+        List validationReport = getValidationReport();
+        String report[] = new String[validationReport.size()];
+        
+        Iterator allReportItems = validationReport.iterator();
+        int counter=0;
+        while(allReportItems.hasNext()){
+            
+            report[counter]=allReportItems.next().toString();
+            counter++;
+        }
+        return report;
     }
     
-    /**
-     *  Has validation warnings.
-     * @return TRUE when there are validation warnings.
-     */
-    public boolean hasWarnings(){
-        return (warnings.size()>0);
+    public void setValidationDuration(long time) {
+        duration=time;
     }
     
-    /**
-     *  Has validation errors and warnings.
-     * @return TRUE when there are errors and warnings.
-     */
-    public boolean hasErrorsAndWarnings(){
-        return ( hasErrors() || hasWarnings() );
+    public long getValidationDuration() {
+        return duration;
     }
     
-    /**
-     *  Get errors as exception
-     * @return XMLDBException object containing all errors.
-     */
-    public XMLDBException toException() {
-        String errors = "";
-        for (Iterator i = getErrors().iterator(); i.hasNext();)
-            errors += (String) i.next() + "\n";
-        return new XMLDBException(ErrorCodes.VENDOR_ERROR, "Error validating: \n" + errors, null);
+    public String toString(){
+        
+       StringBuffer validationReport =  new  StringBuffer();
+       
+       Iterator reportIterator = getValidationReport().iterator();
+       while(reportIterator.hasNext()){
+           validationReport.append(reportIterator.next().toString());
+           validationReport.append("\n");
+       }
+       
+       return validationReport.toString();
     }
+}
+
+class ValidationReportItem {
     
+    public static final int WARNING = 1;
+    public static final int ERROR = 2;
+    public static final int FATAL = 4;
+    
+    public int type = -1;
+    public int lineNumber = -1;
+    public int columnNumber = -1;
+    public String message ="";
+    
+    
+    public String toString(){
+        
+        String reportType="UNKNOWN";
+        
+        switch (type) {
+            case WARNING:  reportType="Warning"; break;
+            case ERROR:    reportType="Error"; break;
+            case FATAL:    reportType="Fatal"; break;
+            default:       reportType="Unknown Error type"; break;
+        }
+        
+        return (reportType
+                + " (" + lineNumber +","+ columnNumber + ") : " + message);
+    }
 }

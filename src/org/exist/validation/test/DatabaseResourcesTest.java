@@ -210,10 +210,9 @@ public class DatabaseResourcesTest extends TestCase {
 	        ValidationReport report = validator.validate(
 	                new FileInputStream(ABOOKFILES +"/addressbook_valid.xml") );
 	        
-	        assertFalse( report.hasErrorsAndWarnings() );
+	        assertTrue( report.isValid() );
 	        
-	        System.out.println(report.getErrorReport());
-	        System.out.println(report.getWarningReport());
+	        System.out.println(report.toString() );
 	        
 	        System.out.println("<<<");
         } catch (Exception e) {            
@@ -228,10 +227,9 @@ public class DatabaseResourcesTest extends TestCase {
 	        ValidationReport report = validator.validate(
 	                new FileInputStream(ABOOKFILES +"/addressbook_invalid.xml") );
 	        
-	        assertTrue( report.hasErrorsAndWarnings() );
+	        assertFalse( report.isValid() );
 	        
-	        System.out.println(report.getErrorReport());
-	        System.out.println(report.getWarningReport());
+	        System.out.println(report.toString());
 	        
 	        System.out.println("<<<");
         } catch (Exception e) {            
@@ -246,10 +244,9 @@ public class DatabaseResourcesTest extends TestCase {
 	        ValidationReport report = validator.validate(
 	                new FileInputStream(DTDFILES +"/hamlet_valid.xml") );
 	        
-	        assertFalse( report.hasErrorsAndWarnings() );
+	        assertTrue( report.isValid() );
 	        
-	        System.out.println(report.getErrorReport());
-	        System.out.println(report.getWarningReport());
+	        System.out.println(report.toString());
 	        
 	        System.out.println("<<<");
         } catch (Exception e) {            
@@ -264,10 +261,9 @@ public class DatabaseResourcesTest extends TestCase {
 	        ValidationReport report = validator.validate(
 	                new FileInputStream(DTDFILES +"/hamlet_invalid.xml") );
 	        
-	        assertTrue( report.hasErrorsAndWarnings() );
+	        assertFalse( report.isValid() );
 	        
-	        System.out.println(report.getErrorReport());
-	        System.out.println(report.getWarningReport());
+	        System.out.println(report.toString());
 	        
 	        System.out.println("<<<");
         } catch (Exception e) {            
