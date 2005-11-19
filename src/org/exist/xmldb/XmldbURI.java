@@ -403,8 +403,7 @@ public class XmldbURI {
 			return xmldbURI;
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException(e.getMessage());
-		}		
-
+		}
 	}	
 	
 	public URI relativizeContext(URI uri) {
@@ -436,6 +435,72 @@ public class XmldbURI {
 		URI contextURI = URI.create(context);
 		return contextURI.resolve(uri);	
 	}
+	
+	public boolean isCollectionNameAbsolute() {
+		String collectionName = this.escapedCollectionName;
+		if (collectionName == null)
+			return true;
+		return collectionName.startsWith("/");
+	}
+	
+	public XmldbURI normalizeCollectionName() {			
+		String collectionName = this.escapedCollectionName;
+		if (collectionName == null)
+			return this;
+		URI collectionNameURI = URI.create(collectionName);	
+		try {
+			XmldbURI xmldbURI = new XmldbURI(this.toString());
+			xmldbURI.setCollectionName(collectionNameURI.normalize().toString());
+			return xmldbURI;
+		} catch (URISyntaxException e) {
+			throw new IllegalArgumentException(e.getMessage());
+		}
+	}	
+
+	public URI relativizeCollectionName(URI uri) {
+		if (uri == null)
+			throw new NullPointerException("The provided URI is null");			
+		String collectionName = this.escapedCollectionName;
+		if (collectionName == null)
+			throw new NullPointerException("The current collection name is null");		
+		URI collectionNameURI;
+		//Trims final slash
+		if (!collectionName.endsWith("/"))
+			collectionNameURI = URI.create(collectionName + "/");
+		else
+			collectionNameURI = URI.create(collectionName);
+		return collectionNameURI.relativize(uri);	
+	}
+	
+	public URI resolveCollectionName(String str) throws NullPointerException, IllegalArgumentException {	
+		if (str == null)
+			throw new NullPointerException("The provided URI is null");		
+		String collectionName = this.escapedCollectionName;
+		if (collectionName == null)
+			throw new NullPointerException("The current collection name is null");	
+		URI collectionNameURI;
+		//Trims final slash
+		if (!collectionName.endsWith("/"))
+			collectionNameURI = URI.create(collectionName + "/");
+		else
+			collectionNameURI = URI.create(collectionName);
+		return collectionNameURI.resolve(str);	
+	}
+	
+	public URI resolveCollectionName(URI uri) throws NullPointerException {	
+		if (uri == null)
+			throw new NullPointerException("The provided URI is null");		
+		String collectionName = this.escapedCollectionName;
+		if (collectionName == null)
+			throw new NullPointerException("The current collection name is null");
+		URI collectionNameURI;
+		//Trims final slash
+		if (!collectionName.endsWith("/"))
+			collectionNameURI = URI.create(collectionName + "/");
+		else
+			collectionNameURI = URI.create(collectionName);
+		return collectionNameURI.resolve(uri);	
+	}	
 	
 	public String toASCIIString() {	
 		//TODO : trim trailing slash if necessary
