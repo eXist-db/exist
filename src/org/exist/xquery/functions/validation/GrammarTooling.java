@@ -31,8 +31,8 @@ import org.exist.validation.Validator;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -49,20 +49,25 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class GrammarTooling extends BasicFunction  {
     
+    private static final String TYPE_DTD="http://www.w3.org/TR/REC-xml";
+    private static final String TYPE_XSD="http://www.w3.org/2001/XMLSchema";
+    
     private Validator validator;
     private BrokerPool brokerPool;
     
     // Setup function signature
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-                new QName("clear-grammar-cache", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                new QName("clear-grammar-cache", ValidationModule.NAMESPACE_URI, 
+                                                 ValidationModule.PREFIX),
                 "Remove all cached grammers.",
                 null,
                 new SequenceType(Type.BOOLEAN, Cardinality.EMPTY)
         ),
                 
         new FunctionSignature(
-                new QName("show-grammar-cache", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                new QName("show-grammar-cache", ValidationModule.NAMESPACE_URI, 
+                                                ValidationModule.PREFIX),
                 "Show cached grammars.",
                 null,
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
@@ -81,7 +86,8 @@ public class GrammarTooling extends BasicFunction  {
     /* (non-Javadoc)
      * @see org.exist.xquery.BasicFunction#eval(Sequence[], Sequence)
      */
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws org.exist.xquery.XPathException {
+    public Sequence eval(Sequence[] args, Sequence contextSequence) 
+                                                        throws XPathException {
         
        // Create response
         Sequence result = new ValueSequence();
@@ -95,15 +101,17 @@ public class GrammarTooling extends BasicFunction  {
         } else if (isCalledAs("show-grammar-cache")){
             
             // TODO ; refactor grammartype url
-            Grammar xsds[] = grammarpool.retrieveInitialGrammarSet("http://www.w3.org/2001/XMLSchema");          
+            Grammar xsds[] = grammarpool.retrieveInitialGrammarSet(TYPE_XSD);          
             for(int i=0; i<xsds.length; i++){
-                result.add(new StringValue(xsds[i].getGrammarDescription().getNamespace()) );
+                result.add(new StringValue(xsds[i].getGrammarDescription()
+                                                            .getNamespace()) );
             }
             
             // TODO ; refactor grammartype url
-            Grammar dtds[] = grammarpool.retrieveInitialGrammarSet("http://www.w3.org/TR/REC-xml");
+            Grammar dtds[] = grammarpool.retrieveInitialGrammarSet(TYPE_DTD);
             for(int i=0; i<dtds.length; i++){
-                result.add(new StringValue(dtds[i].getGrammarDescription().getPublicId()) );
+                result.add(new StringValue(dtds[i].getGrammarDescription()
+                                                             .getPublicId()) );
             }
             
         } else {

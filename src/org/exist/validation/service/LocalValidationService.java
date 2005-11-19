@@ -83,7 +83,7 @@ public class LocalValidationService implements ValidationService {
         
         // Return validation result
         logger.info("Validation done.");
-        return (  !report.hasErrorsAndWarnings() );
+        return (  report.isValid() );
     }
     
 //    /**

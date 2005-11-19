@@ -47,6 +47,13 @@ public class GrammarPool implements XMLGrammarPool {
         pool = new XMLGrammarPoolImpl();
     }
     
+    /**  Constructs a grammar pool with a default number of buckets. 
+         The supplied grammar pool is reused */
+    public GrammarPool(XMLGrammarPool pool) {
+        logger.info("Initializing GrammarPool using supplied pool.");
+        this.pool=pool;
+    }
+    
     /**
      *   Retrieve the initial known set of grammars. this method is called
      * by a validator before the validation starts. the application can provide 

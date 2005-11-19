@@ -2527,7 +2527,7 @@ public class RpcConnection extends Thread {
             ValidationReport veh = validator.validate(is);
             
             // Return validation result
-            retVal = !veh.hasErrorsAndWarnings();
+            retVal = veh.isValid();
             
         } catch (Exception e) {
             LOG.debug(e);

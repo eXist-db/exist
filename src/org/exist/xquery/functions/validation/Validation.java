@@ -32,10 +32,12 @@ import org.exist.validation.internal.ResourceInputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
@@ -53,7 +55,8 @@ public class Validation extends BasicFunction  {
     // Setup function signature
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-                    new QName("validate", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                    new QName("validate", ValidationModule.NAMESPACE_URI, 
+                                          ValidationModule.PREFIX),
                     "Validate document specified by $a.",
                     new SequenceType[]{
                         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
@@ -62,7 +65,8 @@ public class Validation extends BasicFunction  {
                 ),
                             
 //        new FunctionSignature(
-//                    new QName("validate", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+//                    new QName("validate", ValidationModule.NAMESPACE_URI, 
+//                                          ValidationModule.PREFIX),
 //                    "Validate document specified by $a using grammar $b",
 //                    new SequenceType[]{
 //                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
@@ -70,6 +74,16 @@ public class Validation extends BasicFunction  {
 //                    },
 //                    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
 //                )
+                            
+        new FunctionSignature(
+                    new QName("validate-report", ValidationModule.NAMESPACE_URI, 
+                                          ValidationModule.PREFIX),
+                    "Validate document specified by $a, return a simple report.",
+                    new SequenceType[]{
+                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                    },
+                    new SequenceType(Type.STRING,  Cardinality.ZERO_OR_MORE)
+        )
     };
     
     
@@ -84,7 +98,8 @@ public class Validation extends BasicFunction  {
     /* (non-Javadoc)
      * @see BasicFunction#eval(Sequence[], Sequence)
      */
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws org.exist.xquery.XPathException {
+    public Sequence eval(Sequence[] args, Sequence contextSequence) 
+                                                         throws XPathException {
         
         // Check input parameters
         if(args.length != 1){
@@ -92,13 +107,25 @@ public class Validation extends BasicFunction  {
         }
         
         // Get inputstream
-        InputStream is = new ResourceInputStream(brokerPool, args[0].getStringValue());
+        InputStream is = new ResourceInputStream(brokerPool, 
+                                                      args[0].getStringValue());
         
         ValidationReport vr = validator.validate(is);
         
         // Create response
         Sequence result = new ValueSequence();
-        result.add( new BooleanValue( !vr.hasErrorsAndWarnings() ) );
+        
+        if(isCalledAs("validate")){
+            result.add( new BooleanValue( vr.isValid() ) );
+            
+        } else if (isCalledAs("validate-report")) {
+            String report[] = vr.getValidationReportArray();
+            for(int i=0; i<report.length ; i++){
+                result.add( new StringValue(report[i]) );
+            }
+        } else {
+            // ohoh
+        }
         
         return result;
     }

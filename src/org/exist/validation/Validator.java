@@ -163,7 +163,6 @@ public class Validator {
     public ValidationReport validate(Reader reader) {
         
         logger.debug("Start validation.");
-        long start = System.currentTimeMillis();
         
         ValidationReport report = new ValidationReport();
         
@@ -179,17 +178,18 @@ public class Validator {
             
             
             logger.debug("Parse begin.");
+            long start = System.currentTimeMillis();
             xmlReader.parse(source);
-            logger.debug("Parse end.");
+            long stop = System.currentTimeMillis();
             
-            if( report.hasErrors() ){
-                logger.debug( "Parse errors \n" + report.getErrorReport() )  ;
+            report.setValidationDuration(stop-start);
+            logger.debug("Parse end." +
+                         "Validation performed in " + (stop-start) + " msec.");
+            
+            if( ! report.isValid() ){
+                logger.debug( "Parse errors \n" + report.toString() )  ;
             }
-            
-            if( report.hasWarnings() ){
-                logger.debug( "Parse warnings \n" + report.getWarningReport() )  ;
-            }
-            
+                        
         } catch (IOException ex){
             logger.error(ex);
             
@@ -203,7 +203,6 @@ public class Validator {
             logger.error(ex);
         }
         
-        logger.debug("Validation performed in " + (System.currentTimeMillis()-start) + " msec.");
         return report;
     }
     
