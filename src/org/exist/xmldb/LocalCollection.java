@@ -700,4 +700,27 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	public void setReader(XMLReader reader){
 			userReader = reader;
 	}
+	
+    //You probably will have to call this methed from this cast :
+    //((org.exist.xmldb.CollectionImpl)collection).getURI()
+    public XmldbURI getURI() {
+    	StringBuffer accessor = new StringBuffer(XmldbURI.XMLDB_URI_PREFIX);
+    	//TODO : get the name from client
+    	accessor.append("exist");
+    	accessor.append("://");
+    	//No host ;-)
+    	accessor.append("");  
+    	//No port ;-)
+    	if (-1 != -1)
+    		accessor.append(":").append(-1);
+    	//No context ;-)
+    	//accessor.append(getContext());      	
+    	try {
+    		//TODO : cache it when constructed
+    		return XmldbURI.create(accessor.toString(), getPath());
+    	} catch (XMLDBException e) {
+    		//TODO : should never happen
+    		return null;
+    	}
+    }
 }

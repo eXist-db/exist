@@ -56,6 +56,7 @@ public abstract class RemoteDBTest extends TestCase {
 	        DatabaseManager.registerDatabase(database);
 	        //Get the root collection...
 	        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
+	        assertEquals("xmldb:exist://localhost:8088/xmlrpc" + DBBroker.ROOT_COLLECTION, ((org.exist.xmldb.CollectionImpl)rootCollection).getURI().toString());
 	        assertNotNull(rootCollection);  
             CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
                     "CollectionManagementService", "1.0");
