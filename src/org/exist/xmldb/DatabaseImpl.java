@@ -150,22 +150,26 @@ public class DatabaseImpl implements Database {
 			home = System.getProperty("user.dir");
 		return home;
 	}
-
-	//TODO : the signature is inconsistent with the design. We should have an XmldbURI here
+	
+    /* Returns a collection from the given "uri".
+     * @deprecated  Although part of the xmldb API, the design is somewhat inconsistent.     
+     * @see org.exist.xmldb.DatabaseImpl#getCollection(org.exist.xmldb.XmldbURI, java.lang.String, java.lang.String)
+     * @see org.xmldb.api.base.Database#getCollection(java.lang.String, java.lang.String, java.lang.String)
+     */   
     public Collection getCollection(String uri, String user, String password) throws XMLDBException {  
     	XmldbURI xmldbURI = null;
     	try {
     		//Ugly workaround for non-URI compliant collection names
     		String newURIString = XmldbURI.recoverPseudoURIs(uri);
-    		xmldbURI = new XmldbURI(XmldbURI.XMLDB_URI_PREFIX + newURIString);
-    		if (!xmldbURI.isAbsolute())
-    			throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URI is not absolute:" + 
-        				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);       			
+    		xmldbURI = new XmldbURI(XmldbURI.XMLDB_URI_PREFIX + newURIString);    		 			
     	} catch (Exception e) {    		
     		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URI is not well formed:" + 
     				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);   
     	}
-    	
+    	return getCollection(xmldbURI, user, password);
+    }        
+	
+    public Collection getCollection(XmldbURI xmldbURI, String user, String password) throws XMLDBException { 
     	if ("direct access".equals(xmldbURI.getApiName()))    		
         	return getLocalCollection(xmldbURI.getInstanceName(), user, password, xmldbURI.getCollectionName());
     	else if ("xmlrpc".equals(xmldbURI.getApiName())){
