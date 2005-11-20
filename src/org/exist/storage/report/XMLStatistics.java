@@ -34,7 +34,8 @@ public class XMLStatistics {
 
 	public void genInstanceStatus() throws SAXException {
 		AttributesImpl atts = new AttributesImpl();
-		atts.addAttribute("", "default", "default", "CDATA", BrokerPool.DEFAULT_INSTANCE);
+		//TODO : find a way to retrieve the actual instance's name !
+		atts.addAttribute("", "default", "default", "CDATA", "exist");
 		this.contentHandler.startElement(NAMESPACE, "database-instances", 
 			PREFIX + ":database-instances", atts);
 		atts.clear();

@@ -67,10 +67,9 @@ public class BrokerPool {
 	private final static TreeMap instances = new TreeMap();
 	
 	/**
-	 * The id of a default database instance for those who are too lazy to provide parameters ;-). 
-	 */
-	//TODO : rename as DEFAULT_DB_INSTANCE_ID ?
-	public final static String DEFAULT_INSTANCE = "exist";		
+	 * The name of a default database instance for those who are too lazy to provide parameters ;-). 
+	 */	
+	public final static String DEFAULT_INSTANCE_NAME = "exist";		
 	
 	//TODO : inline the class ? or... make it configurable ?
     // WM: inline. I don't think users need to be able to overwrite this.
@@ -129,14 +128,14 @@ public class BrokerPool {
 	//TODO : in the future, we should implement a Configurable interface	
 	public final static void configure(int minBrokers, int maxBrokers, Configuration config)
 		throws EXistException {
-		configure(DEFAULT_INSTANCE, minBrokers, maxBrokers, config);
+		configure(DEFAULT_INSTANCE_NAME, minBrokers, maxBrokers, config);
 	}
 
 	/**
 	 *  Creates and configures a database instance and adds it to the pool. 
 	 *  Call this before calling {link #getInstance()}. 
 	 * If a database instance with the same name already exists, the new configuration is ignored.
-	 * @param id A <strong>unique</strong> name for the database instance. 
+	 * @param instanceName A <strong>unique</strong> name for the database instance. 
 	 * It is possible to have more than one database instance (with different configurations for example).
 	 * @param minBrokers The minimum number of concurrent brokers for handling requests on the database instance.
 	 * @param maxBrokers The maximum number of concurrent brokers for handling requests on the database instance.
@@ -145,22 +144,22 @@ public class BrokerPool {
 	 */
 	//TODO : in the future, we should implement a Configurable interface	
 	public final static void configure(
-		String id,
+		String instanceName,
 		int minBrokers,
 		int maxBrokers,
 		Configuration config)
 		throws EXistException {
 		//Check if there is a database instance in the pool with the same id
-		BrokerPool instance = (BrokerPool) instances.get(id);
+		BrokerPool instance = (BrokerPool) instances.get(instanceName);
 		if (instance == null) {
-			LOG.debug("configuring database instance '" + id + "'...");
+			LOG.debug("configuring database instance '" + instanceName + "'...");
 			//Create the instance
-			instance = new BrokerPool(id, minBrokers, maxBrokers, config);
+			instance = new BrokerPool(instanceName, minBrokers, maxBrokers, config);
 			//Add it to the pool
-			instances.put(id, instance);
-			//We now have at leant an instance...
+			instances.put(instanceName, instance);
+			//We now have at least an instance...
 			if(instances.size() == 1) {	
-				//... and a ShutdownHook may be interesting
+				//... so a ShutdownHook may be interesting
 				if(registerShutdownHook) {		
 					try {
 						//... currently an eXist-specific one. TODO : make it configurable ?
@@ -174,7 +173,7 @@ public class BrokerPool {
 		//TODO : throw an exception here rather than silently ignore an *explicit* parameter ?
         // WM: maybe throw an exception. Users can check if a db is already configured.
 		} else
-			LOG.warn("database instance '" + id + "' is already configured");
+			LOG.warn("database instance '" + instanceName + "' is already configured");
 	}
 	
 	/** Returns whether or not the default database instance is configured.
@@ -182,7 +181,7 @@ public class BrokerPool {
 	 */
 	//TODO : in the future, we should implement a Configurable interface
 	public final static boolean isConfigured() {
-		return isConfigured(DEFAULT_INSTANCE);
+		return isConfigured(DEFAULT_INSTANCE_NAME);
 	}	
 
 	/** Returns whether or not a database instance is configured.
@@ -205,22 +204,22 @@ public class BrokerPool {
 	 * @throws EXistException If the database instance is not available (not created, stopped or not configured)
 	 */
 	public final static BrokerPool getInstance() throws EXistException {
-		return getInstance(DEFAULT_INSTANCE);
+		return getInstance(DEFAULT_INSTANCE_NAME);
 	}	
 
 	/**Returns a broker pool for a database instance.
-	 * @param id The name of the database instance
+	 * @param instanceName The name of the database instance
 	 * @return The broker pool
 	 * @throws EXistException If the instance is not available (not created, stopped or not configured)
 	 */
-	public final static BrokerPool getInstance(String id) throws EXistException {
+	public final static BrokerPool getInstance(String instanceName) throws EXistException {
 		//Check if there is a database instance in the pool with the same id
-        BrokerPool instance = (BrokerPool) instances.get(id);
+        BrokerPool instance = (BrokerPool) instances.get(instanceName);
         if (instance != null)
         	//TODO : call isConfigured(id) and throw an EXistException if relevant ?
         	return instance;
         else        	
-        	throw new EXistException("database instance '" + id + "' is not available");
+        	throw new EXistException("database instance '" + instanceName + "' is not available");
     }
 
 	/** Returns an iterator over the database instances.
@@ -235,7 +234,7 @@ public class BrokerPool {
 	 * @throws EXistException If the default database instance is not available (not created, stopped or not configured) 
 	 */
 	public final static void stop() throws EXistException {
-		stop(DEFAULT_INSTANCE);
+		stop(DEFAULT_INSTANCE_NAME);
 	}
 
 	/** Stops the given database instance. After calling this method, it is
@@ -294,7 +293,7 @@ public class BrokerPool {
 	/**
 	 * The name of the database instance
 	 */
-	private String instanceId;
+	private String instanceName;
 
     /**
 	 * <code>true</code> if the database instance is not yet initialized
@@ -436,7 +435,7 @@ public class BrokerPool {
 	private Lock globalXUpdateLock = new ReentrantReadWriteLock("xupdate");
 
 	/** Creates and configures the database instance. 
-	 * @param instanceId A name for the database instance.
+	 * @param instanceName A name for the database instance.
 	 * @param minBrokers The minimum number of concurrent brokers for handling requests on the database instance.
 	 * @param maxBrokers The maximum number of concurrent brokers for handling requests on the database instance.
 	 * @param conf The configuration object for the database instance
@@ -445,7 +444,7 @@ public class BrokerPool {
 	//TODO : shouldn't this constructor be private ? as such it *must* remain under configure() control !
 	//TODO : Then write a configure(int minBrokers, int maxBrokers, Configuration conf) method
 	// WM: yes, could be private.
-	public BrokerPool(String instanceId, int minBrokers, int maxBrokers, Configuration conf)
+	public BrokerPool(String instanceName, int minBrokers, int maxBrokers, Configuration conf)
 		throws EXistException {
 		
 		Integer anInteger;
@@ -454,7 +453,7 @@ public class BrokerPool {
 		
 		//TODO : ensure that the instance name is unique ?
         //WM: needs to be done in the configure method.
-		this.instanceId = instanceId;
+		this.instanceName = instanceName;
 		
 		//TODO : find a nice way to (re)set the default values
 		//TODO : create static final members for configuration keys
@@ -471,7 +470,7 @@ public class BrokerPool {
 		/*
 		 * strange enough, the settings provided by the constructor may be overriden
 		 * by the ones *explicitely* provided by the constructor
-		 * TODO : consider a private constructor BrokerPool(String instanceId) then configure(int minBrokers, int maxBrokers, Configuration config)
+		 * TODO : consider a private constructor BrokerPool(String instanceName) then configure(int minBrokers, int maxBrokers, Configuration config)
 		 */		
 		anInteger = (Integer) conf.getProperty("db-connection.pool.min");
 		if (anInteger != null)
@@ -481,14 +480,14 @@ public class BrokerPool {
 			this.maxBrokers = anInteger.intValue();		
 		//TODO : sanity check : minBrokers shall be lesser than or equal to maxBrokers
 		//TODO : sanity check : minBrokers shall be positive
-		LOG.info("database instance '" + instanceId + "' will have between " + this.minBrokers + " and " + this.maxBrokers + " brokers");
+		LOG.info("database instance '" + instanceName + "' will have between " + this.minBrokers + " and " + this.maxBrokers + " brokers");
 		
 		//TODO : use the periodicity of a SystemTask (see below)
 		aLong = (Long) conf.getProperty("db-connection.pool.sync-period");
 		if (aLong != null)
 			/*this.*/syncPeriod = aLong.longValue();
 		//TODO : sanity check : the synch period should be reasonible
-		LOG.info("database instance '" + instanceId + "' will be synchronized every " + /*this.*/syncPeriod + " ms");
+		LOG.info("database instance '" + instanceName + "' will be synchronized every " + /*this.*/syncPeriod + " ms");
 
 		//TODO : move this to initialize ?
 		syncDaemon = new SyncDaemon();		
@@ -498,13 +497,13 @@ public class BrokerPool {
 			this.maxShutdownWait = aLong.longValue();			
 		}
 		//TODO : sanity check : the shutdown period should be reasonible
-		LOG.info("database instance '" + instanceId + "' will wait  " + this.maxShutdownWait + " ms during shutdown");
+		LOG.info("database instance '" + instanceName + "' will wait  " + this.maxShutdownWait + " ms during shutdown");
 
 		aBoolean = (Boolean) conf.getProperty("db-connection.recovery.enabled");
 		if (aBoolean != null) {
 			this.transactionsEnabled = aBoolean.booleanValue();
         }
-		LOG.info("database instance '" + instanceId + "' is enabled for transactions : " + this.transactionsEnabled);
+		LOG.info("database instance '" + instanceName + "' is enabled for transactions : " + this.transactionsEnabled);
 		
 		//How ugly : needs refactoring...
 		Configuration.SystemTaskConfig systemTasksConfigs[] = (Configuration.SystemTaskConfig[]) conf.getProperty("db-connection.system-task-config");
@@ -587,7 +586,7 @@ public class BrokerPool {
 	 */
 	protected void initialize() throws EXistException {
         if (LOG.isDebugEnabled())
-            LOG.debug("initializing database instance '" + instanceId + "'...");
+            LOG.debug("initializing database instance '" + instanceName + "'...");
         
         //Flag to indicate that we are initializing
 		initializing = true;
@@ -677,7 +676,7 @@ public class BrokerPool {
 	    }		
 		
         if (LOG.isDebugEnabled())
-            LOG.debug("database instance '" + instanceId + "' initialized");
+            LOG.debug("database instance '" + instanceName + "' initialized");
 	}
 	    
 	//TODO : remove the period argument when SystemTask has a getPeriodicity() method
@@ -702,11 +701,12 @@ public class BrokerPool {
 		return initializing;
 	}	
 
-    /** Returns the database instance's id.
+    /** Returns the database instance's name.
      * @return The id
      */
+	//TODO : rename getInstanceName
     public String getId() {
-    	return instanceId;
+    	return instanceName;
     }    
 
 	/**
@@ -873,9 +873,9 @@ public class BrokerPool {
 		DBBroker broker = BrokerFactory.getInstance(this, this.getConfiguration());
 		inactiveBrokers.push(broker);
 		brokersCount++;
-		broker.setId(broker.getClass().getName() + '_' + brokersCount);
+		broker.setId(broker.getClass().getName() + '_' + instanceName + "_" + brokersCount);
 		LOG.debug(
-			"created broker '" + broker.getId() + " for database instance '" + instanceId);		
+			"created broker '" + broker.getId() + " for database instance '" + instanceName + "'");		
 		return broker;
 	}
 
@@ -886,7 +886,7 @@ public class BrokerPool {
     //TODO : rename as getBroker ? getInstance (when refactored) ?
 	public DBBroker get() throws EXistException {
 		if (!isInstanceConfigured())			
-			throw new EXistException("database instance '" + instanceId + "' is not available");
+			throw new EXistException("database instance '" + instanceName + "' is not available");
 		
 		//Try to get an active broker
 		DBBroker broker = (DBBroker)activeBrokers.get(Thread.currentThread());
@@ -1197,7 +1197,7 @@ public class BrokerPool {
 		//Invalidate the configuration
 		conf = null;
 		//Clear the living instances container
-		instances.remove(instanceId);
+		instances.remove(instanceName);
 		
 		LOG.info("shutdown complete !");
 		
@@ -1209,7 +1209,7 @@ public class BrokerPool {
 			Runtime.getRuntime().removeShutdownHook(shutdownHook);
 		}
 		if (shutdownListener != null)
-			shutdownListener.shutdown(instanceId, instances.size());
+			shutdownListener.shutdown(instanceName, instances.size());
 	}
 
 	//TODO : move this elsewhere
