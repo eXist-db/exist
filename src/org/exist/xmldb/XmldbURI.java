@@ -375,6 +375,14 @@ public class XmldbURI {
 		}
 	}
 	
+	public static XmldbURI create(String accessURI, String collectionName) {		
+		try {
+			return new XmldbURI(accessURI, collectionName);
+		} catch (URISyntaxException e) {
+			throw new IllegalArgumentException(e.getMessage());
+		}
+	}	
+	
 	public boolean equals(Object ob) {
 		if (!(ob instanceof XmldbURI))
 			return false;
