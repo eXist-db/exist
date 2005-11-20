@@ -69,13 +69,11 @@ public class DatabaseImpl implements Database {
     
     protected boolean autoCreate = false;
     protected String configuration = null;
+    protected String currentInstanceName = null;
    
     private HashMap rpcClients = new HashMap();
     protected ShutdownListener shutdown = null;
-	protected int mode = UNKNOWN_CONNECTION;
-	
-	//TODO : for compiance with xmldb API. Usage to be clarified !!!
-	String currentInstanceName = BrokerPool.DEFAULT_INSTANCE;
+	protected int mode = UNKNOWN_CONNECTION;	
 	
     public DatabaseImpl() {
         try {
@@ -119,8 +117,8 @@ public class DatabaseImpl implements Database {
      *
      *@exception  XMLDBException  Description of the Exception
      */    
-    private void configure(String InstanceName) throws XMLDBException {
-        String home, file = "conf.xml";
+    private void configure(String instanceName) throws XMLDBException {        
+    	String home, file = "conf.xml";    	
         if(configuration == null) {
         	home = findExistHomeFromProperties();
         } else {
@@ -130,15 +128,16 @@ public class DatabaseImpl implements Database {
     		file = f.getName();
 			home = f.getParentFile().getPath();
         }
-		System.out.println("configuring '" + InstanceName + "' using " + home + File.pathSeparator + file);
+		System.out.println("configuring '" + instanceName + "' using " + home + File.pathSeparator + file);
         try {
             Configuration config = new Configuration(file, home);
-            BrokerPool.configure(InstanceName, 1, 5, config);
+            BrokerPool.configure(instanceName, 1, 5, config);            
             if (shutdown != null)
-            	BrokerPool.getInstance(InstanceName).registerShutdownListener(shutdown);
+            	BrokerPool.getInstance(instanceName).registerShutdownListener(shutdown);
         } catch (Exception e ) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "configuration error", e );
-        }
+        } 
+        currentInstanceName = instanceName;
     }
 
 	/**
@@ -291,15 +290,15 @@ public class DatabaseImpl implements Database {
     public String getConformanceLevel() throws XMLDBException {
         return "0";
     }
-
-    //TODO : clarify usage !!!
+   
+    //WARNING : returning such a default value is dangerous IMHO ? -pb
     public String getName() throws XMLDBException {
-        return currentInstanceName;
-    }
-	
-    //TODO : clarify usage !!!
+        return (currentInstanceName != null) ? currentInstanceName : "exist";
+    }	
+    
+    //WARNING : returning such a default value is dangerous IMHO ? -pb
 	public String[] getNames() throws XMLDBException {
-		return new String[] {currentInstanceName};
+		return new String[] { (currentInstanceName != null) ? currentInstanceName : "exist" };
 	}
 	
 	/**
