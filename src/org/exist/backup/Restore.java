@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Observable;
 import java.util.Stack;
@@ -25,6 +26,7 @@ import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DateTimeValue;
 import org.xml.sax.Attributes;
@@ -302,7 +304,7 @@ public class Restore extends DefaultHandler {
 		}
 	}
 
-	private final CollectionImpl mkcol(String collPath, Date created) throws XMLDBException {
+	private final CollectionImpl mkcol(String collPath, Date created) throws XMLDBException, URISyntaxException {
 		if (collPath.startsWith(DBBroker.ROOT_COLLECTION))
 			collPath = collPath.substring(DBBroker.ROOT_COLLECTION.length());
 		CollectionManagementServiceImpl mgtService;
@@ -314,7 +316,8 @@ public class Restore extends DefaultHandler {
 		while (tok.hasMoreTokens()) {
 			token = tok.nextToken();
 			p = p + '/' + token;
-			c = DatabaseManager.getCollection(uri + p, username, pass);
+			XmldbURI xmldbURI = new XmldbURI(uri, p); 
+			c = DatabaseManager.getCollection(xmldbURI.toString(), username, pass);
 			if (c == null) {
 				mgtService =
 					(CollectionManagementServiceImpl) current.getService(
