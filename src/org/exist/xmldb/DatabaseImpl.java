@@ -151,12 +151,14 @@ public class DatabaseImpl implements Database {
 		return home;
 	}
 
-    public Collection getCollection(String xmldbURI, String user, String password)
-    		throws XMLDBException {  
-    	XmldbURI uri = null;
+	//TODO : the signature is inconsistent with the design. We should have an XmldbURI here
+    public Collection getCollection(String uri, String user, String password) throws XMLDBException {  
+    	XmldbURI xmldbURI = null;
     	try {
-    		uri = new XmldbURI(XmldbURI.XMLDB_URI_PREFIX + xmldbURI);
-    		if (!uri.isAbsolute())
+    		//Ugly workaround for non-URI compliant collection names
+    		String newURIString = XmldbURI.recoverPseudoURIs(uri);
+    		xmldbURI = new XmldbURI(XmldbURI.XMLDB_URI_PREFIX + newURIString);
+    		if (!xmldbURI.isAbsolute())
     			throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URI is not absolute:" + 
         				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);       			
     	} catch (Exception e) {    		
@@ -164,18 +166,18 @@ public class DatabaseImpl implements Database {
     				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);   
     	}
     	
-    	if ("direct access".equals(uri.getApiName()))    		
-        	return getLocalCollection(uri.getInstanceName(), user, password, uri.getCollectionName());
-    	else if ("xmlrpc".equals(uri.getApiName())){
+    	if ("direct access".equals(xmldbURI.getApiName()))    		
+        	return getLocalCollection(xmldbURI.getInstanceName(), user, password, xmldbURI.getCollectionName());
+    	else if ("xmlrpc".equals(xmldbURI.getApiName())){
     		URL url = null;
     		try {
-    			url = new URL("http", uri.getHost(), uri.getPort(), uri.getContext());
+    			url = new URL("http", xmldbURI.getHost(), xmldbURI.getPort(), xmldbURI.getContext());
     		} catch (MalformedURLException e) {
         		//Should never happen
         		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URL is not well formed:" + 
         				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);   
         	}
-    		return getRemoteCollectionFromXMLRPC(url, uri.getInstanceName(), user, password, uri.getCollectionName());
+    		return getRemoteCollectionFromXMLRPC(url, xmldbURI.getInstanceName(), user, password, xmldbURI.getCollectionName());
     	}
     	else 
     		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URL is not well formed:" + 

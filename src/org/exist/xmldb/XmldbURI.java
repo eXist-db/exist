@@ -28,6 +28,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.regex.Pattern;
 
 /** A utility class for xmldb URis.
  * Since, java.net.URI is <strong>final</strong> this class acts as a wrapper.
@@ -381,7 +382,34 @@ public class XmldbURI {
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException(e.getMessage());
 		}
-	}	
+	}
+	
+	//Ugly workaround for non-URI compliant collection names
+	public static String recoverPseudoURIs(String pseudoURI) {		
+		Pattern p = Pattern.compile("/");
+		String[] parts = p.split(pseudoURI);
+		StringBuffer newURIString = new StringBuffer(parts[0]);
+		for (int i = 1 ; i <parts.length; i ++) { 
+			newURIString.append("/");
+			if (!"".equals(parts[i])) {
+	    		try {
+	    			URI dummy = new URI(parts[i]); 
+	    			newURIString.append(parts[i]);
+	    		} catch (URISyntaxException e) {	
+	    			//We'd nee a logger here.
+	    			System.out.println("Had to escape : ''" + parts[i] + "' in '" + pseudoURI + "' !");    		
+	    			try {
+	    				newURIString.append(URLEncoder.encode(parts[i], "UTF-8"));
+	    			} catch (UnsupportedEncodingException ee) {
+	    				//We'd nee a logger here.
+		    			System.out.println("Can't do anything with : ''" + parts[i] + "' in '" + pseudoURI + "' !");    	
+	    				return null;
+	    			}
+	    		}
+			}			
+		}
+		return newURIString.toString();
+	}
 	
 	public boolean equals(Object ob) {
 		if (!(ob instanceof XmldbURI))
