@@ -170,9 +170,9 @@ public class DatabaseImpl implements Database {
     }        
 	
     public Collection getCollection(XmldbURI xmldbURI, String user, String password) throws XMLDBException { 
-    	if ("direct access".equals(xmldbURI.getApiName()))    		
-        	return getLocalCollection(xmldbURI.getInstanceName(), user, password, xmldbURI.getCollectionName());
-    	else if ("xmlrpc".equals(xmldbURI.getApiName())){
+    	if (XmldbURI.API_LOCAL.equals(xmldbURI.getApiName()))    		
+        	return getLocalCollection(xmldbURI.getInstanceName(), user, password, xmldbURI.getCollectionPath());
+    	else if (XmldbURI.API_XMLRPC.equals(xmldbURI.getApiName())){
     		URL url = null;
     		try {
     			url = new URL("http", xmldbURI.getHost(), xmldbURI.getPort(), xmldbURI.getContext());
@@ -181,7 +181,7 @@ public class DatabaseImpl implements Database {
         		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URL is not well formed:" + 
         				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);   
         	}
-    		return getRemoteCollectionFromXMLRPC(url, xmldbURI.getInstanceName(), user, password, xmldbURI.getCollectionName());
+    		return getRemoteCollectionFromXMLRPC(url, xmldbURI.getInstanceName(), user, password, xmldbURI.getCollectionPath());
     	}
     	else 
     		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URL is not well formed:" + 

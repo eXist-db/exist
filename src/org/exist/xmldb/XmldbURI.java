@@ -44,8 +44,14 @@ public class XmldbURI {
 	private String host;
 	private int port = -1; 
 	private String context;  	
-	private String escapedCollectionName;
+	private String escapedCollectionPath;
 	private String apiName;
+	
+	//TODO : deprecate when we split at root collection
+	public final static String API_XMLRPC = "xmlrpc";
+	public final static String API_WEBDAV = "webdav";
+	public final static String API_REST = "rest-style";
+	public final static String API_LOCAL = "local";	
 
 	/** Contructs an XmldbURI from given string.
 	 * Note that we construct URIs starting with XmldbURI.XMLDB_URI_PREFIX.
@@ -65,12 +71,12 @@ public class XmldbURI {
 	
 	/** Contructs an XmldbURI from the given string, handling the necessary escapings.
 	 * @param accessURI
-	 * @param collectionName An unescaped collection name.
+	 * @param collection An unescaped collection path.
 	 * @throws URISyntaxException
 	 */
-	public XmldbURI(String accessURI, String collectionName) throws URISyntaxException {
+	public XmldbURI(String accessURI, String collectionPath) throws URISyntaxException {
     	try {
-    		String escaped = URLEncoder.encode(collectionName, "UTF-8");    		
+    		String escaped = URLEncoder.encode(collectionPath, "UTF-8");    		
     		//This is the trick : unescape slashed in order to keep java.net.URI capabilities 
     		escaped = escaped.replaceAll("%2F", "/");
     		escaped = escaped.replaceAll("%23", "#");
@@ -82,7 +88,7 @@ public class XmldbURI {
         	throw e;     	
     	} catch (UnsupportedEncodingException e) {
         	wrappedURI = null;        	
-        	throw new URISyntaxException(accessURI + collectionName, e.getMessage());  	
+        	throw new URISyntaxException(accessURI + collectionPath, e.getMessage());  	
     	}
 	}
 	
@@ -129,7 +135,7 @@ public class XmldbURI {
 	}
 	
 	/** Given a java.net.URI.getPath(), <strong>tries</strong> to dispatch the host's context
-	 * from the collection name as smartly as possible. 
+	 * from the collection path as smartly as possible. 
 	 * One would probably prefer a split policy based on the presence of a well-known root collection.
 	 * @param path The java.net.URI.getPath() provided.
 	 * @throws URISyntaxException
@@ -139,29 +145,29 @@ public class XmldbURI {
 		int lastIndex = -1;	
 		//Reinitialise members
 		this.context = null;
-		this.escapedCollectionName = null;
+		this.escapedCollectionPath = null;
 		if (path != null) {				
 			if (host != null) {  
 	    		//TODO : use named constants  
 	        	index = path.lastIndexOf("/xmlrpc");        	         	
 	        	if (index > lastIndex) {
-	        		apiName = "xmlrpc";        		
-	        		escapedCollectionName = path.substring(index + "/xmlrpc".length());
+	        		apiName = API_XMLRPC;        		
+	        		escapedCollectionPath = path.substring(index + "/xmlrpc".length());
 	        		context = path.substring(0, index) + "/xmlrpc";
 	        		lastIndex = index;
 	        	}         	
 	        	//TODO : use named constants  
 	        	index = path.lastIndexOf("/webdav");        	         	
 	        	if (index > lastIndex) {
-	        		apiName = "webdav";        		
-	        		escapedCollectionName = path.substring(index + "/webdav".length());
+	        		apiName = API_WEBDAV;        		
+	        		escapedCollectionPath = path.substring(index + "/webdav".length());
 	        		context = path.substring(0, index) + "/webdav";
 	        		lastIndex = index;
 	        	}    		
 	        	//Default : a local URI...
 	        	if (apiName == null) {	    			
-	        		apiName = "rest-style";  
-	        		escapedCollectionName =  path; 	
+	        		apiName = API_REST;  
+	        		escapedCollectionPath =  path; 	
 	    			//TODO : determine the context out of a clean root collection policy.
 	    			context = null;	        		        		
 	        	}
@@ -171,14 +177,14 @@ public class XmldbURI {
 	        	if (port > -1)
 	        		//Put the "right" URI in the message ;-)
 	        		throw new URISyntaxException(wrappedURI.toString(), "Local xmldb URI should not provide a port");
-	        	apiName = "direct access";  
+	        	apiName = API_LOCAL;  
 	        	context = null;
-	        	escapedCollectionName = path; 	 
+	        	escapedCollectionPath = path; 	 
 	        }
 	    	//Trim trailing slash if necessary    	
-	    	if (escapedCollectionName != null && escapedCollectionName.length() > 1 && escapedCollectionName.endsWith("/"))    		
-	    		escapedCollectionName = escapedCollectionName.substring(0, escapedCollectionName.length() - 1);              	
-	    	//TODO : check that collectionName starts with DBBroker.ROOT_COLLECTION ?					
+	    	if (escapedCollectionPath != null && escapedCollectionPath.length() > 1 && escapedCollectionPath.endsWith("/"))    		
+	    		escapedCollectionPath = escapedCollectionPath.substring(0, escapedCollectionPath.length() - 1);              	
+	    	//TODO : check that collectionPath starts with DBBroker.ROOT_COLLECTION ?					
 		}		
 		
 	}
@@ -197,8 +203,8 @@ public class XmldbURI {
 		if (context != null)
 			buf.append(context);
 		//TODO : eventually use a prepend.root.collection system property 		
-		if (escapedCollectionName != null)
-			buf.append(escapedCollectionName);
+		if (escapedCollectionPath != null)
+			buf.append(escapedCollectionPath);
 		try {
 			wrappedURI = new URI(buf.toString());			
     	} catch (URISyntaxException e) {
@@ -221,12 +227,12 @@ public class XmldbURI {
 			throw new IllegalArgumentException(this.getHost() + " host differs from " + uri.getHost());
 		if (this.getPort() != -1 && uri.getPort() != -1	&& this.getPort() != uri.getPort())
 			throw new IllegalArgumentException(this.getPort() + " port differs from " + uri.getPort());
-		if (this.getCollectionName() != null && uri.getCollectionName() != null
-				&& !this.getCollectionName().equals(uri.getCollectionName()))
-			throw new IllegalArgumentException(this.getCollectionName() + " collection differs from " + uri.getCollectionName());		
+		if (this.getCollectionPath() != null && uri.getCollectionPath() != null
+				&& !this.getCollectionPath().equals(uri.getCollectionPath()))
+			throw new IllegalArgumentException(this.getCollectionPath() + " collection differs from " + uri.getCollectionPath());		
 	}
 
-	/** To be called before a collection name operation with another XmldbURI.
+	/** To be called before a collection path operation with another XmldbURI.
 	 * @param uri
 	 * @throws IllegalArgumentException
 	 */
@@ -301,22 +307,22 @@ public class XmldbURI {
 		setContext(str);		
 	}	
 	
-	public void setCollectionName(String collectionName) throws URISyntaxException {
-		String oldCollectionName = collectionName;
+	public void setCollectionPath(String collectionPath) throws URISyntaxException {
+		String oldCollectionPath = collectionPath;
 		try {
-			if (collectionName == null)
-				this.escapedCollectionName = null;
+			if (collectionPath == null)
+				this.escapedCollectionPath = null;
 			else {
-				String escaped = URLEncoder.encode(collectionName, "UTF-8");
+				String escaped = URLEncoder.encode(collectionPath, "UTF-8");
 				//This is the trick : unescape slashed in order to keep java.net.URI capabilities
 				escaped = escaped.replaceAll("%2F", "/");
 				escaped = escaped.replaceAll("%23", "#");
 				escaped = escaped.replaceAll("%3F", "?");			
-				this.escapedCollectionName = escaped;
+				this.escapedCollectionPath = escaped;
 			}
 			recomputeURI();
 		} catch (URISyntaxException e) {
-			this.escapedCollectionName = oldCollectionName;
+			this.escapedCollectionPath = oldCollectionPath;
 			throw e;
     	} catch (UnsupportedEncodingException e) {
         	wrappedURI = null;        	
@@ -324,9 +330,9 @@ public class XmldbURI {
     	}
 	}
 	
-	public void setCollectionName(URI collectionName) throws URISyntaxException {
+	public void setCollectionPath(URI collectionPath) throws URISyntaxException {
 		String str = context.toString();
-		setCollectionName(str);			
+		setCollectionPath(str);			
 	}
 	
 	public URI getURI() { 			
@@ -343,14 +349,14 @@ public class XmldbURI {
 	public int getPort() {		
 		return port; 
 	}
-	public String getCollectionName() {
-		if (escapedCollectionName == null)
+	public String getCollectionPath() {
+		if (escapedCollectionPath == null)
 			return null;
 		try {
-			return URLDecoder.decode(escapedCollectionName, "UTF-8"); 
+			return URLDecoder.decode(escapedCollectionPath, "UTF-8"); 
 		} catch (UnsupportedEncodingException e) {
 			//Should never happen
-			throw new IllegalArgumentException(escapedCollectionName + " can not be properly escaped");
+			throw new IllegalArgumentException(escapedCollectionPath + " can not be properly escaped");
 		}		
 	}
 	
@@ -376,15 +382,15 @@ public class XmldbURI {
 		}
 	}
 	
-	public static XmldbURI create(String accessURI, String collectionName) {		
+	public static XmldbURI create(String accessURI, String collectionPath) {		
 		try {
-			return new XmldbURI(accessURI, collectionName);
+			return new XmldbURI(accessURI, collectionPath);
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException(e.getMessage());
 		}
 	}
 	
-	//Ugly workaround for non-URI compliant collection names
+	//Ugly workaround for non-URI compliant collection pathes
 	public static String recoverPseudoURIs(String pseudoURI) {		
 		Pattern p = Pattern.compile("/");
 		String[] parts = p.split(pseudoURI);
@@ -487,70 +493,70 @@ public class XmldbURI {
 		return contextURI.resolve(uri);	
 	}
 	
-	public boolean isCollectionNameAbsolute() {
-		String collectionName = this.escapedCollectionName;
-		if (collectionName == null)
+	public boolean isCollectionPathAbsolute() {
+		String collectionPath = this.escapedCollectionPath;
+		if (collectionPath == null)
 			return true;
-		return collectionName.startsWith("/");
+		return collectionPath.startsWith("/");
 	}
 	
-	public XmldbURI normalizeCollectionName() {			
-		String collectionName = this.escapedCollectionName;
-		if (collectionName == null)
+	public XmldbURI normalizeCollectionPath() {			
+		String collectionPath = this.escapedCollectionPath;
+		if (collectionPath == null)
 			return this;
-		URI collectionNameURI = URI.create(collectionName);	
+		URI collectionPathURI = URI.create(collectionPath);	
 		try {
 			XmldbURI xmldbURI = new XmldbURI(this.toString());
-			xmldbURI.setCollectionName(collectionNameURI.normalize().toString());
+			xmldbURI.setCollectionPath(collectionPathURI.normalize().toString());
 			return xmldbURI;
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException(e.getMessage());
 		}
 	}	
 
-	public URI relativizeCollectionName(URI uri) {
+	public URI relativizeCollectionPath(URI uri) {
 		if (uri == null)
 			throw new NullPointerException("The provided URI is null");			
-		String collectionName = this.escapedCollectionName;
-		if (collectionName == null)
-			throw new NullPointerException("The current collection name is null");		
-		URI collectionNameURI;
+		String collectionPath = this.escapedCollectionPath;
+		if (collectionPath == null)
+			throw new NullPointerException("The current collection path is null");		
+		URI collectionPathURI;
 		//Adds a final slash if necessary
-		if (!collectionName.endsWith("/"))
-			collectionNameURI = URI.create(collectionName + "/");
+		if (!collectionPath.endsWith("/"))
+			collectionPathURI = URI.create(collectionPath + "/");
 		else
-			collectionNameURI = URI.create(collectionName);
-		return collectionNameURI.relativize(uri);	
+			collectionPathURI = URI.create(collectionPath);
+		return collectionPathURI.relativize(uri);	
 	}
 	
-	public URI resolveCollectionName(String str) throws NullPointerException, IllegalArgumentException {	
+	public URI resolveCollectionPath(String str) throws NullPointerException, IllegalArgumentException {	
 		if (str == null)
 			throw new NullPointerException("The provided URI is null");		
-		String collectionName = this.escapedCollectionName;
-		if (collectionName == null)
-			throw new NullPointerException("The current collection name is null");	
-		URI collectionNameURI;
+		String collectionPath = this.escapedCollectionPath;
+		if (collectionPath == null)
+			throw new NullPointerException("The current collection path is null");	
+		URI collectionPathURI;
 		//Adds a final slash if necessary
-		if (!collectionName.endsWith("/"))
-			collectionNameURI = URI.create(collectionName + "/");
+		if (!collectionPath.endsWith("/"))
+			collectionPathURI = URI.create(collectionPath + "/");
 		else
-			collectionNameURI = URI.create(collectionName);
-		return collectionNameURI.resolve(str);	
+			collectionPathURI = URI.create(collectionPath);
+		return collectionPathURI.resolve(str);	
 	}
 	
-	public URI resolveCollectionName(URI uri) throws NullPointerException {	
+	public URI resolveCollectionPath(URI uri) throws NullPointerException {	
 		if (uri == null)
 			throw new NullPointerException("The provided URI is null");		
-		String collectionName = this.escapedCollectionName;
-		if (collectionName == null)
-			throw new NullPointerException("The current collection name is null");
-		URI collectionNameURI;
+		String collectionPath = this.escapedCollectionPath;
+		if (collectionPath == null)
+			throw new NullPointerException("The current collection path is null");
+		URI collectionPathURI;
 		//Adds a final slash if necessary
-		if (!collectionName.endsWith("/"))
-			collectionNameURI = URI.create(collectionName + "/");
+		if (!collectionPath.endsWith("/"))
+			collectionPathURI = URI.create(collectionPath + "/");
 		else
-			collectionNameURI = URI.create(collectionName);
-		return collectionNameURI.resolve(uri);	
+			collectionPathURI = URI.create(collectionPath);
+		return collectionPathURI.resolve(uri);	
 	}	
 	
 	public String toASCIIString() {	
