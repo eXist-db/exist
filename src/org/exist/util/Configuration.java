@@ -607,7 +607,7 @@ public class Configuration implements ErrorHandler {
      * @throws MalformedURLException
      * @throws IOException
      */
-    private void configureIndexer(String dbHome, Document doc, NodeList indexer) throws DatabaseConfigurationException, MalformedURLException, IOException {
+    private void configureIndexer(String dbHome, Document doc, NodeList indexer) throws DatabaseConfigurationException, MalformedURLException {
         Element p = (Element) indexer.item(0);
         String parseNum = p.getAttribute("parseNumbers");
         String indexDepth = p.getAttribute("index-depth");
@@ -689,8 +689,13 @@ public class Configuration implements ErrorHandler {
                 else
                     catalogFile = new File(dbHome + File.separatorChar + catalog);
                 if (catalogFile.exists()) {
-                    resolver.getCatalog().parseCatalog(
-                            catalogFile.getAbsolutePath());
+                    try {
+						resolver.getCatalog().parseCatalog(
+						        catalogFile.getAbsolutePath());
+					} catch (IOException e) {
+						LOG.warn("An exception occurred while reading the catalog file: " +
+								catalogFile.getAbsolutePath() + ": " + e.getMessage(), e);
+					}
                 }
             }
         }
