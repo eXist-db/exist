@@ -535,4 +535,24 @@ public class RemoteCollection implements CollectionImpl {
     public boolean isRemoteCollection() throws XMLDBException {
         return true;
     }
+    
+    //You probably will have to call this methed from this cast :
+    //((org.exist.xmldb.CollectionImpl)collection).getURI()
+    public XmldbURI getURI() {
+    	StringBuffer accessor = new StringBuffer(XmldbURI.XMLDB_URI_PREFIX);
+    	//TODO : get the name from client
+    	accessor.append("exist");
+    	accessor.append("://");
+    	accessor.append(rpcClient.getURL().getHost());   
+    	if (rpcClient.getURL().getPort() != -1)
+    		accessor.append(":").append(rpcClient.getURL().getPort());    	
+    	accessor.append(rpcClient.getURL().getPath());      	
+    	try {
+    		//TODO : cache it when constructed
+    		return XmldbURI.create(accessor.toString(), getPath());
+    	} catch (XMLDBException e) {
+    		//TODO : should never happen
+    		return null;
+    	}
+    }
 }
