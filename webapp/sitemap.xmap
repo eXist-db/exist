@@ -212,9 +212,9 @@
       | contain any generator, transformer or serializer in addition to a
       | reader. They are useful for delivering binary content like images.
       +-->
-  <map:readers default="resource">
+  <map:readers default="resource"> 
     <map:reader logger="sitemap.reader.resource" name="resource" pool-max="32" src="org.apache.cocoon.reading.ResourceReader"/>
-    <map:reader logger="sitemap.reader.image" name="image" src="org.apache.cocoon.reading.ImageReader"/>
+    <map:reader logger="sitemap.reader.image" name="image" pool-max="32" src="org.apache.cocoon.reading.ImageReader"/>
   </map:readers>
 
   <!--+
@@ -512,14 +512,17 @@
             <map:match pattern="**.css">
                 <map:read mime-type="text/css" src="{1}.css"/>
             </map:match>
+            <map:match pattern="**.jpeg">
+                <map:read type="image" mime-type="image/jpeg" src="{1}.jpg" />
+            </map:match>               
             <map:match pattern="**.jpg">
-                <map:read mime-type="text/jpg" src="{1}.jpg"/>
-            </map:match>
+                <map:read type="image" mime-type="image/jpeg" src="{1}.jpg" />
+            </map:match>         
             <map:match pattern="**.gif">
-                <map:read mime-type="text/gif" src="{1}.gif"/>
+                <map:read mime-type="image/gif" src="{1}.gif"/>
             </map:match>
             <map:match pattern="**.png">
-                <map:read mime-type="text/png" src="{1}.png"/>
+                <map:read mime-type="image/png" src="{1}.png"/>
             </map:match>
             <map:match pattern="**.dtd">
                 <map:read mime-type="text/text" src="{1}.dtd"/>
@@ -718,6 +721,11 @@
                 <map:mount check-reload="yes" src="apps/sitemap.xmap"
                     uri-prefix="apps"/>
             </map:match>
+            
+            <map:match pattern="spatial-index/**">
+                <map:mount check-reload="yes" src="spatial-index/sitemap.xmap"
+                    uri-prefix="spatial-index"/>
+            </map:match>            
         
             <map:match pattern="examples.xml">
                 <map:generate src="examples.xml"/>
@@ -810,7 +818,7 @@
                 <map:transform src="stylesheets/system/directory2html.xslt"/>
                 <map:serialize/>
             </map:match>
-            
+        
     <!--+
         | At the very end of a pipeline, you can catch the errors triggered
         | by the pipeline execution. The error handler is an internal sitemap
