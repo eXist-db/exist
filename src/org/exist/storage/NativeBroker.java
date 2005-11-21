@@ -1789,8 +1789,8 @@ public class NativeBroker extends DBBroker {
 						sub.setCreationTime(System.currentTimeMillis());
                         if (transaction != null)
                             transaction.acquireLock(sub.getLock(), Lock.WRITE_LOCK);
-						current.addCollection(sub);
 						saveCollection(transaction, current);
+                        current.addCollection(sub);
 						current = sub;
 					}
 				}
