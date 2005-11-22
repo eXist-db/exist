@@ -36,6 +36,7 @@ import javax.xml.transform.OutputKeys;
 
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NativeBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -328,7 +329,7 @@ public class Backup {
 		// write subcollections
 		String[] collections = current.listChildCollections();
 		for (int i = 0; i < collections.length; i++) {
-			if (current.getName().equals("db") && collections[i].equals("system"))
+			if (current.getName().equals(NativeBroker.SYSTEM_COLLECTION) && collections[i].equals("temp"))
 				continue;
 			attr.clear();
 			attr.addAttribute(NS, "name", "name", "CDATA", collections[i]);
@@ -346,6 +347,8 @@ public class Backup {
 		Collection child;
 		for (int i = 0; i < collections.length; i++) {
 			child = current.getChildCollection(collections[i]);
+			if (child.getName().equals(NativeBroker.TEMP_COLLECTION))
+				continue;
 			backup(child, dialog);
 		}
 	}
