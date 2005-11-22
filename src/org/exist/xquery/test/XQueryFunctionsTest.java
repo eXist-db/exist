@@ -385,6 +385,55 @@ public class XQueryFunctionsTest extends TestCase {
 			System.out.println("testSharedLock(): " + e);
 			fail(e.getMessage());
 		}
+	}	
+	
+	
+	public void testEncodeForURI() {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			String string = "a";
+			String expected = "a";
+			String query = "encode-for-uri(\"" + string + "\")";
+			result = service.query(query);
+			r 	= (String) result.getResource(0).getContent();
+			assertEquals(expected, r);
+		} catch (XMLDBException e) {
+			System.out.println("testEncodeForURI(): " + e);
+			fail(e.getMessage());
+		}			
+	}
+	
+	public void testIRIToURI() {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			String string = "a";
+			String expected = "a";
+			String query = "iri-to-uri(\"" + string + "\")";
+			result = service.query(query);
+			r 	= (String) result.getResource(0).getContent();
+			assertEquals(expected, r);
+		} catch (XMLDBException e) {
+			System.out.println("testIRIToURI(): " + e);
+			fail(e.getMessage());
+		}
+	}	
+	
+	public void testEscapeHTMLURI() {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			String string = "a";
+			String expected = "a";
+			String query = "escape-html-uri(\"" + string + "\")";
+			result = service.query(query);
+			r 	= (String) result.getResource(0).getContent();
+			assertEquals(expected, r);
+		} catch (XMLDBException e) {
+			System.out.println("EscapeHTMLURI(): " + e);
+			fail(e.getMessage());
+		}		
 	}		
 	
 	/*
