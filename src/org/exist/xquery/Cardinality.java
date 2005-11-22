@@ -44,37 +44,19 @@ public class Cardinality {
 	public final static int ZERO_OR_MORE = ZERO | ONE | MANY;
 	
 	public final static int ZERO_OR_ONE = ZERO | ONE;
-	
-	public final static String display(int cardinality) {
-		switch(cardinality) {
-			case EMPTY:
-				return "empty()";
-			case EXACTLY_ONE:
-				return ""; 
-			case ONE_OR_MORE:
-				return "+";
-			case ZERO_OR_MORE:
-				return "*";
-			case ZERO_OR_ONE:
-				return "?";
-			default:
-				// impossible
-				throw new IllegalArgumentException("unknown cardinality: " + cardinality);
-		}
-	}
     
     public final static String toString(int cardinality) {
         switch(cardinality) {
             case EMPTY:
-                return "empty sequence";
+                return "empty()";
             case EXACTLY_ONE:
-                return "exactly one"; 
+                return ""; 
             case ONE_OR_MORE:
-                return "one or more";
+                return "+";
             case ZERO_OR_MORE:
-                return "zero or more";
+                return "*";
             case ZERO_OR_ONE:
-                return "zero or one";
+                return "?";
             default:
                 // impossible
                 throw new IllegalArgumentException("unknown cardinality: " + cardinality);
