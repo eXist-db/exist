@@ -24,15 +24,16 @@ package org.exist.webstart;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.log4j.Logger;
 
 /**
  *  Class for managing webstart jar files.
+ *
+ * @author Dannes Wessels
  */
-public class JnlpFiles {
+public class JnlpJarFiles {
     
-    private static Logger logger = Logger.getLogger(JnlpFiles.class);
+    private static Logger logger = Logger.getLogger(JnlpJarFiles.class);
     
     // Holders for jar files
     private File[] _coreJars;
@@ -52,7 +53,7 @@ public class JnlpFiles {
                 "xmlrpc-.*-patched\\.jar"
     }; // TODO tricky, needs te be reviewed on a regular basis.
     
-    private String existHome=System.getProperty("exist.home");
+    
     
     /**
      *  Get jar file specified by regular expression.
@@ -82,61 +83,32 @@ public class JnlpFiles {
             index++;
         }
         
-        
-        
         return jarFile;
     }
     
-    /** Creates a new instance of JnlpFiles */
-    public JnlpFiles() {
+    /**
+     * Creates a new instance of JnlpJarFiles
+     * 
+     * @param jnlpHelper
+     */
+    public JnlpJarFiles(JnlpHelper jnlpHelper) {
         logger.info("Initializing jar files Webstart");
-        logger.debug("eXist home="+existHome);
-        
-        File coreJarsFolder=null;
-        File existJarFolder=null;
         
         // Setup array CORE jars
         int nrCoreJars=jars.length;
         _coreJars = new File[nrCoreJars];
         logger.debug("Number of webstart jars="+nrCoreJars);
         
-        // Setup path based on installation (in jetty, container)
-        if(isInWarFile()){
-            // all files mixed in existHome/lib/
-            logger.debug("eXist is running in container (.war).");
-            coreJarsFolder= new File(existHome, "lib/");
-            existJarFolder= new File(existHome, "lib/");
-            
-        } else {
-            // all files located in existHome/lib/core/
-            logger.debug("eXist is running private jetty server.");
-            coreJarsFolder= new File(existHome, "lib/core");
-            existJarFolder= new File(existHome);
-        }
-        logger.debug("CORE jars location="+coreJarsFolder.getAbsolutePath());
-        logger.debug("EXIST jars location="+existJarFolder.getAbsolutePath());
-        
         // Setup CORE jars
         for(int i=0;i<nrCoreJars;i++){
-            _coreJars[i]=getJar(coreJarsFolder, jars[i]);
+            _coreJars[i]=getJar(jnlpHelper.getCoreJarsFolder(), jars[i]);
         }
         
         // Setup exist.jar
-        _mainJar=new File(existJarFolder, "exist.jar");
+        _mainJar=new File(jnlpHelper.getExistJarFolder(), "exist.jar");
     }
     
-    /**
-     *  Check wether exist runs in Servlet container (as war file).
-     * @return TRUE if exist runs in servlet container.
-     */
-    public boolean isInWarFile(){
-        
-        boolean retVal =true;
-        if( new File(existHome, "lib/core").isDirectory() ) {
-            retVal=false;
-        }
-        return retVal;
-    }
+
     
     /**
      * Get references to all "core" jar files.
@@ -158,8 +130,8 @@ public class JnlpFiles {
     
     /**
      *  Get File reference of associated jar-file.
-     * @param   Name of file
-     * @return  File reference to resource.
+     * @param name 
+     * @return File reference to resource.
      */
     public File getFile(String name){
         File retVal=null;

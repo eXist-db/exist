@@ -37,7 +37,8 @@ public class JnlpServlet extends HttpServlet {
     
     private static Logger logger = Logger.getLogger(JnlpServlet.class);
     
-    private JnlpFiles jf=null;
+    private JnlpJarFiles jf=null;
+    private JnlpHelper jh=null;
     
     /**
      * Initialize servlet.
@@ -45,35 +46,47 @@ public class JnlpServlet extends HttpServlet {
     public void init() {
         logger.info("Initializing JNLP servlet");
         
-        // Pre-find al relevant files
-        jf = new JnlpFiles();
+        jh = new JnlpHelper();
+        jf = new JnlpJarFiles(jh);
+        
+    }
+    
+    private String stripFilename(String URI){
+        int lastPos=URI.lastIndexOf("/");
+        return URI.substring(lastPos+1);
     }
     
     /**
-     *  Handle enduser webstart request.
-     * @param req   Object representing http request.
-     * @param resp  Object representing http response.
-     * @throws javax.servlet.ServletException 
-     * @throws java.io.IOException 
+     *  Handle webstart request for JNLP file, jar file or image.
+     *
+     * @param request   Object representing http request.
+     * @param response  Object representing http response.
+     * @throws ServletException  Standard servlet exception
+     * @throws IOException       Standard IO exception
      */
-    public void doGet(HttpServletRequest req, HttpServletResponse resp)
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException{
         
-        JnlpHelper jh=new JnlpHelper(jf, req);
+        JnlpWriter jw=new JnlpWriter();
         
-        String URI = req.getRequestURI();
+        String URI = request.getRequestURI();
         logger.debug("Requested URI="+URI);
         
         if(URI.endsWith(".jnlp")){
-            jh.sendXML(resp);
+            jw.writeJnlpXML(jf, request, response);
             
         } else if (URI.endsWith(".jar")){
-            String filename= req.getPathInfo().substring(1);
-            jh.sendJar(filename, resp);
+            String filename = stripFilename( request.getPathInfo() );
+            jw.sendJar(jf, filename, response);
+            
+        } else if ( URI.endsWith(".gif") || URI.endsWith(".jpg") ){
+            String filename =  stripFilename( request.getPathInfo() );
+            jw.sendImage(jh, jf, filename, response);
             
         } else {
             logger.error("Invalid file type");
-            throw new ServletException("Invalid file type");            
+            throw new ServletException("Invalid file type");
         }
+        
     }
 }
