@@ -1377,6 +1377,12 @@ public class XQueryContext {
             throw e;
         } catch (Exception e) {
             throw new XPathException("Internal error while loading module: " + location, e);
+        } finally {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                LOG.warn("Error while closing module source: " + e.getMessage(), e);
+            }
         }
         declareModuleVars(module);
         return module;
