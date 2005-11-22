@@ -94,9 +94,14 @@ public class Variable {
 	public String toString() {
 		StringBuffer result = new StringBuffer();
 		result.append("$" + qname.toString());
-		result.append(" ");
-		result.append(Type.getTypeName(getType()));
+		result.append(" as ");
+		result.append(Type.getTypeName(getType()));		
 		result.append(Cardinality.toString(getCardinality()));
+		result.append(" ");	
+		if (value == null) 
+			result.append("[not set]");
+		else
+			result.append(":= ").append(value.toString());
 		return result.toString();
 	}
 	
