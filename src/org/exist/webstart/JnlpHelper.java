@@ -22,172 +22,69 @@
 package org.exist.webstart;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.log4j.Logger;
 
 /**
+ *  Helper class for webstart.
  *
- * @author wessels
+ * @author Dannes Wessels
  */
 public class JnlpHelper {
     
     private static Logger logger = Logger.getLogger(JnlpHelper.class);
+    private String existHome=System.getProperty("exist.home");
     
-    private String _currentUrl;
-    private String _codeBase;
-    private String _href;
-    private String _startUrl;
-    private String _existBaseUrl;
-    
-    private JnlpFiles _jnlpFiles;
-    private HttpServletRequest _request;
+    private File coreJarsFolder=null;
+    private File existJarFolder=null;
+    private File webappFolder=null;
     
     /** Creates a new instance of JnlpHelper */
-    public JnlpHelper(JnlpFiles jnlpFiles, HttpServletRequest request) {
+    public JnlpHelper() {
         
-        // Store objects
-        _jnlpFiles=jnlpFiles;
-        _request=request;
-        
-        // Format URL: "http://host:8080/CONTEXT/webstart/exist.jnlp"
-        _currentUrl = _request.getRequestURL().toString();
-        
-        // Find BaseUrl http://host:8080/CONTEXT
-        int webstartPos = _currentUrl.indexOf("/webstart");
-        _existBaseUrl = _currentUrl.substring(0, webstartPos);
-        
-        // Find codeBase for jarfiles http://host:8080/CONTEXT/webstart
-        _codeBase = _existBaseUrl+"/webstart";
-        
-         // Reconstruct location http://host:8080/CONTEXT/webstart.exist.jnlp
-        _href = _currentUrl;
-        
-        // Find URL to connect to with client       
-        _startUrl = _existBaseUrl
-                        .replaceFirst("http:", "xmldb:exist:")
-                        .replaceAll("-", "%2D") + "/xmlrpc";
-
-    }
-    
-    /**
-     * Get (external) URL where exist can be accessed.
-     * @return eXist URL.
-     */
-    public String getExistBaseURL() { return _existBaseUrl;    }
-    
-    /**
-     * Get (external) URL where webstart files can be accessed..
-     * @return Webstart base URL.
-     */
-    public String getCodeBase() { return _codeBase;    }
-    
-    
-    /**
-     * Get relative name to JNLP file. Relative to _codeBase.
-     * @return Name of JNLP file.
-     */
-    public String getHref() { return _href;    }
-    
-    /**
-     * Get XML-rpc url for connecting the client.
-     * @return XMLRPC url.
-     */
-    public String getStartUrl() {  return _startUrl;    }
-    
-    /**
-     *  Write JNLP file to browser.
-     * @param response  Object for writing to end user.
-     * @throws java.io.IOException
-     */
-    void sendXML(HttpServletResponse response) throws IOException {
-        
-        logger.debug("Writing JNLP file");
-        
-        response.setContentType("application/x-java-jnlp-file");
-        PrintWriter out = response.getWriter();
-        
-        out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-        out.println("<jnlp codebase=\"" + getCodeBase() + "\" href=\"" + getHref() +"\">" );
-        out.println("<information>");
-        out.println("<title>eXist XML-DB client</title>");
-        out.println("<vendor>exist-db.org</vendor>");
-        out.println("<homepage href=\"http://exist-db.org/\"/>");
-        out.println("<description>Integrated command-line and gui client, "+
-                "entirely based on the XML:DB API and provides commands "+
-                "for most database related tasks, like creating and "+
-                "removing collections, user management, batch-loading "+
-                "XML data or querying.</description>");
-        out.println("<description kind=\"short\">eXist XML-DB client</description>");
-        out.println("<description kind=\"tooltip\">eXist XML-DB client</description>");
-        
-        out.println("<icon href=\""+_existBaseUrl+"/logo.jpg\" kind=\"splash\"/>");
-        out.println("<icon href=\""+_existBaseUrl+"/logo.jpg\" />");
-        
-        
-        out.println("</information>");
-        out.println("<security>");
-        out.println("<all-permissions />");
-        out.println("</security>");
-        
-        out.println("<resources>");
-        out.println("<j2se version=\"1.4+\"/>");
-        
-        File coreJars[] = _jnlpFiles.getCoreJars();
-        for(int i=0 ; i<coreJars.length ; i++) {
-            out.println("<jar href=\"" + coreJars[i].getName()
-            + "\" size=\""+ coreJars[i].length() +"\" />");
+        // Setup path based on installation (in jetty, container)
+        if(isInWarFile()){
+            // all files mixed in existHome/lib/
+            logger.debug("eXist is running in container (.war).");
+            coreJarsFolder= new File(existHome, "lib/");
+            existJarFolder= new File(existHome, "lib/");
+            webappFolder= new File(existHome);
+            
+        } else {
+            // all files located in existHome/lib/core/
+            logger.debug("eXist is running private jetty server.");
+            coreJarsFolder= new File(existHome, "lib/core");
+            existJarFolder= new File(existHome);
+            webappFolder= new File(existHome, "webapp");
         }
-        
-        out.println("<jar href=\"" + _jnlpFiles.getMainJar().getName()
-        +"\" size=\""+ _jnlpFiles.getMainJar().length()
-        + "\"  main=\"true\" />");
-        out.println("</resources>");
-        out.println("<application-desc main-class=\"org.exist.client.InteractiveClient\">");
-        out.println("<argument>-ouri=" + getStartUrl()+ "</argument>");
-        out.println("</application-desc>");
-        out.println("</jnlp>");
-        out.flush();
-        out.close();
-        
+        logger.debug("CORE jars location="+coreJarsFolder.getAbsolutePath());
+        logger.debug("EXIST jars location="+existJarFolder.getAbsolutePath());
+        logger.debug("WEBAPP location="+webappFolder.getAbsolutePath());
     }
     
     /**
-     *  Send JAR file to end user.
-     * @param filename  Name of JAR file
-     * @param response  Object for writing to end user.
-     * @throws java.io.IOException
+     *  Check wether exist runs in Servlet container (as war file).
+     * @return TRUE if exist runs in servlet container.
      */
-    void sendJar(String filename, HttpServletResponse response ) throws IOException {
+    public boolean isInWarFile(){
         
-        logger.debug("Send jar file "+ filename);
-        
-        File jarFile = _jnlpFiles.getFile(filename);
-        
-        response.setContentType("application/x-java-archive");
-        response.setContentLength( Integer.parseInt(Long.toString(jarFile.length())) );
-        
-        response.setDateHeader("Last-Modified",jarFile.lastModified());
-        
-        FileInputStream fis = new FileInputStream( jarFile );
-        OutputStream os = response.getOutputStream();
-        
-        
-        // Transfer bytes from in to out
-        byte[] buf = new byte[8096];
-        int len;
-        while ((len = fis.read(buf)) > 0) {
-            os.write(buf, 0, len);
+        boolean retVal =true;
+        if( new File(existHome, "lib/core").isDirectory() ) {
+            retVal=false;
         }
-        
-        os.flush();
-        os.close();
-        fis.close();
+        return retVal;
     }
+    
+    
+    public File getWebappFolder(){
+        return webappFolder;
+    }
+    
+    public File getCoreJarsFolder(){
+        return coreJarsFolder;
+    }
+    
+    public File getExistJarFolder(){
+        return existJarFolder;
+    }
+    
 }
