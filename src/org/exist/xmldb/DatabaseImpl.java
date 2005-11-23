@@ -88,6 +88,7 @@ public class DatabaseImpl implements Database {
     public static Collection readCollection(String c, XmlRpcClient rpcClient) 
     		throws XMLDBException {
     	//TODO : refactor
+    	//TODO : use dedicated function in XmldbURI
         StringTokenizer tok = new StringTokenizer( c, "/" );
         String temp = tok.nextToken();
         if(temp.equals("db"))
