@@ -129,7 +129,7 @@ public class DatabaseImpl implements Database {
     		file = f.getName();
 			home = f.getParentFile().getPath();
         }
-		System.out.println("configuring '" + instanceName + "' using " + home + File.pathSeparator + file);
+		System.out.println("Configuring '" + instanceName + "' using " + home + File.separatorChar + file);
         try {
             Configuration config = new Configuration(file, home);
             BrokerPool.configure(instanceName, 1, 5, config);            
