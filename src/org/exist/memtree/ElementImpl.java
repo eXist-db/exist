@@ -356,4 +356,29 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		// maybe TODO - new DOM interfaces - Java 5.0
 		
 	}
+	
+	public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("in-memory[");
+    	result.append("element { ");
+    	result.append(getQName().toString());
+    	result.append(" } { ");        
+        if(getAttributes() != null) {			
+			for(int i = 0; i < getAttributes().getLength(); i++) {
+			    if(i > 0)
+			    	result.append(" ");		    
+			    AttributeImpl att = (AttributeImpl)getAttributes().item(i);			    
+			    result.append(att.toString());			    
+			}
+		}
+        for(int i = 0; i < this.getChildCount(); i++ ) {  
+        	if(i > 0)
+            	result.append(" ");        	
+    		Node child = getChildNodes().item(i);
+            result.append(child.toString());           
+        }        
+        result.append(" }");
+        result.append("] ");
+        return result.toString();
+	}
 }

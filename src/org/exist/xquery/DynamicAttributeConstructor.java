@@ -117,7 +117,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     	result.append(qnameExpr.toString());
     	result.append(" } { ");        
     	result.append(valueExpr.toString());        
-    	result.append(" }");
+    	result.append(" } ");
     	return result.toString();
     }    
 }

@@ -1033,4 +1033,14 @@ public class DocumentImpl extends NodeImpl implements Document {
 	public void setContext(XQueryContext context) {
 		this.context = context;
 	}
+	
+   public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("in-memory[");
+    	result.append("document { ");
+    	result.append(getDocumentElement().toString());       
+    	result.append(" }");
+    	result.append("] ");
+    	return result.toString();
+    }    	
 }

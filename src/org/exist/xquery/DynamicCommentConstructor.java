@@ -92,7 +92,7 @@ public class DynamicCommentConstructor extends NodeConstructor {
     	StringBuffer result = new StringBuffer();
     	result.append("comment { ");        
     	result.append(content.toString());        
-    	result.append(" }");
+    	result.append(" } ");
     	return result.toString();
     }
     

@@ -22,11 +22,8 @@
  */
 package org.exist.memtree;
 
-import org.exist.storage.DBBroker;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Text;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 public class TextImpl extends NodeImpl implements Text {
 
@@ -131,5 +128,17 @@ public class TextImpl extends NodeImpl implements Text {
 		// maybe TODO - new DOM interfaces - Java 5.0
 		return null;
 	}
+	
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	if (isPersistentSet())
+    		result.append("persistent "); 
+    	result.append("in-memory[");
+    	result.append("text { ");    	
+    	result.append(getData());
+        result.append(" }");
+        result.append("] ");
+        return result.toString();
+    } 	
 
 }

@@ -119,6 +119,7 @@ public class DocumentConstructor extends NodeConstructor {
     public void dump(ExpressionDumper dumper) {
         dumper.display("document {");
         dumper.startIndent();
+        //TODO : is this the required syntax ?
         content.dump(dumper);
         dumper.endIndent();
         dumper.nl().display('}');
@@ -127,8 +128,9 @@ public class DocumentConstructor extends NodeConstructor {
     public String toString() {
     	StringBuffer result = new StringBuffer();
     	result.append("document { ");
+    	//TODO : is this the required syntax ?
     	result.append(content.toString());       
-    	result.append(" }");
+    	result.append(" } ");
     	return result.toString();
     }    
 

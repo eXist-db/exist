@@ -59,5 +59,17 @@ public class ProcessingInstructionImpl
 	 */
 	public void setData(String arg0) throws DOMException {
 	}
+	
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("in-memory[");
+    	result.append("processing-instruction { ");
+    	result.append(getTarget());
+    	result.append(" } { ");        
+    	result.append(getData());
+    	result.append(" }");
+    	result.append("] ");
+    	return result.toString();
+    }  
 
 }

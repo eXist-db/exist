@@ -228,7 +228,7 @@ public class ElementConstructor extends NodeConstructor {
                 	result.append(" ");
             }
         }        
-        result.append(" }");
+        result.append(" } ");
         return result.toString();
     }    
     
