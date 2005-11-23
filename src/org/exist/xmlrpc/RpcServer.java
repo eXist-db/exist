@@ -700,13 +700,6 @@ try {
 
     public boolean parse(User user, byte[] xmlData, String docName,
             int overwrite) throws EXistException, PermissionDeniedException {
-        // some clients (Perl) encode strings with a \0 at the end.
-        // remove it ...
-        if (xmlData[xmlData.length - 1] == 0) {
-            byte[] temp = new byte[xmlData.length - 1];
-            System.arraycopy(xmlData, 0, temp, 0, xmlData.length - 1);
-            xmlData = temp;
-        }
         RpcConnection con = pool.get();
         try {
             return con.parse(user, xmlData, docName, (overwrite != 0));
@@ -721,13 +714,6 @@ try {
 
     public boolean parse(User user, byte[] xmlData, String docName,
             int overwrite, Date created, Date modified) throws EXistException, PermissionDeniedException {
-        // some clients (Perl) encode strings with a \0 at the end.
-        // remove it ...
-        if (xmlData[xmlData.length - 1] == 0) {
-            byte[] temp = new byte[xmlData.length - 1];
-            System.arraycopy(xmlData, 0, temp, 0, xmlData.length - 1);
-            xmlData = temp;
-        }
         RpcConnection con = pool.get();
         try {
             return con.parse(user, xmlData, docName, (overwrite != 0), created, modified);
