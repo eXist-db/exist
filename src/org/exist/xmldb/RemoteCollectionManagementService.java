@@ -30,6 +30,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
 
     public Collection createCollection( String collName, Date created) throws XMLDBException {
         String name = collName;
+        //TODO : use dedicated function in XmldbURI
         if ( ( !collName.startsWith( DBBroker.ROOT_COLLECTION ) ) && parent != null )
             name = parent.getPath() + "/" + collName;
 
@@ -57,9 +58,6 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         return collection;
     }
     
-    
-    
-
     /**
      *  Implements createCollection from interface CollectionManager. Gets
      *  called by some applications based on Xindice.
@@ -88,8 +86,9 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
 
     public void removeCollection( String collName ) throws XMLDBException {
         String name = collName;
-        if ( !collName.startsWith( "/" ) )
-            name = parent.getPath() + '/' + collName;
+        //TODO : use dedicated function in XmldbURI
+        if ( ( !collName.startsWith( DBBroker.ROOT_COLLECTION ) ) && parent != null )
+            name = parent.getPath() + "/" + collName;
 
         Vector params = new Vector();
         params.addElement( name );
@@ -121,7 +120,10 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public void move(String collectionPath, String destinationPath, String newName) throws XMLDBException {
       /*  if(!collectionPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
             collectionPath = parent.getPath() + '/' + collectionPath;*/
+    	
+    	//TODO : use dedicated function in XmldbURI
     	collectionPath = NativeBroker.checkPath(collectionPath, parent.getPath());
+    	
         /*if(destinationPath != null)
         {
         	if(!destinationPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
@@ -131,6 +133,8 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         {
         	destinationPath = parent.getPath();
         }*/
+    	
+    	//TODO : use dedicated function in XmldbURI
     	destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
             int p = collectionPath.lastIndexOf(('/'));
@@ -159,7 +163,10 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public void moveResource(String resourcePath, String destinationPath, String newName) throws XMLDBException {
         /*if(!resourcePath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
             resourcePath = parent.getPath() + '/' + resourcePath;*/
+    	
+    	//TODO : use dedicated function in XmldbURI
     	resourcePath = NativeBroker.checkPath(resourcePath, parent.getPath());
+    	
         /*if(destinationPath != null)
         {
         	if(!destinationPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
@@ -169,6 +176,8 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         {
         	destinationPath = parent.getPath();
         }*/
+    	
+    	//TODO : use dedicated function in XmldbURI
     	destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
             int p = resourcePath.lastIndexOf(('/'));
@@ -198,9 +207,13 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
 			throws XMLDBException {
 		/*if(!collectionPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
             collectionPath = parent.getPath() + '/' + collectionPath;*/
+		
+		//TODO : use dedicated function in XmldbURI
 		collectionPath = NativeBroker.checkPath(collectionPath, parent.getPath());
         /*if(!destinationPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
             destinationPath = parent.getPath() + '/' + destinationPath;*/
+		
+		//TODO : use dedicated function in XmldbURI
 		destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
             int p = collectionPath.lastIndexOf(('/'));
@@ -231,9 +244,13 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
             String newName) throws XMLDBException {
     	/*if(!resourcePath.startsWith(DBBroker.ROOT_COLLECTION+ "/"))
             resourcePath = parent.getPath() + '/' + resourcePath;*/
+    	
+    	//TODO : use dedicated function in XmldbURI
     	resourcePath = NativeBroker.checkPath(resourcePath, parent.getPath());
         /*if(!destinationPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
             destinationPath = parent.getPath() + '/' + destinationPath;*/
+    	
+		//TODO : use dedicated function in XmldbURI
     	destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
             int p = resourcePath.lastIndexOf(('/'));

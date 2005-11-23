@@ -399,6 +399,8 @@ public class RpcConnection extends Thread {
         DBBroker broker = brokerPool.get(user);
         Collection collection = null;
         try {
+        	
+        	//TODO : use dedicated function in XmldbURI
             if (rootCollection == null)
                 rootCollection = DBBroker.ROOT_COLLECTION;
             
@@ -488,6 +490,8 @@ public class RpcConnection extends Thread {
         DBBroker broker = brokerPool.get(user);
         Collection collection = null;
         try {
+        	
+        	//TODO : use dedicated function in XmldbURI
             if (rootCollection == null)
                 rootCollection = DBBroker.ROOT_COLLECTION;
             
@@ -801,6 +805,8 @@ public class RpcConnection extends Thread {
                 name = '/' + name;
             /*if (!name.startsWith(DBBroker.ROOT_COLLECTION))
                 name = DBBroker.ROOT_COLLECTION + name;*/
+            
+            //TODO : use dedicated function in XmldbURI
             name = NativeBroker.checkPath(name, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(name, Lock.READ_LOCK);
             Vector vec = new Vector();
@@ -833,6 +839,8 @@ public class RpcConnection extends Thread {
                 collectionName = '/' + collectionName;
             /*if (!collectionName.startsWith(DBBroker.ROOT_COLLECTION))
                 collectionName = DBBroker.ROOT_COLLECTION + collectionName;*/
+            
+            //TODO : use dedicated function in XmldbURI
             collectionName = NativeBroker.checkPath(collectionName, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(collectionName, Lock.READ_LOCK);
             return collection.getDocumentCount();
@@ -853,6 +861,8 @@ public class RpcConnection extends Thread {
                 collectionName = '/' + collectionName;
             /*if (!collectionName.startsWith(DBBroker.ROOT_COLLECTION))
                 collectionName = DBBroker.ROOT_COLLECTION + collectionName;*/
+            
+            //TODO : use dedicated function in XmldbURI
             collectionName = NativeBroker.checkPath(collectionName, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(collectionName, Lock.READ_LOCK);
             String id;
@@ -887,6 +897,8 @@ public class RpcConnection extends Thread {
                 name = '/' + name;
             /*if (!name.startsWith(DBBroker.ROOT_COLLECTION))
                 name = DBBroker.ROOT_COLLECTION + name;*/
+            
+            //TODO : use dedicated function in XmldbURI
             name = NativeBroker.checkPath(name, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(name, Lock.READ_LOCK);
             if (collection == null)
@@ -927,6 +939,8 @@ public class RpcConnection extends Thread {
                 name = '/' + name;
             /*if (!name.startsWith(DBBroker.ROOT_COLLECTION))
                 name = DBBroker.ROOT_COLLECTION + name;*/
+            
+            //TODO : use dedicated function in XmldbURI
             name = NativeBroker.checkPath(name, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(name, Lock.READ_LOCK);
             if (collection == null)
@@ -978,6 +992,8 @@ public class RpcConnection extends Thread {
                 name = '/' + name;
             /*if (!name.startsWith(DBBroker.ROOT_COLLECTION))
                 name = DBBroker.ROOT_COLLECTION + name;*/
+            
+            //TODO : use dedicated function in XmldbURI
             name = NativeBroker.checkPath(name, DBBroker.ROOT_COLLECTION);
             Collection collection = broker.openCollection(name, Lock.READ_LOCK);
             Permission perm = null;
@@ -1012,6 +1028,8 @@ public class RpcConnection extends Thread {
                 collectionPath = '/' + collectionPath;
             /*if (!collectionPath.startsWith(DBBroker.ROOT_COLLECTION))
                 collectionPath = DBBroker.ROOT_COLLECTION + collectionPath;*/
+            
+            //TODO : use dedicated function in XmldbURI
             collectionPath = NativeBroker.checkPath(collectionPath, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(collectionPath, Lock.READ_LOCK);
             if (collection == null)
@@ -1035,6 +1053,8 @@ public class RpcConnection extends Thread {
                 documentPath = '/' + documentPath;
             /*if (!documentPath.startsWith(DBBroker.ROOT_COLLECTION))
                 documentPath = DBBroker.ROOT_COLLECTION + documentPath;*/
+            
+            //TODO : use dedicated function in XmldbURI
             documentPath = NativeBroker.checkPath(documentPath, DBBroker.ROOT_COLLECTION);
             doc = (DocumentImpl) broker.openDocument(documentPath, Lock.READ_LOCK);
             if (doc == null) {

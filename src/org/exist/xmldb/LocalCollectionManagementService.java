@@ -65,7 +65,11 @@ public class LocalCollectionManagementService implements CollectionManagementSer
 
     
     public Collection createCollection( String collName, Date created) throws XMLDBException {
-        collName = parent.getPath() + '/' + collName;
+    	//Is collection's name relative ?
+    	//TODO : use dedicated function in XmldbURI
+        if (!collName.startsWith(DBBroker.ROOT_COLLECTION) && parent != null)
+        	collName = parent.getPath() + '/' + collName;
+        
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
@@ -119,10 +123,13 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     }
 
     public void removeCollection( String collName ) throws XMLDBException {
-    	//String path = (collName.startsWith(DBBroker.ROOT_COLLECTION + "/") ? collName : 
-    	//	parent.getPath() + '/' + collName);
+    	//Is collection's name relative ?
+    	//TODO : use dedicated function in XmldbURI
+        if (!collName.startsWith(DBBroker.ROOT_COLLECTION) && parent != null)
+        	collName = parent.getPath() + '/' + collName;        
     	String path = NativeBroker.checkPath(collName, parent.getPath());
-        TransactionManager transact = brokerPool.getTransactionManager();
+        
+    	TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
         org.exist.collections.Collection collection = null;
@@ -160,6 +167,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             String newName) throws XMLDBException {
         /*if(!collectionPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
             collectionPath = parent.getPath() + '/' + collectionPath;*/
+    	
+    	//TODO : use dedicated function in XmldbURI
     	collectionPath = NativeBroker.checkPath(collectionPath, parent.getPath());
     	/*
         if(destinationPath != null)
@@ -171,7 +180,10 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         {
         	destinationPath = parent.getPath();
         }*/
+    	
+    	//TODO : use dedicated function in XmldbURI
     	destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
+    	
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
@@ -217,6 +229,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             String newName) throws XMLDBException {
         /*if(!resourcePath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
             resourcePath = parent.getPath() + '/' + resourcePath;*/
+    	
+    	//TODO : use dedicated function in XmldbURI
     	resourcePath = NativeBroker.checkPath(resourcePath, parent.getPath());
         /*if(destinationPath != null)
         {
@@ -227,6 +241,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         {
         	destinationPath = parent.getPath();
         }*/
+    	
+    	//TODO : use dedicated function in XmldbURI
     	destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
@@ -286,9 +302,13 @@ public class LocalCollectionManagementService implements CollectionManagementSer
 		/*(if(!resourcePath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
             resourcePath = parent.getPath() + '/' + resourcePath;
             */
+		
+		//TODO : use dedicated function in XmldbURI
 		resourcePath = NativeBroker.checkPath(resourcePath, parent.getPath());
         /*if(!destinationPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
             destinationPath = parent.getPath() + '/' + destinationPath;*/
+		
+		//TODO : use dedicated function in XmldbURI
 		destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
@@ -344,10 +364,14 @@ public class LocalCollectionManagementService implements CollectionManagementSer
 			throws XMLDBException {
 		/*if(!collectionPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
             collectionPath = parent.getPath() + '/' + collectionPath;*/
+		
+		//TODO : use dedicated function in XmldbURI
 		collectionPath = NativeBroker.checkPath(collectionPath, parent.getPath());
         /*if(!destinationPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
             destinationPath = parent.getPath() + '/' + destinationPath;
             */
+		
+		//TODO : use dedicated function in XmldbURI
 		destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
         System.out.println("Copying " + collectionPath + " to " + destinationPath + " as " + newName);
         TransactionManager transact = brokerPool.getTransactionManager();

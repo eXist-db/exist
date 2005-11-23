@@ -147,6 +147,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
             relDir = relDir.replace(File.separatorChar, '/');
             if (createSubcollections && (prevDir == null || (!relDir.equals(prevDir))))
             {
+              //TODO : use dedicated function in XmldbURI
               col = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION + path, relDir);
               prevDir = relDir;
             }
