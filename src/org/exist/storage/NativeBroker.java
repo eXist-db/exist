@@ -1777,6 +1777,8 @@ public class NativeBroker extends DBBroker {
                         if (current == null)
                             LOG.debug("Collection " + path + " not found!");
 					} else {
+						if (readOnly)
+							throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 						if (!current.getPermissions().validate(user, Permission.WRITE)) {
 							LOG.debug("permission denied to create collection " + path);
 							throw new PermissionDeniedException("User '"+ user.getName() + "' not allowed to write to collection '" + current.getName() + "'");
@@ -1789,8 +1791,8 @@ public class NativeBroker extends DBBroker {
 						sub.setCreationTime(System.currentTimeMillis());
                         if (transaction != null)
                             transaction.acquireLock(sub.getLock(), Lock.WRITE_LOCK);
-						saveCollection(transaction, current);
                         current.addCollection(sub);
+                        saveCollection(transaction, current);
 						current = sub;
 					}
 				}
