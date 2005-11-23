@@ -115,5 +115,18 @@ public class CDATASectionImpl extends NodeImpl implements CDATASection {
 	public Text replaceWholeText(String content) throws DOMException {
 		// maybe TODO - new DOM interfaces - Java 5.0
 		return null;
-	}
+	}	
+
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	if (isPersistentSet())
+    		result.append("persistent "); 
+    	result.append("in-memory[");
+    	result.append("CDATA { ");    	
+    	result.append(getData());
+        result.append(" }");
+        result.append("] ");
+        return result.toString();
+    } 
+   	
 }

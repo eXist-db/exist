@@ -56,6 +56,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
      * @see org.exist.memtree.NodeImpl#getNodeType()
      */
     public short getNodeType() {
+    	//TODO : understand this design -pb
         return Node.ATTRIBUTE_NODE;
     }
 
@@ -130,4 +131,18 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
 		// maybe TODO - new DOM interfaces - Java 5.0
 		return false;
 	}
+	
+	//Untested
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("in-memory[");
+    	result.append("namespace { ");        
+    	result.append(getPrefix());  
+    	result.append("{");  
+    	result.append(getValue());  
+    	result.append("}");
+    	result.append(" }");
+    	result.append("] ");
+    	return result.toString();
+    }	
 }

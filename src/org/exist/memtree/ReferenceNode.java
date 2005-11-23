@@ -23,6 +23,7 @@
 package org.exist.memtree;
 
 import org.exist.dom.NodeProxy;
+import org.w3c.dom.Node;
 
 
 /**
@@ -42,4 +43,12 @@ public class ReferenceNode extends NodeImpl {
         int p = document.alpha[nodeNumber];
         return document.references[p];
     }
+    
+    public String toString() {
+    	StringBuffer result = new StringBuffer(); 
+    	result.append("reference[ ");    
+    	result.append(getReference().getNode().toString());   
+    	result.append(" ]");  
+        return result.toString();
+    } 
 }
