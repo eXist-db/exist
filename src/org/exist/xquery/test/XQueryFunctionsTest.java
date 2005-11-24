@@ -391,13 +391,30 @@ public class XQueryFunctionsTest extends TestCase {
 	public void testEncodeForURI() {
 		ResourceSet result 		= null;
 		String		r			= "";
+		String string;
+		String expected;
+		String query;
 		try {
-			String string = "a";
-			String expected = "a";
-			String query = "encode-for-uri(\"" + string + "\")";
+			string = "http://www.example.com/00/Weather/CA/Los%20Angeles#ocean";
+			expected = "http%3A%2F%2Fwww.example.com%2F00%2FWeather%2FCA%2FLos%2520Angeles#ocean";
+			query = "encode-for-uri(\"" + string + "\")";
 			result = service.query(query);
 			r 	= (String) result.getResource(0).getContent();
 			assertEquals(expected, r);
+			
+			string = "~bébé";
+			expected = "~b%C3%A9b%C3%A9";
+			query = "encode-for-uri(\"" + string + "\")";
+			result = service.query(query);
+			r 	= (String) result.getResource(0).getContent();
+			assertEquals(expected, r);	
+			
+			string = "100% organic";
+			expected = "100%25%20organic";
+			query = "encode-for-uri(\"" + string + "\")";
+			result = service.query(query);
+			r 	= (String) result.getResource(0).getContent();
+			assertEquals(expected, r);				
 		} catch (XMLDBException e) {
 			System.out.println("testEncodeForURI(): " + e);
 			fail(e.getMessage());
@@ -407,13 +424,24 @@ public class XQueryFunctionsTest extends TestCase {
 	public void testIRIToURI() {
 		ResourceSet result 		= null;
 		String		r			= "";
+		String string;
+		String expected;
+		String query;		
 		try {
-			String string = "a";
-			String expected = "a";
-			String query = "iri-to-uri(\"" + string + "\")";
+			string = "http://www.example.com/00/Weather/CA/Los%20Angeles#ocean";
+			expected = "http://www.example.com/00/Weather/CA/Los%20Angeles#ocean";
+			query = "iri-to-uri(\"" + string + "\")";
 			result = service.query(query);
 			r 	= (String) result.getResource(0).getContent();
 			assertEquals(expected, r);
+			
+			
+			string = "http://www.example.com/~bébé";
+			expected = "http://www.example.com/~b%C3%A9b%C3%A9";
+			query = "iri-to-uri(\"" + string + "\")";
+			result = service.query(query);
+			r 	= (String) result.getResource(0).getContent();
+			assertEquals(expected, r);			
 		} catch (XMLDBException e) {
 			System.out.println("testIRIToURI(): " + e);
 			fail(e.getMessage());
@@ -423,13 +451,24 @@ public class XQueryFunctionsTest extends TestCase {
 	public void testEscapeHTMLURI() {
 		ResourceSet result 		= null;
 		String		r			= "";
+		String string;
+		String expected;
+		String query;	
 		try {
-			String string = "a";
-			String expected = "a";
-			String query = "escape-html-uri(\"" + string + "\")";
+			string = "http://www.example.com/00/Weather/CA/Los Angeles#ocean";
+			expected = "http://www.example.com/00/Weather/CA/Los Angeles#ocean";
+			query = "escape-html-uri(\"" + string + "\")";
 			result = service.query(query);
 			r 	= (String) result.getResource(0).getContent();
 			assertEquals(expected, r);
+			
+			string = "javascript:if (navigator.browserLanguage == 'fr') window.open('http://www.example.com/~bébé');";
+			expected = "javascript:if (navigator.browserLanguage == 'fr') window.open('http://www.example.com/~b%C3%A9b%C3%A9');";
+			query = "escape-html-uri(\"" + string + "\")";
+			result = service.query(query);
+			r 	= (String) result.getResource(0).getContent();
+			assertEquals(expected, r);			
+			
 		} catch (XMLDBException e) {
 			System.out.println("EscapeHTMLURI(): " + e);
 			fail(e.getMessage());

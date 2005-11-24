@@ -33,50 +33,76 @@ import java.net.URLEncoder;
 public class URIUtils {
 	
 	public static String encodeForURI(String uriPart) throws UnsupportedEncodingException {
-		String result = URLEncoder.encode(uriPart, "UTF-8");
-		result.replaceAll("%23", "#");
-		result.replaceAll("%2D", "-");
-		result.replaceAll("%5F", "_");
-		result.replaceAll("%2E", ".");
-		result.replaceAll("%21", "!");
-		result.replaceAll("%7E", "~");
-		result.replaceAll("%2A", "*");
-		result.replaceAll("%27", "'");
-		result.replaceAll("%28", "(");
-		result.replaceAll("%29", ")");		
+		String result = URLEncoder.encode(uriPart, "UTF-8");	
+		result = result.replaceAll("\\+", "%20");
+		result = result.replaceAll("%23", "#");
+		result = result.replaceAll("%2D", "-");
+		result = result.replaceAll("%5F", "_");
+		result = result.replaceAll("%2E", ".");
+		result = result.replaceAll("%21", "!");
+		result = result.replaceAll("%7E", "~");
+		result = result.replaceAll("%2A", "*");
+		result = result.replaceAll("%27", "'");
+		result = result.replaceAll("%28", "(");
+		result = result.replaceAll("%29", ")");		
 		return result;
 	}
 	
 	public static String iriToURI(String uriPart) throws UnsupportedEncodingException {
 		String result = URLEncoder.encode(uriPart, "UTF-8");
-		result.replaceAll("%23", "#");
-		result.replaceAll("%2D", "-");
-		result.replaceAll("%5F", "_");
-		result.replaceAll("%2E", ".");
-		result.replaceAll("%21", "!");
-		result.replaceAll("%7E", "~");
-		result.replaceAll("%2A", "*");
-		result.replaceAll("%27", "'");
-		result.replaceAll("%28", "(");
-		result.replaceAll("%29", ")");
-		result.replaceAll("%3B", ";");
-		result.replaceAll("%2F", "/");
-		result.replaceAll("%3F", "?");		
-		result.replaceAll("%3A", ":");
-		result.replaceAll("%40", "@");
-		result.replaceAll("%26", "&");
-		result.replaceAll("%3D", "=");		
-		result.replaceAll("%2B", "+");
-		result.replaceAll("%24", "$");
-		result.replaceAll("%2C", ",");		
-		result.replaceAll("%5B", "[");
-		result.replaceAll("%5D", "])");		
-		result.replaceAll("%25", "%");
+		result = result.replaceAll("%23", "#");
+		result = result.replaceAll("%2D", "-");
+		result = result.replaceAll("%5F", "_");
+		result = result.replaceAll("%2E", ".");
+		result = result.replaceAll("%21", "!");
+		result = result.replaceAll("%7E", "~");
+		result = result.replaceAll("%2A", "*");
+		result = result.replaceAll("%27", "'");
+		result = result.replaceAll("%28", "(");
+		result = result.replaceAll("%29", ")");
+		result = result.replaceAll("%3B", ";");
+		result = result.replaceAll("%2F", "/");
+		result = result.replaceAll("%3F", "?");		
+		result = result.replaceAll("%3A", ":");
+		result = result.replaceAll("%40", "@");
+		result = result.replaceAll("%26", "&");
+		result = result.replaceAll("%3D", "=");		
+		result = result.replaceAll("%2B", "+");
+		result = result.replaceAll("%24", "$");
+		result = result.replaceAll("%2C", ",");		
+		result = result.replaceAll("%5B", "[");
+		result = result.replaceAll("%5D", "])");		
+		result = result.replaceAll("%25", "%");
 		return result;
 	}
 	
 	public static String escapeHtmlURI(String uri) throws UnsupportedEncodingException {
 		String result = URLEncoder.encode(uri, "UTF-8");
+		//TODO : to be continued
+		result = result.replaceAll("\\+", " ");
+		result = result.replaceAll("%23", "#");
+		result = result.replaceAll("%2D", "-");
+		result = result.replaceAll("%5F", "_");
+		result = result.replaceAll("%2E", ".");
+		result = result.replaceAll("%21", "!");
+		result = result.replaceAll("%7E", "~");
+		result = result.replaceAll("%2A", "*");
+		result = result.replaceAll("%27", "'");
+		result = result.replaceAll("%28", "(");
+		result = result.replaceAll("%29", ")");
+		result = result.replaceAll("%3B", ";");
+		result = result.replaceAll("%2F", "/");
+		result = result.replaceAll("%3F", "?");		
+		result = result.replaceAll("%3A", ":");
+		result = result.replaceAll("%40", "@");
+		result = result.replaceAll("%26", "&");
+		result = result.replaceAll("%3D", "=");		
+		result = result.replaceAll("%2B", "+");
+		result = result.replaceAll("%24", "$");
+		result = result.replaceAll("%2C", ",");		
+		result = result.replaceAll("%5B", "[");
+		result = result.replaceAll("%5D", "])");		
+		result = result.replaceAll("%25", "%");		
 		return result;
 	}
 
