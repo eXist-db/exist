@@ -262,15 +262,19 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 }
 				continue;
 			} else {
-				if(axis == Constants.SELF_AXIS && test.matches(proxy)) {
-					if(inPredicate)
-						proxy.addContextNode(proxy);
-					result.add(proxy);
-				} else {
+				if(test.matches(proxy)) {
+					if (axis == Constants.SELF_AXIS || axis == Constants.ANCESTOR_SELF_AXIS || 
+							axis == Constants.DESCENDANT_SELF_AXIS) {				
+						if(inPredicate)
+							proxy.addContextNode(proxy);
+						result.add(proxy);
+					}
+				} 
+				if (axis != Constants.SELF_AXIS) {
 					domIter = proxy.getDocument().getBroker().getNodeIterator(proxy);
 					NodeImpl node = (NodeImpl) domIter.next();
 					node.setOwnerDocument(proxy.getDocument());
-					node.setGID(proxy.gid);
+					node.setGID(proxy.gid);					
 					addChildren(proxy, result, node, domIter, 0);
 				}
 			}
