@@ -62,11 +62,10 @@ public class TypeTest implements NodeTest {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
 	 */
-	public boolean matches(NodeProxy proxy) {
-		int type = proxy.getType();
-		if(type == Type.ITEM || type == Type.NODE) {
-			if(type == Type.NODE)
-				return true;
+	public boolean matches(NodeProxy proxy) {		
+		if(proxy.nodeType == Type.ITEM || proxy.nodeType == Type.NODE) {
+			if (this.nodeType == Type.NODE)
+				return true;			
 			Node node = proxy.getNode();
 			return matches(node);
 		} else
