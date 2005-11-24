@@ -47,7 +47,7 @@ public class JnlpHelper {
             logger.debug("eXist is running in container (.war).");
             coreJarsFolder= new File(existHome, "lib/");
             existJarFolder= new File(existHome, "lib/");
-            webappFolder= new File(existHome);
+            webappFolder= new File(existHome, "..");
             
         } else {
             // all files located in existHome/lib/core/
