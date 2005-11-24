@@ -193,7 +193,9 @@ public class ElementConstructor extends NodeConstructor {
 				attr = (AttributeConstructor)attributes[i];
 				attr.dump(dumper);
 			}
-		}
+	        dumper.endIndent();
+	        dumper.startIndent();
+	    }
         if(content != null) {
             for(Iterator i = content.steps.iterator(); i.hasNext(); ) {
                 Expression expr = (Expression) i.next();
@@ -201,8 +203,8 @@ public class ElementConstructor extends NodeConstructor {
                 if(i.hasNext())
                     dumper.nl();
             }
-        }
-        dumper.endIndent().nl();
+            dumper.endIndent().nl();
+        }        
         dumper.display("}");
     }
     
