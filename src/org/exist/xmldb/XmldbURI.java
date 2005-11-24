@@ -28,7 +28,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+
+import org.exist.storage.DBBroker;
+import org.xmldb.api.base.Collection;
 
 /** A utility class for xmldb URis.
  * Since, java.net.URI is <strong>final</strong> this class acts as a wrapper.
@@ -573,6 +577,46 @@ public class XmldbURI {
 		return wrappedURI.toString();
 	}
 	
-//	TODO : prefefined URIs as static classes...
+    /*
+     * if the currentPath is null return the parentPath else 
+     * 	if the currentPath doesnt not start with "/db/" and is not equal to "/db" then adjust the path to start with the parentPath
+     * 
+     * Fix to Jens collection/resource name problem by deliriumsky
+     */
+    public static String checkPath(String currentPath, String parentPath)
+	{
+        /*String path = (collectionPath.startsWith(DBBroker.ROOT_COLLECTION + "/") ? collectionPath : 
+		parent.getPath() + '/' + collectionPath);*/	
+		
+    	if(currentPath != null)
+		{
+			if((!currentPath.startsWith(DBBroker.ROOT_COLLECTION + "/")) 
+					&& (!currentPath.equals(DBBroker.ROOT_COLLECTION)))
+			{
+				if(currentPath.startsWith("/"))
+				{
+					currentPath = parentPath + currentPath;
+				}
+				else
+				{
+					currentPath = parentPath + '/' + currentPath;
+				}
+			}
+			
+			return(currentPath);
+		}
+		return(parentPath);
+	}	
+    
+    public static String[] getPathComponents(String collectionPath) {    	
+    	Pattern p = Pattern.compile("/");
+    	String [] split = p.split(collectionPath);
+    	String [] result = new String[split.length - 1];
+    	System.arraycopy(split, 1, result, 0, split.length - 1);
+    	return result;       
+    }
 
+	
+//	TODO : prefefined URIs as static classes...
+    
 }

@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
@@ -85,20 +86,11 @@ public class DatabaseImpl implements Database {
     		autoCreate = initdb.equalsIgnoreCase("true");
     }
 
-    public static Collection readCollection(String c, XmlRpcClient rpcClient) 
-    		throws XMLDBException {
-    	//TODO : refactor
-    	//TODO : use dedicated function in XmldbURI
-        StringTokenizer tok = new StringTokenizer( c, "/" );
-        String temp = tok.nextToken();
-        if(temp.equals("db"))
-        	temp = '/' + temp;
-        Collection current =
-            new RemoteCollection( rpcClient, null, temp );
-        while ( current != null && tok.hasMoreTokens() ) {
-            temp = tok.nextToken();
-            current =
-                current.getChildCollection( ( (RemoteCollection) current ).getPath() + '/' + temp );
+    public static Collection readCollection(String c, XmlRpcClient rpcClient) throws XMLDBException {
+    	String[] components = XmldbURI.getPathComponents(c);
+    	Collection current = new RemoteCollection(rpcClient, null, components[0]); 
+    	for (int i = 1 ; i < components.length ; i++) {
+            current = ((RemoteCollection)current).getChildCollection(components[i]);
         }
         return current;
     }
@@ -172,17 +164,9 @@ public class DatabaseImpl implements Database {
 	
     public Collection getCollection(XmldbURI xmldbURI, String user, String password) throws XMLDBException { 
     	if (XmldbURI.API_LOCAL.equals(xmldbURI.getApiName()))    		
-        	return getLocalCollection(xmldbURI.getInstanceName(), user, password, xmldbURI.getCollectionPath());
-    	else if (XmldbURI.API_XMLRPC.equals(xmldbURI.getApiName())){
-    		URL url = null;
-    		try {
-    			url = new URL("http", xmldbURI.getHost(), xmldbURI.getPort(), xmldbURI.getContext());
-    		} catch (MalformedURLException e) {
-        		//Should never happen
-        		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URL is not well formed:" + 
-        				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);   
-        	}
-    		return getRemoteCollectionFromXMLRPC(url, xmldbURI.getInstanceName(), user, password, xmldbURI.getCollectionPath());
+        	return getLocalCollection(xmldbURI, user, password);
+    	else if (XmldbURI.API_XMLRPC.equals(xmldbURI.getApiName())) {    	
+    		return getRemoteCollection(xmldbURI, user, password);
     	}
     	else 
     		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URL is not well formed:" + 
@@ -190,55 +174,59 @@ public class DatabaseImpl implements Database {
     }    
 
     /**
-     * @param url
-     * @param instanceName
+     * @param xmldbURI
      * @param user
      * @param password
-     * @param c
      * @return
      * @throws XMLDBException
      */
-    private Collection getRemoteCollectionFromXMLRPC(URL url, String instanceName, 
-    		String user, String password, String c) throws XMLDBException {        
+    private Collection getRemoteCollection(XmldbURI xmldbURI, String user, String password) 
+    		throws XMLDBException {        
         mode = REMOTE_CONNECTION;                   
         if (user == null) {
             user = "guest";
             password = "guest";
         } 
         if(password == null)
-        	password = "";            
-        XmlRpcClient rpcClient = getRpcClient(user, password, url);
-        return readCollection(c, rpcClient);
+        	password = "";         
+		try {
+			URL url = new URL("http", xmldbURI.getHost(), xmldbURI.getPort(), xmldbURI.getContext());
+			XmlRpcClient rpcClient = getRpcClient(user, password, url);
+	        return readCollection(xmldbURI.getCollectionPath(), rpcClient);			
+		} catch (MalformedURLException e) {
+    		//Should never happen
+    		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URL is not well formed:" + 
+    				XmldbURI.XMLDB_URI_PREFIX + xmldbURI);   
+    	}       
     }
 
     /**
-     * @param instanceName
+     * @param xmldbURI
      * @param user
      * @param password
-     * @param c
      * @return
      * @throws XMLDBException
      */
-    private Collection getLocalCollection(String instanceName, String user, String password, String c) 
-    	throws XMLDBException {
+    private Collection getLocalCollection(XmldbURI xmldbURI, String user, String password) 
+    		throws XMLDBException {
         Collection current;
         mode = LOCAL_CONNECTION;
         // use local database instance
-        if (!BrokerPool.isConfigured(instanceName)) {
+        if (!BrokerPool.isConfigured(xmldbURI.getInstanceName())) {
             if (autoCreate)
-                configure(instanceName);
+                configure(xmldbURI.getInstanceName());
             else
                 throw new XMLDBException(ErrorCodes.COLLECTION_CLOSED, "Local database server is not running");
         }
         BrokerPool pool;
         try {
-            pool = BrokerPool.getInstance(instanceName);
+            pool = BrokerPool.getInstance(xmldbURI.getInstanceName());
         } catch (EXistException e) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, "db not correctly initialized", e);
         }
         User u = getUser(user, password, pool);
         try {
-            current = new LocalCollection(u, pool, c);
+            current = new LocalCollection(u, pool, xmldbURI.getCollectionPath());
             return (current != null) ? current : null;
         } catch (XMLDBException e) {
             switch (e.errorCode) {

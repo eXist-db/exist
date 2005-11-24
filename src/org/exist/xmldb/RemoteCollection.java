@@ -157,9 +157,11 @@ public class RemoteCollection implements CollectionImpl {
 
 	public String getPath() throws XMLDBException {
 		if (parent == null) {
+			/*
 		    if(name != null)
 		        return name;
 		    else
+		    */
 		        return DBBroker.ROOT_COLLECTION;
 		}
 		return name;
