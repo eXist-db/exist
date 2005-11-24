@@ -28,14 +28,12 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
-
-import org.exist.storage.NativeBroker;
 import org.exist.validation.Validator;
 import org.exist.xmldb.RemoteCollection;
-
-import org.xmldb.api.base.XMLDBException;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  *  XML validation service for eXist database.
@@ -60,26 +58,20 @@ public class RemoteValidationService implements ValidationService {
      * Validate specified resource.
      */
     public boolean validateResource(String id) throws XMLDBException {
-        logger.info("Validating resource '"+id+"'");
-        boolean documentIsValid=false;
-        /*if(!id.startsWith(DBBroker.ROOT_COLLECTION))
-            id = remoteCollection.getPath() + '/' + id;*/
-        id = NativeBroker.checkPath(id, remoteCollection.getPath());
+        logger.info("Validating resource '" + id + "'");
+        boolean documentIsValid = false;       
+        id = XmldbURI.checkPath(id, remoteCollection.getPath());
         
         Vector params = new Vector();
         params.addElement( id );
         
         try {
-            Boolean result = (Boolean) client.execute( "isValid", params );
-            documentIsValid= result.booleanValue();
-            
-        } catch ( XmlRpcException xre ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, 
-                                                       xre.getMessage(),  xre );
-            
-        } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, 
-                                                        ioe.getMessage(),  ioe);
+            Boolean result = (Boolean) client.execute("isValid", params);
+            documentIsValid= result.booleanValue();            
+        } catch (XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);            
+        } catch (IOException ioe) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
         }
         
         return documentIsValid;

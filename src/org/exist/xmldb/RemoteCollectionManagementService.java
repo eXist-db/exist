@@ -117,25 +117,9 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     /* (non-Javadoc)
      * @see org.exist.xmldb.CollectionManagementServiceImpl#move(java.lang.String, java.lang.String, java.lang.String)
      */
-    public void move(String collectionPath, String destinationPath, String newName) throws XMLDBException {
-      /*  if(!collectionPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
-            collectionPath = parent.getPath() + '/' + collectionPath;*/
-    	
-    	//TODO : use dedicated function in XmldbURI
-    	collectionPath = NativeBroker.checkPath(collectionPath, parent.getPath());
-    	
-        /*if(destinationPath != null)
-        {
-        	if(!destinationPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
-        		destinationPath = parent.getPath() + '/' + destinationPath;
-        }
-        else
-        {
-        	destinationPath = parent.getPath();
-        }*/
-    	
-    	//TODO : use dedicated function in XmldbURI
-    	destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
+    public void move(String collectionPath, String destinationPath, String newName) throws XMLDBException {    	
+    	collectionPath = XmldbURI.checkPath(collectionPath, parent.getPath());
+    	destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
             int p = collectionPath.lastIndexOf(('/'));
             newName = collectionPath.substring(p + 1);
@@ -161,24 +145,8 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
      * @see org.exist.xmldb.CollectionManagementServiceImpl#moveResource(java.lang.String, java.lang.String, java.lang.String)
      */
     public void moveResource(String resourcePath, String destinationPath, String newName) throws XMLDBException {
-        /*if(!resourcePath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
-            resourcePath = parent.getPath() + '/' + resourcePath;*/
-    	
-    	//TODO : use dedicated function in XmldbURI
-    	resourcePath = NativeBroker.checkPath(resourcePath, parent.getPath());
-    	
-        /*if(destinationPath != null)
-        {
-        	if(!destinationPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
-        		destinationPath = parent.getPath() + '/' + destinationPath;
-        }
-        else
-        {
-        	destinationPath = parent.getPath();
-        }*/
-    	
-    	//TODO : use dedicated function in XmldbURI
-    	destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
+    	resourcePath = XmldbURI.checkPath(resourcePath, parent.getPath());
+      	destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
             int p = resourcePath.lastIndexOf(('/'));
             newName = resourcePath.substring(p + 1);
@@ -204,17 +172,9 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
 	 * @see org.exist.xmldb.CollectionManagementServiceImpl#copy(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public void copy(String collectionPath, String destinationPath, String newName)
-			throws XMLDBException {
-		/*if(!collectionPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
-            collectionPath = parent.getPath() + '/' + collectionPath;*/
-		
-		//TODO : use dedicated function in XmldbURI
-		collectionPath = NativeBroker.checkPath(collectionPath, parent.getPath());
-        /*if(!destinationPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
-            destinationPath = parent.getPath() + '/' + destinationPath;*/
-		
-		//TODO : use dedicated function in XmldbURI
-		destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
+			throws XMLDBException {		
+		collectionPath = XmldbURI.checkPath(collectionPath, parent.getPath());
+		destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
             int p = collectionPath.lastIndexOf(('/'));
             newName = collectionPath.substring(p + 1);
@@ -240,18 +200,9 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
      * @see org.exist.xmldb.CollectionManagementServiceImpl#copyResource(java.lang.String, java.lang.String, java.lang.String)
      */
 	
-    public void copyResource(String resourcePath, String destinationPath,
-            String newName) throws XMLDBException {
-    	/*if(!resourcePath.startsWith(DBBroker.ROOT_COLLECTION+ "/"))
-            resourcePath = parent.getPath() + '/' + resourcePath;*/
-    	
-    	//TODO : use dedicated function in XmldbURI
-    	resourcePath = NativeBroker.checkPath(resourcePath, parent.getPath());
-        /*if(!destinationPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
-            destinationPath = parent.getPath() + '/' + destinationPath;*/
-    	
-		//TODO : use dedicated function in XmldbURI
-    	destinationPath = NativeBroker.checkPath(destinationPath, parent.getPath());
+    public void copyResource(String resourcePath, String destinationPath, String newName) throws XMLDBException {
+    	resourcePath = XmldbURI.checkPath(resourcePath, parent.getPath());
+    	destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
             int p = resourcePath.lastIndexOf(('/'));
             newName = resourcePath.substring(p + 1);

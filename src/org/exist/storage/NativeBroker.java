@@ -90,6 +90,7 @@ import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.StringValue;
@@ -624,7 +625,9 @@ public class NativeBroker extends DBBroker {
 			fileName = '/' + fileName;
 		/*if (!fileName.startsWith(ROOT_COLLECTION))
 		    fileName = ROOT_COLLECTION + fileName;*/
-		fileName = NativeBroker.checkPath(fileName, ROOT_COLLECTION);
+		
+		//TODO : use dedicated function in XmldbURI
+		fileName = XmldbURI.checkPath(fileName, ROOT_COLLECTION);
 
 		int pos = fileName.lastIndexOf('/');
 		String collName = fileName.substring(0, pos);
@@ -652,7 +655,9 @@ public class NativeBroker extends DBBroker {
 			docPath = '/' + docPath;
 		/*if (!docPath.startsWith(ROOT_COLLECTION))
 		    docPath = ROOT_COLLECTION + docPath;*/
-		docPath = NativeBroker.checkPath(docPath, ROOT_COLLECTION);
+		
+		//TODO : use dedicated function in XmldbURI
+		docPath = XmldbURI.checkPath(docPath, ROOT_COLLECTION);
 
 		int pos = docPath.lastIndexOf('/');
 		String collName = docPath.substring(0, pos);
@@ -3170,32 +3175,6 @@ public class NativeBroker extends DBBroker {
     	return ALL_STORAGE_FILES;
     }
     
-    /*
-     * if the currentPath is null return the parentPath else 
-     * 	if the currentPath doesnt not start with "/db/" and is not equal to "/db" then adjust the path to start with the parentPath
-     * 
-     * Fix to Jens collection/resource name problem by deliriumsky
-     */
-    public static String checkPath(String currentPath, String parentPath)
-	{
-		if(currentPath != null)
-		{
-			if((!currentPath.startsWith(ROOT_COLLECTION + "/")) && (!currentPath.equals(ROOT_COLLECTION)))
-			{
-				if(currentPath.startsWith("/"))
-				{
-					currentPath = parentPath + currentPath;
-				}
-				else
-				{
-					currentPath = parentPath + '/' + currentPath;
-				}
-			}
-			
-			return(currentPath);
-		}
-		return(parentPath);
-	}
 
 	public final static class NodeRef extends Value {
         /**
