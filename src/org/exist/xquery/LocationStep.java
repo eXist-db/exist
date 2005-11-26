@@ -31,6 +31,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.dom.XMLUtil;
+import org.exist.storage.ElementIndex;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
@@ -276,11 +277,11 @@ public class LocationStep extends Step {
 				vset.setInPredicate(inPredicate);
 				return vset;
 			}
-		} else {
+		} else {            
 			DocumentSet docs = getDocumentSet(contextSet);
 		    NodeSelector selector = new SelfSelector(contextSet, inPredicate);
-		    return context.getBroker().getElementIndex().findElementsByTagName(
-		    		ElementValue.ELEMENT, docs, test.getName(), selector);
+            ElementIndex index = context.getBroker().getElementIndex();
+		    return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
 		}
 	}
 
@@ -297,15 +298,13 @@ public class LocationStep extends Step {
             if (proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)                
                 return contextSet.directSelectAttribute(test.getName(), inPredicate);
         }       
-        if(preloadNodeSets()) {
+        if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
-            if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-                currentDocs = docs;
-                currentSet =
-                    (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-                        ElementValue.ATTRIBUTE,
-                        currentDocs,
-                        test.getName(), null);
+            if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) { 
+                ElementIndex index = context.getBroker().getElementIndex();                          
+                //TODO : why a null selector here ? Whe have one below !
+                currentSet = index.findElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), null);  
+                currentDocs = docs;      
                 registerUpdateListener();
             }
             switch (axis) {
@@ -317,8 +316,9 @@ public class LocationStep extends Step {
                     throw new IllegalArgumentException("Unsupported axis specified");                   
             }       
 		} else {
-			NodeSelector selector;
+			NodeSelector selector;            
             DocumentSet docs = getDocumentSet(contextSet);
+            //TODO : why a selector here ? We havn't one above !
             switch (axis) {
                 case Constants.ATTRIBUTE_AXIS :
                     selector = new ChildSelector(contextSet, inPredicate);  
@@ -327,6 +327,7 @@ public class LocationStep extends Step {
                     //let $a := (<c id="1"><d id="2">d</d><e>e</e></c>)/descendant-or-self::node()
                     //for $b in $a/attribute::id
                     //return <b>{$b}</b>
+                    //Note that it also works with selector = null
                     if (false) 
                         ((ChildSelector)selector).setMysteriousCondition();
                     break;
@@ -336,7 +337,9 @@ public class LocationStep extends Step {
                default:
                    throw new IllegalArgumentException("Unsupported axis specified");                   
 			}    			
-            return context.getBroker().getElementIndex().getAttributesByName(docs, test.getName(), selector);                          
+            ElementIndex index = context.getBroker().getElementIndex();
+            return index.getAttributesByName(docs, test.getName(), selector);
+            
 		}    
 	}
 
@@ -346,22 +349,21 @@ public class LocationStep extends Step {
 			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
 			vset.setInPredicate(inPredicate);
 			return vset;
-		} else if(preloadNodeSets()) {
+		} else if (preloadNodeSets()) {            
 			DocumentSet docs = getDocumentSet(contextSet);
+			//TODO : understand why this one is different from the other ones
 			if (currentSet == null || currentDocs == null || !(docs == currentDocs || docs.equals(currentDocs))) {
+                ElementIndex index = context.getBroker().getElementIndex();                
+                currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
                 currentDocs = docs;
-                currentSet =
-                    (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-                        ElementValue.ELEMENT, currentDocs, test.getName(), null);
                 registerUpdateListener();
             }
             return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
 		} else {
+            ElementIndex index = context.getBroker().getElementIndex();
 		    DocumentSet docs = getDocumentSet(contextSet);
 		    NodeSelector selector = new ChildSelector(contextSet, inPredicate);
-		    return context.getBroker().getElementIndex().findElementsByTagName(
-		    		ElementValue.ELEMENT, docs, test.getName(), selector
-		    );
+		    return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
 		}
 	}
 
@@ -371,26 +373,24 @@ public class LocationStep extends Step {
 			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
 			vset.setInPredicate(inPredicate);
 			return vset;
-		} else if(preloadNodeSets()){            
+		} else if (preloadNodeSets()) {             
 		    DocumentSet docs = getDocumentSet(contextSet);
+            //TODO : understand why this one is different from the other ones
 			if (currentSet == null || currentDocs == null || !(docs == currentDocs || docs.equals(currentDocs))) {
+                ElementIndex index = context.getBroker().getElementIndex();                
+                currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
                 currentDocs = docs;
-                currentSet =
-                    (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-                        ElementValue.ELEMENT, currentDocs, test.getName(), null);
                 registerUpdateListener();
             }            
             switch (axis) {
                 case Constants.DESCENDANT_SELF_AXIS :                 
-                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, 
-                            true, inPredicate);
+                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, true, inPredicate);
                 case Constants.DESCENDANT_AXIS :                
-                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, 
-                            false, inPredicate);
+                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, inPredicate);
                 default:
                     throw new IllegalArgumentException("Unsupported axis specified");
             }            
-		} else {
+		} else {            
             NodeSelector selector;
 			DocumentSet docs = contextSet.getDocumentSet();            
             switch (axis) {
@@ -403,23 +403,19 @@ public class LocationStep extends Step {
                 default:
                     throw new IllegalArgumentException("Unsupported axis specified");                          
             }
-			return context.getBroker().getElementIndex().findElementsByTagName(
-					ElementValue.ELEMENT, docs, test.getName(), selector);
+            ElementIndex index = context.getBroker().getElementIndex();
+			return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
 		}
 	}
 
-	protected NodeSet getSiblings(
-		XQueryContext context,
-		NodeSet contextSet) {
-		NodeSet result;
-		if (!test.isWildcardTest()) {
+	protected NodeSet getSiblings(XQueryContext context, NodeSet contextSet) {		
+		if (!test.isWildcardTest()) {            
 		    DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-				currentDocs = docs;
-				currentSet =
-					(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-						ElementValue.ELEMENT, currentDocs, test.getName(), null);
-				registerUpdateListener();
+                ElementIndex index = context.getBroker().getElementIndex();				
+				currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
+                currentDocs = docs;
+                registerUpdateListener();
 			} 
             switch (axis) {
                 case Constants.PRECEDING_SIBLING_AXIS :             
@@ -430,7 +426,7 @@ public class LocationStep extends Step {
                     throw new IllegalArgumentException("Unsupported axis specified");                   
             }			
 		} else {
-			result = new ArraySet(contextSet.getLength());
+			NodeSet result = new ArraySet(contextSet.getLength());
 			NodeProxy p, sib;
 			NodeImpl n;
 			for (Iterator i = contextSet.iterator(); i.hasNext();) {
@@ -448,8 +444,8 @@ public class LocationStep extends Step {
 					}
 				}
 			}
-		}
-		return result;
+            return result;
+		}		
 	}
 
 	protected NodeImpl getNextSibling(NodeImpl last) {
@@ -463,38 +459,34 @@ public class LocationStep extends Step {
         }
 	}
 
-	protected NodeSet getFollowing(XQueryContext context, NodeSet contextSet)
-	throws XPathException {
-		NodeSet result = NodeSet.EMPTY_SET;
-		if(!test.isWildcardTest()) {
+	protected NodeSet getFollowing(XQueryContext context, NodeSet contextSet) throws XPathException {		
+		if(!test.isWildcardTest()) {            
 		    DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-				currentDocs = docs;
-				currentSet =
-					(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-						ElementValue.ELEMENT, currentDocs, test.getName(), null);
-				registerUpdateListener();
+                ElementIndex index = context.getBroker().getElementIndex();				
+				currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
+                currentDocs = docs;
+                registerUpdateListener();
 			}
-			result = currentSet.selectFollowing(contextSet);
+			return currentSet.selectFollowing(contextSet);
 		}
-		return result;
+        //TODO : throw an exception here ! Don't let this pass through
+		return NodeSet.EMPTY_SET;
 	}
 	
-    protected NodeSet getPreceding(XQueryContext context, NodeSet contextSet)
-    throws XPathException {
-        NodeSet result = NodeSet.EMPTY_SET;
-        if(!test.isWildcardTest()) {
+    protected NodeSet getPreceding(XQueryContext context, NodeSet contextSet) throws XPathException {        
+        if(!test.isWildcardTest()) {            
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+                ElementIndex index = context.getBroker().getElementIndex();                
+                currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
                 currentDocs = docs;
-                currentSet =
-                    (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-                        ElementValue.ELEMENT, currentDocs, test.getName(), null);
                 registerUpdateListener();
             }
-            result = currentSet.selectPreceding(contextSet);
+            return currentSet.selectPreceding(contextSet);
         }
-        return result;
+        //TODO : throw an exception here ! Don't let this pass through
+        return NodeSet.EMPTY_SET;
     }
     
 	protected NodeSet getAncestors(XQueryContext context, NodeSet contextSet) {		
@@ -525,13 +517,12 @@ public class LocationStep extends Step {
                 }
             }
             return result;
-        } else if(preloadNodeSets()) {
+        } else if (preloadNodeSets()) {            
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+                ElementIndex index = context.getBroker().getElementIndex();                
+                currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
                 currentDocs = docs;
-                currentSet =
-                    context.getBroker().getElementIndex().findElementsByTagName(
-                            ElementValue.ELEMENT, currentDocs, test.getName(), null);
                 registerUpdateListener();
             }           
             switch (axis) {
@@ -543,7 +534,7 @@ public class LocationStep extends Step {
                     throw new IllegalArgumentException("Unsupported axis specified");                   
             }        
 		} else {
-            NodeSelector selector;
+            NodeSelector selector;            
             DocumentSet docs = getDocumentSet(contextSet);
             switch (axis) {
                 case Constants.ANCESTOR_SELF_AXIS :
@@ -555,19 +546,19 @@ public class LocationStep extends Step {
                 default :
                     throw new IllegalArgumentException("Unsupported axis specified");                   
             }
-            return context.getBroker().getElementIndex().findElementsByTagName(
-                    ElementValue.ELEMENT, docs, test.getName(), selector);
+            ElementIndex index = context.getBroker().getElementIndex();
+            return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
 		}		
 	}
 
 	protected NodeSet getParents(XQueryContext context, NodeSet contextSet) {        
 		if(test.isWildcardTest()) {
 			return contextSet.getParents(inPredicate);
-		} else {
+		} else {            
 		    DocumentSet docs = getDocumentSet(contextSet);
 		    NodeSelector selector = new ParentSelector(contextSet, inPredicate);
-		    return context.getBroker().getElementIndex().findElementsByTagName(
-		    		ElementValue.ELEMENT, docs, test.getName(), selector);			
+            ElementIndex index = context.getBroker().getElementIndex();
+		    return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);			
 		}
 	}
 
