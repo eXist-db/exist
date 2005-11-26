@@ -7,11 +7,13 @@ package org.exist.xquery;
  * @author wolf
  */
 public class Dependency {
+    
+    public final static int UNKNOWN_DEPENDENCY = -1;
 
 	/**
 	 * Expression has no dependencies, for example, if it is a literal value.
 	 */
-	public final static int NO_DEPENDENCY = 0;
+    public final static int NO_DEPENDENCY = 0;
 	
 	/**
 	 * Expression depends on the context sequence. This is the default
@@ -54,12 +56,14 @@ public class Dependency {
 	public final static int DEFAULT_DEPENDENCIES = CONTEXT_SET;
 	
 	public final static String getDependenciesName(int dependencies) {
-		if (dependencies == NO_DEPENDENCY) return
-			"NO_DEPENDENCY";
-		StringBuffer result = new StringBuffer();
-		result.append("[");
-		if ((dependencies & CONTEXT_SET) != 0) 
-			result.append("CONTEXT_SET | ");
+        if (dependencies == UNKNOWN_DEPENDENCY) 
+            return "UNKNOWN";
+        if (dependencies == NO_DEPENDENCY) 
+            return "NO_DEPENDENCY";
+		StringBuffer result = new StringBuffer();	
+        result.append("[");        
+        if ((dependencies & CONTEXT_SET) != 0) 
+            result.append("CONTEXT_SET | ");
 		if ((dependencies & CONTEXT_ITEM) != 0) 
 			result.append("CONTEXT_ITEM | ");
 		if ((dependencies & LOCAL_VARS) != 0) 
