@@ -72,17 +72,18 @@ public class Predicate extends PathExpr {
      */
     public void analyze(Expression parent, int flags) throws XPathException {
         flags |= IN_PREDICATE; // set flag to signal subexpression that we are in a predicate
-        flags &= ~ IN_WHERE_CLAUSE;	// remove where clause flag
+        flags &= ~IN_WHERE_CLAUSE;	// remove where clause flag
         Expression inner = getExpression(0);
         if(inner == null)
             return;
         super.analyze(this, flags);
         int type = inner.returnsType();
-        // Case 1: predicate expression returns a node set. Check the returned node set
-		// against the context set and return all nodes from the context, for which the
+        // Case 1: predicate expression returns a node set. 
+        // Check the returned node set against the context set 
+        // and return all nodes from the context, for which the
 		// predicate expression returns a non-empty sequence.
 		if (Type.subTypeOf(type, Type.NODE)) {
-			if((inner.getDependencies() & Dependency.CONTEXT_ITEM) == 0)
+			if(!Dependency.dependsOn(inner.getDependencies(), Dependency.CONTEXT_ITEM))
 			    executionMode = NODE;
 			else
 			    executionMode = BOOLEAN;
@@ -92,6 +93,7 @@ public class Predicate extends PathExpr {
 		// Case 3: predicate expression evaluates to a boolean.
 		} else
 		    executionMode = BOOLEAN;
+        
 		if(executionMode == BOOLEAN) {
 		    flags |= SINGLE_STEP_EXECUTION;
 		    // need to re-analyze:
@@ -99,26 +101,26 @@ public class Predicate extends PathExpr {
 		}
     }
     
-	public Sequence evalPredicate(
-		Sequence outerSequence,
-		Sequence contextSequence,
-		int mode)
-		throws XPathException {
+	public Sequence evalPredicate(Sequence outerSequence, Sequence contextSequence,	int mode)
+		    throws XPathException {
+        
 		Expression inner = getExpression(0);
 		if (inner == null)
 			return Sequence.EMPTY_SEQUENCE;
         // just to be sure: change mode to boolean if the predicate expression returns a number
-        if(Type.subTypeOf(inner.returnsType(), Type.NUMBER) &&
-                executionMode == BOOLEAN) {
+        //TODO : the code, likely correct, seems to implement the exact contrary     
+        if(Type.subTypeOf(inner.returnsType(), Type.NUMBER) && executionMode == BOOLEAN) {
             executionMode = POSITIONAL;
-        }
+        }        
 		switch(executionMode) {
 			case NODE:
 			    return selectByNodeSet(contextSequence);
+            case BOOLEAN:
+                return evalBoolean(contextSequence, inner);
 			case POSITIONAL:
 			    return selectByPosition(outerSequence, contextSequence, mode, inner);
 			default:
-			    return evalBoolean(contextSequence, inner);
+                throw new IllegalArgumentException("Unsupported execution mode");			    
 		}
 	}
 
@@ -205,7 +207,8 @@ public class Predicate extends PathExpr {
 			Sequence result = new ArraySet(100);
 			NodeSet contextSet = contextSequence.toNodeSet();
 			boolean reverseAxis = isReverseAxis(mode);
-			if(!(reverseAxis || mode == Constants.FOLLOWING_SIBLING_AXIS 
+			if(!(reverseAxis 
+                    || mode == Constants.FOLLOWING_SIBLING_AXIS 
                     || mode == Constants.FOLLOWING_AXIS
 					|| mode == Constants.SELF_AXIS)) {
 				outerSequence.clearContext();
@@ -233,6 +236,7 @@ public class Predicate extends PathExpr {
 				        	result.add(p);
 				    }
 				}
+            //TODO : understand why we find other forward axes than the 3 ones above here
 			} else {
 				for(SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
 				    Item item = i.nextItem();
@@ -263,7 +267,8 @@ public class Predicate extends PathExpr {
 				    	case Constants.SELF_AXIS:
 				    	    temp = p;
 				    		break;
-				    	default:
+                        //TODO : explain this default given what is said above !!!
+				    	default:                            
 				    	    temp = contextSet.selectAncestorDescendant(p, NodeSet.DESCENDANT, false, false);
 				    		break;
 				    }
@@ -291,14 +296,18 @@ public class Predicate extends PathExpr {
 		}
 	}
 
+    //TODO : move this to a dedicated Axis class
 	public final static boolean isReverseAxis(int axis) {
-	    return axis < Constants.CHILD_AXIS;
+        if (axis == Constants.UNKNOWN_AXIS)
+            throw new IllegalArgumentException("Tested unknown axis");
+	    return (axis < Constants.CHILD_AXIS);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
+        //TODO : does it actually do anything ?
 		super.resetState();
 		cached = null;
 	}

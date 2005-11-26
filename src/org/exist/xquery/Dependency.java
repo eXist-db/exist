@@ -76,5 +76,9 @@ public class Dependency {
 		result.append("]");
 		return result.toString();
 	}	
+    
+    public final static boolean dependsOn(int dependencies, int dependency) {
+        return ((dependencies & dependency) == dependency);
+    }
 
 }

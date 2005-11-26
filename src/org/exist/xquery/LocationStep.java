@@ -302,7 +302,7 @@ public class LocationStep extends Step {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) { 
                 ElementIndex index = context.getBroker().getElementIndex();                          
-                //TODO : why a null selector here ? Whe have one below !
+                //TODO : why a null selector here ? We have one below !
                 currentSet = index.findElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), null);  
                 currentDocs = docs;      
                 registerUpdateListener();
@@ -614,6 +614,6 @@ public class LocationStep extends Step {
         //parentDeps = Dependency.UNKNOWN_DEPENDENCY;
         //preload = false; 
         //inUpdate = false; 
-        nodeTestType = null;       
+        //nodeTestType = null;       
 	}
 }
