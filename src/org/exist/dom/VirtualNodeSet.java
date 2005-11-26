@@ -49,7 +49,7 @@ import org.w3c.dom.NodeList;
  */
 public class VirtualNodeSet extends AbstractNodeSet {
 
-	protected int axis = -1;
+	protected int axis = Constants.UNKNOWN_AXIS;
 	protected NodeTest test;
 	protected NodeSet context;
 	protected NodeSet realSet = null;

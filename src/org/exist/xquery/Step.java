@@ -34,7 +34,7 @@ public abstract class Step extends AbstractExpression {
 
 	protected final static Logger LOG = Logger.getLogger(Step.class);
 	
-    protected int axis = -1;
+    protected int axis = Constants.UNKNOWN_AXIS;
     protected ArrayList predicates = new ArrayList();
     protected NodeTest test;
 	protected boolean inPredicate = false;
@@ -80,7 +80,7 @@ public abstract class Step extends AbstractExpression {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        if ( axis > -1 )
+        if (axis != Constants.UNKNOWN_AXIS)
             dumper.display( Constants.AXISSPECIFIERS[axis] );
         dumper.display( "::" );
         if ( test != null )
@@ -98,7 +98,7 @@ public abstract class Step extends AbstractExpression {
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-        if ( axis > -1 )
+        if ( axis != Constants.UNKNOWN_AXIS)
         	result.append( Constants.AXISSPECIFIERS[axis] );
         result.append( "::" );
         if ( test != null )

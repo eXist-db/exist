@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111307, USA.
  * 
  *  $Id$
  */
@@ -70,7 +70,7 @@ public class RootNode extends Step {
 	        for (Iterator i = ds.iterator(); i.hasNext();) {
 	            doc = (DocumentImpl) i.next();
 	            if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
-	            	result.add(new NodeProxy(doc, -1));
+	            	result.add(new NodeProxy(doc));
 	            	if(lockOnLoad) {
 	            	    context.getLockedDocuments().add(doc);
 	            	}
@@ -93,10 +93,12 @@ public class RootNode extends Step {
      * @see org.exist.xquery.Step#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
+        //TODO : find a better message
         dumper.display("/ROOT");
     }
     
     public String toString() {
+        //TODO : find a better message
         return "/ROOT";
     }    
     
