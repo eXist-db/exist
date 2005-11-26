@@ -608,6 +608,18 @@ public class XmldbURI {
 		return(parentPath);
 	}	
     
+    public static String checkPath2(String fileName, String parentPath) {
+        if (!fileName.startsWith("/"))
+            fileName = '/' + fileName;
+        /*if (!fileName.startsWith(ROOT_COLLECTION))
+            fileName = ROOT_COLLECTION + fileName;*/
+        
+        return checkPath(fileName, parentPath);
+    }
+    
+    
+    
+    
     public static String[] getPathComponents(String collectionPath) {    	
     	Pattern p = Pattern.compile("/");
     	String [] split = p.split(collectionPath);

@@ -621,13 +621,7 @@ public class NativeBroker extends DBBroker {
 	 *@exception  PermissionDeniedException  
 	 */
 	public Document getDocument(String fileName) throws PermissionDeniedException {
-		if (!fileName.startsWith("/"))
-			fileName = '/' + fileName;
-		/*if (!fileName.startsWith(ROOT_COLLECTION))
-		    fileName = ROOT_COLLECTION + fileName;*/
-		
-		//TODO : use dedicated function in XmldbURI
-		fileName = XmldbURI.checkPath(fileName, ROOT_COLLECTION);
+		fileName = XmldbURI.checkPath2(fileName, ROOT_COLLECTION);
 
 		int pos = fileName.lastIndexOf('/');
 		String collName = fileName.substring(0, pos);
@@ -651,13 +645,7 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public DocumentImpl openDocument(String docPath, int lockMode) throws PermissionDeniedException {
-		if (!docPath.startsWith("/"))
-			docPath = '/' + docPath;
-		/*if (!docPath.startsWith(ROOT_COLLECTION))
-		    docPath = ROOT_COLLECTION + docPath;*/
-		
-		//TODO : use dedicated function in XmldbURI
-		docPath = XmldbURI.checkPath(docPath, ROOT_COLLECTION);
+		docPath = XmldbURI.checkPath2(docPath, ROOT_COLLECTION);
 
 		int pos = docPath.lastIndexOf('/');
 		String collName = docPath.substring(0, pos);

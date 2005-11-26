@@ -799,15 +799,8 @@ public class RpcConnection extends Thread {
         DBBroker broker = null;
         Collection collection = null;
         try {
-            broker = brokerPool.get(user);
-            
-            //TODO : use dedicated function in XmldbURI
-            if (!name.startsWith("/"))
-                name = '/' + name;
-            /*if (!name.startsWith(DBBroker.ROOT_COLLECTION))
-                name = DBBroker.ROOT_COLLECTION + name;*/
-            
-            name = XmldbURI.checkPath(name, DBBroker.ROOT_COLLECTION);
+            broker = brokerPool.get(user);            
+            name = XmldbURI.checkPath2(name, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(name, Lock.READ_LOCK);
             Vector vec = new Vector();
             if (collection == null) {
@@ -835,13 +828,7 @@ public class RpcConnection extends Thread {
         Collection collection = null;
         try {
             broker = brokerPool.get(user);
-            if (!collectionName.startsWith("/"))
-                collectionName = '/' + collectionName;
-            /*if (!collectionName.startsWith(DBBroker.ROOT_COLLECTION))
-                collectionName = DBBroker.ROOT_COLLECTION + collectionName;*/
-            
-            //TODO : use dedicated function in XmldbURI
-            collectionName = XmldbURI.checkPath(collectionName, DBBroker.ROOT_COLLECTION);
+            collectionName = XmldbURI.checkPath2(collectionName, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(collectionName, Lock.READ_LOCK);
             return collection.getDocumentCount();
         } finally {
@@ -857,13 +844,7 @@ public class RpcConnection extends Thread {
         Collection collection = null;
         try {
             broker = brokerPool.get(user);
-            if (!collectionName.startsWith("/"))
-                collectionName = '/' + collectionName;
-            /*if (!collectionName.startsWith(DBBroker.ROOT_COLLECTION))
-                collectionName = DBBroker.ROOT_COLLECTION + collectionName;*/
-            
-            //TODO : use dedicated function in XmldbURI
-            collectionName = XmldbURI.checkPath(collectionName, DBBroker.ROOT_COLLECTION);
+            collectionName = XmldbURI.checkPath2(collectionName, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(collectionName, Lock.READ_LOCK);
             String id;
             Random rand = new Random();
@@ -893,13 +874,7 @@ public class RpcConnection extends Thread {
         Collection collection = null;
         try {
             broker = brokerPool.get(user);
-            if (!name.startsWith("/"))
-                name = '/' + name;
-            /*if (!name.startsWith(DBBroker.ROOT_COLLECTION))
-                name = DBBroker.ROOT_COLLECTION + name;*/
-            
-            //TODO : use dedicated function in XmldbURI
-            name = XmldbURI.checkPath(name, DBBroker.ROOT_COLLECTION);
+            name = XmldbURI.checkPath2(name, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(name, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("Collection " + name + " not found");
@@ -935,13 +910,7 @@ public class RpcConnection extends Thread {
         Collection collection = null;
         try {
             broker = brokerPool.get(user);
-            if (!name.startsWith("/"))
-                name = '/' + name;
-            /*if (!name.startsWith(DBBroker.ROOT_COLLECTION))
-                name = DBBroker.ROOT_COLLECTION + name;*/
-            
-            //TODO : use dedicated function in XmldbURI
-            name = XmldbURI.checkPath(name, DBBroker.ROOT_COLLECTION);
+            name = XmldbURI.checkPath2(name, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(name, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("Collection " + name + " not found");
@@ -988,13 +957,7 @@ public class RpcConnection extends Thread {
         DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
-            if (!name.startsWith("/"))
-                name = '/' + name;
-            /*if (!name.startsWith(DBBroker.ROOT_COLLECTION))
-                name = DBBroker.ROOT_COLLECTION + name;*/
-            
-            //TODO : use dedicated function in XmldbURI
-            name = XmldbURI.checkPath(name, DBBroker.ROOT_COLLECTION);
+            name = XmldbURI.checkPath2(name, DBBroker.ROOT_COLLECTION);
             Collection collection = broker.openCollection(name, Lock.READ_LOCK);
             Permission perm = null;
             if (collection == null) {
@@ -1024,13 +987,7 @@ public class RpcConnection extends Thread {
         Collection collection = null;
         try {
             broker = brokerPool.get(user);
-            if (!collectionPath.startsWith("/"))
-                collectionPath = '/' + collectionPath;
-            /*if (!collectionPath.startsWith(DBBroker.ROOT_COLLECTION))
-                collectionPath = DBBroker.ROOT_COLLECTION + collectionPath;*/
-            
-            //TODO : use dedicated function in XmldbURI
-            collectionPath = XmldbURI.checkPath(collectionPath, DBBroker.ROOT_COLLECTION);
+            collectionPath = XmldbURI.checkPath2(collectionPath, DBBroker.ROOT_COLLECTION);
             collection = broker.openCollection(collectionPath, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("collection " + collectionPath
@@ -1049,13 +1006,7 @@ public class RpcConnection extends Thread {
         DocumentImpl doc = null;
         try {
             broker = brokerPool.get(user);
-            if (!documentPath.startsWith("/"))
-                documentPath = '/' + documentPath;
-            /*if (!documentPath.startsWith(DBBroker.ROOT_COLLECTION))
-                documentPath = DBBroker.ROOT_COLLECTION + documentPath;*/
-            
-            //TODO : use dedicated function in XmldbURI
-            documentPath = XmldbURI.checkPath(documentPath, DBBroker.ROOT_COLLECTION);
+            documentPath = XmldbURI.checkPath2(documentPath, DBBroker.ROOT_COLLECTION);
             doc = (DocumentImpl) broker.openDocument(documentPath, Lock.READ_LOCK);
             if (doc == null) {
                 LOG.debug("document " + documentPath + " not found!");
