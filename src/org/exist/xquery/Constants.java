@@ -50,9 +50,10 @@ public interface Constants {
 
     /**
      * XPath axis constants:
-     *
-    <br>
-    * Reverse axes */
+     */
+    public final static int UNKNOWN_AXIS = -1;
+    
+    /** Reverse axes */
     public final static int ANCESTOR_AXIS = 0;
     public final static int ANCESTOR_SELF_AXIS = 1;
     public final static int PARENT_AXIS =  2;

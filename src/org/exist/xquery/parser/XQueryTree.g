@@ -1186,7 +1186,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			rightStep=expr [path]
 			{
 				if (rightStep instanceof LocationStep) {
-					if(((LocationStep) rightStep).getAxis() == -1)
+					if(((LocationStep) rightStep).getAxis() == Constants.UNKNOWN_AXIS)
 						((LocationStep) rightStep).setAxis(Constants.CHILD_AXIS);
 				} else {
 					rightStep.setPrimaryAxis(Constants.CHILD_AXIS);
@@ -1199,7 +1199,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		)?
 	)
 	{
-		if (step instanceof LocationStep && ((LocationStep) step).getAxis() == -1)
+		if (step instanceof LocationStep && ((LocationStep) step).getAxis() == Constants.UNKNOWN_AXIS)
 			 ((LocationStep) step).setAxis(Constants.CHILD_AXIS);
 	}
 	|
@@ -1225,7 +1225,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		)?
 	)
 	{
-		if (step instanceof LocationStep && ((LocationStep) step).getAxis() == -1)
+		if (step instanceof LocationStep && ((LocationStep) step).getAxis() == Constants.UNKNOWN_AXIS)
 			 ((LocationStep) step).setAxis(Constants.DESCENDANT_SELF_AXIS);
 	}
 	;
@@ -1400,7 +1400,7 @@ throws PermissionDeniedException, EXistException, XPathException
 
 forwardAxis returns [int axis]
 throws PermissionDeniedException, EXistException
-{ axis= -1; }
+{ axis= Constants.UNKNOWN_AXIS; }
 :
 	"child" { axis= Constants.CHILD_AXIS; }
 	|

@@ -164,7 +164,7 @@ public class LocationStep extends Step {
 		}
         
 		Sequence temp = NodeSet.EMPTY_SET;        
-		if (needsComputation(axis)) { 
+		if (needsComputation()) { 
     		switch (axis) {
     			case Constants.DESCENDANT_AXIS :
     			case Constants.DESCENDANT_SELF_AXIS :
@@ -223,7 +223,7 @@ public class LocationStep extends Step {
 	}
     
 	//Avoid unnecessary tests (these should be detected by the parser)
-    private boolean needsComputation(int axis) {
+    private boolean needsComputation() {
         //TODO : log this ?
         switch (axis) {
             //Certainly not exhaustive

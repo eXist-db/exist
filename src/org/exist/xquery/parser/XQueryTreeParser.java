@@ -4960,7 +4960,7 @@ public XQueryTreeParser() {
 				_t = _retTree;
 				
 								if (rightStep instanceof LocationStep) {
-									if(((LocationStep) rightStep).getAxis() == -1)
+									if(((LocationStep) rightStep).getAxis() == Constants.UNKNOWN_AXIS)
 										((LocationStep) rightStep).setAxis(Constants.CHILD_AXIS);
 								} else {
 									rightStep.setPrimaryAxis(Constants.CHILD_AXIS);
@@ -4985,7 +4985,7 @@ public XQueryTreeParser() {
 			_t = __t137;
 			_t = _t.getNextSibling();
 			
-					if (step instanceof LocationStep && ((LocationStep) step).getAxis() == -1)
+					if (step instanceof LocationStep && ((LocationStep) step).getAxis() == Constants.UNKNOWN_AXIS)
 						 ((LocationStep) step).setAxis(Constants.CHILD_AXIS);
 				
 			break;
@@ -5123,7 +5123,7 @@ public XQueryTreeParser() {
 			_t = __t139;
 			_t = _t.getNextSibling();
 			
-					if (step instanceof LocationStep && ((LocationStep) step).getAxis() == -1)
+					if (step instanceof LocationStep && ((LocationStep) step).getAxis() == Constants.UNKNOWN_AXIS)
 						 ((LocationStep) step).setAxis(Constants.DESCENDANT_SELF_AXIS);
 				
 			break;
@@ -6185,7 +6185,7 @@ public XQueryTreeParser() {
 		int axis;
 		
 		org.exist.xquery.parser.XQueryAST forwardAxis_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
-		axis= -1;
+		axis= Constants.UNKNOWN_AXIS;
 		
 		if (_t==null) _t=ASTNULL;
 		switch ( _t.getType()) {
