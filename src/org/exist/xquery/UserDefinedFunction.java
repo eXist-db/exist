@@ -160,6 +160,7 @@ public class UserDefinedFunction extends Function {
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
+        //TODO ; understand this test. Why not reset even is not in recursion ?
 		if(!inRecursion) {
 			inRecursion = true;
 			body.resetState();
