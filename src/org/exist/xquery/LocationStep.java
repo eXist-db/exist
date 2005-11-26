@@ -231,7 +231,7 @@ public class LocationStep extends Step {
             case Constants.PARENT_AXIS :  
             case Constants.SELF_AXIS :
                 if (nodeTestType == null)
-                    nodeTestType = Integer.valueOf(test.getType());                
+                    nodeTestType = new Integer(test.getType());                
                 if (nodeTestType.intValue() != Type.NODE && nodeTestType.intValue() != Type.ELEMENT )           
                     return false; 
         }   
@@ -246,7 +246,7 @@ public class LocationStep extends Step {
 	protected Sequence getSelf(XQueryContext context, NodeSet contextSet) {
 		if(test.isWildcardTest()) {
             if (nodeTestType == null)
-                nodeTestType = Integer.valueOf(test.getType());   
+                nodeTestType = new Integer(test.getType());   
 			if(nodeTestType.intValue() == Type.NODE) {
 				if (inPredicate) {
 					if (contextSet instanceof VirtualNodeSet) {
