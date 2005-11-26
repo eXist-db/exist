@@ -103,6 +103,9 @@ public class LocationStep extends Step {
 		throws XPathException {
 		if(contextSequence == null)
 			return Sequence.EMPTY_SEQUENCE;
+        if (predicates.size() == 0)
+            //Nothing to apply
+            return contextSequence;
 		Predicate pred;
 		Sequence result = contextSequence;
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
@@ -150,72 +153,57 @@ public class LocationStep extends Step {
 				applyPredicate(contextSequence, cached.getResult());
 		}
 		Sequence temp;
+        
+		if (needsComputation(axis)) { 
+    		switch (axis) {
+    			case Constants.DESCENDANT_AXIS :
+    			case Constants.DESCENDANT_SELF_AXIS :
+    				temp = getDescendants(context, contextSequence.toNodeSet());
+    				break;
+    			case Constants.CHILD_AXIS :
+    				temp = getChildren(context, contextSequence.toNodeSet());
+    				break;			
+                case Constants.ANCESTOR_SELF_AXIS : 
+    			case Constants.ANCESTOR_AXIS  :
+    				temp = getAncestors(context, contextSequence.toNodeSet());
+    				break;
+    			case Constants.SELF_AXIS :
+    				temp = getSelf(context, contextSequence.toNodeSet());
+    				break;
+                case Constants.PARENT_AXIS :
+    				temp = getParents(context, contextSequence.toNodeSet());
+    				break;
+    			case Constants.ATTRIBUTE_AXIS :
+    				// combines /descendant-or-self::node()/attribute:*
+    			case Constants.DESCENDANT_ATTRIBUTE_AXIS :
+    				temp = getAttributes(context, contextSequence.toNodeSet());
+    				break;
+    			case Constants.PRECEDING_SIBLING_AXIS :
+    			case Constants.FOLLOWING_SIBLING_AXIS :
+    				temp = getSiblings(context, contextSequence.toNodeSet());
+    				break;
+    			case Constants.FOLLOWING_AXIS:
+    				temp = getFollowing(context, contextSequence.toNodeSet());
+                    break;
+    			case Constants.PRECEDING_AXIS:
+                    temp = getPreceding(context, contextSequence.toNodeSet());
+                    break;
+    			default :
+                    throw new IllegalArgumentException("Unsupported axis specified");
+    		}               
+        }
+        else temp = NodeSet.EMPTY_SET; 	
+        
+        //Caches the result
+        if(contextSequence instanceof NodeSet) {
+            cached = new CachedResult((NodeSet)contextSequence, temp);
+            registerUpdateListener();
+        }
+        //Remove duplicate nodes
+        temp.removeDuplicates(); 
+        //Apply the predicate
+        temp =  applyPredicate(contextSequence, temp);                 
 
-		switch (axis) {
-			case Constants.DESCENDANT_AXIS :
-			case Constants.DESCENDANT_SELF_AXIS :
-				temp =
-					getDescendants(
-						context,
-						contextSequence.toNodeSet());
-				break;
-			case Constants.CHILD_AXIS :
-				temp =
-					getChildren(context, contextSequence.toNodeSet());
-				break;			
-			case Constants.ANCESTOR_SELF_AXIS :				
-				//Avoid unnecessary tests
-//				TODO : log this costly operation into the profiler ?			
-				int testType = test.getType();
-				if (testType != Type.NODE && testType != Type.ELEMENT )	{
-//					TODO : log this shortcut into the profiler ?					
-					temp = NodeSet.EMPTY_SET;
-					break;
-				}
-			case Constants.ANCESTOR_AXIS :
-				temp =
-					getAncestors(context, contextSequence.toNodeSet());
-				break;
-			case Constants.SELF_AXIS :
-				temp = getSelf(context, contextSequence.toNodeSet());
-				break;
-			case Constants.PARENT_AXIS :
-				temp =
-					getParents(context, contextSequence.toNodeSet());
-				break;
-			case Constants.ATTRIBUTE_AXIS :
-				// combines /descendant-or-self::node()/attribute:*
-			case Constants.DESCENDANT_ATTRIBUTE_AXIS :
-				temp =
-					getAttributes(
-						context,
-						contextSequence.toNodeSet());
-				break;
-			case Constants.PRECEDING_SIBLING_AXIS :
-			case Constants.FOLLOWING_SIBLING_AXIS :
-				temp =
-					getSiblings(context, contextSequence.toNodeSet());
-				break;
-			case Constants.FOLLOWING_AXIS:
-				temp = getFollowing(context, contextSequence.toNodeSet());
-                break;
-			case Constants.PRECEDING_AXIS:
-                temp = getPreceding(context, contextSequence.toNodeSet());
-                break;
-			default :
-				throw new IllegalArgumentException("Unsupported axis specified");
-		}
-		
-		if(contextSequence instanceof NodeSet) {
-			cached = new CachedResult((NodeSet)contextSequence, temp);
-			registerUpdateListener();
-		}
-		// remove duplicate nodes
-		temp.removeDuplicates();
-		temp =
-			(predicates.size() == 0)
-				? temp
-				: applyPredicate(contextSequence, temp);
         if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
             context.getProfiler().end(this, " LocationStep" + 
                     ", " + Constants.AXISSPECIFIERS[axis] +
@@ -224,6 +212,21 @@ public class LocationStep extends Step {
         }
         return temp;
 	}
+    
+	//Avoid unnecessary tests (these should be detected by the parser)
+    private boolean needsComputation(int axis) {
+        //TODO : log this ?
+        switch (axis) {
+            //Certainly not exhaustive
+            case Constants.ANCESTOR_SELF_AXIS :
+            case Constants.PARENT_AXIS :  
+            case Constants.SELF_AXIS :
+                int testType = test.getType();
+                if (testType != Type.NODE && testType != Type.ELEMENT )           
+                    return false; 
+        }   
+        return true;
+    }          
 
 	/**
 	 * @param context
@@ -231,17 +234,8 @@ public class LocationStep extends Step {
 	 * @return
 	 */
 	protected Sequence getSelf(XQueryContext context, NodeSet contextSet) {
-		
-		//TODO : move to eval() ?
-		//Avoid unnecessary tests
-//		TODO : log this costly operation into the profiler ?
-		int testType = test.getType();
-		if (testType != Type.NODE && testType != Type.ELEMENT )	
-//			TODO : log this shortcut into the profiler ?			
-			return NodeSet.EMPTY_SET;
-		
 		if(test.isWildcardTest()) {
-			if(testType == Type.NODE) {
+			if(test.getType() == Type.NODE) {
 				if (inPredicate) {
 					if (contextSet instanceof VirtualNodeSet) {
 						((VirtualNodeSet) contextSet).setInPredicate(true);
@@ -283,47 +277,60 @@ public class LocationStep extends Step {
 
 	protected NodeSet getAttributes(
 		XQueryContext context,
-		NodeSet contextSet) {
-		NodeSet result = null;
+		NodeSet contextSet) {		
 		if (test.isWildcardTest()) {
-			result = new VirtualNodeSet(axis, test, contextSet);
+            NodeSet result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
+            return result;
 		// if there's just a single known node in the context, it is faster
 	    // do directly search for the attribute in the parent node.
-        } else if(axis == Constants.ATTRIBUTE_AXIS &&
-                !(contextSet instanceof VirtualNodeSet) && contextSet.getLength() == 1) {
+        } else if(axis == Constants.ATTRIBUTE_AXIS && contextSet.getLength() == 1
+                && !(contextSet instanceof VirtualNodeSet)) {
             NodeProxy proxy = contextSet.get(0);
-            if (proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
-                result = contextSet.directSelectAttribute(test.getName(), inPredicate);
-        }
-        if (result == null) {
-            if(preloadNodeSets()) {
-                DocumentSet docs = getDocumentSet(contextSet);
-                if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-                    currentDocs = docs;
-                    currentSet =
-                        (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-                            ElementValue.ATTRIBUTE,
-                            currentDocs,
-                            test.getName(), null);
-                    registerUpdateListener();
-                }
-                if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                    result = currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, inPredicate);
-                else
-                    result = currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
-    		} else {
-    			NodeSelector selector;
-    			if(axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-    				selector = new DescendantSelector(contextSet, inPredicate);
-    			else
-    				selector = new ChildSelector(contextSet, inPredicate);
-    			DocumentSet docs = getDocumentSet(contextSet);
-    			result = context.getBroker().getElementIndex().getAttributesByName(
-    		            docs, test.getName(), selector);
-    		}
-        }
-		return result;
+            if (proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)                
+                return contextSet.directSelectAttribute(test.getName(), inPredicate);
+        }       
+        if(preloadNodeSets()) {
+            DocumentSet docs = getDocumentSet(contextSet);
+            if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+                currentDocs = docs;
+                currentSet =
+                    (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
+                        ElementValue.ATTRIBUTE,
+                        currentDocs,
+                        test.getName(), null);
+                registerUpdateListener();
+            }
+            switch (axis) {
+                case Constants.ATTRIBUTE_AXIS :
+                    return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);                              
+                case Constants.DESCENDANT_ATTRIBUTE_AXIS :             
+                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, inPredicate);                    
+                default:
+                    throw new IllegalArgumentException("Unsupported axis specified");                   
+            }       
+		} else {
+			NodeSelector selector;
+            DocumentSet docs = getDocumentSet(contextSet);
+            switch (axis) {
+                case Constants.ATTRIBUTE_AXIS :
+                    selector = new ChildSelector(contextSet, inPredicate);  
+                    //TODO : find when this condition must return true !
+                    //It should for :
+                    //let $a := (<c id="1"><d id="2">d</d><e>e</e></c>)/descendant-or-self::node()
+                    //for $b in $a/attribute::id
+                    //return <b>{$b}</b>
+                    if (false) 
+                        ((ChildSelector)selector).setMysteriousCondition();
+                    break;
+                case Constants.DESCENDANT_ATTRIBUTE_AXIS : 
+                    selector = new DescendantSelector(contextSet, inPredicate); 
+                    break;
+               default:
+                   throw new IllegalArgumentException("Unsupported axis specified");                   
+			}    			
+            return context.getBroker().getElementIndex().getAttributesByName(docs, test.getName(), selector);                          
+		}    
 	}
 
 	protected NodeSet getChildren(
@@ -364,7 +371,7 @@ public class LocationStep extends Step {
 			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
 			vset.setInPredicate(inPredicate);
 			return vset;
-		} else if(preloadNodeSets()){
+		} else if(preloadNodeSets()){            
 		    DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs == currentDocs || docs.equals(currentDocs))) {
                 currentDocs = docs;
@@ -374,17 +381,32 @@ public class LocationStep extends Step {
                         currentDocs,
                         test.getName(), null);
                 registerUpdateListener();
-            }
-            return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, 
-                    axis == Constants.DESCENDANT_SELF_AXIS, inPredicate);
+            }            
+            switch (axis) {
+                case Constants.DESCENDANT_SELF_AXIS :                 
+                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, 
+                            true, inPredicate);
+                case Constants.DESCENDANT_AXIS :                
+                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, 
+                            false, inPredicate);
+                default:
+                    throw new IllegalArgumentException("Unsupported axis specified");
+            }            
 		} else {
-			DocumentSet docs = contextSet.getDocumentSet();
-			NodeSelector selector = axis == Constants.DESCENDANT_SELF_AXIS ?
-					new DescendantOrSelfSelector(contextSet, inPredicate) :
-						new DescendantSelector(contextSet, inPredicate);
+            NodeSelector selector;
+			DocumentSet docs = contextSet.getDocumentSet();            
+            switch (axis) {
+                case Constants.DESCENDANT_SELF_AXIS : 
+                    selector = new DescendantOrSelfSelector(contextSet, inPredicate);
+                    break;
+                case Constants.DESCENDANT_AXIS :
+                    selector = new DescendantSelector(contextSet, inPredicate);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported axis specified");                          
+            }
 			return context.getBroker().getElementIndex().findElementsByTagName(
-					ElementValue.ELEMENT, docs, test.getName(), selector
-			);
+					ElementValue.ELEMENT, docs, test.getName(), selector);
 		}
 	}
 
@@ -402,12 +424,17 @@ public class LocationStep extends Step {
 						ElementValue.ELEMENT, currentDocs,
 						test.getName(), null);
 				registerUpdateListener();
-			}
-			result = currentSet.selectSiblings(
-				contextSet,
-				axis == Constants.PRECEDING_SIBLING_AXIS
-					? NodeSet.PRECEDING
-					: NodeSet.FOLLOWING);
+			} 
+            switch (axis) {
+                case Constants.PRECEDING_SIBLING_AXIS :             
+                    result = currentSet.selectSiblings(contextSet, NodeSet.PRECEDING);
+                    break;
+                case Constants.FOLLOWING_SIBLING_AXIS :
+                    result = currentSet.selectSiblings(contextSet, NodeSet.FOLLOWING);
+                    break;
+                default :
+                    throw new IllegalArgumentException("Unsupported axis specified");                   
+            }			
 		} else {
 			result = new ArraySet(contextSet.getLength());
 			NodeProxy p, sib;
@@ -432,12 +459,14 @@ public class LocationStep extends Step {
 	}
 
 	protected NodeImpl getNextSibling(NodeImpl last) {
-		switch (axis) {
-			case Constants.FOLLOWING_SIBLING_AXIS :
-				return (NodeImpl) last.getNextSibling();
-			default :
-				return (NodeImpl) last.getPreviousSibling();
-		}
+        switch (axis) {
+            case Constants.FOLLOWING_SIBLING_AXIS :
+                return (NodeImpl) last.getNextSibling();
+            case Constants.PRECEDING_SIBLING_AXIS :             
+                return (NodeImpl) last.getPreviousSibling();
+            default :
+                throw new IllegalArgumentException("Unsupported axis specified");                   
+        }
 	}
 
 	protected NodeSet getFollowing(XQueryContext context, NodeSet contextSet)
@@ -518,18 +547,32 @@ public class LocationStep extends Step {
                             ElementValue.ELEMENT, currentDocs,
                             test.getName(), null);
                 registerUpdateListener();
-            }
-            result =
-                currentSet.selectAncestors(
-                        contextSet,
-                        axis == Constants.ANCESTOR_SELF_AXIS,
-                        inPredicate);
+            }           
+            switch (axis) {
+                case Constants.ANCESTOR_SELF_AXIS :
+                    result = currentSet.selectAncestors(contextSet, true, inPredicate);
+                    break;
+                case Constants.ANCESTOR_AXIS :             
+                    result = currentSet.selectAncestors(contextSet, false, inPredicate);
+                    break;
+                default :
+                    throw new IllegalArgumentException("Unsupported axis specified");                   
+            }        
 		} else {
+            NodeSelector selector;
             DocumentSet docs = getDocumentSet(contextSet);
-            NodeSelector selector = new AncestorSelector(contextSet, inPredicate, axis == Constants.ANCESTOR_SELF_AXIS);
+            switch (axis) {
+                case Constants.ANCESTOR_SELF_AXIS :
+                    selector = new AncestorSelector(contextSet, inPredicate, true); 
+                    break;
+                case Constants.ANCESTOR_AXIS :             
+                    selector = new AncestorSelector(contextSet, inPredicate, false);
+                    break;
+                default :
+                    throw new IllegalArgumentException("Unsupported axis specified");                   
+            }
             result = context.getBroker().getElementIndex().findElementsByTagName(
-                    ElementValue.ELEMENT, docs, test.getName(), selector
-            );
+                    ElementValue.ELEMENT, docs, test.getName(), selector);
 		}
 		return result;
 	}
@@ -537,14 +580,7 @@ public class LocationStep extends Step {
 	protected NodeSet getParents(
 		XQueryContext context,
 		NodeSet contextSet) {
-		
-		//TODO : move to eval() ?
-		//Avoid unnecessary tests
-//		TODO : log this costly operation into the profiler ?		
-		int testType = test.getType();
-		if (testType != Type.NODE && testType != Type.ELEMENT )	
-			return NodeSet.EMPTY_SET;
-		
+        
 		if(test.isWildcardTest()) {
 			return contextSet.getParents(inPredicate);
 		} else {
