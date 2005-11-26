@@ -30,6 +30,8 @@ package org.exist.xquery;
  */
 public interface Constants {
 
+    //TODO : move this to a dedicated Axis class
+    
 	/** Axis names */
     public final static String[] AXISSPECIFIERS = {
 						"ancestor",
@@ -46,8 +48,8 @@ public interface Constants {
 					    "namespace",
 					    "self",
 					    "attribute-descendant"
-	};
-
+	};    
+    
     /**
      * XPath axis constants:
      */
