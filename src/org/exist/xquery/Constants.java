@@ -68,6 +68,7 @@ public interface Constants {
     public final static int FOLLOWING_SIBLING_AXIS = 10;
     public final static int NAMESPACE_AXIS = 11;
     public final static int SELF_AXIS = 12;
+    //combines /descendant-or-self::node()/attribute:*
 	public final static int DESCENDANT_ATTRIBUTE_AXIS = 13;
 	
     /**
