@@ -106,47 +106,47 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public void analyze(Expression parent, int flags) throws XPathException {
     	inPredicate = (flags & IN_PREDICATE) > 0;
         for (int i = 0; i < steps.size(); i++) {
+            // if this is a sequence of steps, the IN_PREDICATE flag
+            // is only passed to the first step, so it has to be removed
+            // for subsequent steps  
+            //TODO : why not if (i > 0) then ??? -pb
+            //We'd need a test case with more than 2 steps to demonstrate the feature 
         	if(i == 1)
-        		// if this is a sequence of steps, the IN_PREDICATE flag
-        		// is only passed to the first step, so it has to be removed
-        		// for subsequent steps
         		flags = flags & (~IN_PREDICATE);
             Expression expr = (Expression) steps.get(i);
             expr.analyze(this, flags);
         }
     }
     
-    public Sequence eval(Sequence contextSequence, Item contextItem)
-            throws XPathException {
-        if (steps.size() == 0) return Sequence.EMPTY_SEQUENCE;
-        Sequence r;
-        if (contextSequence != null) {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (steps.size() == 0) 
+            return Sequence.EMPTY_SEQUENCE;
+        
+        Sequence r = Sequence.EMPTY_SEQUENCE;
+        if (contextSequence != null)
             r = contextSequence;
-        } else {
-            r = Sequence.EMPTY_SEQUENCE;
-        }
+        
         DocumentSet contextDocs = null;
         Expression expr = (Expression) steps.get(0);
         if (expr instanceof VariableReference) {
             Variable var = ((VariableReference) expr).getVariable();
-            if (var != null) {
-                contextDocs = var.getContextDocs();
-            }
+            if (var != null) 
+                contextDocs = var.getContextDocs();            
         }
 
         Item current;
         Sequence values;
         for (Iterator iter = steps.iterator(); iter.hasNext();) {
             expr = (Expression) iter.next();
-            if (contextDocs != null) expr.setContextDocSet(contextDocs);
-            if ((expr.getDependencies() & Dependency.CONTEXT_ITEM) != 0) {
+            if (contextDocs != null) 
+                expr.setContextDocSet(contextDocs);
+            if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_ITEM)) {
                 if (r.getLength() == 0) {
                     r = expr.eval(null, null);
                 } else {
                     values = null;
                     if (r.getLength() > 1) values = new ValueSequence();
-                    for (SequenceIterator iterInner = r.iterate(); iterInner
-                            .hasNext(); ) {
+                    for (SequenceIterator iterInner = r.iterate(); iterInner.hasNext(); ) {
                         current = iterInner.nextItem();
                         if (values == null)
                             values = expr.eval(r, current);
@@ -175,12 +175,13 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
 
     public Expression getExpression(int pos) {
-        return (Expression) steps.get(pos);
+        return (Expression)steps.get(pos);
     }
 
     public Expression getLastExpression() {
-        if (steps.size() == 0) return null;
-        return (Expression) steps.get(steps.size() - 1);
+        if (steps.size() == 0) 
+            return null;
+        return (Expression)steps.get(steps.size() - 1);
     }
 
     public int getLength() {
@@ -237,9 +238,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
     
     public int returnsType() {
-        if (steps.size() == 0) return Type.NODE;
-        int rtype = ((Expression) steps.get(steps.size() - 1)).returnsType();
-        return rtype;
+        if (steps.size() == 0) 
+            return Type.NODE;         
+        return ((Expression)steps.get(steps.size() - 1)).returnsType();
     }
 
     /*
@@ -259,21 +260,23 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     public void replaceLastExpression(Expression s) {
         if (steps.size() == 0)
-            return;
-        else {
-        	steps.set(steps.size() - 1, s);
-        }
+            return;        
+        steps.set(steps.size() - 1, s);        
     }
 
     public String getLiteralValue() {
-        if (steps.size() == 0) return "";
-        Expression next = (Expression) steps.get(0);
-        if (next instanceof LiteralValue) try {
-            return ((LiteralValue) next).getValue().getStringValue();
-        } catch (XPathException e) {
+        if (steps.size() == 0) 
+            return "";
+        Expression next = (Expression)steps.get(0);
+        if (next instanceof LiteralValue) {
+            try {        
+                return ((LiteralValue) next).getValue().getStringValue();
+            } catch (XPathException e) {
+                //TODO : is there anything to do here ?
+            }
         }
         if (next instanceof PathExpr)
-                return ((PathExpr) next).getLiteralValue();
+            return ((PathExpr)next).getLiteralValue();
         return "";
     }
 
@@ -284,8 +287,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      */
     public XQueryAST getASTNode() {
         XQueryAST ast = super.getASTNode();
-        if (ast == null && steps.size() == 1) { return ((Expression) steps
-                .get(0)).getASTNode(); }
+        if (ast == null && steps.size() == 1)
+            return ((Expression)steps.get(0)).getASTNode();
         return ast;
     }
 
@@ -295,7 +298,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
      */
     public void setPrimaryAxis(int axis) {
-        if (steps.size() > 0) ((Expression) steps.get(0)).setPrimaryAxis(axis);
+        if (steps.size() > 0) 
+            ((Expression)steps.get(0)).setPrimaryAxis(axis);
     }
 
     /*
@@ -305,7 +309,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      */
     public void resetState() {
         for (Iterator i = steps.iterator(); i.hasNext();) {
-            ((Expression) i.next()).resetState();
+            ((Expression)i.next()).resetState();
         }
     }
 
