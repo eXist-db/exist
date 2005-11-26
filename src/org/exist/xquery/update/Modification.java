@@ -178,6 +178,7 @@ public abstract class Modification extends AbstractExpression {
 	    if(lockedDocuments == null)
 	        return;
 	    lockedDocuments.unlock(true);
+        lockedDocuments = null;
 	}
 	
 	/**
