@@ -9,6 +9,7 @@ import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.Value;
+import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
 import org.exist.util.LockException;
@@ -35,13 +36,13 @@ public final class DOMFileIterator implements Iterator {
 		short lastTID = -1;
 		DOMFile.DOMPage p = null;
 		long page;
-		long startAddress = -1;
+		long startAddress = NodeProxy.UNKNOWN_NODE_ADDRESS;
 		Object lockKey;
 
 		public DOMFileIterator(Object lock, DOMFile db, NodeProxy node)
 			throws BTreeException, IOException {
 			this.db = db;
-			if (-1 < node.getInternalAddress())
+			if (node.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
 				startAddress = node.getInternalAddress();
 			else
 				this.node = node;
@@ -190,17 +191,17 @@ public final class DOMFileIterator implements Iterator {
 					node = null;
 				} else
 				    return false;
-			} else if (-1 < startAddress) {
+			} else if (startAddress != NodeProxy.UNKNOWN_NODE_ADDRESS) {
 				DOMFile.RecordPos rec = db.findRecord(startAddress);
 				if(rec != null) {
 					page = rec.page.getPageNum();
 					offset = rec.offset - 2;
 					p = rec.page;
-					startAddress = -1;
+					startAddress = NodeProxy.UNKNOWN_NODE_ADDRESS;
 					return true;
 				} else
 				    return false;
-			} else if (page == -1)
+			} else if (page == Page.NO_PAGE)
 			    return false;
 			p = db.getCurrentPage(page);
 			db.addToBuffer(p);
@@ -213,7 +214,7 @@ public final class DOMFileIterator implements Iterator {
 		 *@param  node  The new to value
 		 */
 		public void setTo(NodeProxy node) {
-			if (-1 < node.getInternalAddress()) {
+			if (node.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS) {
 				startAddress = node.getInternalAddress();
 			} else {
 				this.node = node;
