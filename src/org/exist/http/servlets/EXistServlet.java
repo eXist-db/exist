@@ -27,14 +27,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.Principal;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -44,7 +40,6 @@ import org.exist.EXistException;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.http.RESTServer;
-import org.exist.http.Response;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -53,6 +48,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xquery.Constants;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
@@ -171,7 +167,7 @@ public class EXistServlet extends HttpServlet {
     private String adjustPath(HttpServletRequest request) {
         String path = request.getPathInfo();
         int p = path.lastIndexOf(';');
-        if (p > -1)
+        if (p != Constants.STRING_NOT_FOUND)
 			path = path.substring(0, p);
         return path;
     }

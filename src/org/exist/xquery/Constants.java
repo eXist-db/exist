@@ -159,5 +159,8 @@ public interface Constants {
     public final static int FULLTEXT_OR = 0;
     public final static int FULLTEXT_AND = 1;
     
+    //The defenitive missing constant in java.lang.string
+    public final static int STRING_NOT_FOUND = -1;
+    
     
 }

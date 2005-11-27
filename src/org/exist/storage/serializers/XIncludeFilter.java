@@ -43,6 +43,7 @@ import org.exist.storage.XQueryPool;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -191,7 +192,7 @@ public class XIncludeFilter implements Receiver {
 			String docName = href;
 			// try to find xpointer part
 			int p = href.indexOf('#');
-			if (-1 < p) {
+			if (p != Constants.STRING_NOT_FOUND) {
 				docName = href.substring(0, p);
 				xpointer = XMLUtil.decodeAttrMarkup(href.substring(p + 1));
 				LOG.debug("found xpointer: " + xpointer);
@@ -200,7 +201,7 @@ public class XIncludeFilter implements Receiver {
             // extract possible parameters in the URI
             Map params = null;
             int paramsStart = docName.indexOf('?');
-            if (paramsStart > -1) {
+            if (paramsStart != Constants.STRING_NOT_FOUND) {
                 if (paramsStart < docName.length() - 1) {
                     String paramStr = docName.substring(paramsStart + 1);
                     params = processParameters(paramStr);
@@ -332,8 +333,8 @@ public class XIncludeFilter implements Receiver {
 	 * @throws XPathException
 	 */
 	private String checkNamespaces(String xpointer) throws XPathException {
-		int p0 = -1;
-		while((p0 = xpointer.indexOf("xmlns(")) > -1) {
+		int p0;
+		while((p0 = xpointer.indexOf("xmlns(")) != Constants.STRING_NOT_FOUND) {
 			if(p0 < 0)
 				return xpointer;
 			int p1 = xpointer.indexOf(')', p0 + 6);

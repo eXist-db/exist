@@ -61,6 +61,7 @@ import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.ReceiverToSAX;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -520,7 +521,7 @@ public abstract class Serializer implements XMLReader {
 		xslHandler = null;
 		try {
 			// does stylesheet point to an external resource?
-			if (stylesheet.indexOf(":") > -1) {
+			if (stylesheet.indexOf(":") != Constants.STRING_NOT_FOUND) {
 				StreamSource source = new StreamSource(stylesheet);
 				templates = factory.newTemplates(source);
 			// read stylesheet from the database
@@ -793,7 +794,7 @@ public abstract class Serializer implements XMLReader {
 
 		public Source resolve(String href, String base) throws TransformerException {
 			LOG.debug("resolving stylesheet ref " + href);
-			if (href.indexOf(':') > -1)
+			if (href.indexOf(':') != Constants.STRING_NOT_FOUND)
 				// href is an URL pointing to an external resource
 				return null;
 			URI baseURI = URI.create(collectionId + '/');

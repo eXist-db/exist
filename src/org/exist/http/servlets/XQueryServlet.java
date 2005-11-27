@@ -41,6 +41,7 @@ import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.XQueryService;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.util.HTTPUtils;
@@ -180,7 +181,7 @@ public class XQueryServlet extends HttpServlet {
 		if(path == null) {
 			path = request.getRequestURI().substring(request.getContextPath().length());
 			int p = path.lastIndexOf(';');
-			if(p > -1)
+			if(p != Constants.STRING_NOT_FOUND)
 				path = path.substring(0, p);
 			path = getServletContext().getRealPath(path);
 		}
@@ -214,7 +215,7 @@ public class XQueryServlet extends HttpServlet {
         
 		String baseURI = request.getRequestURI();
 		int p = baseURI.lastIndexOf('/');
-		if(p > -1)
+		if(p != Constants.STRING_NOT_FOUND)
 			baseURI = baseURI.substring(0, p);
 		String moduleLoadPath = getServletContext().getRealPath(baseURI.substring(request.getContextPath().length()));
 		String actualUser = null;

@@ -22,6 +22,9 @@
  */
 package org.exist.ant;
 
+import java.io.File;
+import java.util.StringTokenizer;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -30,14 +33,12 @@ import org.exist.storage.DBBroker;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.EXistResource;
+import org.exist.xquery.Constants;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
-
-import java.io.File;
-import java.util.StringTokenizer;
 
 /**
  * An Ant task to store a set of files into eXist.
@@ -140,7 +141,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
           log("Storing " + files[i] + " ...\n");
           // check whether the relative file path contains file seps
           p = files[i].lastIndexOf(File.separatorChar);
-          if (p > -1)
+          if (p != Constants.STRING_NOT_FOUND)
           {
             relDir = files[i].substring(0, p);
             // It's necessary to do this translation on Windows, and possibly MacOS:

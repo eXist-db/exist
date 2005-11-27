@@ -25,6 +25,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
+import org.exist.xquery.Constants;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
@@ -84,7 +85,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 				Map.Entry docEntry = (Map.Entry) j.next();
 				doc = new QueryResponseDocument();
 				docId = (String) docEntry.getKey();
-				if (docId.indexOf('/') > -1)
+				if (docId.indexOf('/') != Constants.STRING_NOT_FOUND)
 					docId = docId.substring(docId.lastIndexOf('/') + 1);
 				doc.setDocumentName(docId);
 				doc.setHitCount(((Integer) docEntry.getValue()).intValue());
