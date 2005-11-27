@@ -249,7 +249,8 @@ public class XMLUtil {
 		final long gid) {
 		final int level = doc.getTreeLevel(gid);
 		if (level < 0) {
-			return -1;
+            //TODO : compare with below -pb
+			return NodeProxy.DOCUMENT_NODE_GID;
 		}
 		return getParentId(doc, gid, level);
 	}
@@ -258,8 +259,9 @@ public class XMLUtil {
 		final DocumentImpl doc,
 		final long gid,
 		final int level) {
+        //TODO : compare with above -pb
 		if(level < 1)
-			return -1;
+			return NodeProxy.DOCUMENT_NODE_GID;
 		return (gid - doc.treeLevelStartPoints[level])
 			/ doc.treeLevelOrder[level]
 			+ doc.treeLevelStartPoints[level - 1];
@@ -271,7 +273,7 @@ public class XMLUtil {
 		long descendant) {
 		if (ancestor == descendant)
 			return true;
-		while ((descendant = getParentId(doc, descendant)) > -1) {
+		while ((descendant = getParentId(doc, descendant)) != NodeProxy.DOCUMENT_NODE_GID) {
 			if (descendant == ancestor)
 				return true;
 		}
@@ -279,7 +281,7 @@ public class XMLUtil {
 	}
 
 	public final static boolean isDescendant(DocumentImpl doc, long ancestor, long descendant) {
-		while ((descendant = getParentId(doc, descendant)) > -1) {
+		while ((descendant = getParentId(doc, descendant)) != NodeProxy.DOCUMENT_NODE_GID) {
 			if (descendant == ancestor)
 				return true;
 		}

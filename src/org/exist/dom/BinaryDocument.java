@@ -30,6 +30,7 @@ import org.exist.security.Group;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
+import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 
@@ -43,7 +44,7 @@ import org.exist.storage.io.VariableByteOutputStream;
  */
 public class BinaryDocument extends DocumentImpl {
 	
-	private long pageNr = -1;
+	private long pageNr = Page.NO_PAGE;
     
 	public BinaryDocument(DBBroker broker, Collection collection) {
 		super(broker, collection);

@@ -381,7 +381,7 @@ public class BTree extends Paged {
             if (transaction != null && isTransactional) {
                 Loggable loggable = 
                     new CreateBTNodeLoggable(transaction, fileId, status, p.getPageNum(), 
-                            parent != null ? parent.page.getPageNum() : -1);
+                            parent != null ? parent.page.getPageNum() : Page.NO_PAGE);
                 writeToLog(loggable, node);
             }
 			node.ph.setStatus(status);
@@ -570,7 +570,7 @@ public class BTree extends Paged {
     
     protected void redoRemoveValue(RemoveValueLoggable loggable) throws LogException {
         BTreeNode node = getBTreeNode(loggable.pageNum);
-        if (node.page.getPageHeader().getLsn() > -1 && requiresRedo(loggable, node.page)) {
+        if (node.page.getPageHeader().getLsn() != Page.NO_PAGE && requiresRedo(loggable, node.page)) {
             node.removeKey(loggable.idx);
             node.removePointer(loggable.idx);
             node.recalculateDataLen();
@@ -676,7 +676,7 @@ public class BTree extends Paged {
 			if (parent != null)
 				ph.parentPage = parent.page.getPageNum();
             else
-                ph.parentPage = -1;
+                ph.parentPage = Page.NO_PAGE;
             saved = false;
 		}
 		
@@ -684,7 +684,7 @@ public class BTree extends Paged {
          * @return the parent of this node.
          */
 		public BTreeNode getParent() {
-			if (-1 < ph.parentPage) {
+			if (ph.parentPage != Page.NO_PAGE) {
 				return getBTreeNode(ph.parentPage);
 			} else {
                 return null;
@@ -2100,7 +2100,7 @@ public class BTree extends Paged {
 
 	protected static class BTreePageHeader extends PageHeader {
 		private short valueCount = 0;
-		private long parentPage = -1;
+		private long parentPage = Page.NO_PAGE;
 		
 		public BTreePageHeader() {
 			super();

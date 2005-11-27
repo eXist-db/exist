@@ -218,7 +218,7 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
         for (Iterator i = iterator(); i.hasNext();) {
             doc = (DocumentImpl) i.next();
             if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
-            	result.add(new NodeProxy(doc, -1));
+            	result.add(new NodeProxy(doc, NodeProxy.DOCUMENT_NODE_GID));
             }
         }
         return result;
