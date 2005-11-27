@@ -351,7 +351,7 @@ public class ClusterComunication implements MembershipListener {
     private void realign() throws ClusterException {
         if(coordinator)
             return; //TODO: per ora assumiamo che il master (o chi diventa master) sia allineato.
-        int last = -1;
+        int last = ClusterEvent.NO_EVENT;
         try{
             ArrayList events = null;
             int[] header = new int[]{journalManager.getLastIdSaved(),journalManager.getMaxIdSaved(),journalManager.getCounter()};
@@ -370,7 +370,7 @@ public class ClusterComunication implements MembershipListener {
 
             while(true) {
                 log.info("Call remote method getNextEvents: " + Thread.currentThread().getName());
-                Object idObj = disp.callRemoteMethod(coordinatorAddress, "getNextEvents", new Object[]{header,remoteHeader,new Integer(last)}, new Class[]{int[].class,int[].class,Integer.class}, GroupRequest.GET_FIRST, 0);
+                Object idObj = disp.callRemoteMethod(coordinatorAddress, "getNextEvents", new Object[] {header, remoteHeader, new Integer(last)}, new Class[] {int[].class, int[].class, Integer.class }, GroupRequest.GET_FIRST, 0);
                 events = ((ArrayList) idObj);
 
                 if( events==null || events.size() == 0 )
@@ -412,18 +412,18 @@ public class ClusterComunication implements MembershipListener {
     }
 
     private int manageEvents(ArrayList events) throws ClusterException {
-        for(int i=0;i<events.size();i++) {
+        for(int i = 0; i < events.size() ; i++) {
             ClusterEvent event = (ClusterEvent) events.get(i);
-            log.info("Manage event id  " + event.getId());
+            log.info("Manage event id " + event.getId());
             if(journalManager.isProcessed(event))
             {
                 log.info("event already processed .........");
                 continue;
             }
-            ClusterChannel.accountEvent(""+event.hashCode());
+            ClusterChannel.accountEvent("" + event.hashCode());
             manageEvent(event);
         }
-        return ((ClusterEvent)events.get(events.size()-1)).getId();
+        return ((ClusterEvent)events.get(events.size() - 1)).getId();
     }
 
     private void manageEvent(ClusterEvent event) throws ClusterException {

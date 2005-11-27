@@ -3,6 +3,8 @@ package org.exist.cluster.journal;
 
 import java.util.HashMap;
 
+import org.exist.cluster.ClusterEvent;
+
 /**
  * Manage the generation of the unique journal Id
  * Created by Nicola Breda.
@@ -16,7 +18,7 @@ import java.util.HashMap;
 public class JournalIdGenerator {
     public static int MAX_STORED_INDEX = 65000;
 
-    private int lastId = -1;
+    private int lastId = ClusterEvent.NO_EVENT;
     private int counter = 0;
 
     private HashMap idInUse = new HashMap();
