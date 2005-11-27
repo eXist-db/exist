@@ -503,17 +503,18 @@ public class LocationStep extends Step {
                         ancestor.copyContext(p);
                     result.add(ancestor);
                 }
-                ancestor = new NodeProxy(p.getDocument(), p.getGID());
-                while ((ancestor.gid = XMLUtil.getParentId(p.getDocument(), ancestor.getGID())) > 0) {
+                long parentID = XMLUtil.getParentId(p.getDocument(), p.getGID());               
+                while (parentID > 0) {
+                    ancestor = new NodeProxy(p.getDocument(), parentID);
                     ancestor.setNodeType(Node.ELEMENT_NODE);
                     if (test.matches(ancestor)) {
                         if (inPredicate)
                             ancestor.addContextNode(p);
                         else
                             ancestor.copyContext(p);
-                        result.add(ancestor);
-                        ancestor = new NodeProxy(p.getDocument(), ancestor.getGID());
+                        result.add(ancestor);                        
                     }
+                    parentID = XMLUtil.getParentId(ancestor);
                 }
             }
             return result;
