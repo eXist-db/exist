@@ -475,7 +475,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			return temp;
 		if (level < 0)
 			level = doc.getTreeLevel(gid);
-		while (gid != -1) {
+		while (gid != NodeProxy.DOCUMENT_NODE_GID) {
 			gid = XMLUtil.getParentId(doc, gid, level);
 			if ((temp = get(doc, gid)) != null)
 				return temp;
@@ -520,7 +520,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			p = (NodeProxy) i.next();
 			// calculate parent's gid
 			pid = XMLUtil.getParentId(p.getDocument(), p.getGID());
-			if (pid > -1) {
+			if (pid != NodeProxy.DOCUMENT_NODE_GID) {
 				if (parent == null || parent.getDocument().getDocId() != p.getDocument().getDocId() || pid != parent.getGID())
 					parent = new NodeProxy(p.getDocument(), pid, Node.ELEMENT_NODE);
 				if (rememberContext)
