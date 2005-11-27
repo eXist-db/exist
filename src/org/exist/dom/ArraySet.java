@@ -33,7 +33,8 @@ public class ArraySet extends AbstractNodeSet {
 	protected int length;
 
 	protected NodeProxy nodes[];
-	protected boolean sorted = false;
+    protected boolean sortedNaturally = false;
+    protected boolean sortedInDocumentOrder = false;
 
 	private DocumentOrderComparator docOrderComparator = new DocumentOrderComparator();
 	
@@ -47,8 +48,7 @@ public class ArraySet extends AbstractNodeSet {
 		length = initialCapacity;
 	}
 
-	private final static boolean getParentSet(NodeProxy[] nl, int len) {
-		int level;
+	private final static boolean getParentSet(NodeProxy[] nl, int len) {		
 		boolean foundValid = false;
 		long pid;
 		NodeProxy node;
@@ -60,8 +60,7 @@ public class ArraySet extends AbstractNodeSet {
 			if (node.gid < 0) {
 				nl[i] = null;
 				continue;
-			}
-			
+			}			
 			pid = XMLUtil.getParentId(node);
 			//System.out.println(node.doc.getDocId() + ":" + node.gid + "->" + pid);
 			node.gid = pid;	
@@ -80,13 +79,10 @@ public class ArraySet extends AbstractNodeSet {
 	 *@param  cmpItem  Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	private final static int search(
-		NodeProxy[] items,
-		int low,
-		int high,
-		NodeProxy cmpItem) {
+	private final static int search(NodeProxy[] items, int low,	int high, NodeProxy cmpItem) {
 		int mid;
 		int cmp;
+		//Remember that items must be sorted !
 		while (low <= high) {
 			mid = (low + high) / 2;
 			cmp = items[mid].compareTo(cmpItem);
@@ -110,24 +106,21 @@ public class ArraySet extends AbstractNodeSet {
 		 *@param  cmpItem  Description of the Parameter
 		 *@return          Description of the Return Value
 		 */
-	private final static int search(
-		NodeProxy[] items,
-		int low,
-		int high,
-		DocumentImpl cmpDoc,
-		long gid) {
+	private final static int search(NodeProxy[] items, int low,	int high, DocumentImpl cmpDoc, long gid) {
 		int mid;
-		int cmp;
+        NodeProxy cmp;
+        //Remember that items must be sorted !
 		while (low <= high) {
 			mid = (low + high) / 2;
-			if (items[mid].getDocument().docId == cmpDoc.docId) {
-				if (items[mid].gid == gid)
+            cmp = items[mid];
+			if (cmp.getDocument().docId == cmpDoc.docId) {
+				if (cmp.gid == gid)
 					return mid;
-				else if (items[mid].gid > gid)
+				else if (cmp.gid > gid)
 					high = mid - 1;
 				else
 					low = mid + 1;
-			} else if (items[mid].getDocument().docId > cmpDoc.docId)
+			} else if (cmp.getDocument().docId > cmpDoc.docId)
 				high = mid - 1;
 			else
 				low = mid + 1;
@@ -135,12 +128,9 @@ public class ArraySet extends AbstractNodeSet {
 		return -1;
 	}
 
-	private final static NodeSet searchRange(
-		NodeProxy[] items,
-		int low,
-		int high,
-		NodeProxy lower,
-		NodeProxy upper) {
+	private final static NodeSet searchRange(NodeProxy[] items,	int low, int high, 
+            NodeProxy lower, NodeProxy upper) {
+        //TODO : dimension as high - low ?
 		ArraySet result = new ArraySet(100);
 		return searchRange(result, items, low, high, lower, upper);
 	}
@@ -157,16 +147,12 @@ public class ArraySet extends AbstractNodeSet {
 	 *@param  upper  Description of the Parameter
 	 *@return        Description of the Return Value
 	 */
-	private final static NodeSet searchRange(
-		ArraySet result,
-		NodeProxy[] items,
-		int low,
-		int high,
-		NodeProxy lower,
-		NodeProxy upper) {
+	private final static NodeSet searchRange(ArraySet result, NodeProxy[] items, int low, int high,
+	        NodeProxy lower, NodeProxy upper) {
 		int mid = 0;
 		int max = high;
 		int cmp;
+		//Remember that items must be sorted !
 		while (low <= high) {
 			mid = (low + high) / 2;
 			cmp = items[mid].compareTo(lower);
@@ -176,8 +162,8 @@ public class ArraySet extends AbstractNodeSet {
 				high = mid - 1;
 			else
 				low = mid + 1;
-
 		}
+        
 		while (mid > 0 && items[mid].compareTo(lower) > 0)
 			mid--;
 
@@ -186,8 +172,7 @@ public class ArraySet extends AbstractNodeSet {
 
 		while (mid <= max && items[mid].compareTo(upper) <= 0)
 			result.add(items[mid++]);
-
-		result.setIsSorted(true);
+		
 		return result;
 	}
 
@@ -204,7 +189,8 @@ public class ArraySet extends AbstractNodeSet {
 			nodes = temp;
 			nodes[counter++] = proxy;
 		}
-		sorted = false;
+        sortedNaturally = false;
+        sortedInDocumentOrder = false;
 	}
 
 	public void addAll(NodeSet other) {
@@ -213,9 +199,8 @@ public class ArraySet extends AbstractNodeSet {
 
 	}
 
-	public boolean contains(DocumentImpl doc, long nodeId) {
-		sort();
-		NodeProxy p = new NodeProxy(doc, nodeId);
+	public boolean contains(DocumentImpl doc, long nodeId) {		
+        NodeProxy p = new NodeProxy(doc, nodeId);
 		return contains(p);
 	}
 
@@ -225,12 +210,8 @@ public class ArraySet extends AbstractNodeSet {
 	}
 
 	public NodeProxy get(DocumentImpl doc, long nodeId) {
-		sort();
-		int pos = search(nodes, 0, counter - 1, doc, nodeId);
-		if (pos < 0) {
-			return null;
-		}
-		return nodes[pos];
+        NodeProxy p = new NodeProxy(doc, nodeId);
+		return get(p);
 	}
 
 	public NodeProxy get(NodeProxy p) {
@@ -250,6 +231,7 @@ public class ArraySet extends AbstractNodeSet {
 	}
 
 	public NodeProxy getUnsorted(int pos) {
+        //TODO : what if the Array has been sorted ?
 		if (pos >= counter || pos < 0)
 			return null;
 		return nodes[pos];
@@ -259,10 +241,7 @@ public class ArraySet extends AbstractNodeSet {
 		return get(pos);
 	}
 
-	public NodeSet getChildrenX(
-		NodeSet ancestors,
-		int mode,
-		boolean rememberContext) {
+	public NodeSet getChildrenX(NodeSet ancestors, int mode, boolean rememberContext) {
 		if (!(ancestors instanceof ArraySet))
 			return super.selectParentChild(ancestors, mode, rememberContext);
 		ArraySet al = (ArraySet) ancestors;
@@ -277,7 +256,10 @@ public class ArraySet extends AbstractNodeSet {
 		NodeProxy[] dl = null;
 		if (mode == DESCENDANT) {
 			dl = copyNodeSet(al, this);
-			result.sorted = true;
+            //TODO : understand why this can be true ?  -pb
+            //Would, at best, have expected result.sortedNaturally = this.sortedNaturally
+            //Why not also handle sortedInDocumentOrder ?
+            result.sortedNaturally = true;            
 		} else
 			dl = nodes;
 		//result.sorted = true;
@@ -345,19 +327,11 @@ public class ArraySet extends AbstractNodeSet {
 	 *@param  mode  Description of the Parameter
 	 *@return       The descendants value
 	 */
-	public NodeSet getDescendantsX(
-		NodeSet other,
-		int mode,
-		boolean includeSelf,
-		boolean rememberContext) {
+	public NodeSet getDescendantsX(NodeSet other, int mode,	boolean includeSelf, boolean rememberContext) {
 		//		if (other.getLength() < CHOOSE_TOP_DOWN_MAX)
 		//			return getDescendantsTopDown(other, mode, rememberContext);
 		if (!(other instanceof ArraySet))
-			return super.selectAncestorDescendant(
-				other,
-				mode,
-				includeSelf,
-				rememberContext);
+			return super.selectAncestorDescendant(other, mode, includeSelf,	rememberContext);
 		ArraySet al = (ArraySet) other;
 		if (al.counter == 0 || counter == 0)
 			return NodeSet.EMPTY_SET;
@@ -450,10 +424,7 @@ public class ArraySet extends AbstractNodeSet {
 		 *@param  mode  Description of the Parameter
 		 *@return       The descendants value
 		 */
-	public NodeSet selectAncestors(
-		NodeSet other,
-		boolean includeSelf,
-		boolean rememberContext) {
+	public NodeSet selectAncestors(NodeSet other, boolean includeSelf, boolean rememberContext) {
 		if (!(other instanceof ArraySet))
 			return super.selectAncestors(other, includeSelf, rememberContext);
 		ArraySet al = (ArraySet) other;
@@ -535,16 +506,13 @@ public class ArraySet extends AbstractNodeSet {
 		return getRange(new NodeProxy(doc, lower), new NodeProxy(doc, upper));
 	}
 
-	protected boolean isSorted() {
-		return sorted;
-	}
+	//protected boolean isSorted() {
+	//	return sorted;
+	//}
 
-	public Node item(int pos) {
-		if (pos >= counter || pos < 0)
-			return null;
-		sort();
-		NodeProxy p = nodes[pos];
-		return p.getNode();
+	public Node item(int pos) {		
+		NodeProxy p = get(pos);
+		return (p == null) ? null : p.getNode();
 	}
 
 	public Iterator iterator() {
@@ -564,6 +532,7 @@ public class ArraySet extends AbstractNodeSet {
 	 * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
 	 */
 	public SequenceIterator unorderedIterator() {
+        //TODO : explain this sort -pb
 		sort();
 		return new ArraySequenceIterator();
 	}
@@ -582,15 +551,14 @@ public class ArraySet extends AbstractNodeSet {
 	public void remove(NodeProxy node) {
 		long start = System.currentTimeMillis();
 		int pos = search(nodes, 0, counter - 1, node);
-		if (pos < 0)
-			return;
-		NodeProxy[] temp = new NodeProxy[counter];
-		System.arraycopy(nodes, 0, temp, 0, pos - 2);
-		System.arraycopy(nodes, pos + 1, temp, pos + 1, temp.length - pos - 1);
-		nodes = temp;
-		counter--;
-		LOG.debug(
-			"removal of node took " + (System.currentTimeMillis() - start));
+		if (pos > -1) {			
+    		NodeProxy[] temp = new NodeProxy[counter];
+    		System.arraycopy(nodes, 0, temp, 0, pos - 2);
+    		System.arraycopy(nodes, pos + 1, temp, pos + 1, temp.length - pos - 1);
+    		nodes = temp;
+    		counter--;
+        }
+		LOG.debug("Removal of node took " + (System.currentTimeMillis() - start));
 	}
 
 	
@@ -601,7 +569,7 @@ public class ArraySet extends AbstractNodeSet {
         DocumentSet docs = new DocumentSet();
         DocumentImpl lastDoc = null;
         for (int i = 0; i < counter; i++) {
-            if(lastDoc == null || lastDoc.getDocId() != nodes[i].getDocument().getDocId()) {
+            if (lastDoc == null || lastDoc.getDocId() != nodes[i].getDocument().getDocId()) {
                 docs.add(nodes[i].getDocument(), false);
             }
             lastDoc = nodes[i].getDocument();
@@ -609,24 +577,26 @@ public class ArraySet extends AbstractNodeSet {
         return docs;
     }
     
-	public void setIsSorted(boolean sorted) {
+	//public void setIsSorted(boolean sorted) {
 		//this.sorted = sorted;
-	}
+	//}
 
 	public void sort() {
-		if (this.sorted || counter < 2)
+        if (this.sortedNaturally || counter < 2)
 			return;
 		FastQSort.sort(nodes, 0, counter - 1);
 		removeDuplicateNodes();
-		this.sorted = true;
+        sortedNaturally = true;
+        sortedInDocumentOrder = false;
 	}
 
 	public void sortInDocumentOrder() {
-		if (counter < 2)
+        if (this.sortedInDocumentOrder || counter < 2)
 			return;
 		FastQSort.sort(nodes, docOrderComparator, 0, counter - 1);
 		removeDuplicateNodes();
-		this.sorted = false;
+        sortedNaturally = false;
+        sortedInDocumentOrder = true;
 	}
 	
 	private final void removeDuplicateNodes() {
@@ -642,7 +612,8 @@ public class ArraySet extends AbstractNodeSet {
 
 	public void reset() {
 		counter = 0;
-		sorted = false;
+        sortedNaturally = false;
+        sortedInDocumentOrder = false;
 	}
 	
 	private final static NodeProxy[] copyNodeSet(ArraySet al, ArraySet dl) {
@@ -757,7 +728,7 @@ public class ArraySet extends AbstractNodeSet {
 	public void swap(int a, int b) {
 		NodeProxy t = nodes[a];
 		nodes[a] = nodes[b];
-		nodes[b] = nodes[a];
+		nodes[b] = t;
 	}
 
 	public Comparable[] array() {
