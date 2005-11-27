@@ -77,7 +77,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	/**
 	 * The owner document of this node.
 	 */
-	public DocumentImpl doc = null;
+	private DocumentImpl doc = null;
 
 	/**
 	 * The unique internal id of this node in the document, if known.

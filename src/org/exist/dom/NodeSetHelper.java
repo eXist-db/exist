@@ -238,13 +238,13 @@ public class NodeSetHelper {
 	    NodeSet result = new ArraySet(5);
 		NodeProxy temp;
 		long gid = p.gid;
-		if (includeSelf && (temp = ancestors.get(p.doc, gid)) != null)
+		if (includeSelf && (temp = ancestors.get(p.getDocument(), gid)) != null)
 			result.add(temp);
-		if (level < 0)
-			level = p.doc.getTreeLevel(gid);
+		if (level == NodeProxy.UNKNOWN_NODE_LEVEL)
+			level = p.getDocument().getTreeLevel(gid);
 		while (gid > 0) {
-			gid = XMLUtil.getParentId(p.doc, gid, level);
-			if ((temp = ancestors.get(p.doc, gid)) != null)
+			gid = XMLUtil.getParentId(p.getDocument(), gid, level);
+			if ((temp = ancestors.get(p.getDocument(), gid)) != null)
 				result.add(temp);
 			else if (directParent)
 				return result;

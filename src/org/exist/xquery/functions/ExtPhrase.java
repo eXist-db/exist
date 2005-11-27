@@ -127,7 +127,7 @@ public class ExtPhrase extends ExtFulltext {
 				gid=nextMatch.getNodeId(); 
 				// if current gid has not been previously processed
 				if(!matchGid.contains(new Long(gid))) {
-					NodeProxy mcurrent = new NodeProxy(current.doc, gid);
+					NodeProxy mcurrent = new NodeProxy(current.getDocument(), gid);
                     Match match = null;
                     int firstOffset = -1;
 					// add it in gid array
@@ -239,7 +239,7 @@ public class ExtPhrase extends ExtFulltext {
 				gid=nextMatch.getNodeId(); 
 				// if current gid has not been previously processed
 				if(!matchGid.contains(new Long(gid))) {
-					NodeProxy mcurrent = new NodeProxy(current.doc, gid);
+					NodeProxy mcurrent = new NodeProxy(current.getDocument(), gid);
 					// add it in gid array
 					matchGid.add(new Long(gid));
 					value = mcurrent.getNodeValue();
