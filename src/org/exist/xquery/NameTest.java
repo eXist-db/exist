@@ -23,7 +23,7 @@ public class NameTest extends TypeTest {
 	 */
 	public boolean matches(NodeProxy proxy) {
 		Node node = null;
-		short type = proxy.nodeType;
+		short type = proxy.getNodeType();
 		if(proxy.getType() == Type.ITEM) {
 			node = proxy.getNode();
 			type = node.getNodeType();
