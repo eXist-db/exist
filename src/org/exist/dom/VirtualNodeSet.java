@@ -237,8 +237,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		NodeProxy proxy;
 		Iterator domIter;
 		for (Iterator i = context.iterator(); i.hasNext();) {
-			proxy = (NodeProxy) i.next();
-			if (proxy.getGID() < 0) {
+			proxy = (NodeProxy) i.next();            
+			if (proxy.getGID() == NodeProxy.DOCUMENT_NODE_GID) {
 				if(proxy.getDocument().getResourceType() == DocumentImpl.BINARY_FILE)
 					// skip binary resources
 					continue;
