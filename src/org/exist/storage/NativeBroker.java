@@ -932,9 +932,10 @@ public class NativeBroker extends DBBroker {
         NodeProcessor() {
         }
 
-        public void reset(Txn transaction, NodeImpl node, NodePath currentPath) {
-            if (node.getGID() < 0)
+        public void reset(Txn transaction, NodeImpl node, NodePath currentPath) {            
+            if (node.getGID() == NodeProxy.DOCUMENT_NODE_GID)
                 LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
+                //TODO : why continue processing ? return ? -pb
             this.transaction = transaction;
             this.node = node;
             this.currentPath = currentPath;

@@ -499,7 +499,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public Node getNode(NodeProxy p) {
-        if(p.getGID() < 0)
+        if(p.getGID() == NodeProxy.DOCUMENT_NODE_GID)
             return getDocumentElement();
 		return broker.objectWith(p);
 	}
