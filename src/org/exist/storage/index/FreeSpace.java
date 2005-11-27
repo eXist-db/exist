@@ -20,6 +20,8 @@
  */
 package org.exist.storage.index;
 
+import org.exist.storage.btree.Paged.Page;
+
 
 
 /**
@@ -31,7 +33,7 @@ package org.exist.storage.index;
 public class FreeSpace {
 
 	protected int free = 0;
-    protected long page = -1;
+    protected long page = Page.NO_PAGE;
     
     protected FreeSpace next = null;
     protected FreeSpace previous = null;

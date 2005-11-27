@@ -779,7 +779,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 		// matching node is a descendant of one of the nodes
                 		// in the context set.
                 		if (contextSet != null) {
-                			parent = contextSet.parentWithChild(current, false, true, -1);
+                			parent = contextSet.parentWithChild(current, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                 			if (parent != null) {
                 				result.add(returnAncestor ? parent : current, sizeHint);
                 			}

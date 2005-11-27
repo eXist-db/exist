@@ -40,13 +40,14 @@ import org.xmldb.api.base.Collection;
  */
 public class XmldbURI {
 	
+    public static final int NO_PORT = -1;
 	//Should be provided by org.xmldb.api package !!! 
 	public static final String XMLDB_URI_PREFIX = "xmldb:";
 	
 	private URI wrappedURI;	
 	private String instanceName;
 	private String host;
-	private int port = -1; 
+	private int port = NO_PORT; 
 	private String context;  	
 	private String escapedCollectionPath;
 	private String apiName;
@@ -105,7 +106,7 @@ public class XmldbURI {
 		//Reinitialise members
 		this.instanceName = null;
 		this.host = null;
-		this.port = -1;
+		this.port = NO_PORT;
 		this.apiName = null;
 		if (wrappedURI.getScheme() == null) { 			
 			path = wrappedURI.getPath();			
@@ -178,7 +179,7 @@ public class XmldbURI {
     		}    	
 	        else 
 	        {	        	
-	        	if (port > -1)
+	        	if (port != NO_PORT)
 	        		//Put the "right" URI in the message ;-)
 	        		throw new URISyntaxException(wrappedURI.toString(), "Local xmldb URI should not provide a port");
 	        	apiName = API_LOCAL;  
@@ -202,7 +203,7 @@ public class XmldbURI {
 			buf.append(XMLDB_URI_PREFIX).append(instanceName).append("://");
 		if (host != null)	
 			buf.append(host);				
-		if (port > -1)
+		if (port != NO_PORT)
 			buf.append(":" + port);		
 		if (context != null)
 			buf.append(context);
@@ -229,7 +230,7 @@ public class XmldbURI {
 		if (this.getHost() != null && uri.getHost() != null
 				&& !this.getHost().equalsIgnoreCase(uri.getHost()))
 			throw new IllegalArgumentException(this.getHost() + " host differs from " + uri.getHost());
-		if (this.getPort() != -1 && uri.getPort() != -1	&& this.getPort() != uri.getPort())
+		if (this.getPort() != NO_PORT && uri.getPort() != NO_PORT && this.getPort() != uri.getPort())
 			throw new IllegalArgumentException(this.getPort() + " port differs from " + uri.getPort());
 		if (this.getCollectionPath() != null && uri.getCollectionPath() != null
 				&& !this.getCollectionPath().equals(uri.getCollectionPath()))
@@ -248,7 +249,7 @@ public class XmldbURI {
 		if (this.getHost() != null && uri.getHost() != null
 				&& !this.getHost().equalsIgnoreCase(uri.getHost()))
 			throw new IllegalArgumentException(this.getHost() + " host differs from " + uri.getHost());
-		if (this.getPort() != -1 && uri.getPort() != -1	&& this.getPort() != uri.getPort())
+		if (this.getPort() != NO_PORT && uri.getPort() != NO_PORT && this.getPort() != uri.getPort())
 			throw new IllegalArgumentException(this.getPort() + " port differs from " + uri.getPort());
 		if (this.getContext() != null && uri.getContext() != null
 				&& !this.getContext().equals(uri.getContext()))
