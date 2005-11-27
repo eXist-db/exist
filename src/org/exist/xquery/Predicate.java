@@ -154,8 +154,7 @@ public class Predicate extends PathExpr {
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
 		NodeSet contextSet = contextSequence.toNodeSet();
 		boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
-		NodeSet nodes =
-			super.eval(contextSet, null).toNodeSet();
+		NodeSet nodes =	super.eval(contextSet, null).toNodeSet();
 		
 		/* if the predicate expression returns results from the cache
 		 * we can also return the cached result. 
@@ -177,7 +176,7 @@ public class Predicate extends PathExpr {
 			contextNode = current.getContext();
 			if (contextNode == null) {
 				throw new XPathException("Internal evaluation error: context node is missing for node " +
-					current.gid + "!");
+					current.gid + " !");
 			}
 			while (contextNode != null) {
 				next = contextNode.getNode();
@@ -215,25 +214,26 @@ public class Predicate extends PathExpr {
 				Sequence ancestors = contextSet.selectAncestorDescendant(outerSequence.toNodeSet(),
 						NodeSet.ANCESTOR, true, true);
 				ArraySet temp = new ArraySet(100);
-				for(SequenceIterator i = ancestors.iterate(); i.hasNext(); ) {
-					Item item = i.nextItem();
-				    NodeProxy p = (NodeProxy)item;
+				for(SequenceIterator i = ancestors.iterate(); i.hasNext(); ) {					
+				    NodeProxy p = (NodeProxy)i.nextItem();
 				    ContextItem contextNode = p.getContext();
 				    temp.reset();
 				    while (contextNode != null) {
 				    	temp.add(contextNode.getNode());
 				    	contextNode = contextNode.getNextItem();
 				    }
+                    //TODO : understand why we sort here...
 				    temp.sortInDocumentOrder();
 				    
 				    Sequence innerSeq = inner.eval(contextSequence);
-				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {
-				        Item next = j.nextItem();
-				        NumericValue v = (NumericValue)next.convertTo(Type.NUMBER);
-
+				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {				      
+				        NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);
+				        //... whereas we don't want a sorted array here
+                        //TODO : rename this method as getInDocumentOrder ? -pb
 				        p = temp.getUnsorted(v.getInt() - 1);
 				        if (p != null)
 				        	result.add(p);
+                        //TODO : throw an exception for the else condition ?
 				    }
 				}
             //TODO : understand why we find other forward axes than the 3 ones above here
@@ -273,12 +273,12 @@ public class Predicate extends PathExpr {
 				    		break;
 				    }
 				    Sequence innerSeq = inner.eval(contextSequence);
-				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {
-				        Item next = j.nextItem();
-				        NumericValue v = (NumericValue)next.convertTo(Type.NUMBER);
+				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {				     
+				        NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);                       
 				        int pos = (reverseAxis ? temp.getLength() - v.getInt() : v.getInt() - 1);
 				        if(pos < temp.getLength() && pos > -1)
 				            result.add(temp.itemAt(pos));
+                        //TODO : throw an exception for the else condition ?
 				    }
 				}
 			}
@@ -291,12 +291,13 @@ public class Predicate extends PathExpr {
 				int pos = v.getInt() - 1;
 				if(pos < contextSequence.getLength() && pos > -1)
 					result.add(contextSequence.itemAt(pos));
+                //TODO : throw an exception for the else condition ?
 			}
 			return result;
 		}
 	}
 
-    //TODO : move this to a dedicated Axis class
+    //TODO : move this to a dedicated Axis class -pb
 	public final static boolean isReverseAxis(int axis) {
         if (axis == Constants.UNKNOWN_AXIS)
             throw new IllegalArgumentException("Tested unknown axis");
@@ -307,7 +308,7 @@ public class Predicate extends PathExpr {
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
-        //TODO : does it actually do anything ?
+        //TODO : does this actually do anything ?
 		super.resetState();
 		cached = null;
 	}
