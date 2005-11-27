@@ -63,6 +63,7 @@ public class ArraySet extends AbstractNodeSet {
 			}			
 			pid = XMLUtil.getParentId(node);
 			//System.out.println(node.doc.getDocId() + ":" + node.gid + "->" + pid);
+            //TODO : gid should be private ! -pb
 			node.gid = pid;	
 			// continue until all nodes are set to invalid
 			foundValid = true;
