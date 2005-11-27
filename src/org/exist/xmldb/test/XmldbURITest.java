@@ -26,8 +26,8 @@ public class XmldbURITest extends TestCase {
 			XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///db");
 			assertEquals("exist", xmldbURI.getInstanceName());
 			assertNull(xmldbURI.getHost());
-			assertEquals(-1, xmldbURI.getPort());
-			assertNull(xmldbURI.getContext());
+            assertEquals(-1, xmldbURI.getPort());
+            assertNull(xmldbURI.getContext());
 			assertEquals("/db", xmldbURI.getCollectionPath());
 			assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());
 			xmldbURI = XmldbURI.create("xmldb:exist:///db");
@@ -36,7 +36,7 @@ public class XmldbURITest extends TestCase {
 			assertEquals(-1, xmldbURI.getPort());
 			assertNull(xmldbURI.getContext());
 			assertEquals("/db", xmldbURI.getCollectionPath());
-			assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());			
+            assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());    		
 		} catch (URISyntaxException e) {
 			fail(e.getMessage());
 		}
@@ -50,14 +50,14 @@ public class XmldbURITest extends TestCase {
 			assertEquals(8080, xmldbURI.getPort());
 			assertEquals("/exist/xmlrpc", xmldbURI.getContext());
 			assertEquals("", xmldbURI.getCollectionPath());
-			assertEquals("xmlrpc", xmldbURI.getApiName());
+			assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
 			xmldbURI = XmldbURI.create("xmldb:exist://localhost:8080/exist/xmlrpc");
 			assertEquals("exist", xmldbURI.getInstanceName());
 			assertEquals("localhost", xmldbURI.getHost());
 			assertEquals(8080, xmldbURI.getPort());
 			assertEquals("/exist/xmlrpc", xmldbURI.getContext());
 			assertEquals("", xmldbURI.getCollectionPath());
-			assertEquals("xmlrpc", xmldbURI.getApiName());			
+			assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());			
 		} catch (URISyntaxException e) {
 			fail(e.getMessage());
 		}
@@ -71,7 +71,7 @@ public class XmldbURITest extends TestCase {
 			assertEquals(8088, xmldbURI.getPort());
 			assertEquals("/xmlrpc", xmldbURI.getContext());
 			assertEquals("", xmldbURI.getCollectionPath());
-			assertEquals("xmlrpc", xmldbURI.getApiName());
+			assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
 			xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/xmlrpc");
 			assertEquals("exist", xmldbURI.getInstanceName());
 			assertEquals("localhost", xmldbURI.getHost());
@@ -84,26 +84,26 @@ public class XmldbURITest extends TestCase {
 		}
 	}
 	
-	public void testXmldbURIConstructor4() {
-		try{
-			XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/webdav");
-			assertEquals("exist", xmldbURI.getInstanceName());
-			assertEquals("localhost", xmldbURI.getHost());
-			assertEquals(8088, xmldbURI.getPort());
-			assertEquals("/webdav", xmldbURI.getContext());
-			assertEquals("", xmldbURI.getCollectionPath());
-			assertEquals("webdav", xmldbURI.getApiName());
-			xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/webdav");
-			assertEquals("exist", xmldbURI.getInstanceName());
-			assertEquals("localhost", xmldbURI.getHost());
-			assertEquals(8088, xmldbURI.getPort());
-			assertEquals("/webdav", xmldbURI.getContext());
-			assertEquals("", xmldbURI.getCollectionPath());
-			assertEquals("webdav", xmldbURI.getApiName());			
-		} catch (URISyntaxException e) {
-			fail(e.getMessage());
-		}
-	}	
+    public void testXmldbURIConstructor4() {
+        try{
+            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/webdav");
+            assertEquals("exist", xmldbURI.getInstanceName());
+            assertEquals("localhost", xmldbURI.getHost());
+            assertEquals(8088, xmldbURI.getPort());
+            assertEquals("/webdav", xmldbURI.getContext());
+            assertEquals("", xmldbURI.getCollectionPath());
+            assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
+            xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/webdav");
+            assertEquals("exist", xmldbURI.getInstanceName());
+            assertEquals("localhost", xmldbURI.getHost());
+            assertEquals(8088, xmldbURI.getPort());
+            assertEquals("/webdav", xmldbURI.getContext());
+            assertEquals("", xmldbURI.getCollectionPath());
+            assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());          
+        } catch (URISyntaxException e) {
+            fail(e.getMessage());
+        }
+    }   
 	
 	public void testXmldbURIConstructor5() {
 		try{
@@ -137,14 +137,14 @@ public class XmldbURITest extends TestCase {
 			assertEquals(8088, xmldbURI.getPort());
 			assertEquals("/xmlrpc", xmldbURI.getContext());
 			assertEquals("/db", xmldbURI.getCollectionPath());
-			assertEquals("xmlrpc", xmldbURI.getApiName());
+			assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
 			xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/xmlrpc/db");
 			assertEquals("exist", xmldbURI.getInstanceName());
 			assertEquals("localhost", xmldbURI.getHost());
 			assertEquals(8088, xmldbURI.getPort());
 			assertEquals("/xmlrpc", xmldbURI.getContext());
 			assertEquals("/db", xmldbURI.getCollectionPath());
-			assertEquals("xmlrpc", xmldbURI.getApiName());			
+			assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());			
 		} catch (URISyntaxException e) {
 			fail(e.getMessage());
 		}
@@ -158,14 +158,14 @@ public class XmldbURITest extends TestCase {
 			assertEquals(8088, xmldbURI.getPort());
 			assertEquals("/webdav", xmldbURI.getContext());
 			assertEquals("/db", xmldbURI.getCollectionPath());
-			assertEquals("webdav", xmldbURI.getApiName());
+			assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
 			xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/webdav/db");
 			assertEquals("exist", xmldbURI.getInstanceName());
 			assertEquals("localhost", xmldbURI.getHost());
 			assertEquals(8088, xmldbURI.getPort());
 			assertEquals("/webdav", xmldbURI.getContext());
 			assertEquals("/db", xmldbURI.getCollectionPath());
-			assertEquals("webdav", xmldbURI.getApiName());			
+			assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());			
 		} catch (URISyntaxException e) {
 			fail(e.getMessage());
 		}
@@ -179,14 +179,14 @@ public class XmldbURITest extends TestCase {
 			assertEquals(8088, xmldbURI.getPort());
 			assertEquals("/xmlrpc/webdav", xmldbURI.getContext());
 			assertEquals("/db", xmldbURI.getCollectionPath());
-			assertEquals("webdav", xmldbURI.getApiName());
+			assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
 			xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
 			assertEquals("exist", xmldbURI.getInstanceName());
 			assertEquals("localhost", xmldbURI.getHost());
 			assertEquals(8088, xmldbURI.getPort());
 			assertEquals("/xmlrpc/webdav", xmldbURI.getContext());
 			assertEquals("/db", xmldbURI.getCollectionPath());
-			assertEquals("webdav", xmldbURI.getApiName());			
+			assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());			
 		} catch (URISyntaxException e) {
 			fail(e.getMessage());
 		}
@@ -200,14 +200,14 @@ public class XmldbURITest extends TestCase {
 			assertEquals(8088, xmldbURI.getPort());
 			assertEquals("/webdav/xmlrpc", xmldbURI.getContext());
 			assertEquals("/db", xmldbURI.getCollectionPath());
-			assertEquals("xmlrpc", xmldbURI.getApiName());
+			assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
 			xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/webdav/xmlrpc/db");
 			assertEquals("exist", xmldbURI.getInstanceName());
 			assertEquals("localhost", xmldbURI.getHost());
 			assertEquals(8088, xmldbURI.getPort());
 			assertEquals("/webdav/xmlrpc", xmldbURI.getContext());
 			assertEquals("/db", xmldbURI.getCollectionPath());
-			assertEquals("xmlrpc", xmldbURI.getApiName());			
+			assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());			
 		} catch (URISyntaxException e) {
 			fail(e.getMessage());
 		}
@@ -221,11 +221,31 @@ public class XmldbURITest extends TestCase {
 			assertEquals(-1, xmldbURI.getPort());
 			assertNull(xmldbURI.getContext());
 			assertEquals("/db", xmldbURI.getCollectionPath());
-			assertEquals("rest-style", xmldbURI.getApiName());		
+			assertEquals(XmldbURI.API_REST, xmldbURI.getApiName());		
 		} catch (URISyntaxException e) {
 			fail(e.getMessage());
 		}
 	}
+    
+    public void testXmldbURIConstructor12() {
+        try{
+            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///db/aa/bb/ccc");
+            assertEquals("exist", xmldbURI.getInstanceName());
+            assertNull(xmldbURI.getHost());
+            assertEquals(-1, xmldbURI.getPort());
+            assertNull(xmldbURI.getContext());
+            assertEquals("/db/aa/bb/ccc", xmldbURI.getCollectionPath());
+            assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());               
+            xmldbURI = XmldbURI.create("xmldb:exist:///db/aa/bb/ccc");
+            assertEquals("exist", xmldbURI.getInstanceName());
+            assertEquals(-1, xmldbURI.getPort());
+            assertNull(xmldbURI.getContext());
+            assertEquals("/db/aa/bb/ccc", xmldbURI.getCollectionPath());
+            assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());         
+        } catch (URISyntaxException e) {
+            fail(e.getMessage());
+        }
+    }       
 	
 	public void testXmldbURIFaultyConstructor1() {
 		boolean exceptionThrown = false;
