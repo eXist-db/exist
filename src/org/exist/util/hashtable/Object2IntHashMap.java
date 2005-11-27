@@ -35,6 +35,8 @@ import java.util.Iterator;
  */
 public class Object2IntHashMap extends AbstractHashtable {
 
+    public static final int UNKNOWN_KEY = -1;
+    
 	protected Object[] keys;
 	protected int[] values;
 
@@ -83,7 +85,7 @@ public class Object2IntHashMap extends AbstractHashtable {
 		if (idx < 0)
 			idx *= -1;
 		if (keys[idx] == null)
-			return -1; // key does not exist
+			return UNKNOWN_KEY;
 		else if (keys[idx].equals(key)) {
 			return values[idx];
 		}
@@ -91,12 +93,12 @@ public class Object2IntHashMap extends AbstractHashtable {
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (keys[idx] == null) {
-				return -1; // key not found
+				return UNKNOWN_KEY;
 			} else if (keys[idx].equals(key)) {
 				return values[idx];
 			}
 		}
-		return -1;
+		return UNKNOWN_KEY;
 	}
 
 	public boolean containsKey(Object key) {
@@ -125,7 +127,7 @@ public class Object2IntHashMap extends AbstractHashtable {
 		if (idx < 0)
 			idx *= -1;
 		if (keys[idx] == null) {
-			return -1; // key does not exist
+			return UNKNOWN_KEY;
 		} else if (keys[idx].equals(key)) {
 			keys[idx] = REMOVED;
 			--items;
@@ -135,14 +137,14 @@ public class Object2IntHashMap extends AbstractHashtable {
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (keys[idx] == null) {
-				return -1; // key not found
+				return UNKNOWN_KEY;
 			} else if (keys[idx].equals(key)) {
 				keys[idx] = REMOVED;
 				--items;
 				return values[idx];
 			}
 		}
-		return -1;
+		return UNKNOWN_KEY;
 	}
 
 	public Iterator iterator() {

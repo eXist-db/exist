@@ -267,7 +267,7 @@ public class Type {
 		if (name.equals("node"))
 			return NODE;
 		int code = typeCodes.get(name);
-		if (code == -1)
+		if (code == Object2IntHashMap.UNKNOWN_KEY)
 			throw new XPathException("Type: " + name + " is not defined");
 		return code;
 	}

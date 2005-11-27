@@ -43,10 +43,12 @@ public class ValueSequence extends AbstractSequence {
 
 	private final Logger LOG = Logger.getLogger(ValueSequence.class);
 	
-	private final static int INITIAL_SIZE = 64;
+    //Do not change the -1 value since size computation relies on this start value
+    private final static int UNSET_SIZE = -1;
+    private final static int INITIAL_SIZE = 64;
 	
 	private Item[] values;
-	private int size = -1;
+	private int size = UNSET_SIZE;
 	
 	// used to keep track of the type of added items.
 	// will be Type.ANY_TYPE if the type is unknown
@@ -66,7 +68,7 @@ public class ValueSequence extends AbstractSequence {
 	
 	public void clear() {
 		Arrays.fill(values, null);
-		size = -1;
+		size = UNSET_SIZE;
 		itemType = Type.ANY_TYPE;
 		noDuplicates = false;
 	}
@@ -131,7 +133,7 @@ public class ValueSequence extends AbstractSequence {
 	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
-		if(size == -1)
+		if(size == UNSET_SIZE)
 			return NodeSet.EMPTY_SET;
         // for this method to work, all items have to be nodes
 		if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
@@ -172,7 +174,7 @@ public class ValueSequence extends AbstractSequence {
 	}
 	
     public boolean isPersistentSet() {
-        if(size == -1)
+        if(size == UNSET_SIZE)
             return true;
         if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
             NodeValue v;
