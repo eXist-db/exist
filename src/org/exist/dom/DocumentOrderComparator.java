@@ -45,13 +45,13 @@ public class DocumentOrderComparator implements Comparator {
 		else if (doc.docId < p2.getDocument().docId)
 			return -1;
 		else {
-			if (p1.gid == p2.gid)
+			if (p1.getGID() == p2.getGID())
 				return 0;
-			int la = doc.getTreeLevel(p1.gid);
-			int lb = doc.getTreeLevel(p2.gid);
+			int la = doc.getTreeLevel(p1.getGID());
+			int lb = doc.getTreeLevel(p2.getGID());
 			if(la == lb)
-				return p1.gid < p2.gid ? -1 : 1;
-			long pa = p1.gid, pb = p2.gid;
+				return p1.getGID() < p2.getGID() ? -1 : 1;
+			long pa = p1.getGID(), pb = p2.getGID();
 			if (la > lb) {
 				while (la > lb) {
 					pa = XMLUtil.getParentId(doc, pa, la);

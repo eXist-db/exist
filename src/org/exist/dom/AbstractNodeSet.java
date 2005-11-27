@@ -237,7 +237,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		NodeProxy parent,
 		int mode,
 		boolean rememberContext) {
-		Range range = XMLUtil.getChildRange(parent.getDocument(), parent.gid);
+		Range range = XMLUtil.getChildRange(parent.getDocument(), parent.getGID());
 		return getRange(parent.getDocument(), range.getStart(), range.getEnd());
 	}
 
@@ -334,8 +334,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 					break;
 			} else {
 			    // same document
-			    pa = na.gid;
-			    pb = nb.gid;
+			    pa = na.getGID();
+			    pb = nb.getGID();
 //			    System.out.println(pa + " -> " + pb);
 				pb = XMLUtil.getParentId(nb.getDocument(), pb, nb.getDocument().getTreeLevel(pb));
 //				System.out.println("comparing " + pa + " -> " + pb);
@@ -503,7 +503,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		boolean directParent,
 		boolean includeSelf,
 		int level) {
-		return parentWithChild(proxy.getDocument(), proxy.gid, directParent, includeSelf, level);
+		return parentWithChild(proxy.getDocument(), proxy.getGID(), directParent, includeSelf, level);
 	}
 	
 	/**
@@ -519,9 +519,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		for (Iterator i = iterator(); i.hasNext();) {
 			p = (NodeProxy) i.next();
 			// calculate parent's gid
-			pid = XMLUtil.getParentId(p.getDocument(), p.gid);
+			pid = XMLUtil.getParentId(p.getDocument(), p.getGID());
 			if (pid > -1) {
-				if (parent == null || parent.getDocument().getDocId() != p.getDocument().getDocId() || pid != parent.gid)
+				if (parent == null || parent.getDocument().getDocId() != p.getDocument().getDocId() || pid != parent.getGID())
 					parent = new NodeProxy(p.getDocument(), pid, Node.ELEMENT_NODE);
 				if (rememberContext)
 					parent.addContextNode(p);
@@ -544,7 +544,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             		p.addContextNode(p);
                 ancestors.add(p);
             }
-            gid = p.gid;
+            gid = p.getGID();
             // calculate parent's gid
             while((gid = XMLUtil.getParentId(p.getDocument(), gid)) > 0) {
             	NodeProxy parent = ancestors.get(p.getDocument(), gid);
@@ -622,7 +622,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		for (Iterator i = iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
 			if ((p = other.parentWithChild(l, false, true, -1)) != null) {
-				if(p.gid != l.gid)
+				if(p.getGID() != l.getGID())
 					p.addMatches(l);
 				r.add(p);
 			}

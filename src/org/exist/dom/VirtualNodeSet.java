@@ -80,7 +80,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		//return (first != null);
 		return (
 			(first != null)
-				|| (context.get(p.getDocument(), XMLUtil.getParentId(p.getDocument(), p.gid)) != null));
+				|| (context.get(p.getDocument(), XMLUtil.getParentId(p.getDocument(), p.getGID())) != null));
 	}
 
 	public void setInPredicate(boolean predicate) {
@@ -238,7 +238,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		Iterator domIter;
 		for (Iterator i = context.iterator(); i.hasNext();) {
 			proxy = (NodeProxy) i.next();
-			if (proxy.gid < 0) {
+			if (proxy.getGID() < 0) {
 				if(proxy.getDocument().getResourceType() == DocumentImpl.BINARY_FILE)
 					// skip binary resources
 					continue;
@@ -274,7 +274,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 					domIter = proxy.getDocument().getBroker().getNodeIterator(proxy);
 					NodeImpl node = (NodeImpl) domIter.next();
 					node.setOwnerDocument(proxy.getDocument());
-					node.setGID(proxy.gid);					
+					node.setGID(proxy.getGID());					
 					addChildren(proxy, result, node, domIter, 0);
 				}
 			}

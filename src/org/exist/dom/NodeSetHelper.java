@@ -147,7 +147,7 @@ public class NodeSetHelper {
 						lastDoc = n.getDocument();
 						sizeHint = dl.getSizeHint(lastDoc);
 					}
-					if ((p = al.parentWithChild(n.getDocument(), n.gid, false, includeSelf,
+					if ((p = al.parentWithChild(n.getDocument(), n.getGID(), false, includeSelf,
 							NodeProxy.UNKNOWN_NODE_LEVEL ))
 						!= null) {
 						if (rememberContext)
@@ -166,7 +166,7 @@ public class NodeSetHelper {
 						lastDoc = n.getDocument();
 						sizeHint = al.getSizeHint(lastDoc);
 					}
-					p = al.parentWithChild(n.getDocument(), n.gid, false, includeSelf,
+					p = al.parentWithChild(n.getDocument(), n.getGID(), false, includeSelf,
 							NodeProxy.UNKNOWN_NODE_LEVEL );
 					if (p != null) {
 						if (rememberContext)
@@ -237,7 +237,7 @@ public class NodeSetHelper {
 		int level) {
 	    NodeSet result = new ArraySet(5);
 		NodeProxy temp;
-		long gid = p.gid;
+		long gid = p.getGID();
 		if (includeSelf && (temp = ancestors.get(p.getDocument(), gid)) != null)
 			result.add(temp);
 		if (level == NodeProxy.UNKNOWN_NODE_LEVEL)
@@ -287,8 +287,8 @@ public class NodeSetHelper {
 					break;
 			} else {
 				// same document: check if the nodes have the same parent
-				pa = XMLUtil.getParentId(na.getDocument(), na.gid);
-				pb = XMLUtil.getParentId(nb.getDocument(), nb.gid);
+				pa = XMLUtil.getParentId(na.getDocument(), na.getGID());
+				pb = XMLUtil.getParentId(nb.getDocument(), nb.getGID());
 				if (pa < pb) {
 					// wrong parent: proceed
 					if (ia.hasNext())
@@ -305,7 +305,7 @@ public class NodeSetHelper {
 					// found two nodes with the same parent
 					// now, compare the ids: a node is a following sibling
 					// if its id is greater than the id of the other node
-					if (nb.gid < na.gid) {
+					if (nb.getGID() < na.getGID()) {
 						// found a preceding sibling
 						if (mode == NodeSet.PRECEDING) {
 							nb.addContextNode(na);
@@ -315,7 +315,7 @@ public class NodeSetHelper {
 							nb = (NodeProxy) ib.next();
 						else
 							break;
-					} else if (nb.gid > na.gid) {
+					} else if (nb.getGID() > na.getGID()) {
 						// found a following sibling						
 						if (mode == NodeSet.FOLLOWING) {
 							nb.addContextNode(na);

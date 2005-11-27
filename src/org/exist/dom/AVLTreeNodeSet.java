@@ -286,9 +286,9 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 		Node tempNode = root;
 		while (tempNode != null) {
 			if (tempNode.data.getDocument().docId == doc.docId) {
-				if (tempNode.data.gid == nodeId)
+				if (tempNode.data.getGID() == nodeId)
 					return tempNode.data;
-				else if (tempNode.data.gid < nodeId)
+				else if (tempNode.data.getGID() < nodeId)
 					tempNode = tempNode.rightChild;
 				else
 					tempNode = tempNode.leftChild;
@@ -335,7 +335,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 	public void remove(NodeProxy node) {
 		Node n = searchData(node);
 		if(n == null) {
-			System.out.println(node.gid + " not found");
+			System.out.println(node.getGID() + " not found");
 			return;
 		}
 		//System.out.println("removing node " + n.data.gid);

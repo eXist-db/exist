@@ -246,7 +246,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      */
     public boolean contains(NodeProxy proxy) {
         final Part part = getPart(proxy.getDocument(), false, 0);
-        return part == null ? false : part.contains(proxy.gid);
+        return part == null ? false : part.contains(proxy.getGID());
     }
 
     /*
@@ -312,7 +312,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      */
     public NodeProxy get(NodeProxy p) {
         final Part part = getPart(p.getDocument(), false, 0);
-        return part == null ? null : part.get(p.gid);
+        return part == null ? null : part.get(p.getGID());
     }
 
     /*
@@ -510,7 +510,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             // check the last entry, which should avoid most of the likely
             // duplicates. The remaining duplicates are removed by
             // removeDuplicates().
-            if (length > 0 && array[length - 1].gid == p.gid) {
+            if (length > 0 && array[length - 1].getGID() == p.getGID()) {
                 return;
             }
             if (length == array.length) {
@@ -539,9 +539,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             while (low <= high) {
                 mid = (low + high) / 2;
                 p = array[mid];
-                if (p.gid == gid)
+                if (p.getGID() == gid)
                     return p;
-                if (p.gid > gid)
+                if (p.getGID() > gid)
                     high = mid - 1;
                 else
                     low = mid + 1;
@@ -602,12 +602,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
          * @param rememberContext
          * @return
          */
-        NodeSet getChildrenInSet(NodeProxy parent, int mode,
-                                    boolean rememberContext) {
+        NodeSet getChildrenInSet(NodeProxy parent, int mode, boolean rememberContext) {
             NodeSet result = new ExtArrayNodeSet();
             // get the range of node ids reserved for children of the parent
             // node
-            Range range = XMLUtil.getChildRange(parent.getDocument(), parent.gid);
+            Range range = XMLUtil.getChildRange(parent.getDocument(), parent.getGID());
             int low = 0;
             int high = length - 1;
             int mid = 0;
@@ -617,9 +616,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             while (low <= high) {
                 mid = (low + high) / 2;
                 p = array[mid];
-                if (range.inRange(p.gid))
+                if (range.inRange(p.getGID()))
                     break; // found a node, break out
-                if (p.gid > range.getStart())
+                if (p.getGID() > range.getStart())
                     high = mid - 1;
                 else
                     low = mid + 1;
@@ -627,10 +626,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             if (low > high)
                 return result; // no node found
             // find the first child node in the range
-            while (mid > 0 && array[mid - 1].gid >= range.getStart())
+            while (mid > 0 && array[mid - 1].getGID() >= range.getStart())
                 --mid;
             // walk through the range of child nodes we found
-            for (int i = mid; i < length && array[i].gid <= range.getEnd(); i++) {
+            for (int i = mid; i < length && array[i].getGID() <= range.getEnd(); i++) {
                 switch (mode) {
                     case NodeSet.DESCENDANT :
                         if (rememberContext)
@@ -664,9 +663,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             while (low <= high) {
                 mid = (low + high) / 2;
                 p = array[mid];
-                if (p.gid >= lower && p.gid <= upper)
+                if (p.getGID() >= lower && p.getGID() <= upper)
                     break; // found a node, break out
-                if (p.gid > lower)
+                if (p.getGID() > lower)
                     high = mid - 1;
                 else
                     low = mid + 1;
@@ -674,9 +673,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             if (low > high)
                 return result; // no node found
             // find the first child node in the range
-            while (mid > 0 && array[mid - 1].gid >= lower)
+            while (mid > 0 && array[mid - 1].getGID() >= lower)
                 --mid;
-            for (int i = mid; i < length && array[i].gid <= upper; i++) {
+            for (int i = mid; i < length && array[i].getGID() <= upper; i++) {
                 result.add(array[i]);
             }
             return result;
@@ -690,9 +689,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             while (low <= high) {
                 mid = (low + high) / 2;
                 p = array[mid];
-                if (p.gid == node.gid)
+                if (p.getGID() == node.getGID())
                     break;
-                if (p.gid > node.gid)
+                if (p.getGID() > node.getGID())
                     high = mid - 1;
                 else
                     low = mid + 1;
@@ -712,7 +711,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         int removeDuplicates() {
             int j = 0;
             for (int i = 1; i < length; i++) {
-                if (array[i].gid != array[j].gid) {
+                if (array[i].getGID() != array[j].getGID()) {
                     if (i != ++j)
                         array[j] = array[i];
                 }
