@@ -80,7 +80,7 @@ public class ExtDoctype extends Function {
 		}
 		NodeSet result = new ExtArrayNodeSet(1);
 		for (Iterator i = docs.iterator(); i.hasNext();) {
-			result.add(new NodeProxy((DocumentImpl) i.next(), -1));
+			result.add(new NodeProxy((DocumentImpl) i.next(), NodeProxy.DOCUMENT_NODE_GID));
 		}
 		return result;
 	}

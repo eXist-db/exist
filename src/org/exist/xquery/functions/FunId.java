@@ -11,11 +11,13 @@ import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
-import org.exist.xquery.*;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -63,7 +65,7 @@ public class FunId extends Function {
 			docs = contextSequence.toNodeSet().getDocumentSet(); 
 		for(SequenceIterator i = idval.iterate(); i.hasNext(); ) {
 			nextId = i.nextItem().getStringValue();
-			if(nextId.indexOf(' ') > -1) {
+			if(nextId.indexOf(" ") != Constants.STRING_NOT_FOUND) {
 				// parse idrefs
 				StringTokenizer tok = new StringTokenizer(nextId, " ");
 				while(tok.hasMoreTokens()) {

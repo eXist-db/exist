@@ -254,11 +254,11 @@ public class XQueryContext {
     	for(int i = 0; i < pragmas.size(); i++)
     	{
     		pragma = (Pragma)pragmas.get(i);
-    		if((pragma.getQName().equals("exist:serialize")) /*&& (pragma.getContents().indexOf("method") != -1)*/ )
+    		if((pragma.getQName().equals("exist:serialize")) /*&& (pragma.getContents().indexOf("method") != Constants.STRING_NOT_FOUND)*/ )
     		{
     			//yes, so modify the content from the existing pragma
     			String content = pragma.getContents();
-    			if(content.indexOf("method=") != -1)
+    			if(content.indexOf("method=") != Constants.STRING_NOT_FOUND)
     			{
     				content = content.replaceFirst("method=[^/ ]*", "method=" + name);
     			}
@@ -266,7 +266,7 @@ public class XQueryContext {
     			{
     				content += " method=" + name;
     			}
-    			if(content.indexOf("indent=") != -1)
+    			if(content.indexOf("indent=") != Constants.STRING_NOT_FOUND)
     			{
     				content = content.replaceFirst("indent=[^/ ]*", "indent=" + (indent ? "yes":"no"));
     			}
@@ -274,7 +274,7 @@ public class XQueryContext {
     			{
     				content += " indent" + (indent ? "yes":"no");
     			}
-    			if(content.indexOf("omit-xml-declaration") != -1)
+    			if(content.indexOf("omit-xml-declaration") != Constants.STRING_NOT_FOUND)
     			{
     				content = content.replaceFirst("omit-xml-declaration=[^/ ]*", "omit-xml-declaration=" + (omitxmldeclaration ? "yes":"no"));
     			}

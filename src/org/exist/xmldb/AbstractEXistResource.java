@@ -30,6 +30,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.LockException;
+import org.exist.xquery.Constants;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -50,7 +51,7 @@ public abstract class AbstractEXistResource implements EXistResource {
 		this.user = user;
 		this.pool = pool;
 		this.parent = parent;
-		if (docId.indexOf('/') > -1)
+		if (docId.indexOf('/') != Constants.STRING_NOT_FOUND)
 			docId = docId.substring(docId.lastIndexOf('/') + 1);
 		this.docId = docId;
         this.mimeType = mimeType;

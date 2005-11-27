@@ -31,11 +31,12 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -85,7 +86,7 @@ public class FunLang extends Function {
 			include = lang.equalsIgnoreCase(langValue);
 			if (!include) {
 				hyphen = langValue.indexOf('-');
-				if (hyphen != -1) {
+				if (hyphen != Constants.STRING_NOT_FOUND) {
 					langValue = langValue.substring(0, hyphen);
 					include = lang.equalsIgnoreCase(langValue);
 				}

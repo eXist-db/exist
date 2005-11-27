@@ -44,6 +44,7 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Compressor;
 import org.exist.util.Configuration;
 import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.xml.sax.SAXException;
 
@@ -1686,7 +1687,7 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
             for (int i = 0; i < dsize; i++) {
                 hash = (Hashtable) documents.elementAt(i);
                 nome = (String) hash.get("name");
-                if ((p = nome.lastIndexOf('/')) > -1)
+                if ((p = nome.lastIndexOf('/')) != Constants.STRING_NOT_FOUND)
                         nome = nome.substring(p + 1);
 
                 byte[] xml = getDocument(user, name + "/" + nome, parametri);

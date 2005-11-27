@@ -12,34 +12,32 @@ import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
 
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.XMLReader;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXException;
-import org.xml.sax.InputSource;
-
-import org.w3c.dom.DocumentFragment;
-
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Compressor;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.storage.serializers.EXistOutputKeys;
-
+import org.exist.xquery.Constants;
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -89,7 +87,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	this.parent = parent;
 	this.id = id;
 	int p;
-	if (docId != null && (p = docId.lastIndexOf('/')) > -1) {
+	if (docId != null && (p = docId.lastIndexOf('/')) != Constants.STRING_NOT_FOUND) {
 	    path = docId;
 	    documentName = docId.substring(p + 1);
 	} else {

@@ -294,7 +294,7 @@ public class StringValue extends AtomicValue implements Indexable {
 	 * @see org.exist.xquery.value.AtomicValue#contains(org.exist.xquery.value.AtomicValue)
 	 */
 	public boolean contains(Collator collator, AtomicValue other) throws XPathException {
-		return Collations.indexOf(collator, value, other.getStringValue()) > -1;
+		return Collations.indexOf(collator, value, other.getStringValue()) != Constants.STRING_NOT_FOUND;
 	}
 	
 	/* (non-Javadoc)
@@ -382,7 +382,7 @@ public class StringValue extends AtomicValue implements Indexable {
             return in;
         }
         int first = 0;
-        int last = in.length()-1;
+        int last = in.length() - 1;
         while (in.charAt(first) <= 0x20) {
             if (first++ >= last) {
                 return "";
