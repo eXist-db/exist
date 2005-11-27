@@ -93,14 +93,14 @@ public class NativeSerializer extends Serializer {
 
     protected void serializeToReceiver(NodeProxy p, boolean generateDocEvent)
     throws SAXException {
-    	if(Type.subTypeOf(p.getType(), Type.DOCUMENT) || p.gid < 0) {
+    	if(Type.subTypeOf(p.getType(), Type.DOCUMENT) || p.getGID() == NodeProxy.DOCUMENT_NODE_GID) {
     			serializeToReceiver(p.getDocument(), generateDocEvent);
     			return;
     	}
     	setDocument(p.getDocument());
     	if (generateDocEvent) receiver.startDocument();
         Iterator domIter = broker.getNodeIterator(p);
-        serializeToReceiver(null, domIter, p.getDocument(), p.gid, true, p.getMatches(), new TreeSet());
+        serializeToReceiver(null, domIter, p.getDocument(), p.getGID(), true, p.getMatches(), new TreeSet());
         if (generateDocEvent) receiver.endDocument();
     }
     

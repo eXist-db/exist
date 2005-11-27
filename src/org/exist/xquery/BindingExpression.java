@@ -146,7 +146,7 @@ public abstract class BindingExpression extends AbstractExpression {
 				contextNode = current.getContext();
 				if (contextNode == null) {
 					throw new XPathException("Internal evaluation error: context node is missing for node " +
-						current.gid + "!");
+						current.getGID() + "!");
 				}
 				while (contextNode != null) {
 					next = contextNode.getNode();

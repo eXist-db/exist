@@ -577,8 +577,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     last = 0;
                     for (int j = 0; j < len; j++) {
                         p = (NodeProxy) idList.get(j);
-                        delta = p.gid - last;
-                        last = p.gid;
+                        delta = p.getGID() - last;
+                        last = p.getGID();
                         os.writeLong(delta);
                         StorageAddress.write(p.getInternalAddress(), os);
                     }
@@ -697,8 +697,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     last = 0;
                     for (int j = 0; j < len; j++) {
                         p = (NodeProxy) newList.get(j);
-                        delta = p.gid - last;
-                        last = p.gid;
+                        delta = p.getGID() - last;
+                        last = p.getGID();
                         os.writeLong(delta);
                         StorageAddress.write(p.getInternalAddress(), os);
                     }
@@ -724,7 +724,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 
     private final static boolean containsNode(List list, long gid) {
         for (int i = 0; i < list.size(); i++)
-            if (((NodeProxy) list.get(i)).gid == gid) return true;
+            if (((NodeProxy) list.get(i)).getGID() == gid) return true;
         return false;
     }
 
@@ -766,8 +766,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 prevId = 0;
                 for (int j = 0; j < len; j++) {
                     proxy = (NodeProxy) idList.get(j);
-                    cid = proxy.gid - prevId;
-                    prevId = proxy.gid;
+                    cid = proxy.getGID() - prevId;
+                    prevId = proxy.getGID();
                     os.writeLong(cid);
                     StorageAddress.write(proxy.getInternalAddress(), os);
                 }
