@@ -188,7 +188,7 @@ public class Collations {
             CollationElementIterator s0, CollationElementIterator s1) {
         while (true) {
             int e1 = s1.next();
-            if (e1 == -1) {
+            if (e1 == CollationElementIterator.NULLORDER) {
                 return true;
             }
             int e0 = s0.next();
@@ -201,15 +201,15 @@ public class Collations {
     private final static boolean collationContains(CollationElementIterator s0,
             CollationElementIterator s1, int[] offsets, boolean endsWith) {
         int e1 = s1.next();
-        if (e1 == -1) {
+        if (e1 == CollationElementIterator.NULLORDER) {
             return true;
         }
-        int e0 = -1;
+        int e0 = CollationElementIterator.NULLORDER;
         while (true) {
             // scan the first string to find a matching character
             while (e0 != e1) {
                 e0 = s0.next();
-                if (e0 == -1) {
+                if (e0 == CollationElementIterator.NULLORDER) {
                     // hit the end, no match
                     return false;
                 }
@@ -225,7 +225,7 @@ public class Collations {
                     return true;
                 } else {
                     // operation == ENDSWITH
-                    if (s0.next() == -1) {
+                    if (s0.next() == CollationElementIterator.NULLORDER) {
                         // the match is at the end
                         return true;
                     }
@@ -241,7 +241,7 @@ public class Collations {
                 s0.next();
             }
             s1.reset();
-            e0 = -1;
+            e0 = CollationElementIterator.NULLORDER;
             e1 = s1.next();
             // loop round to try again
         }

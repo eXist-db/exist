@@ -138,7 +138,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 	private final static String COLLECTION_URI = "collection";
 	
 	private long cacheValidity;
-	private long defaultCacheValidity = -1;
+	private long defaultCacheValidity = SourceValidity.INVALID;
 	private final static String CACHE_VALIDITY = "cache-validity";
 
 	private String user;
@@ -361,7 +361,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 	}
 
 	public SourceValidity getValidity() {
-		if (cacheValidity != -1) {
+		if (cacheValidity != SourceValidity.INVALID) {
 			AggregatedValidity v = new AggregatedValidity();
 			if (inputSource.getValidity() != null)
 				v.add(inputSource.getValidity());
