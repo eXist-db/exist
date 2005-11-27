@@ -40,7 +40,6 @@ import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,6 +85,7 @@ import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Constants;
 import org.gnu.readline.Readline;
 import org.gnu.readline.ReadlineCompleter;
 import org.gnu.readline.ReadlineLibrary;
@@ -1007,7 +1007,7 @@ public class InteractiveClient {
             }
         String sortBy = null;
         int p = xpath.indexOf(" sort by ");
-        if (p > -1) {
+        if (p != Constants.STRING_NOT_FOUND) {
             String xp = xpath.substring(0, p);
             sortBy = xpath.substring(p + " sort by ".length());
             xpath = xp;

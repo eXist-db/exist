@@ -35,7 +35,8 @@ import org.xmldb.api.base.XMLDBException;
 
 public class ResourcePropertyDialog extends JDialog {
 
-	public final static int APPLY_OPTION = 0;
+    public final static int NO_OPTION = -1;
+    public final static int APPLY_OPTION = 0;
 	public final static int CANCEL_OPTION = 1;
 
 	Permission permissions;
@@ -49,7 +50,7 @@ public class ResourcePropertyDialog extends JDialog {
 	JCheckBox[] worldPerms;
 	JCheckBox[] groupPerms;
 	JCheckBox[] userPerms;
-	int result = -1;
+	int result = NO_OPTION;
 
 	/**
 	 * @param owner

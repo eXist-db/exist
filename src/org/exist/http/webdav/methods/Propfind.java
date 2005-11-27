@@ -56,6 +56,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.xquery.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -266,7 +267,7 @@ public class Propfind extends AbstractWebDAVMethod {
 			// write D:displayname
 			String displayName = collection.getName();
 			int p = displayName.lastIndexOf('/');
-			if(p > -1)
+			if(p != Constants.STRING_NOT_FOUND)
 				displayName = displayName.substring(p + 1);
 			writeSimpleElement(DISPLAY_NAME_PROP, displayName, serializer);
 		}
@@ -476,11 +477,11 @@ public class Propfind extends AbstractWebDAVMethod {
 	private String getServletPath(HttpServletRequest request) {
 		String servletPath = request.getContextPath();
 	    if(servletPath.endsWith("/")) {
-	      servletPath = servletPath.substring(0, servletPath.length()-1);
+	      servletPath = servletPath.substring(0, servletPath.length() - 1);
 	    }
 	    servletPath += request.getServletPath();
 	    if(servletPath.endsWith("/")) {
-	      servletPath = servletPath.substring(0, servletPath.length()-1);
+	      servletPath = servletPath.substring(0, servletPath.length() - 1);
 	    }
 	    return servletPath;
 	}

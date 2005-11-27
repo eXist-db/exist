@@ -101,6 +101,7 @@ import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xquery.Constants;
 import org.gnu.readline.Readline;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -709,7 +710,7 @@ public class ClientFrame extends JFrame
                     if (shell.getCaretPosition() < commandStart)
                         shell.setCaretPosition(doc.getLength());
                 }
-                if (e.paramString().indexOf("Backspace") > -1) {
+                if (e.paramString().indexOf("Backspace") > Constants.STRING_NOT_FOUND) {
                     if (shell.getCaretPosition() <= commandStart)
                         e.consume();
                 }

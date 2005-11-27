@@ -34,13 +34,13 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
 import org.exist.storage.StorageAddress;
-import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.MultiReadReentrantLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.SyntaxException;
+import org.exist.xquery.Constants;
 import org.exist.xquery.DescendantSelector;
 import org.exist.xquery.NodeSelector;
 import org.w3c.dom.Attr;
@@ -313,8 +313,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
 		int p = qualifiedName.indexOf(':');
-		String name = p > -1 ? qualifiedName.substring(p) : qualifiedName;
-		String prefix = p > -1 ? qualifiedName.substring(0, p) : null; 
+		String name = (p != Constants.STRING_NOT_FOUND) ? qualifiedName.substring(p) : qualifiedName;
+		String prefix = (p != Constants.STRING_NOT_FOUND) ? qualifiedName.substring(0, p) : null; 
 		AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix), null);
 		attr.setOwnerDocument(this);
 		return attr;
@@ -340,8 +340,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public Element createElementNS(String namespaceURI, String qualifiedName) throws DOMException {
 		int p = qualifiedName.indexOf(':');
-				String name = p > -1 ? qualifiedName.substring(p) : qualifiedName;
-				String prefix = p > -1 ? qualifiedName.substring(0, p) : null;
+		String name = (p != Constants.STRING_NOT_FOUND) ? qualifiedName.substring(p) : qualifiedName;
+		String prefix = (p != Constants.STRING_NOT_FOUND) ? qualifiedName.substring(0, p) : null;
 		ElementImpl element = new ElementImpl(new QName(name, namespaceURI, prefix));
 		element.setOwnerDocument(this);
 		return element;

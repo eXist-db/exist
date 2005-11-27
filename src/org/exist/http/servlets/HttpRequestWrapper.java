@@ -41,6 +41,7 @@ import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
+import org.exist.xquery.Constants;
 
 /** A wrapper for requests processed by a servlet.
  * @author Wolfgang Meier <wolfgang@exist-db.org>
@@ -249,12 +250,11 @@ public class HttpRequestWrapper implements RequestWrapper {
         
         // If there are (back) slashes in the Filename, we have
         // a full path. Find the last (back) slash, take remaining text
-        int lastFileSepPos=Math.max( itemName.lastIndexOf("/"),
-                itemName.lastIndexOf("\\") );
+        int lastFileSepPos = Math.max(itemName.lastIndexOf("/"), itemName.lastIndexOf("\\") );
         
         String documentName=itemName;
-        if(lastFileSepPos!=-1){
-            documentName=itemName.substring(lastFileSepPos+1);
+        if (lastFileSepPos != Constants.STRING_NOT_FOUND){
+            documentName=itemName.substring(lastFileSepPos + 1);
         }
         
         return documentName;

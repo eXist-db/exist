@@ -38,6 +38,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.sanity.SanityCheck;
+import org.exist.xquery.Constants;
 import org.xml.sax.SAXException;
 
 /**
@@ -118,7 +119,7 @@ public class CollectionConfigurationManager {
     	int p = DBBroker.ROOT_COLLECTION.length();
     	String next;
     	Collection coll = null;
-    	while(p != -1) {
+    	while(p != Constants.STRING_NOT_FOUND) {
     		next = CONFIG_COLLECTION + path.substring(0, p);    
     		try {
     			coll = broker.openCollection(next, Lock.READ_LOCK);

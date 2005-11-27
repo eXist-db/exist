@@ -33,6 +33,7 @@ import javax.xml.transform.TransformerException;
 
 import org.exist.util.Range;
 import org.exist.util.serializer.DOMSerializer;
+import org.exist.xquery.Constants;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -165,7 +166,7 @@ public class XMLUtil {
 			ch = str.charAt(i);
 			if (ch == '&') {
 				p = str.indexOf(';', i);
-				if (-1 < p) {
+				if (p != Constants.STRING_NOT_FOUND) {
 					ent = str.substring(i + 1, p);
 					if (ent.equals("amp"))
 						out.append('&');
