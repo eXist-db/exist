@@ -643,7 +643,7 @@ public abstract class Serializer implements XMLReader {
 	public void toSAX(NodeProxy p) throws SAXException {
 		setStylesheetFromProperties(p.getOwnerDocument());
 		setXSLHandler();
-		if(p.gid < 0)
+		if (p.getGID() == NodeProxy.DOCUMENT_NODE_GID)
 			serializeToReceiver(p.getDocument(), getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 		else
 			serializeToReceiver(p, getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));

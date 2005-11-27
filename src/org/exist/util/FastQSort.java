@@ -213,11 +213,11 @@ public final class FastQSort {
 		if ((r - l) > M) {
 			// 26july00: following [.][1] -> [.][0]
 			i = (r + l) / 2;
-			if (a[l].gid > a[i].gid)
+			if (a[l].getGID() > a[i].getGID())
 				swap(a, l, i); // Tri-Median Methode!
-			if (a[l].gid > a[r].gid)
+			if (a[l].getGID() > a[r].getGID())
 				swap(a, l, r);
-			if (a[i].gid > a[r].gid)
+			if (a[i].getGID() > a[r].getGID())
 				swap(a, i, r);
 
 			j = r - 1;
@@ -226,8 +226,8 @@ public final class FastQSort {
 
 			v = a[j];
 			for (;;) {
-				while (a[++i].gid < v.gid);
-				while (a[--j].gid > v.gid);
+				while (a[++i].getGID() < v.getGID());
+				while (a[--j].getGID() > v.getGID());
 				if (j < i)
 					break;
 				swap(a, i, j);
@@ -283,7 +283,7 @@ public final class FastQSort {
 			temp = a[i]; // the column we're sorting on
 			j = i;
 
-			while ((j > lo0) && (a[j - 1].gid > temp.gid)) {
+			while ((j > lo0) && (a[j - 1].getGID() > temp.getGID())) {
 				a[j] = a[j - 1];
 				j--;
 			}

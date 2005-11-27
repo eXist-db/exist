@@ -1095,7 +1095,7 @@ public class DOMFile extends BTree implements Lockable {
 				id = XMLUtil.getParentId(doc, id);
 				if (id < 1) {
 					SanityCheck.TRACE("Node " + node.doc.getDocId() + ":" + node.getGID() + " not found.");
-					throw new BTreeException("node " + node.gid + " not found.");
+					throw new BTreeException("node " + node.getGID() + " not found.");
 				}
 				NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc
 						.getDocId(), id);
@@ -1110,7 +1110,7 @@ public class DOMFile extends BTree implements Lockable {
 					.getDocument(), parentPointer);
 			final NodeImpl n = (NodeImpl) iter.next();
 			n.setGID(id);
-			final long address = findNode(n, node.gid, iter);
+			final long address = findNode(n, node.getGID(), iter);
 			if (address == 0) {
 				// if(LOG.isDebugEnabled())
 				// LOG.debug("Node data location not found for node " +

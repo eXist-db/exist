@@ -92,7 +92,7 @@ public class FunId extends Function {
 		NodeProxy n, p;
 		for (Iterator i = attribs.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			p = new NodeProxy(n.getDocument(), XMLUtil.getParentId(n.getDocument(), n.gid), Node.ELEMENT_NODE);
+			p = new NodeProxy(n.getDocument(), XMLUtil.getParentId(n), Node.ELEMENT_NODE);
 			result.add(p);
 		}
 	}
