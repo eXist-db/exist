@@ -74,7 +74,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     protected short attributes = 0;
     protected int children = 0;
-    protected long firstChild = -1;
+    protected long firstChild = NodeImpl.UNKNOWN_NODE_IMPL_GID;
     protected Map namespaceMappings = null;
 	protected int indexType = RangeIndexSpec.NO_INDEX;
 	protected int position = 0;
@@ -129,7 +129,7 @@ public class ElementImpl extends NamedNode implements Element {
      */
     public void clear() {
         super.clear();
-        firstChild = -1;
+        firstChild = NodeImpl.UNKNOWN_NODE_IMPL_GID;
         gid = 0;
         children = 0;
         attributes = 0;
@@ -213,11 +213,10 @@ public class ElementImpl extends NamedNode implements Element {
      * @param child
      * @throws DOMException
      */
-    public void appendChildInternal(NodeImpl child)
-            throws DOMException {
+    public void appendChildInternal(NodeImpl child) throws DOMException {
         if (gid > 0) {
-            child.setGID(firstChildID() + children);
-            if (child.getGID() < 0) {
+            child.setGID(firstChildID() + children);            
+            if (child.getGID() == NodeImpl.UNKNOWN_NODE_IMPL_GID) {
                 final int level = ownerDocument.getTreeLevel(gid);
                 final int order = ownerDocument.getTreeLevelOrder(level);
                 throw new DOMException(DOMException.INVALID_STATE_ERR,
@@ -580,7 +579,7 @@ public class ElementImpl extends NamedNode implements Element {
     public long firstChildID() {
         if (gid == 0)
             return 0;
-        if (firstChild > -1)
+        if (firstChild != NodeImpl.UNKNOWN_NODE_IMPL_GID)
             return firstChild;
         firstChild = XMLUtil.getFirstChildId(ownerDocument, gid);
         return firstChild;
@@ -882,7 +881,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     public long lastChildID() {
         if (!hasChildNodes())
-            return -1;
+            return NodeImpl.UNKNOWN_NODE_IMPL_GID;
         return firstChildID() + children - 1;
     }
 
@@ -1232,6 +1231,7 @@ public class ElementImpl extends NamedNode implements Element {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
         DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
         if (refChild == null) {
+            //TODO : use NodeImpl.UNKNOWN_NODE_IMPL_GID ? -pb
             appendChildren(transaction, nodes, -1);
             return;
         }
@@ -1265,6 +1265,7 @@ public class ElementImpl extends NamedNode implements Element {
     public void insertAfter(Txn transaction, NodeList nodes, Node refChild)
             throws DOMException {
         if (refChild == null) {
+            //TODO : use NodeImpl.UNKNOWN_NODE_IMPL_GID ? -pb
             appendChildren(null, nodes, -1);
             return;
         }
@@ -1412,7 +1413,7 @@ public class ElementImpl extends NamedNode implements Element {
 				}
                 NodeList children = node.getChildNodes();
                 NodeImpl child;
-                for (int i = children.getLength() - 1; i > -1; i--) {
+                for (int i = children.getLength() - 1; i >= 0; i--) {
                     child = (NodeImpl) children.item(i);
                     if (child.nodeType == Node.ELEMENT_NODE) {
                         currentPath.addComponent(((ElementImpl) child).getQName());
