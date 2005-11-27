@@ -1428,6 +1428,7 @@ public class ElementImpl extends NamedNode implements Element {
             default :
                 ownerDocument.broker.removeNode(transaction, node, currentPath, null);
                 break;
+            //TODO : manage unknown type ! -pb
         }
     }
 	

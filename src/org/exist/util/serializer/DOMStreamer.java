@@ -240,6 +240,7 @@ public class DOMStreamer {
 				}
 				break;
 			default :
+                //TODO : what kind of default here ? -pb
 				System.out.println("Found node: " + node.getNodeType());
 				break;
 		}

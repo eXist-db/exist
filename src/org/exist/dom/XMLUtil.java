@@ -88,6 +88,7 @@ public class XMLUtil {
 						new_node.appendChild(new_child);
 						break;
 					}
+                //TODO : error for any other one -pb
 			}
 		}
 	}
@@ -113,6 +114,7 @@ public class XMLUtil {
 				((Attr) new_node).setValue(((Attr) node).getValue());
 				return new_node;
 			default :
+                //TODO : error ? -pb
 				return null;
 		}
 	}
