@@ -49,6 +49,7 @@ import org.exist.dom.XMLUtil;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FastStringBuffer;
+import org.exist.xquery.Constants;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -339,7 +340,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				int p = name.indexOf(':');
 				String namespace = null;
 				String prefix = "";
-				if (p > -1) {
+				if (p != Constants.STRING_NOT_FOUND) {
 					prefix = name.substring(0, p);
 					if (name.length() == p + 1)
 						throw new SAXException(
@@ -375,7 +376,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					throw new SAXException("attribute requires a name attribute");
 				int p = name.indexOf(':');
 				String namespace = null;
-				if (p > -1) {
+				if (p != Constants.STRING_NOT_FOUND) {
 					String prefix = name.substring(0, p);
 					if (name.length() == p + 1)
 						throw new SAXException(

@@ -4,12 +4,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.CollationElementIterator;
 import java.text.Collator;
-import java.text.RuleBasedCollator;
 import java.text.ParseException;
+import java.text.RuleBasedCollator;
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
@@ -155,7 +157,7 @@ public class Collations {
 
     public final static boolean contains(Collator collator, String s1, String s2) {
         if (collator == null)
-            return s1.indexOf(s2) > -1;
+            return s1.indexOf(s2) != Constants.STRING_NOT_FOUND;
         else {
             final RuleBasedCollator rbc = (RuleBasedCollator) collator;
             final CollationElementIterator i1 = rbc

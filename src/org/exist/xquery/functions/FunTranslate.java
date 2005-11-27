@@ -24,10 +24,11 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -79,7 +80,7 @@ public class FunTranslate extends Function {
 		for(int i = 0; i < arg.length(); i++) {
 			ch = arg.charAt(i);
 			p = mapStr.indexOf(ch);
-			if(p > -1) {
+			if(p != Constants.STRING_NOT_FOUND) {
 				if(p < transStr.length())
 					buf.append(transStr.charAt(p));
 			} else

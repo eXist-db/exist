@@ -26,7 +26,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -57,10 +56,11 @@ import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.serializers.Serializer;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
@@ -71,7 +71,6 @@ import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Element;
@@ -244,7 +243,7 @@ public class Transform extends BasicFunction {
 			}
 		}
 		int p = stylesheet.lastIndexOf('/');
-		if(p > -1)
+		if(p != Constants.STRING_NOT_FOUND)
 			base = stylesheet.substring(0, p);
 		else
 			base = stylesheet;

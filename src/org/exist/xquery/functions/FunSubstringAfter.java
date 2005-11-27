@@ -28,6 +28,7 @@ import java.text.Collator;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -89,7 +90,7 @@ public class FunSubstringAfter extends CollatingFunction {
 			return StringValue.EMPTY_STRING;
 		Collator collator = getCollator(contextSequence, contextItem, 3);
 		int p = Collations.indexOf(collator, value, cmp);
-		if (p > -1)
+		if (p != Constants.STRING_NOT_FOUND)
 			return new StringValue(
 				p + cmp.length() < value.length() ? 
                     value.substring(p + cmp.length()) : ""

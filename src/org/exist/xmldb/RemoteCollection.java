@@ -41,6 +41,7 @@ import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.util.Compressor;
 import org.exist.validation.service.RemoteValidationService;
+import org.exist.xquery.Constants;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
@@ -127,7 +128,7 @@ public class RemoteCollection implements CollectionImpl {
 	public Collection getChildCollection(String name) throws XMLDBException {
 		if (childCollections == null)
 			readCollection();
-		if (name.indexOf('/') > -1)
+		if (name.indexOf('/') != Constants.STRING_NOT_FOUND)
 			return (Collection) childCollections.get(name);
 		else
 			return (Collection) childCollections.get(getPath() + '/' + name);
@@ -248,7 +249,7 @@ public class RemoteCollection implements CollectionImpl {
 		int p;
 		for (Iterator i = childCollections.keySet().iterator(); i.hasNext(); j++) {
 			coll[j] = (String) i.next();
-			if ((p = coll[j].lastIndexOf('/')) > -1)
+			if ((p = coll[j].lastIndexOf('/')) != Constants.STRING_NOT_FOUND)
 				coll[j] = coll[j].substring(p + 1);
 
 		}
@@ -295,7 +296,7 @@ public class RemoteCollection implements CollectionImpl {
 		if(docName == null)
 			return null;	// resource does not exist!
 		int p;	
-		if ((p = docName.lastIndexOf('/')) > -1)
+		if ((p = docName.lastIndexOf('/')) != Constants.STRING_NOT_FOUND)
 			docName = docName.substring(p + 1);
 		Permission perm =
 			new Permission(

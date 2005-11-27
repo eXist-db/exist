@@ -32,29 +32,28 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.security.PermissionDeniedException;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.security.SecurityManager;
+import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
-import org.exist.util.LockException;
-
-import org.apache.log4j.Logger;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -173,11 +172,11 @@ public class DatabaseResources {
         String docName = null;
         
         int separatorPos = path.lastIndexOf("/");
-        if(separatorPos==-1){
+        if(separatorPos == Constants.STRING_NOT_FOUND){
             docName=path;
             
         } else {
-            docName=path.substring(separatorPos+1);
+            docName=path.substring(separatorPos + 1);
         }
         
         return docName;
@@ -188,7 +187,7 @@ public class DatabaseResources {
         String pathName = null;
         
         int separatorPos = path.lastIndexOf("/");
-        if(separatorPos==-1){
+        if(separatorPos == Constants.STRING_NOT_FOUND){
             // no path
             pathName="/";
             
@@ -197,7 +196,7 @@ public class DatabaseResources {
         }
         
         if(!pathName.startsWith("/")){
-            pathName="/"+pathName;
+            pathName= "/" + pathName;
         }
         
         return pathName;

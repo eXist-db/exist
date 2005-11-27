@@ -32,6 +32,7 @@ import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
+import org.exist.xquery.Constants;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -61,7 +62,7 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	public RemoteBinaryResource(RemoteCollection parent, String documentName) throws XMLDBException {
 		this.parent = parent;
 		int p;
-		if (documentName != null && (p = documentName.lastIndexOf('/')) > -1) {
+		if (documentName != null && (p = documentName.lastIndexOf('/')) != Constants.STRING_NOT_FOUND) {
 			this.path = documentName;
 			this.documentName = documentName.substring(p + 1);
 		} else {

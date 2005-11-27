@@ -27,8 +27,9 @@ import java.text.Collator;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -90,7 +91,7 @@ public class FunContains extends CollatingFunction {
 				.eval(contextSequence)
 				.getStringValue();
 		Collator collator = getCollator(contextSequence, contextItem, 3);
-		if (Collations.indexOf(collator, s1, s2) > -1)
+		if (Collations.indexOf(collator, s1, s2) != Constants.STRING_NOT_FOUND)
 			return BooleanValue.TRUE;
 		else
 			return BooleanValue.FALSE;
