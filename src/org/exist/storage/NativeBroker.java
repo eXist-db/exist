@@ -933,7 +933,7 @@ public class NativeBroker extends DBBroker {
         }
 
         public void reset(Txn transaction, NodeImpl node, NodePath currentPath) {            
-            if (node.getGID() == NodeProxy.DOCUMENT_NODE_GID)
+            if (node.getGID() == NodeImpl.UNKNOWN_NODE_IMPL_GID)
                 LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
                 //TODO : why continue processing ? return ? -pb
             this.transaction = transaction;
@@ -1591,7 +1591,7 @@ public class NativeBroker extends DBBroker {
 		store(transaction, node, currentPath, index);
 		if (node.getNodeType() == Node.ELEMENT_NODE)
 		    endElement(node, currentPath, null);
-		
+		//TODO : what are the semantics of this 1 ? -pb
 		if(node.getGID() == 1)
 		    newDoc.appendChild(node);
 		node.setOwnerDocument(doc);
@@ -2112,8 +2112,6 @@ public class NativeBroker extends DBBroker {
                             domDb.remove(transaction, query, null);
                         } catch (BTreeException e) {
                             LOG.warn("btree error while removing document", e);
-                        } catch (DBException e) {
-                            LOG.warn("db error while removing document", e);
                         } catch (IOException e) {
                             LOG.warn("io error while removing document", e);
                         } catch (TerminatedException e) {
@@ -2164,9 +2162,7 @@ public class NativeBroker extends DBBroker {
 					try {
 						domDb.remove(transaction, idx, null);
 					} catch (BTreeException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);
-					} catch (DBException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);
+                        LOG.warn("start() - " + "error while removing doc", e);					
 					} catch (IOException e) {
                         LOG.warn("start() - " + "error while removing doc", e);
 					} catch (TerminatedException e) {
