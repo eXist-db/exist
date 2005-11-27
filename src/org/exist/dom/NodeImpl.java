@@ -45,13 +45,18 @@ import org.xml.sax.ext.LexicalHandler;
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  */
-public class NodeImpl implements Node, QNameable {
-	
+public class NodeImpl implements Node, QNameable {	
+    
+    public final static int UNKNOWN_NODE_IMPL_GID = -1;
+    public final static int UNKNOWN_NODE_IMPL_ADDRESS = -1;    
+    public final static short UNKNOWN_NODE_IMPL_NODE_TYPE = -1;    
+    
 	protected final static Logger LOG = Logger.getLogger(NodeImpl.class);
 
-	protected long gid;
-	protected long internalAddress = -1;
-	protected short nodeType = 0;
+	//TODO : what are the semantics of this 0 ? Clarify then use named constant -pb
+	protected long gid = 0;
+	protected long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
+	protected short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;
 	protected DocumentImpl ownerDocument = null;
 
 	private NodeImpl() {
@@ -62,7 +67,7 @@ public class NodeImpl implements Node, QNameable {
 	}
 
 	public NodeImpl(long gid) {
-		this((short) 0, gid);
+		this(UNKNOWN_NODE_IMPL_NODE_TYPE, gid);
 	}
 
 	public NodeImpl(short nodeType, long gid) {
@@ -136,8 +141,9 @@ public class NodeImpl implements Node, QNameable {
 	 * parser to be able to reuse node objects.
 	 */
 	public void clear() {
+		//TODO : what are the semantics of this 0 ? -pb		
 		gid = 0;
-		internalAddress = -1;
+		internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
 		ownerDocument = null;
 	}
 
@@ -314,7 +320,7 @@ public class NodeImpl implements Node, QNameable {
 	 */
 	public Node getParentNode() {
 		long pid = getParentGID();
-		return pid < 0 ? null : ownerDocument.getNode(pid);
+		return pid == NodeImpl.UNKNOWN_NODE_IMPL_GID ? null : ownerDocument.getNode(pid);
 	}
 
 	public NodePath getPath() {
