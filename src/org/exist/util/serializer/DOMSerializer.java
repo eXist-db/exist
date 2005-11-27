@@ -177,6 +177,7 @@ public class DOMSerializer {
 				receiver.comment(((Comment) node).getData());
 				break;
 			default :
+                //TODO : what kind of defaut here ?!! -pb
 				break;
 		}
 	}

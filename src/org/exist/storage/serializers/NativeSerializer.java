@@ -268,6 +268,7 @@ public class NativeSerializer extends Serializer {
             receiver.comment(data, 0, data.length);
             node.release();
             break;
+        //TODO : how to process other types ? -pb
         }
     }
 
