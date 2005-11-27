@@ -76,11 +76,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
-import org.exist.storage.journal.LogException;
 import org.exist.storage.journal.Lsn;
 import org.exist.util.ByteConversion;
 
@@ -100,7 +98,6 @@ public abstract class Paged {
 	protected static int PAGE_SIZE = 4096;
 	
 	private RandomAccessFile raf;
-	private FileLock fileLock;
 	private File file;
 	private FileHeader fileHeader;
 	private boolean readOnly = false;
@@ -287,13 +284,13 @@ public abstract class Paged {
 		Page p = null;
 		synchronized (fileHeader) {
 			long pageNum = fileHeader.firstFreePage;
-			if (pageNum != -1) {
+			if (pageNum != Page.NO_PAGE) {
 				// Steal a deleted page
 				p = new Page(pageNum);
 				p.read();
 				fileHeader.firstFreePage = p.header.nextPage;
-				if (fileHeader.firstFreePage == -1)
-					fileHeader.setLastFreePage(-1);
+				if (fileHeader.firstFreePage == Page.NO_PAGE)
+					fileHeader.setLastFreePage(Page.NO_PAGE);
 			} else {
 				// Grow the file
 				pageNum = fileHeader.totalCount;
@@ -310,7 +307,7 @@ public abstract class Paged {
 //				printFreeSpaceList();
 		}
 		// Initialize The Page Header (Cleanly)
-		p.header.setNextPage(-1);
+		p.header.setNextPage(Page.NO_PAGE);
 		p.header.setStatus(UNUSED);
 		fileHeader.setDirty(true);
         // write out the file header
@@ -365,7 +362,7 @@ public abstract class Paged {
 		System.out.println("first free page: " + pageNum);
 		Page next;
 		System.out.println("free pages for " + getFile().getName());
-		while (pageNum != -1) {
+		while (pageNum != Page.NO_PAGE) {
 			next = getPage(pageNum);
 			next.read();
 			System.out.print(pageNum + ";");
@@ -376,7 +373,7 @@ public abstract class Paged {
 
 	private boolean isRemovedPage(long pageNum) throws IOException {
 		long nextNum = fileHeader.firstFreePage;
-		while(nextNum != -1) {
+		while(nextNum != Page.NO_PAGE) {
 			if(nextNum == pageNum) {
 				LOG.error("Page " + pageNum + " has already been removed");
 				Thread.dumpStack();
@@ -430,9 +427,9 @@ public abstract class Paged {
 			page.header.setStatus(UNUSED);
             page.header.lsn = Lsn.LSN_INVALID;
 			synchronized (fileHeader) {
-				if (fileHeader.firstFreePage == -1) {
+				if (fileHeader.firstFreePage == Page.NO_PAGE) {
 					fileHeader.setFirstFreePage(page.pageNum);
-					page.header.setNextPage(-1);
+					page.header.setNextPage(Page.NO_PAGE);
 				} else {
                     long first = fileHeader.firstFreePage;
                     fileHeader.setFirstFreePage(page.pageNum);
@@ -456,7 +453,7 @@ public abstract class Paged {
 	}
 
     protected void reuseDeleted(Page page) throws IOException {
-        if (page != null && fileHeader.getFirstFreePage() > -1) {
+        if (page != null && fileHeader.getFirstFreePage() != Page.NO_PAGE) {
             long next = fileHeader.getFirstFreePage();
             if (next == page.pageNum) {
                 fileHeader.setFirstFreePage(page.header.getNextPage());
@@ -466,7 +463,7 @@ public abstract class Paged {
             Page p = getPage(next);
             p.read();
             next = p.header.getNextPage();
-            while (next > -1) {
+            while (next != Page.NO_PAGE) {
                 if (next == page.pageNum) {
                     p.header.setNextPage(page.header.getNextPage());
                     p.header.setDirty(true);
@@ -524,10 +521,10 @@ public abstract class Paged {
 		private short versionId;
 		
 		private boolean dirty = false;
-		private long firstFreePage = -1;
+		private long firstFreePage = Page.NO_PAGE;
 
 		private short headerSize;
-		private long lastFreePage = -1;
+		private long lastFreePage = Page.NO_PAGE;
 		private short maxKeySize = 256;
 		private long pageCount;
 		private byte pageHeaderSize = 64;
@@ -860,6 +857,8 @@ public abstract class Paged {
 	 */
 
 	public final class Page implements Comparable {
+        
+        public static final long NO_PAGE = -1;
 
 		/**  The Header for this Page */
 		private PageHeader header;
@@ -1035,7 +1034,7 @@ public abstract class Paged {
 		
 		private int dataLen = 0;
 		private boolean dirty = false;
-		private long nextPage = -1;
+		private long nextPage = Page.NO_PAGE;
         
 		private byte status = UNUSED;
 
