@@ -310,7 +310,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 						// in the context set.
 						if (contextSet != null) {
 							if (section == TEXT_SECTION)
-								parent = contextSet.parentWithChild(current, false, true, -1);
+								parent = contextSet.parentWithChild(current, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
 							else
 								parent = contextSet.get(current);
 							if (parent != null) {
@@ -1200,7 +1200,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 							if (contextSet != null) {
 								if (section == TEXT_SECTION)
 									parent = contextSet.parentWithChild(proxy, false,
-										true, -1);
+										true, NodeProxy.UNKNOWN_NODE_LEVEL);
 								else
 									parent = contextSet.get(proxy);
 								if (parent != null) {

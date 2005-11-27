@@ -83,7 +83,7 @@ public class RecoveryManager {
 			JournalReader reader = new JournalReader(broker, last, lastNum);
             try {
     			Checkpoint lastCheckpoint = null;
-    			long lastLsn = -1;
+    			long lastLsn = Lsn.LSN_INVALID;
                 Loggable next;
                 try {
 					ProgressBar progress = new ProgressBar("Scanning journal ", last.length());

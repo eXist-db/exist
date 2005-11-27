@@ -170,7 +170,7 @@ public class ArrayUtils {
      */
     public static int binarySearch(int[] a, int key, int size) {
         int low = 0;
-        int high = size-1;
+        int high = size - 1;
         
         while (low <= high) {
             int mid = (low + high) >> 1;

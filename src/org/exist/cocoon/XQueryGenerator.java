@@ -58,6 +58,7 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.XQueryService;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.Sequence;
@@ -250,7 +251,8 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		StringBuffer baseURIBuffer = new StringBuffer(servletPath);
 		if (pathInfo != null) baseURIBuffer.append(pathInfo);
 		int p = baseURIBuffer.lastIndexOf("/");
-		if (p > -1)  baseURIBuffer.delete(p,baseURIBuffer.length());            
+		if (p != Constants.STRING_NOT_FOUND)
+            baseURIBuffer.delete(p, baseURIBuffer.length());            
 		final String baseURI = context.getRealPath(baseURIBuffer.toString());
 		
 		// check if user and password can be read from the session

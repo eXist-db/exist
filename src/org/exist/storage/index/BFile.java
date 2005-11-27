@@ -1216,7 +1216,7 @@ public class BFile extends BTree {
     
     protected void redoCreateOverflowPage(OverflowCreatePageLoggable loggable) {
         createPageHelper(loggable, loggable.newPage);
-        if (loggable.prevPage > -1) {
+        if (loggable.prevPage != Page.NO_PAGE) {
             try {
                 SinglePage page = getSinglePageForRedo(loggable.prevPage);
                 SanityCheck.ASSERT(page != null, "Previous page is null");
@@ -1235,7 +1235,7 @@ public class BFile extends BTree {
             dataCache.remove(page);
             page.delete();
             
-            if (loggable.prevPage > -1) {
+            if (loggable.prevPage != Page.NO_PAGE) {
                 try {
                     page = getSinglePage(loggable.prevPage);
                     SanityCheck.ASSERT(page != null, "Previous page is null");
@@ -1296,7 +1296,7 @@ public class BFile extends BTree {
                 page.setDirty(true);
                 dataCache.add(page);
                 
-                if (loggable.prevPage > -1) {
+                if (loggable.prevPage != Page.NO_PAGE) {
                     page = getSinglePage(loggable.prevPage);
                     SanityCheck.ASSERT(page != null, "Previous page is null");
                     page.getPageHeader().setNextInChain(loggable.pageNum);
@@ -2103,7 +2103,7 @@ public class BFile extends BTree {
             SinglePage page = firstPage;
             page.getPageHeader().setDataLength(remaining);
             SinglePage nextPage;
-            long prevPageNum = -1;
+            long prevPageNum = Page.NO_PAGE;
             // walk through chain of pages
             while (remaining > 0) {
                 if (remaining < chunkSize) chunkSize = remaining;
