@@ -496,23 +496,23 @@ public class LocationStep extends Step {
             for (Iterator i = contextSet.iterator(); i.hasNext();) {
                 p = (NodeProxy) i.next();
                 if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(p)) {
-                    ancestor = new NodeProxy(p.getDocument(), p.gid, p.getInternalAddress());
+                    ancestor = new NodeProxy(p.getDocument(), p.getGID(), p.getInternalAddress());
                     if (inPredicate)
                         ancestor.addContextNode(p);
                     else
                         ancestor.copyContext(p);
                     result.add(ancestor);
                 }
-                ancestor = new NodeProxy(p.getDocument(), p.gid);
-                while ((ancestor.gid = XMLUtil.getParentId(p.getDocument(), ancestor.gid)) > 0) {
-                    ancestor.nodeType = Node.ELEMENT_NODE;
+                ancestor = new NodeProxy(p.getDocument(), p.getGID());
+                while ((ancestor.gid = XMLUtil.getParentId(p.getDocument(), ancestor.getGID())) > 0) {
+                    ancestor.setNodeType(Node.ELEMENT_NODE);
                     if (test.matches(ancestor)) {
                         if (inPredicate)
                             ancestor.addContextNode(p);
                         else
                             ancestor.copyContext(p);
                         result.add(ancestor);
-                        ancestor = new NodeProxy(p.getDocument(), ancestor.gid);
+                        ancestor = new NodeProxy(p.getDocument(), ancestor.getGID());
                     }
                 }
             }

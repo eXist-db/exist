@@ -98,7 +98,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * The type of this node (as defined by DOM), if known. 
 	 * @link #UNKNOWN_NODE_TYPE
 	 */
-	public short nodeType = UNKNOWN_NODE_TYPE;
+	private short nodeType = UNKNOWN_NODE_TYPE;
 
 	/**
 	 * The first {@link Match} object associated with this node.
@@ -106,7 +106,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * 
 	 * Matches are stored as a linked list.
 	 */
-	public Match match = null;
+	private Match match = null;
 
 	private ContextItem context = null;
 	

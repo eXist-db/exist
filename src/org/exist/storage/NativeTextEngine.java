@@ -1294,7 +1294,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 							p = contextSet.parentWithChild(doc, gid, false, true);
 							if (p != null) {
 								if (section == ATTRIBUTE_SECTION) {
-									include = p.nodeType == Node.ATTRIBUTE_NODE;
+									include = (p.getNodeType() == Node.ATTRIBUTE_NODE);
 								} else {
 									include = p != null;
 								}

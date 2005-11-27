@@ -91,10 +91,11 @@ public class FunLang extends Function {
 				}
 			}
 			if (include) {
-				p.gid = XMLUtil.getParentId(p.getDocument(), p.gid);
-				if (p.gid > -1) {
-					p.setNodeType(Node.ELEMENT_NODE);
-					temp.add(p);
+                long parentID = XMLUtil.getParentId(p);                
+				if (parentID != NodeProxy.DOCUMENT_NODE_GID) {
+                    NodeProxy parent = new NodeProxy(p.getDocument(), parentID);
+                    parent.setNodeType(Node.ELEMENT_NODE);
+					temp.add(parent);
 				}
 			}
 		}
