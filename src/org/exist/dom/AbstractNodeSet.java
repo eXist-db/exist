@@ -621,7 +621,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		NodeProxy l, p, q;
 		for (Iterator i = iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
-			if ((p = other.parentWithChild(l, false, true, -1)) != null) {
+			if ((p = other.parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL)) != null) {
 				if(p.getGID() != l.getGID())
 					p.addMatches(l);
 				r.add(p);
@@ -629,7 +629,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		}
 		for (Iterator i = other.iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
-			if ((q = parentWithChild(l, false, true, -1)) != null) {
+			if ((q = parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL)) != null) {
 				if ((p = r.get(q)) != null) {
 					p.addMatches(l);
 				} else

@@ -26,6 +26,7 @@ import java.util.Arrays;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -100,7 +101,7 @@ public class MemTreeBuilder {
 			prefix = context.getPrefixForURI(namespaceURI);
 		}
 		if(prefix == null)
-			prefix = p > -1 ? qname.substring(0, p) : "";
+			prefix = (p != Constants.STRING_NOT_FOUND) ? qname.substring(0, p) : "";
 		QName qn = new QName(localName, namespaceURI, prefix);
 		return startElement(qn, attributes);
 	}
@@ -127,7 +128,7 @@ public class MemTreeBuilder {
 				if (!(attrQName.startsWith("xmlns")
 					|| attrNS.equals("http://exist.sourceforge.net/NS/exist"))) {
 					p = attrQName.indexOf(':');
-					attrPrefix = (p > -1) ? attrQName.substring(0, p) : null;
+					attrPrefix = (p > Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
 					p =
 						doc.addAttribute(
 							nodeNr,

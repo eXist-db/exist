@@ -66,7 +66,9 @@ import org.w3c.dom.UserDataHandler;
  */
 public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
-	public final static byte XML_FILE = 0;
+    public final static int UNKNOWN_DOCUMENT_ID = -1;
+    
+    public final static byte XML_FILE = 0;
 	public final static byte BINARY_FILE = 1;
 	
 	public final static byte DOCUMENT_NODE_SIGNATURE = 0x0F;
@@ -86,7 +88,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	protected transient Collection collection = null;
 
 	// the document's id
-	protected int docId = -1;
+	protected int docId = UNKNOWN_DOCUMENT_ID;
 
 	// document's document type
 	protected transient DocumentType docType = null;
@@ -834,7 +836,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		NodeImpl ref = (NodeImpl) refChild;
 		long next, last = -1;
 		int idx = -1;
-		for(int i = children - 1; i > -1; i--) {
+		for(int i = children - 1; i >= 0; i--) {
 		    next = childList[i];
 			if (StorageAddress.equals(ref.internalAddress, next)) {
 				idx = i - 1;

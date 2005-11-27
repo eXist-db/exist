@@ -67,7 +67,7 @@ public class NodeSetHelper {
 						lastDoc = n.getDocument();
 						sizeHint = dl.getSizeHint(lastDoc);
 					}
-					if ((p = al.parentWithChild(n, true, false, -1))
+					if ((p = al.parentWithChild(n, true, false, NodeProxy.UNKNOWN_NODE_LEVEL))
 						!= null) {
 						if (rememberContext)
 							n.addContextNode(p);
@@ -84,7 +84,7 @@ public class NodeSetHelper {
 						lastDoc = n.getDocument();
 						sizeHint = al.getSizeHint(lastDoc);
 					}
-					if ((p = al.parentWithChild(n, true, false, -1))
+					if ((p = al.parentWithChild(n, true, false, NodeProxy.UNKNOWN_NODE_LEVEL))
 						!= null) {
 						if (rememberContext)
 							p.addContextNode(n);
@@ -208,7 +208,7 @@ public class NodeSetHelper {
 		NodeSet ancestors;
 		for (Iterator i = dl.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			ancestors = ancestorsForChild(al, n, false, includeSelf, -1);
+			ancestors = ancestorsForChild(al, n, false, includeSelf, NodeProxy.UNKNOWN_NODE_LEVEL);
 			for(Iterator j = ancestors.iterator(); j.hasNext(); ) {
 			    p = (NodeProxy) j.next();
 				if (p != null) {

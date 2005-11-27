@@ -10,6 +10,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeException;
+import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
 import org.exist.util.LockException;
@@ -232,7 +233,7 @@ public final class NodeIterator implements Iterator {
 			offset = rec.offset - 2;
 			p = rec.page;
 			startAddress = -1;
-		} else if (page > -1) {
+		} else if (page != Page.NO_PAGE) {
 			p = db.getCurrentPage(page);
 			db.addToBuffer(p);
 //			LOG.debug("reading " + p.page.getPageNum() + "; " + p.page.hashCode());

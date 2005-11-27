@@ -221,7 +221,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 *@param  doc 
 	 */
 	public void addDocument(Txn transaction, DBBroker broker, DocumentImpl doc) {
-		if (doc.getDocId() < 0)
+		if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID)
 			doc.setDocId(broker.getNextDocId(transaction, this));
 		documents.put(doc.getFileName(), doc);
 	}
