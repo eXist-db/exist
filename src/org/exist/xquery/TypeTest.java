@@ -56,7 +56,7 @@ public class TypeTest implements NodeTest {
 	}
 
 	public String toString() {
-		return nodeType == -1 ? "node()" : Type.NODETYPES[nodeType] + "()";
+		return nodeType == Type.NODE ? "node()" : Type.NODETYPES[nodeType] + "()";
 	}
 	
 	/* (non-Javadoc)
