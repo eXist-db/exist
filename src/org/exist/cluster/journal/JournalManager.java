@@ -40,9 +40,9 @@ public class JournalManager {
     private boolean journalDisabled = false;
     private boolean isNewJournal = false;
 
-    private int lastIdSaved = -1;
+    private int lastIdSaved = ClusterEvent.NO_EVENT;
     private int counter = 1;
-    private int maxIdSaved = -1;
+    private int maxIdSaved = ClusterEvent.NO_EVENT;
 
     TreeSet queue = new TreeSet(new EventComparator());
 
@@ -76,7 +76,7 @@ public class JournalManager {
     }
 
     private void checkNewJournal() {
-        if (lastIdSaved == -1)
+        if (lastIdSaved == ClusterEvent.NO_EVENT)
             isNewJournal = true;
     }
 
@@ -98,25 +98,25 @@ public class JournalManager {
     */
 
     public int getLastIdSaved() {
-        if (lastIdSaved > -1)
+        if (lastIdSaved != ClusterEvent.NO_EVENT)
             return lastIdSaved;
         else if (isNewJournal||journalDisabled)
-            return -1;
+            return ClusterEvent.NO_EVENT;
         else
             return getHeaderData()[0];
     }
 
     public int getMaxIdSaved() {
-        if (maxIdSaved > -1)
+        if (maxIdSaved != ClusterEvent.NO_EVENT)
             return maxIdSaved;
         else if (isNewJournal||journalDisabled)
-            return -1;
+            return ClusterEvent.NO_EVENT;
         else
             return getHeaderData()[1];
     }
 
     public int getCounter() {
-        if (counter > -1)
+        if (counter != ClusterEvent.NO_EVENT)
             return counter;
         else if (isNewJournal||journalDisabled)
             return 1;
@@ -192,7 +192,7 @@ public class JournalManager {
         }
 
         int id = event.getId();
-        if (id == -1)
+        if (id == ClusterEvent.NO_EVENT)
             throw new ClusterException("Error in Journal managment... no id found in event");
 
         queue.add(event);

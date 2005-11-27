@@ -17,12 +17,14 @@ import java.io.Serializable;
  *         Revision $Revision$
  */
 public abstract class ClusterEvent implements Serializable {
+    
+    public static final int NO_EVENT = -1;
 
     private static final long serialVersionUID = 0L;
 
     protected String collectionName;
     protected String documentName;
-    private int id = -1;
+    private int id = NO_EVENT;
     private int counter = 1;
 
 
