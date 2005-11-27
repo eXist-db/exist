@@ -113,6 +113,7 @@ public class CollectionConfigurationManager {
     	LOG.debug("Reading config for " + collection.getName());
     	CollectionConfiguration conf = new CollectionConfiguration(collection);
         boolean configFound = false;
+        //TODO : use dedicated function in XmldbURI
     	String path = collection.getName() + '/';
     	int p = DBBroker.ROOT_COLLECTION.length();
     	String next;
