@@ -238,7 +238,7 @@ public class XMLUtil {
 	}
 
 	public final static long getParentId( NodeProxy node ) {
-		return getParentId(node.getDocument(), node.gid);
+		return getParentId(node.getDocument(), node.getGID());
 	}
 
 	public final static long getParentId(

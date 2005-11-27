@@ -57,7 +57,7 @@ public class ArraySet extends AbstractNodeSet {
 			// skip invalid nodes
 			if (node == null)
 				continue;
-			if (node.gid < 0) {
+			if (node.getGID() == NodeProxy.DOCUMENT_NODE_GID) {
 				nl[i] = null;
 				continue;
 			}			
@@ -114,9 +114,9 @@ public class ArraySet extends AbstractNodeSet {
 			mid = (low + high) / 2;
             cmp = items[mid];
 			if (cmp.getDocument().docId == cmpDoc.docId) {
-				if (cmp.gid == gid)
+				if (cmp.getGID() == gid)
 					return mid;
-				else if (cmp.gid > gid)
+				else if (cmp.getGID() > gid)
 					high = mid - 1;
 				else
 					low = mid + 1;
@@ -715,9 +715,9 @@ public class ArraySet extends AbstractNodeSet {
 	public int compare(int a, int b) {
 		NodeProxy anode = nodes[a], bnode = nodes[b];
 		if (anode.getDocument().docId == bnode.getDocument().docId) {
-			return anode.gid == bnode.gid
+			return anode.getGID() == bnode.getGID()
 				? 0
-				: (anode.gid < bnode.gid ? -1 : 1);
+				: (anode.getGID() < bnode.getGID() ? -1 : 1);
 		}
 		return anode.getDocument().docId < bnode.getDocument().docId ? -1 : 1;
 	}
