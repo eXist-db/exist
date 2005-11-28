@@ -128,10 +128,11 @@ public class RemoteCollection implements CollectionImpl {
 	public Collection getChildCollection(String name) throws XMLDBException {
 		if (childCollections == null)
 			readCollection();
-		if (name.indexOf('/') != Constants.STRING_NOT_FOUND)
+        //TODO : use dedicated function in XmldbURI
+		if (name.indexOf("/") != Constants.STRING_NOT_FOUND)
 			return (Collection) childCollections.get(name);
 		else
-			return (Collection) childCollections.get(getPath() + '/' + name);
+			return (Collection) childCollections.get(getPath() + "/" + name);
 	}
 
 	public int getChildCollectionCount() throws XMLDBException {
@@ -150,7 +151,8 @@ public class RemoteCollection implements CollectionImpl {
 
 	public Collection getParentCollection() throws XMLDBException {
 	    if(parent == null && !name.equals(DBBroker.ROOT_COLLECTION)) {
-	        String parentName = name.substring(0, name.lastIndexOf('/'));
+            //TODO : use dedicated function in XmldbURI
+	        String parentName = name.substring(0, name.lastIndexOf("/"));
 	        return new RemoteCollection(rpcClient, null, parentName);
 	    }
 		return parent;
@@ -249,7 +251,8 @@ public class RemoteCollection implements CollectionImpl {
 		int p;
 		for (Iterator i = childCollections.keySet().iterator(); i.hasNext(); j++) {
 			coll[j] = (String) i.next();
-			if ((p = coll[j].lastIndexOf('/')) != Constants.STRING_NOT_FOUND)
+            //TODO : use dedicated function in XmldbURI
+			if ((p = coll[j].lastIndexOf("/")) != Constants.STRING_NOT_FOUND)
 				coll[j] = coll[j].substring(p + 1);
 
 		}
@@ -283,7 +286,8 @@ public class RemoteCollection implements CollectionImpl {
 	
 	public Resource getResource(String name) throws XMLDBException {
 	    Vector params = new Vector();
-		params.addElement(getPath() + '/' + name);
+        //TODO : use dedicated function in XmldbURI
+		params.addElement(getPath() + "/" + name);
 		Hashtable hash;
 		try {
 			hash = (Hashtable) rpcClient.execute("describeResource", params);
@@ -296,7 +300,8 @@ public class RemoteCollection implements CollectionImpl {
 		if(docName == null)
 			return null;	// resource does not exist!
 		int p;	
-		if ((p = docName.lastIndexOf('/')) != Constants.STRING_NOT_FOUND)
+        //TODO : use dedicated function in XmldbURI
+		if ((p = docName.lastIndexOf("/")) != Constants.STRING_NOT_FOUND)
 			docName = docName.substring(p + 1);
 		Permission perm =
 			new Permission(
@@ -345,8 +350,9 @@ public class RemoteCollection implements CollectionImpl {
 		for (int i = 0; i < collections.size(); i++) {
 			childName = (String) collections.elementAt(i);
 			try {
+                //TODO : use dedicated function in XmldbURI
 				RemoteCollection child =
-					new RemoteCollection(rpcClient, this, getPath() + '/' + childName);
+					new RemoteCollection(rpcClient, this, getPath() + "/"+ childName);
 				addChildCollection(child);
 			} catch (XMLDBException e) {
 			}
@@ -360,12 +366,14 @@ public class RemoteCollection implements CollectionImpl {
 	public void removeChildCollection(String name) throws XMLDBException {
 		if (childCollections == null)
 			readCollection();
-		childCollections.remove(getPath() + '/' + name);
+        //TODO : use dedicated function in XmldbURI
+		childCollections.remove(getPath() + "/" + name);
 	}
 
 	public void removeResource(Resource res) throws XMLDBException {
 		Vector params = new Vector();
-		params.addElement(getPath() + '/' + res.getId());
+        //TODO : use dedicated function in XmldbURI
+		params.addElement(getPath() + "/" + res.getId());
 
 		try {
 			rpcClient.execute("remove", params);
@@ -433,7 +441,8 @@ public class RemoteCollection implements CollectionImpl {
 		byte[] data = res.getData();
 		Vector params = new Vector();
 		params.addElement(data);
-		params.addElement(getPath() + '/' + res.getId());
+        //TODO : use dedicated function in XmldbURI
+		params.addElement(getPath() + "/" + res.getId());
 		params.addElement(new Integer(1));
 		
 		if (res.datecreated != null) {
@@ -457,7 +466,8 @@ public class RemoteCollection implements CollectionImpl {
 		byte[] data = (byte[])res.getContent();
 		Vector params = new Vector();
 		params.addElement(data);
-		params.addElement(getPath() + '/' + res.getId());
+        //TODO : use dedicated function in XmldbURI
+		params.addElement(getPath() + "/" + res.getId());
         params.addElement(res.getMimeType());
 		params.addElement(Boolean.TRUE);
 		
@@ -504,7 +514,8 @@ public class RemoteCollection implements CollectionImpl {
 			}
 			params = new Vector();
 			params.addElement(fileName);
-			params.addElement(getPath() + '/' + res.getId());
+            //TODO : use dedicated function in XmldbURI
+			params.addElement(getPath() + "/" + res.getId());
 			params.addElement(Boolean.TRUE);
 			
 			if ( ((RemoteXMLResource)res).datecreated  != null ) {
