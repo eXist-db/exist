@@ -202,7 +202,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         		dumper.display('(');
             if(count > 0) {
                 if(next instanceof Step)
-                	dumper.display('/');
+                	dumper.display("/");
                 else
                     dumper.nl();
             }
@@ -225,7 +225,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     			result.append('(');
     		if(count > 0) {
     			if(next instanceof Step)
-    				result.append('/');
+    				result.append("/");
     			else
     				result.append(' ');
     		}
