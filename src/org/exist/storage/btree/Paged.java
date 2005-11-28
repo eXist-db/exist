@@ -883,7 +883,7 @@ public abstract class Paged {
 		 */
 		public Page(long pageNum) throws IOException {
 			this();
-			if(pageNum < 0)
+			if(pageNum == Page.NO_PAGE)
 				throw new IOException("Illegal page num: " + pageNum);
 			setPageNum(pageNum);
 		}

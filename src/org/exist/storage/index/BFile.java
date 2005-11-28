@@ -47,6 +47,7 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.Loggable;
+import org.exist.storage.journal.Lsn;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.txn.TransactionException;
@@ -1163,7 +1164,7 @@ public class BFile extends BTree {
                     return;
                 wp = new SinglePage(page, data, false);
             }
-            if (wp.getPageHeader().getLsn() < 0 || requiresRedo(loggable, wp)) {
+            if (wp.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, wp)) {
                 fileHeader.removeFreeSpace(fileHeader.getFreeSpace(wp.getPageNum()));
                 dataCache.remove(wp);
                 wp.delete();
@@ -1183,7 +1184,7 @@ public class BFile extends BTree {
             if (firstPage == null) {
                 final Page page = getPage(loggable.pageNum);
                 page.read();
-                if (page.getPageHeader().getLsn() < 0 || requiresRedo(loggable, page)) {
+                if (page.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, page)) {
                     reuseDeleted(page);
                     BFilePageHeader ph = (BFilePageHeader) page.getPageHeader();
 					ph.setStatus(MULTI_PAGE);
@@ -1196,7 +1197,7 @@ public class BFile extends BTree {
                     firstPage.setDirty(true);
                 }
             }
-            if (firstPage.getPageHeader().getLsn() < 0 || requiresRedo(loggable, firstPage))
+            if (firstPage.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, firstPage))
                 firstPage.getPageHeader().setLsn(loggable.getLsn());
             dataCache.add(firstPage);
         } catch (IOException e) {
@@ -1451,7 +1452,7 @@ public class BFile extends BTree {
             if (dp == null) {
                 final Page page = getPage(newPage);
                 byte[] data = page.read();
-                if (page.getPageHeader().getLsn() < 0 || requiresRedo(loggable, page)) {
+                if (page.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, page)) {
                     reuseDeleted(page);
                     BFilePageHeader ph = (BFilePageHeader) page.getPageHeader();
                     ph.setStatus(RECORD);
@@ -1464,7 +1465,7 @@ public class BFile extends BTree {
                     dp = new SinglePage(page, data, true);
                 }
             }
-            if ((dp.getPageHeader().getLsn() < 0 || requiresRedo(loggable, dp)) && loggable != null)
+            if ((dp.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, dp)) && loggable != null)
                 dp.getPageHeader().setLsn(loggable.getLsn());
             dp.setDirty(true);
             dataCache.add(dp);
