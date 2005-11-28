@@ -68,7 +68,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     	//Is collection's name relative ?
     	//TODO : use dedicated function in XmldbURI
         if (!collName.startsWith(DBBroker.ROOT_COLLECTION) && parent != null)
-        	collName = parent.getPath() + '/' + collName;
+        	collName = parent.getPath() + "/" + collName;
         String path = XmldbURI.checkPath(collName, parent.getPath());
         
         TransactionManager transact = brokerPool.getTransactionManager();
@@ -127,7 +127,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     	//Is collection's name relative ?
     	//TODO : use dedicated function in XmldbURI
         if (!collName.startsWith(DBBroker.ROOT_COLLECTION) && parent != null)
-        	collName = parent.getPath() + '/' + collName;        
+        	collName = parent.getPath() + "/" + collName;        
     	String path = XmldbURI.checkPath(collName, parent.getPath());
         
     	TransactionManager transact = brokerPool.getTransactionManager();
@@ -220,7 +220,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         org.exist.collections.Collection source = null;
         try {
             broker = brokerPool.get(user);
-            int pos = resourcePath.lastIndexOf('/');
+            //TODO : use dedicated function in XmldbURI
+            int pos = resourcePath.lastIndexOf("/");
     		String collName = resourcePath.substring(0, pos);
     		String docName = resourcePath.substring(pos + 1);
     		source = broker.openCollection(collName, Lock.WRITE_LOCK);
@@ -277,7 +278,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         org.exist.collections.Collection source = null;
         try {
             broker = brokerPool.get(user);
-            int pos = resourcePath.lastIndexOf('/');
+            //TODO : use dedicated function in XmldbURI
+            int pos = resourcePath.lastIndexOf("/");
     		String collName = resourcePath.substring(0, pos);
     		String docName = resourcePath.substring(pos + 1);
     		source = broker.openCollection(collName, Lock.WRITE_LOCK);
