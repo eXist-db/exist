@@ -611,7 +611,7 @@ public class XmldbURI {
     
     public static String checkPath2(String fileName, String parentPath) {
         if (!fileName.startsWith("/"))
-            fileName = '/' + fileName;
+            fileName = "/" + fileName;
         /*if (!fileName.startsWith(ROOT_COLLECTION))
             fileName = ROOT_COLLECTION + fileName;*/
         
