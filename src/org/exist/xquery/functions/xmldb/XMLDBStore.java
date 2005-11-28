@@ -188,7 +188,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			return Sequence.EMPTY_SEQUENCE;
 		else
 			try {
-				return new StringValue(collection.getName() + '/' + resource.getId());
+                //TODO : use dedicated function in XmldbURI
+				return new StringValue(collection.getName() + "/" + resource.getId());
 			} catch (XMLDBException e) {
 				throw new XPathException("XMLDB reported an exception while retrieving the " +
 						"stored document", e);

@@ -242,7 +242,8 @@ public class Transform extends BasicFunction {
 				if(f.canRead()) stylesheet = f.toURI().toASCIIString();
 			}
 		}
-		int p = stylesheet.lastIndexOf('/');
+        //TODO : use dedicated function in XmldbURI
+		int p = stylesheet.lastIndexOf("/");
 		if(p != Constants.STRING_NOT_FOUND)
 			base = stylesheet.substring(0, p);
 		else
@@ -356,7 +357,8 @@ public class Transform extends BasicFunction {
 				throws TransformerException {
 			URL url;
 			try {
-				url = new URL(baseURI + '/'  + href);
+                //TODO : use dedicated function in XmldbURI
+				url = new URL(baseURI + "/"  + href);
 				URLConnection connection = url.openConnection();
 				return new StreamSource(connection.getInputStream());
 			} catch (MalformedURLException e) {
@@ -383,10 +385,11 @@ public class Transform extends BasicFunction {
 			throws TransformerException {
 			Collection collection = doc.getCollection();
 			String path;
+            //TODO : use dedicated function in XmldbURI
 			if(href.startsWith("/"))
 				path = href;
 			else
-				path = collection.getName() + '/' + href;
+				path = collection.getName() + "/" + href;
 			DocumentImpl xslDoc;
 			try {
 				xslDoc = (DocumentImpl)

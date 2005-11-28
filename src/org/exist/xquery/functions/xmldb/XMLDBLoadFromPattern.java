@@ -120,7 +120,8 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                     if("BinaryResource".equals(resourceType))
                         ((EXistResource)resource).setMimeType(mimeType);
 					collection.storeResource(resource);
-					stored.add(new StringValue(collection.getName() + '/' + resource.getId()));
+                    //TODO : use dedicated function in XmldbURI
+					stored.add(new StringValue(collection.getName() + "/" + resource.getId()));
 				} catch (XMLDBException e) {
 					throw new XPathException(getASTNode(), "Could not store file " + files[j].getAbsolutePath() + 
 							": " + e.getMessage(), e);

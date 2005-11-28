@@ -124,8 +124,9 @@ public class ExtDocument extends Function {
 					String next = (String)args.get(i);
 					if(next.length() == 0)
 						throw new XPathException("Invalid argument to fn:doc function: empty string is not allowed here.");
-					if(next.charAt(0) != '/')
-						next = context.getBaseURI() + '/' + next;
+					//TODO : use dedicated function in XmldbURI
+                    if(next.charAt(0) != '/')                        
+						next = context.getBaseURI() + "/" + next;
 					try {
 						DocumentImpl doc = (DocumentImpl) context.getBroker().getDocument(next);
 						if(doc != null) {
