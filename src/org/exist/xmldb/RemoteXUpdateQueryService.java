@@ -66,7 +66,8 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 		} catch (UnsupportedEncodingException e) {
 			xupdateData = commands.getBytes();
 		}
-		params.addElement(parent.getPath() + '/' + id);
+        //TODO : use dedicated function in XmldbURI
+		params.addElement(parent.getPath() + "/" + id);
 		params.addElement(xupdateData);
 		try {
 			Integer mods = (Integer) parent.getClient().execute("xupdateResource", params);

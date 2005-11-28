@@ -1687,8 +1687,9 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
             for (int i = 0; i < dsize; i++) {
                 hash = (Hashtable) documents.elementAt(i);
                 nome = (String) hash.get("name");
-                if ((p = nome.lastIndexOf('/')) != Constants.STRING_NOT_FOUND)
-                        nome = nome.substring(p + 1);
+                //TODO : use dedicated function in XmldbURI
+                if ((p = nome.lastIndexOf("/")) != Constants.STRING_NOT_FOUND)
+                    nome = nome.substring(p + 1);
 
                 byte[] xml = getDocument(user, name + "/" + nome, parametri);
                 parse(user, xml, namedest + "/" + nome);
