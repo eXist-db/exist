@@ -117,7 +117,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		NodeProxy node = ((LocalXMLResource) res).getNode();
 		if (node == null) {
 			// resource is a document
-			String[] docs = new String[] { res.getParentCollection().getName() + '/' + res.getDocumentId() };
+            //TODO : use dedicated function in XmldbURI
+			String[] docs = new String[] { res.getParentCollection().getName() + "/" + res.getDocumentId() };
 			return doQuery(query, docs, null, sortBy);
 		} else {
 			NodeSet set = new ArraySet(1);
@@ -136,7 +137,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		NodeProxy node = ((LocalXMLResource) res).getNode();
 		if (node == null) {
 			// resource is a document
-			String[] docs = new String[] { res.getParentCollection().getName() + '/' + res.getDocumentId() };
+            //TODO : use dedicated function in XmldbURI
+			String[] docs = new String[] { res.getParentCollection().getName() + "/" + res.getDocumentId() };
 			return execute(docs, null, expression, null);
 		} else {
 			NodeSet set = new ArraySet(1);
@@ -222,8 +224,9 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     	if (res == null)
     		throw new XMLDBException(
     			ErrorCodes.INVALID_RESOURCE,
-    			"resource " + resource + " not found");
-        String[] docs = new String[] { res.getParentCollection().getName() + '/' + res.getDocumentId() };
+    			"resource '" + resource + "' not found");
+        //TODO : use dedicated function in XmldbURI
+        String[] docs = new String[] { res.getParentCollection().getName() + "/" + res.getDocumentId() };
     	return doQuery(query, docs, null, null);
     }
 	

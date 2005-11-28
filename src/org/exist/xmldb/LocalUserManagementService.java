@@ -529,12 +529,11 @@ public class LocalUserManagementService implements UserManagementService {
 			String child;
 			org.exist.collections.Collection childColl;
 			int j = 0;
-			for (Iterator i = c.collectionIterator();
-				i.hasNext();
-				j++) {
+			for (Iterator i = c.collectionIterator(); i.hasNext(); j++) {
 				child = (String) i.next();
+                //TODO : use dedicated function in XmldbURI
 				childColl =
-					broker.openCollection(collection.getPath() + '/' + child, Lock.READ_LOCK);
+					broker.openCollection(collection.getPath() + "/" + child, Lock.READ_LOCK);
 				if(childColl != null) {
 					try {
 						perms[j] = childColl.getPermissions();
