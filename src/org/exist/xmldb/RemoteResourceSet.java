@@ -80,7 +80,8 @@ public class RemoteResourceSet implements ResourceSet {
             Vector v = (Vector) resources.elementAt( (int) pos );
             String doc = (String) v.elementAt( 0 );
             String s_id = (String) v.elementAt( 1 );
-			String path = doc.substring(0, doc.lastIndexOf('/'));
+            //TODO : use dedicated function in XmldbURI
+			String path = doc.substring(0, doc.lastIndexOf("/"));
 			RemoteCollection parent = 
 				new RemoteCollection(collection.getClient(), null, path);
 			parent.properties = outputProperties;

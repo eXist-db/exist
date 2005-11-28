@@ -50,7 +50,8 @@ public class RemoteUserManagementService implements UserManagementService {
 	 * Change permissions for a resource.
 	 */
 	public void setPermissions(Resource res, Permission perms) throws XMLDBException {
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
+        //TODO : use dedicated function in XmldbURI
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -92,7 +93,8 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public void chmod(Resource res, String mode) throws XMLDBException {
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
+        //TODO : use dedicated function in XmldbURI
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -109,7 +111,8 @@ public class RemoteUserManagementService implements UserManagementService {
 	 * @see org.exist.xmldb.UserManagementService#chmod(org.xmldb.api.base.Resource, int)
 	 */
 	public void chmod(Resource res, int mode) throws XMLDBException {
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
+        //TODO : use dedicated function in XmldbURI
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -161,7 +164,8 @@ public class RemoteUserManagementService implements UserManagementService {
 	 * @see org.exist.xmldb.UserManagementService#lockResource(org.xmldb.api.base.Resource, org.exist.security.User)
 	 */
 	public void lockResource(Resource res, User u) throws XMLDBException {
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
+        //TODO : use dedicated function in XmldbURI
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -178,7 +182,8 @@ public class RemoteUserManagementService implements UserManagementService {
 	 * @see org.exist.xmldb.UserManagementService#hasUserLock(org.xmldb.api.base.Resource)
 	 */
 	public String hasUserLock(Resource res) throws XMLDBException {
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
+        //TODO : use dedicated function in XmldbURI
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -195,7 +200,8 @@ public class RemoteUserManagementService implements UserManagementService {
 	 * @see org.exist.xmldb.UserManagementService#unlockResource(org.xmldb.api.base.Resource)
 	 */
 	public void unlockResource(Resource res) throws XMLDBException {
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
+        //TODO : use dedicated function in XmldbURI
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -238,7 +244,8 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public void chown(Resource res, User u, String group) throws XMLDBException {
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
+        //TODO : use dedicated function in XmldbURI
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -302,7 +309,8 @@ public class RemoteUserManagementService implements UserManagementService {
 			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "resource is null");
 		if(((EXistResource)res).getPermissions() != null)
 			return ((EXistResource)res).getPermissions();
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
+        //TODO : use dedicated function in XmldbURI
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		System.out.println("Retrieving permissions for " + path);
 		try {
 			Vector params = new Vector();
