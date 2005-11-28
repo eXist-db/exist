@@ -473,7 +473,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		NodeProxy temp;
 		if (includeSelf && (temp = get(doc, gid)) != null)
 			return temp;
-		if (level < 0)
+		if (level == NodeProxy.UNKNOWN_NODE_LEVEL)
 			level = doc.getTreeLevel(gid);
 		while (gid != NodeProxy.DOCUMENT_NODE_GID) {
 			gid = XMLUtil.getParentId(doc, gid, level);

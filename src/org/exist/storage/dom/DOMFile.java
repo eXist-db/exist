@@ -1294,7 +1294,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	private final synchronized DOMPage getCurrentPage(Txn transaction) {
 		long pnum = pages.get(owner);
-		if (pnum < 0) {
+		if (pnum == Page.NO_PAGE) {
 			final DOMPage page = new DOMPage();
 			pages.put(owner, page.page.getPageNum());
 			// LOG.debug("new page created: " + page.page.getPageNum() + " by "
@@ -1769,7 +1769,7 @@ public class DOMFile extends BTree implements Lockable {
 			if (rec.offset > rec.page.getPageHeader().getDataLength()) {
 				final long nextPage = rec.page.getPageHeader()
 						.getNextDataPage();
-				if (nextPage < 0) {
+				if (nextPage == Page.NO_PAGE) {
 					SanityCheck.TRACE("bad link to next page");
 					return;
 				}
