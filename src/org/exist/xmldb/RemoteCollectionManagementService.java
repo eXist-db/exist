@@ -121,7 +121,8 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     	collectionPath = XmldbURI.checkPath(collectionPath, parent.getPath());
     	destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
-            int p = collectionPath.lastIndexOf(('/'));
+            //TODO : use dedicated function in XmldbURI
+            int p = collectionPath.lastIndexOf(("/"));
             newName = collectionPath.substring(p + 1);
         }
         Vector params = new Vector();
@@ -148,7 +149,8 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     	resourcePath = XmldbURI.checkPath(resourcePath, parent.getPath());
       	destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
-            int p = resourcePath.lastIndexOf(('/'));
+            //TODO : use dedicated function in XmldbURI
+            int p = resourcePath.lastIndexOf(("/"));
             newName = resourcePath.substring(p + 1);
         }
         Vector params = new Vector();
@@ -176,7 +178,8 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
 		collectionPath = XmldbURI.checkPath(collectionPath, parent.getPath());
 		destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
-            int p = collectionPath.lastIndexOf(('/'));
+            //TODO : use dedicated function in XmldbURI
+            int p = collectionPath.lastIndexOf(("/"));
             newName = collectionPath.substring(p + 1);
         }
         Vector params = new Vector();
@@ -204,7 +207,8 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     	resourcePath = XmldbURI.checkPath(resourcePath, parent.getPath());
     	destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
         if(newName == null) {
-            int p = resourcePath.lastIndexOf(('/'));
+            //TODO : use dedicated function in XmldbURI
+            int p = resourcePath.lastIndexOf(("/"));
             newName = resourcePath.substring(p + 1);
         }
         Vector params = new Vector();
