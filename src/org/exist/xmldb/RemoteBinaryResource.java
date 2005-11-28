@@ -62,11 +62,12 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	public RemoteBinaryResource(RemoteCollection parent, String documentName) throws XMLDBException {
 		this.parent = parent;
 		int p;
-		if (documentName != null && (p = documentName.lastIndexOf('/')) != Constants.STRING_NOT_FOUND) {
+        //TODO : use dedicated function in XmldbURI
+		if (documentName != null && (p = documentName.lastIndexOf("/")) != Constants.STRING_NOT_FOUND) {
 			this.path = documentName;
 			this.documentName = documentName.substring(p + 1);
 		} else {
-			this.path = parent.getPath() + '/' + documentName;
+			this.path = parent.getPath() + "/" + documentName;
 			this.documentName = documentName;
 		}
 	}
