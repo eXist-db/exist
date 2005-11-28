@@ -71,7 +71,6 @@ import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.DataBackup;
-import org.exist.storage.NativeBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
@@ -89,6 +88,7 @@ import org.exist.validation.Validator;
 import org.exist.validation.internal.ResourceInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Constants;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.Pragma;
 import org.exist.xquery.XPathException;
@@ -528,8 +528,8 @@ public class RpcConnection extends Thread {
         DocumentImpl doc = null;
         try {
             broker = brokerPool.get(user);
-            
-            int pos = name.lastIndexOf('/');
+            //TODO : use dedicated function in XmldbURI
+            int pos = name.lastIndexOf("/");
             String collName = name.substring(0, pos);
             String docName = name.substring(pos + 1);
             
@@ -573,8 +573,8 @@ public class RpcConnection extends Thread {
         DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
-            
-            int pos = name.lastIndexOf('/');
+            //TODO : use dedicated function in XmldbURI
+            int pos = name.lastIndexOf("/");
             String collName = name.substring(0, pos);
             String docName = name.substring(pos + 1);
             
@@ -811,8 +811,9 @@ public class RpcConnection extends Thread {
             int p;
             for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
                 resource = ((DocumentImpl) i.next()).getFileName();
-                p = resource.lastIndexOf('/');
-                vec.addElement(p < 0 ? resource : resource.substring(p + 1));
+                //TODO : use dedicated function in XmldbURI
+                p = resource.lastIndexOf("/");
+                vec.addElement(p == Constants.STRING_NOT_FOUND ? resource : resource.substring(p + 1));
             }
             return vec;
         } finally {
@@ -925,7 +926,8 @@ public class RpcConnection extends Thread {
             Vector tmp;
             for (Iterator i = collection.collectionIterator(); i.hasNext(); ) {
                 child = (String) i.next();
-                path = name + '/' + child;
+                //TODO : use dedicated function in XmldbURI
+                path = name + "/" + child;
                 childColl = broker.getCollection(path);
                 perm = childColl.getPermissions();
                 tmp = new Vector(3);
@@ -1102,8 +1104,9 @@ public class RpcConnection extends Thread {
         try {
             long startTime = System.currentTimeMillis();
             broker = brokerPool.get(user);
-            int p = path.lastIndexOf('/');
-            if (p < 0 || p == path.length() - 1) {
+            //TODO : use dedicated function in XmldbURI
+            int p = path.lastIndexOf("/");
+            if (p == Constants.STRING_NOT_FOUND || p == path.length() - 1) {
                 transact.abort(txn);
                 throw new EXistException("Illegal document path");
             }
@@ -1185,8 +1188,9 @@ public class RpcConnection extends Thread {
         DocumentImpl doc = null;
         try {
             broker = brokerPool.get(user);
-            int p = docName.lastIndexOf('/');
-            if (p < 0 || p == docName.length() - 1) {
+            //TODO : use dedicated function in XmldbURI
+            int p = docName.lastIndexOf("/");
+            if (p == Constants.STRING_NOT_FOUND || p == docName.length() - 1) {
                 transact.abort(txn);
                 throw new EXistException("Illegal document path");
             }
@@ -1253,8 +1257,9 @@ public class RpcConnection extends Thread {
         Txn txn = transact.beginTransaction();
         try {
             broker = brokerPool.get(user);
-            int p = docName.lastIndexOf('/');
-            if (p < 0 || p == docName.length() - 1)
+            //TODO : use dedicated function in XmldbURI
+            int p = docName.lastIndexOf("/");
+            if (p == Constants.STRING_NOT_FOUND || p == docName.length() - 1)
                 throw new EXistException("Illegal document path");
             String collectionName = docName.substring(0, p);
             docName = docName.substring(p + 1);
@@ -1443,15 +1448,13 @@ public class RpcConnection extends Thread {
                             entry = new Vector();
                             if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
                                 p = (NodeProxy) next;
-                                entry.addElement(p.getDocument().getCollection().getName() + '/' +
+                                //TODO : use dedicated function in XmldbURI
+                                entry.addElement(p.getDocument().getCollection().getName() + "/" +
                                         p.getDocument().getFileName());
                                 entry.addElement(Long.toString(p.getGID()));
                             } else {
-                                entry.addElement("temp_xquery/"
-                                        + next.hashCode());
-                                entry.addElement(String
-                                        .valueOf(((NodeImpl) next)
-                                        .getNodeNumber()));
+                                entry.addElement("temp_xquery/" + next.hashCode());
+                                entry.addElement(String.valueOf(((NodeImpl) next).getNodeNumber()));
                             }
                             result.addElement(entry);
                         } else
@@ -1520,7 +1523,8 @@ public class RpcConnection extends Thread {
                             entry = new Vector();
                             if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
                                 p = (NodeProxy) next;
-                                entry.addElement(p.getDocument().getCollection().getName() + '/' +
+                                //TODO : use dedicated function in XmldbURI
+                                entry.addElement(p.getDocument().getCollection().getName() + "/" +
                                         p.getDocument().getFileName());
                                 entry.addElement(Long.toString(p.getGID()));
                             } else {
@@ -1563,8 +1567,8 @@ public class RpcConnection extends Thread {
         Collection collection = null;
         try {
             broker = brokerPool.get(user);
-            int p = docPath.lastIndexOf('/');
-            if (p < 0 || p == docPath.length() - 1) {
+            int p = docPath.lastIndexOf("/");
+            if (p == Constants.STRING_NOT_FOUND || p == docPath.length() - 1) {
                 transact.abort(txn);
                 throw new EXistException("Illegal document path");
             }
@@ -2028,7 +2032,8 @@ public class RpcConnection extends Thread {
             DoctypeCount doctypeCounter;
             for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
                 p = (NodeProxy) i.next();
-                docName = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
+                //TODO : use dedicated function in XmldbURI
+                docName = p.getDocument().getCollection().getName() + "/" + p.getDocument().getFileName();
                 doctype = p.getDocument().getDoctype();
                 if (map.containsKey(docName)) {
                     counter = (NodeCount) map.get(docName);
@@ -2104,7 +2109,8 @@ public class RpcConnection extends Thread {
             DoctypeCount doctypeCounter;
             for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
                 p = (NodeProxy) i.next();
-                docName = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
+                //TODO : use dedicated function in XmldbURI
+                docName = p.getDocument().getCollection().getName() + "/" + p.getDocument().getFileName();
                 doctype = p.getDocument().getDoctype();
                 if (map.containsKey(docName)) {
                     counter = (NodeCount) map.get(docName);
@@ -2366,8 +2372,9 @@ public class RpcConnection extends Thread {
         try {
             broker = brokerPool.get(user);
             // get source document
-            int p = docPath.lastIndexOf('/');
-            if (p < 0 || p == docPath.length() - 1) {
+            //TODO : use dedicated function in XmldbURI
+            int p = docPath.lastIndexOf("/");
+            if (p == Constants.STRING_NOT_FOUND || p == docPath.length() - 1) {
                 transact.abort(transaction);
                 throw new EXistException("Illegal document path");
             }
