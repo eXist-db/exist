@@ -1275,8 +1275,9 @@ public class XQueryContext {
 				Source source;
                 // Is the module source stored in the database?
                 if (location.startsWith(XMLDB_URI_START) || moduleLoadPath.startsWith(XMLDB_URI_START)) {
-                    if (location.indexOf(':') < 0)
-                        location = moduleLoadPath + '/' + location;
+                    //TODO : use dedicated function in XmldbURI
+                    if (location.indexOf(':') == Constants.STRING_NOT_FOUND)
+                        location = moduleLoadPath + "/" + location;
                     String path = location.substring(XMLDB_URI_START.length());
                     DocumentImpl sourceDoc = null;
                     try {

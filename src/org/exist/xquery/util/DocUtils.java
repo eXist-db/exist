@@ -123,7 +123,7 @@ public class DocUtils {
 			// relative collection Path: add the current base URI
 			//TODO : use another strategy
 			if (path.charAt(0) != '/')
-				path = context.getBaseURI() + '/' + path;
+				path = context.getBaseURI() + "/" + path;
 
 			// check if the loaded documents should remain locked
 			boolean lockOnLoad = context.lockDocumentsOnLoad();
