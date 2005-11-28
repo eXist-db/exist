@@ -79,7 +79,7 @@ public class STXTransformerTrigger extends FilteringTrigger {
             // load stylesheet out of the database
             int p = stylesheet.indexOf("/");
             DocumentImpl doc;
-            if(p < 0)
+            if(p == Constants.STRING_NOT_FOUND)
                 stylesheet = parent.getName() + "/" + stylesheet;
             try {
 				doc = (DocumentImpl)broker.getDocument(stylesheet);

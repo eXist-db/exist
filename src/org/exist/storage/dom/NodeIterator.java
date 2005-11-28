@@ -87,7 +87,7 @@ public final class NodeIterator implements Iterator {
 				final DOMFile.DOMFilePageHeader ph = p.getPageHeader();
 				if (offset < ph.getDataLength())
 					return true;
-				else if (ph.getNextDataPage() < 0)
+				else if (ph.getNextDataPage() == Page.NO_PAGE)
 					return false;
 				else
 					return true;
@@ -124,7 +124,7 @@ public final class NodeIterator implements Iterator {
 					if (offset >= ph.getDataLength()) {
 						// load next page in chain
 						long nextPage = ph.getNextDataPage();
-						if (nextPage < 0) {
+						if (nextPage == Page.NO_PAGE) {
                             SanityCheck.TRACE("bad link to next " + p.page.getPageInfo() + "; previous: " +
 									ph.getPrevDataPage() + "; offset = " + offset + "; lastTID = " + lastTID);
 							return null;

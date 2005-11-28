@@ -77,8 +77,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 
     registerDatabase();
     int p = uri.indexOf(DBBroker.ROOT_COLLECTION);
-    if (p < 0)
-      throw new BuildException("invalid uri: " + uri);
+    if (p == Constants.STRING_NOT_FOUND)
+      throw new BuildException("invalid uri: '" + uri + "'");
     try
     {
       String baseURI = uri.substring(0, p);

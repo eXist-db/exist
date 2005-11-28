@@ -135,7 +135,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		// if this is the first call to this method, remember the first parent node
 		// and re-evaluate the method
 		if (first == null) {
-			if (pid < 0) {
+			if (pid == NodeProxy.DOCUMENT_NODE_GID) {
 				// given node was already document element -> no parent				
 				return null;
 			}
@@ -163,7 +163,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 			// Timo Boehme: we return the ancestor which is child of context
 			// TODO 
 			return node;
-		} else if (pid < 0) {
+		} else if (pid == NodeProxy.DOCUMENT_NODE_GID) {
 			// no matching node has been found in the context
 			return null;
 		} else if (directParent && axis == Constants.CHILD_AXIS && recursions == 1) {
