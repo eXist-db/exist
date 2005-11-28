@@ -24,6 +24,7 @@ package org.exist.dom;
 
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 
@@ -192,7 +193,7 @@ public class QName implements Comparable {
 	 */
 	public static String extractPrefix(String qname) {
 		int p = qname.indexOf(':');
-		if (p < 0)
+		if (p == Constants.STRING_NOT_FOUND)
 			return null;
 		if (p == 0)
 			throw new IllegalArgumentException("Illegal QName: starts with a :");
@@ -208,7 +209,7 @@ public class QName implements Comparable {
 	 */
 	public static String extractLocalName(String qname) {
 		int p = qname.indexOf(':');
-		if (p < 0)
+		if (p == Constants.STRING_NOT_FOUND)
 			return qname;
 		if (p == 0)
 			throw new IllegalArgumentException("Illegal QName: starts with a :");
@@ -259,7 +260,7 @@ public class QName implements Comparable {
 	
 	public final static boolean isQName(String name) {
 		int colon = name.indexOf(':');
-		if (colon < 0)
+		if (colon == Constants.STRING_NOT_FOUND)
 			return XMLChar.isValidNCName(name);
 		if (colon == 0 || colon == name.length() - 1)
 			return false;

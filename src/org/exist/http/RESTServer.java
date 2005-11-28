@@ -1024,7 +1024,7 @@ public class RESTServer {
     throws IOException {
 //        response.setCharacterEncoding(encoding);
 		String contentType = response.getContentType();
-		if (!response.isCommitted() && contentType != null && contentType.indexOf(';') < 0)
+		if (!response.isCommitted() && contentType != null && contentType.indexOf(';') == Constants.STRING_NOT_FOUND)
 			response.setContentType(contentType + "; charset=" + encoding);
 		
         OutputStream is = response.getOutputStream();

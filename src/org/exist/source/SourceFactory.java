@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.exist.xquery.Constants;
+
 /**
  * Factory to create a {@link org.exist.source.Source} object for a given
  * URL.
@@ -50,7 +52,7 @@ public class SourceFactory {
     public static final Source getSource(String contextPath, String location, boolean checkXQEncoding) 
     throws MalformedURLException, IOException {
         Source source = null;
-        if(location.indexOf(':') < 0) {
+        if(location.indexOf(':') == Constants.STRING_NOT_FOUND) {
             File f = new File(contextPath + File.separatorChar + location);
             if(!f.canRead()) {
                 f = new File(location);

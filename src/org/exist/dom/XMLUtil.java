@@ -190,7 +190,7 @@ public class XMLUtil {
 			return null;
 		StringBuffer buf = new StringBuffer();
 		int p0 = xmlDecl.indexOf("encoding");
-		if (p0 < 0)
+		if (p0 == Constants.STRING_NOT_FOUND)
 			return null;
 		for (int i = p0 + 8; i < xmlDecl.length(); i++)
 			if (Character.isWhitespace(xmlDecl.charAt(i))
@@ -343,7 +343,7 @@ public class XMLUtil {
 
 	public static String parseValue(String value, String key) {
 		int p = value.indexOf(key);
-		if (p < 0)
+		if (p == Constants.STRING_NOT_FOUND)
 			return null;
 		return parseValue(value, p);
 	}

@@ -84,7 +84,7 @@ public final class DOMFileIterator implements Iterator {
 					final DOMFile.DOMFilePageHeader ph = p.getPageHeader();
 					if (offset < ph.getDataLength())
 						return true;
-					else if (ph.getNextDataPage() < 0)
+					else if (ph.getNextDataPage() == Page.NO_PAGE)
 						return false;
 					else
 						return true;
@@ -121,7 +121,7 @@ public final class DOMFileIterator implements Iterator {
 						if (offset >= ph.getDataLength()) {
 							// load next page in chain
 							final long nextPage = ph.getNextDataPage();
-							if (nextPage < 0) {
+							if (nextPage == Page.NO_PAGE) {
 								LOG.debug("bad link to next " + p.page.getPageInfo());
 								return null;
 							}
