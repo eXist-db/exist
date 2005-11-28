@@ -21,6 +21,7 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -130,8 +131,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         Txn txn = transact.beginTransaction();
 		try {
 			broker = pool.get(session.getUser());
-			int p = path.lastIndexOf('/');
-			if (p < 0 || p == path.length() - 1) {
+            //TODO : use dedicated function in XmldbURI
+			int p = path.lastIndexOf("/");
+			if (p == Constants.STRING_NOT_FOUND || p == path.length() - 1) {
                 transact.abort(txn);
 				throw new EXistException("Illegal document path");
             }
@@ -176,8 +178,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         Txn txn = transact.beginTransaction();
 		try {
 			broker = pool.get(session.getUser());
-			int p = path.lastIndexOf('/');
-			if (p < 0 || p == path.length() - 1) {
+            ///TODO : use dedicated function in XmldbURI
+			int p = path.lastIndexOf("/");
+			if (p == Constants.STRING_NOT_FOUND || p == path.length() - 1) {
                 transact.abort(txn);
 				throw new RemoteException("Illegal document path");
             }

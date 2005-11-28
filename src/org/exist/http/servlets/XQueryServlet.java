@@ -214,7 +214,7 @@ public class XQueryServlet extends HttpServlet {
         //-------------------------------
         
 		String baseURI = request.getRequestURI();
-		int p = baseURI.lastIndexOf('/');
+		int p = baseURI.lastIndexOf("/");
 		if(p != Constants.STRING_NOT_FOUND)
 			baseURI = baseURI.substring(0, p);
 		String moduleLoadPath = getServletContext().getRealPath(baseURI.substring(request.getContextPath().length()));

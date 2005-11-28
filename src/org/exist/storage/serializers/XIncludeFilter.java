@@ -211,9 +211,10 @@ public class XIncludeFilter implements Receiver {
             
 			// if docName has no collection specified, assume
 			// current collection 
-			p = docName.lastIndexOf('/');
-			if (p < 0 && document != null)
-				docName = document.getCollection().getName() + '/' + docName;
+            ///TODO : use dedicated function in XmldbURI
+			p = docName.lastIndexOf("/");
+			if (p == Constants.STRING_NOT_FOUND && document != null)
+				docName = document.getCollection().getName() + "/" + docName;
 			// retrieve the document
 			DocumentImpl doc = null;
 			try {

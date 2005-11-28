@@ -434,22 +434,25 @@ public class InteractiveClient {
                 completitions.clear();
                 String tempPath = newPath;
                 Collection temp;
+                //TODO : use dedicated function in XmldbURI
                 if (args.length < 2 || args[1] == null) {
                     tempPath = DBBroker.ROOT_COLLECTION;
-                    temp = DatabaseManager.getCollection(properties
-                            .getProperty("uri")
-                            + DBBroker.ROOT_COLLECTION, properties.getProperty("user"), properties
-                            .getProperty("password"));
+                    temp = DatabaseManager.getCollection(
+                            properties.getProperty("uri") + DBBroker.ROOT_COLLECTION, 
+                            properties.getProperty("user"), 
+                            properties.getProperty("password"));
                 } else {
+                    //TODO : use dedicated function in XmldbURI
                     if (args[1].equals("..")) {
-                        tempPath = newPath.equals(DBBroker.ROOT_COLLECTION) ? DBBroker.ROOT_COLLECTION : tempPath
-                                .substring(0, newPath.lastIndexOf("/"));
+                        tempPath = newPath.equals(DBBroker.ROOT_COLLECTION) ? 
+                        DBBroker.ROOT_COLLECTION : 
+                        tempPath.substring(0, newPath.lastIndexOf("/"));
                         if (tempPath.length() == 0)
                             tempPath = DBBroker.ROOT_COLLECTION;
                     } else if (args[1].startsWith("/"))
                         tempPath = args[1];
                     else
-                        tempPath = tempPath + '/' + args[1];                    
+                        tempPath = tempPath + "/" + args[1];                    
 
                     XmldbURI uri = new XmldbURI(properties.getProperty("uri"), tempPath);                   
                     temp = DatabaseManager.getCollection(
@@ -1168,8 +1171,9 @@ public class InteractiveClient {
         String destName = null;
         Collection destCol = resolveCollection(destination);
         if(destCol == null) {
-            int p = destination.lastIndexOf('/');
-            if(p < 0) {
+            ///TODO : use dedicated function in XmldbURI
+            int p = destination.lastIndexOf("/");
+            if(p == Constants.STRING_NOT_FOUND) {
                 destName = destination;
                 destination = current.getName();
             } else {
@@ -1179,11 +1183,12 @@ public class InteractiveClient {
         }
         Resource srcDoc = resolveResource(source);
         if(srcDoc != null) {
-            String resourcePath = srcDoc.getParentCollection().getName() + '/' + srcDoc.getId();
-            messageln("Copying resource " + resourcePath + " to " + destination);
+            ///TODO : use dedicated function in XmldbURI
+            String resourcePath = srcDoc.getParentCollection().getName() + "/" + srcDoc.getId();
+            messageln("Copying resource '" + resourcePath + "' to '" + destination + "'");
             mgtService.copyResource(resourcePath, destination, destName);
         } else
-            messageln("Copying collection " + source + " to " + destination);
+            messageln("Copying collection '" + source + "' to '" + destination + "'");
         mgtService.copy(source, destination, destName);
     }
     
@@ -1216,7 +1221,8 @@ public class InteractiveClient {
         String next;
         MimeType mimeType;
         for (int i = 0; i < temp.length; i++) {
-            next = base + '/' + temp[i].getName();
+            //TODO : use dedicated function in XmldbURI
+            next = base + "/" + temp[i].getName();
             try {
                 if (temp[i].isDirectory()) {
                     messageln("entering directory " + temp[i].getAbsolutePath());
@@ -1264,6 +1270,7 @@ public class InteractiveClient {
      * @throws XMLDBException
      */
     protected synchronized boolean parse(String fileName) throws XMLDBException {
+        //TODO : why is this test for ? Fileshould make it, shouldn't it ? -pb
         fileName = fileName.replace('/', File.separatorChar).replace('\\',
                 File.separatorChar);
         File file = new File(fileName);
@@ -1393,7 +1400,8 @@ public class InteractiveClient {
         String next;
         MimeType mimeType;
         for (int i = 0; i < temp.length; i++) {
-            next = base + '/' + temp[i].getName();
+            ///TODO : use dedicated function in XmldbURI
+            next = base + "/" + temp[i].getName();
             try {
                 if (temp[i].isDirectory()) {
                     upload.setCurrentDir(temp[i].getAbsolutePath());
@@ -1439,7 +1447,8 @@ public class InteractiveClient {
     }
     
     private void mkcol(String collPath) throws XMLDBException {
-        System.out.println("creating " + collPath);
+        System.out.println("creating '" + collPath + "'");
+        ///TODO : use dedicated function in XmldbURI
         if (collPath.startsWith(DBBroker.ROOT_COLLECTION))
             collPath = collPath.substring(DBBroker.ROOT_COLLECTION.length());
         CollectionManagementService mgtService;
@@ -1447,12 +1456,12 @@ public class InteractiveClient {
         String p = DBBroker.ROOT_COLLECTION, token;
         StringTokenizer tok = new StringTokenizer(collPath, "/");
         while (tok.hasMoreTokens()) {
-            token = tok.nextToken();
-            p = p + '/' + token;
+            token = tok.nextToken();            
+            p = p + "/" + token;
             c = DatabaseManager.getCollection(
-                    properties.getProperty("uri") + p, properties
-                    .getProperty("user"), properties
-                    .getProperty("password"));
+                    properties.getProperty("uri") + p, 
+                    properties.getProperty("user"), 
+                    properties.getProperty("password"));
             if (c == null) {
                 mgtService = (CollectionManagementService) current.getService(
                         "CollectionManagementService", "1.0");
@@ -2270,16 +2279,20 @@ public class InteractiveClient {
         }
     }
     
+    //TODO : use dedicated function in XmldbURI
     private Collection resolveCollection(String path) throws XMLDBException {
-        return DatabaseManager.getCollection(properties.getProperty("uri")
-        + path, properties.getProperty("user"), properties.getProperty("password"));
+        return DatabaseManager.getCollection(
+                properties.getProperty("uri") + path, 
+                properties.getProperty("user"), 
+                properties.getProperty("password"));
     }
     
-    private Resource resolveResource(String path) throws XMLDBException {
-        String collectionPath;
+    //TODO : use dedicated function in XmldbURI
+    private Resource resolveResource(String path) throws XMLDBException {        String collectionPath;
         String resourceName = path;
-        int p = path.lastIndexOf('/');
-        if(p < 0) {
+        
+        int p = path.lastIndexOf("/");
+        if(p == Constants.STRING_NOT_FOUND) {
             collectionPath = current.getName();
         } else {
             collectionPath = path.substring(0, p);

@@ -75,11 +75,13 @@ public class Put extends AbstractWebDAVMethod {
         Txn txn = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
+            ///TODO : use dedicated function in XmldbURI
 			if(path == null)
 				path = "";
 			if(path.endsWith("/"))
 				path = path.substring(0, path.length() - 1);
-			int p = path.lastIndexOf('/');
+			int p = path.lastIndexOf("/");
+            //TODO : strange test here -pb
 			if(p < 1) {
                 transact.abort(txn);
 				response.sendError(HttpServletResponse.SC_CONFLICT, "No collection specified for PUT");

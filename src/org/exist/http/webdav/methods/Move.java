@@ -42,6 +42,7 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.xquery.Constants;
 
 /**
  * Implements the WebDAV move method.
@@ -66,7 +67,8 @@ public class Move extends AbstractWebDAVMethod {
 			broker = pool.get(user);
 			collection = broker.openCollection(path, Lock.WRITE_LOCK);
 			if(collection == null) {
-				int pos = path.lastIndexOf('/');
+                ///TODO : use dedicated function in XmldbURI
+				int pos = path.lastIndexOf("/");
 				String collName = path.substring(0, pos);
 				String docName = path.substring(pos + 1);
 				collection = broker.openCollection(collName, Lock.WRITE_LOCK);
@@ -120,13 +122,14 @@ public class Move extends AbstractWebDAVMethod {
 
     private void moveCollection(User user, DBBroker broker, HttpServletRequest request, HttpServletResponse response, 
             Collection collection, String destination) throws ServletException, IOException {
+        //TODO : use dedicated function in XmldbURI
         if(collection.getName().equals(destination)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN,
                     "Source and destination are the same");
             return;
         }
-        int p = destination.lastIndexOf('/');
-        if(p < 0) {
+        int p = destination.lastIndexOf("/");
+        if(p == Constants.STRING_NOT_FOUND) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Bad destination: " + destination);
             return;
@@ -182,8 +185,9 @@ public class Move extends AbstractWebDAVMethod {
     private void moveResource(User user, DBBroker broker, HttpServletRequest request, HttpServletResponse response, 
     		DocumentImpl resource, String destination)
     throws ServletException, IOException {
-    	int p = destination.lastIndexOf('/');
-        if(p < 0) {
+        //TODO : use dedicated function in XmldbURI
+    	int p = destination.lastIndexOf("/");
+        if(p == Constants.STRING_NOT_FOUND) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Bad destination: " + destination);
             return;

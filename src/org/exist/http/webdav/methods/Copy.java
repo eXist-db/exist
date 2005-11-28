@@ -42,6 +42,7 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.xquery.Constants;
 
 
 /**
@@ -70,7 +71,8 @@ public class Copy extends AbstractWebDAVMethod {
 			broker = pool.get(user);
 			collection = broker.openCollection(path, Lock.READ_LOCK);
 			if(collection == null) {
-				int pos = path.lastIndexOf('/');
+                //TODO : use dedicated function in XmldbURI
+				int pos = path.lastIndexOf("/");
 				String collName = path.substring(0, pos);
 				String docName = path.substring(pos + 1);
 				collection = broker.openCollection(collName, Lock.READ_LOCK);
@@ -126,8 +128,9 @@ public class Copy extends AbstractWebDAVMethod {
     		Collection sourceCollection, DocumentImpl resource, 
             String destination)
     throws ServletException, IOException {
-        int p = destination.lastIndexOf('/');
-        if(p < 0) {
+        //TODO : use dedicated function in XmldbURI
+        int p = destination.lastIndexOf("/");
+        if(p == Constants.STRING_NOT_FOUND) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Bad destination: " + destination);
             return;
@@ -182,8 +185,9 @@ public class Copy extends AbstractWebDAVMethod {
     private void copyCollection(User user, DBBroker broker, HttpServletRequest request, HttpServletResponse response, 
     		Collection collection, String destination)
     throws ServletException, IOException {
-        int p = destination.lastIndexOf('/');
-        if(p < 0) {
+        ///TODO : use dedicated function in XmldbURI
+        int p = destination.lastIndexOf("/");        
+        if(p == Constants.STRING_NOT_FOUND) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Bad destination: " + destination);
             return;

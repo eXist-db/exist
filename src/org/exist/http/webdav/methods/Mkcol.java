@@ -70,7 +70,8 @@ public class Mkcol extends AbstractWebDAVMethod {
 	                    "collection " + request.getPathInfo() + " already exists");
 	            return;
 			}
-			int p = path.lastIndexOf('/');
+            ///TODO : use dedicated function in XmldbURI
+			int p = path.lastIndexOf("/");
 	        String parentPath = (p != Constants.STRING_NOT_FOUND) ? path.substring(0, p) : DBBroker.ROOT_COLLECTION;
 	        String newCollection = (p != Constants.STRING_NOT_FOUND) ? path.substring(p + 1) : path;
 	        collection = broker.openCollection(parentPath, Lock.WRITE_LOCK);

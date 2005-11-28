@@ -616,11 +616,12 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	
 	private static StringBuffer removeLastPathComponent(StringBuffer path) {
 		int i;
+        //TODO : rewrite with subString -pb
 		for(i = path.length() - 1; i >= 0; i--) {
 			if(path.charAt(i) == '/')
 				break;
 		}
-		if(i < 0)
+		if(i == Constants.STRING_NOT_FOUND)
 			return path;
 		return path.delete(i, path.length());
 	}

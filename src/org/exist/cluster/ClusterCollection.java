@@ -177,7 +177,8 @@ public final class ClusterCollection extends Collection {
     public void addCollection(Collection child) {
         try {
             collection.addCollection(child);
-    		final int p = child.getName().lastIndexOf('/') + 1;
+            //TODO : use dedicated function in XmldbURI
+    		final int p = child.getName().lastIndexOf("/") + 1;
     		final String childName = child.getName().substring(p);
             System.out.println("________ ADDDING COLLECTION " + child.getName() +" TO " + this.getName() );
             ClusterComunication cluster = ClusterComunication.getInstance();

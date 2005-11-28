@@ -65,7 +65,8 @@ public class Delete extends AbstractWebDAVMethod {
 			broker = pool.get(user);
 			collection = broker.openCollection(path, Lock.WRITE_LOCK);
 			if(collection == null) {
-				int pos = path.lastIndexOf('/');
+                ///TODO : use dedicated function in XmldbURI
+				int pos = path.lastIndexOf("/");
 				String collName = path.substring(0, pos);
 				String docName = path.substring(pos + 1);
 				LOG.debug("collection = " + collName + "; doc = " + docName);

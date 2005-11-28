@@ -132,7 +132,7 @@ public class NodePath {
     public String toString() {
         StringBuffer buf = new StringBuffer();
         for(int i = 0; i < pos; i++) {
-            buf.append('/');
+            buf.append("/");
             buf.append(components[i]);
         }
         return buf.toString();

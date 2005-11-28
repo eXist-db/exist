@@ -80,7 +80,8 @@ class DocumentView extends JFrame {
 	
 	public DocumentView(InteractiveClient client, String resourceName, Properties properties) throws XMLDBException
 	{
-		super("View Document: " + client.getCollection().getName() +'/'+ resourceName);
+	    //TODO : use dedicated function in XmldbURI
+		super("View Document: " + client.getCollection().getName() + "/" + resourceName);
 		this.resourceName = resourceName;
 		this.resource = client.retrieve(resourceName, properties.getProperty(OutputKeys.INDENT, "yes"));
 		this.client = client;

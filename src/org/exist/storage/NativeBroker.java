@@ -401,6 +401,7 @@ public class NativeBroker extends DBBroker {
 	protected final static String normalizeCollectionName(String name) {
 		StringBuffer out = new StringBuffer();
 		for (int i = 0; i < name.length(); i++)
+            //TODO : use dedicated function in XmldbURI
 			if (name.charAt(i) == '/'
 				&& name.length() > i + 1
 				&& name.charAt(i + 1) == '/')
@@ -517,6 +518,7 @@ public class NativeBroker extends DBBroker {
 	 */
 	public Collection openCollection(String name, long addr, int lockMode) {
 		//	final long start = System.currentTimeMillis();
+        ///TODO : use dedicated function in XmldbURI
 		name = normalizeCollectionName(name);
 		if (name.length() > 0 && name.charAt(0) != '/')
 			name = "/" + name;
@@ -622,14 +624,14 @@ public class NativeBroker extends DBBroker {
 	 */
 	public Document getDocument(String fileName) throws PermissionDeniedException {
 		fileName = XmldbURI.checkPath2(fileName, ROOT_COLLECTION);
-
-		int pos = fileName.lastIndexOf('/');
+		///TODO : use dedicated function in XmldbURI
+		int pos = fileName.lastIndexOf("/");
 		String collName = fileName.substring(0, pos);
 		String docName = fileName.substring(pos + 1);
 		
 		Collection collection = getCollection(collName);
 		if (collection == null) {
-			LOG.debug("collection " + collName + " not found!");
+			LOG.debug("collection '" + collName + "' not found!");
 			return null;
 		}
 		if (!collection.getPermissions().validate(user, Permission.READ))
@@ -646,8 +648,8 @@ public class NativeBroker extends DBBroker {
 
 	public DocumentImpl openDocument(String docPath, int lockMode) throws PermissionDeniedException {
 		docPath = XmldbURI.checkPath2(docPath, ROOT_COLLECTION);
-
-		int pos = docPath.lastIndexOf('/');
+		///TODO : use dedicated function in XmldbURI
+		int pos = docPath.lastIndexOf("/");
 		String collName = docPath.substring(0, pos);
 		String docName = docPath.substring(pos + 1);
 		
@@ -1397,7 +1399,8 @@ public class NativeBroker extends DBBroker {
 	    	throw new PermissionDeniedException("Insufficient privileges to copy resource " +
 	                doc.getFileName());
 	    if(newName == null) {
-            int p = doc.getFileName().lastIndexOf('/');
+            ///TODO : use dedicated function in XmldbURI
+            int p = doc.getFileName().lastIndexOf("/");
             newName = doc.getFileName().substring(p + 1);
         }
 
@@ -1406,7 +1409,8 @@ public class NativeBroker extends DBBroker {
 	        lock = collectionsDb.getLock();
 	        lock.acquire(Lock.WRITE_LOCK);
 	        // check if the move would overwrite a collection
-	        if(getCollection(destination.getName() + '/' + newName) != null)
+            ///TODO : use dedicated function in XmldbURI
+	        if(getCollection(destination.getName() + "/" + newName) != null)
 	            throw new PermissionDeniedException("A resource can not replace an existing collection");
 	        DocumentImpl oldDoc = destination.getDocument(this, newName);
 	        if(oldDoc != null) {
@@ -1469,8 +1473,9 @@ public class NativeBroker extends DBBroker {
 	}
 	
 	public void defrag(final Txn transaction, final DocumentImpl doc) {
+        //TODO : use dedicated function in XmldbURI
 		LOG.debug("============> Defragmenting document " + 
-		        doc.getCollection().getName() + '/' + doc.getFileName());
+		        doc.getCollection().getName() + "/" + doc.getFileName());
 //        Writer writer = new StringWriter();
 //        try {
 //            domDb.dump(writer);
@@ -1952,9 +1957,10 @@ public class NativeBroker extends DBBroker {
         }
         for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
             String next = (String)i.next();
-            Collection child = getCollection(collection.getName() + '/' + next);
+            ///TODO : use dedicated function in XmldbURI
+            Collection child = getCollection(collection.getName() + "/" + next);
             if(child == null)
-                LOG.warn("Collection " + next + " not found");
+                LOG.warn("Collection '" + next + "' not found");
             else {
                 reindex(transaction, child, repairMode);
             }
@@ -2046,7 +2052,8 @@ public class NativeBroker extends DBBroker {
             LOG.debug("removing sub-collections");
             for (Iterator i = collection.collectionIterator(); i.hasNext();) {
                 childName = (String) i.next();
-                childCollection = openCollection(name + '/' + childName, Lock.WRITE_LOCK);
+                //TODO : use dedicated function in XmldbURI
+                childCollection = openCollection(name + "/" + childName, Lock.WRITE_LOCK);
                 try {
                     removeCollection(transaction, childCollection);
                 } finally {
@@ -2375,7 +2382,8 @@ public class NativeBroker extends DBBroker {
 	    }
  	    
 	    if(newName == null) {
-            int p = doc.getFileName().lastIndexOf('/');
+            ///TODO : use dedicated function in XmldbURI
+            int p = doc.getFileName().lastIndexOf("/");
             newName = doc.getFileName().substring(p + 1);
         }
 	    Lock lock = null;
@@ -2383,7 +2391,8 @@ public class NativeBroker extends DBBroker {
 	        lock = collectionsDb.getLock();
 	        lock.acquire(Lock.WRITE_LOCK);
 	        // check if the move would overwrite a collection
-	        if(getCollection(destination.getName() + '/' + newName) != null)
+            ///TODO : use dedicated function in XmldbURI
+	        if(getCollection(destination.getName() + "/" + newName) != null)
 	            throw new PermissionDeniedException("A resource can not replace an existing collection");
 	        DocumentImpl oldDoc = destination.getDocument(this, newName);
 	        if(oldDoc != null) {
@@ -2448,13 +2457,16 @@ public class NativeBroker extends DBBroker {
 	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
 	                destination.getName());
 		if(newName == null) {
-            int p = collection.getName().lastIndexOf('/');
+            ///TODO : use dedicated function in XmldbURI
+            int p = collection.getName().lastIndexOf("/");
             newName = collection.getName().substring(p + 1);
         }
-	    if(newName.indexOf('/') > -1)
+        ///TODO : use dedicated function in XmldbURI
+	    if(newName.indexOf("/") != Constants.STRING_NOT_FOUND)
 	        throw new PermissionDeniedException("New collection name is illegal (may not contain a '/')");
 	    //	check if another collection with the same name exists at the destination
-	    Collection old = openCollection(destination.getName() + '/' + newName, Lock.WRITE_LOCK);
+	    //TODO : use dedicated function in XmldbURI
+        Collection old = openCollection(destination.getName() + "/" + newName, Lock.WRITE_LOCK);
 	    if(old != null) {
 	    	LOG.debug("removing old collection: " + newName);
 	    	try {
@@ -2468,13 +2480,13 @@ public class NativeBroker extends DBBroker {
 	    try {
 	        lock = collectionsDb.getLock();
 	        lock.acquire(Lock.WRITE_LOCK);
-	        
-	        newName = destination.getName() + '/' + newName;
-	        LOG.debug("Copying collection to " + newName);
+	        ///TODO : use dedicated function in XmldbURI
+	        newName = destination.getName() + "/" + newName;
+	        LOG.debug("Copying collection to '" + newName + "'");
 		    destCollection = getOrCreateCollection(transaction, newName);
 		    for(Iterator i = collection.iterator(this); i.hasNext(); ) {
 		    	DocumentImpl child = (DocumentImpl) i.next();
-		    	LOG.debug("Copying resource: " + child.getName());
+		    	LOG.debug("Copying resource: '" + child.getName() + "'");
 		    	DocumentImpl newDoc = new DocumentImpl(this, child.getFileName(), destCollection);
 		        newDoc.copyOf(child);
                 newDoc.setDocId(getNextDocId(transaction, destination));
@@ -2489,9 +2501,10 @@ public class NativeBroker extends DBBroker {
 	    String name = collection.getName();
 	    for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
 	    	String childName = (String)i.next();
-	        Collection child = openCollection(name + '/' + childName, Lock.WRITE_LOCK);
+            ///TODO : use dedicated function in XmldbURI
+	        Collection child = openCollection(name + "/" + childName, Lock.WRITE_LOCK);
 	        if(child == null)
-	            LOG.warn("Child collection " + childName + " not found");
+	            LOG.warn("Child collection '" + childName + "' not found");
 	        else {
 	            try {
 	            	copyCollection(transaction, child, destCollection, childName);
@@ -2519,13 +2532,15 @@ public class NativeBroker extends DBBroker {
 	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
 	                destination.getName());
 	    if(newName == null) {
-            int p = collection.getName().lastIndexOf('/');
+            ///TODO : use dedicated function in XmldbURI
+            int p = collection.getName().lastIndexOf("/");
             newName = collection.getName().substring(p + 1);
         }
-	    if(newName.indexOf('/') > -1)
+	    if(newName.indexOf("/") != Constants.STRING_NOT_FOUND)
 	        throw new PermissionDeniedException("New collection name is illegal (may not contain a '/')");
 	        // check if another collection with the same name exists at the destination
-	    Collection old = openCollection(destination.getName() + '/' + newName, Lock.WRITE_LOCK);
+	    //TODO : use dedicated function in XmldbURI
+	    Collection old = openCollection(destination.getName() + "/" + newName, Lock.WRITE_LOCK);
 	    if(old != null) {
 	    	try {
 	    		removeCollection(transaction, old);
@@ -2557,8 +2572,8 @@ public class NativeBroker extends DBBroker {
 					key = new Value(name.getBytes());
 				}	
 				collectionsDb.remove(transaction, key);
-				
-			    collection.setName(destination.getName() + '/' + newName);
+				///TODO : use dedicated function in XmldbURI
+			    collection.setName(destination.getName() + "/" + newName);
 			    collection.setCreationTime(System.currentTimeMillis());
 			    
 			    destination.addCollection(collection);
@@ -2576,7 +2591,8 @@ public class NativeBroker extends DBBroker {
 		    Collection child;
 		    for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
 		        childName = (String)i.next();
-		        child = openCollection(name + '/' + childName, Lock.WRITE_LOCK);
+                ///TODO : use dedicated function in XmldbURI
+		        child = openCollection(name + "/" + childName, Lock.WRITE_LOCK);
 		        if(child == null)
 		            LOG.warn("Child collection " + childName + " not found");
 		        else {

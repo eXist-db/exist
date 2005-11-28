@@ -477,7 +477,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public String getName() {
-		return collection.getName() + '/' + fileName;
+        //TODO : use dedicated function in XmldbURI
+		return collection.getName() + "/" + fileName;
 	}
 
 	public org.w3c.dom.DOMImplementation getImplementation() {

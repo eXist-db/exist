@@ -139,8 +139,9 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
         {
           file = new File(scanner.getBasedir() + File.separator + files[i]);
           log("Storing " + files[i] + " ...\n");
+          //TODO : use dedicated function in XmldbURI
           // check whether the relative file path contains file seps
-          p = files[i].lastIndexOf(File.separatorChar);
+          p = files[i].lastIndexOf(File.separatorChar);          
           if (p != Constants.STRING_NOT_FOUND)
           {
             relDir = files[i].substring(0, p);
@@ -201,16 +202,17 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
     CollectionManagementService mgtService;
     Collection current = root, c;
     String token;
+    ///TODO : use dedicated function in XmldbURI
     StringTokenizer tok = new StringTokenizer(relPath, "/");
     while (tok.hasMoreTokens())
     {
       token = tok.nextToken();
       if (path != null)
       {
-        path = path + '/' + token;
+        path = path + "/" + token;
       } else
       {
-        path = '/' + token;
+        path = "/" + token;
       }
       log("Get collection " + baseURI + path, Project.MSG_DEBUG);
       c = DatabaseManager.getCollection(baseURI + path, user, password);

@@ -185,9 +185,10 @@ public class Backup {
 		String[] resources = current.listResources();
 		Arrays.sort(resources);
         
+//      TODO : use dedicated function in XmldbURI
 		String cname = current.getName();
 		if (cname.charAt(0) != '/')
-			cname = '/' + cname;
+			cname = "/" + cname;
 		String path = backupDir + encode(cname);
 		
 		UserManagementService mgtService =
@@ -209,8 +210,7 @@ public class Backup {
 		BufferedWriter contents =
 			new BufferedWriter(
 				new OutputStreamWriter(
-					new FileOutputStream(path + '/' + "__contents__.xml"),
-					"UTF-8"));
+					new FileOutputStream(path + File.separatorChar + "__contents__.xml"), "UTF-8"));
 		// serializer writes to __contents__.xml
 		SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 		serializer.setOutput(contents, defaultOutputProperties);
@@ -249,13 +249,13 @@ public class Backup {
                 if (!file.exists())
                     file.mkdirs();
                 if (dialog == null)
-                    System.out.println("writing " + path + '/' + resources[i]);
+                    System.out.println("writing " + path + File.separatorChar + resources[i]);
                 else {
                     dialog.setResource(resources[i]);
                     dialog.setProgress(i);
                 }
-                //os = new FileOutputStream(path + '/' + resources[i]);
-                os = new FileOutputStream(path + '/' + encode(resources[i]));
+                //os = new FileOutputStream(path + File.eparatorChar + resources[i]);
+                os = new FileOutputStream(path + File.separatorChar + encode(resources[i]));
                 if(resource.getResourceType().equals("BinaryResource")) {
                     byte[] bdata = (byte[])resource.getContent();
                     os.write(bdata);
