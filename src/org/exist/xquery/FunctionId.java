@@ -57,6 +57,6 @@ public class FunctionId implements Comparable {
 	}
 	
 	public String toString() {
-		return qname.toString() + '/' + argCount;
+		return qname.toString() + "/" + argCount;
 	}
 }

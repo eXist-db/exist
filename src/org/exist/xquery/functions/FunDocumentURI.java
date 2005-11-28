@@ -66,7 +66,8 @@ public class FunDocumentURI extends Function {
 		Expression arg = getArgument(0);
 		Sequence s = arg.eval(contextSequence, contextItem);
 		NodeProxy node = (NodeProxy) s.itemAt(0);
-		String path = node.getDocument().getCollection().getName() + '/' +node.getDocument().getFileName(); 
+        //TODO : use dedicated function in XmldbURI
+		String path = node.getDocument().getCollection().getName() + "/" +node.getDocument().getFileName(); 
 		return new StringValue(path);
 	}
 
