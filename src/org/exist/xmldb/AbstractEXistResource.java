@@ -51,8 +51,9 @@ public abstract class AbstractEXistResource implements EXistResource {
 		this.user = user;
 		this.pool = pool;
 		this.parent = parent;
-		if (docId.indexOf('/') != Constants.STRING_NOT_FOUND)
-			docId = docId.substring(docId.lastIndexOf('/') + 1);
+        //TODO : use dedicated function in XmldbURI
+		if (docId.indexOf("/") != Constants.STRING_NOT_FOUND)
+			docId = docId.substring(docId.lastIndexOf("/") + 1);
 		this.docId = docId;
         this.mimeType = mimeType;
 	}

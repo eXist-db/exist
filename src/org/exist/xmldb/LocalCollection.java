@@ -269,7 +269,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
 					ErrorCodes.PERMISSION_DENIED,
 					"You are not allowed to access this collection");
 			if(collection.hasChildCollection(name))
-				childName = getPath() + '/' + name;
+                //TODO : use dedicated function in XmldbURI
+				childName = getPath() + "/" + name;
 		} finally {
 			collection.release();
 		}
