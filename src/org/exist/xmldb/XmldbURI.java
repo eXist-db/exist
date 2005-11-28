@@ -587,7 +587,7 @@ public class XmldbURI {
     public static String checkPath(String currentPath, String parentPath)
 	{
         /*String path = (collectionPath.startsWith(DBBroker.ROOT_COLLECTION + "/") ? collectionPath : 
-		parent.getPath() + '/' + collectionPath);*/	
+		parent.getPath() + "/" + collectionPath);*/	
 		
     	if(currentPath != null)
 		{
@@ -600,7 +600,7 @@ public class XmldbURI {
 				}
 				else
 				{
-					currentPath = parentPath + '/' + currentPath;
+					currentPath = parentPath + "/" + currentPath;
 				}
 			}
 			

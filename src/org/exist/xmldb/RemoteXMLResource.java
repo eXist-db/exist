@@ -87,11 +87,12 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	this.parent = parent;
 	this.id = id;
 	int p;
-	if (docId != null && (p = docId.lastIndexOf('/')) != Constants.STRING_NOT_FOUND) {
+    //TODO : use dedicated function in XmldbURI
+	if (docId != null && (p = docId.lastIndexOf("/")) != Constants.STRING_NOT_FOUND) {
 	    path = docId;
 	    documentName = docId.substring(p + 1);
 	} else {
-	    path = parent.getPath() + '/' + docId;
+	    path = parent.getPath() + "/" + docId;
 	    documentName = docId;
 	}
     }
