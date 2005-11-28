@@ -33,7 +33,8 @@ public class CollectionScanner {
 			name = vpath + subs[i];
 			System.out.println("checking " + name + " = " + pattern);
 			if(DirectoryScanner.matchStart(pattern, name))
-				scan(list, current.getChildCollection(subs[i]), name + '/', pattern);
+                ///TODO : use dedicated function in XmldbURI
+				scan(list, current.getChildCollection(subs[i]), name + "/", pattern);
 		}
 	}
 }

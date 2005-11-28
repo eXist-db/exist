@@ -77,6 +77,7 @@ import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Pragma;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -609,8 +610,9 @@ public class RESTServer {
         TransactionManager transact = broker.getBrokerPool().getTransactionManager();
         Txn transaction = transact.beginTransaction();
         try {
-            int p = docPath.lastIndexOf('/');
-            if (p < 0 || p == docPath.length() - 1) {
+            //TODO : use dedicated function in XmldbURI
+            int p = docPath.lastIndexOf("/");
+            if (p == Constants.STRING_NOT_FOUND || p == docPath.length() - 1) {
                 transact.abort(transaction);
                 throw new BadRequestException("Bad path: " + docPath);
             }
@@ -699,9 +701,11 @@ public class RESTServer {
                 } else {
                     // remove the document
                     LOG.debug("removing document " + path);
-                    int p = path.lastIndexOf('/');
-                    String docName = p < 0 || p == path.length() - 1 ? path
-                            : path.substring(p + 1);
+                    //TODO : use dedicated function in XmldbURI
+                    int p = path.lastIndexOf("/");
+                    String docName = (p == Constants.STRING_NOT_FOUND || p == path.length() - 1) ? 
+                            path : 
+                            path.substring(p + 1);
                     if (doc.getResourceType() == DocumentImpl.BINARY_FILE)
                         doc.getCollection().removeBinaryResource(txn, broker,
                                 docName);
@@ -911,9 +915,8 @@ public class RESTServer {
 
             for (Iterator i = collection.collectionIterator(); i.hasNext();) {
                 String child = (String) i.next();
-                Collection childCollection = broker.getCollection(collection
-                        .getName()
-                        + '/' + child);
+                //TODO : use dedicated function in XmldbURI
+                Collection childCollection = broker.getCollection(collection.getName() + "/" + child);
                 if (childCollection.getPermissions().validate(broker.getUser(),
                         Permission.READ)) {
                     attrs.clear();
@@ -934,10 +937,11 @@ public class RESTServer {
                 if (doc.getPermissions().validate(broker.getUser(),
                         Permission.READ)) {
                     String resource = doc.getFileName();
-                    int p = resource.lastIndexOf('/');
+                    //TODO : use dedicated function in XmldbURI
+                    int p = resource.lastIndexOf("/");
                     attrs.clear();
                     attrs.addAttribute("", "name", "name", "CDATA",
-                            p < 0 ? resource : resource.substring(p + 1));
+                            (p == Constants.STRING_NOT_FOUND) ? resource : resource.substring(p + 1));
                     attrs.addAttribute("", "created", "created", "CDATA",
                             dateFormat.format(new Date(doc.getCreated())));
                     attrs.addAttribute("", "last-modified", "last-modified",

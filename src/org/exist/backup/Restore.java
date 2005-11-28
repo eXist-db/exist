@@ -311,11 +311,12 @@ public class Restore extends DefaultHandler {
 		Collection c;
 		Collection current = DatabaseManager.getCollection(uri + DBBroker.ROOT_COLLECTION, username, pass);
 		String p = DBBroker.ROOT_COLLECTION, token;
+        //TODO : use dedicated function in XmldbURI
 		//TODO : use dedicated shared code !
 		StringTokenizer tok = new StringTokenizer(collPath, "/");
 		while (tok.hasMoreTokens()) {
 			token = tok.nextToken();
-			p = p + '/' + token;
+			p = p + "/" + token;
 			XmldbURI xmldbURI = new XmldbURI(uri, p); 
 			c = DatabaseManager.getCollection(xmldbURI.toString(), username, pass);
 			if (c == null) {

@@ -91,15 +91,16 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
     log("BASEURI=" + baseURI, Project.MSG_DEBUG);
     log("RELPATH=" + relPath, Project.MSG_DEBUG);
     log("PATH=" + path, Project.MSG_DEBUG);
+    //TODO : use dedicated function in XmldbURI
     while (tok.hasMoreTokens())
     {
       token = tok.nextToken();
       if (path != null)
       {
-        path = path + '/' + token;
+        path = path + "/" + token;
       } else
       {
-        path = '/' + token;
+        path = "/" + token;
       }
       log("Get collection " + baseURI + path, Project.MSG_DEBUG);
       c = DatabaseManager.getCollection(baseURI + path, user, password);

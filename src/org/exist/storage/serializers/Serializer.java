@@ -529,7 +529,8 @@ public abstract class Serializer implements XMLReader {
 				// if stylesheet is relative, add path to the
 				// current collection
 				if(doc != null && !stylesheet.startsWith("/")) {
-					stylesheet = doc.getCollection().getName() + '/' + stylesheet;
+                    ///TODO : use dedicated function in XmldbURI
+					stylesheet = doc.getCollection().getName() + "/" + stylesheet;
 				}
 				
 				// load stylesheet from eXist
@@ -797,7 +798,8 @@ public abstract class Serializer implements XMLReader {
 			if (href.indexOf(':') != Constants.STRING_NOT_FOUND)
 				// href is an URL pointing to an external resource
 				return null;
-			URI baseURI = URI.create(collectionId + '/');
+            ///TODO : use dedicated function in XmldbURI
+			URI baseURI = URI.create(collectionId + "/");
 			URI uri = URI.create(href);
 			href = baseURI.resolve(uri).toString();
 			Serializer serializer = broker.newSerializer();

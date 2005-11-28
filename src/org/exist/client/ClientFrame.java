@@ -1034,21 +1034,23 @@ public class ClientFrame extends JFrame
     }
     
     private void backupAction(ActionEvent ev) {
-        CreateBackupDialog dialog = new CreateBackupDialog(properties
-                .getProperty("uri", "xmldb:exist://"), properties.getProperty(
-                "user", "admin"), properties.getProperty("password", null),
-                properties.getProperty("backup-dir", System
-                .getProperty("user.home")
+        CreateBackupDialog dialog = new CreateBackupDialog(
+                properties.getProperty("uri", "xmldb:exist://"), 
+                properties.getProperty("user", "admin"), 
+                properties.getProperty("password", null),
+                properties.getProperty("backup-dir", System.getProperty("user.home")
                 + File.separatorChar + "backup"));
         if (JOptionPane.showOptionDialog(this, dialog, "Create Backup",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                 null, null, null) == JOptionPane.YES_OPTION) {
             String collection = dialog.getCollection();
             String dir = dialog.getBackupDir();
-            Backup backup = new Backup(properties.getProperty("user", "admin"),
-                    properties.getProperty("password", null), dir, properties
-                    .getProperty("uri", "xmldb:exist://")
-                    + '/' + collection);
+            Backup backup = new Backup(
+                    properties.getProperty("user", "admin"),
+                    properties.getProperty("password", null), dir,
+                    //TODO : use dedicated function in XmldbURI
+                    properties.getProperty("uri", "xmldb:exist://")
+                    + "/" + collection);
             try {
                 backup.backup(true, this);
             } catch (XMLDBException e) {

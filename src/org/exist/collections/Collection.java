@@ -174,7 +174,8 @@ implements Comparable, EntityResolver, Cacheable {
 	 *@param  name
 	 */
 	public void addCollection(Collection child) {
-		final int p = child.name.lastIndexOf('/') + 1;
+        //TODO : use dedicated function in XmldbURI
+		final int p = child.name.lastIndexOf("/") + 1;
 		final String childName = child.name.substring(p);
 		if (!subcollections.contains(childName))
 			subcollections.add(childName);
@@ -209,7 +210,8 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @param child
 	 */
 	public void update(Collection child) {
-		final int p = child.name.lastIndexOf('/') + 1;
+        //TODO : use dedicated function in XmldbURI
+		final int p = child.name.lastIndexOf("/") + 1;
 		final String childName = child.name.substring(p);
 		subcollections.remove(childName);
 		subcollections.add(childName);
@@ -270,7 +272,8 @@ implements Comparable, EntityResolver, Cacheable {
 			String childName;
 			for (Iterator i = subcollections.iterator(); i.hasNext(); ) {
 				childName = (String) i.next();
-				child = broker.getCollection(name + '/' + childName);
+                //TODO : use dedicated function in XmldbURI
+				child = broker.getCollection(name + "/" + childName);
 				if (permissions.validate(user, Permission.READ)) {
 					cl.add(child);
 					if (child.getChildCollectionCount() > 0)
@@ -316,7 +319,8 @@ implements Comparable, EntityResolver, Cacheable {
             Iterator i = subcollections.iterator();
 			while (i.hasNext() ) {
 				childName = (String) i.next();
-				child = broker.getCollection(name + '/' + childName);
+                //TODO : use dedicated function in XmldbURI
+				child = broker.getCollection(name + "/" + childName);
 				if(child == null) {
 					LOG.warn("child collection " + childName + " not found. Skipping ...");
 					// we always check if we have permissions to read the child collection
@@ -871,9 +875,10 @@ implements Comparable, EntityResolver, Cacheable {
 					setupTriggers(broker, docName, oldDoc != null),
 					oldDoc == null ? Trigger.STORE_DOCUMENT_EVENT : Trigger.UPDATE_DOCUMENT_EVENT);
 
-			info.prepareTrigger(broker, transaction, getName() + '/' + docName, oldDoc);
+            //TODO : use dedicated function in XmldbURI
+			info.prepareTrigger(broker, transaction, getName() + "/" + docName, oldDoc);
 
-			LOG.debug("Scanning document " + getName() + '/' + docName);
+			LOG.debug("Scanning document " + getName() + "/" + docName);
 			doValidate.run(info);
 			
 			document.setMaxDepth(document.getMaxDepth() + 1);

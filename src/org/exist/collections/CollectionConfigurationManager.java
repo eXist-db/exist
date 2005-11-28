@@ -115,7 +115,7 @@ public class CollectionConfigurationManager {
     	CollectionConfiguration conf = new CollectionConfiguration(collection);
         boolean configFound = false;
         //TODO : use dedicated function in XmldbURI
-    	String path = collection.getName() + '/';
+    	String path = collection.getName() + "/";
     	int p = DBBroker.ROOT_COLLECTION.length();
     	String next;
     	Collection coll = null;
@@ -139,7 +139,7 @@ public class CollectionConfigurationManager {
     			if(coll != null)
     				coll.release();
     		}
-    		p = path.indexOf('/', p + 1);
+    		p = path.indexOf("/", p + 1);
 	    }
         if (!configFound)
             // use default configuration

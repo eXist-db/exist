@@ -41,6 +41,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
+import org.exist.xquery.Constants;
 import org.xml.sax.SAXException;
 
 /**
@@ -73,12 +74,13 @@ public class STXTransformerTrigger extends FilteringTrigger {
 			System.setProperty("javax.xml.transform.TransformerFactory", origProperty);
 
 		getLogger().debug("compiling stylesheet " + stylesheet);
-        if(stylesheet.indexOf(':') < 0) {
+        if(stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
+            ///TODO : use dedicated function in XmldbURI
             // load stylesheet out of the database
-            int p = stylesheet.indexOf('/');
+            int p = stylesheet.indexOf("/");
             DocumentImpl doc;
             if(p < 0)
-                stylesheet = parent.getName() + '/' + stylesheet;
+                stylesheet = parent.getName() + "/" + stylesheet;
             try {
 				doc = (DocumentImpl)broker.getDocument(stylesheet);
 				if(doc == null)

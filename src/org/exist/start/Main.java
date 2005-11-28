@@ -187,11 +187,9 @@ public class Main {
                         }
 
                         String file =
-                                subject.startsWith("/")
-                                ? (subject.replace('/', File.separatorChar))
-                                : (home
-                                + File.separatorChar
-                                + subject.replace('/', File.separatorChar));
+                                subject.startsWith("/") ? 
+                                subject.replace('/', File.separatorChar)
+                                : home + File.separatorChar + subject.replace('/', File.separatorChar);
 
                         if (_debug)
                             System.err.println("subject="

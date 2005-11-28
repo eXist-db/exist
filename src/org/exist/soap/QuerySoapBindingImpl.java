@@ -85,8 +85,9 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 				Map.Entry docEntry = (Map.Entry) j.next();
 				doc = new QueryResponseDocument();
 				docId = (String) docEntry.getKey();
-				if (docId.indexOf('/') != Constants.STRING_NOT_FOUND)
-					docId = docId.substring(docId.lastIndexOf('/') + 1);
+                //TODO : use dedicated function in XmldbURI
+				if (docId.indexOf("/") != Constants.STRING_NOT_FOUND)
+					docId = docId.substring(docId.lastIndexOf("/") + 1);
 				doc.setDocumentName(docId);
 				doc.setHitCount(((Integer) docEntry.getValue()).intValue());
 				docs[l] = doc;
@@ -219,8 +220,9 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			String resource;
 			for (Iterator i = collection.iterator(broker); i.hasNext(); j++) {
 				resource = ((DocumentImpl) i.next()).getFileName();
-				p = resource.lastIndexOf('/');
-				resources[j] = p < 0 ? resource : resource.substring(p + 1);
+                ///TODO : use dedicated function in XmldbURI
+				p = resource.lastIndexOf("/");
+				resources[j] = (p == Constants.STRING_NOT_FOUND) ? resource : resource.substring(p + 1);
 			}
 			c.setResources(resources);
 			c.setCollections(childCollections);
@@ -392,7 +394,8 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 				String path;
 				for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
 					p = (NodeProxy) i.next();
-					path = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
+                    ///TODO : use dedicated function in XmldbURI
+					path = p.getDocument().getCollection().getName() + "/" + p.getDocument().getFileName();
 					if (path.equals(docPath))
 						hitsByDoc.add(p);
 				}

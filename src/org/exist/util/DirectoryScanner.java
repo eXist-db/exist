@@ -23,6 +23,7 @@ public class DirectoryScanner {
 	}
 	
 	public final static File[] scanDir(String pattern) {
+        //TODO : why this test ? File should make it ! -pb
 		pattern = pattern.replace('/', File.separatorChar).replace('\\',File.separatorChar);
 		String baseDir = extractBaseDir(pattern);
 		if(baseDir == null) {
@@ -35,6 +36,7 @@ public class DirectoryScanner {
 	}
 	
 	public final static File[] scanDir(File baseDir, String pattern) {
+        ///TODO : why this test ? File should make it ! -pb
 		pattern = pattern.replace('/', File.separatorChar).replace('\\',File.separatorChar);
 		ArrayList list = new ArrayList();
 		scanDir(list, baseDir, "", pattern);

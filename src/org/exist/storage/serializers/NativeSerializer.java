@@ -168,7 +168,7 @@ public class NativeSerializer extends Serializer {
                 attribs.addAttribute(ID_ATTRIB, Long.toString(gid));
             }
             if (first && showId > 0) {
-            	// String src = doc.getCollection().getName() + '/' + doc.getFileName();
+            	// String src = doc.getCollection().getName() + "/" + doc.getFileName();
                 attribs.addAttribute(SOURCE_ATTRIB, doc.getFileName());
             }
             int children = node.getChildCount();

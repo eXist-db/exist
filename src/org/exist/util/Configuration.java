@@ -681,6 +681,7 @@ public class Configuration implements ErrorHandler {
                 catalog = ((Element) catalogs.item(i))
                         .getAttribute("file");
 
+                //TODO : why this test ? File should make it ! -pb
                 if (File.separatorChar == '\\')
                     catalog = catalog.replace('/', '\\');
 
