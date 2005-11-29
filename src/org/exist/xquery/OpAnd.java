@@ -53,6 +53,7 @@ public class OpAnd extends LogicalOp {
 		if(optimize) {
 			NodeSet rl = left.eval(contextSequence, null).toNodeSet();
 			rl = rl.getContextNodes(inPredicate);
+			// TODO: optimize and return false if rl.getLength() == 0 ?
 			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
 			rr = rr.getContextNodes(inPredicate);
 			rl =
@@ -61,6 +62,9 @@ public class OpAnd extends LogicalOp {
 		} else {
 			boolean ls =
 				left.eval(contextSequence).effectiveBooleanValue();
+			// immediately return false if the left operand is false
+			if (!ls)
+				return BooleanValue.FALSE;
 			boolean rs =
 				right.eval(contextSequence).effectiveBooleanValue();
 			return ls && rs ? BooleanValue.TRUE : BooleanValue.FALSE;
