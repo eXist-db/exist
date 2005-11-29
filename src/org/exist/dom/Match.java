@@ -21,6 +21,8 @@
  */
 package org.exist.dom;
 
+import org.exist.xquery.Constants;
+
 /**
  * Used to track fulltext matches throughout the query.
  * 
@@ -65,7 +67,7 @@ public class Match implements Comparable {
         
         public int compareTo(Object other) {
             final int otherOffset = ((Offset) other).offset;
-            return offset == otherOffset ? 0 : (offset > otherOffset ? 1 : -1);
+            return offset == otherOffset ? Constants.EQUAL : (offset < otherOffset ? Constants.INFERIOR : Constants.SUPERIOR);
         }
     }
     

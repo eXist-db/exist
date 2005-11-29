@@ -1294,7 +1294,7 @@ public class ClientFrame extends JFrame
             ResourceDescriptor desc2 = (ResourceDescriptor) aO2;
             
             if (desc1.isCollection() != desc2.isCollection()) {
-                return desc1.isCollection() ? -1 : 1;
+                return desc1.isCollection() ? Constants.INFERIOR : Constants.SUPERIOR;
             } else return desc1.getName().compareTo(desc2.getName());
         }
     }
