@@ -25,10 +25,11 @@ import java.text.Collator;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Function;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -69,11 +70,12 @@ public class FunCompare extends CollatingFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		Collator collator = getCollator(contextSequence, contextItem, 3);		
 		int result = Collations.compare(collator, s1, s2);
-		if (result == 0) 
-			return new IntegerValue(0);
+		if (result == Constants.EQUAL) 
+			return new IntegerValue(Constants.EQUAL);
+        //TODO : 
 		else if (result < 0)
-			return new IntegerValue(-1);
+			return new IntegerValue(Constants.INFERIOR);
 		else 
-			return new IntegerValue(1);
+			return new IntegerValue(Constants.SUPERIOR);
 	}
 }

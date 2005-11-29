@@ -47,11 +47,11 @@ public class FunctionId implements Comparable {
 		final int cmp = qname.compareTo(other.qname);
 		if(cmp == 0) {
 			if(argCount == other.argCount || argCount == -1 || other.argCount == -1)
-				return 0;
-			else if(argCount > other.argCount)
-				return 1;
+				return Constants.EQUAL;
+			else if(argCount < other.argCount)
+				return Constants.INFERIOR;
 			else
-				return -1;
+				return Constants.SUPERIOR;
 		} else
 			return cmp;
 	}

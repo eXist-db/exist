@@ -108,11 +108,11 @@ public class BooleanValue extends AtomicValue implements Indexable {
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		boolean otherVal = other.effectiveBooleanValue();
 		if (otherVal == value)
-			return 0;
+			return Constants.EQUAL;
 		else if (value)
-			return 1;
+			return Constants.SUPERIOR;
 		else
-			return -1;
+			return Constants.INFERIOR;
 	}
 
 	/* (non-Javadoc)
@@ -205,12 +205,12 @@ public class BooleanValue extends AtomicValue implements Indexable {
         final AtomicValue other = (AtomicValue)o;
         if(Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
             if(value == ((BooleanValue)other).value)
-                return 0;
+                return Constants.EQUAL;
             else if(value)
-                return 1;
+                return Constants.SUPERIOR;
             else
-                return -1;
+                return Constants.INFERIOR;
         } else
-            return getType() > other.getType() ? 1 : -1;
+            return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
     }
 }
