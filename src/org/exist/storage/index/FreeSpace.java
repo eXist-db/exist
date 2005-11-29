@@ -21,6 +21,7 @@
 package org.exist.storage.index;
 
 import org.exist.storage.btree.Paged.Page;
+import org.exist.xquery.Constants;
 
 
 
@@ -45,11 +46,11 @@ public class FreeSpace {
     
     public int compareTo(FreeSpace other) {
         if (free < other.free)
-            return -1;
+            return Constants.INFERIOR;
         else if (free > other.free)
-            return 1;
+            return Constants.SUPERIOR;
         else
-            return 0;
+            return Constants.EQUAL;
 	}
     
     public boolean equals(FreeSpace other) {

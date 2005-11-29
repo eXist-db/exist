@@ -21,6 +21,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.exist.util.Heap;
+import org.exist.xquery.Constants;
 
 /**
  * A general-purpose time-based daemon, vaguely similar in functionality
@@ -94,7 +95,7 @@ public class SyncDaemon {
 		public int compareTo(Object other) {
 			long a = getTimeToRun();
 			long b = ((TaskNode) (other)).getTimeToRun();
-			return (a < b) ? -1 : ((a == b) ? 0 : 1);
+			return (a < b) ? Constants.INFERIOR : ((a == b) ? Constants.EQUAL : Constants.SUPERIOR);
 		}
 
 		TaskNode(long w, Runnable c, long p) {
