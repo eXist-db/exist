@@ -63,14 +63,14 @@ public class DynamicCardinalityCheck extends AbstractExpression {
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		int items = seq.getLength();
 		if(items > 0 && requiredCardinality == Cardinality.EMPTY) {
-            error.addArgs(ExpressionDumper.dump(expression), Cardinality.toString(requiredCardinality), new Integer(items));
+            error.addArgs(ExpressionDumper.dump(expression), Cardinality.getDescription(requiredCardinality), new Integer(items));
             throw new XPathException(getASTNode(), error.toString());
         }
 		if(items == 0 && (requiredCardinality & Cardinality.ZERO) == 0) {
-            error.addArgs(ExpressionDumper.dump(expression), Cardinality.toString(requiredCardinality), new Integer(items));
+            error.addArgs(ExpressionDumper.dump(expression), Cardinality.getDescription(requiredCardinality), new Integer(items));
             throw new XPathException(getASTNode(), error.toString());
         } else if(items > 1 && (requiredCardinality & Cardinality.MANY) == 0) {
-            error.addArgs(ExpressionDumper.dump(expression), Cardinality.toString(requiredCardinality), new Integer(items));
+            error.addArgs(ExpressionDumper.dump(expression), Cardinality.getDescription(requiredCardinality), new Integer(items));
             throw new XPathException(getASTNode(), error.toString());
         }
 		return seq;

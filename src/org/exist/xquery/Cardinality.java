@@ -62,4 +62,22 @@ public class Cardinality {
                 throw new IllegalArgumentException("unknown cardinality: " + cardinality);
         }
     }
+    
+    public final static String getDescription(int cardinality) {
+        switch(cardinality) {
+            case EMPTY:
+                return "empty";
+            case EXACTLY_ONE:
+                return "exactly one"; 
+            case ONE_OR_MORE:
+                return "one or more";
+            case ZERO_OR_MORE:
+                return "zero or more";
+            case ZERO_OR_ONE:
+                return "zero or one";
+            default:
+                // impossible
+                throw new IllegalArgumentException("unknown cardinality: " + cardinality);
+        }
+    }
 }
