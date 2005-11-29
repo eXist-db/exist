@@ -8,6 +8,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.OrderedLinkedList;
+import org.exist.xquery.Constants;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -236,9 +237,9 @@ public class SortedNodeSet extends AbstractNodeSet {
 		public int compareTo(OrderedLinkedList.Node other) {
 			IteratorItem o = (IteratorItem) other;
 			if (value == null)
-				return o.value == null ? 0 : 1;
+				return o.value == null ? Constants.EQUAL : Constants.SUPERIOR;
 			if (o.value == null)
-				return value == null ? 0 : -1;
+				return value == null ? Constants.EQUAL : Constants.INFERIOR;
 			return value.compareTo(o.value);
 		}
 

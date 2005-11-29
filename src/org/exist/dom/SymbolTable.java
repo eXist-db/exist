@@ -115,7 +115,7 @@ public class SymbolTable {
      */
 	public synchronized short getSymbol(Element element) {
 		short id = (short) nameSymbols.get(element.getLocalName());
-		if (id > -1)
+		if (id != -1)
 			return id;
 		id = ++max;
 		nameSymbols.put(element.getLocalName(), id);
@@ -141,7 +141,7 @@ public class SymbolTable {
 	public synchronized short getSymbol(Attr attr) {
 		final String key = '@' + attr.getLocalName();
 		short id = (short) nameSymbols.get(key);
-		if (id > -1)
+		if (id != -1)
 			return id;
 		id = ++max;
 		nameSymbols.put(key, id);
@@ -169,7 +169,7 @@ public class SymbolTable {
 		if (name.length() == 0)
 			throw new IllegalArgumentException("name is empty");
 		short id = (short) nameSymbols.get(name);
-		if (id > -1)
+		if (id != -1)
 			return id;
 		id = ++max;
 		nameSymbols.put(name, id);
@@ -189,7 +189,7 @@ public class SymbolTable {
 			return 0;
 		}
 		short id = (short) nsSymbols.get(ns);
-		if (id > -1)
+		if (id != -1)
 			return id;
 		id = ++nsMax;
 		nsSymbols.put(ns, id);

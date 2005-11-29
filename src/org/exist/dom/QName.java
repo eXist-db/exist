@@ -130,16 +130,16 @@ public class QName implements Comparable {
 	public int compareTo(Object o) {
 		QName other = (QName) o;
 		if(nameType_ != other.nameType_) {
-			return nameType_ < other.nameType_ ? -1 : 1;
+			return nameType_ < other.nameType_ ? Constants.INFERIOR : Constants.SUPERIOR;
 		}
 		int c;
 		if (namespaceURI_ == null)
-			c = other.namespaceURI_ == null ? 0 : -1;
+			c = other.namespaceURI_ == null ? Constants.EQUAL : Constants.INFERIOR;
 		else if (other.namespaceURI_ == null)
-			c = 1;
+			c = Constants.SUPERIOR;
 		else
 			c = namespaceURI_.compareTo(other.namespaceURI_);
-		return c == 0 ? localName_.compareTo(other.localName_) : c;
+		return c == Constants.EQUAL ? localName_.compareTo(other.localName_) : c;
 	}
 	
 	/** 
@@ -164,12 +164,12 @@ public class QName implements Comparable {
 	public boolean equalsSimple(QName other) {
         int c;
         if (namespaceURI_ == null)
-            c = other.namespaceURI_ == null ? 0 : -1;
+            c = other.namespaceURI_ == null ? Constants.EQUAL : Constants.INFERIOR;
         else if (other.namespaceURI_ == null)
-            c = 1;
+            c = Constants.SUPERIOR;
         else
             c = namespaceURI_.compareTo(other.namespaceURI_);
-        if (c == 0)
+        if (c == Constants.EQUAL)
             return localName_.equals(other.localName_);
         return false;
     }
