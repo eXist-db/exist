@@ -23,6 +23,7 @@ package org.exist.dom;
 import java.util.Iterator;
 
 import org.exist.util.FastQSort;
+import org.exist.xquery.Constants;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
@@ -718,9 +719,9 @@ public class ArraySet extends AbstractNodeSet {
 		if (anode.getDocument().docId == bnode.getDocument().docId) {
 			return anode.getGID() == bnode.getGID()
 				? 0
-				: (anode.getGID() < bnode.getGID() ? -1 : 1);
+				: (anode.getGID() < bnode.getGID() ? Constants.INFERIOR : Constants.SUPERIOR);
 		}
-		return anode.getDocument().docId < bnode.getDocument().docId ? -1 : 1;
+		return anode.getDocument().docId < bnode.getDocument().docId ? Constants.INFERIOR : Constants.SUPERIOR;
 	}
 
 	/* (non-Javadoc)

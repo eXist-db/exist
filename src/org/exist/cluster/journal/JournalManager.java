@@ -1,17 +1,18 @@
 //$Id$
 package org.exist.cluster.journal;
 
-import org.apache.log4j.Logger;
-import org.exist.cluster.ClusterEvent;
-import org.exist.cluster.ClusterException;
-import org.exist.util.Configuration;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.TreeSet;
+
+import org.apache.log4j.Logger;
+import org.exist.cluster.ClusterEvent;
+import org.exist.cluster.ClusterException;
+import org.exist.util.Configuration;
+import org.exist.xquery.Constants;
 
 /**
  * Manage the Journal
@@ -442,9 +443,9 @@ public class JournalManager {
     private class EventComparator implements Comparator {
         public int compare(Object o, Object o1) {
             if (!(o instanceof ClusterEvent))
-                return -1;
+                return Constants.INFERIOR;
             if (!(o1 instanceof ClusterEvent))
-                return 1;
+                return Constants.SUPERIOR;
 
             ClusterEvent ev = (ClusterEvent) o;
             ClusterEvent ev1 = (ClusterEvent) o1;

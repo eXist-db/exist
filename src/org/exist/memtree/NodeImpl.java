@@ -33,6 +33,7 @@ import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
@@ -211,17 +212,17 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 
 	public int compareTo(Object other) {
 		if(!(other instanceof NodeImpl))
-			return -1;
+			return Constants.INFERIOR;
 		NodeImpl n = (NodeImpl)other;
 		if(n.document == document) {
 			if (nodeNumber == n.nodeNumber)
-				return 0;
+				return Constants.EQUAL;
 			else if (nodeNumber < n.nodeNumber)
-				return -1;
+				return Constants.INFERIOR;
 			else
-				return 1;
+				return Constants.SUPERIOR;
 		} else
-			return -1;
+			return Constants.INFERIOR;
 	}
 	
 	/* (non-Javadoc)

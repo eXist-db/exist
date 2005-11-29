@@ -69,6 +69,7 @@ import org.exist.util.LockException;
 import org.exist.util.SyntaxException;
 import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.serializer.DOMStreamer;
+import org.exist.xquery.Constants;
 import org.w3c.dom.Node;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -390,11 +391,11 @@ implements Comparable, EntityResolver, Cacheable {
 	public int compareTo(Object obj) {
 		Collection other = (Collection) obj;
 		if (collectionId == other.collectionId)
-			return 0;
+			return Constants.EQUAL;
 		else if (collectionId < other.collectionId)
-			return -1;
+			return Constants.INFERIOR;
 		else
-			return 1;
+			return Constants.SUPERIOR;
 	}
 
 	public boolean equals(Object obj) {

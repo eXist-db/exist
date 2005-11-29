@@ -36,6 +36,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
@@ -176,7 +177,7 @@ public class FunMatches extends Function {
         boolean caseSensitive = true;
         if(getSignature().getArgumentCount() == 3) {
             String flagsArg = getArgument(2).eval(contextSequence, contextItem).getStringValue();
-            caseSensitive = flagsArg.indexOf('i') < 0;
+            caseSensitive = (flagsArg.indexOf('i') == Constants.STRING_NOT_FOUND);
             flags = parseFlags(flagsArg);
         }
         

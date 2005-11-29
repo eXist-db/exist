@@ -134,7 +134,7 @@ public class ElementConstructor extends NodeConstructor {
 				constructor = (AttributeConstructor)attributes[i];
 				if(constructor.isNamespaceDeclaration()) {
 					int p = constructor.getQName().indexOf(':');
-					if(p < 0)
+					if(p == Constants.STRING_NOT_FOUND)
 						context.declareInScopeNamespace("", constructor.getLiteralValue());
 					else {
 						String prefix = constructor.getQName().substring(p + 1);

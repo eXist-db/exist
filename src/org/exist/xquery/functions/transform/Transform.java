@@ -232,7 +232,7 @@ public class Transform extends BasicFunction {
 	private Templates getSource(SAXTransformerFactory factory, String stylesheet) 
 	throws XPathException, TransformerConfigurationException {
 		String base;
-		if(stylesheet.indexOf(':') < 0) {
+		if(stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
 			File f = new File(stylesheet);
 			if(f.canRead()) 
 				stylesheet = f.toURI().toASCIIString();

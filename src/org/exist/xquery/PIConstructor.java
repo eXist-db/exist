@@ -41,8 +41,9 @@ public class PIConstructor extends NodeConstructor {
 	
 	public PIConstructor(XQueryContext context, String pi) throws XPathException {
 		super(context);
-		int p = pi.indexOf(' ');
-		if(p < 0)
+        //TODO : handle this from the parser -pb
+		int p = pi.indexOf(" ");
+		if(p == Constants.STRING_NOT_FOUND)
 			throw new XPathException("Syntax error in processing instruction");
 		target = pi.substring(0, p);
 		if(++p < pi.length())

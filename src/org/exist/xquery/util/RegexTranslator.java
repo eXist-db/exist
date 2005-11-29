@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.exist.util.XMLChar;
+import org.exist.xquery.Constants;
 
 /**
  * This class translates XML Schema regex syntax into JDK 1.4 regex syntax.
@@ -519,11 +520,11 @@ public class RegexTranslator {
                 try {
                     int upperValue = Integer.parseInt(upper);
                     result.append(upper);
-                    if (lowerValue < 0 || upperValue < lowerValue)
+                    if (lowerValue == Constants.STRING_NOT_FOUND || upperValue < lowerValue)
                         throw makeException("invalid quantity range");
                 } catch (NumberFormatException e) {
                     result.append(Integer.MAX_VALUE);
-                    if (lowerValue < 0 && new BigDecimal(lower).compareTo(new BigDecimal(upper)) > 0)
+                    if (lowerValue == Constants.STRING_NOT_FOUND && new BigDecimal(lower).compareTo(new BigDecimal(upper)) > 0)
                         throw makeException("invalid quantity range");
                 }
             }
@@ -533,7 +534,7 @@ public class RegexTranslator {
     private String parseQuantExact() throws RegexSyntaxException {
         StringBuffer buf = new StringBuffer();
         do {
-            if ("0123456789".indexOf(curChar) < 0)
+            if ("0123456789".indexOf(curChar) == Constants.STRING_NOT_FOUND)
                 throw makeException("expected digit");
             buf.append(curChar);
             advance();
@@ -1421,12 +1422,12 @@ public class RegexTranslator {
             throw makeException("empty property name");
         case 2:
             int sci = subCategories.indexOf(propertyName);
-            if (sci < 0 || sci % 2 == 1)
+            if (sci == Constants.STRING_NOT_FOUND || sci % 2 == 1)
                 throw makeException("bad category");
             return getSubCategoryCharClass(sci / 2);
         case 1:
             int ci = categories.indexOf(propertyName.charAt(0));
-            if (ci < 0)
+            if (ci == Constants.STRING_NOT_FOUND)
                 throw makeException("bad category", propertyName);
             return getCategoryCharClass(ci);
         default:
@@ -1481,7 +1482,7 @@ public class RegexTranslator {
                 if (curChar == '[')
                     break;
                 CharClass upper = parseCharClassEscOrXmlChar();
-                if (lower.singleChar() < 0 || upper.singleChar() < 0)
+                if (lower.singleChar() == Constants.STRING_NOT_FOUND || upper.singleChar() == Constants.STRING_NOT_FOUND)
                     throw makeException("multi_range");
                 if (lower.singleChar() > upper.singleChar())
                     throw makeException("invalid_range");
@@ -1628,7 +1629,7 @@ public class RegexTranslator {
     static private CharClass computeSubCategoryCharClass(String name) {
         CharClass base = new Property(name);
         int sci = CATEGORY_NAMES.indexOf(name);
-        if (sci < 0) {
+        if (sci == Constants.STRING_NOT_FOUND) {
             if (name.equals("Cn")) {
                 // Unassigned
                 List assignedRanges = new Vector();
