@@ -24,6 +24,7 @@ package org.exist.util;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 
@@ -92,7 +93,8 @@ public class ValueOccurrences {
 			return value.compareTo(null, ((ValueOccurrences) o).value);
 		} catch (XPathException e) {
 			e.printStackTrace();
-			return -1;
+            //TODO : what does this mean ? -pb
+			return Constants.INFERIOR;
 		}
 	}
 }
