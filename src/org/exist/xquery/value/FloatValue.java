@@ -29,6 +29,7 @@ import java.text.Collator;
 
 import org.exist.storage.Indexable;
 import org.exist.util.ByteConversion;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 /**
@@ -340,7 +341,7 @@ public class FloatValue extends NumericValue implements Indexable {
         if(Type.subTypeOf(other.getType(), Type.FLOAT))
             return Float.compare(value, ((FloatValue)other).value);
         else
-            return getType() > other.getType() ? 1 : -1;
+            return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
     }
 	
 }

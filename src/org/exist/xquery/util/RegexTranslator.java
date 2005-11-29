@@ -575,14 +575,14 @@ public class RegexTranslator {
         public int compareTo(Object o) {
             Range other = (Range)o;
             if (this.min < other.min)
-                return -1;
+                return Constants.INFERIOR;
             if (this.min > other.min)
-                return 1;
+                return Constants.SUPERIOR;
             if (this.max > other.max)
-                return -1;
+                return Constants.INFERIOR;
             if (this.max < other.max)
-                return 1;
-            return 0;
+                return Constants.SUPERIOR;
+            return Constants.EQUAL;
         }
     }
 

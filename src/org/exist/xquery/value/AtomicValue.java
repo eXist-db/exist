@@ -27,6 +27,7 @@ import org.exist.dom.NodeSet;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.xml.sax.ContentHandler;
@@ -315,9 +316,9 @@ public abstract class AtomicValue implements Item, Sequence {
 		 */
 		public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 			if (other instanceof EmptyValue)
-				return 0;
+				return Constants.EQUAL;
 			else
-				return -1;
+				return Constants.INFERIOR;
 		}
 
 		/* (non-Javadoc)

@@ -435,6 +435,6 @@ public class DoubleValue extends NumericValue implements Indexable {
         if(Type.subTypeOf(other.getType(), Type.DOUBLE))
             return Double.compare(value, ((DoubleValue)other).value);
         else
-            return getType() > other.getType() ? 1 : -1;
+            return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
     }
 }
