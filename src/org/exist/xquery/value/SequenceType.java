@@ -168,6 +168,8 @@ public class SequenceType {
 	}
 
 	public String toString() {
+		if (cardinality == Cardinality.EMPTY)
+			return Cardinality.toString(cardinality);
 		return Type.getTypeName(primaryType) + Cardinality.toString(cardinality);
 	}
 
