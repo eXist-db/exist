@@ -2,6 +2,8 @@ package org.exist.util;
 
 import java.util.Iterator;
 
+import org.exist.xquery.Constants;
+
 public class LongLinkedList {
 
 	public static class ListItem implements Comparable {
@@ -32,11 +34,11 @@ public class LongLinkedList {
 		public int compareTo(Object o) {
             final long ol = ((ListItem)o).l;
             if(ol == l)
-                return 0;
-            else if(l > ol)
-                return 1;
+                return Constants.EQUAL;
+            else if(l < ol)
+                return Constants.INFERIOR;
             else
-                return -1;
+                return Constants.SUPERIOR;
 		}
 
 	}
