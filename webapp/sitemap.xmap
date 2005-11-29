@@ -818,7 +818,13 @@
                 <map:transform src="stylesheets/system/directory2html.xslt"/>
                 <map:serialize/>
             </map:match>
-        
+ 
+            <!-- allows to automagically activate a subdirectory having its own sitemap.xmap -->
+            <map:match pattern="*/**">
+                <map:mount check-reload="yes" src="{1}/sitemap.xmap"
+                        uri-prefix="{1}" />
+            </map:match>
+       
     <!--+
         | At the very end of a pipeline, you can catch the errors triggered
         | by the pipeline execution. The error handler is an internal sitemap
