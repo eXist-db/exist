@@ -81,6 +81,7 @@ import java.util.Arrays;
 import org.apache.log4j.Logger;
 import org.exist.storage.journal.Lsn;
 import org.exist.util.ByteConversion;
+import org.exist.xquery.Constants;
 
 /**
  *  Paged is a paged file foundation that is used by the BTree class and
@@ -1013,11 +1014,11 @@ public abstract class Paged {
 		public int compareTo(Object o) {
 			final Page other = (Page)o;
 			if(pageNum == other.pageNum)
-				return 0;
+				return Constants.EQUAL;
 			else if(pageNum > other.pageNum)
-				return 1;
+				return Constants.SUPERIOR;
 			else
-				return -1;
+				return Constants.INFERIOR;
 		}
 		
 		public void dumpPage() throws IOException {

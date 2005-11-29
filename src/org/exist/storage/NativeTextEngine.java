@@ -69,6 +69,7 @@ import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.UTF8;
 import org.exist.util.XMLString;
+import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
@@ -1441,9 +1442,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			public int compareTo(Object o) {
 				final TermFreq other = (TermFreq)o;
 				if(l == other.l)
-					return 0;
+					return Constants.EQUAL;
 				else
-					return l > other.l ? 1 : -1;
+					return l < other.l ? Constants.INFERIOR : Constants.SUPERIOR;
 			}
 		}
 		
