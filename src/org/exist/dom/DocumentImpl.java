@@ -300,11 +300,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public final int compareTo(Object other) {
 		final long otherId = ((DocumentImpl)other).docId;
 		if (otherId == docId)
-			return 0;
+			return Constants.EQUAL;
 		else if (docId < otherId)
-			return -1;
+			return Constants.INFERIOR;
 		else
-			return 1;
+			return Constants.SUPERIOR;
 	}
 
 	public Attr createAttribute(String name) throws DOMException {
@@ -390,7 +390,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	
 	public long getFirstChildAddress() {
 		if(children == 0)
-			return -1;
+			return NodeProxy.UNKNOWN_NODE_ADDRESS;
 		return childList[0];
 	}
 	

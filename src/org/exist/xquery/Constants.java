@@ -159,8 +159,11 @@ public interface Constants {
     public final static int FULLTEXT_OR = 0;
     public final static int FULLTEXT_AND = 1;
     
-    //The defenitive missing constant in java.lang.string
+    //The definitive missing constant in java.lang.String
     public final static int STRING_NOT_FOUND = -1;
-    
+    //The definitive missing constants in java.lang.Comparable
+    public final static int INFERIOR = -1;
+    public final static int EQUAL = 0;
+    public final static int SUPERIOR = 1;
     
 }

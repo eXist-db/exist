@@ -24,6 +24,8 @@ package org.exist.dom;
 
 import java.util.Comparator;
 
+import org.exist.xquery.Constants;
+
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
@@ -43,14 +45,14 @@ public class DocumentOrderComparator implements Comparator {
 		if (doc.docId > p2.getDocument().docId)
 			return 1;
 		else if (doc.docId < p2.getDocument().docId)
-			return -1;
+			return Constants.INFERIOR;
 		else {
 			if (p1.getGID() == p2.getGID())
-				return 0;
+				return Constants.EQUAL;
 			int la = doc.getTreeLevel(p1.getGID());
 			int lb = doc.getTreeLevel(p2.getGID());
 			if(la == lb)
-				return p1.getGID() < p2.getGID() ? -1 : 1;
+				return p1.getGID() < p2.getGID() ? Constants.INFERIOR : Constants.SUPERIOR;
 			long pa = p1.getGID(), pb = p2.getGID();
 			if (la > lb) {
 				while (la > lb) {
@@ -58,18 +60,18 @@ public class DocumentOrderComparator implements Comparator {
 					--la;
 				}
 				if (pa == pb)
-					return 1;
+					return Constants.SUPERIOR;
 				else
-					return pa < pb ? -1 : 1;
+					return pa < pb ? Constants.INFERIOR : Constants.SUPERIOR;
 			} else {
 				while (lb > la) {
 					pb = XMLUtil.getParentId(doc, pb, lb);
 					--lb;
 				}
 				if (pb == pa)
-					return -1;
+					return Constants.INFERIOR;
 				else
-					return pa < pb ? -1 : 1;
+					return pa < pb ? Constants.INFERIOR : Constants.SUPERIOR;
 			}	
 		}
 	}

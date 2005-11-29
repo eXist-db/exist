@@ -25,6 +25,7 @@ import java.text.Collator;
 
 import org.exist.storage.Indexable;
 import org.exist.util.ByteConversion;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 public class DoubleValue extends NumericValue implements Indexable {
@@ -74,7 +75,7 @@ public class DoubleValue extends NumericValue implements Indexable {
 			return s;
 		}
 		int e = s.indexOf('E');
-		if (e < 0) {
+		if (e == Constants.STRING_NOT_FOUND) {
 			if (s.equals("Infinity")) {
 				return "INF";
 			} else if (s.equals("-Infinity")) {
