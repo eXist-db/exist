@@ -401,14 +401,14 @@ public class XmldbURI {
 		String[] parts = p.split(pseudoURI);
 		StringBuffer newURIString = new StringBuffer(parts[0]);
 		for (int i = 1 ; i <parts.length; i ++) { 
-			newURIString.append("/");
+            newURIString.append("/");
 			if (!"".equals(parts[i])) {
 	    		try {
-	    			URI dummy = new URI(parts[i]); 
-	    			newURIString.append(parts[i]);
+	    			URI dummy = new URI(newURIString + parts[i]); 
+                    newURIString.append(parts[i]);
 	    		} catch (URISyntaxException e) {	
 	    			//We'd nee a logger here.
-	    			System.out.println("Had to escape : ''" + parts[i] + "' in '" + pseudoURI + "' !");    		
+                    System.out.println("Had to escape : ''" + parts[i] + "' in '" + pseudoURI + "' !");    		
 	    			try {
 	    				newURIString.append(URLEncoder.encode(parts[i], "UTF-8"));
 	    			} catch (UnsupportedEncodingException ee) {
