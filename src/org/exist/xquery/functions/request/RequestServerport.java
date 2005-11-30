@@ -33,26 +33,26 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Type;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author Adam Retter (adam.retter@devon.gov.uk)
  */
-public class RequestServername extends BasicFunction {
+public class RequestServerport extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("request-servername", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns the server nodename of the current request.",
+			new QName("request-serverport", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Returns the server port of the current request.",
 			null,
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE));
 
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public RequestServername(XQueryContext context) {
+	public RequestServerport(XQueryContext context) {
 		super(context, signature);
 	}
 
@@ -72,7 +72,7 @@ public class RequestServername extends BasicFunction {
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper)
-			return new StringValue(((RequestWrapper) value.getObject()).getServerName());
+			return new IntegerValue(((RequestWrapper) value.getObject()).getServerPort());
 		else
 			throw new XPathException("Variable $request is not bound to a Request object.");
 	}
