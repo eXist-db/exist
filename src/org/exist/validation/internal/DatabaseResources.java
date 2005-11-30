@@ -22,21 +22,14 @@
 
 package org.exist.validation.internal;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-
-import org.apache.log4j.Logger;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import org.exist.EXistException;
-import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
@@ -45,22 +38,28 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
-import org.exist.storage.txn.TransactionException;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
-import org.exist.util.LockException;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+
+import org.apache.log4j.Logger;
+import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 
+
 /**
- *
- * @author wessels
+ *  Helper class for accessing grammars.
+ * @author Dannes Wessels
  */
 public class DatabaseResources {
     
@@ -78,311 +77,246 @@ public class DatabaseResources {
     
     public static String NOGRAMMAR = "NONE";
     
-    
-    public static int GRAMMAR_UNKNOWN = 0;
+//    // TODO remove
+//    public static int GRAMMAR_UNKNOWN = 0;
     public static int GRAMMAR_XSD = 1;
     public static int GRAMMAR_DTD = 2;
     
-    private String CATALOGCONTENT="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            +"<catalog>\n"
-            +"<!-- Warning this file is regenerated at every start -->\n"
-            +"<!-- Will be fixed in the near future -->\n"
-            +"<public publicId=\"-//PLAY//EN\" uri=\"play.dtd\"/>\n"
-            +"</catalog>";
+    public static final String OASISCATALOGURN
+            ="urn:oasis:names:tc:entity:xmlns:xml:catalog";
+    
+    public static final String FINDSCHEMA
+            ="for $schema in collection('COLLECTION')/xs:schema"
+            +"[@targetNamespace = 'TARGET'] return document-uri($schema)";
+    
+    public static final String FINDCATALOG
+            ="declare namespace catalogns='"+OASISCATALOGURN+"';"
+            +"for $catalog in collection('COLLECTION')/catalogns:catalog "
+            +"return document-uri($catalog)";
+    
+    public static final String FINDDTD
+            ="let $docs := for $doc in collection($collection) "
+            +"return document-uri($doc) for $doc in $docs "
+            +"where ends-with($doc, '.dtd') return $doc";
+    
+    public static final String FINDXSDINCATALOG
+            ="declare namespace ctlg='"+OASISCATALOGURN+"';"
+            +"for $schema in fn:document('CATALOGFILE')/ctlg:catalog"
+            +"/ctlg:uri[@name = 'NAMESPACE']/@uri return $schema";
+    
+    public static final String FINDDTDINCATALOG
+            ="declare namespace ctlg='"+OASISCATALOGURN+"';"
+            +"for $dtd in fn:document('CATALOGFILE')/ctlg:catalog"
+            +"/ctlg:public[@publicId = 'PUBLICID']/@uri return $dtd";
+    
+    public static final String FINDPUBLICIDINCATALOGS
+            ="declare namespace ctlg='"+OASISCATALOGURN+"';"
+            +"for $dtd in collection('COLLECTION')/ctlg:catalog"
+            +"/ctlg:public[@publicId = 'PUBLICID']/@uri "
+            +"return document-uri($dtd)";
     
     /**
-     * Creates a new instance of DatabaseResources
+     *  Execute xquery.
+     *
+     * @param query  The xQuery
+     * @return  Sequence when results are available, null when errors occur.
      */
-    public DatabaseResources(BrokerPool pool) {
-        
-        logger.info("Initializing DatabaseResources");
-        this.brokerPool = pool;
-        
-        // TODO this must be performed once.... and earlier...
-        createCollection(GRAMMARBASE);
-        createCollection(XSDBASE);
-        createCollection(DTDBASE);
-        insertCatalog(
-                convertToFile(new StringReader(CATALOGCONTENT)),
-                "catalog_example.xml");
-        
-    }
-    
-    public boolean createCollection(String path){
-        
-        boolean insertIsSuccessfull=false;
+    public Sequence executeQuery(String query) {
         
         DBBroker broker = null;
-        try {
-            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
-            
-            TransactionManager transact = brokerPool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-            
-            Collection collection = broker.getOrCreateCollection(transaction, path);
-            broker.saveCollection(transaction, collection);
-            
-            transact.commit(transaction);
-            
-            insertIsSuccessfull=true;
-            
-        } catch (PermissionDeniedException ex){
-            logger.error(ex);
-            
-        } catch (TransactionException ex){
-            logger.error(ex);
-            
-        } catch (EXistException ex){
-            logger.error(ex);
-        } finally {
-            if(brokerPool!=null){
-                brokerPool.release(broker);
-            }
-            
-        }
-        return insertIsSuccessfull;
-    }
-    
-    private File convertToFile(Reader reader){
-        File tmpFile = null;
+        Sequence result= null;
         
-        try {
-            tmpFile = File.createTempFile("InsertGrammar","tmp");
-            FileWriter fw = new FileWriter(tmpFile);
-            
-            // Transfer bytes from in to out
-            char[] buf = new char[1024];
-            int len;
-            while ((len = reader.read(buf, 0, 1024)) > 0) {
-                fw.write(buf, 0, len);
-            }
-            reader.close();
-            fw.close();
-        } catch (IOException ex) {
-            logger.error(ex);
-        }
-        
-        tmpFile.deleteOnExit();
-        
-        return tmpFile;
-    }
-    
-    private String getDocumentName(String path){
-        
-        String docName = null;
-        
-        int separatorPos = path.lastIndexOf("/");
-        if(separatorPos == Constants.STRING_NOT_FOUND){
-            docName=path;
-            
-        } else {
-            docName=path.substring(separatorPos + 1);
-        }
-        
-        return docName;
-    }
-    
-    private String getCollectionPath(String path){
-        
-        String pathName = null;
-        
-        int separatorPos = path.lastIndexOf("/");
-        if(separatorPos == Constants.STRING_NOT_FOUND){
-            // no path
-            pathName="/";
-            
-        } else {
-            pathName=path.substring(0, separatorPos);
-        }
-        
-        if(!pathName.startsWith("/")){
-            pathName= "/" + pathName;
-        }
-        
-        return pathName;
-        
-    }
-    
-    public boolean insertSchema(File file, String path){
-        
-        String collection = XSDBASE + getCollectionPath(path);
-        
-        return insertDocument(file, false, collection, getDocumentName(path));
-    }
-    
-    public boolean insertDtd(File file, String path){
-        String collection = DTDBASE + getCollectionPath(path);
-        
-        return insertDocument(file, true, collection, getDocumentName(path));
-    }
-    
-    public boolean insertCatalog(File file){
-        String collection = DTDBASE;
-        
-        return insertDocument(file, false, collection, "catalog.xml");
-    }
-    
-    public boolean insertCatalog(File file, String catalogName){
-        String collection = DTDBASE;
-        
-        return insertDocument(file, false, collection, catalogName);
-    }
-    
-    public boolean insertDocument( File file, boolean isBinary,
-            String collectionName, String documentName){
-        
-        boolean insertIsSuccesfull = false;
-        
-        DBBroker broker = null;
-        try {
-            
-            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
-            
-            TransactionManager transact = brokerPool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-            
-            Collection collection = broker.getOrCreateCollection(transaction, collectionName);
-            broker.saveCollection(transaction, collection);
-            
-            if(isBinary){
-                FileInputStream is = new FileInputStream(file);
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
-                byte[] buf = new byte[512];
-                int count = 0;
-                while ((count = is.read(buf)) > -1) {
-                    os.write(buf, 0, count);
-                }
-                
-                // TODO : call mime-type stuff.
-                BinaryDocument doc =
-                        collection.addBinaryResource(transaction, broker,
-                        documentName, os.toByteArray(), "text/text");
-                
-            } else {
-                IndexInfo info = collection.validate( transaction, broker, documentName , new InputSource( new FileReader(file) ) );
-                collection.store(transaction, broker, info, new InputSource( new FileReader(file) ), false);
-            }
-            transact.commit(transaction);
-            
-            insertIsSuccesfull=true;
-            
-        } catch (EXistException ex){
-            logger.error(ex);
-        } catch (PermissionDeniedException ex){
-            logger.error(ex);
-        } catch (SAXException ex){
-            logger.error(ex);
-        } catch (TriggerException ex){
-            logger.error(ex);
-        } catch(LockException ex){
-            logger.error(ex);
-        } catch(FileNotFoundException ex){
-            logger.error(ex);
-        } catch(IOException ex){
-            logger.error(ex);
-        } finally {
-            if(brokerPool!=null){
-                brokerPool.release(broker);
-            }
-        }
-        return insertIsSuccesfull;
-        
-    }
-     
-    
-    public boolean hasGrammar(int type, String id){
-        return !getGrammarPath(type, id).equalsIgnoreCase("NONE");
-    }
-    
-    public String getGrammarPath(int type, String id){
-        
-        logger.info("Get path of '"+id+"'");
-        
-        String result="EMPTY";
-        String query = getGrammarQuery(type, id);
-        
-        DBBroker broker = null;
         try {
             broker = brokerPool.get(SecurityManager.SYSTEM_USER);
         } catch (EXistException ex){
             logger.error("Error getting DBBroker", ex);
         }
         
-        XQuery xquery = broker.getXQueryService();
-        try{
-            Sequence seq = xquery.execute(query, null);
-            
-            SequenceIterator i = seq.iterate();
-            if(i.hasNext()){
-                result= i.nextItem().getStringValue();
-                
-            } else {
-                logger.debug("No xQuery result");
+        try {
+            result = broker.getXQueryService().execute(query, null);
+        } catch (XPathException ex) {
+            logger.error("Problem executing xquery", ex);
+        } finally{
+            if(brokerPool!=null){
+                brokerPool.release(broker);
             }
-            
-        } catch (XPathException ex){
-            logger.error("XSD xQuery error: "+ ex.getMessage());
         }
-        
-        brokerPool.release(broker);
         
         return result;
     }
     
-    // TODO precompile grammar, write queries to file. 
-    // TODO figure out how to pass parameters to compiled queries
-    public String getGrammarQuery(int type, String id){ // TODO double
-        String query="NOQUERY";
-        if(type==GRAMMAR_XSD){
-            query = "let $top := collection('"+XSDBASE+"') " +
-                    "let $schemas := $top/xs:schema[ @targetNamespace = \"" + id+ "\" ] "+
-                    "return if($schemas) then document-uri($schemas[1]) else \""+NOGRAMMAR+"\" " ;
-        } else if(type==GRAMMAR_DTD){
-            query = "let $top := doc('"+DTDCATALOG+"') "+
-                    "let $dtds := $top//public[@publicId = \""+id+"\"]/@uri " +
-                    "return if($dtds) then $dtds[1] else \""+NOGRAMMAR+"\"" ;
-        } else {
-            logger.error("Unknown grammar type, not able to find query.");
+    
+    /**
+     *  Execute xquery, return single result.
+     *
+     * @param   query  The xQuery
+     * @return  String When a result is available, null when an error occured.
+     */
+    public String executeQuerySingleResult(String xquery){
+        
+        String result = null;
+        
+        try {
+            // execute query
+            Sequence sequence = executeQuery(xquery);
+            
+            SequenceIterator i = sequence.iterate();
+            if(i.hasNext()){
+                result= i.nextItem().getStringValue();
+                
+                logger.debug("Single query result: '"+result+"'.");
+                
+            } else {
+                logger.debug("No query result.");
+            }
+            
+        } catch (XPathException ex) {
+            logger.error("xQuery issue ", ex);
         }
-
-        return query;
+        
+        return result;
     }
     
     /**
-     *  Get GRAMMAR resource specified by DB path
-     * @param path          Path in DB to resource.
-     * @param isBinary      Flag is resource binary?
-     * @return              Reader to the resource.
+     *  Execute xquery, return multiple result.
+     *
+     * @param   query  The xQuery
+     * @return  List of Strings when a result is available, null when an
+     *          error occured.
      */
-    public byte[] getGrammar(int type, String path ){
+    public List executeQueryListResult(String xquery){
         
-        byte[] data = null;
-        boolean isBinary=false;
+        List result = new ArrayList();
         
-        if(type==GRAMMAR_DTD){
-            isBinary=true;
+        try {
+            // execute query
+            Sequence sequence = executeQuery(xquery);
+            
+            SequenceIterator i = sequence.iterate();
+            
+            logger.debug("Query yielded "+sequence.getLength()+" hits.");
+            
+            while(i.hasNext()){
+                String path =  i.nextItem().getStringValue();
+                result.add(path);
+            }
+            
+        } catch (XPathException ex) {
+            logger.error("xQuery issue.", ex);
         }
         
-        logger.debug("Get resource '"+path + "' binary="+ isBinary);
-        Reader reader=null;
+        return result;
+    }
+    
+    
+    /**
+     *  Find document path of XSD describing a namespace.
+     *
+     * @param collection    Start point for search, e.g. '/db'.
+     * @param namespace     Namespace that needs to be found.
+     * @return              Document path (e.g. '/db/foo/bar.xsd') if found,
+     *                      null if namespace could not be found.
+     */
+    public String getSchemaPath(XmldbURI collection, String namespace){
+        
+        logger.debug("Find schema with namespace '"+namespace+"' in '"+collection+"'.");
+        String path=null;
+        
+        // Fill parameters for query
+        String xquery = FINDSCHEMA.replaceAll("COLLECTION",collection.getCollectionPath()).replaceAll("TARGET",namespace);
+        
+        return executeQuerySingleResult(xquery);
+    }
+    
+    /**
+     *  Find catalogs in database recursively.
+     *
+     * @param collection  Start point for search, e.g. /db
+     * @return  List of document paths (strings), e.g. /db/foo/bar/catalog.xml.
+     */
+    public List getCatalogs(String collection){
+        
+        logger.debug("Find catalogs with namespace '"+OASISCATALOGURN+"' in '"+collection+"'.");
+        
+        // Fill parameters for query
+        String xquery = FINDCATALOG.replaceAll("COLLECTION",collection);
+        
+        return executeQueryListResult(xquery);
+    }
+    
+    /**
+     *  Find document catalogPath of DTD describing a publicId.
+     *
+     * @param collection    Start point for search, e.g. '/db'.
+     * @param publicId      PublicID that needs to be found.
+     * @return Document catalogPath (e.g. '/db/foo/bar.dtd') if found,
+     *                      null if publicID could not be found.
+     */
+    public String getDtdPath(XmldbURI collection, String publicId){
+        
+        logger.debug("Find DTD with publicID '"+publicId+"' in '"+collection.getCollectionPath()+"'.");
+        String dtdPath=null;
+        
+        // Find all catalogs containing publicId
+        String xquery = FINDPUBLICIDINCATALOGS
+                .replaceAll("COLLECTION",collection.getCollectionPath())
+                .replaceAll("PUBLICID", publicId);
+        
+        String catalogPath = executeQuerySingleResult(xquery);
+        
+        // Get from selected catalog file the publicId
+        if(catalogPath !=null){
+            
+            XmldbURI col=null;
+            try {
+                col = new XmldbURI("xmldb:exist://" + getCollectionPath(catalogPath));
+            } catch (URISyntaxException ex) {
+                ex.printStackTrace();
+            }
+            
+            String docName = getDocumentName(catalogPath);
+            
+            dtdPath = getDtdPathFromCatalog(col, docName, publicId);
+        }
+        
+        return dtdPath;
+    }
+    
+    /**
+     *  Get document from database.
+     *
+     * @param isBinary      Indicate wether resource is binary.
+     * @param documentPath  Path to the resource.
+     * @return              Byte array of resource, null if not found.
+     */
+    public byte[] getGrammar(boolean isBinary, String documentPath){
+        
+        byte[] data = null;
+        
+        logger.debug("Get resource '"+documentPath + "' binary="+ isBinary);
         
         DBBroker broker = null;
         try {
-            
             broker = brokerPool.get(SecurityManager.SYSTEM_USER);
             
-            
             if(isBinary){
-                BinaryDocument binDoc = (BinaryDocument) broker.openDocument(path, Lock.READ_LOCK);
+                BinaryDocument binDoc = (BinaryDocument) broker.openDocument(documentPath, Lock.READ_LOCK);
                 data = broker.getBinaryResourceData(binDoc);
                 binDoc.getUpdateLock().release(Lock.READ_LOCK);
                 
             } else {
                 
-                DocumentImpl doc = broker.openDocument(path, Lock.READ_LOCK);
+                DocumentImpl doc = broker.openDocument(documentPath, Lock.READ_LOCK);
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();
-                data = serializer.serialize(doc).getBytes();
+                
+                // if document is not present, null is returned
+                if(doc != null){
+                    data = serializer.serialize(doc).getBytes();
+                } else {
+                    throw new EXistException("Document '"+documentPath+" does not exist.");
+                }
+                
                 doc.getUpdateLock().release(Lock.READ_LOCK);
             }
         } catch (PermissionDeniedException ex){
@@ -398,6 +332,290 @@ public class DatabaseResources {
         }
         
         return data;
+    }
+    
+    
+    /**
+     *  Inser document to database. Not well tested yet.
+     *
+     * @param grammar      ByteArray containing file.
+     * @param isBinary     Indicate wether resource is binary.
+     * @param documentPath Path to the resource.
+     * @return             TRUE if successfull, FALSE if not.
+     */
+    public boolean insertGrammar(boolean isBinary, String documentPath, byte[] grammar){
+        
+        boolean insertIsSuccesfull = false;
+        
+        String collectionName = DatabaseResources.getCollectionPath(documentPath);
+        String documentName = DatabaseResources.getDocumentName(documentPath);
+        
+        DBBroker broker = null;
+        try {
+            
+            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
+            
+            TransactionManager transact = brokerPool.getTransactionManager();
+            Txn transaction = transact.beginTransaction();
+            
+            Collection collection = broker.getOrCreateCollection(transaction, collectionName);
+            broker.saveCollection(transaction, collection);
+            
+            if(isBinary){
+                
+                // TODO : call mime-type stuff for goof mimetypes
+                BinaryDocument doc =
+                        collection.addBinaryResource(transaction, broker,
+                        documentName, grammar, "text/text");
+                
+            } else {
+                IndexInfo info = collection.validate( transaction, broker, documentName , new InputSource( new ByteArrayInputStream(grammar) ) );
+                collection.store(transaction, broker, info, new InputSource( new ByteArrayInputStream(grammar) ), false);
+            }
+            transact.commit(transaction);
+            
+            insertIsSuccesfull=true;
+            
+        } catch (Exception ex){
+            logger.error(ex);
+        } finally {
+            if(brokerPool!=null){
+                brokerPool.release(broker);
+            }
+        }
+        return insertIsSuccesfull;
+        
+    }
+    
+    /**
+     * Creates a new instance of DatabaseResources.
+     *
+     * @param pool  Instance shared broker pool.
+     */
+    public DatabaseResources(BrokerPool pool) {
+        
+        logger.info("Initializing DatabaseResources");
+        this.brokerPool = pool;
+        
+    }
+    
+    /**
+     *  Get document name from path.
+     *
+     *  /db/foo/bar/doc.xml gives doc.xml
+     *  xmldb:exist:///db/fo/bar/doc.xml gives doc.xml
+     *
+     * @param path  The Path
+     * @return  Document name.
+     */
+    static public String getDocumentName(String path){
+        
+        String docName = null;
+        
+        int separatorPos = path.lastIndexOf("/");
+        if(separatorPos == Constants.STRING_NOT_FOUND){
+            docName=path;
+            
+        } else {
+            docName=path.substring(separatorPos + 1);
+        }
+        
+        return docName;
+    }
+    
+    /**
+     *  Get collection pathname from path.
+     *
+     *  /db/foo/bar/doc.xml gives /db/foo/bar
+     *  xmldb:exist:///db/fo/bar/doc.xml gives xmldb:exist:///db/fo/bar
+     *
+     * @param path  The Path
+     * @return  Collection path name, "" if none available (doc.xml)
+     */
+    static public String getCollectionPath(String path){
+        
+        String pathName = null;
+        
+        int separatorPos = path.lastIndexOf("/");
+        if(separatorPos == Constants.STRING_NOT_FOUND){
+            // no path
+            pathName="";
+            
+        } else {
+            pathName=path.substring(0, separatorPos);
+        }
+        
+        return pathName;
+        
+    }
+    
+//    /**
+//     * @deprecated Get rid of this code.
+//     */
+//    public boolean hasGrammar(int type, String id){
+//        return !getGrammarPath(type, id).equalsIgnoreCase("NONE");
+//    }
+    
+//    
+//    /**
+//     * @deprecated Get rid of this code.
+//     */
+//    public String getGrammarPath(int type, String id){
+//        
+//        logger.info("Get path of '"+id+"'");
+//        
+//        String result="EMPTY";
+//        String query = getGrammarQuery(type, id);
+//        
+//        DBBroker broker = null;
+//        try {
+//            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
+//        } catch (EXistException ex){
+//            logger.error("Error getting DBBroker", ex);
+//        }
+//        
+//        XQuery xquery = broker.getXQueryService();
+//        try{
+//            Sequence seq = xquery.execute(query, null);
+//            
+//            SequenceIterator i = seq.iterate();
+//            if(i.hasNext()){
+//                result= i.nextItem().getStringValue();
+//                
+//            } else {
+//                logger.debug("No xQuery result");
+//            }
+//            
+//        } catch (XPathException ex){
+//            logger.error("XSD xQuery error: "+ ex.getMessage());
+//        }
+//        
+//        brokerPool.release(broker);
+//        
+//        return result;
+//    }
+    
+//    /**
+//     * @deprecated Get rid of this code.
+//     */
+//    public String getGrammarQuery(int type, String id){ // TODO double
+//        String query="NOQUERY";
+//        if(type==GRAMMAR_XSD){
+//            query = "let $top := collection('"+XSDBASE+"') " +
+//                    "let $schemas := $top/xs:schema[ @targetNamespace = \"" + id+ "\" ] "+
+//                    "return if($schemas) then document-uri($schemas[1]) else \""+NOGRAMMAR+"\" " ;
+//        } else if(type==GRAMMAR_DTD){
+//            query = "let $top := doc('"+DTDCATALOG+"') "+
+//                    "let $dtds := $top//public[@publicId = \""+id+"\"]/@uri " +
+//                    "return if($dtds) then $dtds[1] else \""+NOGRAMMAR+"\"" ;
+//        } else {
+//            logger.error("Unknown grammar type, not able to find query.");
+//        }
+//        
+//        return query;
+//    }
+    
+//    /**
+//     *  Get GRAMMAR resource specified by DB path
+//     *
+//     * @deprecated Get rid of this code.
+//     * @param path          Path in DB to resource.
+//     * @param isBinary      Flag is resource binary?
+//     * @return              Reader to the resource.
+//     */
+//    public byte[] getGrammar(int type, String path ){
+//        
+//        byte[] data = null;
+//        boolean isBinary=false;
+//        
+//        if(type==GRAMMAR_DTD){
+//            isBinary=true;
+//        }
+//        
+//        logger.debug("Get resource '"+path + "' binary="+ isBinary);
+//        
+//        DBBroker broker = null;
+//        try {
+//            
+//            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
+//            
+//            
+//            if(isBinary){
+//                BinaryDocument binDoc = (BinaryDocument) broker.openDocument(path, Lock.READ_LOCK);
+//                data = broker.getBinaryResourceData(binDoc);
+//                binDoc.getUpdateLock().release(Lock.READ_LOCK);
+//                
+//            } else {
+//                
+//                DocumentImpl doc = broker.openDocument(path, Lock.READ_LOCK);
+//                Serializer serializer = broker.getSerializer();
+//                serializer.reset();
+//                data = serializer.serialize(doc).getBytes();
+//                doc.getUpdateLock().release(Lock.READ_LOCK);
+//            }
+//        } catch (PermissionDeniedException ex){
+//            logger.error("Error opening document", ex);
+//        } catch (SAXException ex){
+//            logger.error("Error serializing document", ex);
+//        }  catch (EXistException ex){
+//            logger.error(ex);
+//        } finally {
+//            if(brokerPool!=null){
+//                brokerPool.release(broker);
+//            }
+//        }
+//        
+//        return data;
+//    }
+    
+    
+    
+    /**
+     *  Get schema path information from catalog.
+     *
+     * @param collection Collection containing the catalog file
+     * @param docName    Catalog filename
+     * @param namespace  This namespace needs to be resolved
+     * @return           Path to schema, or null if not found.
+     */
+    public String getSchemaPathFromCatalog(XmldbURI collection, String docName,
+            String namespace) {
+        
+        String xquery = FINDXSDINCATALOG
+                .replaceAll("CATALOGFILE",collection.getCollectionPath()+"/"+docName)
+                .replaceAll("NAMESPACE", namespace);
+        
+        String path = executeQuerySingleResult(xquery);
+        
+        if(path!= null && !path.startsWith("/")){
+            path = collection.getCollectionPath()+"/"+ path;
+        }
+        
+        return path;
+    }
+    
+    
+    /**
+     *  Get DTD path information from catalog.
+     *
+     * @param collection Collection containing the catalog file
+     * @param docName    Catalog filename
+     * @param publicId   This publicId needs to be resolved
+     * @return           Path to DTD, or null if not found.
+     */
+    public String getDtdPathFromCatalog(XmldbURI collection, String docName,
+            String publicId) {
+        String xquery = FINDDTDINCATALOG
+                .replaceAll("CATALOGFILE",collection.getCollectionPath()+"/"+docName)
+                .replaceAll("PUBLICID", publicId);
+        
+        String path = executeQuerySingleResult(xquery);
+        
+        if(path!= null && !path.startsWith("/")){
+            path = collection.getCollectionPath()+"/"+ path;
+        }
+        
+        return path;
     }
     
 }

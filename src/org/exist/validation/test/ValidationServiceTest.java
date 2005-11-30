@@ -101,7 +101,7 @@ public class ValidationServiceTest  extends TestCase {
     
     public void testXsdValidDocument() {   
     	try {   
-    		assertTrue( service.validateResource(DBBroker.ROOT_COLLECTION + "/addressbook_valid.xml") );
+    		assertTrue( service.validateResource("/db/grammar/addressbook_valid.xml") );
 	    } catch (Exception e) {            
 	        fail(e.getMessage());  
 	    }    
@@ -109,7 +109,7 @@ public class ValidationServiceTest  extends TestCase {
     
     public void testXsdInvalidDocument() {
     	try {       
-    		assertFalse( service.validateResource(DBBroker.ROOT_COLLECTION + "/addressbook_invalid.xml") );
+    		assertFalse( service.validateResource("/db/grammar/addressbook_invalid.xml") );
 	    } catch (Exception e) {            
 	        fail(e.getMessage());  
 	    }    
@@ -125,7 +125,7 @@ public class ValidationServiceTest  extends TestCase {
     
     public void testDtdValidDocument() {
     	try {       
-    		assertTrue( service.validateResource(DBBroker.ROOT_COLLECTION + "/hamlet_valid.xml") );
+    		assertTrue( service.validateResource("/db/grammar/hamlet_valid.xml") );
         } catch (Exception e) {            
             fail(e.getMessage());  
         }    
@@ -133,7 +133,7 @@ public class ValidationServiceTest  extends TestCase {
     
     public void testDtdInvalidDocument() {
     	try {
-            assertFalse( service.validateResource(DBBroker.ROOT_COLLECTION + "/hamlet_invalid.xml") );
+            assertFalse( service.validateResource("/db/grammar/hamlet_invalid.xml") );
         } catch (Exception e) {            
             fail(e.getMessage());  
         }    

@@ -22,10 +22,10 @@
 
 package org.exist.validation.test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-
-import junit.framework.Assert;
+import java.net.URISyntaxException;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -36,6 +36,7 @@ import org.exist.util.Configuration;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
 import org.exist.validation.internal.DatabaseResources;
+import org.exist.xmldb.XmldbURI;
 
 
 /**
@@ -48,11 +49,15 @@ public class DatabaseResourcesTest extends TestCase {
     private final static String ABOOKFILES="samples/validation/addressbook";
     private final static String DTDFILES="samples/validation/dtd";
     
+    private final static String DBGRAMMARS="/db/grammar";
+    
+    private DatabaseTools dt = null;
     private String eXistHome = null;
     private BrokerPool pool = null;
     private Validator validator = null;
     private DatabaseResources dbResources = null;
     
+    private XmldbURI baseURI = null;
     
     public DatabaseResourcesTest(String testName) {
         super(testName);
@@ -75,6 +80,17 @@ public class DatabaseResourcesTest extends TestCase {
         
         if(dbResources==null){
             dbResources = validator.getDatabaseResources();
+        }
+        
+        if(dt==null){
+            dt = new DatabaseTools(pool);
+        }
+        
+        try {
+            baseURI = new XmldbURI("xmldb:exist:///db");
+        } catch (URISyntaxException ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
         }
         
         System.out.println("<<<\n");
@@ -114,161 +130,146 @@ public class DatabaseResourcesTest extends TestCase {
         
         System.out.println(">>> testInsertGrammar");
         
-        assertTrue( dbResources.insertSchema( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
-                           "addressbook.xsd") );
-        
-        System.out.println("<<<");
-    }
-
-    public void testInsertXsdGrammar2() {
-        
-        System.out.println(">>> testInsertGrammar");
-        
-        assertTrue( dbResources.insertSchema( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
-                           "/other/path/addressbook.xsd") );
-        
-        assertTrue( dbResources.insertSchema( new File(eXistHome , ABOOKFILES+"/addressbook.xsd") ,
-                           "another/path/addressbook.xsd") );
-        
-        System.out.println("<<<");
-    }
-        
-    public void testInsertDtdGrammar() {
-        
-        System.out.println(">>> testInsertDtdGrammar");
-        
-        assertTrue( dbResources.insertDtd( new File(eXistHome , DTDFILES+"/play.dtd") ,
-                           "play.dtd") );
-        
-        assertTrue(
-                dbResources.insertCatalog( new File(eXistHome , DTDFILES+"/catalog.xml") )
-                );
+        File schema = new File(eXistHome , ABOOKFILES+"/addressbook.xsd");
+        byte grammar[] = dt.readFile(schema);
+        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/schemas/addressbook.xsd",grammar) );
         
         System.out.println("<<<");
     }
     
-    public void testInsertDtdGrammar2() {
+    public void testInsertDtdGrammar() {
         
-        System.out.println(">>> testInsertDtdGrammar2");
+        System.out.println(">>> testInsertDtdGrammar");
         
-        assertTrue( dbResources.insertDtd( new File(eXistHome , DTDFILES+"/play.dtd") ,
-                           "/other/path/play.dtd") );
+        File dtd = new File(eXistHome , DTDFILES+"/play.dtd");
+        byte grammar[] = dt.readFile(dtd);
+        assertTrue( dbResources.insertGrammar(true, DBGRAMMARS+"/dtds/play.dtd",grammar) );
         
-        assertTrue( dbResources.insertDtd( new File(eXistHome , DTDFILES+"/play.dtd") ,
-                           "anothother/path/play.dtd") );
+        File catalog = new File(eXistHome , DTDFILES+"/catalog.xml");
+        grammar = dt.readFile(catalog);
+        
+        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/dtds/catalog.xml",grammar)  );
         
         System.out.println("<<<");
     }
-
-
+    
+    
+    
     
     public void testInsertTestDocuments() {
         
         System.out.println(">>> testInsertTestDocuments");
         
-        assertTrue(
-                dbResources.insertDocument( new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml") ,
-                false, DBBroker.ROOT_COLLECTION, "addressbook_valid.xml") );
+        File file = new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml");
+        byte data[] = dt.readFile(file);
+        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/addressbook_valid.xml",data) );
         
-        assertTrue(
-                dbResources.insertDocument( new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml") ,
-                false, DBBroker.ROOT_COLLECTION, "addressbook_invalid.xml") );
-
-        assertTrue(
-                dbResources.insertDocument( new File(eXistHome , DTDFILES+"/hamlet_valid.xml") ,
-                false, DBBroker.ROOT_COLLECTION, "hamlet_valid.xml") );
+        file = new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml");
+        data = dt.readFile(file);
+        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/addressbook_invalid.xml",data) );
         
-        assertTrue(
-                dbResources.insertDocument( new File(eXistHome , DTDFILES+"/hamlet_invalid.xml") ,
-                false, DBBroker.ROOT_COLLECTION, "hamlet_invalid.xml") );
+        file = new File(eXistHome , DTDFILES+"/hamlet_valid.xml");
+        data = dt.readFile(file);
+        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/hamlet_valid.xml",data) );
 
+        file = new File(eXistHome , DTDFILES+"/hamlet_invalid.xml");
+        data = dt.readFile(file);
+        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/hamlet_invalid.xml",data) );       
         
         System.out.println("<<<");
-    }   
+    }
     
     public void testIsGrammarInDatabase() {
         System.out.println(">>> testIsGrammarInDatabase");
         
-        assertTrue( dbResources.hasGrammar( DatabaseResources.GRAMMAR_XSD,
-                "http://jmvanel.free.fr/xsd/addressBook" ) );
+//        assertTrue( c.hasGrammar( DatabaseResources.GRAMMAR_XSD,
+//                "http://jmvanel.free.fr/xsd/addressBook" ) );
+        
+        assertNotNull( dbResources.getSchemaPath(baseURI,
+                "http://jmvanel.free.fr/xsd/addressBook" ));
+        
         System.out.println("<<<");
-    }   
+    }
     
     public void testIsGrammarNotInDatabase() {
         System.out.println(">>> testIsGrammarNotInDatabase");
         
-        assertFalse( dbResources.hasGrammar( DatabaseResources.GRAMMAR_XSD,
-                "http://jmvanel.free.fr/xsd/addressBooky" ) );
+        assertNull( dbResources.getSchemaPath(baseURI,
+                "http://jmvanel.free.fr/xsd/addressBooky" ));
+        
+//        assertFalse( dbResources.hasGrammar( DatabaseResources.GRAMMAR_XSD,
+//                "http://jmvanel.free.fr/xsd/addressBooky" ) );
         
         System.out.println("<<<");
     }
     
     public void testXsdValidDocument() {
         try {
-        	System.out.println(">>> testXsdValidDocument");        
-        
-	        ValidationReport report = validator.validate(
-	                new FileInputStream(ABOOKFILES +"/addressbook_valid.xml") );
-	        
-	        assertTrue( report.isValid() );
-	        
-	        System.out.println(report.toString() );
-	        
-	        System.out.println("<<<");
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
+            System.out.println(">>> testXsdValidDocument");
+            
+            ValidationReport report = validator.validate(
+                    new FileInputStream(ABOOKFILES +"/addressbook_valid.xml") );
+            
+            assertTrue( report.isValid() );
+            
+            System.out.println(report.toString() );
+            
+            System.out.println("<<<");
+        } catch (Exception e) {
+            fail(e.getMessage());
         }
     }
     
     public void testXsdInvalidDocument() {
         try {
-	    	System.out.println(">>> testXsdInvalidDocument");
-	        
-	        ValidationReport report = validator.validate(
-	                new FileInputStream(ABOOKFILES +"/addressbook_invalid.xml") );
-	        
-	        assertFalse( report.isValid() );
-	        
-	        System.out.println(report.toString());
-	        
-	        System.out.println("<<<");
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
+            System.out.println(">>> testXsdInvalidDocument");
+            
+            ValidationReport report = validator.validate(
+                    new FileInputStream(ABOOKFILES +"/addressbook_invalid.xml") );
+            
+            assertFalse( report.isValid() );
+            
+            System.out.println(report.toString());
+            
+            System.out.println("<<<");
+        } catch (Exception e) {
+            fail(e.getMessage());
         }
     }
     
     public void testDtdValidDocument() {
         try {
-	    	System.out.println(">>> testDtdValidDocument");
-	        
-	        ValidationReport report = validator.validate(
-	                new FileInputStream(DTDFILES +"/hamlet_valid.xml") );
-	        
-	        assertTrue( report.isValid() );
-	        
-	        System.out.println(report.toString());
-	        
-	        System.out.println("<<<");
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
+            System.out.println(">>> testDtdValidDocument");
+            
+            ValidationReport report = validator.validate(
+                    new FileInputStream(DTDFILES +"/hamlet_valid.xml"),
+                    "/db/grammar/dtds/catalog.xml");
+
+            assertTrue( report.isValid() );
+            
+            System.out.println(report.toString());
+            
+            System.out.println("<<<");
+        } catch (Exception e) {
+            fail(e.getMessage());
         }
     }
     
     public void testDtdInvalidDocument() {
-    	try {
-	        System.out.println(">>> testDtdInvalidDocument");
-	        
-	        ValidationReport report = validator.validate(
-	                new FileInputStream(DTDFILES +"/hamlet_invalid.xml") );
-	        
-	        assertFalse( report.isValid() );
-	        
-	        System.out.println(report.toString());
-	        
-	        System.out.println("<<<");
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
+        try {
+            System.out.println(">>> testDtdInvalidDocument");
+            
+            ValidationReport report = validator.validate(
+                    new FileInputStream(DTDFILES +"/hamlet_invalid.xml") );
+            
+            assertFalse( report.isValid() );
+            
+            System.out.println(report.toString());
+            
+            System.out.println("<<<");
+        } catch (Exception e) {
+            fail(e.getMessage());
         }
-    }    
+    }
     
 }
