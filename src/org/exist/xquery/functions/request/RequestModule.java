@@ -58,6 +58,7 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(GetUploadedFileName.signature, GetUploadedFileName.class),
 		new FunctionDef(SetCurrentUser.signature, SetCurrentUser.class),
 		new FunctionDef(RequestServername.signature, RequestServername.class),
+		new FunctionDef(RequestServerport.signature, RequestServerport.class),
 		new FunctionDef(RequestHostname.signature, RequestHostname.class),
 		new FunctionDef(UnescapeURI.signature, UnescapeURI.class),
 		new FunctionDef(SetDateHeader.signature, SetDateHeader.class),
