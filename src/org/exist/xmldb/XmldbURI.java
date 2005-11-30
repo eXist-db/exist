@@ -45,10 +45,11 @@ public class XmldbURI {
 	public static final String XMLDB_URI_PREFIX = "xmldb:";
 	
 	private URI wrappedURI;	
-	private String instanceName;
+	private String instanceName;  
+    private String userInfo;
 	private String host;
 	private int port = NO_PORT; 
-	private String context;  	
+	private String context;      
 	private String escapedCollectionPath;
 	private String apiName;
 	
@@ -65,9 +66,8 @@ public class XmldbURI {
 	 * @throws URISyntaxException If the given string is not a valid xmldb URI.
 	 */
 	public XmldbURI(String xmldbURI) throws URISyntaxException {
-    	try {
-    		wrappedURI = new URI(xmldbURI);    		
-    		parseURI();
+    	try {    		 		
+    		parseURI(xmldbURI);
     	} catch (URISyntaxException e) {
         	wrappedURI = null;        	
         	throw e;     	
@@ -83,11 +83,11 @@ public class XmldbURI {
     	try {
     		String escaped = URLEncoder.encode(collectionPath, "UTF-8");    		
     		//This is the trick : unescape slashed in order to keep java.net.URI capabilities 
+            //TODO : use escape functions in XQuery -pb
     		escaped = escaped.replaceAll("%2F", "/");
     		escaped = escaped.replaceAll("%23", "#");
-    		escaped = escaped.replaceAll("%3F", "?");
-    		wrappedURI = new URI(accessURI + escaped);    		
-    		parseURI();
+    		escaped = escaped.replaceAll("%3F", "?");            
+    		parseURI(accessURI + escaped);
     	} catch (URISyntaxException e) {
         	wrappedURI = null;        	
         	throw e;     	
@@ -100,9 +100,10 @@ public class XmldbURI {
 	/** Feeds private members
 	 * @throws URISyntaxException
 	 */
-	private void parseURI() throws URISyntaxException {	
+	private void parseURI(String xmldbURI) throws URISyntaxException {	
 		String path = null;	
-		URI truncatedURI;
+        URI truncatedURI;        
+        wrappedURI = new URI(xmldbURI);   
 		//Reinitialise members
 		this.instanceName = null;
 		this.host = null;
@@ -116,7 +117,7 @@ public class XmldbURI {
 			if (!wrappedURI.toString().startsWith(XMLDB_URI_PREFIX))
 				throw new URISyntaxException(wrappedURI.toString(), "xmldb URI scheme does not start with " + XMLDB_URI_PREFIX);
 			try {
-				truncatedURI = new URI(wrappedURI.toString().substring(XMLDB_URI_PREFIX.length()));
+                truncatedURI = new URI(wrappedURI.toString().substring(XMLDB_URI_PREFIX.length()));
 			} catch (URISyntaxException e) {
 				//Put the "right" URI in the message ;-)
 				throw new URISyntaxException(wrappedURI.toString(), e.getMessage());				
@@ -132,9 +133,21 @@ public class XmldbURI {
 			if (instanceName == null)   
 				//Put the "right" URI in the message ;-)
 				throw new URISyntaxException(wrappedURI.toString().toString(), "xmldb URI scheme has no instance name");			
-			host = truncatedURI.getHost();
+            userInfo = truncatedURI.getUserInfo();
+            host = truncatedURI.getHost();
 			port = truncatedURI.getPort();
-			path = truncatedURI.getPath();			
+			path = truncatedURI.getPath();
+            //Eventually rewrite wrappedURI *without* user info
+            if (userInfo != null) {
+                StringBuffer recomputed = new StringBuffer(XMLDB_URI_PREFIX);                
+                recomputed.append(truncatedURI.getScheme());
+                recomputed.append("://");
+                recomputed.append(truncatedURI.getHost());
+                if (truncatedURI.getPort() != -1)
+                    recomputed.append(":").append(truncatedURI.getPort());                
+                recomputed.append(truncatedURI.getPath());
+                wrappedURI = new URI(recomputed.toString());                
+            } 
 		}
 		splitPath(path);
 	}
@@ -201,6 +214,7 @@ public class XmldbURI {
 		StringBuffer buf = new StringBuffer();
 		if (instanceName != null)	
 			buf.append(XMLDB_URI_PREFIX).append(instanceName).append("://");
+        //No userInfo
 		if (host != null)	
 			buf.append(host);				
 		if (port != NO_PORT)
@@ -267,16 +281,28 @@ public class XmldbURI {
 		}			
 	}
 	
-	public void setHost(String host) throws URISyntaxException {
-		String oldHost = this.host;
-		try {
-			this.host = host;
-			recomputeURI();
-		} catch (URISyntaxException e) {
-			this.host = oldHost;
-			throw e;
-		}
-	}
+    public void setUserInfo(String userInfo) throws URISyntaxException {
+        String oldUserInfo = this.userInfo;
+        try {
+            this.userInfo = userInfo;
+            //unnecessary
+            recomputeURI();
+        } catch (URISyntaxException e) {
+            this.userInfo = oldUserInfo;
+            throw e;
+        }
+    }
+    
+    public void setHost(String host) throws URISyntaxException {
+        String oldHost = this.host;
+        try {
+            this.host = host;
+            recomputeURI();
+        } catch (URISyntaxException e) {
+            this.host = oldHost;
+            throw e;
+        }
+    }    
 	
 	public void setPort(int port) throws URISyntaxException {
 		//TODO : check range ?
@@ -347,10 +373,15 @@ public class XmldbURI {
 	public String getInstanceName() {		
 		return instanceName; 
 	}
+    
+    public String getUserInfo() {       
+        return userInfo; 
+    }    
 	
-	public String getHost() { 		
-		return host; 
-	}
+    public String getHost() {       
+        return host; 
+    }
+    
 	public int getPort() {		
 		return port; 
 	}
