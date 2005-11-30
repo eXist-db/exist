@@ -26,8 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-
-import org.exist.storage.BrokerPool;
+import java.net.URISyntaxException;
 import org.exist.validation.internal.DatabaseResources;
 
 import org.apache.log4j.Logger;
@@ -35,6 +34,7 @@ import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
+import org.exist.xmldb.XmldbURI;
 
 
 /**
@@ -54,19 +54,34 @@ import org.apache.xerces.xni.XNIException;
  *
  *  /db/system/grammar/xq/catalog.xq
  *
- * RelaxNG support can be added later.
- *
  * @author dizzzz
  * @see org.apache.xerces.xni.parser.XMLEntityResolver
+ *
+ * NOTES
+ * =====
+ *
+ * - Keep list called grammar id's. For first grammar the base URI must be set.
+ *   other grammars must be found relative, unless full path is used.
+ * - If not schema but folder is supplied, use this folder as startpoint search
+ *   grammar set
+ * -
+ *
  */
 public class EntityResolver  implements XMLEntityResolver {
     
     /* Local logger  */
     private final static Logger logger = Logger.getLogger(EntityResolver.class);
     
-    private BrokerPool pool = null;
     private DatabaseResources databaseResources = null;
-        
+    
+    private String startGrammarPath="/db";
+    
+    private boolean isCatalogSpecified = false;
+    private boolean isGrammarSpecified = false;
+    private boolean isGrammarSearched = false;
+    private XmldbURI collection = null;
+    private String documentName = null;
+    
     /**
      *  Initialize EntityResolver.
      * @param pool  BrokerPool
@@ -75,6 +90,83 @@ public class EntityResolver  implements XMLEntityResolver {
         
         logger.info("Initializing EntityResolver");
         this.databaseResources = resources;
+        
+        try {
+            collection = new XmldbURI("xmldb:exist:///db");
+        } catch (URISyntaxException ex) {
+            logger.error(ex);
+        }
+        
+        isGrammarSearched=true;
+    }
+    
+    /**
+     *  WHat can be supplied:
+     *
+     *  - path to collection   (/db/foo/bar/)
+     *    In this case all grammars must be searched.
+     *    o Grammars can be found using xquery
+     *    o DTD's can only be found by finding catalog files.
+     *
+     *  - path to start schema (/db/foo/bar/special.xsd)
+     *    The pointed grammar -if it exist- must be used
+     *
+     *  - path to catalog file (/db/foo/bar/catalog.xml)
+     *
+     * @param path  Path tp
+     */
+    public void setStartGrammarPath(String path){
+        
+        if(path.startsWith("/db")){
+            path="xmldb:exist://"+path;
+        } else if (path.startsWith("/")) {
+            path="xmldb:exist:///db"+path;
+        }
+        
+        // TODO help...
+        startGrammarPath=path;
+        
+        if( path.endsWith(".xml") ){
+            // Catalog is specified
+            logger.debug("Using catalog '"+path+"'.");
+            isCatalogSpecified=true;
+            
+            try {
+                collection= new XmldbURI( DatabaseResources.getCollectionPath(path) );
+            } catch (URISyntaxException ex) {
+                logger.error("Error constructing collection uri of '"+path+"'.", ex);
+            }
+            
+            documentName=DatabaseResources.getDocumentName(path);
+            
+        } else if ( path.endsWith(".xsd") ||  path.endsWith(".dtd") ){
+            // Grammar is specified
+            logger.debug("Using grammar '"+path+"'.");
+            isGrammarSpecified=true;
+            logger.info("cp="+DatabaseResources.getCollectionPath(path));
+            try {
+                collection= new XmldbURI( DatabaseResources.getCollectionPath(path) );
+            } catch (URISyntaxException ex) {
+                logger.error("Error constructing collection uri of '"+path+"'.", ex);
+            }
+            
+            documentName=DatabaseResources.getDocumentName(path);
+            
+        } else if ( path.endsWith("/") ){
+            // Entity resolver must search for grammars.
+            logger.debug("Searching grammars in collection '"+path+"'.");
+            isGrammarSearched=true;
+            try {
+                collection=new XmldbURI( DatabaseResources.getCollectionPath(path) );
+            } catch (URISyntaxException ex) {
+                logger.error("Error constructing collection uri of '"+path+"'.", ex);
+            }
+            
+        } else {
+            // Oh oh
+            logger.error("No grammar, collection of catalog specified.");
+        }
+        
     }
     
     /**
@@ -89,67 +181,126 @@ public class EntityResolver  implements XMLEntityResolver {
         
         XMLInputSource xis=null;
         String resourcePath = null;
-        Reader rd=null;
-
-        int type=0;
         
-        if( xrid.getNamespace() !=null ){
-            logger.debug("Resolving namespace '"+xrid.getNamespace()+"'.");
-            type=DatabaseResources.GRAMMAR_XSD;
-            resourcePath = databaseResources.getGrammarPath(type, xrid.getNamespace() );
+        byte grammar[] = null;
+        boolean grammarIsBinary = true;
+        
+        if(isGrammarSpecified){
             
-            this.logXMLResourceIdentifier(xrid);
+            /*  Get User specified grammar right away from database.
+             *
+             * At first entrance "BaseSystemId=null" and "ExpandedSystemId=path"
+             * At following entries BaseSystemId contains schema path and
+             * ExpandedSystemId contains path new schema
+             */
             
-        } else if ( xrid.getPublicId() !=null ){
-            logger.debug("Resolving publicId '"+xrid.getPublicId()+"'.");
-            type=DatabaseResources.GRAMMAR_DTD;
-            resourcePath =  databaseResources.DTDBASE+"/"+ databaseResources.getGrammarPath(type,  xrid.getPublicId() );
-            
-            // Fix, remove leading path
-            if(resourcePath.endsWith(DatabaseResources.NOGRAMMAR)){
-                resourcePath=DatabaseResources.NOGRAMMAR;
+            if(xrid.getBaseSystemId()==null){
+                // First step
+                resourcePath = collection.getCollectionPath()+"/"+documentName;
+                
+            } else {
+                // subsequent steps
+                try {
+                    resourcePath = new XmldbURI(xrid.getExpandedSystemId()).getCollectionPath();
+                    
+                } catch (URISyntaxException ex) {
+                    logger.error(ex);
+                }
             }
             
-            // TODO: remove this log statement
-            this.logXMLResourceIdentifier(xrid);
+            if(documentName.endsWith(".xsd")){
+                grammarIsBinary=false;
+            }
+            
+        } else if(isCatalogSpecified){
+            /* Only use data in specified catalog  */
+            logger.debug("Resolve using catalog.");
+            if( xrid.getNamespace() !=null ){
+                
+                logger.debug("Resolve schema namespace.");
+                resourcePath = databaseResources.getSchemaPathFromCatalog(collection, documentName, xrid.getNamespace());
+                
+            } else if ( xrid.getPublicId() !=null ){
+                
+                logger.debug("Resolve dtd publicId.");
+                resourcePath = databaseResources.getDtdPathFromCatalog(collection, documentName, xrid.getPublicId());
+                
+            } else {
+                // TODO remove logging for performance?
+                logger.error("Can only resolve namespace or publicId.");
+                return null;
+            }
             
         } else {
-            // Fast escape; no logging, otherwise validation is slow!
-            return null;
-           
+            // Search for grammar, Might be 'somewhere' in database.
+            
+            if( xrid.getNamespace() !=null ){
+                
+                /*****************************
+                 * XML Schema search
+                 *****************************/
+                
+                logger.debug("Searching namespace '"+xrid.getNamespace()+"'.");
+                this.logXMLResourceIdentifier(xrid);
+                
+                resourcePath = databaseResources.getSchemaPath(collection, xrid.getNamespace());
+                grammarIsBinary=false;
+                
+            } else if ( xrid.getPublicId() !=null ){
+                
+                /*****************************
+                 * DTD search
+                 *****************************/
+                
+                logger.debug("Searching publicId '"+xrid.getPublicId()+"'.");
+                this.logXMLResourceIdentifier(xrid);
+                
+                resourcePath = databaseResources.getDtdPath(collection, xrid.getPublicId());
+                grammarIsBinary=true;
+                
+            } else {
+                // Fast escape; no logging, otherwise validation is slow!
+                return null;
+            }
         }
         
-        // TODO: if resourcepath = null then default resolver must be checked.
-        
-                
-        if(resourcePath == null || resourcePath.equals("NONE") ){
+        if(resourcePath == null ){
             logger.debug("Resource not found in database.");
             return null;
         }
-        logger.debug("resourcePath="+resourcePath);
         
-        // TODO make this streaming, fortunately the grammarfiles are small.
         // Get grammar from database
-        rd = new InputStreamReader(
-                new ByteArrayInputStream( databaseResources.getGrammar(type, resourcePath) ) ) ;
+        logger.debug("resourcePath="+resourcePath);
+        grammar = databaseResources.getGrammar(grammarIsBinary,resourcePath);
         
-        if(rd==null){
-            logger.debug("Grammar not found.");
+        if(grammar == null ){
+            logger.debug("Grammar not retrieved from database.");
             return null;
         }
         
-        xis = new XMLInputSource( xrid.getPublicId(), xrid.getExpandedSystemId(),
-                                  xrid.getBaseSystemId(), rd , "UTF-8");   
+        Reader rd = new InputStreamReader( new ByteArrayInputStream(grammar) ) ;
+        
+        // TODO check ; is all information filled incorrect?
+        logger.info("publicId="+xrid.getPublicId()
+        +" systemId="+"xmldb:exist://"+resourcePath
+                + " baseSystemId="+xrid.getBaseSystemId());
+        
+        xis = new XMLInputSource(
+                xrid.getPublicId(),            // publicId
+                "xmldb:exist://"+resourcePath, // systemId
+                xrid.getBaseSystemId(),        // baseSystemId
+                rd ,
+                "UTF-8" );
+        
         return xis;
-    }    
+    }
     
     private void logXMLResourceIdentifier(XMLResourceIdentifier xrid){
-        logger.info( "getPublicId="+xrid.getPublicId() );
-        logger.info( "getBaseSystemId="+xrid.getBaseSystemId() );
-        logger.info( "getExpandedSystemId="+xrid.getExpandedSystemId() );
-        logger.info( "getLiteralSystemId="+xrid.getLiteralSystemId() );
-        logger.info( "getNamespace="+xrid.getNamespace() );
-        logger.info( xrid.toString() );
-        
+        logger.info( "PublicId="+xrid.getPublicId() );
+        logger.info( "BaseSystemId="+xrid.getBaseSystemId() );
+        logger.info( "ExpandedSystemId="+xrid.getExpandedSystemId() );
+        logger.info( "LiteralSystemId="+xrid.getLiteralSystemId() );
+        logger.info( "Namespace="+xrid.getNamespace() );
     }
+    
 }

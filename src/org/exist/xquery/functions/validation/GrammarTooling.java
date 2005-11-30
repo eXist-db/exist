@@ -58,7 +58,7 @@ public class GrammarTooling extends BasicFunction  {
     // Setup function signature
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-                new QName("clear-grammar-cache", ValidationModule.NAMESPACE_URI, 
+                new QName("grammar-cache-clear", ValidationModule.NAMESPACE_URI, 
                                                  ValidationModule.PREFIX),
                 "Remove all cached grammers.",
                 null,
@@ -66,9 +66,9 @@ public class GrammarTooling extends BasicFunction  {
         ),
                 
         new FunctionSignature(
-                new QName("show-grammar-cache", ValidationModule.NAMESPACE_URI, 
+                new QName("grammar-cache-show", ValidationModule.NAMESPACE_URI, 
                                                 ValidationModule.PREFIX),
-                "Show cached grammars.",
+                "Show all cached grammars.",
                 null,
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
         )

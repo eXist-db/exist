@@ -31,7 +31,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
 
 import org.exist.storage.BrokerPool;
 import org.exist.validation.internal.DatabaseResources;
@@ -54,7 +53,6 @@ public class Validator {
     // TODO check whether this private static trick is wise to do.
     // These are made static to prevent expensive double initialization
     // of classes.
-    private static XMLEntityResolver enityResolver = null;;
     private static GrammarPool grammarPool = null;
     private static DatabaseResources dbResources = null;
     private static SAXParserFactory saxFactory = null;
@@ -106,10 +104,10 @@ public class Validator {
             dbResources = new DatabaseResources(pool);
         }
         
-        // setup enityResolver ; be sure just one instance!
-        if(enityResolver==null){
-            enityResolver = new EntityResolver(dbResources);
-        }
+//        // setup enityResolver ; be sure just one instance!
+//        if(enityResolver==null){
+//            enityResolver = new EntityResolver(dbResources);
+//        }
         
         // setup grammar brokerPool ; be sure just one instance!
         if(grammarPool==null){
@@ -142,7 +140,7 @@ public class Validator {
         }
     }
     
-    
+   
     /**
      *  Validate XML data in inputstream.
      *
@@ -150,19 +148,52 @@ public class Validator {
      * @return      Validation report containing all validation info.
      */
     public ValidationReport validate(InputStream is) {
-        return validate( new InputStreamReader(is)  );
+        return validate( new InputStreamReader(is) , null );
         
     }
     
-    
+    /**
+     *  Validate XML data in inputstream.
+     *
+     * @param is    XML input stream.
+     * @return      Validation report containing all validation info.
+     */
+    public ValidationReport validate(InputStream is, String grammarPath) {
+        return validate( new InputStreamReader(is), grammarPath );
+        
+    }
+
     /**
      *  Validate XML data from reader.
      * @param reader    XML input
      * @return          Validation report containing all validation info.
      */
     public ValidationReport validate(Reader reader) {
+            return validate(reader, null);
+    }
+    
+    /**
+     *  Validate XML data from reader using specified grammar.
+     *
+     *  grammar path
+     *      null : search all documents starting in /db
+     *      /db/doc/ : start search start in specified collection
+     *
+     *      /db/doc/schema/schema.xsd :start with this schema, no search needed.
+     * 
+     * @return Validation report containing all validation info.
+     * @param grammarPath   User supplied path to grammar.
+     * @param reader        XML input.
+     */
+    public ValidationReport validate(Reader reader, String grammarPath) {
         
         logger.debug("Start validation.");
+        
+        EntityResolver entityResolver = new EntityResolver(dbResources);
+        
+        if(grammarPath != null){
+            entityResolver.setStartGrammarPath(grammarPath);
+        }
         
         ValidationReport report = new ValidationReport();
         
@@ -173,7 +204,7 @@ public class Validator {
             sax.setProperty(PROPERTIES_GRAMMARPOOL, grammarPool);
             
             XMLReader xmlReader = sax.getXMLReader();
-            xmlReader.setProperty(PROPERTIES_RESOLVER, enityResolver);
+            xmlReader.setProperty(PROPERTIES_RESOLVER, entityResolver);
             xmlReader.setErrorHandler( report );
             
             
@@ -192,15 +223,19 @@ public class Validator {
                         
         } catch (IOException ex){
             logger.error(ex);
+            report.setException(ex);
             
         } catch (ParserConfigurationException ex){
             logger.error(ex);
+            report.setException(ex);
             
         } catch (SAXNotSupportedException ex){
             logger.error(ex);
+            report.setException(ex);
             
         } catch (SAXException ex){
             logger.error(ex);
+            report.setException(ex);
         }
         
         return report;
@@ -214,13 +249,13 @@ public class Validator {
         return dbResources;
     }
     
-    /**
-     *  Get access to internal XMLEntityResolver.
-     * @return Internally used XMLEntityResolver.
-     */
-    public XMLEntityResolver getXMLEntityResolver(){
-        return enityResolver;
-    }
+//    /**
+//     *  Get access to internal XMLEntityResolver.
+//     * @return Internally used XMLEntityResolver.
+//     */
+//    public XMLEntityResolver getXMLEntityResolver(){
+//        return entityResolver;
+//    }
     
     /**
      *  Get access to internal GrammarPool.

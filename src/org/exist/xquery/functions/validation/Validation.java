@@ -64,22 +64,33 @@ public class Validation extends BasicFunction  {
                     new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
                 ),
                             
-//        new FunctionSignature(
-//                    new QName("validate", ValidationModule.NAMESPACE_URI, 
-//                                          ValidationModule.PREFIX),
-//                    "Validate document specified by $a using grammar $b",
-//                    new SequenceType[]{
-//                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-//                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-//                    },
-//                    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-//                )
+        new FunctionSignature(
+                    new QName("validate", ValidationModule.NAMESPACE_URI, 
+                                          ValidationModule.PREFIX),
+                    "Validate document specified by $a using grammar $b",
+                    new SequenceType[]{
+                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                    },
+                    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+                ),
                             
         new FunctionSignature(
                     new QName("validate-report", ValidationModule.NAMESPACE_URI, 
-                                          ValidationModule.PREFIX),
+                                                 ValidationModule.PREFIX),
                     "Validate document specified by $a, return a simple report.",
                     new SequenceType[]{
+                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                    },
+                    new SequenceType(Type.STRING,  Cardinality.ZERO_OR_MORE)
+        ),
+                            
+        new FunctionSignature(
+                    new QName("validate-report", ValidationModule.NAMESPACE_URI, 
+                                                 ValidationModule.PREFIX),
+                    "Validate document specified by $a, using grannab $b, return a simple report.",
+                    new SequenceType[]{
+                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
                     },
                     new SequenceType(Type.STRING,  Cardinality.ZERO_OR_MORE)
@@ -102,7 +113,7 @@ public class Validation extends BasicFunction  {
                                                          throws XPathException {
         
         // Check input parameters
-        if(args.length != 1){
+        if(args.length != 1 && args.length != 2){
             return Sequence.EMPTY_SEQUENCE;
         }
         
@@ -110,7 +121,15 @@ public class Validation extends BasicFunction  {
         InputStream is = new ResourceInputStream(brokerPool, 
                                                       args[0].getStringValue());
         
-        ValidationReport vr = validator.validate(is);
+        ValidationReport vr = null;
+        if(args.length==1){
+            vr = validator.validate(is);
+            
+        } else {
+            vr = validator.validate(is,args[1].getStringValue());
+            
+        }
+        
         
         // Create response
         Sequence result = new ValueSequence();

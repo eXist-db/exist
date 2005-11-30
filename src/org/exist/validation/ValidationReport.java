@@ -39,7 +39,8 @@ public class ValidationReport implements ErrorHandler {
     
     private ArrayList validationReport = new ArrayList();
     private long duration = -1;
-    
+    private Exception exception = null;
+        
     private ValidationReportItem getValidationReportItem(int type, SAXParseException exception){
         
         ValidationReportItem vri = new ValidationReportItem();
@@ -88,13 +89,17 @@ public class ValidationReport implements ErrorHandler {
     }
     
     
+    public void setException(Exception ex){
+        this.exception=ex;
+    }
+    
     /**
      *  Give validation information of the XML document.
      *
      * @return FALSE if no errors and warnings occurred.
      */
     public boolean isValid(){
-        return (validationReport.size()==0);
+        return( (validationReport.size()==0) && (exception==null) );
     }
     
     public List getValidationReport(){
@@ -102,32 +107,31 @@ public class ValidationReport implements ErrorHandler {
         List textReport = new ArrayList();
         
         if( isValid() ){
-            textReport.add("Document is valid");
+            textReport.add("Document is valid.");
         } else {
-            textReport.add("Document is not valid");
+            textReport.add("Document is not valid.");
         }
         
-        Iterator allReportItems = validationReport.iterator();
-        while(allReportItems.hasNext()){
-            ValidationReportItem ri = (ValidationReportItem) allReportItems.next();
-            
-            textReport.add( ri.toString() );   
+        for (Iterator iter = validationReport.iterator(); iter.hasNext(); ) {     
+            textReport.add( iter.next().toString() );
         }
         
-        textReport.add("Validated in "+duration+" millisec");
+        if(exception!=null){
+            textReport.add( "Exception: " + exception.getMessage() );
+        }
+        
+        textReport.add("Validated in "+duration+" millisec.");
         return textReport;
     }
     
     public String[] getValidationReportArray(){
         
         List validationReport = getValidationReport();
-        String report[] = new String[validationReport.size()];
+        String report[] = new String[ validationReport.size() ];
         
-        Iterator allReportItems = validationReport.iterator();
         int counter=0;
-        while(allReportItems.hasNext()){
-            
-            report[counter]=allReportItems.next().toString();
+        for( Iterator iter = validationReport.iterator(); iter.hasNext();){
+            report[counter]=iter.next().toString();
             counter++;
         }
         return report;
@@ -143,15 +147,15 @@ public class ValidationReport implements ErrorHandler {
     
     public String toString(){
         
-       StringBuffer validationReport =  new  StringBuffer();
-       
-       Iterator reportIterator = getValidationReport().iterator();
-       while(reportIterator.hasNext()){
-           validationReport.append(reportIterator.next().toString());
-           validationReport.append("\n");
-       }
-       
-       return validationReport.toString();
+        StringBuffer validationReport = new  StringBuffer();
+        
+        Iterator reportIterator = getValidationReport().iterator();
+        while(reportIterator.hasNext()){
+            validationReport.append(reportIterator.next().toString());
+            validationReport.append("\n");
+        }
+        
+        return validationReport.toString();
     }
 }
 
