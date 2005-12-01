@@ -1178,13 +1178,15 @@ implements Comparable, EntityResolver, Cacheable {
 	    	return configuration;
 		if (!name.equals(DBBroker.SYSTEM_COLLECTION)) {
 		    CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
-            collectionConfEnabled = false;
-		    try {
-                configuration = manager.getConfiguration(broker, this);
-            } catch (CollectionConfigurationException e) {
-                LOG.warn("Failed to load collection configuration for " + getName(), e);
-            }
-            collectionConfEnabled = true;
+		    if (manager != null) {
+	            collectionConfEnabled = false;
+			    try {
+	                configuration = manager.getConfiguration(broker, this);
+	            } catch (CollectionConfigurationException e) {
+	                LOG.warn("Failed to load collection configuration for " + getName(), e);
+	            }
+	            collectionConfEnabled = true;
+		    }
 		}
 		return configuration;
 	}
