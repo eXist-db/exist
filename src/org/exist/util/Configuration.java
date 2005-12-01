@@ -151,7 +151,6 @@ public class Configuration implements ErrorHandler {
             reader.parse(src);
 			
             Document doc = adapter.getDocument();
-            Element root = doc.getDocumentElement();
 
             // indexer settings
             NodeList indexer = doc.getElementsByTagName("indexer");
@@ -429,6 +428,7 @@ public class Configuration implements ErrorHandler {
         if (recovery.getLength() > 0) {
             configureRecovery(recovery);
         }
+        configurePermissions(con.getElementsByTagName("default-permissions"));
     }
 
     private void configureRecovery(NodeList nodes) throws DatabaseConfigurationException {
@@ -469,6 +469,32 @@ public class Configuration implements ErrorHandler {
 				throw new DatabaseConfigurationException("size attribute in recovery section needs to be a number");
 			}
         }
+    }
+    
+    private void configurePermissions(NodeList nodes) throws DatabaseConfigurationException {
+    	if (nodes.getLength() > 0) {
+    		Element node = (Element) nodes.item(0);
+    		String option = node.getAttribute("collection");
+    		if (option != null && option.length() > 0) {
+    			try {
+    				Integer perms = new Integer(Integer.parseInt(option, 8));
+    				setProperty("indexer.permissions.collection", perms);
+    			} catch (NumberFormatException e) {
+    				throw new DatabaseConfigurationException("collection attribute in default-permissions section needs " +
+    						"to be an octal number");
+    			}
+    		}
+    		option = node.getAttribute("resource");
+    		if (option != null && option.length() > 0) {
+    			try {
+    				Integer perms = new Integer(Integer.parseInt(option, 8));
+    				setProperty("indexer.permissions.resource", perms);
+    			} catch (NumberFormatException e) {
+    				throw new DatabaseConfigurationException("resource attribute in default-permissions section needs " +
+    						"to be an octal number");
+    			}
+    		}
+    	}
     }
     
     /**

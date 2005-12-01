@@ -174,12 +174,17 @@ implements Comparable, EntityResolver, Cacheable {
 	 *
 	 *@param  name
 	 */
-	public void addCollection(Collection child) {
+	public void addCollection(DBBroker broker, Collection child, boolean isNew) {
         //TODO : use dedicated function in XmldbURI
 		final int p = child.name.lastIndexOf("/") + 1;
 		final String childName = child.name.substring(p);
 		if (!subcollections.contains(childName))
 			subcollections.add(childName);
+		if (isNew) {
+			CollectionConfiguration config = getConfiguration(broker);
+			if (config != null)
+				child.permissions.setPermissions(config.getDefCollPermissions());
+		}
 	}
 
 	public boolean hasChildCollection(String name) {
@@ -862,6 +867,14 @@ implements Comparable, EntityResolver, Cacheable {
 			oldDoc = (DocumentImpl) documents.get(docName);
 			document = new DocumentImpl(broker, docName,	this);
 		
+			if (oldDoc == null) {
+				CollectionConfiguration config = getConfiguration(broker);
+				if (config != null) {
+					document.setPermissions(config.getDefResPermissions());
+				}
+			} else
+				document.setPermissions(oldDoc.getPermissions().getPermissions());
+			
 			checkPermissions(transaction, broker, docName, oldDoc);
 			manageDocumentInformation(broker, docName, oldDoc, document );
 			
@@ -1094,7 +1107,7 @@ implements Comparable, EntityResolver, Cacheable {
 	public void setPermissions(int mode) throws LockException {
 		try {
 			getLock().acquire(Lock.WRITE_LOCK);
-		permissions.setPermissions(mode);
+			permissions.setPermissions(mode);
 		} finally {
 			getLock().release();
 		}

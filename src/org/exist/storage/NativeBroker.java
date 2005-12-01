@@ -1790,7 +1790,7 @@ public class NativeBroker extends DBBroker {
 						sub.setCreationTime(System.currentTimeMillis());
                         if (transaction != null)
                             transaction.acquireLock(sub.getLock(), Lock.WRITE_LOCK);
-                        current.addCollection(sub);
+                        current.addCollection(this, sub, true);
                         saveCollection(transaction, current);
 						current = sub;
 					}
@@ -2576,7 +2576,7 @@ public class NativeBroker extends DBBroker {
 			    collection.setName(destination.getName() + "/" + newName);
 			    collection.setCreationTime(System.currentTimeMillis());
 			    
-			    destination.addCollection(collection);
+			    destination.addCollection(this, collection, false);
 			    if(parent != null)
 			        saveCollection(transaction, parent);
 			    if(parent != destination)

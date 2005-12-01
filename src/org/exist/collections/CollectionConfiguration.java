@@ -26,6 +26,7 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.triggers.Trigger;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.util.DatabaseConfigurationException;
@@ -49,7 +50,9 @@ public class CollectionConfiguration {
 	private final static String PARAM_NAME_ATTRIBUTE = "name";
 	private final static String PARAM_VALUE_ATTRIBUTE = "value";
 	private final static String INDEX_ELEMENT = "index";
-	private static final String DOCROOT_ATTRIBUTE = "root";
+	private final static String PERMISSIONS_ELEMENT = "default-permissions";
+	private final static String RESOURCE_PERMISSIONS_ATTR = "resource";
+	private final static String COLLECTION_PERMISSIONS_ATTR = "collection";
 	
 	private static final Logger LOG = Logger.getLogger(CollectionConfiguration.class);
 
@@ -62,15 +65,14 @@ public class CollectionConfiguration {
 
 	private Collection collection;
 	
-    public CollectionConfiguration(Collection collection) {
+	private int defCollPermissions;
+	private int defResPermissions;
+	
+    public CollectionConfiguration(BrokerPool pool, Collection collection) {
     	this.collection = collection;
+    	this.defResPermissions = pool.getSecurityManager().getResourceDefaultPerms();
+		this.defCollPermissions = pool.getSecurityManager().getCollectionDefaultPerms();
     }
-    
-	public CollectionConfiguration(DBBroker broker, Collection collection, Document doc) 
-    throws CollectionConfigurationException {
-		this.collection = collection;
-		read(broker, doc);
-	}
 	
 	/**
      * @param broker
@@ -106,6 +108,28 @@ public class CollectionConfiguration {
                     } catch (DatabaseConfigurationException e) {
                         throw new CollectionConfigurationException(e.getMessage(), e);
                     }
+			    } else if (PERMISSIONS_ELEMENT.equals(node.getLocalName())) {
+			    	Element elem = (Element) node;
+			    	String permsOpt = elem.getAttribute(RESOURCE_PERMISSIONS_ATTR);
+					if (permsOpt != null && permsOpt.length() > 0) {
+						LOG.debug("RESOURCE: " + permsOpt);
+						try {
+							defResPermissions = Integer.parseInt(permsOpt, 8);
+						} catch (NumberFormatException e) {
+							throw new CollectionConfigurationException("Ilegal value for permissions in collection configuration: " + 
+								e.getMessage(), e);
+						}
+					}
+					permsOpt = elem.getAttribute(COLLECTION_PERMISSIONS_ATTR);
+					if (permsOpt != null && permsOpt.length() > 0) {
+						LOG.debug("COLLECTION: " + permsOpt);
+						try {
+							defCollPermissions = Integer.parseInt(permsOpt, 8);
+						} catch (NumberFormatException e) {
+							throw new CollectionConfigurationException("Ilegal value for permissions in collection configuration: " + 
+								e.getMessage(), e);
+						}
+					}
 			    }
 			}
 		}
@@ -117,6 +141,14 @@ public class CollectionConfiguration {
     
     public Collection getCollection() {
     	return collection;
+    }
+    
+    public int getDefCollPermissions() {
+    	return defCollPermissions;
+    }
+    
+    public int getDefResPermissions() {
+    	return defResPermissions;
     }
     
     public IndexSpec getIndexConfiguration() {

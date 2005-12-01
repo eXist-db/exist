@@ -116,7 +116,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	// - beginning at the tree-level defined by reindex
 	protected transient int reindex = -1;
 
-	protected Permission permissions = new Permission(0754);
+	protected Permission permissions = new Permission(Permission.DEFAULT_PERM);
 
 	// arity of the tree at every level
 	protected int treeLevelOrder[] = new int[15];

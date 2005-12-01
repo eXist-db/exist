@@ -74,6 +74,9 @@ public class SecurityManager {
 	private int nextUserId = 0;
 	private int nextGroupId = 0;
 
+	private int defCollectionPermissions = Permission.DEFAULT_PERM;
+    private int defResourcePermissions = Permission.DEFAULT_PERM;
+    
 	/**
 	 * Initialize the security manager.
 	 * 
@@ -165,6 +168,15 @@ public class SecurityManager {
 			e.printStackTrace();
 			LOG.debug("loading acl failed: " + e.getMessage());
 		}
+		// read default collection and resource permissions
+		Integer defOpt = (Integer)
+			broker.getConfiguration().getProperty("indexer.permissions.collection");
+		if (defOpt != null)
+			defCollectionPermissions = defOpt.intValue();
+		defOpt = (Integer)
+			broker.getConfiguration().getProperty("indexer.permissions.resource");
+		if (defOpt != null)
+			defResourcePermissions = defOpt.intValue();
 	}
 
 	public synchronized void deleteUser(String name) throws PermissionDeniedException {
@@ -351,6 +363,14 @@ public class SecurityManager {
 		} finally {
 			pool.release(broker);
 		}
+	}
+	
+	public int getResourceDefaultPerms() {
+		return defResourcePermissions;
+	}
+	
+	public int getCollectionDefaultPerms() {
+		return defCollectionPermissions;
 	}
 	
 	private void createUserHome(DBBroker broker, Txn transaction, User user) 
