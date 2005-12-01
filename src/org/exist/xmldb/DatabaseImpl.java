@@ -25,14 +25,13 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.exist.EXistException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -88,7 +87,10 @@ public class DatabaseImpl implements Database {
 
     public static Collection readCollection(String c, XmlRpcClient rpcClient) throws XMLDBException {
     	String[] components = XmldbURI.getPathComponents(c);
-    	Collection current = new RemoteCollection(rpcClient, null, components[0]); 
+    	String rootName = components[0];
+    	if (DBBroker.ROOT_COLLECTION_NAME.equals(rootName))
+    		rootName = DBBroker.ROOT_COLLECTION;
+    	Collection current = new RemoteCollection(rpcClient, null, rootName); 
     	for (int i = 1 ; i < components.length ; i++) {
             current = ((RemoteCollection)current).getChildCollection(components[i]);
         }
