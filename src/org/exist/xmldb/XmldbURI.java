@@ -134,6 +134,12 @@ public class XmldbURI {
 				//Put the "right" URI in the message ;-)
 				throw new URISyntaxException(wrappedURI.toString().toString(), "xmldb URI scheme has no instance name");			
             userInfo = truncatedURI.getUserInfo();
+            //Very tricky :
+            if (truncatedURI.getHost() == null && truncatedURI.getAuthority() != null) {
+                userInfo = truncatedURI.getAuthority();
+                if (userInfo.endsWith("@"))
+                    userInfo = userInfo.substring(0, userInfo.length() - 1);
+            }
             host = truncatedURI.getHost();
 			port = truncatedURI.getPort();
 			path = truncatedURI.getPath();
