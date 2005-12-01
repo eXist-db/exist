@@ -174,9 +174,9 @@ public final class ClusterCollection extends Collection {
         return collection.getLock();
     }
 
-    public void addCollection(Collection child) {
+    public void addCollection(DBBroker broker, Collection child, boolean isNew) {
         try {
-            collection.addCollection(child);
+            collection.addCollection(broker, child, isNew);
             //TODO : use dedicated function in XmldbURI
     		final int p = child.getName().lastIndexOf("/") + 1;
     		final String childName = child.getName().substring(p);

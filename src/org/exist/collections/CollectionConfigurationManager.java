@@ -112,7 +112,7 @@ public class CollectionConfigurationManager {
     protected CollectionConfiguration getConfiguration(DBBroker broker, 
             Collection collection) throws CollectionConfigurationException {
     	LOG.debug("Reading config for " + collection.getName());
-    	CollectionConfiguration conf = new CollectionConfiguration(collection);
+    	CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool(), collection);
         boolean configFound = false;
         //TODO : use dedicated function in XmldbURI
     	String path = collection.getName() + "/";

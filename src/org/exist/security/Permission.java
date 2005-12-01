@@ -20,6 +20,9 @@ import org.exist.util.SyntaxException;
 public class Permission {
 
     public final static int DEFAULT_PERM = 0755;
+    public final static Permission SYSTEM_DEFAULT =
+    	new Permission(DEFAULT_PERM);
+    
     public final static String DEFAULT_STRING = "other";
     public final static String GROUP_STRING = "group";
 
