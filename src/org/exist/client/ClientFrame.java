@@ -1050,7 +1050,7 @@ public class ClientFrame extends JFrame
                     properties.getProperty("password", null), dir,
                     //TODO : use dedicated function in XmldbURI
                     properties.getProperty("uri", "xmldb:exist://")
-                    + "/" + collection);
+                    + collection);
             try {
                 backup.backup(true, this);
             } catch (XMLDBException e) {
