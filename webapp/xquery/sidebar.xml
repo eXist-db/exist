@@ -28,7 +28,7 @@
     </group>
     <group name="Examples">
         <item>
-            <link href="xquery.xq">Basic XQuery Interface</link>
+            <link href="../sandbox/sandbox.xql">XQuery Sandbox</link>
         </item>
         <item>
             <link href="acronyms.xq">XML Acronyms</link>
