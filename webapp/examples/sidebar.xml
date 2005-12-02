@@ -34,7 +34,7 @@
             <link href="../xquery/biblio.xml">Library</link>
         </item>
         <item>
-            <link href="../xquery/xquery.xq">Basic XQuery Interface</link>
+            <link href="../sandbox/sandbox.xql">XQuery Sandbox</link>
         </item>
         <item>
             <link href="../xmldb/db/">Cocoon + XML:DB</link>
