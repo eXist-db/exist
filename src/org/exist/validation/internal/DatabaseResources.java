@@ -300,24 +300,33 @@ public class DatabaseResources {
             broker = brokerPool.get(SecurityManager.SYSTEM_USER);
             
             if(isBinary){
-                BinaryDocument binDoc = (BinaryDocument) broker.openDocument(documentPath, Lock.READ_LOCK);
-                data = broker.getBinaryResourceData(binDoc);
-                binDoc.getUpdateLock().release(Lock.READ_LOCK);
+                BinaryDocument binDoc = (BinaryDocument) broker
+                        .openDocument(documentPath, Lock.READ_LOCK);
+                
+                // if document is not present, null is returned
+                if(binDoc == null){
+                    logger.error("Binary document '"
+                            + documentPath + " does not exist.");
+                } else {
+                    data = broker.getBinaryResourceData(binDoc);
+                    binDoc.getUpdateLock().release(Lock.READ_LOCK);
+                }
                 
             } else {
                 
-                DocumentImpl doc = broker.openDocument(documentPath, Lock.READ_LOCK);
-                Serializer serializer = broker.getSerializer();
-                serializer.reset();
+                DocumentImpl doc = broker
+                                    .openDocument(documentPath, Lock.READ_LOCK);
                 
                 // if document is not present, null is returned
-                if(doc != null){
-                    data = serializer.serialize(doc).getBytes();
+                if(doc == null){
+                    logger.error("Xml document '"
+                                + documentPath + " does not exist.");
                 } else {
-                    throw new EXistException("Document '"+documentPath+" does not exist.");
+                    Serializer serializer = broker.getSerializer();
+                    serializer.reset();
+                    data = serializer.serialize(doc).getBytes();
+                    doc.getUpdateLock().release(Lock.READ_LOCK);   
                 }
-                
-                doc.getUpdateLock().release(Lock.READ_LOCK);
             }
         } catch (PermissionDeniedException ex){
             logger.error("Error opening document", ex);
@@ -358,7 +367,9 @@ public class DatabaseResources {
             TransactionManager transact = brokerPool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
             
-            Collection collection = broker.getOrCreateCollection(transaction, collectionName);
+            Collection collection = broker
+                    .getOrCreateCollection(transaction, collectionName);
+            
             broker.saveCollection(transaction, collection);
             
             if(isBinary){
@@ -456,42 +467,42 @@ public class DatabaseResources {
 //        return !getGrammarPath(type, id).equalsIgnoreCase("NONE");
 //    }
     
-//    
+//
 //    /**
 //     * @deprecated Get rid of this code.
 //     */
 //    public String getGrammarPath(int type, String id){
-//        
+//
 //        logger.info("Get path of '"+id+"'");
-//        
+//
 //        String result="EMPTY";
 //        String query = getGrammarQuery(type, id);
-//        
+//
 //        DBBroker broker = null;
 //        try {
 //            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
 //        } catch (EXistException ex){
 //            logger.error("Error getting DBBroker", ex);
 //        }
-//        
+//
 //        XQuery xquery = broker.getXQueryService();
 //        try{
 //            Sequence seq = xquery.execute(query, null);
-//            
+//
 //            SequenceIterator i = seq.iterate();
 //            if(i.hasNext()){
 //                result= i.nextItem().getStringValue();
-//                
+//
 //            } else {
 //                logger.debug("No xQuery result");
 //            }
-//            
+//
 //        } catch (XPathException ex){
 //            logger.error("XSD xQuery error: "+ ex.getMessage());
 //        }
-//        
+//
 //        brokerPool.release(broker);
-//        
+//
 //        return result;
 //    }
     
@@ -511,7 +522,7 @@ public class DatabaseResources {
 //        } else {
 //            logger.error("Unknown grammar type, not able to find query.");
 //        }
-//        
+//
 //        return query;
 //    }
     
@@ -524,29 +535,29 @@ public class DatabaseResources {
 //     * @return              Reader to the resource.
 //     */
 //    public byte[] getGrammar(int type, String path ){
-//        
+//
 //        byte[] data = null;
 //        boolean isBinary=false;
-//        
+//
 //        if(type==GRAMMAR_DTD){
 //            isBinary=true;
 //        }
-//        
+//
 //        logger.debug("Get resource '"+path + "' binary="+ isBinary);
-//        
+//
 //        DBBroker broker = null;
 //        try {
-//            
+//
 //            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
-//            
-//            
+//
+//
 //            if(isBinary){
 //                BinaryDocument binDoc = (BinaryDocument) broker.openDocument(path, Lock.READ_LOCK);
 //                data = broker.getBinaryResourceData(binDoc);
 //                binDoc.getUpdateLock().release(Lock.READ_LOCK);
-//                
+//
 //            } else {
-//                
+//
 //                DocumentImpl doc = broker.openDocument(path, Lock.READ_LOCK);
 //                Serializer serializer = broker.getSerializer();
 //                serializer.reset();
@@ -564,7 +575,7 @@ public class DatabaseResources {
 //                brokerPool.release(broker);
 //            }
 //        }
-//        
+//
 //        return data;
 //    }
     
