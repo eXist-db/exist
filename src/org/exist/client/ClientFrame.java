@@ -316,7 +316,7 @@ public class ClientFrame extends JFrame
         
         split.setRightComponent(scroll);
         
-        statusbar = new JLabel("eXist Admin Client connected - " + client.USER + "@" + client.URI);
+        statusbar = new JLabel("eXist Admin Client connected - " + properties.getProperty("user") + "@" + properties.getProperty("uri"));
         statusbar.setMinimumSize(new Dimension(400, 15));
         statusbar.setBorder(BorderFactory
                 .createBevelBorder(BevelBorder.LOWERED));
@@ -586,6 +586,7 @@ public class ClientFrame extends JFrame
                 properties.setProperty("user", loginData[0]);
                 properties.setProperty("password", loginData[1]);
                 properties.setProperty("uri", loginData[2]);
+                statusbar.setText("eXist Admin Client connected - " + properties.getProperty("user") + "@" + properties.getProperty("uri"));
                 try {
                     client.reloadCollection();
                 } catch (XMLDBException e1) {
