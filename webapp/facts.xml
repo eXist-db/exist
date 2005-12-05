@@ -15,7 +15,7 @@
                 <topic name="Supported Platforms">
                     
                     <p>Platform independent. Tested
-                        on Linux (Mandrake), Windows 2000/XP/XP Server Edition</p>
+                        on Linux (Mandrake/SUSE 9.3), FreeBSD 5.4/6.0, Windows 2000/XP/XP Server Edition</p>
                 
                 </topic>
 
@@ -55,9 +55,9 @@
                 <topic name="Index Creation">
 
                     <p>Automatic index creation by default. Uses structural
-                        indexes for element and attribute nodes, and a fulltext
-                        index for text and attribute values. Fulltext indexing
-                        can be turned on/off for selected parts of a
+                        indexes for element and attribute nodes, a fulltext
+                        index for text and attribute values and range indexes for typed values.
+                        Fulltext indexing can be turned on/off for selected parts of a
                         document. The structural indexes are maintained
                         automatically.</p>
 
@@ -159,7 +159,7 @@
                 </topic>
 
                 <topic name="XUpdate">
-                    <p>Yes.</p>
+                    <p>Yes and also an update syntax extension for XQuery</p>
                 </topic>
 
             </category>
