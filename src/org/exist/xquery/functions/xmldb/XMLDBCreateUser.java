@@ -90,8 +90,9 @@ public class XMLDBCreateUser extends BasicFunction {
         for (int x = 0; x < len; x++)
             userObj.addGroup(groups.itemAt(x).getStringValue());
         
-        if(args[3].getLength() > 0)
-        	userObj.setHome(args[3].getStringValue());
+        if("".equals(args[3].getStringValue()))
+            throw new XPathException(getASTNode(), "Empty user collection");
+        userObj.setHome(args[3].getStringValue());
         Collection collection = null;
 		try {
             collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), DBBroker.ROOT_COLLECTION);
