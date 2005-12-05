@@ -76,6 +76,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.NonWritableChannelException;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
@@ -395,19 +397,25 @@ public abstract class Paged {
 	protected final void setFile(final File file) throws DBException {
 		this.file = file;
 		fileIsNew = !file.exists();
-		try {
+        try {
 			if ((!file.exists()) || file.canWrite()) {
-				raf = new RandomAccessFile(file, "rw");
+                try {
+                    raf = new RandomAccessFile(file, "rw");
+                    FileChannel channel = raf.getChannel();   
+                    FileLock lock = channel.tryLock();
+                    if (lock == null)
+                        readOnly = true;
+                    //TODO : who will release the lock ? -pb
+                } catch (NonWritableChannelException e) {
+                    //No way : switch to read-only mode
+                    readOnly = true;
+                    raf = new RandomAccessFile(file, "r");
+                    //TODO : log this !!!
+                }                    
 			} else {
-				readOnly = true;
-				raf = new RandomAccessFile(file, "r");
+                readOnly = true;
+                raf = new RandomAccessFile(file, "r");
 			}
-			
-			FileChannel channel = raf.getChannel();			
-			if (channel.tryLock() == null)
-				readOnly = true;
-//				throw new DBException("Failed to open database file: " + file.getAbsolutePath() +
-//						". It is locked by another process.");
 		} catch (IOException e) {
 			LOG.warn("An exception occured while opening database file " + file.getAbsolutePath() +
 					": " + e.getMessage(), e);
