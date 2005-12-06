@@ -41,6 +41,7 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.RegexTranslator;
@@ -187,7 +188,7 @@ public class FunMatches extends Function {
 		    DocumentSet docs = nodes.getDocumentSet();
 		    try {
 		    	if (context.isProfilingEnabled())
-		    		context.getProfiler().message(this, "Using index for fn:matches. Regex: " + pattern);
+		    		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using index for fn:matches", "Regex: " + pattern);
 				return context.getBroker().getValueIndex().match(docs, nodes, pattern, 
 						DBBroker.MATCH_REGEXP, flags, caseSensitive);
 			} catch (EXistException e) {

@@ -84,32 +84,38 @@ public class VariableDeclaration extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }            
+        
 		QName qn = QName.parse(context, qname, null);
-		Module myModule = context.getModule(qn.getNamespaceURI());
+		Module myModule = context.getModule(qn.getNamespaceURI());		
 		
-		if (context.isProfilingEnabled(2))
-			context.getProfiler().start(this, "Global variable declaration: " + qn);
 		// declare the variable
 		Sequence seq = expression.eval(null, null);
-
-		if (context.isProfilingEnabled(2))
-			context.getProfiler().end(this, "Global variable declaration: " + qn);
-		
+        Variable var;
 		if(myModule != null) {
-			Variable var = myModule.declareVariable(qn, seq);
+			var = myModule.declareVariable(qn, seq);
             var.setSequenceType(sequenceType);
             var.checkType();
         } else {
-			Variable var = new Variable(qn);
+			var = new Variable(qn);
 			var.setValue(seq);
             var.setSequenceType(sequenceType);
             var.checkType();
 			context.declareGlobalVariable(var);
 		}
+        
+        if (context.getProfiler().isEnabled())
+            //Note : that we use seq but we return Sequence.EMPTY_SEQUENCE
+            context.getProfiler().end(this, "", seq);   
+        
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	

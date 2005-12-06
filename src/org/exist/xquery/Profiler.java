@@ -25,6 +25,8 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
 
 /**
  * XQuery profiling output. Profiling information is written to a
@@ -51,9 +53,20 @@ public class Profiler {
     
     private boolean enabled = false;
     
-    private int verbosity = 0;
+    private int verbosity = 0;   
     
-    private boolean queryStarted = false;
+    public static int TIME = 1;
+    //An abstract level to pass some sequences
+    public static int START_SEQUENCES = 2;    
+    public static int ITEM_COUNT = 3;    
+    //For a truncated string representation of sequences (TODO) 
+    public static int SEQUENCE_PREVIEW = 4; 
+    //For computations that will trigger further optimizations 
+    public static int OPTIMIZATION_FLAGS = 5;  
+    //For optimizations
+    public static int OPTIMIZATIONS = 6;
+    public static int DEPENDENCIES = 7;
+    public static int SEQUENCE_DUMP = 8;  
     
     /**
      * Configure the profiler from an XQuery pragma.
@@ -80,15 +93,23 @@ public class Profiler {
                     try {
                         verbosity = Integer.parseInt(params[1]);
                     } catch (NumberFormatException e) {
+//                      LOG this
                     }
-                } else if("threshold".equals(params[0])) {
+                } 
+                else if("threshold".equals(params[0])) {
                     try {
                         profilingThreshold = Integer.parseInt(params[1]);
                     } catch(NumberFormatException e) {
+//                      LOG this
                     }
+                }
+                else {
+//                  LOG this                    
                 }
             }
         }
+        if (verbosity == 0) 
+            enabled=false; 
     }
     
     /**
@@ -125,24 +146,29 @@ public class Profiler {
      * @param message if not null, contains an optional message to print in the log.
      */
     public final void start(Expression expr, String message) {
-        if (enabled) {
-            ProfiledExpr e = new ProfiledExpr(expr);
-            stack.push(e);
+        if (!enabled)
+            return;
         
-            if (!queryStarted) {
-                log.debug("QUERY START");
-                queryStarted = true;
-            }
-            
-            if (message != null) {
-                buf.setLength(0);
-                printPosition(e.expr);
-                buf.append('\t');
-                buf.append("START\t\t- ");
-                buf.append(message);
-                log.debug(buf.toString());
-            }
+        if (stack.size() == 0) {
+            log.debug("QUERY START");                
         }
+        
+        ProfiledExpr e = new ProfiledExpr(expr);
+        stack.push(e);            
+        
+        buf.setLength(0); 
+        buf.append("START\t");
+        printPosition(e.expr);                        
+        buf.append(expr.toString()); 
+        log.debug(buf.toString());
+
+        if (message != null && !"".equals(message)) {
+            buf.setLength(0);
+            buf.append("MSG\t");
+            printPosition(e.expr);
+            buf.append(message);
+            log.debug(buf.toString());
+        }         
     }
     
     /**
@@ -152,29 +178,60 @@ public class Profiler {
      * @param expr the expression.
      * @param message required: a message to be printed to the log.
      */
-    public final void end(Expression expr, String message) {
+    public final void end(Expression expr, String message, Sequence result) {
         if (!enabled)
-            return;
+            return;        
         
-        try {
-			ProfiledExpr e = (ProfiledExpr) stack.pop();
+        try {            
+			ProfiledExpr e = (ProfiledExpr) stack.pop();            
 			if (e.expr != expr) {
 			    log.warn("Error: the object passed to end() does not correspond to the expression on top of the stack.");
 			    stack.clear();
 			    return;
 			}
+            
+            long elapsed = System.currentTimeMillis() - e.start;
+            
+            if (message != null && !"".equals(message)) {
+                buf.setLength(0);
+                buf.append("MSG\t");
+                printPosition(e.expr);
+                buf.append(message);
+                log.debug(buf.toString());
+            } 
+            
+            if (verbosity > START_SEQUENCES) {
+                buf.setLength(0);
+                buf.append("RESULT\t");
+                printPosition(e.expr);    
+                /* if (verbosity >= SEQUENCE_DUMP) 
+                    buf.append(result.toString());               
+                else if (verbosity >= SEQUENCE_PREVIEW)
+                    buf.append(sequencePreview(result));
+                else*/ if (verbosity >= ITEM_COUNT) 
+                    buf.append(result.getLength() + " item(s)");                                  
+                log.debug(buf.toString()); 
+            }
+            
+            if (verbosity >= TIME) {
+                buf.setLength(0);
+                buf.append("TIME\t");
+                printPosition(e.expr);
+                buf.append(elapsed + " ms"); 
+                log.debug(buf.toString()); 
+            }
 			
-			long elapsed = System.currentTimeMillis() - e.start;
-			buf.setLength(0);
-			printPosition(e.expr);
-			buf.append("\tEND\t");
-			buf.append(elapsed);
-			buf.append("ms - ");
-			if (message != null)
-			    buf.append(message);
-			log.debug(buf.toString());
+            buf.setLength(0);
+            buf.append("END\t");
+            printPosition(e.expr);
+            buf.append(expr.toString());            
+            log.debug(buf.toString());
+            
+            if (stack.size() == 0) {
+                log.debug("QUERY END");                
+            }            
 		} catch (RuntimeException e) {
-			log.debug("Profiler: could not pop from expression stack - " + expr + " - "+ message);
+			log.debug("Profiler: could not pop from expression stack - " + expr + " - "+ message + ". Error : "+ e.getMessage());
 		}
     }
 
@@ -185,34 +242,89 @@ public class Profiler {
      * @param expr
      * @param message
      */
-    public final void message(Expression expr, String message) {
+    public final void message(Expression expr, int level, String title, Sequence sequence) {
     	if (!enabled)
     		return;
+        if (level > verbosity)
+            return;
     	
-    	buf.setLength(0);
-    	printPosition(expr);
-    	buf.append("\tMSG\t");
-    	if (message != null)
-    		buf.append(message);
-    	log.debug(buf.toString());
+    	buf.setLength(0);    	 	
+        if (title != null && !"".equals(title))
+            buf.append(title);
+        else
+            buf.append("MSG");        
+        buf.append("\t");
+        printPosition(expr);
+        /* if (verbosity >= SEQUENCE_DUMP) 
+            buf.append(sequence.toString()); 
+        else if (verbosity >= SEQUENCE_PREVIEW)
+            buf.append(sequencePreview(sequence));
+        else */ if (verbosity >= ITEM_COUNT) 
+            buf.append(sequence.getLength() + " item(s)"); 
+    	log.debug(buf.toString());        
     }
     
-    public void reset() {
-        queryStarted = false;
+    public final void message(Expression expr, int level, String title, String message) {
+        if (!enabled)            
+            return;
+        if (level > verbosity)
+            return;        
+        
+        buf.setLength(0);
+        if (title != null && !"".equals(title))
+            buf.append(title);
+        else
+            buf.append("MSG");
+        buf.append("\t");
+        printPosition(expr); 
+        if (message != null && !"".equals(message))            
+            buf.append(message);            
+        log.debug(buf.toString());
+    }    
+    
+    public void reset() {        
+        if (stack.size() > 0)
+            log.debug("QUERY RESET");  
+        stack.clear();
     }
     
     /**
      * @param e
      */
     private void printPosition(Expression expr) {
-        XQueryAST ast = expr.getASTNode();
+        XQueryAST ast = expr.getASTNode();       
         if (ast != null) {
             buf.append('[');
             buf.append(ast.getColumn());
             buf.append(',');
             buf.append(ast.getLine());
-            buf.append("] ");
+            buf.append("]\t");
         }
+        else
+            buf.append("\t");
+    }
+    
+    //TODO : find a way to preview "abstract" sequences
+    private String sequencePreview(Sequence sequence) {
+        StringBuffer truncation = new StringBuffer();         
+        if (sequence.getLength() == 0)
+            truncation.append(sequence.toString());
+        else if (sequence.getLength() == 1) {
+            truncation.append("(");            
+            if (sequence.itemAt(0).toString().length() > 20) 
+                truncation.append(sequence.itemAt(0).toString().substring(0, 20)).append("... "); 
+            else
+                truncation.append(sequence.itemAt(0).toString());            
+            truncation.append(")");        
+        } else  {
+            truncation.append("(");
+            if (sequence.itemAt(0).toString().length() > 20) 
+                truncation.append(sequence.itemAt(0).toString().substring(0, 20)).append("... "); 
+            else
+                truncation.append(sequence.itemAt(0).toString());
+            truncation.append(", ... )"); 
+        }                  
+        return truncation.toString();
     }
     
     private final static class ProfiledExpr {

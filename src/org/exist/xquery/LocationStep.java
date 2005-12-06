@@ -143,27 +143,38 @@ public class LocationStep extends Step {
     }
     
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }            
+        
+        Sequence temp = NodeSet.EMPTY_SET;    
+        
         if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		if(contextSequence == null)
-			return NodeSet.EMPTY_SET;
         
-        if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
-            context.getProfiler().start(this, Constants.AXISSPECIFIERS[axis] + "::" + test);
+		if(contextSequence == null) {
+            if (context.getProfiler().isEnabled()) 
+                context.getProfiler().end(this, "", temp);        
+			return temp; 
         }
         
         //Try to return cached results
-		if(cached != null && cached.isValid(contextSequence)) {
-            if (context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
-                context.getProfiler().end(this, "Returning cached result. Length: " + cached.getResult().getLength());
-            }
-			return (predicates.size() == 0) ? 
-                cached.getResult() :
-				applyPredicate(contextSequence, cached.getResult());
-		}
-        
-		Sequence temp = NodeSet.EMPTY_SET;        
+		if(cached != null && cached.isValid(contextSequence)) {            
+			if (predicates.size() > 0) {
+                applyPredicate(contextSequence, cached.getResult());  
+                //TODO : return now ? -pb
+            } else {
+                if (context.getProfiler().isEnabled()) 
+                    context.getProfiler().end(this, "Using cached result", cached.getResult());
+                return cached.getResult();
+            }           
+		}        
+		    
 		if (needsComputation()) { 
     		switch (axis) {
     			case Constants.DESCENDANT_AXIS :
@@ -213,12 +224,9 @@ public class LocationStep extends Step {
         //Apply the predicate
         temp =  applyPredicate(contextSequence, temp);                 
 
-        if (context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
-            context.getProfiler().end(this, " LocationStep" +
-                    ", " + Constants.AXISSPECIFIERS[axis] +
-                    "::" + test + ", found: " + temp.getLength()
-            );
-        }
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", temp);
+        
         return temp;
 	}
     
