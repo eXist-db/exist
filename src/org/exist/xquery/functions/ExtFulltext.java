@@ -58,6 +58,7 @@ public class ExtFulltext extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
+            //TODO : change this ! -pb
 			new QName("contains", Function.BUILTIN_FUNCTION_NS),
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE) },
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
@@ -195,6 +196,14 @@ public class ExtFulltext extends Function {
 			return NodeSet.EMPTY_SET;
 		return hits;
 	}
+    
+    public String toString() {
+        StringBuffer result = new StringBuffer();
+        result.append(path.toString());
+        result.append(" &= ");
+        result.append(searchTerm.toString());
+        return result.toString();
+    }   
 
 	/* (non-Javadoc)
      * @see org.exist.xquery.Function#dump(org.exist.xquery.util.ExpressionDumper)

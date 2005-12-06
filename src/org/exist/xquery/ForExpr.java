@@ -111,27 +111,33 @@ public class ForExpr extends BindingExpression {
 	 * 
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem,
-		Sequence resultSequence)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence)
+		    throws XPathException {
 
-        context.getProfiler().start(this, "for expression: " + 
-        		// " line " +getASTNode().getLine() +
-        		ExpressionDumper.dump(this) );
-
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            if (resultSequence != null)        
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "RESULT SEQUENCE", resultSequence);
+        }
+        
 		// Save the local variable stack
 		LocalVariable mark = context.markLocalVariables(false);
 		
 		// Evaluate the "in" expression
 		Sequence in = inputSequence.eval(null, null);
-		clearContext(in);
+
+        
+		clearContext(in); 
         
 		// Declare the iteration variable
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
         var.setSequenceType(sequenceType);
-		context.declareVariableBinding(var);
+		context.declareVariableBinding(var);      
 		
 		// Declare positional variable
 		LocalVariable at = null;
@@ -185,8 +191,7 @@ public class ForExpr extends BindingExpression {
 		// order expressions for every item when it is added to the result sequence.
 		if(resultSequence == null) {
 			if(orderSpecs != null && !fastOrderBy)
-				resultSequence = 
-					new OrderedValueSequence(orderSpecs, in.getLength());
+				resultSequence = new OrderedValueSequence(orderSpecs, in.getLength());
 			else
 				resultSequence = new ValueSequence();
 		}
@@ -245,7 +250,8 @@ public class ForExpr extends BindingExpression {
 		// restore the local variable stack
 		context.popLocalVariables(mark);
 		
-        context.getProfiler().end(  this, "for expression: " + this );
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", resultSequence);
 
 		return resultSequence;
 	}

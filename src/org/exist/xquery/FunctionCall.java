@@ -148,12 +148,21 @@ public class FunctionCall extends Function {
      * @throws XPathException
      */
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {
-        if (context.isProfilingEnabled())
-            context.getProfiler().start(this, functionDef.toString());
+        if (context.isProfilingEnabled()) {
+            context.getProfiler().start(this);     
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }        
+        
         functionDef.setArguments(seq);
         LocalVariable mark = context.markLocalVariables(true);
         try {
 			Sequence returnSeq = expression.eval(contextSequence, contextItem);
+            if (context.isProfilingEnabled())
+                context.getProfiler().end(this, "", returnSeq);            
 			return returnSeq;
 		} catch(XPathException e) {
 			if(e.getLine() == 0)
@@ -162,9 +171,7 @@ public class FunctionCall extends Function {
 			e.addFunctionCall(functionDef, getASTNode());
 			throw e;
 		} finally {
-			context.popLocalVariables(mark);
-            if (context.isProfilingEnabled())
-                context.getProfiler().end(this, functionDef.toString());
+			context.popLocalVariables(mark);            
 		}
     }
 

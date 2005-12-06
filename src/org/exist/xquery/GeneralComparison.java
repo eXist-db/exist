@@ -348,7 +348,7 @@ public class GeneralComparison extends BinaryOp {
 	        if(key instanceof Indexable && Type.subTypeOf(key.getType(), indexType)) {
 	        	if(truncation != Constants.TRUNC_NONE) {
 	        		if (context.isProfilingEnabled())
-	        			context.getProfiler().message(this, "Using value index for key: " +  Type.getTypeName(key.getType()) + ": " 
+	        			context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using value index for key", Type.getTypeName(key.getType()) + ": " 
                             + key.getStringValue());
 					try {
 						result = context.getBroker().getValueIndex().match(docs, nodes, rightSeq.getStringValue().replace('%', '*'), 
@@ -358,7 +358,7 @@ public class GeneralComparison extends BinaryOp {
 					}
 	        	} else {
 	        		if (context.isProfilingEnabled())
-	        			context.getProfiler().message(this, "Using value index for key: " +  Type.getTypeName(key.getType()) + ": " 
+	        			context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using value index for key: ", Type.getTypeName(key.getType()) + ": " 
                             + key.getStringValue());
 		            result = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
 				}

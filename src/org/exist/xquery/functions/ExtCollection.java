@@ -88,10 +88,10 @@ public class ExtCollection extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().start(this, "fn:collection: loading documents");        
+        
 	    List args = getParameterValues(contextSequence, contextItem);
 		boolean cacheIsValid = false;
 		if(cachedArgs != null)
@@ -99,11 +99,9 @@ public class ExtCollection extends Function {
 		if(cacheIsValid) {
 		    // if the expression occurs in a nested context, we might have cached the
             // document set
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().end(this, "fn:collection: loading documents", cached);                 
 		    return cached;
-        }
-        
-        if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
-            context.getProfiler().start(this, "fn:collection: loading documents");
         }
         
 		// check if the loaded documents should remain locked
@@ -113,11 +111,9 @@ public class ExtCollection extends Function {
 		DocumentSet docs = new DocumentSet();
 		for (int i = 0; i < args.size(); i++) {
 			String next = (String)args.get(i);
-		    Collection coll = context.getBroker().getCollection(next);
-            context.getProfiler().start(this, "fn:collection: loading collection: " + args.get(i));
+		    Collection coll = context.getBroker().getCollection(next);            
 		    if(coll != null)
-		    	coll.allDocs(context.getBroker(), docs, includeSubCollections, true);
-            context.getProfiler().end(this, "fn:collection: loading collection: " + args.get(i));
+		    	coll.allDocs(context.getBroker(), docs, includeSubCollections, true);          
 		}
         
         // iterate through all docs and create the node set
@@ -144,9 +140,9 @@ public class ExtCollection extends Function {
 		cached = result;
 		cachedArgs = args;
         
-        if ( context.isProfilingEnabled() && context.getProfiler().verbosity() > 1) {
-            context.getProfiler().end(this, "fn:collection: loading documents");
-        }
+       if (context.getProfiler().isEnabled())           
+           context.getProfiler().end(this, "fn:collection: loading documents", result);
+       
 		return result;
 	}
 	
