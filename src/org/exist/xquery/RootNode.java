@@ -94,12 +94,12 @@ public class RootNode extends Step {
      */
     public void dump(ExpressionDumper dumper) {
         //TODO : find a better message
-        dumper.display("/ROOT");
+        dumper.display("[root-node]");
     }
     
     public String toString() {
         //TODO : find a better message
-        return "/ROOT";
+        return "[root-node]";
     }    
     
     /*
