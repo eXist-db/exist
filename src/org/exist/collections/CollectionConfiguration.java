@@ -82,10 +82,12 @@ public class CollectionConfiguration {
      */
     protected void read(DBBroker broker, Document doc) throws CollectionConfigurationException {
         Element root = doc.getDocumentElement();
+        if (root == null)
+            throw new CollectionConfigurationException("Configuration document can not be parsed");            
 		if(!(NAMESPACE.equals(root.getNamespaceURI()) &&
 			ROOT_ELEMENT.equals(root.getLocalName())))
-			throw new CollectionConfigurationException("Wrong document root for collection configuration. " +
-					"The root element should be " + ROOT_ELEMENT + " in namespace " + NAMESPACE);
+            throw new CollectionConfigurationException("Wrong document root for collection configuration. " +
+                    "The root element should be " + ROOT_ELEMENT + " in namespace " + NAMESPACE);
 		NodeList childNodes = root.getChildNodes();
 		Node node;
 		for(int i = 0; i < childNodes.getLength(); i++) {
