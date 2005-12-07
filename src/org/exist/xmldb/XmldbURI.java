@@ -28,11 +28,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.exist.storage.DBBroker;
-import org.xmldb.api.base.Collection;
+import org.exist.xquery.util.URIUtils;
 
 /** A utility class for xmldb URis.
  * Since, java.net.URI is <strong>final</strong> this class acts as a wrapper.
@@ -81,16 +80,8 @@ public class XmldbURI {
 	 */
 	public XmldbURI(String accessURI, String collectionPath) throws URISyntaxException {
     	try {
-    		String escaped = URLEncoder.encode(collectionPath, "UTF-8");    		
-    		//This is the trick : unescape slashed in order to keep java.net.URI capabilities 
-            //TODO : use escape functions in XQuery -pb
-    		escaped = escaped.replaceAll("%2F", "/");
-    		escaped = escaped.replaceAll("%23", "#");
-    		escaped = escaped.replaceAll("%3F", "?");            
-    		parseURI(accessURI + escaped);
-    	} catch (URISyntaxException e) {
-        	wrappedURI = null;        	
-        	throw e;     	
+    		String escaped = URIUtils.escapeHtmlURI(collectionPath);   		
+ 			parseURI(accessURI + escaped);
     	} catch (UnsupportedEncodingException e) {
         	wrappedURI = null;        	
         	throw new URISyntaxException(accessURI + collectionPath, e.getMessage());  	
