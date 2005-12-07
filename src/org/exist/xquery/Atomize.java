@@ -75,17 +75,17 @@ public class Atomize extends AbstractExpression {
      */
     public void dump(ExpressionDumper dumper) {
         if(dumper.verbosity() > 1)
-            dumper.display("atomize#(");
+            dumper.display("atomize[");
         expression.dump(dumper);
         if(dumper.verbosity() > 1)
-            dumper.display(")");
+            dumper.display("]");
     }
     
     public String toString() {
         StringBuffer result = new StringBuffer();
-        result.append("atomize#(");
+        result.append("atomize[");
         result.append(expression.toString());
-        result.append(")");
+        result.append("]");
         return result.toString();
     }    
     

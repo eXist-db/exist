@@ -76,21 +76,25 @@ public class DynamicTypeCheck extends AbstractExpression {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        if(dumper.verbosity() > 1) {
-	        dumper.display(Type.getTypeName(requiredType));
-	        dumper.display('(');
+        if(dumper.verbosity() > 1) {            
+            dumper.display("dynamic-type-check"); 
+            dumper.display("["); 
+            dumper.display(Type.getTypeName(requiredType));
+            dumper.display(", "); 
         }
         expression.dump(dumper);
         if(dumper.verbosity() > 1)
-            dumper.display(')');
+            dumper.display("]");
     }
     
     public String toString() {
         StringBuffer result = new StringBuffer();
+        result.append("dynamic-type-check");   
+        result.append("["); 
         result.append(Type.getTypeName(requiredType));
-        result.append('(');        
+        result.append(", "); 
         result.append(expression.toString());
-        result.append(')');
+        result.append("]");
         return result.toString();
     }    
     

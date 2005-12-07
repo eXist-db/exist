@@ -2,6 +2,7 @@ package org.exist.xquery;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
@@ -58,15 +59,24 @@ public class NameTest extends TypeTest {
 	public boolean isWildcardTest() {
 		return nodeName.getLocalName() == null || nodeName.getNamespaceURI() == null;
 	}
+    
+    public void dump(ExpressionDumper dumper) {
+        if(nodeName.getLocalName() == null)
+            dumper.display(nodeName.getPrefix() + ":*");
+        else
+            dumper.display(nodeName.toString());        
+    }    
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-	    if(nodeName.getLocalName() == null)
-	        return nodeName.getPrefix() + ":*";
-	    else
-	        return nodeName.toString();
+        StringBuffer result = new StringBuffer();
+        if(nodeName.getLocalName() == null)
+            result.append(nodeName.getPrefix() + ":*");
+        else
+            result.append(nodeName.toString());            
+        return result.toString();	    
 	}
 
 }

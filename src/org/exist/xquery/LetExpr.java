@@ -166,7 +166,11 @@ public class LetExpr extends BindingExpression {
                 dumper.display(orderSpecs[i].toString());
             }
         }
-        dumper.nl().display("return ");
+        //TODO : QuantifiedExpr
+        if (returnExpr instanceof LetExpr)
+            dumper.display(", ");
+        else
+            dumper.nl().display("return "); 
         dumper.startIndent();
         returnExpr.dump(dumper);
         dumper.endIndent();
@@ -190,7 +194,11 @@ public class LetExpr extends BindingExpression {
                 result.append(orderSpecs[i].toString());
             }
         }
-        result.append("return ");       
+        //TODO : QuantifiedExpr
+        if (returnExpr instanceof LetExpr)
+            result.append(", ");
+        else
+            result.append("return ");       
         result.append(returnExpr.toString());
         return result.toString();
     }    
