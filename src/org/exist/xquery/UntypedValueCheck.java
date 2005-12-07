@@ -26,7 +26,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -100,18 +99,21 @@ public class UntypedValueCheck extends AbstractExpression {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("#type:").display(Type.getTypeName(requiredType));
-        dumper.display('(');
+        dumper.display("untyped-check#(").display(Type.getTypeName(requiredType));
+        dumper.display(":");
+        dumper.display("(");
         expression.dump(dumper);
-        dumper.display(')');
+        dumper.display(")");
     }
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("#type:").append(Type.getTypeName(requiredType));
-    	result.append('(');
+    	result.append("untyped-check#(");
+    	result.append(Type.getTypeName(requiredType));
+    	result.append(":");
+    	result.append("(");
     	result.append(expression.toString());
-    	result.append(')');
+    	result.append(")");
     	return result.toString();
     }    
     

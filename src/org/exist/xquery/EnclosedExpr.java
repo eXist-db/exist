@@ -104,7 +104,7 @@ public class EnclosedExpr extends PathExpr {
      * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("{ ");
+        dumper.display("{");
         dumper.startIndent();
         super.dump(dumper);
         dumper.endIndent();
@@ -113,9 +113,9 @@ public class EnclosedExpr extends PathExpr {
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("{ ");    	
+    	result.append("{");    	
     	result.append(super.toString());        
-    	result.append(" }");
+    	result.append("}");
     	return result.toString();
     }    
 }

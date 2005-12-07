@@ -181,9 +181,9 @@ public class ElementConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("element { ");
+        dumper.display("element {");
         qnameExpr.dump(dumper);
-        dumper.display(" } {");
+        dumper.display("} {");
         dumper.startIndent();
         if(attributes != null) {
 			AttributeConstructor attr;
@@ -210,9 +210,9 @@ public class ElementConstructor extends NodeConstructor {
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("element { ");
+    	result.append("element {");
     	result.append(qnameExpr.toString());
-    	result.append(" } { ");        
+    	result.append("} {");        
         if(attributes != null) {
 			AttributeConstructor attr;
 			for(int i = 0; i < attributes.length; i++) {
@@ -230,7 +230,7 @@ public class ElementConstructor extends NodeConstructor {
                 	result.append(" ");
             }
         }        
-        result.append(" } ");
+        result.append("} ");
         return result.toString();
     }    
     

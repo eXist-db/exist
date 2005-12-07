@@ -91,17 +91,17 @@ public class NamespaceConstructor extends NodeConstructor {
      */
     public void dump(ExpressionDumper dumper) {
         dumper.display("namespace ").display(prefix);
-        dumper.display("{ ");
+        dumper.display("{");
         uri.dump(dumper);
-        dumper.display(" }");
+        dumper.display("}");
     }
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
     	result.append("namespace ").append(prefix);
-    	result.append("{ ");
+    	result.append("{");
     	result.append(uri.toString());
-    	result.append(" }");
+    	result.append("}");
     	return result.toString();
     }    
 }

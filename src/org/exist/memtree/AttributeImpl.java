@@ -24,15 +24,12 @@ package org.exist.memtree;
 
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
-import org.exist.storage.DBBroker;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.TypeInfo;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 
@@ -156,13 +153,12 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 	
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("in-memory[");
-    	result.append("attribute { ");
+    	result.append("in-memory#");
+    	result.append("attribute {");
     	result.append(getQName().toString());
-    	result.append(" } { ");        
+    	result.append("} {");        
     	result.append(getValue().toString());        
-    	result.append(" }");
-    	result.append("] ");
+    	result.append("} ");    	
     	return result.toString();
     }    
 }

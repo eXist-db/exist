@@ -81,7 +81,7 @@ public class DynamicCardinalityCheck extends AbstractExpression {
      */
     public void dump(ExpressionDumper dumper) {
         if(dumper.verbosity() > 1) {
-	        dumper.display("#cardinality(");
+	        dumper.display("cardinality-check#(");
         }
         expression.dump(dumper);
         if(dumper.verbosity() > 1)
@@ -90,9 +90,9 @@ public class DynamicCardinalityCheck extends AbstractExpression {
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("#cardinality( ");        
+    	result.append("cardinality-check#(");        
     	result.append(expression.toString());
-    	result.append(" )");
+    	result.append(")");
     	return result.toString();
     }    
     

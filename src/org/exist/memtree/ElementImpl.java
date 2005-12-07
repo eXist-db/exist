@@ -359,10 +359,10 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	
 	public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("in-memory[");
-    	result.append("element { ");
+    	result.append("in-memory#");
+    	result.append("element {");
     	result.append(getQName().toString());
-    	result.append(" } { ");        
+    	result.append("} {");        
         if(getAttributes() != null) {			
 			for(int i = 0; i < getAttributes().getLength(); i++) {
 			    if(i > 0)
@@ -377,8 +377,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
     		Node child = getChildNodes().item(i);
             result.append(child.toString());           
         }        
-        result.append(" }");
-        result.append("] ");
+        result.append("} ");        
         return result.toString();
 	}
 }

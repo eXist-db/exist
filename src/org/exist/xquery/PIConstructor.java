@@ -73,9 +73,9 @@ public class PIConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("processing-instruction { ");
+        dumper.display("processing-instruction {");
         dumper.display(target);
-        dumper.display(" } { ");
+        dumper.display("} {");
         dumper.startIndent();
         dumper.display(data);
         dumper.endIndent().nl().display("}");
@@ -83,11 +83,11 @@ public class PIConstructor extends NodeConstructor {
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("processing-instruction { ");
+    	result.append("processing-instruction {");
     	result.append(target.toString());
-    	result.append(" } { ");        
+    	result.append("} {");        
     	result.append(data.toString());
-    	result.append(" }");
+    	result.append("}");
     	return result.toString();
     }    
 }

@@ -104,9 +104,9 @@ public class DynamicPIConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("processing-instruction { ");
+        dumper.display("processing-instruction {");
         name.dump(dumper);
-        dumper.display(" } { ");
+        dumper.display("} {");
         dumper.startIndent();
         content.dump(dumper);
         dumper.endIndent().nl().display("}");
@@ -114,11 +114,11 @@ public class DynamicPIConstructor extends NodeConstructor {
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("processing-instruction { ");
+    	result.append("processing-instruction {");
     	result.append(name.toString());
-    	result.append(" } { ");        
+    	result.append("} {");        
     	result.append(content.toString());
-    	result.append(" }");
+    	result.append("}");
     	return result.toString();
     }    
 }

@@ -127,11 +127,11 @@ public class VariableDeclaration extends AbstractExpression {
         if(sequenceType != null) {
             dumper.display(" as ").display(sequenceType.toString());
         }
-        dumper.display('{');
+        dumper.display("{");
         dumper.startIndent();
         expression.dump(dumper);
         dumper.endIndent();
-        dumper.nl().display('}').nl();
+        dumper.nl().display("}").nl();
     }
     
     public String toString() {
@@ -140,9 +140,9 @@ public class VariableDeclaration extends AbstractExpression {
         if(sequenceType != null) {
         	result.append(" as ").append(sequenceType.toString());
         }
-        result.append("{ ");
+        result.append("{");
         result.append(expression.toString());        
-        result.append(" }");
+        result.append("}");
         return result.toString();
     }    
     
