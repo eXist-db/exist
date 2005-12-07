@@ -99,21 +99,20 @@ public class UntypedValueCheck extends AbstractExpression {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("untyped-check#(").display(Type.getTypeName(requiredType));
-        dumper.display(":");
-        dumper.display("(");
+        dumper.display("untyped-value-check[");
+        dumper.display(Type.getTypeName(requiredType));
+        dumper.display(", ");        
         expression.dump(dumper);
-        dumper.display(")");
+        dumper.display("]");
     }
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("untyped-check#(");
+    	result.append("untyped-value-check[");
     	result.append(Type.getTypeName(requiredType));
-    	result.append(":");
-    	result.append("(");
+    	result.append(", ");    	
     	result.append(expression.toString());
-    	result.append(")");
+    	result.append("]");
     	return result.toString();
     }    
     
