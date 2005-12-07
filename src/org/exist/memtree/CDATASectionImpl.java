@@ -21,12 +21,9 @@
  */
 package org.exist.memtree;
 
-import org.exist.storage.DBBroker;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Text;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 /**
  * Represents a CDATA section.
@@ -121,11 +118,10 @@ public class CDATASectionImpl extends NodeImpl implements CDATASection {
     	StringBuffer result = new StringBuffer();
     	if (isPersistentSet())
     		result.append("persistent "); 
-    	result.append("in-memory[");
-    	result.append("CDATA { ");    	
+    	result.append("in-memory#");
+    	result.append("CDATA {");    	
     	result.append(getData());
-        result.append(" }");
-        result.append("] ");
+        result.append("} ");        
         return result.toString();
     } 
    	

@@ -133,11 +133,10 @@ public class TextImpl extends NodeImpl implements Text {
     	StringBuffer result = new StringBuffer();
     	if (isPersistentSet())
     		result.append("persistent "); 
-    	result.append("in-memory[");
-    	result.append("text { ");    	
+    	result.append("in-memory#");
+    	result.append("text {");    	
     	result.append(getData());
-        result.append(" }");
-        result.append("] ");
+        result.append("} ");      
         return result.toString();
     } 	
 

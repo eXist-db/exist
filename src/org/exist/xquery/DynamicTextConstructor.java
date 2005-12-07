@@ -81,7 +81,7 @@ public class DynamicTextConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("text { ");
+        dumper.display("text {");
         dumper.startIndent();
         content.dump(dumper);
         dumper.endIndent();
@@ -90,9 +90,9 @@ public class DynamicTextConstructor extends NodeConstructor {
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("text { ");        
+    	result.append("text {");        
     	result.append(content.toString());        
-    	result.append(" }");
+    	result.append("}");
     	return result.toString();
     }    
 

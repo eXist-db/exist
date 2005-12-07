@@ -76,7 +76,7 @@ public class TextConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("text { ");
+        dumper.display("text {");
         dumper.startIndent();
         dumper.display(text);
         dumper.endIndent();
@@ -85,9 +85,9 @@ public class TextConstructor extends NodeConstructor {
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("text { ");
+    	result.append("text {");
     	result.append(text.toString());
-        result.append(" }");
+        result.append("}");
         return result.toString();
     }    
     

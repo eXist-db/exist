@@ -91,11 +91,10 @@ public class CommentImpl extends NodeImpl implements Comment {
 	
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("in-memory[");
-    	result.append("comment { ");      	
+    	result.append("in-memory#");
+    	result.append("comment {");      	
     	result.append(getData());        
-    	result.append(" }");
-    	result.append("] ");
+    	result.append("} ");    	
     	return result.toString();
     }	
 

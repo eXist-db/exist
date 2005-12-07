@@ -26,7 +26,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;

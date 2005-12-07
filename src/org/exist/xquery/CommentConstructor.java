@@ -61,11 +61,11 @@ public class CommentConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.nl().display("comment { ").display(data).display(" }");
+        dumper.nl().display("comment {").display(data).display("}");
     }
     
     public String toString() {
-        return "comment { " + data.toString() + " }";
+        return "comment {" + data.toString() + "}";
     }
     
 }

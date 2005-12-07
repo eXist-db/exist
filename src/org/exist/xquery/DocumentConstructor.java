@@ -122,15 +122,15 @@ public class DocumentConstructor extends NodeConstructor {
         //TODO : is this the required syntax ?
         content.dump(dumper);
         dumper.endIndent();
-        dumper.nl().display('}');
+        dumper.nl().display("}");
     }
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("document { ");
+    	result.append("document {");
     	//TODO : is this the required syntax ?
     	result.append(content.toString());       
-    	result.append(" } ");
+    	result.append("} ");
     	return result.toString();
     }    
 

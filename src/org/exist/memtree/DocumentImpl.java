@@ -23,7 +23,6 @@ package org.exist.memtree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
@@ -1036,11 +1035,10 @@ public class DocumentImpl extends NodeImpl implements Document {
 	
    public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("in-memory[");
-    	result.append("document { ");
+    	result.append("in-memory#");
+    	result.append("document {");
     	result.append(getDocumentElement().toString());       
-    	result.append(" }");
-    	result.append("] ");
+    	result.append("} ");    	
     	return result.toString();
     }    	
 }
