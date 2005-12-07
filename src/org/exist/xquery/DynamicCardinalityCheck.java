@@ -80,19 +80,25 @@ public class DynamicCardinalityCheck extends AbstractExpression {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        if(dumper.verbosity() > 1) {
-	        dumper.display("cardinality-check#(");
+        if(dumper.verbosity() > 1) {            
+            dumper.display("dynamic-cardinality-check"); 
+            dumper.display("["); 
+            dumper.display(Cardinality.getDescription(requiredCardinality));
+            dumper.display(", ");             
         }
         expression.dump(dumper);
         if(dumper.verbosity() > 1)
-	        dumper.display(')');
+	        dumper.display("]");
     }
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("cardinality-check#(");        
-    	result.append(expression.toString());
-    	result.append(")");
+        result.append("dynamic-cardinality-check"); 
+        result.append("["); 
+        result.append(Cardinality.getDescription(requiredCardinality));
+        result.append(", "); 
+        result.append(expression.toString());
+        result.append("]");
     	return result.toString();
     }    
     

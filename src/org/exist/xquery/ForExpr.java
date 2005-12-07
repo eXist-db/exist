@@ -284,7 +284,11 @@ public class ForExpr extends BindingExpression {
             }
             dumper.nl();
         }
-        dumper.display("return", returnExpr.getASTNode());
+        //TODO : QuantifiedExpr
+        if (returnExpr instanceof LetExpr)
+            dumper.display(" ", returnExpr.getASTNode());
+        else
+            dumper.display("return", returnExpr.getASTNode()); 
         dumper.startIndent();
         returnExpr.dump(dumper);
         dumper.endIndent().nl();
@@ -316,8 +320,11 @@ public class ForExpr extends BindingExpression {
             }
             result.append(" ");
         }
-        result.append("return");
-        result.append(" ");
+        //TODO : QuantifiedExpr
+        if (returnExpr instanceof LetExpr)
+            result.append(" ");  
+        else
+            result.append("return ");        
         result.append(returnExpr.toString());
         return result.toString();
     }

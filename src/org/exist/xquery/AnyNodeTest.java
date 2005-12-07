@@ -7,6 +7,7 @@ package org.exist.xquery;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
@@ -44,12 +45,18 @@ public class AnyNodeTest implements NodeTest {
 		} else
 			return type != Node.ATTRIBUTE_NODE;
 	}
+    
+    public void dump(ExpressionDumper dumper) {
+        if(dumper.verbosity() > 1) {            
+            dumper.display("any-node-test[]"); 
+        }
+    }    
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return "node()";
+		return "any-node-test[]";
 	}
 
     /* (non-Javadoc)
