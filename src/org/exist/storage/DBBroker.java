@@ -340,7 +340,7 @@ public abstract class DBBroker extends Observable {
 	/**
 	 * Get a new document id that does not yet exist within the collection.
 	 */
-	public abstract int getNextDocId(Txn transaction, Collection collection);
+	public abstract int getNextDocumentId(Txn transaction, Collection collection);
 
 	/**
 	 * Get the string value of the specified node.
