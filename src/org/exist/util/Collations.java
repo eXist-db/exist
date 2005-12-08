@@ -134,10 +134,8 @@ public class Collations {
             return s1.startsWith(s2);
         else {
             final RuleBasedCollator rbc = (RuleBasedCollator) collator;
-            final CollationElementIterator i1 = rbc
-                    .getCollationElementIterator(s1);
-            final CollationElementIterator i2 = rbc
-                    .getCollationElementIterator(s2);
+            final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
+            final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);
             return collationStartsWith(i1, i2);
         }
     }
@@ -147,10 +145,8 @@ public class Collations {
             return s1.endsWith(s2);
         else {
             final RuleBasedCollator rbc = (RuleBasedCollator) collator;
-            final CollationElementIterator i1 = rbc
-                    .getCollationElementIterator(s1);
-            final CollationElementIterator i2 = rbc
-                    .getCollationElementIterator(s2);
+            final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
+            final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);
             return collationContains(i1, i2, null, true);
         }
     }
@@ -160,10 +156,8 @@ public class Collations {
             return s1.indexOf(s2) != Constants.STRING_NOT_FOUND;
         else {
             final RuleBasedCollator rbc = (RuleBasedCollator) collator;
-            final CollationElementIterator i1 = rbc
-                    .getCollationElementIterator(s1);
-            final CollationElementIterator i2 = rbc
-                    .getCollationElementIterator(s2);
+            final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
+            final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);
             return collationContains(i1, i2, null, false);
         }
     }
@@ -174,20 +168,17 @@ public class Collations {
         else {
             final int offsets[] = new int[2];
             final RuleBasedCollator rbc = (RuleBasedCollator) collator;
-            final CollationElementIterator i1 = rbc
-                    .getCollationElementIterator(s1);
-            final CollationElementIterator i2 = rbc
-                    .getCollationElementIterator(s2);
-            final boolean found = collationContains(i1, i2, offsets, false);
-            if (found)
+            final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
+            final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);           
+            if (collationContains(i1, i2, offsets, false))
                 return offsets[0];
             else
-                return -1;
+                return Constants.STRING_NOT_FOUND;
         }
     }
 
-    private final static boolean collationStartsWith(
-            CollationElementIterator s0, CollationElementIterator s1) {
+    private final static boolean collationStartsWith(CollationElementIterator s0, 
+            CollationElementIterator s1) {
         while (true) {
             int e1 = s1.next();
             if (e1 == CollationElementIterator.NULLORDER) {
@@ -320,11 +311,11 @@ public class Collations {
      * @return
      */
     private static Locale getLocale(String lang) {
-        int dash = lang.indexOf('-');
-        if (dash < 0)
+        int dashPos = lang.indexOf('-');
+        if (dashPos == Constants.STRING_NOT_FOUND)
             return new Locale(lang);
         else
-            return new Locale(lang.substring(0, dash), lang.substring(dash + 1));
+            return new Locale(lang.substring(0, dashPos), lang.substring(dashPos + 1));
     }
 
 }
