@@ -59,6 +59,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.cache.Cacheable;
+import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
@@ -102,9 +103,11 @@ implements Comparable, EntityResolver, Cacheable {
 	private final static int VALIDATION_ENABLED = 0;
 	private final static int VALIDATION_AUTO = 1;
 	private final static int VALIDATION_DISABLED = 2;
+    
+    public final static short UNKNOWN_COLLECTION_ID = -1;
 
-	// the unique internal id to identify this collection
-	private short collectionId = -1;
+	// Internal id 
+	private short collectionId = UNKNOWN_COLLECTION_ID;
 
 	// the documents contained in this collection
 	private Map documents = new TreeMap();
@@ -118,8 +121,8 @@ implements Comparable, EntityResolver, Cacheable {
 	// stores child-collections with their storage address
 	private ObjectHashSet subcollections = new ObjectHashSet(19);
 
-	// temporary field for the storage address
-	private long address = -1;
+	// Storage address of the collection in the BFile
+	private long address = BFile.UNKNOWN_ADDRESS;
 
 	// creation time
 	private long created = 0;
@@ -459,8 +462,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @return
 	 * @throws LockException
 	 */
-	public DocumentImpl getDocumentWithLock(DBBroker broker, String name) 
-	throws LockException {
+	public DocumentImpl getDocumentWithLock(DBBroker broker, String name) throws LockException {
 	    try {
 	        getLock().acquire(Lock.READ_LOCK);
 	        DocumentImpl doc = (DocumentImpl) documents.get(name);
@@ -551,6 +553,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 *is the root collection.
 	 */
 	public String getParentPath() {
+        ///TODO : use dedicated function in XmldbURI
 		if (name.equals(DBBroker.ROOT_COLLECTION))
 			return null;
 		String parent = (name.lastIndexOf("/") < 1 ? DBBroker.ROOT_COLLECTION : name.substring(0,
@@ -597,6 +600,7 @@ implements Comparable, EntityResolver, Cacheable {
 			return subcollections.contains(name);
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
+            //TODO : ouch ! -pb
 			return subcollections.contains(name);
 		} finally {
 			getLock().release();
@@ -618,20 +622,20 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @param istream
 	 * @throws IOException
 	 */
-	public void read(DBBroker broker, VariableByteInput istream)
-			throws IOException {
+	public void read(DBBroker broker, VariableByteInput istream) throws IOException {
 		collectionId = istream.readShort();
 		final int collLen = istream.readInt();
 		subcollections = new ObjectHashSet(collLen);
 		for (int i = 0; i < collLen; i++)
 			subcollections.add(istream.readUTF());
-
-		final SecurityManager secman = broker.getBrokerPool()
-				.getSecurityManager();
 		final int uid = istream.readInt();
-		final int gid = istream.readInt();
-		final int perm = (istream.readInt() & 0777);
+		final int gid = istream.readInt();        
+		final int perm = istream.readInt();
+        created = istream.readLong();
+        
+        final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
 		if (secman == null) {
+            //TODO : load default permissions ? -pb
 			permissions.setOwner(SecurityManager.DBA_USER);
 			permissions.setGroup(SecurityManager.DBA_GROUP);
 		} else {
@@ -640,8 +644,8 @@ implements Comparable, EntityResolver, Cacheable {
             if (group != null)
                 permissions.setGroup(group.getName());
 		}
-		permissions.setPermissions(perm);
-		created = istream.readLong();
+        ///TODO : why this mask ? -pb
+		permissions.setPermissions(perm & 0777);		
 		broker.readDocuments(this);
 	}
 

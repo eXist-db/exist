@@ -498,7 +498,7 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public Collection getCollection(String name) {
-		return openCollection(name, -1, Lock.NO_LOCK);
+		return openCollection(name, BFile.UNKNOWN_ADDRESS, Lock.NO_LOCK);
 	}
 	
 	public Collection getCollection(String name, long addr) {
@@ -506,7 +506,7 @@ public class NativeBroker extends DBBroker {
 	}
 	
 	public Collection openCollection(String name, int lockMode) {
-		return openCollection(name, -1, lockMode);
+		return openCollection(name, BFile.UNKNOWN_ADDRESS, lockMode);
 	}
 
 	/**
@@ -531,38 +531,39 @@ public class NativeBroker extends DBBroker {
 
 		Collection collection = null;
 		CollectionCache collectionsCache = pool.getCollectionsCache();
+        
 		synchronized(collectionsCache) {
 			collection = collectionsCache.get(name);
 			if(collection == null) {
 				VariableByteInput is = null;
 				Lock lock = collectionsDb.getLock();
 				try {
-					lock.acquire(Lock.READ_LOCK);
-					
+					lock.acquire(Lock.READ_LOCK);					
 					collection = new Collection(name);
 					Value key = null;
-					if (addr == -1) {
+					//TODO : redesign this : one too many try block -pb 
+					if (addr == BFile.UNKNOWN_ADDRESS) {
 						try {
 							key = new Value(name.getBytes("UTF-8"));
 						} catch (UnsupportedEncodingException uee) {
 							key = new Value(name.getBytes());
 						}
 					}
-					try {
-						if (addr < 0) {
+					try {                        
+						if (addr == BFile.UNKNOWN_ADDRESS) {
 							is = collectionsDb.getAsStream(key);
 						} else {
 							is = collectionsDb.getAsStream(addr);
 						}
 						if (is == null) {
-				                        return null;
-                        			}
+						    return null;
+                        }
 						collection.read(this, is);
 					} catch (IOException ioe) {
 						LOG.warn(ioe.getMessage(), ioe);
 					}
 				} catch (LockException e) {
-					LOG.warn("failed to acquire lock on collections.dbx");
+					LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
 					return null;
 				} finally {
 					lock.release();
@@ -653,16 +654,16 @@ public class NativeBroker extends DBBroker {
 		String collName = docPath.substring(0, pos);
 		String docName = docPath.substring(pos + 1);
 		
-		Collection collection = null;
+		Collection collection = openCollection(collName, lockMode);
+        if (collection == null) {
+            LOG.debug("collection '" + collName + "' not found!");
+            return null;
+        }
+        if (!collection.getPermissions().validate(user, Permission.READ)) {
+            throw new PermissionDeniedException("permission denied to read collection");
+        }        
+        
 		try {
-            collection = openCollection(collName, lockMode);
-			if (collection == null) {
-				LOG.debug("collection " + collName + " not found!");
-				return null;
-			}
-			if (!collection.getPermissions().validate(user, Permission.READ)) {
-				throw new PermissionDeniedException("permission denied to read collection");
-			}
 			DocumentImpl doc = collection.getDocumentWithLock(this, docName, lockMode);
 			if (doc == null) {
 //				LOG.debug("document " + docPath + " not found!");
@@ -731,7 +732,7 @@ public class NativeBroker extends DBBroker {
 				collectionsDb.put(transaction, key, data, true);
 			}
 		} catch (LockException e) {
-			LOG.warn("failed to acquire lock on collections store", e);
+            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
 		} catch (ReadOnlyException e) {
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         } finally {
@@ -747,7 +748,7 @@ public class NativeBroker extends DBBroker {
 	 * @throws ReadOnlyException
 	 */
 	protected short getFreeCollectionId(Txn transaction) throws ReadOnlyException {
-		short freeCollectionId = -1;
+		short freeCollectionId = Collection.UNKNOWN_COLLECTION_ID;
 		Value key = new Value("__free_collection_id");
 		Lock lock = collectionsDb.getLock();
 		try {
@@ -765,8 +766,8 @@ public class NativeBroker extends DBBroker {
 					collectionsDb.remove(transaction, key);
 			}
 		} catch (LockException e) {
-			LOG.warn("failed to acquire lock on collections store", e);
-			return -1;
+			LOG.warn("Failed to acquire lock on " + collectionsDb, e);
+			return Collection.UNKNOWN_COLLECTION_ID;
 		} finally {
 			lock.release();
 		}
@@ -781,7 +782,7 @@ public class NativeBroker extends DBBroker {
 	 */
 	protected short getNextCollectionId(Txn transaction) throws ReadOnlyException {
 		short nextCollectionId = getFreeCollectionId(transaction);
-		if(nextCollectionId > -1)
+		if(nextCollectionId != Collection.UNKNOWN_COLLECTION_ID)
 			return nextCollectionId;
 		Value key = new Value("__next_collection_id");
 		Lock lock = collectionsDb.getLock();
@@ -796,8 +797,8 @@ public class NativeBroker extends DBBroker {
 			ByteConversion.shortToByte(nextCollectionId, d, 0);
 			collectionsDb.put(transaction, key, d, true);
 		} catch (LockException e) {
-			LOG.warn("failed to acquire lock on collections store", e);
-			return -1;
+			LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
+			return Collection.UNKNOWN_COLLECTION_ID;
 		} finally {
 			lock.release();
 		}
@@ -830,7 +831,7 @@ public class NativeBroker extends DBBroker {
 				collectionsDb.put(transaction, key, data, true);
 			}
 		} catch (LockException e) {
-			LOG.warn("failed to acquire lock on collections store", e);
+			LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
 		} catch (ReadOnlyException e) {
 		    throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         } finally {
@@ -864,7 +865,7 @@ public class NativeBroker extends DBBroker {
 					collectionsDb.remove(transaction, key);
 			}
 		} catch (LockException e) {
-			LOG.warn("failed to acquire lock on collections store", e);
+			LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
 			return -1;
 		} finally {
 			lock.release();
@@ -904,7 +905,7 @@ public class NativeBroker extends DBBroker {
 				return -1;
 			}
 		} catch (LockException e) {
-			LOG.warn("failed to acquire lock on collections store", e);
+			LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
 		} finally {
 			lock.release();
 		}
@@ -1566,7 +1567,7 @@ public class NativeBroker extends DBBroker {
 			
 			doc.copyChildren(tempDoc);
 			doc.setSplitCount(0);
-			doc.setAddress(-1);
+			doc.setAddress(BFile.UNKNOWN_ADDRESS);
 			doc.setPageCount(tempDoc.getPageCount());
 			
 			storeDocument(transaction, doc);
@@ -1592,7 +1593,7 @@ public class NativeBroker extends DBBroker {
 		    currentPath.addComponent(node.getQName());
 		final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 		node.setOwnerDocument(newDoc);
-		node.setInternalAddress(-1);
+		node.setInternalAddress(BFile.UNKNOWN_ADDRESS);
 		store(transaction, node, currentPath, index);
 		if (node.getNodeType() == Node.ELEMENT_NODE)
 		    endElement(node, currentPath, null);
@@ -1738,16 +1739,17 @@ public class NativeBroker extends DBBroker {
 	
 	public Collection getOrCreateCollection(Txn transaction, String name)
 		throws PermissionDeniedException {
-		//		final long start = System.currentTimeMillis();
+		//		final long start = System.currentTimeMillis();        
+        
+	    //TODO : use dedicated function in XmldbURI
 		name = normalizeCollectionName(name);
 		if (name.length() > 0 && name.charAt(0) != '/')
 			name = "/" + name;
-
 		if (!name.startsWith(ROOT_COLLECTION))
 			name = ROOT_COLLECTION + name;
-
 		if (name.endsWith("/") && name.length() > 1)
 			name = name.substring(0, name.length() - 1);
+        
 		final CollectionCache collectionsCache = pool.getCollectionsCache();
 		synchronized(collectionsCache) {
 			try {
@@ -2081,7 +2083,7 @@ public class NativeBroker extends DBBroker {
                 }
                 
             } catch (LockException e) {
-                LOG.warn("Failed to acquire lock on collections.dbx");
+                LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
             } catch (ReadOnlyException e) {
                 throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
             } finally {
@@ -2197,14 +2199,13 @@ public class NativeBroker extends DBBroker {
         // remove document metadata
         Lock lock = collectionsDb.getLock();
         try {
-            lock.acquire();
-            
+            lock.acquire();            
             Value key = new DocumentKey(document.getCollection().getId(), document.getResourceType(), document.getDocId());
             collectionsDb.remove(transaction, key);
         } catch (ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY);
         } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on collections.dbx");
+            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
         } finally {
             lock.release();
         }
@@ -2227,7 +2228,7 @@ public class NativeBroker extends DBBroker {
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
 			public Object start() {
 				final long address = node.getInternalAddress();
-				if (address > -1)
+				if (address != BFile.UNKNOWN_ADDRESS)
 					domDb.remove(transaction, new NodeRef(doc.getDocId(), node.getGID()), address);
 				else
 					domDb.remove(transaction, new NodeRef(doc.getDocId(), node.getGID()));
@@ -2323,12 +2324,12 @@ public class NativeBroker extends DBBroker {
 		if (!pool.isInitializing())
 			// don't cache the collection during initialization: SecurityManager is not yet online
 			pool.getCollectionsCache().add(collection);
-		Lock lock = null;
-		try {
-			lock = collectionsDb.getLock();
+		
+        Lock lock = collectionsDb.getLock();
+		try {			
 			lock.acquire(Lock.WRITE_LOCK);
 
-			if (collection.getId() < 0)
+			if (collection.getId() == Collection.UNKNOWN_COLLECTION_ID)
 				collection.setId(getNextCollectionId(transaction));
 
 			Value name;
@@ -2338,13 +2339,14 @@ public class NativeBroker extends DBBroker {
 				LOG.debug(uee);
 				name = new Value(collection.getName().getBytes());
 			}
+            
 			try {
 				final VariableByteOutputStream ostream = new VariableByteOutputStream(8);
 				collection.write(this, ostream);
 				final long addr = collectionsDb.put(transaction, name, ostream.data(), true);
-				if (addr < 0) {
-					LOG.debug(
-						"could not store collection data for " + collection.getName());
+				if (addr == BFile.UNKNOWN_ADDRESS) {
+                    //TODO : exception !!! -pb
+					LOG.warn("could not store collection data for '" + collection.getName()+ "'");
 					return;
 				}
 				collection.setAddress(addr);
@@ -2355,7 +2357,7 @@ public class NativeBroker extends DBBroker {
 		} catch (ReadOnlyException e) {
 			LOG.warn(DATABASE_IS_READ_ONLY);
 		} catch (LockException e) {
-			LOG.warn("could not acquire lock for collections store", e);
+            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
 		} finally {
 			lock.release();
 		}
@@ -2363,11 +2365,13 @@ public class NativeBroker extends DBBroker {
 
     /** move Resource to another collection, with possible rename */
 	public void moveResource(Txn transaction, DocumentImpl doc, Collection destination, String newName)
-	throws PermissionDeniedException, LockException {
+	    throws PermissionDeniedException, LockException {
+        
 	    if (readOnly)
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-	    Collection collection = doc.getCollection();
-	    	    
+        
+        //TODO : somewhat inconsistent (READ is enough for original doc whereas WRITE is mandatory for destination) -pb
+	    Collection collection = doc.getCollection();	    	    
 	    if(!collection.getPermissions().validate(user, Permission.WRITE))
 	        throw new PermissionDeniedException("Insufficient privileges to move resource " +
 	                doc.getFileName());
@@ -2375,10 +2379,11 @@ public class NativeBroker extends DBBroker {
 	        throw new PermissionDeniedException("Insufficient privileges to move resource " +
 	                doc.getFileName());
       
-	    if (doc.getUserLock() != null) {
-           if(!(doc.getUserLock().getName()).equals(user.getName()))
-     	    	throw new PermissionDeniedException("Cannot move the resource because is locked by another user " +
-     	               doc.getFileName());
+        User docUser = doc.getUserLock();
+	    if (docUser != null) {
+           if(!(user.getName()).equals(docUser.getName()))
+     	    	throw new PermissionDeniedException("Cannot move '" + doc.getFileName() + 
+                        " because is locked by user '" + docUser.getName() + "'");
 	    }
  	    
 	    if(newName == null) {
@@ -2386,9 +2391,8 @@ public class NativeBroker extends DBBroker {
             int p = doc.getFileName().lastIndexOf("/");
             newName = doc.getFileName().substring(p + 1);
         }
-	    Lock lock = null;
-	    try {
-	        lock = collectionsDb.getLock();
+	    Lock lock = collectionsDb.getLock();
+	    try {	        
 	        lock.acquire(Lock.WRITE_LOCK);
 	        // check if the move would overwrite a collection
             ///TODO : use dedicated function in XmldbURI
@@ -2639,7 +2643,7 @@ public class NativeBroker extends DBBroker {
 				domDb.setOwnerObject(this);
 				content = domDb.getNodeValue(p, false);
 			} catch (LockException e) {
-				LOG.warn("failed to acquire read lock on dom.dbx");
+				LOG.warn("Failed to acquire read lock on " + domDb.getFile().getName());
 				continue;
 			} finally {
 				domDb.getLock().release();
@@ -2659,7 +2663,7 @@ public class NativeBroker extends DBBroker {
 						resultNodeSet.add(p);
 					break;
 				case Constants.TRUNC_BOTH :
-					if (-1 < Collations.indexOf(collator, cmp, expr))
+					if (Collations.indexOf(collator, cmp, expr) != Constants.STRING_NOT_FOUND)
 						resultNodeSet.add(p);
 					break;
 				case Constants.TRUNC_NONE :
@@ -2727,7 +2731,7 @@ public class NativeBroker extends DBBroker {
         final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
             public Object start() throws ReadOnlyException {
-                long address = -1;
+                long address = BFile.UNKNOWN_ADDRESS;
                 final byte data[] = node.serialize();
                 if (nodeType == Node.TEXT_NODE
                     || nodeType == Node.ATTRIBUTE_NODE
@@ -2736,8 +2740,9 @@ public class NativeBroker extends DBBroker {
                 else {
                     address = domDb.put(transaction, new NodeRef(doc.getDocId(), gid), data);
                 }
-                if (address < 0)
+                if (address == BFile.UNKNOWN_ADDRESS)
                     LOG.warn("address is missing");
+                //TODO : how can we continue here ? -pb
                 node.setInternalAddress(address);
                 ByteArrayPool.releaseByteArray(data);
                 return null;
@@ -2829,7 +2834,7 @@ public class NativeBroker extends DBBroker {
         } catch (ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY);
         } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on collections.dbx");
+            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
         } catch (IOException e) {
             LOG.warn("IOException while writing document data", e);
         } finally {
@@ -2840,15 +2845,14 @@ public class NativeBroker extends DBBroker {
     public void readDocuments(Collection collection) {
         Lock lock = collectionsDb.getLock();
         try {
-            lock.acquire();
-            
+            lock.acquire();            
             Value key = new DocumentKey(collection.getId());
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
             collectionsDb.query(query, new DocumentCallback(collection));
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
         } catch (IOException e) {
             LOG.warn("IOException while reading document data", e);
-        } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on collections.dbx");
         } catch (BTreeException e) {
             LOG.warn("Exception while reading document data", e);
         } catch (TerminatedException e) {
@@ -2915,7 +2919,7 @@ public class NativeBroker extends DBBroker {
                     lock.acquire(Lock.WRITE_LOCK);
                     collectionsDb.flush();
                 } catch (LockException e) {
-                    LOG.warn("failed to acquire lock on collections store", e);
+                    LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
                 } finally {
                     lock.release();
                 }
@@ -2961,7 +2965,7 @@ public class NativeBroker extends DBBroker {
 			final byte[] data = node.serialize();
 			new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 				public Object start() throws ReadOnlyException {
-					if (-1 < internalAddress)
+					if (internalAddress != BFile.UNKNOWN_ADDRESS)
 						domDb.update(transaction, internalAddress, data);
 					else {
 						domDb.update(transaction, new NodeRef(doc.getDocId(), node.getGID()), data);
@@ -2995,7 +2999,7 @@ public class NativeBroker extends DBBroker {
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
 			public Object start() {
 				long address = previous.getInternalAddress();
-				if (address > -1) {
+				if (address != BFile.UNKNOWN_ADDRESS) {
 					address = domDb.insertAfter(transaction, doc, address, data);
 				} else {
 					NodeRef ref = new NodeRef(doc.getDocId(), previous.getGID());
