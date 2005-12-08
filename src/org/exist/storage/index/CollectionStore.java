@@ -18,8 +18,13 @@ import org.exist.storage.btree.DBException;
  * @author wolf
  */
 public class CollectionStore extends BFile {
-
-	/**
+    
+    public final static String FREE_DOC_ID_KEY = "__free_doc_id";
+    public final static String NEXT_DOC_ID_KEY = "__next_doc_id";  
+    public final static String FREE_COLLECTION_ID_KEY = "__free_collection_id";
+    public final static String NEXT_COLLECTION_ID_KEY = "__next_collection_id";  
+    
+    /**
 	 * @param file
 	 * @param btreeBuffers
 	 * @param dataBuffers

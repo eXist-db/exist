@@ -233,7 +233,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public void addDocument(Txn transaction, DBBroker broker, DocumentImpl doc) {
 		if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID)
-			doc.setDocId(broker.getNextDocId(transaction, this));
+			doc.setDocId(broker.getNextDocumentId(transaction, this));
 		documents.put(doc.getFileName(), doc);
 	}
 	
@@ -916,7 +916,7 @@ implements Comparable, EntityResolver, Cacheable {
 				document = oldDoc;
 			} else {
 			    document.getUpdateLock().acquire(Lock.WRITE_LOCK);
-			    document.setDocId(broker.getNextDocId(transaction, this));
+			    document.setDocId(broker.getNextDocumentId(transaction, this));
 			    addDocument(transaction, broker, document);
 			}
 

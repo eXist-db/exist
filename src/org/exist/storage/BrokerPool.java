@@ -697,7 +697,7 @@ public class BrokerPool {
 	 * @return <code>true</code> is the database instance is being initialized
 	 */
 	//	TODO : let's be positive and rename it as isInitialized ? 
-	protected boolean isInitializing() {
+	public boolean isInitializing() {
 		return initializing;
 	}	
 
