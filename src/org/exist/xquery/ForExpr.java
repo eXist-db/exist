@@ -128,9 +128,7 @@ public class ForExpr extends BindingExpression {
 		LocalVariable mark = context.markLocalVariables(false);
 		
 		// Evaluate the "in" expression
-		Sequence in = inputSequence.eval(null, null);
-
-        
+		Sequence in = inputSequence.eval(null, null);        
 		clearContext(in); 
         
 		// Declare the iteration variable
