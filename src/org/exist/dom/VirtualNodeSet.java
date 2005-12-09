@@ -447,4 +447,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	public void clearContext() {
 		// ignored for a virtual set
 	}
+    
+    public String toString() {
+        StringBuffer result = new StringBuffer();
+        result.append("Virtual#").append(super.toString());
+        return result.toString();
+    }      
 }

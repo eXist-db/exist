@@ -125,6 +125,12 @@ public final class EmptyNodeSet extends AbstractNodeSet {
 		public Object next() {
 			return null;
 		}
+        
+        public String toString() {
+            StringBuffer result = new StringBuffer();
+            result.append("Empty#").append(super.toString());
+            return result.toString();
+        }          
 		
 	} 
 }
