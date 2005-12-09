@@ -803,4 +803,16 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         // node sets are always persistent
         return true;
     }
+    
+    public String toString() {
+        StringBuffer result = new StringBuffer();
+        result.append("NodeSet(");
+        for (int i = 0 ; i < getLength() ; i++) {
+            if(i > 0)
+                result.append(", ");                
+            result.append(get(i).toString());
+        }
+        result.append(")");
+        return result.toString();
+    }     
 }

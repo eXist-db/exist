@@ -445,6 +445,12 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 			return currentNode.getData();
 		}
 	}
+    
+    public String toString() {
+        StringBuffer result = new StringBuffer();
+        result.append("AVLTree#").append(super.toString());
+        return result.toString();
+    }  
 
 	private final static class Node {
 

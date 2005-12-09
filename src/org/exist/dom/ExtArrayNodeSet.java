@@ -485,15 +485,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
-    	result.append("NodeSet(");
-    	for (int i = 0 ; i < getLength() ; i++) {
-    		if(i > 0)
-		    	result.append(", ");	    		
-    		result.append(get(i).toString());
-    	}
-    	result.append(")");
-    	return result.toString();
+        StringBuffer result = new StringBuffer();
+        result.append("ExtArrayTree#").append(super.toString());
+        return result.toString();
     }  
     
     private final class Part {

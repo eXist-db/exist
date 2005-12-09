@@ -736,4 +736,10 @@ public class ArraySet extends AbstractNodeSet {
 	public Comparable[] array() {
 		return nodes;
 	}
+    
+    public String toString() {
+        StringBuffer result = new StringBuffer();
+        result.append("Array#").append(super.toString());
+        return result.toString();
+    }     
 }
