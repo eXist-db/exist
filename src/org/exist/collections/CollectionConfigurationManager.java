@@ -109,9 +109,9 @@ public class CollectionConfigurationManager {
      * @return
      * @throws CollectionConfigurationException
      */
-    protected CollectionConfiguration getConfiguration(DBBroker broker, 
-            Collection collection) throws CollectionConfigurationException {
-    	LOG.debug("Reading config for " + collection.getName());
+    protected CollectionConfiguration getConfiguration(DBBroker broker, Collection collection) 
+        throws CollectionConfigurationException {
+
     	CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool(), collection);
         boolean configFound = false;
         //TODO : use dedicated function in XmldbURI
@@ -126,9 +126,8 @@ public class CollectionConfigurationManager {
     			if (coll != null && coll.getDocumentCount() > 0) {
     			    for(Iterator i = coll.iterator(broker); i.hasNext(); ) {
     			        DocumentImpl confDoc = (DocumentImpl) i.next();
-    			        if(confDoc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
-    			            if(LOG.isDebugEnabled())
-    			                LOG.debug("Reading config for '" + collection.getName() + "' from '" + confDoc.getName() + "'");
+    			        if(CollectionConfiguration.COLLECTION_CONFIG_FILE.equals(confDoc.getFileName())) {
+                            LOG.debug("Reading collection configuration for '" + collection.getName() + "' from '" + confDoc.getName() + "'");
     			            conf.read(broker, confDoc);
                             configFound = true;
     			            break;
@@ -141,9 +140,11 @@ public class CollectionConfigurationManager {
     		}
     		p = path.indexOf("/", p + 1);
 	    }
-        if (!configFound)
+        if (!configFound) {
+            LOG.debug("Reading collection configuration for '" + collection.getName() + "' from index configuration");
             // use default configuration
             conf.setIndexConfiguration(broker.getIndexConfiguration());
+        }
         
 		// we synchronize on the global CollectionCache to avoid deadlocks.
 		// the calling code does mostly already hold a lock on CollectionCache.
