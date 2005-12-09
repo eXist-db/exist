@@ -1369,25 +1369,20 @@ public class NativeBroker extends DBBroker {
 	 * the document if node is null.
 	 */
 	private void reindex(Txn transaction, DocumentImpl doc, boolean repairMode) {
-//		LOG.debug("Reindexing document " + doc.getFileName());
-		if(doc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX))
+		if(CollectionConfiguration.COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
 		    doc.getCollection().setConfigEnabled(false);
-//		final long start = System.currentTimeMillis();
 		Iterator iterator;
 		NodeList nodes = doc.getChildNodes();
 		NodeImpl n;
 		for (int i = 0; i < nodes.getLength(); i++) {
 		    n = (NodeImpl) nodes.item(i);
-		    iterator =
-		        getNodeIterator(
-		                new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+		    iterator = getNodeIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
 		    iterator.next();
 		    scanNodes(transaction, iterator, n, new NodePath(), true, repairMode);
 		}
 		flush();
-		if(doc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX))
+		if(CollectionConfiguration.COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
 		    doc.getCollection().setConfigEnabled(true);
-//		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
 	}
 	
 	public void copyResource(Txn transaction, DocumentImpl doc, Collection destination, String newName) 
