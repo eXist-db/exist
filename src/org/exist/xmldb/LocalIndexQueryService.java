@@ -107,7 +107,7 @@ public class LocalIndexQueryService implements IndexQueryService {
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(txn, broker, parent.getCollection(), configData);
             transact.commit(txn);
-            System.out.println("Added config for collection " + parent.getCollection().getName());
+            System.out.println("Configured '" + parent.getCollection().getName() + "'");
         } catch (CollectionConfigurationException e) {
             transact.abort(txn);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
