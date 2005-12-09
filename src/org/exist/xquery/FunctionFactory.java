@@ -102,7 +102,8 @@ public class FunctionFactory {
                 ExtPhrase phrase = new ExtPhrase(context);
                 phrase.setASTNode(ast);
                 phrase.addTerm(e1);
-                phrase.setPath((PathExpr) params.get(0));                                          step = phrase;
+                phrase.setPath((PathExpr) params.get(0));                                          
+                step = phrase;
             }
 			
 			// starts-with(node-set, string)
