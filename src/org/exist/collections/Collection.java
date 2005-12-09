@@ -672,20 +672,7 @@ implements Comparable, EntityResolver, Cacheable {
 			throws PermissionDeniedException, TriggerException, LockException {
         try {
             getLock().acquire(Lock.READ_LOCK);
-    	    DocumentTrigger trigger = null;
-    	    if (!docname.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
-    	        if (triggersEnabled) {
-    	            CollectionConfiguration config = getConfiguration(broker);
-    	            if (config != null)
-    	                trigger = (DocumentTrigger) 
-    	                config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
-    	        }
-    	    } else {
-    	        // we remove a collection.xconf configuration file: tell the configuration manager to
-    	        // reload the configuration.
-    	        CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
-    	        confMgr.invalidateAll(getName());
-    	    }
+            
     	    DocumentImpl doc = getDocument(broker, docname);
     	    if (doc == null)
     	        return;
@@ -697,27 +684,46 @@ implements Comparable, EntityResolver, Cacheable {
     	                "Write access to collection denied; user=" + broker.getUser().getName());
     	    if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
     	        throw new PermissionDeniedException("Permission to remove document denied");
-    	    if (trigger != null && triggersEnabled) {
+            
+            DocumentTrigger trigger = null;
+            if (!CollectionConfiguration.COLLECTION_CONFIG_FILE.equals(docname)) {
+                if (triggersEnabled) {
+                    CollectionConfiguration config = getConfiguration(broker);
+                    if (config != null)
+                        trigger = (DocumentTrigger) config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
+                }
+            } else {
+                // we remove a collection.xconf configuration file: tell the configuration manager to
+                // reload the configuration.
+                CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+                confMgr.invalidateAll(getName());
+            }
+            
+    	    if (trigger != null) {
     	        trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, 
     	        		getName() + "/" + docname, doc);
     	    }
     	    
     	    broker.removeDocument(transaction, doc);
     	    documents.remove(docname);
-    	    if (trigger != null && triggersEnabled) {
+            
+    	    if (trigger != null) {
     	        trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc);
     	    }
+            
     	    broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
+            
         } finally {
             getLock().release();
         }
 	}
 
-	public void removeBinaryResource(Txn transaction, DBBroker broker,
-			String docname) throws PermissionDeniedException, LockException, TriggerException {
+	public void removeBinaryResource(Txn transaction, DBBroker broker, String docName) 
+        throws PermissionDeniedException, LockException, TriggerException {
+        
         try {
             getLock().acquire(Lock.WRITE_LOCK);
-    	    DocumentImpl doc = getDocument(broker, docname);
+    	    DocumentImpl doc = getDocument(broker, docName);
     	    if(doc.isLockedForWrite())
     	        throw new PermissionDeniedException("Document " + doc.getFileName() + 
     	        " is locked for write");
@@ -733,10 +739,12 @@ implements Comparable, EntityResolver, Cacheable {
         }
 	}
 
-	public void removeBinaryResource(Txn transaction, DBBroker broker,
-			DocumentImpl doc) throws PermissionDeniedException, LockException, TriggerException {
-		if (doc == null)
+	public void removeBinaryResource(Txn transaction, DBBroker broker, DocumentImpl doc) 
+            throws PermissionDeniedException, LockException, TriggerException {
+		
+        if (doc == null)
 			return;
+        
         try {
             getLock().acquire(Lock.WRITE_LOCK);
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
@@ -755,13 +763,16 @@ implements Comparable, EntityResolver, Cacheable {
             if (triggersEnabled) {
             	CollectionConfiguration config = getConfiguration(broker);
 	            if (config != null) {
-	                trigger = (DocumentTrigger) config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
-	                if (trigger != null)
-	                	trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getName(), doc);
+	                trigger = (DocumentTrigger) config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);	                
 	            }
             }
+            
+            if (trigger != null)
+                trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getName(), doc);
+            
             broker.removeBinaryResource(transaction, (BinaryDocument) doc);
             documents.remove(doc.getFileName());
+            
             if (trigger != null) {
             	trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, null);
             }
@@ -769,9 +780,16 @@ implements Comparable, EntityResolver, Cacheable {
             getLock().release();
         }
 	}
+    
+    public IndexInfo validate(Txn transaction, DBBroker broker, String docName, String data)
+            throws EXistException, PermissionDeniedException, TriggerException, 
+            SAXException, LockException {
+        return validate(transaction, broker, docName, new InputSource(new StringReader(data)));
+    }    
 
 	public IndexInfo validate(Txn transaction, final DBBroker broker, String docName, final InputSource source) 
-			throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
+			throws EXistException, PermissionDeniedException, TriggerException, 
+            SAXException, LockException {
 		return validateInternal(transaction, broker, docName, new ValidateBlock() {
 			public void run(IndexInfo info) throws SAXException, EXistException {
 				info.setReader(getReader(broker), Collection.this);
@@ -808,12 +826,7 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 		});
 	}
-	
-	public IndexInfo validate(Txn transaction, DBBroker broker, String docName, String data)
-			throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
-		return validate(transaction, broker, docName, new InputSource(new StringReader(data)));
-	}
-	
+    
 	public void store(Txn transaction, DBBroker broker, final IndexInfo info, final String data, boolean privileged)
 			throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
 		storeInternal(transaction, broker, info, privileged, new StoreBlock() {
@@ -1022,34 +1035,49 @@ implements Comparable, EntityResolver, Cacheable {
 					"User '" + broker.getUser().getName() + "' not allowed to write to collection '" + getName() + "'");
 	}
 
-	private DocumentTrigger setupTriggers(DBBroker broker, String name, boolean update) {
-		DocumentTrigger trigger = null;
-		if (name.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
+	private DocumentTrigger setupTriggers(DBBroker broker, String docName, boolean update) {
+		
+        //TODO : is this the right place for such a task ? -pb
+		if (CollectionConfiguration.COLLECTION_CONFIG_FILE.equals(docName)) {
 		    // we are updating collection.xconf. Notify configuration manager
 			CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
 			confMgr.invalidateAll(getName());
 			collectionConfEnabled = false;
-		} else {
-			if (triggersEnabled) {
-				CollectionConfiguration config = getConfiguration(broker);
-				if (config != null) {
-					trigger = (DocumentTrigger) config.getTrigger(update ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT);
-				}
-				if(trigger != null) LOG.debug("Using trigger: " + trigger.getClass().getName());
-			}
-		}
+            return null;
+		} 
+		if (!triggersEnabled)
+		    return null;
+        
+		CollectionConfiguration config = getConfiguration(broker);
+		if (config == null)
+          return null;
+                
+        DocumentTrigger trigger;
+        if (update) 
+            trigger = (DocumentTrigger) config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+        else
+            trigger = (DocumentTrigger) config.getTrigger(Trigger.STORE_DOCUMENT_EVENT);  
+       
+        if(trigger == null) 
+            return null;
+        
+        if (update) 
+            LOG.debug("Using update trigger '" + trigger.getClass().getName() + "'");
+        else
+            LOG.debug("Using store trigger '" + trigger.getClass().getName() + "'");
+
 		return trigger;
 	}
 
 	public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
-			String name, byte[] data, String mimeType) throws EXistException,
-			PermissionDeniedException, LockException, TriggerException {
+			String name, byte[] data, String mimeType) 
+            throws EXistException, PermissionDeniedException, LockException, TriggerException {
 		return addBinaryResource(transaction, broker, name, data, mimeType, null, null);
 	}
 
 	public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
-			String name, byte[] data, String mimeType, Date created, Date modified) throws EXistException,
-			PermissionDeniedException, LockException, TriggerException {
+			String name, byte[] data, String mimeType, Date created, Date modified) 
+            throws EXistException, PermissionDeniedException, LockException, TriggerException {
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("Database is read-only");
 		BinaryDocument blob = null;
@@ -1146,8 +1174,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @param ostream
 	 * @throws IOException
 	 */
-	public void write(DBBroker broker, VariableByteOutputStream ostream)
-			throws IOException {
+	public void write(DBBroker broker, VariableByteOutputStream ostream) throws IOException {
 		ostream.writeShort(collectionId);
 		ostream.writeInt(subcollections.size());
 		String childColl;
@@ -1180,19 +1207,25 @@ implements Comparable, EntityResolver, Cacheable {
 	        return null;
 	    if (configuration != null)
 	    	return configuration;
-		if (!name.equals(DBBroker.SYSTEM_COLLECTION)) {
-		    CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
-		    if (manager != null) {
-	            collectionConfEnabled = false;
-			    try {
-	                configuration = manager.getConfiguration(broker, this);
-	            } catch (CollectionConfigurationException e) {
-	                LOG.warn("Failed to load collection configuration for " + getName(), e);
-	            }
-	            collectionConfEnabled = true;
-		    }
-		}
-		return configuration;
+        //System collection has no configuration
+		if (name.equals(DBBroker.SYSTEM_COLLECTION))
+            return null;
+        
+	    CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
+	    if (manager == null)
+            return null;
+        
+        //Attempt to get configuration
+        collectionConfEnabled = false;
+	    try {
+            configuration = manager.getConfiguration(broker, this);            
+        } catch (CollectionConfigurationException e) {
+            LOG.warn("Failed to load collection configuration for '" + getName() + "'", e);
+        }
+        //TODO : we should not consider the collectiona configured after a failure ! -pb  
+        collectionConfEnabled = true;
+	   
+        return configuration;	
 	}
 
 	/**
@@ -1237,6 +1270,7 @@ implements Comparable, EntityResolver, Cacheable {
 			this.triggersEnabled = enabled;
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
+            //Ouch ! -pb
 			this.triggersEnabled = enabled;
 		} finally {
 			getLock().release();
