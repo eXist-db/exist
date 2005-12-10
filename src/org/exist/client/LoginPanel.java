@@ -28,6 +28,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -35,6 +38,7 @@ import java.util.prefs.Preferences;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -81,6 +85,8 @@ public class LoginPanel extends JPanel {
     JButton btnAddFavourite;
     JButton btnRemoveFavourite;
     JButton btnLoadFavourite;
+    
+    JButton btnExportFavourite;
     
     /**
      * Creates a new login panel with the given user and uri.
@@ -355,6 +361,24 @@ public class LoginPanel extends JPanel {
         grid.setConstraints(btnRemoveFavourite, c);
         add(btnRemoveFavourite);
         
+//        btnExportFavourite = new JButton("Export");
+//        btnExportFavourite.setEnabled(true);
+//        btnExportFavourite.setToolTipText("Export favourite");
+//        btnExportFavourite.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                importFavourites();
+//                repaint();
+//            }
+//        });
+//        c.gridx = 2;
+//        c.gridy = 7;
+//        c.gridwidth = 1;
+//        c.gridheight = 1;
+//        c.anchor = GridBagConstraints.WEST;
+//        c.fill = GridBagConstraints.HORIZONTAL;
+//        grid.setConstraints(btnExportFavourite, c);
+//        add(btnExportFavourite);
+        
         JPanel spacer = new JPanel();
         c.gridx = 2;
         c.gridy = 8;
@@ -426,11 +450,47 @@ public class LoginPanel extends JPanel {
         // Write a node for each item in model.
         for (int i=0; i < model.getSize(); i++) {
             Favourite f = (Favourite)model.getElementAt(i);
+            //Preferences favouriteNode = favouritesNode.node(f.getName());
             Preferences favouriteNode = favouritesNode.node(""+i);
+            
             favouriteNode.put(Favourite.NAME, f.getName());
             favouriteNode.put(Favourite.USERNAME, f.getUsername());
             favouriteNode.put(Favourite.PASSWORD, f.getPassword());
             favouriteNode.put(Favourite.URL, f.getUrl());
+        }
+    }
+    
+    private void importFavourites(){
+        JFileChooser chooser = new JFileChooser();
+        chooser.showOpenDialog(this);
+        
+        File selectedFile = chooser.getSelectedFile();
+        Preferences prefs = Preferences.userNodeForPackage(LoginPanel.class);
+        
+        try{
+            FileInputStream fis = new FileInputStream(selectedFile);
+            prefs.importPreferences(fis);
+            fis.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            ClientFrame.showErrorMessage("Problems importing favourites", ex);
+        }
+    }
+    
+    private void exportFavourites(){
+        JFileChooser chooser = new JFileChooser();
+        chooser.showSaveDialog(this);
+        
+        File selectedFile = chooser.getSelectedFile();
+        Preferences prefs = Preferences.userNodeForPackage(LoginPanel.class);
+        
+        try {
+            FileOutputStream fos = new FileOutputStream(selectedFile);
+            prefs.exportSubtree(fos);
+            fos.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            ClientFrame.showErrorMessage("Problems exporting favourites", ex);
         }
     }
     
