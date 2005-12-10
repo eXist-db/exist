@@ -44,14 +44,25 @@ public class Except extends CombiningExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.CombiningExpression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		Sequence lval = left.eval(contextSequence, contextItem);
-		lval.removeDuplicates();
+        if(lval.getLength() == 0)
+            return Sequence.EMPTY_SEQUENCE; 
 		Sequence rval = right.eval(contextSequence, contextItem);
-		rval.removeDuplicates();
-		if(rval.getLength() == 0 || lval.getLength() == 0)
-		    return lval;
+        if(rval.getLength() == 0)
+            return lval;  
+        lval.removeDuplicates();
+		rval.removeDuplicates();          
+        
         if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
 			throw new XPathException(getASTNode(), "except operand is not a node sequence");
         if (lval.isPersistentSet() && rval.isPersistentSet())
