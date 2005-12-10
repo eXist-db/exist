@@ -66,18 +66,25 @@ public class CastExpression extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		Sequence seq = expression.eval(contextSequence, contextItem);
-		if(seq.getLength() == 0) {
-			if((cardinality & Cardinality.ZERO) == 0)
-				throw new XPathException(getASTNode(), 
-						"Type error: empty sequence is not allowed here");
+		if (seq.getLength() == 0) {
+			if ((cardinality & Cardinality.ZERO) == 0)
+				throw new XPathException(getASTNode(), "Type error: empty sequence is not allowed here");
 			else
 				return Sequence.EMPTY_SEQUENCE;
 		}
+        
         Item item = seq.itemAt(0);
         try {
             // casting to QName needs special treatment

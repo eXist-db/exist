@@ -58,13 +58,23 @@ public class DynamicCommentConstructor extends NodeConstructor {
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
-    public Sequence eval(Sequence contextSequence, Item contextItem)
-            throws XPathException {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
         Sequence contentSeq = content.eval(contextSequence, contextItem);
         if(contentSeq.getLength() == 0)
             return Sequence.EMPTY_SEQUENCE;
+        
         MemTreeBuilder builder = context.getDocumentBuilder();
 		context.proceed(this, builder);
+        
 		StringBuffer buf = new StringBuffer();
         for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
             context.proceed(this, builder);

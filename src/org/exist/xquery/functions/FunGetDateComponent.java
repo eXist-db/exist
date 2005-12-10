@@ -24,8 +24,10 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DateValue;
@@ -85,20 +87,28 @@ public class FunGetDateComponent extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if (arg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		DateValue date = (DateValue) arg.itemAt(0);
-		if(isCalledAs("day-from-date"))
+		if (isCalledAs("day-from-date"))
 			return new IntegerValue(date.getPart(DateValue.DAY), Type.INTEGER);
-		else if(isCalledAs("month-from-date"))
+		else if (isCalledAs("month-from-date"))
 			return new IntegerValue(date.getPart(DateValue.MONTH), Type.INTEGER);
-		else if(isCalledAs("timezone-from-date"))
+		else if (isCalledAs("timezone-from-date"))
 			return date.getTimezone();
-		else if(isCalledAs("year-from-date"))
+		else if (isCalledAs("year-from-date"))
 			return new IntegerValue(date.getPart(DateValue.YEAR), Type.INTEGER);
-		else throw new Error("can't handle function " + mySignature.getName().getLocalName());
+		else throw new Error("Can't handle function " + mySignature.getName().getLocalName());
 	}
 }

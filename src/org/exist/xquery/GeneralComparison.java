@@ -261,11 +261,12 @@ public class GeneralComparison extends BinaryOp {
 				c = current.getContext();
 				if(c == null)
 					throw new XPathException(getASTNode(), "Internal error: context node missing");
-				do {
-					lv = current.atomize();
-					rs = getRight().eval(c.getNode().toSequence());
-					for (SequenceIterator si = rs.iterate(); si.hasNext();) {
-						if (compareValues(collator, lv, si.nextItem().atomize())) {
+                lv = current.atomize();
+				do {					
+                    rs = getRight().eval(c.getNode().toSequence());
+					for (SequenceIterator si = rs.iterate(); si.hasNext();) {                        
+                        rv = si.nextItem().atomize();
+						if (compareValues(collator, lv, rv)) {
 							result.add(current);
 						}
 					}
@@ -273,11 +274,12 @@ public class GeneralComparison extends BinaryOp {
 			}
 		} else {
 		    for (Iterator i = nodes.iterator(); i.hasNext();) {
-				current = (NodeProxy) i.next();
-				lv = current.atomize();
-				rs = getRight().eval(null);
+				current = (NodeProxy) i.next();	
+                lv = current.atomize();
+                rs = getRight().eval(null);
 				for (SequenceIterator si = rs.iterate(); si.hasNext();) {
-					if (compareValues(collator, lv, si.nextItem().atomize())) {
+                    rv = si.nextItem().atomize();
+					if (compareValues(collator, lv, rv)) {
 						result.add(current);
 					}
 				}
