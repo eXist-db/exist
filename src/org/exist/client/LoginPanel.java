@@ -297,7 +297,7 @@ public class LoginPanel extends JPanel {
         grid.setConstraints(btnLoadFavourite, c);
         add(btnLoadFavourite);
         
-        btnAddFavourite = new JButton("Save...");
+        btnAddFavourite = new JButton("Save");
         btnAddFavourite.setEnabled(false);
         btnAddFavourite.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
