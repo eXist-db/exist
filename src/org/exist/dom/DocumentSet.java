@@ -51,8 +51,7 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 
     public final static DocumentSet EMPTY_DOCUMENT_SET = new DocumentSet(9);
     
-	private final static Logger LOG =
-		Logger.getLogger(DocumentSet.class.getName());
+	private final static Logger LOG = Logger.getLogger(DocumentSet.class.getName());
 	
 	private ArrayList list = null;
 	private TreeSet collections = new TreeSet();
@@ -196,16 +195,13 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	public boolean contains(DocumentSet other) {
 		if (other.size() > size())
 			return false;
-		DocumentImpl d;
-		boolean equal = false;
+		DocumentImpl d;		
 		for (Iterator i = other.iterator(); i.hasNext();) {
 			d = (DocumentImpl) i.next();
-			if (containsKey(d.docId))
-				equal = true;
-			else
-				equal = false;
+			if (!containsKey(d.docId))
+				return false;
 		}
-		return equal;
+		return true;
 	}
 
 	public boolean contains(int id) {
@@ -225,11 +221,11 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	}
 	
 	public int getMinDocId() {
-		int min = -1;
-		DocumentImpl d;
+		int min = DocumentImpl.UNKNOWN_DOCUMENT_ID; 
+        DocumentImpl d;
 		for (Iterator i = iterator(); i.hasNext();) {
 			d = (DocumentImpl) i.next();
-			if (min < 0)
+			if (min == DocumentImpl.UNKNOWN_DOCUMENT_ID)
 				min = d.getDocId();
 			else if (d.getDocId() < min)
 				min = d.getDocId();
@@ -238,7 +234,7 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	}
 
 	public int getMaxDocId() {
-		int max = -1;
+		int max = DocumentImpl.UNKNOWN_DOCUMENT_ID;
 		DocumentImpl d;
 		for (Iterator i = iterator(); i.hasNext();) {
 			d = (DocumentImpl) i.next();
