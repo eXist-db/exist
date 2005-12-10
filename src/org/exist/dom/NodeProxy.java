@@ -833,7 +833,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             return this;        
 		if(otherDoc.getDocId() != doc.getDocId())
 			return null;		
-		if (level < 0)
+		if (level == UNKNOWN_NODE_LEVEL)
 			level = doc.getTreeLevel(otherId);
 		while (otherId > 0) {
 			otherId = XMLUtil.getParentId(doc, otherId, level);
@@ -1003,20 +1003,24 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public NodeSet selectParentChild(NodeSet al, int mode, boolean rememberContext) {
         NodeProxy p = al.parentWithChild(this, true, false,	UNKNOWN_NODE_LEVEL);
         if(p == null)
-            return NodeSet.EMPTY_SET;      
-        if(mode == NodeSet.DESCENDANT) {
-			if (rememberContext)
-				addContextNode(p);
-			else
-				copyContext(p);
-			return this;
-        } else {
-            if (rememberContext)
-				p.addContextNode(this);
-			else
-				p.copyContext(this);
-            return p;
-        }   
+            return NodeSet.EMPTY_SET;  
+        switch (mode){
+            case NodeSet.DESCENDANT : {
+    			if (rememberContext)
+    				addContextNode(p);
+    			else
+    				copyContext(p);
+    			return this;
+            }
+            //TODO : refine switch -pb
+            default : {
+                if (rememberContext)
+    				p.addContextNode(this);
+    			else
+    				p.copyContext(this);
+                return p;
+            }
+        }
     }
     
     /* (non-Javadoc)
@@ -1084,11 +1088,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		}
 
 		public Object next() {
-			if (hasNext) {
-				hasNext = false;
-				return node;
-			} else
-				return null;
+			if (!hasNext) 
+                return null;
+			hasNext = false;
+			return node;
 		}
 
 		public void remove() {
@@ -1099,11 +1102,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
-			if (hasNext) {
-				hasNext = false;
-				return node;
-			} else
-				return null;
+			if (!hasNext)
+			    return null;
+			hasNext = false;
+			return node;			
 		}
 
 	}
