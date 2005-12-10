@@ -90,20 +90,33 @@ public class OpNumeric extends BinaryOp {
 	}
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		if (contextItem != null) contextSequence = contextItem.toSequence();
+        
 		Sequence lseq = getLeft().eval(contextSequence);
 		if (lseq.getLength() == 0) return Sequence.EMPTY_SEQUENCE;
 		Sequence rseq = getRight().eval(contextSequence);
 		if (rseq.getLength() == 0) return Sequence.EMPTY_SEQUENCE;
 
-		Item lvalue = lseq.itemAt(0), rvalue = rseq.itemAt(0);
+		Item lvalue = lseq.itemAt(0);
+        Item rvalue = rseq.itemAt(0);
 		
 		try {
 			// runtime type checks:
 			if (!(lvalue instanceof ComputableValue)) lvalue = lvalue.convertTo(Type.DOUBLE);
 			if (!(rvalue instanceof ComputableValue)) rvalue = rvalue.convertTo(Type.DOUBLE);
 
-			int ltype = lvalue.getType(), rtype = rvalue.getType();
+			int ltype = lvalue.getType();
+            int rtype = rvalue.getType();
+            
 			if (Type.subTypeOf(ltype, Type.NUMBER) && Type.subTypeOf(rtype, Type.NUMBER)) {
 				if (ltype > rtype) {
 					rvalue = rvalue.convertTo(ltype);

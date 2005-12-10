@@ -36,7 +36,9 @@ import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.Error;
@@ -66,8 +68,16 @@ public class Rename extends Modification {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-			throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		Sequence inSeq = select.eval(contextSequence);
