@@ -100,28 +100,29 @@ public class GeneralComparison extends BinaryOp {
 	}
 
 	public GeneralComparison(XQueryContext context, Expression left, Expression right,
-		int relation) {
+	        int relation) {
 		this(context, left, right, relation, Constants.TRUNC_NONE);
 	}
 	
-	public GeneralComparison(
-		XQueryContext context,
-		Expression left,
-		Expression right,
-		int relation,
-		int truncation) {
+	public GeneralComparison(XQueryContext context,	Expression left, Expression right,
+	        int relation, int truncation) {
 		super(context);
 		this.relation = relation;
 		this.truncation = truncation;
 		// simplify arguments
 		if (left instanceof PathExpr && ((PathExpr) left).getLength() == 1) {
+            context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
+            "Simplifying left argument");
 			left = ((PathExpr) left).getExpression(0);
 		}
 		add(left);
 		if (right instanceof PathExpr && ((PathExpr) right).getLength() == 1) {
-			right = ((PathExpr) right).getExpression(0);
+            context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
+            "Simplifying right argument");
+            right = ((PathExpr) right).getExpression(0);
 		}
 		add(right);
+        //TODO : should we also use simplify() here ? -pb
 	}
 
 	/* (non-Javadoc)
@@ -151,8 +152,7 @@ public class GeneralComparison extends BinaryOp {
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
-		final int leftDeps = getLeft().getDependencies();
-		
+		final int leftDeps = getLeft().getDependencies();		
 		// left expression returns node set
 		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 			//	and does not depend on the context item
@@ -168,11 +168,10 @@ public class GeneralComparison extends BinaryOp {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
-//        long start = System.currentTimeMillis();
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
+        
         Sequence result = null;
 		/* 
 		 * If we are inside a predicate and one of the arguments is a node set, 
@@ -182,21 +181,24 @@ public class GeneralComparison extends BinaryOp {
 		 */
 		if (inPredicate) {
 			if((getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
-			        Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
-				// if the right operand is static, we can use the fulltext index
-				if ((getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0
-					&& (getRight().getCardinality() & Cardinality.MANY) == 0) {
-					// lookup search terms in the fulltext index
+			   Type.subTypeOf(getLeft().returnsType(), Type.NODE)) { 
+			    if ((getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0 && 
+                    (getRight().getCardinality() & Cardinality.MANY) == 0) {
+                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE",  
+                    "quickNodeSetCompare");
 					result = quickNodeSetCompare(contextSequence);
-				} else {
+				} else {         
+                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", 
+                    "nodeSetCompare");                    
 					result = nodeSetCompare(contextSequence);
 				}
 			}
 		}
-        if(result == null)
-            // Fall back to the generic compare process
+        if(result == null) {
+            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", 
+            "genericCompare");   
             result = genericCompare(contextSequence, contextItem);
-//        LOG.debug("comparison took " + (System.currentTimeMillis() - start));
+        }
         return result;
 	}
 
@@ -209,10 +211,7 @@ public class GeneralComparison extends BinaryOp {
 	 * @return
 	 * @throws XPathException
 	 */
-	protected Sequence genericCompare(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	protected Sequence genericCompare(Sequence contextSequence,	Item contextItem) throws XPathException {
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
 		Sequence rs = getRight().eval(contextSequence, contextItem);
 		Collator collator = getCollator(contextSequence);
@@ -224,8 +223,8 @@ public class GeneralComparison extends BinaryOp {
 		} else {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				lv = i1.nextItem().atomize();
-				if (rs.getLength() == 1
-					&& compareValues(collator, lv, rs.itemAt(0).atomize()))
+				if (rs.getLength() == 1	&& 
+                    compareValues(collator, lv, rs.itemAt(0).atomize()))
 					return BooleanValue.TRUE;
 				else {
 					for (SequenceIterator i2 = rs.iterate(); i2.hasNext();) {
@@ -244,17 +243,12 @@ public class GeneralComparison extends BinaryOp {
 	 * returns a node set. In this case, the left expression is executed first.
 	 * All matching context nodes are then passed to the right expression.
 	 */
-	protected Sequence nodeSetCompare(Sequence contextSequence)
-		throws XPathException {
-		// evaluate left expression (returning node set)
+	protected Sequence nodeSetCompare(Sequence contextSequence)	throws XPathException {		
 		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
 		return nodeSetCompare(nodes, contextSequence);
 	}
 
-	protected Sequence nodeSetCompare(
-		NodeSet nodes,
-		Sequence contextSequence)
-		throws XPathException {
+	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {
 		NodeSet result = new ExtArrayNodeSet();
 		NodeProxy current;
 		ContextItem c;
@@ -298,26 +292,20 @@ public class GeneralComparison extends BinaryOp {
 	 * the fulltext index to speed up the search. Otherwise, fall back to
 	 * {@link #nodeSetCompare(NodeSet, Sequence)}.
 	 */
-	protected Sequence quickNodeSetCompare(Sequence contextSequence)
-		throws XPathException {
-		// if the context sequence hasn't changed we can return a cached result
-		if (cached != null && cached.isValid(contextSequence)) {
-//			LOG.debug("Returning cached result for " + ExpressionDumper.dump(this));
-			return cached.getResult();
-		}
-		//	evaluate left expression
-		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
+	protected Sequence quickNodeSetCompare(Sequence contextSequence) throws XPathException {
 		
+        // if the context sequence hasn't changed we can return a cached result
+		if (cached != null && cached.isValid(contextSequence)) {
+            context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
+                    "Returned cached result");
+			return cached.getResult();
+		}		
+      
+		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);		
         if (nodes.getLength() == 0)
             return Sequence.EMPTY_SEQUENCE;
-        
-//		if(nodes.getLength() < 2)
-//			// fall back to nodeSetCompare if we just have to check a single node
-//			return nodeSetCompare(nodes, contextSequence);
-		
-		// evaluate right expression
+    
 		Sequence rightSeq = getRight().eval(contextSequence);
-
         if (rightSeq.getLength() == 0)
             return Sequence.EMPTY_SEQUENCE;
         
@@ -326,13 +314,12 @@ public class GeneralComparison extends BinaryOp {
 			return nodeSetCompare(nodes, contextSequence);
 		
 		// get the type of a possible index
-		int indexType = nodes.getIndexType();
-		
+		int indexType = nodes.getIndexType();		
 		DocumentSet docs = nodes.getDocumentSet();
 		NodeSet result = null;
 		Item key = rightSeq.itemAt(0).atomize();
+		//See if we have a range index defined on the nodes in this sequence
 	    if(indexType != Type.ITEM) {
-	        // we have a range index defined on the nodes in this sequence
 	        if(truncation != Constants.TRUNC_NONE) {
 	        	// truncation is only possible on strings
 	        	key = key.convertTo(Type.STRING);
@@ -344,26 +331,31 @@ public class GeneralComparison extends BinaryOp {
 	            if(Type.subTypeOf(indexType, Type.NUMBER))
 	                key = key.convertTo(Type.DOUBLE);
 	        }
-	        // if key does not implement Indexable, we can't use the index
+            
+	        // If key implements Indexable, we can use the index
 	        if(key instanceof Indexable && Type.subTypeOf(key.getType(), indexType)) {
-	        	if(truncation != Constants.TRUNC_NONE) {
-	        		if (context.isProfilingEnabled())
-	        			context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using value index for key", Type.getTypeName(key.getType()) + ": " 
-                            + key.getStringValue());
+	        	if(truncation == Constants.TRUNC_NONE) {
+                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
+                            "Using value index to find key '" + Type.getTypeName(key.getType()) + 
+                            "(" + key.getStringValue() + ")'");
+                    result = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
+                } else {
+                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", 
+                        "Using value index to match key '" + Type.getTypeName(key.getType()) + 
+                        "(" + key.getStringValue() + ")'");
 					try {
 						result = context.getBroker().getValueIndex().match(docs, nodes, rightSeq.getStringValue().replace('%', '*'), 
 								DBBroker.MATCH_WILDCARDS);
 					} catch (EXistException e) {
 						throw new XPathException(getASTNode(), e.getMessage(), e);
 					}
-	        	} else {
-	        		if (context.isProfilingEnabled())
-	        			context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using value index for key: ", Type.getTypeName(key.getType()) + ": " 
-                            + key.getStringValue());
-		            result = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
 				}
 	        } else
+                // no usable index found. Fall back to nodeSetCompare	            
+                //TODO : is this cacheable ? -pb
 	            return nodeSetCompare(nodes, contextSequence);
+        //REMOVED : a *general* comparison should not be dependant of the settings of a fulltext index
+        /*
 	    } else if (key.getType() == Type.ATOMIC || Type.subTypeOf(key.getType(), Type.STRING)) {
 	        if (!nodes.hasMixedContent() && relation == Constants.EQ 
 	            && nodes.hasTextIndex()) {
@@ -383,8 +375,10 @@ public class GeneralComparison extends BinaryOp {
 					context.getBroker().getNodesEqualTo(nodes, docs, relation, truncation, rightSeq.getStringValue(), 
 					        getCollator(contextSequence));
 			}
+        */
 		} else {
 		    // no usable index found. Fall back to nodeSetCompare
+            //TODO : is this cacheable ? -pb
 		    return nodeSetCompare(nodes, contextSequence);
 		}
 		
@@ -398,6 +392,7 @@ public class GeneralComparison extends BinaryOp {
 		return result;
 	}
 
+    /*
     protected NodeSet useFulltextIndex(String cmp, NodeSet nodes, DocumentSet docs) throws XPathException {
 //	    LOG.debug("Using fulltext index for expression " + ExpressionDumper.dump(this));
 	    String cmpCopy = cmp;
@@ -435,7 +430,7 @@ public class GeneralComparison extends BinaryOp {
 		context.getBroker().getTextEngine().setTrackMatches(oldFlags);
 		cmp = cmpCopy;
 		return nodes;
-	}
+	}    
 	
 	private String handleTruncation(String cmp) {
 		switch (truncation) {
@@ -449,16 +444,14 @@ public class GeneralComparison extends BinaryOp {
 				return cmp;
 		}
 	}
+    */
 	
 	/**
 	 * Cast the atomic operands into a comparable type
 	 * and compare them.
 	 */
-	protected boolean compareValues(
-		Collator collator,
-		AtomicValue lv,
-		AtomicValue rv)
-		throws XPathException {
+	protected boolean compareValues(Collator collator, AtomicValue lv, AtomicValue rv)
+		    throws XPathException {
 		try {
 			return compareAtomic(collator, lv, rv, context.isBackwardsCompatible(), truncation, relation);
 		} catch (XPathException e) {
@@ -467,10 +460,9 @@ public class GeneralComparison extends BinaryOp {
 		}
 	}
 
-	public static boolean compareAtomic(Collator collator, AtomicValue lv,
-			AtomicValue rv, boolean backwardsCompatible, int truncation,
-			int relation) 
-	throws XPathException{
+	public static boolean compareAtomic(Collator collator, AtomicValue lv, 
+            AtomicValue rv, boolean backwardsCompatible, int truncation, int relation) 
+	        throws XPathException{
 		int ltype = lv.getType();
 		int rtype = rv.getType();
 		if (ltype == Type.ITEM || ltype == Type.ATOMIC) {
@@ -523,9 +515,8 @@ public class GeneralComparison extends BinaryOp {
 	 * @throws XPathException
      */
     private static boolean isEmptyString(AtomicValue lv) throws XPathException {
-        if(Type.subTypeOf(lv.getType(), Type.STRING) || lv.getType() == Type.ATOMIC) {
-            String str = lv.getStringValue();
-            if(str.length() == 0)
+        if(Type.subTypeOf(lv.getType(), Type.STRING) || lv.getType() == Type.ATOMIC) {           
+            if(lv.getStringValue().length() == 0)
                 return true;
         }
         return false;
@@ -570,6 +561,8 @@ public class GeneralComparison extends BinaryOp {
     }    
     
 	protected void switchOperands() {
+        context.getProfiler().message(this, Profiler.OPTIMIZATIONS,  "OPTIMIZATION", "Switching operands");
+        //Invert relation
 		switch (relation) {
 			case Constants.GT :
 				relation = Constants.LT;
@@ -589,14 +582,17 @@ public class GeneralComparison extends BinaryOp {
 		setLeft(right);
 	}
 
+	/**
+	 * Possibly switch operands to simplify execution
+	 */
 	protected void simplify() {
-		// switch operands to simplify execution
-		if ((!Type.subTypeOf(getLeft().returnsType(), Type.NODE))
-			&& Type.subTypeOf(getRight().returnsType(), Type.NODE))
+		//Prefer nodes at the left hand
+		if ((!Type.subTypeOf(getLeft().returnsType(), Type.NODE)) && 
+              Type.subTypeOf(getRight().returnsType(), Type.NODE))
 			switchOperands();
-		else if (
-			(getLeft().getCardinality() & Cardinality.MANY) != 0
-				&& (getRight().getCardinality() & Cardinality.MANY) == 0)
+        //Prefer fewer items at the left hand
+		else if ((getLeft().getCardinality() & Cardinality.MANY) != 0 && 
+                 (getRight().getCardinality() & Cardinality.MANY) == 0)
 			switchOperands();
 	}
 	
