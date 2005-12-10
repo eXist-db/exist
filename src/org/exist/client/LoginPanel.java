@@ -374,17 +374,17 @@ public class LoginPanel extends JPanel {
         Preferences favouritesNode = prefs.node(FAVOURITES_NODE);
         
         // Get all favourites
-        String favouriteNode[]=new String[0];
+        String favouriteNodeNames[]=new String[0];
         try {
-            favouriteNode = favouritesNode.childrenNames();
+            favouriteNodeNames = favouritesNode.childrenNames();
         } catch (BackingStoreException ex) {
             ex.printStackTrace();
         }
         
         // Copy for each connection data into Favourite array
-        Favourite[] favourites = new Favourite[favouriteNode.length];
-        for(int i=0 ; i< favouriteNode.length ; i++){
-            Preferences node = favouritesNode.node( favouriteNode[i]);
+        Favourite[] favourites = new Favourite[favouriteNodeNames.length];
+        for(int i=0 ; i< favouriteNodeNames.length ; i++){
+            Preferences node = favouritesNode.node( favouriteNodeNames[i]);
             
             Favourite favourite = new Favourite(
                     node.get(Favourite.NAME, ""),
