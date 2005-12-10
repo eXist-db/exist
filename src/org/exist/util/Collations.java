@@ -128,8 +128,7 @@ public class Collations {
             return collator.compare(s1, s2);
     }
 
-    public final static boolean startsWith(Collator collator, String s1,
-            String s2) {
+    public final static boolean startsWith(Collator collator, String s1, String s2) {
         if (collator == null)
             return s1.startsWith(s2);
         else {
