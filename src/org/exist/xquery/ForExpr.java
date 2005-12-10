@@ -111,7 +111,7 @@ public class ForExpr extends BindingExpression {
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence)
-		    throws XPathException {
+        throws XPathException {
 
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       

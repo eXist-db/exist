@@ -64,27 +64,44 @@ public class QuantifiedExpression extends BindingExpression {
 		context.popLocalVariables(mark);
     }
     
-	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence) 
+        throws XPathException {
+        
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            if (resultSequence != null)        
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "RESULT SEQUENCE", resultSequence);
+        }        
+        
         if (contextItem != null)
             contextSequence = contextItem.toSequence();
+        
 		LocalVariable mark = context.markLocalVariables(false);
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
 		context.declareVariableBinding(var);
+        
 		Sequence inSeq = inputSequence.eval(contextSequence);
 		Sequence satisfiesSeq;
 		boolean found = (mode == EVERY) ? true : false;
-		for(SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
+		for (SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
 			contextItem = i.nextItem();
 			var.setValue(contextItem.toSequence());
             var.checkType();
 			satisfiesSeq = returnExpr.eval(contextSequence);
 			found = satisfiesSeq.effectiveBooleanValue();
-			if((mode == SOME ) && found)
+			if ((mode == SOME ) && found)
 				break;
 			if ((mode == EVERY) && !found)
 				break;
 		}
+        
 		context.popLocalVariables(mark);
+        
 		return found ? BooleanValue.TRUE : BooleanValue.FALSE;
 	}
 

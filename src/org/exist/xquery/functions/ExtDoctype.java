@@ -31,8 +31,10 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -65,23 +67,30 @@ public class ExtDoctype extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		DocumentSet docs = new DocumentSet();
 		for (int i = 0; i < getArgumentCount(); i++) {
-			Sequence seq =
-				getArgument(i).eval(contextSequence, contextItem);
+			Sequence seq = getArgument(i).eval(contextSequence, contextItem);
 			for (SequenceIterator j = seq.iterate(); j.hasNext();) {
 				String next = j.nextItem().getStringValue();
 				context.getBroker().getDocumentsByDoctype(next, docs);
 			}
 		}
+        
 		NodeSet result = new ExtArrayNodeSet(1);
 		for (Iterator i = docs.iterator(); i.hasNext();) {
 			result.add(new NodeProxy((DocumentImpl) i.next(), NodeProxy.DOCUMENT_NODE_GID));
 		}
+        
 		return result;
 	}
 

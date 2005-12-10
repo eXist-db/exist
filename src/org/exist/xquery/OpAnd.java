@@ -39,15 +39,22 @@ public class OpAnd extends LogicalOp {
 		super(context);
 	}
 
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		if (getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
+        
 		Expression left = getLeft();
 		Expression right = getRight();
 		if(optimize) {
@@ -56,17 +63,13 @@ public class OpAnd extends LogicalOp {
 			// TODO: optimize and return false if rl.getLength() == 0 ?
 			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
 			rr = rr.getContextNodes(inPredicate);
-			rl =
-				rr.intersection(rl);
-			return rl;
+			return rr.intersection(rl);
 		} else {
-			boolean ls =
-				left.eval(contextSequence).effectiveBooleanValue();
+			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
 			// immediately return false if the left operand is false
 			if (!ls)
 				return BooleanValue.FALSE;
-			boolean rs =
-				right.eval(contextSequence).effectiveBooleanValue();
+			boolean rs = right.eval(contextSequence).effectiveBooleanValue();
 			return ls && rs ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
 	}

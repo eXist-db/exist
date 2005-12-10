@@ -58,14 +58,23 @@ public class SimpleStep extends Step {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		NodeSet set = expression.eval(contextSequence).toNodeSet();
 
 		if(set.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
+        
 		switch(axis) {
 			case Constants.DESCENDANT_SELF_AXIS:
 				set = set.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, inPredicate);
