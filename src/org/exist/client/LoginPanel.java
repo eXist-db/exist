@@ -275,7 +275,8 @@ public class LoginPanel extends JPanel {
         grid.setConstraints(scroll, c);
         add(scroll);
         
-        btnLoadFavourite = new JButton("Load");
+        btnLoadFavourite = new JButton("Select");
+        btnLoadFavourite.setToolTipText("Select favourite");
         btnLoadFavourite.setEnabled(false);
         btnLoadFavourite.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -298,6 +299,7 @@ public class LoginPanel extends JPanel {
         add(btnLoadFavourite);
         
         btnAddFavourite = new JButton("Save");
+        btnAddFavourite.setToolTipText("Save settings");
         btnAddFavourite.setEnabled(false);
         btnAddFavourite.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -334,6 +336,7 @@ public class LoginPanel extends JPanel {
         
         btnRemoveFavourite = new JButton("Remove");
         btnRemoveFavourite.setEnabled(false);
+        btnRemoveFavourite.setToolTipText("Remove favourite");
         btnRemoveFavourite.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 favouritesModel.remove(favourites.getSelectedIndex());
