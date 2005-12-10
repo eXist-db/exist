@@ -45,14 +45,23 @@ public class UnaryExpr extends PathExpr {
 		return Type.DECIMAL;
 	}
 	
-	public Sequence eval(Sequence contextSequence, Item contextItem) 
-	throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
+        
 		if(getLength() == 0)
 			throw new XPathException("unary expression requires an operand");
-		NumericValue value = (NumericValue)
-			getExpression(0).eval(contextSequence).convertTo(Type.NUMBER);
+        
+		NumericValue value = (NumericValue)getExpression(0).eval(contextSequence).convertTo(Type.NUMBER);
 		if(mode == Constants.MINUS)
 			return value.negate();
 		else

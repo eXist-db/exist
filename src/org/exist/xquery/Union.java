@@ -36,19 +36,29 @@ public class Union extends CombiningExpression {
     }
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		Sequence lval = left.eval(contextSequence, contextItem);
 		lval.removeDuplicates();
 		Sequence rval = right.eval(contextSequence, contextItem);
 		rval.removeDuplicates();
-		long start = System.currentTimeMillis();
+		
 		if(lval.getLength() == 0)
 		    return rval;
 		if(rval.getLength() == 0)
 		    return lval;
+        
 		if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
 			throw new XPathException(getASTNode(), "union operand is not a node sequence");
-        boolean convertToNodeSet = lval.isPersistentSet() && rval.isPersistentSet();
-        if (convertToNodeSet) {
+        
+        if (lval.isPersistentSet() && rval.isPersistentSet()) {
             return lval.toNodeSet().union(rval.toNodeSet());
         } else {
             ValueSequence result = new ValueSequence();

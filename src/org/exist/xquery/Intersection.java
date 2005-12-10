@@ -47,32 +47,43 @@ public class Intersection extends CombiningExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
-			Sequence lval = left.eval(contextSequence, contextItem);
-			lval.removeDuplicates();
-			Sequence rval = right.eval(contextSequence, contextItem);
-			rval.removeDuplicates();
-			if(lval.getLength() == 0 || rval.getLength() == 0)
-			    return Sequence.EMPTY_SEQUENCE;
-			if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
-				throw new XPathException(getASTNode(), "intersect operand is not a node sequence");
-            
-            if (lval.isPersistentSet() && rval.isPersistentSet())
-                return lval.toNodeSet().intersection(rval.toNodeSet());
-            else {
-                ValueSequence result = new ValueSequence();
-                Set set = new TreeSet();
-                for (SequenceIterator i = lval.unorderedIterator(); i.hasNext(); )
-                    set.add(i.nextItem());
-                for (SequenceIterator i = rval.unorderedIterator(); i.hasNext(); ) {
-                    Item next = i.nextItem();
-                    if (set.contains(next))
-                        result.add(next);
-                }
-                result.removeDuplicates();
-                return result;
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
+		Sequence lval = left.eval(contextSequence, contextItem);
+        if(lval.getLength() == 0 )
+            return Sequence.EMPTY_SEQUENCE;		
+		Sequence rval = right.eval(contextSequence, contextItem);		
+        if(rval.getLength() == 0)
+            return Sequence.EMPTY_SEQUENCE;
+        lval.removeDuplicates();
+        rval.removeDuplicates();
+        
+		if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
+			throw new XPathException(getASTNode(), "intersect operand is not a node sequence");
+        
+        if (lval.isPersistentSet() && rval.isPersistentSet())
+            return lval.toNodeSet().intersection(rval.toNodeSet());
+        else {
+            ValueSequence result = new ValueSequence();
+            Set set = new TreeSet();
+            for (SequenceIterator i = lval.unorderedIterator(); i.hasNext(); )
+                set.add(i.nextItem());
+            for (SequenceIterator i = rval.unorderedIterator(); i.hasNext(); ) {
+                Item next = i.nextItem();
+                if (set.contains(next))
+                    result.add(next);
             }
+            result.removeDuplicates();
+            return result;
+        }
 	}
 	
 	/* (non-Javadoc)
