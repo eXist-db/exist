@@ -61,10 +61,20 @@ public class DocumentConstructor extends NodeConstructor {
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
-    public Sequence eval(Sequence contextSequence, Item contextItem)
-            throws XPathException {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
         Sequence contentSeq = content.eval(contextSequence, contextItem);
+        
         context.pushDocumentContext();
+        
         MemTreeBuilder builder = context.getDocumentBuilder();
         DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
         
@@ -76,8 +86,9 @@ public class DocumentConstructor extends NodeConstructor {
 	        Item next = i.nextItem();
 	        while(next != null) {
 	            context.proceed(this, builder);
-	            if(next.getType() == Type.ATTRIBUTE || next.getType() == Type.NAMESPACE ||
-	                    next.getType() == Type.DOCUMENT)
+	            if(next.getType() == Type.ATTRIBUTE || 
+                   next.getType() == Type.NAMESPACE ||
+	               next.getType() == Type.DOCUMENT)
 	                throw new XPathException(getASTNode(), "Found a node of type " + Type.getTypeName(next.getType()) +
 	                        " inside a document constructor");
 	            // if item is an atomic value, collect the string values of all

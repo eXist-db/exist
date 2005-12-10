@@ -50,21 +50,27 @@ public class EnclosedExpr extends PathExpr {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
-		long start = System.currentTimeMillis();
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		// evaluate the expression
 		context.pushDocumentContext();
 		Sequence result = super.eval(null, null);
 		context.popDocumentContext();
+        
 		// create the output
 		MemTreeBuilder builder = context.getDocumentBuilder();
-		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-		start = System.currentTimeMillis();
+		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);		
 		try {
 			SequenceIterator i = result.iterate();
-			Item next = i.nextItem();
-			boolean readNext = true;
+			Item next = i.nextItem();			
 			StringBuffer buf = null;
 			while (next != null) {
 			    context.proceed(this, builder);
