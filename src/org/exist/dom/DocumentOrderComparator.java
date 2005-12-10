@@ -43,7 +43,7 @@ public class DocumentOrderComparator implements Comparator {
 		final NodeProxy p2 = (NodeProxy) o2;
 		final DocumentImpl doc = p1.getDocument();
 		if (doc.docId > p2.getDocument().docId)
-			return 1;
+			return Constants.SUPERIOR;
 		else if (doc.docId < p2.getDocument().docId)
 			return Constants.INFERIOR;
 		else {
