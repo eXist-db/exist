@@ -82,7 +82,7 @@ public class XmldbURI {
 	 */
 	public XmldbURI(String accessURI, String collectionPath) throws URISyntaxException {
     	try {
-            String escaped = URIUtils.escapeHtmlURI(collectionPath);   		
+            String escaped = URIUtils.iriToURI(collectionPath);   		
  			parseURI(accessURI + escaped);
     	} catch (UnsupportedEncodingException e) {
         	wrappedURI = null;        	
