@@ -27,9 +27,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.util.URIUtils;
 
@@ -38,6 +38,8 @@ import org.exist.xquery.util.URIUtils;
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class XmldbURI {
+    
+    protected final static Logger LOG = Logger.getLogger(DBBroker.class);
 	
     public static final int NO_PORT = -1;
 	//Should be provided by org.xmldb.api package !!! 
@@ -80,7 +82,7 @@ public class XmldbURI {
 	 */
 	public XmldbURI(String accessURI, String collectionPath) throws URISyntaxException {
     	try {
-    		String escaped = URIUtils.escapeHtmlURI(collectionPath);   		
+            String escaped = URIUtils.escapeHtmlURI(collectionPath);   		
  			parseURI(accessURI + escaped);
     	} catch (UnsupportedEncodingException e) {
         	wrappedURI = null;        	
@@ -341,11 +343,7 @@ public class XmldbURI {
 			if (collectionPath == null)
 				this.escapedCollectionPath = null;
 			else {
-				String escaped = URLEncoder.encode(collectionPath, "UTF-8");
-				//This is the trick : unescape slashed in order to keep java.net.URI capabilities
-				escaped = escaped.replaceAll("%2F", "/");
-				escaped = escaped.replaceAll("%23", "#");
-				escaped = escaped.replaceAll("%3F", "?");			
+                String escaped = URIUtils.escapeHtmlURI(collectionPath); 				
 				this.escapedCollectionPath = escaped;
 			}
 			recomputeURI();
@@ -421,9 +419,13 @@ public class XmldbURI {
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException(e.getMessage());
 		}
-	}
-	
-	//Ugly workaround for non-URI compliant collection pathes
+	}	
+
+	/** Ugly workaround for non-URI compliant pathes
+	 * @param pseudoURI What is supposed to be a URI
+	 * @return an supposedly correctly escaped URI <strong>string representation</string>
+     * @deprecated By definition, using this method is strongly discouraged
+	 */
 	public static String recoverPseudoURIs(String pseudoURI) {		
 		Pattern p = Pattern.compile("/");
 		String[] parts = p.split(pseudoURI);
@@ -434,14 +436,12 @@ public class XmldbURI {
 	    		try {
 	    			URI dummy = new URI(newURIString + parts[i]); 
                     newURIString.append(parts[i]);
-	    		} catch (URISyntaxException e) {	
-	    			//We'd nee a logger here.
-                    System.out.println("Had to escape : ''" + parts[i] + "' in '" + pseudoURI + "' !");    		
-	    			try {
-	    				newURIString.append(URLEncoder.encode(parts[i], "UTF-8"));
-	    			} catch (UnsupportedEncodingException ee) {
-	    				//We'd nee a logger here.
-		    			System.out.println("Can't do anything with : ''" + parts[i] + "' in '" + pseudoURI + "' !");    	
+	    		} catch (URISyntaxException e) {		    			
+                    LOG.info("Had to escape : ''" + parts[i] + "' in '" + pseudoURI + "' !");                   		
+	    			try {                        
+	    				newURIString.append(URIUtils.encodeForURI(parts[i]));
+	    			} catch (UnsupportedEncodingException ee) {	    				
+		    			LOG.warn("Can't do anything with : ''" + parts[i] + "' in '" + pseudoURI + "' !");    	
 	    				return null;
 	    			}
 	    		}
@@ -489,9 +489,10 @@ public class XmldbURI {
 			throw new NullPointerException("The current context is null");		
 		URI contextURI;
 		//Adds a final slash if necessary
-		if (!context.endsWith("/"))
+		if (!context.endsWith("/")) {
+            LOG.info("Added a final '/' to '" + context + "'"); 
 			contextURI = URI.create(context + "/");
-		else
+        } else
 			contextURI = URI.create(context);		
 		return contextURI.relativize(uri);	
 	}
@@ -504,9 +505,10 @@ public class XmldbURI {
 			throw new NullPointerException("The current context is null");
 		URI contextURI;
 		//Adds a final slash if necessary
-		if (!context.endsWith("/"))
+		if (!context.endsWith("/")) {
+            LOG.info("Added a final '/' to '" + context + "'");  
 			contextURI = URI.create(context + "/");
-		else
+        } else
 			contextURI = URI.create(context);		
 		return contextURI.resolve(str);	
 	}
@@ -519,9 +521,10 @@ public class XmldbURI {
 			throw new NullPointerException("The current context is null");	
 		URI contextURI;
 		//Adds a final slash if necessary
-		if (!context.endsWith("/"))
+		if (!context.endsWith("/")) {
+            LOG.info("Added a final '/' to '" + context + "'"); 
 			contextURI = URI.create(context + "/");
-		else
+        } else
 			contextURI = URI.create(context);		
 		return contextURI.resolve(uri);	
 	}
@@ -555,9 +558,10 @@ public class XmldbURI {
 			throw new NullPointerException("The current collection path is null");		
 		URI collectionPathURI;
 		//Adds a final slash if necessary
-		if (!collectionPath.endsWith("/"))
+		if (!collectionPath.endsWith("/")) {
+            LOG.info("Added a final '/' to '" + collectionPath + "'"); 
 			collectionPathURI = URI.create(collectionPath + "/");
-		else
+        } else
 			collectionPathURI = URI.create(collectionPath);
 		return collectionPathURI.relativize(uri);	
 	}
@@ -570,9 +574,10 @@ public class XmldbURI {
 			throw new NullPointerException("The current collection path is null");	
 		URI collectionPathURI;
 		//Adds a final slash if necessary
-		if (!collectionPath.endsWith("/"))
+		if (!collectionPath.endsWith("/")) {
+            LOG.info("Added a final '/' to '" + collectionPath + "'"); 
 			collectionPathURI = URI.create(collectionPath + "/");
-		else
+        } else
 			collectionPathURI = URI.create(collectionPath);
 		return collectionPathURI.resolve(str);	
 	}
@@ -585,9 +590,10 @@ public class XmldbURI {
 			throw new NullPointerException("The current collection path is null");
 		URI collectionPathURI;
 		//Adds a final slash if necessary
-		if (!collectionPath.endsWith("/"))
+		if (!collectionPath.endsWith("/")) {
+            LOG.info("Added a final '/' to '" + collectionPath + "'"); 
 			collectionPathURI = URI.create(collectionPath + "/");
-		else
+        } else
 			collectionPathURI = URI.create(collectionPath);
 		return collectionPathURI.resolve(uri);	
 	}	
@@ -608,46 +614,48 @@ public class XmldbURI {
 	
     /*
      * if the currentPath is null return the parentPath else 
-     * 	if the currentPath doesnt not start with "/db/" and is not equal to "/db" then adjust the path to start with the parentPath
+     * if the currentPath doesnt not start with "/db/" and is not equal to "/db" then adjust the path to start with the parentPath
      * 
      * Fix to Jens collection/resource name problem by deliriumsky
+     * 
+     * @deprecated Use {@link #resolveCollectionPath(String) resolveCollectionPath} instead
      */
     public static String checkPath(String currentPath, String parentPath)
 	{
-        /*String path = (collectionPath.startsWith(DBBroker.ROOT_COLLECTION + "/") ? collectionPath : 
-		parent.getPath() + "/" + collectionPath);*/	
+    	if(currentPath == null)
+            return parentPath;	
+    	//Absolute path
+        if (DBBroker.ROOT_COLLECTION.equals(currentPath))
+            return currentPath;
+        //Absolute path
+		if (currentPath.startsWith(DBBroker.ROOT_COLLECTION + "/"))
+            return currentPath;
+        
+        //Kind of relative path : against all conventions ! -pb
+		if(currentPath.startsWith("/"))
+            LOG.warn("Initial '/' for relative path '" + currentPath + "'"); 
 		
-    	if(currentPath != null)
-		{
-			if((!currentPath.startsWith(DBBroker.ROOT_COLLECTION + "/")) 
-					&& (!currentPath.equals(DBBroker.ROOT_COLLECTION)))
-			{
-				if(currentPath.startsWith("/"))
-				{
-					currentPath = parentPath + currentPath;
-				}
-				else
-				{
-					currentPath = parentPath + "/" + currentPath;
-				}
-			}
-			
-			return(currentPath);
-		}
-		return(parentPath);
+		//OK : let's process this so-called relative path
+        if (currentPath.startsWith("/")) {
+            if (parentPath.endsWith("/"))            
+                return  parentPath + currentPath.substring(1);
+             return  parentPath + currentPath;
+        }
+        //True relative pathes
+        if (parentPath.endsWith("/"))            
+            return  parentPath + currentPath;
+        return  parentPath + "/" + currentPath;
 	}	
     
+    
     public static String checkPath2(String fileName, String parentPath) {
-        if (!fileName.startsWith("/"))
-            fileName = "/" + fileName;
+        //if (!fileName.startsWith("/"))
+        //    fileName = "/" + fileName;
         /*if (!fileName.startsWith(ROOT_COLLECTION))
             fileName = ROOT_COLLECTION + fileName;*/
         
         return checkPath(fileName, parentPath);
     }
-    
-    
-    
     
     public static String[] getPathComponents(String collectionPath) {    	
     	Pattern p = Pattern.compile("/");
