@@ -156,10 +156,10 @@ public class RpcConnection extends Thread {
             transact.commit(transaction);
             broker.flush();
             //broker.sync();
-            LOG.debug("collection " + name + " has been created");
+            LOG.info("collection " + name + " has been created");
         } catch (Exception e) {
             transact.abort(transaction);
-            LOG.debug(e);
+            LOG.warn(e);
             throw e;
         } finally {
             brokerPool.release(broker);
@@ -182,6 +182,7 @@ public class RpcConnection extends Thread {
             CollectionConfigurationManager mgr = brokerPool.getConfigurationManager();
             mgr.addConfiguration(txn, broker, collection, configuration);
             transact.commit(txn);
+            LOG.info("Configured '" + collection.getName() + "'");  
         } catch (CollectionConfigurationException e) {
             transact.abort(txn);
             throw new EXistException(e.getMessage());
