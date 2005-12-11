@@ -129,10 +129,8 @@ public class QNameIndexLookup extends Function {
         Sequence result = Sequence.EMPTY_SEQUENCE;
 
         if (comparisonCriterium instanceof Indexable) {
-            NativeValueIndexByQName valueIndex = context.getBroker()
-                    .getQNameValueIndex();
-            result = valueIndex.findByQName(qname, comparisonCriterium,
-                    contextSequence);
+            NativeValueIndexByQName valueIndex = context.getBroker().getQNameValueIndex();
+            result = valueIndex.findByQName(qname, comparisonCriterium, contextSequence);
         } else {
             String message = "The comparison criterium must be an Indexable: " +
             	"boolean, numeric, string; instead your criterium has type " +
