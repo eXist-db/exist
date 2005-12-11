@@ -96,13 +96,15 @@ public class LocationStep extends Step {
 	protected boolean preloadNodeSets() {
         //TODO : log elsewhere ?
         if (preload) {
-            LOG.debug("Preloaded NodeSets");
+        	if (context.isProfilingEnabled(5))
+        		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, null, "Preloaded NodeSets");
             return true;
         }
         if (inUpdate)
             return false;        
         if ((parentDeps & Dependency.LOCAL_VARS) == Dependency.LOCAL_VARS) {
-            LOG.debug("Preloaded NodeSets");
+        	if (context.isProfilingEnabled(5))
+        		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, null, "Preloaded NodeSets");
             return true;
         }           
         return false;
@@ -381,6 +383,7 @@ public class LocationStep extends Step {
 			// test is one out of *, text(), node()
 			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
 			vset.setInPredicate(inPredicate);
+			
 			return vset;
 		} else if (preloadNodeSets()) {             
 		    DocumentSet docs = getDocumentSet(contextSet);

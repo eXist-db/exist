@@ -88,10 +88,14 @@ public class EvalInline extends BasicFunction {
 		DocumentSet oldDocs = context.getStaticallyKnownDocuments();
 		context.setStaticallyKnownDocuments(exprContext.getDocumentSet());
 		
+		if (context.isProfilingEnabled(2))
+			context.getProfiler().start(this, "eval: " + expr);
+		
 		XQueryLexer lexer = new XQueryLexer(context, new StringReader(expr));
 		XQueryParser parser = new XQueryParser(lexer);
 		// shares the context of the outer expression
 		XQueryTreeParser astParser = new XQueryTreeParser(context);
+		Sequence sequence = null;
 		try {
 		    parser.xpath();
 			if(parser.foundErrors()) {
@@ -107,12 +111,9 @@ public class EvalInline extends BasicFunction {
 				throw new XPathException("error found while executing expression: " +
 						astParser.getErrorMessage(), astParser.getLastException());
 			}
-			long start = System.currentTimeMillis();
 			path.analyze(null, 0);
-			Sequence sequence = path.eval(exprContext, null);
+			sequence = path.eval(exprContext, null);
 			path.reset();
-			LOG.debug("Found " + sequence.getLength() + " for " + expr);
-			LOG.debug("Query took " + (System.currentTimeMillis() - start));
 			return sequence;
 		} catch (RecognitionException e) {
 			throw new XPathException("error found while executing eval expression: " + e.getMessage(), 
@@ -123,6 +124,8 @@ public class EvalInline extends BasicFunction {
 			if (oldDocs != null)
 				context.setStaticallyKnownDocuments(oldDocs);
 			context.popNamespaceContext();
+			if (context.isProfilingEnabled(2))
+				context.getProfiler().end(this, "eval: " + expr, sequence);
 		}
 	}
 
