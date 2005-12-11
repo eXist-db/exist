@@ -29,9 +29,11 @@ import java.util.List;
 import org.exist.dom.QName;
 import org.exist.xquery.Atomize;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -91,14 +93,31 @@ public class FunConcat extends Function {
     }
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+           if (context.getProfiler().isEnabled()) {
+                context.getProfiler().start(this);       
+                context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+                if (contextSequence != null)
+                    context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                if (contextItem != null)
+                    context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
+           
 		if(getArgumentCount() < 2)
 			throw new XPathException ("concat requires at least two arguments");
+        
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		StringBuffer result = new StringBuffer();
-		for(int i = 0; i < getArgumentCount(); i++) {
-			result.append(getArgument(i).eval(contextSequence).getStringValue());
+		
+        StringBuffer concat = new StringBuffer();
+		for (int i = 0; i < getArgumentCount(); i++) {
+            concat.append(getArgument(i).eval(contextSequence).getStringValue());
 		}
-		return new StringValue(result.toString());
+		Sequence result = new StringValue(concat.toString());
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);        
+        
+        return result;
+        
 	}
 }
