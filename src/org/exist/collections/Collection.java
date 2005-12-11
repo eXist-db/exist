@@ -780,27 +780,6 @@ implements Comparable, EntityResolver, Cacheable {
             getLock().release();
         }
 	}
-    
-    public IndexInfo validate(Txn transaction, DBBroker broker, String docName, String data)
-            throws EXistException, PermissionDeniedException, TriggerException, 
-            SAXException, LockException {
-        return validate(transaction, broker, docName, new InputSource(new StringReader(data)));
-    }    
-
-	public IndexInfo validate(Txn transaction, final DBBroker broker, String docName, final InputSource source) 
-			throws EXistException, PermissionDeniedException, TriggerException, 
-            SAXException, LockException {
-		return validateInternal(transaction, broker, docName, new ValidateBlock() {
-			public void run(IndexInfo info) throws SAXException, EXistException {
-				info.setReader(getReader(broker), Collection.this);
-				try {
-					info.getReader().parse(source);
-				} catch (IOException e) {
-					throw new EXistException(e);
-				}
-			}
-		});
-	}
 	
 	public void store(Txn transaction, DBBroker broker, final IndexInfo info, final InputSource source, boolean privileged)
 			throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
@@ -839,6 +818,15 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 		});
 	}
+    
+    public void store(Txn transaction, DBBroker broker, final IndexInfo info, final Node node, boolean privileged)
+            throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
+        storeInternal(transaction, broker, info, privileged, new StoreBlock() {
+            public void run() throws EXistException, SAXException {
+                info.getDOMStreamer().serialize(node, true);
+            }
+        });
+    }    
 	
 	private interface StoreBlock {
 		public void run() throws EXistException, SAXException;
@@ -873,6 +861,42 @@ implements Comparable, EntityResolver, Cacheable {
 		broker.getBrokerPool().getNotificationService().notifyUpdate(document, 
 				(info.getEvent() == Trigger.UPDATE_DOCUMENT_EVENT ? UpdateListener.UPDATE : UpdateListener.ADD));
 	}
+    
+    public IndexInfo validate(Txn transaction, DBBroker broker, String docName, String data)
+            throws EXistException, PermissionDeniedException, TriggerException, 
+            SAXException, LockException {
+        return validate(transaction, broker, docName, new InputSource(new StringReader(data)));
+    }    
+
+    public IndexInfo validate(Txn transaction, final DBBroker broker, String docName, final InputSource source) 
+            throws EXistException, PermissionDeniedException, TriggerException, 
+            SAXException, LockException {
+        return validateInternal(transaction, broker, docName, new ValidateBlock() {
+            public void run(IndexInfo info) throws SAXException, EXistException {
+                info.setReader(getReader(broker), Collection.this);
+                try {
+                    info.getReader().parse(source);
+                } catch (IOException e) {
+                    throw new EXistException(e);
+                }
+            }
+        });
+    }    
+    
+    public IndexInfo validate(Txn transaction, final DBBroker broker, String docName, final Node node)
+            throws EXistException, PermissionDeniedException, TriggerException, 
+            SAXException, LockException {
+        return validateInternal(transaction, broker, docName, new ValidateBlock() {
+            public void run(IndexInfo info) throws SAXException {
+                info.setDOMStreamer(new DOMStreamer());
+                info.getDOMStreamer().serialize(node, true);
+            }
+        });
+    }
+    
+    private interface ValidateBlock {
+        public void run(IndexInfo info) throws SAXException, EXistException;
+    }
 	
 	private IndexInfo validateInternal(Txn transaction, DBBroker broker, String docName, ValidateBlock doValidate) 
 			throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
@@ -940,29 +964,6 @@ implements Comparable, EntityResolver, Cacheable {
 		   if (oldDocLocked) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 			getLock().release();
 		}
-	}
-	
-	private interface ValidateBlock {
-		public void run(IndexInfo info) throws SAXException, EXistException;
-	}
-
-	public IndexInfo validate(Txn transaction, final DBBroker broker, String docName, final Node node)
-			throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
-		return validateInternal(transaction, broker, docName, new ValidateBlock() {
-			public void run(IndexInfo info) throws SAXException {
-				info.setDOMStreamer(new DOMStreamer());
-				info.getDOMStreamer().serialize(node, true);
-			}
-		});
-	}
-	
-	public void store(Txn transaction, DBBroker broker, final IndexInfo info, final Node node, boolean privileged)
-			throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
-		storeInternal(transaction, broker, info, privileged, new StoreBlock() {
-			public void run() throws EXistException, SAXException {
-				info.getDOMStreamer().serialize(node, true);
-			}
-		});
 	}
 
 	/** add observers to the indexer
