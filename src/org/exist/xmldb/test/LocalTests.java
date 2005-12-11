@@ -16,6 +16,7 @@ public class LocalTests {
         suite.addTest(new TestSuite(ContentAsDOMTest.class));
 //        suite.addTest(new TestSuite(MultiDBTest.class));
         suite.addTestSuite(XmldbURITest.class);
+        suite.addTestSuite(CollectionConfigurationTest.class);
 		//$JUnit-END$
 		return suite;
 	}
