@@ -26,8 +26,10 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
@@ -69,16 +71,32 @@ public class FunBaseURI extends BasicFunction {
     /* (non-Javadoc)
      * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
      */
-    public Sequence eval(Sequence[] args, Sequence contextSequence)
-            throws XPathException {
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        }
+        
+        Sequence result;
         if (args.length == 0)
-            return new AnyURIValue(context.getBaseURI());
-        if (args[0].getLength() == 0)
-            return Sequence.EMPTY_SEQUENCE;
-        NodeValue node = (NodeValue) args[0].itemAt(0);
-        if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-            return new AnyURIValue(context.getBaseURI());
-        NodeProxy proxy = (NodeProxy) node;
-        return new AnyURIValue(proxy.getDocument().getName());
+            result = new AnyURIValue(context.getBaseURI());
+        else if (args[0].getLength() == 0)
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+            NodeValue node = (NodeValue) args[0].itemAt(0);
+            if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
+                result = new AnyURIValue(context.getBaseURI());
+            else {
+                NodeProxy proxy = (NodeProxy) node;
+                result = new AnyURIValue(proxy.getDocument().getName());
+            }
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);        
+        
+        return result;        
     }
 }

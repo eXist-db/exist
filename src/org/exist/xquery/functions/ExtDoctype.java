@@ -91,7 +91,10 @@ public class ExtDoctype extends Function {
 			result.add(new NodeProxy((DocumentImpl) i.next(), NodeProxy.DOCUMENT_NODE_GID));
 		}
         
-		return result;
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);        
+        
+        return result;
 	}
 
 }
