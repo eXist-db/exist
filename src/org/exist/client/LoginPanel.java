@@ -427,12 +427,8 @@ public class LoginPanel extends JPanel {
         return favourites;
     }
     
-    /**
-     * Saves the connections favourites using the Preferences API.
-     *
-     * @param model the list model
-     */
-    private void storeFavourites(ListModel model) {
+    
+    private void storeFavourites(Favourite[] favs) {
         
         Preferences prefs = Preferences.userNodeForPackage(LoginPanel.class);
         
@@ -447,17 +443,38 @@ public class LoginPanel extends JPanel {
         // Recreate connection node
         favouritesNode = prefs.node(FAVOURITES_NODE);
         
+        // Write all favourites
+        for (int i=0; i < favs.length; i++) {
+            
+            if(favs[i]!=null){
+                
+                // Create node
+                Preferences favouriteNode = favouritesNode.node(favs[i].getName());
+                
+                // Fill node
+                favouriteNode.put(Favourite.NAME, favs[i].getName());
+                favouriteNode.put(Favourite.USERNAME, favs[i].getUsername());
+                favouriteNode.put(Favourite.PASSWORD, favs[i].getPassword());
+                favouriteNode.put(Favourite.URL, favs[i].getUrl());
+            }
+        }   
+    }
+    
+    /**
+     * Saves the connections favourites using the Preferences API.
+     *
+     * @param model the list model
+     */
+    private void storeFavourites(ListModel model) {
+        
+        Favourite favs[] = new Favourite[model.getSize()];
+        
         // Write a node for each item in model.
         for (int i=0; i < model.getSize(); i++) {
-            Favourite f = (Favourite)model.getElementAt(i);
-            //Preferences favouriteNode = favouritesNode.node(f.getName());
-            Preferences favouriteNode = favouritesNode.node(""+i);
-            
-            favouriteNode.put(Favourite.NAME, f.getName());
-            favouriteNode.put(Favourite.USERNAME, f.getUsername());
-            favouriteNode.put(Favourite.PASSWORD, f.getPassword());
-            favouriteNode.put(Favourite.URL, f.getUrl());
+            favs[i]= (Favourite)model.getElementAt(i);
         }
+        
+        storeFavourites(favs);
     }
     
     private void importFavourites(){
