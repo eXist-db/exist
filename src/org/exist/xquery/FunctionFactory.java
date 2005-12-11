@@ -185,12 +185,14 @@ public class FunctionFactory {
 					if (def == null) {
 						List funcs = ((InternalModule)module).getFunctionsByName(qname);
 						if (funcs.size() == 0)
-							throw new XPathException(ast, "function " + qname.toString() + "() " + 
+							throw new XPathException(ast, "Function " + qname.toString() + "() " + 
 								" is not defined in module namespace: " + qname.getNamespaceURI());
 						else {
 							StringBuffer buf = new StringBuffer();
-							buf.append("wrong number of parameters in call to function ").append(qname.toString());
-							buf.append(". Defined function signatures:\r\n");
+                            buf.append("Unexpectedly received ");
+                            buf.append(params.size() + " parameter(s) in call to function ");
+                            buf.append("'" + qname.toString() +  "()'. ");
+                            buf.append("Defined function signatures are:\r\n");
 							for (Iterator i = funcs.iterator(); i.hasNext(); ) {
 								FunctionSignature sig = (FunctionSignature) i.next();
 								buf.append(sig.toString()).append("\r\n");
@@ -205,8 +207,8 @@ public class FunctionFactory {
                     // function is from an imported XQuery module
 					UserDefinedFunction func = ((ExternalModule)module).getFunction(qname, params.size());
 					if(func == null)
-						throw new XPathException(ast, "function " + qname.toString() + " ( namespace-uri = " + 
-							qname.getNamespaceURI() + ") is not defined");
+						throw new XPathException(ast, "Function " + qname.toString() + 
+                                "() is not defined in namespace '" + qname.getNamespaceURI() + "'");
 					FunctionCall call = new FunctionCall(context, func);
 					call.setArguments(params);
 					call.setASTNode(ast);
