@@ -24,8 +24,10 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -62,27 +64,42 @@ public class FunAvg extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
+        Sequence result;
 		Sequence inner = getArgument(0).eval(contextSequence, contextItem);
 		if (inner.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-
-		SequenceIterator iter = inner.iterate();
-		Item nextItem;
-		AtomicValue nextValue;
-		nextItem = iter.nextItem();
-		nextValue = nextItem.atomize();
-		if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
-			nextValue = nextValue.convertTo(Type.DOUBLE);
-		ComputableValue sum = (ComputableValue) nextValue;
-		while (iter.hasNext()) {
-			nextItem = iter.nextItem();
-			nextValue = nextItem.atomize();
-			if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
-				nextValue = nextValue.convertTo(Type.DOUBLE);
-			sum = sum.plus((NumericValue) nextValue);
-		}
-		return sum.div(new IntegerValue(inner.getLength()));
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+    		SequenceIterator iter = inner.iterate();
+    		Item nextItem;
+    		AtomicValue nextValue;
+    		nextItem = iter.nextItem();
+    		nextValue = nextItem.atomize();
+    		if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
+    			nextValue = nextValue.convertTo(Type.DOUBLE);
+    		ComputableValue sum = (ComputableValue) nextValue;
+    		while (iter.hasNext()) {
+    			nextItem = iter.nextItem();
+    			nextValue = nextItem.atomize();
+    			if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
+    				nextValue = nextValue.convertTo(Type.DOUBLE);
+    			sum = sum.plus((NumericValue) nextValue);
+    		}
+    		result = sum.div(new IntegerValue(inner.getLength()));
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);        
+        
+        return result;        
 	}
 }

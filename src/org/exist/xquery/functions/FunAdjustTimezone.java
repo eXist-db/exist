@@ -68,14 +68,34 @@ public class FunAdjustTimezone extends BasicFunction {
 	}
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		if (args[0].getLength() == 0) return Sequence.EMPTY_SEQUENCE;
-		AbstractDateTimeValue time = (AbstractDateTimeValue) args[0].itemAt(0);
-		DayTimeDurationValue offset = null;
-		if (getSignature().getArgumentCount() == 2) {
-			if (args[1].getLength() == 0) return time.withoutTimezone();
-			offset = (DayTimeDurationValue) args[1].itemAt(0);
-		}
-		return time.adjustedToTimezone(offset);
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        }
+        
+        Sequence result;
+		if (args[0].getLength() == 0) 
+            result =Sequence.EMPTY_SEQUENCE;
+        else {
+    		AbstractDateTimeValue time = (AbstractDateTimeValue) args[0].itemAt(0);    		 
+    		if (getSignature().getArgumentCount() == 2) {
+    			if (args[1].getLength() == 0) 
+    			    result = time.withoutTimezone();
+                else {
+                    DayTimeDurationValue offset = (DayTimeDurationValue) args[1].itemAt(0);
+                    result = time.adjustedToTimezone(offset);
+                }
+    		}
+            else
+                result = time.adjustedToTimezone(null);
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);        
+        
+        return result;
 	}
 
 }
