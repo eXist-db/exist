@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-05 The eXist Project
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.util;
 
 import java.util.ArrayList;
@@ -5,408 +26,393 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.exist.dom.NodeProxy;
+import org.exist.util.SwapVals;
+import org.exist.util.HeapSort;
+import org.exist.util.InsertionSort;
 
+/**
+	This class implements a version 
+	of the Introspective Sort Algorithm.
+	
+	Reference: David R. Musser
+	"Introspective Sorting and Selection Algorithms"
+	Software--Practice and Experience, (8): 983-993 (1997)
+
+	The implementation is mainly inspired
+	on the article describing the algorithm,
+	but also in the work of Michael
+	Maniscalco in C++. It is also slightly
+	based on the previous implementation of
+	FastQSort in eXist.
+	
+	http://www.cs.rpi.edu/~musser/
+	http://www.cs.rpi.edu/~musser/gp/introsort.ps
+	http://www.michael-maniscalco.com/sorting.htm
+	
+	@author José María Fernández
+*/
 public final class FastQSort {
-
-	private final static void QuickSort(Comparable a[], int l, int r)
+	private final static int M = 10;
+	private final static double LOG2 = Math.log(2.0);
+	
+	private final static void IntroSort(Comparable a[], int l, int r, int maxdepth)
 	//----------------------------------------------------
 	{
-		int M = 4;
-		int i;
-		int j;
-		Comparable v;
+		while ( (r - l) > M ) {
+			if(maxdepth<=0) {
+				HeapSort.sort(a,l,r);
+				return;
+			}
+			
+			int i = ( l + r ) / 2;
+			int j;
 
-		if ((r - l) > M) {
-			// 26july00: following [.][1] -> [.][0]
-			i = (r + l) / 2;
+			Comparable partionElement;
+			// Arbitrarily establishing partition element as the midpoint of
+			// the array.
 			if (a[l].compareTo(a[i]) > 0)
-				swap(a, l, i); // Tri-Median Methode!
+				SwapVals.swap(a, l, i); // Tri-Median Methode!
 			if (a[l].compareTo(a[r]) > 0)
-				swap(a, l, r);
+				SwapVals.swap(a, l, r);
 			if (a[i].compareTo(a[r]) > 0)
-				swap(a, i, r);
-
-			j = r - 1;
-			swap(a, i, j);
-			i = l;
-
-			v = a[j];
-			for (;;) {
-				while (a[++i].compareTo(v) < 0);
-				while (a[--j].compareTo(v) > 0);
-				if (j < i)
-					break;
-				swap(a, i, j);
-			}
-			swap(a, i, r - 1);
-
-			QuickSort(a, l, j);
-			QuickSort(a, i + 1, r);
-		}
-	}
-
-	private final static void QuickSort(Object a[], Comparator comp, int l, int r)
-	//----------------------------------------------------
-	{
-		int M = 4;
-		int i;
-		int j;
-		Object v;
-
-		if ((r - l) > M) {
-			// 26july00: following [.][1] -> [.][0]
-			i = (r + l) / 2;
-			if (comp.compare(a[l], a[i]) > 0)
-				swap(a, l, i); // Tri-Median Methode!
-			if (comp.compare(a[l], a[r]) > 0)
-				swap(a, l, r);
-			if (comp.compare(a[i], a[r]) > 0)
-				swap(a, i, r);
-
-			j = r - 1;
-			swap(a, i, j);
-			i = l;
-
-			v = a[j];
-			for (;;) {
-				while (comp.compare(a[++i], v) < 0);
-				while (comp.compare(a[--j], v) > 0);
-				if (j < i)
-					break;
-				swap(a, i, j);
-			}
-			swap(a, i, r - 1);
-
-			QuickSort(a, comp, l, j);
-			QuickSort(a, comp, i + 1, r);
-		}
-	}
-
-	private final static void QuickSort(NodeProxy a[], int l, int r)
-	//----------------------------------------------------
-	{
-		int M = 4;
-		int i;
-		int j;
-		NodeProxy v;
-
-		if ((r - l) > M) {
-			// 26july00: following [.][1] -> [.][0]
-			i = (r + l) / 2;
-			if (a[l].compareTo(a[i]) > 0)
-				swap(a, l, i); // Tri-Median Methode!
-			if (a[l].compareTo(a[r]) > 0)
-				swap(a, l, r);
-			if (a[i].compareTo(a[r]) > 0)
-				swap(a, i, r);
-
-			j = r - 1;
-			swap(a, i, j);
-			i = l;
-
-			v = a[j];
-			for (;;) {
-				while (a[++i].compareTo(v) < 0);
-				while (a[--j].compareTo(v) > 0);
-				if (j < i)
-					break;
-				swap(a, i, j);
-			}
-			swap(a, i, r - 1);
-
-			QuickSort(a, l, j);
-			QuickSort(a, i + 1, r);
-		}
-	}
-
-	private final static void QuickSort(List a, int l, int r)
-	//----------------------------------------------------
-	{
-		int M = 4;
-		int i;
-		int j;
-		Object v;
-
-		if ((r - l) > M) {
-			// 26july00: following [.][1] -> [.][0]
-			i = (r + l) / 2;
-			if (((Comparable) a.get(l)).compareTo(a.get(i)) > 0)
-				swap(a, l, i); // Tri-Median Methode!
-			if (((Comparable) a.get(l)).compareTo(a.get(r)) > 0)
-				swap(a, l, r);
-			if (((Comparable) a.get(i)).compareTo(a.get(r)) > 0)
-				swap(a, i, r);
-
-			j = r - 1;
-			swap(a, i, j);
-			i = l;
-
-			v = a.get(j);
-			for (;;) {
-				while (((Comparable) a.get(++i)).compareTo(v) < 0);
-				while (((Comparable) a.get(--j)).compareTo(v) > 0);
-				if (j < i)
-					break;
-				swap(a, i, j);
-			}
-			swap(a, i, r - 1);
-
-			QuickSort(a, l, j);
-			QuickSort(a, i + 1, r);
-		}
-	}
-
-	private final static void QuickSort(long a[], int l, int r, Object b[])
-	//----------------------------------------------------
-	{
-		int M = 4;
-		int i;
-		int j;
-		long v;
-
-		if ((r - l) > M) {
-			// 26july00: following [.][1] -> [.][0]
-			i = (r + l) / 2;
-			if (a[l] > a[i]) {
-				swap(a, l, i); // Tri-Median Methode!
-				swap(b, l, i);
-			}
-			if (a[l] > a[r]) {
-				swap(a, l, r);
-				swap(b, l, r);
-			}
-			if (a[i] > a[r]) {
-				swap(a, i, r);
-				swap(b, i, r);
-			}
-
-			j = r - 1;
-			swap(a, i, j);
-			swap(b, i, j);
-			i = l;
-
-			v = a[j];
-			for (;;) {
-				while (a[++i] < v);
-				while (a[--j] > v);
-				if (j < i)
-					break;
-				swap(a, i, j);
-				swap(b, i, j);
-			}
-			swap(a, i, r - 1);
-			swap(b, i, r - 1);
-
-			QuickSort(a, l, j, b);
-			QuickSort(a, i + 1, r, b);
-		}
-	}
-
-	private final static void QuickSortByNodeId(NodeProxy a[], int l, int r)
-	//----------------------------------------------------
-	{
-		int M = 4;
-		int i;
-		int j;
-		NodeProxy v;
-
-		if ((r - l) > M) {
-			// 26july00: following [.][1] -> [.][0]
-			i = (r + l) / 2;
-			if (a[l].getGID() > a[i].getGID())
-				swap(a, l, i); // Tri-Median Methode!
-			if (a[l].getGID() > a[r].getGID())
-				swap(a, l, r);
-			if (a[i].getGID() > a[r].getGID())
-				swap(a, i, r);
-
-			j = r - 1;
-			swap(a, i, j);
-			i = l;
-
-			v = a[j];
-			for (;;) {
-				while (a[++i].getGID() < v.getGID());
-				while (a[--j].getGID() > v.getGID());
-				if (j < i)
-					break;
-				swap(a, i, j);
-			}
-			swap(a, i, r - 1);
-
-			QuickSortByNodeId(a, l, j);
-			QuickSortByNodeId(a, i + 1, r);
-		}
-	}
-
-	private final static void swap(long a[], int i, int j) {
-		long T = a[i];
-		a[i] = a[j];
-		a[j] = T;
-	}
-
-	private final static void swap(Object[] a, int i, int j) {
-		if (a == null)
-			return;
-		Object T = a[i];
-		a[i] = a[j];
-		a[j] = T;
-	}
-
-	private final static void swap(List a, int i, int j)
-	//-----------------------------------------------
-	{
-		Object T;
-
-		T = a.get(i);
-		a.set(i, a.get(j));
-		a.set(j, T);
-	}
-
-	private final static void swap(Comparable[] a, int i, int j)
-	//-----------------------------------------------
-	{
-		Comparable T;
-
-		T = a[i];
-		a[i] = a[j];
-		a[j] = T;
-	}
-
-	private final static void InsertionSortByNodeId(NodeProxy[] a, int lo0, int hi0)
-	//------------------------------------------------------------
-	{
-		int i, j;
-		NodeProxy temp = null;
-
-		for (i = lo0 + 1; i <= hi0; i++) {
-			temp = a[i]; // the column we're sorting on
-			j = i;
-
-			while ((j > lo0) && (a[j - 1].getGID() > temp.getGID())) {
-				a[j] = a[j - 1];
-				j--;
-			}
-
-			a[j] = temp;
-		}
-	}
-
-	private final static void InsertionSort(Comparable[] a, int lo0, int hi0)
-	//------------------------------------------------------------
-	{
-		int i, j;
-		Comparable temp = null;
-
-		for (i = lo0 + 1; i <= hi0; i++) {
-			temp = a[i]; // the column we're sorting on
-			j = i;
-
-			while ((j > lo0) && (a[j - 1].compareTo(temp) > 0)) {
-				a[j] = a[j - 1];
-				j--;
-			}
-
-			a[j] = temp;
-		}
-	}
-
-	private final static void InsertionSort(Object[] a, Comparator comp, int lo0, int hi0)
-		//------------------------------------------------------------
-		{
-			int i, j;
-			Object temp = null;
-
-			for (i = lo0 + 1; i <= hi0; i++) {
-				temp = a[i]; // the column we're sorting on
-				j = i;
-
-				while ((j > lo0) && (comp.compare(a[j - 1], temp) > 0)) {
-					a[j] = a[j - 1];
-					j--;
+				SwapVals.swap(a, i, r);
+			partionElement = a[i];
+			// loop through the array until indices cross
+			i = l+1;
+			j = r-1;
+			while( i <= j ) {
+				// find the first element that is greater than or equal to
+				// the partionElement starting from the leftIndex.
+				while( ( i < r ) && ( partionElement.compareTo(a[i])>0 ) )
+					++i;
+				// find an element that is smaller than or equal to
+				// the partionElement starting from the rightIndex.
+				while( ( j > l ) && ( partionElement.compareTo(a[j])<0 ) )
+					--j;
+				// if the indexes have not crossed, swap
+				if( i <= j ) {
+					SwapVals.swap(a, i, j);
+					++i;
+					--j;
 				}
-
-				a[j] = temp;
 			}
+			// If the right index has not reached the left side of array
+			// must now sort the left partition.
+			if( l < j )
+				IntroSort( a, l, j, maxdepth );
+			// If the left index has not reached the right side of array
+			// must now sort the right partition.
+			if( i >= r )  break;
+			l=i;
 		}
-		
-	private final static void InsertionSort(List a, int lo0, int hi0)
-	//------------------------------------------------------------
-	{
-		int i, j;
-		Object temp = null;
-
-		for (i = lo0 + 1; i <= hi0; i++) {
-			temp = a.get(i); // the column we're sorting on
-			j = i;
-
-			while ((j > lo0) && (((Comparable) a.get(j - 1)).compareTo(temp) > 0)) {
-				a.set(j, a.get(j - 1));
-				j--;
-			}
-
-			a.set(j, temp);
-		}
+		InsertionSort.sort(a,l,r);
 	}
 
-	private final static void InsertionSort(long a[], int lo0, int hi0, Object b[])
-	//------------------------------------------------------------
+	private final static void IntroSort(Object a[], Comparator comp, int l, int r, int maxdepth)
+	//----------------------------------------------------
 	{
-		int i, j;
-		long tempa;
-		Object tempb = null;
-
-		for (i = lo0 + 1; i <= hi0; i++) {
-			tempa = a[i]; // the column we're sorting on
-			if (b != null)
-				tempb = b[i];
-			j = i;
-
-			while ((j > lo0) && (a[j - 1] > tempa)) {
-				a[j] = a[j - 1];
-				if (b != null)
-					b[j] = b[j - 1];
-				j--;
+		while ( (r - l) > M ) {
+			if(maxdepth<=0) {
+				HeapSort.sort(a,comp,l,r);
+				return;
 			}
-			a[j] = tempa;
-			if (b != null)
-				b[j] = tempb;
+			
+			int i = ( l + r ) / 2;
+			int j;
+
+			Object partionElement;
+			// Arbitrarily establishing partition element as the midpoint of
+			// the array.
+			if (comp.compare(a[l],a[i]) > 0)
+				SwapVals.swap(a, l, i); // Tri-Median Methode!
+			if (comp.compare(a[l],a[r]) > 0)
+				SwapVals.swap(a, l, r);
+			if (comp.compare(a[i],a[r]) > 0)
+				SwapVals.swap(a, i, r);
+			partionElement = a[i];
+			// loop through the array until indices cross
+			i = l+1;
+			j = r-1;
+			while( i <= j ) {
+				// find the first element that is greater than or equal to
+				// the partionElement starting from the leftIndex.
+				while( ( i < r ) && ( comp.compare(partionElement,a[i])>0 ) )
+					++i;
+				// find an element that is smaller than or equal to
+				// the partionElement starting from the rightIndex.
+				while( ( j > l ) && ( comp.compare(partionElement,a[j])<0 ) )
+					--j;
+				// if the indexes have not crossed, swap
+				if( i <= j ) {
+					SwapVals.swap(a, i, j);
+					++i;
+					--j;
+				}
+			}
+			// If the right index has not reached the left side of array
+			// must now sort the left partition.
+			if( l < j )
+				IntroSort( a, comp, l, j, maxdepth );
+			// If the left index has not reached the right side of array
+			// must now sort the right partition.
+			if( i >= r )  break;
+			l=i;
 		}
+		InsertionSort.sort(a,comp,l,r);
 	}
 
+	private final static void IntroSort(NodeProxy a[], int l, int r, int maxdepth)
+	//----------------------------------------------------
+	{
+		while ( (r - l) > M ) {
+			if(maxdepth<=0) {
+				HeapSort.sort(a,l,r);
+				return;
+			}
+			
+			int i = ( l + r ) / 2;
+			int j;
+
+			NodeProxy partionElement;
+			// Arbitrarily establishing partition element as the midpoint of
+			// the array.
+			if (a[l].compareTo(a[i]) > 0)
+				SwapVals.swap(a, l, i); // Tri-Median Methode!
+			if (a[l].compareTo(a[r]) > 0)
+				SwapVals.swap(a, l, r);
+			if (a[i].compareTo(a[r]) > 0)
+				SwapVals.swap(a, i, r);
+			partionElement = a[i];
+			// loop through the array until indices cross
+			i = l+1;
+			j = r-1;
+			while( i <= j ) {
+				// find the first element that is greater than or equal to
+				// the partionElement starting from the leftIndex.
+				while( ( i < r ) && ( partionElement.compareTo(a[i])>0 ) )
+					++i;
+				// find an element that is smaller than or equal to
+				// the partionElement starting from the rightIndex.
+				while( ( j > l ) && ( partionElement.compareTo(a[j])<0 ) )
+					--j;
+				// if the indexes have not crossed, swap
+				if( i <= j ) {
+					SwapVals.swap(a, i, j);
+					++i;
+					--j;
+				}
+			}
+			// If the right index has not reached the left side of array
+			// must now sort the left partition.
+			if( l < j )
+				IntroSort( a, l, j, maxdepth );
+			// If the left index has not reached the right side of array
+			// must now sort the right partition.
+			if( i >= r )  break;
+			l=i;
+		}
+		InsertionSort.sort(a,l,r);
+	}
+	
+	private final static void IntroSort(List a, int l, int r, int maxdepth)
+	//----------------------------------------------------
+	{
+		while ( (r - l) > M ) {
+			if(maxdepth<=0) {
+				HeapSort.sort(a,l,r);
+				return;
+			}
+			
+			int i = ( l + r ) / 2;
+			int j;
+
+			Object partionElement;
+			// Arbitrarily establishing partition element as the midpoint of
+			// the array.
+			if (((Comparable)a.get(l)).compareTo(a.get(i)) > 0)
+				SwapVals.swap(a, l, i); // Tri-Median Methode!
+			if (((Comparable)a.get(l)).compareTo(a.get(r)) > 0)
+				SwapVals.swap(a, l, r);
+			if (((Comparable)a.get(i)).compareTo(a.get(r)) > 0)
+				SwapVals.swap(a, i, r);
+			partionElement = a.get(i);
+			// loop through the array until indices cross
+			i = l+1;
+			j = r-1;
+			while( i <= j ) {
+				// find the first element that is greater than or equal to
+				// the partionElement starting from the leftIndex.
+				while( ( i < r ) && ( ((Comparable)partionElement).compareTo(a.get(i))>0 ) )
+					++i;
+				// find an element that is smaller than or equal to
+				// the partionElement starting from the rightIndex.
+				while( ( j > l ) && ( ((Comparable)partionElement).compareTo(a.get(j))<0 ) )
+					--j;
+				// if the indexes have not crossed, swap
+				if( i <= j ) {
+					SwapVals.swap(a, i, j);
+					++i;
+					--j;
+				}
+			}
+			// If the right index has not reached the left side of array
+			// must now sort the left partition.
+			if( l < j )
+				IntroSort( a, l, j, maxdepth );
+			// If the left index has not reached the right side of array
+			// must now sort the right partition.
+			if( i >= r )  break;
+			l=i;
+		}
+		InsertionSort.sort(a,l,r);
+	}
+
+	private final static void IntroSort(long a[], int l, int r, Object b[], int maxdepth)
+	//----------------------------------------------------
+	{
+		while ( (r - l) > M ) {
+			if(maxdepth<=0) {
+				HeapSort.sort(a,l,r,b);
+				return;
+			}
+			
+			int i = ( l + r ) / 2;
+			int j;
+
+			long partionElement;
+			// Arbitrarily establishing partition element as the midpoint of
+			// the array.
+			if (a[l] > a[i] ) {
+				SwapVals.swap(a, l, i); // Tri-Median Methode!
+				if(b!=null)
+					SwapVals.swap(b, l, i); // Tri-Median Methode!
+			}
+			if (a[l] > a[r] ) {
+				SwapVals.swap(a, l, r);
+				if(b!=null)
+					SwapVals.swap(b, l, r);
+			}
+			if (a[i] > a[r] ) {
+				SwapVals.swap(a, i, r);
+				if(b!=null)
+					SwapVals.swap(b, i, r);
+			}
+			partionElement = a[i];
+			// loop through the array until indices cross
+			i = l+1;
+			j = r-1;
+			while( i <= j ) {
+				// find the first element that is greater than or equal to
+				// the partionElement starting from the leftIndex.
+				while( ( i < r ) && ( partionElement>a[i] ) )
+					++i;
+				// find an element that is smaller than or equal to
+				// the partionElement starting from the rightIndex.
+				while( ( j > l ) && ( partionElement<a[j] ) )
+					--j;
+				// if the indexes have not crossed, swap
+				if( i <= j ) {
+					SwapVals.swap(a, i, j);
+					if(b!=null)
+						SwapVals.swap(b, i, j);
+					++i;
+					--j;
+				}
+			}
+			// If the right index has not reached the left side of array
+			// must now sort the left partition.
+			if( l < j )
+				IntroSort( a, l, j, b, maxdepth );
+			// If the left index has not reached the right side of array
+			// must now sort the right partition.
+			if( i >= r )  break;
+			l=i;
+		}
+		InsertionSort.sort(a,l,r,b);
+	}
+	
+	private final static void IntroSortByNodeId(NodeProxy a[], int l, int r, int maxdepth)
+	//----------------------------------------------------
+	{
+		while ( (r - l) > M ) {
+			if(maxdepth<=0) {
+				HeapSort.sort(a,l,r);
+				return;
+			}
+			
+			int i = ( l + r ) / 2;
+			int j;
+
+			NodeProxy partionElement;
+			// Arbitrarily establishing partition element as the midpoint of
+			// the array.
+			if (a[l].getGID() > a[i].getGID() )
+				SwapVals.swap(a, l, i); // Tri-Median Methode!
+			if (a[l].getGID() > a[r].getGID() )
+				SwapVals.swap(a, l, r);
+			if (a[i].getGID() > a[r].getGID() )
+				SwapVals.swap(a, i, r);
+			partionElement = a[i];
+			// loop through the array until indices cross
+			i = l+1;
+			j = r-1;
+			while( i <= j ) {
+				// find the first element that is greater than or equal to
+				// the partionElement starting from the leftIndex.
+				while( ( i < r ) && ( partionElement.getGID()>a[i].getGID() ) )
+					++i;
+				// find an element that is smaller than or equal to
+				// the partionElement starting from the rightIndex.
+				while( ( j > l ) && ( partionElement.getGID()<a[j].getGID() ) )
+					--j;
+				// if the indexes have not crossed, swap
+				if( i <= j ) {
+					SwapVals.swap(a, i, j);
+					++i;
+					--j;
+				}
+			}
+			// If the right index has not reached the left side of array
+			// must now sort the left partition.
+			if( l < j )
+				IntroSortByNodeId( a, l, j, maxdepth );
+			// If the left index has not reached the right side of array
+			// must now sort the right partition.
+			if( i >= r )  break;
+			l=i;
+		}
+		InsertionSort.sort(a,l,r);
+	}
+	
 	public static void sort(Comparable[] a, int lo, int hi) {
-		QuickSort(a, lo, hi);
-		InsertionSort(a, lo, hi);
+		IntroSort(a, lo, hi, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 	}
 
 	public static void sort(Object[] a, Comparator c, int lo, int hi) {
-		QuickSort(a, c, lo, hi);
-		InsertionSort(a, c, lo, hi);
+		IntroSort(a, c, lo, hi, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 	}
 	
 	public static void sort(List a, int lo, int hi) {
-		QuickSort(a, lo, hi);
-		InsertionSort(a, lo, hi);
+		IntroSort(a, lo, hi, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 	}
-
+	
 	public static void sort(NodeProxy[] a, int lo, int hi) {
-		QuickSort(a, lo, hi);
-		InsertionSort(a, lo, hi);
+		IntroSort(a, lo, hi, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 	}
 
 	public static void sortByNodeId(NodeProxy[] a, int lo, int hi) {
-		QuickSortByNodeId(a, lo, hi);
-		InsertionSortByNodeId(a, lo, hi);
+		IntroSortByNodeId(a, lo, hi, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 	}
 
 	public static void sort(long[] a, int lo, int hi, Object b[]) {
-		QuickSort(a, lo, hi, b);
-		InsertionSort(a, lo, hi, b);
+		IntroSort(a, lo, hi, b, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 	}
 
 	public static void main(String[] args) throws Exception {
-		String[] a =
-			new String[] {
+		List l = new ArrayList();
+		
+		if(args.length==0) {
+			String[] a=new String[] {
 				"Rudi",
 				"Herbert",
 				"Anton",
@@ -414,10 +420,29 @@ public final class FastQSort {
 				"Olga",
 				"Willi",
 				"Heinz" };
-		List l = new ArrayList(a.length);
-		for (int i = 0; i < a.length; i++)
-			l.add(a[i]);
+		
+			for (int i = 0; i < a.length; i++)
+				l.add(a[i]);
+		} else {
+			System.err.println("Ordering file "+args[0]+"\n");
+			try {
+				java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]));
+				String rr;
+				
+				while((rr=is.readLine())!=null) {
+					l.add(rr);
+				}
+				
+				is.close();
+			} catch(Exception e) {
+			}
+		}
+		long a;
+		long b;
+		a=System.currentTimeMillis();
 		sort(l, 0, l.size() - 1);
+		b=System.currentTimeMillis();
+		System.err.println("Ellapsed time: "+(b-a)+" size: "+l.size());
 		for (int i = 0; i < l.size(); i++)
 			System.out.println(l.get(i));
 	}
