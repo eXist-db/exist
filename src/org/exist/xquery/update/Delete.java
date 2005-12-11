@@ -76,60 +76,66 @@ public class Delete extends Modification {
         
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
+        
 		Sequence inSeq = select.eval(contextSequence);
-		if (inSeq.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
-			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-        TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
-        Txn transaction = transact.beginTransaction();
-		try {
-			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-            NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
-            IndexListener listener = new IndexListener(ql);
-            NodeImpl node;
-            NodeImpl parent;
-            DocumentImpl doc = null;
-            DocumentSet modifiedDocs = new DocumentSet();
-            for (int i = 0; i < ql.length; i++) {
-                node = ql[i];
-                doc = (DocumentImpl) node.getOwnerDocument();
-                if (!doc.getPermissions().validate(context.getUser(),
-                        Permission.UPDATE)) {
-                    transact.abort(transaction);    
-                    throw new XPathException(getASTNode(), "permission to update document denied");
+        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
+            throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        
+		if (inSeq.getLength() > 0) {
+            TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+            Txn transaction = transact.beginTransaction();
+    		try {
+    			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+                NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
+                IndexListener listener = new IndexListener(ql);
+                NodeImpl node;
+                NodeImpl parent;
+                DocumentImpl doc = null;
+                DocumentSet modifiedDocs = new DocumentSet();
+                for (int i = 0; i < ql.length; i++) {
+                    node = ql[i];
+                    doc = (DocumentImpl) node.getOwnerDocument();
+                    if (!doc.getPermissions().validate(context.getUser(),
+                            Permission.UPDATE)) {
+                        transact.abort(transaction);    
+                        throw new XPathException(getASTNode(), "permission to update document denied");
+                    }
+                    doc.setIndexListener(listener);
+                    modifiedDocs.add(doc);
+                    parent = (NodeImpl) node.getParentNode();
+                    if (parent.getNodeType() != Node.ELEMENT_NODE) {
+                        LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
+                        transact.abort(transaction);
+                        throw new XPathException(getASTNode(),
+                                "you cannot remove the document element. Use update "
+                                        + "instead");
+                    } else
+                        parent.removeChild(transaction, node);
+                    doc.clearIndexListener();
+                    doc.setLastModified(System.currentTimeMillis());
+                    context.getBroker().storeDocument(transaction, doc);
+                    notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
-                doc.setIndexListener(listener);
-                modifiedDocs.add(doc);
-                parent = (NodeImpl) node.getParentNode();
-                if (parent.getNodeType() != Node.ELEMENT_NODE) {
-                    LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
-                    transact.abort(transaction);
-                    throw new XPathException(getASTNode(),
-                            "you cannot remove the document element. Use update "
-                                    + "instead");
-                } else
-                    parent.removeChild(transaction, node);
-                doc.clearIndexListener();
-                doc.setLastModified(System.currentTimeMillis());
-                context.getBroker().storeDocument(transaction, doc);
-                notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+                checkFragmentation(transaction, modifiedDocs);
+                transact.commit(transaction);
+            } catch (EXistException e) {
+                transact.abort(transaction);
+                throw new XPathException(getASTNode(), e.getMessage(), e);
+    		} catch (PermissionDeniedException e) {
+                transact.abort(transaction);
+                throw new XPathException(getASTNode(), e.getMessage(), e);
+    		} catch (LockException e) {
+                transact.abort(transaction);
+                throw new XPathException(getASTNode(), e.getMessage(), e);
+    		} finally {
+                unlockDocuments();
             }
-            checkFragmentation(transaction, modifiedDocs);
-            transact.commit(transaction);
-        } catch (EXistException e) {
-            transact.abort(transaction);
-            throw new XPathException(getASTNode(), e.getMessage(), e);
-		} catch (PermissionDeniedException e) {
-            transact.abort(transaction);
-            throw new XPathException(getASTNode(), e.getMessage(), e);
-		} catch (LockException e) {
-            transact.abort(transaction);
-            throw new XPathException(getASTNode(), e.getMessage(), e);
-		} finally {
-            unlockDocuments();
         }
-		return Sequence.EMPTY_SEQUENCE;
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        
+        return Sequence.EMPTY_SEQUENCE;
 	}
 
 	/* (non-Javadoc)

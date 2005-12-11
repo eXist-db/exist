@@ -77,87 +77,93 @@ public class Update extends Modification {
         
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		Sequence inSeq = select.eval(contextSequence);
-		if (inSeq.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
+        
+        Sequence contentSeq = value.eval(contextSequence);
+        if (contentSeq.getLength() == 0)
+            throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+        
+        Sequence inSeq = select.eval(contextSequence);
 		if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-		
-		Sequence contentSeq = value.eval(contextSequence);
-		if (contentSeq.getLength() == 0)
-			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
-		try {
-			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-            TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-            NodeImpl ql[] = selectAndLock(inSeq.toNodeSet());
-            IndexListener listener = new IndexListener(ql);
-            NodeImpl node;
-            TextImpl text;
-            AttrImpl attribute;
-            ElementImpl parent;
-            DocumentImpl doc = null;
-            DocumentSet modifiedDocs = new DocumentSet();
-            for (int i = 0; i < ql.length; i++) {
-                node = ql[i];
-                doc = (DocumentImpl) node.getOwnerDocument();
-                doc.setIndexListener(listener);
-                modifiedDocs.add(doc);
-                if (!doc.getPermissions().validate(context.getUser(),
-                        Permission.UPDATE))
-                        throw new XPathException(getASTNode(),
-                                "permission to update document denied");
-                switch (node.getNodeType()) {
-                    case Node.ELEMENT_NODE:
-						NodeListImpl content = new NodeListImpl();
-						for (SequenceIterator j = contentSeq.iterate(); j.hasNext(); ) {
-							Item next = j.nextItem();
-							if (Type.subTypeOf(next.getType(), Type.NODE))
-								content.add(((NodeValue)next).getNode());
-							else {
-								text = new TextImpl(next.getStringValue());
-								content.add(text);
-							}
-						}
-                        ((ElementImpl) node).update(transaction, content);
-                        break;
-                    case Node.TEXT_NODE:
-                        parent = (ElementImpl) node.getParentNode();
-                    	text = new TextImpl(contentSeq.getStringValue());
-                        text.setOwnerDocument(doc);
-                        parent.updateChild(transaction, node, text);
-                        break;
-                    case Node.ATTRIBUTE_NODE:
-                        parent = (ElementImpl) node.getParentNode();
-                        if (parent == null) {
-                            LOG.warn("parent node not found for "
-                                    + node.getGID());
+        if (inSeq.getLength() > 0) {          
+
+    		try {
+    			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+                TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+                Txn transaction = transact.beginTransaction();
+                NodeImpl ql[] = selectAndLock(inSeq.toNodeSet());
+                IndexListener listener = new IndexListener(ql);
+                NodeImpl node;
+                TextImpl text;
+                AttrImpl attribute;
+                ElementImpl parent;
+                DocumentImpl doc = null;
+                DocumentSet modifiedDocs = new DocumentSet();
+                for (int i = 0; i < ql.length; i++) {
+                    node = ql[i];
+                    doc = (DocumentImpl) node.getOwnerDocument();
+                    doc.setIndexListener(listener);
+                    modifiedDocs.add(doc);
+                    if (!doc.getPermissions().validate(context.getUser(),
+                            Permission.UPDATE))
+                            throw new XPathException(getASTNode(),
+                                    "permission to update document denied");
+                    switch (node.getNodeType()) {
+                        case Node.ELEMENT_NODE:
+    						NodeListImpl content = new NodeListImpl();
+    						for (SequenceIterator j = contentSeq.iterate(); j.hasNext(); ) {
+    							Item next = j.nextItem();
+    							if (Type.subTypeOf(next.getType(), Type.NODE))
+    								content.add(((NodeValue)next).getNode());
+    							else {
+    								text = new TextImpl(next.getStringValue());
+    								content.add(text);
+    							}
+    						}
+                            ((ElementImpl) node).update(transaction, content);
                             break;
-                        }
-                        AttrImpl attr = (AttrImpl) node;
-                        attribute = new AttrImpl(attr.getQName(), contentSeq.getStringValue());
-                        attribute.setOwnerDocument(doc);
-                        parent.updateChild(transaction, node, attribute);
-                        break;
-                    default:
-                        throw new XPathException(getASTNode(), "unsupported node-type");
+                        case Node.TEXT_NODE:
+                            parent = (ElementImpl) node.getParentNode();
+                        	text = new TextImpl(contentSeq.getStringValue());
+                            text.setOwnerDocument(doc);
+                            parent.updateChild(transaction, node, text);
+                            break;
+                        case Node.ATTRIBUTE_NODE:
+                            parent = (ElementImpl) node.getParentNode();
+                            if (parent == null) {
+                                LOG.warn("parent node not found for "
+                                        + node.getGID());
+                                break;
+                            }
+                            AttrImpl attr = (AttrImpl) node;
+                            attribute = new AttrImpl(attr.getQName(), contentSeq.getStringValue());
+                            attribute.setOwnerDocument(doc);
+                            parent.updateChild(transaction, node, attribute);
+                            break;
+                        default:
+                            throw new XPathException(getASTNode(), "unsupported node-type");
+                    }
+                    doc.setLastModified(System.currentTimeMillis());
+                    context.getBroker().storeDocument(transaction, doc);
+                    notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
-                doc.setLastModified(System.currentTimeMillis());
-                context.getBroker().storeDocument(transaction, doc);
-                notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+                checkFragmentation(transaction, modifiedDocs);
+                transact.commit(transaction);
+            } catch (LockException e) {
+                throw new XPathException(getASTNode(), e.getMessage(), e);
+    		} catch (PermissionDeniedException e) {
+                throw new XPathException(getASTNode(), e.getMessage(), e);
+    		} catch (EXistException e) {
+                throw new XPathException(getASTNode(), e.getMessage(), e);
+    		} finally {
+                unlockDocuments();
             }
-            checkFragmentation(transaction, modifiedDocs);
-            transact.commit(transaction);
-        } catch (LockException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
-		} catch (PermissionDeniedException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
-		} catch (EXistException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
-		} finally {
-            unlockDocuments();
         }
-		return Sequence.EMPTY_SEQUENCE;
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        
+        return Sequence.EMPTY_SEQUENCE;
 	}
 
 	/* (non-Javadoc)

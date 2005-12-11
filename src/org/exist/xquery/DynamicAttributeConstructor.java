@@ -105,6 +105,10 @@ public class DynamicAttributeConstructor extends NodeConstructor {
         }
         int nodeNr = builder.addAttribute(qn, value);
         NodeImpl node = ((DocumentImpl)builder.getDocument()).getAttribute(nodeNr);
+        
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", node);          
+        
         return node;
     }
 

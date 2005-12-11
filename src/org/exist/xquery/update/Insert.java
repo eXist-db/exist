@@ -88,69 +88,75 @@ public class Insert extends Modification {
         
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		Sequence inSeq = select.eval(contextSequence);
-        LOG.debug("Found: " + inSeq.getLength());
-		if (inSeq.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
-			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
 		
 		Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.getLength() == 0)
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
-        contentSeq = deepCopy(contentSeq);
         
-        try {
-            TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-            NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
-            NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-            IndexListener listener = new IndexListener(ql);
-            NodeImpl node;
-            NodeImpl parent;
-            DocumentImpl doc = null;
-            DocumentSet modifiedDocs = new DocumentSet();
-            NodeList contentList = seq2nodeList(contentSeq);
-            for (int i = 0; i < ql.length; i++) {
-                node = ql[i];
-                doc = (DocumentImpl) node.getOwnerDocument();
-                doc.setIndexListener(listener);
-                if (!doc.getPermissions().validate(context.getUser(),
-                        Permission.UPDATE))
-                    throw new XPathException(getASTNode(),
-                        "permission to remove document denied");
-                modifiedDocs.add(doc);
-				if (mode == INSERT_APPEND) {
-					node.appendChildren(transaction, contentList, -1);
-				} else {
-	                parent = (NodeImpl) node.getParentNode();
-	                switch (mode) {
-	                    case INSERT_BEFORE:
-	                        parent.insertBefore(transaction, contentList, node);
-	                        break;
-	                    case INSERT_AFTER:
-	                        ((NodeImpl) parent).insertAfter(transaction, contentList, node);
-	                        break;
-	                }
-				}
-                doc.clearIndexListener();
-                doc.setLastModified(System.currentTimeMillis());
-                context.getBroker().storeDocument(transaction, doc);
-                notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+        Sequence inSeq = select.eval(contextSequence);             
+        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
+            throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        
+        if (inSeq.getLength() > 0) { 
+            LOG.debug("Found: " + inSeq.getLength());   
+            
+            contentSeq = deepCopy(contentSeq);
+        
+            try {
+                TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+                Txn transaction = transact.beginTransaction();
+                NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
+                NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+                IndexListener listener = new IndexListener(ql);
+                NodeImpl node;
+                NodeImpl parent;
+                DocumentImpl doc = null;
+                DocumentSet modifiedDocs = new DocumentSet();
+                NodeList contentList = seq2nodeList(contentSeq);
+                for (int i = 0; i < ql.length; i++) {
+                    node = ql[i];
+                    doc = (DocumentImpl) node.getOwnerDocument();
+                    doc.setIndexListener(listener);
+                    if (!doc.getPermissions().validate(context.getUser(), Permission.UPDATE))
+                        throw new XPathException(getASTNode(), "permission to remove document denied");
+                    modifiedDocs.add(doc);
+    				if (mode == INSERT_APPEND) {
+    					node.appendChildren(transaction, contentList, -1);
+    				} else {
+    	                parent = (NodeImpl) node.getParentNode();
+    	                switch (mode) {
+    	                    case INSERT_BEFORE:
+    	                        parent.insertBefore(transaction, contentList, node);
+    	                        break;
+    	                    case INSERT_AFTER:
+    	                        ((NodeImpl) parent).insertAfter(transaction, contentList, node);
+    	                        break;
+    	                }
+    				}
+                    doc.clearIndexListener();
+                    doc.setLastModified(System.currentTimeMillis());
+                    context.getBroker().storeDocument(transaction, doc);
+                    notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+                }
+                checkFragmentation(transaction, modifiedDocs);
+    
+                transact.commit(transaction);
+            } catch (PermissionDeniedException e) {
+    			throw new XPathException(getASTNode(), e.getMessage(), e);
+    		} catch (EXistException e) {
+                throw new XPathException(getASTNode(), e.getMessage(), e);
+    		} catch (LockException e) {
+                throw new XPathException(getASTNode(), e.getMessage(), e);
+    		} finally {
+                unlockDocuments();
             }
-            checkFragmentation(transaction, modifiedDocs);
-
-            transact.commit(transaction);
-        } catch (PermissionDeniedException e) {
-			throw new XPathException(getASTNode(), e.getMessage(), e);
-		} catch (EXistException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
-		} catch (LockException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
-		} finally {
-            unlockDocuments();
         }
-		return Sequence.EMPTY_SEQUENCE;
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        
+        return Sequence.EMPTY_SEQUENCE;
+        
 	}
 
 	private NodeList seq2nodeList(Sequence contentSeq) {

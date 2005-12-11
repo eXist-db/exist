@@ -55,20 +55,24 @@ public class Except extends CombiningExpression {
         }
         
 		Sequence lval = left.eval(contextSequence, contextItem);
-        if(lval.getLength() == 0)
-            return Sequence.EMPTY_SEQUENCE; 
 		Sequence rval = right.eval(contextSequence, contextItem);
-        if(rval.getLength() == 0)
-            return lval;  
         lval.removeDuplicates();
-		rval.removeDuplicates();          
+		rval.removeDuplicates();         
+        
         
         if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
 			throw new XPathException(getASTNode(), "except operand is not a node sequence");
-        if (lval.isPersistentSet() && rval.isPersistentSet())
-            return lval.toNodeSet().except(rval.toNodeSet());
-        else {
-            ValueSequence result = new ValueSequence();
+
+        Sequence result;
+        
+        if(lval.getLength() == 0)
+            result = Sequence.EMPTY_SEQUENCE; 
+        else if(rval.getLength() == 0)
+            result = lval;          
+        else if (lval.isPersistentSet() && rval.isPersistentSet())
+            result = lval.toNodeSet().except(rval.toNodeSet());
+        else { 
+            result = new ValueSequence();
             Set set = new TreeSet();
             for (SequenceIterator i = rval.unorderedIterator(); i.hasNext(); )
                 set.add(i.nextItem());
@@ -77,9 +81,14 @@ public class Except extends CombiningExpression {
                 if (!set.contains(next))
                     result.add(next);
             }
-            result.removeDuplicates();
-            return result;
+            result.removeDuplicates();            
         }
+        
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result); 
+        
+        return result;
+                
 	}
 	
 	/* (non-Javadoc)

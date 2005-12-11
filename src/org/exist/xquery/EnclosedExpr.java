@@ -103,6 +103,10 @@ public class EnclosedExpr extends PathExpr {
 				"Encountered SAX exception while serializing enclosed expression: "
 					+ ExpressionDumper.dump(this));
 		}
+        
+       if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result);              
+           
 		return result;
 	}
 	

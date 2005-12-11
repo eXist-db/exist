@@ -128,51 +128,57 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-        if (steps.size() == 0) 
-            return Sequence.EMPTY_SEQUENCE;
+        Sequence result = Sequence.EMPTY_SEQUENCE;
         
-        Sequence r = Sequence.EMPTY_SEQUENCE;
-        if (contextSequence != null)
-            r = contextSequence;
-        
-        DocumentSet contextDocs = null;
-        Expression expr = (Expression) steps.get(0);
-        if (expr instanceof VariableReference) {
-            Variable var = ((VariableReference) expr).getVariable();
-            if (var != null) 
-                contextDocs = var.getContextDocs();            
-        }
-
-        Item current;
-        Sequence values;
-        for (Iterator iter = steps.iterator(); iter.hasNext();) {
-            expr = (Expression) iter.next();
-            if (contextDocs != null) 
-                expr.setContextDocSet(contextDocs);
-            if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_ITEM)) {
-                if (r.getLength() == 0) {
-                    r = expr.eval(null, null);
-                } else {
-                    values = null;
-                    if (r.getLength() > 1) values = new ValueSequence();
-                    for (SequenceIterator iterInner = r.iterate(); iterInner.hasNext(); ) {
-                        current = iterInner.nextItem();
-                        if (values == null)
-                            values = expr.eval(r, current);
-                        else
-                            values.addAll(expr.eval(r, current));
-                    }
-                    r = values;
-                }
-            } else {
-                r = expr.eval(r);
+        if (steps.size() > 0) {
+ 
+            if (contextSequence != null)
+                result = contextSequence;
+            
+            DocumentSet contextDocs = null;
+            Expression expr = (Expression) steps.get(0);
+            if (expr instanceof VariableReference) {
+                Variable var = ((VariableReference) expr).getVariable();
+                if (var != null) 
+                    contextDocs = var.getContextDocs();            
             }
-            if(steps.size() > 1)
-                // remove duplicate nodes if this is a path 
-                // expression with more than one step
-                r.removeDuplicates();
+    
+            Item current;
+            Sequence values;
+            for (Iterator iter = steps.iterator(); iter.hasNext();) {
+                expr = (Expression) iter.next();
+                if (contextDocs != null) 
+                    expr.setContextDocSet(contextDocs);
+                if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_ITEM)) {
+                    if (result.getLength() == 0) {
+                        result = expr.eval(null, null);
+                    //TODO : strange design : should rather use : else if (result.getLength() == 1) ? -pb
+                    } else {                        
+                        values = null;                        
+                        if (result.getLength() > 1) values = new ValueSequence();
+                        for (SequenceIterator iterInner = result.iterate(); iterInner.hasNext(); ) {
+                            current = iterInner.nextItem();
+                            if (values == null)
+                                values = expr.eval(result, current);
+                            else
+                                values.addAll(expr.eval(result, current));
+                        }
+                        result = values;
+                    }
+                } else {
+                    result = expr.eval(result);
+                }
+                if(steps.size() > 1)
+                    // remove duplicate nodes if this is a path 
+                    // expression with more than one step
+                    result.removeDuplicates();
+            }
         }
-        return r;
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
+        return result;
     }
 
     public XQueryContext getContext() {

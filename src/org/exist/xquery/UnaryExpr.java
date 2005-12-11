@@ -61,10 +61,16 @@ public class UnaryExpr extends PathExpr {
 		if(getLength() == 0)
 			throw new XPathException("unary expression requires an operand");
         
+        Sequence result;
 		NumericValue value = (NumericValue)getExpression(0).eval(contextSequence).convertTo(Type.NUMBER);
 		if(mode == Constants.MINUS)
-			return value.negate();
+            result = value.negate();
 		else
-			return value;
+            result =  value;
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
+        return result;        
 	}
 }

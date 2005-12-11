@@ -81,18 +81,23 @@ public class FilteredExpression extends AbstractExpression {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
         
+        Sequence result;
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if (seq.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
+			result = Sequence.EMPTY_SEQUENCE;
+        else {            
+    		seq.setSelfAsContext(); 
+    		result = seq;
+            Predicate pred;
+    		for (Iterator i = predicates.iterator(); i.hasNext();) {
+    			pred = (Predicate) i.next();
+    			result = pred.evalPredicate(contextSequence, result, Constants.DESCENDANT_SELF_AXIS);
+    		}
+        }
         
-		seq.setSelfAsContext();
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result); 
         
-		Predicate pred;
-		Sequence result = seq;
-		for (Iterator i = predicates.iterator(); i.hasNext();) {
-			pred = (Predicate) i.next();
-			result = pred.evalPredicate(contextSequence, result, Constants.DESCENDANT_SELF_AXIS);
-		}
 		return result;
 	}
 

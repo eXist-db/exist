@@ -90,7 +90,11 @@ public class UntypedValueCheck extends AbstractExpression {
                 throw new XPathException(expression.getASTNode(), error.toString());
 			}
 		}
-		return result;
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
+        return result; 
 	}
     
 	/* (non-Javadoc)

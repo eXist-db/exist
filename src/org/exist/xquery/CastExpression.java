@@ -77,30 +77,36 @@ public class CastExpression extends AbstractExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
+        Sequence result;
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if (seq.getLength() == 0) {
 			if ((cardinality & Cardinality.ZERO) == 0)
 				throw new XPathException(getASTNode(), "Type error: empty sequence is not allowed here");
 			else
-				return Sequence.EMPTY_SEQUENCE;
-		}
-        
-        Item item = seq.itemAt(0);
-        try {
-            // casting to QName needs special treatment
-            if(requiredType == Type.QNAME) {
-                if(item.getType() == Type.ATOMIC || Type.subTypeOf(item.getType(), Type.STRING)) {
-                    return new QNameValue(context, item.getStringValue());
-                } else {
-                    throw new XPathException(getASTNode(), "Cannot cast " + Type.getTypeName(item.getType()) + 
-                            " to xs:QName");
-                }
-            } else
-        		return (AtomicValue)seq.itemAt(0).convertTo(requiredType);
-		} catch(XPathException e) {
-			e.setASTNode(getASTNode());
-			throw e;
-		}
+                result = Sequence.EMPTY_SEQUENCE;
+		} else {        
+            Item item = seq.itemAt(0);
+            try {
+                // casting to QName needs special treatment
+                if(requiredType == Type.QNAME) {
+                    if(item.getType() == Type.ATOMIC || Type.subTypeOf(item.getType(), Type.STRING)) {
+                        result = new QNameValue(context, item.getStringValue());
+                    } else {
+                        throw new XPathException(getASTNode(), "Cannot cast " + Type.getTypeName(item.getType()) + 
+                                " to xs:QName");
+                    }
+                } else
+                    result = (AtomicValue)item.convertTo(requiredType);
+    		} catch(XPathException e) {
+    			e.setASTNode(getASTNode());
+    			throw e;
+    		}            
+        }
+
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result);   
+     
+        return result;         
 	}
 
 	/* (non-Javadoc)

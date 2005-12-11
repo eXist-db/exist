@@ -121,6 +121,10 @@ public class NodeComparison extends BinaryOp {
 			default:
 				throw new XPathException("Illegal argument: unknown relation");
 		}
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
 		return result;
 	}
 

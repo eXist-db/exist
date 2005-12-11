@@ -61,6 +61,10 @@ public class CDATAConstructor extends NodeConstructor {
         MemTreeBuilder builder = context.getDocumentBuilder();
         int nodeNr = builder.cdataSection(cdata);
         NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+        
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", node);   
+        
         return node;
     }
 
