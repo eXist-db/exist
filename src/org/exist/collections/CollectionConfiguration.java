@@ -37,8 +37,9 @@ import org.w3c.dom.NodeList;
 
 public class CollectionConfiguration {
 
-	public final static String COLLECTION_CONFIG_FILE = "collection.xconf";	
-	
+    public final static String COLLECTION_CONFIG_SUFFIX = ".xconf"; 
+    public final static String DEFAULT_COLLECTION_CONFIG_FILE = "collection" + COLLECTION_CONFIG_SUFFIX; 
+    	
     public final static String NAMESPACE = "http://exist-db.org/collection-config/1.0";
     
 	private final static String ROOT_ELEMENT = "collection";

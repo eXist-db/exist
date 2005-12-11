@@ -1369,7 +1369,7 @@ public class NativeBroker extends DBBroker {
 	 * the document if node is null.
 	 */
 	private void reindex(Txn transaction, DocumentImpl doc, boolean repairMode) {
-		if(CollectionConfiguration.COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
+		if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
 		    doc.getCollection().setConfigEnabled(false);
 		Iterator iterator;
 		NodeList nodes = doc.getChildNodes();
@@ -1381,7 +1381,7 @@ public class NativeBroker extends DBBroker {
 		    scanNodes(transaction, iterator, n, new NodePath(), true, repairMode);
 		}
 		flush();
-		if(CollectionConfiguration.COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
+		if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
 		    doc.getCollection().setConfigEnabled(true);
 	}
 	

@@ -686,7 +686,7 @@ implements Comparable, EntityResolver, Cacheable {
     	        throw new PermissionDeniedException("Permission to remove document denied");
             
             DocumentTrigger trigger = null;
-            if (!CollectionConfiguration.COLLECTION_CONFIG_FILE.equals(docname)) {
+            if (!CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(docname)) {
                 if (triggersEnabled) {
                     CollectionConfiguration config = getConfiguration(broker);
                     if (config != null)
@@ -1039,7 +1039,7 @@ implements Comparable, EntityResolver, Cacheable {
 	private DocumentTrigger setupTriggers(DBBroker broker, String docName, boolean update) {
 		
         //TODO : is this the right place for such a task ? -pb
-		if (CollectionConfiguration.COLLECTION_CONFIG_FILE.equals(docName)) {
+		if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(docName)) {
 		    // we are updating collection.xconf. Notify configuration manager
 			CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
 			confMgr.invalidateAll(getName());

@@ -80,7 +80,7 @@ public class CollectionConfigurationManager {
 			if(confCol == null)
 				throw new CollectionConfigurationException("Failed to create config collection: " + path);
 			broker.saveCollection(transaction, confCol);
-			IndexInfo info = confCol.validate(transaction, broker, CollectionConfiguration.COLLECTION_CONFIG_FILE, config);
+			IndexInfo info = confCol.validate(transaction, broker, CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE, config);
 			confCol.store(transaction, broker, info, config, false);
 			broker.sync(Sync.MAJOR_SYNC);
 		} catch (PermissionDeniedException e) {
@@ -126,7 +126,7 @@ public class CollectionConfigurationManager {
     			if (coll != null && coll.getDocumentCount() > 0) {
     			    for(Iterator i = coll.iterator(broker); i.hasNext(); ) {
     			        DocumentImpl confDoc = (DocumentImpl) i.next();
-    			        if(CollectionConfiguration.COLLECTION_CONFIG_FILE.equals(confDoc.getFileName())) {
+    			        if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(confDoc.getFileName())) {
                             LOG.debug("Reading collection configuration for '" + collection.getName() + "' from '" + confDoc.getName() + "'");
     			            conf.read(broker, confDoc);
                             configFound = true;
