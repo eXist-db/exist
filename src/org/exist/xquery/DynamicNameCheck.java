@@ -74,6 +74,10 @@ public class DynamicNameCheck extends AbstractExpression {
 						"required node name is " + test.getName() + "; got: " +
 						node.getNodeName());
 		}
+        
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", seq);  
+        
 		return seq;
 	}
 

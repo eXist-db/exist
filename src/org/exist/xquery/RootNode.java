@@ -70,11 +70,12 @@ public class RootNode extends Step {
         
         // check if the loaded documents should remain locked
         boolean lockOnLoad = context.lockDocumentsOnLoad();
+        
+        NodeSet result = new ArraySet(ds.getLength());
         try {
             // wait for pending updates
             ds.lock(false);
             
-	        NodeSet result = new ArraySet(ds.getLength());
 	        DocumentImpl doc;
 	        for (Iterator i = ds.iterator(); i.hasNext();) {
 	            doc = (DocumentImpl) i.next();
@@ -86,9 +87,8 @@ public class RootNode extends Step {
 	            }
 	        }
 	        cached = result;
-	        cachedDocs = ds;
-            
-	        return result;
+	        cachedDocs = ds;            
+	        
         } catch (LockException e) {
             throw new XPathException(getASTNode(), "Failed to acquire lock on the context document set");
         } finally {
@@ -96,6 +96,11 @@ public class RootNode extends Step {
                 // release all locks
                 ds.unlock(false);
         }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
+        return result;        
     }
 
     /* (non-Javadoc)

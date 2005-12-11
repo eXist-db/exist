@@ -103,16 +103,20 @@ public class LetExpr extends BindingExpression {
         context.declareVariableBinding(var);        
         var.setValue(in);
         var.checkType();
-
-        Sequence filtered = null;
+        
         if (whereExpr != null) {
-            filtered = applyWhereExpression(null);
+            Sequence filtered = applyWhereExpression(null);
             // TODO: don't use returnsType here
-            if (filtered.getItemType() == Type.BOOLEAN) {
-                if (!filtered.effectiveBooleanValue())
-                    return Sequence.EMPTY_SEQUENCE;
-            } else if (filtered.getLength() == 0)
+            if (filtered.getLength() == 0) {
+                if (context.getProfiler().isEnabled())
+                    context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);  
+                return Sequence.EMPTY_SEQUENCE; 
+            } else if (filtered.getItemType() == Type.BOOLEAN &&
+                       !filtered.effectiveBooleanValue()) {
+                if (context.getProfiler().isEnabled())
+                    context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);                 
                 return Sequence.EMPTY_SEQUENCE;
+            }  
         }        
         
         // Check if we can speed up the processing of the "order by" clause.
@@ -127,7 +131,7 @@ public class LetExpr extends BindingExpression {
         // Otherwise, if there's an order by clause, wrap the result into
         // an OrderedValueSequence. OrderedValueSequence will compute
         // order expressions for every item when it is added to the result sequence.
-        if(resultSequence == null) {
+        if(resultSequence == null) {            
             if(orderSpecs != null && !fastOrderBy)
                 resultSequence = new OrderedValueSequence(orderSpecs, in.getLength());
             else

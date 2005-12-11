@@ -69,23 +69,32 @@ public class InstanceOfExpression extends AbstractExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
+        Sequence result = BooleanValue.TRUE;
 		Sequence seq = expression.eval(contextSequence, contextItem);
         
 		int items = seq.getLength();
 		int requiredCardinality = type.getCardinality();
-		if(items > 0 && requiredCardinality == Cardinality.EMPTY)
-			return BooleanValue.FALSE;
-		if(items == 0 && (requiredCardinality & Cardinality.ZERO) == 0)
-			return BooleanValue.FALSE;
-		else if(items > 1 && (requiredCardinality & Cardinality.MANY) == 0)
-			return BooleanValue.FALSE;
-		
-		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-			Item next = i.nextItem();
-			if(!type.checkType(next))
-				return BooleanValue.FALSE;
-		}
-		return BooleanValue.TRUE;
+		if (items > 0 && requiredCardinality == Cardinality.EMPTY)
+            result = BooleanValue.FALSE;
+        else if (items == 0 && (requiredCardinality & Cardinality.ZERO) == 0)
+            result = BooleanValue.FALSE;
+		else if (items > 1 && (requiredCardinality & Cardinality.MANY) == 0)
+            result = BooleanValue.FALSE;
+        else {
+    		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+    			Item next = i.nextItem();
+    			if(!type.checkType(next)) {
+                    result = BooleanValue.FALSE;   
+                    break;
+                }
+    				
+    		}
+        }		
+        
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result);    
+        
+        return result;
 	}
 
 	/* (non-Javadoc)

@@ -152,82 +152,83 @@ public class LocationStep extends Step {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }            
         
-        Sequence temp = NodeSet.EMPTY_SET;    
+        Sequence result;    
         
         if (contextItem != null)
 			contextSequence = contextItem.toSequence();
         
-		if(contextSequence == null) {
-            if (context.getProfiler().isEnabled()) 
-                context.getProfiler().end(this, "", temp);        
-			return temp; 
-        }
-        
+		if(contextSequence == null)                
+			result = NodeSet.EMPTY_SET;        
         //Try to return cached results
-		if(cached != null && cached.isValid(contextSequence)) {            
+        else if(cached != null && cached.isValid(contextSequence)) { 
+            
+            //WARNING : commented since predicates are *also* applied below ! -pb
+            /*
 			if (predicates.size() > 0) {
-                applyPredicate(contextSequence, cached.getResult());  
-                //TODO : return now ? -pb
+                applyPredicate(contextSequence, cached.getResult());
             } else {
-                if (context.getProfiler().isEnabled()) 
-                    context.getProfiler().end(this, "Using cached result", cached.getResult());
-                return cached.getResult();
-            }           
-		}        
-		    
-		if (needsComputation()) { 
+            */
+                result = cached.getResult();
+                if (context.getProfiler().isEnabled())                     
+                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                            "Using cached results", result);                
+                
+            //}           
+		}   
+        else if (needsComputation()) { 
     		switch (axis) {
     			case Constants.DESCENDANT_AXIS :
     			case Constants.DESCENDANT_SELF_AXIS :
-    				temp = getDescendants(context, contextSequence.toNodeSet());
+                    result = getDescendants(context, contextSequence.toNodeSet());
     				break;
     			case Constants.CHILD_AXIS :
-    				temp = getChildren(context, contextSequence.toNodeSet());
+                    result = getChildren(context, contextSequence.toNodeSet());
     				break;			
                 case Constants.ANCESTOR_SELF_AXIS : 
     			case Constants.ANCESTOR_AXIS  :
-    				temp = getAncestors(context, contextSequence.toNodeSet());
+                    result = getAncestors(context, contextSequence.toNodeSet());
     				break;
                 case Constants.PARENT_AXIS :
-                    temp = getParents(context, contextSequence.toNodeSet());
+                    result = getParents(context, contextSequence.toNodeSet());
                     break;                    
     			case Constants.SELF_AXIS :
-    				temp = getSelf(context, contextSequence.toNodeSet());
+                    result = getSelf(context, contextSequence.toNodeSet());
     				break;
     			case Constants.ATTRIBUTE_AXIS :    				
     			case Constants.DESCENDANT_ATTRIBUTE_AXIS :
-    				temp = getAttributes(context, contextSequence.toNodeSet());
+                    result = getAttributes(context, contextSequence.toNodeSet());
     				break;
                 case Constants.PRECEDING_AXIS:
-                    temp = getPreceding(context, contextSequence.toNodeSet());
+                    result = getPreceding(context, contextSequence.toNodeSet());
                     break;                    
                 case Constants.FOLLOWING_AXIS:
-                    temp = getFollowing(context, contextSequence.toNodeSet());
+                    result = getFollowing(context, contextSequence.toNodeSet());
                     break;                    
     			case Constants.PRECEDING_SIBLING_AXIS :
     			case Constants.FOLLOWING_SIBLING_AXIS :
-    				temp = getSiblings(context, contextSequence.toNodeSet());
+                    result = getSiblings(context, contextSequence.toNodeSet());
     				break;
     			default :
                     throw new IllegalArgumentException("Unsupported axis specified");
     		}               
-        }      	
+        } 
+        else result = NodeSet.EMPTY_SET;
         
         //Caches the result
         if(contextSequence instanceof NodeSet) {
-            //TODO : cache *after* removing duplicates ?
-            cached = new CachedResult((NodeSet)contextSequence, temp);
+            //TODO : cache *after* removing duplicates ? -pb
+            cached = new CachedResult((NodeSet)contextSequence, result);
             registerUpdateListener();
         }
         //Remove duplicate nodes
-        temp.removeDuplicates(); 
+        result.removeDuplicates(); 
         //Apply the predicate
-        temp =  applyPredicate(contextSequence, temp);                 
+        result = applyPredicate(contextSequence, result);                 
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", temp);
+            context.getProfiler().end(this, "", result);
         
-        return temp;
+        return result;
 	}
     
 	//Avoid unnecessary tests (these should be detected by the parser)

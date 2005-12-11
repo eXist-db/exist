@@ -49,25 +49,30 @@ public class Union extends CombiningExpression {
 		lval.removeDuplicates();
 		Sequence rval = right.eval(contextSequence, contextItem);
 		rval.removeDuplicates();
-		
-		if(lval.getLength() == 0)
-		    return rval;
-		if(rval.getLength() == 0)
-		    return lval;
-        
+       
 		if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
 			throw new XPathException(getASTNode(), "union operand is not a node sequence");
         
-        if (lval.isPersistentSet() && rval.isPersistentSet()) {
-            return lval.toNodeSet().union(rval.toNodeSet());
+        Sequence result;
+        if(lval.getLength() == 0)
+            result = rval;
+        else if(rval.getLength() == 0)
+            result = lval;
+        else if (lval.isPersistentSet() && rval.isPersistentSet()) {
+            result = lval.toNodeSet().union(rval.toNodeSet());
         } else {
-            ValueSequence result = new ValueSequence();
-            result.addAll(lval);
-            result.addAll(rval);
-            result.sortInDocumentOrder();
-            result.removeDuplicates();
-            return result;
+            ValueSequence values = new ValueSequence();
+            values.addAll(lval);
+            values.addAll(rval);
+            values.sortInDocumentOrder();
+            values.removeDuplicates();
+            result = values;
         }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
+        return result;           
 	}
 	
 	/* (non-Javadoc)

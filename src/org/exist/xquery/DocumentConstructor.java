@@ -119,8 +119,14 @@ public class DocumentConstructor extends NodeConstructor {
 				"Encountered SAX exception while processing document constructor: "
 					+ ExpressionDumper.dump(this));
         }
-        NodeImpl node =  builder.getDocument();
+        
         context.popDocumentContext();
+        
+        NodeImpl node =  builder.getDocument();
+        
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", node);
+        
         return node;
     }
     

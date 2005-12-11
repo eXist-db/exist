@@ -68,23 +68,30 @@ public class DynamicCommentConstructor extends NodeConstructor {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
+        Sequence result;
         Sequence contentSeq = content.eval(contextSequence, contextItem);
         if(contentSeq.getLength() == 0)
-            return Sequence.EMPTY_SEQUENCE;
-        
-        MemTreeBuilder builder = context.getDocumentBuilder();
-		context.proceed(this, builder);
-        
-		StringBuffer buf = new StringBuffer();
-        for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
-            context.proceed(this, builder);
-            Item next = i.nextItem();
-            if(buf.length() > 0)
-                buf.append(' ');
-            buf.append(next.toString());
+            result = Sequence.EMPTY_SEQUENCE;
+        else {            
+            MemTreeBuilder builder = context.getDocumentBuilder();
+    		context.proceed(this, builder);
+            
+    		StringBuffer buf = new StringBuffer();
+            for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+                context.proceed(this, builder);
+                Item next = i.nextItem();
+                if(buf.length() > 0)
+                    buf.append(' ');
+                buf.append(next.toString());
+            }
+            int nodeNr = builder.comment(buf.toString());
+            result = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
         }
-        int nodeNr = builder.comment(buf.toString());
-        return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+        
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result);  
+        
+        return result;
     }
     
     /* (non-Javadoc)

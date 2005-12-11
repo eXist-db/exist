@@ -203,10 +203,12 @@ public class JavaCall extends Function {
 				params[i - 1] = args[i].toJavaObject(paramTypes[i - 1]);
 			}
 		}
+        
+        Sequence result;
 		if (bestMethod instanceof Constructor) {
 			try {
 				Object object = ((Constructor) bestMethod).newInstance(params);
-				return new JavaObjectValue(object);
+                result = new JavaObjectValue(object);
 			} catch (IllegalArgumentException e) {
 				throw new XPathException(getASTNode(),
 					"illegal argument to constructor "
@@ -227,16 +229,16 @@ public class JavaCall extends Function {
 			}
 		} else {
 			try {
-				Object result = null;
+				Object invocationResult;
 				if (isStatic)
-					result = ((Method) bestMethod).invoke(null, params);
+                    invocationResult = ((Method) bestMethod).invoke(null, params);
 				else {
-					result =
+                    invocationResult =
 						((Method) bestMethod).invoke(
 							args[0].toJavaObject(myClass),
 							params);
 				}
-				return XPathUtil.javaObjectToXPath(result, getContext());
+                result = XPathUtil.javaObjectToXPath(invocationResult, getContext());
 			} catch (IllegalArgumentException e) {
 				throw new XPathException(getASTNode(),
 					"illegal argument to method "
@@ -256,6 +258,12 @@ public class JavaCall extends Function {
 						e);
 			}
 		}
+
+         if (context.getProfiler().isEnabled())           
+                context.getProfiler().end(this, "", result); 
+        
+        return result;
+        
 	}
 
 	/* (non-Javadoc)

@@ -101,45 +101,56 @@ public class OpNumeric extends BinaryOp {
         
 		if (contextItem != null) contextSequence = contextItem.toSequence();
         
-		Sequence lseq = getLeft().eval(contextSequence);
-		if (lseq.getLength() == 0) return Sequence.EMPTY_SEQUENCE;
+		Sequence lseq = getLeft().eval(contextSequence);		
 		Sequence rseq = getRight().eval(contextSequence);
-		if (rseq.getLength() == 0) return Sequence.EMPTY_SEQUENCE;
-
 		Item lvalue = lseq.itemAt(0);
         Item rvalue = rseq.itemAt(0);
 		
-		try {
-			// runtime type checks:
-			if (!(lvalue instanceof ComputableValue)) lvalue = lvalue.convertTo(Type.DOUBLE);
-			if (!(rvalue instanceof ComputableValue)) rvalue = rvalue.convertTo(Type.DOUBLE);
-
-			int ltype = lvalue.getType();
-            int rtype = rvalue.getType();
-            
-			if (Type.subTypeOf(ltype, Type.NUMBER) && Type.subTypeOf(rtype, Type.NUMBER)) {
-				if (ltype > rtype) {
-					rvalue = rvalue.convertTo(ltype);
-				} else if (rtype > ltype) {
-					lvalue = lvalue.convertTo(rtype);
-				}				
-			} else if (Type.subTypeOf(ltype, Type.NUMBER)) {
-				rvalue = rvalue.convertTo(ltype);				
-			} else if (Type.subTypeOf(rtype, Type.NUMBER)) {
-				lvalue = lvalue.convertTo(rtype);				
-			}
-
-			if (operator == Constants.IDIV) {
-				if (!(lvalue instanceof NumericValue && rvalue instanceof NumericValue))
-					throw new XPathException("idiv not supported for types " + Type.getTypeName(lvalue.getType()) + " and " + Type.getTypeName(rvalue.getType()));
-				return ((NumericValue) lvalue).idiv((NumericValue) rvalue);
-			} else {
-				return applyOperator((ComputableValue) lvalue, (ComputableValue) rvalue);
-			}
-		} catch (XPathException e) {
-			e.setASTNode(getASTNode());
-			throw e;
-		}
+        Sequence result;
+        
+        if (lseq.getLength() == 0) 
+            result = Sequence.EMPTY_SEQUENCE;
+        else if (rseq.getLength() == 0) 
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+    		try {
+    			// runtime type checks:
+    			if (!(lvalue instanceof ComputableValue)) lvalue = lvalue.convertTo(Type.DOUBLE);
+    			if (!(rvalue instanceof ComputableValue)) rvalue = rvalue.convertTo(Type.DOUBLE);
+    
+    			int ltype = lvalue.getType();
+                int rtype = rvalue.getType();
+                
+    			if (Type.subTypeOf(ltype, Type.NUMBER) && Type.subTypeOf(rtype, Type.NUMBER)) {
+    				if (ltype > rtype) {
+    					rvalue = rvalue.convertTo(ltype);
+    				} else if (rtype > ltype) {
+    					lvalue = lvalue.convertTo(rtype);
+    				}				
+    			} else if (Type.subTypeOf(ltype, Type.NUMBER)) {
+    				rvalue = rvalue.convertTo(ltype);				
+    			} else if (Type.subTypeOf(rtype, Type.NUMBER)) {
+    				lvalue = lvalue.convertTo(rtype);				
+    			}
+    
+    			if (operator == Constants.IDIV) {
+    				if (!(lvalue instanceof NumericValue && rvalue instanceof NumericValue))
+    					throw new XPathException("idiv not supported for types " + Type.getTypeName(lvalue.getType()) + " and " + Type.getTypeName(rvalue.getType()));
+                    result = ((NumericValue) lvalue).idiv((NumericValue) rvalue);
+    			} else {
+                    result = applyOperator((ComputableValue) lvalue, (ComputableValue) rvalue);
+    			}
+    		} catch (XPathException e) {
+    			e.setASTNode(getASTNode());
+    			throw e;
+    		}
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
+        return result;
+        
 	}
 
 	public ComputableValue applyOperator(ComputableValue left, ComputableValue right)

@@ -102,7 +102,12 @@ public class QuantifiedExpression extends BindingExpression {
         
 		context.popLocalVariables(mark);
         
-		return found ? BooleanValue.TRUE : BooleanValue.FALSE;
+		Sequence result = found ? BooleanValue.TRUE : BooleanValue.FALSE;
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
+        return result;        
 	}
 
 	/* (non-Javadoc)

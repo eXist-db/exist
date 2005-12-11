@@ -64,7 +64,12 @@ public class VariableReference extends AbstractExpression {
         
 		Variable var = getVariable();
 		Sequence seq = var.getValue();
-		return seq == null ? Sequence.EMPTY_SEQUENCE : seq;
+        Sequence result = (seq == null) ? Sequence.EMPTY_SEQUENCE : seq;
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
+        return result;         
 	}
 
 	protected Variable getVariable() throws XPathException {

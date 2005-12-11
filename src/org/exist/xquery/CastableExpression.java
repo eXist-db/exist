@@ -93,19 +93,29 @@ public class CastableExpression extends AbstractExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
+        Sequence result;
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if(seq.getLength() == 0) {
 			if ((cardinality & Cardinality.ZERO) == 0)
-				return BooleanValue.FALSE;
+                result = BooleanValue.FALSE;
 			else
-				return BooleanValue.TRUE;
+                result = BooleanValue.TRUE;
 		}
-		try {
-			seq.itemAt(0).convertTo(requiredType);
-			return BooleanValue.TRUE;
-		} catch(XPathException e) {
-			return BooleanValue.FALSE;
-		}
+        else {
+    		try {
+    			seq.itemAt(0).convertTo(requiredType);
+                result = BooleanValue.TRUE;
+            //TODO : why catch this xception ?
+    		} catch(XPathException e) {       
+                System.err.println("Caught exception in CatableExpression");
+                result = BooleanValue.FALSE;
+    		}
+        }
+        
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result);   
+     
+        return result;        
 	}
 	
 	/* (non-Javadoc)

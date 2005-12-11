@@ -58,7 +58,13 @@ public abstract class BasicFunction extends Function {
 		for (int i = 0; i < argCount; i++) {
 			args[i] = getArgument(i).eval(contextSequence, contextItem);
 		}
-		return eval(args, contextSequence);
+		       
+        Sequence result = eval(args, contextSequence);
+        
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result);   
+     
+        return result;        
 	}
 
 	/**

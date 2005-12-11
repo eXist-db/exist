@@ -107,7 +107,13 @@ public class DynamicPIConstructor extends NodeConstructor {
 	        value = buf.toString();
         }
         int nodeNr = builder.processingInstruction(qn.getLocalName(), value);
-        return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+
+        Sequence result = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+                
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result);  
+        
+        return result;
     }
 
     /* (non-Javadoc)

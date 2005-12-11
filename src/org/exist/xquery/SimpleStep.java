@@ -70,22 +70,30 @@ public class SimpleStep extends Step {
         
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
+        
+        Sequence result;
 		NodeSet set = expression.eval(contextSequence).toNodeSet();
 
 		if(set.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
+			result = Sequence.EMPTY_SEQUENCE;
+        else {        
+    		switch(axis) {
+    			case Constants.DESCENDANT_SELF_AXIS:
+    				set = set.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, inPredicate);
+    				break;
+    			case Constants.CHILD_AXIS:
+    				set = set.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, inPredicate);
+    				break;
+    			default:
+    				throw new XPathException("Wrong axis specified");
+    		}
+            result = set;
+        }
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
         
-		switch(axis) {
-			case Constants.DESCENDANT_SELF_AXIS:
-				set = set.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, inPredicate);
-				break;
-			case Constants.CHILD_AXIS:
-				set = set.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, inPredicate);
-				break;
-			default:
-				throw new XPathException("Wrong axis specified");
-		}
-		return set;
+        return result;
 	}
 	
 	/* (non-Javadoc)

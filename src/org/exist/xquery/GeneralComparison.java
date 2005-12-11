@@ -208,6 +208,10 @@ public class GeneralComparison extends BinaryOp {
             "genericCompare");   
             result = genericCompare(contextSequence, contextItem);
         }
+        
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result);
+        
         return result;
 	}
 

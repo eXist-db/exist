@@ -80,76 +80,82 @@ public class Rename extends Modification {
         
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		Sequence inSeq = select.eval(contextSequence);
-		if (inSeq.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
-			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
 		
 		Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.getLength() == 0)
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         
-        QName newQName;
-        Item item = contentSeq.itemAt(0);
-        if (item.getType() == Type.QNAME) {
-            newQName = ((QNameValue) item).getQName();
-        } else {
-            newQName = QName.parse(context, item.getStringValue());
-        }
-
-		try {
-            TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-            NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
-            DocumentImpl doc = null;
-            DocumentSet modifiedDocs = new DocumentSet();
-            NodeImpl node;
-            NodeImpl parent;
-            IndexListener listener = new IndexListener(ql);
-            NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-            for (int i = 0; i < ql.length; i++) {
-                node = ql[i];
-                doc = (DocumentImpl) node.getOwnerDocument();
-                if (!doc.getPermissions().validate(context.getUser(),
-                        Permission.UPDATE))
-                        throw new XPathException(getASTNode(),
-                                "permission denied to update document");
-                doc.setIndexListener(listener);
-                modifiedDocs.add(doc);
-                parent = (NodeImpl) node.getParentNode();
-                switch (node.getNodeType()) {
-                    case Node.ELEMENT_NODE:
-                        ElementImpl newElem = new ElementImpl((ElementImpl) node);
-                        newElem.setNodeName(newQName);
-                        parent.updateChild(transaction, node, newElem);
-                        break;
-                    case Node.ATTRIBUTE_NODE:
-                        AttrImpl newAttr = new AttrImpl((AttrImpl) node);
-                        newAttr.setNodeName(newQName);
-                        parent.updateChild(transaction, node, newAttr);
-                        break;
-                    default:
-                        throw new XPathException(getASTNode(), "unsupported node-type");
-                }
-
-                doc.clearIndexListener();
-                doc.setLastModified(System.currentTimeMillis());
-                context.getBroker().storeDocument(transaction, doc);
-                notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+        Sequence inSeq = select.eval(contextSequence);
+        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
+            throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        
+        if (inSeq.getLength() > 0) {
+                
+            QName newQName;
+            Item item = contentSeq.itemAt(0);
+            if (item.getType() == Type.QNAME) {
+                newQName = ((QNameValue) item).getQName();
+            } else {
+                newQName = QName.parse(context, item.getStringValue());
             }
-            checkFragmentation(transaction, modifiedDocs);
-            transact.commit(transaction);
-        } catch (PermissionDeniedException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
-		} catch (EXistException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
-		} catch (LockException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
-		} finally {
-            unlockDocuments();
+    
+    		try {
+                TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+                Txn transaction = transact.beginTransaction();
+                NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
+                DocumentImpl doc = null;
+                DocumentSet modifiedDocs = new DocumentSet();
+                NodeImpl node;
+                NodeImpl parent;
+                IndexListener listener = new IndexListener(ql);
+                NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+                for (int i = 0; i < ql.length; i++) {
+                    node = ql[i];
+                    doc = (DocumentImpl) node.getOwnerDocument();
+                    if (!doc.getPermissions().validate(context.getUser(),
+                            Permission.UPDATE))
+                            throw new XPathException(getASTNode(),
+                                    "permission denied to update document");
+                    doc.setIndexListener(listener);
+                    modifiedDocs.add(doc);
+                    parent = (NodeImpl) node.getParentNode();
+                    switch (node.getNodeType()) {
+                        case Node.ELEMENT_NODE:
+                            ElementImpl newElem = new ElementImpl((ElementImpl) node);
+                            newElem.setNodeName(newQName);
+                            parent.updateChild(transaction, node, newElem);
+                            break;
+                        case Node.ATTRIBUTE_NODE:
+                            AttrImpl newAttr = new AttrImpl((AttrImpl) node);
+                            newAttr.setNodeName(newQName);
+                            parent.updateChild(transaction, node, newAttr);
+                            break;
+                        default:
+                            throw new XPathException(getASTNode(), "unsupported node-type");
+                    }
+    
+                    doc.clearIndexListener();
+                    doc.setLastModified(System.currentTimeMillis());
+                    context.getBroker().storeDocument(transaction, doc);
+                    notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+                }
+                checkFragmentation(transaction, modifiedDocs);
+                transact.commit(transaction);
+            } catch (PermissionDeniedException e) {
+                throw new XPathException(getASTNode(), e.getMessage(), e);
+    		} catch (EXistException e) {
+                throw new XPathException(getASTNode(), e.getMessage(), e);
+    		} catch (LockException e) {
+                throw new XPathException(getASTNode(), e.getMessage(), e);
+    		} finally {
+                unlockDocuments();
+            }
         }
-		return Sequence.EMPTY_SEQUENCE;
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        
+        return Sequence.EMPTY_SEQUENCE;
 	}
 
 	/* (non-Javadoc)

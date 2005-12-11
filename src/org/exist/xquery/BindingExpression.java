@@ -105,24 +105,17 @@ public abstract class BindingExpression extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		return eval(contextSequence, contextItem, null);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public abstract Sequence eval(
-		Sequence contextSequence,
-		Item contextItem,
-		Sequence resultSequence)
+	public abstract Sequence eval(Sequence contextSequence,	Item contextItem, Sequence resultSequence)
 		throws XPathException;
 
-	protected Sequence applyWhereExpression(
-		Sequence contextSequence)
-		throws XPathException {
-//		long start = System.currentTimeMillis();
+	protected Sequence applyWhereExpression(Sequence contextSequence) throws XPathException {
 		if (contextSequence != null &&
 			Type.subTypeOf(whereExpr.returnsType(), Type.NODE) &&
 			Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
@@ -157,7 +150,6 @@ public abstract class BindingExpression extends AbstractExpression {
 					contextNode = contextNode.getNextItem();
 				}
 			}
-//			LOG.debug("where expression took " + (System.currentTimeMillis() - start));
 			return result;
 		} else if (contextSequence == null) {
 			Sequence innerSeq = whereExpr.eval(null);
@@ -167,9 +159,7 @@ public abstract class BindingExpression extends AbstractExpression {
 			ValueSequence result = new ValueSequence();
 			int p = 0;
 			context.setContextPosition(0);
-			for (SequenceIterator i = contextSequence.iterate();
-				i.hasNext();
-				p++) {
+			for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
 				Item item = i.nextItem();
 				context.setContextPosition(p);
 				Sequence innerSeq = whereExpr.eval(contextSequence, item);
@@ -188,11 +178,11 @@ public abstract class BindingExpression extends AbstractExpression {
 	 * @return
 	 */
 	protected boolean checkOrderSpecs(Sequence in) {
-		if(orderSpecs == null)
+		if (orderSpecs == null)
 			return false;
-		if(!Type.subTypeOf(in.getItemType(), Type.NODE))
+		if (!Type.subTypeOf(in.getItemType(), Type.NODE))
 			return false;
-		for(int i = 0; i < orderSpecs.length; i++) {
+		for (int i = 0; i < orderSpecs.length; i++) {
 			Expression expr = orderSpecs[i].getSortExpression();
 			if(!Type.subTypeOf(expr.returnsType(), Type.NODE) ||
 					(expr.getDependencies() & Dependency.CONTEXT_ITEM ) != 0)

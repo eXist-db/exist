@@ -57,22 +57,23 @@ public class Intersection extends CombiningExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		Sequence lval = left.eval(contextSequence, contextItem);
-        if(lval.getLength() == 0 )
-            return Sequence.EMPTY_SEQUENCE;		
-		Sequence rval = right.eval(contextSequence, contextItem);		
-        if(rval.getLength() == 0)
-            return Sequence.EMPTY_SEQUENCE;
+        Sequence result;
+		Sequence lval = left.eval(contextSequence, contextItem);        	
+		Sequence rval = right.eval(contextSequence, contextItem);
         lval.removeDuplicates();
-        rval.removeDuplicates();
+        rval.removeDuplicates();        
         
 		if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
 			throw new XPathException(getASTNode(), "intersect operand is not a node sequence");
-        
+
+        if(lval.getLength() == 0 )
+            result = Sequence.EMPTY_SEQUENCE;         
+        if(rval.getLength() == 0)
+            result = Sequence.EMPTY_SEQUENCE;        
         if (lval.isPersistentSet() && rval.isPersistentSet())
-            return lval.toNodeSet().intersection(rval.toNodeSet());
+            result = lval.toNodeSet().intersection(rval.toNodeSet());
         else {
-            ValueSequence result = new ValueSequence();
+            result = new ValueSequence();
             Set set = new TreeSet();
             for (SequenceIterator i = lval.unorderedIterator(); i.hasNext(); )
                 set.add(i.nextItem());
@@ -81,9 +82,13 @@ public class Intersection extends CombiningExpression {
                 if (set.contains(next))
                     result.add(next);
             }
-            result.removeDuplicates();
-            return result;
+            result.removeDuplicates();            
         }
+        
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result);  
+        
+        return result;
 	}
 	
 	/* (non-Javadoc)

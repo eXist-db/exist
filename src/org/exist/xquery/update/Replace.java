@@ -157,7 +157,11 @@ public class Replace extends Modification {
         } finally {
             unlockDocuments();
         }
-		return Sequence.EMPTY_SEQUENCE;
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        
+        return Sequence.EMPTY_SEQUENCE;
 	}
 
 	/* (non-Javadoc)
