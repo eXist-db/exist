@@ -18,7 +18,7 @@ import org.xmldb.api.modules.XPathQueryService;
 
 public class CollectionConfigurationTest extends TestCase {
 
-    private final static String URI = "xmldb:exist://"            ;
+    private final static String URI = "xmldb:exist://";
 
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
@@ -67,24 +67,24 @@ public class CollectionConfigurationTest extends TestCase {
 
     protected void tearDown() {
         try {
-
+           
             Collection root = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
             CollectionManagementService service = (CollectionManagementService) root
-                    .getService("CollectionManagementService", "1.0");               
+                    .getService("CollectionManagementService", "1.0");
+            service.removeCollection(TEST_COLLECTION);
+            testCollection = null;
             
-            //Removes the collection config file *manually*
+            //Removes the collection config collection *manually*            
             if (configurationFileName == null)
                 configurationFileName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
             String configPath = CollectionConfigurationManager.CONFIG_COLLECTION
-                    + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;
+                    + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;                    
             System.out.println("Manually removing '" + configPath + "/" + configurationFileName + "'");
             Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);            
             configColl.removeResource(configColl.getResource(configurationFileName));
-        
-            service.removeCollection(TEST_COLLECTION);
-            testCollection = null;
-            DatabaseInstanceManager mgr = (DatabaseInstanceManager) root
-                    .getService("DatabaseInstanceManager", "1.0");
+            //TODO remove the config collection as well ?
+            
+            DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
             mgr.shutdown();
         } catch (Exception e) {
             fail(e.getMessage());
@@ -95,7 +95,7 @@ public class CollectionConfigurationTest extends TestCase {
      public void testCollectionConfigurationService1() { 
          ResourceSet result; 
          try {
-             //Configure collection 
+             //Configure collection automatically
              IndexQueryService idxConf = (IndexQueryService)
              testCollection.getService("IndexQueryService", "1.0");
              idxConf.configureCollection(CONFIG1);
@@ -129,7 +129,7 @@ public class CollectionConfigurationTest extends TestCase {
             doc.setContent(DOCUMENT_CONTENT);
             testCollection.storeResource(doc);
 
-            // ... then configure collection
+            // ... then configure collection automatically
             IndexQueryService idxConf = (IndexQueryService) testCollection
                     .getService("IndexQueryService", "1.0");
             idxConf.configureCollection(CONFIG1);
@@ -172,7 +172,7 @@ public class CollectionConfigurationTest extends TestCase {
             Resource res = configColl.createResource(configurationFileName, "XMLResource");
             assertNotNull(res);
             res.setContent(CONFIG1);            
-            configColl.storeResource(res); 
+            configColl.storeResource(res);             
 
             //... then index document 
             XMLResource doc = (XMLResource)
@@ -203,8 +203,7 @@ public class CollectionConfigurationTest extends TestCase {
            doc.setContent(DOCUMENT_CONTENT);
            testCollection.storeResource(doc);
 
-           // ... then configure collection
-           //Configure collection *manually* 
+           // ... then configure collection *manually*           
            String configPath = CollectionConfigurationManager.CONFIG_COLLECTION
                    + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;
            configurationFileName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
@@ -219,10 +218,10 @@ public class CollectionConfigurationTest extends TestCase {
            XPathQueryService service = (XPathQueryService) testCollection
                    .getService("XPathQueryService", "1.0");
 
-           // No numeric values because we have not index
+           // No numeric values because we have no index
            result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
            assertEquals(0, result.getSize());
-           // No string value because we have not index
+           // No string value because we have no index
            result = service.query("util:qname-index-lookup( xs:QName(\"b\"), \"1\" ) ");
            assertEquals(0, result.getSize());
 
@@ -241,10 +240,123 @@ public class CollectionConfigurationTest extends TestCase {
        } catch (Exception e) {
            fail(e.getMessage());
        }
-   }  
+   } 
    
-   // TODO : direct copying of a foo.xconf file in the /db/ystem/config hierarchy
-   // TODO : direct copying of many foo.xconf file in the /db/ystem/config hierarchy (exception)
+   public void testCollectionConfigurationService5() {
+       ResourceSet result;
+       try {
+           //Configure collection *manually*           
+           String configPath = CollectionConfigurationManager.CONFIG_COLLECTION
+                   + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;
+           configurationFileName = "foo" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX;
+           System.out.println("Manually adding '" + configPath + "/"
+                   + configurationFileName + "'");
+           Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);            
+           Resource res = configColl.createResource(configurationFileName, "XMLResource");
+           assertNotNull(res);
+           res.setContent(CONFIG1);            
+           configColl.storeResource(res);            
+           
+           // ... then configure collection automatically
+           IndexQueryService idxConf = (IndexQueryService) testCollection
+                   .getService("IndexQueryService", "1.0");
+           idxConf.configureCollection(CONFIG1);           
+           
+           // Add document....
+           XMLResource doc = (XMLResource) testCollection.createResource(
+                   DOCUMENT_NAME, "XMLResource");
+           doc.setContent(DOCUMENT_CONTENT);
+           testCollection.storeResource(doc);
+
+           XPathQueryService service = (XPathQueryService) testCollection
+                   .getService("XPathQueryService", "1.0");
+
+           //our config file
+           result = service.query("xmldb:get-child-resources('" +
+                   CollectionConfigurationManager.CONFIG_COLLECTION +
+                   DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION +
+                   "')");  
+           assertEquals(configurationFileName, result.getResource(0).getContent());           
+           
+           // 3 numeric values
+           result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
+           assertEquals(3, result.getSize());
+           // ... but 1 string value
+           result = service.query("util:qname-index-lookup( xs:QName(\"b\"), \"1\" ) ");
+           assertEquals(1, result.getSize());           
+
+       } catch (Exception e) {
+           fail(e.getMessage());
+       }
+   } 
+   
+   public void testCollectionConfigurationService6() {
+       ResourceSet result;
+       try {
+           // Add document....
+           XMLResource doc = (XMLResource) testCollection.createResource(
+                   DOCUMENT_NAME, "XMLResource");
+           doc.setContent(DOCUMENT_CONTENT);
+           testCollection.storeResource(doc);
+
+           //... then configure collection *manually* 
+           String configPath = CollectionConfigurationManager.CONFIG_COLLECTION
+                   + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;
+           configurationFileName = "foo" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX;
+           System.out.println("Manually adding '" + configPath + "/"
+                   + configurationFileName + "'");
+           Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);            
+           Resource res = configColl.createResource(configurationFileName, "XMLResource");
+           assertNotNull(res);
+           res.setContent(CONFIG1);            
+           configColl.storeResource(res); 
+           
+           //... then configure collection automatically 
+           IndexQueryService idxConf = (IndexQueryService)
+           testCollection.getService("IndexQueryService", "1.0");           
+           idxConf.configureCollection(CONFIG1); 
+           
+           XPathQueryService service = (XPathQueryService) testCollection
+           .getService("XPathQueryService", "1.0"); 
+           
+           //our config file
+           result = service.query("xmldb:get-child-resources('" +
+                   CollectionConfigurationManager.CONFIG_COLLECTION +
+                   DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION +
+                   "')");  
+           assertEquals(configurationFileName, result.getResource(0).getContent());
+
+           // No numeric values because we have no index
+           result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
+           assertEquals(0, result.getSize());
+           // No string value because we have no index
+           result = service.query("util:qname-index-lookup( xs:QName(\"b\"), \"1\" ) ");
+           assertEquals(0, result.getSize());
+
+           // ...let's activate the index          
+           idxConf.reindexCollection(); 
+           
+           //WARNING : the code hereafter used to *not* work whereas 
+           //testCollectionConfigurationService4 did. 
+           //Adding confMgr.invalidateAll(getName()); in Collection.storeInternal solved the problem
+           //Strane case that needs investigations... -pb
+           
+           // 3 numeric values
+           result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
+           assertEquals(3, result.getSize());
+           // ... but 1 string value
+           result = service.query("util:qname-index-lookup( xs:QName(\"b\"), \"1\" ) ");
+           assertEquals(1, result.getSize());           
+                 
+
+       } catch (Exception e) {
+           fail(e.getMessage());
+       }
+   } 
+   
+
+
+// TODO : 2 manual configurations (exception because foo.xonf/bar.xconf)
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(CollectionConfigurationTest.class);        

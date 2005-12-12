@@ -61,6 +61,8 @@ public class CollectionConfiguration {
 	private IndexSpec indexSpec = null;
 
 	private Collection collection;
+    
+    private String docName = null;
 	
 	private int defCollPermissions;
 	private int defResPermissions;
@@ -77,7 +79,7 @@ public class CollectionConfiguration {
      * @param doc
      * @throws CollectionConfigurationException
      */
-    protected void read(DBBroker broker, Document doc) throws CollectionConfigurationException {
+    protected void read(DBBroker broker, Document doc, String docName) throws CollectionConfigurationException {
         Element root = doc.getDocumentElement();
         if (root == null)
             throw new CollectionConfigurationException("Configuration document can not be parsed"); 
@@ -88,7 +90,9 @@ public class CollectionConfiguration {
             throw new CollectionConfigurationException("Expected namespace '" + NAMESPACE +                            
                     "' for element '" + PARAMETER_ELEMENT + 
                     "' in configuration document. Got '" + root.getNamespaceURI() + "'");     
-
+        
+        this.docName = docName;        
+        
         NodeList childNodes = root.getChildNodes();
 		Node node;
 		for(int i = 0; i < childNodes.getLength(); i++) {
@@ -142,6 +146,10 @@ public class CollectionConfiguration {
                         node.getNamespaceURI() + "' in configuration document");                
             }
 		}
+    }
+    
+    public String getDocName() {
+        return docName;
     }
 
     protected void setIndexConfiguration(IndexSpec spec) {
