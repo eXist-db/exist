@@ -81,7 +81,7 @@ class DocumentView extends JFrame {
 	public DocumentView(InteractiveClient client, String resourceName, Properties properties) throws XMLDBException
 	{
 	    //TODO : use dedicated function in XmldbURI
-		super("View Document: " + client.getCollection().getName() + "/" + resourceName);
+		super("View Document ");
 		this.resourceName = resourceName;
 		this.resource = client.retrieve(resourceName, properties.getProperty(OutputKeys.INDENT, "yes"));
 		this.client = client;
@@ -349,7 +349,7 @@ class DocumentView extends JFrame {
 		text.setText(content);
 		text.setCaretPosition(0);
 		text.scrollToCaret();
-		statusMessage.setText("Loaded " + resource.getId());
+		statusMessage.setText("Loaded " + client.getCollection().getName() + "/" + resourceName +" from "+properties.getProperty("uri"));
 	}
 	
 	class ProgressObserver implements Observer {
