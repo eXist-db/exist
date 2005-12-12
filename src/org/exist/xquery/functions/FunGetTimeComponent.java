@@ -25,8 +25,10 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Function;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateValue;
@@ -89,22 +91,36 @@ public class FunGetTimeComponent extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
-		Sequence arg = args[0];
+	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        }
+        
+        Sequence result;
+        Sequence arg = args[0];
 		if (arg.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		TimeValue time = (TimeValue) arg.itemAt(0);
-		if(isCalledAs("hours-from-time"))
-			return new IntegerValue(time.getPart(DateValue.HOUR), Type.INTEGER);
-		else if(isCalledAs("minutes-from-time"))
-			return new IntegerValue(time.getPart(DateValue.MINUTE), Type.INTEGER);
-		else if(isCalledAs("seconds-from-time")) {
-			long millis = time.getPart(DateValue.SECOND) * 1000 + time.getPart(DateValue.MILLISECOND);
-			return new DecimalValue(millis / 1000);
-		} else if(isCalledAs("timezone-from-time"))
-			return time.getTimezone();
-		else throw new Error("can't handle function " + mySignature.getName().getLocalName());
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+    		TimeValue time = (TimeValue) arg.itemAt(0);
+    		if (isCalledAs("hours-from-time"))
+                result = new IntegerValue(time.getPart(DateValue.HOUR), Type.INTEGER);
+    		else if (isCalledAs("minutes-from-time"))
+                result = new IntegerValue(time.getPart(DateValue.MINUTE), Type.INTEGER);
+    		else if (isCalledAs("seconds-from-time")) {
+    			long millis = time.getPart(DateValue.SECOND) * 1000 + time.getPart(DateValue.MILLISECOND);
+                result = new DecimalValue(millis / 1000);
+    		} else if (isCalledAs("timezone-from-time"))
+                result = time.getTimezone();
+    		else throw new Error("can't handle function " + mySignature.getName().getLocalName());
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;         
 
 	}
 

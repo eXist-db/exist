@@ -73,12 +73,19 @@ public class FunGetHoursFromDayTimeDuration extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
+        Sequence result;
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if (arg.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
+            result = Sequence.EMPTY_SEQUENCE;
+        else {            
+    		DurationValue duration = (DurationValue) arg.itemAt(0);
+            result = new IntegerValue(duration.getPart(DurationValue.HOUR));
+        }
         
-		DurationValue duration = (DurationValue) arg.itemAt(0);
-		return new IntegerValue(duration.getPart(DurationValue.HOUR));
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;         
 	}
 
 }

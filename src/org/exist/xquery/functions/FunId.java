@@ -13,9 +13,11 @@ import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -44,45 +46,61 @@ public class FunId extends Function {
 	/**
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.dom.NodeSet, org.exist.dom.NodeProxy)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-		if (getArgumentCount() < 1)
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
+        if (getArgumentCount() < 1)
 			throw new XPathException("function id requires one argument");
-		if(contextItem != null)
+		
+        if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		Expression arg = getArgument(0);
+		
+        Sequence result;
+        Expression arg = getArgument(0);        
 		Sequence idval = arg.eval(contextSequence);
 		if(idval.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		NodeSet result = new ExtArrayNodeSet();
-		String nextId;
-		DocumentSet docs;
-		if(contextSequence == null || !(contextSequence instanceof NodeSet))
-			docs = context.getStaticallyKnownDocuments();
-		else
-			docs = contextSequence.toNodeSet().getDocumentSet(); 
-		for(SequenceIterator i = idval.iterate(); i.hasNext(); ) {
-			nextId = i.nextItem().getStringValue();
-			if(nextId.indexOf(" ") != Constants.STRING_NOT_FOUND) {
-				// parse idrefs
-				StringTokenizer tok = new StringTokenizer(nextId, " ");
-				while(tok.hasMoreTokens()) {
-					nextId = tok.nextToken();
-					if(!XMLChar.isValidNCName(nextId))
-						throw new XPathException(nextId + " is not a valid NCName");
-					QName id = new QName(nextId, "", null);
-					getId(result, docs, id);
-				}
-			} else {
-				if(!XMLChar.isValidNCName(nextId))
-					throw new XPathException(nextId + " is not a valid NCName");
-				QName id = new QName(nextId, "", null);
-				getId(result, docs, id);
-			}
-		}
-		return result;
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+    		result = new ExtArrayNodeSet();
+    		String nextId;
+    		DocumentSet docs;
+    		if(contextSequence == null || !(contextSequence instanceof NodeSet))
+    			docs = context.getStaticallyKnownDocuments();
+    		else
+    			docs = contextSequence.toNodeSet().getDocumentSet(); 
+    		for(SequenceIterator i = idval.iterate(); i.hasNext(); ) {
+    			nextId = i.nextItem().getStringValue();
+    			if(nextId.indexOf(" ") != Constants.STRING_NOT_FOUND) {
+    				// parse idrefs
+    				StringTokenizer tok = new StringTokenizer(nextId, " ");
+    				while(tok.hasMoreTokens()) {
+    					nextId = tok.nextToken();
+    					if(!XMLChar.isValidNCName(nextId))
+    						throw new XPathException(nextId + " is not a valid NCName");
+    					QName id = new QName(nextId, "", null);
+    					getId((NodeSet)result, docs, id);
+    				}
+    			} else {
+    				if(!XMLChar.isValidNCName(nextId))
+    					throw new XPathException(nextId + " is not a valid NCName");
+    				QName id = new QName(nextId, "", null);
+    				getId((NodeSet)result, docs, id);
+    			}
+    		}
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;   
+        
 	}
 
 	private void getId(
