@@ -25,8 +25,10 @@ import org.exist.dom.QName;
 import org.exist.util.UTF8;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
@@ -63,11 +65,26 @@ public class FunEscapeURI extends BasicFunction {
     }
     
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        }
+        
+        Sequence result;
         if (args[0].getLength() == 0)
-            return StringValue.EMPTY_STRING;
-        String uri = args[0].getStringValue();
-        boolean escapeReserved = args[1].effectiveBooleanValue();
-        return new StringValue(escape(uri, escapeReserved));
+            result = StringValue.EMPTY_STRING;
+        else {
+            String uri = args[0].getStringValue();
+            boolean escapeReserved = args[1].effectiveBooleanValue();
+            return new StringValue(escape(uri, escapeReserved));
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;            
     }
     
     /**
@@ -79,6 +96,7 @@ public class FunEscapeURI extends BasicFunction {
      * @return
      */
     public static String escape(CharSequence s, boolean escapeReserved) {
+        //TODO : use dedidated URIUtils... -pb
         StringBuffer sb = new StringBuffer(s.length());
         for (int i=0; i<s.length(); i++) {
             char c = s.charAt(i);

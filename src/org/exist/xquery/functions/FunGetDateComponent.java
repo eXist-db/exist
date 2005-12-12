@@ -97,18 +97,26 @@ public class FunGetDateComponent extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
+        Sequence result;
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if (arg.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		DateValue date = (DateValue) arg.itemAt(0);
-		if (isCalledAs("day-from-date"))
-			return new IntegerValue(date.getPart(DateValue.DAY), Type.INTEGER);
-		else if (isCalledAs("month-from-date"))
-			return new IntegerValue(date.getPart(DateValue.MONTH), Type.INTEGER);
-		else if (isCalledAs("timezone-from-date"))
-			return date.getTimezone();
-		else if (isCalledAs("year-from-date"))
-			return new IntegerValue(date.getPart(DateValue.YEAR), Type.INTEGER);
-		else throw new Error("Can't handle function " + mySignature.getName().getLocalName());
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+    		DateValue date = (DateValue) arg.itemAt(0);
+    		if (isCalledAs("day-from-date"))
+                result = new IntegerValue(date.getPart(DateValue.DAY), Type.INTEGER);
+    		else if (isCalledAs("month-from-date"))
+                result = new IntegerValue(date.getPart(DateValue.MONTH), Type.INTEGER);
+    		else if (isCalledAs("timezone-from-date"))
+                result = date.getTimezone();
+    		else if (isCalledAs("year-from-date"))
+                result = new IntegerValue(date.getPart(DateValue.YEAR), Type.INTEGER);
+    		else throw new Error("Can't handle function " + mySignature.getName().getLocalName());
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;            
 	}
 }

@@ -72,10 +72,14 @@ public class FunExactlyOne extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if (seq.getLength() != 1)
-			throw new XPathException("fn:exactly-one called with a sequence containing " + seq.getLength() + " items");
-		return seq;
+		Sequence result = getArgument(0).eval(contextSequence, contextItem);
+		if (result.getLength() != 1)
+			throw new XPathException("fn:exactly-one called with a sequence containing " + result.getLength() + " items");
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;      
 	}
 
 }
