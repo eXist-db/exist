@@ -414,13 +414,12 @@ public class LoginPanel extends JPanel {
             Preferences node = favouritesNode.node( favouriteNodeNames[i]);
             
             Favourite favourite = new Favourite(
-                    node.get(Favourite.NAME, ""),
+                    favouriteNodeNames[i],
                     node.get(Favourite.USERNAME, ""),
                     node.get(Favourite.PASSWORD, ""),
                     node.get(Favourite.URL, ""));
             
-            favourites[i]=favourite;
-            
+            favourites[i]=favourite;          
         }
         
         Arrays.sort(favourites);
@@ -452,7 +451,6 @@ public class LoginPanel extends JPanel {
                 Preferences favouriteNode = favouritesNode.node(favs[i].getName());
                 
                 // Fill node
-                favouriteNode.put(Favourite.NAME, favs[i].getName());
                 favouriteNode.put(Favourite.USERNAME, favs[i].getUsername());
                 favouriteNode.put(Favourite.PASSWORD, favs[i].getPassword());
                 favouriteNode.put(Favourite.URL, favs[i].getUrl());
@@ -477,38 +475,40 @@ public class LoginPanel extends JPanel {
         storeFavourites(favs);
     }
     
-    private void importFavourites(){
-        JFileChooser chooser = new JFileChooser();
-        chooser.showOpenDialog(this);
+     public static boolean importFavourites(File importFile){
         
-        File selectedFile = chooser.getSelectedFile();
+        boolean importOk=false;
+
         Preferences prefs = Preferences.userNodeForPackage(LoginPanel.class);
         
         try{
-            FileInputStream fis = new FileInputStream(selectedFile);
+            FileInputStream fis = new FileInputStream(importFile);
             prefs.importPreferences(fis);
+            importOk=true;
             fis.close();
         } catch (Exception ex) {
             ex.printStackTrace();
-            ClientFrame.showErrorMessage("Problems importing favourites", ex);
         }
+        
+        return importOk;
     }
     
-    private void exportFavourites(){
-        JFileChooser chooser = new JFileChooser();
-        chooser.showSaveDialog(this);
+    public static boolean exportFavourites(File exportFile){
+
+        boolean exportOk=false;
         
-        File selectedFile = chooser.getSelectedFile();
         Preferences prefs = Preferences.userNodeForPackage(LoginPanel.class);
         
         try {
-            FileOutputStream fos = new FileOutputStream(selectedFile);
+            FileOutputStream fos = new FileOutputStream(exportFile);
             prefs.exportSubtree(fos);
+            exportOk=true;
             fos.close();
         } catch (Exception ex) {
             ex.printStackTrace();
-            ClientFrame.showErrorMessage("Problems exporting favourites", ex);
         }
+        
+        return exportOk;
     }
     
     /**
