@@ -25,8 +25,10 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Function;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
@@ -113,28 +115,43 @@ public class FunGetDateTimeComponent extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
+	public Sequence eval(Sequence[] args, Sequence contextSequence)	throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        }
+        
+        Sequence result;
 		Sequence arg = args[0];
 		if (arg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		DateTimeValue date = (DateTimeValue) arg.itemAt(0);
-		if(isCalledAs("day-from-dateTime"))
-			return new IntegerValue(date.getPart(DateValue.DAY), Type.INTEGER);
-		else if(isCalledAs("month-from-dateTime"))
-			return new IntegerValue(date.getPart(DateValue.MONTH), Type.INTEGER);
-		else if(isCalledAs("year-from-dateTime"))
-			return new IntegerValue(date.getPart(DateValue.YEAR), Type.INTEGER);
-		else if(isCalledAs("hours-from-dateTime"))
-			return new IntegerValue(date.getPart(DateValue.HOUR), Type.INTEGER);
-		else if(isCalledAs("minutes-from-dateTime"))
-			return new IntegerValue(date.getPart(DateValue.MINUTE), Type.INTEGER);
-		else if(isCalledAs("seconds-from-dateTime")) {
-			long millis = date.getPart(DateValue.SECOND) * 1000 + date.getPart(DateValue.MILLISECOND);
-			return new DecimalValue(millis / 1000);
-		} else if(isCalledAs("timezone-from-dateTime"))
-			return date.getTimezone();
-		else throw new Error("can't handle function " + mySignature.getName().getLocalName());
+        else {
+    		DateTimeValue date = (DateTimeValue) arg.itemAt(0);
+    		if (isCalledAs("day-from-dateTime"))
+                result = new IntegerValue(date.getPart(DateValue.DAY), Type.INTEGER);
+    		else if (isCalledAs("month-from-dateTime"))
+                result = new IntegerValue(date.getPart(DateValue.MONTH), Type.INTEGER);
+    		else if  (isCalledAs("year-from-dateTime"))
+                result = new IntegerValue(date.getPart(DateValue.YEAR), Type.INTEGER);
+    		else if(isCalledAs("hours-from-dateTime"))
+                result = new IntegerValue(date.getPart(DateValue.HOUR), Type.INTEGER);
+    		else if (isCalledAs("minutes-from-dateTime"))
+                result = new IntegerValue(date.getPart(DateValue.MINUTE), Type.INTEGER);
+    		else if (isCalledAs("seconds-from-dateTime")) {
+    			long millis = date.getPart(DateValue.SECOND) * 1000 + date.getPart(DateValue.MILLISECOND);
+                result = new DecimalValue(millis / 1000);
+    		} else if(isCalledAs("timezone-from-dateTime"))
+                result = date.getTimezone();
+    		else throw new Error("can't handle function " + mySignature.getName().getLocalName());
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;         
+        
 	}
 
 }
