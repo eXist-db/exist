@@ -371,6 +371,16 @@ public class LoginPanel extends JPanel {
                 JFileChooser chooser = new JFileChooser();
                 chooser.showSaveDialog(LoginPanel.this);
                 File selectedFile = chooser.getSelectedFile();
+                
+                if(selectedFile==null){
+                    JOptionPane.showMessageDialog(LoginPanel.this, "No favourites file selected", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                if(!selectedFile.canWrite()){
+                    JOptionPane.showMessageDialog(LoginPanel.this, "Cannot write selected file", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
                 exportFavourites(selectedFile);
                 repaint();
             }
@@ -393,7 +403,20 @@ public class LoginPanel extends JPanel {
                 JFileChooser chooser = new JFileChooser();
                 chooser.showOpenDialog(LoginPanel.this);
                 File selectedFile = chooser.getSelectedFile();
+                
+                if(selectedFile==null){
+                    JOptionPane.showMessageDialog(LoginPanel.this, "No favourites file selected", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                if(!selectedFile.canRead()){
+                    JOptionPane.showMessageDialog(LoginPanel.this, "Cannot read selected file", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
                 importFavourites(selectedFile);
+                
+
                 repaint();
             }
         });
