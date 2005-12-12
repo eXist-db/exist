@@ -55,13 +55,34 @@ public class FunDeepEqual extends Function {
 	}
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }       
+        
+        Sequence result;
 		Sequence[] args = getArguments(contextSequence, contextItem);
 		int length = args[0].getLength();
-		if (length != args[1].getLength()) return BooleanValue.FALSE;
-		for (int i=0; i<length; i++) {
-			if (!deepEquals(args[0].itemAt(i), args[1].itemAt(i))) return BooleanValue.FALSE;
-		}
-		return BooleanValue.TRUE;
+		if (length != args[1].getLength()) 
+            result = BooleanValue.FALSE;
+        else {
+        	result = BooleanValue.TRUE;
+    		for (int i = 0; i < length; i++) {
+    			if (!deepEquals(args[0].itemAt(i), args[1].itemAt(i))) {
+                    result = BooleanValue.FALSE;
+                    break;
+                }   
+    		}    		
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;
 	}
 	
 	private boolean deepEquals(Item a, Item b) {
