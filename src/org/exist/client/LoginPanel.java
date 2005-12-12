@@ -87,6 +87,7 @@ public class LoginPanel extends JPanel {
     JButton btnLoadFavourite;
     
     JButton btnExportFavourite;
+    JButton btnImportFavourite;
     
     /**
      * Creates a new login panel with the given user and uri.
@@ -357,27 +358,53 @@ public class LoginPanel extends JPanel {
         c.gridwidth = 1;
         c.gridheight = 1;
         c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(inset, inset, 15, inset);
         c.fill = GridBagConstraints.HORIZONTAL;
         grid.setConstraints(btnRemoveFavourite, c);
         add(btnRemoveFavourite);
         
-//        btnExportFavourite = new JButton("Export");
-//        btnExportFavourite.setEnabled(true);
-//        btnExportFavourite.setToolTipText("Export favourite");
-//        btnExportFavourite.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                importFavourites();
-//                repaint();
-//            }
-//        });
-//        c.gridx = 2;
-//        c.gridy = 7;
-//        c.gridwidth = 1;
-//        c.gridheight = 1;
-//        c.anchor = GridBagConstraints.WEST;
-//        c.fill = GridBagConstraints.HORIZONTAL;
-//        grid.setConstraints(btnExportFavourite, c);
-//        add(btnExportFavourite);
+        btnExportFavourite = new JButton("Export");
+        btnExportFavourite.setEnabled(true);
+        btnExportFavourite.setToolTipText("Export favourites to file");
+        btnExportFavourite.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser chooser = new JFileChooser();
+                chooser.showSaveDialog(LoginPanel.this);
+                File selectedFile = chooser.getSelectedFile();
+                exportFavourites(selectedFile);
+                repaint();
+            }
+        });
+        c.gridx = 2;
+        c.gridy = 8;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(inset, inset, inset, inset);
+        grid.setConstraints(btnExportFavourite, c);
+        add(btnExportFavourite);
+        
+        btnImportFavourite = new JButton("Import");
+        btnImportFavourite.setEnabled(true);
+        btnImportFavourite.setToolTipText("Import favourites from file");
+        btnImportFavourite.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser chooser = new JFileChooser();
+                chooser.showOpenDialog(LoginPanel.this);
+                File selectedFile = chooser.getSelectedFile();
+                importFavourites(selectedFile);
+                repaint();
+            }
+        });
+        c.gridx = 2;
+        c.gridy = 9;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        grid.setConstraints(btnImportFavourite, c);
+        add(btnImportFavourite);
         
         JPanel spacer = new JPanel();
         c.gridx = 2;
@@ -419,7 +446,7 @@ public class LoginPanel extends JPanel {
                     node.get(Favourite.PASSWORD, ""),
                     node.get(Favourite.URL, ""));
             
-            favourites[i]=favourite;          
+            favourites[i]=favourite;
         }
         
         Arrays.sort(favourites);
@@ -455,7 +482,7 @@ public class LoginPanel extends JPanel {
                 favouriteNode.put(Favourite.PASSWORD, favs[i].getPassword());
                 favouriteNode.put(Favourite.URL, favs[i].getUrl());
             }
-        }   
+        }
     }
     
     /**
@@ -475,10 +502,10 @@ public class LoginPanel extends JPanel {
         storeFavourites(favs);
     }
     
-     public static boolean importFavourites(File importFile){
+    public static boolean importFavourites(File importFile){
         
         boolean importOk=false;
-
+        
         Preferences prefs = Preferences.userNodeForPackage(LoginPanel.class);
         
         try{
@@ -494,7 +521,7 @@ public class LoginPanel extends JPanel {
     }
     
     public static boolean exportFavourites(File exportFile){
-
+        
         boolean exportOk=false;
         
         Preferences prefs = Preferences.userNodeForPackage(LoginPanel.class);
