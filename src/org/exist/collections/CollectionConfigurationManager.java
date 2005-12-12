@@ -79,10 +79,21 @@ public class CollectionConfigurationManager {
 			Collection confCol = broker.getOrCreateCollection(transaction, path);
 			if(confCol == null)
 				throw new CollectionConfigurationException("Failed to create config collection: " + path);
-			broker.saveCollection(transaction, confCol);
-			IndexInfo info = confCol.validate(transaction, broker, CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE, config);
+            String configurationDocumentName = null;
+            //Replaces the current configuration file if there is one
+            CollectionConfiguration conf = getConfiguration(broker, collection);
+            if (conf != null) {                
+                configurationDocumentName = conf.getDocName();
+                if (configurationDocumentName != null) 
+                    LOG.warn("Replacing current configuration file '" + configurationDocumentName + "'");
+                
+            }
+            if (configurationDocumentName == null)
+                configurationDocumentName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
+            //broker.saveCollection(transaction, confCol);
+			IndexInfo info = confCol.validate(transaction, broker, configurationDocumentName, config);
 			confCol.store(transaction, broker, info, config, false);
-			broker.sync(Sync.MAJOR_SYNC);
+			//broker.sync(Sync.MAJOR_SYNC);
 		} catch (PermissionDeniedException e) {
 			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
 		} catch (CollectionConfigurationException e) {
@@ -126,13 +137,19 @@ public class CollectionConfigurationManager {
     			if (coll != null && coll.getDocumentCount() > 0) {
     			    for(Iterator i = coll.iterator(broker); i.hasNext(); ) {
     			        DocumentImpl confDoc = (DocumentImpl) i.next();
-    			        if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(confDoc.getFileName())) {
-                            LOG.debug("Reading collection configuration for '" + collection.getName() + "' from '" + confDoc.getName() + "'");
-    			            conf.read(broker, confDoc);
-                            configFound = true;
-    			            break;
+    			        if(confDoc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
+                            if (!configFound) {
+                                LOG.debug("Reading collection configuration for '" + collection.getName() + "' from '" + confDoc.getName() + "'");
+        			            conf.read(broker, confDoc, confDoc.getFileName());                            
+                                configFound = true;
+                                //Allow just one configuration document per collection
+                                //TODO : do not break if a system property allows several ones -pb
+        			            break;
+                            } else {
+                                LOG.debug("Found another collection configuration for '" + collection.getName() + "' in '" + confDoc.getName() + "'");
+                            }
     			        }
-    			    }
+    			    }                    
                 }
     		} finally {
     			if(coll != null)

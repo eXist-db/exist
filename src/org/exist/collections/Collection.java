@@ -64,6 +64,7 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
+import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
@@ -860,6 +861,12 @@ implements Comparable, EntityResolver, Cacheable {
 		info.finishTrigger(broker, transaction, document);
 		broker.getBrokerPool().getNotificationService().notifyUpdate(document, 
 				(info.getEvent() == Trigger.UPDATE_DOCUMENT_EVENT ? UpdateListener.UPDATE : UpdateListener.ADD));
+        
+        //Is it a collection configuration file ?
+        if (getName().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION))
+            if (getConfiguration(broker).getDocName() == null ||
+                getConfiguration(broker).getDocName().equals(document.getFileName()))                   
+                broker.sync(Sync.MAJOR_SYNC);        
 	}
     
     public IndexInfo validate(Txn transaction, DBBroker broker, String docName, String data)
@@ -900,6 +907,23 @@ implements Comparable, EntityResolver, Cacheable {
 	
 	private IndexInfo validateInternal(Txn transaction, DBBroker broker, String docName, ValidateBlock doValidate) 
 			throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
+        
+        //Is it a collection configuration file ?
+        if (getName().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION) &&
+            docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
+            //Allow just one configuration document per collection
+            //TODO : do no throw the exception if a system property allows several ones -pb
+            if (getConfiguration(broker).getDocName() != null &&
+                !getConfiguration(broker).getDocName().equals(docName))
+                throw new EXistException("Trying to validate another configuration document");
+            //Banzaï ! This code seems to solve some long standing issues 
+            else {
+                broker.saveCollection(transaction, this);                
+                CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+                confMgr.invalidateAll(getName());                
+            }
+        }
+        
 		if (broker.isReadOnly()) throw new PermissionDeniedException("Database is read-only");
 		DocumentImpl document, oldDoc = null;
 		boolean oldDocLocked = false;
@@ -1203,7 +1227,7 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 	}
 
-	private CollectionConfiguration getConfiguration(DBBroker broker) {
+	public CollectionConfiguration getConfiguration(DBBroker broker) {
 	    if (!collectionConfEnabled)
 	        return null;
 	    if (configuration != null)
