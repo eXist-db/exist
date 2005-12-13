@@ -728,6 +728,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
         return atomic;        
     }
     
+    public String toString() {
+        return this.getClass().getName() + " at "+ db.getFile().getName() +
+        " owned by " + broker.toString() + " (case sensitive = " + caseSensitive + ")";
+    }
+    
 	/** TODO document */
     class SearchCallback implements BTreeCallback {
         
