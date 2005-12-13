@@ -198,71 +198,61 @@ public class BFile extends BTree {
     }
     
     public long append(Txn transaction, Value key, ByteArray value) 
-        throws ReadOnlyException, IOException {
-        if (key == null) {
-            LOG.debug("key is null");
-            return UNKNOWN_ADDRESS;
-        }
-        if (key.getLength() > fileHeader.getWorkSize()) {
-            //TODO : throw an exception ? -pb
-            LOG.warn("Key length exceeds page size! Skipping key ...");
-            return UNKNOWN_ADDRESS;
-        }
-        //TODO : one too many try block here -pb
-        try {
-            try {
-                // check if key exists already
-                //TODO : rely on a KEY_NOT_FOUND (or maybe VALUE_NOT_FOUND) result ! -pb
-                long p = findValue(key);
-                if (p == KEY_NOT_FOUND) {
-                    // key does not exist:
-                    p = storeValue(transaction, value);
-                    addValue(transaction, key, p);
-                    return p;
-                }
-                // key exists: get old data
-                final long pnum = StorageAddress.pageFromPointer(p);
-                final short tid = StorageAddress.tidFromPointer(p);
-                final DataPage page = getDataPage(pnum);
-                if (page instanceof OverflowPage)
-                    ((OverflowPage) page).append(transaction, value);
-                else {
-                    final int valueLen = value.size();
-                    final byte[] data = page.getData();
-                    final int offset = page.findValuePosition(tid);
-                    if (offset < 0)
-                        throw new IOException("tid " + tid + " not found on page " + pnum);                               
-                    if (offset + 4 > data.length) {
-                        LOG.error("found invalid pointer in file " + getFile().getName() + 
-                                " for page" + page.getPageInfo() + " : " +
-                                "tid = " + tid + "; offset = " + offset);
-                        return UNKNOWN_ADDRESS;
-                    }
-                    final int l = ByteConversion.byteToInt(data, offset);       
-                    //TOUNDERSTAND : unless l can be negative, we should never get there -pb
-                    if (offset + 4 + l > data.length) {
-                        LOG.error("found invalid data record in file " + getFile().getName() + 
-                                " for page" + page.getPageInfo() + " : " +                               
-                                "length = " + data.length + "; required = " + (offset + 4 + l));
-                        return UNKNOWN_ADDRESS;
-                    }
-                    final byte[] newData = new byte[l + valueLen];
-                    System.arraycopy(data, offset + 4, newData, 0, l);
-                    value.copyTo(newData, l);
-                    p = update(transaction, p, page, key, new FixedByteArray(newData, 0, newData.length));
-                }
-                return p;
-            //TODO : why catch an exception here ??? It costs too much ! -pb
-            } catch (BTreeException bte) {
-                // key does not exist:
-                long p = storeValue(transaction, value);
-                addValue(transaction, key, p);
-                return p;
-            }
-        } catch (BTreeException bte) {
-            LOG.warn("btree exception while appending value", bte);
-        }
-        return UNKNOWN_ADDRESS;
+    throws ReadOnlyException, IOException {
+    	if (key == null) {
+    		LOG.debug("key is null");
+    		return UNKNOWN_ADDRESS;
+    	}
+    	if (key.getLength() > fileHeader.getWorkSize()) {
+    		//TODO : throw an exception ? -pb
+    		LOG.warn("Key length exceeds page size! Skipping key ...");
+    		return UNKNOWN_ADDRESS;
+    	}
+    	try {
+    		// check if key exists already
+    		long p = findValue(key);
+    		if (p == KEY_NOT_FOUND) {
+    			// key does not exist:
+    			p = storeValue(transaction, value);
+    			addValue(transaction, key, p);
+    			return p;
+    		}
+    		// key exists: get old data
+    		final long pnum = StorageAddress.pageFromPointer(p);
+    		final short tid = StorageAddress.tidFromPointer(p);
+    		final DataPage page = getDataPage(pnum);
+    		if (page instanceof OverflowPage)
+    			((OverflowPage) page).append(transaction, value);
+    		else {
+    			final int valueLen = value.size();
+    			final byte[] data = page.getData();
+    			final int offset = page.findValuePosition(tid);
+    			if (offset < 0)
+    				throw new IOException("tid " + tid + " not found on page " + pnum);                               
+    			if (offset + 4 > data.length) {
+    				LOG.error("found invalid pointer in file " + getFile().getName() + 
+    						" for page" + page.getPageInfo() + " : " +
+    						"tid = " + tid + "; offset = " + offset);
+    				return UNKNOWN_ADDRESS;
+    			}
+    			final int l = ByteConversion.byteToInt(data, offset);       
+    			//TOUNDERSTAND : unless l can be negative, we should never get there -pb
+    			if (offset + 4 + l > data.length) {
+    				LOG.error("found invalid data record in file " + getFile().getName() + 
+    						" for page" + page.getPageInfo() + " : " +                               
+    						"length = " + data.length + "; required = " + (offset + 4 + l));
+    				return UNKNOWN_ADDRESS;
+    			}
+    			final byte[] newData = new byte[l + valueLen];
+    			System.arraycopy(data, offset + 4, newData, 0, l);
+    			value.copyTo(newData, l);
+    			p = update(transaction, p, page, key, new FixedByteArray(newData, 0, newData.length));
+    		}
+    		return p;
+    	} catch (BTreeException bte) {
+    		LOG.warn("btree exception while appending value", bte);
+    	}
+    	return UNKNOWN_ADDRESS;
     }
 
     /**
@@ -358,7 +348,7 @@ public class BFile extends BTree {
                     remove(cb.pointers[i]);
                 } catch (ReadOnlyException e) {
                     LOG.warn("Database is read-only. Cannot remove items.");
-                    //TODO : break ? -pb
+                    throw new IOException("Database is read-only");
                 }
             }
         } catch (TerminatedException e) {
@@ -459,11 +449,10 @@ public class BFile extends BTree {
             final long pnum = StorageAddress.pageFromPointer(p);
             final DataPage page = getDataPage(pnum);
             return get(page, p);
-        //TODO : why rely on an exception here ? -pb
-        } catch (BTreeException b) {
-            LOG.debug("key " + key + " not found");
+        } catch (BTreeException e) {
+            LOG.warn("An exception occurred while trying to retrieve key " + key + ": " + e.getMessage(), e);
         } catch (IOException e) {
-            LOG.debug(e.getMessage(), e);
+            LOG.warn(e.getMessage(), e);
         }
         return null;
     }
@@ -488,9 +477,8 @@ public class BFile extends BTree {
                 default:
                     return getAsStream(page, p);
             }
-        //TODO : why rely on an exception here ? -pb
-        } catch (BTreeException b) {
-            LOG.debug("key " + key + " not found");
+        } catch (BTreeException e) {
+        	LOG.warn("An exception occurred while trying to retrieve key " + key + ": " + e.getMessage(), e);
         }
         return null;
     }
@@ -648,11 +636,7 @@ public class BFile extends BTree {
     }
 
     public long put(Txn transaction, Value key, byte[] data, boolean overwrite) throws ReadOnlyException {
-        if (key.getLength() > fileHeader.getWorkSize()) {
-            //TODO : exception ? -pb
-            LOG.warn("Key length exceeds page size! Skipping key ...");
-            return UNKNOWN_ADDRESS;
-        }
+    	SanityCheck.THROW_ASSERT(key.getLength() <= fileHeader.getWorkSize(), "Key length exceeds page size!");
         FixedByteArray buf = new FixedByteArray(data, 0, data.length);
         return put(transaction, key, buf, overwrite);
     }
