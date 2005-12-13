@@ -661,7 +661,7 @@ public class XPathQueryTest extends XMLTestCase {
             
 			result = service.queryResource("namespaces.xml", "namespace-uri(//t:test)");
 			assertEquals(1, result.getSize());
-			assertEquals(result.getResource(0).getContent(), "http://www.foo.com");
+			assertEquals("http://www.foo.com", result.getResource(0).getContent());
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}
