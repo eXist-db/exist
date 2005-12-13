@@ -10,8 +10,10 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
@@ -42,15 +44,22 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
 		super(context, signature);
 	}
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
+	public Sequence eval(Sequence[] args, Sequence contextSequence)	throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        }
+        
 		String prefix;
 		if (args[0].getLength() == 0)
 			prefix = "";
 		else
 			prefix = args[0].itemAt(0).getStringValue();
-		NodeValue node = (NodeValue) args[1].itemAt(0);
-		
+        
+        Sequence result;
+		NodeValue node = (NodeValue) args[1].itemAt(0);		
 		Map prefixes = new HashMap();
 		if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy) node;
@@ -66,9 +75,17 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
 				next = next.getParentNode();
 			} while (next != null && next.getNodeType() == Node.ELEMENT_NODE);
 		}
+        
 		String namespace = (String) prefixes.get(prefix);
-		if (namespace != null)
-			return new AnyURIValue(namespace);
-		return Sequence.EMPTY_SEQUENCE;
+		if (namespace == null)
+            result = Sequence.EMPTY_SEQUENCE;            
+        else
+            result = new AnyURIValue(namespace);
+            
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;  
+        
 	}
 }

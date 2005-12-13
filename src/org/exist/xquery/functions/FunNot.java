@@ -29,6 +29,7 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -74,14 +75,21 @@ public class FunNot extends Function {
 		return Dependency.CONTEXT_SET | getArgument(0).getDependencies();
 	}
 	
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+       if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+           
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		Expression arg = getArgument(0);
 		
+        Sequence result;
+        Expression arg = getArgument(0);		
 		// case 1: if the argument expression returns a node set,
 		// subtract the set from the context node set and return
 		// the remaining set
@@ -92,30 +100,37 @@ public class FunNot extends Function {
 				// within a predicate, we just return the empty sequence
 				// otherwise evaluate the argument and return a boolean result			    
 				if (inPredicate && !inWhereClause)
-					return Sequence.EMPTY_SEQUENCE;
+                    result = Sequence.EMPTY_SEQUENCE;
 				else
-					return evalBoolean(contextSequence, contextItem, arg);
-			}
-			NodeSet result = new ExtArrayNodeSet();
-			if(contextSequence.getLength() > 0)
-				result.addAll(contextSequence);
-			NodeProxy current;
-			if (inPredicate) {
-				for (SequenceIterator i = result.iterate(); i.hasNext();) {
-					current = (NodeProxy) i.nextItem();
-					current.addContextNode(current);
-				}
-			}
-			// evaluate argument expression
-			Sequence argSeq =
-				arg.eval(contextSequence, contextItem);
-			NodeSet argSet = argSeq.toNodeSet().getContextNodes(true);
-			return result.except(argSet);
+                    result = evalBoolean(contextSequence, contextItem, arg);
+			} else {            
+    			result = new ExtArrayNodeSet();
+    			if(contextSequence.getLength() > 0)
+    				result.addAll(contextSequence);
+    			
+                NodeProxy current;
+    			if (inPredicate) {
+    				for (SequenceIterator i = result.iterate(); i.hasNext();) {
+    					current = (NodeProxy) i.nextItem();
+    					current.addContextNode(current);
+    				}
+    			}
+                
+    			// evaluate argument expression
+    			Sequence argSeq = arg.eval(contextSequence, contextItem);
+    			NodeSet argSet = argSeq.toNodeSet().getContextNodes(true);
+    			result = ((NodeSet)result).except(argSet);
+            }
 			
 		// case 2: simply invert the boolean value
 		} else {
 			return evalBoolean(contextSequence, contextItem, arg);
 		}
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;           
 	}
 
 	/**
@@ -126,8 +141,7 @@ public class FunNot extends Function {
 	 * @throws XPathException
 	 */
 	private Sequence evalBoolean(Sequence contextSequence, Item contextItem, Expression arg) throws XPathException {
-		Sequence seq =
-			arg.eval(contextSequence, contextItem);
+		Sequence seq = arg.eval(contextSequence, contextItem);
 		return seq.effectiveBooleanValue() ? BooleanValue.FALSE : BooleanValue.TRUE;
 	}
 }
