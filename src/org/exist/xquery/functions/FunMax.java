@@ -26,11 +26,14 @@ import java.text.Collator;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
@@ -80,34 +83,53 @@ public class FunMax extends CollatingFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        } 
+        
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
+        
+        Sequence result;
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if(arg.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		Collator collator = getCollator(contextSequence, contextItem, 2);
-		SequenceIterator iter = arg.unorderedIterator();
-		Item nextItem;
-		AtomicValue nextValue;
-		nextItem = iter.nextItem();
-		nextValue = nextItem.atomize();
-		AtomicValue max = nextValue;
-		if(max.getType() == Type.ATOMIC)
-			max = max.convertTo(Type.DOUBLE);		
-		while(iter.hasNext()) {
-			nextItem = iter.nextItem();
-			nextValue = nextItem.atomize();
-			if(nextValue.getType() == Type.ATOMIC)
-				nextValue = nextValue.convertTo(Type.DOUBLE);
-			if(Type.subTypeOf(nextValue.getType(), Type.NUMBER) &&
-				((NumericValue)nextValue).isNaN())
-				return DoubleValue.NaN;
-				
-			max = max.max(collator, nextValue);
-		}
-//		TODO : return a ComputableValue ?
-		return max;
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+    		Collator collator = getCollator(contextSequence, contextItem, 2);
+    		SequenceIterator iter = arg.unorderedIterator();            
+            Item nextItem = iter.nextItem();
+            AtomicValue nextValue = nextItem.atomize();
+            //TODO : use sub-type method here that eventually will throw an exception ? -pb
+    		if(nextValue.getType() == Type.ATOMIC)
+                nextValue = nextValue.convertTo(Type.DOUBLE);
+            ComputableValue max = (ComputableValue)nextValue;
+    		while(iter.hasNext()) {
+    			nextItem = iter.nextItem();
+    			nextValue = nextItem.atomize();
+                //TODO : use sub-type method here that eventually will throw an exception ? -pb
+    			if (nextValue.getType() == Type.ATOMIC)
+    				nextValue = nextValue.convertTo(Type.DOUBLE);
+                //TODO : use ComputableValue.max with the collator ! -pb
+    			if (Type.subTypeOf(nextValue.getType(), Type.NUMBER) && ((NumericValue)nextValue).isNaN()) {
+    			    result = DoubleValue.NaN;
+                    break;
+                }	
+                //Ugly type-casting -pb
+                max = (ComputableValue) max.max(collator, nextValue);
+    		}           
+            result = max;
+        }
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;   
+        
 	}
 }

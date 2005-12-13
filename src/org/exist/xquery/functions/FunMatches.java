@@ -35,6 +35,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NativeValueIndex;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
@@ -145,22 +146,37 @@ public class FunMatches extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-	    if(contextItem != null)
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
+	    if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 	    
+        Sequence result;
 		Sequence input = getArgument(0).eval(contextSequence, contextItem);
-		if(input.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-        
-		if(inPredicate && (getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
-		    return evalWithIndex(contextSequence, contextItem, input);
+		if (input.getLength() == 0)
+            result = Sequence.EMPTY_SEQUENCE;        
+        else if (inPredicate && !Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM)) {
+            if (context.isProfilingEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Index evaluation");            
+            result = evalWithIndex(contextSequence, contextItem, input);
         } else {
-		    return evalGeneric(contextSequence, contextItem, input);
+            if (context.isProfilingEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Generic evaluation");            
+            result = evalGeneric(contextSequence, contextItem, input);
         }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;          
 	}
 
 	/**
@@ -171,38 +187,53 @@ public class FunMatches extends Function {
 	 * @throws XPathException
      */
     private Sequence evalWithIndex(Sequence contextSequence, Item contextItem, Sequence input) throws XPathException {
-        String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
-        NodeSet nodes = input.toNodeSet();
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }  
         
-        int flags = 0; 
         boolean caseSensitive = true;
+        int flags = 0;       
         if(getSignature().getArgumentCount() == 3) {
             String flagsArg = getArgument(2).eval(contextSequence, contextItem).getStringValue();
             caseSensitive = (flagsArg.indexOf('i') == Constants.STRING_NOT_FOUND);
             flags = parseFlags(flagsArg);
         }
         
+        Sequence result;
+        String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+        NodeSet nodes = input.toNodeSet();
         // get the type of a possible index
 		int indexType = nodes.getIndexType();
 		if(Type.subTypeOf(indexType, Type.STRING)) {
 		    DocumentSet docs = nodes.getDocumentSet();
-		    try {
+		    try {                
+                NativeValueIndex index = context.getBroker().getValueIndex(); 
+                //TODO : check index' case compatibility with flags' one ? -pb 
 		    	if (context.isProfilingEnabled())
-		    		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using index for fn:matches", "Regex: " + pattern);
-				return context.getBroker().getValueIndex().match(docs, nodes, pattern, 
-						DBBroker.MATCH_REGEXP, flags, caseSensitive);
+		    		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using index " + index.toString(), "Regex: " + pattern);
+                result = index.match(docs, nodes, pattern, DBBroker.MATCH_REGEXP, flags, caseSensitive);
 			} catch (EXistException e) {
 				throw new XPathException(getASTNode(), e.getMessage(), e);
 			}
 		} else {
-		    ExtArrayNodeSet result = new ExtArrayNodeSet();
+		    result = new ExtArrayNodeSet();
 		    for(Iterator i = nodes.iterator(); i.hasNext(); ) {
 		        NodeProxy node = (NodeProxy) i.next();
-		        if(match(node.getStringValue(), pattern, flags))
+		        if (match(node.getStringValue(), pattern, flags))
 		            result.add(node);
-		    }
-		    return result;
+		    }          
 		}
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;           
+        
     }
 
 	/**

@@ -27,6 +27,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.IntegerValue;
@@ -65,22 +66,36 @@ public class FunItemAt extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		IntegerValue posArg = (IntegerValue)
 			getArgument(1).eval(contextSequence, contextItem).convertTo(Type.INTEGER);
 		long pos = posArg.getValue();
-		if(pos < 1 || pos > seq.getLength())
+		if (pos < 1 || pos > seq.getLength())
 			throw new XPathException("Invalid position: " + pos);
 		Item item = seq.itemAt((int)pos - 1);
+        
+        Sequence result;
 		if(item == null) {
+            //TODO : throw an exception ? -pb
 			LOG.debug("Item is null: " + seq.getClass().getName() + "; len = " + seq.getLength());
-			return Sequence.EMPTY_SEQUENCE;
+			result = Sequence.EMPTY_SEQUENCE;
 		}
-		return item.toSequence();
+        else result = item.toSequence();
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;          
 	}
 
 }
