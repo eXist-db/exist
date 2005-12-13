@@ -2,8 +2,10 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -32,13 +34,30 @@ public class FunReverse extends Function {
 	}
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		Sequence seq = getArguments(contextSequence, contextItem)[0];
-		if(seq.getLength() == 0) return Sequence.EMPTY_SEQUENCE;
-		Sequence result = new ValueSequence();
-		for (int i = seq.getLength()-1; i>=0; i--) {
-			result.add(seq.itemAt(i));
-		}
-		return result;
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }           
+        
+        Sequence result;
+        Sequence seq = getArguments(contextSequence, contextItem)[0];
+		if (seq.getLength() == 0) 
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+		  result = new ValueSequence();
+    		for (int i = seq.getLength()-1; i>=0; i--) {
+    			result.add(seq.itemAt(i));
+    		}
+        }
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;          
 	}
 
 }
