@@ -33,22 +33,42 @@ public class FunRemove extends Function {
 	}
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if (seq.getLength() == 0) return Sequence.EMPTY_SEQUENCE;
-		int pos = 
-			((DoubleValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)).getInt();
-		if (pos < 1 || pos > seq.getLength()) return seq;
-		pos--;
-		if (seq instanceof NodeSet) {
-			ExtArrayNodeSet result = new ExtArrayNodeSet();
-			result.addAll((NodeSet) seq);
-			return result.except((NodeSet) seq.itemAt(pos));
-		} else {
-			Sequence result = new ValueSequence();
-			for (int i = 0; i < seq.getLength(); i++) {
-				if (i != pos) result.add(seq.itemAt(i));
-			}
-			return result;
-		}
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }    		
+        
+        Sequence result;
+        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+		if (seq.getLength() == 0) 
+            result = Sequence.EMPTY_SEQUENCE;
+        else {            
+            //TODO : explain this Double conversion -pb
+    		int pos = ((DoubleValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)).getInt();
+    		if (pos < 1 || pos > seq.getLength()) 
+                result= seq;
+            else {
+        		pos--;
+        		if (seq instanceof NodeSet) {
+        			result = new ExtArrayNodeSet();
+        			result.addAll((NodeSet) seq);
+        			result = ((NodeSet)result).except((NodeSet) seq.itemAt(pos));
+        		} else {
+        			result = new ValueSequence();
+        			for (int i = 0; i < seq.getLength(); i++) {
+        				if (i != pos) result.add(seq.itemAt(i));
+        			}        			
+        		}
+            }
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;         
 	}
 }

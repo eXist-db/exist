@@ -90,33 +90,41 @@ public class FunReplace extends FunMatches {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
+        Sequence result;
 		Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
 		if (stringArg.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-        
-		String string = stringArg.getStringValue();
-		String pattern =
-			translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
-		String replace =
-			getArgument(2).eval(contextSequence, contextItem).getStringValue();
-		
-        int flags = 0;
-		if (getSignature().getArgumentCount() == 4)
-			flags =	parseFlags(getArgument(3).eval(contextSequence, contextItem).getStringValue());
-		try {
-			if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
-				pat = Pattern.compile(pattern, flags);
-                matcher = pat.matcher(string);
-            } else {
-                matcher.reset(string);
+            result = Sequence.EMPTY_SEQUENCE;
+        else {        
+    		String string = stringArg.getStringValue();
+    		String pattern =
+    			translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+    		String replace =
+    			getArgument(2).eval(contextSequence, contextItem).getStringValue();
+    		
+            int flags = 0;
+    		if (getSignature().getArgumentCount() == 4)
+    			flags =	parseFlags(getArgument(3).eval(contextSequence, contextItem).getStringValue());
+    		try {
+    			if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
+    				pat = Pattern.compile(pattern, flags);
+                    matcher = pat.matcher(string);
+                } else {
+                    matcher.reset(string);
+                }
+                String r = matcher.replaceAll(replace);
+    			result = new StringValue(r);
+    		} catch (PatternSyntaxException e) {
+    			throw new XPathException(getASTNode(), "Invalid regular expression: " + e.getMessage(), e);
+    		} catch (IndexOutOfBoundsException e) {
+    		    throw new XPathException(getASTNode(), e.getMessage(), e);
             }
-            String r = matcher.replaceAll(replace);
-			return new StringValue(r);
-		} catch (PatternSyntaxException e) {
-			throw new XPathException(getASTNode(), "Invalid regular expression: " + e.getMessage(), e);
-		} catch (IndexOutOfBoundsException e) {
-		    throw new XPathException(getASTNode(), e.getMessage(), e);
         }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;   
+        
 	}
 
 }

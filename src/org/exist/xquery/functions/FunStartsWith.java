@@ -25,8 +25,10 @@ import java.text.Collator;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.BooleanValue;
@@ -60,17 +62,34 @@ public class FunStartsWith extends CollatingFunction {
 	}
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 
+        Sequence result;
 		String s1 = getArgument(0).eval(contextSequence).getStringValue();
-		String s2 = getArgument(1).eval(contextSequence).getStringValue();
+		String s2 = getArgument(1).eval(contextSequence).getStringValue();        
 		if(s1.length() == 0 || s2.length() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		Collator collator = getCollator(contextSequence, contextItem, 3);
-		if(Collations.startsWith(collator, s1, s2))
-			return BooleanValue.TRUE;
-		else
-			return BooleanValue.FALSE;
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+    		Collator collator = getCollator(contextSequence, contextItem, 3);
+    		if(Collations.startsWith(collator, s1, s2))
+                result = BooleanValue.TRUE;
+    		else
+                result = BooleanValue.FALSE;
+        }
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;             
 	}
 }

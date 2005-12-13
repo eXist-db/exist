@@ -25,8 +25,10 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.QNameValue;
@@ -64,9 +66,15 @@ public class FunQName extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
-		String namespace;
+	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        }  
+        
+        String namespace;
 		if (args[0].getLength() == 0)
 			namespace = "";
 		else
@@ -76,6 +84,12 @@ public class FunQName extends BasicFunction {
 		String prefix = QName.extractPrefix(param);
 		String localName = QName.extractLocalName(param);
 		QName qname = new QName(localName, namespace, prefix);
-		return new QNameValue(context, qname);
+
+		Sequence result = new QNameValue(context, qname);
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;                 
 	}
 }

@@ -81,19 +81,32 @@ public class FunRoot extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
+        Sequence result;
 		Item item = contextItem;
 		if (getSignature().getArgumentCount() > 0) {
 			Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 			if (seq.getLength() == 0)
-				return Sequence.EMPTY_SEQUENCE;
-			item = seq.itemAt(0);
+                item = null;
+            else
+                item = seq.itemAt(0);
 		}
-		if (!Type.subTypeOf(item.getType(), Type.NODE))
-			throw new XPathException("Context item is not a node; got " + Type.getTypeName(item.getType()));
-		if (item instanceof NodeProxy) {
-		    return new NodeProxy(((NodeProxy) item).getDocument()); // , -1, Node.DOCUMENT_NODE);
-		} else
-			return (DocumentImpl) ((NodeImpl) item).getOwnerDocument();
+        
+        if (item == null)
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+    		if (!Type.subTypeOf(item.getType(), Type.NODE))
+    			throw new XPathException("Context item is not a node; got " + Type.getTypeName(item.getType()));
+    		if (item instanceof NodeProxy) {
+                result = new NodeProxy(((NodeProxy) item).getDocument()); // , -1, Node.DOCUMENT_NODE);
+    		} else
+                result = (DocumentImpl) ((NodeImpl) item).getOwnerDocument();
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result; 
+        
 	}
 
 }
