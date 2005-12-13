@@ -41,6 +41,7 @@ public abstract class RangeIndexSpec {
 	public static final int DOUBLE = 3;
 	public static final int FLOAT = 4;
 	public static final int BOOLEAN = 5;
+	public static final int DATE_TIME = 6;
 	
 	/** 
 	 * Indicates that the node has a qname-value index defined
@@ -71,7 +72,8 @@ public abstract class RangeIndexSpec {
             Type.INTEGER,
             Type.DOUBLE,
             Type.FLOAT,
-            Type.BOOLEAN
+            Type.BOOLEAN,
+			Type.DATE_TIME
 	};
 	
 	protected static final int[] indexTypes = new int[64];
@@ -82,6 +84,7 @@ public abstract class RangeIndexSpec {
         indexTypes[Type.DOUBLE] = DOUBLE;
         indexTypes[Type.FLOAT] = FLOAT;
         indexTypes[Type.BOOLEAN] = BOOLEAN;
+        indexTypes[Type.DATE_TIME] = DATE_TIME;
     }
 
 	/**

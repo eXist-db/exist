@@ -139,6 +139,7 @@ public class Transform extends BasicFunction {
     		MemTreeBuilder builder = context.getDocumentBuilder();
     		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
     		SAXResult result = new SAXResult(receiver);
+    		result.setLexicalHandler(receiver);		//preserve comments etc... from xslt output
     		handler.setResult(result);
     		try {
     			handler.startDocument();
