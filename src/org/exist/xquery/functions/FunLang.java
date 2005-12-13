@@ -35,6 +35,7 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -60,60 +61,71 @@ public class FunLang extends Function {
 		super(context, signature);
 	}
 
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
+        
+        Sequence result;
 		if (!(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)))
-			return Sequence.EMPTY_SEQUENCE;
-		String lang =
-			getArgument(0)
-				.eval(contextSequence)
-				.getStringValue();
-		QName qname = new QName("lang", context.getURIForPrefix("xml"), "xml");
-		NodeSet attribs = context.getBroker().getElementIndex().getAttributesByName(contextSequence.toNodeSet().getDocumentSet(), qname, null);
-		NodeSet temp = new ExtArrayNodeSet();
-		NodeProxy p;
-		String langValue;
-		int hyphen;
-		boolean include;
-		for (Iterator i = attribs.iterator(); i.hasNext();) {
-			include = false;
-			p = (NodeProxy) i.next();
-			langValue = p.getNodeValue();
-			include = lang.equalsIgnoreCase(langValue);
-			if (!include) {
-				hyphen = langValue.indexOf('-');
-				if (hyphen != Constants.STRING_NOT_FOUND) {
-					langValue = langValue.substring(0, hyphen);
-					include = lang.equalsIgnoreCase(langValue);
-				}
-			}
-			if (include) {
-                long parentID = XMLUtil.getParentId(p);                
-				if (parentID != NodeProxy.DOCUMENT_NODE_GID) {
-                    NodeProxy parent = new NodeProxy(p.getDocument(), parentID);
-                    parent.setNodeType(Node.ELEMENT_NODE);
-					temp.add(parent);
-				}
-			}
-		}
-		if (temp.getLength() > 0) {
-			NodeSet result =
-				((NodeSet) contextSequence).selectAncestorDescendant(
-					temp,
-					NodeSet.DESCENDANT,
-					true,
-					false);
-			for (Iterator i = result.iterator(); i.hasNext();) {
-				p = (NodeProxy) i.next();
-				p.addContextNode(p);
-			}
-			return result;
-		}
-		return Sequence.EMPTY_SEQUENCE;
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+            String lang = getArgument(0).eval(contextSequence).getStringValue();
+            QName qname = new QName("lang", context.getURIForPrefix("xml"), "xml");
+    		NodeSet attribs = context.getBroker().getElementIndex().getAttributesByName(contextSequence.toNodeSet().getDocumentSet(), qname, null);
+    		NodeSet temp = new ExtArrayNodeSet();
+    		NodeProxy p;
+    		String langValue;
+    		int hyphen;
+    		boolean include;
+    		for (Iterator i = attribs.iterator(); i.hasNext();) {
+    			include = false;
+    			p = (NodeProxy) i.next();
+    			langValue = p.getNodeValue();
+    			include = lang.equalsIgnoreCase(langValue);
+    			if (!include) {
+    				hyphen = langValue.indexOf('-');
+    				if (hyphen != Constants.STRING_NOT_FOUND) {
+    					langValue = langValue.substring(0, hyphen);
+    					include = lang.equalsIgnoreCase(langValue);
+    				}
+    			}
+    			if (include) {
+                    long parentID = XMLUtil.getParentId(p);                
+    				if (parentID != NodeProxy.DOCUMENT_NODE_GID) {
+                        NodeProxy parent = new NodeProxy(p.getDocument(), parentID);
+                        parent.setNodeType(Node.ELEMENT_NODE);
+    					temp.add(parent);
+    				}
+    			}
+    		}
+    		if (temp.getLength() > 0) {
+    			result =
+    				((NodeSet) contextSequence).selectAncestorDescendant(
+    					temp,
+    					NodeSet.DESCENDANT,
+    					true,
+    					false);
+    			for (Iterator i = ((NodeSet)result).iterator(); i.hasNext();) {
+    				p = (NodeProxy) i.next();
+    				p.addContextNode(p);
+    			}                
+    		}
+            else result = Sequence.EMPTY_SEQUENCE;
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;          
 	}
 	
 	/* (non-Javadoc)

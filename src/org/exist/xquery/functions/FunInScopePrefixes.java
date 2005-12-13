@@ -11,8 +11,10 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
@@ -39,8 +41,14 @@ public class FunInScopePrefixes extends BasicFunction {
 		super(context, signature);
 	}
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
+	public Sequence eval(Sequence[] args, Sequence contextSequence)	throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        }
+        
 		Map prefixes = new HashMap();
 		NodeValue node = (NodeValue) args[0].itemAt(0);
 		if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
@@ -64,7 +72,11 @@ public class FunInScopePrefixes extends BasicFunction {
 			prefix = (String) i.next();
 			result.add(new StringValue(prefix));
 		}
-		return result;
+		
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;          
 	}
 
 	public static void collectNamespacePrefixes(ElementImpl element, Map prefixes) {
