@@ -79,7 +79,7 @@ public class FunGetSecondsFromDayTimeDuration extends Function {
             result = Sequence.EMPTY_SEQUENCE;
         else {
     		DurationValue duration = (DurationValue) arg.itemAt(0);
-    		return new DecimalValue(Double.toString(duration.getSeconds()));
+    		result = new DecimalValue(Double.toString(duration.getSeconds()));
         }
         
         if (context.getProfiler().isEnabled()) 
