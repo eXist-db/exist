@@ -26,11 +26,18 @@ import org.exist.EXistException;
 import org.exist.util.ByteConversion;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FloatValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+
+import java.util.GregorianCalendar;
+
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * @author wolf
@@ -39,24 +46,64 @@ import org.exist.xquery.value.Type;
 public class ValueIndexFactory {
 
 	public final static AtomicValue deserialize(byte[] data, int start, int len) throws EXistException {
+		
 		int type = data[start + 2];
-		if (Type.subTypeOf(type, Type.STRING)) {
+		
+		/* xs:string */
+		if (Type.subTypeOf(type, Type.STRING))
+		{
 			String s = new String(data, start + 3, len - 3);
 			return new StringValue(s);
-		} else if (Type.subTypeOf(type, Type.INTEGER) ) {
+		}
+		/* xs:dateTime */
+		else if(Type.subTypeOf(type, Type.DATE_TIME))
+		{
+			//get the dateTime back as a long
+			long value = ByteConversion.byteToLong(data, start + 3); 
+			
+			//Create a GregorianCalendar from the long (normalized datetime as milliseconds since the Epoch)
+			GregorianCalendar utccal = new GregorianCalendar();
+			utccal.setTimeInMillis(value);
+			
+			//Create a XMLGregorianCalendar from the GregorianCalendar
+			try
+			{
+				XMLGregorianCalendar xmlutccal = DatatypeFactory.newInstance().newXMLGregorianCalendar(utccal);
+				return new DateTimeValue(xmlutccal);
+			}
+			catch(DatatypeConfigurationException dtce)
+			{
+				throw new EXistException("Could not deserialize xs:dateTime data type for range index key: " + Type.getTypeName(type) + " - " + dtce.getMessage());
+			}
+		}
+		/* xs:integer */
+		else if(Type.subTypeOf(type, Type.INTEGER))
+		{
 			return new IntegerValue(ByteConversion.byteToLong(data, start + 3) ^ 0x8000000000000000L);
-		} else if (type == Type.BOOLEAN) {
+		}
+		/* xs:boolean */
+		else if(type == Type.BOOLEAN)
+		{
 			return new BooleanValue(data[start + 3] == 1);
-		} else if (type == Type.FLOAT) {
+		}
+		/* xs:float */
+		else if (type == Type.FLOAT)
+		{
 			int bits = ByteConversion.byteToInt(data, start + 3) ^ 0x80000000;
 			float f = Float.intBitsToFloat(bits);
 			return new FloatValue(f);
-		} else if (type == Type.DOUBLE) {
+		}
+		/* xs:double */
+		else if (type == Type.DOUBLE)
+		{
 			long bits = ByteConversion.byteToLong(data, start + 3) ^ 0x8000000000000000L;
 			double d = Double.longBitsToDouble(bits);
 			return new DoubleValue(d);
-		} else
-			throw new EXistException("Unknown data type for range index key: " + 
-					Type.getTypeName(type));
+		}
+		/* unknown! */
+		else
+		{
+			throw new EXistException("Unknown data type for range index key: " + Type.getTypeName(type));
+		}
 	}
 }
