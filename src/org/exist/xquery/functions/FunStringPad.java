@@ -24,8 +24,10 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.IntegerValue;
@@ -62,21 +64,40 @@ public class FunStringPad extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }          
+        
+        Sequence result;
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if(seq.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		String str = seq.getStringValue();
-		int count = ((IntegerValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.INTEGER)).getInt();
-		if(count == 0)
-			return StringValue.EMPTY_STRING;
-		if(count < 0)
-			throw new XPathException("Invalid string-pad count");
-		StringBuffer buf = new StringBuffer(str.length() * count);
-		for(int i = 0; i < count; i++)
-			buf.append(str);
-		return new StringValue(buf.toString());
+            result = Sequence.EMPTY_SEQUENCE;
+        else {        
+    		String str = seq.getStringValue();
+    		int count = ((IntegerValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.INTEGER)).getInt();
+    		if(count < 0)
+    			throw new XPathException("Invalid string-pad count");
+            if(count == 0)
+                result = StringValue.EMPTY_STRING;
+            else {
+        		StringBuffer buf = new StringBuffer(str.length() * count);
+        		for(int i = 0; i < count; i++)
+        			buf.append(str);
+                result = new StringValue(buf.toString());
+            }
+        }
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;                        
+            
 	}
 
 }
