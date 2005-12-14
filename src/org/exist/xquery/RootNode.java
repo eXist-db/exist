@@ -22,7 +22,6 @@ package org.exist.xquery;
 
 import java.util.Iterator;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;

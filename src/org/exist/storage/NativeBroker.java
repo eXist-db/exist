@@ -42,7 +42,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.ArraySet;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
