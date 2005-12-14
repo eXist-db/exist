@@ -101,6 +101,7 @@ public class FunName extends Function {
     			case Node.ELEMENT_NODE:
     			case Node.ATTRIBUTE_NODE:
     				result = new StringValue(n.getNodeName());
+    				break;
     			case Node.PROCESSING_INSTRUCTION_NODE:
     				result = new StringValue(((ProcessingInstruction)n).getTarget());
                     break;
