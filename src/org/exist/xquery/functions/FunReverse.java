@@ -10,6 +10,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
@@ -48,16 +49,22 @@ public class FunReverse extends Function {
 		if (seq.getLength() == 0) 
             result = Sequence.EMPTY_SEQUENCE;
         else {
-		  result = new ValueSequence();
-    		for (int i = seq.getLength()-1; i>=0; i--) {
-    			result.add(seq.itemAt(i));
-    		}
+                Sequence tmp = new ValueSequence();
+                Item item;
+                for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                    item = i.nextItem();
+                    tmp.add(item);
+                }
+                result = new ValueSequence();
+                for (int i = seq.getLength()-1; i>=0; i--) {
+                    result.add(tmp.itemAt(i));
+                }
         }
 
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
         
-        return result;          
+        return result;
 	}
 
 }
