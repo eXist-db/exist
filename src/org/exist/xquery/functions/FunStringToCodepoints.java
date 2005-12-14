@@ -25,8 +25,10 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.IntegerValue;
@@ -51,25 +53,40 @@ public class FunStringToCodepoints extends BasicFunction {
 		super(context, signature);
 	}
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
-		if (args[0].getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		String s = args[0].getStringValue();
-		ValueSequence codepoints = new ValueSequence();
-		int ch;
-		IntegerValue next;
-		for (int i = 0; i < s.length(); i++) {
-			ch = s.charAt(i);
-			if (ch >= 55296 && ch <= 56319) {
-                // we'll trust the data to be sound
-                next = new IntegerValue(((ch - 55296) * 1024) + ((int) s.charAt(i++) - 56320) + 65536);
-            } else {
-                next = new IntegerValue(ch);
-            }
-			codepoints.add(next);
-		}
-		return codepoints;
+	public Sequence eval(Sequence[] args, Sequence contextSequence)	throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+       }    
+       
+        Sequence result;
+        if (args[0].getLength() == 0)
+			result =  Sequence.EMPTY_SEQUENCE;
+        else {
+    		String s = args[0].getStringValue();
+    		ValueSequence codepoints = new ValueSequence();
+    		int ch;
+    		IntegerValue next;
+    		for (int i = 0; i < s.length(); i++) {
+    			ch = s.charAt(i);
+    			if (ch >= 55296 && ch <= 56319) {
+                    // we'll trust the data to be sound
+                    next = new IntegerValue(((ch - 55296) * 1024) + ((int) s.charAt(i++) - 56320) + 65536);
+                } else {
+                    next = new IntegerValue(ch);
+                }
+    			codepoints.add(next);
+    		}
+    		result = codepoints;
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;             
+        
 	}
 
 }

@@ -22,8 +22,10 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
@@ -68,31 +70,54 @@ public class FunSum extends Function {
     }
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                    "DEPENDENCIES",
+                    Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		Sequence inner = getArgument(0).eval(contextSequence, contextItem);
 		Sequence zero = IntegerValue.ZERO;
 		if(getSignature().getArgumentCount() == 2)
 			zero = getArgument(1).eval(contextSequence, contextItem);
 		
+        Sequence result;
 		if (inner.getLength() == 0)
-			return zero;
+            result = zero;
+        else {
+    		Item nextItem;
+    		AtomicValue nextValue;
+    		SequenceIterator iter = inner.iterate();
+    		nextItem = iter.nextItem();
+    		nextValue = nextItem.atomize();
+    		if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
+    			nextValue = nextValue.convertTo(Type.DOUBLE);
+    		ComputableValue sum = (ComputableValue) nextValue;
+    		while (iter.hasNext()) {
+    			nextItem = iter.nextItem();
+    			nextValue = nextItem.atomize();
+    			if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
+    				nextValue = nextValue.convertTo(Type.DOUBLE);
+    			if (((NumericValue)nextValue).isNaN()) {
+                    result = DoubleValue.NaN;
+                    break;
+                }
+    			sum = sum.plus((NumericValue) nextValue);
+    		}
+    		result = sum;
+        }
+        
 
-		Item nextItem;
-		AtomicValue nextValue;
-		SequenceIterator iter = inner.iterate();
-		nextItem = iter.nextItem();
-		nextValue = nextItem.atomize();
-		if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
-			nextValue = nextValue.convertTo(Type.DOUBLE);
-		ComputableValue sum = (ComputableValue) nextValue;
-		while (iter.hasNext()) {
-			nextItem = iter.nextItem();
-			nextValue = nextItem.atomize();
-			if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
-				nextValue = nextValue.convertTo(Type.DOUBLE);
-			if(((NumericValue)nextValue).isNaN())
-				return DoubleValue.NaN;
-			sum = sum.plus((NumericValue) nextValue);
-		}
-		return sum;
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", result);
+
+        return result;        
 	}
 }

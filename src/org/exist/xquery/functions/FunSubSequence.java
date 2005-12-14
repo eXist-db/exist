@@ -26,8 +26,10 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DoubleValue;
@@ -44,76 +46,102 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunSubSequence extends Function {
 
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-			new QName("subsequence", Function.BUILTIN_FUNCTION_NS),
-			"Returns a subsequence of the values in the first argument sequence, " +
-			"starting at the position indicated by the value of the second argument and " +
-			"including the number of items indicated by the value of the optional third" +
-			"argument. If the third argument is missing, all items up to the end of the " +
-			"sequence are included.",
-			new SequenceType[] {
-				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
-				 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
-		),
-		new FunctionSignature(
-			new QName("subsequence", Function.BUILTIN_FUNCTION_NS),
-			"Returns a subsequence of the values in the first argument sequence, " +
-			"starting at the position indicated by the value of the second argument and " +
-			"including the number of items indicated by the value of the optional third" +
-			"argument. If the third argument is missing, all items up to the end of the " +
-			"sequence are included.",
-			new SequenceType[] {
-				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
-				 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
-				 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
-		)
-	};
-			
-	/**
-	 * @param context
-	 */
-	public FunSubSequence(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    public final static FunctionSignature signatures[] = {
+            new FunctionSignature(
+                    new QName("subsequence", Function.BUILTIN_FUNCTION_NS),
+                    "Returns a subsequence of the values in the first argument sequence, "
+                            + "starting at the position indicated by the value of the second argument and "
+                            + "including the number of items indicated by the value of the optional third"
+                            + "argument. If the third argument is missing, all items up to the end of the "
+                            + "sequence are included.", new SequenceType[] {
+                            new SequenceType(Type.ITEM,
+                                    Cardinality.ZERO_OR_MORE),
+                            new SequenceType(Type.DOUBLE,
+                                    Cardinality.EXACTLY_ONE) },
+                    new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)),
+            new FunctionSignature(
+                    new QName("subsequence", Function.BUILTIN_FUNCTION_NS),
+                    "Returns a subsequence of the values in the first argument sequence, "
+                            + "starting at the position indicated by the value of the second argument and "
+                            + "including the number of items indicated by the value of the optional third"
+                            + "argument. If the third argument is missing, all items up to the end of the "
+                            + "sequence are included.", new SequenceType[] {
+                            new SequenceType(Type.ITEM,
+                                    Cardinality.ZERO_OR_MORE),
+                            new SequenceType(Type.DOUBLE,
+                                    Cardinality.EXACTLY_ONE),
+                            new SequenceType(Type.DOUBLE,
+                                    Cardinality.EXACTLY_ONE) },
+                    new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)) };
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if(seq.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		int start = 
-			((DoubleValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)).getInt();
-		if(start < 0)
-			start = 0;
-		else
-			--start;
-		if(start >= seq.getLength())
-			return Sequence.EMPTY_SEQUENCE;
-		int length = -1;
-		if(getSignature().getArgumentCount() == 3)
-			length =
-				((DoubleValue)getArgument(2).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)).getInt();
-		 if(length < 0 || length > seq.getLength() - start)
-		 	length = seq.getLength() - start;
-		 Sequence result;
-		 if(seq instanceof NodeSet)
-		 	result = new ExtArrayNodeSet();
-		 else
-		 	result = new ValueSequence();
-		 for(int i = 0; i < length; i++) {
-		 	result.add(seq.itemAt(start + i));
-		 }
-		 return result;
-	}
+    /**
+     * @param context
+     */
+    public FunSubSequence(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
+     *      org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                    "DEPENDENCIES",
+                    Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT ITEM", contextItem.toSequence());
+        }
+
+        Sequence result;
+        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+        if (seq.getLength() == 0)
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+            int start = ((DoubleValue) getArgument(1).eval(contextSequence,
+                    contextItem).convertTo(Type.DOUBLE)).getInt();
+            // TODO : exception? -pb
+            if (start < 0)
+                start = 0;
+            else
+                --start;
+
+            if (start >= seq.getLength())
+                result = Sequence.EMPTY_SEQUENCE;
+            else {
+                int length = -1;
+                if (getSignature().getArgumentCount() == 3)
+                    length = ((DoubleValue) getArgument(2).eval(
+                            contextSequence, contextItem)
+                            .convertTo(Type.DOUBLE)).getInt();
+
+                if (length < 0 || length > seq.getLength() - start)
+                    length = seq.getLength() - start;
+
+                if (seq instanceof NodeSet)
+                    result = new ExtArrayNodeSet();
+                else
+                    result = new ValueSequence();
+                
+                for (int i = 0; i < length; i++) {
+                    result.add(seq.itemAt(start + i));
+                }
+            }
+        }
+
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", result);
+
+        return result;
+
+    }
 
 }
