@@ -29,9 +29,11 @@ import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -67,10 +69,20 @@ public class FunSubstringBefore extends CollatingFunction {
 		super(context, signature);
 	}
 
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                    "DEPENDENCIES",
+                    Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		Expression arg0 = getArgument(0);
 		Expression arg1 = getArgument(1);
 
@@ -80,18 +92,27 @@ public class FunSubstringBefore extends CollatingFunction {
 		Sequence seq1 = arg0.eval(contextSequence);
 		Sequence seq2 = arg1.eval(contextSequence);
 
+        Sequence result;
 		if (seq1.getLength() == 0 || seq2.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+    		String value = seq1.getStringValue();
+    		String cmp = seq2.getStringValue();
+    		if (cmp.length() == 0)
+                result = StringValue.EMPTY_STRING;
+            else {
+        		Collator collator = getCollator(contextSequence, contextItem, 3);
+        		int p = Collations.indexOf(collator, value, cmp);
+        		if (p == Constants.STRING_NOT_FOUND)
+                    result = new StringValue("");
+                else
+                    result = new StringValue(value.substring(0, p));        			
+            }
+        }
 
-		String value = seq1.getStringValue();
-		String cmp = seq2.getStringValue();
-		if (cmp.length() == 0)
-			return StringValue.EMPTY_STRING;
-		Collator collator = getCollator(contextSequence, contextItem, 3);
-		int p = Collations.indexOf(collator, value, cmp);
-		if (p != Constants.STRING_NOT_FOUND)
-			return new StringValue(value.substring(0, p));
-		else
-			return new StringValue("");
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", result);
+
+        return result;        
 	}
 }

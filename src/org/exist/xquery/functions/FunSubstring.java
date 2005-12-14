@@ -25,9 +25,11 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DoubleValue;
@@ -73,31 +75,52 @@ public class FunSubstring extends Function {
 	}
 		
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		Expression arg0 = getArgument(0);
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }  
+        
+        Expression arg0 = getArgument(0);
 		Expression arg1 = getArgument(1);
 		Expression arg2 = null;
-		if(getArgumentCount() > 2)
+		if (getArgumentCount() > 2)
 			arg2 = getArgument(2);
 
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
+        
+        Sequence result;
 		Sequence seq = arg0.eval(contextSequence);
 		if(seq.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		int start = ((DoubleValue)arg1.eval(contextSequence).itemAt(0).convertTo(Type.DOUBLE)).getInt();
-		if(start <= 0)
-			start = 1;
-		int length = 0;
-		if(arg2 != null)
-			length = ((NumericValue)arg2.eval(contextSequence).
-				itemAt(0).convertTo(Type.DOUBLE)).getInt(); 
-		if(start <= 0 || length < 0)
-			throw new IllegalArgumentException("Illegal start or length argument");
-		String result = seq.getStringValue();
-		if(length > result.length())
-			length = result.length() - start + 1;
-		if(start < 0 || --start + length > result.length())
-			return new StringValue("");
-		return new StringValue((length > 0) ? result.substring(start, start + length) : result.substring(start));
+        else {
+    		int start = ((DoubleValue)arg1.eval(contextSequence).itemAt(0).convertTo(Type.DOUBLE)).getInt();
+            //TODO : does this make sense ? -pb
+    		if (start <= 0)
+    			start = 1;
+            
+    		int length = 0;
+    		if(arg2 != null)
+    			length = ((NumericValue)arg2.eval(contextSequence).
+    				itemAt(0).convertTo(Type.DOUBLE)).getInt(); 
+    		if(start <= 0 || length < 0)
+    			throw new IllegalArgumentException("Illegal start or length argument");
+    		String string = seq.getStringValue();
+    		if(length > string.length())
+    			length = string.length() - start + 1;
+    		if(start < 0 || --start + length > string.length())
+    			return new StringValue("");
+    		result = new StringValue((length > 0) ? string.substring(start, start + length) : string.substring(start));
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+        
+        return result;    
+        
 	}
 }
