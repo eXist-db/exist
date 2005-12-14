@@ -48,6 +48,7 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeListImpl;
@@ -2624,7 +2625,7 @@ public class NativeBroker extends DBBroker {
 		int truncation,
 		String expr,
 		Collator collator) {
-		ArraySet resultNodeSet = new ArraySet(context.getLength());
+		ExtArrayNodeSet resultNodeSet = new ExtArrayNodeSet();
 		NodeProxy p;
 		String content;
 		String cmp;

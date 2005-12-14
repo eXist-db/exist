@@ -25,6 +25,7 @@ import java.util.Iterator;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.util.LockException;
@@ -71,7 +72,7 @@ public class RootNode extends Step {
         // check if the loaded documents should remain locked
         boolean lockOnLoad = context.lockDocumentsOnLoad();
         
-        NodeSet result = new ArraySet(ds.getLength());
+        NodeSet result = new ExtArrayNodeSet(2);
         try {
             // wait for pending updates
             ds.lock(false);
