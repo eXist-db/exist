@@ -2142,9 +2142,8 @@ public class NativeBroker extends DBBroker {
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 		try {
             if (LOG.isInfoEnabled()) {
-                LOG.info("removeDocument() - "
-                    + "removing document "
-                    + document.getDocId()
+                LOG.info("Removing document "
+                    + document.getFileName()
                     + " ...");
             }
             
