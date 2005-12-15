@@ -258,17 +258,17 @@ public class LocationStep extends Step {
 		if(test.isWildcardTest()) {
             if (nodeTestType == null)
                 nodeTestType = new Integer(test.getType());   
-			if(nodeTestType.intValue() == Type.NODE) {
+			if (Type.subTypeOf(nodeTestType.intValue(), Type.NODE)) {
 				if (inPredicate) {
 					if (contextSet instanceof VirtualNodeSet) {
 						((VirtualNodeSet) contextSet).setInPredicate(true);
 						((VirtualNodeSet) contextSet).setSelfIsContext();
-                    } else if(Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
+                    } else if (Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
 						NodeProxy p;
 						for (Iterator i = contextSet.iterator(); i.hasNext();) {
 							p = (NodeProxy) i.next();
 							if (test.matches(p))
-								p.addContextNode(p);
+								p.addContextNode(p); 
 						}
 					}
 				}
@@ -285,7 +285,7 @@ public class LocationStep extends Step {
 //                }
 //                return result;
 				VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
-				vset.setInPredicate(inPredicate);
+                vset.setInPredicate(inPredicate);               
 				return vset;
 			}
 		} else {            
