@@ -45,23 +45,27 @@ public class SelfSelector implements NodeSelector {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.DocumentImpl, long)
 	 */
-	public NodeProxy match(DocumentImpl doc, long gid) {		
+	public NodeProxy match(DocumentImpl doc, long gid) {
         
-        NodeProxy newNode = new NodeProxy(doc, gid);
-        if (newNode == null) 
-            return null;         
-        NodeProxy contextNode;      
-        contextNode = newNode;
-        if (rememberContext)
-            newNode.addContextNode(contextNode);
-        return newNode;
-		
+        NodeProxy p = new NodeProxy(doc, gid);
+        if (p == null) 
+            return null;  
+        NodeProxy contextNode;       
+        
+        contextNode = p;       
+        if (rememberContext)             
+            p.addContextNode(contextNode);       
+        return p;
+        	
+        
         /*
         NodeProxy p = context.get(doc, gid);
-		if(p != null) {
-			if (rememberContext)
-				p.addContextNode(p);
-		}
+		if(p == null)
+            return null;            
+		if (rememberContext) {
+            contextNode = p;
+			p.addContextNode(p);
+        }		
 		return p;
 		*/
 	}
