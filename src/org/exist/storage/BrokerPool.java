@@ -627,14 +627,16 @@ public class BrokerPool {
 			recovered = transactionManager.runRecovery(broker);
 		
             if (!recovered) {
-                Txn txn = transactionManager.beginTransaction();
-                try {
-                	//TODO : use a root collection final member
-                    broker.getOrCreateCollection(txn, DBBroker.ROOT_COLLECTION);
-                    transactionManager.commit(txn);
-                } catch (PermissionDeniedException e) {
-                    transactionManager.abort(txn);
-                }
+            	if (broker.getCollection(DBBroker.ROOT_COLLECTION) == null) {
+            		Txn txn = transactionManager.beginTransaction();
+            		try {
+            			//TODO : use a root collection final member
+            			broker.getOrCreateCollection(txn, DBBroker.ROOT_COLLECTION);
+            			transactionManager.commit(txn);
+            		} catch (PermissionDeniedException e) {
+            			transactionManager.abort(txn);
+            		}
+            	}
             }
         }
         

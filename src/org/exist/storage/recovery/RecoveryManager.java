@@ -81,6 +81,7 @@ public class RecoveryManager {
 			File last = logManager.getFile(lastNum);
 			// scan the last log file and record the last checkpoint found
 			JournalReader reader = new JournalReader(broker, last, lastNum);
+			Long2ObjectHashMap txnsStarted = new Long2ObjectHashMap();
             try {
     			Checkpoint lastCheckpoint = null;
     			long lastLsn = Lsn.LSN_INVALID;
@@ -90,8 +91,16 @@ public class RecoveryManager {
         			while ((next = reader.nextEntry()) != null) {
 //                        LOG.debug(next.dump());
 						progress.set(Lsn.getOffset(next.getLsn()));
-        				if (next.getLogType() == LogEntryTypes.CHECKPOINT)
+						if (next.getLogType() == LogEntryTypes.TXN_START) {
+			                // new transaction starts: add it to the transactions table
+			                txnsStarted.put(next.getTransactionId(), next);
+			            } else if (next.getLogType() == LogEntryTypes.TXN_ABORT) {
+			            	// transaction aborted: remove it from the transactions table
+			            	txnsStarted.remove(next.getTransactionId());
+			            } else if (next.getLogType() == LogEntryTypes.CHECKPOINT) {
+			            	txnsStarted.clear();
         					lastCheckpoint = (Checkpoint) next;
+			            }
         				lastLsn = next.getLsn();
         			}
                 } catch (LogException e) {
@@ -102,7 +111,9 @@ public class RecoveryManager {
                 
     			// if the last checkpoint record is not the last record in the file
     			// we need a recovery.
-    			if (lastCheckpoint == null || lastCheckpoint.getLsn() != lastLsn) {
+    			if ((lastCheckpoint == null || lastCheckpoint.getLsn() != lastLsn) &&
+    					txnsStarted.size() > 0) {
+    				LOG.debug("Found dirty transactions: " + txnsStarted.size());
     				// starting recovery: reposition the log reader to the last checkpoint
                     if (lastCheckpoint == null)
                         reader.position(1);
@@ -153,6 +164,9 @@ public class RecoveryManager {
             } else if (next.getLogType() == LogEntryTypes.TXN_COMMIT) {
                 // transaction committed: remove it from the transactions table
                 runningTxns.remove(next.getTransactionId());
+            } else if (next.getLogType() == LogEntryTypes.TXN_ABORT) {
+            	// transaction aborted: remove it from the transactions table
+            	runningTxns.remove(next.getTransactionId());
             }
 //            LOG.debug("Redo: " + next.dump());
             // redo the log entry

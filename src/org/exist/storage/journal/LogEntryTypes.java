@@ -26,6 +26,7 @@ import java.lang.reflect.Constructor;
 
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Checkpoint;
+import org.exist.storage.txn.TxnAbort;
 import org.exist.storage.txn.TxnCommit;
 import org.exist.storage.txn.TxnStart;
 import org.exist.util.hashtable.Int2ObjectHashMap;
@@ -64,6 +65,7 @@ public class LogEntryTypes {
 	public final static byte TXN_START = 0;
 	public final static byte TXN_COMMIT = 1;
 	public final static byte CHECKPOINT = 2;
+	public final static byte TXN_ABORT = 3;
 	
     private final static Int2ObjectHashMap entryTypes = new Int2ObjectHashMap();
     
@@ -72,6 +74,7 @@ public class LogEntryTypes {
         addEntryType(TXN_START, TxnStart.class);
         addEntryType(TXN_COMMIT, TxnCommit.class);
         addEntryType(CHECKPOINT, Checkpoint.class);
+        addEntryType(TXN_ABORT, TxnAbort.class);
     }
     
     /**

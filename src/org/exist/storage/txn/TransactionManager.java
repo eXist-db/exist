@@ -30,8 +30,8 @@ import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.journal.Journal;
-import org.exist.storage.journal.LogException;
 import org.exist.storage.recovery.RecoveryManager;
+import org.exist.util.sanity.SanityCheck;
 
 /**
  * This is the central entry point to the transaction management service.
@@ -128,8 +128,16 @@ public class TransactionManager {
     }
 	
     public void abort(Txn txn) {
-        if (enabled)
-            txn.releaseAll();
+        if (!enabled || txn == null)
+        	return;
+        try {
+			journal.writeToLog(new TxnAbort(txn.getId()));
+		} catch (TransactionException e) {
+			LOG.warn("Failed to write abort record to journal: " + e.getMessage());
+		}
+        if (!groupCommit)
+        	journal.flushToLog(true);
+        txn.releaseAll();
     }
     
     /**
