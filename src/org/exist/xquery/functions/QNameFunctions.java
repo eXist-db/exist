@@ -25,8 +25,10 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
@@ -83,25 +85,39 @@ public class QNameFunctions extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
+	public Sequence eval(Sequence[] args, Sequence contextSequence)	throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        } 
+        
+        Sequence result;
 		if (args[0].getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		QNameValue value = (QNameValue) args[0].itemAt(0);
-		QName qname = value.getQName();
-		if (isCalledAs("prefix-from-QName")) {
-			String prefix = qname.getPrefix();
-			if (prefix == null)
-				return Sequence.EMPTY_SEQUENCE;
-			else
-				return new StringValue(prefix, Type.NCNAME);
-		} else if (isCalledAs("local-name-from-QName"))
-			return new StringValue(qname.getLocalName(), Type.NCNAME);
-		else {
-			String uri = qname.getNamespaceURI();
-			if (uri == null)
-				uri = "";
-			return new AnyURIValue(uri);
-		}
+			result = Sequence.EMPTY_SEQUENCE;
+        else {
+    		QNameValue value = (QNameValue) args[0].itemAt(0);
+    		QName qname = value.getQName();
+    		if (isCalledAs("prefix-from-QName")) {
+    			String prefix = qname.getPrefix();
+    			if (prefix == null)
+                    result = Sequence.EMPTY_SEQUENCE;
+    			else
+                    result = new StringValue(prefix, Type.NCNAME);
+    		} else if (isCalledAs("local-name-from-QName"))
+                result = new StringValue(qname.getLocalName(), Type.NCNAME);
+    		else {
+    			String uri = qname.getNamespaceURI();
+    			if (uri == null)
+    				uri = "";
+                result = new AnyURIValue(uri);
+    		}
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);        
+        
+        return result;          
 	}
 }

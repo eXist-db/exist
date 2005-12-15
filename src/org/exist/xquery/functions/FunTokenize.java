@@ -27,8 +27,10 @@ import java.util.regex.PatternSyntaxException;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -77,37 +79,49 @@ public class FunTokenize extends FunMatches {
 	/**
 	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
+        Sequence result;
 		Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
 		if (stringArg.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		String string = stringArg.getStringValue();
-		if ( string.length() == 0 )
-			return Sequence.EMPTY_SEQUENCE;
-		String pattern =
-			translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+            String string = stringArg.getStringValue();
+            if (string.length() == 0 )
+                result = Sequence.EMPTY_SEQUENCE;
+            else {
+                String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
 		
-		int flags = 0;
-		if (getSignature().getArgumentCount() == 3)
-			flags =
-				parseFlags(
-					getArgument(2)
-						.eval(contextSequence, contextItem)
-						.getStringValue());
-		try {
-			if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
-				pat = Pattern.compile(pattern, flags);
+        		int flags = 0;
+        		if (getSignature().getArgumentCount() == 3)
+        			flags = parseFlags(getArgument(2).eval(contextSequence, contextItem)
+        						.getStringValue());
+        		try {
+        			if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
+        				pat = Pattern.compile(pattern, flags);
+                    }
+                    String[] tokens = pat.split(string, -1);
+                    result = new ValueSequence();
+        			for (int i = 0; i < tokens.length; i++)
+                        result.add(new StringValue(tokens[i]));        			
+        		} catch (PatternSyntaxException e) {
+        			throw new XPathException(getASTNode(), "Invalid regular expression: " + e.getMessage(), e);
+        		}
             }
+        }
 
-            String[] result = pat.split(string, -1);
-			ValueSequence r = new ValueSequence();
-			for(int i = 0; i < result.length; i++)
-				r.add(new StringValue(result[i]));
-			return r;
-		} catch (PatternSyntaxException e) {
-			throw new XPathException(getASTNode(), "Invalid regular expression: " + e.getMessage(), e);
-		}
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);        
+        
+        return result;    
 	}
 
 }
