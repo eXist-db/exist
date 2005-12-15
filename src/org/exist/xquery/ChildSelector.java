@@ -50,18 +50,18 @@ public class ChildSelector implements NodeSelector {
 	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.NodeProxy)
 	 */
 	public NodeProxy match(DocumentImpl doc, long gid) {
-        //NodeProxy newNode = new NodeProxy(doc, gid);
-        NodeProxy newNode = new NodeProxy(doc, gid);
-        if(newNode == null) 
+        
+        NodeProxy p = new NodeProxy(doc, gid);
+        if(p == null) 
             return null;         
         NodeProxy contextNode;         
         
         //What is this mysterious condition apart a Constants.ATTRIBUTE_AXIS ???
 		if (mysteriousCondition) {
 		    //Like in SelfSelector            
-            contextNode = newNode;
+            contextNode = p;
             if (rememberContext)
-                newNode.addContextNode(contextNode);
+                p.addContextNode(contextNode);
             //no else clause !
         } else {
             //Like in ChildSelector            
@@ -69,10 +69,10 @@ public class ChildSelector implements NodeSelector {
 			if (contextNode == null)
                return null;
             if (rememberContext)
-                newNode.addContextNode(contextNode);
+                p.addContextNode(contextNode);
             else
-                newNode.copyContext(contextNode);
+                p.copyContext(contextNode);
         }
- 		return newNode;			
+ 		return p;			
 	}
 }
