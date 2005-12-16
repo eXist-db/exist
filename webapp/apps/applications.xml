@@ -319,4 +319,33 @@
         <demo-site>http://www.dwds.de/</demo-site>
         <dev-notes>XQuery, Java, XSLT, Perl</dev-notes>
     </application>
+    <application>
+     <dc:creator>Bruno Chatel</dc:creator>
+     <creator-site>http://www.chadocs.com/</creator-site>
+     <dc:identifier>http://www.masson.fr/</dc:identifier>
+     <dc:title>Atelier éditorial du Guide Thérapeutique</dc:title>
+     <dc:subject>Editorial system : authoring of a medical book</dc:subject>
+     <dc:description>Authoring system to produce the "Guide thérapeutique" book in XML : the system enables to
+     manage the authoring process of the book (called corpus), using medicaments external databases. <br/>Developed functionalities
+     are : browse and edit (using Epic Editor) the corpus at any structural elements level, search in corpus and medicament databases (fulltext and
+     structure mixed queries), organize (sort, create, delete) "high level" structure of the book without using an XML editor, propagate
+     medicament database updates in corpus, search for unavailable medicaments, secure links, manage index tables, coherence controls,
+     export and transform XML corpus for publishing process
+     (<a href="http://www.masson.fr/masson/portal/bookmark?Global=2&amp;Page2=0&amp;MenuIdSelected=223&amp;MenuItemSelected=0&amp;MenuSupportSelected=0&amp;Product=401153&amp;ProductCode=401153">paper</a> and 
+     <a href="http://www.masson.fr/masson/portal/bookmark?Global=2&amp;Page2=0&amp;MenuIdSelected=226&amp;MenuItemSelected=0&amp;MenuSupportSelected=0&amp;Product=401585&amp;ProductCode=401585">ebook</a>).
+     </dc:description>
+     <dc:publisher>Editions Masson</dc:publisher>
+     <dc:format>Web based authoring environment (eXist, Cocoon) integrated with an XML editor (Epic) and Java batch modules.</dc:format>
+
+  <status>production</status>
+  <feature-used>XQuery</feature-used>
+  <feature-used>XUpdate</feature-used>
+  <feature-used>XMLDB Api in Java</feature-used>
+  <feature-used>Cocoon</feature-used>
+  <database size="20Mb" documents="4 (corpus, medicaments, international medicaments common designation, index tables)" updates="always"/>
+  <dev-notes>XQuery, XUpdate, XMLDB Api in Java,  XSP pages, XSLT, JavaScript + HTML GUI, Epic Editor integration (chek-in, check-out)  </dev-notes>
+  <submitter>Bruno Chatel, mailto:bcha@chadocs.com</submitter>
+  <third-party-feature-used>Epic Editor</third-party-feature-used>
+  <third-party-feature-used>Java specific modules</third-party-feature-used>  
+ </application>
 </applications>
