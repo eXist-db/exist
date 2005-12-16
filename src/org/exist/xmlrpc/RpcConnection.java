@@ -54,10 +54,10 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.ArraySet;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -1411,7 +1411,7 @@ public class RpcConnection extends Thread {
                 if(s_id.length() > 0) {
                     long id = Long.parseLong(s_id);
                     NodeProxy node = new NodeProxy(doc, id);
-                    nodes = new ArraySet(1);
+                    nodes = new ExtArrayNodeSet(1);
                     nodes.add(node);
                 }
             }
