@@ -32,8 +32,8 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.security.User;
@@ -48,10 +48,10 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.modules.XMLResource;
 
 public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryService {
@@ -121,7 +121,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			String[] docs = new String[] { res.getParentCollection().getName() + "/" + res.getDocumentId() };
 			return doQuery(query, docs, null, sortBy);
 		} else {
-			NodeSet set = new ArraySet(1);
+			NodeSet set = new ExtArrayNodeSet(1);
 			set.add(node);
 			String[] docs = new String[] { node.getDocument().getName() };
 			return doQuery(query, docs, set, sortBy);
@@ -141,7 +141,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			String[] docs = new String[] { res.getParentCollection().getName() + "/" + res.getDocumentId() };
 			return execute(docs, null, expression, null);
 		} else {
-			NodeSet set = new ArraySet(1);
+			NodeSet set = new ExtArrayNodeSet(1);
 			set.add(node);
 			String[] docs = new String[] { node.getDocument().getName() };
 			return execute(docs, set, expression, null);
