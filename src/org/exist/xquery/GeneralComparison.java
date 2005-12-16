@@ -193,19 +193,22 @@ public class GeneralComparison extends BinaryOp {
 			   Type.subTypeOf(getLeft().returnsType(), Type.NODE)) { 
 			    if ((getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0 && 
                     (getRight().getCardinality() & Cardinality.MANY) == 0) {
-                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE",  
-                    "quickNodeSetCompare");
+                        if (context.getProfiler().isEnabled())
+                            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
+                                    "OPTIMIZATION CHOICE", "quickNodeSetCompare");
 					result = quickNodeSetCompare(contextSequence);
-				} else {         
-                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", 
-                    "nodeSetCompare");                    
+				} else {      
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
+                                "OPTIMIZATION CHOICE", "nodeSetCompare");                    
 					result = nodeSetCompare(contextSequence);
 				}
 			}
 		}
         if(result == null) {
-            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", 
-            "genericCompare");   
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
+                        "OPTIMIZATION CHOICE", "genericCompare");   
             result = genericCompare(contextSequence, contextItem);
         }
         
@@ -311,8 +314,9 @@ public class GeneralComparison extends BinaryOp {
 		
         // if the context sequence hasn't changed we can return a cached result
 		if (cached != null && cached.isValid(contextSequence)) {
-            context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
-                    "Returned cached result");
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                        "OPTIMIZATION", "Returned cached result");
 			return cached.getResult();
 		}		
       
@@ -324,9 +328,13 @@ public class GeneralComparison extends BinaryOp {
         if (rightSeq.getLength() == 0)
             return Sequence.EMPTY_SEQUENCE;
         
-		if (rightSeq.getLength() > 1)
-			// fall back to nodeSetCompare
+		if (rightSeq.getLength() > 1) {
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
+                        "OPTIMIZATION FALLBACK", "nodeSetCompare");
+            //TODO : cache this ?
 			return nodeSetCompare(nodes, contextSequence);
+        }
 		
 		// get the type of a possible index
 		int indexType = nodes.getIndexType();		
@@ -335,15 +343,15 @@ public class GeneralComparison extends BinaryOp {
 		Item key = rightSeq.itemAt(0).atomize();
 		//See if we have a range index defined on the nodes in this sequence
 	    if(indexType != Type.ITEM) {
-	        if(truncation != Constants.TRUNC_NONE) {
+	        if (truncation != Constants.TRUNC_NONE) {
 	        	// truncation is only possible on strings
 	        	key = key.convertTo(Type.STRING);
-	        } else if(key.getType() != indexType) {
+	        } else if (key.getType() != indexType) {
 	            // index type doesn't match. If key is untyped atomic, convert it to string
-	            if(key.getType() == Type.ATOMIC)
+	            if (key.getType() == Type.ATOMIC)
 	                key = key.convertTo(Type.STRING);
 	            // If index has a numeric type, we convert to xs:double 
-	            if(Type.subTypeOf(indexType, Type.NUMBER))
+	            if (Type.subTypeOf(indexType, Type.NUMBER))
 	                key = key.convertTo(Type.DOUBLE);
 	        }
             
@@ -365,10 +373,14 @@ public class GeneralComparison extends BinaryOp {
 						throw new XPathException(getASTNode(), e.getMessage(), e);
 					}
 				}
-	        } else
-                // no usable index found. Fall back to nodeSetCompare	            
-                //TODO : is this cacheable ? -pb
+	        } else {
+                if (context.getProfiler().isEnabled())
+                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
+                            "OPTIMIZATION FALLBACK", "nodeSetCompare"); 
+                //TODO : cache this ?
 	            return nodeSetCompare(nodes, contextSequence);
+            }
+        
         //REMOVED : a *general* comparison should not be dependant of the settings of a fulltext index
         /*
 	    } else if (key.getType() == Type.ATOMIC || Type.subTypeOf(key.getType(), Type.STRING)) {
@@ -392,8 +404,10 @@ public class GeneralComparison extends BinaryOp {
 			}
         */
 		} else {
-		    // no usable index found. Fall back to nodeSetCompare
-            //TODO : is this cacheable ? -pb
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
+                        "OPTIMIZATION FALLBACK", "nodeSetCompare"); 
+            //TODO : cache this ? -pb
 		    return nodeSetCompare(nodes, contextSequence);
 		}
 		
