@@ -22,7 +22,6 @@ package org.exist.xquery;
 
 import java.util.Iterator;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
@@ -438,7 +437,7 @@ public class LocationStep extends Step {
                     throw new IllegalArgumentException("Unsupported axis specified");                   
             }			
 		} else {
-			NodeSet result = new ArraySet(contextSet.getLength());
+			NodeSet result = new ExtArrayNodeSet(contextSet.getLength());
 			NodeProxy p, sib;
 			NodeImpl n;
 			for (Iterator i = contextSet.iterator(); i.hasNext();) {

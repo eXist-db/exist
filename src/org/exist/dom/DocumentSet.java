@@ -209,7 +209,7 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	}
 
 	public NodeSet toNodeSet() {
-		NodeSet result = new ArraySet(getLength());
+		NodeSet result = new ExtArrayNodeSet(getLength());
 		DocumentImpl doc;
         for (Iterator i = iterator(); i.hasNext();) {
             doc = (DocumentImpl) i.next();
