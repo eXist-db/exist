@@ -12,6 +12,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
@@ -80,7 +81,8 @@ public class CollectionConfigurationTest extends TestCase {
             String configPath = CollectionConfigurationManager.CONFIG_COLLECTION
                     + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;                    
             System.out.println("Manually removing '" + configPath + "/" + configurationFileName + "'");
-            Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);            
+            Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);  
+            assertNotNull(configColl);
             configColl.removeResource(configColl.getResource(configurationFileName));
             //TODO remove the config collection as well ?
             
@@ -169,6 +171,7 @@ public class CollectionConfigurationTest extends TestCase {
             System.out.println("Manually adding '" + configPath + "/"
                     + configurationFileName + "'");
             Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);             
+            assertNotNull(configColl);
             Resource res = configColl.createResource(configurationFileName, "XMLResource");
             assertNotNull(res);
             res.setContent(CONFIG1);            
@@ -339,7 +342,7 @@ public class CollectionConfigurationTest extends TestCase {
            //WARNING : the code hereafter used to *not* work whereas 
            //testCollectionConfigurationService4 did. 
            //Adding confMgr.invalidateAll(getName()); in Collection.storeInternal solved the problem
-           //Strane case that needs investigations... -pb
+           //Strange case that needs investigations... -pb
            
            // 3 numeric values
            result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
@@ -354,6 +357,47 @@ public class CollectionConfigurationTest extends TestCase {
        }
    } 
    
+   public void testCollectionConfigurationService7() {
+       ResourceSet result;
+       boolean exceptionThrown = false;
+       String message;
+       try {
+           //Configure collection *manually* 
+           String configPath = CollectionConfigurationManager.CONFIG_COLLECTION
+                   + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;
+           configurationFileName = "foo" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX;
+           System.out.println("Manually adding '" + configPath + "/"
+                   + configurationFileName + "'");
+           Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);            
+           Resource res = configColl.createResource(configurationFileName, "XMLResource");
+           assertNotNull(res);
+           res.setContent(CONFIG1);            
+           configColl.storeResource(res);            
+
+           try {
+           
+               //Reconfigure collection *manually* 
+               configPath = CollectionConfigurationManager.CONFIG_COLLECTION
+                       + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;   
+               configurationFileName = "bar" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX;
+               System.out.println("Manually adding '" + configPath + "/"
+                       + configurationFileName + "'");
+               configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);            
+               res = configColl.createResource(configurationFileName, "XMLResource");
+               assertNotNull(res);
+               res.setContent(CONFIG1);            
+               configColl.storeResource(res);  
+           } catch (XMLDBException e) {
+                exceptionThrown = true;
+                message = e.getMessage();
+            }
+            assertTrue(configurationFileName, exceptionThrown);
+            configurationFileName = "foo" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX;
+           
+       } catch (Exception e) {
+           fail(e.getMessage());
+       }
+   }    
 
 
 // TODO : 2 manual configurations (exception because foo.xonf/bar.xconf)
