@@ -44,7 +44,8 @@ public class DoubleValue extends NumericValue implements Indexable {
 			value = Double.parseDouble(otherValue.getStringValue());
 		} catch (NumberFormatException e) {
 			throw new XPathException(
-				"cannot convert '" + Type.getTypeName(otherValue.getType()) + "' into a double");
+				"Cannot convert '" + Type.getTypeName(otherValue.getType()) + 
+                "(" + otherValue.getStringValue() + ")' into a double");
 		}
 	}
 
