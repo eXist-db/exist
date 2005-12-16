@@ -856,17 +856,21 @@ implements Comparable, EntityResolver, Cacheable {
 			releaseReader(broker, info.getReader());
 		}
         
-      collectionConfEnabled = true;
+        collectionConfEnabled = true;
 		broker.deleteObservers();
 		info.finishTrigger(broker, transaction, document);
 		broker.getBrokerPool().getNotificationService().notifyUpdate(document, 
 				(info.getEvent() == Trigger.UPDATE_DOCUMENT_EVENT ? UpdateListener.UPDATE : UpdateListener.ADD));
         
         //Is it a collection configuration file ?
-        if (getName().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION))
+        if (getName().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION)) {
             if (getConfiguration(broker).getDocName() == null ||
-                getConfiguration(broker).getDocName().equals(document.getFileName()))                   
-                broker.sync(Sync.MAJOR_SYNC);        
+                getConfiguration(broker).getDocName().equals(document.getFileName())) {               
+                broker.sync(Sync.MAJOR_SYNC);
+                //TODO : ugly construct since we should re-read the configuration
+                getConfiguration(broker).setDocName(document.getFileName());
+            }
+        }        
 	}
     
     public IndexInfo validate(Txn transaction, DBBroker broker, String docName, String data)
@@ -912,7 +916,7 @@ implements Comparable, EntityResolver, Cacheable {
         if (getName().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION) &&
             docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
             //Allow just one configuration document per collection
-            //TODO : do no throw the exception if a system property allows several ones -pb
+            //TODO : do not throw the exception if a system property allows several ones -pb
             if (getConfiguration(broker).getDocName() != null &&
                 !getConfiguration(broker).getDocName().equals(docName))
                 throw new EXistException("Trying to validate another configuration document");

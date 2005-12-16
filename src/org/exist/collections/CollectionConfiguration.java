@@ -151,6 +151,11 @@ public class CollectionConfiguration {
     public String getDocName() {
         return docName;
     }
+    
+    //TODO : we should not have write access
+    public void setDocName(String docName) {
+        this.docName = docName;
+    }    
 
     protected void setIndexConfiguration(IndexSpec spec) {
         this.indexSpec = spec;
