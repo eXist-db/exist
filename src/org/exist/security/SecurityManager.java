@@ -90,14 +90,16 @@ public class SecurityManager {
 		this.pool = pool;
 		
         TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        Txn txn = null;
 		DBBroker broker = sysBroker;
 		try {
 			Collection sysCollection = broker.getCollection(DBBroker.SYSTEM_COLLECTION);
 			if (sysCollection == null) {
+				txn = transact.beginTransaction();
 				sysCollection = broker.getOrCreateCollection(txn, DBBroker.SYSTEM_COLLECTION);
 				sysCollection.setPermissions(0770);
 				broker.saveCollection(txn, sysCollection);
+				transact.commit(txn);
 			}
 			Document acl = sysCollection.getDocument(broker, ACL_FILE);
 			Element docElement = null;
@@ -114,7 +116,9 @@ public class SecurityManager {
 				users.put(user.getUID(), user);
 				addGroup(DBA_GROUP);
 				addGroup(GUEST_GROUP);
+				txn = transact.beginTransaction();
 				save(broker, txn);
+				transact.commit(txn);
 			} else {
 				LOG.debug("loading acl");
 				Element root = acl.getDocumentElement();
@@ -162,7 +166,6 @@ public class SecurityManager {
 					}
 				}
 			}
-            transact.commit(txn);
 		} catch (Exception e) {
             transact.abort(txn);
 			e.printStackTrace();
