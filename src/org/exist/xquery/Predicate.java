@@ -203,7 +203,7 @@ public class Predicate extends PathExpr {
 	private Sequence selectByPosition(Sequence outerSequence, Sequence contextSequence, int mode, Expression inner) throws XPathException {
 		if(Type.subTypeOf(contextSequence.getItemType(), Type.NODE) && outerSequence != null &&
 			outerSequence.getLength() > 0) {
-			Sequence result = new ArraySet(100);
+			Sequence result = new ExtArrayNodeSet(100);
 			NodeSet contextSet = contextSequence.toNodeSet();
 			boolean reverseAxis = isReverseAxis(mode);
 			if(!(reverseAxis 

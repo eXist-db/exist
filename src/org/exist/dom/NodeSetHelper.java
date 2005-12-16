@@ -235,7 +235,7 @@ public class NodeSetHelper {
 		boolean directParent,
 		boolean includeSelf,
 		int level) {
-	    NodeSet result = new ArraySet(5);
+	    NodeSet result = new ExtArrayNodeSet(5);
 		NodeProxy temp;
 		long gid = p.getGID();
 		if (includeSelf && (temp = ancestors.get(p.getDocument(), gid)) != null)
