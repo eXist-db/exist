@@ -103,25 +103,52 @@ public class Predicate extends PathExpr {
     
 	public Sequence evalPredicate(Sequence outerSequence, Sequence contextSequence,	int mode)
 		    throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        }            
         
+        Sequence result;
 		Expression inner = getExpression(0);
 		if (inner == null)
-			return Sequence.EMPTY_SEQUENCE;
-        // just to be sure: change mode to boolean if the predicate expression returns a number
-        //TODO : the code, likely correct, seems to implement the exact contrary     
-        if(Type.subTypeOf(inner.returnsType(), Type.NUMBER) && executionMode == BOOLEAN) {
-            executionMode = POSITIONAL;
-        }        
-		switch(executionMode) {
-			case NODE:
-			    return selectByNodeSet(contextSequence);
-            case BOOLEAN:
-                return evalBoolean(contextSequence, inner);
-			case POSITIONAL:
-			    return selectByPosition(outerSequence, contextSequence, mode, inner);
-			default:
-                throw new IllegalArgumentException("Unsupported execution mode");			    
-		}
+			result = Sequence.EMPTY_SEQUENCE;
+        else {
+            // just to be sure: change mode to boolean if the predicate expression returns a number
+            //TODO : the code, likely correct, seems to implement the exact contrary     
+            if(Type.subTypeOf(inner.returnsType(), Type.NUMBER) && executionMode == BOOLEAN) {
+                executionMode = POSITIONAL;
+            }        
+    		switch(executionMode) {
+    			case NODE: 
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
+                                "OPTIMIZATION CHOICE", "selectByNodeSet");                    
+                    result = selectByNodeSet(contextSequence);
+                    break;
+                case BOOLEAN: 
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
+                                "OPTIMIZATION CHOICE", "evalBoolean");                    
+                    result = evalBoolean(contextSequence, inner);
+                    break;
+    			case POSITIONAL: 
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
+                                "OPTIMIZATION CHOICE", "selectByPosition");                    
+                    result = selectByPosition(outerSequence, contextSequence, mode, inner);
+                    break;
+    			default:
+                    throw new IllegalArgumentException("Unsupported execution mode: '" + executionMode + "'");			    
+    		}            
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
+        return result;
+
 	}
 
 	/**
@@ -133,12 +160,12 @@ public class Predicate extends PathExpr {
 	private Sequence evalBoolean(Sequence contextSequence, Expression inner) throws XPathException {
 		Sequence result = new ValueSequence();
 		int p = 0;
+        //TODO : as such the following expression is useless : do we have a 0 or 1 based sequence ?
 		context.setContextPosition(0);
 		for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
 			Item item = i.nextItem();
 			context.setContextPosition(p);
 			Sequence innerSeq = inner.eval(contextSequence, item);
-//				LOG.debug("innerSeq = " + innerSeq.effectiveBooleanValue());
 			if(innerSeq.effectiveBooleanValue())
 				result.add(item);
 		}
@@ -159,8 +186,12 @@ public class Predicate extends PathExpr {
 		/* if the predicate expression returns results from the cache
 		 * we can also return the cached result. 
 		 */
-		if(cached != null && cached.isValid(contextSequence) && nodes.isCached())
-			return cached.getResult();
+		if(cached != null && cached.isValid(contextSequence) && nodes.isCached()) {
+            if (context.getProfiler().isEnabled())                     
+                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                        "Using cached results", result);
+            return cached.getResult();
+        }
 		
 		NodeProxy current;
 		ContextItem contextNode;
@@ -187,8 +218,10 @@ public class Predicate extends PathExpr {
 				contextNode = contextNode.getNextItem();
 			}
 		}
-		if(contextSequence instanceof NodeSet)
+        
+		if (contextSequence instanceof NodeSet)
 			cached = new CachedResult((NodeSet)contextSequence, result);
+        
 		return result;
 	}
 
@@ -288,10 +321,12 @@ public class Predicate extends PathExpr {
 			ValueSequence result = new ValueSequence();
 			for(SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
 				NumericValue v = (NumericValue)i.nextItem().convertTo(Type.NUMBER);
-				int pos = v.getInt() - 1;
-				if(pos < contextSequence.getLength() && pos > -1)
-					result.add(contextSequence.itemAt(pos));
-                //TODO : throw an exception for the else condition ?
+				int pos = v.getInt();
+				if(pos > 0 && pos <= contextSequence.getLength())
+					result.add(contextSequence.itemAt(pos - 1));
+                else                   
+                    //TODO : throw an exception ?
+                    LOG.warn("Strange position in Predicate: '" + pos + "'");
 			}
 			return result;
 		}
