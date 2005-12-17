@@ -195,10 +195,10 @@ public class User {
      */
     public final boolean hasGroup( String group ) {
         String g;
-        for ( Iterator i = getGroups(); i.hasNext();  ) {
-            g = (String) i.next();
-            if ( g.equals( group ) )
-                return true;
+        for (int i = 0; i < groups.size(); i++) {
+        	g = (String) groups.get(i);
+        	if (group.equals(g))
+        		return true;
         }
         return false;
     }
