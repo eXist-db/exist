@@ -50,7 +50,51 @@ body {
 	color: #AF0024;
 }
 
-#top-panel {
+h2 {
+	font-size: 100%;
+}
+
+#slots-panel {
+	float: left;
+	width: 140px;
+	height: 216px;
+	background-color: #FC6;
+	border: 1px solid #FFD100;
+	padding: 5px 2px 5px 2px;
+}
+
+#slots-panel h2 {
+	font-weight: normal;
+	color: white;
+	border-bottom: 1px solid white;
+	margin-bottom: 5px;
+	padding: 0 0 5px 5px;
+}
+
+#slots li {
+	list-style: none;
+	white-space: nowrap;
+	text-align: center;
+	padding-bottom: 5px;
+}
+
+#slots .num {
+	float: left;
+	color: white;
+	width: 30px;
+	text-align: right;
+}
+
+#slots a {
+	text-decoration: none;
+}
+
+#slots .used {
+	background-color: #FEFFAF;
+}
+	
+#right-panel {
+	margin-left: 150px;
 	border: 1px solid #FFD100;
 }
 
@@ -61,10 +105,6 @@ body {
 #query-panel {
 	background-color: #FEFFAF;
 	padding: 3px 3px 3px 5px;
-}
-
-h2 {
-	font-size: 100%;
 }
 
 p {
@@ -124,11 +164,7 @@ fieldset select {
 }
 
 #wrapper, #docname {
-	min-width: 250px;
-}
-
-#collection {
-	min-width: 250px;
+	min-width: 200px;
 }
 
 #query-output {
@@ -190,4 +226,29 @@ fieldset select {
 	font-size: 1.25em;
 	padding: 2px;
 	margin-right: 5px;
+}
+
+#ajax-open {
+	width: 40%;
+	background-color: #99CCCC;
+	font-size: 85%;
+}
+
+#ajax-open h1 {
+	font-size: 85%;
+	color: white;
+	padding: 5px 5px;
+	border-bottom: 1px solid black;
+}
+
+#ajax-close {
+	float: right;
+}
+
+#ajax-open li {
+	list-style: none;
+}
+
+#ajax-open input {
+	width: 100%;
 }

@@ -37,6 +37,11 @@ declare function sandbox:check-paths() as xs:string* {
     else ()
 };
 
+declare function sandbox:init-slots() as element()+ {
+    for $i in 1 to 10 return
+        <li><span class="num">[{$i}]</span> <a href="#" id="slot{$i}" onclick="switchSlot(this)">--- empty ---</a></li>
+};
+
 (:~ Export the current query results into a new document in the database. :)
 declare function sandbox:export($docName as xs:string) as element() {
     let $collection := request:request-parameter("collection", ())
@@ -126,8 +131,9 @@ declare function sandbox:display-page() as element() {
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <link type="text/css" href="styles/sandbox.css" rel="stylesheet"/>
             <script language="Javascript" type="text/javascript" src="scripts/prototype.js"/>
-            <script language="Javascript" type="text/javascript" src="scripts/rico.js"/>
+            <script language="Javascript" type="text/javascript" src="scripts/scriptaculous.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/behaviour.js"/>
+            <script language="Javascript" type="text/javascript" src="scripts/ajax.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/sandbox.js"/>
         </head>
         <body>
@@ -145,48 +151,59 @@ declare function sandbox:display-page() as element() {
                 <div id="errors">{sandbox:check-paths()}</div>
                 <form name="main">
                     <div id="top-panel">
-                        <div id="query-panel">
-                            <a href="#" id="maximize">Maximize</a>
-                            <p id="queries">
-                                <label for="saved">Paste saved query</label>
-                                <select id="saved" name="saved">
-                                    <option></option>
-                                </select>
-                            </p>
-                            <textarea id="query" name="qu" />
-                            <fieldset>
-                                <div id="buttons">
-                                    <button type="button" id="submit">Send</button>
-                                    <button type="button" id="clear">Clear</button>
-                                    <button type="button" id="check">Check</button>
-                                </div>
-                                <label for="howmany">Display</label>
-                                <select id="howmany">
-                                    <option>20</option>
-                                    <option>50</option>
-                                    <option>100</option>
-                                </select>
-                                <a href="#" id="show-options">More Options</a>
-                            </fieldset>
+                        <div id="slots-panel">
+                            <h2>Slots</h2>
+                            <ul id="slots">
+                                {sandbox:init-slots()}
+                            </ul>
                         </div>
-                        <div id="save-panel">
-                            <h2>Save current:</h2>
-                            <label for="description">Description</label>
-                            <input type="text" id="description"/>
-                            <button type="button" id="save">Save</button>
-                            
-                            <h2>Export results to new document:</h2>
-                            <p id="export-options">
-                                <label for="docname">Document name</label>
-                                <input type="text" id="docname"/>
-                                <label for="collection">Collection</label>
-                                <select id="collection"/>
-                            </p>
-                            <p>
-                                <label for="wrapper">Wrapper element</label>
-                                <input type="text" id="wrapper"/>
-                            </p>
-                            <button type="button" id="export">Export</button>
+                        <div id="right-panel">
+                            <div id="query-panel">
+                                <a href="#" id="maximize">Maximize</a>
+                                <p id="queries">
+                                    <label for="saved">Paste saved query</label>
+                                    <select id="saved" name="saved">
+                                        <option></option>
+                                    </select>
+                                </p>
+                                <textarea id="query" name="qu" />
+                                <fieldset>
+                                    <div id="buttons">
+                                        <button type="button" id="submit">Send</button>
+                                        <button type="button" id="clear">Clear</button>
+                                        <button type="button" id="check">Check</button>
+                                    </div>
+                                    <label for="howmany">Display</label>
+                                    <select id="howmany">
+                                        <option>20</option>
+                                        <option>50</option>
+                                        <option>100</option>
+                                    </select>
+                                    <a href="#" id="show-options">More Options</a>
+                                </fieldset>
+                            </div>
+                            <div id="save-panel">
+                                <div>
+                                    <h2>Save current:</h2>
+                                    <label for="description">Description</label>
+                                    <input type="text" id="description"/>
+                                    <button type="button" id="save">Save</button>
+                                    
+                                    <h2>Export results to new document:</h2>
+                                    <p id="export-options">
+                                        <label for="docname">Document name</label>
+                                        <input type="text" id="docname"/>
+                                        <label for="collection">Collection</label>
+                                        <input type="text" id="collection"/>
+                                        <button type="button" id="select-collection">Select</button>
+                                    </p>
+                                    <p>
+                                        <label for="wrapper">Wrapper element</label>
+                                        <input type="text" id="wrapper"/>
+                                    </p>
+                                    <button type="button" id="export">Export</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </form>
