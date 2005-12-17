@@ -27,7 +27,6 @@ import java.util.Iterator;
 import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
 import org.exist.util.Range;
-import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -370,6 +369,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 //              long start = System.currentTimeMillis();
         if (isSorted)
             return;
+        LOG.debug("SORT NATURALLY EXT");
         Part part;
         size = 0;
         for (int i = 0; i < partCount; i++) {
@@ -387,6 +387,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         //      long start = System.currentTimeMillis();
         if (isInDocumentOrder)
             return;
+        LOG.debug("SORT EXT");
         Part part;
         size = 0;
         for (int i = 0; i < partCount; i++) {
@@ -454,6 +455,21 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         return part == null ? null : part.parentWithChild(doc, gid, directParent, includeSelf, level);
     }
 
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#getIndexType()
+     */
+    public int getIndexType() {
+    	if(indexType == Type.ANY_TYPE) {
+		    hasTextIndex = true;
+		    hasMixedContent = false;
+		    
+		    for (int i = 0; i < partCount; i++) {
+		    	parts[i].determineIndexType();
+		    }
+    	}
+    	return indexType;
+    }
+    
     public DocumentSet getDocumentSet() {
         if(cachedDocuments != null)
             return cachedDocuments;
@@ -714,6 +730,33 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             return length;
         }
 
+        void determineIndexType() {
+        	int type;
+		    NodeProxy p;
+		    for (int i = 0; i < length; i++) {
+		    	p = array[i];
+		    	if (p.getDocument().getCollection().isTempCollection()) {
+                    indexType = Type.ITEM;
+                    hasTextIndex = false;
+                    break;
+                }
+			    type = p.getIndexType();
+				if(indexType == Type.ANY_TYPE)
+				    indexType = type;
+				else if(indexType != type) {
+                    if (indexType != Type.ITEM)
+                        LOG.debug("Found: " + Type.getTypeName(type) + "; node = " + p.toString());
+				    indexType = Type.ITEM;
+				}
+				if(!p.hasTextIndex()) {
+				    hasTextIndex = false;
+				}
+				if(p.hasMixedContent()) {
+				    hasMixedContent = true;
+				}
+		    }
+        }
+        
         void setSelfAsContext() {
             for (int i = 0; i < length; i++) {
                 array[i].addContextNode(array[i]);
