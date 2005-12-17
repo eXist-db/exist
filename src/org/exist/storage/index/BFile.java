@@ -2294,10 +2294,23 @@ public class BFile extends BTree {
         }
 
         public int readFixedInt() throws IOException {
-            return ( readByte() & 0xff ) |
-            ( ( readByte() & 0xff ) << 8 ) |
-            ( ( readByte() & 0xff ) << 16 ) |
-            ( ( readByte() & 0xff ) << 24 );
+        	if (offset == pageLen) advance();
+        	// do we have to read across a page boundary?
+        	if (offset + 4 < pageLen) {
+        		return ( nextPage.data[offset++] & 0xff ) |
+                	( (nextPage.data[offset++] & 0xff) << 8 ) |
+                	( (nextPage.data[offset++] & 0xff) << 16 ) |
+                	( (nextPage.data[offset++] & 0xff) << 24 );
+        	} else {
+	        	int r = nextPage.data[offset++] & 0xff;
+	        	int shift = 8;
+	        	for (int i = 0; i < 3; i++) {
+	        		if (offset == pageLen) advance();
+	                r |= (nextPage.data[offset++] & 0xff) << shift;
+	                shift += 8;
+	        	}
+	        	return r;
+        	}
         }
         
         public final long readLong() throws IOException {
