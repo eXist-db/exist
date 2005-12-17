@@ -21,6 +21,11 @@ var behaviourRules = {
 				$('description').value = saved.options[saved.selectedIndex].text;
 			}
 	},
+	'#select-collection' : function (element) {
+			element.onclick = function() {
+				new Ajax.SelectDialog('collection');
+			}
+	},
 	'#next' : function (element) {
 			element.onclick = browseNext;
 	},
@@ -45,15 +50,11 @@ var behaviourRules = {
 				var panel = $('save-panel');
 				if (!document.savePanelShow) {
 					this.innerHTML = "Hide Options";
-					panel.style.display = '';
-					new Effect.Size( panel, null, document.savePanelHeight, 200, 8, 
-						{complete:function() { panel.style.overflow = "visible"; }});
-					updateCollections();
+					Effect.BlindDown('save-panel');
 					document.savePanelShow = true;
 				} else {
 					this.innerHTML = "Show Options";
-					panel.style.overflow = "hidden";
-					new Effect.Size( panel, null, 1, 200, 8 );
+					Effect.BlindUp('save-panel');
 					document.savePanelShow = false;
 				}
 				return false;
@@ -67,19 +68,24 @@ var behaviourRules = {
 };
 Behaviour.register(behaviourRules);
 
+var EXPIRY_OFFSET = 30 * 24 * 60 * 60 * 1000;
+
+var hitCount = 0;
+var startOffset = 0;
+var currentOffset = 0;
+var endOffset = 0;
+
 /** onLoad handler to initialize display */
 function init() {
 	var savePanel = $('save-panel');
-	document.savePanelHeight = savePanel.offsetHeight;
 	document.savePanelShow = false;
 	savePanel.style.display = 'none';
-	savePanel.style.height = '1px';
-	
     resize();
     retrieveStored();
     Behaviour.apply();	// we need to call behaviour again after this handler
+    initSlots();
 }
-
+		
 /** Resize the query result output div. We want this to have a fixed height,
  *  so it neatly fits into the browser window.
  */
@@ -92,12 +98,12 @@ function resizeQueryBox(minimizeOnly) {
 	var element = $('maximize');
 	var panel = $('query');
 	if (document.quMaximized) {
-		new Effect.Size(panel, null, 170, 200, 8);
+		Effect.Size(panel, null, 170, 200, 8);
 		document.quMaximized = false;
 		element.innerHTML = "Maximize";
 	} else if (!minimizeOnly) {
 		var newHeight = (document.body.clientHeight - panel.offsetTop - 50);
-		new Effect.Size( panel, null, newHeight, 200, 8 );
+		Effect.Size( panel, null, newHeight, 200, 8 );
 		document.quMaximized = true;
 		element.innerHTML = "Minimize";
 	}
@@ -213,15 +219,16 @@ function showQueryResponse(request) {
 		var elapsed = root.getAttribute('elapsed');
 		$('query-result').innerHTML = 
 			"Found " + hits + " in " + elapsed + " seconds.";
-		document.startOffset = 1;
-		document.currentOffset = 1;
-		document.hitCount = hits;
-		document.endOffset = document.startOffset + ($F('howmany') - 1);
-		if (document.hitCount < document.endOffset)
-			document.endOffset = document.hitCount;
+		startOffset = 1;
+		currentOffset = 1;
+		hitCount = hits;
+		var howmany = $('howmany');
+		endOffset = startOffset + (howmany.options[howmany.selectedIndex].text - 1);
+		if (hitCount < endOffset)
+			endOffset = hitCount;
 			
-		$('current').innerHTML = "Showing items " + document.startOffset + 
-			" to " + document.endOffset;
+		$('current').innerHTML = "Showing items " + startOffset + 
+			" to " + endOffset;
 		$('errors').innerHTML = 'Retrieving results ...';
 		retrieveNext();
 	}
@@ -229,31 +236,31 @@ function showQueryResponse(request) {
 
 /** Called if user clicks on "forward" link in query results. */
 function browseNext() {
-	if (document.currentOffset > 0 && document.endOffset < document.hitCount) {
-		document.startOffset = document.currentOffset;
-		document.endOffset = document.currentOffset + ($F('howmany') - 1);
-		if (document.hitCount < document.endOffset)
-			document.endOffset = document.hitCount;
+	if (currentOffset > 0 && endOffset < hitCount) {
+		startOffset = currentOffset;
+		endOffset = currentOffset + ($F('howmany') - 1);
+		if (hitCount < endOffset)
+			endOffset = hitCount;
 		$('output').innerHTML = "";
-		$('current').innerHTML = "Showing items " + document.startOffset + 
-			" to " + document.endOffset;
+		$('current').innerHTML = "Showing items " + startOffset + 
+			" to " + endOffset;
 		retrieveNext();
 	}
 }
 
 /** Called if user clicks on "previous" link in query results. */
 function browsePrevious() {
-	if (document.currentOffset > 0 && document.startOffset > 1) {
-		document.startOffset = document.startOffset - $F('howmany');
-		if (document.startOffset < 1)
-			document.startOffset = 1;
-		document.currentOffset = document.startOffset;
-		document.endOffset = document.currentOffset + ($F('howmany') - 1);
-		if (document.hitCount < document.endOffset)
-			document.endOffset = document.hitCount;
+	if (currentOffset > 0 && startOffset > 1) {
+		startOffset = startOffset - $F('howmany');
+		if (startOffset < 1)
+			startOffset = 1;
+		currentOffset = startOffset;
+		endOffset = currentOffset + ($F('howmany') - 1);
+		if (hitCount < endOffset)
+			endOffset = hitCount;
 		$('output').innerHTML = "";
-		$('current').innerHTML = "Showing items " + document.startOffset + 
-			" to " + document.endOffset;
+		$('current').innerHTML = "Showing items " + startOffset + 
+			" to " + endOffset;
 		retrieveNext();
 	}
 }
@@ -267,9 +274,9 @@ function requestFailed(request) {
  *  the next result.
  */
 function retrieveNext() {
-	if (document.currentOffset > 0 && document.currentOffset <= document.endOffset) {
-		var params = 'num=' + document.currentOffset;
-		document.currentOffset++;
+	if (currentOffset > 0 && currentOffset <= endOffset) {
+		var params = 'num=' + currentOffset;
+		currentOffset++;
 		var ajax = new Ajax.Request("sandbox.xql", {
 				method: 'get', parameters: params, 
 				onComplete: itemRetrieved,
@@ -308,6 +315,70 @@ function saveQuery() {
 
 function queryStored(request) {
 	retrieveStored();
+}
+
+function initSlots() {
+	if (document.cookie.length > 0) {
+		var clen = document.cookie.length;
+		for (i = 0; i < clen; ) {
+			var j = document.cookie.indexOf('=', i);
+			var name = document.cookie.substring(i, j);
+			if (name.substring(0, 4) == 'slot') {
+				var slot = $(name);
+				slot.parentNode.className = 'used';
+				slot.innerHTML = getCookieVal(j + 1).substring(0, 12).escapeHTML();
+			}
+			i = document.cookie.indexOf(' ', i) + 1;
+			if (i == 0) break;
+		}
+	}
+}
+
+function switchSlot(node) {
+	var id = node.id;
+	var currentQuery = $F('query');
+	var cookie = getCookie(id);
+	if (cookie != null)
+		$('query').value = cookie;
+	if (currentQuery.length > 0) {
+		if (cookie != null)
+			deleteCookie(id, cookie);
+		var expiryDate = new Date();
+		expiryDate.setTime(expiryDate.getTime() + EXPIRY_OFFSET);
+		document.cookie = id + '=' + escape(currentQuery) +
+			';expires=' + expiryDate.toGMTString();
+		node.parentNode.className = 'used';
+		node.innerHTML = currentQuery.substring(0, 12);
+	}
+}
+
+function getCookie(name) {
+	var arg = name + '=';
+	var alen = arg.length;
+	var clen = document.cookie.length;
+	for (i = 0; i < clen;) {
+		var j = i + alen;
+		if (document.cookie.substring(i, j) == arg) {
+			return getCookieVal(j);
+		}			
+		i = document.cookie.indexOf(" ", i) + 1;
+		if (i == 0) break;
+	}
+	return null;
+}
+
+function getCookieVal(offset) {
+	var endstr = document.cookie.indexOf(';', offset);
+	if (endstr == -1)
+		endstr = document.cookie.length;
+	return unescape(document.cookie.substring(offset, endstr));
+}
+
+function deleteCookie(name, value) {
+	var exp = new Date();
+	exp.setTime(exp.getTime() - 1);
+	document.cookie = name + '=' + escape(value) +
+		'; expires=' + exp.toGMTString();
 }
 
 function getElementValue(node) {
