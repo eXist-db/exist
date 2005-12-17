@@ -401,6 +401,8 @@ public final class FastQSort {
 	}
 
 	public static void sortByNodeId(NodeProxy[] a, int lo, int hi) {
+		if (lo == hi)
+			return; // just one item, doesn't need sorting
 		IntroSortByNodeId(a, lo, hi, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 	}
 
