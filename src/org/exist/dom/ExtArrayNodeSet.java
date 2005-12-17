@@ -369,7 +369,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 //              long start = System.currentTimeMillis();
         if (isSorted)
             return;
-        LOG.debug("SORT NATURALLY EXT");
         Part part;
         size = 0;
         for (int i = 0; i < partCount; i++) {
@@ -387,7 +386,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         //      long start = System.currentTimeMillis();
         if (isInDocumentOrder)
             return;
-        LOG.debug("SORT EXT");
         Part part;
         size = 0;
         for (int i = 0; i < partCount; i++) {
