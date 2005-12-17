@@ -46,10 +46,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	
 	// indicates the type of an optional value index that may have
     // been defined on the nodes in this set.
-	private int indexType = Type.ANY_TYPE;
+	protected int indexType = Type.ANY_TYPE;
 	
-	private boolean hasTextIndex = false;
-	private boolean hasMixedContent = false;
+	protected boolean hasTextIndex = false;
+	protected boolean hasMixedContent = false;
 	
 	private boolean isCached = false;
 	
