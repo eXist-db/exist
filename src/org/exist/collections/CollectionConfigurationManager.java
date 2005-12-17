@@ -228,17 +228,18 @@ public class CollectionConfigurationManager {
 	 */
     private void checkConfigCollection(DBBroker broker) throws EXistException {
         TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        Txn txn = null;
     	try {
     		Collection root = broker.getCollection(CONFIG_COLLECTION);
     		if(root == null) {
+    			txn = transact.beginTransaction();
     			root = broker.getOrCreateCollection(txn, CONFIG_COLLECTION);
                 SanityCheck.THROW_ASSERT(root != null);
     			broker.saveCollection(txn, root);
                 transact.commit(txn);
     		}
     	} catch (PermissionDeniedException e) {
-            transact.abort(txn);
+    		transact.abort(txn);
     		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
     	}
     }
