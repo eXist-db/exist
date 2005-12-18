@@ -21,9 +21,9 @@ var behaviourRules = {
 				$('description').value = saved.options[saved.selectedIndex].text;
 			}
 	},
-	'#select-collection' : function (element) {
+	'#export-resource' : function (element) {
 			element.onclick = function() {
-				new Ajax.SelectDialog('collection');
+				new XOpenDialog('export-resource', X_SELECT_RESOURCE, '/db');
 			}
 	},
 	'#next' : function (element) {
@@ -92,18 +92,18 @@ function init() {
 function resize() {
 	var output = $('output');
     output.style.height = (document.body.clientHeight - output.offsetTop - 15) + "px";
+    $('query').style.width = ($('query-panel').offsetWidth - 15) + 'px';
 }
 
 function resizeQueryBox(minimizeOnly) {
 	var element = $('maximize');
 	var panel = $('query');
 	if (document.quMaximized) {
-		Effect.Size(panel, null, 170, 200, 8);
+		panel.style.height = 170;
 		document.quMaximized = false;
 		element.innerHTML = "Maximize";
 	} else if (!minimizeOnly) {
-		var newHeight = (document.body.clientHeight - panel.offsetTop - 50);
-		Effect.Size( panel, null, newHeight, 200, 8 );
+		panel.style.height = (document.body.clientHeight - panel.offsetTop - 50);
 		document.quMaximized = true;
 		element.innerHTML = "Minimize";
 	}
@@ -142,18 +142,22 @@ function updateCollections() {
 
 /** Called if the user clicked 'export'. */
 function exportData() {
-	if (!document.hitCount || document.hitCount < 1) {
+	if (!hitCount || hitCount < 1) {
 		alert("There are no records to export!");
 		return;
 	}
-	var docName = $F('docname');
+	var docName = $('export-resource').innerHTML;
 	if (docName == '') {
 		alert("Please enter a name for the exported document.");
 		return;
 	}
-	if (confirm('Export ' + document.hitCount + ' records to document ' +
+	var p = docName.lastIndexOf('/');
+	var collection = docName.substring(0, p);
+	docName = docName.substring(p + 1);
+	alert("doc: " + docName + "; " + collection);
+	if (confirm('Export ' + hitCount + ' records to document ' +
 		docName + '?')) {
-		var params = 'export=' + escape(docName) + '&collection=' + escape($F('collection')) +
+		var params = 'export=' + escape(docName) + '&collection=' + escape(collection) +
 			'&wrapper=' + escape($F('wrapper'));
 		var ajax = new Ajax.Request("sandbox.xql", {
 				method: 'post', parameters: params,

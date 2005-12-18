@@ -1,34 +1,46 @@
+var X_SELECT_COLLECTION = 'collection';
+var X_SELECT_RESOURCE = 'resource';
+
 var openDialog;
 
-Ajax.SelectDialog = function(target, root) {
+XOpenDialog = function(target, mode, root) {
 	this.target = target;
+	this.selectMode = mode;
 	
 	var html = 
-		'<div id="ajax-open">' +
-		'	<a href="#" id="ajax-close">Close</a>' +
+		'<div id="xmldb-open">' +
+		'	<a href="#" id="xmldb-close">Close</a>' +
 		'	<h1>Open Resource</h1>' +
-		'	<input type="text" name="path" id="ajax-path" />' +
-		'	<div id="ajax-open-content"></div>' +
-		'	<button type="button" id="ajax-submit">Select</button>' +
+		'	<div id="xmldb-inner">' +
+		'		<input type="text" name="path" id="xmldb-path" />' +
+		'		<div id="xmldb-open-content"></div>' +
+		'		<button type="button" id="xmldb-submit">Select</button>' +
+		'	</div>' +
 		'</div>';
 	new Insertion.Bottom(document.body, html);
-	Event.observe('ajax-close', 'click', this.close, false);
-	Event.observe('ajax-submit', 'click', submit, false);
+	Event.observe('xmldb-close', 'click', this.close, false);
+	Event.observe('xmldb-submit', 'click', submit, false);
 	
-	var div = $('ajax-open');
+	var div = $('xmldb-open');
 	div.style.display = 'block';
 	div.style.position = 'absolute';
 	div.style.left = '25%';
 	div.style.top = '25%';
-	div.style.border = '1px solid black';
-	openDialog = this;
+	
+	this.submitButton = $('xmldb-submit');
+	
 	root = root || '/db';
 	this.open(root);
+	$('xmldb-path').value = root;
+	openDialog = this;
 }
 
-Ajax.SelectDialog.prototype = {
-	
+XOpenDialog.prototype = {	
+
 	open: function (path) {
+		if (this.selectMode == X_SELECT_COLLECTION)
+			this.submitButton.disabled = false;
+			
 		var params = 'collection=' + escape(path);
 		var ajax = new Ajax.Request("browse.xql", {
 			method: 'post', parameters: params,
@@ -38,20 +50,28 @@ Ajax.SelectDialog.prototype = {
 	},
 	
 	close: function () {
-		var div = $('ajax-open');
+		var div = $('xmldb-open');
 		div.parentNode.removeChild(div);
 	},
 	
 	submit: function () {
 		var control = $(this.target);
-		control.value = $F('ajax-path');
+		if (control.value)
+			control.value = $F('xmldb-path');
+		else
+			control.innerHTML = $F('xmldb-path');
 		this.close();
 	},
 	
 	handleResponse: function (request) {
 		// add collections
-		var html = '<ul class="ajax-collections">';
 		var root = request.responseXML.documentElement;
+		var rootCol = root.getAttribute('root');
+		if (rootCol == '')
+			rootCol = '/db';
+		var html = '<ul id="xmldb-collections">' +
+				'<li><a href="#" onclick="selectCol(&quot;' +
+				rootCol + '&quot;)">..</a></li>';
 		var collections = root.getElementsByTagName('collection');
 		for (var i = 0; i < collections.length; i++) {
 			var node = collections[i];
@@ -60,29 +80,31 @@ Ajax.SelectDialog.prototype = {
 				node.getAttribute('name') + '</a></li>';
 		}
 		html += '</ul>';
-		// add resources
-		html += '<ul class="ajax-resources">';
-		var resources = root.getElementsByTagName('resource');
-		for (var i = 0; i < resources.length; i++) {
-			var node = resources[i];
-			html += '<li><a href="#" onclick="selectResource(&quot;' +
-				node.getAttribute('path') + '&quot;)">' + 
-				node.getAttribute('name') + '</a></li>';
+		if (openDialog.selectMode == X_SELECT_RESOURCE) {
+			// add resources
+			html += '<ul id="xmldb-resources">';
+			var resources = root.getElementsByTagName('resource');
+			for (var i = 0; i < resources.length; i++) {
+				var node = resources[i];
+				html += '<li><a href="#" onclick="selectResource(&quot;' +
+					node.getAttribute('path') + '&quot;)">' + 
+					node.getAttribute('name') + '</a></li>';
+			}
+			html += '</ul>';
 		}
-		html += '</ul>';
-		var div = $('ajax-open-content');
+		var div = $('xmldb-open-content');
 		div.innerHTML = html;
 	}
 }
 
 function selectCol(path) {
-	$('ajax-path').value = path;
+	$('xmldb-path').value = path;
 	openDialog.open(path);
 	return false;
 }
 
 function selectResource(path) {
-	$('ajax-path').value = path;
+	$('xmldb-path').value = path;
 	return false;
 }
 
