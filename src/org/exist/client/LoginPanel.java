@@ -368,8 +368,12 @@ public class LoginPanel extends JPanel {
         btnExportFavourite.setToolTipText("Export favourites to file");
         btnExportFavourite.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                
+                File file = new File( "favourites.xml" );
                 JFileChooser chooser = new JFileChooser();
+                chooser.setSelectedFile(file);
                 chooser.showSaveDialog(LoginPanel.this);
+                
                 File selectedFile = chooser.getSelectedFile();
                 
                 if(selectedFile==null){
@@ -377,7 +381,7 @@ public class LoginPanel extends JPanel {
                     return;
                 }
                 
-                if(!selectedFile.canWrite()){
+                if(selectedFile.exists() && !selectedFile.canWrite()){
                     JOptionPane.showMessageDialog(LoginPanel.this, "Cannot write selected file", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -400,7 +404,11 @@ public class LoginPanel extends JPanel {
         btnImportFavourite.setToolTipText("Import favourites from file");
         btnImportFavourite.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                
+                File file = new File( "favourites.xml" );
                 JFileChooser chooser = new JFileChooser();
+                chooser.setSelectedFile(file);
+                
                 chooser.showOpenDialog(LoginPanel.this);
                 File selectedFile = chooser.getSelectedFile();
                 
