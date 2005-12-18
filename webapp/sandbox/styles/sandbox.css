@@ -121,7 +121,6 @@ label {
 
 #query {
     height: 170px;
-    width: 100%;
 }
 
 #saved {
@@ -228,27 +227,42 @@ fieldset select {
 	margin-right: 5px;
 }
 
-#ajax-open {
+#xmldb-open {
 	width: 40%;
-	background-color: #99CCCC;
-	font-size: 85%;
+	background-color: #EEEEEE;
+	font-size: 75%;
+	border: 2px solid #999999;
 }
 
-#ajax-open h1 {
+#xmldb-open h1 {
 	font-size: 85%;
 	color: white;
 	padding: 5px 5px;
-	border-bottom: 1px solid black;
+	background-color: #3366CC;
 }
 
-#ajax-close {
+#xmldb-inner {
+	padding: 7px;
+}
+
+#xmldb-collections {
+	margin-top: 5px;
+}
+
+#xmldb-close {
 	float: right;
+	color: #CCCCCC;
+	font-size: 75%;
 }
 
-#ajax-open li {
+#xmldb-open li {
 	list-style: none;
 }
 
-#ajax-open input {
+#xmldb-submit {
+	float: right;
+}
+
+#xmldb-open input {
 	width: 100%;
 }

@@ -7,7 +7,7 @@ declare namespace ajax="http://exist-db.org/xquery/ajax";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace request="http://exist-db.org/xquery/request";
 
-declare function ajax:display-collection($collection as xs:string) as element()+ {
+declare function ajax:display-collection($collection as xs:string) as element()* {
     let $c := xdb:collection($collection, "guest", "guest")
     let $parent := util:collection-name($c)
     return (
@@ -22,10 +22,10 @@ declare function ajax:display-collection($collection as xs:string) as element()+
     )
 };
 
-let $collections := request:request-parameter("collection", ())
+let $collection := request:request-parameter("collection", ())
 return
-    <ajax-response>
+    <ajax-response root="{replace($collection, '/[^/]*$', '')}">
     { 
-        for $c in $collections return ajax:display-collection($c)
+        ajax:display-collection($collection)
     }
     </ajax-response>

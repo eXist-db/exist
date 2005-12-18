@@ -184,18 +184,15 @@ declare function sandbox:display-page() as element() {
                             </div>
                             <div id="save-panel">
                                 <div>
-                                    <h2>Save current:</h2>
+                                    <h2>Save to examples.xml:</h2>
                                     <label for="description">Description</label>
                                     <input type="text" id="description"/>
                                     <button type="button" id="save">Save</button>
                                     
                                     <h2>Export results to new document:</h2>
-                                    <p id="export-options">
-                                        <label for="docname">Document name</label>
-                                        <input type="text" id="docname"/>
-                                        <label for="collection">Collection</label>
-                                        <input type="text" id="collection"/>
-                                        <button type="button" id="select-collection">Select</button>
+                                    <p>
+                                        <label for="docname">Document path</label>
+                                        <a href="#" id="export-resource">Click to select</a>
                                     </p>
                                     <p>
                                         <label for="wrapper">Wrapper element</label>
