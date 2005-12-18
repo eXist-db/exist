@@ -168,6 +168,8 @@ public abstract class Modification extends AbstractExpression {
 			return out;
 		} catch(SAXException e) {
 			throw new XPathException(getASTNode(), e.getMessage(), e);
+		} finally {
+			context.popDocumentContext();
 		}
 	}
 	
