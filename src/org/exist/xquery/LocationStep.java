@@ -242,8 +242,13 @@ public class LocationStep extends Step {
             case Constants.SELF_AXIS :
                 if (nodeTestType == null)
                     nodeTestType = new Integer(test.getType());                
-                if (nodeTestType.intValue() != Type.NODE && nodeTestType.intValue() != Type.ELEMENT )           
-                    return false; 
+                if (nodeTestType.intValue() != Type.NODE && nodeTestType.intValue() != Type.ELEMENT ) {
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                                "OPTIMIZATION", "avoid useless computations");
+                    return false;
+                }
+                    
         }   
         return true;
     }          
@@ -261,7 +266,7 @@ public class LocationStep extends Step {
 				if (inPredicate) {
 					if (contextSet instanceof VirtualNodeSet) {
 						((VirtualNodeSet) contextSet).setInPredicate(true);
-						((VirtualNodeSet) contextSet).setSelfIsContext();
+						((VirtualNodeSet) contextSet).setSelfIsContext();                     
                     } else if (Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
 						NodeProxy p;
 						for (Iterator i = contextSet.iterator(); i.hasNext();) {
@@ -284,13 +289,16 @@ public class LocationStep extends Step {
 //                }
 //                return result;
 				VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
-                vset.setInPredicate(inPredicate);               
+                vset.setInPredicate(inPredicate);                
 				return vset;
 			}
 		} else {            
 			DocumentSet docs = getDocumentSet(contextSet);
 		    NodeSelector selector = new SelfSelector(contextSet, inPredicate);
             ElementIndex index = context.getBroker().getElementIndex();
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                        "OPTIMIZATION", "using index '" + index.toString() + "'");            
 		    return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
 		}
 	}
@@ -298,20 +306,23 @@ public class LocationStep extends Step {
 	protected NodeSet getAttributes(XQueryContext context, NodeSet contextSet) {		
 		if (test.isWildcardTest()) {
             NodeSet result = new VirtualNodeSet(axis, test, contextSet);
-			((VirtualNodeSet) result).setInPredicate(inPredicate);
+			((VirtualNodeSet) result).setInPredicate(inPredicate);           
             return result;
 		// if there's just a single known node in the context, it is faster
 	    // do directly search for the attribute in the parent node.
         } else if(axis == Constants.ATTRIBUTE_AXIS && contextSet.getLength() == 1
                 && !(contextSet instanceof VirtualNodeSet)) {
             NodeProxy proxy = contextSet.get(0);
-            if (proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)                
-                return contextSet.directSelectAttribute(test.getName(), inPredicate);
+            if (proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
+                return contextSet.directSelectAttribute(test.getName(), inPredicate);          
         }       
         if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) { 
-                ElementIndex index = context.getBroker().getElementIndex();                          
+                ElementIndex index = context.getBroker().getElementIndex();
+                if (context.getProfiler().isEnabled())
+                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                            "OPTIMIZATION", "using index '" + index.toString() + "'");   
                 //TODO : why a null selector here ? We have one below !
                 currentSet = index.findElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), null);  
                 currentDocs = docs;      
@@ -332,12 +343,12 @@ public class LocationStep extends Step {
             switch (axis) {
                 case Constants.ATTRIBUTE_AXIS :
                     selector = new ChildSelector(contextSet, inPredicate);  
-                    //TODO : find when this condition must return true !
-                    //It should for :
+                    //TODO : find when this condition must be set !                                        
+                    //It should be for :
                     //let $a := (<c id="1"><d id="2">d</d><e>e</e></c>)/descendant-or-self::node()
                     //for $b in $a/attribute::id
                     //return <b>{$b}</b>
-                    //Note that it also works with selector = null
+                    //Note that this expression also works with selector = null
                     if (false) 
                         ((ChildSelector)selector).setMysteriousCondition();
                     break;
@@ -348,8 +359,10 @@ public class LocationStep extends Step {
                    throw new IllegalArgumentException("Unsupported axis specified");                   
 			}    			
             ElementIndex index = context.getBroker().getElementIndex();
-            return index.getAttributesByName(docs, test.getName(), selector);
-            
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                        "OPTIMIZATION", "using index '" + index.toString() + "'");              
+            return index.getAttributesByName(docs, test.getName(), selector);            
 		}    
 	}
 
@@ -363,7 +376,10 @@ public class LocationStep extends Step {
 			DocumentSet docs = getDocumentSet(contextSet);
 			//TODO : understand why this one is different from the other ones
 			if (currentSet == null || currentDocs == null || !(docs == currentDocs || docs.equals(currentDocs))) {
-                ElementIndex index = context.getBroker().getElementIndex();                
+                ElementIndex index = context.getBroker().getElementIndex(); 
+                if (context.getProfiler().isEnabled())
+                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                            "OPTIMIZATION", "using index '" + index.toString() + "'");                   
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
@@ -371,8 +387,11 @@ public class LocationStep extends Step {
             return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
 		} else {
             ElementIndex index = context.getBroker().getElementIndex();
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                        "OPTIMIZATION", "using index '" + index.toString() + "'");            
 		    DocumentSet docs = getDocumentSet(contextSet);
-		    NodeSelector selector = new ChildSelector(contextSet, inPredicate);
+		    NodeSelector selector = new ChildSelector(contextSet, inPredicate);            
 		    return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
 		}
 	}
@@ -382,13 +401,15 @@ public class LocationStep extends Step {
 			// test is one out of *, text(), node()
 			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
 			vset.setInPredicate(inPredicate);
-			
 			return vset;
 		} else if (preloadNodeSets()) {             
 		    DocumentSet docs = getDocumentSet(contextSet);
             //TODO : understand why this one is different from the other ones
 			if (currentSet == null || currentDocs == null || !(docs == currentDocs || docs.equals(currentDocs))) {
-                ElementIndex index = context.getBroker().getElementIndex();                
+                ElementIndex index = context.getBroker().getElementIndex(); 
+                if (context.getProfiler().isEnabled())
+                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                            "OPTIMIZATION", "using index '" + index.toString() + "'");                
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
@@ -415,15 +436,21 @@ public class LocationStep extends Step {
                     throw new IllegalArgumentException("Unsupported axis specified");                          
             }
             ElementIndex index = context.getBroker().getElementIndex();
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                        "OPTIMIZATION", "using index '" + index.toString() + "'");              
 			return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
 		}
 	}
 
 	protected NodeSet getSiblings(XQueryContext context, NodeSet contextSet) {		
-		if (!test.isWildcardTest()) {            
+		if (!test.isWildcardTest()) {
 		    DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-                ElementIndex index = context.getBroker().getElementIndex();				
+                ElementIndex index = context.getBroker().getElementIndex();	
+                if (context.getProfiler().isEnabled())
+                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                            "OPTIMIZATION", "using index '" + index.toString() + "'"); 
 				currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
@@ -474,7 +501,10 @@ public class LocationStep extends Step {
 		if(!test.isWildcardTest()) {            
 		    DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-                ElementIndex index = context.getBroker().getElementIndex();				
+                ElementIndex index = context.getBroker().getElementIndex();		
+                if (context.getProfiler().isEnabled())
+                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                            "OPTIMIZATION", "using index '" + index.toString() + "'");
 				currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
@@ -489,7 +519,10 @@ public class LocationStep extends Step {
         if(!test.isWildcardTest()) {            
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-                ElementIndex index = context.getBroker().getElementIndex();                
+                ElementIndex index = context.getBroker().getElementIndex(); 
+                if (context.getProfiler().isEnabled())
+                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                            "OPTIMIZATION", "using index '" + index.toString() + "'"); 
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
@@ -516,8 +549,7 @@ public class LocationStep extends Step {
                 }
                 long parentID = XMLUtil.getParentId(p.getDocument(), p.getGID());               
                 while (parentID > 0) {
-                    ancestor = new NodeProxy(p.getDocument(), parentID);
-                    ancestor.setNodeType(Node.ELEMENT_NODE);
+                    ancestor = new NodeProxy(p.getDocument(), parentID, Node.ELEMENT_NODE);                    
                     if (test.matches(ancestor)) {
                         if (inPredicate)
                             ancestor.addContextNode(p);
@@ -532,7 +564,10 @@ public class LocationStep extends Step {
         } else if (preloadNodeSets()) {            
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-                ElementIndex index = context.getBroker().getElementIndex();                
+                ElementIndex index = context.getBroker().getElementIndex(); 
+                if (context.getProfiler().isEnabled())
+                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                            "OPTIMIZATION", "using index '" + index.toString() + "'");  
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
@@ -559,6 +594,9 @@ public class LocationStep extends Step {
                     throw new IllegalArgumentException("Unsupported axis specified");                   
             }
             ElementIndex index = context.getBroker().getElementIndex();
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                        "OPTIMIZATION", "using index '" + index.toString() + "'");              
             return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
 		}		
 	}
@@ -570,6 +608,9 @@ public class LocationStep extends Step {
 		    DocumentSet docs = getDocumentSet(contextSet);
 		    NodeSelector selector = new ParentSelector(contextSet, inPredicate);
             ElementIndex index = context.getBroker().getElementIndex();
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                        "OPTIMIZATION", "using index '" + index.toString() + "'");              
 		    return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);			
 		}
 	}
