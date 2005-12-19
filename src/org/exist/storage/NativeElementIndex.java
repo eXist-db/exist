@@ -864,6 +864,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 		
 	}
     
+    public String toString() {
+        return this.getClass().getName() + " at "+ dbElement.getFile().getName() +
+        " owned by " + broker.toString();
+    }    
+    
 
 
 }
