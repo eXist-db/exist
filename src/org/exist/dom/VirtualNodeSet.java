@@ -94,25 +94,15 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	    return context.getDocumentSet();
 	}
 
-	protected NodeProxy getFirstParent(NodeProxy node, long gid, boolean includeSelf) {
-		return getFirstParent(node, null, includeSelf, true, 0);
-	}
-
-	protected NodeProxy getFirstParent(
-		NodeProxy node,
-		NodeProxy first,
-		boolean includeSelf,
-		int recursions) {
+	protected NodeProxy getFirstParent(NodeProxy node,	NodeProxy first, 
+            boolean includeSelf, int recursions) {
 		return getFirstParent(node, first, includeSelf, true, recursions);
 	}
 
-	protected NodeProxy getFirstParent(
-		NodeProxy node,
-		NodeProxy first,
-		boolean includeSelf,
-		boolean directParent,
-		int recursions) {
-		long pid = XMLUtil.getParentId(node.getDocument(), node.gid);
+	protected NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
+            boolean includeSelf, boolean directParent, int recursions) {
+		
+        long pid = XMLUtil.getParentId(node.getDocument(), node.getGID());
 		NodeProxy parent;
 		// check if the start-node should be included, e.g. to process an
 		// expression like *[. = 'xxx'] 
@@ -176,12 +166,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		}
 	}
 
-	public NodeProxy nodeHasParent(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent,
-		boolean includeSelf,
-		int level) {
+	public NodeProxy nodeHasParent(DocumentImpl doc, long gid, 
+            boolean directParent, boolean includeSelf, int level) {
 		final NodeProxy p =
 			getFirstParent(new NodeProxy(doc, gid), null, includeSelf, directParent, 0);
 		if (p != null)
@@ -189,11 +175,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		return p;
 	}
 
-	public NodeProxy nodeHasParent(
-		NodeProxy node,
-		boolean directParent,
-		boolean includeSelf,
-		int level) {
+	public NodeProxy nodeHasParent(NodeProxy node, 
+            boolean directParent, boolean includeSelf, int level) {
+        
 		final NodeProxy p = getFirstParent(node, null, includeSelf, directParent, 0);
 		if (p != null)
 			addInternal(p);

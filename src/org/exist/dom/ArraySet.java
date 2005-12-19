@@ -50,26 +50,19 @@ public class ArraySet extends AbstractNodeSet {
 	}
 
 	private final static boolean getParentSet(NodeProxy[] nl, int len) {		
-		boolean foundValid = false;
-		long pid;
-		NodeProxy node;
-		for (int i = 0; i < len; i++) {
-			node = nl[i];
-			// skip invalid nodes
-			if (node == null)
+		boolean foundParentNode = false;		
+		for (int i = 0; i < len; i++) {            
+			//Skip invalid nodes
+			if (nl[i] == null)
 				continue;
-			if (node.getGID() == NodeProxy.DOCUMENT_NODE_GID) {
+			if (nl[i].getGID() == NodeProxy.DOCUMENT_NODE_GID) {
 				nl[i] = null;
 				continue;
-			}			
-			pid = XMLUtil.getParentId(node);
-			//System.out.println(node.doc.getDocId() + ":" + node.gid + "->" + pid);
-            //TODO : gid should be private ! -pb
-			node.gid = pid;	
-			// continue until all nodes are set to invalid
-			foundValid = true;
+			}	          
+            nl[i] = new NodeProxy(nl[i].getDocument(), XMLUtil.getParentId(nl[i]));			
+            foundParentNode = true;
 		}
-		return foundValid;
+		return foundParentNode;
 	}
 
 	/**
