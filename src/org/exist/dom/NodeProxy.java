@@ -85,7 +85,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * @link #DOCUMENT_NODE_GID
 	 * @link #DOCUMENT_ELEMENT_GID
 	 */
-	protected long gid = UNKNOWN_NODE_GID;
+	private long gid = UNKNOWN_NODE_GID;
 
 	/**
 	 * The internal storage address of this node in the
