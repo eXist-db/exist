@@ -101,8 +101,7 @@ public class FunLang extends Function {
     			if (include) {
                     long parentID = XMLUtil.getParentId(p);                
     				if (parentID != NodeProxy.DOCUMENT_NODE_GID) {
-                        NodeProxy parent = new NodeProxy(p.getDocument(), parentID);
-                        parent.setNodeType(Node.ELEMENT_NODE);
+                        NodeProxy parent = new NodeProxy(p.getDocument(), parentID, Node.ELEMENT_NODE);                       
     					temp.add(parent);
     				}
     			}
