@@ -244,22 +244,12 @@ public class XMLUtil {
 		return getParentId(node.getDocument(), node.getGID());
 	}
 
-	public final static long getParentId(
-		final DocumentImpl doc,
-		final long gid) {
+	public final static long getParentId(final DocumentImpl doc, final long gid) {
 		final int level = doc.getTreeLevel(gid);
-		if (level < 0) {
-            //TODO : compare with below -pb
-			return NodeProxy.DOCUMENT_NODE_GID;
-		}
 		return getParentId(doc, gid, level);
 	}
 	
-	public final static long getParentId(
-		final DocumentImpl doc,
-		final long gid,
-		final int level) {
-        //TODO : compare with above -pb
+	public final static long getParentId(final DocumentImpl doc, final long gid, final int level) {
 		if(level < 1)
 			return NodeProxy.DOCUMENT_NODE_GID;
 		return (gid - doc.treeLevelStartPoints[level])
