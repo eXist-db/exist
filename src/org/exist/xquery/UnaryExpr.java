@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -73,4 +74,12 @@ public class UnaryExpr extends PathExpr {
         
         return result;        
 	}
+
+    public void dump(ExpressionDumper dumper) {       
+        dumper.display("to be implemented");      
+    }    
+    
+    public String toString() {
+        return "to be implemented";
+    }
 }
