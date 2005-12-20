@@ -53,51 +53,41 @@ public class ValueComparison extends GeneralComparison {
 	 * @param right
 	 * @param relation
 	 */
-	public ValueComparison(
-		XQueryContext context,
-		Expression left,
-		Expression right,
-		int relation) {
+	public ValueComparison(XQueryContext context, Expression left, Expression right, int relation) {
 		super(context, left, right, relation);
 	}
 
-	protected Sequence genericCompare(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	protected Sequence genericCompare(Sequence contextSequence, Item contextItem) throws XPathException {
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
 		Sequence rs = getRight().eval(contextSequence, contextItem);
 		if(ls.getLength() == 0 || rs.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		Collator collator = getCollator(contextSequence);
-		AtomicValue lv, rv;
+			return Sequence.EMPTY_SEQUENCE;	
 		if (ls.getLength() == 1 && rs.getLength() == 1) {
+            AtomicValue lv, rv;
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
+            Collator collator = getCollator(contextSequence);
 			return BooleanValue.valueOf(compareValues(collator, lv, rv));
-		} else
-			throw new XPathException("Type error: sequence with less or more than one item is not allowed here");
+		} 
+        throw new XPathException("Type error: sequence with more than one item is not allowed here");
 	}
 
-	protected Sequence nodeSetCompare(
-		NodeSet nodes,
-		Sequence contextSequence)
-		throws XPathException {
+	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {
 		NodeSet result = new ExtArrayNodeSet();
 		NodeProxy current;
 		ContextItem c;
 		Sequence rs;
-		AtomicValue lv, rv;
-		Collator collator = getCollator(contextSequence);
+		AtomicValue lv;		
 		for (Iterator i = nodes.iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
 			c = current.getContext();
 			do {
 				lv = current.atomize();
 				rs = getRight().eval(c.getNode().toSequence());
-				if(rs.getLength() != 1)
+				if (rs.getLength() != 1)
 					throw new XPathException("Type error: sequence with less or more than one item is not allowed here");
-				if(compareValues(collator, lv, rs.itemAt(0).atomize()))
+                Collator collator = getCollator(contextSequence);
+                if (compareValues(collator, lv, rs.itemAt(0).atomize()))
 					result.add(current);
 			} while ((c = c.getNextItem()) != null);
 		}
