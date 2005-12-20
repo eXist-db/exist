@@ -34,45 +34,26 @@ public class ChildSelector implements NodeSelector {
 	
 	private NodeSet context;
 	private boolean rememberContext = false;
-	//TODO : give me light ! -pb
-	private boolean mysteriousCondition = false;
 	
 	public ChildSelector(NodeSet contextSet, boolean rememberContext) {
 		this.context = contextSet;
 		this.rememberContext = rememberContext;
 	}
 	
-	public void setMysteriousCondition() {
-        mysteriousCondition = true;
-	}	
-	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.NodeProxy)
 	 */
-	public NodeProxy match(DocumentImpl doc, long gid) {
-        
+	public NodeProxy match(DocumentImpl doc, long gid) {        
         NodeProxy p = new NodeProxy(doc, gid);
         if(p == null) 
             return null;         
-        NodeProxy contextNode;         
-        
-        //What is this mysterious condition apart a Constants.ATTRIBUTE_AXIS ???
-		if (mysteriousCondition) {
-		    //Like in SelfSelector            
-            contextNode = p;
-            if (rememberContext)
-                p.addContextNode(contextNode);
-            //no else clause !
-        } else {
-            //Like in ChildSelector            
-            contextNode = context.parentWithChild(doc, gid, true, false, NodeProxy.UNKNOWN_NODE_LEVEL);            
-			if (contextNode == null)
-               return null;
-            if (rememberContext)
-                p.addContextNode(contextNode);
-            else
-                p.copyContext(contextNode);
-        }
+        NodeProxy contextNode = context.parentWithChild(doc, gid, true, false, NodeProxy.UNKNOWN_NODE_LEVEL);            
+		if (contextNode == null)
+           return null;
+        if (rememberContext)
+            p.addContextNode(contextNode);
+        else
+            p.copyContext(contextNode);        
  		return p;			
 	}
 }

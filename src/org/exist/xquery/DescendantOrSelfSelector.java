@@ -40,16 +40,17 @@ public class DescendantOrSelfSelector extends DescendantSelector {
 	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.NodeProxy)
 	 */
 	public NodeProxy match(DocumentImpl doc, long gid) {
-		NodeProxy p;
-		if((p = context.parentWithChild(doc, gid, false, true,
-				NodeProxy.UNKNOWN_NODE_LEVEL )) != null) {
-			NodeProxy newNode = new NodeProxy(doc, gid);
-			if (rememberContext)
-				newNode.addContextNode(p);
-			else
-				newNode.copyContext(p);
-			return newNode;
-		}
-		return null;
+        NodeProxy p = new NodeProxy(doc, gid);
+        if (p == null) 
+            return null;    
+        NodeProxy contextNode = context.parentWithChild(doc, gid, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+        if(contextNode == null)
+            return null;        
+		if (rememberContext)
+			p.addContextNode(contextNode);
+		else
+			p.copyContext(contextNode);
+		return p;
+
 	}
 }
