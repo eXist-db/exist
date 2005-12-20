@@ -1436,6 +1436,7 @@ public class NativeBroker extends DBBroker {
                 DocumentImpl newDoc = new DocumentImpl(this, newName, destination);
                 newDoc.copyOf(doc);
                 newDoc.setDocId(getNextDocumentId(transaction, destination));
+                newDoc.setPermissions(doc.getPermissions()); 
                 copyResource(transaction, doc, newDoc);
                 destination.addDocument(transaction, this, newDoc);
                 storeDocument(transaction, newDoc);
