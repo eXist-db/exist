@@ -65,14 +65,19 @@ public class UntypedAtomicValue extends AtomicValue {
 				return new StringValue(value);
             case Type.ANY_URI :
                 return new AnyURIValue(value);
-			case Type.BOOLEAN :
-				if (value.equals("0") || value.equals("false"))
-					return BooleanValue.FALSE;
-				else if (value.equals("1") || value.equals("true"))
-					return BooleanValue.TRUE;
+			case Type.BOOLEAN :                
+                if (value.equals("0"))
+                    return BooleanValue.FALSE;
+                else if (value.equals("1"))
+                    return BooleanValue.TRUE;
+                else if (value.equals("false"))
+                    return BooleanValue.FALSE;
+                else if (value.equals("true"))
+                    return BooleanValue.TRUE;
 				else
 					throw new XPathException(
-						"cannot convert string '" + value + "' to boolean");
+						"Cannot cast 'xdt:UntypeAtomic(" + value + ")' to '" + 
+                        Type.getTypeName(requiredType) + "' [err:FORG0001]");
 			case Type.FLOAT :
 			case Type.DOUBLE :
 			case Type.NUMBER :
@@ -106,10 +111,8 @@ public class UntypedAtomicValue extends AtomicValue {
 				return new DayTimeDurationValue(value);
 			default :
 				throw new XPathException(
-					"cannot convert string '"
-						+ value
-						+ "' to "
-						+ Type.getTypeName(requiredType));
+					"Cannot cast 'xdt:UntypeAtomic(" + value + ")' to '" +
+                    Type.getTypeName(requiredType) + "' [err:FORG0001]");
 		}
 	}
 
