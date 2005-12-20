@@ -129,9 +129,14 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				// given node was already document element -> no parent				
 				return null;
 			}
-			first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);
+            first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);
+            
+            if (directParent)
+                return first;
+            
 			// Timo Boehme: we need a real parent (child from context)
-			return getFirstParent(first, first, false, directParent, recursions + 1);
+			return getFirstParent(first, first, false, directParent, recursions + 1); 
+            
 		}
 
 		// is pid member of the context set?
@@ -162,7 +167,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		} else {
 			// continue for expressions like //*/n or /*//n
 			parent = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);
-			return getFirstParent(parent, first, false, directParent, recursions + 1);
+            return getFirstParent(parent, first, false, directParent, recursions + 1);          
 		}
 	}
 
