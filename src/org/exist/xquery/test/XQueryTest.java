@@ -1159,26 +1159,46 @@ public class XQueryTest extends XMLTestCase {
 		}
 		return b.toString();
 	}
+    
+    public void testAttributeAxis() {
+        ResourceSet result;
+        String query;
+        XMLResource resu;
+        try {
+            System.out.println("testAttributeAxis 1: ========" );
+            String large = createXMLContentWithLargeString();
+            XPathQueryService service = 
+                storeXMLStringAndGetQueryService(file_name, xml);
+            
+            query = "(<c id=\"OK\">b</c>)/descendant-or-self::*/attribute::id";
+            result = service.query(query );
+            printResult(result);
+            assertEquals( "XQuery: " + query, "OK", result.getResource(0).getContent());    
+        } catch (XMLDBException e) {
+            System.out.println("testAttributeAxis(): XMLDBException: "+e);
+            fail(e.getMessage());
+        }
+    }    
 
-	public void testLargeAttributeSimple() {
-		ResourceSet result;
-		String query;
-		XMLResource resu;
-		try {
-			System.out.println("testLargeAttributeSimple 1: ========" );
-			String large = createXMLContentWithLargeString();
-			XPathQueryService service = 
-				storeXMLStringAndGetQueryService(file_name, xml);
-			
-			query = "doc('"+ file_name+"') / details/metadata[@docid= '" + large + "' ]";
-			result = service.queryResource(file_name, query );
-			printResult(result);
-			assertEquals( "XQuery: " + query, nbElem, result.getSize() );
-		} catch (XMLDBException e) {
-			System.out.println("testLargeAttributeSimple(): XMLDBException: "+e);
-			fail(e.getMessage());
-		}
-	}
+    public void testLargeAttributeSimple() {
+        ResourceSet result;
+        String query;
+        XMLResource resu;
+        try {
+            System.out.println("testLargeAttributeSimple 1: ========" );
+            String large = createXMLContentWithLargeString();
+            XPathQueryService service = 
+                storeXMLStringAndGetQueryService(file_name, xml);
+            
+            query = "doc('"+ file_name+"') / details/metadata[@docid= '" + large + "' ]";
+            result = service.queryResource(file_name, query );
+            printResult(result);
+            assertEquals( "XQuery: " + query, nbElem, result.getSize() );
+        } catch (XMLDBException e) {
+            System.out.println("testLargeAttributeSimple(): XMLDBException: "+e);
+            fail(e.getMessage());
+        }
+    }
 
 	public void testLargeAttributeContains() {
 		ResourceSet result;
