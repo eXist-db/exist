@@ -39,10 +39,7 @@ public class AncestorSelector implements NodeSelector {
     }
 
     public NodeProxy match(DocumentImpl doc, long gid) {
-        NodeProxy p;
-        if((p = ancestors.get(doc, gid)) != null) {
-            return p;
-        } else
-            return null;
+        NodeProxy p = ancestors.get(doc, gid);        
+        return p;            
     }
 }

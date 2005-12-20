@@ -343,14 +343,6 @@ public class LocationStep extends Step {
             switch (axis) {
                 case Constants.ATTRIBUTE_AXIS :
                     selector = new ChildSelector(contextSet, inPredicate);  
-                    //TODO : find when this condition must be set !                                        
-                    //It should be for :
-                    //let $a := (<c id="1"><d id="2">d</d><e>e</e></c>)/descendant-or-self::node()
-                    //for $b in $a/attribute::id
-                    //return <b>{$b}</b>
-                    //Note that this expression also works with selector = null
-                    if (false) 
-                        ((ChildSelector)selector).setMysteriousCondition();
                     break;
                 case Constants.DESCENDANT_ATTRIBUTE_AXIS : 
                     selector = new DescendantSelector(contextSet, inPredicate); 

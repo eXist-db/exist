@@ -46,10 +46,7 @@ public class ParentSelector implements NodeSelector {
 	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.DocumentImpl, long)
 	 */
 	public NodeProxy match(DocumentImpl doc, long gid) {
-		NodeProxy p;
-		if((p = parents.get(doc, gid)) != null) {
-			return p;
-		} else
-			return null;
+		NodeProxy p = parents.get(doc, gid);
+        return p;			
 	}
 }
