@@ -45,13 +45,12 @@ public class CastableExpression extends AbstractExpression {
 	 * @param requiredType
 	 * @param cardinality
 	 */
-	public CastableExpression(XQueryContext context, Expression expr,
-			int requiredType, int cardinality) {
+	public CastableExpression(XQueryContext context, Expression expr, int requiredType, int cardinality) {
 		super(context);
 		this.expression = expr;
 		this.requiredType = requiredType;
 		this.cardinality = cardinality;
-		if(!Type.subTypeOf(expression.returnsType(), Type.ATOMIC))
+		if (!Type.subTypeOf(expression.returnsType(), Type.ATOMIC))
 			expression = new Atomize(context, expression);
 	}
 
@@ -105,9 +104,8 @@ public class CastableExpression extends AbstractExpression {
     		try {
     			seq.itemAt(0).convertTo(requiredType);
                 result = BooleanValue.TRUE;
-            //TODO : why catch this xception ?
-    		} catch(XPathException e) {       
-                System.err.println("Caught exception in CatableExpression");
+            //TODO : improve by *not* using a costly exception ?
+    		} catch(XPathException e) {
                 result = BooleanValue.FALSE;
     		}
         }
