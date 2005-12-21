@@ -127,8 +127,12 @@ public class AttributeConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("attribute {").display(qname);
-        dumper.display("} {");
+        dumper.display("attribute ");
+        //TODO : remove curly braces if Qname
+        dumper.display("{");
+        dumper.display(qname);
+        dumper.display("} ");
+        dumper.display("{");
         dumper.startIndent();
         Object next;
 		for(Iterator i = contents.iterator(); i.hasNext(); ) {
@@ -139,13 +143,17 @@ public class AttributeConstructor extends NodeConstructor {
 				dumper.display(next);
 		}
         dumper.endIndent();
-        dumper.nl().display("}");
+        dumper.nl().display("} ");
     }
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("attribute {").append(qname);
-    	result.append("} {");        
+    	result.append("attribute ");
+        //TODO : remove curly braces if Qname
+        result.append("{"); 
+        result.append(qname);
+        result.append("} "); 
+        result.append("{");        
         Object next;
 		for(Iterator i = contents.iterator(); i.hasNext(); ) {
 			next = i.next();
@@ -154,7 +162,7 @@ public class AttributeConstructor extends NodeConstructor {
 			else
 				result.append(next.toString());
 		}      
-		result.append("}");
+		result.append("} ");
 		return result.toString();
     }    
     

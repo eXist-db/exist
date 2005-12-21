@@ -134,7 +134,7 @@ public class DynamicPIConstructor extends NodeConstructor {
     	result.append(name.toString());
     	result.append("} {");        
     	result.append(content.toString());
-    	result.append("}");
+    	result.append("} ");
     	return result.toString();
     }    
 }

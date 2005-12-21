@@ -169,7 +169,7 @@ public class ElementConstructor extends NodeConstructor {
 		}
 		// process element contents
 		if(content != null) {
-			content.eval(contextSequence, contextItem);
+            content.eval(contextSequence, contextItem);
 		}
 		builder.endElement();
 		NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
@@ -181,9 +181,12 @@ public class ElementConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("element {");
+        dumper.display("element ");
+        //TODO : remove curly braces if Qname
+        dumper.display("{");
         qnameExpr.dump(dumper);
-        dumper.display("} {");
+        dumper.display("} ");
+        dumper.display("{");
         dumper.startIndent();
         if(attributes != null) {
 			AttributeConstructor attr;
@@ -205,14 +208,17 @@ public class ElementConstructor extends NodeConstructor {
             }
             dumper.endIndent().nl();
         }        
-        dumper.display("}");
+        dumper.display("} ");
     }
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("element {");
+    	result.append("element ");
+        //TODO : remove curly braces if Qname
+        result.append("{");    
     	result.append(qnameExpr.toString());
-    	result.append("} {");        
+        result.append("} ");    
+        result.append("{");        
         if(attributes != null) {
 			AttributeConstructor attr;
 			for(int i = 0; i < attributes.length; i++) {
