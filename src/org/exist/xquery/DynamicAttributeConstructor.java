@@ -116,9 +116,13 @@ public class DynamicAttributeConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("attribute {");
+        dumper.display("attribute ");
+        //TODO : remove curly braces if Qname
+        dumper.display("{");
         qnameExpr.dump(dumper);
-        dumper.display("} {");
+        dumper.display("} ");
+        //TODO : handle empty value
+        dumper.display("{");
         dumper.startIndent();
         valueExpr.dump(dumper);
         dumper.endIndent();
@@ -127,11 +131,15 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	result.append("attribute {");
+    	result.append("attribute ");
+        //TODO : remove curly braces if Qname
+        result.append("{");  
     	result.append(qnameExpr.toString());
-    	result.append("} {");        
+        result.append("} ");
+        //TODO : handle empty value
+        result.append("{");        
     	result.append(valueExpr.toString());        
-    	result.append("} ");
+        result.append("} ");
     	return result.toString();
     }    
 }
