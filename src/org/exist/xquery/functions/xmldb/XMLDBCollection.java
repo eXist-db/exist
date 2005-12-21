@@ -72,29 +72,28 @@ public class XMLDBCollection extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence args[],
-		Sequence contextSequence)
-		throws XPathException {
+	public Sequence eval(Sequence args[], Sequence contextSequence)	throws XPathException {
+        
 		String collectionURI = args[0].getStringValue();
 		String user = args[1].getStringValue();
 		String passwd = args[2].getStringValue();
 		
 		Collection collection = null;
 		try {
-			if(!collectionURI.startsWith("xmldb:")) {
+            //TODO : revisit according to XmldbURI implementation -pb
+			if (!collectionURI.startsWith("xmldb:")) {
 				User localUser = context.getUser();
 				// Must be a LOCAL collection
-				if(!localUser.getName().equals(user))
-					localUser = getUser(user, passwd);
+				if (!localUser.getName().equals(user))
+					localUser = getUser(user, passwd);                 
 		        collection = new LocalCollection(localUser, context.getBroker().getBrokerPool(), collectionURI);
 			} else {
 				collection = DatabaseManager.getCollection(collectionURI, user, passwd);
 			}
 		} catch (XMLDBException e) {
-		    LOG.debug(e.getMessage(), e);
-			throw new XPathException(getASTNode(), 
-				"exception while retrieving collection: " + e.getMessage(), e);
+            LOG.debug(e.getMessage(), e);
+            throw new XPathException(getASTNode(), 
+                "Exception while retrieving collection '" + collectionURI + ": " + e.getMessage(), e);
 		}
 		return collection == null ? Sequence.EMPTY_SEQUENCE : new JavaObjectValue(collection);
 	}
@@ -102,8 +101,10 @@ public class XMLDBCollection extends BasicFunction {
 	private User getUser(String user, String passwd) throws XPathException {
 		SecurityManager secman = context.getBroker().getBrokerPool().getSecurityManager();
 		User u = secman.getUser(user);
-		if(!u.validate(passwd))
-			throw new XPathException(getASTNode(), "Wrong password specified for user " + user);
+        if (u == null)
+            throw new XPathException(getASTNode(), "Unknown user '" + user + "'");
+		if (!u.validate(passwd))
+            throw new XPathException(getASTNode(), "Wrong password specified for user '" + user + "'");
 		return u;
 	}
 }
