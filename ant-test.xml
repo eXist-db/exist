@@ -7,6 +7,7 @@
 			<include name="*.jar"/>
 		</fileset>
 		<pathelement path="exist.jar"/>
+		<pathelement path="exist-optional.jar"/>
 	</path>
 
 	<typedef resource="org/exist/ant/antlib.xml"
@@ -37,7 +38,7 @@
 
 		<xmldb:remove uri="xmldb:exist:///db" collection="shakespeare"/>
 
-		<xmldb:restore base="xmldb:exist://" user="admin" password=""
-			file="${backup}/db/shakespeare/__contents__.xml"/>
+		<xmldb:restore uri="xmldb:exist://" user="admin" password=""
+			dir="${backup}/db/shakespeare/plays"/>
 	</target>
 </project>
