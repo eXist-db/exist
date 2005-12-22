@@ -88,135 +88,96 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     private final static Logger LOG = Logger.getLogger(NativeValueIndex.class);
     
-	/** Data base broker associated to this value index - 1 to 1 association */
+	/** The broker that is using this value index */
 	DBBroker broker;
 	
-	/** Data storage associated to this value index - 1 to 1 association */
+	/** The datastore for this value index */
     protected BFile db;
     
-	/** Pending modifications; the keys are AtomicValue objects implementing Indexable 
-	 * (StringValue or numeric values, IntegerValue etc), 
-	 * which are the index entries,
-	 * and the values are LongLinkedList objects 
-	 * whose entries are gid (global identifiers) matching the index entries.
-	 * Do not confuse these keys with the keys used in persistent storage, created with
+	/** A collection of key-value pairs that pending modifications for this value index.  
+     * The keys are {@link org.exist.xquery.value.AtomicValue atomic values}
+     * that implement {@link Indexable Indexable}.
+	 * The values are {@link org.exist.util.LongLinkedList lists} containing
+	 * the nodes GIDs (global identifiers.
+	 * Do not confuse the keys with the ones used in persistent storage, created with
 	 * {@link Indexable#serialize(short) */
     protected TreeMap pending = new TreeMap();
     
-	/** the current document */
+	/** The current document */
     private DocumentImpl doc;
     
-	/** work Output Stream; it is cleared before each use */
+	/** Work output Stream taht should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream();
     
+    //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
     protected boolean caseSensitive = true;
     
     public NativeValueIndex(DBBroker broker, BFile valuesDb) {
         this.broker = broker;
         this.db = valuesDb;
+        //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
         Boolean caseOpt = (Boolean) broker.getConfiguration().getProperty("indexer.case-sensitive");
         if (caseOpt != null)
             caseSensitive = caseOpt.booleanValue();
     }
     
-	/* (non-Javadoc)
-	 * @see org.exist.storage.IndexGenerator#storeElement(int, org.exist.dom.ElementImpl, java.lang.String)
-	 */
+    /* (non-Javadoc)
+     * @see org.exist.storage.ContentLoadingObserver#setDocument(org.exist.dom.DocumentImpl)
+     */
+    public void setDocument(DocumentImpl document) {
+        this.doc = document;
+    }    
+    
+    /** Store the given element's value in the value index.
+     * @param xpathType The value type
+     * @param node The element
+     * @param content The string representation of the value
+     */
     public void storeElement(int xpathType, ElementImpl node, String content) {
         AtomicValue atomic = convertToAtomic(xpathType, content);
-        if(atomic == null)
-            return;		// skip
+        if (atomic == null)
+            //TODO : throw an exception ? -pb
+            return;
         LongLinkedList buf;
+        //Is this indexable value already pending ?
         if (pending.containsKey(atomic))
+            //Reuse the existing GIDs list
             buf = (LongLinkedList) pending.get(atomic);
         else {
+            //Create a GIDs list
             buf = new LongLinkedList();
             pending.put(atomic, buf);
         }
+        //Add node's GID to the list
         buf.add(node.getGID());
     }
     
-	/* (non-Javadoc)
-	 * @see org.exist.storage.IndexGenerator#storeAttribute(org.exist.storage.RangeIndexSpec, org.exist.dom.AttrImpl)
-	 */
+
+    /** Store the given attribute's value in the value index.
+     * @param spec The index specification
+     * @param node The attribute
+     */
     public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
         AtomicValue atomic = convertToAtomic(spec.getType(), node.getValue());
         if(atomic == null)
-            return;		// skip
+            return;
         LongLinkedList buf;
+        //Is this indexable value already pending ?
         if (pending.containsKey(atomic))
+            //Reuse the existing GIDs list
             buf = (LongLinkedList) pending.get(atomic);
         else {
+            //Create a GIDs list
             buf = new LongLinkedList();
             pending.put(atomic, buf);
         }
+        //Add node's GID to the list
         buf.add(node.getGID());
     }
     
-	/* (non-Javadoc)
-	 * @see org.exist.storage.IndexGenerator#setDocument(org.exist.dom.DocumentImpl)
-	 */
-    public void setDocument(DocumentImpl document) {
-        this.doc = document;
-    }
-    
-	/* (non-Javadoc)
-	 * @see org.exist.storage.IndexGenerator#flush()
-	 */
-    public void flush() {
-        if (pending.size() == 0) return;
-        Indexable indexable;
-        LongLinkedList idList;
-        long ids[];
-        int len;
-        Value ref;
-        Map.Entry entry;
-        long prevId;
-        long cid;
-        short collectionId = doc.getCollection().getId();
-        Lock lock = db.getLock();
-        try {
-            for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
-                entry = (Map.Entry) i.next();
-                indexable = (Indexable) entry.getKey();
-                idList = (LongLinkedList) entry.getValue();
-                os.clear();
-                ids = idList.getData();
-                Arrays.sort(ids);
-                len = ids.length;
-                os.writeInt(doc.getDocId());
-                os.writeInt(len);
-                prevId = 0;
-                for (int j = 0; j < len; j++) {
-                    cid = ids[j] - prevId;
-                    prevId = ids[j];
-                    os.writeLong(cid);
-                }
-                ref = new Value(indexable.serialize(collectionId, caseSensitive));
-                try {
-                    lock.acquire(Lock.WRITE_LOCK);
-                    if (db.append(ref, os.data()) < 0) {
-                        LOG.warn("could not save index for value");
-                        continue;
-                    }
-                } catch (LockException e) {
-                    LOG.error("could not acquire lock on values.dbx", e);
-                } catch (IOException e) {
-                    LOG.error("io error while writing value index.", e);
-                } finally {
-                    lock.release();
-                }
-            }
-        } catch (ReadOnlyException e) {
-            LOG.warn("database is read-only");
-            return;
-        }
-        pending.clear();
-    }
-    
-	/* (non-Javadoc)
-	 * @see org.exist.storage.IndexGenerator#sync()
-	 */
+    /* (non-Javadoc)
+     * @see org.exist.storage.IndexGenerator#sync()
+     */
     public void sync() {
         Lock lock = db.getLock();
         try {
@@ -227,11 +188,173 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 LOG.warn(dbe);
             }
         } catch (LockException e) {
-            LOG.warn("could not acquire lock for values.dbx", e);
+            LOG.warn("Failed to acquire lock for '" + db.getFile().getName() + "'", e);
+            //TODO : throw an exception ? -pb
         } finally {
             lock.release();
         }
+    }    
+    
+	/* (non-Javadoc)
+	 * @see org.exist.storage.IndexGenerator#flush()
+	 */
+    public void flush() {
+        if (pending.size() == 0) 
+            return;        
+        Indexable indexable;
+        LongLinkedList gidList;
+        long gids[];
+        int gidsCount;        
+        long previousGID;
+        long delta;
+        Value ref;
+        Map.Entry entry;        
+        final short collectionId = doc.getCollection().getId();
+        final Lock lock = db.getLock();
+        for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
+            entry = (Map.Entry) i.next();
+            indexable = (Indexable) entry.getKey();
+            gidList = (LongLinkedList) entry.getValue();
+            gids = gidList.getData();
+            gidsCount = gids.length;
+            //Don't forget this one
+            Arrays.sort(gids);
+            os.clear();
+            os.writeInt(doc.getDocId());
+            os.writeInt(gidsCount);
+            previousGID = 0;
+            for (int j = 0; j < gidsCount; j++) {                    
+                delta = gids[j] - previousGID;                    
+                os.writeLong(delta);
+                previousGID = gids[j];
+            }
+            ref = new Value(indexable.serialize(collectionId, caseSensitive));
+            try {
+                lock.acquire(Lock.WRITE_LOCK);
+                if (db.append(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                    LOG.warn("could not save index for value");
+                    continue;
+                }
+            } catch (LockException e) {
+                LOG.warn("Failed to acquire lock for '" + db.getFile().getName() + "'", e);
+                //TODO : return ?
+            } catch (ReadOnlyException e) {
+                LOG.warn("Read-only error on '" + db.getFile().getName() + "'", e);                
+                return;                          
+            } catch (IOException e) {
+                LOG.warn("IO error on '" + db.getFile().getName() + "'", e);  
+                //TODO : return ?
+            } finally {
+                lock.release();
+            }
+        }
+        pending.clear();
     }
+    
+    /* (non-Javadoc)
+     * @see org.exist.storage.IndexGenerator#remove()
+     */
+    public void remove() {
+        if (pending.size() == 0) 
+            return;        
+        Indexable indexable;
+        LongLinkedList currentGIDList;
+        LongLinkedList newGIDList;
+        long[] gids;        
+        int gidsCount;
+        long currentGID;
+        long previousGID;        
+        long delta;        
+        Value ref;
+        Map.Entry entry;        
+        Value val;
+        VariableByteArrayInput is;
+        int currentDocId;
+        final short collectionId = doc.getCollection().getId();
+        final Lock lock = db.getLock();           
+        for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
+            try {                    
+                lock.acquire(Lock.WRITE_LOCK);  
+                newGIDList = new LongLinkedList();
+                entry = (Map.Entry) i.next();
+                indexable = (Indexable) entry.getKey();
+                currentGIDList = (LongLinkedList) entry.getValue();                
+                ref = new Value(indexable.serialize(collectionId, caseSensitive));
+                val = db.get(ref);
+                os.clear();
+                //Does the value already has data ?
+                if (val != null) {
+                    //Add its data to the new list
+                    is = new VariableByteArrayInput(val.getData());
+                    try {                            
+                        while (is.available() > 0) {
+                            currentDocId = is.readInt();
+                            gidsCount = is.readInt();
+                            if (currentDocId != doc.getDocId()) {
+                                // data are related to another document:
+                                // append them to any existing data
+                                os.writeInt(currentDocId);
+                                os.writeInt(gidsCount);
+                                try {                                        
+                                    is.copyTo(os, gidsCount);
+                                } catch(EOFException e) {
+                                    LOG.error("EOF while copying: expected: " + gidsCount);
+                                }
+                            } else {
+                                // data are related to our document:
+                                // feed the new list with the GIDs
+                                previousGID = 0;
+                                for (int j = 0; j < gidsCount; j++) {
+                                    delta = is.readLong();
+                                    currentGID = previousGID + delta;                                        
+                                    if (!currentGIDList.contains(currentGID)) {
+                                        newGIDList.add(currentGID);
+                                    }
+                                    previousGID = currentGID;
+                                }
+                            }
+                        }
+                    } catch (EOFException e) {
+                        LOG.error("end-of-file while updating value index", e);
+                        //The data will be saved if an exception occurs ! -pb
+                    } catch (IOException e) {
+                        LOG.error("io-error while updating value index", e);
+                        //The data will be saved if an exception occurs ! -pb
+                    }
+                }
+                // append the new list to any existing data
+                gids = newGIDList.getData();
+                gidsCount = gids.length;
+                //Don't forget this one
+                Arrays.sort(gids);
+                os.writeInt(doc.getDocId());
+                os.writeInt(gidsCount);
+                previousGID = 0;
+                for (int j = 0; j < gidsCount; j++) {
+                    delta = gids[j] - previousGID;                            
+                    os.writeLong(delta);
+                    previousGID = gids[j];
+                }
+                //Store the data
+                if (val == null) {
+                    db.put(ref, os.data());
+                    //TODO : what if BFile.UNKNOWN_ADDRESS is returned ? -pb
+                } else {
+                    db.update(val.getAddress(), ref, os.data());
+                    //TODO : what if BFile.UNKNOWN_ADDRESS is returned ? -pb
+                }  
+            } catch (LockException e) {
+                LOG.warn("Failed to acquire lock for '" + db.getFile().getName() + "'", e);
+                //TODO : return ?
+            } catch (ReadOnlyException e) {
+                LOG.warn("Read-only error on '" + db.getFile().getName() + "'", e);
+                return;           
+            } finally {
+                lock.release();
+            }            
+        }
+        pending.clear();
+    }    
     
     /* (non-Javadoc)
 	 * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.collections.Collection)
@@ -437,105 +560,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
         pending.clear();
     }
     
-	/* (non-Javadoc)
-	 * @see org.exist.storage.IndexGenerator#remove()
-	 */
-    public void remove() {
-        if (pending.size() == 0) return;
-        Lock lock = db.getLock();
-        Map.Entry entry;
-        Indexable indexable;
-        LongLinkedList newList, idList;
-        long[] ids;
-        VariableByteArrayInput is;
-        int len, docId;
-        byte[] data;
-        Value ref;
-        Value val;
-//        short sym, nsSym;
-        short collectionId = doc.getCollection().getId();
-        long delta, last, gid;
-        try {
-            // iterate through pending elements
-            for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
-                try {
-                    lock.acquire(Lock.WRITE_LOCK);
-                    entry = (Map.Entry) i.next();
-                    indexable = (Indexable) entry.getKey();
-                    idList = (LongLinkedList) entry.getValue();
-                    ref = new Value(indexable.serialize(collectionId, caseSensitive));
-                    
-                    val = db.get(ref);
-                    os.clear();
-                    newList = new LongLinkedList();
-                    if (val != null) {
-                        // add old entries to the new list
-                        data = val.getData();
-                        is = new VariableByteArrayInput(data);
-                        try {
-							// iterate through indexed nodes
-                            while (is.available() > 0) {
-                                docId = is.readInt();
-                                len = is.readInt();
-                                if (docId != doc.getDocId()) {
-                                    // section belongs to another document:
-                                    // copy data to new buffer
-                                    os.writeInt(docId);
-                                    os.writeInt(len);
-                                    try {
-                                        is.copyTo(os, len);
-                                    } catch(EOFException e) {
-                                        LOG.error("EOF while copying: expected: " + len);
-                                    }
-                                } else {
-                                    // copy nodes to new list
-                                    last = 0;
-                                    for (int j = 0; j < len; j++) {
-                                        delta = is.readLong();
-                                        gid = last + delta;
-                                        last = gid;
-                                        if (!idList.contains(gid)) {
-                                            newList.add(gid);
-                                        }
-                                    }
-                                }
-                            }
-                        } catch (EOFException e) {
-                            LOG
-                            .error("end-of-file while updating value index", e);
-                        } catch (IOException e) {
-                            LOG.error("io-error while updating value index", e);
-                        }
-                    }
-                    // write out the updated list
-                    ids = newList.getData();
-	                Arrays.sort(ids);
-	                len = ids.length;
-                    os.writeInt(doc.getDocId());
-                    os.writeInt(len);
-                    last = 0;
-                    for (int j = 0; j < len; j++) {
-                        delta = ids[j] - last;
-                        last = ids[j];
-                        os.writeLong(delta);
-                    }
-                    if (val == null) {
-                    	db.put(ref, os.data());
-                    } else {
-                    	db.update(val.getAddress(), ref, os.data());
-                    }
-                } catch (LockException e) {
-                    LOG.error("could not acquire lock on elements", e);
-                } finally {
-                    lock.release();
-                }
-            }
-        } catch (ReadOnlyException e) {
-            LOG.warn("database is read only");
-        }
-        pending.clear();
-    }
-    
 	/** find
 	 * @param relation binary operator used for the comparison
 	 * @param value right hand comparison value */
@@ -704,9 +728,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
         		break;
         }
         return indexOp;
-    }
+    }    
     
-	/** compute a key for the "pending" map */
+    /**
+     * @param xpathType
+     * @param value
+     * @return <code>null</null> if atomization fails or if the atomic value is not indexable.
+     * Should we throw an exception instead ? -pb
+     */
     private AtomicValue convertToAtomic(int xpathType, String value) {
         AtomicValue atomic = null;
         if(Type.subTypeOf(xpathType, Type.STRING)) {
