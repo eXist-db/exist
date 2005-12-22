@@ -450,100 +450,111 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	/* (non-Javadoc)
 	 * @see org.exist.storage.IndexGenerator#reindex(org.exist.dom.DocumentImpl, org.exist.dom.NodeImpl)
 	 */
-    public void reindex(DocumentImpl oldDoc, NodeImpl node) {
-        if (pending.size() == 0) return;
-        Lock lock = db.getLock();
-        Map.Entry entry;
+    public void reindex(DocumentImpl document, NodeImpl node) {
+        if (pending.size() == 0) 
+            return;        
         Indexable indexable;
-        LongLinkedList oldList, idList;
-        VariableByteInput is = null;
-        int len, docId;
-//        byte[] data;
+        LongLinkedList currentGIDList;
+        LongLinkedList newGIDList;
+        long[] gids;        
+        int gidsCount;
+        long currentGID;
+        long previousGID;        
+        long delta;        
         Value ref;
-//        Value val;
-//        short sym, nsSym;
-        short collectionId = oldDoc.getCollection().getId();
-        long gid, prevId, cid, address;
-        long ids[];
-        try {
-            // iterate through elements
-            for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
-                entry = (Map.Entry) i.next();
-                indexable = (Indexable) entry.getKey();
-                idList = (LongLinkedList) entry.getValue();
-                ref = new Value(indexable.serialize(collectionId, caseSensitive));                
-                // Retrieve old index entry for the element
-                try {
-                    lock.acquire(Lock.WRITE_LOCK);
-                    is = db.getAsStream(ref);
-                    os.clear();
-                    oldList = new LongLinkedList();
-                    if (is != null) {
-                        // add old entries to the new list
-                        try {
-                            while (is.available() > 0) {
-                                docId = is.readInt();
-                                len = is.readInt();
-                                if (docId != oldDoc.getDocId()) {
-                                    // section belongs to another document:
-                                    // copy data to new buffer
-                                    os.writeInt(docId);
-                                    os.writeInt(len);
-                                    is.copyTo(os, len);
-                                } else {
-                                    // copy nodes to new list
-                                    gid = 0;
-                                    for (int j = 0; j < len; j++) {
-                                        gid += is.readLong();
-                                        if (node == null
-                                                && oldDoc.getTreeLevel(gid) < oldDoc
-                                                .reindexRequired()) {
-                                            idList.add(gid);
-                                        } else if (node != null
-                                                && (!XMLUtil.isDescendant(oldDoc,
-                                                        node.getGID(), gid))) {
-                                            oldList.add(gid);
-                                        }
+        Map.Entry entry;        
+        VariableByteInput is;        
+        int currentDocId;
+        long address;
+        final short collectionId = doc.getCollection().getId();
+        final Lock lock = db.getLock();        
+        // iterate through elements
+        for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
+            entry = (Map.Entry) i.next();
+            indexable = (Indexable) entry.getKey();
+            currentGIDList = (LongLinkedList) entry.getValue();
+            ref = new Value(indexable.serialize(collectionId, caseSensitive));                
+            // Retrieve old index entry for the element
+            try {
+                lock.acquire(Lock.WRITE_LOCK);
+                is = db.getAsStream(ref);
+                os.clear();
+                newGIDList = new LongLinkedList();
+                if (is != null) {
+                    // add old entries to the new list
+                    try {
+                        while (is.available() > 0) {
+                            currentDocId = is.readInt();
+                            gidsCount = is.readInt();
+                            if (currentDocId != document.getDocId()) {
+                                // data are related to another document:
+                                // append them to any existing data
+                                os.writeInt(gidsCount);
+                                os.writeInt(gidsCount);
+                                is.copyTo(os, gidsCount);
+                            } else {
+                                // data are related to our document:
+                                // feed the new list with the GIDs                                    
+                                previousGID = 0;
+                                for (int j = 0; j < gidsCount; j++) {
+                                    delta = is.readLong();
+                                    currentGID = previousGID + delta;    
+                                    if (node == null) {
+                                        if (document.getTreeLevel(currentGID) < document.reindexRequired())
+                                            currentGIDList.add(currentGID);
+                                    } else {
+                                         if (!XMLUtil.isDescendant(document, node.getGID(), currentGID))
+                                             //TO UNDERSTAND : what will these GIDs become ? -pb
+                                             newGIDList.add(currentGID);
                                     }
+                                    previousGID = currentGID;
                                 }
                             }
-                        } catch (EOFException e) {
-                            LOG.warn("Could not save index data for value '" +  ref + "'");
-                        } catch (IOException e) {
-                            LOG.error("io-error while updating index for value", e);
                         }
+                    } catch (EOFException e) {
+                        LOG.warn("Could not save index data for value '" +  ref + "'");
+                    } catch (IOException e) {
+                        LOG.error("io-error while updating index for value", e);
                     }
-                    // write out the updated list
-                    ids = idList.getData();
-	                Arrays.sort(ids);
-	                len = ids.length;
-
-                    os.writeInt(doc.getDocId());
-                    os.writeInt(len);
-                    prevId = 0;
-                    for (int j = 0; j < len; j++) {
-                        cid = ids[j] - prevId;
-                        prevId = ids[j];
-                        os.writeLong(cid);
-                    }
-                    if (is == null)
-                        db.put(ref, os.data());
-                    else {
-                        address = ((BFile.PageInputStream) is).getAddress();
-                        db.update(address, ref, os.data());
-                    }
-                } catch (LockException e) {
-                    LOG.error("could not acquire lock for value index", e);
-                    return;
-                } catch (IOException e) {
-                    LOG.error(e.getMessage(), e);
-                    is = null;
-                } finally {
-                    lock.release(Lock.WRITE_LOCK);
                 }
+                // append the new list to any existing data
+                gids = currentGIDList.getData();
+                gidsCount = gids.length;
+                //Don't forget this one
+                Arrays.sort(gids);
+                os.writeInt(doc.getDocId());
+                os.writeInt(gidsCount);
+                previousGID = 0;
+                for (int j = 0; j < gidsCount; j++) {
+                    delta = gids[j] - previousGID;                        
+                    os.writeLong(delta);
+                    previousGID = gids[j];
+                }
+                //Store the data
+                if (is == null)
+                    if (db.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.warn("Could not put index data for value '" +  ref + "'");
+                    }
+                else {
+                    address = ((BFile.PageInputStream) is).getAddress();
+                    if (db.update(address, ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.warn("Could not update index data for value '" +  ref + "'");
+                    }
+                }
+                
+            } catch (LockException e) {
+                LOG.warn("Failed to acquire lock for '" + db.getFile().getName() + "'", e);     
+                return;
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+                is = null;
+                //TODO : return ?
+            } catch (ReadOnlyException e) {
+                LOG.warn(e.getMessage(), e);  
+                //TODO : return ?
+            } finally {
+                lock.release(Lock.WRITE_LOCK);
             }
-        } catch (ReadOnlyException e) {
-            LOG.warn("database is read only");
         }
         pending.clear();
     }
@@ -579,16 +590,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
 			}
         }
         return result;
-    }
-    
-    /**
-     * Returns a key containing type and collectionId.
-     */
-    private Value getPrefixValue(int type, short collectionId) {
-        byte[] data = new byte[3];
-        ByteConversion.shortToByte(collectionId, data, 0);
-        data[2] = (byte) type;
-        return new Value(data);
     }
     
     public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type)
@@ -691,6 +692,16 @@ public class NativeValueIndex implements ContentLoadingObserver {
         LOG.debug("Found " + result.length + " in " + (System.currentTimeMillis() - t0));
         return (ValueOccurrences[]) map.values().toArray(result);
     }
+    
+    /**
+     * Returns a key containing type and collectionId.
+     */
+    private Value getPrefixValue(int type, short collectionId) {
+        byte[] data = new byte[3];
+        ByteConversion.shortToByte(collectionId, data, 0);
+        data[2] = (byte) type;
+        return new Value(data);
+    }    
 
     protected int checkRelationOp(int relation) {
         int indexOp;
@@ -845,7 +856,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 		}
     }
     
-private final class IndexScanCallback implements BTreeCallback{
+    private final class IndexScanCallback implements BTreeCallback{
         
         private DocumentSet docs;
         private NodeSet contextSet;
@@ -861,8 +872,7 @@ private final class IndexScanCallback implements BTreeCallback{
         /* (non-Javadoc)
          * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
          */
-        public boolean indexInfo(Value key, long pointer)
-                throws TerminatedException {
+        public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             AtomicValue atomic;
             try {
                 atomic = ValueIndexFactory.deserialize(key.data(), key.start(), key.getLength());
@@ -917,36 +927,32 @@ private final class IndexScanCallback implements BTreeCallback{
                     }
                 }
             } catch(EOFException e) {
+                LOG.warn(e.getMessage(), e);
             } catch(IOException e) {
-                LOG.warn("Exception while scanning index: " + e.getMessage(), e);
+                LOG.warn(e.getMessage(), e);
             }
             return true;
         }
     }
 
-public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
-	// TODO Auto-generated method stub
-	
-}
-
-public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
-	// TODO Auto-generated method stub
-	
-}
-
-public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
-	// TODO Auto-generated method stub
-	
-}
-
-public void endElement(int xpathType, ElementImpl node, String content) {
-	// TODO Auto-generated method stub
-	
-}
-
-public void removeElement(ElementImpl node, NodePath currentPath, String content) {
-	// TODO Auto-generated method stub
-	
-}
+    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+    	// TODO Auto-generated method stub    	
+    }
+    
+    public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+    	// TODO Auto-generated method stub    	
+    }
+    
+    public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
+    	// TODO Auto-generated method stub    	
+    }
+    
+    public void endElement(int xpathType, ElementImpl node, String content) {
+    	// TODO Auto-generated method stub    	
+    }
+    
+    public void removeElement(ElementImpl node, NodePath currentPath, String content) {
+    	// TODO Auto-generated method stub    	
+    }
 
 }
