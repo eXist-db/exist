@@ -232,12 +232,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
             try {
                 lock.acquire(Lock.WRITE_LOCK);
                 if (db.append(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                    LOG.warn("could not save index for value");
-                    continue;
+                    LOG.warn("Could not append index data for value '" +  ref + "'");                   
                 }
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + db.getFile().getName() + "'", e);
-                //TODO : return ?
+               //TODO : return ?
             } catch (ReadOnlyException e) {
                 LOG.warn("Read-only error on '" + db.getFile().getName() + "'", e);                
                 return;                          
@@ -267,7 +266,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         long delta;        
         Value ref;
         Map.Entry entry;        
-        Value val;
+        Value value;
         VariableByteArrayInput is;
         int currentDocId;
         final short collectionId = doc.getCollection().getId();
@@ -280,12 +279,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 indexable = (Indexable) entry.getKey();
                 currentGIDList = (LongLinkedList) entry.getValue();                
                 ref = new Value(indexable.serialize(collectionId, caseSensitive));
-                val = db.get(ref);
+                value = db.get(ref);
                 os.clear();
                 //Does the value already has data ?
-                if (val != null) {
+                if (value != null) {
                     //Add its data to the new list
-                    is = new VariableByteArrayInput(val.getData());
+                    is = new VariableByteArrayInput(value.getData());
                     try {                            
                         while (is.available() > 0) {
                             currentDocId = is.readInt();
@@ -298,7 +297,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                 try {                                        
                                     is.copyTo(os, gidsCount);
                                 } catch(EOFException e) {
-                                    LOG.error("EOF while copying: expected: " + gidsCount);
+                                    LOG.error(e.getMessage(), e);
+                                    //The data will be saved if an exception occurs ! -p
                                 }
                             } else {
                                 // data are related to our document:
@@ -313,12 +313,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                     previousGID = currentGID;
                                 }
                             }
-                        }
-                    } catch (EOFException e) {
-                        LOG.error("end-of-file while updating value index", e);
-                        //The data will be saved if an exception occurs ! -pb
+                        }                    
                     } catch (IOException e) {
-                        LOG.error("io-error while updating value index", e);
+                        LOG.error(e.getMessage(), e);
                         //The data will be saved if an exception occurs ! -pb
                     }
                 }
@@ -336,12 +333,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     previousGID = gids[j];
                 }
                 //Store the data
-                if (val == null) {
-                    db.put(ref, os.data());
-                    //TODO : what if BFile.UNKNOWN_ADDRESS is returned ? -pb
+                if (value == null) {
+                    if (db.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.warn("Could not put index data for value '" +  ref + "'");  
+                    }                    
                 } else {
-                    db.update(val.getAddress(), ref, os.data());
-                    //TODO : what if BFile.UNKNOWN_ADDRESS is returned ? -pb
+                    if (db.update(value.getAddress(), ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.warn("Could not update index data for value '" +  ref + "'");  
+                    }                    
                 }  
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + db.getFile().getName() + "'", e);
@@ -359,8 +358,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     /* (non-Javadoc)
 	 * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.collections.Collection)
 	 */
-    public void dropIndex(Collection collection) {
-        LOG.debug("removing elements ...");
+    public void dropIndex(Collection collection) {        
         Value ref = new ElementValue(collection.getId());
         IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
         Lock lock = db.getLock();
@@ -368,7 +366,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             lock.acquire(Lock.WRITE_LOCK);
             db.removeAll(query);
         } catch (LockException e) {
-            LOG.error("could not acquire lock on elements index", e);
+            LOG.warn("Failed to acquire lock for '" + db.getFile().getName() + "'", e);
         } catch (BTreeException e) {
             LOG.warn(e.getMessage(), e);
         } catch (IOException e) {
@@ -382,82 +380,72 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	 * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.dom.DocumentImpl)
 	 */
     public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
-        //	  drop element-index
-        short collectionId = doc.getCollection().getId();
+        Value key;
+        Value value;
+        int gidsCount;
+        long delta;        
+        VariableByteArrayInput is;
+        int currentDocId;
+        boolean changed;        
+        final short collectionId = doc.getCollection().getId();
         Value ref = new ElementValue(collectionId);
         IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
         Lock lock = db.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
             ArrayList elements = db.findKeys(query);
-
-            Value key;
-            Value value;
-            byte[] data;
-            VariableByteArrayInput is;
-            VariableByteOutputStream os;
-            int len;
-            int docId;
-            long delta;
-//            long address;
-            boolean changed;
             for (int i = 0; i < elements.size(); i++) {
-                key = (Value) elements.get(i);
-                value = db.get(key);
-                data = value.getData();
-                is = new VariableByteArrayInput(data);
-                os = new VariableByteOutputStream();
                 changed = false;
-                try {
-                    while (is.available() > 0) {
-                        docId = is.readInt();
-                        len = is.readInt();
-                        // copy data to new buffer if not in given document
-						if (docId != doc.getDocId()) {
-                            os.writeInt(docId);
-                            os.writeInt(len);
-                            for (int j = 0; j < len; j++) {
-                                delta = is.readLong();
-                                os.writeLong(delta);
-                            }
-                        } else {
-                            changed = true;
-                            // skip
-                            is.skip(len);
+                key = (Value) elements.get(i);
+                value = db.get(key);                
+                is = new VariableByteArrayInput(value.getData());
+                os.clear();                
+                while (is.available() > 0) {
+                    currentDocId = is.readInt();
+                    gidsCount = is.readInt();                        
+					if (currentDocId != doc.getDocId()) {
+					    // data are related to another document:
+                        // copy them to any existing data
+                        os.writeInt(currentDocId);
+                        os.writeInt(gidsCount);
+                        for (int j = 0; j < gidsCount; j++) {
+                            delta = is.readLong();
+                            os.writeLong(delta);
                         }
+                    } else {
+                        // data are related to our document:
+                        // skip them                          
+                        is.skip(gidsCount);
+                        changed = true;
                     }
-                } catch (EOFException e) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("removeDocument(String) - eof", e);
-                    }
-                } catch (IOException e) {
-                    LOG.warn("removeDocument(String) " + e.getMessage(), e);
                 }
                 if (changed) {
                     if (os.data().size() == 0) {
                         db.remove(key);
                     } else {
-                        if (db.put(key, os.data()) < 0)
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("removeDocument() - "
-                                        + "could not save value index");
-                            }
+                        //TODO : why not use the same construct as above :
+                        //db.update(value.getAddress(), ref, os.data()) -pb
+                        if (db.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                            LOG.warn("Could not put index data for value '" +  ref + "'");
+                        }
                     }
                 }
-            }
+            }            
         } catch (LockException e) {
-            LOG.warn("removeDocument(String) - "
-                    + "could not acquire lock on values.dbx", e);
+            LOG.warn("Failed to acquire lock for '" + db.getFile().getName() + "'", e);       
         } catch (TerminatedException e) {
-            LOG.warn("method terminated", e);
+            LOG.warn(e.getMessage(), e);            
         } catch (BTreeException e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.warn(e.getMessage(), e);       
+        } catch (EOFException e) {
+            LOG.warn(e.getMessage(), e);            
         } catch (IOException e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.warn(e.getMessage(), e);    
         } finally {
             lock.release();
         }
     }
+
     
 	/* (non-Javadoc)
 	 * @see org.exist.storage.IndexGenerator#reindex(org.exist.dom.DocumentImpl, org.exist.dom.NodeImpl)
@@ -483,9 +471,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 entry = (Map.Entry) i.next();
                 indexable = (Indexable) entry.getKey();
                 idList = (LongLinkedList) entry.getValue();
-                ref = new Value(indexable.serialize(collectionId, caseSensitive));
-                
-                // try to retrieve old index entry for the element
+                ref = new Value(indexable.serialize(collectionId, caseSensitive));                
+                // Retrieve old index entry for the element
                 try {
                     lock.acquire(Lock.WRITE_LOCK);
                     is = db.getAsStream(ref);
@@ -521,6 +508,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                 }
                             }
                         } catch (EOFException e) {
+                            LOG.warn("Could not save index data for value '" +  ref + "'");
                         } catch (IOException e) {
                             LOG.error("io-error while updating index for value", e);
                         }
@@ -548,7 +536,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     LOG.error("could not acquire lock for value index", e);
                     return;
                 } catch (IOException e) {
-                    LOG.error("io error while reindexing", e);
+                    LOG.error(e.getMessage(), e);
                     is = null;
                 } finally {
                     lock.release(Lock.WRITE_LOCK);
