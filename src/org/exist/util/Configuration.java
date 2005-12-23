@@ -565,6 +565,7 @@ public class Configuration implements ErrorHandler {
         Element queryPool = (Element) queryPoolConf.item(0);
         String maxStackSize = queryPool
                 .getAttribute("max-stack-size");
+        String maxPoolSize = queryPool.getAttribute("size");
         String timeout = queryPool.getAttribute("timeout");
         String timeoutCheckInterval = queryPool
                 .getAttribute("timeout-check-interval");
@@ -575,6 +576,12 @@ public class Configuration implements ErrorHandler {
                         new Integer(maxStackSize));
             } catch (NumberFormatException e) {
             }
+        if (maxPoolSize != null) {
+        	try {
+        		config.put("db-connection.query-pool.size", new Integer(maxPoolSize));
+        	} catch (NumberFormatException e) {
+        	}
+        }
         if (timeout != null)
             try {
                 config.put("db-connection.query-pool.timeout",

@@ -44,7 +44,7 @@ import org.exist.xquery.XQueryContext;
  */
 public class XQueryPool extends Object2ObjectHashMap {
 
-    public final static int MAX_POOL_SIZE = 32;
+    public final static int MAX_POOL_SIZE = 128;
     
     public final static int MAX_STACK_SIZE = 5;
 
@@ -56,6 +56,8 @@ public class XQueryPool extends Object2ObjectHashMap {
 
     private long lastTimeOutCheck;
 
+    private int maxPoolSize;
+    
     private int maxStackSize;
 
     private long timeout;
@@ -71,10 +73,16 @@ public class XQueryPool extends Object2ObjectHashMap {
 
         Integer maxStSz = (Integer) conf
                 .getProperty("db-connection.query-pool.max-stack-size");
+        Integer maxPoolSz = (Integer) conf.getProperty("db-connection.query-pool.size");
         Long t = (Long) conf.getProperty("db-connection.query-pool.timeout");
         Long tci = (Long) conf
                 .getProperty("db-connection.query-pool.timeout-check-interval");
 
+        if (maxPoolSz != null)
+        	maxPoolSize = maxPoolSz.intValue();
+        else
+        	maxPoolSize = MAX_POOL_SIZE;
+        
         if (maxStSz != null)
             maxStackSize = maxStSz.intValue();
         else
@@ -90,14 +98,14 @@ public class XQueryPool extends Object2ObjectHashMap {
         else
             timeoutCheckInterval = TIMEOUT_CHECK_INTERVAL;
 
-        LOG.info("QueryPool: maxStackSize = " + maxStackSize + "; timeout = "
+        LOG.info("QueryPool: size = " + maxPoolSize + "; maxStackSize = " + maxStackSize + "; timeout = "
                 + timeout + "; timeoutCheckInterval = " + timeoutCheckInterval);
 
     }
 
     public synchronized void returnCompiledXQuery(Source source,
             CompiledXQuery xquery) {
-        if (size() < MAX_POOL_SIZE) {
+        if (size() < maxPoolSize) {
             Stack stack = (Stack) get(source);
             if (stack == null) {
                 stack = new Stack();
@@ -113,8 +121,9 @@ public class XQueryPool extends Object2ObjectHashMap {
 
     public synchronized CompiledXQuery borrowCompiledXQuery(DBBroker broker, Source source) {
         int idx = getIndex(source);
-        if (idx < 0)
-            return null;
+        if (idx < 0) {
+        	return null;
+        }
         Source key = (Source) keys[idx];
         int validity = key.isValid(broker);
         if (validity == Source.UNKNOWN)

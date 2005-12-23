@@ -44,6 +44,8 @@ public interface CompiledXQuery extends CompiledExpression {
      */
     public XQueryContext getContext();
     
+    public void setContext(XQueryContext context);
+    
     /**
      * Execute the compiled query, optionally using the specified
      * sequence as context.
