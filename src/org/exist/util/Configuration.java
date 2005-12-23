@@ -47,9 +47,9 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 public class Configuration implements ErrorHandler {
-
+    
     private final static Logger LOG = Logger.getLogger(Configuration.class);
-
+    
     public static final class SystemTaskConfig {
         
         private String className;
@@ -75,24 +75,24 @@ public class Configuration implements ErrorHandler {
     }
     
     protected DocumentBuilder builder = null;
-
+    
     protected HashMap config = new HashMap();
-
+    
     protected String file = null;
-
+    
     public Configuration(String file) throws DatabaseConfigurationException {
         this(file, null);
     }
-
+    
     public Configuration(String file, String dbHome)
-            throws DatabaseConfigurationException {
+    throws DatabaseConfigurationException {
         try {
             InputStream is = null;
             // first try to read the configuration from a file within the
             // classpath
             if (file == null) {
                 is = Configuration.class.getClassLoader()
-                    .getResourceAsStream(file);
+                .getResourceAsStream(file);
                 if (is != null) {
                     LOG.info("Reading configuration from classloader");
                 } else
@@ -109,16 +109,16 @@ public class Configuration implements ErrorHandler {
                 if (!f.canRead()) {
                     LOG
                             .info("unable to read configuration. Trying to guess location ...");
-
+                    
                     // fall back and try to read from home directory
                     if (dbHome == null) {
                         // try to determine exist home directory
                         dbHome = System.getProperty("exist.home");
-
+                        
                         if (dbHome == null)
                             dbHome = System.getProperty("user.dir");
                     }
-
+                    
                     if (dbHome != null)
                         file = dbHome + File.separatorChar + file;
                     f = new File(file);
@@ -131,11 +131,13 @@ public class Configuration implements ErrorHandler {
                 this.file = file;
                 is = new FileInputStream(file);
             }
-
-			CatalogResolver resolver = new CatalogResolver(true);
-	        System.setProperty("xml.catalog.verbosity", "10");
-	        config.put("resolver", resolver);
-			
+            
+            // Create resolver
+            System.out.println("Creating CatalogResolver");
+            System.setProperty("xml.catalog.verbosity", "10");
+            CatalogResolver resolver = new CatalogResolver(true);
+            config.put("resolver", resolver);
+            
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
             // around a bug in Xerces
@@ -149,45 +151,45 @@ public class Configuration implements ErrorHandler {
             SAXAdapter adapter = new SAXAdapter();
             reader.setContentHandler(adapter);
             reader.parse(src);
-			
+            
             Document doc = adapter.getDocument();
-
+            
             // indexer settings
             NodeList indexer = doc.getElementsByTagName("indexer");
             if (indexer.getLength() > 0) {
                 configureIndexer(dbHome, doc, indexer);
             }
-
+            
             NodeList dbcon = doc.getElementsByTagName("db-connection");
             if (dbcon.getLength() > 0) {
-                configureBackend(dbHome, dbcon); 
+                configureBackend(dbHome, dbcon);
             }
-
+            
             NodeList serializers = doc.getElementsByTagName("serializer");
             if (serializers.getLength() > 0) {
                 configureSerializer(serializers);
             }
-
+            
             NodeList xupdates = doc.getElementsByTagName("xupdate");
             if (xupdates.getLength() > 0) {
                 configureXUpdate(xupdates);
             }
-			
-			NodeList xquery = doc.getElementsByTagName("xquery");
+            
+            NodeList xquery = doc.getElementsByTagName("xquery");
             if (xquery.getLength() > 0) {
                 configureXQuery((Element) xquery.item(0));
             }
-
+            
             /*
             CLUSTER CONFIGURATION...
-            */
+             */
             NodeList clusters = doc.getElementsByTagName("cluster");
-			if(clusters.getLength() > 0) {
+            if(clusters.getLength() > 0) {
                 configureCluster((Element)clusters.item(0));
             }
             /*
             END CLUSTER CONFIGURATION....
-            */
+             */
         } catch (SAXException e) {
             LOG.warn("error while reading config file: " + file, e);
             throw new DatabaseConfigurationException(e.getMessage());
@@ -199,7 +201,7 @@ public class Configuration implements ErrorHandler {
             throw new DatabaseConfigurationException(io.getMessage());
         }
     }
-
+    
     private void configureCluster(Element cluster) {
         String protocol = cluster.getAttribute("protocol");
         if(protocol != null) {
@@ -228,7 +230,7 @@ public class Configuration implements ErrorHandler {
         if(!list.contains(NativeBroker.TEMP_COLLECTION))
             list.add(NativeBroker.TEMP_COLLECTION);
         config.put("cluster.exclude", list);
-
+        
         /*Cluster parameters for test*/
         String maxStore = cluster.getAttribute("journalMaxItem");
         if(maxStore == null || maxStore.trim().length()==0) {
@@ -240,12 +242,12 @@ public class Configuration implements ErrorHandler {
             shift = "100";
         }
         config.put("cluster.journal.shift", Integer.valueOf(shift));
-
+        
         System.out.println("IN CONFIGURE");
         System.out.println("cluster.journal.maxStore " + this.getProperty("cluster.journal.maxStore"));
         System.out.println("cluster.journal.shift " + this.getProperty("cluster.journal.shift"));
     }
-
+    
     private void configureXQuery(Element xquery) throws DatabaseConfigurationException {
         NodeList builtins = xquery.getElementsByTagName("builtin-modules");
         if (builtins.getLength() > 0) {
@@ -266,15 +268,15 @@ public class Configuration implements ErrorHandler {
             config.put("xquery.modules", moduleList);
         }
     }
-
-	public Object getProperty(String name) {
+    
+    public Object getProperty(String name) {
         return config.get(name);
     }
-
+    
     public boolean hasProperty(String name) {
         return config.containsKey(name);
     }
-
+    
     public void setProperty(String name, Object obj) {
         config.put(name, obj);
     }
@@ -300,7 +302,7 @@ public class Configuration implements ErrorHandler {
             config.put("xupdate.consistency-checks", Boolean
                     .valueOf(consistencyCheck.equals("yes")));
     }
-
+    
     /**
      * @param serializers
      */
@@ -329,7 +331,7 @@ public class Configuration implements ErrorHandler {
             config.put("serialization.match-tagging-attributes",
                     tagAttributeMatches);
     }
-
+    
     /**
      * @param dbHome
      * @param dbcon
@@ -358,8 +360,8 @@ public class Configuration implements ErrorHandler {
             if (!df.canRead())
                 throw new DatabaseConfigurationException(
                         "cannot read data directory: "
-                                + df.getAbsolutePath());
-
+                        + df.getAbsolutePath());
+            
             config.put("db-connection.data-dir", df.getAbsolutePath());
             LOG.info("data directory = " + df.getAbsolutePath());
         }
@@ -430,7 +432,7 @@ public class Configuration implements ErrorHandler {
         }
         configurePermissions(con.getElementsByTagName("default-permissions"));
     }
-
+    
     private void configureRecovery(NodeList nodes) throws DatabaseConfigurationException {
         Element recovery = (Element) nodes.item(0);
         String option = recovery.getAttribute("enabled");
@@ -443,7 +445,7 @@ public class Configuration implements ErrorHandler {
         option = recovery.getAttribute("sync-on-commit");
         value = true;
         if (option != null) {
-        	value = option.equals("yes");
+            value = option.equals("yes");
         }
         setProperty("db-connection.recovery.sync-on-commit", new Boolean(value));
         
@@ -460,41 +462,41 @@ public class Configuration implements ErrorHandler {
         
         option = recovery.getAttribute("size");
         if (option != null) {
-        	if (option.endsWith("M") || option.endsWith("m"))
+            if (option.endsWith("M") || option.endsWith("m"))
                 option = option.substring(0, option.length() - 1);
-        	try {
-				Integer size = new Integer(option);
-				setProperty("db-connection.recovery.size-limit", size);
-			} catch (NumberFormatException e) {
-				throw new DatabaseConfigurationException("size attribute in recovery section needs to be a number");
-			}
+            try {
+                Integer size = new Integer(option);
+                setProperty("db-connection.recovery.size-limit", size);
+            } catch (NumberFormatException e) {
+                throw new DatabaseConfigurationException("size attribute in recovery section needs to be a number");
+            }
         }
     }
     
     private void configurePermissions(NodeList nodes) throws DatabaseConfigurationException {
-    	if (nodes.getLength() > 0) {
-    		Element node = (Element) nodes.item(0);
-    		String option = node.getAttribute("collection");
-    		if (option != null && option.length() > 0) {
-    			try {
-    				Integer perms = new Integer(Integer.parseInt(option, 8));
-    				setProperty("indexer.permissions.collection", perms);
-    			} catch (NumberFormatException e) {
-    				throw new DatabaseConfigurationException("collection attribute in default-permissions section needs " +
-    						"to be an octal number");
-    			}
-    		}
-    		option = node.getAttribute("resource");
-    		if (option != null && option.length() > 0) {
-    			try {
-    				Integer perms = new Integer(Integer.parseInt(option, 8));
-    				setProperty("indexer.permissions.resource", perms);
-    			} catch (NumberFormatException e) {
-    				throw new DatabaseConfigurationException("resource attribute in default-permissions section needs " +
-    						"to be an octal number");
-    			}
-    		}
-    	}
+        if (nodes.getLength() > 0) {
+            Element node = (Element) nodes.item(0);
+            String option = node.getAttribute("collection");
+            if (option != null && option.length() > 0) {
+                try {
+                    Integer perms = new Integer(Integer.parseInt(option, 8));
+                    setProperty("indexer.permissions.collection", perms);
+                } catch (NumberFormatException e) {
+                    throw new DatabaseConfigurationException("collection attribute in default-permissions section needs " +
+                            "to be an octal number");
+                }
+            }
+            option = node.getAttribute("resource");
+            if (option != null && option.length() > 0) {
+                try {
+                    Integer perms = new Integer(Integer.parseInt(option, 8));
+                    setProperty("indexer.permissions.resource", perms);
+                } catch (NumberFormatException e) {
+                    throw new DatabaseConfigurationException("resource attribute in default-permissions section needs " +
+                            "to be an octal number");
+                }
+            }
+        }
     }
     
     /**
@@ -530,7 +532,7 @@ public class Configuration implements ErrorHandler {
         }
         config.put("db-connection.system-task-config", taskList);
     }
-
+    
     /**
      * @param watchConf
      */
@@ -555,7 +557,7 @@ public class Configuration implements ErrorHandler {
             }
         }
     }
-
+    
     /**
      * @param queryPoolConf
      */
@@ -583,12 +585,12 @@ public class Configuration implements ErrorHandler {
             try {
                 config
                         .put(
-                                "db-connection.query-pool.timeout-check-interval",
-                                new Long(timeoutCheckInterval));
+                        "db-connection.query-pool.timeout-check-interval",
+                        new Long(timeoutCheckInterval));
             } catch (NumberFormatException e) {
             }
     }
-
+    
     /**
      * @param poolConf
      */
@@ -624,7 +626,7 @@ public class Configuration implements ErrorHandler {
             } catch (NumberFormatException e) {
             }
     }
-
+    
     /**
      * @param dbHome
      * @param doc
@@ -634,6 +636,7 @@ public class Configuration implements ErrorHandler {
      * @throws IOException
      */
     private void configureIndexer(String dbHome, Document doc, NodeList indexer) throws DatabaseConfigurationException, MalformedURLException {
+        
         Element p = (Element) indexer.item(0);
         String parseNum = p.getAttribute("parseNumbers");
         String indexDepth = p.getAttribute("index-depth");
@@ -683,9 +686,9 @@ public class Configuration implements ErrorHandler {
         NodeList stopwords = p.getElementsByTagName("stopwords");
         if (stopwords.getLength() > 0) {
             String stopwordFile = ((Element) stopwords.item(0))
-                    .getAttribute("file");
+            .getAttribute("file");
             File sf = new File(stopwordFile);
-
+            
             if (!sf.canRead()) {
                 stopwordFile = dbHome + File.separatorChar + stopwordFile;
                 sf = new File(stopwordFile);
@@ -693,63 +696,73 @@ public class Configuration implements ErrorHandler {
             if (sf.canRead())
                 config.put("stopwords", stopwordFile);
         }
-		
-		CatalogResolver resolver = (CatalogResolver) config.get("resolver");
-        NodeList entityResolver = p
-                .getElementsByTagName("entity-resolver");
+        
+        CatalogResolver resolver = (CatalogResolver) config.get("resolver");
+        NodeList entityResolver = p.getElementsByTagName("entity-resolver");
+        
         if (entityResolver.getLength() > 0) {
             Element r = (Element) entityResolver.item(0);
             NodeList catalogs = r.getElementsByTagName("catalog");
-            String catalog;
-            File catalogFile;
-
+            
+            // TODO remove. log function does not work yet
+            System.out.println("Found "+catalogs.getLength()+" catalog entries.");
+            
             for (int i = 0; i < catalogs.getLength(); i++) {
-                catalog = ((Element) catalogs.item(i))
-                        .getAttribute("file");
-
-                //TODO : why this test ? File should make it ! -pb
-                if (File.separatorChar == '\\')
-                    catalog = catalog.replace('/', '\\');
-
+                String catalog = ((Element) catalogs.item(i)).getAttribute("file");
+                           
+                File catalogFile=null;
                 if (dbHome == null)
                     catalogFile = new File(catalog);
                 else
-                    catalogFile = new File(dbHome + File.separatorChar + catalog);
-                if (catalogFile.exists()) {
+                    catalogFile = new File(dbHome, catalog);
+                
+                if (catalogFile!=null && catalogFile.exists()) {
+                    LOG.info("Loading catalog '"+catalogFile.getAbsolutePath()+"'.");
+                    System.out.println("Loading catalog '"+catalogFile.getAbsolutePath()+"'.");
                     try {
-						resolver.getCatalog().parseCatalog(
-						        catalogFile.getAbsolutePath());
-					} catch (IOException e) {
-						LOG.warn("An exception occurred while reading the catalog file: " +
-								catalogFile.getAbsolutePath() + ": " + e.getMessage(), e);
-					}
+                        resolver.getCatalog()
+                                .parseCatalog( catalogFile.getAbsolutePath() );
+                        
+                    } catch (IOException e) {
+                        String message = "An exception occurred while reading catalog: " 
+                                + catalogFile.getAbsolutePath() + ": " 
+                                + e.getMessage();
+                        
+                        LOG.warn(message, e);
+                        System.out.println(message);
+                    }
+                } else {
+                    String message ="Could not load catalog '"
+                                           +catalogFile.getAbsolutePath()+"'.";
+                    LOG.debug(message);
+                    System.out.println(message);
                 }
             }
         }
     }
-
+    
     public int getInteger(String name) {
         Object obj = getProperty(name);
-
+        
         if ((obj == null) || !(obj instanceof Integer))
             return -1;
-
+        
         return ((Integer) obj).intValue();
     }
-
+    
     public String getPath() {
         return file;
     }
-
+    
     public void error(SAXParseException exception) throws SAXException {
         System.err.println("error occured while reading configuration file "
                 + "[line: " + exception.getLineNumber() + "]:"
                 + exception.getMessage());
     }
-
+    
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException)
      */
     public void fatalError(SAXParseException exception) throws SAXException {
@@ -757,10 +770,10 @@ public class Configuration implements ErrorHandler {
                 + "[line: " + exception.getLineNumber() + "]:"
                 + exception.getMessage());
     }
-
+    
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)
      */
     public void warning(SAXParseException exception) throws SAXException {
@@ -768,5 +781,5 @@ public class Configuration implements ErrorHandler {
                 + "[line: " + exception.getLineNumber() + "]:"
                 + exception.getMessage());
     }
-
+    
 }
