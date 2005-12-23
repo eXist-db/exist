@@ -127,16 +127,24 @@ public class XQuery {
     }
     
     public Sequence execute(CompiledXQuery expression, Sequence contextSequence) throws XPathException {
+    	return execute(expression, contextSequence, true);
+    }
+    
+    public Sequence execute(CompiledXQuery expression, Sequence contextSequence, boolean resetContext) throws XPathException {
         XQueryContext context = expression.getContext();
-        context.setBroker(broker);
         expression.reset();
-        context.getWatchDog().reset();
+        if (resetContext) {
+        	context.setBroker(broker);
+        	context.getWatchDog().reset();
+        }
         broker.getBrokerPool().getXQueryMonitor().queryStarted(context.getWatchDog());
         try {
         	Sequence result = expression.eval(contextSequence);
         	expression.reset();
-        	context.reset();
-        	HTTPUtils.addLastModifiedHeader( result, context );
+        	if (resetContext) {
+        		context.reset();
+        		HTTPUtils.addLastModifiedHeader( result, context );
+        	}
         	return result;
         } finally {
         	broker.getBrokerPool().getXQueryMonitor().queryCompleted(context.getWatchDog());
