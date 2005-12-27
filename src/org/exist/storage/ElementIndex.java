@@ -33,9 +33,12 @@ import org.exist.xquery.NodeSelector;
 /** base class for {@link org.exist.storage.NativeElementIndex} */
 public abstract class ElementIndex extends Observable {
 
+    /** The broker that is using this value index */
     protected DBBroker broker;
-    /** maps a qname to a List of  NodeProxy - should be renamed ? */
-    protected TreeMap elementIds = new TreeMap();
+    
+    protected TreeMap pending = new TreeMap();
+    
+    /** The current document */
     protected DocumentImpl doc;
 
     public ElementIndex(DBBroker broker) {
@@ -51,15 +54,11 @@ public abstract class ElementIndex extends Observable {
 	 * belonging to one of the documents in the DocumentSet.
 	 *
 	 */
-	public abstract NodeSet findElementsByTagName(
-		byte type,
-		DocumentSet docs,
-		QName qname,
-		NodeSelector selector);
+	public abstract NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname,	NodeSelector selector);
 	
 	public abstract NodeSet getAttributesByName(DocumentSet docs, QName qname, NodeSelector selector);
 	
-	public abstract Occurrences[] scanIndexedElements(Collection collection,
-			boolean inclusive) throws PermissionDeniedException;
+	public abstract Occurrences[] scanIndexedElements(Collection collection, boolean inclusive) 
+        throws PermissionDeniedException;
 	
 }
