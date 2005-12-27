@@ -228,7 +228,7 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     throws TerminatedException {
         int idxOp =  checkRelationOp(relation);
         NodeSet result = new ExtArrayNodeSet();
-        Lock lock = db.getLock();
+        Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			Collection collection = (Collection) iter.next();
 			short collectionId = collection.getId();
@@ -238,7 +238,7 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 				lock.acquire();
 				try {
 					SearchCallback callback = new SearchCallback(docs, contextSet, result, false);
-					db.query(query, callback );
+					dbValues.query(query, callback );
 				} catch (IOException ioe) {
 					LOG.debug(ioe);
 				} catch (BTreeException bte) {
@@ -307,7 +307,7 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     
     public void close() throws DBException {
     	if (qnameValueIndexation)
-    		db.close();
+    		dbValues.close();
     }
 
     /** updates the index type of given node according to the Index By QName config. */
