@@ -351,4 +351,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         ExpressionDumper dumper = new ExpressionDumper(writer);
         dump(dumper);
     }
+
+	public void setContext(XQueryContext context) {
+		this.context = context;
+	}
 }
