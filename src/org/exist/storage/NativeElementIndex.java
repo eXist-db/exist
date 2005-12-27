@@ -73,13 +73,14 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     
     private static Logger LOG = Logger.getLogger(NativeElementIndex.class.getName());
 
-    protected BFile dbElement;
+    /** The datastore for this node index */
+    protected BFile dbNodes;
 
     private VariableByteOutputStream os = new VariableByteOutputStream();
 
-    public NativeElementIndex(DBBroker broker, BFile dbElement) {
+    public NativeElementIndex(DBBroker broker, BFile dbNodes) {
         super(broker);
-        this.dbElement = dbElement;
+        this.dbNodes = dbNodes;
     }
 
     /**
@@ -87,27 +88,23 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * Added entries are written to the list of pending entries.
      * {@link #flush()} is called later to flush all pending entries.
      */
-    public void addRow(QName qname, NodeProxy proxy) {
+    public void addNode(QName qname, NodeProxy proxy) {
         ArrayList buf;
-        buf = (ArrayList) elementIds.get(qname);
+        buf = (ArrayList) pending.get(qname);
         if (buf == null) {
             buf = new ArrayList(50);
-            elementIds.put(qname, buf);
+            pending.put(qname, buf);
         }
         buf.add(proxy);
     }
-
-    public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
-        // Not used
-    }
     
     public void sync() {
-        Lock lock = dbElement.getLock();
+        Lock lock = dbNodes.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            dbElement.flush();
+            dbNodes.flush();
         } catch (LockException e) {
-            LOG.warn("Failed to acquire lock for '" + dbElement.getFile().getName() + "'", e);
+            LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
         } catch (DBException e) {
             LOG.warn(e.getMessage(), e);        
         } finally {
@@ -120,10 +117,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * a document is stored.
      */
     public void flush() {
-        if (elementIds.size() == 0) 
+        if (pending.size() == 0) 
             return;
         
-        final ProgressIndicator progress = new ProgressIndicator(elementIds.size(), 5);
+        final ProgressIndicator progress = new ProgressIndicator(pending.size(), 5);
 
         NodeProxy proxy;
         QName qname;
@@ -137,9 +134,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         long delta;
         int lenOffset;
         short collectionId = doc.getCollection().getId();
-        Lock lock = dbElement.getLock();
+        Lock lock = dbNodes.getLock();
         try {
-            for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
+            for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
                 entry = (Map.Entry) i.next();
                 qname = (QName) entry.getKey();
                 idList = (ArrayList) entry.getValue();
@@ -175,12 +172,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 }
                 try {
                     lock.acquire(Lock.WRITE_LOCK);
-                    if (dbElement.append(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                    if (dbNodes.append(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.warn("could not save index for element " + qname);
                         continue;
                     }
                 } catch (LockException e) {
-                    LOG.warn("Failed to acquire lock for '" + dbElement.getFile().getName() + "'", e);
+                    LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
                 } catch (IOException e) {
                     LOG.error("io error while writing element " + qname, e);
                 } finally {
@@ -200,12 +197,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         progress.finish();
         setChanged();
         notifyObservers(progress);
-        elementIds.clear();
+        pending.clear();
     }    
     
     public void remove() {
-        if (elementIds.size() == 0) return;
-        Lock lock = dbElement.getLock();
+        if (pending.size() == 0) return;
+        Lock lock = dbNodes.getLock();
         Map.Entry entry;
         QName qname;
         List newList = new ArrayList(), idList;
@@ -220,7 +217,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         long delta, last, gid, address;
         try {
             // iterate through elements
-            for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
+            for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
                 try {
                     lock.acquire(Lock.WRITE_LOCK);
                     entry = (Map.Entry) i.next();
@@ -236,7 +233,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         ref = new ElementValue(qname.getNameType(), collectionId,
                                 qname.getLocalName());
                     }
-                    val = dbElement.get(ref);
+                    val = dbNodes.get(ref);
                     os.clear();
                     newList.clear();
                     if (val != null) {
@@ -302,12 +299,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                     
                     if (val == null) {
-                        dbElement.put(ref, os.data());
+                        dbNodes.put(ref, os.data());
                     } else {
-                        dbElement.update(val.getAddress(), ref, os.data());
+                        dbNodes.update(val.getAddress(), ref, os.data());
                     }
                 } catch (LockException e) {
-                    LOG.warn("Failed to acquire lock for '" + dbElement.getFile().getName() + "'", e);
+                    LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
                 } finally {
                     lock.release();
                 }
@@ -315,96 +312,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         } catch (ReadOnlyException e) {
             LOG.warn("database is read only");
         }
-        elementIds.clear();
-    }    
-
-    public void consistencyCheck(DocumentImpl doc) throws EXistException {
-    	short collectionId = doc.getCollection().getId();
-        Value ref = new ElementValue(collectionId);
-        IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-        Lock lock = dbElement.getLock();
-        try {
-            lock.acquire(Lock.WRITE_LOCK);
-            ArrayList elements = dbElement.findKeys(query);
-            
-            Value key;
-            Value value;
-            byte[] data;
-            // byte[] ndata;
-            VariableByteArrayInput is;
-            int len;
-            int docId;
-            long delta;
-            long address;
-            long gid;
-            long last = 0;
-            Node node;
-            short symbol;
-            String nodeName;
-            StringBuffer msg = new StringBuffer();
-            for (int i = 0; i < elements.size(); i++) {
-                key = (Value) elements.get(i);
-                value = dbElement.get(key);
-                data = value.getData();
-                symbol = ByteConversion.byteToShort(key.data(), key.start() + 3);
-                nodeName = broker.getSymbols().getName(symbol);
-                msg.setLength(0);
-                msg.append("Checking ").append(nodeName).append(": ");
-                
-                is = new VariableByteArrayInput(data);
-                try {
-                    while (is.available() > 0) {
-                        docId = is.readInt();
-                        len = is.readInt();
-                        is.readFixedInt();
-                        if (docId == doc.getDocId()) {
-                            for (int j = 0; j < len; j++) {
-                                delta = is.readLong();
-                                gid = last + delta;
-                                last = gid;
-                                address = StorageAddress.read(is);
-                                node = broker.objectWith(new NodeProxy(doc, gid, address));
-                                if(node == null) {
-                                	throw new EXistException("Node " + gid + " in document " + doc.getFileName() + " not found.");
-                                }
-                                if(node.getNodeType() != Node.ELEMENT_NODE && node.getNodeType() != Node.ATTRIBUTE_NODE) {
-                                	LOG.warn("Node " + gid + " in document " + 
-                                			doc.getFileName() + " is not an element or attribute node.");
-                                	LOG.debug("Type = " + node.getNodeType() + "; name = " + node.getNodeName() +
-                                			"; value = " + node.getNodeValue());
-                                	throw new EXistException("Node " + gid + " in document " + 
-                                			doc.getFileName() + " is not an element or attribute node.");
-                                }
-                                if(!node.getLocalName().equals(nodeName)) {
-                                	LOG.warn("Node name does not correspond to index entry. Expected " + nodeName +
-                                			"; found " + node.getLocalName());
-                                }
-                                msg.append(StorageAddress.toString(address)).append(' ');
-                            }
-                        } else
-                        	is.skip(len * 4);
-                    }
-                } catch (EOFException e) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("removeDocument(String) - eof", e);
-                    }
-                } catch (IOException e) {
-                    LOG.warn("removeDocument(String) " + e.getMessage(), e);
-                }
-                LOG.debug(msg.toString());
-            }
-        } catch (LockException e) {
-            LOG.warn("Failed to acquire lock for '" + dbElement.getFile().getName() + "'", e);
-        } catch (TerminatedException e) {
-            LOG.warn("method terminated", e);
-        } catch (BTreeException e) {
-            LOG.warn(e.getMessage(), e);
-        } catch (IOException e) {
-            LOG.warn(e.getMessage(), e);
-        } finally {
-            lock.release();
-        }
-    }
+        pending.clear();
+    } 
     
     /**
      * Drop all index entries for the given collection.
@@ -415,12 +324,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         LOG.debug("removing elements ...");
         Value ref = new ElementValue(collection.getId());
         IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-        Lock lock = dbElement.getLock();
+        Lock lock = dbNodes.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            dbElement.removeAll(query);
+            dbNodes.removeAll(query);
         } catch (LockException e) {
-            LOG.warn("Failed to acquire lock for '" + dbElement.getFile().getName() + "'", e);
+            LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
         } catch (BTreeException e) {
             LOG.warn(e.getMessage(), e);
         } catch (IOException e) {
@@ -441,10 +350,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         short collectionId = doc.getCollection().getId();
         Value ref = new ElementValue(collectionId);
         IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-        Lock lock = dbElement.getLock();
+        Lock lock = dbNodes.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            ArrayList elements = dbElement.findKeys(query);
+            ArrayList elements = dbNodes.findKeys(query);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("removeDocument() - " + "found " + elements.size()
                         + " elements.");
@@ -457,7 +366,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             boolean changed;
             for (int i = 0; i < elements.size(); i++) {
                 key = (Value) elements.get(i);
-                is = dbElement.getAsStream(key);
+                is = dbNodes.getAsStream(key);
                 os.clear();
                 changed = false;
                 try {
@@ -484,7 +393,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     LOG.warn("removeDocument(String) " + e.getMessage(), e);
                 }
                 if (changed) {
-                    if (dbElement.put(key, os.data()) == BFile.UNKNOWN_ADDRESS)
+                    if (dbNodes.put(key, os.data()) == BFile.UNKNOWN_ADDRESS)
                             if (LOG.isDebugEnabled()) {
                                 LOG.debug("removeDocument() - "
                                         + "could not save element");
@@ -492,7 +401,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 }
             }
         } catch (LockException e) {
-            LOG.warn("Failed to acquire lock for '" + dbElement.getFile().getName() + "'", e);
+            LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
         } catch (TerminatedException e) {
             LOG.warn("method terminated", e);
         } catch (BTreeException e) {
@@ -506,8 +415,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 
     /** Called by {@link NativeBroker.reIndex} */
     public void reindex(DocumentImpl oldDoc, NodeImpl node) {
-        if (elementIds.size() == 0) return;
-        Lock lock = dbElement.getLock();
+        if (pending.size() == 0) return;
+        Lock lock = dbNodes.getLock();
         Map.Entry entry;
         QName qname;
         List oldList = new ArrayList(), idList;
@@ -522,7 +431,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         long delta, last, gid, address;
         try {
             // iterate through elements
-            for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
+            for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
                 entry = (Map.Entry) i.next();
                 idList = (ArrayList) entry.getValue();
                 qname = (QName) entry.getKey();
@@ -538,7 +447,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 // try to retrieve old index entry for the element
                 try {
                     lock.acquire(Lock.WRITE_LOCK);
-                    is = dbElement.getAsStream(ref);
+                    is = dbNodes.getAsStream(ref);
                     os.clear();
                     oldList.clear();
                     if (is != null) {
@@ -603,13 +512,13 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                     
                     if (is == null)
-                        dbElement.put(ref, os.data());
+                        dbNodes.put(ref, os.data());
                     else {
                         address = ((BFile.PageInputStream) is).getAddress();
-                        dbElement.update(address, ref, os.data());
+                        dbNodes.update(address, ref, os.data());
                     }
                 } catch (LockException e) {
-                    LOG.warn("Failed to acquire lock for '" + dbElement.getFile().getName() + "'", e);
+                    LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
                     return;
                 } catch (IOException e) {
                     LOG.error("io error while reindexing " + qname, e);
@@ -621,7 +530,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         } catch (ReadOnlyException e) {
             LOG.warn("database is read only");
         }
-        elementIds.clear();
+        pending.clear();
     }
     
     public NodeSet getAttributesByName(DocumentSet docs, QName qname, NodeSelector selector) {
@@ -656,7 +565,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         NodeProxy p;
         final short nodeType = (type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE
                 : Node.ELEMENT_NODE);
-        final Lock lock = dbElement.getLock();
+        final Lock lock = dbNodes.getLock();
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             collection = (Collection) i.next();
             collectionId = collection.getId();
@@ -669,7 +578,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             }
             try {
                 lock.acquire(Lock.READ_LOCK);
-                is = dbElement.getAsStream(ref);
+                is = dbNodes.getAsStream(ref);
                 
                 if (is == null) 
                     continue;
@@ -706,7 +615,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             } catch (EOFException e) {
                 //EOFExceptions are expected here
             } catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbElement.getFile().getName() + "'", e);
+                LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
             } catch (IOException e) {
                 LOG.warn(
                         "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
@@ -733,7 +642,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         int len, size;
         // required for namespace lookups
         XQueryContext context = new XQueryContext(broker);
-        final Lock lock = dbElement.getLock();
+        final Lock lock = dbNodes.getLock();
         for (Iterator i = collections.iterator(); i.hasNext();) {
             Collection current = (Collection) i.next();
             short collectionId = current.getId();
@@ -743,7 +652,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
             try {
                 lock.acquire();
-                ArrayList values = dbElement.findEntries(query);
+                ArrayList values = dbNodes.findEntries(query);
                 for (Iterator j = values.iterator(); j.hasNext();) {
                     Value val[] = (Value[]) j.next();
                     short elementId = ByteConversion.byteToShort(val[0].getData(), 3);
@@ -777,7 +686,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             } catch (IOException e) {
                 LOG.warn("exception while reading element index", e);
             } catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbElement.getFile().getName() + "'", e);
+                LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
             } catch (TerminatedException e) {
                 LOG.warn("Method terminated", e);
             } finally {
@@ -789,17 +698,107 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     }    
 
     private final static boolean containsNode(List list, long gid) {
-        for (int i = 0; i < list.size(); i++)
-            if (((NodeProxy) list.get(i)).getGID() == gid) return true;
+        for (int i = 0; i < list.size(); i++) {
+            if (((NodeProxy) list.get(i)).getGID() == gid) 
+                return true;
+        }
         return false;
     }
     
+    public void consistencyCheck(DocumentImpl doc) throws EXistException {
+        final short collectionId = doc.getCollection().getId();
+        final Value ref = new ElementValue(collectionId);
+        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+        final Lock lock = dbNodes.getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+            ArrayList elements = dbNodes.findKeys(query);
+            
+            Value key;
+            Value value;
+            byte[] data;
+            // byte[] ndata;
+            VariableByteArrayInput is;
+            int len;
+            int docId;
+            long delta;
+            long address;
+            long gid;
+            long last = 0;
+            Node node;
+            short symbol;
+            String nodeName;
+            StringBuffer msg = new StringBuffer();
+            for (int i = 0; i < elements.size(); i++) {
+                key = (Value) elements.get(i);
+                value = dbNodes.get(key);
+                data = value.getData();
+                symbol = ByteConversion.byteToShort(key.data(), key.start() + 3);
+                nodeName = broker.getSymbols().getName(symbol);
+                msg.setLength(0);
+                msg.append("Checking ").append(nodeName).append(": ");
+                
+                is = new VariableByteArrayInput(data);
+                try {
+                    while (is.available() > 0) {
+                        docId = is.readInt();
+                        len = is.readInt();
+                        is.readFixedInt();
+                        if (docId == doc.getDocId()) {
+                            for (int j = 0; j < len; j++) {
+                                delta = is.readLong();
+                                gid = last + delta;
+                                last = gid;
+                                address = StorageAddress.read(is);
+                                node = broker.objectWith(new NodeProxy(doc, gid, address));
+                                if(node == null) {
+                                    throw new EXistException("Node " + gid + " in document " + doc.getFileName() + " not found.");
+                                }
+                                if(node.getNodeType() != Node.ELEMENT_NODE && node.getNodeType() != Node.ATTRIBUTE_NODE) {
+                                    LOG.warn("Node " + gid + " in document " + 
+                                            doc.getFileName() + " is not an element or attribute node.");
+                                    LOG.debug("Type = " + node.getNodeType() + "; name = " + node.getNodeName() +
+                                            "; value = " + node.getNodeValue());
+                                    throw new EXistException("Node " + gid + " in document " + 
+                                            doc.getFileName() + " is not an element or attribute node.");
+                                }
+                                if(!node.getLocalName().equals(nodeName)) {
+                                    LOG.warn("Node name does not correspond to index entry. Expected " + nodeName +
+                                            "; found " + node.getLocalName());
+                                }
+                                msg.append(StorageAddress.toString(address)).append(' ');
+                            }
+                        } else
+                            is.skip(len * 4);
+                    }
+                } catch (EOFException e) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("removeDocument(String) - eof", e);
+                    }
+                } catch (IOException e) {
+                    LOG.warn("removeDocument(String) " + e.getMessage(), e);
+                }
+                LOG.debug(msg.toString());
+            }
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
+        } catch (TerminatedException e) {
+            LOG.warn("method terminated", e);
+        } catch (BTreeException e) {
+            LOG.warn(e.getMessage(), e);
+        } catch (IOException e) {
+            LOG.warn(e.getMessage(), e);
+        } finally {
+            lock.release();
+        }
+    }    
+    
     public boolean close() throws DBException {
-        return dbElement.close();
+        return dbNodes.close();
     }
     
     public void printStatistics() {
-        dbElement.printStatistics();
+        dbNodes.printStatistics();
     }
 
 	public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
@@ -823,7 +822,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 	}
     
     public String toString() {
-        return this.getClass().getName() + " at "+ dbElement.getFile().getName() +
+        return this.getClass().getName() + " at "+ dbNodes.getFile().getName() +
         " owned by " + broker.toString();
     }    
     
