@@ -47,9 +47,30 @@ import org.exist.xquery.value.Type;
  * @author wolf
  *
  */
-public class EvalInline extends BasicFunction {
+public class Eval extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
+				new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+				"Dynamically evaluates its string argument as an XPath/XQuery expression. " +
+				"The argument expression will inherit the current execution context, i.e. all " +
+				"namespace declarations and variable declarations are visible from within the " +
+				"inner expression. It will return an empty sequence if you pass a whitespace string.",
+				new SequenceType[] {
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				},
+				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
+		new FunctionSignature(
+				new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+				"Dynamically evaluates its string argument as an XPath/XQuery expression. " +
+				"The argument expression will inherit the current execution context, i.e. all " +
+				"namespace declarations and variable declarations are visible from within the " +
+				"inner expression. It will return an empty sequence if you pass a whitespace string.",
+				new SequenceType[] {
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+				},
+				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
 		new FunctionSignature(
 				new QName("eval-inline", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 				"Dynamically evaluates the XPath/XQuery expression specified in $b within " +
@@ -74,13 +95,11 @@ public class EvalInline extends BasicFunction {
 				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE))
 	};
 	
-//	private CompiledXQuery compiled = null;
-	
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public EvalInline(XQueryContext context, FunctionSignature signature) {
+	public Eval(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -89,22 +108,28 @@ public class EvalInline extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		// the current expression context
-		Sequence exprContext = args[0];
+		int argCount = 0;
+		Sequence exprContext = null;
+		
+		if (isCalledAs("eval-inline")) {
+			// the current expression context
+			exprContext = args[argCount++];
+		}
 		// get the query expression
-		String expr = StringValue.expand(args[1].getStringValue());
+		String expr = StringValue.expand(args[argCount++].getStringValue());
 		if ("".equals(expr.trim()))
 		  return new EmptySequence();
 		
 		// should the compiled query be cached?
 		boolean cache = false;
-		if (getArgumentCount() == 3)
-			cache = ((BooleanValue)args[2].itemAt(0)).effectiveBooleanValue();
+		if (argCount < getArgumentCount())
+			cache = ((BooleanValue)args[argCount].itemAt(0)).effectiveBooleanValue();
 		
 		// save some context properties
         context.pushNamespaceContext();
 		DocumentSet oldDocs = context.getStaticallyKnownDocuments();
-		context.setStaticallyKnownDocuments(exprContext.getDocumentSet());
+		if (exprContext != null)
+			context.setStaticallyKnownDocuments(exprContext.getDocumentSet());
 		
 		if (context.isProfilingEnabled(2))
 			context.getProfiler().start(this, "eval: " + expr);
