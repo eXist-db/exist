@@ -182,14 +182,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
         Lock lock = db.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            try {
-                db.flush();
-            } catch (DBException dbe) {
-                LOG.warn(dbe);
-            }
+            db.flush();            
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + db.getFile().getName() + "'", e);
             //TODO : throw an exception ? -pb
+        } catch (DBException dbe) {
+            LOG.warn(dbe);                   
         } finally {
             lock.release();
         }
@@ -298,7 +296,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                     is.copyTo(os, gidsCount);
                                 } catch(EOFException e) {
                                     LOG.error(e.getMessage(), e);
-                                    //The data will be saved if an exception occurs ! -p
+                                    //The data will be saved if an exception occurs ! -pb
                                 }
                             } else {
                                 // data are related to our document:
@@ -445,7 +443,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
             lock.release();
         }
     }
-
     
 	/* (non-Javadoc)
 	 * @see org.exist.storage.IndexGenerator#reindex(org.exist.dom.DocumentImpl, org.exist.dom.NodeImpl)
@@ -467,8 +464,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         int currentDocId;
         long address;
         final short collectionId = doc.getCollection().getId();
-        final Lock lock = db.getLock();        
-        // iterate through elements
+        final Lock lock = db.getLock();              
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
             entry = (Map.Entry) i.next();
             indexable = (Indexable) entry.getKey();
@@ -480,8 +476,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 is = db.getAsStream(ref);
                 os.clear();
                 newGIDList = new LongLinkedList();
-                if (is != null) {
-                    // add old entries to the new list
+                if (is != null) {                    
                     try {
                         while (is.available() > 0) {
                             currentDocId = is.readInt();
@@ -531,11 +526,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     previousGID = gids[j];
                 }
                 //Store the data
-                if (is == null)
+                if (is == null) {
                     if (db.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.warn("Could not put index data for value '" +  ref + "'");
                     }
-                else {
+                } else {
                     address = ((BFile.PageInputStream) is).getAddress();
                     if (db.update(address, ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.warn("Could not update index data for value '" +  ref + "'");
@@ -563,28 +558,28 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	 * @param relation binary operator used for the comparison
 	 * @param value right hand comparison value */
     public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, Indexable value) 
-    throws TerminatedException {
-        int idxOp =  checkRelationOp(relation);
-        NodeSet result = new ExtArrayNodeSet();
-        SearchCallback callback = new SearchCallback(docs, contextSet, result, true);
-        Lock lock = db.getLock();
+            throws TerminatedException {
+        final int idxOp =  checkRelationOp(relation);
+        final NodeSet result = new ExtArrayNodeSet();
+        final SearchCallback callback = new SearchCallback(docs, contextSet, result, true);
+        final Lock lock = db.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-			Collection collection = (Collection) iter.next();
-			short collectionId = collection.getId();
-			byte[] key = value.serialize(collectionId, caseSensitive);
+            Collection collection = (Collection) iter.next();
+            short collectionId = collection.getId();
+            byte[] key = value.serialize(collectionId, caseSensitive);
 			IndexQuery query = new IndexQuery(idxOp, new Value(key));
-            Value prefix = getPrefixValue(value.getType(), collectionId);
+            Value prefix = getValuePrefix(value.getType(), collectionId);
 			try {
 				lock.acquire();
 				try {
 					db.query(query, prefix, callback);
-				} catch (IOException ioe) {
-					LOG.debug(ioe);
-				} catch (BTreeException bte) {
-					LOG.debug(bte);
+				} catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+				} catch (BTreeException e) {
+                    LOG.warn(e.getMessage(), e);
 				}
 			} catch (LockException e) {
-				LOG.debug(e);
+                LOG.warn("Failed to acquire lock for '" + db.getFile().getName() + "'", e);  
 			} finally {
 				lock.release();
 			}
@@ -593,7 +588,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
     
     public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type)
-    throws TerminatedException, EXistException {
+            throws TerminatedException, EXistException {
         return match(docs, contextSet, expr, type, 0, true);
     }
     
@@ -602,7 +597,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	 * @param flags like flags argument for {@link RegexMatcher} constructor
 	 *  */
     public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type, int flags, boolean caseSensitiveQuery)
-    throws TerminatedException, EXistException {
+        throws TerminatedException, EXistException {
+        
     	// if the regexp starts with a char sequence, we restrict the index scan to entries starting with
     	// the same sequence. Otherwise, we have to scan the whole index.
         StringValue startTerm = null;
@@ -614,37 +610,40 @@ public class NativeValueIndex implements ContentLoadingObserver {
     			else
     				break;
     		if(term.length() > 0) {
-    			startTerm = new StringValue(term.toString());
+                startTerm = new StringValue(term.toString());
+                LOG.debug("Match will begin index scan at '" + startTerm + "'");
     		}
         }
         
 		TermMatcher comparator = new RegexMatcher(expr, type, flags);
         NodeSet result = new ExtArrayNodeSet();
         RegexCallback callback = new RegexCallback(docs, contextSet, result, comparator);
-        Lock lock = db.getLock();
+        final Lock lock = db.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			Collection collection = (Collection) iter.next();
 			short collectionId = collection.getId();
-			byte[] key;
-			if(startTerm != null)
-				key = startTerm.serialize(collectionId, caseSensitive);
-			else {
-				key = new byte[3];
-				ByteConversion.shortToByte(collectionId, key, 0);
-				key[2] = (byte) Type.STRING;
+			Value value;
+			if (startTerm != null) {
+                byte[] key = startTerm.serialize(collectionId, caseSensitive);
+                value = new Value(key);
+            } else {
+                value = getValuePrefix(Type.STRING, collectionId);                
+				//key = new byte[3];
+				//ByteConversion.shortToByte(collectionId, key, 0);
+				//key[2] = (byte) Type.STRING;
 			}
-			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new Value(key));
+			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
 			try {
 				lock.acquire();
 				try {
 					db.query(query, callback);
-				} catch (IOException ioe) {
-					LOG.debug(ioe);
-				} catch (BTreeException bte) {
-					LOG.debug(bte);
+				} catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+				} catch (BTreeException e) {
+                    LOG.warn(e.getMessage(), e);
 				}
 			} catch (LockException e) {
-				LOG.debug(e);
+                LOG.warn("Failed to acquire lock for '" + db.getFile().getName() + "'", e);  
 			} finally {
 				lock.release();
 			}
@@ -652,51 +651,46 @@ public class NativeValueIndex implements ContentLoadingObserver {
         return result;
     }
     
-    public ValueOccurrences[] scanIndexKeys(DocumentSet docs, NodeSet contextSet,
-            Indexable start) {
-        long t0 = System.currentTimeMillis();
+    public ValueOccurrences[] scanIndexKeys(DocumentSet docs, NodeSet contextSet, Indexable start) {        
+        final int type = ((Item) start).getType();
+        final boolean stringType = Type.subTypeOf(type, Type.STRING);
+        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type);
         final Lock lock = db.getLock();
-        short collectionId;
-        Collection current;
-        IndexQuery query;
-        int type = ((Item) start).getType();
-        boolean stringType = Type.subTypeOf(type, Type.STRING);
-        IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type);
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-            current = (Collection) i.next();
-            collectionId = current.getId();
-            byte[] startKey = start.serialize(collectionId, caseSensitive);
+            Collection current = (Collection) i.next();
+            short collectionId = current.getId();
             int op = stringType ? IndexQuery.TRUNC_RIGHT : IndexQuery.GEQ;
-            query = new IndexQuery(op, new Value(startKey));
-            Value prefix = getPrefixValue(start.getType(), collectionId);
+            byte[] startKey = start.serialize(collectionId, caseSensitive);            
+            IndexQuery query = new IndexQuery(op, new Value(startKey));            
             try {
-                lock.acquire();
+                lock.acquire();               
                 if (stringType)
                     db.query(query, cb);
-                else
+                else {
+                    Value prefix = getValuePrefix(start.getType(), collectionId);
                     db.query(query, prefix, cb);
+                }
             } catch (LockException e) {
-                LOG.warn("cannot get lock on words", e);
+                LOG.warn("Failed to acquire lock for '" + db.getFile().getName() + "'", e);
             } catch (IOException e) {
-                LOG.warn("error while reading words", e);
+                LOG.error(e.getMessage(), e);
             } catch (BTreeException e) {
-                LOG.warn("error while reading words", e);
+                LOG.error(e.getMessage(), e);
             } catch (TerminatedException e) {
-                LOG.warn("Method terminated", e);
+                LOG.warn(e.getMessage(), e);
             } finally {
                 lock.release();
             }
         }
         Map map = cb.map;
-        ValueOccurrences[] result = new ValueOccurrences[map.size()];
-        LOG.debug("Found " + result.length + " in " + (System.currentTimeMillis() - t0));
+        ValueOccurrences[] result = new ValueOccurrences[map.size()];        
         return (ValueOccurrences[]) map.values().toArray(result);
     }
     
     /**
-     * Returns a key containing type and collectionId.
+     * Returns a search key for a collectionId/type combination.
      */
-    private Value getPrefixValue(int type, short collectionId) {
+    private Value getValuePrefix(int type, short collectionId) {
         byte[] data = new byte[3];
         ByteConversion.shortToByte(collectionId, data, 0);
         data[2] = (byte) type;
@@ -737,21 +731,26 @@ public class NativeValueIndex implements ContentLoadingObserver {
      */
     private AtomicValue convertToAtomic(int xpathType, String value) {
         AtomicValue atomic = null;
-        if(Type.subTypeOf(xpathType, Type.STRING)) {
+        if (Type.subTypeOf(xpathType, Type.STRING)) {
             atomic = new StringValue(value);
         } else {
             try {
                 atomic = new StringValue(value).convertTo(xpathType);
             } catch (XPathException e) {
-                LOG.warn("Node value: '" + value + "' cannot be converted to type " + 
+                LOG.warn("Node value '" + value + "' cannot be converted to " + 
                         Type.getTypeName(xpathType));
+                return null;
             }
         }
-        if(!(atomic instanceof Indexable)) {
-            LOG.warn("The specified type: '" + Type.getTypeName(xpathType) +
-            		"' and value '" + value + "'" +
-                    " cannot be used as index key. It is null or does not implement interface Indexable.");
-            atomic = null;
+        if (atomic == null) {
+            LOG.warn("Node value '" + Type.getTypeName(xpathType) + "(" + value + ")'" +
+            " cannot be used as index key. It is null.");
+            return null;
+        }            
+        if (!(atomic instanceof Indexable)) {
+            LOG.warn("Node value '" + Type.getTypeName(xpathType) + "(" + value + ")'" +
+            " cannot be used as index key. It does not implement " + Indexable.class.getName());
+            return null;
         }
         return atomic;        
     }
@@ -779,53 +778,67 @@ public class NativeValueIndex implements ContentLoadingObserver {
         /* (non-Javadoc)
          * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
          */
-        public boolean indexInfo(Value value, long pointer)
-                throws TerminatedException {
+        public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             VariableByteInput is = null;
 			try {
 				is = db.getAsStream(pointer);
-			} catch (IOException ioe) {
-				LOG.warn(ioe.getMessage(), ioe);
-			}
+			} catch (IOException e) {
+				LOG.warn(e.getMessage(), e);
+			}            
 			if (is == null)
 				return true;
+            
+            int currentDocId;            
+            int gidsCount;
+            long currentGID;
+            long delta;  
+            DocumentImpl currentDocument;        
+            NodeProxy currentNode, parentNode;            
 			try {
                 int sizeHint = -1;
                 while (is.available() > 0) {
-                	int docId = is.readInt();
-                	int len = is.readInt();
-                	if ((doc = docs.getDoc(docId)) == null
-                			|| (contextSet != null && !contextSet.containsDoc(doc))) {
-                		is.skip(len);
-                		continue;
+                    currentDocId = is.readInt();
+                	gidsCount = is.readInt();
+                    currentDocument = docs.getDoc(currentDocId);                    
+                	if (currentDocument == null) {
+                        is.skip(gidsCount);
+                        continue;                        
+                    }                    
+                    
+                	if (contextSet != null) { 
+                	    if (!contextSet.containsDoc(doc)) {
+                	        is.skip(gidsCount);
+                	        continue;
+                        }
+                        sizeHint = contextSet.getSizeHint(doc);
                 	}
-                	if (contextSet != null)
-                		sizeHint = contextSet.getSizeHint(doc);
-                	long gid = 0;
-                	NodeProxy current, parent;
-                	for (int j = 0; j < len; j++) {
-                		gid = gid + is.readLong();
-						
-                		current = new NodeProxy(doc, gid);
-						
+
+                    currentGID = 0;                	
+                	for (int j = 0; j < gidsCount; j++) {
+                        delta = is.readLong();
+                        currentGID = currentGID + delta;
+                        
+                        currentNode = new NodeProxy(doc, currentGID);						
                 		// if a context set is specified, we can directly check if the
                 		// matching node is a descendant of one of the nodes
                 		// in the context set.
                 		if (contextSet != null) {
-                			parent = contextSet.parentWithChild(current, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                			if (parent != null) {
-                				result.add(returnAncestor ? parent : current, sizeHint);
-                			}
+                            if (returnAncestor) {
+                                parentNode = contextSet.parentWithChild(currentNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                if (parentNode != null) 
+                                    result.add(parentNode, sizeHint);
+                			} else
+                                result.add(currentNode, sizeHint);
                 		// otherwise, we add all nodes without check
                 		} else {
-                			result.add(current, sizeHint);
+                			result.add(currentNode, sizeHint);
                 		}
                 	}
                 }
 			} catch (EOFException e) {
 			    // EOF is expected here
-            } catch (IOException e) {
-                LOG.warn("io error while reading index", e);
+            } catch (IOException e) {                
+                LOG.warn(e.getMessage(), e);
             }
             return false;
         }
@@ -845,8 +858,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     	/**
 		 * @see org.exist.storage.NativeValueIndex.SearchCallback#indexInfo(org.dbxml.core.data.Value, long)
 		 */
-		public boolean indexInfo(Value value, long pointer)
-				throws TerminatedException {
+		public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             key.reuse();
             UTF8.decode(value.data(), value.start() + 3, value.getLength() - 3, key);
 			if(matcher.matches(key)) {
@@ -873,6 +885,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
          * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
          */
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
+            
             AtomicValue atomic;
             try {
                 atomic = ValueIndexFactory.deserialize(key.data(), key.start(), key.getLength());
@@ -882,47 +895,52 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 LOG.warn(e.getMessage(), e);
                 return true;
             }
-            ValueOccurrences oc = (ValueOccurrences) map.get(atomic);
             
             VariableByteInput is = null;
             try {
                 is = db.getAsStream(pointer);
-            } catch (IOException ioe) {
-                LOG.warn(ioe.getMessage(), ioe);
+            } catch (IOException e) {
+                LOG.warn(e.getMessage(), e);
             }
             if (is == null)
                 return true;
+            
+            int currentDocId;
+            int gidsCount;
+            long currentGID; 
+            long delta;       
+            DocumentImpl currentDocument;                
+            boolean docAdded;
+            ValueOccurrences oc = (ValueOccurrences) map.get(atomic);
             try {
-                int docId;
-                int len;
-                long gid;
-                DocumentImpl doc;
-                boolean include = true;
-                boolean docAdded;
                 while (is.available() > 0) {
-                    docId = is.readInt();
-                    len = is.readInt();
-                    if ((doc = docs.getDoc(docId)) == null) {
-                        is.skip(len);
+                    currentDocId = is.readInt();
+                    gidsCount = is.readInt();
+                    currentDocument = docs.getDoc(currentDocId);                    
+                    if (currentDocument == null) {
+                        is.skip(gidsCount);
                         continue;
                     }
                     docAdded = false;
-                    gid = 0;
-                    for (int j = 0; j < len; j++) {
-                        gid += is.readLong();
+                    currentGID = 0;                    
+                    for (int j = 0; j < gidsCount; j++) {
+                        delta = is.readLong();
+                        currentGID = currentGID + delta;
+                        //TODO : what if contextSet == null ? -pb
+                        //See above where we have this behaviour :
+                        //otherwise, we add all nodes without check
                         if (contextSet != null) {
-                            include = contextSet.parentWithChild(doc, gid, false, true) != null;
-                        }
-                        if (include) {
-                            if (oc == null) {
-                                oc = new ValueOccurrences(atomic);
-                                map.put(atomic, oc);
+                            if (contextSet.parentWithChild(currentDocument, currentGID, false, true) != null) {
+                                if (oc == null) {
+                                    oc = new ValueOccurrences(atomic);
+                                    map.put(atomic, oc);
+                                }
+                                if (!docAdded) {
+                                    oc.addDocument(currentDocument);
+                                    docAdded = true;
+                                }
+                                oc.addOccurrences(1);
                             }
-                            if (!docAdded) {
-                                oc.addDocument(doc);
-                                docAdded = true;
-                            }
-                            oc.addOccurrences(1);
                         }
                     }
                 }
