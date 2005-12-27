@@ -806,11 +806,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     }                    
                     
                 	if (contextSet != null) { 
-                	    if (!contextSet.containsDoc(doc)) {
+                	    if (!contextSet.containsDoc(currentDocument)) {
                 	        is.skip(gidsCount);
                 	        continue;
                         }
-                        sizeHint = contextSet.getSizeHint(doc);
+                        sizeHint = contextSet.getSizeHint(currentDocument);
                 	}
 
                     currentGID = 0;                	
@@ -818,7 +818,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         delta = is.readLong();
                         currentGID = currentGID + delta;
                         
-                        currentNode = new NodeProxy(doc, currentGID);						
+                        currentNode = new NodeProxy(currentDocument, currentGID);						
                 		// if a context set is specified, we can directly check if the
                 		// matching node is a descendant of one of the nodes
                 		// in the context set.
