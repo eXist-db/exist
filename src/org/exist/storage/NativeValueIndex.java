@@ -200,6 +200,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         if (pending.size() == 0) 
             return;        
         Indexable indexable;
+        //TODO : NativeElementIndex uses ArrayLists -pb
         LongLinkedList gidList;
         long gids[];
         int gidsCount;        
@@ -256,9 +257,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @see org.exist.storage.IndexGenerator#remove()
      */
     public void remove() {
+        //What does remove has to do with the pending entries ??? -pb
         if (pending.size() == 0) 
             return;        
         Indexable indexable;
+        //TODO : NativeElementIndex uses ArrayLists -pb
         LongLinkedList currentGIDList;
         LongLinkedList newGIDList;
         long[] gids;        
@@ -279,11 +282,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 newGIDList = new LongLinkedList();
                 entry = (Map.Entry) i.next();
                 indexable = (Indexable) entry.getKey();
-                currentGIDList = (LongLinkedList) entry.getValue();                
-                ref = new Value(indexable.serialize(collectionId, caseSensitive));
+                currentGIDList = (LongLinkedList) entry.getValue();   
+                //Compute a key for the value
+                ref = new Value(indexable.serialize(collectionId, caseSensitive));                
                 value = dbValues.get(ref);
                 os.clear();
-                //Does the value already has data ?
+                //Does the value already exist in the index ?
                 if (value != null) {
                     //Add its data to the new list
                     is = new VariableByteArrayInput(value.getData());
@@ -300,7 +304,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                     is.copyTo(os, gidsCount);
                                 } catch(EOFException e) {
                                     LOG.error(e.getMessage(), e);
-                                    //The data will be saved if an exception occurs ! -pb
+                                    //TODO : data will be saved although os is probably corrupted ! -pb
                                 }
                             } else {
                                 // data are related to our document:
@@ -318,10 +322,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         }                    
                     } catch (IOException e) {
                         LOG.error(e.getMessage(), e);
-                        //The data will be saved if an exception occurs ! -pb
+                        //TODO : data will be saved although os is probably corrupted ! -pb
                     }
                 }
-                // append the new list to any existing data
+                // append the new list
                 gids = newGIDList.getData();
                 gidsCount = gids.length;
                 //Don't forget this one
@@ -455,6 +459,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         if (pending.size() == 0) 
             return;        
         Indexable indexable;
+        //TODO : NativeElementIndex uses ArrayLists -pb
         LongLinkedList currentGIDList;
         LongLinkedList newGIDList;
         long[] gids;        
