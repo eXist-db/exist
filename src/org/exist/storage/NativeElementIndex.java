@@ -126,7 +126,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             return;        
         final ProgressIndicator progress = new ProgressIndicator(pending.size(), 5);
         QName qname;   
-        NodeProxy currentNode;
+        NodeProxy storedNode;
         //TODO : NativeValueIndex uses LongLinkedLists -pb
         ArrayList gids;
         int gidsCount;
@@ -154,11 +154,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             //Compute the GIDs list
             previousGID = 0;
             for (int j = 0; j < gidsCount; j++) {
-                currentNode = (NodeProxy) gids.get(j);
-                delta = currentNode.getGID() - previousGID;                
+                storedNode = (NodeProxy) gids.get(j);
+                delta = storedNode.getGID() - previousGID;                
                 os.writeLong(delta);
-                StorageAddress.write(currentNode.getInternalAddress(), os);
-                previousGID = currentNode.getGID();
+                StorageAddress.write(storedNode.getInternalAddress(), os);
+                previousGID = storedNode.getGID();
             }            
             os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
             //Compute a key for the node
@@ -200,18 +200,16 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         pending.clear();
     }    
     
-    public void remove() {
-        //What does remove has to do with the pending entries ??? -pb
+    public void remove() {        
         if (pending.size() == 0) 
             return;
-
         QName qname;   
-        NodeProxy currentNode;        
-        List currentGIDList;        
+        NodeProxy storedNode;        
+        List storedGIDList;        
         List newGIDList;
         byte[] gids;
         int gidsCount;
-        long currentGID;
+        long storedGID;
         long previousGID; 
         long delta;
         Value ref;
@@ -229,7 +227,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 lock.acquire(Lock.WRITE_LOCK);
                 newGIDList = new ArrayList();
                 entry = (Map.Entry) i.next();
-                currentGIDList = (ArrayList) entry.getValue();
+                storedGIDList = (ArrayList) entry.getValue();
                 qname = (QName) entry.getKey();
                 //Compute a key for the node
                 if (qname.getNameType() == ElementValue.ATTRIBUTE_ID) {
@@ -269,12 +267,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                 previousGID = 0;
                                 for (int j = 0; j < gidsCount; j++) {
                                     delta = is.readLong();
-                                    currentGID = previousGID + delta;                                        
+                                    storedGID = previousGID + delta;                                        
                                     long address = StorageAddress.read(is);
-                                    if (!containsNode(currentGIDList, currentGID)) {
-                                        newGIDList.add(new NodeProxy(doc, currentGID, address));
+                                    if (!containsNode(storedGIDList, storedGID)) {
+                                        newGIDList.add(new NodeProxy(doc, storedGID, address));
                                     }
-                                    previousGID = currentGID;
+                                    previousGID = storedGID;
                                 }
                             }
                         }
@@ -293,11 +291,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 os.writeFixedInt(0);
                 previousGID = 0;
                 for (int j = 0; j < gidsCount; j++) {
-                    currentNode = (NodeProxy) newGIDList.get(j);
-                    delta = currentNode.getGID() - previousGID;                        
+                    storedNode = (NodeProxy) newGIDList.get(j);
+                    delta = storedNode.getGID() - previousGID;                        
                     os.writeLong(delta);
-                    StorageAddress.write(currentNode.getInternalAddress(), os);
-                    previousGID = currentNode.getGID();
+                    StorageAddress.write(storedNode.getInternalAddress(), os);
+                    previousGID = storedNode.getGID();
                 }                
                 os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                 //Store the data
@@ -323,10 +321,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         pending.clear();
     } 
     
-    /**
-     * Drop all index entries for the given collection.
-     * 
-     * @param collection
+    /* Drop all index entries for the given collection.
+     * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.collections.Collection)
      */
     public void dropIndex(Collection collection) {        
         final Value ref = new ElementValue(collection.getId());
@@ -346,65 +342,63 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         }
     }    
     
-    /**
-     * Drop all index entries for the given document.
-     * 
-     * @param doc
-     * @throws ReadOnlyException
+    /* Drop all index entries for the given document.
+     * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.dom.DocumentImpl)
      */
-    public void dropIndex(DocumentImpl doc) throws ReadOnlyException {        
+    public void dropIndex(DocumentImpl doc) throws ReadOnlyException {   
+        Value key;
+        int gidsCount;
+        int size;
+        VariableByteInput is;  
+        int storedDocId;
+        boolean changed;        
         final short collectionId = doc.getCollection().getId();
         final Value ref = new ElementValue(collectionId);
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
         final Lock lock = dbNodes.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            ArrayList elements = dbNodes.findKeys(query);            
-            Value key;
-            VariableByteInput is;
-            int len, size;
-            int docId;
-            boolean changed;
+            ArrayList elements = dbNodes.findKeys(query);  
             for (int i = 0; i < elements.size(); i++) {
-                key = (Value) elements.get(i);
-                is = dbNodes.getAsStream(key);
-                os.clear();
                 changed = false;
-                try {
+                key = (Value) elements.get(i);                
+                is = dbNodes.getAsStream(key);
+                os.clear();  
+                try {              
                     while (is.available() > 0) {
-                        docId = is.readInt();
-                        len = is.readInt();
+                        storedDocId = is.readInt();
+                        gidsCount = is.readInt();
                         size = is.readFixedInt();
-                        if (docId != doc.getDocId()) {
-                            // copy data to new buffer
-                            os.writeInt(docId);
-                            os.writeInt(len);
+                        if (storedDocId != doc.getDocId()) {
+                            // data are related to another document:
+                            // copy them to any existing data
+                            os.writeInt(storedDocId);
+                            os.writeInt(gidsCount);
                             os.writeFixedInt(size);
                             is.copyRaw(os, size);
-//                            is.copyTo(os, len * 4);
                         } else {
-                            changed = true;
-                            // skip
+                            // data are related to our document:
+                            // skip them                           
+                            changed = true;                        
                             is.skipBytes(size);
                         }
                     }
                 } catch (EOFException e) {
-                    // EOF is expected here
-                } catch (IOException e) {
-                    LOG.warn("removeDocument(String) " + e.getMessage(), e);
-                }
-                if (changed) {
-                    if (dbNodes.put(key, os.data()) == BFile.UNKNOWN_ADDRESS)
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("removeDocument() - "
-                                        + "could not save element");
-                            }
+                   //EOF is expected here 
+                }                
+                if (changed) {  
+                    //TODO : no call to dbNodes.remove if no data ? -pb
+                    //TODO : why not use the same construct as above :
+                    //dbNodes.update(value.getAddress(), ref, os.data()) -pb
+                    if (dbNodes.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.warn("Could not put index data for value '" +  ref + "'");
+                    }                    
                 }
             }
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
         } catch (TerminatedException e) {
-            LOG.warn("method terminated", e);
+            LOG.warn(e.getMessage(), e);  
         } catch (BTreeException e) {
             LOG.warn(e.getMessage(), e);
         } catch (IOException e) {
@@ -414,7 +408,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         }
     }
 
-    /** Called by {@link NativeBroker.reIndex} */
+
+    /* (non-Javadoc)
+     * @see org.exist.storage.ContentLoadingObserver#reindex(org.exist.dom.DocumentImpl, org.exist.dom.NodeImpl)
+     */
     public void reindex(DocumentImpl oldDoc, NodeImpl node) {
         if (pending.size() == 0) return;
         Lock lock = dbNodes.getLock();
@@ -636,8 +633,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 throw new PermissionDeniedException(
                         "you don't have the permission"
                                 + " to read collection " + collection.getName());
-        List collections = inclusive ? collection.getDescendants(broker, broker
-                .getUser()) : new ArrayList();
+        List collections = inclusive ? collection.getDescendants(broker, broker.getUser()) : new ArrayList();
         collections.add(collection);
         TreeMap map = new TreeMap();
         VariableByteArrayInput is;
@@ -646,11 +642,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         XQueryContext context = new XQueryContext(broker);
         final Lock lock = dbNodes.getLock();
         for (Iterator i = collections.iterator(); i.hasNext();) {
-            Collection current = (Collection) i.next();
-            short collectionId = current.getId();
+            Collection storedCollection = (Collection) i.next();
+            short collectionId = storedCollection.getId();
 
-            ElementValue ref = new ElementValue(ElementValue.ELEMENT,
-                    collectionId);
+            ElementValue ref = new ElementValue(ElementValue.ELEMENT, collectionId);
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
             try {
                 lock.acquire();
