@@ -130,7 +130,7 @@ public class ElementConstructor extends NodeConstructor {
 			Sequence attrValues;
 			QName attrQName;
 			// first, search for xmlns attributes and declare in-scope namespaces
-			for(int i = 0; i < attributes.length; i++) {
+			for (int i = 0; i < attributes.length; i++) {
 				constructor = (AttributeConstructor)attributes[i];
 				if(constructor.isNamespaceDeclaration()) {
 					int p = constructor.getQName().indexOf(':');
@@ -142,8 +142,8 @@ public class ElementConstructor extends NodeConstructor {
 					}
 				}
 			}
-			// process the remaining attributesCharArr
-			for(int i = 0; i < attributes.length; i++) {
+			// process the remaining attributes
+			for (int i = 0; i < attributes.length; i++) {
 			    context.proceed(this, builder);
 				constructor = (AttributeConstructor)attributes[i];
 				attrValues = constructor.eval(contextSequence, contextItem);
