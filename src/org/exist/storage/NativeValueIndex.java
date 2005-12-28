@@ -298,13 +298,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                 // data are related to another document:
                                 // append them to any existing data
                                 os.writeInt(storedDocId);
-                                os.writeInt(gidsCount);
-                                try {                                        
-                                    is.copyTo(os, gidsCount);
-                                } catch(EOFException e) {
-                                    LOG.error(e.getMessage(), e);
-                                    //TODO : data will be saved although os is probably corrupted ! -pb
-                                }
+                                os.writeInt(gidsCount);                                                                       
+                                is.copyTo(os, gidsCount);
                             } else {
                                 // data are related to our document:
                                 // feed the new list with the GIDs
@@ -318,7 +313,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                     previousGID = storedGID;
                                 }
                             }
-                        }                    
+                        }
+                    } catch (EOFException e) {
+                        //Is it expected ? -pb
+                        LOG.warn(e.getMessage(), e);
                     } catch (IOException e) {
                         LOG.error(e.getMessage(), e);
                         //TODO : data will be saved although os is probably corrupted ! -pb
@@ -513,9 +511,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             }
                         }
                     } catch (EOFException e) {
-                        LOG.warn("Could not save index data for value '" +  ref + "'");
-                    } catch (IOException e) {
-                        LOG.error("io-error while updating index for value", e);
+                        //Is it expected ? -pb
+                        LOG.warn(e.getMessage(), e);
+                    } catch (IOException e) {                        
+                        LOG.error(e.getMessage(), e);
+                        //TODO : data will be saved although os is probably corrupted ! -pb
                     }
                 }
                 // append the new list to any existing data
@@ -533,6 +533,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 }
                 //Store the data
                 if (is == null) {
+                    //TODO : Should is be null, what will there be in os.data() ? -pb
                     if (dbValues.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.warn("Could not put index data for value '" +  ref + "'");
                     }
@@ -843,7 +844,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 			} catch (EOFException e) {
 			    // EOF is expected here
             } catch (IOException e) {                
-                LOG.warn(e.getMessage(), e);
+                LOG.error(e.getMessage(), e);
             }
             return false;
         }
@@ -950,9 +951,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     }
                 }
             } catch(EOFException e) {
+                //Is it expected ? -pb
                 LOG.warn(e.getMessage(), e);
             } catch(IOException e) {
-                LOG.warn(e.getMessage(), e);
+                LOG.error(e.getMessage(), e);
             }
             return true;
         }
