@@ -1052,33 +1052,54 @@
     <target name="demoserver">
         <echo message="Adjusting links ..."/>
         <property name="host" value="http://exist-db.org"/>
-        <replace dir="webapp" summary="true"
+    	<delete dir="${build.docs}" failonerror="false"/>
+        <mkdir dir="${build.docs}"/>
+        <mkdir dir="${build.docs.src}"/>
+
+        <echo message="Copying docs to temporary location ${build.docs.src}"/>
+        <copy todir="${build.docs.src}">
+            <fileset dir="${src.webapp}">
+                <include name="**/*"/>
+                <exclude name="WEB-INF/data/*"/>
+            	<exclude name="WEB-INF/logs/*"/>
+            </fileset>
+        </copy>
+    	
+        <replace dir="${build.docs.src}" summary="true"
                 includes="sidebar.xml">
             <replacefilter token="index.xml" value="${host}/index.html"/>
+        	<replacefilter token="acknowledge.xml" value="${host}/acknowledge.html"/>
             <replacefilter token="credits.xml" value="${host}/credits.html"/>
+        	<replacefilter token="facts.xml" value="${host}/facts.html"/>
             <replacefilter token="quickstart.xml" value="${host}/quickstart.html"/>
             <replacefilter token="documentation.xml" value="${host}/documentation.html"/>
-            <replacefilter token="#mailing" value="${host}/index.html#mailing"/>
+            <!--replacefilter token="#mailing" value="${host}/index.html#mailing"/-->
             <replacefilter token="api/index.html" value="${host}/api/index.html"/>
         </replace>
 
-        <replace dir="webapp" summary="true">
+        <replace dir="${build.docs.src}" summary="true">
             <include name="acronyms/sidebar.xml"/>
             <include name="apps/sidebar.xml"/>
             <include name="library/sidebar.xml"/>
             <include name="xquery/sidebar.xml"/>
             <replacefilter token="../index.xml" value="${host}/index.html"/>
+        	<replacefilter token="../acknowledge.xml" value="${host}/acknowledge.html"/>
             <replacefilter token="../credits.xml" value="${host}/credits.html"/>
             <replacefilter token="../quickstart.xml" value="${host}/quickstart.html"/>
             <replacefilter token="../documentation.xml" value="${host}/documentation.html"/>
             <replacefilter token="../api/index.html" value="${host}/api/index.html"/>
         </replace>
 
-        <replace dir="webapp/admin" summary="true">
+        <replace dir="${build.docs.src}/admin" summary="true">
             <include name="admin.xql"/>
             <replacefilter token='&lt;a href="..">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
         </replace>
-        <replace dir="webapp/mods" summary="true">
+    	<replace dir="${build.docs.src}/sandbox" summary="true">
+            <include name="sandbox.xql"/>
+            <replacefilter token='&lt;a href="../index.xml">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
+    		<replacefilter token='&lt;a href="../index.xml#download">Download&lt;/a>' value='&lt;a href="${host}#download">Download&lt;/a>'/>
+        </replace>
+        <replace dir="${build.docs.src}/mods" summary="true">
             <include name="config.xqm"/>
             <include name="login.xhtml"/>
             <include name="mods.xq"/>
