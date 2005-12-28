@@ -76,6 +76,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     /** The datastore for this node index */
     protected BFile dbNodes;
 
+    /** Work output Stream taht should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream();
 
     public NativeElementIndex(DBBroker broker, BFile dbNodes) {
@@ -83,21 +84,25 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         this.dbNodes = dbNodes;
     }
 
-    /**
-     * Add an index entry for the given QName and NodeProxy.
-     * Added entries are written to the list of pending entries.
-     * {@link #flush()} is called later to flush all pending entries.
+    /** Store the given node in the node index.
+     * @param qname The node's identity
+     * @param proxy The node's proxy
      */
-    public void addNode(QName qname, NodeProxy proxy) {
-        ArrayList buf;
-        buf = (ArrayList) pending.get(qname);
+    public void addNode(QName qname, NodeProxy proxy) {       
+        //Is this node already pending ?
+        ArrayList buf = (ArrayList) pending.get(qname);
         if (buf == null) {
+            //Create a node list
             buf = new ArrayList(50);
             pending.put(qname, buf);
         }
+        //Add node's proxy to the list
         buf.add(proxy);
     }
     
+    /* (non-Javadoc)
+     * @see org.exist.storage.ContentLoadingObserver#sync()
+     */
     public void sync() {
         Lock lock = dbNodes.getLock();
         try {
@@ -112,88 +117,82 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         }
     }    
 
-    /**
-     * Flush all pending index entries. This method is called while
-     * a document is stored.
+
+    /* (non-Javadoc)
+     * @see org.exist.storage.ContentLoadingObserver#flush()
      */
     public void flush() {
         if (pending.size() == 0) 
-            return;
-        
+            return;        
         final ProgressIndicator progress = new ProgressIndicator(pending.size(), 5);
-
-        NodeProxy proxy;
-        QName qname;
-        ArrayList idList;
-        int count = 1, len;
-//        String name;
-        ElementValue ref;
-        Map.Entry entry;
-        // get collection id for this collection
-        long prevId;
+        QName qname;        
+        ArrayList gids;
+        int gidsCount;
+        long previousGID;
         long delta;
+        NodeProxy currentProxy;
         int lenOffset;
-        short collectionId = doc.getCollection().getId();
-        Lock lock = dbNodes.getLock();
-        try {
-            for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
-                entry = (Map.Entry) i.next();
-                qname = (QName) entry.getKey();
-                idList = (ArrayList) entry.getValue();
-                os.clear();
-                FastQSort.sort(idList, 0, idList.size() - 1);
-                len = idList.size();
-                os.writeInt(doc.getDocId());
-                os.writeInt(len);
-                lenOffset = os.position();
-                os.writeFixedInt(0);
-                
-                prevId = 0;
-                for (int j = 0; j < len; j++) {
-                    proxy = (NodeProxy) idList.get(j);
-                    delta = proxy.getGID() - prevId;
-                    prevId = proxy.getGID();
-                    os.writeLong(delta);
-                    StorageAddress.write(proxy.getInternalAddress(), os);
-                }
-                
-                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
-                
-                if (qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
-                    short sym = broker.getSymbols().getSymbol(
-                            qname.getLocalName());
-                    short nsSym = broker.getSymbols().getNSSymbol(
-                            qname.getNamespaceURI());
-                    ref = new ElementValue(qname.getNameType(), collectionId,
-                            sym, nsSym);
-                } else {
-                    ref = new ElementValue(qname.getNameType(), collectionId,
-                            qname.getLocalName());
-                }
-                try {
-                    lock.acquire(Lock.WRITE_LOCK);
-                    if (dbNodes.append(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.warn("could not save index for element " + qname);
-                        continue;
-                    }
-                } catch (LockException e) {
-                    LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
-                } catch (IOException e) {
-                    LOG.error("io error while writing element " + qname, e);
-                } finally {
-                    lock.release();
-                }
-                progress.setValue(count);
-                if (progress.changed()) {
-                    setChanged();
-                    notifyObservers(progress);
-                }
-                count++;
+        final SymbolTable symbols = broker.getSymbols();
+        Map.Entry entry; 
+        ElementValue ref;
+        final short collectionId = doc.getCollection().getId(); 
+        final Lock lock = dbNodes.getLock();   
+        int count = 0;
+        for (Iterator i = pending.entrySet().iterator(); i.hasNext(); count++) {
+            entry = (Map.Entry) i.next();
+            qname = (QName) entry.getKey();
+            gids = (ArrayList) entry.getValue();            
+            gidsCount = gids.size();
+            //Don't forget this one
+            FastQSort.sort(gids, 0, gidsCount - 1);
+            os.clear();
+            os.writeInt(doc.getDocId());
+            os.writeInt(gidsCount);
+            lenOffset = os.position();
+            os.writeFixedInt(0);  
+            //Compute the GID list
+            previousGID = 0;
+            for (int j = 0; j < gidsCount; j++) {
+                currentProxy = (NodeProxy) gids.get(j);
+                delta = currentProxy.getGID() - previousGID;                
+                os.writeLong(delta);
+                StorageAddress.write(currentProxy.getInternalAddress(), os);
+                previousGID = currentProxy.getGID();
+            }            
+            os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+            //Compute a key for the node
+            if (qname.getNameType() == ElementValue.ATTRIBUTE_ID) {
+                ref = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());                
+            } else {
+                short sym = symbols.getSymbol(qname.getLocalName());
+                short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
+                ref = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);   
             }
-        } catch (ReadOnlyException e) {
-            LOG.warn("database is read-only");
-            return;
-        }
+            try {
+                lock.acquire(Lock.WRITE_LOCK);
+                //Store data
+                if (dbNodes.append(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                    LOG.warn("Could not put index data for node '" +  qname + "'"); 
+                }
+            } catch (LockException e) {
+                LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
+                //TODO : return ?
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);   
+                //TODO : return ?
+            } catch (ReadOnlyException e) {
+                LOG.warn("Read-only error on '" + dbNodes.getFile().getName() + "'", e);
+                //Return without clearing the pending entries
+                return;                 
+            } finally {
+                lock.release();
+            }
+            progress.setValue(count);
+            if (progress.changed()) {
+                setChanged();
+                notifyObservers(progress);
+            }            
+        }        
         progress.finish();
         setChanged();
         notifyObservers(progress);
@@ -201,7 +200,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     }    
     
     public void remove() {
-        if (pending.size() == 0) return;
+        if (pending.size() == 0) 
+            return;
         Lock lock = dbNodes.getLock();
         Map.Entry entry;
         QName qname;

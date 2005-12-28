@@ -220,27 +220,31 @@ public class NativeValueIndex implements ContentLoadingObserver {
             os.clear();
             os.writeInt(doc.getDocId());
             os.writeInt(gidsCount);
+            //Compute the GID list
             previousGID = 0;
             for (int j = 0; j < gidsCount; j++) {                    
                 delta = gids[j] - previousGID;                    
                 os.writeLong(delta);
                 previousGID = gids[j];
             }
+            //Compute a key for the value
             ref = new Value(indexable.serialize(collectionId, caseSensitive));
             try {
                 lock.acquire(Lock.WRITE_LOCK);
+                //Store data
                 if (dbValues.append(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
                     LOG.warn("Could not append index data for value '" +  ref + "'");                   
                 }
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
-               //TODO : return ?
-            } catch (ReadOnlyException e) {
-                LOG.warn("Read-only error on '" + dbValues.getFile().getName() + "'", e);                
-                return;                          
+               //TODO : return ?                         
             } catch (IOException e) {
                 LOG.warn("IO error on '" + dbValues.getFile().getName() + "'", e);  
                 //TODO : return ?
+            } catch (ReadOnlyException e) {
+                LOG.warn("Read-only error on '" + dbValues.getFile().getName() + "'", e);   
+                //Return without clearing the pending entries
+                return;                 
             } finally {
                 lock.release();
             }
