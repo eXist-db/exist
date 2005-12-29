@@ -240,14 +240,14 @@ public class XQueryFunctionsTest extends TestCase {
 			//Any untyped atomic values in the resulting sequence 
 			//(typically, values extracted from nodes in a schemaless document)
 			//are converted to xs:double values ([MK Xpath 2.0], p. 372)
-			assertEquals( "1", r );	
+			assertEquals( "1.0", r );	
 			
 			result 	= service.query( "declare variable $c { min(()) }; $c" );		
 			assertEquals( 0, result.getSize());	
 			
 
 		} catch (XMLDBException e) {
-			System.out.println("testTokenize(): " + e);
+			System.out.println("testMin(): " + e);
 			fail(e.getMessage());
 		}
 	}	
@@ -265,14 +265,14 @@ public class XQueryFunctionsTest extends TestCase {
 			//Any untyped atomic values in the resulting sequence 
 			//(typically, values extracted from nodes in a schemaless document)
 			//are converted to xs:double values ([MK Xpath 2.0], p. 370)
-			assertEquals( "2", r );	
+			assertEquals( "2.0", r );	
 			
 			result 	= service.query( "declare variable $c { max(()) }; $c" );		
 			assertEquals( 0, result.getSize());	
 			
 
 		} catch (XMLDBException e) {
-			System.out.println("testTokenize(): " + e);
+			System.out.println("testMax(): " + e);
 			fail(e.getMessage());
 		}
 	}	

@@ -98,26 +98,22 @@ public class FunMin extends CollatingFunction {
 			result = Sequence.EMPTY_SEQUENCE;
         else {
     		Collator collator = getCollator(contextSequence, contextItem, 2);
-    		SequenceIterator iter = arg.iterate();
-            Item nextItem = iter.nextItem();
-            AtomicValue nextValue = nextItem.atomize();
-            //TODO : use sub-type method here that eventually will throw an exception ? -pb
-            if (nextValue.getType() == Type.ATOMIC)
-                nextValue = nextValue.convertTo(Type.DOUBLE);            
-            ComputableValue min = (ComputableValue)nextValue;
+    		SequenceIterator iter = arg.unorderedIterator();
+            ComputableValue min = null;
     		while (iter.hasNext()) {
-    			nextItem = iter.nextItem();
-    			nextValue = nextItem.atomize();
-                //TODO : use sub-type method here that eventually will throw an exception ? -pb
-    			if (nextValue.getType() == Type.ATOMIC)
-    				nextValue = nextValue.convertTo(Type.DOUBLE);
-                //TODO : use ComputableValue.max with the collector ! -pb
-    			if (Type.subTypeOf(nextValue.getType(), Type.NUMBER) && ((NumericValue) nextValue).isNaN()) {
-    				result = DoubleValue.NaN;
+                Item nextItem = iter.nextItem();
+                AtomicValue nextValue = nextItem.atomize();
+                if (Type.subTypeOf(nextValue.getType(), Type.NUMBER) && ((NumericValue) nextValue).isNaN()) {
+                    result = DoubleValue.NaN;
                     break;
-                }
-                //Ugly type-casting -pb
-    			min = (ComputableValue) min.min(collator, nextValue);
+                }                
+                nextValue = nextValue.convertTo(Type.NUMBER);  
+                if (min == null)
+                    min = (ComputableValue)nextValue;
+                else
+                    //TODO : use ComputableValue.max with the collator ! -pb   
+                    //Ugly type-casting -pb
+                    min = (ComputableValue) min.min(collator, nextValue);
             }           
             result = min;
         }
