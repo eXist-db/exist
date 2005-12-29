@@ -475,6 +475,21 @@ public class XQueryFunctionsTest extends TestCase {
 		}		
 	}		
 	
+	public void testLocalName() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {	
+			result 	= service.query(
+			"let $a := <a><b></b></a>" +
+			"return fn:local-name($a)" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "a", r );
+		} catch (XMLDBException e) {
+			System.out.println("testTokenize(): " + e);
+			fail(e.getMessage());
+		}
+	}
+	
 	/*
 	 * @see TestCase#setUp()
 	 */
