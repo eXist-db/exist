@@ -485,7 +485,7 @@ public class XQueryFunctionsTest extends TestCase {
 			r 		= (String) result.getResource(0).getContent();
 			assertEquals( "a", r );
 		} catch (XMLDBException e) {
-			System.out.println("testTokenize(): " + e);
+			System.out.println("local-name(): " + e);
 			fail(e.getMessage());
 		}
 	}
