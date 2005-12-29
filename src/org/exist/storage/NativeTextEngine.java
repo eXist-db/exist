@@ -285,14 +285,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     /* Drop all index entries for the given document.
      * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.dom.DocumentImpl)
      */
-    public void dropIndex(DocumentImpl doc) {        
+    public void dropIndex(DocumentImpl document) {        
         //Collect document's tokens
         TreeSet tokens = new TreeSet();
-        NodeList children = doc.getChildNodes();
+        NodeList children = document.getChildNodes();
         NodeImpl node;
         for (int i = 0; i < children.getLength(); i++) {
             node = (NodeImpl) children.item(i);
-            Iterator j = broker.getDOMIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
+            Iterator j = broker.getDOMIterator(new NodeProxy(document, node.getGID(), node.getInternalAddress()));
             collect(tokens, j);
         }
         
@@ -303,7 +303,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         int rawSize;
         int docId;
         byte section;
-        short collectionId = doc.getCollection().getId();
+        short collectionId = document.getCollection().getId();
         boolean changed;
         final Lock lock = dbTokens.getLock();
         for (Iterator iter = tokens.iterator(); iter.hasNext();) {
@@ -323,7 +323,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         section = is.readByte();
                         len = is.readInt();
                         rawSize = is.readFixedInt();
-                        if (docId != doc.getDocId()) {
+                        if (docId != document.getDocId()) {
                             // copy data to new buffer
                             os.writeInt(docId);
                             os.writeByte(section);
@@ -753,7 +753,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		    // TODO: use VariableInputStream
 			if (doc == null)
 				return;
-			final short collectionId = doc.getCollection().getId();
+			final short collectionId = this.doc.getCollection().getId();
 			int len, rawSize, docId;
 			Map.Entry entry;
 			String word;
@@ -794,7 +794,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					                section = is.readByte();
 					                len = is.readInt();
 					                rawSize = is.readFixedInt();
-					                if (docId == doc.getDocId() && section == k) {
+					                if (docId == this.doc.getDocId() && section == k) {
 					                    // copy data to new output list; skip
 					                    // removed nodes
 					                    last = 0;
@@ -833,7 +833,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					    	// save the nodes remaining in the output list for the document
 						    newList.sort();
 						    len = newList.getTermCount();
-						    os.writeInt(doc.getDocId());
+						    os.writeInt(this.doc.getDocId());
 						    os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
 						    os.writeInt(len);
 						    rawSize = os.position();
@@ -1008,7 +1008,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				return;
 			final ProgressIndicator progress = new ProgressIndicator(
 					wordsCount, 100);
-			final short collectionId = doc.getCollection().getId();
+			final short collectionId = this.doc.getCollection().getId();
 			int count = 1, len, lenOffset, freq;
 			Map.Entry entry;
 			String word;
@@ -1022,7 +1022,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					idList = (OccurrenceList) entry.getValue();
 					os.clear();
 					len = idList.getTermCount();
-					os.writeInt(doc.getDocId());
+					os.writeInt(this.doc.getDocId());
 					os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
 					os.writeInt(len);
 					lenOffset = os.position();
@@ -1079,10 +1079,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			}
 		}
 
-		public void setDocument(DocumentImpl doc) {
-			if (this.doc != null && this.doc.getDocId() != doc.getDocId())
+		public void setDocument(DocumentImpl document) {
+			if (this.doc != null && this.doc.getDocId() != document.getDocId())
 				flush();
-			this.doc = doc;
+			this.doc = document;
 		}
 	}
 	
