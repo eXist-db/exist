@@ -38,6 +38,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
+import java.net.URL;
+import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -584,6 +586,22 @@ public class RESTServer {
     }
     
     /**
+     * Creates an input source from a URL location with an optional
+     * known charset.
+     */
+    private InputSource createInputSource(String charset,URI location)
+       throws java.io.IOException
+    {
+       if (charset==null) {
+          return new InputSource(location.toASCIIString());
+       } else {
+          InputSource source = new InputSource(new InputStreamReader(location.toURL().openStream(),charset));
+          source.setSystemId(location.toASCIIString());
+          return source;
+       }
+    }
+
+    /**
      * Handles PUT requests. The request content is stored as a new resource at
      * the specified location. If the resource already exists, it is overwritten if the
      * user has write permissions.
@@ -624,12 +642,23 @@ public class RESTServer {
                 collection = broker.getOrCreateCollection(transaction, collectionName);
                 broker.saveCollection(transaction, collection);
             }
-            String url = tempFile.toURI().toASCIIString();
             MimeType mime;
             String contentType = request.getContentType();
-            if (contentType != null)
+            String charset = null;
+            if (contentType != null) {
+                int semicolon = contentType.indexOf(';');
+                if (semicolon>0) {
+                    contentType = contentType.substring(0,semicolon).trim();
+                    int equals = contentType.indexOf('=',semicolon);
+                    if (equals>0) {
+                        String param = contentType.substring(semicolon+1,equals).trim();
+                        if (param.compareToIgnoreCase("charset=")==0) {
+                            charset = param.substring(equals+1).trim();
+                        }
+                    }
+                }
                 mime = MimeTable.getInstance().getContentType(contentType);
-            else {
+            } else {
                 mime = MimeTable.getInstance().getContentTypeFor(docPath);
                 if (mime != null)
                     contentType = mime.getName();
@@ -638,9 +667,10 @@ public class RESTServer {
                 mime = MimeType.BINARY_TYPE;
             
             if (mime.isXMLType()) {
-                IndexInfo info = collection.validate(transaction, broker, docPath, new InputSource(url));
+                URI url = tempFile.toURI();
+                IndexInfo info = collection.validate(transaction, broker, docPath, createInputSource(charset,url));
                 info.getDocument().setMimeType(contentType);
-                collection.store(transaction, broker, info, new InputSource(url), false);
+                collection.store(transaction, broker, info, createInputSource(charset,url), false);
                 response.sendError(HttpServletResponse.SC_OK, "Document " + docPath + " stored.");
             } else {
                 byte[] chunk = new byte[4096];
