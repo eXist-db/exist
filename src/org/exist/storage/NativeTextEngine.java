@@ -93,30 +93,29 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	public final static byte ATTRIBUTE_SECTION = 1;
 	public final static byte TEXT_SECTION = 0;
   
-  /**
-   * Limit the length of the words to be indexed.
-   * Default is 512 characters for words in attributes and elements. 
-   */
-  public final static int MAX_WORD_LENGTH = 2048;
+    /** Length limit for the tokens */
+	public final static int MAX_TOKEN_LENGTH = 2048;
 	
-	protected BFile dbWords;
-	protected InvertedIndex invIdx;
+  /** The datastore for this token index */
+	protected BFile dbTokens;
+	protected InvertedIndex invertedIndex;
 
 	public NativeTextEngine(DBBroker broker, Configuration config, BFile db) {
 		super(broker, config);
-        this.dbWords = db;
-        this.invIdx = new InvertedIndex();
+        this.dbTokens = db;
+        this.invertedIndex = new InvertedIndex();
 	}
 
 	/**
-	 * check if string contains non-letters (maybe it's a regular expression?
+	 * Checks if the given string could be a regular expression.
 	 * 
-	 * @param str
-	 *                Description of the Parameter
-	 * @return Description of the Return Value
+	 * @param str The string	                 
+	 * @return 
 	 */
 	public final static boolean containsWildcards(String str) {
-		for (int i = 0; i < str.length(); i++)
+        if (str == null || str.length() == 0)
+            return false;
+        for (int i = 0; i < str.length(); i++)
 			switch (str.charAt(i)) {
 				case '*' :
 				case '?' :
@@ -129,8 +128,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	}
 
 	public final static boolean startsWithWildcard(String str) {
-		if (str == null || str.length() == 0)
-			return false;
+        if (str == null || str.length() == 0)
+            return false;
 		switch (str.charAt(0)) {
 			case '*' :
 			case '?' :
@@ -141,14 +140,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		return false;
 	}
 
-	public void close() {
-		try {
-			dbWords.close();
-		} catch (DBException dbe) {
-			LOG.debug(dbe);
-		}
-	}
-
 	public int getTrackMatches() {
 		return trackMatches;
 	}
@@ -156,76 +147,219 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	public void setTrackMatches(int flags) {
 		trackMatches = flags;
 	}
-	
-	/**
-	 * Collect all words in a document to be removed
-	 * 
-	 * @param words
-	 *                Description of the Parameter
-	 * @param domIterator
-	 *                Description of the Parameter
-	 */
-	protected void collect(Set words, Iterator domIterator) {
-		byte[] data = ((Value) domIterator.next()).getData();
-		short type = Signatures.getType(data[0]);
-		String word;
-		TextToken token;
-		switch (type) {
-			case Node.ELEMENT_NODE :
-				int children = ByteConversion.byteToInt(data, 1);
-				for (int i = 0; i < children; i++)
-					collect(words, domIterator);
-				break;
-			case Node.TEXT_NODE :
-				String s;
-				try {
-					s = new String(data, 1, data.length - 1, "UTF-8");
-				} catch (UnsupportedEncodingException uee) {
-					s = new String(data, 1, data.length - 1);
-				}
-				tokenizer.setText(s);
-				while (null != (token = tokenizer.nextToken())) {
-					word = token.getText();
-					if (stoplist.contains(word))
-						continue;
-					words.add(word.toLowerCase());
-				}
-				break;
-			case Node.ATTRIBUTE_NODE :
-				byte idSizeType = (byte) (data[0] & 0x3);
-				String val;
-				try {
-					val = new String(data,
-							1 + Signatures.getLength(idSizeType), data.length
-									- 1 - Signatures.getLength(idSizeType),
-							"UTF-8");
-				} catch (UnsupportedEncodingException uee) {
-					val = new String(data,
-							1 + Signatures.getLength(idSizeType), data.length
-									- 1 - Signatures.getLength(idSizeType));
-				}
-				tokenizer.setText(val);
-				while (null != (token = tokenizer.nextToken())) {
-					word = token.getText().toString();
-					if (stoplist.contains(word))
-						continue;
-					words.add(word.toLowerCase());
-				}
-				break;
-		}
-	}
+    
+    /**
+     * Index an attribute value
+     * 
+     * @param attr
+     *                the attribute to be indexed
+     */
+    public void storeAttribute(FulltextIndexSpec idx, AttrImpl attr) {
+        final DocumentImpl doc = (DocumentImpl) attr.getOwnerDocument();
+        tokenizer.setText(attr.getValue().toLowerCase());
+        TextToken token;
+        final long gid = attr.getGID();
+        while (null != (token = tokenizer.nextToken())) {
+            if (idx != null && idx.getIncludeAlphaNum() == false
+                    && token.getType() == TextToken.ALPHANUM) {
+                continue;
+            }
+            if (stoplist.contains(token) || token.length() > MAX_TOKEN_LENGTH) {
+                continue;
+            }
+            invertedIndex.setDocument(doc);
+            invertedIndex.addAttribute(token, gid);
+        }
+    }
 
+    /**
+     * Index a text node
+     * 
+     * @param idx
+     *                IndexPaths object passed in by the broker
+     * @param text
+     *                the text node to be indexed
+     * @param onetoken
+     *                if true, given text is indexed as a whole
+     *                if false, it is indexed token by token
+     * @return boolean indicates if all of the text content has been added to
+     *            the index
+     */
+    public void storeText(FulltextIndexSpec idx, TextImpl text, boolean onetoken) {
+        final DocumentImpl doc = (DocumentImpl) text.getOwnerDocument();
+        XMLString t = text.getXMLString().transformToLower();
+        tokenizer.setText(t);
+        TextToken token;
+        final long gid = text.getGID();
+        if ( onetoken ) {
+            invertedIndex.setDocument(doc);
+            String sal= text.getXMLString().transformToLower().toString();
+            token = new TextToken(TextToken.ALPHA, sal, 0, sal.length());
+            invertedIndex.addText(t, token, gid);           
+        } else {
+            while (null != (token = tokenizer.nextToken())) {
+                if (idx != null && idx.getIncludeAlphaNum() == false
+                        && token.isAlpha() == false) {
+                    continue;
+                }
+                if (stoplist.contains(token) || token.length() > MAX_TOKEN_LENGTH) {
+                    continue;
+                }
+                invertedIndex.setDocument(doc);
+                invertedIndex.addText(t, token, gid);
+            }
+        }
+    }    
+
+    public void sync() {
+        Lock lock = dbTokens.getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+            dbTokens.flush();
+        } catch (DBException e) {
+            LOG.error(e.getMessage(), e);        
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);           
+        } finally {
+            lock.release();
+        }
+    }
+    
 	public void flush() {
-		invIdx.flush();
+		invertedIndex.flush();
 	}
 
-	public void reindex(DocumentImpl oldDoc, NodeImpl node) {
-		invIdx.reindex(oldDoc, node);
+	public void reindex(DocumentImpl document, NodeImpl node) {
+		invertedIndex.reindex(document, node);
 	}
 
 	public void remove() {
-		invIdx.remove();
+		invertedIndex.remove();
 	}
+    
+    /**
+     * Remove indexed words for entire collection
+     * 
+     * @param collection
+     *                Description of the Parameter
+     */
+    public void dropIndex(Collection collection) {
+        Lock lock = dbTokens.getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+            LOG.debug("removing fulltext index ...");
+            WordRef ref = new WordRef(collection.getId());
+            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+            dbTokens.flush();
+            dbTokens.removeAll(query);
+        } catch (BTreeException bte) {
+            LOG.debug(bte);
+        } catch (IOException ioe) {
+            LOG.debug(ioe);
+        } catch (DBException dbe) {
+            LOG.warn(dbe);
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+        } finally {
+            lock.release(Lock.WRITE_LOCK);
+        }
+    }
+    
+    /**
+     * Remove all index entries for the specified document
+     * 
+     * @param doc
+     *                The document
+     */
+    public void dropIndex(DocumentImpl doc) {
+        try {
+            TreeSet words = new TreeSet();
+            NodeList children = doc.getChildNodes();
+            NodeImpl node;
+            for (int i = 0; i < children.getLength(); i++) {
+                node = (NodeImpl) children.item(i);
+                Iterator j = broker.getDOMIterator(new NodeProxy(doc, node
+                        .getGID(), node.getInternalAddress()));
+                collect(words, j);
+            }
+            String word;
+//          Value val;
+            WordRef ref;
+            VariableByteInput is = null;
+            VariableByteOutputStream os;
+            int len, rawSize;
+            int docId;
+            byte section;
+            short collectionId = doc.getCollection().getId();
+            boolean changed;
+            Lock lock = dbTokens.getLock();
+            for (Iterator iter = words.iterator(); iter.hasNext();) {
+                word = (String) iter.next();
+                ref = new WordRef(collectionId, word);
+                try {
+                    lock.acquire(Lock.WRITE_LOCK);
+                    is = dbTokens.getAsStream(ref);
+                    if (is == null) {
+                        continue;
+                    }
+                    os = new VariableByteOutputStream();
+                    changed = false;
+                    try {
+                        while (is.available() > 0) {
+                            docId = is.readInt();
+                            section = is.readByte();
+                            len = is.readInt();
+                            rawSize = is.readFixedInt();
+                            if (docId != doc.getDocId()) {
+                                // copy data to new buffer
+                                os.writeInt(docId);
+                                os.writeByte(section);
+                                os.writeInt(len);
+                                os.writeFixedInt(rawSize);
+                                is.copyRaw(os, rawSize);
+                            } else {
+                                changed = true;
+                                // skip
+                                is.skipBytes(rawSize);
+                            }
+                        }
+                    } catch (EOFException e) {
+                        //                  LOG.debug(e.getMessage(), e);
+                    } catch (IOException e) {
+                        //                  LOG.debug(e.getMessage(), e);
+                    }
+                    if (changed) {
+                        if (os.data().size() == 0) {
+                            dbTokens.remove(ref);
+                        } else {
+                            if (dbTokens.put(ref, os.data()) < 0 && LOG.isDebugEnabled()) {
+                                    LOG.debug("removeDocument() - "
+                                            + "could not remove index for "
+                                            + word);
+                            }
+                        }
+                    }
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+                    is = null;
+                } catch (IOException e) {
+                    LOG.error("removeDocument(DocumentImpl) - "
+                            + "io error while reading words", e);
+                    is = null;
+                } finally {
+                    lock.release();
+                }
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("removeDocument() - "
+                    + words.size()
+                    + " words updated.");
+            }
+        } catch (ReadOnlyException e) {
+            LOG.warn("removeDocument(DocumentImpl) - "
+                + "database is read-only");
+        }
+    }    
 
 	public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, NodeSet contextSet,
 										String expr, int type) throws TerminatedException {
@@ -278,10 +412,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			collection = (Collection) iter.next();
 			collectionId = collection.getId();
 			ref = new WordRef(collectionId, term);
-			Lock lock = dbWords.getLock();
+			Lock lock = dbTokens.getLock();
 			try {
 				lock.acquire();
-				is = dbWords.getAsStream(ref);
+				is = dbTokens.getAsStream(ref);
 				if (is == null) {
 					continue;
 				}
@@ -335,7 +469,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				}
 			} catch (EOFException e) {
 			} catch (LockException e) {
-				LOG.warn("could not acquire lock on words db", e);
+                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
 			} catch (IOException e) {
 				LOG.warn("io error while reading words", e);
 			} finally {
@@ -409,7 +543,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		Value ref;
 		Collection collection;
 		short collectionId;
-		Lock lock = dbWords.getLock();
+		Lock lock = dbTokens.getLock();
 		SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, docs);
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			collection = (Collection) iter.next();
@@ -422,14 +556,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			try {
 				lock.acquire();
 				try {
-					dbWords.query(query, cb);
+					dbTokens.query(query, cb);
 				} catch (IOException ioe) {
 					LOG.debug(ioe);
 				} catch (BTreeException bte) {
 					LOG.debug(bte);
 				}
 			} catch (LockException e) {
-				LOG.debug(e);
+                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
 			} finally {
 				lock.release();
 			}
@@ -444,7 +578,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		Value ref;
 		Collection collection;
 		short collectionId;
-		Lock lock = dbWords.getLock();
+		Lock lock = dbTokens.getLock();
 		IndexCallback cb = new IndexCallback(null, matcher);
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			collection = (Collection) iter.next();
@@ -454,7 +588,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			try {
 				lock.acquire();
 				try {
-					dbWords.query(query, cb);
+					dbTokens.query(query, cb);
 				} catch (IOException ioe) {
 					LOG.debug(ioe);
 				} catch (BTreeException bte) {
@@ -463,7 +597,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     LOG.debug(e);
                 }
 			} catch (LockException e) {
-				LOG.debug(e);
+                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
 			} finally {
 				lock.release();
 			}
@@ -474,7 +608,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	public Occurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet,
 			String start, String end) throws PermissionDeniedException {
 		long t0 = System.currentTimeMillis();
-		final Lock lock = dbWords.getLock();
+		final Lock lock = dbTokens.getLock();
 		short collectionId;
 		Collection current;
 		IndexQuery query;
@@ -490,9 +624,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     					start.toLowerCase()), new WordRef(collectionId, end.toLowerCase()));
 			try {
 				lock.acquire();
-				dbWords.query(query, cb);
+				dbTokens.query(query, cb);
 			} catch (LockException e) {
-				LOG.warn("cannot get lock on words", e);
+                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
 			} catch (IOException e) {
 				LOG.warn("error while reading words", e);
 			} catch (BTreeException e) {
@@ -508,212 +642,72 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		LOG.debug("Found " + result.length + " in " + (System.currentTimeMillis() - t0) + "ms");
 		return (Occurrences[]) map.values().toArray(result);
 	}
-
-	/**
-	 * Remove indexed words for entire collection
-	 * 
-	 * @param collection
-	 *                Description of the Parameter
-	 */
-	public void dropIndex(Collection collection) {
-		Lock lock = dbWords.getLock();
-		try {
-			lock.acquire(Lock.WRITE_LOCK);
-			LOG.debug("removing fulltext index ...");
-			WordRef ref = new WordRef(collection.getId());
-			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-			dbWords.flush();
-			dbWords.removeAll(query);
-		} catch (BTreeException bte) {
-			LOG.debug(bte);
-		} catch (IOException ioe) {
-			LOG.debug(ioe);
-		} catch (DBException dbe) {
-			LOG.warn(dbe);
-		} catch (LockException e) {
-			LOG.warn("Failed to acquire lock on collections.dbx", e);
-		} finally {
-			lock.release(Lock.WRITE_LOCK);
-		}
-	}
 	
-	/**
-	 * Remove all index entries for the specified document
-	 * 
-	 * @param doc
-	 *                The document
-	 */
-	public void dropIndex(DocumentImpl doc) {
-		try {
-			TreeSet words = new TreeSet();
-			NodeList children = doc.getChildNodes();
-			NodeImpl node;
-			for (int i = 0; i < children.getLength(); i++) {
-				node = (NodeImpl) children.item(i);
-				Iterator j = broker.getDOMIterator(new NodeProxy(doc, node
-						.getGID(), node.getInternalAddress()));
-				collect(words, j);
-			}
-			String word;
-//			Value val;
-			WordRef ref;
-			VariableByteInput is = null;
-			VariableByteOutputStream os;
-			int len, rawSize;
-			int docId;
-			byte section;
-			short collectionId = doc.getCollection().getId();
-			boolean changed;
-			Lock lock = dbWords.getLock();
-			for (Iterator iter = words.iterator(); iter.hasNext();) {
-				word = (String) iter.next();
-				ref = new WordRef(collectionId, word);
-				try {
-					lock.acquire(Lock.WRITE_LOCK);
-					is = dbWords.getAsStream(ref);
-					if (is == null) {
-						continue;
-					}
-					os = new VariableByteOutputStream();
-					changed = false;
-					try {
-						while (is.available() > 0) {
-							docId = is.readInt();
-							section = is.readByte();
-							len = is.readInt();
-							rawSize = is.readFixedInt();
-							if (docId != doc.getDocId()) {
-								// copy data to new buffer
-								os.writeInt(docId);
-								os.writeByte(section);
-								os.writeInt(len);
-								os.writeFixedInt(rawSize);
-								is.copyRaw(os, rawSize);
-							} else {
-								changed = true;
-								// skip
-								is.skipBytes(rawSize);
-							}
-						}
-					} catch (EOFException e) {
-						//				    LOG.debug(e.getMessage(), e);
-					} catch (IOException e) {
-						//				    LOG.debug(e.getMessage(), e);
-					}
-					if (changed) {
-						if (os.data().size() == 0) {
-							dbWords.remove(ref);
-						} else {
-							if (dbWords.put(ref, os.data()) < 0 && LOG.isDebugEnabled()) {
-									LOG.debug("removeDocument() - "
-											+ "could not remove index for "
-											+ word);
-							}
-						}
-					}
-				} catch (LockException e) {
-					LOG.warn("removeDocument(DocumentImpl) - "
-							+ "could not acquire lock on words db", e);
-					is = null;
-				} catch (IOException e) {
-					LOG.error("removeDocument(DocumentImpl) - "
-							+ "io error while reading words", e);
-					is = null;
-				} finally {
-					lock.release();
-				}
-			}
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("removeDocument() - "
-                    + words.size()
-                    + " words updated.");
-            }
-		} catch (ReadOnlyException e) {
-            LOG.warn("removeDocument(DocumentImpl) - "
-                + "database is read-only");
-		}
-	}
-
-	/**
-	 * Index an attribute value
-	 * 
-	 * @param attr
-	 *                the attribute to be indexed
-	 */
-	public void storeAttribute(FulltextIndexSpec idx, AttrImpl attr) {
-		final DocumentImpl doc = (DocumentImpl) attr.getOwnerDocument();
-		tokenizer.setText(attr.getValue().toLowerCase());
-		TextToken token;
-		final long gid = attr.getGID();
-		while (null != (token = tokenizer.nextToken())) {
-			if (idx != null && idx.getIncludeAlphaNum() == false
-					&& token.getType() == TextToken.ALPHANUM) {
-				continue;
-			}
-            if (stoplist.contains(token) || token.length() > MAX_WORD_LENGTH) {
-                continue;
-            }
-			invIdx.setDocument(doc);
-			invIdx.addAttribute(token, gid);
-		}
-	}
-
-	/**
-	 * Index a text node
-	 * 
-	 * @param idx
-	 *                IndexPaths object passed in by the broker
-	 * @param text
-	 *                the text node to be indexed
-	 * @param onetoken
-	 *                if true, given text is indexed as a whole
-	 *                if false, it is indexed token by token
-	 * @return boolean indicates if all of the text content has been added to
-	 *            the index
-	 */
-	public void storeText(FulltextIndexSpec idx, TextImpl text, boolean onetoken) {
-		final DocumentImpl doc = (DocumentImpl) text.getOwnerDocument();
-        XMLString t = text.getXMLString().transformToLower();
-		tokenizer.setText(t);
-		TextToken token;
-		final long gid = text.getGID();
-		if ( onetoken ) {
-			invIdx.setDocument(doc);
-			String sal= text.getXMLString().transformToLower().toString();
-            token = new TextToken(TextToken.ALPHA, sal, 0, sal.length());
-			invIdx.addText(t, token, gid);			
-		} else {
-			while (null != (token = tokenizer.nextToken())) {
-				if (idx != null && idx.getIncludeAlphaNum() == false
-						&& token.isAlpha() == false) {
-					continue;
-				}
-				if (stoplist.contains(token) || token.length() > MAX_WORD_LENGTH) {
-					continue;
-				}
-				invIdx.setDocument(doc);
-				invIdx.addText(t, token, gid);
-			}
-		}
-	}
-
-	public void sync() {
-		// uncomment this to get statistics about page buffer usage
-		dbWords.printStatistics();
-		Lock lock = dbWords.getLock();
-		try {
-			lock.acquire(Lock.WRITE_LOCK);
-			try {
-				dbWords.flush();
-			} catch (DBException dbe) {
-				LOG.warn(dbe);
-			}
-		} catch (LockException e) {
-			LOG.warn("could not acquire lock on words db", e);
-		} finally {
-			lock.release();
-		}
-	}
+    /**
+     * Collect all words in a document to be removed
+     * 
+     * @param words
+     *                Description of the Parameter
+     * @param domIterator
+     *                Description of the Parameter
+     */
+    private void collect(Set words, Iterator domIterator) {
+        byte[] data = ((Value) domIterator.next()).getData();
+        short type = Signatures.getType(data[0]);
+        String word;
+        TextToken token;
+        switch (type) {
+            case Node.ELEMENT_NODE :
+                int children = ByteConversion.byteToInt(data, 1);
+                for (int i = 0; i < children; i++)
+                    collect(words, domIterator);
+                break;
+            case Node.TEXT_NODE :
+                String s;
+                try {
+                    s = new String(data, 1, data.length - 1, "UTF-8");
+                } catch (UnsupportedEncodingException uee) {
+                    s = new String(data, 1, data.length - 1);
+                }
+                tokenizer.setText(s);
+                while (null != (token = tokenizer.nextToken())) {
+                    word = token.getText();
+                    if (stoplist.contains(word))
+                        continue;
+                    words.add(word.toLowerCase());
+                }
+                break;
+            case Node.ATTRIBUTE_NODE :
+                byte idSizeType = (byte) (data[0] & 0x3);
+                String val;
+                try {
+                    val = new String(data,
+                            1 + Signatures.getLength(idSizeType), data.length
+                                    - 1 - Signatures.getLength(idSizeType),
+                            "UTF-8");
+                } catch (UnsupportedEncodingException uee) {
+                    val = new String(data,
+                            1 + Signatures.getLength(idSizeType), data.length
+                                    - 1 - Signatures.getLength(idSizeType));
+                }
+                tokenizer.setText(val);
+                while (null != (token = tokenizer.nextToken())) {
+                    word = token.getText().toString();
+                    if (stoplist.contains(word))
+                        continue;
+                    words.add(word.toLowerCase());
+                }
+                break;
+        }
+    }
+    
+    public void close() {
+        try {
+            dbTokens.close();
+        } catch (DBException dbe) {
+            LOG.debug(dbe);
+        }
+    }    
 
 	/**
 	 * This inner class is responsible for actually storing the list of
@@ -780,7 +774,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			int freq = 1;
 			Value val = null;
 			VariableByteArrayInput is;
-			Lock lock = dbWords.getLock();
+			Lock lock = dbTokens.getLock();
 			for (int k = 0; k < 2; k++) {
 				for (Iterator i = words[k].entrySet().iterator(); i.hasNext();) {
 					entry = (Map.Entry) i.next();
@@ -789,7 +783,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					ref = new WordRef(collectionId, word);
 					try {
 					    lock.acquire(Lock.WRITE_LOCK);
-					    val = dbWords.get(ref);
+					    val = dbTokens.get(ref);
 					    os.clear();
 					    // new output list containing nodes from the
 					    // document that should not be removed
@@ -868,23 +862,23 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 //					    LOG.debug("new size: " + ndata.size());
 					    if(ndata.size() == 0) {
 					    	try {
-								dbWords.remove(ref);
+								dbTokens.remove(ref);
 							} catch (ReadOnlyException e) {
 								LOG.warn("Error while removing fulltext entry: " + e.getMessage(), e);
 							}
 					    } else {
 						    try {
 						        if (val == null)
-						            dbWords.put(ref, os.data());
+						            dbTokens.put(ref, os.data());
 						        else
-						            dbWords
+						            dbTokens
 						            .update(val.getAddress(), ref, os
 						                    .data());
 						    } catch (ReadOnlyException e) {
 						    }
 					    }
 					} catch (LockException e) {
-					    LOG.warn("could not acquire lock", e);
+                        LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
                     } finally {
 					    lock.release();
 					}
@@ -893,8 +887,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			}
 		}
 
-		public void reindex(DocumentImpl oldDoc, NodeImpl node) {
-		    final short collectionId = oldDoc.getCollection().getId();
+		public void reindex(DocumentImpl document, NodeImpl node) {
+		    final short collectionId = document.getCollection().getId();
 		    int len, rawSize, docId;
 		    Map.Entry entry;
 		    String word;
@@ -905,7 +899,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 //		    NodeProxy p;
 		    WordRef ref;
 		    VariableByteInput is = null;
-		    Lock lock = dbWords.getLock();
+		    Lock lock = dbTokens.getLock();
 		    for (int k = 0; k < 2; k++) {
 		        for (Iterator i = words[k].entrySet().iterator(); i.hasNext();) {
 		            entry = (Map.Entry) i.next();
@@ -914,7 +908,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		            ref = new WordRef(collectionId, word);
 		            try {
 		                lock.acquire(Lock.WRITE_LOCK);
-		                is = dbWords.getAsStream(ref);
+		                is = dbTokens.getAsStream(ref);
 		                os.clear();
 		                if (is != null) {
 		                    // add old entries to the new list
@@ -924,7 +918,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                            section = is.readByte();
 		                            len = is.readInt();
 		                            rawSize = is.readFixedInt();
-		                            if (docId != oldDoc.getDocId() || section != k) {
+		                            if (docId != document.getDocId() || section != k) {
 		                                // section belongs to another document:
 		                                // copy data to new buffer
 		                                os.writeInt(docId);
@@ -939,7 +933,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                                    gid += is.readLong();
 		                                    freq = is.readInt();
 		                                    if (node == null
-		                                            && oldDoc.getTreeLevel(gid) < oldDoc
+		                                            && document.getTreeLevel(gid) < document
 		                                            .reindexRequired()) {
                                                 for (int l = 0; l < freq; l++) {
                                                     idList.add(gid, is.readInt());
@@ -947,7 +941,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                                    } else if (node != null
 		                                            && (!XMLUtil
 		                                                    .isDescendantOrSelf(
-		                                                            oldDoc,
+                                                                    document,
 		                                                            node.getGID(),
 		                                                            gid))) {
                                                 for (int l = 0; l < freq; l++) {
@@ -968,7 +962,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                }
 		                idList.sort();
 		                len = idList.getTermCount();
-		                os.writeInt(oldDoc.getDocId());
+		                os.writeInt(document.getDocId());
 		                os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
 		                os.writeInt(len);
 		                rawSize = os.position();
@@ -991,16 +985,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                
 		                try {
 		                    if (is == null)
-		                        dbWords.put(ref, os.data());
+		                        dbTokens.put(ref, os.data());
 		                    else {
-		                        dbWords.update(((BFile.PageInputStream) is)
+		                        dbTokens.update(((BFile.PageInputStream) is)
 		                                .getAddress(), ref, os.data());
 		                    }
 		                } catch (ReadOnlyException e) {
 		                }
 		            } catch (LockException e) {
-		                LOG.error("could not acquire lock on index for '"
-		                        + word + "'");
+                        LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
 		                is = null;
 		            } catch (IOException e) {
 		                LOG.error("io error while reindexing word '" + word
@@ -1075,17 +1068,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		private void flushWord(short collectionId, String word, ByteArray data) {
 			if (data.size() == 0)
 				return;
-			Lock lock = dbWords.getLock();
+			Lock lock = dbTokens.getLock();
 			try {
 				lock.acquire(Lock.WRITE_LOCK);
 				try {
-					dbWords.append(new WordRef(collectionId, word), data);
+					dbTokens.append(new WordRef(collectionId, word), data);
 				} catch (ReadOnlyException e) {
 				} catch (IOException ioe) {
 					LOG.warn("io error while writing '" + word + "'", ioe);
 				}
 			} catch (LockException e) {
-				LOG.warn("could not acquire lock", e);
+                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
 			} finally {
 				lock.release();
 			}
@@ -1157,7 +1150,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			if (matcher.matches(word)) {
 				VariableByteInput is = null;
 				try {
-					is = dbWords.getAsStream(pointer);
+					is = dbTokens.getAsStream(pointer);
 				} catch (IOException ioe) {
 					LOG.warn(ioe.getMessage(), ioe);
 				}
@@ -1258,7 +1251,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			
 			VariableByteInput is = null;
 			try {
-				is = dbWords.getAsStream(pointer);
+				is = dbTokens.getAsStream(pointer);
 			} catch (IOException ioe) {
 				LOG.warn(ioe.getMessage(), ioe);
 			}
@@ -1522,44 +1515,37 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			UTF8.encode(word, data, 2);
 		}
 
-		/**
-		 * @see java.lang.Object#toString()
-		 */
 		public String toString() {
-			return ByteConversion.byteToShort(data, pos)
-					+ new String(data, pos, len);
+			return ByteConversion.byteToShort(data, pos) + new String(data, pos, len);
 		}
 	}
 
 	public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
-		// TODO Auto-generated method stu	
+		// TODO Auto-generated method stub	
 	}
 
 	public void setDocument(DocumentImpl document) {
+	    //TODO Auto-generated method stub        
 	}
 
 	public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
-		// TODO Auto-generated method stub
-		
+	    //TODO Auto-generated method stub        
 	}
 
 	public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
-		// TODO Auto-generated method stub
-		
+		// TODO Auto-generated method stub		
 	}
 
 	public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
-		// TODO Auto-generated method stub
-		
+		// TODO Auto-generated method stub		
 	}
 
 	public void endElement(int xpathType, ElementImpl node, String content) {
-		// TODO Auto-generated method stub
-		
+		// TODO Auto-generated method stub	
 	}
 
 	public void removeElement(ElementImpl node, NodePath currentPath, String content) {
-		// TODO Auto-generated method stub
-		
+		// TODO Auto-generated method stub		
 	}
+    
 }
