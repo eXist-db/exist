@@ -80,8 +80,8 @@ import org.w3c.dom.NodeList;
  * to this class to be fulltext-indexed. Method storeText() is called by
  * RelationalBroker whenever it finds a TextNode. Method getNodeIDsContaining()
  * is used by the XPath-engine to process queries where a fulltext-operator is
- * involved. The class keeps two database tables: table words stores the words
- * found with their unique id. Table inv_idx contains the word occurrences for
+ * involved. The class keeps two database tables: table <code>dbTokens</code> stores the words
+ * found with their unique id. Table <code>invertedIndex</code> contains the word occurrences for
  * every word-id per document.
  * 
  * TODO: store node type (attribute or text) with each entry
@@ -149,23 +149,29 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	}
     
     /**
-     * Index an attribute value
+     * Indexes the tokens contained in an attribute.
      * 
-     * @param attr
-     *                the attribute to be indexed
+     * @param attr The attribute to be indexed
      */
-    public void storeAttribute(FulltextIndexSpec idx, AttrImpl attr) {
+    //TODO : unify with storeText -pb
+    public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl attr) {
         final DocumentImpl doc = (DocumentImpl) attr.getOwnerDocument();
-        tokenizer.setText(attr.getValue().toLowerCase());
-        TextToken token;
         final long gid = attr.getGID();
+        TextToken token;
+        //TODO : case conversion should be handled by the tokenizer -pb
+        tokenizer.setText(attr.getValue().toLowerCase());         
         while (null != (token = tokenizer.nextToken())) {
-            if (idx != null && idx.getIncludeAlphaNum() == false
-                    && token.getType() == TextToken.ALPHANUM) {
+            if (token.length() > MAX_TOKEN_LENGTH) {
                 continue;
-            }
-            if (stoplist.contains(token) || token.length() > MAX_TOKEN_LENGTH) {
+            } 
+            if (stoplist.contains(token)) {
                 continue;
+            }            
+            if (indexSpec != null) {  
+                //TODO : the tokenizer should strip unwanted token types itself -pb
+                if (!indexSpec.getIncludeAlphaNum() && !token.isAlpha()) {
+                    continue;
+                }
             }
             invertedIndex.setDocument(doc);
             invertedIndex.addAttribute(token, gid);
@@ -173,38 +179,42 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     }
 
     /**
-     * Index a text node
+     * Indexes the tokens contained in a text node.
      * 
-     * @param idx
-     *                IndexPaths object passed in by the broker
-     * @param text
-     *                the text node to be indexed
+     * @param idx The index configuration
+     * @param text The text node to be indexed
      * @param onetoken
-     *                if true, given text is indexed as a whole
-     *                if false, it is indexed token by token
+     *                if <code>true</code>, given text is indexed as a single token
+     *                if <code>false</code>, it is itokenized before being indexed
      * @return boolean indicates if all of the text content has been added to
      *            the index
      */
-    public void storeText(FulltextIndexSpec idx, TextImpl text, boolean onetoken) {
+    //TODO : use an indexSpec member in order to get rid of <code>onetoken</code>
+    public void storeText(FulltextIndexSpec indexSpec, TextImpl text, boolean onetoken) {
         final DocumentImpl doc = (DocumentImpl) text.getOwnerDocument();
-        XMLString t = text.getXMLString().transformToLower();
-        tokenizer.setText(t);
-        TextToken token;
         final long gid = text.getGID();
-        if ( onetoken ) {
+        //TODO : case conversion should be handled by the tokenizer -pb
+        XMLString t = text.getXMLString().transformToLower();        
+        TextToken token;        
+        if (onetoken) {            
+            token = new TextToken(TextToken.ALPHA, t, 0, t.length());
             invertedIndex.setDocument(doc);
-            String sal= text.getXMLString().transformToLower().toString();
-            token = new TextToken(TextToken.ALPHA, sal, 0, sal.length());
             invertedIndex.addText(t, token, gid);           
         } else {
+            tokenizer.setText(t);
             while (null != (token = tokenizer.nextToken())) {
-                if (idx != null && idx.getIncludeAlphaNum() == false
-                        && token.isAlpha() == false) {
+                if (token.length() > MAX_TOKEN_LENGTH) {
+                    continue;
+                } 
+                if (stoplist.contains(token)) {
                     continue;
                 }
-                if (stoplist.contains(token) || token.length() > MAX_TOKEN_LENGTH) {
-                    continue;
-                }
+                if (indexSpec != null) {
+                    //TODO : the tokenizer should strip unwanted token types itself -pb
+                    if (!indexSpec.getIncludeAlphaNum() && !token.isAlpha()) {
+                        continue;
+                    }
+                }                
                 invertedIndex.setDocument(doc);
                 invertedIndex.addText(t, token, gid);
             }
@@ -212,7 +222,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     }    
 
     public void sync() {
-        Lock lock = dbTokens.getLock();
+        final Lock lock = dbTokens.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
             dbTokens.flush();
@@ -244,12 +254,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      *                Description of the Parameter
      */
     public void dropIndex(Collection collection) {
-        Lock lock = dbTokens.getLock();
+        final Lock lock = dbTokens.getLock();
         try {
-            lock.acquire(Lock.WRITE_LOCK);
-            LOG.debug("removing fulltext index ...");
+            lock.acquire(Lock.WRITE_LOCK);            
             WordRef ref = new WordRef(collection.getId());
-            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);            
             dbTokens.flush();
             dbTokens.removeAll(query);
         } catch (BTreeException bte) {
@@ -390,7 +399,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			return null;
 		if (stoplist.contains(expr))
 			return null;
-//		long start = System.currentTimeMillis();
 		DocumentImpl doc;
 		Value ref;
 		long gid, last;
@@ -405,8 +413,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		NodeProxy parent, current = new NodeProxy();
 		Match match;
 		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);
-		String term = (stem) ? stemmer.stem(expr.toLowerCase()) : expr
-				.toLowerCase();
+		String term = (stem) ? stemmer.stem(expr.toLowerCase()) : expr.toLowerCase();
 		int count = 0;
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			collection = (Collection) iter.next();
@@ -424,10 +431,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					section = is.readByte();
 					len = is.readInt();
 					rawSize = is.readFixedInt();
-					if ((doc = docs.getDoc(docId)) == null
-							|| (contextSet != null && !contextSet.containsDoc(doc))) {
-						is.skipBytes(rawSize);
-						continue;
+					if ((doc = docs.getDoc(docId)) == null) {
+                        is.skipBytes(rawSize);
+                        continue;                        
+                    }
+					if (contextSet != null && !contextSet.containsDoc(doc)) {
+                        is.skipBytes(rawSize);
+                        continue;
 					}
 					if (contextSet != null)
 						sizeHint = contextSet.getSizeHint(doc);
@@ -476,21 +486,31 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				lock.release();
 			}
 		}
-//		if (contextSet != null)
-//			((ExtArrayNodeSet) result).sort();
-//				LOG.debug(
-//					"found "
-//						+ expr
-//						+ ": "
-//						+ result.getLength()
-//						+ " ("
-//						+ count
-//						+ ") "
-//						+ " in "
-//						+ (System.currentTimeMillis() - start)
-//						+ "ms.");
 		return result;
 	}
+    
+    private NodeSet getNodesRegexp(XQueryContext context, DocumentSet docs, NodeSet contextSet,
+            String expr, int type) throws TerminatedException {
+        if (expr == null)
+            return null;
+        if (stoplist.contains(expr))
+            return null;
+        expr = expr.toLowerCase();
+        StringBuffer term = new StringBuffer();
+        for (int i = 0; i < expr.length(); i++) {
+            if (Character.isLetterOrDigit(expr.charAt(i)))
+                term.append(expr.charAt(i));
+            else
+                break;
+        }
+        try {
+            TermMatcher comparator = new RegexMatcher(expr, type, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+            return getNodes(context, docs, contextSet, comparator, term);
+        } catch (EXistException e) {
+            return null;
+        }
+    }
+    
 
     /**
      * @param freq
@@ -503,27 +523,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             match.addOffset(is.readInt(), length);
         }
     }
-
-	private NodeSet getNodesRegexp(XQueryContext context, DocumentSet docs, NodeSet contextSet,
-									String expr, int type) throws TerminatedException {
-		if (expr == null)
-			return null;
-		if (stoplist.contains(expr))
-			return null;
-		expr = expr.toLowerCase();
-		StringBuffer term = new StringBuffer();
-		for (int j = 0; j < expr.length(); j++)
-			if (Character.isLetterOrDigit(expr.charAt(j)))
-				term.append(expr.charAt(j));
-			else
-				break;
-		try {
-			TermMatcher comparator = new RegexMatcher(expr, type, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-			return getNodes(context, docs, contextSet, comparator, term);
-		} catch (EXistException e) {
-			return null;
-		}
-	}
 
 	/**
 	 * Return all nodes whose content matches any of the search terms in expr.
