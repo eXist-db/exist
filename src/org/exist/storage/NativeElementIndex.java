@@ -497,7 +497,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         //TODO : data will be saved although os is probably corrupted ! -pb
                     }
                 }
-                //TOUNDERSTAND : why is this constructuin so different from the other ones ? -pb
+                //TOUNDERSTAND : why is this construct so different from the other ones ? -pb
                 // append the new list to any existing data
                 if (node != null) storedGIDList.addAll(newGIDList);
                 gidsCount = storedGIDList.size();
@@ -562,65 +562,77 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * @return
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector) {
+        short nodeType;
+        switch (type) {
+            case ElementValue.ATTRIBUTE :
+                nodeType = Node.ATTRIBUTE_NODE;
+            //TODO : stricter control -pb
+            default :
+                nodeType = Node.ELEMENT_NODE;
+        }        
         final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
+        NodeProxy storedNode;
+        int storedDocId;        
+        int gidsCount;
+        long storedGID;
+        long previousGID; 
+        long delta;        
+        ElementValue ref;   
         final SymbolTable symbols = broker.getSymbols();
-        DocumentImpl doc;
-        int docId;
-        int len, size;
-        short collectionId;
-        long gid;
-        VariableByteInput is = null;
-        ElementValue ref;
-        short sym, nsSym;
+        VariableByteInput is;
+        //TOUNDERSTAND -pb
+        int size; 
         Collection collection;
-        NodeProxy p;
-        final short nodeType = (type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE
-                : Node.ELEMENT_NODE);
+        short collectionId;
+        DocumentImpl storedDocument; 
         final Lock lock = dbNodes.getLock();
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             collection = (Collection) i.next();
             collectionId = collection.getId();
+            //Compute a key for the node
             if (type == ElementValue.ATTRIBUTE_ID) {
                 ref = new ElementValue((byte) type, collectionId, qname.getLocalName());
             } else {
-                sym = symbols.getSymbol(qname.getLocalName());
-                nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
+                short sym = symbols.getSymbol(qname.getLocalName());
+                short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
                 ref = new ElementValue((byte) type, collectionId, sym, nsSym);
             }
             try {
                 lock.acquire(Lock.READ_LOCK);
-                is = dbNodes.getAsStream(ref);
-                
+                is = dbNodes.getAsStream(ref); 
+                //Does the node already exist in the index ?
                 if (is == null) 
                     continue;
                 
                 while (is.available() > 0) {
-                    docId = is.readInt();
-                    len = is.readInt();
+                    storedDocId = is.readInt();
+                    gidsCount = is.readInt();
                     size = is.readFixedInt();
-                    doc = docs.getDoc(docId);
-                    if (doc == null) {
+                    storedDocument = docs.getDoc(storedDocId);
+                    //TOUNDERSTAND : how could this be possible ? -pb
+                    if (storedDocument == null) {
                         is.skipBytes(size);
                         continue;
-                    }
-                    
-                    gid = 0;
-                    for (int k = 0; k < len; k++) {
-                        gid = gid + is.readLong();
-                        if (selector == null)
-                            p = new NodeProxy(doc, gid, nodeType, StorageAddress.read(is));
-                        else {
-                            p = selector.match(doc, gid);
-                            if (p == null) {
+                    }                    
+                    previousGID = 0;
+                    for (int k = 0; k < gidsCount; k++) {
+                        delta = is.readLong();
+                        storedGID = previousGID + delta;
+                        if (selector == null) {
+                            storedNode = new NodeProxy(storedDocument, storedGID, nodeType, StorageAddress.read(is));
+                            result.add(storedNode, gidsCount);                        
+                        } else {
+                            //Filter out the node if requested to do so
+                            storedNode = selector.match(storedDocument, storedGID);
+                            if (storedNode == null) {
                                 is.skip(3);
                             } else {
-                                p.setInternalAddress(StorageAddress.read(is));
-                                p.setNodeType(nodeType);                                
+                                storedNode.setInternalAddress(StorageAddress.read(is));
+                                storedNode.setNodeType(nodeType);
+                                result.add(storedNode, gidsCount);
                             }                                
                         }
-                        if (p != null) {
-                            result.add(p, len);
-                        }
+                        previousGID = storedGID;                        
                     }
                 }
             } catch (EOFException e) {
@@ -628,10 +640,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
             } catch (IOException e) {
-                LOG.error(
-                        "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
-                                + "io exception while reading elements for "
-                                + qname, e);
+                LOG.error(e.getMessage(), e);
+                is = null;
+                //TODO : return ?
             } finally {
                 lock.release();
             }
@@ -655,9 +666,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final Lock lock = dbNodes.getLock();
         for (Iterator i = collections.iterator(); i.hasNext();) {
             Collection storedCollection = (Collection) i.next();
-            short collectionId = storedCollection.getId();
+            short storedCollectionId = storedCollection.getId();
 
-            ElementValue ref = new ElementValue(ElementValue.ELEMENT, collectionId);
+            ElementValue ref = new ElementValue(ElementValue.ELEMENT, storedCollectionId);
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
             try {
                 lock.acquire();
