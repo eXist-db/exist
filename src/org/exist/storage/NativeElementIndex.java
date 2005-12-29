@@ -110,8 +110,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             dbNodes.flush();
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
+            //TODO : throw an exception ? -pb
         } catch (DBException e) {
-            LOG.warn(e.getMessage(), e);        
+            LOG.error(e.getMessage(), e); 
+            //TODO : throw an exception ? -pb
         } finally {
             lock.release();
         }
@@ -136,7 +138,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final SymbolTable symbols = broker.getSymbols();
         Map.Entry entry; 
         ElementValue ref;
-        final short collectionId = doc.getCollection().getId(); 
+        final short collectionId = this.doc.getCollection().getId(); 
         final Lock lock = dbNodes.getLock();   
         int count = 0;
         for (Iterator i = pending.entrySet().iterator(); i.hasNext(); count++) {
@@ -147,7 +149,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             //Don't forget this one
             FastQSort.sort(gids, 0, gidsCount - 1);
             os.clear();
-            os.writeInt(doc.getDocId());
+            os.writeInt(this.doc.getDocId());
             os.writeInt(gidsCount);
             lenOffset = os.position();
             os.writeFixedInt(0);  
@@ -220,7 +222,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         int size;
         int lenOffset;
         int currentDocId;
-        final short collectionId = doc.getCollection().getId();
+        final short collectionId = this.doc.getCollection().getId();
         final Lock lock = dbNodes.getLock();
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
             try {
@@ -249,7 +251,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             currentDocId = is.readInt();
                             gidsCount = is.readInt();
                             size = is.readFixedInt();
-                            if (currentDocId != doc.getDocId()) {
+                            if (currentDocId != this.doc.getDocId()) {
                                 // data are related to another document:
                                 // append them to any existing data
                                 os.writeInt(currentDocId);
@@ -287,7 +289,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 gidsCount = newGIDList.size();
                 //Don't forget this one
                 FastQSort.sort(newGIDList, 0, gidsCount - 1);                
-                os.writeInt(doc.getDocId());
+                os.writeInt(this.doc.getDocId());
                 os.writeInt(gidsCount);
                 lenOffset = os.position();
                 os.writeFixedInt(0);
@@ -348,14 +350,15 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     /* Drop all index entries for the given document.
      * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.dom.DocumentImpl)
      */
-    public void dropIndex(DocumentImpl doc) throws ReadOnlyException {   
+    //TODO : note that this is *not* this.doc -pb
+    public void dropIndex(DocumentImpl document) throws ReadOnlyException {   
         Value key;
         int gidsCount;
         int size;
         VariableByteInput is;  
         int storedDocId;
         boolean changed;        
-        final short collectionId = doc.getCollection().getId();
+        final short collectionId = document.getCollection().getId();
         final Value ref = new ElementValue(collectionId);
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
         final Lock lock = dbNodes.getLock();
@@ -372,7 +375,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         storedDocId = is.readInt();
                         gidsCount = is.readInt();
                         size = is.readFixedInt();
-                        if (storedDocId != doc.getDocId()) {
+                        if (storedDocId != document.getDocId()) {
                             // data are related to another document:
                             // copy them to any existing data
                             os.writeInt(storedDocId);
@@ -415,6 +418,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     /* (non-Javadoc)
      * @see org.exist.storage.ContentLoadingObserver#reindex(org.exist.dom.DocumentImpl, org.exist.dom.NodeImpl)
      */
+    //TODO : note that this is *not* this.doc -pb
     public void reindex(DocumentImpl document, NodeImpl node) {
         if (pending.size() == 0) 
             return;        
@@ -504,7 +508,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 gidsCount = storedGIDList.size();
                 //Don't forget this one
                 FastQSort.sort(storedGIDList, 0, gidsCount - 1);               
-                os.writeInt(doc.getDocId());
+                os.writeInt(document.getDocId());
                 os.writeInt(gidsCount);
                 lenOffset = os.position();
                 os.writeFixedInt(0);
@@ -734,8 +738,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         Occurrences[] result = new Occurrences[map.size()];
         return (Occurrences[]) map.values().toArray(result);
     }   
-    
-    public void consistencyCheck(DocumentImpl doc) throws EXistException {
+
+    //TODO : note that this is *not* this.doc -pb
+    public void consistencyCheck(DocumentImpl document) throws EXistException {
         final SymbolTable symbols = broker.getSymbols();        
         Node storedNode;   
         int storedDocId;        
@@ -746,7 +751,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         long address;
         String nodeName;
         StringBuffer msg = new StringBuffer();        
-        final short collectionId = doc.getCollection().getId();
+        final short collectionId = document.getCollection().getId();
         final Value ref = new ElementValue(collectionId);
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
         final Lock lock = dbNodes.getLock();
@@ -767,7 +772,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         storedDocId = is.readInt();
                         gidsCount = is.readInt();
                         is.readFixedInt();                       
-                        if (storedDocId != doc.getDocId()) {
+                        if (storedDocId != document.getDocId()) {
                             // data are related to another document:
                             // ignore them 
                             is.skip(gidsCount * 4);
@@ -781,12 +786,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                 address = StorageAddress.read(is);
                                 storedNode = broker.objectWith(new NodeProxy(doc, storedGID, address));
                                 if (storedNode == null) {
-                                    throw new EXistException("Node " + storedGID + " in document " + doc.getFileName() + " not found.");
+                                    throw new EXistException("Node " + storedGID + " in document " + document.getFileName() + " not found.");
                                 }
                                 if (storedNode.getNodeType() != Node.ELEMENT_NODE && storedNode.getNodeType() != Node.ATTRIBUTE_NODE) {
-                                    LOG.error("Node " + storedGID + " in document " +  doc.getFileName() + " is not an element or attribute node.");
+                                    LOG.error("Node " + storedGID + " in document " +  document.getFileName() + " is not an element or attribute node.");
                                     LOG.error("Type = " + storedNode.getNodeType() + "; name = " + storedNode.getNodeName() + "; value = " + storedNode.getNodeValue());
-                                    throw new EXistException("Node " + storedGID + " in document " + doc.getFileName() + " is not an element or attribute node.");
+                                    throw new EXistException("Node " + storedGID + " in document " + document.getFileName() + " is not an element or attribute node.");
                                 }
                                 if(!storedNode.getLocalName().equals(nodeName)) {
                                     LOG.error("Node name does not correspond to index entry. Expected " + nodeName + "; found " + storedNode.getLocalName());
