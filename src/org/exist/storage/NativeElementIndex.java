@@ -566,6 +566,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         switch (type) {
             case ElementValue.ATTRIBUTE :
                 nodeType = Node.ATTRIBUTE_NODE;
+                break;
             //TODO : stricter control -pb
             default :
                 nodeType = Node.ELEMENT_NODE;
@@ -679,6 +680,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 //TODO : NativeValueIndex uses LongLinkedLists -pb
                 ArrayList values = dbNodes.findEntries(query);
                 for (Iterator j = values.iterator(); j.hasNext();) {
+                    //TOUNDERSTAND : what's in there ?
                     Value val[] = (Value[]) j.next();
                     short sym = ByteConversion.byteToShort(val[0].getData(), 3);
                     short nsSymbol = ByteConversion.byteToShort(val[0].getData(), 5);
@@ -730,17 +732,19 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         }
         Occurrences[] result = new Occurrences[map.size()];
         return (Occurrences[]) map.values().toArray(result);
-    }    
-
-    private final static boolean containsNode(List list, long gid) {
-        for (int i = 0; i < list.size(); i++) {
-            if (((NodeProxy) list.get(i)).getGID() == gid) 
-                return true;
-        }
-        return false;
-    }
+    }   
     
     public void consistencyCheck(DocumentImpl doc) throws EXistException {
+        final SymbolTable symbols = broker.getSymbols();        
+        Node storedNode;   
+        int storedDocId;        
+        int gidsCount;
+        long storedGID;
+        long previousGID; 
+        long delta;
+        long address;
+        String nodeName;
+        StringBuffer msg = new StringBuffer();        
         final short collectionId = doc.getCollection().getId();
         final Value ref = new ElementValue(collectionId);
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
@@ -748,83 +752,82 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         try {
             lock.acquire(Lock.WRITE_LOCK);
             //TODO : NativeValueIndex uses LongLinkedLists -pb
-            ArrayList elements = dbNodes.findKeys(query);
-            
-            Value key;
-            Value value;
-            byte[] data;
-            // byte[] ndata;
-            VariableByteArrayInput is;
-            int len;
-            int docId;
-            long delta;
-            long address;
-            long gid;
-            long last = 0;
-            Node node;
-            short symbol;
-            String nodeName;
-            StringBuffer msg = new StringBuffer();
+            ArrayList elements = dbNodes.findKeys(query);           
             for (int i = 0; i < elements.size(); i++) {
-                key = (Value) elements.get(i);
-                value = dbNodes.get(key);
-                data = value.getData();
-                symbol = ByteConversion.byteToShort(key.data(), key.start() + 3);
-                nodeName = broker.getSymbols().getName(symbol);
+                Value key = (Value) elements.get(i);
+                Value value = dbNodes.get(key);
+                short sym = ByteConversion.byteToShort(key.data(), key.start() + 3);
+                nodeName = symbols.getName(sym);
                 msg.setLength(0);
-                msg.append("Checking ").append(nodeName).append(": ");
-                
-                is = new VariableByteArrayInput(data);
+                msg.append("Checking ").append(nodeName).append(": ");                
+                VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
                 try {
                     while (is.available() > 0) {
-                        docId = is.readInt();
-                        len = is.readInt();
-                        is.readFixedInt();
-                        if (docId == doc.getDocId()) {
-                            for (int j = 0; j < len; j++) {
+                        storedDocId = is.readInt();
+                        gidsCount = is.readInt();
+                        is.readFixedInt();                       
+                        if (storedDocId != doc.getDocId()) {
+                            // data are related to another document:
+                            // ignore them 
+                            is.skip(gidsCount * 4);
+                        } else {
+                            // data are related to our document:
+                            // check   
+                            previousGID = 0;
+                            for (int j = 0; j < gidsCount; j++) {
                                 delta = is.readLong();
-                                gid = last + delta;
-                                last = gid;
+                                storedGID = previousGID + delta;                                
                                 address = StorageAddress.read(is);
-                                node = broker.objectWith(new NodeProxy(doc, gid, address));
-                                if(node == null) {
-                                    throw new EXistException("Node " + gid + " in document " + doc.getFileName() + " not found.");
+                                storedNode = broker.objectWith(new NodeProxy(doc, storedGID, address));
+                                if (storedNode == null) {
+                                    throw new EXistException("Node " + storedGID + " in document " + doc.getFileName() + " not found.");
                                 }
-                                if(node.getNodeType() != Node.ELEMENT_NODE && node.getNodeType() != Node.ATTRIBUTE_NODE) {
-                                    LOG.warn("Node " + gid + " in document " + 
-                                            doc.getFileName() + " is not an element or attribute node.");
-                                    LOG.debug("Type = " + node.getNodeType() + "; name = " + node.getNodeName() +
-                                            "; value = " + node.getNodeValue());
-                                    throw new EXistException("Node " + gid + " in document " + 
-                                            doc.getFileName() + " is not an element or attribute node.");
+                                if (storedNode.getNodeType() != Node.ELEMENT_NODE && storedNode.getNodeType() != Node.ATTRIBUTE_NODE) {
+                                    LOG.error("Node " + storedGID + " in document " +  doc.getFileName() + " is not an element or attribute node.");
+                                    LOG.error("Type = " + storedNode.getNodeType() + "; name = " + storedNode.getNodeName() + "; value = " + storedNode.getNodeValue());
+                                    throw new EXistException("Node " + storedGID + " in document " + doc.getFileName() + " is not an element or attribute node.");
                                 }
-                                if(!node.getLocalName().equals(nodeName)) {
-                                    LOG.warn("Node name does not correspond to index entry. Expected " + nodeName +
-                                            "; found " + node.getLocalName());
+                                if(!storedNode.getLocalName().equals(nodeName)) {
+                                    LOG.error("Node name does not correspond to index entry. Expected " + nodeName + "; found " + storedNode.getLocalName());
+                                    //TODO : also throw an exception here ?
                                 }
-                                msg.append(StorageAddress.toString(address)).append(' ');
+                                //TODO : better message (see above) -pb
+                                msg.append(StorageAddress.toString(address)).append(" ");
+                                previousGID = storedGID;
                             }
-                        } else
-                            is.skip(len * 4);
+                        }                            
                     }                
                 } catch (EOFException e) {
                     LOG.warn(e.getMessage(), e);
                 } catch (IOException e) {
-                    LOG.error("removeDocument(String) " + e.getMessage(), e);
+                    LOG.error(e.getMessage(), e);
+                    //TODO : throw an exception ? -pb
                 }
                 LOG.debug(msg.toString());
             }
         } catch (LockException e) {
-            LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
-        } catch (TerminatedException e) {
-            LOG.warn("method terminated", e);
+            LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);   
+            //TODO : throw an exception ? -pb
         } catch (BTreeException e) {
             LOG.error(e.getMessage(), e);
+            //TODO : throw an exception ? -pb
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
+            //TODO : throw an exception ? -pb
+        } catch (TerminatedException e) {
+            LOG.warn(e.getMessage(), e);
+            //TODO : throw an exception ? -pb
         } finally {
             lock.release();
         }
+    } 
+    
+    private final static boolean containsNode(List list, long gid) {
+        for (int i = 0; i < list.size(); i++) {
+            if (((NodeProxy) list.get(i)).getGID() == gid) 
+                return true;
+        }
+        return false;
     }    
     
     public boolean close() throws DBException {
