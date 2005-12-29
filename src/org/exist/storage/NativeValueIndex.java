@@ -367,6 +367,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         Lock lock = dbValues.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
+            //TODO : flush ? -pb
             dbValues.removeAll(query);
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
