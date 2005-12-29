@@ -186,8 +186,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
             //TODO : throw an exception ? -pb
-        } catch (DBException dbe) {
-            LOG.warn(dbe);                   
+        } catch (DBException e) {
+            LOG.error(e.getMessage(), e); 
+            //TODO : throw an exception ? -pb
         } finally {
             lock.release();
         }
@@ -208,7 +209,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         long delta;
         Value ref;
         Map.Entry entry;        
-        final short collectionId = doc.getCollection().getId();
+        final short collectionId = this.doc.getCollection().getId();
         final Lock lock = dbValues.getLock();
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
             entry = (Map.Entry) i.next();
@@ -219,7 +220,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             //Don't forget this one
             Arrays.sort(gids);
             os.clear();
-            os.writeInt(doc.getDocId());
+            os.writeInt(this.doc.getDocId());
             os.writeInt(gidsCount);
             //Compute the GID list
             previousGID = 0;
@@ -273,7 +274,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         Value value;
         VariableByteArrayInput is;
         int storedDocId;
-        final short collectionId = doc.getCollection().getId();
+        final short collectionId = this.doc.getCollection().getId();
         final Lock lock = dbValues.getLock();           
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
             try {                    
@@ -294,7 +295,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         while (is.available() > 0) {
                             storedDocId = is.readInt();
                             gidsCount = is.readInt();
-                            if (storedDocId != doc.getDocId()) {
+                            if (storedDocId != this.doc.getDocId()) {
                                 // data are related to another document:
                                 // append them to any existing data
                                 os.writeInt(storedDocId);
@@ -327,7 +328,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 gidsCount = gids.length;
                 //Don't forget this one
                 Arrays.sort(gids);
-                os.writeInt(doc.getDocId());
+                os.writeInt(this.doc.getDocId());
                 os.writeInt(gidsCount);
                 previousGID = 0;
                 for (int j = 0; j < gidsCount; j++) {
@@ -383,7 +384,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
     /* Drop all index entries for the given document.
 	 * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.dom.DocumentImpl)
 	 */
-    public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
+    //TODO : note that this is *not* this.doc -pb
+    public void dropIndex(DocumentImpl document) throws ReadOnlyException {
         Value key;
         Value value;
         int gidsCount;
@@ -391,7 +393,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         VariableByteArrayInput is;
         int storedDocId;
         boolean changed;        
-        final short collectionId = doc.getCollection().getId();
+        final short collectionId = document.getCollection().getId();
         final Value ref = new ElementValue(collectionId);
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
         final Lock lock = dbValues.getLock();
@@ -407,7 +409,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 while (is.available() > 0) {
                     storedDocId = is.readInt();
                     gidsCount = is.readInt();                        
-					if (storedDocId != doc.getDocId()) {
+					if (storedDocId != document.getDocId()) {
 					    // data are related to another document:
                         // copy them to any existing data
                         os.writeInt(storedDocId);
@@ -451,6 +453,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	/* (non-Javadoc)
 	 * @see org.exist.storage.IndexGenerator#reindex(org.exist.dom.DocumentImpl, org.exist.dom.NodeImpl)
 	 */
+    //TODO : note that this is *not* this.doc -pb
     public void reindex(DocumentImpl document, NodeImpl node) {
         if (pending.size() == 0) 
             return;        
@@ -468,7 +471,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         VariableByteInput is;        
         int storedDocId;
         long address;
-        final short collectionId = doc.getCollection().getId();
+        final short collectionId = document.getCollection().getId();
         final Lock lock = dbValues.getLock();              
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
             entry = (Map.Entry) i.next();
@@ -524,7 +527,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 gidsCount = gids.length;
                 //Don't forget this one
                 Arrays.sort(gids);
-                os.writeInt(doc.getDocId());
+                os.writeInt(document.getDocId());
                 os.writeInt(gidsCount);
                 previousGID = 0;
                 for (int j = 0; j < gidsCount; j++) {
