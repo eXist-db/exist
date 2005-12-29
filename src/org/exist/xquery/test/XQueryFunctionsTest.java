@@ -402,7 +402,7 @@ public class XQueryFunctionsTest extends TestCase {
 			r 	= (String) result.getResource(0).getContent();
 			assertEquals(expected, r);
 			
-			string = "~bébé";
+			string = "~b\u00e9b\u00e9";
 			expected = "~b%C3%A9b%C3%A9";
 			query = "encode-for-uri(\"" + string + "\")";
 			result = service.query(query);
@@ -436,7 +436,7 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals(expected, r);
 			
 			
-			string = "http://www.example.com/~bébé";
+			string = "http://www.example.com/~b\u00e9b\u00e9";
 			expected = "http://www.example.com/~b%C3%A9b%C3%A9";
 			query = "iri-to-uri(\"" + string + "\")";
 			result = service.query(query);
@@ -462,7 +462,7 @@ public class XQueryFunctionsTest extends TestCase {
 			r 	= (String) result.getResource(0).getContent();
 			assertEquals(expected, r);
 			
-			string = "javascript:if (navigator.browserLanguage == 'fr') window.open('http://www.example.com/~bébé');";
+			string = "javascript:if (navigator.browserLanguage == 'fr') window.open('http://www.example.com/~b\u00e9b\u00e9');";
 			expected = "javascript:if (navigator.browserLanguage == 'fr') window.open('http://www.example.com/~b%C3%A9b%C3%A9');";
 			query = "escape-html-uri(\"" + string + "\")";
 			result = service.query(query);
