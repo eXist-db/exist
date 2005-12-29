@@ -100,8 +100,10 @@ public class FunLocalName extends Function {
                 case Node.ELEMENT_NODE:
                 case Node.ATTRIBUTE_NODE:
                     result = new StringValue(n.getLocalName());
+                    break;
                 case Node.PROCESSING_INSTRUCTION_NODE:
                     result = new StringValue(((ProcessingInstruction)n).getTarget());
+                    break;
                 default:
                     result = new StringValue("");
             }
