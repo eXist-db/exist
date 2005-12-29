@@ -324,9 +324,7 @@ public class Predicate extends PathExpr {
 				int pos = v.getInt();
 				if(pos > 0 && pos <= contextSequence.getLength())
 					result.add(contextSequence.itemAt(pos - 1));
-                else                   
-                    //TODO : throw an exception ?
-                    LOG.warn("Strange position in Predicate: '" + pos + "'");
+                //Other positions are ignored                
 			}
 			return result;
 		}
