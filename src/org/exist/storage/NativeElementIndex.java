@@ -653,49 +653,59 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     public Occurrences[] scanIndexedElements(Collection collection, boolean inclusive) 
             throws PermissionDeniedException {
         if (!collection.getPermissions().validate(broker.getUser(), Permission.READ))
-                throw new PermissionDeniedException(
-                        "you don't have the permission"
-                                + " to read collection " + collection.getName());
-        List collections = inclusive ? collection.getDescendants(broker, broker.getUser()) : new ArrayList();
-        collections.add(collection);
-        TreeMap map = new TreeMap();
+            throw new PermissionDeniedException("User '" + broker.getUser().getName() + 
+                    "' has no permission to read collection '" + collection.getName() + "'");        
+        List collections;
+        if (inclusive) 
+            collections = collection.getDescendants(broker, broker.getUser());
+        else
+            collections = new ArrayList();
+        collections.add(collection);      
+        QName qname;
+        int gidsCount;
+        //TOUNDERSTAND -pb
+        int size;
+        final SymbolTable symbols = broker.getSymbols();
         VariableByteArrayInput is;
-        int len, size;
-        // required for namespace lookups
-        XQueryContext context = new XQueryContext(broker);
+        TreeMap map = new TreeMap();        
         final Lock lock = dbNodes.getLock();
         for (Iterator i = collections.iterator(); i.hasNext();) {
             Collection storedCollection = (Collection) i.next();
             short storedCollectionId = storedCollection.getId();
-
-            ElementValue ref = new ElementValue(ElementValue.ELEMENT, storedCollectionId);
-            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+            ElementValue startKey = new ElementValue(ElementValue.ELEMENT, storedCollectionId);
+            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
             try {
                 lock.acquire();
                 //TODO : NativeValueIndex uses LongLinkedLists -pb
                 ArrayList values = dbNodes.findEntries(query);
                 for (Iterator j = values.iterator(); j.hasNext();) {
                     Value val[] = (Value[]) j.next();
-                    short elementId = ByteConversion.byteToShort(val[0].getData(), 3);
+                    short sym = ByteConversion.byteToShort(val[0].getData(), 3);
                     short nsSymbol = ByteConversion.byteToShort(val[0].getData(), 5);
-                    String name = broker.getSymbols().getName(elementId);
-                    String namespace = nsSymbol == 0 ? "" : broker.getSymbols().getNamespace(nsSymbol);
-                    QName qname = new QName(name, namespace);
+                    String name = symbols.getName(sym);
+                    String namespace;
+                    if (nsSymbol == 0) {
+                        namespace = "";
+                    } else {
+                        namespace = symbols.getNamespace(nsSymbol);
+                    }                    
+                    qname = new QName(name, namespace);
                     Occurrences oc = (Occurrences) map.get(qname);
                     if (oc == null) {
+                        // required for namespace lookups
+                        final XQueryContext context = new XQueryContext(broker);                        
                         qname.setPrefix(context.getPrefixForURI(namespace));
                         oc = new Occurrences(qname);
                         map.put(qname, oc);
                     }
-
                     is = new VariableByteArrayInput(val[1].data(), val[1].start(), val[1].getLength());
                     try {
                         while (is.available() > 0) { 
                             is.readInt();
-                            len = is.readInt();
-                            size = is.readFixedInt();
-                            oc.addOccurrences(len);
+                            gidsCount = is.readInt();
+                            size = is.readFixedInt();                            
                             is.skipBytes(size);
+                            oc.addOccurrences(gidsCount);
                         }                    
                     } catch (EOFException e) {
                         LOG.warn(e.getMessage(), e);
@@ -704,14 +714,16 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         //TODO : return null ? -pb
                     }
                 }
-            } catch (BTreeException e) {
-                LOG.error("exception while reading element index", e);
-            } catch (IOException e) {
-                LOG.error("exception while reading element index", e);
             } catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
+                LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);                
+            } catch (BTreeException e) {
+                LOG.error(e.getMessage(), e);
+                //TODO : return ?
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+                //TODO : return ?           
             } catch (TerminatedException e) {
-                LOG.warn("Method terminated", e);
+                LOG.warn(e.getMessage(), e);
             } finally {
                 lock.release();
             }

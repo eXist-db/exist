@@ -575,11 +575,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
             short collectionId = collection.getId();
             byte[] key = value.serialize(collectionId, caseSensitive);
 			IndexQuery query = new IndexQuery(idxOp, new Value(key));
-            Value prefix = getValuePrefix(value.getType(), collectionId);
+            Value keyPrefix = computeKeyPrefix(value.getType(), collectionId);
 			try {
 				lock.acquire();
 				try {
-					dbValues.query(query, prefix, callback);
+					dbValues.query(query, keyPrefix, callback);
 				} catch (IOException e) {
                     LOG.error(e.getMessage(), e);
 				} catch (BTreeException e) {
@@ -629,17 +629,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			Collection collection = (Collection) iter.next();
 			short collectionId = collection.getId();
-			Value value;
+			Value searchKey;
 			if (startTerm != null) {
                 byte[] key = startTerm.serialize(collectionId, caseSensitive);
-                value = new Value(key);
+                searchKey = new Value(key);
             } else {
-                value = getValuePrefix(Type.STRING, collectionId);                
+                searchKey = computeKeyPrefix(Type.STRING, collectionId);                
 				//key = new byte[3];
 				//ByteConversion.shortToByte(collectionId, key, 0);
 				//key[2] = (byte) Type.STRING;
 			}
-			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
+			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
 			try {
 				lock.acquire();
 				try {
@@ -674,8 +674,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 if (stringType)
                     dbValues.query(query, cb);
                 else {
-                    Value prefix = getValuePrefix(start.getType(), collectionId);
-                    dbValues.query(query, prefix, cb);
+                    Value keyPrefix = computeKeyPrefix(start.getType(), collectionId);
+                    dbValues.query(query, keyPrefix, cb);
                 }
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
@@ -697,7 +697,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     /**
      * Returns a search key for a collectionId/type combination.
      */
-    private Value getValuePrefix(int type, short collectionId) {
+    private Value computeKeyPrefix(int type, short collectionId) {
         byte[] data = new byte[3];
         ByteConversion.shortToByte(collectionId, data, 0);
         data[2] = (byte) type;
