@@ -339,8 +339,12 @@ public class EXistServlet extends HttpServlet {
 		byte[] c = Base64.decode(auth.substring(6).getBytes());
 		String s = new String(c);
 		int p = s.indexOf(':');
+		if (p == Constants.STRING_NOT_FOUND) {
+			 return null;
+			 }
 		String username = s.substring(0, p);
 		String password = s.substring(p + 1);
+		
 		User user = pool.getSecurityManager().getUser(username);
 		if (user == null)
 			return null;
