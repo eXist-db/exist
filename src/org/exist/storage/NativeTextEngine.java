@@ -593,6 +593,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	public String[] getIndexTerms(DocumentSet docs, TermMatcher matcher) {
         final IndexCallback cb = new IndexCallback(null, matcher);
 		Value ref;
+        IndexQuery query;
 		Collection collection;
 		short collectionId;
 		final Lock lock = dbTokens.getLock();		
@@ -601,7 +602,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			collectionId = collection.getId();
             //Compute a key for the token
 			ref = new WordRef(collectionId);
-			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+            query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 			try {
 				lock.acquire();
 				dbTokens.query(query, cb);
@@ -618,6 +619,46 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			}
 		}
 		return cb.getMatches();
+	}    
+
+	public Occurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet, String start, String end) 
+            throws PermissionDeniedException {
+        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
+        Value startRef;
+        Value endRef;
+        IndexQuery query;
+        Collection collection;
+		short collectionId;
+        final Lock lock = dbTokens.getLock();
+		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
+            collection = (Collection) i.next();
+			collectionId = collection.getId();
+            //Compute a key for the token            
+            if (end == null) {
+                startRef = new WordRef(collectionId, start.toLowerCase());
+                query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
+            } else {
+                startRef = new WordRef(collectionId,  start.toLowerCase());
+                endRef = new WordRef(collectionId, end.toLowerCase());
+    			query = new IndexQuery(IndexQuery.BW, startRef, endRef);
+            }
+			try {
+				lock.acquire();
+				dbTokens.query(query, cb);
+			} catch (LockException e) {
+                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+			} catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+			} catch (BTreeException e) {
+                LOG.error(e.getMessage(), e);
+			} catch (TerminatedException e) {
+                LOG.warn(e.getMessage(), e);
+            } finally {
+				lock.release();
+			}
+		}		
+		Occurrences[] result = new Occurrences[cb.map.size()];		
+		return (Occurrences[]) cb.map.values().toArray(result);
 	}
     
     /**
@@ -631,45 +672,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         for (int k = 0; k < freq; k++) {
             match.addOffset(is.readInt(), length);
         }
-    }    
-
-	public Occurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet, String start, String end) 
-            throws PermissionDeniedException {
-		long t0 = System.currentTimeMillis();
-		final Lock lock = dbTokens.getLock();
-		short collectionId;
-		Collection current;
-		IndexQuery query;
-		IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
-		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-			current = (Collection) i.next();
-			collectionId = current.getId();
-
-            if (end == null)
-                query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new WordRef(collectionId, start.toLowerCase()));
-            else
-    			query = new IndexQuery(IndexQuery.BW, new WordRef(collectionId,
-    					start.toLowerCase()), new WordRef(collectionId, end.toLowerCase()));
-			try {
-				lock.acquire();
-				dbTokens.query(query, cb);
-			} catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
-			} catch (IOException e) {
-				LOG.warn("error while reading words", e);
-			} catch (BTreeException e) {
-				LOG.warn("error while reading words", e);
-			} catch (TerminatedException e) {
-                LOG.warn("Method terminated", e);
-            } finally {
-				lock.release();
-			}
-		}
-		Map map = cb.map;
-		Occurrences[] result = new Occurrences[map.size()];
-		LOG.debug("Found " + result.length + " in " + (System.currentTimeMillis() - t0) + "ms");
-		return (Occurrences[]) map.values().toArray(result);
-	}
+    }        
 	
     /**
      * Collect all words in a document to be removed
