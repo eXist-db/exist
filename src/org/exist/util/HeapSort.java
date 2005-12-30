@@ -37,7 +37,7 @@ import org.exist.util.SwapVals;
 	based on the implementation of a sorting
 	framework by Cay Horstmann.
 
-	@author José María Fernández
+	@author Jose Maria Fernandez
 */
 public final class HeapSort {
 	public static void sort(Comparable[] a, int lo, int hi) {
