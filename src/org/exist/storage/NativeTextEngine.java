@@ -682,6 +682,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * @param domIterator
      *                Description of the Parameter
      */
+    //TODO : unify functionalities with storeText -pb
     private void collect(Set words, Iterator domIterator) {
         byte[] data = ((Value) domIterator.next()).getData();
         short type = Signatures.getType(data[0]);
@@ -697,38 +698,42 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 String s;
                 try {
                     s = new String(data, 1, data.length - 1, "UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-                    s = new String(data, 1, data.length - 1);
-                }
-                tokenizer.setText(s);
-                while (null != (token = tokenizer.nextToken())) {
-                    word = token.getText();
-                    if (stoplist.contains(word))
-                        continue;
-                    words.add(word.toLowerCase());
-                }
+                    tokenizer.setText(s);
+                    while (null != (token = tokenizer.nextToken())) {
+                        word = token.getText();
+                        if (stoplist.contains(word))
+                            continue;
+                        words.add(word.toLowerCase());
+                    }                    
+                } catch (UnsupportedEncodingException e) {
+                    //s = new String(data, 1, data.length - 1);
+                    LOG.error(e.getMessage(), e);
+                }                
                 break;
             case Node.ATTRIBUTE_NODE :
                 byte idSizeType = (byte) (data[0] & 0x3);
                 String val;
                 try {
                     val = new String(data,
-                            1 + Signatures.getLength(idSizeType), data.length
-                                    - 1 - Signatures.getLength(idSizeType),
-                            "UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-                    val = new String(data,
-                            1 + Signatures.getLength(idSizeType), data.length
-                                    - 1 - Signatures.getLength(idSizeType));
-                }
-                tokenizer.setText(val);
-                while (null != (token = tokenizer.nextToken())) {
-                    word = token.getText().toString();
-                    if (stoplist.contains(word))
-                        continue;
-                    words.add(word.toLowerCase());
-                }
+                        1 + Signatures.getLength(idSizeType), 
+                        data.length - 1 - Signatures.getLength(idSizeType),
+                        "UTF-8");
+                    tokenizer.setText(val);
+                    while (null != (token = tokenizer.nextToken())) {
+                        word = token.getText().toString();
+                        if (stoplist.contains(word))
+                            continue;
+                        words.add(word.toLowerCase());
+                    }                    
+                } catch (UnsupportedEncodingException e) {
+                    //val = new String(data,
+                    //        1 + Signatures.getLength(idSizeType), data.length
+                    //                - 1 - Signatures.getLength(idSizeType));
+                    LOG.error(e.getMessage(), e);
+                }                
                 break;
+           default :
+               //Other types are ignored : some may be useful though -pb
         }
     }
     
@@ -759,6 +764,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			words[0] = new HashMap(512);
 			words[1] = new HashMap(256);
 		}
+        
+        public void setDocument(DocumentImpl document) {
+            if (this.doc != null && this.doc.getDocId() != document.getDocId())
+                flush();
+            this.doc = document;
+        }        
 
 		public void addText(XMLString text, TextToken token, long gid) {
             OccurrenceList list = (OccurrenceList) words[0].get(token);
@@ -781,6 +792,83 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 list.add(gid, token.startOffset());
             }
 		}
+        
+        public void flush() {
+            final int wordsCount = words[0].size() + words[1].size();
+            if (doc == null || wordsCount == 0)
+                return;
+            final ProgressIndicator progress = new ProgressIndicator(
+                    wordsCount, 100);
+            final short collectionId = this.doc.getCollection().getId();
+            int count = 1, len, lenOffset, freq;
+            Map.Entry entry;
+            String word;
+            OccurrenceList idList;
+            long lastId = 0;
+            long delta;
+            for (int k = 0; k < 2; k++) {
+                for (Iterator i = words[k].entrySet().iterator(); i.hasNext(); count++) {
+                    entry = (Map.Entry) i.next();
+                    word = (String) entry.getKey();
+                    idList = (OccurrenceList) entry.getValue();
+                    os.clear();
+                    len = idList.getTermCount();
+                    os.writeInt(this.doc.getDocId());
+                    os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
+                    os.writeInt(len);
+                    lenOffset = os.position();
+                    os.writeFixedInt(0);
+                    idList.sort();
+
+                    lastId = 0;
+                    for (int m = 0; m < idList.getSize(); ) {
+                        delta = idList.nodes[m] - lastId;
+                        os.writeLong(delta);
+                        lastId = idList.nodes[m];
+                        freq = idList.getOccurrences(m);
+                        os.writeInt(freq);
+                        for (int n = 0; n < freq; n++) {
+                            os.writeInt(idList.offsets[m + n]);
+                        }
+                        m += freq;
+                    }
+                    os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+                    
+                    flushWord(collectionId, word, os.data());
+                    progress.setValue(count);
+                    if (progress.changed()) {
+                        setChanged();
+                        notifyObservers(progress);
+                    }
+                }
+                if (wordsCount > 100) {
+                    progress.finish();
+                    setChanged();
+                    notifyObservers(progress);
+                }
+                words[k].clear();
+            }
+//          dbWords.debugFreeList();
+        }
+
+        private void flushWord(short collectionId, String word, ByteArray data) {
+            if (data.size() == 0)
+                return;
+            Lock lock = dbTokens.getLock();
+            try {
+                lock.acquire(Lock.WRITE_LOCK);
+                try {
+                    dbTokens.append(new WordRef(collectionId, word), data);
+                } catch (ReadOnlyException e) {
+                } catch (IOException ioe) {
+                    LOG.warn("io error while writing '" + word + "'", ioe);
+                }
+            } catch (LockException e) {
+                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+            } finally {
+                lock.release();
+            }
+        }        
 
 		/**
 		 * Remove the entries in the current list from the index.
@@ -1036,89 +1124,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		        }
 		        words[k].clear();
 		    }
-		}
-
-		public void flush() {
-			final int wordsCount = words[0].size() + words[1].size();
-			if (doc == null || wordsCount == 0)
-				return;
-			final ProgressIndicator progress = new ProgressIndicator(
-					wordsCount, 100);
-			final short collectionId = this.doc.getCollection().getId();
-			int count = 1, len, lenOffset, freq;
-			Map.Entry entry;
-			String word;
-			OccurrenceList idList;
-            long lastId = 0;
-            long delta;
-			for (int k = 0; k < 2; k++) {
-				for (Iterator i = words[k].entrySet().iterator(); i.hasNext(); count++) {
-					entry = (Map.Entry) i.next();
-					word = (String) entry.getKey();
-					idList = (OccurrenceList) entry.getValue();
-					os.clear();
-					len = idList.getTermCount();
-					os.writeInt(this.doc.getDocId());
-					os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
-					os.writeInt(len);
-					lenOffset = os.position();
-					os.writeFixedInt(0);
-					idList.sort();
-
-                    lastId = 0;
-					for (int m = 0; m < idList.getSize(); ) {
-                        delta = idList.nodes[m] - lastId;
-						os.writeLong(delta);
-                        lastId = idList.nodes[m];
-                        freq = idList.getOccurrences(m);
-                        os.writeInt(freq);
-                        for (int n = 0; n < freq; n++) {
-                            os.writeInt(idList.offsets[m + n]);
-                        }
-                        m += freq;
-					}
-					os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
-					
-					flushWord(collectionId, word, os.data());
-					progress.setValue(count);
-					if (progress.changed()) {
-						setChanged();
-						notifyObservers(progress);
-					}
-				}
-				if (wordsCount > 100) {
-					progress.finish();
-					setChanged();
-					notifyObservers(progress);
-				}
-				words[k].clear();
-			}
-//			dbWords.debugFreeList();
-		}
-
-		private void flushWord(short collectionId, String word, ByteArray data) {
-			if (data.size() == 0)
-				return;
-			Lock lock = dbTokens.getLock();
-			try {
-				lock.acquire(Lock.WRITE_LOCK);
-				try {
-					dbTokens.append(new WordRef(collectionId, word), data);
-				} catch (ReadOnlyException e) {
-				} catch (IOException ioe) {
-					LOG.warn("io error while writing '" + word + "'", ioe);
-				}
-			} catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
-			} finally {
-				lock.release();
-			}
-		}
-
-		public void setDocument(DocumentImpl document) {
-			if (this.doc != null && this.doc.getDocId() != document.getDocId())
-				flush();
-			this.doc = document;
 		}
 	}
 	
