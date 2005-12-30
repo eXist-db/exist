@@ -810,18 +810,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     storedDocId = is.readInt();
                 	gidsCount = is.readInt();
                     storedDocument = docs.getDoc(storedDocId);
-                    //TOUNDERSTAND : how could this be possible ? -pb
+                    //Exit if the document is not concerned
                 	if (storedDocument == null) {
                         is.skip(gidsCount);
                         continue;                        
-                    }               
-                    //TOUNDERSTAND : does a null contextSet makes sense ? -pb                    
+                    }                
                 	if (contextSet != null) { 
+                        //Exit if the document is not concerned
                 	    if (!contextSet.containsDoc(storedDocument)) {
                 	        is.skip(gidsCount);
                 	        continue;
-                        }
-                        sizeHint = contextSet.getSizeHint(storedDocument);
+                        }                        
                 	}
                 	//Process the nodes
                     storedGID = 0;                	
@@ -833,6 +832,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 		// matching node is a descendant of one of the nodes
                 		// in the context set.
                 		if (contextSet != null) {
+                            sizeHint = contextSet.getSizeHint(storedDocument);
                             if (returnAncestor) {
                                 parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                                 if (parentNode != null) 
@@ -841,7 +841,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                 result.add(storedNode, sizeHint);
                 		// otherwise, we add all nodes without check
                 		} else {
-                			result.add(storedNode, sizeHint);
+                			result.add(storedNode, -1);
                 		}
                 	}
                 }
@@ -927,7 +927,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 while (is.available() > 0) {
                     storedDocId = is.readInt();
                     gidsCount = is.readInt();
-                    storedDocument = docs.getDoc(storedDocId);                    
+                    storedDocument = docs.getDoc(storedDocId); 
+                    //Exit if the document is not concerned
                     if (storedDocument == null) {
                         is.skip(gidsCount);
                         continue;

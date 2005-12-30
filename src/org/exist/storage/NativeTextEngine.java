@@ -445,19 +445,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     gidsCount = is.readInt();
                     size = is.readFixedInt();
                     storedDocument = docs.getDoc(storedDocId);
-                    //TOUNDERSTAND : how could this be possible ? -pb
-					if (storedDocument == null) {
+                    //Exit if the document is not concerned
+                    if (storedDocument == null) {
                         is.skipBytes(size);
                         continue;                        
-                    }
-                    //TOUNDERSTAND : does a null contextSet makes sense ? -pb
+                    }                    
 					if (contextSet != null) {
-                        //Exit if the current document is not concerned
+                        //Exit if the document is not concerned
                         if (!contextSet.containsDoc(storedDocument)) {                    
                             is.skipBytes(size);
                             continue;
-                        }
-                        sizeHint = contextSet.getSizeHint(storedDocument);
+                        }                        
 					}
                     //Process the nodes
                     previousGID = 0;
@@ -493,6 +491,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 								match = new Match(storedGID, token, freq);
                                 readOccurrences(freq, is, match, token.length());
                                 parent.addMatch(match);
+                                sizeHint = contextSet.getSizeHint(storedDocument);
 								result.add(parent, sizeHint);
 							} else {
 							    is.skip(freq);
@@ -502,7 +501,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             match = new Match(storedGID, token, freq);
                             readOccurrences(freq, is, match, token.length());
                             storedNode.addMatch(match);
-							result.add(storedNode, sizeHint);							
+							result.add(storedNode, -1);							
 						}
 						context.proceed();
                         previousGID = storedGID;                        
@@ -836,10 +835,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     os.clear();
                     os.writeInt(this.doc.getDocId());
                     switch (currentSection) {
-                        case 0 :
+                        case TEXT_SECTION :
                             os.writeByte(TEXT_SECTION);
                             break;
-                        case 1 :
+                        case ATTRIBUTE_SECTION :
                             os.writeByte(ATTRIBUTE_SECTION);
                             break;
                         default :
@@ -990,10 +989,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 newOccurencesList.sort();                                
                                 os.writeInt(this.doc.getDocId());                           
                                 switch (currentSection) {
-                                    case 0 :
+                                    case TEXT_SECTION :
                                         os.writeByte(TEXT_SECTION);
                                         break;
-                                    case 1 :
+                                    case ATTRIBUTE_SECTION :
                                         os.writeByte(ATTRIBUTE_SECTION);
                                         break;
                                     default :
@@ -1047,7 +1046,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
 		public void reindex(DocumentImpl document, NodeImpl node) {	
             OccurrenceList storedOccurencesList;
-		    int termCount;
+            int termCount;
             long storedGID;
             long previousGID;
             long delta;
@@ -1134,10 +1133,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             storedOccurencesList.sort();                        
     		                os.writeInt(document.getDocId());
                             switch (currentSection) {
-                                case 0 :
+                                case TEXT_SECTION :
                                     os.writeByte(TEXT_SECTION);
                                     break;
-                                case 1 :
+                                case ATTRIBUTE_SECTION :
                                     os.writeByte(ATTRIBUTE_SECTION);
                                     break;
                                 default :
@@ -1254,75 +1253,91 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     //TODO : return early -pb
 				}
 				if (is == null)
-					return true;
+					return true; 
                 
-
-				int docId;
-				int len;
-				int rawSize;
-				long gid;
-				long last = -1;
-				int freq = 1;
-				int sizeHint = -1;
-				byte section;
-				DocumentImpl doc;
-				NodeProxy parent;
-                NodeProxy proxy;
+				int storedDocId;
+                byte storedSection;
+				int termCount;
+                long storedGID;
+                long previousGID;
+                long delta;                    
+				int size;				
+                DocumentImpl storedDocument;        
+                NodeProxy storedNode;
+                NodeProxy parentNode;  
 				Match match;
+                int freq;
+                int sizeHint;
 				try {
 					while (is.available() > 0) {
+                        
 					    if(context != null)
-					        context.proceed();
-						docId = is.readInt();
-						section = is.readByte();
-						len = is.readInt();
-						rawSize = is.readFixedInt();
-						if ((doc = docs.getDoc(docId)) == null) {
-							is.skipBytes(rawSize);
+					        context.proceed();                        
+                        storedDocId = is.readInt();
+                        storedSection = is.readByte();
+                        termCount = is.readInt();
+                        size = is.readFixedInt();
+                        storedDocument = docs.getDoc(storedDocId);                        
+                        //Exit if the document is not concerned
+						if (storedDocument == null) {
+							is.skipBytes(size);
 							continue;
-						}
-						if (contextSet != null)
-							sizeHint = contextSet.getSizeHint(doc);
-						last = 0;
-						for (int j = 0; j < len; j++) {
-							gid = last + is.readLong();
-							freq = is.readInt();
-							last = gid;
-							proxy = (section == TEXT_SECTION
-									? new NodeProxy(doc, gid,
-											Node.TEXT_NODE)
-									: new NodeProxy(doc, gid,
-											Node.ATTRIBUTE_NODE));
+						}                        
+                        previousGID = 0;
+						for (int j = 0; j < termCount; j++) {
+                            delta = is.readLong();
+                            storedGID = previousGID + delta;
+							freq = is.readInt();	
+                            switch (storedSection) {
+                                case TEXT_SECTION :
+                                    storedNode = new NodeProxy(storedDocument, storedGID, Node.TEXT_NODE);
+                                    break;
+                                case ATTRIBUTE_SECTION :
+                                    storedNode = new NodeProxy(storedDocument, storedGID, Node.ATTRIBUTE_NODE);
+                                    break;
+                                default :
+                                    throw new IllegalArgumentException("Invalid inverted index");
+                            } 
 							if (contextSet != null) {
-								if (section == TEXT_SECTION)
-									parent = contextSet.parentWithChild(proxy, false,
-										true, NodeProxy.UNKNOWN_NODE_LEVEL);
-								else
-									parent = contextSet.get(proxy);
-								if (parent != null) {
-                                    match = new Match(gid, word.toString(), freq);
+                                switch (storedSection) {
+                                    case TEXT_SECTION :
+                                        parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                        break;
+                                    case ATTRIBUTE_SECTION :
+                                        parentNode = contextSet.get(storedNode);
+                                        break;
+                                    default :
+                                        throw new IllegalArgumentException("Invalid inverted index");
+                                }
+								if (parentNode != null) {
+                                    match = new Match(storedGID, word.toString(), freq);
                                     readOccurrences(freq, is, match, word.length());
-                                    parent.addMatch(match);
-									result.add(parent, sizeHint);
+                                    parentNode.addMatch(match);
+                                    sizeHint = contextSet.getSizeHint(storedDocument);
+									result.add(parentNode, sizeHint);
 								} else
                                     is.skip(freq);
 							} else {
-							    match = new Match(gid, word.toString(), freq);
+							    match = new Match(storedGID, word.toString(), freq);
 							    readOccurrences(freq, is, match, word.length());
-							    proxy.addMatch(match);
-							    result.add(proxy, sizeHint);
+                                storedNode.addMatch(match);
+							    result.add(storedNode, -1);
                             }
+                            previousGID = storedGID;
 						}
 					}
 				} catch (EOFException e) {
 					// EOFExceptions are normal
 				} catch (IOException e) {
-					LOG.error("io error while reading index", e);
+                    LOG.error(e.getMessage(), e);   
                     //TODO : return early -pb
 				}
 			}
+            
+            //TOUNDERSTAND : why sort here ? -pb
 			if (contextSet != null)
 				((ExtArrayNodeSet) result).sort();
+            
 			return true;
 		}
 	}
@@ -1365,9 +1380,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			try {
 				int docId;
 				byte section;
-				int len, rawSize;
+                
+                long storedGID;
+                long previousGID;
+                long delta;
+                
+				int len;
+                int rawSize;
 				int freq = 1;
-				long gid;
+				
 				DocumentImpl doc;
 				boolean include = true;
 				boolean docAdded;
@@ -1383,14 +1404,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 						continue;
 					}
 					docAdded = false;
-					gid = 0;
+                    previousGID = 0;
 					for (int j = 0; j < len; j++) {
-						gid += is.readLong();
+                        delta = is.readLong(); 
+                        storedGID = previousGID + delta;
 						freq = is.readInt();
                         is.skip(freq);
 						if (contextSet != null) {
 							include = false;
-							p = contextSet.parentWithChild(doc, gid, false, true);
+							p = contextSet.parentWithChild(doc, storedGID, false, true);
 							if (p != null) {
 								if (section == ATTRIBUTE_SECTION) {
 									include = (p.getNodeType() == Node.ATTRIBUTE_NODE);
@@ -1410,6 +1432,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 							}
 							oc.addOccurrences(freq);
 						}
+                        previousGID = storedGID;
 					}
 				}
 			} catch(EOFException e) {

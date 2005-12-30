@@ -615,7 +615,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     gidsCount = is.readInt();
                     size = is.readFixedInt();
                     storedDocument = docs.getDoc(storedDocId);
-                    //TOUNDERSTAND : how could this be possible ? -pb
+                    //Exit if the document is not concerned
                     if (storedDocument == null) {
                         is.skipBytes(size);
                         continue;
