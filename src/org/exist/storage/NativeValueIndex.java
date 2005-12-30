@@ -326,8 +326,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         LOG.error(e.getMessage(), e);
                         //TODO : data will be saved although os is probably corrupted ! -pb
                     }
-                    if (newGIDList.getSize() > 0) {
-                        //append the data from the new list
+                    //append the data from the new list
+                    if (newGIDList.getSize() > 0) {                        
                         gids = newGIDList.getData();
                         gidsCount = gids.length;
                         //Don't forget this one
