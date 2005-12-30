@@ -913,93 +913,76 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             long storedGID;
             long previousGID; 
             long delta;
-            
-            
-            byte section;
-            
-            int rawSize;
-            int docId;
-			Map.Entry entry;
-			String word;
-			
-			
-		
-			
-
-			WordRef ref;
-			
-			int freq = 1;
-			Value val = null;
+            Map.Entry entry;			
+			String token;
+            WordRef ref;
+            Value value;            
 			VariableByteArrayInput is;
-			Lock lock = dbTokens.getLock();
-            
+            //TOUNDERSTAND -pb
+            int size;
+            int lenOffset;
+            int storedDocId;
+            byte storedSection;
+            int freq;            
             final short collectionId = this.doc.getCollection().getId();
-			for (int k = 0; k < 2; k++) {
-				for (Iterator i = words[k].entrySet().iterator(); i.hasNext();) {
-					entry = (Map.Entry) i.next();
-					word = (String) entry.getKey();
-                    storedOccurencesList = (OccurrenceList) entry.getValue();
-					ref = new WordRef(collectionId, word);
-					try {
-					    lock.acquire(Lock.WRITE_LOCK);
-					    val = dbTokens.get(ref);
-					    os.clear();
-					    // new output list containing nodes from the
-					    // document that should not be removed
+            final Lock lock = dbTokens.getLock();
+			for (byte currentSection = 0; currentSection < 2; currentSection++) {
+				for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
+                    try {
+                        lock.acquire(Lock.WRITE_LOCK);  
                         newOccurencesList = new OccurrenceList();
-					    if (val != null) {
-					        // add old entries to the new list
-					        is = new VariableByteArrayInput(val.getData());
-					        try {
-					            while (is.available() > 0) {
-					                docId = is.readInt();
-					                section = is.readByte();
-                                    termCount = is.readInt();
-					                rawSize = is.readFixedInt();
-					                if (docId == this.doc.getDocId() && section == k) {
-					                    // copy data to new output list; skip
-					                    // removed nodes
-                                        previousGID = 0;
-					                    for (int j = 0; j < termCount; j++) {
-                                            delta = is.readLong();
-                                            storedGID = previousGID + delta;
-					                        freq = is.readInt();
-					                        // add the node to the new output list if it is not found
-					                        // in the list of removed nodes
-					                        if (!storedOccurencesList.contains(storedGID)) {
-                                                for (int l = 0; l < freq; l++) {
-                                                    newOccurencesList.add(storedGID, is.readInt());
-                                                }
-					                        } else
-                                                is.skip(freq);
-                                            previousGID = storedGID;
-					                    }
-					                } else {
-					                    // section belongs to another document:
-					                    // copy data to new buffer
-					                    os.writeInt(docId);
-					                    os.writeByte(section);
-					                    os.writeInt(termCount);
-					                    os.writeFixedInt(rawSize);
-					                    is.copyRaw(os, rawSize);
-					                }
-					            }
-					        } catch (EOFException e) {
-					            LOG
-					            .error("end-of-file while reading index entry for "
-					                    + word);
-					        } catch (IOException e) {
-					            LOG.error("io-error while reading index entry for "
-					                    + word);
+                        //Compute a key for the token
+    					entry = (Map.Entry) i.next();
+                        storedOccurencesList = (OccurrenceList) entry.getValue();
+                        token = (String) entry.getKey();                        
+    					ref = new WordRef(collectionId, token);
+                        value = dbTokens.get(ref);
+					    os.clear();
+                        //Does the token already exist in the index ?
+					    if (value != null) {
+					        //Add its data to the new list    
+					        is = new VariableByteArrayInput(value.getData());					        
+				            while (is.available() > 0) {
+                                storedDocId = is.readInt();
+                                storedSection = is.readByte();
+                                termCount = is.readInt();
+                                size = is.readFixedInt();
+				                if (storedSection != currentSection || storedDocId != this.doc.getDocId()) {
+				                    // data are related to another section or document:
+				                    // append them to any existing data
+                                    os.writeInt(storedDocId);
+                                    os.writeByte(storedSection);
+                                    os.writeInt(termCount);
+                                    os.writeFixedInt(size);
+                                    is.copyRaw(os, size);
+                                } else {    
+				                    // data are related to our section and document:
+                                    // feed the new list with the GIDs
+                                    previousGID = 0;
+				                    for (int j = 0; j < termCount; j++) {                                            
+                                        delta = is.readLong();
+                                        storedGID = previousGID + delta;
+				                        freq = is.readInt();
+				                        // add the node to the new list if it is not 
+				                        // in the list of removed nodes
+				                        if (!storedOccurencesList.contains(storedGID)) {
+                                            for (int k = 0; k < freq; k++) {
+                                                newOccurencesList.add(storedGID, is.readInt());
+                                            }
+				                        } else
+                                            is.skip(freq);
+                                        previousGID = storedGID;
+				                    }
+				                }
 					        }
 					    }
-                        //termCount
+                        
 					    if(newOccurencesList.getSize() > 0) {
 					    	// save the nodes remaining in the output list for the document
                             newOccurencesList.sort();
                             termCount = newOccurencesList.getTermCount();
 						    os.writeInt(this.doc.getDocId());						    
-                            switch (k) {
+                            switch (currentSection) {
                                 case 0 :
                                     os.writeByte(TEXT_SECTION);
                                     break;
@@ -1010,7 +993,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     throw new IllegalArgumentException("Invalid inverted index");
                             }                                      
 						    os.writeInt(termCount);
-						    rawSize = os.position();
+                            lenOffset = os.position();
 		                    os.writeFixedInt(0);
 		                    
                             previousGID = 0;
@@ -1025,31 +1008,28 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 previousGID = newOccurencesList.nodes[m];
                                 m += freq;
                             }
-						    os.writeFixedInt(rawSize, os.position() - rawSize - 4);
+						    os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
 					    }
 					    
-					    if(os.data().size() == 0) {
-					    	try {
-								dbTokens.remove(ref);
-							} catch (ReadOnlyException e) {
-								LOG.warn("Error while removing fulltext entry: " + e.getMessage(), e);
-							}
-					    } else {
-						    try {
-						        if (val == null)
-						            dbTokens.put(ref, os.data());
-						        else
-						            dbTokens.update(val.getAddress(), ref, os.data());
-						    } catch (ReadOnlyException e) {
-						    }
+					    if(os.data().size() == 0) {				    	
+							dbTokens.remove(ref);							
+					    } else {						   
+					        if (value == null)
+					            dbTokens.put(ref, os.data());
+					        else
+					            dbTokens.update(value.getAddress(), ref, os.data());						    
 					    }
 					} catch (LockException e) {
                         LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+                    } catch (IOException e) {
+                        LOG.error("io-error while reading index entry for ");                                           
+                    } catch (ReadOnlyException e) {
+                        LOG.warn("Error while removing fulltext entry: " + e.getMessage(), e);                                          
                     } finally {
 					    lock.release();
 					}
 				}
-				words[k].clear();
+				words[currentSection].clear();
 			}
 		}
 
