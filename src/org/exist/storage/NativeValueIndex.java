@@ -320,11 +320,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             }
                         }
                     } catch (EOFException e) {
-                        //Is it expected ? -pb
+                        //Is it expected ? if not, remove the block -pb
                         LOG.warn(e.getMessage(), e);
-                    } catch (IOException e) {
-                        LOG.error(e.getMessage(), e);
-                        //TODO : data will be saved although os is probably corrupted ! -pb
                     }
                     //append the data from the new list
                     if (newGIDList.getSize() > 0) {                        
@@ -356,7 +353,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
                 //TODO : return ?
             } catch (ReadOnlyException e) {
-                LOG.warn("Read-only error on '" + dbValues.getFile().getName() + "'", e);                       
+                LOG.warn("Read-only error on '" + dbValues.getFile().getName() + "'", e);
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);                
             } finally {
                 lock.release();
             }            
@@ -584,17 +583,15 @@ public class NativeValueIndex implements ContentLoadingObserver {
 			IndexQuery query = new IndexQuery(idxOp, new Value(key));
             Value keyPrefix = computeKeyPrefix(value.getType(), collectionId);
 			try {
-				lock.acquire();
-				try {
-					dbValues.query(query, keyPrefix, callback);
-				} catch (IOException e) {
-                    LOG.error(e.getMessage(), e);
-				} catch (BTreeException e) {
-                    LOG.warn(e.getMessage(), e);
-				}
+				lock.acquire();				
+				dbValues.query(query, keyPrefix, callback);				
 			} catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);  
-			} finally {
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+            } catch (BTreeException e) {
+                LOG.error(e.getMessage(), e);
+            } finally {
 				lock.release();
 			}
         }
@@ -795,7 +792,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
 			try {
 				is = dbValues.getAsStream(pointer);
 			} catch (IOException e) {
-				LOG.warn(e.getMessage(), e);
+				LOG.error(e.getMessage(), e);
+                //TODO : return early -pb
 			}            
 			if (is == null)
 				return true;
@@ -847,8 +845,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 		}
                 	}
                 }
-			} catch (EOFException e) {
-			    // EOF is expected here
+            } catch (EOFException e) {
+                // EOF is expected here
             } catch (IOException e) {                
                 LOG.error(e.getMessage(), e);
             }
@@ -912,7 +910,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
             try {
                 is = dbValues.getAsStream(pointer);
             } catch (IOException e) {
-                LOG.warn(e.getMessage(), e);
+                LOG.error(e.getMessage(), e);
+                //TODO : return early -pb
             }
             if (is == null)
                 return true;

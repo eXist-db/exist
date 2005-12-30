@@ -177,7 +177,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 lock.acquire(Lock.WRITE_LOCK);
                 //Store the data
                 if (dbNodes.append(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                    LOG.warn("Could not put index data for node '" +  qname + "'"); 
+                    LOG.error("Could not put index data for node '" +  qname + "'"); 
                 }
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
@@ -282,10 +282,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             }
                         }
                     } catch (EOFException e) {
+                        //TODO : remove this block if unexpected -pb
                         LOG.warn(e.getMessage(), e);
-                    } catch (IOException e) {
-                        LOG.error(e.getMessage(), e);
-                        //TODO : data will be saved although os is probably corrupted ! -pb
                     }
                     //append the data from the new list
                     if (newGIDList.size() > 0 ) {                        
@@ -320,7 +318,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);                
             } catch (ReadOnlyException e) {
-                LOG.warn("Read-only error on '" + dbNodes.getFile().getName() + "'", e);                
+                LOG.warn("Read-only error on '" + dbNodes.getFile().getName() + "'", e);   
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
             } finally {
                 lock.release();
             }
@@ -500,9 +500,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         }
                     } catch (EOFException e) {
                         //EOFExceptions expected there
-                    } catch (IOException e) {
-                        LOG.error(e.getMessage(), e);
-                        //TODO : data will be saved although os is probably corrupted ! -pb
                     }
                 }
                 //TOUNDERSTAND : why is this construct so different from the other ones ? -pb
@@ -719,10 +716,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             oc.addOccurrences(gidsCount);
                         }                    
                     } catch (EOFException e) {
-                        LOG.warn(e.getMessage(), e);
-                    } catch (IOException e) {
-                        LOG.error(e.getMessage(), e);
-                        //TODO : return null ? -pb
+                        //TODO : remove this block if unexpected -pb
+                        LOG.warn(e.getMessage(), e);                    
                     }
                 }
             } catch (LockException e) {
@@ -808,10 +803,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         }                            
                     }                
                 } catch (EOFException e) {
+                    //TODO : remove this block if unexpected -pb
                     LOG.warn(e.getMessage(), e);
-                } catch (IOException e) {
-                    LOG.error(e.getMessage(), e);
-                    //TODO : throw an exception ? -pb
                 }
                 LOG.debug(msg.toString());
             }

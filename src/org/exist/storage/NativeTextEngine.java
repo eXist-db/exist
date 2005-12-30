@@ -979,10 +979,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     				            }
                             } catch (EOFException e) {
                                 //Is it expected ? -pb
-                                LOG.warn(e.getMessage(), e);
-                            } catch (IOException e) {
-                                LOG.error(e.getMessage(), e);
-                                //TODO : data will be saved although os is probably corrupted ! -pb
+                                LOG.warn(e.getMessage(), e);                            
                             }                                
                             //append the data from the new list
                             if(newOccurencesList.getSize() > 0) {
@@ -1035,7 +1032,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					} catch (LockException e) {
                         LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
                     } catch (ReadOnlyException e) {
-                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "'", e);                                                  
+                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "'", e);
+                    } catch (IOException e) {
+                        LOG.error(e.getMessage(), e);
                     } finally {
 					    lock.release();
 					}
@@ -1122,11 +1121,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                            }
 		                        }
 		                    } catch (EOFException e) {
-		                        //LOG.error("end-of-file while reading index entry
-		                        // for " + word, e);
-		                    } catch (IOException e) {
-		                        LOG.error("io-error while reading index entry for "
-		                                + token, e);
+		                        //EOF is expected here
 		                    }
 		                }
                         termCount = storedOccurencesList.getTermCount();
@@ -1168,7 +1163,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                                .getAddress(), ref, os.data());
 		                    }
 		                } catch (ReadOnlyException e) {
-                            
+                            //EOF are expected here -pb
 		                }
 		            } catch (LockException e) {
                         LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
@@ -1245,8 +1240,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				VariableByteInput is = null;
 				try {
 					is = dbTokens.getAsStream(pointer);
-				} catch (IOException ioe) {
-					LOG.warn(ioe.getMessage(), ioe);
+				} catch (IOException e) {
+					LOG.warn(e.getMessage(), e);
+                    //TODO : return early -pb
 				}
 				if (is == null)
 					return true;
@@ -1309,7 +1305,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				} catch (EOFException e) {
 					// EOFExceptions are normal
 				} catch (IOException e) {
-					LOG.warn("io error while reading index", e);
+					LOG.error("io error while reading index", e);
+                    //TODO : return early -pb
 				}
 			}
 			if (contextSet != null)
@@ -1346,8 +1343,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			VariableByteInput is = null;
 			try {
 				is = dbTokens.getAsStream(pointer);
-			} catch (IOException ioe) {
-				LOG.warn(ioe.getMessage(), ioe);
+			} catch (IOException e) {
+				LOG.warn(e.getMessage(), e);
+                //TODO : return early -pb
 			}
 			if (is == null)
 				return true;
