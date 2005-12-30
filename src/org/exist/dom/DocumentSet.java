@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
@@ -50,8 +49,6 @@ import org.w3c.dom.NodeList;
 public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 
     public final static DocumentSet EMPTY_DOCUMENT_SET = new DocumentSet(9);
-    
-	private final static Logger LOG = Logger.getLogger(DocumentSet.class.getName());
 	
 	private ArrayList list = null;
 	private TreeSet collections = new TreeSet();
@@ -245,6 +242,9 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	}
 
 	public boolean equals(Object other) {
+		if (this == other)
+			// we are comparing the same objects
+			return true;
 		final DocumentSet o = (DocumentSet) other;
 		if (size() != o.size())
 			return false;
