@@ -96,11 +96,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     /** Length limit for the tokens */
 	public final static int MAX_TOKEN_LENGTH = 2048;
 	
-  /** The datastore for this token index */
+	/** The datastore for this token index */
 	protected BFile dbTokens;
 	protected InvertedIndex invertedIndex;
     
-    /** Work output Stream taht should be cleared before every use */
+    /** Work output Stream that should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream();    
 
 	public NativeTextEngine(DBBroker broker, Configuration config, BFile db) {
@@ -188,7 +188,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * @param text The text node to be indexed
      * @param noTokenizing
      *                if <code>true</code>, given text is indexed as a single token
-     *                if <code>false</code>, it is itokenized before being indexed
+     *                if <code>false</code>, it is tokenized before being indexed
      * @return boolean indicates if all of the text content has been added to
      *            the index
      */
@@ -398,6 +398,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		if (stoplist.contains(expr))
 			return null;
         
+        //TODO : case conversion should be handled by the tokenizer -pb
+        expr = expr.toLowerCase();
+        //TODO : use an indexSpec member in order to get rid of this or do the job *before* -pb
+        String token;        
+        if (stem)
+            token = stemmer.stem(expr);
+        else
+            token = expr;
+        
         NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);
         Value ref;
         int storedDocId;
@@ -414,24 +423,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         short collectionId;        
 		DocumentImpl storedDocument;
         NodeProxy storedNode;
-        NodeProxy parent;		
-        
-        
-		
+        NodeProxy parent;
 		int sizeHint = -1;
-		
-		
-
-        
-		Match match;
-		
-		String term = (stem) ? stemmer.stem(expr.toLowerCase()) : expr.toLowerCase();
-		
+        Match match;
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
             //Compute a key for the node
 			collection = (Collection) iter.next();
 			collectionId = collection.getId();
-			ref = new WordRef(collectionId, term);
+			ref = new WordRef(collectionId, token);
 			Lock lock = dbTokens.getLock();
 			try {
 				lock.acquire();
@@ -480,13 +479,19 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 						// matching text node is a descendant of one of the nodes
 						// in the context set.
 						if (contextSet != null) {
-							if (section == TEXT_SECTION)
-								parent = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-							else
-								parent = contextSet.get(storedNode);
+                            switch(section) {
+                                case ATTRIBUTE_SECTION :
+                                    parent = contextSet.get(storedNode);
+                                    break;
+                                case TEXT_SECTION :
+                                    parent = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                    break;
+                                default :
+                                    throw new IllegalArgumentException("Invalid section type");
+                            }                               
 							if (parent != null) {
-								match = new Match(storedGID, term, freq);
-                                readOccurrences(freq, is, match, term.length());
+								match = new Match(storedGID, token, freq);
+                                readOccurrences(freq, is, match, token.length());
                                 parent.addMatch(match);
 								result.add(parent, sizeHint);
 							} else {
@@ -494,21 +499,24 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             }
 						// otherwise, we add all text nodes without check
 						} else {
-                            match = new Match(storedGID, term, freq);
-                            readOccurrences(freq, is, match, term.length());
+                            match = new Match(storedGID, token, freq);
+                            readOccurrences(freq, is, match, token.length());
                             storedNode.addMatch(match);
-							result.add(storedNode, sizeHint);
-							
+							result.add(storedNode, sizeHint);							
 						}
 						context.proceed();
                         previousGID = storedGID;                        
 					}
 				}
-			} catch (EOFException e) {
-			} catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+            } catch (EOFException e) {
+                // EOF is expected here 
+                //TODO : confirm this -pb
+            } catch (LockException e) {
+                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);              
 			} catch (IOException e) {
-				LOG.warn("io error while reading words", e);
+                LOG.error(e.getMessage(), e);
+                is = null;
+                //TODO : return ?
 			} finally {
 				lock.release();
 			}
@@ -518,11 +526,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     
     private NodeSet getNodesRegexp(XQueryContext context, DocumentSet docs, NodeSet contextSet,
             String expr, int type) throws TerminatedException {
+        //Return early
         if (expr == null)
             return null;
         if (stoplist.contains(expr))
             return null;
+        //TODO : case conversion should be handled by the tokenizer -pb
         expr = expr.toLowerCase();
+        
         StringBuffer term = new StringBuffer();
         for (int i = 0; i < expr.length(); i++) {
             if (Character.isLetterOrDigit(expr.charAt(i)))
