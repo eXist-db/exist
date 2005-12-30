@@ -20,6 +20,11 @@ var behaviourRules = {
 				Element.hide('query-result');
 				resize();
 			}
+	},
+	'#current-date' : function (element) {
+			element.onchange = function () {
+				displayLog(this.value);
+			}
 	}
 };
 Behaviour.register(behaviourRules);
@@ -44,11 +49,20 @@ var nickNames = new Object();
 var lastColor = 0;
 
 var currentDate;
+var timer = null;
 
 /** onLoad handler to initialize display */
 function init() {
 	Element.hide('query-result');
+    Calendar.setup(
+    {
+    	inputField : 'current-date',
+    	ifFormat : '%Y-%m-%d',
+    	button : 'set-date'
+    }
+    );
     resize();
+    
     Behaviour.apply();	// we need to call behaviour again after this handler
     displayLog(new Date());
 }
@@ -69,6 +83,9 @@ function displayLog(date, query) {
 			return value;
 	}
 	
+	if (timer)
+		clearInterval(timer);
+	
 	var dateStr;
 	if (typeof date == 'string')
 		dateStr = date;
@@ -85,8 +102,10 @@ function displayLog(date, query) {
 			onFailure: requestFailed
 		});
 	$('errors').innerHTML = 'Retrieving log ...';
-	$('current').innerHTML = dateStr;
+	$('current-date').value = dateStr;
 	currentDate = date;
+	
+	timer = setInterval('autoRefresh()', 30000);
 }
 
 function displayResponse(request) {
@@ -94,9 +113,18 @@ function displayResponse(request) {
 	var output = $('log-output');
 	output.innerHTML = request.responseText;
 	colorify(output);
-	var spans = output.getElementsByTagName("span");
+	var spans = output.getElementsByTagName('span');
 	if (spans.length > 0)
 		spans[0].scrollIntoView();
+	else {
+		var rows = output.getElementsByTagName('tr');
+		rows[rows.length - 1].scrollIntoView();
+	}
+}
+
+function autoRefresh() {
+	$('errors').innerHTML = 'Refreshing ...';
+	displayLog(currentDate);
 }
 
 function requestFailed(request) {
@@ -140,6 +168,10 @@ function queryResponse(request) {
 
 function showQueryResult(dateStr, query) {
 	displayLog(dateStr, query);
+}
+
+function browseToDate(calendar) {
+	alert(calendar.date.toString());
 }
 
 function colorify(element) {

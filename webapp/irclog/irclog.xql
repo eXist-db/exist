@@ -11,6 +11,9 @@ declare function irc:display-page($channel as xs:string) as element() {
             <link type="text/css" href="styles/irclog.css" rel="stylesheet"/>
             <script language="Javascript" type="text/javascript" src="scripts/prototype.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/behaviour.js"/>
+            <script language="Javascript" type="text/javascript" src="scripts/calendar.js"/>
+            <script language="Javascript" type="text/javascript" src="scripts/calendar-en.js"/>
+            <script language="Javascript" type="text/javascript" src="scripts/calendar-setup.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/irclog.js"/>
         </head>
         <body>
@@ -39,7 +42,10 @@ declare function irc:display-page($channel as xs:string) as element() {
                     <div id="navbar">
                         <a id="previous" href="#">&lt;&lt;</a>
                         <a id="next" href="#">&gt;&gt;</a>
-                        <div id="current"></div>
+                        <div id="current">
+                            <input readonly="readonly" type="text" id="current-date"/>
+                            <button id="set-date" type="button">Change Date</button>
+                        </div>
                     </div>
                     <div id="log-output"/>
                 </div>

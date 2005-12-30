@@ -1,3 +1,5 @@
+@import url(calendar-blue.css);
+
 body {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	overflow-y: scroll;
@@ -135,6 +137,15 @@ td {
 	color: white;
 	font-weight: bold;
 	font-size: 150%;
+}
+
+#current-date {
+	border: 0;
+	background-color: transparent;
+	color: white;
+	font-weight: bold;
+	text-align: right;
+	padding-right: 8px;
 }
 
 #next {
