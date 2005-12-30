@@ -447,9 +447,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
         } catch (TerminatedException e) {
             LOG.warn(e.getMessage(), e);            
         } catch (BTreeException e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
         } catch (IOException e) {
-            LOG.warn(e.getMessage(), e);    
+            LOG.error(e.getMessage(), e);    
         } finally {
             lock.release();
         }
@@ -479,16 +479,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final short collectionId = document.getCollection().getId();
         final Lock lock = dbValues.getLock();              
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
+            //Compute a key for the value
             entry = (Map.Entry) i.next();
             indexable = (Indexable) entry.getKey();
             storedGIDList = (LongLinkedList) entry.getValue();
-            ref = new Value(indexable.serialize(collectionId, caseSensitive));                
-            // Retrieve old index entry for the element
+            ref = new Value(indexable.serialize(collectionId, caseSensitive)); 
             try {
                 lock.acquire(Lock.WRITE_LOCK);
                 is = dbValues.getAsStream(ref);
                 os.clear();
                 newGIDList = new LongLinkedList();
+                //Does the value already has data in the index ?
                 if (is != null) {                    
                     try {
                         while (is.available() > 0) {
@@ -520,11 +521,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             }
                         }
                     } catch (EOFException e) {
-                        //Is it expected ? -pb
+                        //Is it expected ? Remove this block if not -pb
                         LOG.warn(e.getMessage(), e);
-                    } catch (IOException e) {                        
-                        LOG.error(e.getMessage(), e);
-                        //TODO : data will be saved although os is probably corrupted ! -pb
                     }
                 }
                 // append the new list to any existing data

@@ -949,15 +949,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     termCount = is.readInt();
                                     size = is.readFixedInt();
     				                if (storedSection != currentSection || storedDocId != this.doc.getDocId()) {
-    				                    // data are related to another section or document:
-    				                    // append them to any existing data
+                                        // data are related to another section or document:
+                                        // append them to any existing data
                                         os.writeInt(storedDocId);
                                         os.writeByte(storedSection);
                                         os.writeInt(termCount);
                                         os.writeFixedInt(size);
                                         is.copyRaw(os, size);
                                     } else {    
-    				                    // data are related to our section and document:
+                                        // data are related to our section and document:
                                         // feed the new list with the GIDs
                                         previousGID = 0;
     				                    for (int j = 0; j < termCount; j++) {                                            
@@ -1064,6 +1064,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		    final Lock lock = dbTokens.getLock();
             for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
 		        for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
+                    //Compute a key for the token
 		            entry = (Map.Entry) i.next();
                     token = (String) entry.getKey();
                     storedOccurencesList = (OccurrenceList) entry.getValue();
@@ -1071,9 +1072,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     os.clear();
 		            try {
 		                lock.acquire(Lock.WRITE_LOCK);
-		                is = dbTokens.getAsStream(ref);		                
+		                is = dbTokens.getAsStream(ref);	
+                        //Does the token already has data in the index ?
 		                if (is != null) {
-		                    // add old entries to the new list
+		                    //Add its data to the new list    
 		                    try {
 		                        while (is.available() > 0) {
                                     storedDocId = is.readInt();
@@ -1081,37 +1083,40 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     termCount = is.readInt();
                                     size = is.readFixedInt();
 		                            if (storedSection != currentSection || storedDocId != document.getDocId()) {
-		                                // section belongs to another document:
-		                                // copy data to new buffer
+                                        // data are related to another section or document:
+                                        // append them to any existing data
 		                                os.writeInt(storedDocId);
 		                                os.writeByte(storedSection);
 		                                os.writeInt(termCount);
 		                                os.writeFixedInt(size);
 		                                is.copyRaw(os, size);
 		                            } else {
-		                                // copy nodes to new list
+                                        // data are related to our section and document:
+                                        // feed the new list with the GIDs
                                         previousGID = 0;
 		                                for (int j = 0; j < termCount; j++) {
                                             delta = is.readLong();
                                             storedGID = previousGID + delta;
 		                                    freq = is.readInt();
-		                                    if (node == null
-		                                            && document.getTreeLevel(storedGID) < document
-		                                            .reindexRequired()) {
-                                                for (int l = 0; l < freq; l++) {
-                                                    storedOccurencesList.add(storedGID, is.readInt());
-                                                }
-		                                    } else if (node != null
-		                                            && (!XMLUtil
-		                                                    .isDescendantOrSelf(
-                                                                    document,
-		                                                            node.getGID(),
-                                                                    storedGID))) {
-                                                for (int l = 0; l < freq; l++) {
-                                                    storedOccurencesList.add(storedGID, is.readInt());
-                                                }
-		                                    } else
-                                                is.skip(freq);
+		                                    if (node == null) {
+		                                        if (document.getTreeLevel(storedGID) < document.reindexRequired()) {
+                                                    for (int l = 0; l < freq; l++) {
+                                                        storedOccurencesList.add(storedGID, is.readInt());
+                                                    }
+                                                } else
+                                                    is.skip(freq);
+                                                
+		                                    } else {
+		                                        if (!XMLUtil.isDescendantOrSelf(
+                                                        document,
+                                                        node.getGID(),
+                                                        storedGID)) {
+                                                    for (int l = 0; l < freq; l++) {
+                                                        storedOccurencesList.add(storedGID, is.readInt());
+                                                    }
+                                                } else
+                                                    is.skip(freq);
+                                            }
                                             previousGID = storedGID;
 		                                }
 		                            }
