@@ -708,6 +708,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 } catch (UnsupportedEncodingException e) {
                     //s = new String(data, 1, data.length - 1);
                     LOG.error(e.getMessage(), e);
+                    s = null;
                 }                
                 break;
             case Node.ATTRIBUTE_NODE :
@@ -730,6 +731,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     //        1 + Signatures.getLength(idSizeType), data.length
                     //                - 1 - Signatures.getLength(idSizeType));
                     LOG.error(e.getMessage(), e);
+                    val = null;
                 }                
                 break;
            default :
@@ -1100,6 +1102,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                                    if (node == null) {
 		                                        if (document.getTreeLevel(storedGID) < document.reindexRequired()) {
                                                     for (int l = 0; l < freq; l++) {
+                                                        //Note that we use the existing list
                                                         storedOccurencesList.add(storedGID, is.readInt());
                                                     }
                                                 } else
@@ -1111,6 +1114,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                                         node.getGID(),
                                                         storedGID)) {
                                                     for (int l = 0; l < freq; l++) {
+                                                        //Note that we use the existing list
                                                         storedOccurencesList.add(storedGID, is.readInt());
                                                     }
                                                 } else
@@ -1124,50 +1128,54 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                        //EOF is expected here
 		                    }
 		                }
-                        termCount = storedOccurencesList.getTermCount();
-                        storedOccurencesList.sort();                        
-		                os.writeInt(document.getDocId());
-                        switch (currentSection) {
-                            case 0 :
-                                os.writeByte(TEXT_SECTION);
-                                break;
-                            case 1 :
-                                os.writeByte(ATTRIBUTE_SECTION);
-                                break;
-                            default :
-                                throw new IllegalArgumentException("Invalid inverted index");
-                        }         
-		                os.writeInt(termCount);
-                        lenOffset = os.position();
-	                    os.writeFixedInt(0);
-                        
-                        previousGID = 0;
-                        for (int m = 0; m < storedOccurencesList.getSize(); ) {
-                            delta = storedOccurencesList.nodes[m] - previousGID;
-                            os.writeLong(delta);                            
-                            freq = storedOccurencesList.getOccurrences(m);
-                            os.writeInt(freq);
-                            for (int n = 0; n < freq; n++) {
-                                os.writeInt(storedOccurencesList.offsets[m + n]);
+                        if (storedOccurencesList.getSize() > 0) {
+                            //append the data from the new list
+                            termCount = storedOccurencesList.getTermCount();
+                            storedOccurencesList.sort();                        
+    		                os.writeInt(document.getDocId());
+                            switch (currentSection) {
+                                case 0 :
+                                    os.writeByte(TEXT_SECTION);
+                                    break;
+                                case 1 :
+                                    os.writeByte(ATTRIBUTE_SECTION);
+                                    break;
+                                default :
+                                    throw new IllegalArgumentException("Invalid inverted index");
+                            }         
+    		                os.writeInt(termCount);
+                            lenOffset = os.position();
+    	                    os.writeFixedInt(0);
+                            
+                            previousGID = 0;
+                            for (int m = 0; m < storedOccurencesList.getSize(); ) {
+                                delta = storedOccurencesList.nodes[m] - previousGID;
+                                os.writeLong(delta);                            
+                                freq = storedOccurencesList.getOccurrences(m);
+                                os.writeInt(freq);
+                                for (int n = 0; n < freq; n++) {
+                                    os.writeInt(storedOccurencesList.offsets[m + n]);
+                                }
+                                previousGID = storedOccurencesList.nodes[m];
+                                m += freq;
+                            }		                
+    		                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+                        }
+		                //Store the data		                
+	                    if (is == null) {
+	                        if (dbTokens.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                                LOG.error("Could not put index data for token '" +  token + "'"); 
                             }
-                            previousGID = storedOccurencesList.nodes[m];
-                            m += freq;
-                        }		                
-		                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
-		                
-		                try {
-		                    if (is == null)
-		                        dbTokens.put(ref, os.data());
-		                    else {
-		                        dbTokens.update(((BFile.PageInputStream) is)
-		                                .getAddress(), ref, os.data());
-		                    }
-		                } catch (ReadOnlyException e) {
-                            //EOF are expected here -pb
-		                }
+	                    }else {                            
+	                        if (dbTokens.update(((BFile.PageInputStream) is).getAddress(), ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                                LOG.error("Could not update index data for value '" +  token + "'");  
+                            }
+	                    }		                
 		            } catch (LockException e) {
                         LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
 		                is = null;
+                    } catch (ReadOnlyException e) {
+                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "'", e);                        
 		            } catch (IOException e) {
 		                LOG.error("io error while reindexing word '" + token  + "'");
 		                is = null;
@@ -1204,11 +1212,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		        context.proceed();
 			String word;
 			try {
-				word = new String(key.getData(), 2, key.getLength() - 2,
-						"UTF-8");
-			} catch (UnsupportedEncodingException uee) {
-				word = new String(key.getData(), 2, key.getLength() - 2);
-			}
+				word = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+                LOG.error(e.getMessage(), e);
+				//word = new String(key.getData(), 2, key.getLength() - 2);
+                word = null;
+			}            
 			if (matcher.matches(word))
 				matches.add(word);
 			return true;
@@ -1246,16 +1255,19 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				}
 				if (is == null)
 					return true;
-//				int k = 0;
+                
+
 				int docId;
-				int len, rawSize;
+				int len;
+				int rawSize;
 				long gid;
 				long last = -1;
 				int freq = 1;
 				int sizeHint = -1;
 				byte section;
 				DocumentImpl doc;
-				NodeProxy parent, proxy;
+				NodeProxy parent;
+                NodeProxy proxy;
 				Match match;
 				try {
 					while (is.available() > 0) {
@@ -1333,10 +1345,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				throws TerminatedException {
 			String term;
 			try {
-				term = new String(key.getData(), 2, key.getLength() - 2,
-						"UTF-8");
-			} catch (UnsupportedEncodingException uee) {
-				term = new String(key.getData(), 2, key.getLength() - 2);
+				term = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+                LOG.error(e.getMessage(), e);
+				//term = new String(key.getData(), 2, key.getLength() - 2);
+                term = null;
 			}
 			Occurrences oc = (Occurrences) map.get(term);
 			
