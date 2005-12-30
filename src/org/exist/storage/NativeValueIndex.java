@@ -242,10 +242,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
                //TODO : return ?                         
             } catch (IOException e) {
-                LOG.warn("IO error on '" + dbValues.getFile().getName() + "'", e);  
+                LOG.error(e.getMessage(), e);  
                 //TODO : return ?
             } catch (ReadOnlyException e) {
-                LOG.warn("Read-only error on '" + dbValues.getFile().getName() + "'", e);   
+                LOG.warn(e.getMessage(), e);     
                 //Return without clearing the pending entries
                 return;                 
             } finally {
@@ -258,7 +258,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
     /* (non-Javadoc)
      * @see org.exist.storage.IndexGenerator#remove()
      */
-    public void remove() {        
+    public void remove() { 
+        //TODO : return if doc == null? -pb  
         if (pending.size() == 0) 
             return;        
         Indexable indexable;
