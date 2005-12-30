@@ -198,6 +198,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	 * @see org.exist.storage.IndexGenerator#flush()
 	 */
     public void flush() {
+        //TODO : return if doc == null? -pb        
         if (pending.size() == 0) 
             return;        
         Indexable indexable;
