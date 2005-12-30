@@ -666,7 +666,7 @@ public interface RpcAPI {
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
 	Hashtable querySummary(User user, int resultId)
-		throws EXistException, PermissionDeniedException;
+		throws EXistException, PermissionDeniedException, XPathException;
 
 	Hashtable getPermissions(User user, String resource)
 		throws EXistException, PermissionDeniedException;

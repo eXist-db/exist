@@ -2086,7 +2086,7 @@ public class RpcConnection extends Thread {
         }
     }
     
-    public Hashtable summary(User user, int resultId) throws EXistException {
+    public Hashtable summary(User user, int resultId) throws EXistException, XPathException {
         long startTime = System.currentTimeMillis();
         QueryResult qr = (QueryResult) connectionPool.resultSets.get(resultId);
         if (qr == null)
@@ -2100,7 +2100,7 @@ public class RpcConnection extends Thread {
         }
         DBBroker broker = brokerPool.get(user);
         try {
-            NodeList resultSet = (NodeList) qr.result;
+        	NodeList resultSet = qr.result.toNodeSet();
             HashMap map = new HashMap();
             HashMap doctypes = new HashMap();
             NodeProxy p;
