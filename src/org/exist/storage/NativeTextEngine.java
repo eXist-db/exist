@@ -1255,17 +1255,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				if (is == null)
 					return true; 
                 
-				int storedDocId;
+                int storedDocId;
                 byte storedSection;
-				int termCount;
+                int termCount;
                 long storedGID;
                 long previousGID;
                 long delta;                    
-				int size;				
+                int size;               
                 DocumentImpl storedDocument;        
                 NodeProxy storedNode;
                 NodeProxy parentNode;  
-				Match match;
+                Match match;
                 int freq;
                 int sizeHint;
 				try {
@@ -1356,88 +1356,92 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		/* (non-Javadoc)
 		 * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
 		 */
-		public boolean indexInfo(Value key, long pointer)
-				throws TerminatedException {
-			String term;
+		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
+            VariableByteInput is;
+            try {
+                is = dbTokens.getAsStream(pointer);
+            } catch (IOException e) {
+                LOG.warn(e.getMessage(), e);
+                //TODO : return early -pb
+                is = null;
+            }
+            if (is == null)
+                return true;
+            String term;
 			try {
 				term = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
 			} catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
 				//term = new String(key.getData(), 2, key.getLength() - 2);
+                //TODO : return early ! -pb
                 term = null;
-			}
-			Occurrences oc = (Occurrences) map.get(term);
-			
-			VariableByteInput is = null;
+			}            
+            int storedDocId;
+            byte storedSection;
+            int termCount;
+            long storedGID;
+            long previousGID;
+            long delta;                    
+            int size;               
+            DocumentImpl storedDocument; 
+            NodeProxy parentNode;
+            int freq;
+            boolean include = true;
+            boolean docAdded;
 			try {
-				is = dbTokens.getAsStream(pointer);
-			} catch (IOException e) {
-				LOG.warn(e.getMessage(), e);
-                //TODO : return early -pb
-			}
-			if (is == null)
-				return true;
-			try {
-				int docId;
-				byte section;
-                
-                long storedGID;
-                long previousGID;
-                long delta;
-                
-				int len;
-                int rawSize;
-				int freq = 1;
-				
-				DocumentImpl doc;
-				boolean include = true;
-				boolean docAdded;
-				NodeProxy p;
 				while (is.available() > 0) {
-					docId = is.readInt();
-					section = 
-						is.readByte();
-					len = is.readInt();
-					rawSize = is.readFixedInt();
-					if ((doc = docs.getDoc(docId)) == null) {
-						is.skipBytes(rawSize);
+                    docAdded = false;
+                    storedDocId = is.readInt();
+                    storedSection = is.readByte();
+                    termCount = is.readInt();
+                    size = is.readFixedInt();
+                    storedDocument = docs.getDoc(storedDocId);
+                    //Exit if the document is not concerned
+					if (storedDocument == null) {
+						is.skipBytes(size);
 						continue;
-					}
-					docAdded = false;
+					}					
                     previousGID = 0;
-					for (int j = 0; j < len; j++) {
+					for (int j = 0; j < termCount; j++) {
                         delta = is.readLong(); 
                         storedGID = previousGID + delta;
 						freq = is.readInt();
                         is.skip(freq);
 						if (contextSet != null) {
 							include = false;
-							p = contextSet.parentWithChild(doc, storedGID, false, true);
-							if (p != null) {
-								if (section == ATTRIBUTE_SECTION) {
-									include = (p.getNodeType() == Node.ATTRIBUTE_NODE);
-								} else {
-									include = p != null;
-								}
-							}
-						}
-						if (include) {
-							if (oc == null) {
-								oc = new Occurrences(term);
-								map.put(term, oc);
-							}
-							if (!docAdded) {
-								oc.addDocument(doc);
-								docAdded = true;
-							}
-							oc.addOccurrences(freq);
-						}
+                            parentNode = contextSet.parentWithChild(storedDocument, storedGID, false, true);                           
+                            switch (storedSection) {
+                                case TEXT_SECTION :
+                                    //TODO : also test on Node.TEXT_NODE like below ? -pb                                    
+                                    include = (parentNode != null);
+                                    break;
+                                case ATTRIBUTE_SECTION :
+                                    include = (parentNode != null && parentNode.getNodeType() == Node.ATTRIBUTE_NODE);
+                                    break;
+                                default :
+                                    throw new IllegalArgumentException("Invalid inverted index");
+                            } 
+                            if (include) {
+                                Occurrences oc = (Occurrences) map.get(term);
+                                if (oc == null) {
+                                    oc = new Occurrences(term);
+                                    map.put(term, oc);
+                                }
+                                if (!docAdded) {
+                                    oc.addDocument(storedDocument);
+                                    docAdded = true;
+                                }
+                                oc.addOccurrences(freq);
+                            }                            
+						}						
                         previousGID = storedGID;
 					}
 				}
 			} catch(EOFException e) {
+                //EOFExceptions are expected 
 			} catch(IOException e) {
-				LOG.warn("Exception while scanning index: " + e.getMessage(), e);
+                LOG.error(e.getMessage(), e);   
+                //TODO : return early -pb
 			}
 			return true;
 		}
