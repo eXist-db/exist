@@ -51,10 +51,10 @@ import org.exist.xquery.value.Type;
 public class QNameIndexLookup extends Function {
 
 	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("qname-index-lookup", UtilModule.NAMESPACE_URI,
-					UtilModule.PREFIX),
-			"Fast retrieval of nodes by node name and content, "
-					+ "using the new value index by QName's",
+			new QName("qname-index-lookup", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Can be used to query existing qname indexes defined on a set of nodes. " +
+            "The qname is specified in the first argument. " +
+            "The second argument specifies a comparison value. ",
 			new SequenceType[] {
 					new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE) },
