@@ -58,7 +58,10 @@ function init() {
     {
     	inputField : 'current-date',
     	ifFormat : '%Y-%m-%d',
-    	button : 'set-date'
+    	button : 'set-date',
+    	onUpdate : function (calendar) {
+    		currentDate = calendar.date;
+    	}
     }
     );
     resize();
