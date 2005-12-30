@@ -734,6 +734,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 break;
            default :
                //Other types are ignored : some may be useful though -pb
+               //TOUNDERSTAND : it looks like other types (got : Node.PRCESSING_INSTRUCTION_NODE)
+               //are stored in the index ??? -pb
         }
     }
     
@@ -754,13 +756,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	final class InvertedIndex {
 
 		private DocumentImpl doc = null;
+        // To distinguish between attribute values and text, we use
+        // two maps: words[0] collects text, words[1] stores attribute
+        // values.        
+        //TODO : very tricky. Why not 2 inverted indexes ??? -pb
 		private Map words[] = new HashMap[2];
 		private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
 		public InvertedIndex() {
-			// To distinguish between attribute values and text, we use
-			// two maps: words[0] collects text, words[1] stores attribute
-			// values.
 			words[0] = new HashMap(512);
 			words[1] = new HashMap(256);
 		}
@@ -772,75 +775,101 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }        
 
 		public void addText(XMLString text, TextToken token, long gid) {
+            //Is this token already pending ?
             OccurrenceList list = (OccurrenceList) words[0].get(token);
+            //Create a GIDs list
             if (list == null) {
                 list = new OccurrenceList();
                 list.add(gid, token.startOffset() - text.startOffset());
                 words[0].put(token.getText(), list);
             } else {
+                //Add node's GID to the list
                 list.add(gid, token.startOffset());
             }
 		}
 
+        //TODO : unify functionalities with addText -pb
 		public void addAttribute(TextToken token, long gid) {
+            //Is this token already pending ?
             OccurrenceList list = (OccurrenceList) words[1].get(token);
+            //Create a GIDs list
             if (list == null) {
                 list = new OccurrenceList();
                 list.add(gid, token.startOffset());
                 words[1].put(token.getText(), list);
             } else {
+                //Add node's GID to the list
                 list.add(gid, token.startOffset());
             }
 		}
         
         public void flush() {
+            //return early
+            if (this.doc == null)
+                return;            
             final int wordsCount = words[0].size() + words[1].size();
-            if (doc == null || wordsCount == 0)
+            if (wordsCount == 0)
                 return;
-            final ProgressIndicator progress = new ProgressIndicator(
-                    wordsCount, 100);
+            
+            final ProgressIndicator progress = new ProgressIndicator(wordsCount, 100);
             final short collectionId = this.doc.getCollection().getId();
-            int count = 1, len, lenOffset, freq;
-            Map.Entry entry;
-            String word;
-            OccurrenceList idList;
-            long lastId = 0;
+            OccurrenceList occurences;
+            int termCount;
+            long previousGID = 0;
             long delta;
+            //TOUNDERSTAND -pb
+            int lenOffset;            
+            int freq;
+            Map.Entry entry;
+            String token;           
+            int count = 0;
             for (int k = 0; k < 2; k++) {
                 for (Iterator i = words[k].entrySet().iterator(); i.hasNext(); count++) {
                     entry = (Map.Entry) i.next();
-                    word = (String) entry.getKey();
-                    idList = (OccurrenceList) entry.getValue();
+                    token = (String) entry.getKey();
+                    occurences = (OccurrenceList) entry.getValue();
+                    termCount = occurences.getTermCount();
+                    //Don't forget this one
+                    occurences.sort();                    
                     os.clear();
-                    len = idList.getTermCount();
                     os.writeInt(this.doc.getDocId());
-                    os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
-                    os.writeInt(len);
+                    switch (k) {
+                        case 0 :
+                            os.writeByte(TEXT_SECTION);
+                            break;
+                        case 1 :
+                            os.writeByte(ATTRIBUTE_SECTION);
+                            break;
+                        default :
+                            throw new IllegalArgumentException("Invalid inverted index");
+                    }                    
+                    os.writeInt(termCount);
                     lenOffset = os.position();
                     os.writeFixedInt(0);
-                    idList.sort();
 
-                    lastId = 0;
-                    for (int m = 0; m < idList.getSize(); ) {
-                        delta = idList.nodes[m] - lastId;
-                        os.writeLong(delta);
-                        lastId = idList.nodes[m];
-                        freq = idList.getOccurrences(m);
+                    previousGID = 0;
+                    for (int m = 0; m < occurences.getSize(); ) {
+                        delta = occurences.nodes[m] - previousGID;
+                        os.writeLong(delta);                                        
+                        freq = occurences.getOccurrences(m);
                         os.writeInt(freq);
                         for (int n = 0; n < freq; n++) {
-                            os.writeInt(idList.offsets[m + n]);
-                        }
-                        m += freq;
+                            os.writeInt(occurences.offsets[m + n]);
+                        }  
+                        previousGID = occurences.nodes[m];        
+                        m += freq;                        
                     }
                     os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                     
-                    flushWord(collectionId, word, os.data());
+                    flushWord(collectionId, token, os.data());
                     progress.setValue(count);
                     if (progress.changed()) {
                         setChanged();
                         notifyObservers(progress);
                     }
                 }
+                //TOUNDERSTAND : is this a flush ? 
+                //If so, the ProgressIndicator should be reinitialized -pb
                 if (wordsCount > 100) {
                     progress.finish();
                     setChanged();
@@ -848,23 +877,23 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 }
                 words[k].clear();
             }
-//          dbWords.debugFreeList();
         }
 
         private void flushWord(short collectionId, String word, ByteArray data) {
+            //return early
+            //TODO : is this ever called ? -pb
             if (data.size() == 0)
                 return;
-            Lock lock = dbTokens.getLock();
+            final Lock lock = dbTokens.getLock();
             try {
-                lock.acquire(Lock.WRITE_LOCK);
-                try {
-                    dbTokens.append(new WordRef(collectionId, word), data);
-                } catch (ReadOnlyException e) {
-                } catch (IOException ioe) {
-                    LOG.warn("io error while writing '" + word + "'", ioe);
-                }
+                lock.acquire(Lock.WRITE_LOCK);          
+                dbTokens.append(new WordRef(collectionId, word), data);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+            } catch (ReadOnlyException e) {
+                //
+            } catch (IOException ioe) {
+                LOG.warn("io error while writing '" + word + "'", ioe);            
             } finally {
                 lock.release();
             }

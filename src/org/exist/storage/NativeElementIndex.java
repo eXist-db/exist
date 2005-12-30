@@ -124,6 +124,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * @see org.exist.storage.ContentLoadingObserver#flush()
      */
     public void flush() {
+        //TODO : return if doc == null? -pb
         if (pending.size() == 0) 
             return;        
         final ProgressIndicator progress = new ProgressIndicator(pending.size(), 5);
@@ -133,7 +134,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         ArrayList gids;
         int gidsCount;
         long previousGID;
-        long delta;        
+        long delta;     
+        //TOUNDERSTAND -pb
         int lenOffset;
         final SymbolTable symbols = broker.getSymbols();
         Map.Entry entry; 
@@ -208,8 +210,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         QName qname;   
         NodeProxy storedNode;        
         List storedGIDList;        
-        List newGIDList;
-        byte[] gids;
+        List newGIDList;        
         int gidsCount;
         long storedGID;
         long previousGID; 
@@ -243,9 +244,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 os.clear();                
                 //Does the node already exist in the index ?
                 if (value != null) {
-                    //Add its data to the new list
-                    gids = value.getData();
-                    is = new VariableByteArrayInput(gids);
+                    //Add its data to the new list                    
+                    is = new VariableByteArrayInput(value.getData());
                     try {
                         while (is.available() > 0) {
                             currentDocId = is.readInt();
