@@ -968,68 +968,71 @@ try {
     }
 
     public Hashtable querySummary(User user, int resultId)
-            throws EXistException, PermissionDeniedException {
-        RpcConnection con = pool.get();
-        try {
-            return con.summary(user, resultId);
-        } finally {
-            pool.release(con);
-        }
-    }
+			throws EXistException, PermissionDeniedException, XPathException {
+		RpcConnection con = pool.get();
+		try {
+			return con.summary(user, resultId);
+		} catch (Exception e) {
+			handleException(e);
+			return null;
+		} finally {
+			pool.release(con);
+		}
+	}
 
     /**
-     * execute XPath query and return a summary of hits per document and hits
-     * per doctype. This method returns a struct with the following fields:
-     * 
-     * <tableborder="1">
-     * 
-     * <tr>
-     * 
-     * <td>"queryTime"</td>
-     * 
-     * <td>int</td>
-     * 
-     * </tr>
-     * 
-     * <tr>
-     * 
-     * <td>"hits"</td>
-     * 
-     * <td>int</td>
-     * 
-     * </tr>
-     * 
-     * <tr>
-     * 
-     * <td>"documents"</td>
-     * 
-     * <td>array of array: Object[][3]</td>
-     * 
-     * </tr>
-     * 
-     * <tr>
-     * 
-     * <td>"doctypes"</td>
-     * 
-     * <td>array of array: Object[][2]</td>
-     * 
-     * </tr>
-     * 
-     * </table> Documents and doctypes represent tables where each row describes
-     * one document or doctype for which hits were found. Each document entry
-     * has the following structure: docId (int), docName (string), hits (int)
-     * The doctype entry has this structure: doctypeName (string), hits (int)
-     * 
-     * @param xpath
-     *                   Description of the Parameter
-     * @param user
-     *                   Description of the Parameter
-     * @return Description of the Return Value
-     * @exception EXistException
-     *                        Description of the Exception
-     * @exception PermissionDeniedException
-     *                        Description of the Exception
-     */
+	 * execute XPath query and return a summary of hits per document and hits
+	 * per doctype. This method returns a struct with the following fields:
+	 * 
+	 * <tableborder="1">
+	 * 
+	 * <tr>
+	 * 
+	 * <td>"queryTime"</td>
+	 * 
+	 * <td>int</td>
+	 * 
+	 * </tr>
+	 * 
+	 * <tr>
+	 * 
+	 * <td>"hits"</td>
+	 * 
+	 * <td>int</td>
+	 * 
+	 * </tr>
+	 * 
+	 * <tr>
+	 * 
+	 * <td>"documents"</td>
+	 * 
+	 * <td>array of array: Object[][3]</td>
+	 * 
+	 * </tr>
+	 * 
+	 * <tr>
+	 * 
+	 * <td>"doctypes"</td>
+	 * 
+	 * <td>array of array: Object[][2]</td>
+	 * 
+	 * </tr>
+	 * 
+	 * </table> Documents and doctypes represent tables where each row describes
+	 * one document or doctype for which hits were found. Each document entry
+	 * has the following structure: docId (int), docName (string), hits (int)
+	 * The doctype entry has this structure: doctypeName (string), hits (int)
+	 * 
+	 * @param xpath
+	 *            Description of the Parameter
+	 * @param user
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
+	 * @exception EXistException
+	 *                Description of the Exception
+	 * @exception PermissionDeniedException
+	 *                Description of the Exception
+	 */
     public Hashtable querySummary(User user, String xpath)
             throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
