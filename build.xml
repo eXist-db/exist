@@ -425,6 +425,7 @@
         <echo message="Running tests on remote database"/>
         <echo message="--------------------------------"/>
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
+            <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <formatter type="plain"/>
