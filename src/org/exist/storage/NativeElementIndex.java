@@ -216,14 +216,14 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         long storedGID;
         long previousGID; 
         long delta;
-        Value ref;
         Map.Entry entry;
+        Value ref;        
         Value value;
         VariableByteArrayInput is; 
         //TOUNDERSTAND -pb
         int size;
         int lenOffset;
-        int currentDocId;
+        int storedDocId;
         final short collectionId = this.doc.getCollection().getId();
         final Lock lock = dbNodes.getLock();
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
@@ -249,13 +249,13 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     is = new VariableByteArrayInput(value.getData());
                     try {
                         while (is.available() > 0) {
-                            currentDocId = is.readInt();
+                            storedDocId = is.readInt();
                             gidsCount = is.readInt();
                             size = is.readFixedInt();
-                            if (currentDocId != this.doc.getDocId()) {
+                            if (storedDocId != this.doc.getDocId()) {
                                 // data are related to another document:
                                 // append them to any existing data
-                                os.writeInt(currentDocId);
+                                os.writeInt(storedDocId);
                                 os.writeInt(gidsCount);
                                 os.writeFixedInt(size);
                                 try {
@@ -272,6 +272,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                     delta = is.readLong();
                                     storedGID = previousGID + delta;                                        
                                     long address = StorageAddress.read(is);
+                                    // add the node to the new list if it is not 
+                                    // in the list of removed nodes
                                     if (!containsNode(storedGIDList, storedGID)) {
                                         newGIDList.add(new NodeProxy(doc, storedGID, address));
                                     }

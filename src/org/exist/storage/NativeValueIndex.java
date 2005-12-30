@@ -270,9 +270,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
         int gidsCount;
         long storedGID;
         long previousGID;        
-        long delta;        
+        long delta; 
+        Map.Entry entry;    
         Value ref;
-        Map.Entry entry;        
         Value value;
         VariableByteArrayInput is;
         int storedDocId;
@@ -309,7 +309,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                 previousGID = 0;
                                 for (int j = 0; j < gidsCount; j++) {
                                     delta = is.readLong();
-                                    storedGID = previousGID + delta;                                        
+                                    storedGID = previousGID + delta;  
+                                    // add the node to the new list if it is not 
+                                    // in the list of removed nodes
                                     if (!storedGIDList.contains(storedGID)) {
                                         newGIDList.add(storedGID);
                                     }
