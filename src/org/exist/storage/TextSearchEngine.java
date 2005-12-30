@@ -38,6 +38,7 @@ import org.exist.dom.TextImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.Tokenizer;
+import org.exist.storage.btree.DBException;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
@@ -163,7 +164,7 @@ public abstract class TextSearchEngine extends Observable {
 	public abstract void storeAttribute(FulltextIndexSpec idx, AttrImpl text);
 
 	public abstract void flush();
-	public abstract void close();
+	public abstract boolean close() throws DBException;
 
 	public int getTrackMatches() {
 		return trackMatches;

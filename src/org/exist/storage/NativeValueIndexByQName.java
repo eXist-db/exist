@@ -305,9 +305,10 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     		super.dropIndex(doc);
     }
     
-    public void close() throws DBException {
+    public boolean close() throws DBException {
     	if (qnameValueIndexation)
-    		dbValues.close();
+    		return dbValues.close();
+        return true;
     }
 
     /** updates the index type of given node according to the Index By QName config. */

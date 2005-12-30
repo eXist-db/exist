@@ -222,6 +222,34 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 invertedIndex.addText(t, token, gid);
             }
         }
+    } 
+    
+    public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
+        // TODO Auto-generated method stub  
+    }
+
+    public void setDocument(DocumentImpl document) {
+        //TODO Auto-generated method stub        
+    }
+
+    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+        //TODO Auto-generated method stub        
+    }
+
+    public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+        // TODO Auto-generated method stub      
+    }
+
+    public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
+        // TODO Auto-generated method stub      
+    }
+
+    public void endElement(int xpathType, ElementImpl node, String content) {
+        // TODO Auto-generated method stub  
+    }
+
+    public void removeElement(ElementImpl node, NodePath currentPath, String content) {
+        // TODO Auto-generated method stub      
     }    
 
     /* (non-Javadoc)
@@ -740,12 +768,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
     }
     
-    public void close() {
-        try {
-            dbTokens.close();
-        } catch (DBException dbe) {
-            LOG.debug(dbe);
-        }
+    public boolean close() throws DBException {
+        return dbTokens.close();        
+    }  
+    
+    public void printStatistics() {
+        dbTokens.printStatistics();
+    }
+    
+    public String toString() {
+        return this.getClass().getName() + " at "+ dbTokens.getFile().getName() +
+        " owned by " + broker.toString();
     }    
 
 	/**
@@ -1650,34 +1683,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		public String toString() {
 			return ByteConversion.byteToShort(data, pos) + new String(data, pos, len);
 		}
-	}
-
-	public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
-		// TODO Auto-generated method stub	
-	}
-
-	public void setDocument(DocumentImpl document) {
-	    //TODO Auto-generated method stub        
-	}
-
-	public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
-	    //TODO Auto-generated method stub        
-	}
-
-	public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
-		// TODO Auto-generated method stub		
-	}
-
-	public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
-		// TODO Auto-generated method stub		
-	}
-
-	public void endElement(int xpathType, ElementImpl node, String content) {
-		// TODO Auto-generated method stub	
-	}
-
-	public void removeElement(ElementImpl node, NodePath currentPath, String content) {
-		// TODO Auto-generated method stub		
 	}
     
 }

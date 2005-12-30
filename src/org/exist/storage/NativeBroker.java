@@ -2001,7 +2001,8 @@ public class NativeBroker extends DBBroker {
         if (qnameValueIndexation) {
             valuesDbQname.closeAndRemove();
             config.setProperty("db-connection2.values", null);
-        }
+        }        
+        
         LOG.debug("Recreating index files ...");
         try {
             createIndexFiles();
@@ -2683,11 +2684,11 @@ public class NativeBroker extends DBBroker {
 		try {
 			flush();
 			sync(Sync.MAJOR_SYNC);
-			textEngine.close();
+            textEngine.close();
 			domDb.close();
 			elementsDb.close();
 			valuesDb.close();
-			collectionsDb.close();
+			collectionsDb.close();            
 			
 //            if (qnameValueIndexation)
 //                valuesDbQname.close();
@@ -2928,12 +2929,13 @@ public class NativeBroker extends DBBroker {
 						(runtime.freeMemory() / 1024) + "K free");
 				
 				// uncomment this to get statistics on page buffer usage
-				collectionsDb.printStatistics();
+                collectionsDb.printStatistics();
                 elementsDb.printStatistics();
 				valuesDb.printStatistics();
-				domDb.printStatistics();
+				domDb.printStatistics();                
 				if (valuesDbQname != null)
 					valuesDbQname.printStatistics();
+                textEngine.printStatistics();
 			}
 		} catch (DBException dbe) {
 			dbe.printStackTrace();
