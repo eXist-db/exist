@@ -49,7 +49,7 @@ import org.exist.util.InsertionSort;
 	http://www.cs.rpi.edu/~musser/gp/introsort.ps
 	http://www.michael-maniscalco.com/sorting.htm
 	
-	@author José María Fernández
+	@author Jose Maria Fernandez
 */
 public final class FastQSort {
 	private final static int M = 10;
