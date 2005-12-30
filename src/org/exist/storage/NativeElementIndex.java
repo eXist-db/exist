@@ -100,6 +100,26 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         buf.add(proxy);
     }
     
+    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+        // TODO Auto-generated method stub      
+    }
+
+    public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+        // TODO Auto-generated method stub      
+    }
+
+    public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
+        // TODO Auto-generated method stub      
+    }
+
+    public void endElement(int xpathType, ElementImpl node, String content) {
+        // TODO Auto-generated method stub      
+    }
+
+    public void removeElement(ElementImpl node, NodePath currentPath, String content) {
+        // TODO Auto-generated method stub      
+    }    
+    
     /* (non-Javadoc)
      * @see org.exist.storage.ContentLoadingObserver#sync()
      */
@@ -840,26 +860,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     public void printStatistics() {
         dbNodes.printStatistics();
     }
-
-	public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
-		// TODO Auto-generated method stub		
-	}
-
-	public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
-		// TODO Auto-generated method stub		
-	}
-
-	public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
-		// TODO Auto-generated method stub		
-	}
-
-	public void endElement(int xpathType, ElementImpl node, String content) {
-		// TODO Auto-generated method stub		
-	}
-
-	public void removeElement(ElementImpl node, NodePath currentPath, String content) {
-		// TODO Auto-generated method stub		
-	}
     
     public String toString() {
         return this.getClass().getName() + " at "+ dbNodes.getFile().getName() +

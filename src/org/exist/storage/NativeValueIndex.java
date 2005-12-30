@@ -175,6 +175,26 @@ public class NativeValueIndex implements ContentLoadingObserver {
         buf.add(node.getGID());
     }
     
+    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+        // TODO Auto-generated method stub      
+    }
+    
+    public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+        // TODO Auto-generated method stub      
+    }
+    
+    public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
+        // TODO Auto-generated method stub      
+    }
+    
+    public void endElement(int xpathType, ElementImpl node, String content) {
+        // TODO Auto-generated method stub      
+    }
+    
+    public void removeElement(ElementImpl node, NodePath currentPath, String content) {
+        // TODO Auto-generated method stub      
+    }    
+    
     /* (non-Javadoc)
      * @see org.exist.storage.IndexGenerator#sync()
      */
@@ -764,6 +784,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
         return atomic;        
     }
     
+    public boolean close() throws DBException {
+        return dbValues.close();
+    }
+    
+    public void printStatistics() {
+        dbValues.printStatistics();
+    }
+    
     public String toString() {
         return this.getClass().getName() + " at "+ dbValues.getFile().getName() +
         " owned by " + broker.toString() + " (case sensitive = " + caseSensitive + ")";
@@ -965,25 +993,4 @@ public class NativeValueIndex implements ContentLoadingObserver {
             return true;
         }
     }
-
-    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
-    	// TODO Auto-generated method stub    	
-    }
-    
-    public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
-    	// TODO Auto-generated method stub    	
-    }
-    
-    public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
-    	// TODO Auto-generated method stub    	
-    }
-    
-    public void endElement(int xpathType, ElementImpl node, String content) {
-    	// TODO Auto-generated method stub    	
-    }
-    
-    public void removeElement(ElementImpl node, NodePath currentPath, String content) {
-    	// TODO Auto-generated method stub    	
-    }
-
 }
