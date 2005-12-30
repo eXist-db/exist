@@ -90,8 +90,8 @@ import org.w3c.dom.NodeList;
  */
 public class NativeTextEngine extends TextSearchEngine implements ContentLoadingObserver {
 
-	public final static byte ATTRIBUTE_SECTION = 1;
-	public final static byte TEXT_SECTION = 0;
+    public final static byte TEXT_SECTION = 0;
+	public final static byte ATTRIBUTE_SECTION = 1;	
   
     /** Length limit for the tokens */
 	public final static int MAX_TOKEN_LENGTH = 2048;
@@ -410,7 +410,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);
         Value ref;
         int storedDocId;
-        int section;
+        int storedSection;
         int freq;
         int gidsCount;
         long storedGID;
@@ -441,7 +441,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				}
 				while (is.available() > 0) {
                     storedDocId = is.readInt();
-					section = is.readByte();
+                    storedSection = is.readByte();
                     gidsCount = is.readInt();
                     size = is.readFixedInt();
                     storedDocument = docs.getDoc(storedDocId);
@@ -465,7 +465,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         delta = is.readLong();
                         storedGID = previousGID + delta;                        
 						freq = is.readInt();
-                        switch(section) {
+                        switch (storedSection) {
                             case ATTRIBUTE_SECTION :
                                 storedNode = new NodeProxy(storedDocument, storedGID, Node.ATTRIBUTE_NODE);
                                 break;
@@ -479,7 +479,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 						// matching text node is a descendant of one of the nodes
 						// in the context set.
 						if (contextSet != null) {
-                            switch(section) {
+                            switch(storedSection) {
                                 case ATTRIBUTE_SECTION :
                                     parent = contextSet.get(storedNode);
                                     break;
@@ -823,7 +823,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             Map.Entry entry;
             String token;           
             int count = 0;
-            for (int section = 0; section < 2; section++) {
+            for (int section = 0; section <= ATTRIBUTE_SECTION; section++) {
                 for (Iterator i = words[section].entrySet().iterator(); i.hasNext(); count++) {
                     entry = (Map.Entry) i.next();
                     token = (String) entry.getKey();
@@ -969,48 +969,49 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                             for (int k = 0; k < freq; k++) {
                                                 newOccurencesList.add(storedGID, is.readInt());
                                             }
-				                        } else
+				                        } else {
                                             is.skip(freq);
+                                        }
                                         previousGID = storedGID;
 				                    }
 				                }
 					        }
+                            
+                            if(newOccurencesList.getSize() > 0) {
+                                // save the nodes remaining in the output list for the document
+                                newOccurencesList.sort();
+                                termCount = newOccurencesList.getTermCount();
+                                os.writeInt(this.doc.getDocId());                           
+                                switch (currentSection) {
+                                    case 0 :
+                                        os.writeByte(TEXT_SECTION);
+                                        break;
+                                    case 1 :
+                                        os.writeByte(ATTRIBUTE_SECTION);
+                                        break;
+                                    default :
+                                        throw new IllegalArgumentException("Invalid inverted index");
+                                }                                      
+                                os.writeInt(termCount);
+                                lenOffset = os.position();
+                                os.writeFixedInt(0);
+                                
+                                previousGID = 0;
+                                for (int m = 0; m < newOccurencesList.getSize(); ) {
+                                    delta = newOccurencesList.nodes[m] - previousGID;
+                                    os.writeLong(delta);                                
+                                    freq = newOccurencesList.getOccurrences(m);
+                                    os.writeInt(freq);
+                                    for (int n = 0; n < freq; n++) {
+                                        os.writeInt(newOccurencesList.offsets[m + n]);
+                                    }
+                                    previousGID = newOccurencesList.nodes[m];
+                                    m += freq;
+                                }
+                                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+                            }                            
 					    }
                         
-					    if(newOccurencesList.getSize() > 0) {
-					    	// save the nodes remaining in the output list for the document
-                            newOccurencesList.sort();
-                            termCount = newOccurencesList.getTermCount();
-						    os.writeInt(this.doc.getDocId());						    
-                            switch (currentSection) {
-                                case 0 :
-                                    os.writeByte(TEXT_SECTION);
-                                    break;
-                                case 1 :
-                                    os.writeByte(ATTRIBUTE_SECTION);
-                                    break;
-                                default :
-                                    throw new IllegalArgumentException("Invalid inverted index");
-                            }                                      
-						    os.writeInt(termCount);
-                            lenOffset = os.position();
-		                    os.writeFixedInt(0);
-		                    
-                            previousGID = 0;
-                            for (int m = 0; m < newOccurencesList.getSize(); ) {
-                                delta = newOccurencesList.nodes[m] - previousGID;
-                                os.writeLong(delta);                                
-                                freq = newOccurencesList.getOccurrences(m);
-                                os.writeInt(freq);
-                                for (int n = 0; n < freq; n++) {
-                                    os.writeInt(newOccurencesList.offsets[m + n]);
-                                }
-                                previousGID = newOccurencesList.nodes[m];
-                                m += freq;
-                            }
-						    os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
-					    }
-					    
 					    if(os.data().size() == 0) {				    	
 							dbTokens.remove(ref);							
 					    } else {						   

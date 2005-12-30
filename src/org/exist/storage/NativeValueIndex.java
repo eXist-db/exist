@@ -326,20 +326,22 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         LOG.error(e.getMessage(), e);
                         //TODO : data will be saved although os is probably corrupted ! -pb
                     }
-                }
-                // append the new list
-                gids = newGIDList.getData();
-                gidsCount = gids.length;
-                //Don't forget this one
-                Arrays.sort(gids);
-                os.writeInt(this.doc.getDocId());
-                os.writeInt(gidsCount);
-                previousGID = 0;
-                for (int j = 0; j < gidsCount; j++) {
-                    delta = gids[j] - previousGID;                            
-                    os.writeLong(delta);
-                    previousGID = gids[j];
-                }
+                    if (newGIDList.getSize() > 0) {
+                        //append the data from the new list
+                        gids = newGIDList.getData();
+                        gidsCount = gids.length;
+                        //Don't forget this one
+                        Arrays.sort(gids);
+                        os.writeInt(this.doc.getDocId());
+                        os.writeInt(gidsCount);
+                        previousGID = 0;
+                        for (int j = 0; j < gidsCount; j++) {
+                            delta = gids[j] - previousGID;                            
+                            os.writeLong(delta);
+                            previousGID = gids[j];
+                        } 
+                    }
+                }                
                 //Store the data
                 if (value == null) {
                     if (dbValues.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
