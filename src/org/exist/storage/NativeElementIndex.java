@@ -204,7 +204,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         pending.clear();
     }    
     
-    public void remove() {        
+    public void remove() {      
+        //TODO : return if doc == null? -pb  
         if (pending.size() == 0) 
             return;
         QName qname;   
