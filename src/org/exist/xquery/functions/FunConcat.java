@@ -56,9 +56,10 @@ public class FunConcat extends Function {
 				"of its arguments after conversion. If any of the arguments is the empty sequence, " +
 				"the argument is treated as the zero-length string.",
 				new SequenceType[] {
-						new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
+                    //More complicated : see below
+				    new SequenceType(Type.ATOMIC, Cardinality.ONE_OR_MORE)
 				},
-				new SequenceType(Type.STRING, Cardinality.ONE),
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				true
 			);
 			
@@ -78,8 +79,8 @@ public class FunConcat extends Function {
 	public void setArguments(List arguments) throws XPathException {
 		for(Iterator i = arguments.iterator(); i.hasNext(); ) {
 			Expression next = (Expression) i.next();
-			if(!Type.subTypeOf(next.returnsType(), Type.ATOMIC))
-				next = new Atomize(context, next);
+            if(!Type.subTypeOf(next.returnsType(), Type.ATOMIC))
+                next = new Atomize(context, next);
 			steps.add(next);
 		}
 	}
@@ -89,18 +90,18 @@ public class FunConcat extends Function {
         inPredicate = (flags & IN_PREDICATE) > 0;
         for(int i = 0; i < getArgumentCount(); i++) {
             getArgument(i).analyze(this, flags);
-        }
+        }        
     }
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-           if (context.getProfiler().isEnabled()) {
-                context.getProfiler().start(this);       
-                context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-                if (contextSequence != null)
-                    context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-                if (contextItem != null)
-                    context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-            }
+       if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
            
 		if(getArgumentCount() < 2)
 			throw new XPathException ("concat requires at least two arguments");
@@ -108,16 +109,17 @@ public class FunConcat extends Function {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		
+        Sequence result = Sequence.EMPTY_SEQUENCE;
         StringBuffer concat = new StringBuffer();
 		for (int i = 0; i < getArgumentCount(); i++) {
             concat.append(getArgument(i).eval(contextSequence).getStringValue());
-		}
-		Sequence result = new StringValue(concat.toString());
+		}		
+        if (concat.length() > 0)     
+            result = new StringValue(concat.toString());
 
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);        
         
-        return result;
-        
+        return result;        
 	}
 }
