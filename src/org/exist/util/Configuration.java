@@ -725,7 +725,8 @@ public class Configuration implements ErrorHandler {
                 
                 if (catalogFile!=null && catalogFile.exists()) {
                     LOG.info("Loading catalog '"+catalogFile.getAbsolutePath()+"'.");
-                    System.out.println("Loading catalog '"+catalogFile.getAbsolutePath()+"'.");
+                    // TODO dizzzz remove debug
+                    //System.out.println("Loading catalog '"+catalogFile.getAbsolutePath()+"'.");
                     try {
                         resolver.getCatalog()
                                 .parseCatalog( catalogFile.getAbsolutePath() );
