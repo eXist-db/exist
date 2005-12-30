@@ -577,17 +577,17 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 nodeType = Node.ELEMENT_NODE;
         }        
         final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
-        NodeProxy storedNode;
+        final SymbolTable symbols = broker.getSymbols();
+        ElementValue ref;
         int storedDocId;        
         int gidsCount;
+        //TOUNDERSTAND -pb
+        int size;        
         long storedGID;
         long previousGID; 
-        long delta;        
-        ElementValue ref;   
-        final SymbolTable symbols = broker.getSymbols();
-        VariableByteInput is;
-        //TOUNDERSTAND -pb
-        int size; 
+        long delta;              
+        NodeProxy storedNode;
+        VariableByteInput is;         
         Collection collection;
         short collectionId;
         DocumentImpl storedDocument; 
@@ -619,7 +619,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     if (storedDocument == null) {
                         is.skipBytes(size);
                         continue;
-                    }                    
+                    }               
+                    //Process the nodes
                     previousGID = 0;
                     for (int k = 0; k < gidsCount; k++) {
                         delta = is.readLong();

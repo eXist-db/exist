@@ -380,39 +380,55 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		}
 	}
 
-	/**
-	 * Get all nodes whose content exactly matches the terms passed in expr.
-	 * Called by method getNodesContaining.
-	 * 
-	 * @param the
-	 *                input document set
-	 * @param array
-	 *                of regular expression search terms
-	 * @return array containing a NodeSet for each of the search terms
+
+	/** Get all nodes whose content exactly matches the give expression.
+	 * @param context
+	 * @param docs
+	 * @param contextSet
+	 * @param expr
+	 * @return
+	 * @throws TerminatedException
 	 */
 	public NodeSet getNodesExact(XQueryContext context, DocumentSet docs, NodeSet contextSet, String expr) 
-	throws TerminatedException {
+	    throws TerminatedException {
+        //Return early
 		if (expr == null)
 			return null;
+        //TODO : filter the expression *before* -pb
 		if (stoplist.contains(expr))
 			return null;
-		DocumentImpl doc;
-		Value ref;
-		long gid, last;
-		int docId;
-		int len, rawSize;
-		int section;
+        
+        NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);
+        Value ref;
+        int storedDocId;
+        int section;
+        int freq;
+        int gidsCount;
+        long storedGID;
+        long previousGID; 
+        long delta;  
+        //TOUNDERSTAND -pb
+        int size;        
+        VariableByteInput is;
+        Collection collection;
+        short collectionId;        
+		DocumentImpl storedDocument;
+        NodeProxy storedNode;
+        NodeProxy parent;		
+        
+        
+		
 		int sizeHint = -1;
-		int freq;
-		Collection collection;
-		short collectionId;
-		VariableByteInput is = null;
-		NodeProxy parent, current = new NodeProxy();
+		
+		
+
+        
 		Match match;
-		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);
+		
 		String term = (stem) ? stemmer.stem(expr.toLowerCase()) : expr.toLowerCase();
-		int count = 0;
+		
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
+            //Compute a key for the node
 			collection = (Collection) iter.next();
 			collectionId = collection.getId();
 			ref = new WordRef(collectionId, term);
@@ -420,43 +436,56 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			try {
 				lock.acquire();
 				is = dbTokens.getAsStream(ref);
+                //Does the node already exist in the index ?
 				if (is == null) {
 					continue;
 				}
 				while (is.available() > 0) {
-					docId = is.readInt();
+                    storedDocId = is.readInt();
 					section = is.readByte();
-					len = is.readInt();
-					rawSize = is.readFixedInt();
-					if ((doc = docs.getDoc(docId)) == null) {
-                        is.skipBytes(rawSize);
+                    gidsCount = is.readInt();
+                    size = is.readFixedInt();
+                    storedDocument = docs.getDoc(storedDocId);
+                    //TOUNDERSTAND : how could this be possible ? -pb
+					if (storedDocument == null) {
+                        is.skipBytes(size);
                         continue;                        
                     }
-					if (contextSet != null && !contextSet.containsDoc(doc)) {
-                        is.skipBytes(rawSize);
-                        continue;
+                    //TOUNDERSTAND : does a null contextSet makes sense ? -pb
+					if (contextSet != null) {
+                        //Exit if the current document is not concerned
+                        if (!contextSet.containsDoc(storedDocument)) {                    
+                            is.skipBytes(size);
+                            continue;
+                        }
+                        sizeHint = contextSet.getSizeHint(storedDocument);
 					}
-					if (contextSet != null)
-						sizeHint = contextSet.getSizeHint(doc);
-                    last = 0;
-					for (int j = 0; j < len; j++) {
-						gid = last + is.readLong();
-                        last = gid;
+                    //Process the nodes
+                    previousGID = 0;
+					for (int j = 0; j < gidsCount; j++) {
+                        delta = is.readLong();
+                        storedGID = previousGID + delta;                        
 						freq = is.readInt();
-						count++;
-						current = (section == TEXT_SECTION ? new NodeProxy(
-								doc, gid, Node.TEXT_NODE) : new NodeProxy(
-								doc, gid, Node.ATTRIBUTE_NODE));
+                        switch(section) {
+                            case ATTRIBUTE_SECTION :
+                                storedNode = new NodeProxy(storedDocument, storedGID, Node.ATTRIBUTE_NODE);
+                                break;
+                            case TEXT_SECTION :
+                                storedNode = new NodeProxy(storedDocument, storedGID, Node.TEXT_NODE);
+                                break;
+                            default :
+                                throw new IllegalArgumentException("Invalid section type");
+                        }						
 						// if a context set is specified, we can directly check if the
 						// matching text node is a descendant of one of the nodes
 						// in the context set.
 						if (contextSet != null) {
 							if (section == TEXT_SECTION)
-								parent = contextSet.parentWithChild(current, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+								parent = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
 							else
-								parent = contextSet.get(current);
+								parent = contextSet.get(storedNode);
 							if (parent != null) {
-								match = new Match(gid, term, freq);
+								match = new Match(storedGID, term, freq);
                                 readOccurrences(freq, is, match, term.length());
                                 parent.addMatch(match);
 								result.add(parent, sizeHint);
@@ -465,13 +494,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             }
 						// otherwise, we add all text nodes without check
 						} else {
-                            match = new Match(gid, term, freq);
+                            match = new Match(storedGID, term, freq);
                             readOccurrences(freq, is, match, term.length());
-                            current.addMatch(match);
-							result.add(current, sizeHint);
+                            storedNode.addMatch(match);
+							result.add(storedNode, sizeHint);
 							
 						}
 						context.proceed();
+                        previousGID = storedGID;                        
 					}
 				}
 			} catch (EOFException e) {
