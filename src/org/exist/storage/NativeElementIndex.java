@@ -287,8 +287,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         LOG.error(e.getMessage(), e);
                         //TODO : data will be saved although os is probably corrupted ! -pb
                     }
-                    if (newGIDList.size() >0 ) {
-                        //append the data from the new list
+                    //append the data from the new list
+                    if (newGIDList.size() > 0 ) {                        
                         gidsCount = newGIDList.size();
                         //Don't forget this one
                         FastQSort.sort(newGIDList, 0, gidsCount - 1);                

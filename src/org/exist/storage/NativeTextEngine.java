@@ -941,46 +941,54 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         //Does the token already exist in the index ?
 					    if (value != null) {
 					        //Add its data to the new list    
-					        is = new VariableByteArrayInput(value.getData());					        
-				            while (is.available() > 0) {
-                                storedDocId = is.readInt();
-                                storedSection = is.readByte();
-                                termCount = is.readInt();
-                                size = is.readFixedInt();
-				                if (storedSection != currentSection || storedDocId != this.doc.getDocId()) {
-				                    // data are related to another section or document:
-				                    // append them to any existing data
-                                    os.writeInt(storedDocId);
-                                    os.writeByte(storedSection);
-                                    os.writeInt(termCount);
-                                    os.writeFixedInt(size);
-                                    is.copyRaw(os, size);
-                                } else {    
-				                    // data are related to our section and document:
-                                    // feed the new list with the GIDs
-                                    previousGID = 0;
-				                    for (int j = 0; j < termCount; j++) {                                            
-                                        delta = is.readLong();
-                                        storedGID = previousGID + delta;
-				                        freq = is.readInt();
-				                        // add the node to the new list if it is not 
-				                        // in the list of removed nodes
-				                        if (!storedOccurencesList.contains(storedGID)) {
-                                            for (int k = 0; k < freq; k++) {
-                                                newOccurencesList.add(storedGID, is.readInt());
+					        is = new VariableByteArrayInput(value.getData());
+                            try {
+    				            while (is.available() > 0) {
+                                    storedDocId = is.readInt();
+                                    storedSection = is.readByte();
+                                    termCount = is.readInt();
+                                    size = is.readFixedInt();
+    				                if (storedSection != currentSection || storedDocId != this.doc.getDocId()) {
+    				                    // data are related to another section or document:
+    				                    // append them to any existing data
+                                        os.writeInt(storedDocId);
+                                        os.writeByte(storedSection);
+                                        os.writeInt(termCount);
+                                        os.writeFixedInt(size);
+                                        is.copyRaw(os, size);
+                                    } else {    
+    				                    // data are related to our section and document:
+                                        // feed the new list with the GIDs
+                                        previousGID = 0;
+    				                    for (int j = 0; j < termCount; j++) {                                            
+                                            delta = is.readLong();
+                                            storedGID = previousGID + delta;
+    				                        freq = is.readInt();
+    				                        // add the node to the new list if it is not 
+    				                        // in the list of removed nodes
+    				                        if (!storedOccurencesList.contains(storedGID)) {
+                                                for (int k = 0; k < freq; k++) {
+                                                    newOccurencesList.add(storedGID, is.readInt());
+                                                }
+    				                        } else {
+                                                is.skip(freq);
                                             }
-				                        } else {
-                                            is.skip(freq);
-                                        }
-                                        previousGID = storedGID;
-				                    }
-				                }
-					        }
-                            
+                                            previousGID = storedGID;
+    				                    }
+    				                }                                    
+    				            }
+                            } catch (EOFException e) {
+                                //Is it expected ? -pb
+                                LOG.warn(e.getMessage(), e);
+                            } catch (IOException e) {
+                                LOG.error(e.getMessage(), e);
+                                //TODO : data will be saved although os is probably corrupted ! -pb
+                            }                                
+                            //append the data from the new list
                             if(newOccurencesList.getSize() > 0) {
-                                // save the nodes remaining in the output list for the document
-                                newOccurencesList.sort();
                                 termCount = newOccurencesList.getTermCount();
+                                //Don't forget this one
+                                newOccurencesList.sort();                                
                                 os.writeInt(this.doc.getDocId());                           
                                 switch (currentSection) {
                                     case 0 :
@@ -994,8 +1002,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 }                                      
                                 os.writeInt(termCount);
                                 lenOffset = os.position();
-                                os.writeFixedInt(0);
-                                
+                                os.writeFixedInt(0);                                
                                 previousGID = 0;
                                 for (int m = 0; m < newOccurencesList.getSize(); ) {
                                     delta = newOccurencesList.nodes[m] - previousGID;
@@ -1011,21 +1018,24 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                             }                            
 					    }
-                        
+                        //Store the data
 					    if(os.data().size() == 0) {				    	
 							dbTokens.remove(ref);							
 					    } else {						   
 					        if (value == null)
-					            dbTokens.put(ref, os.data());
+					            if (dbTokens.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                                    LOG.warn("Could not put index data for token '" +  ref + "'");  
+                                }                    
 					        else
-					            dbTokens.update(value.getAddress(), ref, os.data());						    
+					            if (dbTokens.update(value.getAddress(), ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                                    LOG.warn("Could not update index data for token '" +  ref + "'");  
+                                }                    						    
 					    }
 					} catch (LockException e) {
                         LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
-                    } catch (IOException e) {
-                        LOG.error("io-error while reading index entry for ");                                           
                     } catch (ReadOnlyException e) {
-                        LOG.warn("Error while removing fulltext entry: " + e.getMessage(), e);                                          
+                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "'", e);
+                        return;                            
                     } finally {
 					    lock.release();
 					}
