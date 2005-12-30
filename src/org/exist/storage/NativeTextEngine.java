@@ -823,8 +823,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             Map.Entry entry;
             String token;           
             int count = 0;
-            for (int section = 0; section <= ATTRIBUTE_SECTION; section++) {
-                for (Iterator i = words[section].entrySet().iterator(); i.hasNext(); count++) {
+            for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
+                for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext(); count++) {
                     entry = (Map.Entry) i.next();
                     token = (String) entry.getKey();
                     occurences = (OccurrenceList) entry.getValue();
@@ -833,7 +833,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     occurences.sort();                    
                     os.clear();
                     os.writeInt(this.doc.getDocId());
-                    switch (section) {
+                    switch (currentSection) {
                         case 0 :
                             os.writeByte(TEXT_SECTION);
                             break;
@@ -875,7 +875,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     setChanged();
                     notifyObservers(progress);
                 }
-                words[section].clear();
+                words[currentSection].clear();
             }
         }
 
@@ -926,18 +926,18 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             int freq;            
             final short collectionId = this.doc.getCollection().getId();
             final Lock lock = dbTokens.getLock();
-			for (byte currentSection = 0; currentSection < 2; currentSection++) {
+            for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
 				for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
+                    //Compute a key for the token
+                    entry = (Map.Entry) i.next();
+                    storedOccurencesList = (OccurrenceList) entry.getValue();
+                    token = (String) entry.getKey();                        
+                    ref = new WordRef(collectionId, token);
+                    newOccurencesList = new OccurrenceList();
+                    os.clear();
                     try {
-                        lock.acquire(Lock.WRITE_LOCK);  
-                        newOccurencesList = new OccurrenceList();
-                        //Compute a key for the token
-    					entry = (Map.Entry) i.next();
-                        storedOccurencesList = (OccurrenceList) entry.getValue();
-                        token = (String) entry.getKey();                        
-    					ref = new WordRef(collectionId, token);
+                        lock.acquire(Lock.WRITE_LOCK);
                         value = dbTokens.get(ref);
-					    os.clear();
                         //Does the token already exist in the index ?
 					    if (value != null) {
 					        //Add its data to the new list    
@@ -1021,21 +1021,21 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         //Store the data
 					    if(os.data().size() == 0) {				    	
 							dbTokens.remove(ref);							
-					    } else {						   
+					    } else {                           
 					        if (value == null)
+                                //TOUNDERSTAND : is this ever called ? -pb
 					            if (dbTokens.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                    LOG.warn("Could not put index data for token '" +  ref + "'");  
+                                    LOG.error("Could not put index data for token '" +  token + "'");  
                                 }                    
 					        else
 					            if (dbTokens.update(value.getAddress(), ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                    LOG.warn("Could not update index data for token '" +  ref + "'");  
+                                    LOG.error("Could not update index data for token '" +  token + "'");  
                                 }                    						    
 					    }
 					} catch (LockException e) {
                         LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
                     } catch (ReadOnlyException e) {
-                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "'", e);
-                        return;                            
+                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "'", e);                                                  
                     } finally {
 					    lock.release();
 					}
@@ -1044,68 +1044,75 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			}
 		}
 
-		public void reindex(DocumentImpl document, NodeImpl node) {
-		    final short collectionId = document.getCollection().getId();
-		    int len, rawSize, docId;
+		public void reindex(DocumentImpl document, NodeImpl node) {	
+            OccurrenceList storedOccurencesList;
+		    int termCount;
+            long storedGID;
+            long previousGID;
+            long delta;
 		    Map.Entry entry;
-		    String word;
-		    OccurrenceList idList;
-		    long last, gid, delta;
-		    int freq = 1;
-		    byte section;
-//		    NodeProxy p;
-		    WordRef ref;
-		    VariableByteInput is = null;
-		    Lock lock = dbTokens.getLock();
-		    for (int k = 0; k < 2; k++) {
-		        for (Iterator i = words[k].entrySet().iterator(); i.hasNext();) {
+		    String token;
+            WordRef ref;
+            VariableByteInput is;
+		    //TOUNDERSTAND -pb
+            int size;
+            int lenOffset;
+            int storedDocId;
+            byte storedSection;
+            int freq;
+            final short collectionId = document.getCollection().getId();
+		    final Lock lock = dbTokens.getLock();
+            for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
+		        for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
 		            entry = (Map.Entry) i.next();
-		            word = (String) entry.getKey();
-		            idList = (OccurrenceList) entry.getValue();
-		            ref = new WordRef(collectionId, word);
+                    token = (String) entry.getKey();
+                    storedOccurencesList = (OccurrenceList) entry.getValue();
+		            ref = new WordRef(collectionId, token);
+                    os.clear();
 		            try {
 		                lock.acquire(Lock.WRITE_LOCK);
-		                is = dbTokens.getAsStream(ref);
-		                os.clear();
+		                is = dbTokens.getAsStream(ref);		                
 		                if (is != null) {
 		                    // add old entries to the new list
 		                    try {
 		                        while (is.available() > 0) {
-		                            docId = is.readInt();
-		                            section = is.readByte();
-		                            len = is.readInt();
-		                            rawSize = is.readFixedInt();
-		                            if (docId != document.getDocId() || section != k) {
+                                    storedDocId = is.readInt();
+                                    storedSection = is.readByte();
+                                    termCount = is.readInt();
+                                    size = is.readFixedInt();
+		                            if (storedSection != currentSection || storedDocId != document.getDocId()) {
 		                                // section belongs to another document:
 		                                // copy data to new buffer
-		                                os.writeInt(docId);
-		                                os.writeByte(section);
-		                                os.writeInt(len);
-		                                os.writeFixedInt(rawSize);
-		                                is.copyRaw(os, rawSize);
+		                                os.writeInt(storedDocId);
+		                                os.writeByte(storedSection);
+		                                os.writeInt(termCount);
+		                                os.writeFixedInt(size);
+		                                is.copyRaw(os, size);
 		                            } else {
 		                                // copy nodes to new list
-		                                gid = 0;
-		                                for (int j = 0; j < len; j++) {
-		                                    gid += is.readLong();
+                                        previousGID = 0;
+		                                for (int j = 0; j < termCount; j++) {
+                                            delta = is.readLong();
+                                            storedGID = previousGID + delta;
 		                                    freq = is.readInt();
 		                                    if (node == null
-		                                            && document.getTreeLevel(gid) < document
+		                                            && document.getTreeLevel(storedGID) < document
 		                                            .reindexRequired()) {
                                                 for (int l = 0; l < freq; l++) {
-                                                    idList.add(gid, is.readInt());
+                                                    storedOccurencesList.add(storedGID, is.readInt());
                                                 }
 		                                    } else if (node != null
 		                                            && (!XMLUtil
 		                                                    .isDescendantOrSelf(
                                                                     document,
 		                                                            node.getGID(),
-		                                                            gid))) {
+                                                                    storedGID))) {
                                                 for (int l = 0; l < freq; l++) {
-                                                    idList.add(gid, is.readInt());
+                                                    storedOccurencesList.add(storedGID, is.readInt());
                                                 }
 		                                    } else
                                                 is.skip(freq);
+                                            previousGID = storedGID;
 		                                }
 		                            }
 		                        }
@@ -1114,31 +1121,39 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                        // for " + word, e);
 		                    } catch (IOException e) {
 		                        LOG.error("io-error while reading index entry for "
-		                                + word, e);
+		                                + token, e);
 		                    }
 		                }
-		                idList.sort();
-		                len = idList.getTermCount();
+                        termCount = storedOccurencesList.getTermCount();
+                        storedOccurencesList.sort();                        
 		                os.writeInt(document.getDocId());
-		                os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
-		                os.writeInt(len);
-		                rawSize = os.position();
+                        switch (currentSection) {
+                            case 0 :
+                                os.writeByte(TEXT_SECTION);
+                                break;
+                            case 1 :
+                                os.writeByte(ATTRIBUTE_SECTION);
+                                break;
+                            default :
+                                throw new IllegalArgumentException("Invalid inverted index");
+                        }         
+		                os.writeInt(termCount);
+                        lenOffset = os.position();
 	                    os.writeFixedInt(0);
                         
-                        last = 0;
-                        for (int m = 0; m < idList.getSize(); ) {
-                            delta = idList.nodes[m] - last;
-                            os.writeLong(delta);
-                            last = idList.nodes[m];
-                            freq = idList.getOccurrences(m);
+                        previousGID = 0;
+                        for (int m = 0; m < storedOccurencesList.getSize(); ) {
+                            delta = storedOccurencesList.nodes[m] - previousGID;
+                            os.writeLong(delta);                            
+                            freq = storedOccurencesList.getOccurrences(m);
                             os.writeInt(freq);
                             for (int n = 0; n < freq; n++) {
-                                os.writeInt(idList.offsets[m + n]);
+                                os.writeInt(storedOccurencesList.offsets[m + n]);
                             }
+                            previousGID = storedOccurencesList.nodes[m];
                             m += freq;
-                        }
-		                
-		                os.writeFixedInt(rawSize, os.position() - rawSize - 4);
+                        }		                
+		                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
 		                
 		                try {
 		                    if (is == null)
@@ -1148,19 +1163,19 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                                .getAddress(), ref, os.data());
 		                    }
 		                } catch (ReadOnlyException e) {
+                            
 		                }
 		            } catch (LockException e) {
                         LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
 		                is = null;
 		            } catch (IOException e) {
-		                LOG.error("io error while reindexing word '" + word
-		                        + "'");
+		                LOG.error("io error while reindexing word '" + token  + "'");
 		                is = null;
 		            } finally {
 		                lock.release(Lock.WRITE_LOCK);
 		            }
 		        }
-		        words[k].clear();
+		        words[currentSection].clear();
 		    }
 		}
 	}

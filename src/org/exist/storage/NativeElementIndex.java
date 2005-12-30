@@ -217,7 +217,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         long previousGID; 
         long delta;
         Map.Entry entry;
-        Value ref;        
+        Value searchKey;        
         Value value;
         VariableByteArrayInput is; 
         //TOUNDERSTAND -pb
@@ -227,22 +227,22 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final short collectionId = this.doc.getCollection().getId();
         final Lock lock = dbNodes.getLock();
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
+            entry = (Map.Entry) i.next();
+            storedGIDList = (ArrayList) entry.getValue();
+            qname = (QName) entry.getKey();
+            //Compute a key for the node
+            if (qname.getNameType() == ElementValue.ATTRIBUTE_ID) {
+                searchKey = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());                    
+            } else {
+                short sym = broker.getSymbols().getSymbol(qname.getLocalName());
+                short nsSym = broker.getSymbols().getNSSymbol(qname.getNamespaceURI());
+                searchKey = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);                    
+            }
+            newGIDList = new ArrayList();
+            os.clear();             
             try {
                 lock.acquire(Lock.WRITE_LOCK);
-                newGIDList = new ArrayList();
-                entry = (Map.Entry) i.next();
-                storedGIDList = (ArrayList) entry.getValue();
-                qname = (QName) entry.getKey();
-                //Compute a key for the node
-                if (qname.getNameType() == ElementValue.ATTRIBUTE_ID) {
-                    ref = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());                    
-                } else {
-                    short sym = broker.getSymbols().getSymbol(qname.getLocalName());
-                    short nsSym = broker.getSymbols().getNSSymbol(qname.getNamespaceURI());
-                    ref = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);                    
-                }
-                value = dbNodes.get(ref);
-                os.clear();                
+                value = dbNodes.get(searchKey);
                 //Does the node already exist in the index ?
                 if (value != null) {
                     //Add its data to the new list                    
@@ -309,20 +309,18 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 }                
                 //Store the data
                 if (value == null) {
-                    if (dbNodes.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.warn("Could not put index data for node '" +  qname + "'");  
+                    if (dbNodes.put(searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.error("Could not put index data for node '" +  qname + "'");  
                     }                    
                 } else {
-                    if (dbNodes.update(value.getAddress(), ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.warn("Could not put index data for node '" +  qname + "'");  
+                    if (dbNodes.update(value.getAddress(), searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.error("Could not put index data for node '" +  qname + "'");  
                     }                    
                 }
             } catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
-                //TODO : return ?
+                LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);                
             } catch (ReadOnlyException e) {
-                LOG.warn("Read-only error on '" + dbNodes.getFile().getName() + "'", e); 
-                //TODO : return ?
+                LOG.warn("Read-only error on '" + dbNodes.getFile().getName() + "'", e);                
             } finally {
                 lock.release();
             }

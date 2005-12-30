@@ -272,23 +272,23 @@ public class NativeValueIndex implements ContentLoadingObserver {
         long previousGID;        
         long delta; 
         Map.Entry entry;    
-        Value ref;
+        Value searchKey;
         Value value;
         VariableByteArrayInput is;
         int storedDocId;
         final short collectionId = this.doc.getCollection().getId();
         final Lock lock = dbValues.getLock();           
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
+            entry = (Map.Entry) i.next();
+            indexable = (Indexable) entry.getKey();
+            storedGIDList = (LongLinkedList) entry.getValue();   
+            //Compute a key for the value
+            searchKey = new Value(indexable.serialize(collectionId, caseSensitive)); 
+            newGIDList = new LongLinkedList();
+            os.clear();              
             try {                    
-                lock.acquire(Lock.WRITE_LOCK);  
-                newGIDList = new LongLinkedList();
-                entry = (Map.Entry) i.next();
-                indexable = (Indexable) entry.getKey();
-                storedGIDList = (LongLinkedList) entry.getValue();   
-                //Compute a key for the value
-                ref = new Value(indexable.serialize(collectionId, caseSensitive));                
-                value = dbValues.get(ref);
-                os.clear();
+                lock.acquire(Lock.WRITE_LOCK); 
+                value = dbValues.get(searchKey);
                 //Does the value already exist in the index ?
                 if (value != null) {
                     //Add its data to the new list
@@ -344,20 +344,19 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 }                
                 //Store the data
                 if (value == null) {
-                    if (dbValues.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.warn("Could not put index data for value '" +  ref + "'");  
+                    if (dbValues.put(searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.error("Could not put index data for value '" +  searchKey + "'");  
                     }                    
                 } else {
-                    if (dbValues.update(value.getAddress(), ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.warn("Could not update index data for value '" +  ref + "'");  
+                    if (dbValues.update(value.getAddress(), searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.error("Could not update index data for value '" +  searchKey + "'");  
                     }                    
                 }  
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
                 //TODO : return ?
             } catch (ReadOnlyException e) {
-                LOG.warn("Read-only error on '" + dbValues.getFile().getName() + "'", e);
-                return;           
+                LOG.warn("Read-only error on '" + dbValues.getFile().getName() + "'", e);                       
             } finally {
                 lock.release();
             }            
