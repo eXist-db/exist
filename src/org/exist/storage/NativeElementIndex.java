@@ -287,24 +287,26 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         LOG.error(e.getMessage(), e);
                         //TODO : data will be saved although os is probably corrupted ! -pb
                     }
-                }
-                // append the new list
-                gidsCount = newGIDList.size();
-                //Don't forget this one
-                FastQSort.sort(newGIDList, 0, gidsCount - 1);                
-                os.writeInt(this.doc.getDocId());
-                os.writeInt(gidsCount);
-                lenOffset = os.position();
-                os.writeFixedInt(0);
-                previousGID = 0;
-                for (int j = 0; j < gidsCount; j++) {
-                    storedNode = (NodeProxy) newGIDList.get(j);
-                    delta = storedNode.getGID() - previousGID;                        
-                    os.writeLong(delta);
-                    StorageAddress.write(storedNode.getInternalAddress(), os);
-                    previousGID = storedNode.getGID();
+                    if (newGIDList.size() >0 ) {
+                        //append the data from the new list
+                        gidsCount = newGIDList.size();
+                        //Don't forget this one
+                        FastQSort.sort(newGIDList, 0, gidsCount - 1);                
+                        os.writeInt(this.doc.getDocId());
+                        os.writeInt(gidsCount);
+                        lenOffset = os.position();
+                        os.writeFixedInt(0);
+                        previousGID = 0;
+                        for (int j = 0; j < gidsCount; j++) {
+                            storedNode = (NodeProxy) newGIDList.get(j);
+                            delta = storedNode.getGID() - previousGID;                        
+                            os.writeLong(delta);
+                            StorageAddress.write(storedNode.getInternalAddress(), os);
+                            previousGID = storedNode.getGID();
+                        }                
+                        os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);    
+                    }
                 }                
-                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                 //Store the data
                 if (value == null) {
                     if (dbNodes.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
