@@ -373,9 +373,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
         } catch (BTreeException e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
         } catch (IOException e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
         } finally {
             lock.release();
         }
@@ -425,12 +425,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         changed = true;
                     }
                 }
+                //Store new data, if relevant
                 if (changed) {
                     if (os.data().size() == 0) {
+                        //Well, nothing to store : remove the existing data
                         dbValues.remove(key);
-                    } else {
-                        //TODO : why not use the same construct as above :
-                        //db.update(value.getAddress(), ref, os.data()) -pb
+                    } else {                      
                         if (dbValues.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                             LOG.warn("Could not put index data for value '" +  ref + "'");
                         }
