@@ -135,6 +135,28 @@ public class RESTServiceTest extends TestCase {
 	    }
 	}
 	
+	public void testPutWithCharset() {
+		try {
+			System.out.println("--- Storing document ---");
+			HttpURLConnection connect = getConnection(RESOURCE_URI);
+			connect.setRequestMethod("PUT");
+			connect.setDoOutput(true);
+			connect.setRequestProperty("ContentType", "text/xml; charset=UTF-8");
+			
+			Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
+			writer.write(XML_DATA);
+			writer.close();
+			
+			connect.connect();
+			int r = connect.getResponseCode();
+			assertEquals("Server returned response code " + r, 200, r);
+			
+			doGet();
+	    } catch (Exception e) {            
+	        fail(e.getMessage()); 
+	    }
+	}
+	
 	public void testXUpdate() {
 		try {
 			HttpURLConnection connect = preparePost(XUPDATE);
@@ -215,6 +237,12 @@ public class RESTServiceTest extends TestCase {
 			
 			int r = connect.getResponseCode();
 			assertEquals("Server returned response code " + r, 200, r);
+                        String contentType = connect.getContentType();
+                        int semicolon = contentType.indexOf(';');
+                        if (semicolon>0) {
+                           contentType = contentType.substring(0, semicolon).trim();
+                        }
+			assertEquals("Server returned content type " + contentType, "text/xml", contentType);
 			
 			System.out.println(readResponse(connect.getInputStream()));
 	    } catch (Exception e) {            
