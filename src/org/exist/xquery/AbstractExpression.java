@@ -59,7 +59,9 @@ public abstract class AbstractExpression implements Expression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#resetState()
 	 */
-	public abstract void resetState();
+	public void resetState() {
+		contextDocSet = null;
+	}
 
 	/**
 	 * The default cardinality is {@link Cardinality#EXACTLY_ONE}.

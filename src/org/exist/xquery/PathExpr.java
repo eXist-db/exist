@@ -143,6 +143,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     contextDocs = var.getContextDocs();            
             }
     
+            if (contextDocs != null)
+            	setContextDocSet(contextDocs);
+            
             Item current;
             Sequence values;
             for (Iterator iter = steps.iterator(); iter.hasNext();) {
@@ -323,6 +326,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @see org.exist.xquery.AbstractExpression#resetState()
      */
     public void resetState() {
+    	super.resetState();
         for (Iterator i = steps.iterator(); i.hasNext();) {
             ((Expression)i.next()).resetState();
         }

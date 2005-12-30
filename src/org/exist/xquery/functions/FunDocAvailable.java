@@ -107,6 +107,7 @@ public class FunDocAvailable extends Function {
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		getArgument(0).resetState();
 	}
 }

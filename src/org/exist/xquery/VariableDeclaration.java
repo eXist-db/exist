@@ -171,6 +171,7 @@ public class VariableDeclaration extends AbstractExpression {
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		expression.resetState();
 	}
 }

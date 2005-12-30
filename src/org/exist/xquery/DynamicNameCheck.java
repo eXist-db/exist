@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -92,6 +93,7 @@ public class DynamicNameCheck extends AbstractExpression {
 	 * @see org.exist.xquery.Expression#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		expression.resetState();
 	}
 
@@ -128,4 +130,8 @@ public class DynamicNameCheck extends AbstractExpression {
 		return result.toString();
 	}	
 
+	public void setContextDocSet(DocumentSet contextSet) {
+		super.setContextDocSet(contextSet);
+		expression.setContextDocSet(contextSet);
+	}
 }

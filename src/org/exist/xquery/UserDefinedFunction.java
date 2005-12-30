@@ -161,6 +161,7 @@ public class UserDefinedFunction extends Function {
 	 */
 	public void resetState() {
         //TODO ; understand this test. Why not reset even is not in recursion ?
+		// Answer: would lead to an infinite loop if the function is recursive.
 		if(!inRecursion) {
 			inRecursion = true;
 			body.resetState();

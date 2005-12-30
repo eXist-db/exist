@@ -50,6 +50,8 @@ import org.w3c.dom.Node;
  */
 public class LocationStep extends Step {
 
+	private final int ATTR_DIRECT_SELECT_THRESHOLD = 3;
+	
 	protected NodeSet currentSet = null;
 	protected DocumentSet currentDocs = null;
 	protected UpdateListener listener = null;
@@ -123,6 +125,7 @@ public class LocationStep extends Step {
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
             //TODO : log and/or profile ?
 			pred = (Predicate) i.next();
+			pred.setContextDocSet(getContextDocSet());
 			result = pred.evalPredicate(outerSequence, result, axis);
 		}
 		return result;
@@ -310,12 +313,13 @@ public class LocationStep extends Step {
             return result;
 		// if there's just a single known node in the context, it is faster
 	    // do directly search for the attribute in the parent node.
-        } else if(axis == Constants.ATTRIBUTE_AXIS && contextSet.getLength() == 1
+        } else if(
+        		axis == Constants.ATTRIBUTE_AXIS && contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD
                 && !(contextSet instanceof VirtualNodeSet)) {
             NodeProxy proxy = contextSet.get(0);
-            if (proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
+            if (proxy != null && proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
                 return contextSet.directSelectAttribute(test.getName(), inPredicate);          
-        }       
+        }
         if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) { 
@@ -325,7 +329,7 @@ public class LocationStep extends Step {
                             "OPTIMIZATION", "using index '" + index.toString() + "'");   
                 //TODO : why a null selector here ? We have one below !
                 currentSet = index.findElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), null);  
-                currentDocs = docs;      
+                currentDocs = docs;
                 registerUpdateListener();
             }
             switch (axis) {
@@ -354,8 +358,8 @@ public class LocationStep extends Step {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
                         "OPTIMIZATION", "using index '" + index.toString() + "'");              
-            return index.getAttributesByName(docs, test.getName(), selector);            
-		}    
+            return index.getAttributesByName(docs, test.getName(), selector);
+		}
 	}
 
 	protected NodeSet getChildren(XQueryContext context, NodeSet contextSet) {
@@ -364,7 +368,7 @@ public class LocationStep extends Step {
 			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
 			vset.setInPredicate(inPredicate);
 			return vset;
-		} else if (preloadNodeSets()) {            
+		} else if (preloadNodeSets()) {
 			DocumentSet docs = getDocumentSet(contextSet);
 			//TODO : understand why this one is different from the other ones
 			if (currentSet == null || currentDocs == null || !(docs == currentDocs || docs.equals(currentDocs))) {

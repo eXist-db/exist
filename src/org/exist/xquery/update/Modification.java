@@ -92,6 +92,7 @@ public abstract class Modification extends AbstractExpression {
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		select.resetState();
 		if (value != null)
 			value.resetState();

@@ -261,10 +261,16 @@ public class ExtFulltext extends Function {
 		this.path = path;
 	}
 	
+	public void setContextDocSet(DocumentSet contextSet) {
+		super.setContextDocSet(contextSet);
+		path.setContextDocSet(contextSet);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		path.resetState();
 		searchTerm.resetState();
 		cached = null;

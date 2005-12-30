@@ -103,10 +103,16 @@ public class AtomicToString extends AbstractExpression {
 		return in_docs;
 	}
 
+	public void setContextDocSet(DocumentSet contextSet) {
+		super.setContextDocSet(contextSet);
+		expression.setContextDocSet(contextSet);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		expression.resetState();
 	}
 

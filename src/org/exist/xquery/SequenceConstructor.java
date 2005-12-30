@@ -107,6 +107,7 @@ public class SequenceConstructor extends PathExpr {
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		for (Iterator i = steps.iterator(); i.hasNext();) {
 			((Expression) i.next()).resetState();
 		}

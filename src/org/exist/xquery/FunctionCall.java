@@ -179,6 +179,7 @@ public class FunctionCall extends Function {
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
     public void resetState() {
+    	super.resetState();
 		functionDef.resetState();
         //TODO : reset expression ?        
 	}

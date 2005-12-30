@@ -209,6 +209,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		inputSequence.resetState();
 		if(whereExpr != null) whereExpr.resetState();
 		returnExpr.resetState();

@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
@@ -133,7 +134,13 @@ public class CastableExpression extends AbstractExpression {
     	return result.toString();
     }    
     
+    public void setContextDocSet(DocumentSet contextSet) {
+		super.setContextDocSet(contextSet);
+		expression.setContextDocSet(contextSet);
+	}
+    
 	public void resetState() {
+		super.resetState();
 		expression.resetState();
 	}
 }

@@ -166,6 +166,8 @@ public interface Expression {
 	
 	public void setContextDocSet(DocumentSet contextSet);
 	
+	public DocumentSet getContextDocSet();
+	
 	/**
 	 * Returns the {@link XQueryAST} node from which this expression
 	 * has been constructed by the parser. This node contains location information

@@ -740,6 +740,7 @@ public class GeneralComparison extends BinaryOp {
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		getLeft().resetState();
 		getRight().resetState();
 		cached = null;

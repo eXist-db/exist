@@ -102,6 +102,7 @@ public class LetExpr extends BindingExpression {
         var.setSequenceType(sequenceType);
         context.declareVariableBinding(var);        
         var.setValue(in);
+        var.setContextDocs(inputSequence.getContextDocSet());
         var.checkType();
         
         if (whereExpr != null) {
