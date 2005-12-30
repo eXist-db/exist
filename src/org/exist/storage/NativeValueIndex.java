@@ -646,15 +646,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
 			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
 			try {
 				lock.acquire();
-				try {
-					dbValues.query(query, callback);
-				} catch (IOException e) {
-                    LOG.error(e.getMessage(), e);
-				} catch (BTreeException e) {
-                    LOG.warn(e.getMessage(), e);
-				}
-			} catch (LockException e) {
+				dbValues.query(query, callback);
+            } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);  
+			} catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+			} catch (BTreeException e) {
+                LOG.error(e.getMessage(), e);			
 			} finally {
 				lock.release();
 			}
