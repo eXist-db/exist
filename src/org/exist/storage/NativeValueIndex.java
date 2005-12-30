@@ -810,12 +810,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 while (is.available() > 0) {
                     storedDocId = is.readInt();
                 	gidsCount = is.readInt();
-                    storedDocument = docs.getDoc(storedDocId);                    
+                    storedDocument = docs.getDoc(storedDocId);
+                    //TOUNDERSTAND : how could this be possible ? -pb
                 	if (storedDocument == null) {
                         is.skip(gidsCount);
                         continue;                        
-                    }                    
-                    
+                    }               
+                    //TOUNDERSTAND : does a null contextSet makes sense ? -pb                    
                 	if (contextSet != null) { 
                 	    if (!contextSet.containsDoc(storedDocument)) {
                 	        is.skip(gidsCount);
@@ -823,7 +824,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         }
                         sizeHint = contextSet.getSizeHint(storedDocument);
                 	}
-
+                	//Process the nodes
                     storedGID = 0;                	
                 	for (int j = 0; j < gidsCount; j++) {
                         delta = is.readLong();
