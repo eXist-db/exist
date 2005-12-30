@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -102,6 +103,11 @@ public class SimpleStep extends Step {
 	public void resetState() {
 		super.resetState();
 		expression.resetState();
+	}
+	
+	public void setContextDocSet(DocumentSet contextSet) {
+		super.setContextDocSet(contextSet);
+		expression.setContextDocSet(contextSet);
 	}
 	
 	/* (non-Javadoc)

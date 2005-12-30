@@ -170,6 +170,7 @@ public class AttributeConstructor extends NodeConstructor {
 	 * @see org.exist.xquery.NodeConstructor#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		Object object;
 		for(Iterator i = contents.iterator(); i.hasNext(); ) {
 			object = i.next();

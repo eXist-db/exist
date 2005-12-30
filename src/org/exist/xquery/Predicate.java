@@ -26,6 +26,7 @@ import java.util.Iterator;
 import org.exist.dom.ArraySet;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -335,6 +336,12 @@ public class Predicate extends PathExpr {
         if (axis == Constants.UNKNOWN_AXIS)
             throw new IllegalArgumentException("Tested unknown axis");
 	    return (axis < Constants.CHILD_AXIS);
+	}
+	
+	public void setContextDocSet(DocumentSet contextSet) {
+		super.setContextDocSet(contextSet);
+		if (getLength() > 0)
+			getExpression(0).setContextDocSet(contextSet);
 	}
 	
 	/* (non-Javadoc)

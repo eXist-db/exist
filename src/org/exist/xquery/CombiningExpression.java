@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.DocumentSet;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -67,10 +68,17 @@ public abstract class CombiningExpression extends AbstractExpression {
 		return Type.NODE;
 	}
 
+	public void setContextDocSet(DocumentSet contextSet) {
+		super.setContextDocSet(contextSet);
+		left.setContextDocSet(contextSet);
+		right.setContextDocSet(contextSet);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		left.resetState();
 		right.resetState();
 	}

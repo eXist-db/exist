@@ -19,6 +19,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.DocumentSet;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -51,6 +52,12 @@ public abstract class BinaryOp extends PathExpr {
         steps.add(1, expr);
     }
 
+    public void setContextDocSet(DocumentSet contextSet) {
+    	super.setContextDocSet(contextSet);
+    	getLeft().setContextDocSet(contextSet);
+    	getRight().setContextDocSet(contextSet);
+    }
+    
     /*
      * (non-Javadoc)
      * 

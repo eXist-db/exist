@@ -141,6 +141,7 @@ public class ConditionalExpression extends AbstractExpression {
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		testExpr.resetState();
 		thenExpr.resetState();
 		elseExpr.resetState();

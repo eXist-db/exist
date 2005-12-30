@@ -130,6 +130,7 @@ public abstract class Step extends AbstractExpression {
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			Predicate pred = (Predicate) i.next();
 			pred.resetState();

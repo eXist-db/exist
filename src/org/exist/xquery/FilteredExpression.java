@@ -135,6 +135,7 @@ public class FilteredExpression extends AbstractExpression {
 	 * @see org.exist.xquery.Expression#resetState()
 	 */
 	public void resetState() {
+		super.resetState();
 		expression.resetState();
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			Predicate pred = (Predicate) i.next();
