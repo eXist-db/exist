@@ -533,116 +533,108 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             return null;
         //TODO : case conversion should be handled by the tokenizer -pb
         expr = expr.toLowerCase();
-        
-        StringBuffer term = new StringBuffer();
+
+        // if the regexp starts with a char sequence, we restrict the index scan to entries starting with
+        // the same sequence. Otherwise, we have to scan the whole index.
+        StringBuffer token = new StringBuffer();
         for (int i = 0; i < expr.length(); i++) {
             if (Character.isLetterOrDigit(expr.charAt(i)))
-                term.append(expr.charAt(i));
+                token.append(expr.charAt(i));
             else
                 break;
         }
         try {
             TermMatcher comparator = new RegexMatcher(expr, type, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-            return getNodes(context, docs, contextSet, comparator, term);
+            return getNodes(context, docs, contextSet, comparator, token);
         } catch (EXistException e) {
             return null;
         }
-    }    
-
-    /**
-     * @param freq
-     * @param is
-     * @param match
-     * @throws IOException
-     */
-    private void readOccurrences(int freq, VariableByteInput is, Match match, int length) throws IOException {
-        for (int k = 0; k < freq; k++) {
-            match.addOffset(is.readInt(), length);
-        }
     }
-
-	/**
-	 * Return all nodes whose content matches any of the search terms in expr.
-	 * This method interprets the search terms as regular expressions and
-	 * matches them against all indexed words.
-	 * 
-	 * @param the
-	 *                input document set
-	 * @param array
-	 *                of regular expression search terms
-	 * @return array containing a NodeSet for each of the search terms
+    
+	/* Return all nodes for wich the matcher matches.
+	 * @see org.exist.storage.TextSearchEngine#getNodes(org.exist.xquery.XQueryContext, org.exist.dom.DocumentSet, org.exist.dom.NodeSet, org.exist.storage.TermMatcher, java.lang.CharSequence)
 	 */
 	public NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet,
-							TermMatcher matcher, CharSequence startTerm) throws TerminatedException {
-//		long start = System.currentTimeMillis();
+			TermMatcher matcher, CharSequence startTerm) throws TerminatedException {;
 		NodeSet result = new ExtArrayNodeSet();
+        final SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, docs);        
 		Value ref;
 		Collection collection;
 		short collectionId;
-		Lock lock = dbTokens.getLock();
-		SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, docs);
+		final Lock lock = dbTokens.getLock();		
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			collection = (Collection) iter.next();
 			collectionId = collection.getId();
+            //Compute a key for the token
 			if (startTerm != null && startTerm.length() > 0)
+                //TODO : case conversion should be handled by the tokenizer -pb
 				ref = new WordRef(collectionId, startTerm.toString().toLowerCase());
 			else
 				ref = new WordRef(collectionId);
 			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 			try {
-				lock.acquire();
-				try {
-					dbTokens.query(query, cb);
-				} catch (IOException ioe) {
-					LOG.debug(ioe);
-				} catch (BTreeException bte) {
-					LOG.debug(bte);
-				}
+				lock.acquire();	
+				dbTokens.query(query, cb);
 			} catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+            } catch (BTreeException e) {
+                LOG.error(e.getMessage(), e);
+                //TODO return null ? rethrow ? -pb                
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);   
+                //TODO return null ? rethrow ? -pb
 			} finally {
 				lock.release();
 			}
 		}
-//		LOG.debug("regexp found: " + result.getLength() + " in "
-//				+ (System.currentTimeMillis() - start) + "ms.");
 		return result;
 	}
 
 	public String[] getIndexTerms(DocumentSet docs, TermMatcher matcher) {
-//		long start = System.currentTimeMillis();
+        final IndexCallback cb = new IndexCallback(null, matcher);
 		Value ref;
 		Collection collection;
 		short collectionId;
-		Lock lock = dbTokens.getLock();
-		IndexCallback cb = new IndexCallback(null, matcher);
+		final Lock lock = dbTokens.getLock();		
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			collection = (Collection) iter.next();
 			collectionId = collection.getId();
+            //Compute a key for the token
 			ref = new WordRef(collectionId);
 			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 			try {
 				lock.acquire();
-				try {
-					dbTokens.query(query, cb);
-				} catch (IOException ioe) {
-					LOG.debug(ioe);
-				} catch (BTreeException bte) {
-					LOG.debug(bte);
-				} catch (TerminatedException e) {
-                    LOG.debug(e);
-                }
+				dbTokens.query(query, cb);
 			} catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+            } catch (BTreeException e) {
+                LOG.error(e.getMessage(), e);
+            } catch (TerminatedException e) {
+                LOG.warn(e.getMessage(), e);                       
 			} finally {
 				lock.release();
 			}
 		}
 		return cb.getMatches();
 	}
+    
+    /**
+     * @param freq
+     * @param is
+     * @param match
+     * @throws IOException
+     */
+    private void readOccurrences(int freq, VariableByteInput is, Match match, int length) 
+            throws IOException {
+        for (int k = 0; k < freq; k++) {
+            match.addOffset(is.readInt(), length);
+        }
+    }    
 
-	public Occurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet,
-			String start, String end) throws PermissionDeniedException {
+	public Occurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet, String start, String end) 
+            throws PermissionDeniedException {
 		long t0 = System.currentTimeMillis();
 		final Lock lock = dbTokens.getLock();
 		short collectionId;
