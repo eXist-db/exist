@@ -36,15 +36,19 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeValueIndex;
+import org.exist.xquery.Atomize;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.DynamicCardinalityCheck;
+import org.exist.xquery.DynamicTypeCheck;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.Error;
 import org.exist.xquery.util.RegexTranslator;
 import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
 import org.exist.xquery.value.BooleanValue;
@@ -102,7 +106,28 @@ public class FunMatches extends Function {
 	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */
 	public void setArguments(List arguments) throws XPathException {
-		steps.addAll(arguments);
+        Expression arg = (Expression) arguments.get(0);
+        arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg,
+                new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));    
+        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
+            arg = new Atomize(context, arg);
+        steps.add(arg);
+        
+        arg = (Expression) arguments.get(1);
+        arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
+                new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature)); 
+        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
+            arg = new Atomize(context, arg);
+        steps.add(arg);
+        
+        if (getArgumentCount() == 3) {
+            arg = (Expression) arguments.get(2);
+            arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
+                    new Error(Error.FUNC_PARAM_CARDINALITY, "3", mySignature)); 
+            if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
+                arg = new Atomize(context, arg);
+            steps.add(arg);            
+        }
 	}
 	
 	/* (non-Javadoc)
@@ -139,8 +164,8 @@ public class FunMatches extends Function {
     	//  call analyze for each argument
         inPredicate = (flags & IN_PREDICATE) > 0;
         for(int i = 0; i < getArgumentCount(); i++) {
-            getArgument(i).analyze(this, flags);
-        }
+            getArgument(i).analyze(this, flags);            
+        }        
     }
     
 	/* (non-Javadoc)
