@@ -159,10 +159,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     //TODO : unify functionalities with storeText -pb
     public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl attr) {
         final DocumentImpl doc = (DocumentImpl) attr.getOwnerDocument();
-        final long gid = attr.getGID();
-        TextToken token;
+        final long gid = attr.getGID();        
         //TODO : case conversion should be handled by the tokenizer -pb
-        tokenizer.setText(attr.getValue().toLowerCase());         
+        tokenizer.setText(attr.getValue().toLowerCase());   
+        TextToken token;
         while (null != (token = tokenizer.nextToken())) {
             if (token.length() > MAX_TOKEN_LENGTH) {
                 continue;
@@ -315,43 +315,33 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */
     public void dropIndex(DocumentImpl document) {        
         //Collect document's tokens
-        TreeSet tokens = new TreeSet();
-        NodeList children = document.getChildNodes();
-        NodeImpl node;
+        final TreeSet tokens = new TreeSet();
+        final NodeList children = document.getChildNodes();        
         for (int i = 0; i < children.getLength(); i++) {
-            node = (NodeImpl) children.item(i);
+            NodeImpl node = (NodeImpl) children.item(i);
             Iterator j = broker.getDOMIterator(new NodeProxy(document, node.getGID(), node.getInternalAddress()));
             collect(tokens, j);
         }
-        
-        String token;        
-        WordRef ref;
-        int gidsCount;        
-        byte section;
-        //TOUNDERSTAND -pb
-        int size;        
-        VariableByteInput is; 
-        int storedDocId;
-        boolean changed;
         short collectionId = document.getCollection().getId();        
         final Lock lock = dbTokens.getLock();
         for (Iterator iter = tokens.iterator(); iter.hasNext();) {
-            token = (String) iter.next();
-            ref = new WordRef(collectionId, token);
+            String token = (String) iter.next();
+            WordRef ref = new WordRef(collectionId, token);
             try {
                 lock.acquire(Lock.WRITE_LOCK);
-                changed = false;                
+                boolean changed = false;                
                 os.clear();    
-                is = dbTokens.getAsStream(ref);
+                VariableByteInput is = dbTokens.getAsStream(ref);
                 //Does the token already has data in the index ?
                 if (is == null)
                     continue;            
                 try {
                     while (is.available() > 0) {
-                        storedDocId = is.readInt();
-                        section = is.readByte();
-                        gidsCount = is.readInt();
-                        size = is.readFixedInt();
+                        int storedDocId = is.readInt();
+                        byte section = is.readByte();
+                        int gidsCount = is.readInt();
+                        //TOUNDERSTAND -pb        
+                        int size = is.readFixedInt();
                         if (storedDocId != document.getDocId()) {
                             // data are related to another document:
                             // copy them to any existing data
@@ -434,44 +424,26 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             token = stemmer.stem(expr);
         else
             token = expr;
-        
-        NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);
-        Value ref;
-        int storedDocId;
-        int storedSection;
-        int freq;
-        int gidsCount;
-        long storedGID;
-        long previousGID; 
-        long delta;  
-        //TOUNDERSTAND -pb
-        int size;        
-        VariableByteInput is;
-        Collection collection;
-        short collectionId;        
-		DocumentImpl storedDocument;
-        NodeProxy storedNode;
-        NodeProxy parent;
-		int sizeHint;
-        Match match;
+        final NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);         
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
             //Compute a key for the node
-			collection = (Collection) iter.next();
-			collectionId = collection.getId();
-			ref = new WordRef(collectionId, token);
+            Collection collection = (Collection) iter.next();
+            short collectionId = collection.getId();
+            Value ref = new WordRef(collectionId, token);
 			Lock lock = dbTokens.getLock();
 			try {
 				lock.acquire();
-				is = dbTokens.getAsStream(ref);
+                VariableByteInput is = dbTokens.getAsStream(ref);
                 //Does the token already has data in the index ?
 				if (is == null)
 					continue;				
 				while (is.available() > 0) {
-                    storedDocId = is.readInt();
-                    storedSection = is.readByte();
-                    gidsCount = is.readInt();
-                    size = is.readFixedInt();
-                    storedDocument = docs.getDoc(storedDocId);
+                    int storedDocId = is.readInt();
+                    int storedSection = is.readByte();
+                    int gidsCount = is.readInt();
+                    //TOUNDERSTAND -pb       
+                    int size = is.readFixedInt();
+                    DocumentImpl storedDocument = docs.getDoc(storedDocId);
                     //Exit if the document is not concerned
                     if (storedDocument == null) {
                         is.skipBytes(size);
@@ -485,11 +457,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         }                        
 					}
                     //Process the nodes
-                    previousGID = 0;
+                    long previousGID = 0;
 					for (int j = 0; j < gidsCount; j++) {
-                        delta = is.readLong();
-                        storedGID = previousGID + delta;                        
-						freq = is.readInt();
+                        long delta = is.readLong();
+                        long storedGID = previousGID + delta;                        
+                        int freq = is.readInt();
+                        NodeProxy storedNode;
                         switch (storedSection) {
                             case ATTRIBUTE_SECTION :
                                 storedNode = new NodeProxy(storedDocument, storedGID, Node.ATTRIBUTE_NODE);
@@ -504,6 +477,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 						// matching text node is a descendant of one of the nodes
 						// in the context set.
 						if (contextSet != null) {
+                            NodeProxy parent;
                             switch(storedSection) {
                                 case ATTRIBUTE_SECTION :
                                     parent = contextSet.get(storedNode);
@@ -515,17 +489,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     throw new IllegalArgumentException("Invalid section type");
                             }                               
 							if (parent != null) {
-								match = new Match(storedGID, token, freq);
+                                Match match = new Match(storedGID, token, freq);
                                 readOccurrences(freq, is, match, token.length());
                                 parent.addMatch(match);
-                                sizeHint = contextSet.getSizeHint(storedDocument);
+                                int sizeHint = contextSet.getSizeHint(storedDocument);
 								result.add(parent, sizeHint);
 							} else {
 							    is.skip(freq);
                             }
 						// otherwise, we add all text nodes without check
 						} else {
-                            match = new Match(storedGID, token, freq);
+                            Match match = new Match(storedGID, token, freq);
                             readOccurrences(freq, is, match, token.length());
                             storedNode.addMatch(match);
 							result.add(storedNode, -1);							
@@ -540,8 +514,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);              
 			} catch (IOException e) {
-                LOG.error(e.getMessage(), e);
-                is = null;
+                LOG.error(e.getMessage(), e);                
                 //TODO : return ?
 			} finally {
 				lock.release();
@@ -562,7 +535,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
         // if the regexp starts with a char sequence, we restrict the index scan to entries starting with
         // the same sequence. Otherwise, we have to scan the whole index.
-        StringBuffer token = new StringBuffer();
+        final StringBuffer token = new StringBuffer();
         for (int i = 0; i < expr.length(); i++) {
             if (Character.isLetterOrDigit(expr.charAt(i)))
                 token.append(expr.charAt(i));
@@ -582,16 +555,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	 */
 	public NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet,
 			TermMatcher matcher, CharSequence startTerm) throws TerminatedException {;
-		NodeSet result = new ExtArrayNodeSet();
-        final SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, docs);        
-		Value ref;
-		Collection collection;
-		short collectionId;
+		final NodeSet result = new ExtArrayNodeSet();
+        final SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, docs); 
 		final Lock lock = dbTokens.getLock();		
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-			collection = (Collection) iter.next();
-			collectionId = collection.getId();
             //Compute a key for the token
+            Collection collection = (Collection) iter.next();
+            short collectionId = collection.getId();            
+            Value ref;
 			if (startTerm != null && startTerm.length() > 0)
                 //TODO : case conversion should be handled by the tokenizer -pb
 				ref = new WordRef(collectionId, startTerm.toString().toLowerCase());
@@ -617,18 +588,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	}
 
 	public String[] getIndexTerms(DocumentSet docs, TermMatcher matcher) {
-        final IndexCallback cb = new IndexCallback(null, matcher);
-		Value ref;
-        IndexQuery query;
-		Collection collection;
-		short collectionId;
+        final IndexCallback cb = new IndexCallback(null, matcher);		
 		final Lock lock = dbTokens.getLock();		
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-			collection = (Collection) iter.next();
-			collectionId = collection.getId();
             //Compute a key for the token
-			ref = new WordRef(collectionId);
-            query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+            Collection collection = (Collection) iter.next();
+            short collectionId = collection.getId();           
+            Value ref = new WordRef(collectionId);
+            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 			try {
 				lock.acquire();
 				dbTokens.query(query, cb);
@@ -650,16 +617,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	public Occurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet, String start, String end) 
             throws PermissionDeniedException {
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
-        Value startRef;
-        Value endRef;
-        IndexQuery query;
-        Collection collection;
-		short collectionId;
         final Lock lock = dbTokens.getLock();
 		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-            collection = (Collection) i.next();
-			collectionId = collection.getId();
             //Compute a key for the token            
+            Collection collection = (Collection) i.next();
+            short collectionId = collection.getId();
+            Value startRef;
+            Value endRef;
+            IndexQuery query;
             if (end == null) {
                 startRef = new WordRef(collectionId, start.toLowerCase());
                 query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
@@ -712,8 +677,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     private void collect(Set words, Iterator domIterator) {
         byte[] data = ((Value) domIterator.next()).getData();
         short type = Signatures.getType(data[0]);
-        String word;
-        TextToken token;
         switch (type) {
             case Node.ELEMENT_NODE :
                 int children = ByteConversion.byteToInt(data, 1);
@@ -725,8 +688,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 try {
                     s = new String(data, 1, data.length - 1, "UTF-8");
                     tokenizer.setText(s);
+                    TextToken token;
                     while (null != (token = tokenizer.nextToken())) {
-                        word = token.getText();
+                        String word = token.getText();
                         if (stoplist.contains(word))
                             continue;
                         words.add(word.toLowerCase());
@@ -746,8 +710,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         data.length - 1 - Signatures.getLength(idSizeType),
                         "UTF-8");
                     tokenizer.setText(val);
+                    TextToken token;
                     while (null != (token = tokenizer.nextToken())) {
-                        word = token.getText().toString();
+                        String word = token.getText().toString();
                         if (stoplist.contains(word))
                             continue;
                         words.add(word.toLowerCase());
@@ -843,25 +808,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             final int wordsCount = words[0].size() + words[1].size();
             if (wordsCount == 0)
                 return;
-            
             final ProgressIndicator progress = new ProgressIndicator(wordsCount, 100);
             final short collectionId = this.doc.getCollection().getId();
-            OccurrenceList occurences;
-            int termCount;            
-            long previousGID;
-            long delta;
-            //TOUNDERSTAND -pb
-            int lenOffset;            
-            int freq;
-            Map.Entry entry;
-            String token;           
             int count = 0;
             for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
                 for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext(); count++) {
-                    entry = (Map.Entry) i.next();
-                    token = (String) entry.getKey();
-                    occurences = (OccurrenceList) entry.getValue();
-                    termCount = occurences.getTermCount();
+                    Map.Entry entry = (Map.Entry) i.next();
+                    String token = (String) entry.getKey();
+                    OccurrenceList occurences = (OccurrenceList) entry.getValue();
+                    int termCount = occurences.getTermCount();
                     //Don't forget this one
                     occurences.sort();                    
                     os.clear();
@@ -877,13 +832,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             throw new IllegalArgumentException("Invalid inverted index");
                     }                    
                     os.writeInt(termCount);
-                    lenOffset = os.position();
+                    //TOUNDERSTAND -pb             
+                    int lenOffset = os.position();
                     os.writeFixedInt(0);
-                    previousGID = 0;
+                    long previousGID = 0;
                     for (int j = 0; j < occurences.getSize(); ) {
-                        delta = occurences.nodes[j] - previousGID;
+                        long delta = occurences.nodes[j] - previousGID;
                         os.writeLong(delta);                                        
-                        freq = occurences.getOccurrences(j);
+                        int freq = occurences.getOccurrences(j);
                         os.writeInt(freq);
                         for (int k = 0; k < freq; k++) {
                             os.writeInt(occurences.offsets[j + k]);
@@ -937,48 +893,32 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		public void remove() {
 		    //Return early
 			if (doc == null)
-				return;
-            OccurrenceList storedOccurencesList;
-            OccurrenceList newOccurencesList;			
-			int termCount;  
-            long storedGID;
-            long previousGID; 
-            long delta;
-            Map.Entry entry;			
-			String token;
-            WordRef ref;
-            Value value;            
-			VariableByteArrayInput is;
-            //TOUNDERSTAND -pb
-            int size;
-            int lenOffset;
-            int storedDocId;
-            byte storedSection;
-            int freq;            
+				return;                    
             final short collectionId = this.doc.getCollection().getId();
             final Lock lock = dbTokens.getLock();
             for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
 				for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
                     //Compute a key for the token
-                    entry = (Map.Entry) i.next();
-                    storedOccurencesList = (OccurrenceList) entry.getValue();
-                    token = (String) entry.getKey();                        
-                    ref = new WordRef(collectionId, token);
-                    newOccurencesList = new OccurrenceList();
+                    Map.Entry entry = (Map.Entry) i.next();
+                    OccurrenceList storedOccurencesList = (OccurrenceList) entry.getValue();
+                    String token = (String) entry.getKey();                        
+                    WordRef ref = new WordRef(collectionId, token);
+                    OccurrenceList newOccurencesList = new OccurrenceList();
                     os.clear();
                     try {
                         lock.acquire(Lock.WRITE_LOCK);
-                        value = dbTokens.get(ref);
+                        Value value = dbTokens.get(ref);
                         //Does the token already has data in the index ?
 					    if (value != null) {
 					        //Add its data to the new list    
-					        is = new VariableByteArrayInput(value.getData());
+                            VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
                             try {
     				            while (is.available() > 0) {
-                                    storedDocId = is.readInt();
-                                    storedSection = is.readByte();
-                                    termCount = is.readInt();
-                                    size = is.readFixedInt();
+                                    int storedDocId = is.readInt();
+                                    byte storedSection = is.readByte();
+                                    int termCount = is.readInt();
+                                    //TOUNDERSTAND -pb           
+                                    int size = is.readFixedInt();
     				                if (storedSection != currentSection || storedDocId != this.doc.getDocId()) {
                                         // data are related to another section or document:
                                         // append them to any existing data
@@ -990,11 +930,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     } else {    
                                         // data are related to our section and document:
                                         // feed the new list with the GIDs
-                                        previousGID = 0;
+                                        long previousGID = 0;
     				                    for (int j = 0; j < termCount; j++) {                                            
-                                            delta = is.readLong();
-                                            storedGID = previousGID + delta;
-    				                        freq = is.readInt();
+                                            long delta = is.readLong();
+                                            long storedGID = previousGID + delta;
+                                            int freq = is.readInt();
     				                        // add the node to the new list if it is not 
     				                        // in the list of removed nodes
     				                        if (!storedOccurencesList.contains(storedGID)) {
@@ -1014,7 +954,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             }                                
                             //append the data from the new list
                             if(newOccurencesList.getSize() > 0) {
-                                termCount = newOccurencesList.getTermCount();
+                                int termCount = newOccurencesList.getTermCount();
                                 //Don't forget this one
                                 newOccurencesList.sort();                                
                                 os.writeInt(this.doc.getDocId());                           
@@ -1029,13 +969,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         throw new IllegalArgumentException("Invalid inverted index");
                                 }                                      
                                 os.writeInt(termCount);
-                                lenOffset = os.position();
+                                //TOUNDERSTAND -pb           
+                                int lenOffset = os.position();
                                 os.writeFixedInt(0);                                
-                                previousGID = 0;
+                                long previousGID = 0;
                                 for (int m = 0; m < newOccurencesList.getSize(); ) {
-                                    delta = newOccurencesList.nodes[m] - previousGID;
+                                    long delta = newOccurencesList.nodes[m] - previousGID;
                                     os.writeLong(delta);                                
-                                    freq = newOccurencesList.getOccurrences(m);
+                                    int freq = newOccurencesList.getOccurrences(m);
                                     os.writeInt(freq);
                                     for (int n = 0; n < freq; n++) {
                                         os.writeInt(newOccurencesList.offsets[m + n]);
@@ -1074,44 +1015,30 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			}
 		}
 
-		public void reindex(DocumentImpl document, NodeImpl node) {	
-            OccurrenceList storedOccurencesList;
-            int termCount;
-            long storedGID;
-            long previousGID;
-            long delta;
-		    Map.Entry entry;
-		    String token;
-            WordRef ref;
-            VariableByteInput is;
-		    //TOUNDERSTAND -pb
-            int size;
-            int lenOffset;
-            int storedDocId;
-            byte storedSection;
-            int freq;
+		public void reindex(DocumentImpl document, NodeImpl node) {
             final short collectionId = document.getCollection().getId();
 		    final Lock lock = dbTokens.getLock();
             for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
-		        for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
+		        for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {                   
                     //Compute a key for the token
-		            entry = (Map.Entry) i.next();
-                    token = (String) entry.getKey();
-                    storedOccurencesList = (OccurrenceList) entry.getValue();
-		            ref = new WordRef(collectionId, token);
-                    os.clear();
+                    Map.Entry entry = (Map.Entry) i.next();
+                    String token = (String) entry.getKey();                    
+                    WordRef ref = new WordRef(collectionId, token);
+                    OccurrenceList storedOccurencesList = (OccurrenceList) entry.getValue();
+                    os.clear();                     
 		            try {
 		                lock.acquire(Lock.WRITE_LOCK);
-		                is = dbTokens.getAsStream(ref);	
+                        VariableByteInput is = dbTokens.getAsStream(ref);	
                         //Does the token already has data in the index ?
 		                if (is != null) {
 		                    //Add its data to the new list    
 		                    try {
 		                        while (is.available() > 0) {
-                                    storedDocId = is.readInt();
-                                    storedSection = is.readByte();
-                                    termCount = is.readInt();
-                                    size = is.readFixedInt();
+                                    int storedDocId = is.readInt();
+                                    byte storedSection = is.readByte();
+                                    int termCount = is.readInt();
+                                    //TOUNDERSTAND -pb         
+                                    int size = is.readFixedInt();
 		                            if (storedSection != currentSection || storedDocId != document.getDocId()) {
                                         // data are related to another section or document:
                                         // append them to any existing data
@@ -1123,11 +1050,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                            } else {
                                         // data are related to our section and document:
                                         // feed the new list with the GIDs
-                                        previousGID = 0;
+                                        long previousGID = 0;
 		                                for (int j = 0; j < termCount; j++) {
-                                            delta = is.readLong();
-                                            storedGID = previousGID + delta;
-		                                    freq = is.readInt();
+                                            long delta = is.readLong();
+                                            long storedGID = previousGID + delta;
+                                            int freq = is.readInt();
 		                                    if (node == null) {
 		                                        if (document.getTreeLevel(storedGID) < document.reindexRequired()) {
                                                     for (int l = 0; l < freq; l++) {
@@ -1159,7 +1086,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                }
                         if (storedOccurencesList.getSize() > 0) {
                             //append the data from the new list
-                            termCount = storedOccurencesList.getTermCount();
+                            int termCount = storedOccurencesList.getTermCount();
                             storedOccurencesList.sort();                        
     		                os.writeInt(document.getDocId());
                             switch (currentSection) {
@@ -1173,13 +1100,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     throw new IllegalArgumentException("Invalid inverted index");
                             }         
     		                os.writeInt(termCount);
-                            lenOffset = os.position();
+                            //TOUNDERSTAND -pb         
+                            int lenOffset = os.position();
     	                    os.writeFixedInt(0);                            
-                            previousGID = 0;
+                            long previousGID = 0;
                             for (int m = 0; m < storedOccurencesList.getSize(); ) {
-                                delta = storedOccurencesList.nodes[m] - previousGID;
+                                long delta = storedOccurencesList.nodes[m] - previousGID;
                                 os.writeLong(delta);                            
-                                freq = storedOccurencesList.getOccurrences(m);
+                                int freq = storedOccurencesList.getOccurrences(m);
                                 os.writeInt(freq);
                                 for (int n = 0; n < freq; n++) {
                                     os.writeInt(storedOccurencesList.offsets[m + n]);
@@ -1201,13 +1129,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             }
 	                    }		                
 		            } catch (LockException e) {
-                        LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
-		                is = null;
+                        LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);		               
                     } catch (ReadOnlyException e) {
                         LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "'", e);                        
 		            } catch (IOException e) {
-		                LOG.error("io error while reindexing word '" + token  + "'");
-		                is = null;
+		                LOG.error("io error while reindexing word '" + token  + "'");		               
 		            } finally {
 		                lock.release(Lock.WRITE_LOCK);
 		            }
@@ -1240,7 +1166,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		    if(context != null)
 		        context.proceed();			
 			try {
-                String word = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+                final String word = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
                 if (matcher.matches(word))
                     matches.add(word);
                 return true;
@@ -1277,43 +1203,31 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
                 return true; 
-            }   
-            
+            } 
             word.reuse();
             word = UTF8.decode(key.getData(), 2, key.getLength() - 2, word);
-			if (matcher.matches(word)) {                
-                int storedDocId;
-                byte storedSection;
-                int termCount;
-                long storedGID;
-                long previousGID;
-                long delta;                    
-                int size;               
-                DocumentImpl storedDocument;        
-                NodeProxy storedNode;
-                NodeProxy parentNode;  
-                Match match;
-                int freq;
-                int sizeHint;
+			if (matcher.matches(word)) {                 
 				try {
 					while (is.available() > 0) {                        
 					    if(context != null)
 					        context.proceed();                        
-                        storedDocId = is.readInt();
-                        storedSection = is.readByte();
-                        termCount = is.readInt();
-                        size = is.readFixedInt();
-                        storedDocument = docs.getDoc(storedDocId);                        
+                        int storedDocId = is.readInt();
+                        byte storedSection = is.readByte();
+                        int termCount = is.readInt();
+                        //TOUNDERSTAND -pb
+                        int size = is.readFixedInt();
+                        DocumentImpl storedDocument = docs.getDoc(storedDocId);                        
                         //Exit if the document is not concerned
 						if (storedDocument == null) {
 							is.skipBytes(size);
 							continue;
 						}                        
-                        previousGID = 0;
+                        long previousGID = 0;
 						for (int j = 0; j < termCount; j++) {
-                            delta = is.readLong();
-                            storedGID = previousGID + delta;
-							freq = is.readInt();	
+                            long delta = is.readLong();
+                            long storedGID = previousGID + delta;
+                            int freq = is.readInt();
+                            NodeProxy storedNode;
                             switch (storedSection) {
                                 case TEXT_SECTION :
                                     storedNode = new NodeProxy(storedDocument, storedGID, Node.TEXT_NODE);
@@ -1325,6 +1239,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     throw new IllegalArgumentException("Invalid inverted index");
                             } 
 							if (contextSet != null) {
+                                NodeProxy parentNode;  
                                 switch (storedSection) {
                                     case TEXT_SECTION :
                                         parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
@@ -1336,15 +1251,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         throw new IllegalArgumentException("Invalid inverted index");
                                 }
 								if (parentNode != null) {
-                                    match = new Match(storedGID, word.toString(), freq);
+                                    Match match = new Match(storedGID, word.toString(), freq);
                                     readOccurrences(freq, is, match, word.length());
                                     parentNode.addMatch(match);
-                                    sizeHint = contextSet.getSizeHint(storedDocument);
+                                    int sizeHint = contextSet.getSizeHint(storedDocument);
 									result.add(parentNode, sizeHint);
 								} else
                                     is.skip(freq);
 							} else {
-							    match = new Match(storedGID, word.toString(), freq);
+                                Match match = new Match(storedGID, word.toString(), freq);
 							    readOccurrences(freq, is, match, word.length());
                                 storedNode.addMatch(match);
 							    result.add(storedNode, -1);
@@ -1399,42 +1314,32 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
-            }
-            
-            int storedDocId;
-            byte storedSection;
-            int termCount;
-            long storedGID;
-            long previousGID;
-            long delta;                    
-            int size;               
-            DocumentImpl storedDocument; 
-            NodeProxy parentNode;
-            int freq;
-            boolean include;
-            boolean docAdded;
+            } 
+           
 			try {
 				while (is.available() > 0) {
-                    docAdded = false;                    
-                    storedDocId = is.readInt();
-                    storedSection = is.readByte();
-                    termCount = is.readInt();
-                    size = is.readFixedInt();
-                    storedDocument = docs.getDoc(storedDocId);
+                    boolean docAdded = false;                    
+                    int storedDocId = is.readInt();
+                    byte storedSection = is.readByte();
+                    int termCount = is.readInt();
+                    //TOUNDERSTAND -pb
+                    int size = is.readFixedInt();
+                    DocumentImpl storedDocument = docs.getDoc(storedDocId);
                     //Exit if the document is not concerned
 					if (storedDocument == null) {
 						is.skipBytes(size);
 						continue;
 					}					
-                    previousGID = 0;
+                    long previousGID = 0;
 					for (int j = 0; j < termCount; j++) {
-                        delta = is.readLong(); 
-                        storedGID = previousGID + delta;
-						freq = is.readInt();
+                        long delta = is.readLong(); 
+                        long storedGID = previousGID + delta;
+                        int freq = is.readInt();
+                        //TODO : use variable
                         is.skip(freq);
 						if (contextSet != null) {
-							include = false;
-                            parentNode = contextSet.parentWithChild(storedDocument, storedGID, false, true);                           
+                            boolean include = false;
+                            NodeProxy parentNode = contextSet.parentWithChild(storedDocument, storedGID, false, true);                           
                             switch (storedSection) {
                                 case TEXT_SECTION :
                                     //TODO : also test on Node.TEXT_NODE like below ? -pb                                    
