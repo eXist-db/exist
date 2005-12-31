@@ -234,11 +234,17 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	protected NodeSet hasChildrenInSet(
-		NodeProxy parent,
+		NodeSet al,
 		int mode,
 		boolean rememberContext) {
-		Range range = XMLUtil.getChildRange(parent.getDocument(), parent.getGID());
-		return getRange(parent.getDocument(), range.getStart(), range.getEnd());
+		NodeSet result = new ExtArrayNodeSet();
+		NodeProxy node;
+		for (Iterator i = al.iterator(); i.hasNext(); ) {
+			node = (NodeProxy) i.next();
+			Range range = XMLUtil.getChildRange(node.getDocument(), node.getGID());
+			getRange(result, node.getDocument(), range.getStart(), range.getEnd());
+		}
+		 return result;
 	}
 
 	/**
@@ -275,8 +281,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 */
 	public NodeSet selectParentChild(NodeSet al, int mode, boolean rememberContext) {
 		if (!(al instanceof VirtualNodeSet)) {
-		    if(al.getLength() == 1)
-		        return hasChildrenInSet(al.get(0), mode, rememberContext);
+		    if(al.getLength() < 10)
+		        return hasChildrenInSet(al, mode, rememberContext);
 		    else
 		        return quickSelectParentChild(al, mode, rememberContext);
 		}
@@ -569,7 +575,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param upper
 	 * @return
 	 */
-	public NodeSet getRange(DocumentImpl doc, long lower, long upper) {
+	public void getRange(NodeSet result, DocumentImpl doc, long lower, long upper) {
 		throw new RuntimeException(
 			"getRange is not valid for class " + getClass().getName());
 	}
@@ -641,7 +647,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	
 	public NodeSet except(NodeSet other) {
 		AVLTreeNodeSet r = new AVLTreeNodeSet();
-		NodeProxy l, p;
+		NodeProxy l;
 		for (Iterator i = iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
 			if (!other.contains(l)) {
