@@ -120,7 +120,7 @@ public class FunMatches extends Function {
             arg = new Atomize(context, arg);
         steps.add(arg);
         
-        if (getArgumentCount() == 3) {
+        if (arguments.size() == 3) {
             arg = (Expression) arguments.get(2);
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                     new Error(Error.FUNC_PARAM_CARDINALITY, "3", mySignature)); 
