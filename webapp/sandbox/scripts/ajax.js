@@ -9,8 +9,8 @@ XOpenDialog = function(target, mode, root) {
 	
 	var html = 
 		'<div id="xmldb-open">' +
-		'	<a href="#" id="xmldb-close">Close</a>' +
-		'	<h1>Open Resource</h1>' +
+		'	<a href="#" id="xmldb-close"><img src="window_close_grey.gif" border="0"/></a>' +
+		'	<h1 id="xmldb-title">Open Resource</h1>' +
 		'	<div id="xmldb-inner">' +
 		'		<input type="text" name="path" id="xmldb-path" />' +
 		'		<div id="xmldb-open-content"></div>' +
@@ -26,6 +26,7 @@ XOpenDialog = function(target, mode, root) {
 	div.style.position = 'absolute';
 	div.style.left = '25%';
 	div.style.top = '25%';
+	new Draggable(div, { revert: false, handle: 'xmldb-title' });
 	
 	this.submitButton = $('xmldb-submit');
 	

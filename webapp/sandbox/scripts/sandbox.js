@@ -50,11 +50,13 @@ var behaviourRules = {
 				var panel = $('save-panel');
 				if (!document.savePanelShow) {
 					this.innerHTML = "Hide Options";
-					Effect.BlindDown('save-panel');
+					//Effect.BlindDown('save-panel');
+					Effect.toggle('save-panel', 'blind');
 					document.savePanelShow = true;
 				} else {
 					this.innerHTML = "Show Options";
-					Effect.BlindUp('save-panel');
+					//Effect.BlindUp('save-panel');
+					Effect.toggle('save-panel', 'blind');
 					document.savePanelShow = false;
 				}
 				return false;
