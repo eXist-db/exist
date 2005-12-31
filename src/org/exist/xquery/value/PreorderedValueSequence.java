@@ -28,6 +28,7 @@ import java.util.Iterator;
 import org.exist.dom.ContextItem;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
@@ -156,19 +157,19 @@ public class PreorderedValueSequence extends AbstractSequence {
 					b = p2.values[i];
 					if(a == AtomicValue.EMPTY_VALUE && b != AtomicValue.EMPTY_VALUE) {
 						if((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
-							cmp = -1;
+							cmp = Constants.INFERIOR;
 						else
-							cmp = 1;
-					} else if(b == AtomicValue.EMPTY_VALUE && a != AtomicValue.EMPTY_VALUE) {
+							cmp = Constants.SUPERIOR;
+					} else if(a != AtomicValue.EMPTY_VALUE && b == AtomicValue.EMPTY_VALUE) {
 						if((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
-							cmp = 1;
+							cmp = Constants.SUPERIOR;
 						else
-							cmp = -1;
+							cmp = Constants.INFERIOR;
 					} else
 						cmp = a.compareTo(orderSpecs[i].getCollator(), b);
 					if((orderSpecs[i].getModifiers() & OrderSpec.DESCENDING_ORDER) != 0)
 						cmp = cmp * -1;
-					if(cmp != 0)
+					if(cmp != Constants.EQUAL)
 						break;
 				} catch (XPathException e) {
 				}
