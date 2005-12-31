@@ -220,38 +220,30 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public void flush() {
         //TODO : return if doc == null? -pb        
         if (pending.size() == 0) 
-            return;        
-        Indexable indexable;
-        //TODO : NativeElementIndex uses ArrayLists -pb
-        LongLinkedList gidList;
-        long gids[];
-        int gidsCount;        
-        long previousGID;
-        long delta;
-        Value ref;
-        Map.Entry entry;        
+            return;             
         final short collectionId = this.doc.getCollection().getId();
         final Lock lock = dbValues.getLock();
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
-            entry = (Map.Entry) i.next();
-            indexable = (Indexable) entry.getKey();
-            gidList = (LongLinkedList) entry.getValue();
-            gids = gidList.getData();
-            gidsCount = gids.length;
+            Map.Entry entry = (Map.Entry) i.next();
+            Indexable indexable = (Indexable) entry.getKey();
+            //TODO : NativeElementIndex uses ArrayLists -pb
+            LongLinkedList gidList = (LongLinkedList) entry.getValue();
+            long[] gids = gidList.getData();
+            int gidsCount = gids.length;
             //Don't forget this one
             Arrays.sort(gids);
             os.clear();
             os.writeInt(this.doc.getDocId());
             os.writeInt(gidsCount);
             //Compute the GID list
-            previousGID = 0;
+            long previousGID = 0;
             for (int j = 0; j < gidsCount; j++) {                    
-                delta = gids[j] - previousGID;                    
+                long delta = gids[j] - previousGID;                    
                 os.writeLong(delta);
                 previousGID = gids[j];
             }
             //Compute a key for the value
-            ref = new Value(indexable.serialize(collectionId, caseSensitive));
+            Value ref = new Value(indexable.serialize(collectionId, caseSensitive));
             try {
                 lock.acquire(Lock.WRITE_LOCK);
                 //Store data
@@ -281,42 +273,30 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public void remove() { 
         //TODO : return if doc == null? -pb  
         if (pending.size() == 0) 
-            return;        
-        Indexable indexable;
-        //TODO : NativeElementIndex uses ArrayLists -pb
-        LongLinkedList storedGIDList;
-        LongLinkedList newGIDList;
-        long[] gids;        
-        int gidsCount;
-        long storedGID;
-        long previousGID;        
-        long delta; 
-        Map.Entry entry;    
-        Value searchKey;
-        Value value;
-        VariableByteArrayInput is;
-        int storedDocId;
+            return;
         final short collectionId = this.doc.getCollection().getId();
         final Lock lock = dbValues.getLock();           
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
-            entry = (Map.Entry) i.next();
-            indexable = (Indexable) entry.getKey();
-            storedGIDList = (LongLinkedList) entry.getValue();   
+            Map.Entry entry = (Map.Entry) i.next();
+            Indexable indexable = (Indexable) entry.getKey();
+            //TODO : NativeElementIndex uses ArrayLists -pb
+            LongLinkedList storedGIDList = (LongLinkedList) entry.getValue();   
             //Compute a key for the value
-            searchKey = new Value(indexable.serialize(collectionId, caseSensitive)); 
-            newGIDList = new LongLinkedList();
+            Value searchKey = new Value(indexable.serialize(collectionId, caseSensitive));
+            //TODO : NativeElementIndex uses ArrayLists -pb
+            LongLinkedList newGIDList = new LongLinkedList();
             os.clear();              
             try {                    
                 lock.acquire(Lock.WRITE_LOCK); 
-                value = dbValues.get(searchKey);
+                Value value = dbValues.get(searchKey);
                 //Does the value already exist in the index ?
                 if (value != null) {
                     //Add its data to the new list
-                    is = new VariableByteArrayInput(value.getData());
+                    VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
                     try {                            
                         while (is.available() > 0) {
-                            storedDocId = is.readInt();
-                            gidsCount = is.readInt();
+                            int storedDocId = is.readInt();
+                            int gidsCount = is.readInt();
                             if (storedDocId != this.doc.getDocId()) {
                                 // data are related to another document:
                                 // append them to any existing data
@@ -326,10 +306,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             } else {
                                 // data are related to our document:
                                 // feed the new list with the GIDs
-                                previousGID = 0;
+                                long previousGID = 0;
                                 for (int j = 0; j < gidsCount; j++) {
-                                    delta = is.readLong();
-                                    storedGID = previousGID + delta;  
+                                    long delta = is.readLong();
+                                    long storedGID = previousGID + delta;  
                                     // add the node to the new list if it is not 
                                     // in the list of removed nodes
                                     if (!storedGIDList.contains(storedGID)) {
@@ -345,15 +325,15 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     }
                     //append the data from the new list
                     if (newGIDList.getSize() > 0) {                        
-                        gids = newGIDList.getData();
-                        gidsCount = gids.length;
+                        long[] gids = newGIDList.getData();
+                        int gidsCount = gids.length;
                         //Don't forget this one
                         Arrays.sort(gids);
                         os.writeInt(this.doc.getDocId());
                         os.writeInt(gidsCount);
-                        previousGID = 0;
+                        long previousGID = 0;
                         for (int j = 0; j < gidsCount; j++) {
-                            delta = gids[j] - previousGID;                            
+                            long delta = gids[j] - previousGID;                            
                             os.writeLong(delta);
                             previousGID = gids[j];
                         } 
@@ -387,9 +367,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	 * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.collections.Collection)
 	 */
     public void dropIndex(Collection collection) {        
-        Value ref = new ElementValue(collection.getId());
-        IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-        Lock lock = dbValues.getLock();
+        final Value ref = new ElementValue(collection.getId());
+        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+        final Lock lock = dbValues.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
             //TODO : flush ? -pb
@@ -409,14 +389,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	 * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.dom.DocumentImpl)
 	 */
     //TODO : note that this is *not* this.doc -pb
-    public void dropIndex(DocumentImpl document) throws ReadOnlyException {
-        Value key;
-        Value value;
-        int gidsCount;
-        long delta;        
-        VariableByteArrayInput is;
-        int storedDocId;
-        boolean changed;        
+    public void dropIndex(DocumentImpl document) throws ReadOnlyException {    
         final short collectionId = document.getCollection().getId();
         final Value ref = new ElementValue(collectionId);
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
@@ -425,21 +398,21 @@ public class NativeValueIndex implements ContentLoadingObserver {
             lock.acquire(Lock.WRITE_LOCK);
             ArrayList elements = dbValues.findKeys(query);
             for (int i = 0; i < elements.size(); i++) {
-                changed = false;
-                key = (Value) elements.get(i);
-                value = dbValues.get(key);                
-                is = new VariableByteArrayInput(value.getData());
+                boolean changed = false;
+                Value key = (Value) elements.get(i);
+                Value value = dbValues.get(key);                
+                VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
                 os.clear();                
                 while (is.available() > 0) {
-                    storedDocId = is.readInt();
-                    gidsCount = is.readInt();                        
+                    int storedDocId = is.readInt();
+                    int gidsCount = is.readInt();                        
 					if (storedDocId != document.getDocId()) {
 					    // data are related to another document:
                         // copy them to any existing data
                         os.writeInt(storedDocId);
                         os.writeInt(gidsCount);
                         for (int j = 0; j < gidsCount; j++) {
-                            delta = is.readLong();
+                            long delta = is.readLong();
                             os.writeLong(delta);
                         }
                     } else {
@@ -481,39 +454,27 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public void reindex(DocumentImpl document, NodeImpl node) {
         if (pending.size() == 0) 
             return;        
-        Indexable indexable;
-        //TODO : NativeElementIndex uses ArrayLists -pb
-        LongLinkedList storedGIDList;
-        LongLinkedList newGIDList;
-        long[] gids;        
-        int gidsCount;
-        long storedGID;
-        long previousGID;        
-        long delta;        
-        Value ref;
-        Map.Entry entry;        
-        VariableByteInput is;        
-        int storedDocId;
-        long address;
         final short collectionId = document.getCollection().getId();
         final Lock lock = dbValues.getLock();              
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
             //Compute a key for the value
-            entry = (Map.Entry) i.next();
-            indexable = (Indexable) entry.getKey();
-            storedGIDList = (LongLinkedList) entry.getValue();
-            ref = new Value(indexable.serialize(collectionId, caseSensitive)); 
+            Map.Entry entry = (Map.Entry) i.next();
+            Indexable indexable = (Indexable) entry.getKey();
+            //TODO : NativeElementIndex uses ArrayLists -pb
+            LongLinkedList storedGIDList = (LongLinkedList) entry.getValue();
+            Value ref = new Value(indexable.serialize(collectionId, caseSensitive)); 
             try {
                 lock.acquire(Lock.WRITE_LOCK);
-                is = dbValues.getAsStream(ref);
+                VariableByteInput is = dbValues.getAsStream(ref);
                 os.clear();
-                newGIDList = new LongLinkedList();
+                //TODO : NativeElementIndex uses ArrayLists -pb
+                LongLinkedList newGIDList = new LongLinkedList();
                 //Does the value already has data in the index ?
                 if (is != null) {                    
                     try {
                         while (is.available() > 0) {
-                            storedDocId = is.readInt();
-                            gidsCount = is.readInt();
+                            int storedDocId = is.readInt();
+                            int gidsCount = is.readInt();
                             if (storedDocId != document.getDocId()) {
                                 // data are related to another document:
                                 // append them to any existing data
@@ -523,10 +484,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             } else {
                                 // data are related to our document:
                                 // feed the new list with the GIDs                                    
-                                previousGID = 0;
+                                long previousGID = 0;
                                 for (int j = 0; j < gidsCount; j++) {
-                                    delta = is.readLong();
-                                    storedGID = previousGID + delta;    
+                                    long delta = is.readLong();
+                                    long storedGID = previousGID + delta;    
                                     if (node == null) {
                                         if (document.getTreeLevel(storedGID) < document.reindexRequired())
                                             storedGIDList.add(storedGID);
@@ -544,18 +505,20 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         LOG.warn(e.getMessage(), e);
                     }
                 }
-                // append the new list to any existing data
-                gids = storedGIDList.getData();
-                gidsCount = gids.length;
-                //Don't forget this one
-                Arrays.sort(gids);
-                os.writeInt(document.getDocId());
-                os.writeInt(gidsCount);
-                previousGID = 0;
-                for (int j = 0; j < gidsCount; j++) {
-                    delta = gids[j] - previousGID;                        
-                    os.writeLong(delta);
-                    previousGID = gids[j];
+                if (storedGIDList.getSize() > 0) {
+                    // append the new list to any existing data
+                    long[] gids = storedGIDList.getData();
+                    int gidsCount = gids.length;
+                    //Don't forget this one
+                    Arrays.sort(gids);
+                    os.writeInt(document.getDocId());
+                    os.writeInt(gidsCount);
+                    long previousGID = 0;
+                    for (int j = 0; j < gidsCount; j++) {
+                        long delta = gids[j] - previousGID;                        
+                        os.writeLong(delta);
+                        previousGID = gids[j];
+                    }
                 }
                 //Store the data
                 if (is == null) {
@@ -564,7 +527,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         LOG.warn("Could not put index data for value '" +  ref + "'");
                     }
                 } else {
-                    address = ((BFile.PageInputStream) is).getAddress();
+                    long address = ((BFile.PageInputStream) is).getAddress();
                     if (dbValues.update(address, ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.warn("Could not update index data for value '" +  ref + "'");
                     }
@@ -574,8 +537,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);     
                 return;
             } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
-                is = null;
+                LOG.error(e.getMessage(), e);                
                 //TODO : return ?
             } catch (ReadOnlyException e) {
                 LOG.warn(e.getMessage(), e);  
@@ -646,9 +608,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
     		}
         }
         
-		TermMatcher comparator = new RegexMatcher(expr, type, flags);
-        NodeSet result = new ExtArrayNodeSet();
-        RegexCallback callback = new RegexCallback(docs, contextSet, result, comparator);
+		final TermMatcher comparator = new RegexMatcher(expr, type, flags);
+        final NodeSet result = new ExtArrayNodeSet();
+        final RegexCallback callback = new RegexCallback(docs, contextSet, result, comparator);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			Collection collection = (Collection) iter.next();
@@ -822,20 +784,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
 			} catch (IOException e) {
 				LOG.error(e.getMessage(), e);
                 return true;
-			}
-            
-            int storedDocId;            
-            int gidsCount;
-            long storedGID;
-            long delta;  
-            DocumentImpl storedDocument;        
-            NodeProxy storedNode, parentNode;            
+			}         
 			try {
                 int sizeHint = -1;
                 while (is.available() > 0) {
-                    storedDocId = is.readInt();
-                	gidsCount = is.readInt();
-                    storedDocument = docs.getDoc(storedDocId);
+                    int storedDocId = is.readInt();
+                    int gidsCount = is.readInt();
+                    DocumentImpl storedDocument = docs.getDoc(storedDocId);
                     //Exit if the document is not concerned
                 	if (storedDocument == null) {
                         is.skip(gidsCount);
@@ -849,18 +804,18 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         }                        
                 	}
                 	//Process the nodes
-                    storedGID = 0;                	
+                    long storedGID = 0;                	
                 	for (int j = 0; j < gidsCount; j++) {
-                        delta = is.readLong();
+                        long delta = is.readLong();
                         storedGID = storedGID + delta;                        
-                        storedNode = new NodeProxy(storedDocument, storedGID);						
+                        NodeProxy storedNode = new NodeProxy(storedDocument, storedGID);						
                 		// if a context set is specified, we can directly check if the
                 		// matching node is a descendant of one of the nodes
                 		// in the context set.
                 		if (contextSet != null) {
                             sizeHint = contextSet.getSizeHint(storedDocument);
                             if (returnAncestor) {
-                                parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                                 if (parentNode != null) 
                                     result.add(parentNode, sizeHint);
                 			} else
@@ -920,8 +875,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         /* (non-Javadoc)
          * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
          */
-        public boolean indexInfo(Value key, long pointer) throws TerminatedException {
-            
+        public boolean indexInfo(Value key, long pointer) throws TerminatedException {            
             AtomicValue atomic;
             try {
                 atomic = ValueIndexFactory.deserialize(key.data(), key.start(), key.getLength());
@@ -938,46 +892,42 @@ public class NativeValueIndex implements ContentLoadingObserver {
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
-            }   
+            } 
             
-            int storedDocId;
-            int gidsCount;
-            long storedGID; 
-            long delta;       
-            DocumentImpl storedDocument;                
-            boolean docAdded;
-            ValueOccurrences oc = (ValueOccurrences) map.get(atomic);
+            ValueOccurrences oc = (ValueOccurrences) map.get(atomic);                        
             try {
                 while (is.available() > 0) {
-                    docAdded = false;
-                    storedDocId = is.readInt();
-                    gidsCount = is.readInt();
-                    storedDocument = docs.getDoc(storedDocId); 
+                    boolean docAdded = false;
+                    int storedDocId = is.readInt();
+                    int gidsCount = is.readInt();
+                    DocumentImpl storedDocument = docs.getDoc(storedDocId); 
                     //Exit if the document is not concerned
                     if (storedDocument == null) {
                         is.skip(gidsCount);
                         continue;
                     }                    
-                    storedGID = 0;                    
+                    long previousGID = 0;                    
                     for (int j = 0; j < gidsCount; j++) {
-                        delta = is.readLong();
-                        storedGID = storedGID + delta;                        
+                        long delta = is.readLong();
+                        long storedGID = previousGID + delta;                        
                         if (contextSet != null) {
-                            if (contextSet.parentWithChild(storedDocument, storedGID, false, true) != null) {
+                            NodeProxy parentNode = contextSet.parentWithChild(storedDocument, storedGID, false, true);
+                            if (parentNode != null) {                                
                                 if (oc == null) {
                                     oc = new ValueOccurrences(atomic);
                                     map.put(atomic, oc);
                                 }
-                                if (!docAdded) {
+                                oc.addOccurrences(1);
+                                if (!docAdded) {                                
                                     oc.addDocument(storedDocument);
                                     docAdded = true;
-                                }
-                                oc.addOccurrences(1);
+                                }                                
                             }
                         }
                         //TODO : what if contextSet == null ? -pb
                         //See above where we have this behaviour :
-                        //otherwise, we add all nodes without check                        
+                        //otherwise, we add all nodes without check    
+                        previousGID = storedGID;
                     }
                 }
             } catch(EOFException e) {
