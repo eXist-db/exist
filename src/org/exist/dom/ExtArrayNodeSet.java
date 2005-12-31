@@ -348,17 +348,22 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         setHasChanged();
     }
 
-    public NodeSet getRange(DocumentImpl doc, long lower, long upper) {
+    public void getRange(NodeSet result, DocumentImpl doc, long lower, long upper) {
         final Part part = getPart(doc, false, 0);
-        return part.getRange(lower, upper);
+        part.getRange(result, lower, upper);
     }
 
-    public NodeSet hasChildrenInSet(NodeProxy parent, int mode,
-                                    boolean rememberContext) {
-        final Part part = getPart(parent.getDocument(), false, 0);
-        if (part == null)
-            return new ArraySet(1);
-        return part.getChildrenInSet(parent, mode, rememberContext);
+    protected NodeSet hasChildrenInSet(NodeSet al, int mode, boolean rememberContext) {
+    	NodeSet result = new ExtArrayNodeSet();
+		NodeProxy node;
+		Part part;
+		for (Iterator i = al.iterator(); i.hasNext(); ) {
+			node = (NodeProxy) i.next();
+			part = getPart(node.getDocument(), false, 0);
+	        if (part != null)
+	        	part.getChildrenInSet(result, node, mode, rememberContext);
+		}
+		return result;
     }
 
     private boolean isSorted() {
@@ -610,8 +615,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
          * @param rememberContext
          * @return
          */
-        NodeSet getChildrenInSet(NodeProxy parent, int mode, boolean rememberContext) {
-            NodeSet result = new ExtArrayNodeSet();
+        NodeSet getChildrenInSet(NodeSet result, NodeProxy parent, int mode, boolean rememberContext) {
             // get the range of node ids reserved for children of the parent
             // node
             Range range = XMLUtil.getChildRange(parent.getDocument(), parent.getGID());
@@ -660,8 +664,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             return result;
         }
 
-        NodeSet getRange(long lower, long upper) {
-            NodeSet result = new ExtArrayNodeSet((int) (upper - lower) + 1);
+        NodeSet getRange(NodeSet result, long lower, long upper) {
             int low = 0;
             int high = length - 1;
             int mid = 0;

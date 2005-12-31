@@ -123,13 +123,6 @@ public class ArraySet extends AbstractNodeSet {
 		return -1;
 	}
 
-	private final static NodeSet searchRange(NodeProxy[] items,	int low, int high, 
-            NodeProxy lower, NodeProxy upper) {
-        //TODO : dimension as high - low ?
-		ArraySet result = new ArraySet(100);
-		return searchRange(result, items, low, high, lower, upper);
-	}
-
 	/**
 	 *  get all nodes contained in the set, which are greater or equal to lower
 	 *  and less or equal to upper. This is basically needed by all functions
@@ -142,7 +135,7 @@ public class ArraySet extends AbstractNodeSet {
 	 *@param  upper  Description of the Parameter
 	 *@return        Description of the Return Value
 	 */
-	private final static NodeSet searchRange(ArraySet result, NodeProxy[] items, int low, int high,
+	private final static void searchRange(NodeSet result, NodeProxy[] items, int low, int high,
 	        NodeProxy lower, NodeProxy upper) {
 		int mid = 0;
 		int max = high;
@@ -167,8 +160,6 @@ public class ArraySet extends AbstractNodeSet {
 
 		while (mid <= max && items[mid].compareTo(upper) <= 0)
 			result.add(items[mid++]);
-		
-		return result;
 	}
 
 	public void add(NodeProxy proxy) {
@@ -351,7 +342,6 @@ public class ArraySet extends AbstractNodeSet {
 		int ax;
 		int dx;
 		int cmp;
-		NodeProxy node;
 		final int dlen = dl.length;
 		boolean more = includeSelf ? true : getParentSet(dl, dlen);
 		while (more) {
@@ -492,13 +482,13 @@ public class ArraySet extends AbstractNodeSet {
 		return counter;
 	}
 
-	public NodeSet getRange(NodeProxy lower, NodeProxy upper) {
+	public void getRange(NodeSet result, NodeProxy lower, NodeProxy upper) {
 		sort();
-		return searchRange(nodes, 0, counter - 1, lower, upper);
+		searchRange(result, nodes, 0, counter - 1, lower, upper);
 	}
 
-	public NodeSet getRange(DocumentImpl doc, long lower, long upper) {
-		return getRange(new NodeProxy(doc, lower), new NodeProxy(doc, upper));
+	public void getRange(NodeSet result, DocumentImpl doc, long lower, long upper) {
+		getRange(result, new NodeProxy(doc, lower), new NodeProxy(doc, upper));
 	}
 
 	//protected boolean isSorted() {

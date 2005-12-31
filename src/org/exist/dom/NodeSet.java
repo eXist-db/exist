@@ -302,15 +302,16 @@ public interface NodeSet extends Sequence, NodeList {
 	public boolean hasMixedContent();
 	
 	/**
-	 * Return a sub-range of this node set containing the range of nodes greater than or including
-	 * the lower node and smaller than or including the upper node.
+	 * Create a sub-range of this node set containing the range of nodes greater than or including
+	 * the lower node and smaller than or including the upper node. Matching nodes are added to the
+	 * given result node set.
 	 * 
 	 * @param doc
 	 * @param lower
 	 * @param upper
 	 * @return
 	 */
-	public NodeSet getRange(DocumentImpl doc, long lower, long upper);
+	public void getRange(NodeSet result, DocumentImpl doc, long lower, long upper);
 	
 	/**
 	 * Get a hint about how many nodes in this node set belong to the 

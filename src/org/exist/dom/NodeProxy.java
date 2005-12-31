@@ -870,14 +870,14 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     /* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#getRange(org.exist.dom.DocumentImpl, long, long)
 	 */
-	public NodeSet getRange(DocumentImpl document, long lower, long upper) {
+	public void getRange(NodeSet result, DocumentImpl document, long lower, long upper) {
         if (this.gid < lower)
-            return NodeSet.EMPTY_SET;
+            return;
         if (this.gid > upper)
-            return NodeSet.EMPTY_SET;
+            return;
         if(this.doc.getDocId() != document.getDocId())
-            return NodeSet.EMPTY_SET;
-		return this;		
+            return;
+        result.add(this);
 	}
 	
     /* (non-Javadoc)

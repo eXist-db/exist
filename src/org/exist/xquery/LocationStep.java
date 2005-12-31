@@ -313,9 +313,9 @@ public class LocationStep extends Step {
             return result;
 		// if there's just a single known node in the context, it is faster
 	    // do directly search for the attribute in the parent node.
-        } else if(
-        		axis == Constants.ATTRIBUTE_AXIS && contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD
-                && !(contextSet instanceof VirtualNodeSet)) {
+        } else if(!(contextSet instanceof VirtualNodeSet) &&
+        		axis == Constants.ATTRIBUTE_AXIS && 
+        		contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD) {
             NodeProxy proxy = contextSet.get(0);
             if (proxy != null && proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
                 return contextSet.directSelectAttribute(test.getName(), inPredicate);          
