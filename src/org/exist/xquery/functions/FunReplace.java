@@ -22,17 +22,22 @@
  */
 package org.exist.xquery.functions;
 
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.dom.QName;
+import org.exist.xquery.Atomize;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.DynamicCardinalityCheck;
+import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.Error;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -78,6 +83,41 @@ public class FunReplace extends FunMatches {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.xquery.Function#setArguments(java.util.List)
+	 */
+	public void setArguments(List arguments) throws XPathException {
+        Expression arg = (Expression) arguments.get(0);
+        arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg,
+                new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));    
+        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
+            arg = new Atomize(context, arg);
+        steps.add(arg);
+        
+        arg = (Expression) arguments.get(1);
+        arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
+                new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature)); 
+        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
+            arg = new Atomize(context, arg);
+        steps.add(arg);
+        
+        arg = (Expression) arguments.get(2);
+        arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
+                new Error(Error.FUNC_PARAM_CARDINALITY, "3", mySignature)); 
+        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
+            arg = new Atomize(context, arg);
+        steps.add(arg);
+        
+        if (arguments.size() == 4) {
+            arg = (Expression) arguments.get(3);
+            arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
+                    new Error(Error.FUNC_PARAM_CARDINALITY, "4", mySignature)); 
+            if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
+                arg = new Atomize(context, arg);
+            steps.add(arg);            
+        }
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
@@ -89,7 +129,7 @@ public class FunReplace extends FunMatches {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-        
+
         Sequence result;
 		Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
 		if (stringArg.getLength() == 0)
