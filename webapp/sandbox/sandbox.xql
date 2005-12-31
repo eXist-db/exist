@@ -1,12 +1,12 @@
 xquery version "1.0";
 
-declare option exist:serialize "method=xhtml indent=no";
-
 declare namespace sandbox="http://exist-db.org/xquery/sandbox";
 
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
+
+declare option exist:serialize "method=xhtml indent=no";
 
 (:~ Points to the location of the xml-highlight.xsl stylesheet stored in the database :)
 declare variable $sandbox:XML_HIGHLIGHT_STYLE { "/db/sandbox/xml-highlight.xsl" };
@@ -182,6 +182,7 @@ declare function sandbox:display-page() as element() {
                                     <a href="#" id="show-options">More Options</a>
                                 </fieldset>
                             </div>
+                        </div>
                             <div id="save-panel">
                                 <div>
                                     <h2>Save to examples.xml:</h2>
@@ -190,19 +191,14 @@ declare function sandbox:display-page() as element() {
                                     <button type="button" id="save">Save</button>
                                     
                                     <h2>Export results to new document:</h2>
-                                    <p>
-                                        <label for="docname">Document path</label>
-                                        <a href="#" id="export-resource">Click to select</a>
-                                    </p>
-                                    <p>
-                                        <label for="wrapper">Wrapper element</label>
-                                        <input type="text" id="wrapper"/>
-                                    </p>
+                                    <label for="docname">Document path</label>
+                                    <a href="#" id="export-resource">Click to select</a>
+                                    <label for="wrapper">Wrapper element</label>
+                                    <input type="text" id="wrapper"/>
                                     <button type="button" id="export">Export</button>
                                 </div>
                             </div>
                         </div>
-                    </div>
                 </form>
                 <div id="query-output">
                     <div id="query-result"/>

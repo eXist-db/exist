@@ -24,7 +24,7 @@ declare function ajax:display-collection($collection as xs:string) as element()*
 
 let $collection := request:request-parameter("collection", ())
 return
-    <ajax-response root="{replace($collection, '/[^/]*$', '')}">
+    <ajax-response root="{replace($collection, '/[^/]*$', '', 'mx')}">
     { 
         ajax:display-collection($collection)
     }

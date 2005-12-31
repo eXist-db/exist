@@ -50,6 +50,11 @@ body {
 	color: #AF0024;
 }
 
+button {
+	border: 1px solid #FFB900;
+	background-color: white;
+}
+
 h2 {
 	font-size: 100%;
 }
@@ -58,15 +63,15 @@ h2 {
 	float: left;
 	width: 140px;
 	height: 216px;
-	background-color: #FC6;
-	border: 1px solid #FFD100;
+	background-color: #FFE;
+	border: 1px solid #FFB900;
 	padding: 5px 2px 5px 2px;
 }
 
 #slots-panel h2 {
 	font-weight: normal;
-	color: white;
-	border-bottom: 1px solid white;
+	color: black;
+	border-bottom: 1px solid #FFB900;
 	margin-bottom: 5px;
 	padding: 0 0 5px 5px;
 }
@@ -80,7 +85,7 @@ h2 {
 
 #slots .num {
 	float: left;
-	color: white;
+	color: #FFB900;
 	width: 30px;
 	text-align: right;
 }
@@ -95,7 +100,7 @@ h2 {
 	
 #right-panel {
 	margin-left: 150px;
-	border: 1px solid #FFD100;
+	border: 1px solid #FFB900;
 }
 
 #maximize {
@@ -147,15 +152,23 @@ fieldset select {
 
 #save-panel {
 	padding: 0 3px 3px 5px;
-	background-color: #FEFFAF;
+	margin-top: 5px;
+	background-color: #FFE;
+	border: 1px solid #FFB900;
 }
 
 #save-panel h2 {
 	margin: 3px 0;
+	font-style: italic;
+	font-weight: normal;
 }
 
 #save-panel select, input {
 	margin-right: 5px;
+}
+
+#save-panel #export-resource {
+	margin-right: 10px;
 }
 
 #description, #path {
@@ -229,9 +242,9 @@ fieldset select {
 
 #xmldb-open {
 	width: 40%;
-	background-color: #EEEEEE;
+	background-color: white;
 	font-size: 75%;
-	border: 2px solid #999999;
+	border: 5px solid #DAD6D6;
 }
 
 #xmldb-open h1 {
