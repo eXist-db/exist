@@ -44,8 +44,6 @@ public class OrderedValueSequence extends AbstractSequence {
 	private Entry[] items = null;
 	private int count = 0;
 	
-	private long execTime = 0;
-	
 	public OrderedValueSequence(OrderSpec orderSpecs[], int size) {
 		this.orderSpecs = orderSpecs;
 		this.items = new Entry[size];
@@ -140,7 +138,6 @@ public class OrderedValueSequence extends AbstractSequence {
 		AtomicValue values[];
 		
 		public Entry(Item item) throws XPathException {
-			long start = System.currentTimeMillis();
 			this.item = item;
 			values = new AtomicValue[orderSpecs.length];
 			for(int i = 0; i < orderSpecs.length; i++) {
@@ -153,7 +150,6 @@ public class OrderedValueSequence extends AbstractSequence {
 						ExpressionDumper.dump(orderSpecs[i].getSortExpression()) + 
 						" ; found: " + seq.getLength());
 			}
-			execTime = execTime + (System.currentTimeMillis() - start);
 		}
 
 		/* (non-Javadoc)
