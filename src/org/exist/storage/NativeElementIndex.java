@@ -543,7 +543,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                 
                 if (is == null) {
-                    //TODO : Should is be null, what will there be in os.data() ? -pb
+                    //TOUNDERSTAND : Should is be null, what will there be in os.data() ? -pb
                     if (dbNodes.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.warn("Could not put index data for node '" +  qname + "'");
                     }
@@ -572,6 +572,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     }
     
     public NodeSet getAttributesByName(DocumentSet docs, QName qname, NodeSelector selector) {
+        //TODO : should we consider ElementValue.ATTRIBUTE_ID as well ? -pb
         return findElementsByTagName(ElementValue.ATTRIBUTE, docs, qname, selector);       
     }
 
@@ -588,13 +589,16 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector) {
         short nodeType;
-        switch (type) {
+        switch (type) {   
+            case ElementValue.ATTRIBUTE_ID : //is this correct ? -pb
             case ElementValue.ATTRIBUTE :
                 nodeType = Node.ATTRIBUTE_NODE;
-                break;
-            //TODO : stricter control -pb
-            default :
+                break;            
+            case ElementValue.ELEMENT :
                 nodeType = Node.ELEMENT_NODE;
+                 break;            
+            default :
+                throw new IllegalArgumentException("Invalid type");
         }        
         final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
         final SymbolTable symbols = broker.getSymbols();
@@ -626,7 +630,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             try {
                 lock.acquire(Lock.READ_LOCK);
                 is = dbNodes.getAsStream(ref); 
-                //Does the node already exist in the index ?
+                //Does the node already has data in the index ?
                 if (is == null) 
                     continue;
                 

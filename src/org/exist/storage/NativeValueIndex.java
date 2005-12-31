@@ -559,7 +559,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 }
                 //Store the data
                 if (is == null) {
-                    //TODO : Should is be null, what will there be in os.data() ? -pb
+                    //TOUNDERSTAND : Should is be null, what will there be in os.data() ? -pb
                     if (dbValues.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.warn("Could not put index data for value '" +  ref + "'");
                     }
@@ -816,15 +816,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
          * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
          */
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-            VariableByteInput is = null;
+            VariableByteInput is;
 			try {
 				is = dbValues.getAsStream(pointer);
 			} catch (IOException e) {
 				LOG.error(e.getMessage(), e);
-                //TODO : return early -pb
-			}            
-			if (is == null)
-				return true;
+                return true;
+			}
             
             int storedDocId;            
             int gidsCount;
@@ -930,19 +928,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 if (atomic.getType() != type)
                     return false;
             } catch (EXistException e) {
-                LOG.warn(e.getMessage(), e);
+                LOG.error(e.getMessage(), e);
                 return true;
             }
             
-            VariableByteInput is = null;
+            VariableByteInput is;
             try {
                 is = dbValues.getAsStream(pointer);
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
-                //TODO : return early -pb
-            }
-            if (is == null)
                 return true;
+            }   
             
             int storedDocId;
             int gidsCount;
@@ -953,6 +949,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             ValueOccurrences oc = (ValueOccurrences) map.get(atomic);
             try {
                 while (is.available() > 0) {
+                    docAdded = false;
                     storedDocId = is.readInt();
                     gidsCount = is.readInt();
                     storedDocument = docs.getDoc(storedDocId); 
@@ -960,15 +957,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     if (storedDocument == null) {
                         is.skip(gidsCount);
                         continue;
-                    }
-                    docAdded = false;
+                    }                    
                     storedGID = 0;                    
                     for (int j = 0; j < gidsCount; j++) {
                         delta = is.readLong();
-                        storedGID = storedGID + delta;
-                        //TODO : what if contextSet == null ? -pb
-                        //See above where we have this behaviour :
-                        //otherwise, we add all nodes without check
+                        storedGID = storedGID + delta;                        
                         if (contextSet != null) {
                             if (contextSet.parentWithChild(storedDocument, storedGID, false, true) != null) {
                                 if (oc == null) {
@@ -982,6 +975,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                 oc.addOccurrences(1);
                             }
                         }
+                        //TODO : what if contextSet == null ? -pb
+                        //See above where we have this behaviour :
+                        //otherwise, we add all nodes without check                        
                     }
                 }
             } catch(EOFException e) {

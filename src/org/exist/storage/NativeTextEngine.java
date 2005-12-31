@@ -340,12 +340,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             ref = new WordRef(collectionId, token);
             try {
                 lock.acquire(Lock.WRITE_LOCK);
-                changed = false;
-                is = dbTokens.getAsStream(ref);
+                changed = false;                
                 os.clear();    
-                if (is == null) {
-                    continue;                
-                }                            
+                is = dbTokens.getAsStream(ref);
+                //Does the token already has data in the index ?
+                if (is == null)
+                    continue;            
                 try {
                     while (is.available() > 0) {
                         storedDocId = is.readInt();
@@ -452,7 +452,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		DocumentImpl storedDocument;
         NodeProxy storedNode;
         NodeProxy parent;
-		int sizeHint = -1;
+		int sizeHint;
         Match match;
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
             //Compute a key for the node
@@ -463,10 +463,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			try {
 				lock.acquire();
 				is = dbTokens.getAsStream(ref);
-                //Does the node already exist in the index ?
-				if (is == null) {
-					continue;
-				}
+                //Does the token already has data in the index ?
+				if (is == null)
+					continue;				
 				while (is.available() > 0) {
                     storedDocId = is.readInt();
                     storedSection = is.readByte();
@@ -880,7 +879,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     os.writeInt(termCount);
                     lenOffset = os.position();
                     os.writeFixedInt(0);
-
                     previousGID = 0;
                     for (int j = 0; j < occurences.getSize(); ) {
                         delta = occurences.nodes[j] - previousGID;
@@ -893,8 +891,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         previousGID = occurences.nodes[j];        
                         j += freq;                        
                     }
-                    os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
-                    
+                    os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);                    
                     flushWord(collectionId, token, os.data());
                     progress.setValue(count);
                     if (progress.changed()) {
@@ -913,7 +910,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             }
         }
 
-        private void flushWord(short collectionId, String word, ByteArray data) {
+        private void flushWord(short collectionId, String token, ByteArray data) {
             //return early
             //TODO : is this ever called ? -pb
             if (data.size() == 0)
@@ -921,7 +918,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             final Lock lock = dbTokens.getLock();
             try {
                 lock.acquire(Lock.WRITE_LOCK);          
-                dbTokens.append(new WordRef(collectionId, word), data);
+                dbTokens.append(new WordRef(collectionId, token), data);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
             } catch (ReadOnlyException e) {
@@ -972,7 +969,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     try {
                         lock.acquire(Lock.WRITE_LOCK);
                         value = dbTokens.get(ref);
-                        //Does the token already exist in the index ?
+                        //Does the token already has data in the index ?
 					    if (value != null) {
 					        //Add its data to the new list    
 					        is = new VariableByteArrayInput(value.getData());
@@ -1177,8 +1174,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             }         
     		                os.writeInt(termCount);
                             lenOffset = os.position();
-    	                    os.writeFixedInt(0);
-                            
+    	                    os.writeFixedInt(0);                            
                             previousGID = 0;
                             for (int m = 0; m < storedOccurencesList.getSize(); ) {
                                 delta = storedOccurencesList.nodes[m] - previousGID;
@@ -1195,6 +1191,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         }
 		                //Store the data		                
 	                    if (is == null) {
+                            //TOUNDERSTAND : Should is be null, what will there be in os.data() ? -pb
 	                        if (dbTokens.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
                                 LOG.error("Could not put index data for token '" +  token + "'"); 
                             }
@@ -1241,18 +1238,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		 */
 		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
 		    if(context != null)
-		        context.proceed();
-			String word;
+		        context.proceed();			
 			try {
-				word = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+                String word = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+                if (matcher.matches(word))
+                    matches.add(word);
+                return true;
 			} catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
 				//word = new String(key.getData(), 2, key.getLength() - 2);
-                word = null;
-			}            
-			if (matcher.matches(word))
-				matches.add(word);
-			return true;
+                return true;
+			} 
 		}
 	}
 	
@@ -1274,20 +1270,18 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			this.context = context;
 		}
 
-		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
+		public boolean indexInfo(Value key, long pointer) throws TerminatedException {            
+            VariableByteInput is;
+            try {
+                is = dbTokens.getAsStream(pointer);
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+                return true; 
+            }   
+            
             word.reuse();
             word = UTF8.decode(key.getData(), 2, key.getLength() - 2, word);
-			if (matcher.matches(word)) {
-				VariableByteInput is = null;
-				try {
-					is = dbTokens.getAsStream(pointer);
-				} catch (IOException e) {
-					LOG.warn(e.getMessage(), e);
-                    //TODO : return early -pb
-				}
-				if (is == null)
-					return true; 
-                
+			if (matcher.matches(word)) {                
                 int storedDocId;
                 byte storedSection;
                 int termCount;
@@ -1302,8 +1296,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 int freq;
                 int sizeHint;
 				try {
-					while (is.available() > 0) {
-                        
+					while (is.available() > 0) {                        
 					    if(context != null)
 					        context.proceed();                        
                         storedDocId = is.readInt();
@@ -1390,25 +1383,24 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		 * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
 		 */
 		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
+            
+            String term;
+            try {
+                term = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                LOG.error(e.getMessage(), e);
+                //term = new String(key.getData(), 2, key.getLength() - 2);
+                return true;
+            }
+            
             VariableByteInput is;
             try {
                 is = dbTokens.getAsStream(pointer);
             } catch (IOException e) {
-                LOG.warn(e.getMessage(), e);
-                //TODO : return early -pb
-                is = null;
-            }
-            if (is == null)
-                return true;
-            String term;
-			try {
-				term = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
-			} catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
-				//term = new String(key.getData(), 2, key.getLength() - 2);
-                //TODO : return early ! -pb
-                term = null;
-			}            
+                return true;
+            }
+            
             int storedDocId;
             byte storedSection;
             int termCount;
@@ -1419,11 +1411,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             DocumentImpl storedDocument; 
             NodeProxy parentNode;
             int freq;
-            boolean include = true;
+            boolean include;
             boolean docAdded;
 			try {
 				while (is.available() > 0) {
-                    docAdded = false;
+                    docAdded = false;                    
                     storedDocId = is.readInt();
                     storedSection = is.readByte();
                     termCount = is.readInt();
