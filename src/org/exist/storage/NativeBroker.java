@@ -54,6 +54,7 @@ import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.memtree.DOMIndexer;
@@ -1154,7 +1155,7 @@ public class NativeBroker extends DBBroker {
 	 * the document if node is null.
 	 */
 	public void reindex(final Txn transaction, final DocumentImpl oldDoc, final DocumentImpl doc, 
-			final NodeImpl node) {
+			final StoredNode node) {
 		int idxLevel = doc.reindexRequired();
 		if (idxLevel < 0) {
 			flush();
@@ -1596,8 +1597,9 @@ public class NativeBroker extends DBBroker {
 		if (node.getNodeType() == Node.ELEMENT_NODE)
 		    endElement(node, currentPath, null);
 		//TODO : what are the semantics of this 1 ? -pb
+		// Answer: 1 is the document root node. Always.
 		if(node.getGID() == 1)
-		    newDoc.appendChild(node);
+		    newDoc.appendChild((StoredNode) node);
 		node.setOwnerDocument(doc);
 		
 		if (node.hasChildNodes()) {
@@ -1853,8 +1855,8 @@ public class NativeBroker extends DBBroker {
 //				    }
 					return null;
 				}
-				NodeImpl node =
-					NodeImpl.deserialize(
+				StoredNode node =
+					StoredNode.deserialize(
 						val.getData(),
 						0,
 						val.getLength(),
@@ -1881,8 +1883,8 @@ public class NativeBroker extends DBBroker {
 //					return null;
 					return objectWith(p.getDocument(), p.getGID()); // retry?
 				}
-				NodeImpl node =
-					NodeImpl.deserialize(
+				StoredNode node =
+					StoredNode.deserialize(
 						val.getData(),
 						0,
 						val.getLength(),
@@ -2976,8 +2978,8 @@ public class NativeBroker extends DBBroker {
 			ByteArrayPool.releaseByteArray(data);
 		} catch (Exception e) {
 		    Value oldVal = domDb.get(node.getInternalAddress());
-		    NodeImpl old = 
-		        NodeImpl.deserialize(oldVal.data(), oldVal.start(), oldVal.getLength(), 
+		    StoredNode old = 
+		        StoredNode.deserialize(oldVal.data(), oldVal.start(), oldVal.getLength(), 
 		                (DocumentImpl)node.getOwnerDocument(), false);
 			LOG.debug(
 				"Exception while storing "

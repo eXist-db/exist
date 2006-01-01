@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeException;
@@ -117,7 +118,6 @@ public final class NodeIterator implements Iterator {
 			db.setOwnerObject(lockKey);
 			if(gotoNextPosition()) {
 				long backLink = 0;
-			    boolean skipped = false;
 			    do {
 					DOMFile.DOMFilePageHeader ph = p.getPageHeader();
 					// next value larger than length of the current page?
@@ -142,11 +142,9 @@ public final class NodeIterator implements Iterator {
 					//	check if this is just a link to a relocated node
 					if(ItemId.isLink(lastTID)) {
 						// skip this
-						long link = ByteConversion.byteToLong(p.data, offset);
 						offset += 8;
 //						System.out.println("skipping link on p " + page + " -> " + 
 //								StorageAddress.pageFromPointer(link));
-						skipped = true;
 						continue;
 					}
 					// read data length
@@ -166,7 +164,7 @@ public final class NodeIterator implements Iterator {
 						offset += 8;
 						try {
 							final byte[] odata = db.getOverflowValue(overflow);
-							nextNode = NodeImpl.deserialize(odata, 0, odata.length, doc, useNodePool);
+							nextNode = StoredNode.deserialize(odata, 0, odata.length, doc, useNodePool);
 						} catch(Exception e) {
 							LOG.warn("Exception while loading overflow value: " + e.getMessage() +
 									"; originating page: " + p.page.getPageInfo());
@@ -174,7 +172,7 @@ public final class NodeIterator implements Iterator {
 					// normal node
 					} else {
                         try {
-    						nextNode = NodeImpl.deserialize(p.data, offset, l, doc, useNodePool);
+    						nextNode = StoredNode.deserialize(p.data, offset, l, doc, useNodePool);
     						offset += l;
                         } catch(Exception e) {
                             LOG.warn("Error while deserializing node: " + e.getMessage(), e);
