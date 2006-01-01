@@ -197,7 +197,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final DocumentImpl doc = (DocumentImpl) text.getOwnerDocument();
         final long gid = text.getGID();
         //TODO : case conversion should be handled by the tokenizer -pb
-        XMLString t = text.getXMLString().transformToLower();        
+        final XMLString t = text.getXMLString().transformToLower();        
         TextToken token;        
         if (noTokenizing) {            
             token = new TextToken(TextToken.ALPHA, t, 0, t.length());
@@ -290,11 +290,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.collections.Collection)
      */
     public void dropIndex(Collection collection) {
+        final WordRef ref = new WordRef(collection.getId());
+        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);            
         final Lock lock = dbTokens.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);            
-            WordRef ref = new WordRef(collection.getId());
-            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);            
             dbTokens.flush();
             dbTokens.removeAll(query);
         } catch (LockException e) {
@@ -322,7 +322,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             Iterator j = broker.getDOMIterator(new NodeProxy(document, node.getGID(), node.getInternalAddress()));
             collect(tokens, j);
         }
-        short collectionId = document.getCollection().getId();        
+        final short collectionId = document.getCollection().getId();        
         final Lock lock = dbTokens.getLock();
         for (Iterator iter = tokens.iterator(); iter.hasNext();) {
             String token = (String) iter.next();
@@ -367,7 +367,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         dbTokens.remove(ref);
                     } else {                        
                         if (dbTokens.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                            LOG.warn("Could not put index data for token '" +  token + "'");
+                            LOG.error("Could not put index data for token '" +  token + "'");
                         }                    
                     }
                 }
@@ -1123,8 +1123,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	                        if (dbTokens.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
                                 LOG.error("Could not put index data for token '" +  token + "'"); 
                             }
-	                    }else {                            
-	                        if (dbTokens.update(((BFile.PageInputStream) is).getAddress(), ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+	                    }else {  
+                            long address = ((BFile.PageInputStream) is).getAddress();
+	                        if (dbTokens.update(address, ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
                                 LOG.error("Could not update index data for value '" +  token + "'");  
                             }
 	                    }		                
@@ -1334,8 +1335,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					for (int j = 0; j < termCount; j++) {
                         long delta = is.readLong(); 
                         long storedGID = previousGID + delta;
-                        int freq = is.readInt();
-                        //TODO : use variable
+                        int freq = is.readInt();                        
                         is.skip(freq);
 						if (contextSet != null) {
                             boolean include = false;
@@ -1437,6 +1437,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
         
         /** Standard quicksort */
+        //TODO : use methods in org.exist.util ?
         private void sort(int lo0, int hi0) {
             int lo = lo0;
             int hi = hi0;
