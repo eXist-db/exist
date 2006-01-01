@@ -45,6 +45,7 @@ import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.User;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.IndexQuery;
@@ -635,8 +636,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 
     public Occurrences[] scanIndexedElements(Collection collection, boolean inclusive) 
             throws PermissionDeniedException {
-        if (!collection.getPermissions().validate(broker.getUser(), Permission.READ))
-            throw new PermissionDeniedException("User '" + broker.getUser().getName() + 
+        final User user = broker.getUser();
+        if (!collection.getPermissions().validate(user, Permission.READ))
+            throw new PermissionDeniedException("User '" + user.getName() + 
                     "' has no permission to read collection '" + collection.getName() + "'");        
         List collections;
         if (inclusive) 
@@ -734,8 +736,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     while (is.available() > 0) {
                         int storedDocId = is.readInt();
                         int gidsCount = is.readInt();
-                        //TODO : use variable -pb
-                        is.readFixedInt();                       
+                        //TOUNDERSTAND -pb
+                        int size = is.readFixedInt(); //unused                       
                         if (storedDocId != document.getDocId()) {
                             // data are related to another document:
                             // ignore them 
