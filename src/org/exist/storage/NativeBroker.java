@@ -437,9 +437,9 @@ public class NativeBroker extends DBBroker {
 			case Constants.GTEQ :
 				return (cmp >= 0);
 			case Constants.EQ :
-				return (cmp == 0);
+				return (cmp == Constants.EQUAL);
 			case Constants.NEQ :
-				return (cmp != 0);
+				return (cmp != Constants.EQUAL);
 		}
 		return false;
 		// never reached
@@ -939,7 +939,7 @@ public class NativeBroker extends DBBroker {
         }
 
         public void reset(Txn transaction, NodeImpl node, NodePath currentPath) {            
-            if (node.getGID() == NodeImpl.UNKNOWN_NODE_IMPL_GID)
+            if (node.getGID() == NodeImpl.NODE_IMPL_UNKNOWN_GID)
                 LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
                 //TODO : why continue processing ? return ? -pb
             this.transaction = transaction;
@@ -1156,8 +1156,8 @@ public class NativeBroker extends DBBroker {
 	 */
 	public void reindex(final Txn transaction, final DocumentImpl oldDoc, final DocumentImpl doc, 
 			final StoredNode node) {
-		int idxLevel = doc.reindexRequired();
-		if (idxLevel < 0) {
+		int idxLevel = doc.reindexRequired();     
+		if (idxLevel == DocumentImpl.REINDEX_ALL) {
 			flush();
 			return;
 		}
@@ -1220,7 +1220,7 @@ public class NativeBroker extends DBBroker {
 			LOG.error("Error occured while reindexing document: " + e.getMessage(), e);
 		}
         notifyReindex(oldDoc, node);
-		doc.setReindexRequired(-1);
+		doc.setReindexRequired(DocumentImpl.REINDEX_ALL);
 //		checkTree(doc);
 		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
 	}
@@ -1255,7 +1255,7 @@ public class NativeBroker extends DBBroker {
 		    reindex(transaction, node, currentPath);
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		if (node.hasChildNodes()) {
-			final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());
+			final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());            
 			if (firstChildId < 0) {
 				LOG.fatal(
 					"no child found: expected = "
@@ -1318,7 +1318,7 @@ public class NativeBroker extends DBBroker {
                 stack.push(removed);
 
                 if (node.hasChildNodes()) {
-                    final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());
+                    final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());                    
                     if (firstChildId < 0) {
                         LOG.fatal(
                             "no child found: expected = "
@@ -1595,15 +1595,13 @@ public class NativeBroker extends DBBroker {
 		node.setInternalAddress(BFile.UNKNOWN_ADDRESS);
 		store(transaction, node, currentPath, index);
 		if (node.getNodeType() == Node.ELEMENT_NODE)
-		    endElement(node, currentPath, null);
-		//TODO : what are the semantics of this 1 ? -pb
-		// Answer: 1 is the document root node. Always.
-		if(node.getGID() == 1)
+		    endElement(node, currentPath, null);		
+		if (node.getGID() == NodeImpl.NODE_IMPL_ROOT_NODE_GID)
 		    newDoc.appendChild((StoredNode) node);
 		node.setOwnerDocument(doc);
 		
 		if (node.hasChildNodes()) {
-			final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());
+			final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());            
 			if (firstChildId < 0) {
 				LOG.fatal(
 					"no child found: expected = "
@@ -1683,7 +1681,7 @@ public class NativeBroker extends DBBroker {
 	private void checkTree(Iterator iterator, NodeImpl node) {
 		if (node.hasChildNodes()) {
 			final long firstChildId = XMLUtil.getFirstChildId((DocumentImpl)node.getOwnerDocument(), 
-					node.getGID());
+					node.getGID());          
 			if (firstChildId < 0) {
 				LOG.fatal(
 					"no child found: expected = "
@@ -1870,8 +1868,8 @@ public class NativeBroker extends DBBroker {
 		.run();
 	}
 
-	public Node objectWith(final NodeProxy p) {
-		if (p.getInternalAddress() < 0)
+	public Node objectWith(final NodeProxy p) {       
+		if (p.getInternalAddress() == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
 			return objectWith(p.getDocument(), p.getGID());
 		return (Node) new DOMTransaction(this, domDb) {
 			public Object start() {
@@ -2721,7 +2719,7 @@ public class NativeBroker extends DBBroker {
         final IndexSpec idxSpec = 
             doc.getCollection().getIdxConf(this);
 //        final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
-        final long gid = node.getGID();
+        final long gid = node.getGID();        
         if (gid < 0) {
             LOG.debug("illegal node: " + gid + "; " + node.getNodeName());
             Thread.dumpStack();
