@@ -631,6 +631,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 lock.release();
             }
         }
+        LOG.debug("Found: " + result.getLength() + " for " + qname);
         return result;
     }
 

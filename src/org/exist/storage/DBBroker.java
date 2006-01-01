@@ -43,6 +43,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -635,7 +636,7 @@ public abstract class DBBroker extends Observable {
 
 	public abstract void insertAfter(Txn transaction, final NodeImpl previous, final NodeImpl node);
 
-	public void reindex(Txn transaction, DocumentImpl oldDoc, DocumentImpl doc, NodeImpl node) {
+	public void reindex(Txn transaction, DocumentImpl oldDoc, DocumentImpl doc, StoredNode node) {
 		throw new RuntimeException("not implemented");
 	}
 
