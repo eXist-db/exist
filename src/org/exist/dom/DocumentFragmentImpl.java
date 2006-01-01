@@ -4,7 +4,7 @@ package org.exist.dom;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 
-class DocumentFragmentImpl extends NodeImpl implements DocumentFragment {
+class DocumentFragmentImpl extends StoredNode implements DocumentFragment {
    
    public DocumentFragmentImpl() {
       super(Node.DOCUMENT_FRAGMENT_NODE);

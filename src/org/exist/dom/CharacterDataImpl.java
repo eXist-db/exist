@@ -21,17 +21,11 @@
  */
 package org.exist.dom;
 
-import java.util.Set;
-
 import org.exist.util.XMLString;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.DOMException;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.AttributesImpl;
 
-public class CharacterDataImpl extends NodeImpl implements CharacterData {
+public class CharacterDataImpl extends StoredNode implements CharacterData {
     
     protected XMLString cdata = null;
     
@@ -144,28 +138,6 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
     		throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, 
     			"string index out of bounds");
         return cdata.substring(offset, count);
-    }
-
-    public void toSAX( ContentHandler contentHandler,
-                       LexicalHandler lexicalHandler, boolean first,
-                       Set namespaces)
-         throws SAXException {
-        if ( first ) {
-            AttributesImpl attribs = new AttributesImpl();
-            attribs.addAttribute( "http://exist.sourceforge.net/NS/exist", "id",
-                "exist:id", "CDATA", Long.toString( gid ) );
-            attribs.addAttribute( "http://exist.sourceforge.net/NS/exist", "source",
-                "exist:source", "CDATA", ownerDocument.getFileName() );
-            contentHandler.startElement( "http://exist.sourceforge.net/NS/exist", "text",
-                "exist:text", attribs );
-        }
-        char ch[] = new char[cdata.length()];
-        cdata.toString().getChars( 0, ch.length, ch, 0 );
-        contentHandler.characters( ch, 0, ch.length );
-        if ( first )
-            contentHandler.endElement( "http://exist.sourceforge.net/NS/exist", "text",
-                "exist:text" );
-
     }
 
     public String toString() {

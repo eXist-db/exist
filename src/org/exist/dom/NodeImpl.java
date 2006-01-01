@@ -1,34 +1,9 @@
-
-/*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2000-04,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
- *  $Id$
- */
 package org.exist.dom;
 
 import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NodePath;
-import org.exist.storage.Signatures;
 import org.exist.storage.txn.Txn;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -36,127 +11,25 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.UserDataHandler;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.LexicalHandler;
 
-/**
- *  The base class for all persistent DOM nodes in the database.
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- */
-public class NodeImpl implements Node, QNameable {	
-    
-    public final static int UNKNOWN_NODE_IMPL_GID = -1;
+public abstract class NodeImpl implements Node, QNameable {
+
+	public final static int UNKNOWN_NODE_IMPL_GID = -1;
     public final static int UNKNOWN_NODE_IMPL_ADDRESS = -1;    
-    public final static short UNKNOWN_NODE_IMPL_NODE_TYPE = -1;    
+    public final static short UNKNOWN_NODE_IMPL_NODE_TYPE = -1;
     
-	protected final static Logger LOG = Logger.getLogger(NodeImpl.class);
-
-	//TODO : what are the semantics of this 0 ? Clarify then use named constant -pb
-	protected long gid = 0;
-	protected long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
-	protected short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;
-	protected DocumentImpl ownerDocument = null;
-
-	private NodeImpl() {
-	}
-
-	public NodeImpl(short nodeType) {
-		this(nodeType, 0);
-	}
-
-	public NodeImpl(long gid) {
-		this(UNKNOWN_NODE_IMPL_NODE_TYPE, gid);
-	}
-
-	public NodeImpl(short nodeType, long gid) {
-		this.nodeType = nodeType;
-		this.gid = gid;
-	}
-
-    /**
-     * Copy constructor: creates a copy of the other node.
-     * 
-     * @param other
-     */
-    public NodeImpl(NodeImpl other) {
-        this.nodeType = other.nodeType;
-        this.gid = other.gid;
-        this.internalAddress = other.internalAddress;
-        this.ownerDocument = other.ownerDocument;
-    }
+    protected final static Logger LOG = Logger.getLogger(NodeImpl.class);
     
-	/**
-	 * Read a node from the specified byte array.
-	 * 
-	 * This checks the node type and calls the {@link #deserialize(byte[], int, int)}
-	 * method of the corresponding node class. The node will be allocated in the pool
-	 * and should be released once it is no longer needed.
-	 * 
-	 * @param data
-	 * @param start
-	 * @param len
-	 * @param doc
-	 * @return
-	 */
-	public static NodeImpl deserialize(byte[] data, int start, int len, DocumentImpl doc,
-	        boolean pooled) {
-	    short type = Signatures.getType(data[start]);
-		switch (type) {
-			case Node.TEXT_NODE :
-				return TextImpl.deserialize(data, start, len, pooled);
-			case Node.ELEMENT_NODE :
-				return ElementImpl.deserialize(data, start, len, doc, pooled);
-			case Node.ATTRIBUTE_NODE :
-				return AttrImpl.deserialize(data, start, len, doc, pooled);
-			case Node.PROCESSING_INSTRUCTION_NODE :
-				return ProcessingInstructionImpl.deserialize(data, start, len, pooled);
-			case Node.COMMENT_NODE :
-				return CommentImpl.deserialize(data, start, len, pooled);
-			default :
-				LOG.debug("Unknown node type: " + type);
-				return null;
-		}
-	}
-	
-	/**
-	 * Read a node from the specified byte array.
-	 * 
-	 * This checks the node type and calls the {@link #deserialize(byte[], int, int)}
-	 * method of the corresponding node class.
-	 * 
-	 * @param data
-	 * @param start
-	 * @param len
-	 * @param doc
-	 * @return
-	 */
-	public static NodeImpl deserialize(byte[] data, int start, int len, DocumentImpl doc) {
-		return deserialize(data, start, len, doc, false);
-	}
-
-	/**
-	 * Reset this object to its initial state. Required by the
-	 * parser to be able to reuse node objects.
-	 */
-	public void clear() {
-		//TODO : what are the semantics of this 0 ? -pb		
-		gid = 0;
-		internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
-		ownerDocument = null;
-	}
-
 	/**
 	 * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
 	 */
 	public Node appendChild(Node child) throws DOMException {
-		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
+		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
 	}
 
 	public void appendChildren(Txn transaction, NodeList nodes, int child) throws DOMException {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
-		        "Cannot append children to a node of type " + nodeType);
+		        "Cannot append children to a node of type " + getNodeType());
 	}
 
 	/**
@@ -165,18 +38,7 @@ public class NodeImpl implements Node, QNameable {
 	public Node cloneNode(boolean deep) {
 		return this;
 	}
- 
-	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	public boolean equals(Object obj) {
-		if (!(obj instanceof NodeImpl))
-			return false;
-		if (((NodeImpl) obj).gid == gid)
-			return true;
-		return false;
-	}
-
+	
 	public long firstChildID() {
 		return 0;
 	}
@@ -191,16 +53,7 @@ public class NodeImpl implements Node, QNameable {
 	public short getAttributesCount() {
 		return 0;
 	}
-
-	/**
-	 * Return the broker instance used to create this node.
-	 * 
-	 * @return
-	 */
-	public DBBroker getBroker() {
-		return (DBBroker) ownerDocument.broker;
-	}
-
+	
 	public int getChildCount() {
 		return 0;
 	}
@@ -215,24 +68,6 @@ public class NodeImpl implements Node, QNameable {
 	public Node getFirstChild() {
 		return null;
 	}
-
-	/**
-	 *  Get the unique identifier assigned to this node.
-	 *
-	 *@return
-	 */
-	public long getGID() {
-		return gid;
-	}
-
-	/**
-	 *  Get the internal storage address of this node
-	 *
-	 *@return    The internalAddress value
-	 */
-	public long getInternalAddress() {
-		return internalAddress;
-	}
 	
 	/**
 	 * @see org.w3c.dom.Node#getLastChild()
@@ -242,6 +77,62 @@ public class NodeImpl implements Node, QNameable {
 	}
 
 	/**
+	 * Return the broker instance used to create this node.
+	 * 
+	 * @return
+	 */
+	public abstract DBBroker getBroker();
+	
+	/**
+	 *  Get the unique identifier assigned to this node.
+	 *
+	 *@return
+	 */
+	public abstract long getGID();
+	
+	/**
+	 *  Set the unique node identifier of this node.
+	 *
+	 *@param  gid  The new gID value
+	 */
+	public abstract void setGID(long gid);
+	
+	/**
+	 *  Set the internal storage address of this node.
+	 *
+	 *@param  address  The new internalAddress value
+	 */
+	public abstract void setInternalAddress(long address);
+	
+	/**
+	 *  Get the internal storage address of this node
+	 *
+	 *@return    The internalAddress value
+	 */
+	public abstract long getInternalAddress();
+	
+	/**
+	 *  Get the unique node identifier of this node's parent node.
+	 *
+	 *@return    The parentGID value
+	 */
+	public abstract long getParentGID();
+	
+	/**
+	 *  Set the owner document.
+	 *
+	 *@param  doc  The new ownerDocument value
+	 */
+	public abstract void setOwnerDocument(Document doc);
+	
+	public abstract QName getQName();
+	
+	/**
+	 * Release all memory resources hold by this node. 
+	 */
+	public abstract void release();
+	
+	/**
 	 * @see org.w3c.dom.Node#getLocalName()
 	 */
 	public String getLocalName() {
@@ -249,20 +140,6 @@ public class NodeImpl implements Node, QNameable {
 		if (nodeName != null)
 			return nodeName.getLocalName();
 		return "";
-	}
-
-	public QName getQName() {
-		switch(nodeType) {
-			case Node.DOCUMENT_NODE:
-			    return QName.DOCUMENT_QNAME;
-			case Node.TEXT_NODE:
-			    return QName.TEXT_QNAME;
-			case Node.COMMENT_NODE:
-			    return QName.COMMENT_QNAME;
-			case Node.DOCUMENT_TYPE_NODE:
-			    return QName.DOCTYPE_QNAME;
-		}
-		return null;
 	}
 
 	/**
@@ -284,57 +161,14 @@ public class NodeImpl implements Node, QNameable {
 	        return nodeName.toString();
 	    return "";
 	}
-
-	/**
-	 * @see org.w3c.dom.Node#getNodeType()
-	 */
-	public short getNodeType() {
-		return nodeType;
-	}
-
+	
 	/**
 	 * @see org.w3c.dom.Node#getNodeValue()
 	 */
 	public String getNodeValue() throws DOMException {
 		return "";
 	}
-
-	/**
-	 * @see org.w3c.dom.Node#getOwnerDocument()
-	 */
-	public Document getOwnerDocument() {
-		return ownerDocument;
-	}
-
-	/**
-	 *  Get the unique node identifier of this node's parent node.
-	 *
-	 *@return    The parentGID value
-	 */
-	public long getParentGID() {
-	    return XMLUtil.getParentId(ownerDocument, gid);
-	}
-
-	/**
-	 * @see org.w3c.dom.Node#getParentNode()
-	 */
-	public Node getParentNode() {
-		long pid = getParentGID();
-		return pid == NodeImpl.UNKNOWN_NODE_IMPL_GID ? null : ownerDocument.getNode(pid);
-	}
-
-	public NodePath getPath() {
-		NodePath path = new NodePath();
-		if (nodeType != ATTRIBUTE_NODE)
-			path.addComponent(getQName());
-		NodeImpl parent = (NodeImpl)getParentNode();
-		while (parent != null && parent.getNodeType() != DOCUMENT_NODE) {
-		    path.addComponentAtStart(parent.getQName());
-			parent = (NodeImpl)parent.getParentNode();
-		}
-		return path;
-	}
-
+	
 	/**
 	 * @see org.w3c.dom.Node#getPrefix()
 	 */
@@ -346,47 +180,7 @@ public class NodeImpl implements Node, QNameable {
 		}
 		return "";
 	}
-
-	/**
-	 * @see org.w3c.dom.Node#getPreviousSibling()
-	 */
-	public Node getPreviousSibling() {
-		int level = ownerDocument.getTreeLevel(gid);
-		if (level == 0)
-			return ownerDocument.getPreviousSibling(this);
-		long pid =
-			(gid - ownerDocument.getLevelStartPoint(level))
-				/ ownerDocument.getTreeLevelOrder(level)
-				+ ownerDocument.getLevelStartPoint(level - 1);
-		long firstChildId =
-			(pid - ownerDocument.getLevelStartPoint(level - 1))
-				* ownerDocument.getTreeLevelOrder(level)
-				+ ownerDocument.getLevelStartPoint(level);
-		if (gid > firstChildId)
-			return ownerDocument.getNode(gid - 1);
-		return null;
-	}
-
-	/**
-	 * @see org.w3c.dom.Node#getNextSibling()
-	 */
-	public Node getNextSibling() {
-		int level = ownerDocument.getTreeLevel(gid);
-		if (level == 0)
-			return ownerDocument.getFollowingSibling(this);
-		long pid =
-			(gid - ownerDocument.getLevelStartPoint(level))
-				/ ownerDocument.getTreeLevelOrder(level)
-				+ ownerDocument.getLevelStartPoint(level - 1);
-		long firstChildId =
-			(pid - ownerDocument.getLevelStartPoint(level - 1))
-				* ownerDocument.getTreeLevelOrder(level)
-				+ ownerDocument.getLevelStartPoint(level);
-		if (gid < firstChildId + ownerDocument.getTreeLevelOrder(level) - 1)
-			return ownerDocument.getNode(gid + 1);
-		return null;
-	}
-
+	
 	/**
 	 * @see org.w3c.dom.Node#hasAttributes()
 	 */
@@ -442,6 +236,29 @@ public class NodeImpl implements Node, QNameable {
 		return;
 	}
 
+	protected StoredNode getLastNode(StoredNode node) {
+		final DocumentImpl owner = (DocumentImpl) getOwnerDocument();
+		final NodeProxy p = new NodeProxy(owner, node.gid, node.internalAddress);
+		Iterator iterator = owner.getBroker().getNodeIterator(p);
+		iterator.next();
+		return getLastNode(iterator, node);
+	}
+
+	protected StoredNode getLastNode(Iterator iterator, StoredNode node) {
+		if (node.hasChildNodes()) {
+			final long firstChild = node.firstChildID();
+			final long lastChild = firstChild + node.getChildCount();
+			StoredNode next = null;
+			for (long gid = firstChild; gid < lastChild; gid++) {
+				next = (StoredNode) iterator.next();
+				next.setGID(gid);
+				next = getLastNode(iterator, next);
+			}
+			return next;
+		} else
+			return node;
+	}
+	
 	public Node removeChild(Node oldChild)
     throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "remove child is not supported. Use XUpdate instead.");
@@ -482,24 +299,6 @@ public class NodeImpl implements Node, QNameable {
 	 */
 	protected void setChildCount(int count) {
 	}
-
-	/**
-	 *  Set the unique node identifier of this node.
-	 *
-	 *@param  gid  The new gID value
-	 */
-	public void setGID(long gid) {
-		this.gid = gid;
-	}
-
-	/**
-	 *  Set the internal storage address of this node.
-	 *
-	 *@param  address  The new internalAddress value
-	 */
-	public void setInternalAddress(long address) {
-		internalAddress = address;
-	}
 	
 	/**
 	 *  Set the node name.
@@ -517,16 +316,7 @@ public class NodeImpl implements Node, QNameable {
 	 */
 	public void setNodeValue(String value) throws DOMException {
 	}
-
-	/**
-	 *  Set the owner document.
-	 *
-	 *@param  doc  The new ownerDocument value
-	 */
-	public void setOwnerDocument(Document doc) {
-		ownerDocument = (DocumentImpl) doc;
-	}
-
+	
 	/**
 	 *  Sets the prefix attribute of the NodeImpl object
 	 *
@@ -548,76 +338,21 @@ public class NodeImpl implements Node, QNameable {
 	public boolean supports(String feature, String version) {
 		return false;
 	}
-
-	public void toSAX(ContentHandler contentHandler, LexicalHandler lexicalHandler, boolean first)
-		throws SAXException {
-		toSAX(contentHandler, lexicalHandler, first, new TreeSet());
-	}
-
-	public void toSAX(
-		ContentHandler contentHandler,
-		LexicalHandler lexicalHandler,
-		boolean first,
-		Set namespaces)
-		throws SAXException {
-	}
-
-	public String toString() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(Long.toString(gid));
-		buf.append('\t');
-		buf.append(getQName());
-		return buf.toString();
-	}
-
-	public String toString(boolean top) {
-		return toString();
-	}
-
-	protected NodeImpl getLastNode(NodeImpl node) {
-		final NodeProxy p = new NodeProxy(ownerDocument, node.gid, node.internalAddress);
-		Iterator iterator = ownerDocument.getBroker().getNodeIterator(p);
-		iterator.next();
-		return getLastNode(iterator, node);
-	}
-
-	protected NodeImpl getLastNode(Iterator iterator, NodeImpl node) {
-		if (node.hasChildNodes()) {
-			final long firstChild = node.firstChildID();
-			final long lastChild = firstChild + node.getChildCount();
-			NodeImpl next = null;
-			for (long gid = firstChild; gid < lastChild; gid++) {
-				next = (NodeImpl) iterator.next();
-				next.setGID(gid);
-				next = getLastNode(iterator, next);
-			}
-			return next;
-		} else
-			return node;
-	}
-
-	/**
-		 * Update a child node. This method will only update the child node
-		 * but not its potential descendant nodes.
-		 * 
-		 * @param oldChild
-		 * @param newChild
-		 * @throws DOMException
-		 */
-	public void updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
-		throw new DOMException(
-			DOMException.NO_MODIFICATION_ALLOWED_ERR,
-			"method not allowed on this node type");
-	}
 	
 	/**
-	 * Release all memory resources hold by this node. 
+	 * Update a child node. This method will only update the child node
+	 * but not its potential descendant nodes.
+	 * 
+	 * @param oldChild
+	 * @param newChild
+	 * @throws DOMException
 	 */
-	public void release() {
-		clear();
-		NodeObjectPool.getInstance().returnNode(this);
+	public void updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
+		throw new DOMException(
+				DOMException.NO_MODIFICATION_ALLOWED_ERR,
+		"method not allowed on this node type");
 	}
-
+	
 	/** ? @see org.w3c.dom.Node#getBaseURI()
 	 */
 	public String getBaseURI() {

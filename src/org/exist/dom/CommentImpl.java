@@ -1,16 +1,12 @@
 package org.exist.dom;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Set;
 
 import org.exist.storage.Signatures;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Node;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.LexicalHandler;
 
 public class CommentImpl extends CharacterDataImpl implements Comment {
 
@@ -42,16 +38,6 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         return buf.toString();
     }
 
-    public void toSAX( ContentHandler contentHandler,
-            LexicalHandler lexicalHandler, boolean first,
-            Set namespaces )
-             throws SAXException {
-        if ( lexicalHandler != null ) {
-            char data[] = cdata.toString().toCharArray();
-            lexicalHandler.comment( data, 0, data.length );
-        }
-    }
-
     public byte[] serialize() {
         String s;
         try {
@@ -72,7 +58,7 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         return data;
     }
 
-    public static NodeImpl deserialize( byte[] data, int start, int len, boolean pooled ) {
+    public static StoredNode deserialize( byte[] data, int start, int len, boolean pooled ) {
         String cdata;
         try {
             cdata = new String( data, start + 1, len - 1, "UTF-8" );

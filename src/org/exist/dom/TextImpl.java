@@ -59,7 +59,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
         super( Node.TEXT_NODE, data, start, howmany );
     }
 
-    public static NodeImpl deserialize( byte[] data, int start, int len, boolean pooled ) {
+    public static StoredNode deserialize( byte[] data, int start, int len, boolean pooled ) {
         TextImpl text;
         if(pooled)
             text = (TextImpl)NodeObjectPool.getInstance().borrowNode(TextImpl.class);

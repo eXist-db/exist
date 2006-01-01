@@ -2,22 +2,18 @@
 package org.exist.dom;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 
 import org.exist.storage.Signatures;
 import org.exist.util.ByteConversion;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.LexicalHandler;
 
 /**
  * Persistent implementation of a DOM processing-instruction node.
  * 
  * @author wolf
  */
-public class ProcessingInstructionImpl extends NodeImpl implements ProcessingInstruction {
+public class ProcessingInstructionImpl extends StoredNode implements ProcessingInstruction {
 
     protected String target;
     protected String data;
@@ -110,23 +106,6 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
     /**
      *  Description of the Method
      *
-     *@param  contentHandler    Description of the Parameter
-     *@param  lexicalHandler    Description of the Parameter
-     *@param  first             Description of the Parameter
-     *@param  prefixes          Description of the Parameter
-     *@exception  SAXException  Description of the Exception
-     */
-    public void toSAX( ContentHandler contentHandler,
-            LexicalHandler lexicalHandler, boolean first,
-            ArrayList prefixes )
-             throws SAXException {
-        contentHandler.processingInstruction( getTarget(), getData() );
-    }
-
-
-    /**
-     *  Description of the Method
-     *
      *@return    Description of the Return Value
      */
     public byte[] serialize() {
@@ -148,7 +127,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
         return d;
     }
 
-    public static NodeImpl deserialize( byte[] data, int start, int len, boolean pooled ) {
+    public static StoredNode deserialize( byte[] data, int start, int len, boolean pooled ) {
         int l = ByteConversion.byteToInt( data, start + 1 );
         String target;
         String cdata;
