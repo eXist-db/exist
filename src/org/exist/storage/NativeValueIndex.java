@@ -199,7 +199,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @see org.exist.storage.IndexGenerator#sync()
      */
     public void sync() {
-        Lock lock = dbValues.getLock();
+        final Lock lock = dbValues.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
             dbValues.flush();            
@@ -248,7 +248,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 lock.acquire(Lock.WRITE_LOCK);
                 //Store data
                 if (dbValues.append(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                    LOG.warn("Could not append index data for value '" +  ref + "'");                   
+                    LOG.error("Could not append index data for value '" +  ref + "'");                   
                 }
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
@@ -289,7 +289,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             try {                    
                 lock.acquire(Lock.WRITE_LOCK); 
                 Value value = dbValues.get(searchKey);
-                //Does the value already exist in the index ?
+                //Does the value already has data in the index ?
                 if (value != null) {
                     //Add its data to the new list
                     VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
@@ -321,7 +321,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         }
                     } catch (EOFException e) {
                         //Is it expected ? if not, remove the block -pb
-                        LOG.warn(e.getMessage(), e);
+                        LOG.warn("REPORT ME " + e.getMessage(), e);
                     }
                     //append the data from the new list
                     if (newGIDList.getSize() > 0) {                        
@@ -429,7 +429,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         dbValues.remove(key);
                     } else {                      
                         if (dbValues.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                            LOG.warn("Could not put index data for value '" +  ref + "'");
+                            LOG.error("Could not put index data for value '" +  ref + "'");
                         }
                     }
                 }
@@ -502,11 +502,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         }
                     } catch (EOFException e) {
                         //Is it expected ? Remove this block if not -pb
-                        LOG.warn(e.getMessage(), e);
+                        LOG.warn("REPORT ME" + e.getMessage(), e);
                     }
                 }
-                if (storedGIDList.getSize() > 0) {
-                    // append the new list to any existing data
+                //TOUNDERSTAND (bis) : don't we lack the 2 following lines like in NativeElementIndex ? -pb
+                //if (node != null) 
+                //    storedGIDList.addAll(newGIDList);
+                // append the data
+                if (storedGIDList.getSize() > 0) {                   
                     long[] gids = storedGIDList.getData();
                     int gidsCount = gids.length;
                     //Don't forget this one
@@ -524,12 +527,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 if (is == null) {
                     //TOUNDERSTAND : Should is be null, what will there be in os.data() ? -pb
                     if (dbValues.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.warn("Could not put index data for value '" +  ref + "'");
+                        LOG.error("Could not put index data for value '" +  ref + "'");
                     }
                 } else {
                     long address = ((BFile.PageInputStream) is).getAddress();
                     if (dbValues.update(address, ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.warn("Could not update index data for value '" +  ref + "'");
+                        LOG.error("Could not update index data for value '" +  ref + "'");
                     }
                 }
                 
@@ -590,8 +593,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	 * @param flags like flags argument for {@link RegexMatcher} constructor
 	 *  */
     public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type, int flags, boolean caseSensitiveQuery)
-        throws TerminatedException, EXistException {
-        
+        throws TerminatedException, EXistException {        
     	// if the regexp starts with a char sequence, we restrict the index scan to entries starting with
     	// the same sequence. Otherwise, we have to scan the whole index.
         StringValue startTerm = null;
@@ -606,8 +608,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 startTerm = new StringValue(term.toString());
                 LOG.debug("Match will begin index scan at '" + startTerm + "'");
     		}
-        }
-        
+        }        
 		final TermMatcher comparator = new RegexMatcher(expr, type, flags);
         final NodeSet result = new ExtArrayNodeSet();
         final RegexCallback callback = new RegexCallback(docs, contextSet, result, comparator);
@@ -643,14 +644,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
     
     public ValueOccurrences[] scanIndexKeys(DocumentSet docs, NodeSet contextSet, Indexable start) {        
-        final int type = ((Item) start).getType();
+        final int type = ((Item) start).getType();        
         final boolean stringType = Type.subTypeOf(type, Type.STRING);
+        final int op = stringType ? IndexQuery.TRUNC_RIGHT : IndexQuery.GEQ;
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type);
         final Lock lock = dbValues.getLock();
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             Collection collection = (Collection) i.next();
-            short collectionId = collection.getId();
-            int op = stringType ? IndexQuery.TRUNC_RIGHT : IndexQuery.GEQ;
+            short collectionId = collection.getId();            
             byte[] startKey = start.serialize(collectionId, caseSensitive);            
             IndexQuery query = new IndexQuery(op, new Value(startKey));            
             try {
@@ -785,8 +786,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 				LOG.error(e.getMessage(), e);
                 return true;
 			}         
-			try {
-                int sizeHint = -1;
+			try {                
                 while (is.available() > 0) {
                     int storedDocId = is.readInt();
                     int gidsCount = is.readInt();
@@ -813,7 +813,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 		// matching node is a descendant of one of the nodes
                 		// in the context set.
                 		if (contextSet != null) {
-                            sizeHint = contextSet.getSizeHint(storedDocument);
+                            int sizeHint = contextSet.getSizeHint(storedDocument);
                             if (returnAncestor) {
                                 NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                                 if (parentNode != null) 
@@ -932,7 +932,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 }
             } catch(EOFException e) {
                 //Is it expected ? -pb
-                LOG.warn(e.getMessage(), e);
+                LOG.warn("REPORT ME" + e.getMessage(), e);
             } catch(IOException e) {
                 LOG.error(e.getMessage(), e);
             }
