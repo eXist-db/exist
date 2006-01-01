@@ -94,6 +94,24 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 		ValueIndexKeyFactory keyFactory = computeTemporaryKey(spec.getType(), node.getValue(), node.getQName());
         updatePendingIndexEntry(node, keyFactory);
 	}
+    
+    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean index) {
+        if (qnameValueIndexation) {
+            DocumentImpl docu = (DocumentImpl) node.getOwnerDocument();
+            IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
+            if (idxSpec != null) {
+                RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+                if (qnIdx != null) {
+                    this.setDocument(docu);
+                    this.storeAttribute(qnIdx, (AttrImpl) node);
+                }
+            }
+        }
+    }
+    
+    public void removeAttribute(AttrImpl attr, NodePath currentPath, boolean index) {
+        storeAttribute( attr, currentPath, index );
+    }     
 
 	/** @see org.exist.storage.NativeValueIndex#storeElement(int, org.exist.dom.ElementImpl, java.lang.String)
 	 */
@@ -101,6 +119,30 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 		ValueIndexKeyFactory keyFactory = computeTemporaryKey( xpathType, content, node.getQName() );
         updatePendingIndexEntry(node, keyFactory);
 	}
+    
+    /** updates the index type of given node according to the Index By QName config. */
+    public void startElement(ElementImpl node, NodePath currentPath, boolean index) {
+        if (qnameValueIndexation) {
+            DocumentImpl docu = (DocumentImpl) node.getOwnerDocument();
+            IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
+            if (idxSpec != null) {
+                RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+                if (qnIdx != null) {
+                    int newIndexType = RangeIndexSpec.QNAME_INDEX;
+                    ElementImpl elementImpl = (ElementImpl) node;
+                    elementImpl.setIndexType(newIndexType | elementImpl.getIndexType());
+                }
+            }
+        }
+    }
+    
+    public void endElement(ElementImpl node, NodePath currentPath, String content) {
+        localMarkElement(node, currentPath, content);   
+    }
+    
+    public void removeElement( ElementImpl node, NodePath currentPath, String content ) {
+        localMarkElement(node, currentPath, content);   
+    }    
 
 	/** adds or updates an entry in the {@link #pending} map
 	 * @param node the DOM node
@@ -154,9 +196,8 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 	 * this class also provides through serialize() the persistant storage key :
 	 * (collectionId, qname, indexType, indexData)
 	 */
-	private class QNameValueIndexKeyFactory implements ValueIndexKeyFactory, 
-		Indexable // TODO  "ValueIndexKeyFactory" refactoring: remove after refactoring NativeValueIndex
-	{
+    // TODO  "ValueIndexKeyFactory" refactoring: remove after refactoring NativeValueIndex
+	private class QNameValueIndexKeyFactory implements ValueIndexKeyFactory, Indexable {
 		private QName qname;
 		private Indexable indexable;
 		
@@ -225,7 +266,7 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 	 * @param relation binary operator used for the comparison
 	 * @param value right hand comparison value */
     public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, ValueIndexKeyFactory value) 
-    throws TerminatedException {
+            throws TerminatedException {
         int idxOp =  checkRelationOp(relation);
         NodeSet result = new ExtArrayNodeSet();
         Lock lock = dbValues.getLock();
@@ -251,35 +292,12 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 			}
         }
         return result;
-    }
+    }    
 
-    
-    /** Methods from interface ContentLoadingObserver
-     *  --------------------------------------------- */
-    
-	public void storeAttribute(AttrImpl node, NodePath currentPath,
-			boolean index) {
+	private void localMarkElement(ElementImpl node, NodePath currentPath, String content) {
 		if (qnameValueIndexation) {
 			DocumentImpl docu = (DocumentImpl) node.getOwnerDocument();
 			IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
-
-			if (idxSpec != null) {
-				RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-				if (qnIdx != null) {
-					this.setDocument(docu);
-					this.storeAttribute(qnIdx, (AttrImpl) node);
-				}
-			}
-		}
-	}
-	
-	/**	 */
-	private void localMarkElement(ElementImpl node, NodePath currentPath,
-			String content) {
-		if (qnameValueIndexation) {
-			DocumentImpl docu = (DocumentImpl) node.getOwnerDocument();
-			IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
-
 			if (idxSpec != null) {
 				RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
 				if (qnIdx != null) {
@@ -291,15 +309,6 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 		}
 	}
 	
-	public void endElement(ElementImpl node, NodePath currentPath, String content) {
-		localMarkElement(node, currentPath, content);	
-	}
-	
-	public void removeElement( ElementImpl node, NodePath currentPath, String content ) {
-		localMarkElement(node, currentPath, content);	
-	}
-
-	
     public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
     	if ( qnameValueIndexation )
     		super.dropIndex(doc);
@@ -310,27 +319,4 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     		return dbValues.close();
         return true;
     }
-
-    /** updates the index type of given node according to the Index By QName config. */
-	public void startElement(ElementImpl node, NodePath currentPath,
-			boolean index) {
-		if (qnameValueIndexation) {
-			DocumentImpl docu = (DocumentImpl) node.getOwnerDocument();
-			IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
-
-			if (idxSpec != null) {
-				RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-				if (qnIdx != null) {
-					int newIndexType = RangeIndexSpec.QNAME_INDEX;
-					ElementImpl elementImpl = (ElementImpl) node;
-					elementImpl.setIndexType( newIndexType
-							| elementImpl.getIndexType());
-				}
-			}
-		}
-	}
-
-	public void removeAttribute(AttrImpl attr, NodePath currentPath, boolean index) {
-		storeAttribute( attr, currentPath, index );
-	}
 }

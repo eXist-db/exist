@@ -151,6 +151,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		trackMatches = flags;
 	}
     
+    public void setDocument(DocumentImpl document) {
+        //TODO Auto-generated method stub        
+    }    
+    
     /**
      * Indexes the tokens contained in an attribute.
      * 
@@ -226,10 +230,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     
     public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
         // TODO Auto-generated method stub  
-    }
-
-    public void setDocument(DocumentImpl document) {
-        //TODO Auto-generated method stub        
     }
 
     public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
@@ -727,7 +727,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 break;
            default :
                //Other types are ignored : some may be useful though -pb
-               //TOUNDERSTAND : it looks like other types (got : Node.PRCESSING_INSTRUCTION_NODE)
+               //TOUNDERSTAND : it looks like other types (got : Node.PROCESSING_INSTRUCTION_NODE)
                //are stored in the index ??? -pb
         }
     }
