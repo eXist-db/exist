@@ -129,10 +129,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	private transient Lock updateLock = null;
 	
 	public DocumentImpl(DBBroker broker, Collection collection) {
-		super(Node.DOCUMENT_NODE, 0);
 		this.broker = broker;
 		this.collection = collection;
-		this.ownerDocument = this;
 		treeLevelOrder[0] = 1;
 	}
 
@@ -146,19 +144,15 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public DocumentImpl(DBBroker broker, String fileName, Collection collection) {
-		super(Node.DOCUMENT_NODE, 0);
 		this.broker = broker;
 		this.fileName = fileName;
-		this.ownerDocument = this;
 		this.collection = collection;
 		treeLevelOrder[0] = 1;
 	}
 
 	public DocumentImpl(DocumentImpl old) {
-		super(Node.DOCUMENT_NODE, 0);
 		this.broker = old.broker;
 		this.fileName = old.fileName;
-		this.ownerDocument = this;
 		this.collection = old.collection;
 		if(old.collection == null)
 			throw new RuntimeException("Collection == null");
@@ -189,7 +183,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	    docType = other.getDoctype();
 	    treeLevelOrder = other.treeLevelOrder;
 	    treeLevelStartPoints = other.treeLevelStartPoints;
-	    internalAddress = -1;
 	    lastModified = other.getLastModified();
 	    // reset pageCount: will be updated during storage
 	    pageCount = 0;
@@ -256,7 +249,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return node;
 	}
 
-	public void appendChild(NodeImpl child) throws DOMException {
+	public void appendChild(StoredNode child) throws DOMException {
 		++children;
 		resizeChildList();
 		childList[children - 1] = child.internalAddress;
@@ -364,10 +357,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return text;
 	}
 
-	protected NodeList findElementsByTagName(NodeImpl root, QName qname) {
+	protected NodeList findElementsByTagName(StoredNode root, QName qname) {
 		DocumentSet docs = new DocumentSet();
 		docs.add(this);
-		NodeProxy p = new NodeProxy(root.ownerDocument, root.gid, root.internalAddress);
+		NodeProxy p = new NodeProxy(this, root.gid, root.internalAddress);
 		NodeSelector selector = new DescendantSelector(p, false);
 		return (NodeSet) broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
 	}
@@ -406,22 +399,22 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return list;
 	}
     
-	protected Node getPreviousSibling(NodeImpl node) {
+	protected Node getPreviousSibling(StoredNode node) {
 		NodeList cl = getChildNodes();
-		NodeImpl next;
+		StoredNode next;
 		for (int i = 0; i < cl.getLength(); i++) {
-			next = (NodeImpl) cl.item(i);
+			next = (StoredNode) cl.item(i);
 			if (StorageAddress.equals(node.internalAddress, next.internalAddress))
 				return i == 0 ? null : cl.item(i - 1);
 		}
 		return null;
 	}
 
-	protected Node getFollowingSibling(NodeImpl node) {
+	protected Node getFollowingSibling(StoredNode node) {
 		NodeList cl = getChildNodes();
-		NodeImpl next;
+		StoredNode next;
 		for (int i = 0; i < cl.getLength(); i++) {
-			next = (NodeImpl) cl.item(i);
+			next = (StoredNode) cl.item(i);
 			if (StorageAddress.equals(node.internalAddress, next.internalAddress))
 				return i == children - 1 ? null : cl.item(i + 1);
 		}
@@ -663,8 +656,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		try {
             ostream.writeInt(docId);
             ostream.writeUTF(fileName);
-            ostream.writeInt(StorageAddress.pageFromPointer(internalAddress));
-            ostream.writeShort(StorageAddress.tidFromPointer(internalAddress));
             SecurityManager secman = broker.getBrokerPool().getSecurityManager();
             if (secman == null) {
                 ostream.writeInt(1);
@@ -712,7 +703,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		try {
             docId = istream.readInt();
             fileName = istream.readUTF();
-            internalAddress = StorageAddress.createPointer(istream.readInt(), istream.readShort());
 
             final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
             final int uid = istream.readInt();
@@ -780,13 +770,57 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public void setAddress(long address) {
-		this.internalAddress = address;
 	}
 
 	public long getAddress() {
-		return internalAddress;
+		return UNKNOWN_NODE_IMPL_ADDRESS;
 	}
 
+	public DBBroker getBroker() {
+		return broker;
+	}
+
+	public long getGID() {
+		return 0;
+	}
+
+	public void setGID(long gid) {
+	}
+
+	public long getInternalAddress() {
+		return UNKNOWN_NODE_IMPL_ADDRESS;
+	}
+
+	public long getParentGID() {
+		return -1;
+	}
+
+	public void setOwnerDocument(Document doc) {
+	}
+
+	public QName getQName() {
+		return QName.DOCUMENT_QNAME;
+	}
+
+	public void release() {
+	}
+
+	public short getNodeType() {
+		return Node.DOCUMENT_NODE;
+	}
+
+	public Node getPreviousSibling() {
+		return null;
+	}
+
+	public Node getNextSibling() {
+		return null;
+	}
+
+	public Document getOwnerDocument() {
+		return this;
+	}
+	
     /* (non-Javadoc)
      * @see org.exist.dom.NodeImpl#setInternalAddress(long)
      */
@@ -797,12 +831,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * @see org.exist.dom.NodeImpl#updateChild(org.w3c.dom.Node, org.w3c.dom.Node)
 	 */
 	public void updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
-		if (!(oldChild instanceof NodeImpl))
+		if (!(oldChild instanceof StoredNode))
 			throw new DOMException(
 				DOMException.WRONG_DOCUMENT_ERR,
 				"node does not belong to this document");
-		NodeImpl old = (NodeImpl) oldChild;
-		NodeImpl newNode = (NodeImpl) newChild;
+		StoredNode old = (StoredNode) oldChild;
+		StoredNode  newNode = (StoredNode) newChild;
 		NodeImpl previous = (NodeImpl) old.getPreviousSibling();
 		if (previous == null)
 			previous = this;
@@ -832,9 +866,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * @see org.exist.dom.NodeImpl#insertBefore(org.w3c.dom.NodeList, org.w3c.dom.Node)
 	 */
 	public void insertBefore(NodeList nodes, Node refChild) throws DOMException {
-		if (!(refChild instanceof NodeImpl))
+		if (!(refChild instanceof StoredNode))
 			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
-		NodeImpl ref = (NodeImpl) refChild;
+		StoredNode ref = (StoredNode) refChild;
 		long next, last = -1;
 		int idx = -1;
 		for(int i = children - 1; i >= 0; i--) {
@@ -847,10 +881,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		if (idx < 0)
 			throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "reference node not found");
 		last = childList[idx];
-		NodeImpl prev = (NodeImpl) broker.objectWith(
+		StoredNode prev = (StoredNode) broker.objectWith(
 				new NodeProxy(this, NodeProxy.UNKNOWN_NODE_GID, last));
 		for (int i = 0; i < nodes.getLength(); i++) {
-			prev = (NodeImpl) appendChild(null, prev, nodes.item(i));
+			prev = (StoredNode) appendChild(null, prev, nodes.item(i));
 			++children;
 			resizeChildList();
 			childList[++idx] = prev.internalAddress;
@@ -859,9 +893,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public void insertAfter(NodeList nodes, Node refChild) throws DOMException {
-		if (!(refChild instanceof NodeImpl))
+		if (!(refChild instanceof StoredNode))
 			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
-		NodeImpl ref = (NodeImpl) refChild;
+		StoredNode ref = (StoredNode) refChild;
 		long next, last = -1;
 		int idx = -1;
 		for(int i = 0; i < children; i++) {
@@ -874,10 +908,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		}
 		if (last < 0)
 			throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "reference node not found");
-		NodeImpl prev = getLastNode( (NodeImpl) broker.objectWith(
+		StoredNode prev = getLastNode( (StoredNode) broker.objectWith(
 				new NodeProxy(this, NodeProxy.UNKNOWN_NODE_GID, last)) );
 		for (int i = 0; i < nodes.getLength(); i++) {
-			prev = (NodeImpl) appendChild(null, prev, nodes.item(i));
+			prev = (StoredNode) appendChild(null, prev, nodes.item(i));
 			++children;
 			resizeChildList();
 			childList[idx] = prev.internalAddress;

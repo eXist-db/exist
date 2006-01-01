@@ -22,7 +22,6 @@
 package org.exist.dom;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Set;
 
 import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
@@ -34,10 +33,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.TypeInfo;
 import org.w3c.dom.UserDataHandler;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.AttributesImpl;
 
 public class AttrImpl extends NamedNode implements Attr {
 	
@@ -66,7 +61,7 @@ public class AttrImpl extends NamedNode implements Attr {
         this.value = other.value;
     }
     
-    public static NodeImpl deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
+    public static StoredNode deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
     	int next = start;
         byte idSizeType = (byte) ( data[next] & 0x3 );
 		boolean hasNamespace = (data[next] & 0x10) == 0x10;
@@ -178,25 +173,6 @@ public class AttrImpl extends NamedNode implements Attr {
 
     public void setValue( String value ) throws DOMException {
         this.value = value;
-    }
-
-    public void toSAX( ContentHandler contentHandler,
-                       LexicalHandler lexicalHandler, boolean first,
-                       Set namespaces)
-         throws SAXException {
-        if ( first ) {
-            AttributesImpl attribs = new AttributesImpl();
-            attribs.addAttribute( "http://exist.sourceforge.net/NS/exist", "id",
-                "exist:id", "CDATA", Long.toString( gid ) );
-            attribs.addAttribute( "http://exist.sourceforge.net/NS/exist", "source",
-                "exist:source", "CDATA", ownerDocument.getFileName() );
-            attribs.addAttribute( getNamespaceURI(), getLocalName(),
-                getNodeName(), "CDATA", getValue() );
-            contentHandler.startElement( "http://exist.sourceforge.net/NS/exist", "attribute",
-                "exist:attribute", attribs );
-            contentHandler.endElement( "http://exist.sourceforge.net/NS/exist", "attribute",
-                "exist:attribute" );
-        }
     }
 
     public String toString() {

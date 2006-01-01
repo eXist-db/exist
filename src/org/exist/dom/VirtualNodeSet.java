@@ -23,7 +23,6 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
-import org.exist.storage.btree.Value;
 import org.exist.xquery.Constants;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.value.Item;
@@ -267,11 +266,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		Iterator iter,
 		int recursions) {
 		if (node.hasChildNodes()) {
-			NodeImpl child;
-			Value value;
+			StoredNode child;
 			NodeProxy p;
 			for (int i = 0; i < node.getChildCount(); i++) {
-				child = (NodeImpl) iter.next();
+				child = (StoredNode) iter.next();
 				if(child == null)
 					LOG.debug("CHILD == NULL; doc = " + 
 							((DocumentImpl)node.getOwnerDocument()).getName());

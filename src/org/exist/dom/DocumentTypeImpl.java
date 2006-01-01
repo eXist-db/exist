@@ -18,15 +18,17 @@
 
 package org.exist.dom;
 
-import org.exist.storage.io.VariableByteArrayInput;
-import org.exist.storage.io.VariableByteInput;
-import org.exist.storage.io.VariableByteOutputStream;
-import org.w3c.dom.*;
-import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class DocumentTypeImpl extends NodeImpl implements DocumentType {
+import org.exist.storage.io.VariableByteArrayInput;
+import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
+public class DocumentTypeImpl extends StoredNode implements DocumentType {
 
     protected String publicId = null;
     protected String systemId = null;

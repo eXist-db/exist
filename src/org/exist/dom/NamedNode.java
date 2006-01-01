@@ -27,7 +27,7 @@ package org.exist.dom;
  * 
  * @author wolf
  */
-public class NamedNode extends NodeImpl implements QNameable {
+public class NamedNode extends StoredNode implements QNameable {
 
     protected QName nodeName = null;
     

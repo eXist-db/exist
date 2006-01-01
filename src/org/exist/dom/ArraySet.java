@@ -522,12 +522,6 @@ public class ArraySet extends AbstractNodeSet {
 		return new ArraySequenceIterator();
 	}
 
-	public int position(NodeImpl test) {
-		sort();
-		NodeProxy p = new NodeProxy(test.ownerDocument, test.getGID());
-		return search(nodes, 0, counter - 1, p);
-	}
-
 	public int position(NodeProxy proxy) {
 		sort();
 		return search(nodes, 0, counter - 1, proxy);

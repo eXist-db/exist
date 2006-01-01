@@ -74,7 +74,6 @@ public class BinaryDocument extends DocumentImpl {
 	public void write(VariableByteOutputStream ostream) throws IOException {
 		ostream.writeInt(docId);
 		ostream.writeUTF(fileName);
-		ostream.writeLong(internalAddress);
 		ostream.writeLong(pageNr);
 		SecurityManager secman = broker.getBrokerPool().getSecurityManager();
 		if (secman == null) {
@@ -97,7 +96,6 @@ public class BinaryDocument extends DocumentImpl {
 		throws IOException, EOFException {
 		docId = istream.readInt();
 		fileName = istream.readUTF();
-		internalAddress = istream.readLong();
 		pageNr = istream.readLong();
 		final SecurityManager secman =
 			broker.getBrokerPool().getSecurityManager();

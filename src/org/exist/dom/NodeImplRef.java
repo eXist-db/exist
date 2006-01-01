@@ -8,8 +8,8 @@ package org.exist.dom;
 public class NodeImplRef {
 	
 	public NodeImplRef() {}
-	public NodeImplRef(NodeImpl node) {this.node = node;}
+	public NodeImplRef(StoredNode node) {this.node = node;}
 	
-	public NodeImpl node;
+	public StoredNode node;
 
 }
