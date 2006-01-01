@@ -116,7 +116,7 @@ public class ExtCollection extends Function {
         boolean lockOnLoad = context.lockDocumentsOnLoad();
         
         // build the document set
-		DocumentSet docs = new DocumentSet();
+		DocumentSet docs = new DocumentSet(521);
 		for (int i = 0; i < args.size(); i++) {
 			String next = (String)args.get(i);
 		    Collection coll = context.getBroker().getCollection(next);            

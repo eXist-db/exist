@@ -35,6 +35,8 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 	protected int[] keys;
 	protected Object[] values;
 
+	protected double growthFactor = 1.5;
+	
 	public Int2ObjectHashMap() {
 		super();
 		keys = new int[tabSize];
@@ -42,11 +44,16 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 	}
 
 	public Int2ObjectHashMap(int iSize) {
+		this(iSize, 1.5);
+	}
+
+	public Int2ObjectHashMap(int iSize, double growth) {
 		super(iSize);
 		keys = new int[tabSize];
 		values = new Object[tabSize];
+		growthFactor = growth;
 	}
-
+	
 	public void clear() {
 		items = 0;
 		keys = new int[tabSize];
@@ -68,7 +75,7 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 			int[] copyKeys = keys;
 			Object[] copyValues = values;
 			// enlarge the table with a prime value
-			tabSize = (int) nextPrime(tabSize + tabSize / 2);
+			tabSize = (int) nextPrime((int) (tabSize * growthFactor));
 			keys = new int[tabSize];
 			values = new Object[tabSize];
 			items = 0;

@@ -78,14 +78,21 @@ public abstract class AbstractHashtable {
 	public abstract Iterator iterator();
 	public abstract Iterator valueIterator();
 	
-	public final static boolean isPrime(long iVal) {
-		if (iVal % 2 == 0)
-			return false;
-		long zw = iVal / 2;
-		for (int i = 3; i < zw; i++) {
-			if (iVal % i == 0)
+	public final static boolean isPrime(long number) {
+		if (number < 2) return false;
+		if (number == 2) return true;
+		if (number % 2 == 0) return false;
+		if (number == 3) return true;
+		if (number % 3 == 0) return false;
+ 
+		int y = 2;
+		int x = (int) Math.sqrt(number);
+ 
+		for (int i = 5; i <= x; i += y, y = 6 - y) {
+			if (number % i == 0)
 				return false;
 		}
+ 
 		return true;
 	}
 
