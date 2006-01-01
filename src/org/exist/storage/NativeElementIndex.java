@@ -220,6 +220,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         //TODO : return if doc == null? -pb  
         if (pending.size() == 0) 
             return;
+        final SymbolTable symbols = broker.getSymbols(); 
         final short collectionId = this.doc.getCollection().getId();
         final Lock lock = dbNodes.getLock();
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
@@ -230,9 +231,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             Value searchKey;
             if (qname.getNameType() == ElementValue.ATTRIBUTE_ID) {
                 searchKey = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());                    
-            } else {
-                short sym = broker.getSymbols().getSymbol(qname.getLocalName());
-                short nsSym = broker.getSymbols().getNSSymbol(qname.getNamespaceURI());
+            } else {                
+                short sym = symbols.getSymbol(qname.getLocalName());
+                short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
                 searchKey = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);                    
             }
             List newGIDList = new ArrayList();
@@ -281,7 +282,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         }
                     } catch (EOFException e) {
                         //TODO : remove this block if unexpected -pb
-                        LOG.warn(e.getMessage(), e);
+                        LOG.warn("REPORT ME " + e.getMessage(), e);
                     }
                     //append the data from the new list
                     if (newGIDList.size() > 0 ) {                        
@@ -394,7 +395,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     //TODO : why not use the same construct as above :
                     //dbNodes.update(value.getAddress(), ref, os.data()) -pb
                     if (dbNodes.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.warn("Could not put index data for value '" +  ref + "'");
+                        LOG.error("Could not put index data for value '" +  ref + "'");
                     }                    
                 }
             }
@@ -418,17 +419,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     //TODO : note that this is *not* this.doc -pb
     public void reindex(DocumentImpl document, NodeImpl node) {
         if (pending.size() == 0) 
-            return;        
-       
-       
-          
-       
-      
-        
-       
-      
-       
-       
+            return;         
         final SymbolTable symbols = broker.getSymbols();
         final short collectionId = document.getCollection().getId();
         final Lock lock = dbNodes.getLock();
@@ -478,10 +469,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                     long address = StorageAddress.read(is);
                                     if (node == null) {
                                         if (document.getTreeLevel(storedGID) < document.reindexRequired()) {
+                                            //TOUNDERSTAND : given what is below, why not use newGIDList ? -pb
                                             storedGIDList.add(new NodeProxy(document, storedGID, address));
                                         }
                                     } else {
                                         if (!XMLUtil.isDescendant(document, node.getGID(), storedGID)) {
+                                            //TOUNDERSTAND : given what is below, why not use storedGIDList ? -pb
                                             newGIDList.add(new NodeProxy(document, storedGID, address));
                                         }
                                     }
@@ -492,40 +485,42 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     } catch (EOFException e) {
                         //EOFExceptions expected there
                     }
-                }
-                //TOUNDERSTAND : why is this construct so different from the other ones ? -pb
+                }  
+                // TOUNDERSTAND : given what is above :-), why not rationalize ? -pb
                 // append the new list to any existing data
-                if (node != null) storedGIDList.addAll(newGIDList);
-                int gidsCount = storedGIDList.size();
-                //Don't forget this one
-                FastQSort.sort(storedGIDList, 0, gidsCount - 1);               
-                os.writeInt(document.getDocId());
-                os.writeInt(gidsCount);
-                //TOUNDERSTAND -pb       
-                int lenOffset = os.position();
-                os.writeFixedInt(0);
-                long previousGID = 0;
-                for (int j = 0; j < gidsCount; j++) {
-                    NodeProxy storedNode = (NodeProxy) storedGIDList.get(j);
-                    long delta = storedNode.getGID() - previousGID;                        
-                    os.writeLong(delta);
-                    StorageAddress.write(storedNode.getInternalAddress(), os);
-                    previousGID = storedNode.getGID();
+                if (node != null) 
+                    storedGIDList.addAll(newGIDList);
+                // append the data
+                if (storedGIDList.size() > 0) {
+                    int gidsCount = storedGIDList.size();
+                    //Don't forget this one
+                    FastQSort.sort(storedGIDList, 0, gidsCount - 1);               
+                    os.writeInt(document.getDocId());
+                    os.writeInt(gidsCount);
+                    //TOUNDERSTAND -pb       
+                    int lenOffset = os.position();
+                    os.writeFixedInt(0);
+                    long previousGID = 0;
+                    for (int j = 0; j < gidsCount; j++) {
+                        NodeProxy storedNode = (NodeProxy) storedGIDList.get(j);
+                        long delta = storedNode.getGID() - previousGID;                        
+                        os.writeLong(delta);
+                        StorageAddress.write(storedNode.getInternalAddress(), os);
+                        previousGID = storedNode.getGID();
+                    }                
+                    os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                 }                
-                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
-                
                 if (is == null) {
                     //TOUNDERSTAND : Should is be null, what will there be in os.data() ? -pb
                     if (dbNodes.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.warn("Could not put index data for node '" +  qname + "'");
+                        LOG.error("Could not put index data for node '" +  qname + "'");
                     }
                 } else {
                     long address = ((BFile.PageInputStream) is).getAddress();
                     if (dbNodes.update(address, ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.warn("Could not update index data for node '" +  qname + "'");
+                        LOG.error("Could not update index data for node '" +  qname + "'");
                     }
-                }
-                
+                }                
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
                 return;
@@ -607,17 +602,16 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     long previousGID = 0;
                     for (int k = 0; k < gidsCount; k++) {
                         long delta = is.readLong();
-                        long storedGID = previousGID + delta;                        
+                        long storedGID = previousGID + delta; 
+                        long address = StorageAddress.read(is);
                         if (selector == null) {
-                            NodeProxy storedNode = new NodeProxy(storedDocument, storedGID, nodeType, StorageAddress.read(is));
+                            NodeProxy storedNode = new NodeProxy(storedDocument, storedGID, nodeType, address);
                             result.add(storedNode, gidsCount);                        
                         } else {
                             //Filter out the node if requested to do so
                             NodeProxy storedNode = selector.match(storedDocument, storedGID);
-                            if (storedNode == null) {
-                                is.skip(3);
-                            } else {
-                                storedNode.setInternalAddress(StorageAddress.read(is));
+                            if (storedNode != null) {
+                                storedNode.setInternalAddress(address);
                                 storedNode.setNodeType(nodeType);
                                 result.add(storedNode, gidsCount);
                             }                                
@@ -695,7 +689,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         }                    
                     } catch (EOFException e) {
                         //TODO : remove this block if unexpected -pb
-                        LOG.warn(e.getMessage(), e);                    
+                        LOG.warn("REPORT ME " + e.getMessage(), e);                    
                     }
                 }
             } catch (LockException e) {
@@ -775,7 +769,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     }                
                 } catch (EOFException e) {
                     //TODO : remove this block if unexpected -pb
-                    LOG.warn(e.getMessage(), e);
+                    LOG.warn("REPORT ME " + e.getMessage(), e);
                 }
                 LOG.debug(msg.toString());
             }
