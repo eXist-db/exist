@@ -34,7 +34,9 @@ import org.w3c.dom.Node;
  */
 public class StoredNode extends NodeImpl {
 
-	//TODO : what are the semantics of this 0 ? Clarify then use named constant -pb
+    public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
+	
+    //TOUNDERSTAND : what are the semantics of this 0 ? -pb
 	protected long gid = 0;
 	protected long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
 	protected short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;
@@ -208,7 +210,9 @@ public class StoredNode extends NodeImpl {
 	 */
 	public Node getParentNode() {
 		long pid = getParentGID();
-		return pid == NodeImpl.UNKNOWN_NODE_IMPL_GID ? null : ownerDocument.getNode(pid);
+		if (pid == NodeImpl.NODE_IMPL_UNKNOWN_GID)
+            return null;
+        return ownerDocument.getNode(pid);
 	}
 
 	public NodePath getPath() {

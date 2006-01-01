@@ -5,6 +5,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+import org.exist.xquery.Constants;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -14,8 +15,10 @@ import org.w3c.dom.UserDataHandler;
 
 public abstract class NodeImpl implements Node, QNameable {
 
-	public final static int UNKNOWN_NODE_IMPL_GID = -1;
-    public final static int UNKNOWN_NODE_IMPL_ADDRESS = -1;    
+    public final static int NODE_IMPL_UNKNOWN_GID = -1;  
+    public final static int NODE_IMPL_DOCUMENT_NODE_GID = -1;  
+    public final static int NODE_IMPL_ROOT_NODE_GID = 1;  
+    
     public final static short UNKNOWN_NODE_IMPL_NODE_TYPE = -1;
     
     protected final static Logger LOG = Logger.getLogger(NodeImpl.class);
@@ -40,6 +43,7 @@ public abstract class NodeImpl implements Node, QNameable {
 	}
 	
 	public long firstChildID() {
+        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
 		return 0;
 	}
 
@@ -226,6 +230,7 @@ public abstract class NodeImpl implements Node, QNameable {
 	 *@return    Description of the Return Value
 	 */
 	public long lastChildID() {
+        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
 		return 0;
 	}
 
@@ -364,7 +369,7 @@ public abstract class NodeImpl implements Node, QNameable {
 	 */
 	public short compareDocumentPosition(Node other) throws DOMException {
 		// maybe TODO - new DOM interfaces - Java 5.0
-		return 0;
+		return Constants.EQUAL;
 	}
 
 	/** ? @see org.w3c.dom.Node#getTextContent()

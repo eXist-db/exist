@@ -67,6 +67,7 @@ import org.w3c.dom.UserDataHandler;
 public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
     public final static int UNKNOWN_DOCUMENT_ID = -1;
+    public final static int REINDEX_ALL = -1;
     
     public final static byte XML_FILE = 0;
 	public final static byte BINARY_FILE = 1;
@@ -114,7 +115,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	// if set to > -1, the document needs to be partially reindexed
 	// - beginning at the tree-level defined by reindex
-	protected transient int reindex = -1;
+	protected transient int reindex = REINDEX_ALL;
 
 	protected Permission permissions = new Permission(Permission.DEFAULT_PERM);
 
@@ -773,7 +774,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public long getAddress() {
-		return UNKNOWN_NODE_IMPL_ADDRESS;
+		return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 	}
 
 	public DBBroker getBroker() {
@@ -788,7 +789,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public long getInternalAddress() {
-		return UNKNOWN_NODE_IMPL_ADDRESS;
+		return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 	}
 
 	public long getParentGID() {

@@ -28,11 +28,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 
 import org.exist.EXistException;
@@ -48,6 +46,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
+import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
@@ -60,10 +59,6 @@ import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 import org.w3c.dom.TypeInfo;
 import org.w3c.dom.UserDataHandler;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * ElementImpl.java
@@ -74,7 +69,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     protected short attributes = 0;
     protected int children = 0;
-    protected long firstChild = StoredNode.UNKNOWN_NODE_IMPL_GID;
+    protected long firstChild = StoredNode.NODE_IMPL_UNKNOWN_GID;
     protected Map namespaceMappings = null;
 	protected int indexType = RangeIndexSpec.NO_INDEX;
 	protected int position = 0;
@@ -129,7 +124,8 @@ public class ElementImpl extends NamedNode implements Element {
      */
     public void clear() {
         super.clear();
-        firstChild = NodeImpl.UNKNOWN_NODE_IMPL_GID;
+        firstChild = NodeImpl.NODE_IMPL_UNKNOWN_GID;
+        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
         gid = 0;
         children = 0;
         attributes = 0;
@@ -214,9 +210,10 @@ public class ElementImpl extends NamedNode implements Element {
      * @throws DOMException
      */
     public void appendChildInternal(NodeImpl child) throws DOMException {
+        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
         if (gid > 0) {
             child.setGID(firstChildID() + children);            
-            if (child.getGID() == NodeImpl.UNKNOWN_NODE_IMPL_GID) {
+            if (child.getGID() == NodeImpl.NODE_IMPL_UNKNOWN_GID) {
                 final int level = ownerDocument.getTreeLevel(gid);
                 final int order = ownerDocument.getTreeLevelOrder(level);
                 throw new DOMException(DOMException.INVALID_STATE_ERR,
@@ -237,6 +234,7 @@ public class ElementImpl extends NamedNode implements Element {
             }
         }
         else
+            //TOUNDERSTAND : what are the semantics of this 0 ? -pb
             child.setGID(0);
         ++children;
     }
@@ -496,7 +494,7 @@ public class ElementImpl extends NamedNode implements Element {
                 final AttrImpl attrib = new AttrImpl(attrName, attr.getValue());
                 attrib.setGID(gid);
                 attrib.setOwnerDocument(ownerDocument);
-                if (ns != null && attrName.compareTo(Namespaces.XML_ID_QNAME) == 0) {
+                if (ns != null && attrName.compareTo(Namespaces.XML_ID_QNAME) == Constants.EQUAL) {
 					// an xml:id attribute. Normalize the attribute and set its type to ID
 					attrib.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attrib.getValue())));
 					attrib.setType(AttrImpl.ID);
@@ -570,16 +568,19 @@ public class ElementImpl extends NamedNode implements Element {
     }
     
     public boolean declaresNamespacePrefixes() {
-        return namespaceMappings != null && namespaceMappings.size() > 0;
+        if (namespaceMappings == null)
+            return false;
+        return (namespaceMappings.size() > 0);
     }
 
     /**
      * @see org.exist.dom.NodeImpl#firstChildID()
      */
     public long firstChildID() {
+        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
         if (gid == 0)
             return 0;
-        if (firstChild != NodeImpl.UNKNOWN_NODE_IMPL_GID)
+        if (firstChild != NodeImpl.NODE_IMPL_UNKNOWN_GID)
             return firstChild;
         firstChild = XMLUtil.getFirstChildId(ownerDocument, gid);
         return firstChild;
@@ -881,7 +882,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     public long lastChildID() {
         if (!hasChildNodes())
-            return NodeImpl.UNKNOWN_NODE_IMPL_GID;
+            return NodeImpl.NODE_IMPL_UNKNOWN_GID;
         return firstChildID() + children - 1;
     }
 
@@ -907,8 +908,8 @@ public class ElementImpl extends NamedNode implements Element {
     public byte[] serialize() {
         try {
             byte[] prefixData = null;
-            // serialize namespace prefixes declared in this element
-            if (namespaceMappings != null && namespaceMappings.size() > 0) {
+            // serialize namespace prefixes declared in this element            
+            if (declaresNamespacePrefixes()) {
                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
                 DataOutputStream out = new DataOutputStream(bout);
                 out.writeShort(namespaceMappings.size());
@@ -1510,7 +1511,7 @@ public class ElementImpl extends NamedNode implements Element {
 	 */
 	public short compareDocumentPosition(Node other) throws DOMException {
 		// maybe TODO - new DOM interfaces - Java 5.0
-		return 0;
+		return Constants.EQUAL;
 	}
 
 	/** ? @see org.w3c.dom.Node#getTextContent()
