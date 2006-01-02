@@ -327,8 +327,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      */
     public void resetState() {
     	super.resetState();
-        for (Iterator i = steps.iterator(); i.hasNext();) {
-            ((Expression)i.next()).resetState();
+    	for (int i = 0; i < steps.size(); i++) {
+            ((Expression)steps.get(i)).resetState();
         }
     }
 
