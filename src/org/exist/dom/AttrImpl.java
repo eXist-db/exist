@@ -65,7 +65,8 @@ public class AttrImpl extends NamedNode implements Attr {
     
     public void clear() {
         super.clear();
-        attributeType = DEFAULT_ATTRIBUTE_TYPE; 
+        attributeType = DEFAULT_ATTRIBUTE_TYPE;
+        value = null;
     }    
     
     public byte[] serialize() {
@@ -210,6 +211,15 @@ public class AttrImpl extends NamedNode implements Attr {
         else
             return toString();
     }
+    
+    public boolean hasChildNodes() {
+        return false;        
+    } 
+    
+    public Node getFirstChild() {   
+        //bad implementations don't call hasChildNodes before
+        return null;
+    }        
 
 	/** ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
 	 */

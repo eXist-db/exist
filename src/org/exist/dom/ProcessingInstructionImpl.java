@@ -39,7 +39,12 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         this.target = target;
         this.data = data;
     }
-
+    
+    public void clear() {
+        super.clear();
+        target = null;
+        data = null;
+    } 
 
     /**
      *  Gets the target attribute of the ProcessingInstructionImpl object
@@ -49,7 +54,6 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     public String getTarget() {
         return target;
     }
-
 
     /**
      *  Sets the target attribute of the ProcessingInstructionImpl object
@@ -76,7 +80,6 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         return data;
     }
 
-
     /**
      *  Sets the data attribute of the ProcessingInstructionImpl object
      *
@@ -85,7 +88,6 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     public void setData( String data ) {
         this.data = data;
     }
-
 
     /**
      *  Description of the Method
@@ -148,6 +150,15 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         pi.data = cdata;
         return pi;
     }
+    
+    public boolean hasChildNodes() {
+        return false;        
+    }
+    
+    public Node getFirstChild() {   
+        //bad implementations don't call hasChildNodes before
+        return null;
+    }       
 
 }
 

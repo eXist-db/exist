@@ -53,6 +53,7 @@ public class CharacterDataImpl extends StoredNode implements CharacterData {
     }
 
     public void clear() {
+        super.clear();
         cdata.reset();
     }
 
@@ -153,5 +154,6 @@ public class CharacterDataImpl extends StoredNode implements CharacterData {
     public void release() {
     	cdata.release();
     	super.release();
-    }
+    }    
+  
 }
