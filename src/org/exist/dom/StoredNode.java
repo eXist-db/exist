@@ -35,16 +35,17 @@ import org.w3c.dom.Node;
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  */
 public class StoredNode extends NodeImpl {
-
+    
     public final static int NODE_IMPL_UNKNOWN_GID = -1; 
     public final static int NODE_IMPL_ROOT_NODE_GID = 1;      
     public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
+    public final static short UNKNOWN_NODE_IMPL_NODE_TYPE = -1;
 	
     //TOUNDERSTAND : what are the semantics of this 0 ? -pb
 	private long gid = 0;
 	private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
-	private short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;
-	private DocumentImpl ownerDocument = null;
+    private DocumentImpl ownerDocument = null;
+	private short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;	
 
     //Made this constructor protected since we need it from DocumentImpl -pb
 	private StoredNode() {
@@ -137,7 +138,8 @@ public class StoredNode extends NodeImpl {
 		//TODO : what are the semantics of this 0 ? -pb		
 		gid = 0;
 		internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
-		ownerDocument = null;
+        ownerDocument = null;
+        //nodeType is *immutable*		
 	}
 
 	public QName getQName() {

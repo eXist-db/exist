@@ -38,8 +38,10 @@ public class AttrImpl extends NamedNode implements Attr {
 	
     public final static int CDATA = 0;
 	public final static int ID = 1;
+    
+    public final static int DEFAULT_ATTRIBUTE_TYPE = CDATA;
 	
-	protected int attributeType = CDATA;
+	protected int attributeType = DEFAULT_ATTRIBUTE_TYPE;
     protected String value = null;
 
     public AttrImpl() {
@@ -60,6 +62,47 @@ public class AttrImpl extends NamedNode implements Attr {
         this.attributeType = other.attributeType;
         this.value = other.value;
     }
+    
+    public void clear() {
+        super.clear();
+        attributeType = DEFAULT_ATTRIBUTE_TYPE; 
+    }    
+    
+    public byte[] serialize() {
+        if(nodeName.getLocalName() == null)
+            throw new RuntimeException("Local name is null");
+        final short id = ((DocumentImpl)getOwnerDocument()).getSymbols().getSymbol( this );
+        final byte idSizeType = Signatures.getSizeType( id );
+        int prefixLen = 0;
+        if (nodeName.needsNamespaceDecl()) {
+            prefixLen = nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0 ?
+                UTF8.encoded(nodeName.getPrefix()) : 0;
+        }
+        final byte[] data = ByteArrayPool.getByteArray(UTF8.encoded(value) +
+                Signatures.getLength( idSizeType ) +
+                (nodeName.needsNamespaceDecl() ? prefixLen + 4 : 0) + 1);
+        int pos = 0;
+        data[pos] = (byte) ( Signatures.Attr << 0x5 );
+        data[pos] |= idSizeType;
+        data[pos] |= (byte) (attributeType << 0x2);
+        if(nodeName.needsNamespaceDecl())
+            data[pos] |= 0x10;
+        Signatures.write( idSizeType, id, data, ++pos );
+        pos += Signatures.getLength(idSizeType);
+        if(nodeName.needsNamespaceDecl()) {
+            final short nsId = 
+                ((DocumentImpl)getOwnerDocument()).getSymbols().getNSSymbol(nodeName.getNamespaceURI());
+            ByteConversion.shortToByte(nsId, data, pos);
+            pos += 2;
+            ByteConversion.shortToByte((short)prefixLen, data, pos);
+            pos += 2;
+            if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
+                UTF8.encode(nodeName.getPrefix(), data, pos);
+            pos += prefixLen;
+        }
+        UTF8.encode(value, data, pos);
+        return data;
+    }    
     
     public static StoredNode deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
     	int next = start;
@@ -109,71 +152,34 @@ public class AttrImpl extends NamedNode implements Attr {
         return nodeName.toString();
     }
 
-
 	public int getType() {
 		return attributeType;
 	}
 	
 	public void setType(int type) {
+        //TODO : range check -pb
 		attributeType = type;
 	}
-	
-    public String getNodeValue() {
+
+    public String getValue() {
         return value;
     }
-
+    
+    public String getNodeValue() {
+        return value;
+    }    
+    
+    public void setValue( String value ) throws DOMException {
+        this.value = value;
+    } 
+    
     public Element getOwnerElement() {
         return (Element) ((DocumentImpl)getOwnerDocument()).getNode( getParentGID() );
     }
 
     public boolean getSpecified() {
         return true;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public byte[] serialize() {
-        if(nodeName.getLocalName() == null)
-            throw new RuntimeException("Local name is null");
-        final short id = ((DocumentImpl)getOwnerDocument()).getSymbols().getSymbol( this );
-        final byte idSizeType = Signatures.getSizeType( id );
-		int prefixLen = 0;
-		if (nodeName.needsNamespaceDecl()) {
-			prefixLen = nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0 ?
-				UTF8.encoded(nodeName.getPrefix()) : 0;
-		}
-		final byte[] data = ByteArrayPool.getByteArray(UTF8.encoded(value) +
-				Signatures.getLength( idSizeType ) +
-				(nodeName.needsNamespaceDecl() ? prefixLen + 4 : 0) + 1);
-		int pos = 0;
-        data[pos] = (byte) ( Signatures.Attr << 0x5 );
-        data[pos] |= idSizeType;
-        data[pos] |= (byte) (attributeType << 0x2);
-        if(nodeName.needsNamespaceDecl())
-			data[pos] |= 0x10;
-        Signatures.write( idSizeType, id, data, ++pos );
-        pos += Signatures.getLength(idSizeType);
-        if(nodeName.needsNamespaceDecl()) {
-        	final short nsId = 
-                ((DocumentImpl)getOwnerDocument()).getSymbols().getNSSymbol(nodeName.getNamespaceURI());
-        	ByteConversion.shortToByte(nsId, data, pos);
-        	pos += 2;
-			ByteConversion.shortToByte((short)prefixLen, data, pos);
-			pos += 2;
-			if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
-				UTF8.encode(nodeName.getPrefix(), data, pos);
-			pos += prefixLen;
-        }
-        UTF8.encode(value, data, pos);
-        return data;
-    }
-
-
-    public void setValue( String value ) throws DOMException {
-        this.value = value;
-    }
+    } 
 
     public String toString() {
         StringBuffer buf = new StringBuffer();
@@ -203,11 +209,6 @@ public class AttrImpl extends NamedNode implements Attr {
         }
         else
             return toString();
-    }
-    
-    public void clear() {
-        super.clear();
-        attributeType = CDATA; 
     }
 
 	/** ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
