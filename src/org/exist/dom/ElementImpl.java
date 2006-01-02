@@ -198,8 +198,7 @@ public class ElementImpl extends NamedNode implements Element {
             namespaceMappings = new HashMap(1);
         else if (namespaceMappings.containsKey(prefix))
             return;
-        namespaceMappings.put(prefix, ns);
-        ((DocumentImpl)getOwnerDocument()).getSymbols().getNSSymbol(ns);
+        namespaceMappings.put(prefix, ns);        
     }
 
     /**
@@ -600,9 +599,11 @@ public class ElementImpl extends NamedNode implements Element {
         long start = firstChildID();
         for (long i = start; i < start + children; i++) {
             Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
-            if (child != null
-                    && child.getNodeType() == Node.ATTRIBUTE_NODE
-                    && child.getNodeName().equals(name))
+            if (child == null)
+                continue;
+            if (child.getNodeType() != Node.ATTRIBUTE_NODE)
+                continue;
+            if (child.getNodeName().equals(name))
                 return ((AttrImpl) child).getValue();
         }
         return null;
@@ -616,11 +617,15 @@ public class ElementImpl extends NamedNode implements Element {
         long start = firstChildID();
         for (long i = start; i < start + children; i++) {
             Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
-            if (child != null
-                    && child.getNodeType() == Node.ATTRIBUTE_NODE
-                    && (child.getNamespaceURI() == null
-                    || child.getNamespaceURI().equals(namespaceURI))
-                    && child.getLocalName().equals(localName))
+            if (child == null)
+                continue;
+            if (child.getNodeType() != Node.ATTRIBUTE_NODE)
+                continue;
+            if (!child.getLocalName().equals(localName))
+                continue;
+            if (child.getNamespaceURI() == null)
+                return ((AttrImpl) child).getValue();
+            if (child.getNamespaceURI().equals(namespaceURI))                  
                 return ((AttrImpl) child).getValue();
         }
         return "";
@@ -633,9 +638,11 @@ public class ElementImpl extends NamedNode implements Element {
         long start = firstChildID();
         for (long i = start; i < start + children; i++) {
             Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
-            if (child != null
-                    && child.getNodeType() == Node.ATTRIBUTE_NODE
-                    && child.getNodeName().equals(name))
+            if (child == null)
+                continue;
+            if (child.getNodeType() != Node.ATTRIBUTE_NODE)
+                continue;
+            if (child.getNodeName().equals(name))
                 return (Attr) child;
         }
         return null;
@@ -656,10 +663,8 @@ public class ElementImpl extends NamedNode implements Element {
             Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
             if (child == null) 
                 break;
-            else {
-            	if(child.getNodeType() == Node.ATTRIBUTE_NODE)
-            		attr = (AttrImpl) child;
-            }
+            if (child.getNodeType() == Node.ATTRIBUTE_NODE)
+                attr = (AttrImpl) child;           
         }
         return attr;
     }
@@ -696,13 +701,16 @@ public class ElementImpl extends NamedNode implements Element {
     		childNS = "";
     	for(int i = 0; i < attrs.getLength(); i++) {
     		Node current = (Node) attrs.item(i);
-    		if(current == null || current.getNodeType() != Node.ATTRIBUTE_NODE)
-    			continue;
+    		if (current == null) 
+                continue;
+            if (current.getNodeType() != Node.ATTRIBUTE_NODE)
+                continue;
     		String currentNS = current.getNamespaceURI();
-    		if(currentNS == null)
+    		if (currentNS == null)
     			currentNS = "";
-    		if(child.getLocalName().equals(current.getLocalName()) &&
-    				childNS.equals(currentNS))
+    		if (!child.getLocalName().equals(current.getLocalName()))
+    			continue;
+    		if (childNS.equals(currentNS))
     			return current;
     	}
     	return null;
@@ -720,14 +728,16 @@ public class ElementImpl extends NamedNode implements Element {
         for (long i = start; i < start + attributes && iter.hasNext(); i++) {
             StoredNode child = (StoredNode) iter.next();
             child.setGID(i);
-            if (child != null
-                    && child.getNodeType() == Node.ATTRIBUTE_NODE
-                    && (child.getNamespaceURI() == null
-                    || child.getNamespaceURI().equals(namespaceURI))
-                    && child.getLocalName().equals(localName)) {
-                
+            if (child == null)
+                continue;
+            if (child.getNodeType() != Node.ATTRIBUTE_NODE)
+                continue;
+            if (!child.getLocalName().equals(localName))
+                continue;
+            if (child.getNamespaceURI() == null)
                 return (Attr) child;
-            }
+            if (child.getNamespaceURI().equals(namespaceURI))
+                return (Attr) child;            
         }
         return null;
     }
@@ -741,8 +751,11 @@ public class ElementImpl extends NamedNode implements Element {
         if (getAttributesCount() > 0) {
 	        for (long i = start; i < start + children; i++) {
 	            Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
-	            if (child != null && child.getNodeType() == Node.ATTRIBUTE_NODE)
-	                map.setNamedItem(child);
+	            if (child == null)
+                    continue;
+                if (child.getNodeType() != Node.ATTRIBUTE_NODE)
+                    continue;
+	            map.setNamedItem(child);
 	        }
         }
         if(declaresNamespacePrefixes()) {
@@ -837,7 +850,9 @@ public class ElementImpl extends NamedNode implements Element {
         long first = firstChildID();
         for (int i = 0; i < children; i++) {
             Node n = ((DocumentImpl)getOwnerDocument()).getNode(first + i);
-            if (n.getNodeType() == Node.ATTRIBUTE_NODE && n.getNodeName().equals(name))
+            if (n.getNodeType() != Node.ATTRIBUTE_NODE)
+                continue;
+            if (n.getNodeName().equals(name))
                 return true;
         }
         return false;
@@ -851,11 +866,14 @@ public class ElementImpl extends NamedNode implements Element {
         long first = firstChildID();
         for (int i = 0; i < children; i++) {
             Node n = ((DocumentImpl)getOwnerDocument()).getNode(first + i);
-            if (n.getNodeType() == Node.ATTRIBUTE_NODE
-                    && (n.getNamespaceURI() == null || n.getNamespaceURI().equals(namespaceURI))
-                    && n.getLocalName().equals(localName)) {
+            if (n.getNodeType() != Node.ATTRIBUTE_NODE)
+                continue;
+            if (!n.getLocalName().equals(localName))
+                continue;
+            if (n.getNamespaceURI() == null)
                 return true;
-            }
+            if (n.getNamespaceURI().equals(namespaceURI))
+                return true;
         }
         return false;
     }
@@ -911,17 +929,16 @@ public class ElementImpl extends NamedNode implements Element {
                         ) {
                     entry = (Map.Entry) i.next();
                     out.writeUTF((String) entry.getKey());
-                    nsId =
-                        ((DocumentImpl)getOwnerDocument()).getSymbols().getNSSymbol((String) entry.getValue());
+                    nsId = getBroker().getSymbols().getNSSymbol((String) entry.getValue());
                     out.writeShort(nsId);
                 }
                 prefixData = bout.toByteArray();
             }
-            final short id = ((DocumentImpl)getOwnerDocument()).getSymbols().getSymbol(this);
+            final short id = getBroker().getSymbols().getSymbol(this);
             final boolean hasNamespace = nodeName.needsNamespaceDecl();
             final short nsId =
                     hasNamespace
-                    ? ((DocumentImpl)getOwnerDocument()).getSymbols().getNSSymbol(nodeName.getNamespaceURI())
+                    ? getBroker().getSymbols().getNSSymbol(nodeName.getNamespaceURI())
                     : 0;
 
 //            final byte attrSizeType = Signatures.getSizeType(attributes);
@@ -970,18 +987,19 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     public void setAttribute(String name, String value) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setAttribute(String name, String value) not implemented on class " + getClass().getName());
     }
 
-    public void setAttributeNS(String namespaceURI, String qualifiedName, String value)
-            throws DOMException {
+    public void setAttributeNS(String namespaceURI, String qualifiedName, String value) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setAttributeNS(String namespaceURI, String qualifiedName, String value) not implemented on class " + getClass().getName());
     }
 
     public Attr setAttributeNode(Attr newAttr) throws DOMException {
-        return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setAttributeNode(Attr newAttr) not implemented on class " + getClass().getName());
     }
 
     public Attr setAttributeNodeNS(Attr newAttr) {
-        return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setAttributeNodeNS(Attr newAttr) not implemented on class " + getClass().getName());
     }
 
     public void setChildCount(int count) {
@@ -993,7 +1011,7 @@ public class ElementImpl extends NamedNode implements Element {
         String ns;
         for (Iterator i = namespaceMappings.values().iterator(); i.hasNext();) {
             ns = (String) i.next();
-            ((DocumentImpl)getOwnerDocument()).getSymbols().getNSSymbol(ns);
+            getBroker().getSymbols().getNSSymbol(ns);
         }
     }
 

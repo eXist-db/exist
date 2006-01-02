@@ -72,7 +72,7 @@ public class AttrImpl extends NamedNode implements Attr {
     public byte[] serialize() {
         if(nodeName.getLocalName() == null)
             throw new RuntimeException("Local name is null");
-        final short id = ((DocumentImpl)getOwnerDocument()).getSymbols().getSymbol( this );
+        final short id = getBroker().getSymbols().getSymbol( this );
         final byte idSizeType = Signatures.getSizeType( id );
         int prefixLen = 0;
         if (nodeName.needsNamespaceDecl()) {
@@ -91,8 +91,7 @@ public class AttrImpl extends NamedNode implements Attr {
         Signatures.write( idSizeType, id, data, ++pos );
         pos += Signatures.getLength(idSizeType);
         if(nodeName.needsNamespaceDecl()) {
-            final short nsId = 
-                ((DocumentImpl)getOwnerDocument()).getSymbols().getNSSymbol(nodeName.getNamespaceURI());
+            final short nsId = getBroker().getSymbols().getNSSymbol(nodeName.getNamespaceURI());
             ByteConversion.shortToByte(nsId, data, pos);
             pos += 2;
             ByteConversion.shortToByte((short)prefixLen, data, pos);
