@@ -82,6 +82,22 @@ public class StoredNode extends NodeImpl {
         throw new DOMException(DOMException.INVALID_ACCESS_ERR, "Can't serialize " + getClass().getName());
     }
     
+    /**
+     * Read a node from the specified byte array.
+     * 
+     * This checks the node type and calls the {@link #deserialize(byte[], int, int)}
+     * method of the corresponding node class.
+     * 
+     * @param data
+     * @param start
+     * @param len
+     * @param doc
+     * @return
+     */
+    public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc) {
+        return deserialize(data, start, len, doc, false);
+    }    
+    
 	/**
 	 * Read a node from the specified byte array.
 	 * 
@@ -110,25 +126,9 @@ public class StoredNode extends NodeImpl {
 			case Node.COMMENT_NODE :
 				return CommentImpl.deserialize(data, start, len, pooled);
 			default :
-				LOG.debug("Unknown node type: " + type);
+				LOG.error("Unknown node type: " + type);
 				return null;
 		}
-	}
-	
-	/**
-	 * Read a node from the specified byte array.
-	 * 
-	 * This checks the node type and calls the {@link #deserialize(byte[], int, int)}
-	 * method of the corresponding node class.
-	 * 
-	 * @param data
-	 * @param start
-	 * @param len
-	 * @param doc
-	 * @return
-	 */
-	public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc) {
-		return deserialize(data, start, len, doc, false);
 	}
 
 	/**
