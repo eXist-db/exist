@@ -26,6 +26,7 @@ import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
+import org.exist.dom.StoredNode;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NotificationService;
@@ -86,7 +87,7 @@ public class Delete extends Modification {
             Txn transaction = transact.beginTransaction();
     		try {
     			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
+                StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
                 IndexListener listener = new IndexListener(ql);
                 NodeImpl node;
                 NodeImpl parent;
@@ -102,7 +103,7 @@ public class Delete extends Modification {
                     }
                     doc.setIndexListener(listener);
                     modifiedDocs.add(doc);
-                    parent = (NodeImpl) node.getParentNode();
+                    parent = (StoredNode) node.getParentNode();
                     if (parent.getNodeType() != Node.ELEMENT_NODE) {
                         LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
                         transact.abort(transaction);

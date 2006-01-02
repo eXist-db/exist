@@ -384,7 +384,7 @@ public class NativeBroker extends DBBroker {
             observer.remove();
         }
     }
-    private void notifyReindex(final DocumentImpl oldDoc, final NodeImpl node) {
+    private void notifyReindex(final DocumentImpl oldDoc, final StoredNode node) {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.reindex(oldDoc, node);
@@ -919,7 +919,7 @@ public class NativeBroker extends DBBroker {
     private class NodeProcessor {
         
         private Txn transaction;
-        private NodeImpl node;
+        private StoredNode node;
         private NodePath currentPath;
         /** work variables */
         private short nodeType;
@@ -938,8 +938,8 @@ public class NativeBroker extends DBBroker {
         NodeProcessor() {
         }
 
-        public void reset(Txn transaction, NodeImpl node, NodePath currentPath) {            
-            if (node.getGID() == NodeImpl.NODE_IMPL_UNKNOWN_GID)
+        public void reset(Txn transaction, StoredNode node, NodePath currentPath) {            
+            if (node.getGID() < 0)
                 LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
                 //TODO : why continue processing ? return ? -pb
             this.transaction = transaction;
@@ -955,7 +955,7 @@ public class NativeBroker extends DBBroker {
             level = doc.getTreeLevel(gid);
         }
         
-        public void reset(Txn transaction, NodeImpl node, NodePath currentPath, boolean index) {
+        public void reset(Txn transaction, StoredNode node, NodePath currentPath, boolean index) {
             reset(transaction, node, currentPath);
             this.index = index;
         }
@@ -1140,11 +1140,11 @@ public class NativeBroker extends DBBroker {
 	 * without changing the node identifiers of sibling or parent nodes. In other 
 	 * cases, reindex will be called.
 	 */
-    public void index(Txn transaction, NodeImpl node, NodePath currentPath) {
+    public void index(Txn transaction, StoredNode node, NodePath currentPath) {
         index(transaction, node, currentPath, false);
     }
     
-	public void index(final Txn transaction, final NodeImpl node, NodePath currentPath, boolean repairMode) {
+	public void index(final Txn transaction, final StoredNode node, NodePath currentPath, boolean repairMode) {
         nodeProcessor.reset(transaction, node, currentPath);
         nodeProcessor.index();
 	}
@@ -1200,9 +1200,9 @@ public class NativeBroker extends DBBroker {
 			Iterator iterator;
 			if (node == null) {
 				NodeList nodes = doc.getChildNodes();
-				NodeImpl n;
+				StoredNode n;
 				for (int i = 0; i < nodes.getLength(); i++) {
-					n = (NodeImpl) nodes.item(i);
+					n = (StoredNode) nodes.item(i);
 					iterator =
 						getNodeIterator(
 							new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
@@ -1232,7 +1232,7 @@ public class NativeBroker extends DBBroker {
 	 * @param node
 	 * @param currentPath
 	 */
-	private void reindex(final Txn transaction, final NodeImpl node, NodePath currentPath) {
+	private void reindex(final Txn transaction, final StoredNode node, NodePath currentPath) {
         nodeProcessor.reset(transaction, node, currentPath);
         nodeProcessor.reindex();
 	}
@@ -1245,7 +1245,7 @@ public class NativeBroker extends DBBroker {
 	 * @param node
 	 * @param currentPath
 	 */
-	private void scanNodes(Txn transaction, Iterator iterator, NodeImpl node, NodePath currentPath,
+	private void scanNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath,
 	        boolean fullReindex, boolean repairMode) {
 		if (node.getNodeType() == Node.ELEMENT_NODE)
 		    currentPath.addComponent(node.getQName());
@@ -1267,9 +1267,9 @@ public class NativeBroker extends DBBroker {
 				throw new IllegalStateException("wrong node id");
 			}
 			final long lastChildId = firstChildId + node.getChildCount();
-			NodeImpl child;
+			StoredNode child;
 			for (long gid = firstChildId; gid < lastChildId; gid++) {
-				child = (NodeImpl) iterator.next();
+				child = (StoredNode) iterator.next();
 				if(child == null)
 					LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
 							"; last = " + lastChildId + "; children = " + node.getChildCount());
@@ -1285,7 +1285,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
-    public void removeAll(Txn transaction, NodeImpl node, NodePath currentPath) {
+    public void removeAll(Txn transaction, StoredNode node, NodePath currentPath) {
         Iterator iterator = 
             getNodeIterator(new NodeProxy((DocumentImpl)node.getOwnerDocument(), node.getGID(), node.getInternalAddress()));
         iterator.next();
@@ -1298,7 +1298,7 @@ public class NativeBroker extends DBBroker {
         }
     }
     
-    private void collectForRemove(Stack stack, Iterator iterator, NodeImpl node, NodePath currentPath) {
+    private void collectForRemove(Stack stack, Iterator iterator, StoredNode node, NodePath currentPath) {
         RemovedNode removed;
         switch (node.getNodeType()) {
             case Node.ELEMENT_NODE:
@@ -1330,9 +1330,9 @@ public class NativeBroker extends DBBroker {
                         throw new IllegalStateException("wrong node id");
                     }
                     final long lastChildId = firstChildId + node.getChildCount();
-                    NodeImpl child;
+                    StoredNode child;
                     for (long gid = firstChildId; gid < lastChildId; gid++) {
-                        child = (NodeImpl) iterator.next();
+                        child = (StoredNode) iterator.next();
                         if(child == null)
                             LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
                                     "; last = " + lastChildId + "; children = " + node.getChildCount());
@@ -1353,11 +1353,11 @@ public class NativeBroker extends DBBroker {
     }
     
     private final static class RemovedNode {
-        NodeImpl node;
+        StoredNode node;
         String content;
         NodePath path;
         
-        RemovedNode(NodeImpl node, NodePath path, String content) {
+        RemovedNode(StoredNode node, NodePath path, String content) {
             this.node = node;
             this.path = path;
             this.content = content;
@@ -1374,9 +1374,9 @@ public class NativeBroker extends DBBroker {
 		    doc.getCollection().setConfigEnabled(false);
 		Iterator iterator;
 		NodeList nodes = doc.getChildNodes();
-		NodeImpl n;
+		StoredNode n;
 		for (int i = 0; i < nodes.getLength(); i++) {
-		    n = (NodeImpl) nodes.item(i);
+		    n = (StoredNode) nodes.item(i);
 		    iterator = getNodeIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
 		    iterator.next();
 		    scanNodes(transaction, iterator, n, new NodePath(), true, repairMode);
@@ -1458,9 +1458,9 @@ public class NativeBroker extends DBBroker {
 		final long start = System.currentTimeMillis();
 		Iterator iterator;
 		NodeList nodes = oldDoc.getChildNodes();
-		NodeImpl n;
+		StoredNode n;
 		for (int i = 0; i < nodes.getLength(); i++) {
-		    n = (NodeImpl) nodes.item(i);
+		    n = (StoredNode) nodes.item(i);
 		    iterator =
 		        getNodeIterator(
 		                new NodeProxy(oldDoc, n.getGID(), n.getInternalAddress()));
@@ -1536,9 +1536,9 @@ public class NativeBroker extends DBBroker {
 			// copy the nodes
 			Iterator iterator;
 			NodeList nodes = doc.getChildNodes();
-			NodeImpl n;
+			StoredNode n;
 			for (int i = 0; i < nodes.getLength(); i++) {
-			    n = (NodeImpl) nodes.item(i);
+			    n = (StoredNode) nodes.item(i);
 			    iterator =
 			        getNodeIterator(
 			                new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
@@ -1586,7 +1586,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 	
-	private void copyNodes(Txn transaction, Iterator iterator, NodeImpl node, NodePath currentPath, 
+	private void copyNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath, 
 	        DocumentImpl newDoc, boolean index) {
 		if (node.getNodeType() == Node.ELEMENT_NODE)
 		    currentPath.addComponent(node.getQName());
@@ -1596,7 +1596,7 @@ public class NativeBroker extends DBBroker {
 		store(transaction, node, currentPath, index);
 		if (node.getNodeType() == Node.ELEMENT_NODE)
 		    endElement(node, currentPath, null);		
-		if (node.getGID() == NodeImpl.NODE_IMPL_ROOT_NODE_GID)
+		if (node.getGID() == StoredNode.NODE_IMPL_ROOT_NODE_GID)
 		    newDoc.appendChild((StoredNode) node);
 		node.setOwnerDocument(doc);
 		
@@ -1613,9 +1613,9 @@ public class NativeBroker extends DBBroker {
 				throw new IllegalStateException("wrong node id");
 			}
 			final long lastChildId = firstChildId + node.getChildCount();
-			NodeImpl child;
+			StoredNode child;
 			for (long gid = firstChildId; gid < lastChildId; gid++) {
-				child = (NodeImpl) iterator.next();
+				child = (StoredNode) iterator.next();
 				if(child == null)
 					LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
 							"; last = " + lastChildId + "; children = " + node.getChildCount());
@@ -1651,9 +1651,9 @@ public class NativeBroker extends DBBroker {
 			}.run();
 			
 			NodeList nodes = doc.getChildNodes();
-			NodeImpl n;
+			StoredNode n;
 			for (int i = 0; i < nodes.getLength(); i++) {
-			    n = (NodeImpl) nodes.item(i);
+			    n = (StoredNode) nodes.item(i);
 			    Iterator iterator =
 			        getNodeIterator(
 			                new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
@@ -1678,7 +1678,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 	
-	private void checkTree(Iterator iterator, NodeImpl node) {
+	private void checkTree(Iterator iterator, StoredNode node) {
 		if (node.hasChildNodes()) {
 			final long firstChildId = XMLUtil.getFirstChildId((DocumentImpl)node.getOwnerDocument(), 
 					node.getGID());          
@@ -1693,9 +1693,9 @@ public class NativeBroker extends DBBroker {
 				throw new IllegalStateException("wrong node id");
 			}
 			final long lastChildId = firstChildId + node.getChildCount();
-			NodeImpl child;
+			StoredNode child;
 			for (long gid = firstChildId; gid < lastChildId; gid++) {
-				child = (NodeImpl) iterator.next();
+				child = (StoredNode) iterator.next();
 				if(child == null)
 					LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
 							"; last = " + lastChildId + "; children = " + node.getChildCount());
@@ -2104,7 +2104,7 @@ public class NativeBroker extends DBBroker {
                         if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
                             domDb.removeOverflowValue(transaction, ((BinaryDocument)doc).getPage());
                         } else {
-                            NodeImpl node = (NodeImpl)doc.getFirstChild();
+                            StoredNode node = (StoredNode)doc.getFirstChild();
                             domDb.removeAll(transaction, node.getInternalAddress());
                         }
                         return null;
@@ -2155,7 +2155,7 @@ public class NativeBroker extends DBBroker {
             }
 			new DOMTransaction(this, domDb) {
 				public Object start() {
-				    NodeImpl node = (NodeImpl)document.getFirstChild();
+				    StoredNode node = (StoredNode)document.getFirstChild();
 					domDb.removeAll(transaction, node.getInternalAddress());
 					return null;
 				}
@@ -2215,7 +2215,7 @@ public class NativeBroker extends DBBroker {
 	 * removeNode() just adds the node ids to the list in elementIndex 
 	 * for later removal.
 	 */
-    public void removeNode(final Txn transaction, final NodeImpl node, NodePath currentPath, String content) {
+    public void removeNode(final Txn transaction, final StoredNode node, NodePath currentPath, String content) {
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final IndexSpec idxSpec = 
 		    doc.getCollection().getIdxConf(this);
@@ -2711,7 +2711,7 @@ public class NativeBroker extends DBBroker {
 	 *      the Broker to determine if a node's content should be
 	 *      fulltext-indexed).  @param index switch to activate fulltext indexation
 	 */
-	public void store(final Txn transaction, final NodeImpl node, NodePath currentPath, boolean index) {
+	public void store(final Txn transaction, final StoredNode node, NodePath currentPath, boolean index) {
 	    checkAvailableMemory();
         
         final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
@@ -2779,7 +2779,7 @@ public class NativeBroker extends DBBroker {
      * @param content contains the string value of the element. Needed if a range index
      * is defined on it.
 	 */
-	public void endElement(final NodeImpl node, NodePath currentPath, String content) {
+	public void endElement(final StoredNode node, NodePath currentPath, String content) {
 	    final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 //	    tempProxy.reset(doc, node.getGID(), node.getInternalAddress());
         final NodeProxy tempProxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
@@ -2957,7 +2957,7 @@ public class NativeBroker extends DBBroker {
 		.run();
 	}
 
-	public void update(final Txn transaction, final NodeImpl node) {
+	public void update(final Txn transaction, final StoredNode node) {
 		try {
 			final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 			final long internalAddress = node.getInternalAddress();
@@ -2992,7 +2992,7 @@ public class NativeBroker extends DBBroker {
 	/**
 	 * Physically insert a node into the DOM storage.
 	 */
-	public void insertAfter(final Txn transaction, final NodeImpl previous, final NodeImpl node) {
+	public void insertAfter(final Txn transaction, final StoredNode previous, final StoredNode node) {
 		final byte data[] = node.serialize();
 		final DocumentImpl doc = (DocumentImpl) previous.getOwnerDocument();
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {

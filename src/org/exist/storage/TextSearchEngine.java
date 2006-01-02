@@ -32,8 +32,8 @@ import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeSet;
+import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.SimpleTokenizer;
@@ -245,5 +245,5 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param oldDoc
 	 * @param node
 	 */
-	public abstract void reindex(DocumentImpl oldDoc, NodeImpl node);
+	public abstract void reindex(DocumentImpl oldDoc, StoredNode node);
 }

@@ -31,8 +31,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
@@ -1039,7 +1039,7 @@ public class DOMFile extends BTree implements Lockable {
 		return cb.getValues();
 	}
 
-	private long findNode(NodeImpl node, long target, Iterator iter) {
+	private long findNode(StoredNode node, long target, Iterator iter) {
 		if (node.hasChildNodes()) {
 			final long firstChildId = XMLUtil.getFirstChildId(
 					(DocumentImpl) node.getOwnerDocument(), node.getGID());
@@ -1050,7 +1050,7 @@ public class DOMFile extends BTree implements Lockable {
 			final long lastChildId = firstChildId + node.getChildCount();
 			long p;
 			for (long gid = firstChildId; gid < lastChildId; gid++) {
-				NodeImpl child = (NodeImpl) iter.next();
+				StoredNode child = (StoredNode) iter.next();
 
 				SanityCheck.ASSERT(child != null, "Next node missing. gid = "
 						+ gid + "; last = " + lastChildId + "; parent= "
@@ -1105,10 +1105,10 @@ public class DOMFile extends BTree implements Lockable {
 				}
 			} while (parentPointer == KEY_NOT_FOUND);
 
-			final long firstChildId = XMLUtil.getFirstChildId(doc, id);
+			//final long firstChildId = XMLUtil.getFirstChildId(doc, id);
 			final Iterator iter = new NodeIterator(lock, this, node
 					.getDocument(), parentPointer);
-			final NodeImpl n = (NodeImpl) iter.next();
+			final StoredNode n = (StoredNode) iter.next();
 			n.setGID(id);
 			final long address = findNode(n, node.getGID(), iter);
 			if (address == 0) {
@@ -1608,7 +1608,7 @@ public class DOMFile extends BTree implements Lockable {
 		StringBuffer buf = new StringBuffer();
 		buf.append("Pages used by ").append(doc.getName());
 		buf.append("; docId ").append(doc.getDocId()).append(':');
-		long pnum = StorageAddress.pageFromPointer(((NodeImpl) doc
+		long pnum = StorageAddress.pageFromPointer(((StoredNode) doc
 				.getFirstChild()).getInternalAddress());
 		while (-1 < pnum) {
 			DOMPage page = getCurrentPage(pnum);

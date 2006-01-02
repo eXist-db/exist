@@ -26,6 +26,7 @@ import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
+import org.exist.dom.StoredNode;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -61,7 +62,7 @@ public class Remove extends Modification {
     public long process(Txn transaction) throws PermissionDeniedException, LockException,
             EXistException, XPathException {
         try {
-            NodeImpl[] ql = selectAndLock();
+            StoredNode[] ql = selectAndLock();
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = broker.getBrokerPool().getNotificationService();
             NodeImpl node;

@@ -28,6 +28,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.StoredNode;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementIndex;
@@ -462,10 +463,10 @@ public class LocationStep extends Step {
 		} else {
 			NodeSet result = new ExtArrayNodeSet(contextSet.getLength());
 			NodeProxy p, sib;
-			NodeImpl n;
+			StoredNode n;
 			for (Iterator i = contextSet.iterator(); i.hasNext();) {
 				p = (NodeProxy) i.next();
-				n = (NodeImpl) p.getNode();
+				n = (StoredNode) p.getNode();
 				while ((n = getNextSibling(n)) != null) {
 					if (test.matches(n)) {
 						sib = new NodeProxy((DocumentImpl) n.getOwnerDocument(), n.getGID(),
@@ -482,12 +483,12 @@ public class LocationStep extends Step {
 		}		
 	}
 
-	protected NodeImpl getNextSibling(NodeImpl last) {
+	protected StoredNode getNextSibling(NodeImpl last) {
         switch (axis) {
             case Constants.FOLLOWING_SIBLING_AXIS :
-                return (NodeImpl) last.getNextSibling();
+                return (StoredNode) last.getNextSibling();
             case Constants.PRECEDING_SIBLING_AXIS :             
-                return (NodeImpl) last.getPreviousSibling();
+                return (StoredNode) last.getPreviousSibling();
             default :
                 throw new IllegalArgumentException("Unsupported axis specified");                   
         }

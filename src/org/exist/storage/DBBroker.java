@@ -40,14 +40,12 @@ import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteInputStream;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -173,7 +171,7 @@ public abstract class DBBroker extends Observable {
 		if ((temp = (Boolean) config.getProperty("indexer.case-sensitive"))
 			!= null)
 			caseSensitive = temp.booleanValue();
-		String sym, dataDir;
+		String dataDir;
 		if ((dataDir = (String) config.getProperty("db-connection.data-dir"))
 			== null)
 			dataDir = "data";
@@ -481,9 +479,9 @@ public abstract class DBBroker extends Observable {
 	 *      the Broker to determine if a node's content should be
 	 *      fulltext-indexed).
 	 */
-	public abstract void store(Txn transaction, NodeImpl node, NodePath currentPath, boolean index);
+	public abstract void store(Txn transaction, StoredNode node, NodePath currentPath, boolean index);
 
-	public void store(Txn transaction, NodeImpl node, NodePath currentPath) {
+	public void store(Txn transaction, StoredNode node, NodePath currentPath) {
 	    store(transaction, node, currentPath, true);
 	}
 	
@@ -497,7 +495,7 @@ public abstract class DBBroker extends Observable {
      * @param content contains the string value of the element. Needed if a range index
      * is defined on it.
      */
-	public abstract void endElement(final NodeImpl node, NodePath currentPath, String content);
+	public abstract void endElement(final StoredNode node, NodePath currentPath, String content);
 	
 	/**
 	 * Store a document (descriptor) into the database
@@ -615,7 +613,7 @@ public abstract class DBBroker extends Observable {
 	 *
 	 *@param  node  Description of the Parameter
 	 */
-	public void update(Txn transaction, NodeImpl node) {
+	public void update(Txn transaction, StoredNode node) {
 		throw new RuntimeException("not implemented");
 	}
 
@@ -634,25 +632,25 @@ public abstract class DBBroker extends Observable {
 		return pool;
 	}
 
-	public abstract void insertAfter(Txn transaction, final NodeImpl previous, final NodeImpl node);
+	public abstract void insertAfter(Txn transaction, final StoredNode previous, final StoredNode node);
 
 	public void reindex(Txn transaction, DocumentImpl oldDoc, DocumentImpl doc, StoredNode node) {
 		throw new RuntimeException("not implemented");
 	}
 
-	public void index(Txn transaction, NodeImpl node) {
+	public void index(Txn transaction, StoredNode node) {
 		index(transaction, node, null);
 	}
 	
-	public void index(Txn transaction, NodeImpl node, NodePath currentPath) {
+	public void index(Txn transaction, StoredNode node, NodePath currentPath) {
 		throw new RuntimeException("not implemented");
 	}
 
-	public void removeNode(Txn transaction, NodeImpl node, NodePath currentPath, String content) {
+	public void removeNode(Txn transaction, StoredNode node, NodePath currentPath, String content) {
 		throw new RuntimeException("not implemented");
 	}
 
-    public abstract void removeAll(Txn transaction, NodeImpl node, NodePath currentPath);
+    public abstract void removeAll(Txn transaction, StoredNode node, NodePath currentPath);
     
 	public void endRemove() {
 		throw new RuntimeException("not implemented");

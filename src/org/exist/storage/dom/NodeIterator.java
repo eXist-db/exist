@@ -5,7 +5,6 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
 import org.exist.storage.StorageAddress;
@@ -108,7 +107,7 @@ public final class NodeIterator implements Iterator {
 	 */
 	public Object next() {
 		Lock lock = db.getLock();
-		NodeImpl nextNode = null;
+		StoredNode nextNode = null;
 		try {
 			try {
 				lock.acquire(Lock.READ_LOCK);

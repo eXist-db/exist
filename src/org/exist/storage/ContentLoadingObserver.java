@@ -25,7 +25,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeImpl;
+import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.util.ReadOnlyException;
 
@@ -98,7 +98,7 @@ public interface ContentLoadingObserver {
      * @param node if != null, only nodes being descendants of the specified node will be
      * reindexed. Other nodes are not touched. This is used for a partial reindex.
      */
-	public abstract void reindex(DocumentImpl oldDoc, NodeImpl node);
+	public abstract void reindex(DocumentImpl oldDoc, StoredNode node);
 
 	/** remove all pending modifications, for the current document. */
 	public abstract void remove();

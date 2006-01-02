@@ -123,7 +123,7 @@ public class AttrImpl extends NamedNode implements Attr {
     }
 
     public Element getOwnerElement() {
-        return (Element) ownerDocument.getNode( getParentGID() );
+        return (Element) ((DocumentImpl)getOwnerDocument()).getNode( getParentGID() );
     }
 
     public boolean getSpecified() {
@@ -137,7 +137,7 @@ public class AttrImpl extends NamedNode implements Attr {
     public byte[] serialize() {
         if(nodeName.getLocalName() == null)
             throw new RuntimeException("Local name is null");
-        final short id = ownerDocument.getSymbols().getSymbol( this );
+        final short id = ((DocumentImpl)getOwnerDocument()).getSymbols().getSymbol( this );
         final byte idSizeType = Signatures.getSizeType( id );
 		int prefixLen = 0;
 		if (nodeName.needsNamespaceDecl()) {
@@ -157,7 +157,7 @@ public class AttrImpl extends NamedNode implements Attr {
         pos += Signatures.getLength(idSizeType);
         if(nodeName.needsNamespaceDecl()) {
         	final short nsId = 
-        		ownerDocument.getSymbols().getNSSymbol(nodeName.getNamespaceURI());
+                ((DocumentImpl)getOwnerDocument()).getSymbols().getNSSymbol(nodeName.getNamespaceURI());
         	ByteConversion.shortToByte(nsId, data, pos);
         	pos += 2;
 			ByteConversion.shortToByte((short)prefixLen, data, pos);
@@ -191,9 +191,9 @@ public class AttrImpl extends NamedNode implements Attr {
             result.append( "<exist:attribute " );
             result.append( "xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" " );
             result.append( "exist:id=\"" );
-            result.append( gid );
+            result.append( getGID() );
             result.append( "\" exist:source=\"" );
-            result.append( ownerDocument.getFileName() );
+            result.append( ((DocumentImpl)getOwnerDocument()).getFileName() );
             result.append( "\" " );
             result.append( getNodeName() );
             result.append( "=\"" );

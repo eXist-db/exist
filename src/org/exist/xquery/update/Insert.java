@@ -27,6 +27,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeListImpl;
+import org.exist.dom.StoredNode;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NotificationService;
@@ -105,7 +106,7 @@ public class Insert extends Modification {
             try {
                 TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
                 Txn transaction = transact.beginTransaction();
-                NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
+                StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
                 NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 IndexListener listener = new IndexListener(ql);
                 NodeImpl node;
@@ -123,7 +124,7 @@ public class Insert extends Modification {
     				if (mode == INSERT_APPEND) {
     					node.appendChildren(transaction, contentList, -1);
     				} else {
-    	                parent = (NodeImpl) node.getParentNode();
+    	                parent = (StoredNode) node.getParentNode();
     	                switch (mode) {
     	                    case INSERT_BEFORE:
     	                        parent.insertBefore(transaction, contentList, node);

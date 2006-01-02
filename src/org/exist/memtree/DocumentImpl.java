@@ -27,6 +27,7 @@ import java.util.List;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.NamePool;
@@ -418,7 +419,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     
     public int getChildCountFor(int nr) {
         int count = 0;
-        short level = (short)(treeLevel[nr] + 1);
+        //short level = (short)(treeLevel[nr] + 1);
         int nextNode = getFirstChildFor(nr);
         while (nextNode > nr) {
             ++count;
@@ -539,7 +540,7 @@ public class DocumentImpl extends NodeImpl implements Document {
      */
     public NodeList getElementsByTagName(String name) {
     	NodeListImpl nl = new NodeListImpl();
-    	int nodeNr = 1;
+    	//int nodeNr = 1;
     	for(int i = 1; i < size; i++) {
     		if (nodeKind[i] == Node.ELEMENT_NODE) {
     			QName qn = (QName) namePool.get(nodeName[i]);
@@ -911,7 +912,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         top = 1;
         int i = 0;
         while(top > 0 && i < cl.getLength()) {
-            org.exist.dom.NodeImpl node = (org.exist.dom.NodeImpl) cl.item(i);
+            StoredNode node = (StoredNode) cl.item(i);
             NodeProxy proxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
             int old = ((Integer)oldIds.get(i)).intValue();
             storedNodes.put(old, proxy);

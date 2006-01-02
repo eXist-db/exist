@@ -37,9 +37,9 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.btree.BTreeCallback;
@@ -451,7 +451,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	 * @see org.exist.storage.IndexGenerator#reindex(org.exist.dom.DocumentImpl, org.exist.dom.NodeImpl)
 	 */
     //TODO : note that this is *not* this.doc -pb
-    public void reindex(DocumentImpl document, NodeImpl node) {
+    public void reindex(DocumentImpl document, StoredNode node) {
         if (pending.size() == 0) 
             return;        
         final short collectionId = document.getCollection().getId();
