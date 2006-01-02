@@ -63,7 +63,14 @@ public abstract class NodeImpl implements Node, QNameable {
  
     public Node replaceChild(Txn transaction, Node newChild, Node oldChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
-    }  
+    }
+    
+    /**
+     * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
+     */
+    public Node replaceChild(Node newChild, Node oldChild) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
+    }    
     
     /**
      * Update a child node. This method will only update the child node
@@ -75,13 +82,6 @@ public abstract class NodeImpl implements Node, QNameable {
      */
     public void updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
-    }        
-    
-    /**
-     * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
-     */
-    public Node replaceChild(Node newChild, Node oldChild) throws DOMException {
-        return null;
     }
 
     public int getChildCount() {
@@ -139,13 +139,6 @@ public abstract class NodeImpl implements Node, QNameable {
     public boolean hasAttributes() {
         return false;
     }
-
-    /**
-     * @see org.w3c.dom.Node#hasChildNodes()
-     */
-    public boolean hasChildNodes() {
-        return false;
-    } 
     
     /**
      *  Set the attributes that belong to this node.
@@ -154,6 +147,14 @@ public abstract class NodeImpl implements Node, QNameable {
      */
     public void setAttributes(short attribNum) {
     }
+    
+    /**
+     * @see org.w3c.dom.Node#hasChildNodes()
+     */
+    public boolean hasChildNodes() {
+        return false;
+    } 
+    
 
     /**
      *  Set the number of children.
