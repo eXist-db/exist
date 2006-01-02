@@ -176,7 +176,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
      * Persistent node methods
      *
      ************************************************/ 
-    
 
     public int getMaxDepth() {
         return maxDepth;

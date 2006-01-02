@@ -69,10 +69,10 @@ public class ElementImpl extends NamedNode implements Element {
 
     protected short attributes = 0;
     protected int children = 0;
-    protected long firstChild = StoredNode.NODE_IMPL_UNKNOWN_GID;
-    protected Map namespaceMappings = null;
-	protected int indexType = RangeIndexSpec.NO_INDEX;
+    protected long firstChild = StoredNode.NODE_IMPL_UNKNOWN_GID;    
 	protected int position = 0;
+    protected Map namespaceMappings = null;
+    protected int indexType = RangeIndexSpec.NO_INDEX;
 	protected boolean preserveWS = false;
     
     public ElementImpl() {
@@ -124,14 +124,14 @@ public class ElementImpl extends NamedNode implements Element {
      */
     public void clear() {
         super.clear();
-        firstChild = StoredNode.NODE_IMPL_UNKNOWN_GID;
-        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-        super.setGID(0);
-        children = 0;
         attributes = 0;
+        children = 0;
+        firstChild = StoredNode.NODE_IMPL_UNKNOWN_GID;
         position = 0;
-        if (namespaceMappings != null)
-            namespaceMappings = null;
+        namespaceMappings = null;
+        //TODO : reset below as well ? -pb
+        //indexType
+        //preserveWS
     }
 
     public static StoredNode deserialize(byte[] data,
@@ -242,8 +242,7 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
      */
-    public Node appendChild(Node child)
-            throws DOMException {
+    public Node appendChild(Node child) throws DOMException {
         Node node;
         TransactionManager transact = getBroker().getBrokerPool().getTransactionManager();
         Txn transaction = transact.beginTransaction();
@@ -280,8 +279,7 @@ public class ElementImpl extends NamedNode implements Element {
         }
     }
 
-    private void checkTree(int size)
-            throws EXistException {
+    private void checkTree(int size) throws EXistException {
         // check if the tree structure needs to be changed
         int level = ((DocumentImpl)getOwnerDocument()).getTreeLevel(getGID());
         if (((DocumentImpl)getOwnerDocument()).getMaxDepth() == level + 1) {
@@ -299,8 +297,7 @@ public class ElementImpl extends NamedNode implements Element {
         }
     }
 
-    public void appendAttributes(Txn transaction, NodeList attribs)
-            throws DOMException {
+    public void appendAttributes(Txn transaction, NodeList attribs) throws DOMException {
     	NodeList duplicateAttrs = findDupAttributes(attribs);
     	if(duplicateAttrs != null) {
     		removeAppendAttributes(transaction, duplicateAttrs, attribs);
@@ -328,8 +325,7 @@ public class ElementImpl extends NamedNode implements Element {
     	}
     }
 
-    private NodeList checkForAttributes(Txn transaction, NodeList nodes)
-            throws DOMException {
+    private NodeList checkForAttributes(Txn transaction, NodeList nodes) throws DOMException {
         NodeListImpl attribs = null;
         NodeListImpl rest = null;
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -352,8 +348,7 @@ public class ElementImpl extends NamedNode implements Element {
             return nodes;
     }
 
-    public void appendChildren(Txn transaction, NodeList nodes, int child)
-            throws DOMException {
+    public void appendChildren(Txn transaction, NodeList nodes, int child) throws DOMException {
     	// attributes are handled differently. Call checkForAttributes to extract them.
         nodes = checkForAttributes(transaction, nodes);
         if (nodes == null || nodes.getLength() == 0) return;
@@ -392,8 +387,7 @@ public class ElementImpl extends NamedNode implements Element {
      * @throws DOMException
      */
     protected void appendChildren(Txn transaction, long gid, NodeImplRef last, NodePath lastPath, NodeList nodes, 
-            boolean index)
-            throws DOMException {
+            boolean index) throws DOMException {
         if (last == null || last.node == null || last.node.getOwnerDocument() == null)
             throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "invalid node");
         try {
@@ -582,7 +576,7 @@ public class ElementImpl extends NamedNode implements Element {
             return 0;
         if (firstChild != StoredNode.NODE_IMPL_UNKNOWN_GID)
             return firstChild;
-        firstChild = XMLUtil.getFirstChildId(((DocumentImpl)getOwnerDocument()), getGID());
+        firstChild = XMLUtil.getFirstChildId((DocumentImpl)getOwnerDocument(), getGID());
         return firstChild;
     }
 
@@ -660,11 +654,12 @@ public class ElementImpl extends NamedNode implements Element {
         AttrImpl attr = null;
         for (long i = start; i < start + children; i++) {
             Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
-            if (child != null) {
+            if (child == null) 
+                break;
+            else {
             	if(child.getNodeType() == Node.ATTRIBUTE_NODE)
             		attr = (AttrImpl) child;
-            } else
-            	break;
+            }
         }
         return attr;
     }
@@ -824,8 +819,7 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * @see org.w3c.dom.Node#getNodeValue()
      */
-    public String getNodeValue()
-            throws DOMException {
+    public String getNodeValue() throws DOMException {
         return null;
     }
 
@@ -889,19 +883,16 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * @see org.w3c.dom.Element#removeAttribute(java.lang.String)
      */
-    public void removeAttribute(String name)
-            throws DOMException {
+    public void removeAttribute(String name) throws DOMException {
     }
 
     /**
      * @see org.w3c.dom.Element#removeAttributeNS(java.lang.String, java.lang.String)
      */
-    public void removeAttributeNS(String namespaceURI, String name)
-            throws DOMException {
+    public void removeAttributeNS(String namespaceURI, String name) throws DOMException {
     }
 
-    public Attr removeAttributeNode(Attr oldAttr)
-            throws DOMException {
+    public Attr removeAttributeNode(Attr oldAttr) throws DOMException {
         return null;
     }
 
@@ -978,16 +969,14 @@ public class ElementImpl extends NamedNode implements Element {
         }
     }
 
-    public void setAttribute(String name, String value)
-            throws DOMException {
+    public void setAttribute(String name, String value) throws DOMException {
     }
 
     public void setAttributeNS(String namespaceURI, String qualifiedName, String value)
             throws DOMException {
     }
 
-    public Attr setAttributeNode(Attr newAttr)
-            throws DOMException {
+    public Attr setAttributeNode(Attr newAttr) throws DOMException {
         return null;
     }
 
@@ -1118,8 +1107,7 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * @see org.w3c.dom.Node#insertBefore(org.w3c.dom.Node, org.w3c.dom.Node)
      */
-    public Node insertBefore(Node newChild, Node refChild)
-            throws DOMException {
+    public Node insertBefore(Node newChild, Node refChild) throws DOMException {
         if (!(refChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
         DocumentImpl prevDoc = (DocumentImpl)getOwnerDocument();
@@ -1154,8 +1142,7 @@ public class ElementImpl extends NamedNode implements Element {
      * Insert a list of nodes at the position before the reference
      * child.
      */
-    public void insertBefore(Txn transaction, NodeList nodes, Node refChild)
-            throws DOMException {
+    public void insertBefore(Txn transaction, NodeList nodes, Node refChild) throws DOMException {
         if (!(refChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
         DocumentImpl prevDoc = (DocumentImpl)getOwnerDocument();
@@ -1191,8 +1178,7 @@ public class ElementImpl extends NamedNode implements Element {
      * Insert a list of nodes at the position following the reference
      * child.
      */
-    public void insertAfter(Txn transaction, NodeList nodes, Node refChild)
-            throws DOMException {
+    public void insertAfter(Txn transaction, NodeList nodes, Node refChild) throws DOMException {
         if (refChild == null) {
             //TODO : use NodeImpl.UNKNOWN_NODE_IMPL_GID ? -pb
             appendChildren(null, nodes, -1);
@@ -1264,8 +1250,7 @@ public class ElementImpl extends NamedNode implements Element {
      * @param newChild
      * @throws DOMException
      */
-    public void updateChild(Txn transaction, Node oldChild, Node newChild)
-            throws DOMException {
+    public void updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
         if (!(oldChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
         if (!(newChild instanceof StoredNode))
@@ -1303,8 +1288,7 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * @see org.w3c.dom.Node#removeChild(org.w3c.dom.Node)
      */
-    public Node removeChild(Txn transaction, Node oldChild)
-            throws DOMException {
+    public Node removeChild(Txn transaction, Node oldChild) throws DOMException {
         if (!(oldChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
         StoredNode old = (StoredNode) oldChild;
@@ -1404,8 +1388,7 @@ public class ElementImpl extends NamedNode implements Element {
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
      */
-    public Node replaceChild(Txn transaction, Node newChild, Node oldChild)
-            throws DOMException {
+    public Node replaceChild(Txn transaction, Node newChild, Node oldChild) throws DOMException {
         if (!(oldChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
         StoredNode old = (StoredNode) oldChild;

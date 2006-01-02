@@ -27,6 +27,7 @@ package org.exist.dom;
  * 
  * @author wolf
  */
+//TODO : rename as StoredNamedNode ? -pb
 public class NamedNode extends StoredNode implements QNameable {
 
     protected QName nodeName = null;
@@ -72,6 +73,10 @@ public class NamedNode extends StoredNode implements QNameable {
         return nodeName;
     }
     
+    public void setNodeName(QName name) {
+        nodeName = name;
+    }    
+    
     /* (non-Javadoc)
      * @see org.exist.dom.NodeImpl#clear()
      */
@@ -79,8 +84,5 @@ public class NamedNode extends StoredNode implements QNameable {
         super.clear();
         nodeName = null;
     }
-    
-    public void setNodeName(QName name) {
-		nodeName = name;
-	}
+
 }
