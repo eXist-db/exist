@@ -1080,163 +1080,144 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     }
     
     public void setStrictErrorChecking(boolean strict) {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setStrictErrorChecking(boolean strict) not implemented on class " + getClass().getName());
     }          
 
 	/** ? @see org.w3c.dom.Document#getInputEncoding()
 	 */
 	public String getInputEncoding() {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "String getInputEncoding() not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Document#getXmlEncoding()
 	 */
 	public String getXmlEncoding() {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlEncoding() not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Document#getXmlStandalone()
 	 */
 	public boolean getXmlStandalone() {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return false;
-	}
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlStandalone() not implemented on class " + getClass().getName());
+    }
 
 	/** ? @see org.w3c.dom.Document#setXmlStandalone(boolean)
 	 */
 	public void setXmlStandalone(boolean xmlStandalone) throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setXmlStandalone(boolean xmlStandalone) not implemented on class " + getClass().getName());		
 	}
 
 	/** ? @see org.w3c.dom.Document#getXmlVersion()
 	 */
 	public String getXmlVersion() {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlVersion() not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Document#setXmlVersion(java.lang.String)
 	 */
 	public void setXmlVersion(String xmlVersion) throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setXmlVersion(String xmlVersion) not implemented on class " + getClass().getName());		
 	}
 
 	/** ? @see org.w3c.dom.Document#getDocumentURI()
 	 */
 	public String getDocumentURI() {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getDocumentURI() not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Document#setDocumentURI(java.lang.String)
 	 */
 	public void setDocumentURI(String documentURI) {
-		// maybe TODO - new DOM interfaces - Java 5.0		
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setDocumentURI(String documentURI) not implemented on class " + getClass().getName());	
 	}
 
 	/** ? @see org.w3c.dom.Document#getDomConfig()
 	 */
 	public DOMConfiguration getDomConfig() {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getDomConfig() not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Document#normalizeDocument()
 	 */
 	public void normalizeDocument() {
-		// maybe TODO - new DOM interfaces - Java 5.0		
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "normalizeDocument() not implemented on class " + getClass().getName());	
 	}
 
 	/** ? @see org.w3c.dom.Document#renameNode(org.w3c.dom.Node, java.lang.String, java.lang.String)
 	 */
 	public Node renameNode(Node n, String namespaceURI, String qualifiedName) throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "renameNode(Node n, String namespaceURI, String qualifiedName) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#getBaseURI()
 	 */
 	public String getBaseURI() {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getBaseURI() not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
 	 */
 	public short compareDocumentPosition(Node other) throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return 0;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "compareDocumentPosition(Node other) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#getTextContent()
 	 */
 	public String getTextContent() throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getTextContent() not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
 	 */
 	public void setTextContent(String textContent) throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0		
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setTextContent(String textContent) not implemented on class " + getClass().getName());	
 	}
 
 	/** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
 	 */
 	public boolean isSameNode(Node other) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return false;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isSameNode(Node other) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
 	 */
 	public String lookupPrefix(String namespaceURI) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "lookupPrefix(String namespaceURI) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
 	 */
 	public boolean isDefaultNamespace(String namespaceURI) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return false;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isDefaultNamespace(String namespaceURI) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
 	 */
 	public String lookupNamespaceURI(String prefix) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "lookupNamespaceURI(String prefix) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
 	 */
 	public boolean isEqualNode(Node arg) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return false;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isEqualNode(Node arg) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
 	 */
 	public Object getFeature(String feature, String version) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getFeature(String feature, String version) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
 	 */
 	public Object setUserData(String key, Object data, UserDataHandler handler) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setUserData(String key, Object data, UserDataHandler handler) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
 	 */
 	public Object getUserData(String key) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getUserData(String key) not implemented on class " + getClass().getName());
 	}
 }
