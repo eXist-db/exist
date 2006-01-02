@@ -170,6 +170,17 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		for (int i = 0; i < treeLevelStartPoints.length; i++)
 			treeLevelStartPoints[i] = old.treeLevelStartPoints[i];
 	}
+    
+    /************************************************
+     * 
+     * Persistent node methods
+     *
+     ************************************************/ 
+    
+
+    public int getMaxDepth() {
+        return maxDepth;
+    }
 
 	/**
 	 * Copy the relevant internal fields from the specified document object.
@@ -193,25 +204,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		childList = other.childList;
 		children = other.children;
 	}
-	
-	/**
-	 * Returns the type of this resource, either  {@link #XML_FILE} or 
-	 * {@link #BINARY_FILE}.
-	 * 
-	 * @return
-	 */
-	public byte getResourceType() {
-		return XML_FILE;
-	}
-    
-    public void setMimeType(String type) {
-        if (type != null)
-            this.mimeType = type;
-    }
-    
-    public String getMimeType() {
-        return mimeType;
-    }
     
 	/**
 	 * Returns true if the document is currently locked for
@@ -222,35 +214,234 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public boolean isLockedForWrite() {
 		return getUpdateLock().isLockedForWrite();
 	}
-	
-	public void setCollection(Collection parent) {
-	    this.collection = parent;
-	}
-	
-	protected static NodeImpl createNode(long gid, short type) {
-		NodeImpl node;
-		switch (type) {
-			case Node.TEXT_NODE :
-				node = new TextImpl(gid);
-				break;
-			case Node.ELEMENT_NODE :
-				node = new ElementImpl(gid);
-				break;
-			case Node.ATTRIBUTE_NODE :
-				node = new AttrImpl(gid);
-				break;
-			default :
-				LOG.debug("unknown node type");
-				node = null;
-		}
-		return node;
-	}
+
+    /**
+     * Returns the update lock associated with this
+     * resource.
+     * 
+     * @return
+     */     
+    public final synchronized Lock getUpdateLock() {
+        if(updateLock == null)
+            updateLock = new MultiReadReentrantLock();
+        return updateLock;
+    }
+    
+    public User getUserLock() {
+        if(lockOwnerId < 1)
+            return null;
+        final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
+        return secman.getUser(lockOwnerId);
+    }
+    
+    public void setUserLock(User user) {
+        lockOwnerId = (user == null ? 0 : user.getUID());
+    }    
+
+    public void incPageCount() {
+        ++pageCount;
+    }
+    
+    public void decPageCount() {
+        --pageCount;
+    }
+    
+    /**
+     * Returns the estimated size of the data in this document.
+     * 
+     * As an estimation, the number of pages occupied by the document
+     * is multiplied with the current page size.
+     * 
+     * @return
+     */
+    public int getContentLength() {
+        return pageCount * broker.getPageSize();
+    }
+    
+    /**
+     * Returns the number of pages currently occupied by this document.
+     * 
+     * @return
+     */
+    public int getPageCount() {
+        return pageCount;
+    }
+    
+    /**
+     * Set the number of pages currently occupied by this document.
+     * @param count
+     */
+    public void setPageCount(int count) {
+        pageCount = count;
+    }
+    
+    public int getSplitCount() {
+        return splitCount;
+    }
+    
+    public void setSplitCount(int count) {
+        splitCount = count;
+    }
+    
+    /**
+     * Increase the page split count of this document. The number
+     * of pages that have been split during inserts serves as an
+     * indicator for the 
+     *
+     */ 
+    public void incSplitCount() {
+        splitCount++;
+    }    
+    
+    public void triggerDefrag() {
+        splitCount = broker.getFragmentationLimit();
+    }  
+    
+    public NodeList getRange(long first, long last) {
+        return broker.getRange(this, first, last);
+    }
+
+    public SymbolTable getSymbols() {
+        return broker.getSymbols();
+    }
+    
+    public Node getNode(long gid) {
+        if (gid == StoredNode.NODE_IMPL_ROOT_NODE_GID)
+            return getDocumentElement();
+        return broker.objectWith(this, gid);
+    }
+
+    public Node getNode(NodeProxy p) {
+        if(p.getGID() == NodeProxy.DOCUMENT_NODE_GID)
+            return getDocumentElement();
+        return broker.objectWith(p);
+    }  
+    
+    private void resizeChildList() {
+        long[] newChildList = new long[children];
+        if(childList != null)
+            System.arraycopy(childList, 0, newChildList, 0, childList.length);
+        childList = newChildList;
+    }    
     
 	public void appendChild(StoredNode child) throws DOMException {
 		++children;
 		resizeChildList();
 		childList[children - 1] = child.getInternalAddress();
 	}
+    
+    public void write(VariableByteOutputStream ostream) throws IOException {
+        try {
+            ostream.writeInt(docId);
+            ostream.writeUTF(fileName);
+            SecurityManager secman = broker.getBrokerPool().getSecurityManager();
+            if (secman == null) {
+                ostream.writeInt(1);
+                ostream.writeInt(1);
+            } else {
+                User user = secman.getUser(permissions.getOwner());
+                Group group = secman.getGroup(permissions.getOwnerGroup());
+                ostream.writeInt(user.getUID());
+                ostream.writeInt(group.getId());
+            }
+            ostream.writeInt(permissions.getPermissions());
+            if(lockOwnerId > 0)
+                ostream.writeInt(lockOwnerId);
+            else
+                ostream.writeInt(0);
+            
+            ostream.writeInt(maxDepth);
+            for (int i = 0; i < maxDepth; i++) {
+                //System.out.println("k[" + i + "] = " + treeLevelOrder[i]);
+                ostream.writeInt(treeLevelOrder[i]);
+            }
+            ostream.writeInt(children);
+            if(children > 0) {
+                for(int i = 0; i < children; i++) {
+                    ostream.writeInt(StorageAddress.pageFromPointer(childList[i]));
+                    ostream.writeShort(StorageAddress.tidFromPointer(childList[i]));
+                }
+            }
+            if (docType != null) {
+                ostream.writeByte(HAS_DOCTYPE);
+                ((DocumentTypeImpl) docType).write(ostream);
+            } else
+                ostream.writeByte((byte) 0);
+            
+            ostream.writeLong(created);
+            ostream.writeLong(lastModified);
+            ostream.writeUTF(mimeType);
+            ostream.writeInt(pageCount);
+        } catch (IOException e) {
+            LOG.warn("io error while writing document data", e);
+        }
+    }
+
+    public void read(VariableByteInput istream) throws IOException, EOFException {
+        try {
+            docId = istream.readInt();
+            fileName = istream.readUTF();
+
+            final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
+            final int uid = istream.readInt();
+            final int gid = istream.readInt();
+            final int perm = (istream.readInt() & 0777);
+            if (secman == null) {
+                permissions.setOwner(SecurityManager.DBA_USER);
+                permissions.setGroup(SecurityManager.DBA_GROUP);
+            } else {
+                permissions.setOwner(secman.getUser(uid));
+                Group group = secman.getGroup(gid);
+                if (group != null)
+                    permissions.setGroup(group.getName());
+            }
+            permissions.setPermissions(perm);
+            lockOwnerId = istream.readInt();
+            
+            maxDepth = istream.readInt();
+            treeLevelOrder = new int[maxDepth + 1];
+            for (int i = 0; i < maxDepth; i++) {
+                treeLevelOrder[i] = istream.readInt();
+            }
+            children = istream.readInt();
+            childList = new long[children];
+            for (int i = 0; i < children; i++) { 
+                childList[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
+            }
+            
+            if (istream.readByte() == HAS_DOCTYPE) { 
+                docType = new DocumentTypeImpl();
+                ((DocumentTypeImpl) docType).read(istream);
+            } else
+                docType = null;
+            
+            created = istream.readLong();
+            lastModified = istream.readLong();
+            mimeType = istream.readUTF();
+            if(istream.available() > 0)
+                pageCount = istream.readInt();
+        } catch (IOException e) {
+            LOG.warn("IO error while reading document data for document " + fileName, e);
+            LOG.warn("Document address is " + StorageAddress.toString(getInternalAddress()));
+        }
+        
+        try {
+            calculateTreeLevelStartPoints();
+        } catch (EXistException e) {
+        }
+    }
+    
+    public void setTreeLevelOrder(int level, int order) {
+        treeLevelOrder[level] = order;
+    }
+
+    public int reindexRequired() {
+        return reindex;
+    }    
+
+    public void setReindexRequired(int level) {
+        this.reindex = level;
+    }    
     
    public long getLevelStartPoint(int level) {
         if (level > maxDepth || level < 0)
@@ -338,11 +529,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		}
 		buf.append(" ]");
 		return buf.toString();
-	}
-    
-    public Node adoptNode(Node node) throws DOMException {
-        return node;
-    }
+	}   
 	
 	public final int compareTo(Object other) {
 		final long otherId = ((DocumentImpl)other).docId;
@@ -352,86 +539,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			return Constants.INFERIOR;
 		else
 			return Constants.SUPERIOR;
-	}
-
-	public Attr createAttribute(String name) throws DOMException {
-		AttrImpl attr = new AttrImpl(new QName(name, "", null), null);
-		attr.setOwnerDocument(this);
-		return attr;
-	}
-
-	public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
-        String name;
-        String prefix;        
-        int p = qualifiedName.indexOf(':');
-        if (p == Constants.STRING_NOT_FOUND) {
-            prefix =null; 
-            name =  qualifiedName;
-        } else {
-            prefix = qualifiedName.substring(0, p);
-            name = qualifiedName.substring(p); 
-        }
-        AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix), null);
-		attr.setOwnerDocument(this);
-		return attr;
-	}
-
-	public CDATASection createCDATASection(String data) throws DOMException {
-		return null;
-	}
-
-	public Comment createComment(String data) {
-		return null;
-	}
-
-	public DocumentFragment createDocumentFragment() throws DOMException {
-		return null;
-	}
-
-	public Element createElement(String tagName) throws DOMException {
-		ElementImpl element = new ElementImpl(new QName(tagName, "", null));
-		element.setOwnerDocument(this);
-		return element;
-	}
-
-	public Element createElementNS(String namespaceURI, String qualifiedName) throws DOMException {
-        String name;
-        String prefix;
-        int p = qualifiedName.indexOf(':');        
-        if (p == Constants.STRING_NOT_FOUND) {
-            prefix =null;
-            name = qualifiedName;            
-        } else {                 
-            prefix = qualifiedName.substring(0, p); 
-            name = qualifiedName.substring(p);            
-        }          
-		ElementImpl element = new ElementImpl(new QName(name, namespaceURI, prefix));
-		element.setOwnerDocument(this);
-		return element;
-	}
- 
-	public EntityReference createEntityReference(String name) throws DOMException {
-		return null;
-	}
-
-	public ProcessingInstruction createProcessingInstruction(String target, String data)
-		throws DOMException {
-		return null;
-	}
-
-	public Text createTextNode(String data) {
-		TextImpl text = new TextImpl(data);
-		text.setOwnerDocument(this);
-		return text;
-	}
-    
-	public int getChildCount() {
-		return children;
-	}
-    
-    public DocumentType getDoctype() {
-        return docType;
-    }    
+	}  
     
     protected NodeList findElementsByTagName(StoredNode root, QName qname) {
         DocumentSet docs = new DocumentSet();
@@ -439,11 +547,16 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         NodeProxy p = new NodeProxy(this, root.getGID(), root.getInternalAddress());
         NodeSelector selector = new DescendantSelector(p, false);
         return (NodeSet) broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
-    } 
+    }    
+    
 
     public DBBroker getBroker() {
         return broker;
     }
+    
+    public void setBroker(DBBroker broker) {
+        this.broker = broker;
+    }    
 
     public long getGID() {
         return 0;
@@ -636,324 +749,77 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		}
 		return null;
 	}
-	
-	public Collection getCollection() {
-		return collection;
-	}
+    
+    /************************************************
+     * 
+     * Document metadata
+     *
+     ************************************************/
+    
+    public Collection getCollection() {
+        return collection;
+    }
 
-	public int getDocId() {
-		return docId;
-	}
+    public void setCollection(Collection parent) {
+        this.collection = parent;
+    }
 
-	/*
-	 *  W3C Document-Methods
-	 */
-
-	public Element getDocumentElement() {
-		NodeList cl = getChildNodes();
-		for (int i = 0; i < cl.getLength(); i++)
-			if (cl.item(i).getNodeType() == Node.ELEMENT_NODE)
-				return (Element) cl.item(i);
-		return null;
-	}
-
-	public Element getElementById(String elementId) {
-		return null;
-	}
-
-	public NodeList getElementsByTagName(String tagname) {
-		return getElementsByTagNameNS("", tagname);
-	}
-
-	public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
-		DocumentSet docs = new DocumentSet();
-		docs.add(this);
-		QName qname = new QName(localName, namespaceURI, null);
-		return broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null);
-	}
-
-	public String getEncoding() {
-		return "UTF-8";
-	}
+    public int getDocId() {
+        return docId;
+    }
+    
+    public void setDocId(int docId) {
+        this.docId = docId;
+    }     
+    
+    /**
+     * Returns the type of this resource, either  {@link #XML_FILE} or 
+     * {@link #BINARY_FILE}.
+     * 
+     * @return
+     */
+    public byte getResourceType() {
+        return XML_FILE;
+    }
+    
+    public String getMimeType() {
+        return mimeType;
+    }
+    
+    public void setMimeType(String type) {
+        if (type != null)
+            this.mimeType = type;
+    }
 
 	public String getFileName() {
 		//checkAvail();
 		return fileName;
 	}
-
+    
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    } 
+    
 	public String getName() {
         //TODO : use dedicated function in XmldbURI
 		return collection.getName() + "/" + fileName;
 	}
-
-	public org.w3c.dom.DOMImplementation getImplementation() {
-		return null;
-	}
-
-
-	public int getMaxDepth() {
-		return maxDepth;
-	}
-
-	public Node getNode(long gid) {
-		if (gid == StoredNode.NODE_IMPL_ROOT_NODE_GID)
-			return getDocumentElement();
-		return broker.objectWith(this, gid);
-	}
-
-	public Node getNode(NodeProxy p) {
-        if(p.getGID() == NodeProxy.DOCUMENT_NODE_GID)
-            return getDocumentElement();
-		return broker.objectWith(p);
-	}
-
+    
 	public Permission getPermissions() {
 		return permissions;
 	}
-
-	public NodeList getRange(long first, long last) {
-		return broker.getRange(this, first, last);
-	}
-
-	public boolean getStandalone() {
-		return true;
-	}
-
-	public boolean getStrictErrorChecking() {
-		return false;
-	}
-
-	public SymbolTable getSymbols() {
-		return broker.getSymbols();
-	}
-
-	/* (non-Javadoc)
-     * @see org.w3c.dom.Node#getParentNode()
-     */
-	public Node getParentNode() {
-		return null;
-	}
     
-	public String getVersion() {
-		return "";
-	}
+    public void setPermissions(int mode) {
+        permissions.setPermissions(mode);
+    }
 
-	public Node importNode(Node importedNode, boolean deep) throws DOMException {
-		return null;
-	}
+    public void setPermissions(String mode) throws SyntaxException {
+        permissions.setPermissions(mode);
+    }
 
-	public boolean isSupported(String type, String value) {
-		return false;
-	}
-
-	public void setBroker(DBBroker broker) {
-		this.broker = broker;
-	}
-
-	public void setChildCount(int count) {
-		children = count;
-		if (children == 0)
-			childList = null;
-	}
-
-	public void setDocId(int docId) {
-		this.docId = docId;
-	}
-
-	public void setDocumentType(DocumentType docType) {
-		this.docType = docType;
-	}
-
-	public void setEncoding(String enc) {
-		// allways  "UTF-8"  !?
-	}
-
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
-	} 
-
-	public void setUserLock(User user) {
-		lockOwnerId = (user == null ? 0 : user.getUID());
-	}
-	
-	public User getUserLock() {
-		if(lockOwnerId < 1)
-			return null;
-		final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
-		return secman.getUser(lockOwnerId);
-	}
-	
-	public void setPermissions(int mode) {
-		permissions.setPermissions(mode);
-	}
-
-	public void setPermissions(String mode) throws SyntaxException {
-		permissions.setPermissions(mode);
-	}
-
-	public void setPermissions(Permission perm) {
-		permissions = perm;
-	}
-
-	public void setStandalone(boolean alone) {
-	}
-
-	public void setStrictErrorChecking(boolean strict) {
-	}
-
-	public void setTreeLevelOrder(int level, int order) {
-		treeLevelOrder[level] = order;
-	}
-
-	public void setVersion(String version) {
-	}
-
-	public int reindexRequired() {
-		return reindex;
-	}
-
-    public void write(VariableByteOutputStream ostream) throws IOException {
-		try {
-            ostream.writeInt(docId);
-            ostream.writeUTF(fileName);
-            SecurityManager secman = broker.getBrokerPool().getSecurityManager();
-            if (secman == null) {
-                ostream.writeInt(1);
-                ostream.writeInt(1);
-            } else {
-                User user = secman.getUser(permissions.getOwner());
-                Group group = secman.getGroup(permissions.getOwnerGroup());
-                ostream.writeInt(user.getUID());
-                ostream.writeInt(group.getId());
-            }
-            ostream.writeInt(permissions.getPermissions());
-            if(lockOwnerId > 0)
-                ostream.writeInt(lockOwnerId);
-            else
-                ostream.writeInt(0);
-            
-            ostream.writeInt(maxDepth);
-            for (int i = 0; i < maxDepth; i++) {
-                //System.out.println("k[" + i + "] = " + treeLevelOrder[i]);
-                ostream.writeInt(treeLevelOrder[i]);
-            }
-            ostream.writeInt(children);
-			if(children > 0) {
-			    for(int i = 0; i < children; i++) {
-					ostream.writeInt(StorageAddress.pageFromPointer(childList[i]));
-					ostream.writeShort(StorageAddress.tidFromPointer(childList[i]));
-			    }
-			}
-            if (docType != null) {
-                ostream.writeByte(HAS_DOCTYPE);
-                ((DocumentTypeImpl) docType).write(ostream);
-            } else
-                ostream.writeByte((byte) 0);
-            
-			ostream.writeLong(created);
-			ostream.writeLong(lastModified);
-            ostream.writeUTF(mimeType);
-			ostream.writeInt(pageCount);
-		} catch (IOException e) {
-			LOG.warn("io error while writing document data", e);
-		}
-	}
-
-    public void read(VariableByteInput istream) throws IOException, EOFException {
-		try {
-            docId = istream.readInt();
-            fileName = istream.readUTF();
-
-            final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
-            final int uid = istream.readInt();
-            final int gid = istream.readInt();
-            final int perm = (istream.readInt() & 0777);
-            if (secman == null) {
-                permissions.setOwner(SecurityManager.DBA_USER);
-                permissions.setGroup(SecurityManager.DBA_GROUP);
-            } else {
-                permissions.setOwner(secman.getUser(uid));
-                Group group = secman.getGroup(gid);
-                if (group != null)
-                    permissions.setGroup(group.getName());
-            }
-            permissions.setPermissions(perm);
-            lockOwnerId = istream.readInt();
-            
-            maxDepth = istream.readInt();
-            treeLevelOrder = new int[maxDepth + 1];
-            for (int i = 0; i < maxDepth; i++) {
-                treeLevelOrder[i] = istream.readInt();
-            }
-            children = istream.readInt();
-			childList = new long[children];
-			for (int i = 0; i < children; i++) { 
-				childList[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
-			}
-            
-            if (istream.readByte() == HAS_DOCTYPE) { 
-                docType = new DocumentTypeImpl();
-			    ((DocumentTypeImpl) docType).read(istream);
-            } else
-                docType = null;
-            
-			created = istream.readLong();
-			lastModified = istream.readLong();
-            mimeType = istream.readUTF();
-			if(istream.available() > 0)
-			    pageCount = istream.readInt();
-		} catch (IOException e) {
-			LOG.warn("IO error while reading document data for document " + fileName, e);
-			LOG.warn("Document address is " + StorageAddress.toString(getInternalAddress()));
-		}
-        
-        try {
-            calculateTreeLevelStartPoints();
-        } catch (EXistException e) {
-        }
-	}
-
-	public void setReindexRequired(int level) {
-		this.reindex = level;
-	}
-
-	public void setIndexListener(NodeIndexListener listener) {
-		this.listener = listener;
-	}
-
-	public NodeIndexListener getIndexListener() {
-		return listener;
-	}
-
-	public void clearIndexListener() {
-		listener = NullNodeIndexListener.INSTANCE;	}
-
-
-	public void setOwnerDocument(Document doc) {
-	}
-
-	public QName getQName() {
-		return QName.DOCUMENT_QNAME;
-	}
-
-	public void release() {
-	}
-
-	public short getNodeType() {
-		return Node.DOCUMENT_NODE;
-	}
-
-	public Node getPreviousSibling() {
-		return null;
-	}
-
-	public Node getNextSibling() {
-		return null;
-	}
-
-	public Document getOwnerDocument() {
-		return this;
-	}
+    public void setPermissions(Permission perm) {
+        permissions = perm;
+    }
 
 	/**
 	 * @return
@@ -962,106 +828,260 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return created;
 	}
 
+    /**
+     * @param l
+     */
+    public void setCreated(long l) {
+        created = l;
+        if(lastModified == 0)
+            lastModified = l;
+    }    
+
 	/**
 	 * @return
 	 */
 	public long getLastModified() {
 		return lastModified;
 	}
+    
+    /**
+     * @param l
+     */
+    public void setLastModified(long l) {
+        lastModified = l;
+    }
+    
+    public NodeIndexListener getIndexListener() {
+        return listener;
+    }
+    
+    public void setIndexListener(NodeIndexListener listener) {
+        this.listener = listener;
+    }    
 
-	/**
-	 * @param l
-	 */
-	public void setCreated(long l) {
-		created = l;
-		if(lastModified == 0)
-			lastModified = l;
-	}
+    public void clearIndexListener() {
+        listener = NullNodeIndexListener.INSTANCE;  
+    }
 
-	/**
-	 * @param l
-	 */
-	public void setLastModified(long l) {
-		lastModified = l;
-	}
-	
-	/**
-	 * Returns the update lock associated with this
-	 * resource.
-	 * 
-	 * @return
-	 */
-	public final synchronized Lock getUpdateLock() {
-	    if(updateLock == null)
-	        updateLock = new MultiReadReentrantLock();
-	    return updateLock;
-	}
-	
-	public void incPageCount() {
-	    ++pageCount;
-	}
-	
-	public void decPageCount() {
-	    --pageCount;
-	}
-	
-	/**
-	 * Returns the estimated size of the data in this document.
-	 * 
-	 * As an estimation, the number of pages occupied by the document
-	 * is multiplied with the current page size.
-	 * 
-	 * @return
-	 */
-	public int getContentLength() {
-	    return pageCount * broker.getPageSize();
-	}
-	
-	/**
-	 * Returns the number of pages currently occupied by this document.
-	 * 
-	 * @return
-	 */
-	public int getPageCount() {
-	    return pageCount;
-	}
-	
-	/**
-	 * Set the number of pages currently occupied by this document.
-	 * @param count
-	 */
-	public void setPageCount(int count) {
-	    pageCount = count;
-	}
-	
-	private void resizeChildList() {
-	    long[] newChildList = new long[children];
-	    if(childList != null)
-	        System.arraycopy(childList, 0, newChildList, 0, childList.length);
-	    childList = newChildList;
-	}
-	
-	/**
-	 * Increase the page split count of this document. The number
-	 * of pages that have been split during inserts serves as an
-	 * indicator for the 
-	 *
-	 */
-	public void incSplitCount() {
-		splitCount++;
-	}
-	
-	public int getSplitCount() {
-		return splitCount;
-	}
-	
-	public void setSplitCount(int count) {
-		splitCount = count;
-	}
-	
-	public void triggerDefrag() {
-		splitCount = broker.getFragmentationLimit();
-	}
+    //TODO : what is this "method" designed for ?-pb
+    public void release() {
+    }    
+    
+    /************************************************
+     * 
+     * NodeImpl methods
+     *
+     ************************************************/
+    
+    protected static NodeImpl createNode(long gid, short type) {
+        NodeImpl node;
+        switch (type) {
+            case Node.TEXT_NODE :
+                node = new TextImpl(gid);
+                break;
+            case Node.ELEMENT_NODE :
+                node = new ElementImpl(gid);
+                break;
+            case Node.ATTRIBUTE_NODE :
+                node = new AttrImpl(gid);
+                break;
+            default :
+                LOG.debug("unknown node type");
+                node = null;
+        }
+        return node;
+    }
+    
+    public String getEncoding() {
+        return "UTF-8";
+    } 
+    
+    public void setEncoding(String enc) {
+        // allways  "UTF-8"  !?
+    } 
+    
+    public String getVersion() {
+        return "";
+    }
+    
+    public void setVersion(String version) {
+    }     
+    
+    public boolean getStandalone() {
+        return true;
+    }    
+    
+    public void setStandalone(boolean alone) {
+    }
+    
+    public DocumentType getDoctype() {
+        return docType;
+    }     
+    
+    public void setDocumentType(DocumentType docType) {
+        this.docType = docType;
+    }    
+    
+    public Document getOwnerDocument() {
+        return this;
+    }
+    
+    public void setOwnerDocument(Document doc) {
+    }     
+    
+    public QName getQName() {
+        return QName.DOCUMENT_QNAME;
+    }    
+
+    public short getNodeType() {
+        return Node.DOCUMENT_NODE;
+    }
+
+    public Node getPreviousSibling() {
+        return null;
+    }
+
+    public Node getNextSibling() {
+        return null;
+    }    
+    
+    public Attr createAttribute(String name) throws DOMException {
+        AttrImpl attr = new AttrImpl(new QName(name, "", null), null);
+        attr.setOwnerDocument(this);
+        return attr;
+    }
+
+    public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
+        String name;
+        String prefix;        
+        int p = qualifiedName.indexOf(':');
+        if (p == Constants.STRING_NOT_FOUND) {
+            prefix =null; 
+            name =  qualifiedName;
+        } else {
+            prefix = qualifiedName.substring(0, p);
+            name = qualifiedName.substring(p); 
+        }
+        AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix), null);
+        attr.setOwnerDocument(this);
+        return attr;
+    }
+
+    public CDATASection createCDATASection(String data) throws DOMException {
+        return null;
+    }
+
+    public Comment createComment(String data) {
+        return null;
+    }
+
+    public DocumentFragment createDocumentFragment() throws DOMException {
+        return null;
+    }
+
+    public Element createElement(String tagName) throws DOMException {
+        ElementImpl element = new ElementImpl(new QName(tagName, "", null));
+        element.setOwnerDocument(this);
+        return element;
+    }
+
+    public Element createElementNS(String namespaceURI, String qualifiedName) throws DOMException {
+        String name;
+        String prefix;
+        int p = qualifiedName.indexOf(':');        
+        if (p == Constants.STRING_NOT_FOUND) {
+            prefix =null;
+            name = qualifiedName;            
+        } else {                 
+            prefix = qualifiedName.substring(0, p); 
+            name = qualifiedName.substring(p);            
+        }          
+        ElementImpl element = new ElementImpl(new QName(name, namespaceURI, prefix));
+        element.setOwnerDocument(this);
+        return element;
+    }
+ 
+    public EntityReference createEntityReference(String name) throws DOMException {
+        return null;
+    }
+
+    public ProcessingInstruction createProcessingInstruction(String target, String data)
+        throws DOMException {
+        return null;
+    }
+
+    public Text createTextNode(String data) {
+        TextImpl text = new TextImpl(data);
+        text.setOwnerDocument(this);
+        return text;
+    }
+    
+    /*
+     *  W3C Document-Methods
+     */
+
+    public Element getDocumentElement() {
+        NodeList cl = getChildNodes();
+        for (int i = 0; i < cl.getLength(); i++)
+            if (cl.item(i).getNodeType() == Node.ELEMENT_NODE)
+                return (Element) cl.item(i);
+        return null;
+    }
+
+    public Element getElementById(String elementId) {
+        return null;
+    }
+
+    public NodeList getElementsByTagName(String tagname) {
+        return getElementsByTagNameNS("", tagname);
+    }
+
+    public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
+        DocumentSet docs = new DocumentSet();
+        docs.add(this);
+        QName qname = new QName(localName, namespaceURI, null);
+        return broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null);
+    }
+    
+    public org.w3c.dom.DOMImplementation getImplementation() {
+        return null;
+    } 
+
+    public boolean getStrictErrorChecking() {
+        return false;
+    }
+    
+    public Node adoptNode(Node node) throws DOMException {
+        return node;
+    }    
+
+    public Node importNode(Node importedNode, boolean deep) throws DOMException {
+        return null;
+    }
+
+    public boolean isSupported(String type, String value) {
+        return false;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Node#getParentNode()
+     */    
+    public Node getParentNode() {
+        return null;
+    }    
+    
+    public int getChildCount() {
+        return children;
+    }     
+
+    public void setChildCount(int count) {
+        children = count;
+        if (children == 0)
+            childList = null;
+    }
+    
+    public void setStrictErrorChecking(boolean strict) {
+    }          
 
 	/** ? @see org.w3c.dom.Document#getInputEncoding()
 	 */
@@ -1115,8 +1135,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	/** ? @see org.w3c.dom.Document#setDocumentURI(java.lang.String)
 	 */
 	public void setDocumentURI(String documentURI) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		
+		// maybe TODO - new DOM interfaces - Java 5.0		
 	}
 
 	/** ? @see org.w3c.dom.Document#getDomConfig()
@@ -1129,8 +1148,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	/** ? @see org.w3c.dom.Document#normalizeDocument()
 	 */
 	public void normalizeDocument() {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		
+		// maybe TODO - new DOM interfaces - Java 5.0		
 	}
 
 	/** ? @see org.w3c.dom.Document#renameNode(org.w3c.dom.Node, java.lang.String, java.lang.String)
@@ -1164,8 +1182,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	/** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
 	 */
 	public void setTextContent(String textContent) throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		
+		// maybe TODO - new DOM interfaces - Java 5.0		
 	}
 
 	/** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
