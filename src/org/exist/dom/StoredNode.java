@@ -21,6 +21,8 @@
  */
 package org.exist.dom;
 
+import java.util.Iterator;
+
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
@@ -34,18 +36,22 @@ import org.w3c.dom.Node;
  */
 public class StoredNode extends NodeImpl {
 
+    public final static int NODE_IMPL_UNKNOWN_GID = -1; 
+    public final static int NODE_IMPL_ROOT_NODE_GID = 1;      
     public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
 	
     //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-	protected long gid = 0;
-	protected long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
-	protected short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;
-	protected DocumentImpl ownerDocument = null;
+	private long gid = 0;
+	private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
+	private short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;
+	private DocumentImpl ownerDocument = null;
 
+    //Made this constructor protected since we need it from DocumentImpl -pb
 	private StoredNode() {
 	}
 
 	public StoredNode(short nodeType) {
+        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
 		this(nodeType, 0);
 	}
 
@@ -69,6 +75,10 @@ public class StoredNode extends NodeImpl {
         this.internalAddress = other.internalAddress;
         this.ownerDocument = other.ownerDocument;
     }
+    
+    public byte[] serialize() {
+        return null;
+    }    
     
 	/**
 	 * Read a node from the specified byte array.
@@ -150,7 +160,7 @@ public class StoredNode extends NodeImpl {
 	public boolean equals(Object obj) {
 		if (!(obj instanceof StoredNode))
 			return false;
-		if (((StoredNode) obj).gid == gid)
+		if (((StoredNode) obj).getGID() == getGID())
 			return true;
 		return false;
 	}
@@ -162,7 +172,7 @@ public class StoredNode extends NodeImpl {
 	 */
 	public DBBroker getBroker() {
 		return (DBBroker) ownerDocument.broker;
-	}
+	}    
 
 	/**
 	 *  Get the unique identifier assigned to this node.
@@ -172,6 +182,16 @@ public class StoredNode extends NodeImpl {
 	public long getGID() {
 		return gid;
 	}
+    
+    /**
+     *  Set the unique node identifier of this node.
+     *
+     *@param  gid  The new gID value
+     */
+    public void setGID(long gid) {
+        this.gid = gid;
+    }
+
 
 	/**
 	 *  Get the internal storage address of this node
@@ -181,6 +201,16 @@ public class StoredNode extends NodeImpl {
 	public long getInternalAddress() {
 		return internalAddress;
 	}
+    
+    /**
+     *  Set the internal storage address of this node.
+     *
+     *@param  address  The new internalAddress value
+     */
+    public void setInternalAddress(long address) {
+        internalAddress = address;
+    }
+        
 
 	/**
 	 * @see org.w3c.dom.Node#getNodeType()
@@ -196,23 +226,47 @@ public class StoredNode extends NodeImpl {
 		return ownerDocument;
 	}
 
+    /**
+     *  Set the owner document.
+     *
+     *@param  doc  The new ownerDocument value
+     */
+    public void setOwnerDocument(Document doc) {
+        ownerDocument = (DocumentImpl) doc;
+    }
+    
 	/**
 	 *  Get the unique node identifier of this node's parent node.
 	 *
 	 *@return    The parentGID value
 	 */
 	public long getParentGID() {
-	    return XMLUtil.getParentId(ownerDocument, gid);
+	    return XMLUtil.getParentId((DocumentImpl)getOwnerDocument(), getGID());
 	}
+    
+    public long firstChildID() {
+        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
+        return 0;
+    }
+    
+    /**
+     *  Get the unique node identifier of the last child of this node.
+     *
+     *@return    Description of the Return Value
+     */
+    public long lastChildID() {
+        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
+        return 0;
+    }    
 
 	/**
 	 * @see org.w3c.dom.Node#getParentNode()
 	 */
 	public Node getParentNode() {
-		long pid = getParentGID();
-		if (pid == NodeImpl.NODE_IMPL_UNKNOWN_GID)
+		long pid = getParentGID();       
+		if (pid == NODE_IMPL_UNKNOWN_GID)
             return null;
-        return ownerDocument.getNode(pid);
+        return ((DocumentImpl)getOwnerDocument()).getNode(pid);
 	}
 
 	public NodePath getPath() {
@@ -226,24 +280,47 @@ public class StoredNode extends NodeImpl {
 		}
 		return path;
 	}
+    
+    protected StoredNode getLastNode(StoredNode node) {
+        final DocumentImpl owner = (DocumentImpl) getOwnerDocument();
+        final NodeProxy p = new NodeProxy(owner, node.getGID(), node.getInternalAddress());
+        Iterator iterator = owner.getBroker().getNodeIterator(p);
+        iterator.next();
+        return getLastNode(iterator, node);
+    }
+
+    protected StoredNode getLastNode(Iterator iterator, StoredNode node) {
+        if (node.hasChildNodes()) {
+            final long firstChild = node.firstChildID();
+            final long lastChild = firstChild + node.getChildCount();
+            StoredNode next = null;
+            for (long gid = firstChild; gid < lastChild; gid++) {
+                next = (StoredNode) iterator.next();
+                next.setGID(gid);
+                next = getLastNode(iterator, next);
+            }
+            return next;
+        } else
+            return node;
+    }       
 
 	/**
 	 * @see org.w3c.dom.Node#getPreviousSibling()
 	 */
 	public Node getPreviousSibling() {
-		int level = ownerDocument.getTreeLevel(gid);
+		int level = ownerDocument.getTreeLevel(getGID());
 		if (level == 0)
 			return ownerDocument.getPreviousSibling(this);
 		long pid =
-			(gid - ownerDocument.getLevelStartPoint(level))
+			(getGID() - ownerDocument.getLevelStartPoint(level))
 				/ ownerDocument.getTreeLevelOrder(level)
 				+ ownerDocument.getLevelStartPoint(level - 1);
 		long firstChildId =
 			(pid - ownerDocument.getLevelStartPoint(level - 1))
 				* ownerDocument.getTreeLevelOrder(level)
 				+ ownerDocument.getLevelStartPoint(level);
-		if (gid > firstChildId)
-			return ownerDocument.getNode(gid - 1);
+		if (getGID() > firstChildId)
+			return ownerDocument.getNode(getGID() - 1);
 		return null;
 	}
 
@@ -251,52 +328,25 @@ public class StoredNode extends NodeImpl {
 	 * @see org.w3c.dom.Node#getNextSibling()
 	 */
 	public Node getNextSibling() {
-		int level = ownerDocument.getTreeLevel(gid);
+		int level = ownerDocument.getTreeLevel(getGID());
 		if (level == 0)
 			return ownerDocument.getFollowingSibling(this);
 		long pid =
-			(gid - ownerDocument.getLevelStartPoint(level))
+			(getGID() - ownerDocument.getLevelStartPoint(level))
 				/ ownerDocument.getTreeLevelOrder(level)
 				+ ownerDocument.getLevelStartPoint(level - 1);
 		long firstChildId =
 			(pid - ownerDocument.getLevelStartPoint(level - 1))
 				* ownerDocument.getTreeLevelOrder(level)
 				+ ownerDocument.getLevelStartPoint(level);
-		if (gid < firstChildId + ownerDocument.getTreeLevelOrder(level) - 1)
-			return ownerDocument.getNode(gid + 1);
+		if (getGID() < firstChildId + ownerDocument.getTreeLevelOrder(level) - 1)
+			return ownerDocument.getNode(getGID() + 1);
 		return null;
-	}
-
-	/**
-	 *  Set the unique node identifier of this node.
-	 *
-	 *@param  gid  The new gID value
-	 */
-	public void setGID(long gid) {
-		this.gid = gid;
-	}
-
-	/**
-	 *  Set the internal storage address of this node.
-	 *
-	 *@param  address  The new internalAddress value
-	 */
-	public void setInternalAddress(long address) {
-		internalAddress = address;
-	}
-
-	/**
-	 *  Set the owner document.
-	 *
-	 *@param  doc  The new ownerDocument value
-	 */
-	public void setOwnerDocument(Document doc) {
-		ownerDocument = (DocumentImpl) doc;
 	}
 
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		buf.append(Long.toString(gid));
+		buf.append(Long.toString(getGID()));
 		buf.append('\t');
 		buf.append(getQName());
 		return buf.toString();
@@ -312,5 +362,7 @@ public class StoredNode extends NodeImpl {
 	public void release() {
 		clear();
 		NodeObjectPool.getInstance().returnNode(this);
-	}
+	}     
+
+    
 }

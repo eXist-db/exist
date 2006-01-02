@@ -8,6 +8,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeImpl;
+import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -54,7 +55,7 @@ public class Replace extends Modification {
         LOG.debug("processing replace ...");
         int modifications = children.getLength();
         try {
-            NodeImpl ql[] = selectAndLock();
+            StoredNode ql[] = selectAndLock();
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = broker.getBrokerPool().getNotificationService();
             NodeImpl node;

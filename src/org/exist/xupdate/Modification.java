@@ -33,9 +33,9 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeSet;
+import org.exist.dom.StoredNode;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -180,7 +180,7 @@ public abstract class Modification {
 	 * @return
 	 * @throws LockException
 	 */
-	protected NodeImpl[] selectAndLock() throws LockException, PermissionDeniedException, 
+	protected StoredNode[] selectAndLock() throws LockException, PermissionDeniedException, 
 		EXistException, XPathException {
 	    Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
 	    try {
@@ -194,10 +194,10 @@ public abstract class Modification {
 	        // during the modification
 	        lockedDocuments.lock(true);
 	        
-		    NodeImpl ql[] = new NodeImpl[nl.getLength()];
+		    StoredNode ql[] = new StoredNode[nl.getLength()];
 		    DocumentImpl doc;
 			for (int i = 0; i < ql.length; i++) {
-				ql[i] = (NodeImpl)nl.item(i);
+				ql[i] = (StoredNode)nl.item(i);
 				doc = (DocumentImpl)ql[i].getOwnerDocument();
 				doc.setBroker(broker);
 			}
@@ -249,16 +249,16 @@ public abstract class Modification {
 
 	final static class IndexListener implements NodeIndexListener {
 
-		NodeImpl[] nodes;
+		StoredNode[] nodes;
 
-		public IndexListener(NodeImpl[] nodes) {
+		public IndexListener(StoredNode[] nodes) {
 			this.nodes = nodes;
 		}
 
 		/* (non-Javadoc)
 		 * @see org.exist.dom.NodeIndexListener#nodeChanged(org.exist.dom.NodeImpl)
 		 */
-		public void nodeChanged(NodeImpl node) {
+		public void nodeChanged(StoredNode node) {
 			final long address = node.getInternalAddress();
 			for (int i = 0; i < nodes.length; i++) {
 				if (StorageAddress.equals(nodes[i].getInternalAddress(), address)) {
@@ -290,8 +290,8 @@ public abstract class Modification {
 		* @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		*/
 		public int compare(Object o1, Object o2) {
-			NodeImpl n1 = (NodeImpl) o1;
-			NodeImpl n2 = (NodeImpl) o2;
+			StoredNode n1 = (StoredNode) o1;
+			StoredNode n2 = (StoredNode) o2;
 			if (n1.getInternalAddress() == n2.getInternalAddress())
 				return 0;
 			else if (n1.getInternalAddress() < n2.getInternalAddress())

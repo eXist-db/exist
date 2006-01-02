@@ -221,7 +221,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 					continue;
 				NodeList cl = proxy.getDocument().getChildNodes();
                 for (int j = 0; j < cl.getLength(); j++) {
-                    NodeImpl node = (NodeImpl) cl.item(j);
+                    StoredNode node = (StoredNode) cl.item(j);
     				NodeProxy docElemProxy =
     					new NodeProxy(proxy.getDocument(), node.getGID(), node.getNodeType());
     				docElemProxy.setInternalAddress(node.getInternalAddress());
@@ -249,7 +249,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				} 
 				if (axis != Constants.SELF_AXIS) {
 					domIter = proxy.getDocument().getBroker().getNodeIterator(proxy);
-					NodeImpl node = (NodeImpl) domIter.next();
+					StoredNode node = (StoredNode) domIter.next();
 					node.setOwnerDocument(proxy.getDocument());
 					node.setGID(proxy.getGID());					
 					addChildren(proxy, result, node, domIter, 0);
@@ -262,7 +262,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	private final void addChildren(
 		NodeProxy contextNode,
 		NodeSet result,
-		NodeImpl node,
+		StoredNode node,
 		Iterator iter,
 		int recursions) {
 		if (node.hasChildNodes()) {
@@ -277,8 +277,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 					LOG.debug("DOC == NULL");
 				child.setOwnerDocument(node.getOwnerDocument());
 				child.setGID(node.firstChildID() + i);
-				p = new NodeProxy(child.ownerDocument, child.gid, child.getNodeType());
-				p.setInternalAddress(child.internalAddress);
+				p = new NodeProxy((DocumentImpl)child.getOwnerDocument(), child.getGID(), child.getNodeType());
+				p.setInternalAddress(child.getInternalAddress());
 				p.setMatches(contextNode.getMatches());
 				if (test.matches(child)) {
 					if (((axis == Constants.CHILD_AXIS

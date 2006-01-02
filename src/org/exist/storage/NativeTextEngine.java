@@ -43,9 +43,9 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.Match;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.security.PermissionDeniedException;
@@ -278,7 +278,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		invertedIndex.flush();
 	}
 
-	public void reindex(DocumentImpl document, NodeImpl node) {
+	public void reindex(DocumentImpl document, StoredNode node) {
 		invertedIndex.reindex(document, node);
 	}
 
@@ -318,7 +318,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final TreeSet tokens = new TreeSet();
         final NodeList children = document.getChildNodes();        
         for (int i = 0; i < children.getLength(); i++) {
-            NodeImpl node = (NodeImpl) children.item(i);
+            StoredNode node = (StoredNode) children.item(i);
             Iterator j = broker.getDOMIterator(new NodeProxy(document, node.getGID(), node.getInternalAddress()));
             collect(tokens, j);
         }
@@ -1015,7 +1015,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			}
 		}
 
-		public void reindex(DocumentImpl document, NodeImpl node) {
+		public void reindex(DocumentImpl document, StoredNode node) {
             final short collectionId = document.getCollection().getId();
 		    final Lock lock = dbTokens.getLock();
             for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {

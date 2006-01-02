@@ -23,7 +23,6 @@
 package org.exist.storage.serializers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -37,10 +36,10 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.Match;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.DBBroker;
@@ -62,9 +61,7 @@ import org.xml.sax.SAXException;
 public class NativeSerializer extends Serializer {
 
     public final static int EXIST_ID_NONE = 0;
-
     public final static int EXIST_ID_ELEMENT = 1;
-
     public final static int EXIST_ID_ALL = 2;
 
     // private final static AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
@@ -112,14 +109,14 @@ public class NativeSerializer extends Serializer {
     	if (generateDocEvent) receiver.startDocument();
 		if (doc.getDoctype()!=null){
 			if (getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no").equals("yes")) {
-				final NodeImpl n = (NodeImpl) doc.getDoctype();
+				final StoredNode n = (StoredNode) doc.getDoctype();
 				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), n
 						.getGID(), true, null, new TreeSet());
 			}
 		}
     	// iterate through children
     	for (int i = 0; i < children.getLength(); i++) {
-    		final NodeImpl n = (NodeImpl) children.item(i);
+    		final StoredNode n = (StoredNode) children.item(i);
     		final NodeProxy p = new NodeProxy((DocumentImpl) n
     				.getOwnerDocument(), n.getGID(), n.getInternalAddress());
     		Iterator domIter = broker.getNodeIterator(p);
@@ -134,10 +131,10 @@ public class NativeSerializer extends Serializer {
     	if (generateDocEvent) receiver.endDocument();
     }
     
-    protected void serializeToReceiver(NodeImpl node, Iterator iter,
+    protected void serializeToReceiver(StoredNode node, Iterator iter,
             DocumentImpl doc, long gid, boolean first, Match match, Set namespaces) 
     throws SAXException {
-        if (node == null) node = (NodeImpl) iter.next();
+        if (node == null) node = (StoredNode) iter.next();
         if (node == null) return;
         // char ch[];
         String cdata;
@@ -174,10 +171,10 @@ public class NativeSerializer extends Serializer {
             int children = node.getChildCount();
             int count = 0;
             // int childLen;
-            NodeImpl child = null;
+            StoredNode child = null;
             if (children > 0) gid = XMLUtil.getFirstChildId(doc, gid);
             while (count < children) {
-                child = (NodeImpl) iter.next();
+                child = (StoredNode) iter.next();
                 if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
                     if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) > 0)
                         cdata = processAttribute(((AttrImpl) child).getValue(),
@@ -195,7 +192,7 @@ public class NativeSerializer extends Serializer {
             while (count < children) {
                 serializeToReceiver(child, iter, doc, gid++, false, match, namespaces);
                 if (++count < children) {
-                    child = (NodeImpl) iter.next();
+                    child = (StoredNode) iter.next();
                 } else
                     break;
             }

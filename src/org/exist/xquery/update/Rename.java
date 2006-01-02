@@ -29,6 +29,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NotificationService;
@@ -102,7 +103,7 @@ public class Rename extends Modification {
     		try {
                 TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
                 Txn transaction = transact.beginTransaction();
-                NodeImpl[] ql = selectAndLock(inSeq.toNodeSet());
+                StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
                 DocumentImpl doc = null;
                 DocumentSet modifiedDocs = new DocumentSet();
                 NodeImpl node;

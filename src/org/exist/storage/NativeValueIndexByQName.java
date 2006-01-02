@@ -31,9 +31,9 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.DBException;
@@ -148,7 +148,7 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 	 * @param node the DOM node
 	 * @param keyFactory a {@link QNameValueIndexKeyFactory}
 	 */
-	private void updatePendingIndexEntry(NodeImpl node, ValueIndexKeyFactory keyFactory) {
+	private void updatePendingIndexEntry(StoredNode node, ValueIndexKeyFactory keyFactory) {
 		if(keyFactory == null)
             return;		// skip
 		LongLinkedList buf;

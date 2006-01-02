@@ -23,18 +23,17 @@
 package org.exist.xquery.update;
 
 import org.exist.EXistException;
-import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeImpl;
+import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
-import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -43,7 +42,6 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.update.Modification.IndexListener;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
@@ -52,7 +50,6 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 /**
  * @author wolf
@@ -96,7 +93,7 @@ public class Replace extends Modification {
 		try {
             TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
             Txn transaction = transact.beginTransaction();
-            NodeImpl ql[] = selectAndLock(inSeq.toNodeSet());
+            StoredNode ql[] = selectAndLock(inSeq.toNodeSet());
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
             NodeImpl node;

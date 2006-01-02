@@ -127,9 +127,9 @@ public class TextImpl extends CharacterDataImpl implements Text {
             result.append( "<exist:text " );
             result.append( "xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" " );
             result.append( "exist:id=\"" );
-            result.append( gid );
+            result.append( getGID() );
             result.append( "\" exist:source=\"" );
-            result.append( ownerDocument.getFileName() );
+            result.append( ((DocumentImpl)getOwnerDocument()).getFileName() );
             result.append( "\">" );
             result.append( getData() );
             result.append( "</exist:text>" );

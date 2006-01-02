@@ -28,18 +28,18 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.StoredNode;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.serializers.Serializer;
-import org.exist.storage.txn.Txn;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.AbstractExpression;
 import org.exist.xquery.Cardinality;
@@ -116,7 +116,7 @@ public abstract class Modification extends AbstractExpression {
 	 * @return
 	 * @throws LockException
 	 */
-	protected NodeImpl[] selectAndLock(NodeSet nodes) throws LockException, PermissionDeniedException, 
+	protected StoredNode[] selectAndLock(NodeSet nodes) throws LockException, PermissionDeniedException, 
 		XPathException {
 	    Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
 	    try {
@@ -129,10 +129,10 @@ public abstract class Modification extends AbstractExpression {
 	        // during the modification
 	        lockedDocuments.lock(true);
 	        
-		    NodeImpl ql[] = new NodeImpl[nodes.getLength()];
+		    StoredNode ql[] = new StoredNode[nodes.getLength()];
 		    DocumentImpl doc;
 			for (int i = 0; i < ql.length; i++) {
-				ql[i] = (NodeImpl)nodes.item(i);
+				ql[i] = (StoredNode)nodes.item(i);
 				doc = (DocumentImpl)ql[i].getOwnerDocument();
 				doc.setBroker(context.getBroker());
 			}
@@ -204,16 +204,16 @@ public abstract class Modification extends AbstractExpression {
 	
     final static class IndexListener implements NodeIndexListener {
 
-		NodeImpl[] nodes;
+		StoredNode[] nodes;
 
-		public IndexListener(NodeImpl[] nodes) {
+		public IndexListener(StoredNode[] nodes) {
 			this.nodes = nodes;
 		}
 
 		/* (non-Javadoc)
 		 * @see org.exist.dom.NodeIndexListener#nodeChanged(org.exist.dom.NodeImpl)
 		 */
-		public void nodeChanged(NodeImpl node) {
+		public void nodeChanged(StoredNode node) {
 			long address = node.getInternalAddress();
 			for (int i = 0; i < nodes.length; i++) {
 				if (StorageAddress.equals(nodes[i].getInternalAddress(), address)) {

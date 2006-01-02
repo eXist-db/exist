@@ -16,5 +16,5 @@ public interface NodeIndexListener {
 	 * 
 	 * @param node
 	 */
-	void nodeChanged(NodeImpl node);
+	void nodeChanged(StoredNode node);
 }
