@@ -81,49 +81,47 @@ public abstract class NodeImpl implements Node, QNameable {
     }
     
     public void insertAfter(Txn transaction, NodeList nodes, Node refChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "insertAfter(Txn transaction, NodeList nodes, Node refChild) not implemented on class " + getClass().getName());
     } 
 
     public int getChildCount() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getChildCount() not implemented on class " + getClass().getName());
     }
 
     public NodeList getChildNodes() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getChildNodes() not implemented on class " + getClass().getName());
     } 
 
 	/**
 	 * @see org.w3c.dom.Node#getFirstChild()
 	 */
-	public Node getFirstChild() {
-        //TODO : throw the exception. For now, we return "something" -pb 
-        return null;
-        //throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+    public Node getFirstChild() {       
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getFirstChild() not implemented on class " + getClass().getName());
 	}
 	
 	/**
 	 * @see org.w3c.dom.Node#getLastChild()
 	 */
 	public Node getLastChild() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getLastChild() not implemented on class " + getClass().getName());
 	}
     
     /**
      * @see org.w3c.dom.Node#hasAttributes()
      */
     public boolean hasAttributes() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "hasAttributes() not implemented on class " + getClass().getName());
     }
     
     public short getAttributesCount() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getAttributesCount() not implemented on class " + getClass().getName());
     }    
     
     /**
      * @see org.w3c.dom.Node#getAttributes()
      */
     public NamedNodeMap getAttributes() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getAttributes()  not implemented on class " + getClass().getName());
     }
 
     /**
@@ -132,14 +130,14 @@ public abstract class NodeImpl implements Node, QNameable {
      *@param  attribNum  The new attributes value
      */
     public void setAttributes(short attribNum) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setAttributes(short attribNum) not implemented on class " + getClass().getName());
     }
     
     /**
      * @see org.w3c.dom.Node#getNodeValue()
      */
     public String getNodeValue() throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getNodeValue() not implemented on class " + getClass().getName());
     } 
     
     /**
@@ -149,16 +147,14 @@ public abstract class NodeImpl implements Node, QNameable {
      *@exception  DOMException  Description of the Exception
      */
     public void setNodeValue(String value) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setNodeValue(String value) not implemented on class " + getClass().getName());
     }
     
     /**
      * @see org.w3c.dom.Node#hasChildNodes()
      */
     public boolean hasChildNodes() {
-        //TODO : throw the exception. For now, we return "something" -pb 
-        return false;
-        //throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "hasChildNodes() not implemented on class " + getClass().getName());
     } 
 
     /**
@@ -167,7 +163,7 @@ public abstract class NodeImpl implements Node, QNameable {
      *@param  count  The new childCount value
      */
     protected void setChildCount(int count) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setChildCount(int count) not implemented on class " + getClass().getName());
     }
     
     /**
@@ -176,21 +172,21 @@ public abstract class NodeImpl implements Node, QNameable {
      *@param  name  The new nodeName value
      */
     public void setNodeName(QName name) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setNodeName(QName name) not implemented on class " + getClass().getName());
     }
     
     /**
      * @see org.w3c.dom.Node#isSupported(java.lang.String, java.lang.String)
      */
     public boolean isSupported(String key, String value) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isSupported(String key, String value) not implemented on class " + getClass().getName());
     }
 
     /**
      * @see org.w3c.dom.Node#normalize()
      */
     public void normalize() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "normalize() not implemented on class " + getClass().getName());
     }  
     
     /**
@@ -200,79 +196,79 @@ public abstract class NodeImpl implements Node, QNameable {
      * @return boolean
      */
     public boolean supports(String feature, String version) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "supports(String feature, String version) not implemented on class " + getClass().getName());
     }  
 
 	/** ? @see org.w3c.dom.Node#getBaseURI()
 	 */
 	public String getBaseURI() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getBaseURI() not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
 	 */
 	public short compareDocumentPosition(Node other) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "compareDocumentPosition(Node other) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#getTextContent()
 	 */
 	public String getTextContent() throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getTextContent() not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
 	 */
 	public void setTextContent(String textContent) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());		
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setTextContent(String textContent) not implemented on class " + getClass().getName());		
 	}
 
 	/** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
 	 */
 	public boolean isSameNode(Node other) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isSameNode(Node other) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
 	 */
 	public String lookupPrefix(String namespaceURI) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "lookupPrefix(String namespaceURI) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
 	 */
 	public boolean isDefaultNamespace(String namespaceURI) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isDefaultNamespace(String namespaceURI) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
 	 */
 	public String lookupNamespaceURI(String prefix) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "lookupNamespaceURI(String prefix) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
 	 */
 	public boolean isEqualNode(Node arg) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isEqualNode(Node arg) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
 	 */
 	public Object getFeature(String feature, String version) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getFeature(String feature, String version) not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
 	 */
 	public Object getUserData(String key) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getUserData(String key) not implemented on class " + getClass().getName());
 	}
     
     /** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
      */
     public Object setUserData(String key, Object data, UserDataHandler handler) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setUserData(String key, Object data, UserDataHandler handler) not implemented on class " + getClass().getName());
     }
     
     /**

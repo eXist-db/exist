@@ -74,5 +74,15 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         comment.appendData( cdata );
         return comment;
     }
+    
+    public boolean hasChildNodes() {
+        return false;        
+    }
+    
+    public Node getFirstChild() {   
+        //bad implementations don't call hasChildNodes before
+        return null;
+    }        
+ 
 }
 

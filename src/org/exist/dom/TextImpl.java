@@ -142,6 +142,15 @@ public class TextImpl extends CharacterDataImpl implements Text {
     public String toString() {
         return super.toString();
     }
+    
+    public boolean hasChildNodes() {
+        return false;        
+    }
+    
+    public Node getFirstChild() {   
+        //bad implementations don't call hasChildNodes before
+        return null;
+    }    
 
 	/** ? @see org.w3c.dom.Text#isElementContentWhitespace()
 	 */
