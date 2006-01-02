@@ -245,16 +245,65 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		}
 		return node;
 	}
-
-	public Node adoptNode(Node node) throws DOMException {
-		return node;
-	}
-
+    
 	public void appendChild(StoredNode child) throws DOMException {
 		++children;
 		resizeChildList();
 		childList[children - 1] = child.getInternalAddress();
 	}
+    
+   public long getLevelStartPoint(int level) {
+        if (level > maxDepth || level < 0)
+            return -1;
+        return treeLevelStartPoints[level];
+    }    
+
+    public int getTreeLevel(long gid) {
+        for (int i = 0; i < maxDepth; i++) {
+            if ((gid >= treeLevelStartPoints[i])
+                && (i + 1 == maxDepth || gid < treeLevelStartPoints[i + 1]))
+                return i;
+        }
+        return -1;
+    }
+
+    public int getTreeLevelOrder(int level) {
+        if (level > maxDepth) {
+            LOG.fatal("tree level " + level + " does not exist");
+            return -1;
+        }
+        return treeLevelOrder[level];
+    }
+
+    public int getTreeLevelOrder(long gid) {
+        int order = 0;
+        for (int i = 0; i < maxDepth; i++)
+            if (gid >= treeLevelStartPoints[i] && gid < treeLevelStartPoints[i + 1]) {
+                order = treeLevelOrder[i];
+                break;
+            }
+        return order;
+    }    
+
+    public void setMaxDepth(int depth) {
+        maxDepth = depth;
+        if (treeLevelOrder.length <= maxDepth) {
+            int temp[] = new int[maxDepth + 1];
+            System.arraycopy(treeLevelOrder, 0, temp, 0, treeLevelOrder.length);
+            temp[maxDepth] = 0;
+            treeLevelOrder = temp;
+        }
+    }
+
+    public void incMaxDepth() {
+        ++maxDepth;
+        if (treeLevelOrder.length < maxDepth) {
+            int temp[] = new int[maxDepth];
+            System.arraycopy(treeLevelOrder, 0, temp, 0, maxDepth - 1);
+            treeLevelOrder = temp;
+            treeLevelOrder[maxDepth - 1] = 0;
+        }
+    }    
 	
 	public void calculateTreeLevelStartPoints() throws EXistException {
 		calculateTreeLevelStartPoints(true);
@@ -290,6 +339,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		buf.append(" ]");
 		return buf.toString();
 	}
+    
+    public Node adoptNode(Node node) throws DOMException {
+        return node;
+    }
 	
 	public final int compareTo(Object other) {
 		final long otherId = ((DocumentImpl)other).docId;
@@ -308,10 +361,17 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
-		int p = qualifiedName.indexOf(':');
-		String name = (p != Constants.STRING_NOT_FOUND) ? qualifiedName.substring(p) : qualifiedName;
-		String prefix = (p != Constants.STRING_NOT_FOUND) ? qualifiedName.substring(0, p) : null; 
-		AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix), null);
+        String name;
+        String prefix;        
+        int p = qualifiedName.indexOf(':');
+        if (p == Constants.STRING_NOT_FOUND) {
+            prefix =null; 
+            name =  qualifiedName;
+        } else {
+            prefix = qualifiedName.substring(0, p);
+            name = qualifiedName.substring(p); 
+        }
+        AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix), null);
 		attr.setOwnerDocument(this);
 		return attr;
 	}
@@ -335,14 +395,21 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public Element createElementNS(String namespaceURI, String qualifiedName) throws DOMException {
-		int p = qualifiedName.indexOf(':');
-		String name = (p != Constants.STRING_NOT_FOUND) ? qualifiedName.substring(p) : qualifiedName;
-		String prefix = (p != Constants.STRING_NOT_FOUND) ? qualifiedName.substring(0, p) : null;
+        String name;
+        String prefix;
+        int p = qualifiedName.indexOf(':');        
+        if (p == Constants.STRING_NOT_FOUND) {
+            prefix =null;
+            name = qualifiedName;            
+        } else {                 
+            prefix = qualifiedName.substring(0, p); 
+            name = qualifiedName.substring(p);            
+        }          
 		ElementImpl element = new ElementImpl(new QName(name, namespaceURI, prefix));
 		element.setOwnerDocument(this);
 		return element;
 	}
-
+ 
 	public EntityReference createEntityReference(String name) throws DOMException {
 		return null;
 	}
@@ -357,18 +424,166 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		text.setOwnerDocument(this);
 		return text;
 	}
-
-	protected NodeList findElementsByTagName(StoredNode root, QName qname) {
-		DocumentSet docs = new DocumentSet();
-		docs.add(this);
-		NodeProxy p = new NodeProxy(this, root.getGID(), root.getInternalAddress());
-		NodeSelector selector = new DescendantSelector(p, false);
-		return (NodeSet) broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
-	}
-
+    
 	public int getChildCount() {
 		return children;
 	}
+    
+    public DocumentType getDoctype() {
+        return docType;
+    }    
+    
+    protected NodeList findElementsByTagName(StoredNode root, QName qname) {
+        DocumentSet docs = new DocumentSet();
+        docs.add(this);
+        NodeProxy p = new NodeProxy(this, root.getGID(), root.getInternalAddress());
+        NodeSelector selector = new DescendantSelector(p, false);
+        return (NodeSet) broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
+    } 
+
+    public DBBroker getBroker() {
+        return broker;
+    }
+
+    public long getGID() {
+        return 0;
+    }
+
+    public void setGID(long gid) {
+    }
+
+    public long getInternalAddress() {
+        return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeImpl#setInternalAddress(long)
+     */
+    public void setInternalAddress(long address) {
+    }    
+
+    public long getParentGID() {
+        return StoredNode.NODE_IMPL_UNKNOWN_GID;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeImpl#updateChild(org.w3c.dom.Node, org.w3c.dom.Node)
+     */
+    public void updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
+        if (!(oldChild instanceof StoredNode))
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
+        final StoredNode oldNode = (StoredNode) oldChild;
+        final StoredNode newNode = (StoredNode) newChild;
+        final StoredNode previousNode = (StoredNode) oldNode.getPreviousSibling();      
+        if (previousNode == null)            
+            throw new DOMException(DOMException.NOT_FOUND_ERR, "No previous sibling for the old child");
+        if (oldChild.getNodeType() == Node.ELEMENT_NODE) {
+            // replace the document-element
+            //TODO : be more precise in the type test -pb
+            if (newChild.getNodeType() != Node.ELEMENT_NODE)
+                throw new DOMException(
+                    DOMException.INVALID_MODIFICATION_ERR,
+                    "A node replacing the document root needs to be an element");
+            broker.removeNode(transaction, oldNode, oldNode.getPath(), null);
+            broker.endRemove();
+            newNode.setGID(oldNode.getGID());
+            broker.insertAfter(null, previousNode, newNode);
+            NodePath path = newNode.getPath();
+            broker.index(transaction, newNode, path);
+            broker.endElement(newNode, path, null);
+            broker.flush();
+        } else {
+            broker.removeNode(transaction, oldNode, oldNode.getPath(), null);
+            broker.endRemove();
+            //TOUNDERSTAND : what are the semantics of this 0 ? -pb            
+            newNode.setGID(0);
+            broker.insertAfter(transaction, previousNode, newNode);
+        }
+    }
+
+    /*
+     * @see org.exist.dom.NodeImpl#insertBefore(org.w3c.dom.NodeList, org.w3c.dom.Node)
+     */
+    public void insertBefore(NodeList nodes, Node refChild) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
+        /*
+        if (!(refChild instanceof StoredNode))
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
+        StoredNode ref = (StoredNode) refChild;
+        long next, last = -1;
+        int idx = -1;
+        for(int i = children - 1; i >= 0; i--) {
+            next = childList[i];
+            if (StorageAddress.equals(ref.internalAddress, next)) {
+                idx = i - 1;
+                break;
+            }
+        }
+        if (idx < 0)
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "reference node not found");
+        last = childList[idx];
+        StoredNode prev = (StoredNode) broker.objectWith(
+                new NodeProxy(this, NodeProxy.UNKNOWN_NODE_GID, last));
+        for (int i = 0; i < nodes.getLength(); i++) {
+            prev = (StoredNode) appendChild(null, prev, nodes.item(i));
+            ++children;
+            resizeChildList();
+            childList[++idx] = prev.internalAddress;
+        }
+        broker.storeDocument(null, this);
+        */
+    }
+
+    public void insertAfter(NodeList nodes, Node refChild) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
+        /*
+        if (!(refChild instanceof StoredNode))
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
+        StoredNode ref = (StoredNode) refChild;
+        long next, last = -1;
+        int idx = -1;
+        for(int i = 0; i < children; i++) {
+            next = childList[i];
+            if (StorageAddress.equals(ref.internalAddress, next)) {
+                last = next;
+                idx = i + 1;
+                break;
+            }
+        }
+        if (last < 0)
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "reference node not found");
+        StoredNode prev = getLastNode( (StoredNode) broker.objectWith(
+                new NodeProxy(this, NodeProxy.UNKNOWN_NODE_GID, last)) );
+        for (int i = 0; i < nodes.getLength(); i++) {
+            prev = (StoredNode) appendChild(null, prev, nodes.item(i));
+            ++children;
+            resizeChildList();
+            childList[idx] = prev.internalAddress;
+        }
+        broker.storeDocument(null, this);
+        */
+    }
+
+    private Node appendChild(Txn transaction, StoredNode last, Node child) throws DOMException {
+        switch (child.getNodeType()) {
+            case Node.PROCESSING_INSTRUCTION_NODE :
+                final ProcessingInstructionImpl pi = new ProcessingInstructionImpl(0);
+                pi.setTarget(((ProcessingInstruction) child).getTarget());
+                pi.setData(((ProcessingInstruction) child).getData());
+                pi.setOwnerDocument(this);              
+                broker.insertAfter(transaction, last, pi);
+                return pi;
+            case Node.COMMENT_NODE :
+                final CommentImpl comment = new CommentImpl(0, ((Comment) child).getData());
+                comment.setOwnerDocument(this);
+                broker.insertAfter(transaction, last, comment);
+                return comment;
+            default :
+                throw new DOMException(
+                    DOMException.INVALID_MODIFICATION_ERR,
+                    "you cannot append a node of this type");
+        }
+    }    
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getFirstChild()
@@ -430,10 +645,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return docId;
 	}
 
-	public DocumentType getDoctype() {
-		return docType;
-	}
-
 	/*
 	 *  W3C Document-Methods
 	 */
@@ -479,11 +690,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return null;
 	}
 
-	public long getLevelStartPoint(int level) {
-		if (level > maxDepth || level < 0)
-			return -1;
-		return treeLevelStartPoints[level];
-	}
 
 	public int getMaxDepth() {
 		return maxDepth;
@@ -519,33 +725,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public SymbolTable getSymbols() {
 		return broker.getSymbols();
-	}
-
-	public int getTreeLevel(long gid) {
-		for (int i = 0; i < maxDepth; i++) {
-			if ((gid >= treeLevelStartPoints[i])
-				&& (i + 1 == maxDepth || gid < treeLevelStartPoints[i + 1]))
-				return i;
-		}
-		return -1;
-	}
-
-	public int getTreeLevelOrder(int level) {
-		if (level > maxDepth) {
-			LOG.fatal("tree level " + level + " does not exist");
-			return -1;
-		}
-		return treeLevelOrder[level];
-	}
-
-	public int getTreeLevelOrder(long gid) {
-		int order = 0;
-		for (int i = 0; i < maxDepth; i++)
-			if (gid >= treeLevelStartPoints[i] && gid < treeLevelStartPoints[i + 1]) {
-				order = treeLevelOrder[i];
-				break;
-			}
-		return order;
 	}
 
 	/* (non-Javadoc)
@@ -591,27 +770,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
-	}
-
-	public void setMaxDepth(int depth) {
-		maxDepth = depth;
-		if (treeLevelOrder.length <= maxDepth) {
-			int temp[] = new int[maxDepth + 1];
-			System.arraycopy(treeLevelOrder, 0, temp, 0, treeLevelOrder.length);
-			temp[maxDepth] = 0;
-			treeLevelOrder = temp;
-		}
-	}
-
-	public void incMaxDepth() {
-		++maxDepth;
-		if (treeLevelOrder.length < maxDepth) {
-			int temp[] = new int[maxDepth];
-			System.arraycopy(treeLevelOrder, 0, temp, 0, maxDepth - 1);
-			treeLevelOrder = temp;
-			treeLevelOrder[maxDepth - 1] = 0;
-		}
-	}
+	} 
 
 	public void setUserLock(User user) {
 		lockOwnerId = (user == null ? 0 : user.getUID());
@@ -745,7 +904,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			    pageCount = istream.readInt();
 		} catch (IOException e) {
 			LOG.warn("IO error while reading document data for document " + fileName, e);
-			LOG.warn("Document address is " + StorageAddress.toString(getAddress()));
+			LOG.warn("Document address is " + StorageAddress.toString(getInternalAddress()));
 		}
         
         try {
@@ -767,34 +926,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public void clearIndexListener() {
-		listener = NullNodeIndexListener.INSTANCE;
-	}
+		listener = NullNodeIndexListener.INSTANCE;	}
 
-	public void setAddress(long address) {
-	}
-
-	public long getAddress() {
-		return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
-	}
-
-	public DBBroker getBroker() {
-		return broker;
-	}
-
-	public long getGID() {
-		return 0;
-	}
-
-	public void setGID(long gid) {
-	}
-
-	public long getInternalAddress() {
-		return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
-	}
-
-	public long getParentGID() {
-		return StoredNode.NODE_IMPL_UNKNOWN_GID;
-	}
 
 	public void setOwnerDocument(Document doc) {
 	}
@@ -820,135 +953,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public Document getOwnerDocument() {
 		return this;
-	}
-	
-    /* (non-Javadoc)
-     * @see org.exist.dom.NodeImpl#setInternalAddress(long)
-     */
-    public void setInternalAddress(long address) {
-    }
-
-	/* (non-Javadoc)
-	 * @see org.exist.dom.NodeImpl#updateChild(org.w3c.dom.Node, org.w3c.dom.Node)
-	 */
-	public void updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
-		if (!(oldChild instanceof StoredNode))
-			throw new DOMException(
-                    DOMException.WRONG_DOCUMENT_ERR,
-				"node does not belong to this document");
-		StoredNode old = (StoredNode) oldChild;
-		StoredNode  newNode = (StoredNode) newChild;
-		StoredNode previous = (StoredNode) old.getPreviousSibling();		
-		if (previous == null)            
-            throw new DOMException(DOMException.NOT_FOUND_ERR, "No previous sibling for the old child");
-		if (oldChild.getNodeType() == Node.ELEMENT_NODE) {
-			// replace the document-element
-			if (newChild.getNodeType() != Node.ELEMENT_NODE)
-				throw new DOMException(
-					DOMException.INVALID_MODIFICATION_ERR,
-					"a node replacing the document root needs to be an element");
-			broker.removeNode(transaction, old, old.getPath(), null);
-			broker.endRemove();
-			newNode.setGID(old.getGID());
-			broker.insertAfter(null, previous, newNode);
-			NodePath path = newNode.getPath();
-			broker.index(transaction, newNode, path);
-			broker.endElement(newNode, path, null);
-			broker.flush();
-		} else {
-			broker.removeNode(transaction, old, old.getPath(), null);
-			broker.endRemove();
-            //TOUNDERSTAND : what are the semantics of this 0 ? -pb            
-			newNode.setGID(0);
-			broker.insertAfter(transaction, previous, newNode);
-		}
-	}
-
-	/*
-	 * @see org.exist.dom.NodeImpl#insertBefore(org.w3c.dom.NodeList, org.w3c.dom.Node)
-	 */
-	public void insertBefore(NodeList nodes, Node refChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
-        /*
-		if (!(refChild instanceof StoredNode))
-			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
-		StoredNode ref = (StoredNode) refChild;
-		long next, last = -1;
-		int idx = -1;
-		for(int i = children - 1; i >= 0; i--) {
-		    next = childList[i];
-			if (StorageAddress.equals(ref.internalAddress, next)) {
-				idx = i - 1;
-				break;
-			}
-		}
-		if (idx < 0)
-			throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "reference node not found");
-		last = childList[idx];
-		StoredNode prev = (StoredNode) broker.objectWith(
-				new NodeProxy(this, NodeProxy.UNKNOWN_NODE_GID, last));
-		for (int i = 0; i < nodes.getLength(); i++) {
-			prev = (StoredNode) appendChild(null, prev, nodes.item(i));
-			++children;
-			resizeChildList();
-			childList[++idx] = prev.internalAddress;
-		}
-		broker.storeDocument(null, this);
-        */
-	}
-
-	public void insertAfter(NodeList nodes, Node refChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
-        /*
-		if (!(refChild instanceof StoredNode))
-			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
-		StoredNode ref = (StoredNode) refChild;
-		long next, last = -1;
-		int idx = -1;
-		for(int i = 0; i < children; i++) {
-			next = childList[i];
-			if (StorageAddress.equals(ref.internalAddress, next)) {
-				last = next;
-				idx = i + 1;
-				break;
-			}
-		}
-		if (last < 0)
-			throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "reference node not found");
-		StoredNode prev = getLastNode( (StoredNode) broker.objectWith(
-				new NodeProxy(this, NodeProxy.UNKNOWN_NODE_GID, last)) );
-		for (int i = 0; i < nodes.getLength(); i++) {
-			prev = (StoredNode) appendChild(null, prev, nodes.item(i));
-			++children;
-			resizeChildList();
-			childList[idx] = prev.internalAddress;
-		}
-		broker.storeDocument(null, this);
-        */
-	}
-
-	private Node appendChild(Txn transaction, StoredNode last, Node child) throws DOMException {
-		// String ns, prefix;
-		// Attr attr;
-		switch (child.getNodeType()) {
-			case Node.PROCESSING_INSTRUCTION_NODE :
-				final ProcessingInstructionImpl pi = new ProcessingInstructionImpl(0);
-				pi.setTarget(((ProcessingInstruction) child).getTarget());
-				pi.setData(((ProcessingInstruction) child).getData());
-				pi.setOwnerDocument(this);
-				//insert the node
-				broker.insertAfter(transaction, last, pi);
-				return pi;
-			case Node.COMMENT_NODE :
-				final CommentImpl comment = new CommentImpl(0, ((Comment) child).getData());
-				comment.setOwnerDocument(this);
-				broker.insertAfter(transaction, last, comment);
-				return comment;
-			default :
-				throw new DOMException(
-					DOMException.INVALID_MODIFICATION_ERR,
-					"you cannot append a node of this type");
-		}
 	}
 
 	/**

@@ -48,7 +48,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
@@ -1566,11 +1565,11 @@ public class NativeBroker extends DBBroker {
 			
 			doc.copyChildren(tempDoc);
 			doc.setSplitCount(0);
-			doc.setAddress(BFile.UNKNOWN_ADDRESS);
+			doc.setInternalAddress(BFile.UNKNOWN_ADDRESS);
 			doc.setPageCount(tempDoc.getPageCount());
 			
 			storeDocument(transaction, doc);
-			LOG.debug("new doc address = " + StorageAddress.toString(doc.getAddress()));
+			LOG.debug("new doc address = " + StorageAddress.toString(doc.getInternalAddress()));
 			closeDocument();
 //			new DOMTransaction(this, domDb, Lock.READ_LOCK) {
 //				public Object start() throws ReadOnlyException {
@@ -3244,7 +3243,7 @@ public class NativeBroker extends DBBroker {
                 else
                     doc = new DocumentImpl(NativeBroker.this, collection);
                 doc.read(istream);
-                doc.setAddress(pointer);
+                doc.setInternalAddress(pointer);
                 collection.addDocument(null, NativeBroker.this, doc);
             } catch (EOFException e) {
                 LOG.debug("EOFException while reading document data", e);

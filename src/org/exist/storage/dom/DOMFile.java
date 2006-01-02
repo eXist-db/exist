@@ -1619,7 +1619,7 @@ public class DOMFile extends BTree implements Lockable {
                 LOG.debug(debugPageContents(page));
 		}
 		buf.append("; Document metadata at "
-				+ StorageAddress.toString(doc.getAddress()));
+				+ StorageAddress.toString(doc.getInternalAddress()));
 		return buf.toString();
 	}
 
