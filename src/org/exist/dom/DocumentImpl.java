@@ -443,15 +443,18 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     }    
     
    public long getLevelStartPoint(int level) {
-        if (level > maxDepth || level < 0)
+        if (level > maxDepth || level < 0) {
+            LOG.fatal("tree level " + level + " does not exist");
             return -1;
+        }
         return treeLevelStartPoints[level];
     }    
 
     public int getTreeLevel(long gid) {
         for (int i = 0; i < maxDepth; i++) {
-            if ((gid >= treeLevelStartPoints[i])
-                && (i + 1 == maxDepth || gid < treeLevelStartPoints[i + 1]))
+            if (gid < treeLevelStartPoints[i])
+                continue;
+            if (i + 1 == maxDepth || gid < treeLevelStartPoints[i + 1])
                 return i;
         }
         return -1;
@@ -467,11 +470,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
     public int getTreeLevelOrder(long gid) {
         int order = 0;
-        for (int i = 0; i < maxDepth; i++)
-            if (gid >= treeLevelStartPoints[i] && gid < treeLevelStartPoints[i + 1]) {
+        for (int i = 0; i < maxDepth; i++) {
+            if (gid < treeLevelStartPoints[i])
+                continue;
+            if (gid < treeLevelStartPoints[i + 1]) {
                 order = treeLevelOrder[i];
                 break;
             }
+        }
         return order;
     }    
 
