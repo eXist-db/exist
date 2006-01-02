@@ -268,18 +268,6 @@ public class StoredNode extends NodeImpl {
             return null;
         return ((DocumentImpl)getOwnerDocument()).getNode(pid);
 	}
-
-	public NodePath getPath() {
-		NodePath path = new NodePath();
-		if (nodeType != ATTRIBUTE_NODE)
-			path.addComponent(getQName());
-		NodeImpl parent = (NodeImpl)getParentNode();
-		while (parent != null && parent.getNodeType() != DOCUMENT_NODE) {
-		    path.addComponentAtStart(parent.getQName());
-			parent = (NodeImpl)parent.getParentNode();
-		}
-		return path;
-	}
     
     protected StoredNode getLastNode(StoredNode node) {
         final DocumentImpl owner = (DocumentImpl) getOwnerDocument();
@@ -343,6 +331,18 @@ public class StoredNode extends NodeImpl {
 			return ownerDocument.getNode(getGID() + 1);
 		return null;
 	}
+    
+    public NodePath getPath() {
+        NodePath path = new NodePath();
+        if (nodeType != ATTRIBUTE_NODE)
+            path.addComponent(getQName());
+        NodeImpl parent = (NodeImpl)getParentNode();
+        while (parent != null && parent.getNodeType() != DOCUMENT_NODE) {
+            path.addComponentAtStart(parent.getQName());
+            parent = (NodeImpl)parent.getParentNode();
+        }
+        return path;
+    }    
 
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
