@@ -26,6 +26,7 @@ import java.util.Iterator;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -78,8 +79,8 @@ public class StoredNode extends NodeImpl {
     }
     
     public byte[] serialize() {
-        return null;
-    }    
+        throw new DOMException(DOMException.INVALID_ACCESS_ERR, "Can't serialize " + getClass().getName());
+    }
     
 	/**
 	 * Read a node from the specified byte array.
@@ -194,7 +195,6 @@ public class StoredNode extends NodeImpl {
         this.gid = gid;
     }
 
-
 	/**
 	 *  Get the internal storage address of this node
 	 *
@@ -211,8 +211,7 @@ public class StoredNode extends NodeImpl {
      */
     public void setInternalAddress(long address) {
         internalAddress = address;
-    }
-        
+    }        
 
 	/**
 	 * @see org.w3c.dom.Node#getNodeType()
@@ -246,20 +245,9 @@ public class StoredNode extends NodeImpl {
 	    return XMLUtil.getParentId((DocumentImpl)getOwnerDocument(), getGID());
 	}
     
-    public long firstChildID() {
-        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-        return 0;
+    public long firstChildID(){
+        throw new DOMException(DOMException.INVALID_ACCESS_ERR, "No first child ID in " + getClass().getName());
     }
-    
-    /**
-     *  Get the unique node identifier of the last child of this node.
-     *
-     *@return    Description of the Return Value
-     */
-    public long lastChildID() {
-        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-        return 0;
-    }    
 
 	/**
 	 * @see org.w3c.dom.Node#getParentNode()
@@ -305,6 +293,7 @@ public class StoredNode extends NodeImpl {
 			(getGID() - ownerDocument.getLevelStartPoint(level))
 				/ ownerDocument.getTreeLevelOrder(level)
 				+ ownerDocument.getLevelStartPoint(level - 1);
+        //TODO : use XMLUtils routine ? -pb
 		long firstChildId =
 			(pid - ownerDocument.getLevelStartPoint(level - 1))
 				* ownerDocument.getTreeLevelOrder(level)
@@ -325,6 +314,7 @@ public class StoredNode extends NodeImpl {
 			(getGID() - ownerDocument.getLevelStartPoint(level))
 				/ ownerDocument.getTreeLevelOrder(level)
 				+ ownerDocument.getLevelStartPoint(level - 1);
+        //TODO : use XMLUtils routine ? -pb
 		long firstChildId =
 			(pid - ownerDocument.getLevelStartPoint(level - 1))
 				* ownerDocument.getTreeLevelOrder(level)
