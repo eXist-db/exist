@@ -2,7 +2,7 @@ package org.exist.storage.analysis;
 
 import org.exist.util.XMLString;
 
-public class TextToken {
+public class TextToken implements Comparable {
 	
     public final static int ALPHA = 1;
     public final static int ALPHANUM = 2;
@@ -167,6 +167,10 @@ public class TextToken {
             return true;
         }
         return false;
+    }
+    
+    public int compareTo(Object o) {
+    	return getText().compareTo(o.toString());
     }
     
     public String toString() {
