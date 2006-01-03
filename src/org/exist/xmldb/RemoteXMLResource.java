@@ -42,6 +42,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+import org.w3c.dom.DocumentType;
 
 public class RemoteXMLResource implements XMLResource, EXistResource {
 	
@@ -423,4 +424,14 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     public String getMimeType() {
         return "text/xml";
     }
+
+
+    public  DocumentType getDocType() throws XMLDBException {
+    	
+    	return null;
+        }
+    
+    public void setDocType(DocumentType doctype) throws XMLDBException {
+		
+}
 }

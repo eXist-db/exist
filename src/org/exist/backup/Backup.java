@@ -52,6 +52,7 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+import org.exist.dom.DocumentImpl;
 
 public class Backup {
 
@@ -320,6 +321,22 @@ public class Backup {
                         encode( ((EXistResource)resource).getMimeType())
                 );
                 
+                if (!resource.getResourceType().equals("BinaryResource")) {
+					if (ris.getDocType() != null) {
+						if (ris.getDocType().getName() != null) {
+							attr.addAttribute(NS, "namedoctype", "namedoctype",
+									"CDATA", ris.getDocType().getName());
+						}
+						if (ris.getDocType().getPublicId() != null) {
+							attr.addAttribute(NS, "publicid", "publicid",
+									"CDATA", ris.getDocType().getPublicId());
+						}
+						if (ris.getDocType().getSystemId() != null) {
+							attr.addAttribute(NS, "systemid", "systemid",
+									"CDATA", ris.getDocType().getSystemId());
+						}					
+					}
+				}
                 serializer.startElement(NS, "resource", "resource", attr);
                 serializer.endElement(NS, "resource", "resource");
             } catch(XMLDBException e) {
