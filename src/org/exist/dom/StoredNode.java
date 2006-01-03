@@ -78,6 +78,18 @@ public class StoredNode extends NodeImpl {
         this.ownerDocument = other.ownerDocument;
     }
     
+    /**
+     * Reset this object to its initial state. Required by the
+     * parser to be able to reuse node objects.
+     */
+    public void clear() {
+        //TODO : what are the semantics of this 0 ? -pb     
+        this.gid = 0;
+        this.internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
+        this.ownerDocument = null;
+        //this.nodeType is *immutable*       
+    } 
+    
     public byte[] serialize() {
         throw new DOMException(DOMException.INVALID_ACCESS_ERR, "Can't serialize " + getClass().getName());
     }
@@ -129,18 +141,6 @@ public class StoredNode extends NodeImpl {
 				LOG.error("Unknown node type: " + type);
 				return null;
 		}
-	}
-
-	/**
-	 * Reset this object to its initial state. Required by the
-	 * parser to be able to reuse node objects.
-	 */
-	public void clear() {
-		//TODO : what are the semantics of this 0 ? -pb		
-		gid = 0;
-		internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
-        ownerDocument = null;
-        //nodeType is *immutable*		
 	}
 
 	public QName getQName() {
@@ -209,8 +209,8 @@ public class StoredNode extends NodeImpl {
      *
      *@param  address  The new internalAddress value
      */
-    public void setInternalAddress(long address) {
-        internalAddress = address;
+    public void setInternalAddress(long internalAddress) {
+        this.internalAddress = internalAddress;
     }        
 
 	/**
@@ -232,8 +232,8 @@ public class StoredNode extends NodeImpl {
      *
      *@param  doc  The new ownerDocument value
      */
-    public void setOwnerDocument(Document doc) {
-        ownerDocument = (DocumentImpl) doc;
+    public void setOwnerDocument(Document ownerDocument) {
+        this.ownerDocument = (DocumentImpl) ownerDocument;
     }
     
 	/**
@@ -242,11 +242,11 @@ public class StoredNode extends NodeImpl {
 	 *@return    The parentGID value
 	 */
 	public long getParentGID() {
-	    return XMLUtil.getParentId((DocumentImpl)getOwnerDocument(), getGID());
+	    return XMLUtil.getParentId(ownerDocument, getGID());
 	}
     
     public long firstChildID(){
-        throw new DOMException(DOMException.INVALID_ACCESS_ERR, "No first child ID in " + getClass().getName());
+        throw new DOMException(DOMException.INVALID_ACCESS_ERR, "firstChildID() not implemented in " + getClass().getName());
     }
 
 	/**
@@ -256,30 +256,30 @@ public class StoredNode extends NodeImpl {
 		long pid = getParentGID();       
 		if (pid == NODE_IMPL_UNKNOWN_GID)
             return null;
-        return ((DocumentImpl)getOwnerDocument()).getNode(pid);
+        return ownerDocument.getNode(pid);
 	}
     
-    protected StoredNode getLastNode(StoredNode node) {
-        final DocumentImpl owner = (DocumentImpl) getOwnerDocument();
-        final NodeProxy p = new NodeProxy(owner, node.getGID(), node.getInternalAddress());
-        Iterator iterator = owner.getBroker().getNodeIterator(p);
+    protected StoredNode getLastNode(StoredNode node) {        
+        final NodeProxy p = new NodeProxy(ownerDocument, node.getGID(), node.getInternalAddress());
+        final Iterator iterator = getBroker().getNodeIterator(p);
+        //TODO : hasNext() test ? -pb
         iterator.next();
         return getLastNode(iterator, node);
     }
 
     protected StoredNode getLastNode(Iterator iterator, StoredNode node) {
-        if (node.hasChildNodes()) {
-            final long firstChild = node.firstChildID();
-            final long lastChild = firstChild + node.getChildCount();
-            StoredNode next = null;
-            for (long gid = firstChild; gid < lastChild; gid++) {
-                next = (StoredNode) iterator.next();
-                next.setGID(gid);
-                next = getLastNode(iterator, next);
-            }
-            return next;
-        } else
+        if (!node.hasChildNodes())
             return node;
+        final long firstChild = node.firstChildID();
+        final long lastChild = firstChild + node.getChildCount();
+        StoredNode next = null;
+        for (long gid = firstChild; gid < lastChild; gid++) {
+            next = (StoredNode) iterator.next();
+            next.setGID(gid);
+            //Recursivity helps taversing...
+            next = getLastNode(iterator, next);
+        }
+        return next;
     }       
 
 	/**
@@ -354,7 +354,6 @@ public class StoredNode extends NodeImpl {
 	public void release() {
 		clear();
 		NodeObjectPool.getInstance().returnNode(this);
-	}     
-
+	}
     
 }
