@@ -45,6 +45,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
 import org.exist.dom.QName;
 import org.exist.http.webdav.WebDAV;
 import org.exist.http.webdav.WebDAVUtil;
@@ -350,6 +351,7 @@ public class Propfind extends AbstractWebDAVMethod {
 			int type, Collection collection, DocumentImpl resource, SAXSerializer serializer, String servletPath) throws SAXException {
 		if(!resource.getPermissions().validate(user, Permission.READ))
 			return;
+		DocumentMetadata metadata = resource.getMetadata();
 		AttributesImpl attrs = new AttributesImpl();
 		searchedProperties.reset();
 		serializer.startElement(WebDAV.DAV_NS, "response", "D:response", attrs);
@@ -372,12 +374,12 @@ public class Propfind extends AbstractWebDAVMethod {
 		}
 		
 		if(shouldIncludeProperty(type, searchedProperties, CREATION_DATE_PROP)) {
-			long created = resource.getCreated();
+			long created = metadata.getCreated();
 			writeSimpleElement(CREATION_DATE_PROP, creationDateFormat.format(new Date(created)), serializer);
 		}
 		
 		if(shouldIncludeProperty(type, searchedProperties, LAST_MODIFIED_PROP)) {
-			long modified = resource.getLastModified();
+			long modified = metadata.getLastModified();
 			writeSimpleElement(LAST_MODIFIED_PROP, modificationDateFormat.format(new Date(modified)), serializer);
 		}
 		
@@ -386,7 +388,7 @@ public class Propfind extends AbstractWebDAVMethod {
 		}
 		
 		if(shouldIncludeProperty(type, searchedProperties, CONTENT_TYPE_PROP)) {
-            writeSimpleElement(CONTENT_TYPE_PROP, resource.getMimeType(), serializer);
+            writeSimpleElement(CONTENT_TYPE_PROP, metadata.getMimeType(), serializer);
 		}
 		
 		if(shouldIncludeProperty(type, searchedProperties, SUPPORTED_LOCK_PROP)) {

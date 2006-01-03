@@ -196,7 +196,7 @@ public abstract class Modification extends AbstractExpression {
 		DBBroker broker = context.getBroker();
 	    for(Iterator i = docs.iterator(); i.hasNext(); ) {
 	        DocumentImpl next = (DocumentImpl) i.next();
-	        if(next.getSplitCount() > broker.getFragmentationLimit())
+	        if(next.getMetadata().getSplitCount() > broker.getFragmentationLimit())
 	            broker.defrag(transaction, next);
 	        broker.consistencyCheck(next);
 	    }

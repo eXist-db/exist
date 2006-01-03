@@ -489,7 +489,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                     long delta = is.readLong();
                                     long storedGID = previousGID + delta;    
                                     if (node == null) {
-                                        if (document.getTreeLevel(storedGID) < document.reindexRequired())
+                                        if (document.getTreeLevel(storedGID) < document.getMetadata().reindexRequired())
                                             storedGIDList.add(storedGID);
                                     } else {
                                          if (!XMLUtil.isDescendant(document, node.getGID(), storedGID))

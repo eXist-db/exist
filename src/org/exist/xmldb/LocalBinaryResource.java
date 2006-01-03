@@ -153,7 +153,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 				throw new XMLDBException(
 						ErrorCodes.PERMISSION_DENIED,
 				"permission denied to read resource");
-			return new Date(blob.getCreated());
+			return new Date(blob.getMetadata().getCreated());
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
 		} finally {
@@ -175,7 +175,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 				throw new XMLDBException(
 						ErrorCodes.PERMISSION_DENIED,
 				"permission denied to read resource");
-			return new Date(blob.getLastModified());
+			return new Date(blob.getMetadata().getLastModified());
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
 		} finally {
@@ -197,7 +197,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
                 throw new XMLDBException(
                         ErrorCodes.PERMISSION_DENIED,
                 "permission denied to read resource");
-            mimeType = blob.getMimeType();
+            mimeType = blob.getMetadata().getMimeType();
             return mimeType;
         } catch (EXistException e) {
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);

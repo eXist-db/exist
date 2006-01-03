@@ -34,12 +34,10 @@ import java.util.Random;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
-// import org.cyberneko.html.parsers.SAXParser;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -463,9 +461,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				return new String[0];
 			String[] resources = new String[collection.getDocumentCount()];
 			int j = 0;
-			int p;
 			DocumentImpl doc;
-			String resource;
 			for (Iterator i = collection.iterator(broker); i.hasNext(); j++) {
 				doc = (DocumentImpl) i.next();
 				resources[j] = doc.getFileName();
@@ -580,12 +576,11 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 transact.abort(txn);
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
             }
-			BinaryDocument blob =
-				collection.addBinaryResource(txn,
+			collection.addBinaryResource(txn,
 					broker,
 					res.getId(),
 					(byte[]) res.getContent(),
-                    res.getMimeType(), res.datecreated, res.datemodified  );
+					res.getMimeType(), res.datecreated, res.datemodified  );
             transact.commit(txn);
 		} catch (Exception e) {
             transact.abort(txn);
@@ -609,7 +604,6 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			String name = res.getDocumentId();
 			String uri = null;
 			if(res.file != null) uri = res.file.toURI().toASCIIString();
-			DocumentImpl newDoc;
             IndexInfo info = null;
 			Collection collection = broker.openCollection(path, Lock.WRITE_LOCK);
             try {
@@ -629,13 +623,13 @@ public class LocalCollection extends Observable implements CollectionImpl {
     			    info = collection.validate(txn, broker, name, res.root);
     			else
     			    info = collection.validate(txn, broker, name, res.content);
-                info.getDocument().setMimeType(res.getMimeType());
+                info.getDocument().getMetadata().setMimeType(res.getMimeType());
                 
                 if (res.datecreated  != null) 
-    				info.getDocument().setCreated( res.datecreated.getTime());
+    				info.getDocument().getMetadata().setCreated( res.datecreated.getTime());
     			
                 if (res.datemodified != null)
-    				info.getDocument().setLastModified( res.datemodified.getTime());
+    				info.getDocument().getMetadata().setLastModified( res.datemodified.getTime());
             } finally {
                 collection.release();
             }

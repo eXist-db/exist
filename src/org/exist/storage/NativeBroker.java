@@ -45,6 +45,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
@@ -90,6 +91,7 @@ import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
+import org.exist.util.sanity.SanityCheck;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
@@ -1123,8 +1125,8 @@ public class NativeBroker extends DBBroker {
         /** Updates the various indices and stores this node into the database
          * if necessary */
         public void reindex() {
-            if (level >= doc.reindexRequired()) {
-                NodeIndexListener listener = doc.getIndexListener();
+            if (level >= doc.getMetadata().reindexRequired()) {
+                NodeIndexListener listener = doc.getMetadata().getIndexListener();
                 if(listener != null)
                     listener.nodeChanged(node);
                 store();
@@ -1155,12 +1157,12 @@ public class NativeBroker extends DBBroker {
 	 */
 	public void reindex(final Txn transaction, final DocumentImpl oldDoc, final DocumentImpl doc, 
 			final StoredNode node) {
-		int idxLevel = doc.reindexRequired();     
-		if (idxLevel == DocumentImpl.REINDEX_ALL) {
+		int idxLevel = doc.getMetadata().reindexRequired();     
+		if (idxLevel == DocumentMetadata.REINDEX_ALL) {
 			flush();
 			return;
 		}
-		oldDoc.setReindexRequired(idxLevel);
+		oldDoc.getMetadata().setReindexRequired(idxLevel);
 		if (node == null)
 			LOG.debug("reindexing level " + idxLevel + " of document " + doc.getDocId());
 //		checkTree(doc);
@@ -1177,7 +1179,7 @@ public class NativeBroker extends DBBroker {
 					for (Iterator i = nodes.iterator(); i.hasNext();) {
 						ref = (Value) i.next();
 						gid = ByteConversion.byteToLong(ref.data(), ref.start() + 4);
-						if (oldDoc.getTreeLevel(gid) >= doc.reindexRequired()) {
+						if (oldDoc.getTreeLevel(gid) >= doc.getMetadata().reindexRequired()) {
 							if (node != null) {
 								if (XMLUtil.isDescendant(oldDoc, node.getGID(), gid)) {
 									domDb.removeValue(transaction, ref);
@@ -1219,7 +1221,7 @@ public class NativeBroker extends DBBroker {
 			LOG.error("Error occured while reindexing document: " + e.getMessage(), e);
 		}
         notifyReindex(oldDoc, node);
-		doc.setReindexRequired(DocumentImpl.REINDEX_ALL);
+		doc.getMetadata().setReindexRequired(DocumentMetadata.REINDEX_ALL);
 //		checkTree(doc);
 		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
 	}
@@ -1277,7 +1279,7 @@ public class NativeBroker extends DBBroker {
 			}
 		}
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
-			if((fullReindex || doc.getTreeLevel(node.getGID()) >= doc.reindexRequired())) {
+			if((fullReindex || doc.getTreeLevel(node.getGID()) >= doc.getMetadata().reindexRequired())) {
 			    endElement(node, currentPath, null);
 			}
 			currentPath.removeLastComponent();
@@ -1431,7 +1433,7 @@ public class NativeBroker extends DBBroker {
 	        }
             if (doc.getResourceType() == DocumentImpl.BINARY_FILE)  {
                 byte[] data = getBinaryResourceData((BinaryDocument) doc); 
-                destination.addBinaryResource(transaction, this, newName, data, doc.getMimeType());
+                destination.addBinaryResource(transaction, this, newName, data, doc.getMetadata().getMimeType());
             } else {
                 DocumentImpl newDoc = new DocumentImpl(this, newName, destination);
                 newDoc.copyOf(doc);
@@ -1564,9 +1566,8 @@ public class NativeBroker extends DBBroker {
 //			checkTree(tempDoc);
 			
 			doc.copyChildren(tempDoc);
-			doc.setSplitCount(0);
-			doc.setInternalAddress(BFile.UNKNOWN_ADDRESS);
-			doc.setPageCount(tempDoc.getPageCount());
+			doc.getMetadata().setSplitCount(0);
+			doc.getMetadata().setPageCount(tempDoc.getMetadata().getPageCount());
 			
 			storeDocument(transaction, doc);
 			LOG.debug("new doc address = " + StorageAddress.toString(doc.getInternalAddress()));
@@ -1595,8 +1596,9 @@ public class NativeBroker extends DBBroker {
 		store(transaction, node, currentPath, index);
 		if (node.getNodeType() == Node.ELEMENT_NODE)
 		    endElement(node, currentPath, null);		
-		if (node.getGID() == StoredNode.NODE_IMPL_ROOT_NODE_GID)
+		if (node.getGID() == StoredNode.NODE_IMPL_ROOT_NODE_GID) {
 		    newDoc.appendChild((StoredNode) node);
+		}
 		node.setOwnerDocument(doc);
 		
 		if (node.hasChildNodes()) {
@@ -2488,12 +2490,22 @@ public class NativeBroker extends DBBroker {
 		    for(Iterator i = collection.iterator(this); i.hasNext(); ) {
 		    	DocumentImpl child = (DocumentImpl) i.next();
 		    	LOG.debug("Copying resource: '" + child.getName() + "'");
-		    	DocumentImpl newDoc = new DocumentImpl(this, child.getFileName(), destCollection);
-		        newDoc.copyOf(child);
-                newDoc.setDocId(getNextDocumentId(transaction, destination));
-		        copyResource(transaction, child, newDoc);
-                storeDocument(transaction, newDoc);
-		        destCollection.addDocument(transaction, this, newDoc);
+		    	if (child.getResourceType() == DocumentImpl.XML_FILE) {
+			    	DocumentImpl newDoc = new DocumentImpl(this, child.getFileName(), destCollection);
+			        newDoc.copyOf(child);
+	                newDoc.setDocId(getNextDocumentId(transaction, destination));
+			        copyResource(transaction, child, newDoc);
+	                storeDocument(transaction, newDoc);
+			        destCollection.addDocument(transaction, this, newDoc);
+		    	} else {
+		    		BinaryDocument newDoc = new BinaryDocument(this, child.getFileName(), destCollection);
+		    		newDoc.copyOf(child);
+	                newDoc.setDocId(getNextDocumentId(transaction, destination));
+	                byte[] data = getBinaryResourceData((BinaryDocument) child);
+	                storeBinaryResource(transaction, newDoc, data);
+	                storeDocument(transaction, newDoc);
+	                destCollection.addDocument(transaction, this, newDoc);
+		    	}
 		    }
 		    saveCollection(transaction, destCollection);
 	    } finally {
@@ -2825,6 +2837,10 @@ public class NativeBroker extends DBBroker {
         try {
             lock.acquire();
             final VariableByteOutputStream ostream = new VariableByteOutputStream(8);
+            doc.getMetadata().write(ostream);
+            long metaPointer = collectionsDb.storeValue(transaction, ostream.data());
+            ostream.clear();
+            doc.setMetadataLocation(metaPointer);
             doc.write(ostream);
             Value key = new DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
             collectionsDb.put(transaction, key, ostream.data(), true);
@@ -2859,6 +2875,25 @@ public class NativeBroker extends DBBroker {
         }
     }
 	
+    public void readDocumentMeta(DocumentImpl doc) {
+    	Lock lock = collectionsDb.getLock();
+        try {
+            lock.acquire();
+            SanityCheck.ASSERT(doc.getMetadataLocation() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS, 
+            		"Missing pointer to metadata location in document " + doc.getDocId());
+            VariableByteInput istream = collectionsDb.getAsStream(doc.getMetadataLocation());
+            DocumentMetadata metadata = new DocumentMetadata();
+            metadata.read(istream);
+            doc.setMetadata(metadata);
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+        } catch (IOException e) {
+            LOG.warn("IOException while reading document data", e);
+        } finally {
+            lock.release();
+        }
+    }
+    
 	public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final byte[] data) {
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 			public Object start() throws ReadOnlyException {
@@ -3034,8 +3069,10 @@ public class NativeBroker extends DBBroker {
             targetDoc.setFileName(docName);
             targetDoc.setPermissions(0771);
             long now = System.currentTimeMillis();
-            targetDoc.setLastModified(now);
-            targetDoc.setCreated(now);
+            DocumentMetadata metadata = new DocumentMetadata();
+            metadata.setLastModified(now);
+            metadata.setCreated(now);
+            targetDoc.setMetadata(metadata);
             targetDoc.setDocId(getNextDocumentId(transaction, temp));
 
     		DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
@@ -3110,7 +3147,7 @@ public class NativeBroker extends DBBroker {
             long now = System.currentTimeMillis();
             for(Iterator i = temp.iterator(this); i.hasNext(); ) {
             	DocumentImpl next = (DocumentImpl) i.next();
-            	long modified = next.getLastModified();
+            	long modified = next.getMetadata().getLastModified();
             	if(now - modified > TEMP_FRAGMENT_TIMEOUT)
             		try {
             			temp.removeDocument(txn, this, next.getFileName());

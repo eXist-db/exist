@@ -67,16 +67,11 @@ import org.w3c.dom.UserDataHandler;
 public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
     public final static int UNKNOWN_DOCUMENT_ID = -1;
-    public final static int REINDEX_ALL = -1;
     
     public final static byte XML_FILE = 0;
 	public final static byte BINARY_FILE = 1;
 	
 	public final static byte DOCUMENT_NODE_SIGNATURE = 0x0F;
-	
-    public final static byte HAS_DOCTYPE = 1;
-    
-	private transient NodeIndexListener listener = NullNodeIndexListener.INSTANCE;
 
 	protected transient DBBroker broker = null;
 
@@ -96,26 +91,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	// the document's file name
 	protected String fileName = null;
-
-    protected String mimeType = "text/xml";
-    
-	// the creation time of this document
-	protected long created = 0;
-	
-	// time of the last modification
-	protected long lastModified = 0;
-	
-	// the number of data pages occupied by this document
-	protected int pageCount = 0;
-	
-	protected transient int splitCount = 0;
 	
 	// number of levels in this DOM tree
 	protected int maxDepth = 0;
-
-	// if set to > -1, the document needs to be partially reindexed
-	// - beginning at the tree-level defined by reindex
-	protected transient int reindex = REINDEX_ALL;
 
 	protected Permission permissions = new Permission(Permission.DEFAULT_PERM);
 
@@ -124,10 +102,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	protected transient long treeLevelStartPoints[] = new long[15];
 	
-	//private transient User lockOwner = null;
-	private transient int lockOwnerId = 0;
-	
 	private transient Lock updateLock = null;
+	
+	protected transient long metadataLocation = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
+	
+	protected DocumentMetadata metadata = null;
 	
 	public DocumentImpl(DBBroker broker, Collection collection) {
 		this.broker = broker;
@@ -151,26 +130,45 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		treeLevelOrder[0] = 1;
 	}
 
-	public DocumentImpl(DocumentImpl old) {
-		this.broker = old.broker;
-		this.fileName = old.fileName;
-		this.collection = old.collection;
-		if(old.collection == null)
-			throw new RuntimeException("Collection == null");
-		this.children = old.children;
-		this.maxDepth = old.maxDepth;
-		this.docId = old.docId;
-		this.childList = old.childList;
-		this.docType = old.docType;
-		this.permissions = old.permissions;
-		treeLevelOrder = new int[old.treeLevelOrder.length];
-		for (int i = 0; i < treeLevelOrder.length; i++)
-			treeLevelOrder[i] = old.treeLevelOrder[i];
-		treeLevelStartPoints = new long[old.treeLevelStartPoints.length];
-		for (int i = 0; i < treeLevelStartPoints.length; i++)
-			treeLevelStartPoints[i] = old.treeLevelStartPoints[i];
-	}
+//	public DocumentImpl(DocumentImpl old) {
+//		this.broker = old.broker;
+//		this.fileName = old.fileName;
+//		this.collection = old.collection;
+//		if(old.collection == null)
+//			throw new RuntimeException("Collection == null");
+//		this.children = old.children;
+//		this.maxDepth = old.maxDepth;
+//		this.docId = old.docId;
+//		this.childList = old.childList;
+//		this.docType = old.docType;
+//		this.permissions = old.permissions;
+//		treeLevelOrder = new int[old.treeLevelOrder.length];
+//		for (int i = 0; i < treeLevelOrder.length; i++)
+//			treeLevelOrder[i] = old.treeLevelOrder[i];
+//		treeLevelStartPoints = new long[old.treeLevelStartPoints.length];
+//		for (int i = 0; i < treeLevelStartPoints.length; i++)
+//			treeLevelStartPoints[i] = old.treeLevelStartPoints[i];
+//	}
     
+	public void setMetadata(DocumentMetadata meta) {
+		this.metadata = meta;
+	}
+	
+	public DocumentMetadata getMetadata() {
+		if (metadata == null) {
+			broker.readDocumentMeta(this);
+		}
+		return metadata;
+	}
+	
+	public void setMetadataLocation(long pointer) {
+		this.metadataLocation = pointer;
+	}
+	
+	public long getMetadataLocation() {
+		return metadataLocation;
+	}
+	
     /************************************************
      * 
      * Persistent node methods
@@ -180,7 +178,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     public int getMaxDepth() {
         return maxDepth;
     }
-
+	
 	/**
 	 * Copy the relevant internal fields from the specified document object.
 	 * This is called by {@link Collection} when replacing a document.
@@ -191,12 +189,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	    maxDepth = other.maxDepth;
 	    childList = null;
 	    children = 0;
-	    docType = other.getDoctype();
 	    treeLevelOrder = other.treeLevelOrder;
 	    treeLevelStartPoints = other.treeLevelStartPoints;
-	    lastModified = other.getLastModified();
+	    metadata = new DocumentMetadata(other.getMetadata());
 	    // reset pageCount: will be updated during storage
-	    pageCount = 0;
+	    metadata.setPageCount(0);
 	}
 	
 	public void copyChildren(DocumentImpl other) {
@@ -226,75 +223,33 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         return updateLock;
     }
     
-    public User getUserLock() {
-        if(lockOwnerId < 1)
-            return null;
-        final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
-        return secman.getUser(lockOwnerId);
-    }
-    
     public void setUserLock(User user) {
-        lockOwnerId = (user == null ? 0 : user.getUID());
-    }    
-
-    public void incPageCount() {
-        ++pageCount;
-    }
+		getMetadata().setUserLock(user == null ? 0 : user.getUID());
+	}
+	
+	public User getUserLock() {
+		int lockOwnerId = getMetadata().getUserLock();
+		if(lockOwnerId < 1)
+			return null;
+		final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
+		return secman.getUser(lockOwnerId);
+	}
     
-    public void decPageCount() {
-        --pageCount;
-    }
+	/**
+	 * Returns the estimated size of the data in this document.
+	 * 
+	 * As an estimation, the number of pages occupied by the document
+	 * is multiplied with the current page size.
+	 * 
+	 * @return
+	 */
+	public int getContentLength() {
+	    return getMetadata().getPageCount() * broker.getPageSize();
+	}
     
-    /**
-     * Returns the estimated size of the data in this document.
-     * 
-     * As an estimation, the number of pages occupied by the document
-     * is multiplied with the current page size.
-     * 
-     * @return
-     */
-    public int getContentLength() {
-        return pageCount * broker.getPageSize();
-    }
-    
-    /**
-     * Returns the number of pages currently occupied by this document.
-     * 
-     * @return
-     */
-    public int getPageCount() {
-        return pageCount;
-    }
-    
-    /**
-     * Set the number of pages currently occupied by this document.
-     * @param count
-     */
-    public void setPageCount(int count) {
-        pageCount = count;
-    }
-    
-    public int getSplitCount() {
-        return splitCount;
-    }
-    
-    public void setSplitCount(int count) {
-        splitCount = count;
-    }
-    
-    /**
-     * Increase the page split count of this document. The number
-     * of pages that have been split during inserts serves as an
-     * indicator for the 
-     *
-     */ 
-    public void incSplitCount() {
-        splitCount++;
-    }    
-    
-    public void triggerDefrag() {
-        splitCount = broker.getFragmentationLimit();
-    }  
+	public void triggerDefrag() {
+		getMetadata().setSplitCount(broker.getFragmentationLimit());
+	}  
     
     public NodeList getRange(long first, long last) {
         return broker.getRange(this, first, last);
@@ -329,8 +284,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		childList[children - 1] = child.getInternalAddress();
 	}
     
-    public void write(VariableByteOutputStream ostream) throws IOException {
-        try {
+	public void write(VariableByteOutputStream ostream) throws IOException {
+		try {
             ostream.writeInt(docId);
             ostream.writeUTF(fileName);
             SecurityManager secman = broker.getBrokerPool().getSecurityManager();
@@ -344,10 +299,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
                 ostream.writeInt(group.getId());
             }
             ostream.writeInt(permissions.getPermissions());
-            if(lockOwnerId > 0)
-                ostream.writeInt(lockOwnerId);
-            else
-                ostream.writeInt(0);
             
             ostream.writeInt(maxDepth);
             for (int i = 0; i < maxDepth; i++) {
@@ -355,29 +306,22 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
                 ostream.writeInt(treeLevelOrder[i]);
             }
             ostream.writeInt(children);
-            if(children > 0) {
-                for(int i = 0; i < children; i++) {
-                    ostream.writeInt(StorageAddress.pageFromPointer(childList[i]));
-                    ostream.writeShort(StorageAddress.tidFromPointer(childList[i]));
-                }
-            }
-            if (docType != null) {
-                ostream.writeByte(HAS_DOCTYPE);
-                ((DocumentTypeImpl) docType).write(ostream);
-            } else
-                ostream.writeByte((byte) 0);
+			if(children > 0) {
+			    for(int i = 0; i < children; i++) {
+					ostream.writeInt(StorageAddress.pageFromPointer(childList[i]));
+					ostream.writeShort(StorageAddress.tidFromPointer(childList[i]));
+			    }
+			}
             
-            ostream.writeLong(created);
-            ostream.writeLong(lastModified);
-            ostream.writeUTF(mimeType);
-            ostream.writeInt(pageCount);
-        } catch (IOException e) {
-            LOG.warn("io error while writing document data", e);
-        }
-    }
+            
+            StorageAddress.write(metadataLocation, ostream);
+		} catch (IOException e) {
+			LOG.warn("io error while writing document data", e);
+		}
+	}
 
-    public void read(VariableByteInput istream) throws IOException, EOFException {
-        try {
+	public void read(VariableByteInput istream) throws IOException, EOFException {
+		try {
             docId = istream.readInt();
             fileName = istream.readUTF();
 
@@ -395,7 +339,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
                     permissions.setGroup(group.getName());
             }
             permissions.setPermissions(perm);
-            lockOwnerId = istream.readInt();
             
             maxDepth = istream.readInt();
             treeLevelOrder = new int[maxDepth + 1];
@@ -403,43 +346,24 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
                 treeLevelOrder[i] = istream.readInt();
             }
             children = istream.readInt();
-            childList = new long[children];
-            for (int i = 0; i < children; i++) { 
-                childList[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
-            }
+			childList = new long[children];
+			for (int i = 0; i < children; i++) { 
+				childList[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
+			}
             
-            if (istream.readByte() == HAS_DOCTYPE) { 
-                docType = new DocumentTypeImpl();
-                ((DocumentTypeImpl) docType).read(istream);
-            } else
-                docType = null;
-            
-            created = istream.readLong();
-            lastModified = istream.readLong();
-            mimeType = istream.readUTF();
-            if(istream.available() > 0)
-                pageCount = istream.readInt();
-        } catch (IOException e) {
-            LOG.warn("IO error while reading document data for document " + fileName, e);
-            LOG.warn("Document address is " + StorageAddress.toString(getInternalAddress()));
-        }
+            metadataLocation = StorageAddress.read(istream);
+		} catch (IOException e) {
+			LOG.warn("IO error while reading document data for document " + fileName, e);
+		}
         
         try {
             calculateTreeLevelStartPoints();
         } catch (EXistException e) {
         }
-    }
+	}
     
     public void setTreeLevelOrder(int level, int order) {
         treeLevelOrder[level] = order;
-    }
-
-    public int reindexRequired() {
-        return reindex;
-    }    
-
-    public void setReindexRequired(int level) {
-        this.reindex = level;
     }    
     
    public long getLevelStartPoint(int level) {
@@ -786,15 +710,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     public byte getResourceType() {
         return XML_FILE;
     }
-    
-    public String getMimeType() {
-        return mimeType;
-    }
-    
-    public void setMimeType(String type) {
-        if (type != null)
-            this.mimeType = type;
-    }
 
 	public String getFileName() {
 		//checkAvail();
@@ -824,53 +739,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
     public void setPermissions(Permission perm) {
         permissions = perm;
-    }
-
-	/**
-	 * @return
-	 */
-	public long getCreated() {
-		return created;
-	}
-
-    /**
-     * @param l
-     */
-    public void setCreated(long l) {
-        created = l;
-        if(lastModified == 0)
-            lastModified = l;
-    }    
-
-	/**
-	 * @return
-	 */
-	public long getLastModified() {
-		return lastModified;
-	}
-    
-    /**
-     * @param l
-     */
-    public void setLastModified(long l) {
-        lastModified = l;
-    }
-    
-    public NodeIndexListener getIndexListener() {
-        return listener;
-    }
-    
-    public void setIndexListener(NodeIndexListener listener) {
-        this.listener = listener;
-    }    
-
-    public void clearIndexListener() {
-        listener = NullNodeIndexListener.INSTANCE;  
-    }
-
-    //TODO : what is this "method" designed for ?-pb
-    public void release() {
-    }    
+    } 
     
     /************************************************
      * 

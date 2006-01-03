@@ -469,7 +469,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                     long storedGID = previousGID + delta;                                        
                                     long address = StorageAddress.read(is);
                                     if (node == null) {
-                                        if (document.getTreeLevel(storedGID) < document.reindexRequired()) {
+                                        if (document.getTreeLevel(storedGID) < document.getMetadata().reindexRequired()) {
                                             //TOUNDERSTAND : given what is below, why not use newGIDList ? -pb
                                             storedGIDList.add(new NodeProxy(document, storedGID, address));
                                         }
@@ -631,7 +631,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 lock.release();
             }
         }
-        LOG.debug("Found: " + result.getLength() + " for " + qname);
+//        LOG.debug("Found: " + result.getLength() + " for " + qname);
         return result;
     }
 

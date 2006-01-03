@@ -281,7 +281,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			if (!document.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 						"permission denied to read resource");
-			return new Date(document.getCreated());
+			return new Date(document.getMetadata().getCreated());
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(),
 					e);
@@ -298,7 +298,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			if (!document.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 						"permission denied to read resource");
-			return new Date(document.getLastModified());
+			return new Date(document.getMetadata().getLastModified());
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(),
 					e);

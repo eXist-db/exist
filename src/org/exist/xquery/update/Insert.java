@@ -117,7 +117,7 @@ public class Insert extends Modification {
                 for (int i = 0; i < ql.length; i++) {
                     node = ql[i];
                     doc = (DocumentImpl) node.getOwnerDocument();
-                    doc.setIndexListener(listener);
+                    doc.getMetadata().setIndexListener(listener);
                     if (!doc.getPermissions().validate(context.getUser(), Permission.UPDATE))
                         throw new XPathException(getASTNode(), "permission to remove document denied");
                     modifiedDocs.add(doc);
@@ -134,8 +134,8 @@ public class Insert extends Modification {
     	                        break;
     	                }
     				}
-                    doc.clearIndexListener();
-                    doc.setLastModified(System.currentTimeMillis());
+                    doc.getMetadata().clearIndexListener();
+                    doc.getMetadata().setLastModified(System.currentTimeMillis());
                     context.getBroker().storeDocument(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }

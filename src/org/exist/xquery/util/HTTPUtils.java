@@ -52,7 +52,7 @@ public class HTTPUtils {
 			for (int i = 0; i < documentSet.getLength(); i++) {
 				DocumentImpl doc = (DocumentImpl) documentSet.item(i);
 				if (doc != null) {
-					mostRecentDocumentTime = Math.max(doc.getLastModified(),
+					mostRecentDocumentTime = Math.max(doc.getMetadata().getLastModified(),
 							mostRecentDocumentTime);
 //					LOG.debug("getFileName: " + doc.getFileName() + ", "
 //							+ doc.getLastModified());

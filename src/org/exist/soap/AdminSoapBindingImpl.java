@@ -200,7 +200,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			}
 			long startTime = System.currentTimeMillis();
             IndexInfo info = collection.validate(txn, broker, path, new InputSource(new ByteArrayInputStream(data)));
-            info.getDocument().setMimeType("text/xml");
+            info.getDocument().getMetadata().setMimeType("text/xml");
             collection.store(txn, broker, info, new InputSource(new ByteArrayInputStream(data)), false);
             transact.commit(txn);
 			LOG.debug(

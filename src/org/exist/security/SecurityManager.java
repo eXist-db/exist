@@ -37,6 +37,7 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -322,7 +323,7 @@ public class SecurityManager {
             String data = buf.toString();
             IndexInfo info = sysCollection.validate(transaction, broker, ACL_FILE, data);
             DocumentImpl doc = info.getDocument();
-            doc.setMimeType("text/xml");
+            doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
             sysCollection.store(transaction, broker, info, data, false);
 			doc.setPermissions(0770);
 			broker.saveCollection(transaction, doc.getCollection());

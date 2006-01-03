@@ -117,7 +117,7 @@ public class Rename extends Modification {
                             Permission.UPDATE))
                             throw new XPathException(getASTNode(),
                                     "permission denied to update document");
-                    doc.setIndexListener(listener);
+                    doc.getMetadata().setIndexListener(listener);
                     modifiedDocs.add(doc);
                     parent = (NodeImpl) node.getParentNode();
                     switch (node.getNodeType()) {
@@ -135,8 +135,8 @@ public class Rename extends Modification {
                             throw new XPathException(getASTNode(), "unsupported node-type");
                     }
     
-                    doc.clearIndexListener();
-                    doc.setLastModified(System.currentTimeMillis());
+                    doc.getMetadata().clearIndexListener();
+                    doc.getMetadata().setLastModified(System.currentTimeMillis());
                     context.getBroker().storeDocument(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }

@@ -48,12 +48,10 @@ public class BinaryDocument extends DocumentImpl {
     
 	public BinaryDocument(DBBroker broker, Collection collection) {
 		super(broker, collection);
-        this.mimeType = "application/octet-stream";
 	}
 
 	public BinaryDocument(DBBroker broker, String docName, Collection collection) {
 		super(broker, docName, collection);
-        this.mimeType = "application/octet-stream";
 	}
 	
 	/* (non-Javadoc)
@@ -86,10 +84,8 @@ public class BinaryDocument extends DocumentImpl {
 			ostream.writeInt(group.getId());
 		}
 		ostream.writeByte((byte) permissions.getPermissions());
-        ostream.writeLong(created);
-        ostream.writeLong(lastModified);
-        ostream.writeUTF(mimeType);
-        ostream.writeInt(pageCount);
+		
+		metadata.write(ostream);
 	}
 
 	public void read(VariableByteInput istream)
@@ -112,9 +108,8 @@ public class BinaryDocument extends DocumentImpl {
                 permissions.setGroup(group.getName());
 		}
 		permissions.setPermissions(perm);
-        created = istream.readLong();
-        lastModified = istream.readLong();
-        mimeType = istream.readUTF();
-        pageCount = istream.readInt();
+		
+		metadata = new DocumentMetadata();
+		metadata.read(istream);
 	}
 }

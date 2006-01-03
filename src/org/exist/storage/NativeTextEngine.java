@@ -1056,7 +1056,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                             long storedGID = previousGID + delta;
                                             int freq = is.readInt();
 		                                    if (node == null) {
-		                                        if (document.getTreeLevel(storedGID) < document.reindexRequired()) {
+		                                        if (document.getTreeLevel(storedGID) < document.getMetadata().reindexRequired()) {
                                                     for (int l = 0; l < freq; l++) {
                                                         //Note that we use the existing list
                                                         storedOccurencesList.add(storedGID, is.readInt());

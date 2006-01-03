@@ -323,7 +323,7 @@ public class DOMFile extends BTree implements Lockable {
 	public long addBinary(Txn transaction, DocumentImpl doc, byte[] value) {
 		OverflowDOMPage overflow = new OverflowDOMPage(transaction);
 		int pagesCount = overflow.write(transaction, value);
-        doc.setPageCount(pagesCount);
+        doc.getMetadata().setPageCount(pagesCount);
 		return overflow.getPageNum();
 	}
 
@@ -567,7 +567,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	private RecordPos splitDataPage(Txn transaction, DocumentImpl doc, RecordPos rec) {
 		if (currentDocument != null)
-			currentDocument.incSplitCount();
+			currentDocument.getMetadata().incSplitCount();
 		// check if a split is really required. A split is not required if all
 		// records following the split point are already links to other pages. In this
 		// case, the new record is just appended to a new page linked to the old one.
@@ -1010,7 +1010,7 @@ public class DOMFile extends BTree implements Lockable {
 			ph.setDataLength(0);
 			ph.setRecordCount((short) 0);
 			if (currentDocument != null)
-				currentDocument.incPageCount();
+				currentDocument.getMetadata().incPageCount();
 //            LOG.debug("New page: " + page.getPageNum() + "; " + page.getPageInfo());
 			return page;
 		} catch (IOException ioe) {
@@ -1281,10 +1281,6 @@ public class DOMFile extends BTree implements Lockable {
 		} catch (IOException e) {
 			LOG.error("io error while removing overflow value", e);
 		}
-	}
-
-	private final DOMPage getCurrentPage() {
-		return getCurrentPage(null);
 	}
 
 	/**
@@ -1560,7 +1556,7 @@ public class DOMFile extends BTree implements Lockable {
 			LOG.warn(ioe);
 		}
 		if (currentDocument != null)
-			currentDocument.decPageCount();
+			currentDocument.getMetadata().decPageCount();
 	}
 
 	/**
@@ -1848,8 +1844,6 @@ public class DOMFile extends BTree implements Lockable {
 		long pageNr = StorageAddress.pageFromPointer(p);
 		short targetId = StorageAddress.tidFromPointer(p);
 		DOMPage page;
-		int pos;
-		short currentId, vlen;
 		RecordPos rec;
 		while (pageNr != Page.NO_PAGE) {
 			page = getCurrentPage(pageNr);
@@ -2254,7 +2248,6 @@ public class DOMFile extends BTree implements Lockable {
 		try {
 			Page page = getPage(loggable.pageNum);
             page.read();
-			PageHeader ph = page.getPageHeader();
 			unlinkPages(page);
 		} catch (IOException e) {
 			LOG.warn("Failed to undo " + loggable.dump() + ": "
@@ -2379,7 +2372,6 @@ public class DOMFile extends BTree implements Lockable {
         DOMPage page = getCurrentPage(loggable.pageNum);
         DOMFilePageHeader ph = page.getPageHeader();
         if (requiresRedo(loggable, page)) {
-            int oldDataLen = page.getPageHeader().getDataLength();
             byte[] oldData = page.data;
             page.data = new byte[fileHeader.getWorkSize()];
             System.arraycopy(oldData, 0, page.data, 0, loggable.splitOffset);
@@ -2963,7 +2955,7 @@ public class DOMFile extends BTree implements Lockable {
 				int remaining = data.length;
 				int chunkSize = fileHeader.getWorkSize();
 				Page page = firstPage, next = null;
-				int chunk, pos = 0;
+				int pos = 0;
 				Value value;
 				while (remaining > 0) {
 					chunkSize = remaining > fileHeader.getWorkSize() ? fileHeader
@@ -3082,29 +3074,6 @@ public class DOMFile extends BTree implements Lockable {
 				return true;
 			}
 			return false;
-		}
-	}
-
-	private final class RangeCallback implements BTreeCallback {
-
-		ArrayList values = new ArrayList();
-
-		public RangeCallback() {
-		}
-
-		public ArrayList getValues() {
-			return values;
-		}
-
-		public boolean indexInfo(Value value, long pointer)
-				throws TerminatedException {
-			RecordPos rec = findRecord(pointer);
-			short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
-			int dataStart = rec.offset + 2;
-			// int l = (int) VariableByteCoding.decode( page.data, offset );
-			// int dataStart = VariableByteCoding.getSize( l ) + offset;
-			values.add(new Value(rec.page.data, dataStart, l));
-			return true;
 		}
 	}
 

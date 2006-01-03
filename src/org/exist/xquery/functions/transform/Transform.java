@@ -321,9 +321,9 @@ public class Transform extends BasicFunction {
 				DocumentImpl doc = null;
 				try {
 					doc = context.getBroker().openDocument(docPath, Lock.READ_LOCK);
-					if (doc != null && (templates == null || doc.getLastModified() > lastModified))
+					if (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified))
 						templates = getSource(factory, doc);
-					lastModified = doc.getLastModified();
+					lastModified = doc.getMetadata().getLastModified();
 				} catch (PermissionDeniedException e) {
 					throw new XPathException("Permission denied to read stylesheet: " + uri);
 				} finally {

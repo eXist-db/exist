@@ -106,7 +106,7 @@ public class Replace extends Modification {
             for (int i = 0; i < ql.length; i++) {
                 node = ql[i];
                 doc = (DocumentImpl) node.getOwnerDocument();
-                doc.setIndexListener(listener);
+                doc.getMetadata().setIndexListener(listener);
                 modifiedDocs.add(doc);
                 if (!doc.getPermissions().validate(context.getUser(),
                         Permission.UPDATE))
@@ -139,7 +139,8 @@ public class Replace extends Modification {
                     default:
                         throw new EXistException("unsupported node-type");
                 }
-                doc.setLastModified(System.currentTimeMillis());
+                doc.getMetadata().clearIndexListener();
+                doc.getMetadata().setLastModified(System.currentTimeMillis());
                 context.getBroker().storeDocument(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }

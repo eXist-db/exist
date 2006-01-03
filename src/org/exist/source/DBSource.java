@@ -52,7 +52,7 @@ public class DBSource extends AbstractSource {
         this.broker = broker;
         this.doc = doc;
         this.key = doc.getName();
-        this.lastModified = doc.getLastModified();
+        this.lastModified = doc.getMetadata().getLastModified();
         this.checkEncoding = checkXQEncoding;
     }
     
@@ -76,7 +76,7 @@ public class DBSource extends AbstractSource {
             doc = broker.openDocument(key, Lock.READ_LOCK);
             if (doc == null)
                 return INVALID;
-            if (doc.getLastModified() > lastModified)
+            if (doc.getMetadata().getLastModified() > lastModified)
                 return INVALID;
             return VALID;
         } catch (PermissionDeniedException e) {

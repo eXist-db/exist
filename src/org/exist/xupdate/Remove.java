@@ -76,7 +76,7 @@ public class Remove extends Modification {
                         Permission.UPDATE))
                         throw new PermissionDeniedException(
                                 "permission to remove document denied");
-                doc.setIndexListener(listener);
+                doc.getMetadata().setIndexListener(listener);
                 modifiedDocs.add(doc);
                 parent = (NodeImpl) node.getParentNode();
                 if (parent.getNodeType() != Node.ELEMENT_NODE) {
@@ -86,8 +86,8 @@ public class Remove extends Modification {
                                     + "instead");
                 } else
                     parent.removeChild(transaction, node);
-                doc.clearIndexListener();
-                doc.setLastModified(System.currentTimeMillis());
+                doc.getMetadata().clearIndexListener();
+                doc.getMetadata().setLastModified(System.currentTimeMillis());
                 broker.storeDocument(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
