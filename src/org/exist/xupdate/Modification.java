@@ -227,7 +227,7 @@ public abstract class Modification {
 	protected void checkFragmentation(Txn transaction, DocumentSet docs) throws EXistException {
 	    for(Iterator i = docs.iterator(); i.hasNext(); ) {
 	        DocumentImpl next = (DocumentImpl) i.next();
-	        if(next.getSplitCount() > broker.getFragmentationLimit())
+	        if(next.getMetadata().getSplitCount() > broker.getFragmentationLimit())
 	            broker.defrag(transaction, next);
 	        broker.consistencyCheck(next);
 	    }

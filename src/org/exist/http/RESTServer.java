@@ -33,13 +33,12 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
-import java.net.URL;
-import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -55,6 +54,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
 import org.exist.dom.DocumentSet;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
@@ -253,7 +253,7 @@ public class RESTServer {
             resource = (DocumentImpl) broker.openDocument(path, Lock.READ_LOCK);
             if (resource != null) {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
-                        "application/xquery".equals(resource.getMimeType())) {
+                        "application/xquery".equals(resource.getMetadata().getMimeType())) {
                     // found an XQuery resource
                     try {
                         String result = executeXQuery(broker, resource, request, response, outputProperties);
@@ -309,7 +309,7 @@ public class RESTServer {
                                 "Not allowed to read resource");
                     if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
                         // binary resource
-                        response.setContentType(resource.getMimeType());
+                        response.setContentType(resource.getMetadata().getMimeType());
                         writeResponse(response, broker.getBinaryResourceData((BinaryDocument) resource));
                     } else {
                         // xml resource
@@ -325,7 +325,7 @@ public class RESTServer {
                             if (serializer.isStylesheetApplied()) {
                                 response.setContentType("text/html");
                             } else
-                                response.setContentType(resource.getMimeType());
+                                response.setContentType(resource.getMetadata().getMimeType());
                             writeResponse(response, output, encoding);
                         } catch (SAXException saxe) {
                             LOG.warn(saxe);
@@ -354,10 +354,11 @@ public class RESTServer {
             if(!resource.getPermissions().validate(broker.getUser(), Permission.READ)) {
                 throw new PermissionDeniedException("Permission to read resource " + path + " denied");
             }
-            response.setContentType(resource.getMimeType());
+            DocumentMetadata metadata = resource.getMetadata();
+            response.setContentType(metadata.getMimeType());
             response.setContentLength(resource.getContentLength());
-            response.addDateHeader("Last-Modified", resource.getLastModified());
-            response.addDateHeader("Created", resource.getCreated());
+            response.addDateHeader("Last-Modified", metadata.getLastModified());
+            response.addDateHeader("Created", metadata.getCreated());
         } finally {
             if(resource != null)
                 resource.getUpdateLock().release(Lock.READ_LOCK);
@@ -389,7 +390,7 @@ public class RESTServer {
             resource = (DocumentImpl) broker.openDocument(path, Lock.READ_LOCK);
             if (resource != null) {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
-                        "application/xquery".equals(resource.getMimeType())) {
+                        "application/xquery".equals(resource.getMetadata().getMimeType())) {
                     // found an XQuery resource
                     try {
                         String result = executeXQuery(broker, resource, request, response, outputProperties);
@@ -412,8 +413,6 @@ public class RESTServer {
         
         // normal POST: read the request content and check if
         // it is an XUpdate or a query request.
-        boolean indent = true;
-        boolean summary = false;
         int howmany = 10;
         int start = 1;
         boolean enclose = true;
@@ -675,7 +674,7 @@ public class RESTServer {
             if (mime.isXMLType()) {
                 URI url = tempFile.toURI();
                 IndexInfo info = collection.validate(transaction, broker, docPath, createInputSource(charset,url));
-                info.getDocument().setMimeType(contentType);
+                info.getDocument().getMetadata().setMimeType(contentType);
                 collection.store(transaction, broker, info, createInputSource(charset,url), false);
                 response.sendError(HttpServletResponse.SC_OK, "Document " + docPath + " stored.");
             } else {
@@ -790,7 +789,6 @@ public class RESTServer {
             HttpServletRequest request, HttpServletResponse response)
             throws BadRequestException, PermissionDeniedException,
             XPathException {
-        String result = null;
         try {
             Source source = new StringSource(query);
             XQuery xquery = broker.getXQueryService();
@@ -973,16 +971,16 @@ public class RESTServer {
                 if (doc.getPermissions().validate(broker.getUser(),
                         Permission.READ)) {
                     String resource = doc.getFileName();
+                    DocumentMetadata metadata = doc.getMetadata();
                     //TODO : use dedicated function in XmldbURI
                     int p = resource.lastIndexOf("/");
                     attrs.clear();
                     attrs.addAttribute("", "name", "name", "CDATA",
                             (p == Constants.STRING_NOT_FOUND) ? resource : resource.substring(p + 1));
                     attrs.addAttribute("", "created", "created", "CDATA",
-                            dateFormat.format(new Date(doc.getCreated())));
+                            dateFormat.format(new Date(metadata.getCreated())));
                     attrs.addAttribute("", "last-modified", "last-modified",
-                            "CDATA", dateFormat.format(new Date(doc
-                            .getLastModified())));
+                            "CDATA", dateFormat.format(new Date(metadata.getLastModified())));
                     printPermissions(attrs, doc.getPermissions());
                     serializer.startElement(NS, "resource", "exist:resource",
                             attrs);

@@ -56,6 +56,7 @@ import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.dom.ExtArrayNodeSet;
@@ -477,7 +478,7 @@ public class RpcConnection extends Thread {
                     ? "BinaryResource"
                     : "XMLResource");
             hash.put("content-length", new Integer(doc.getContentLength()));
-            hash.put("mime-type", doc.getMimeType());
+            hash.put("mime-type", doc.getMetadata().getMimeType());
             return hash;
         } finally {
             if(doc != null)
@@ -523,7 +524,6 @@ public class RpcConnection extends Thread {
     
     public String getDocument(User user, String name, Hashtable parametri)
     throws Exception {
-        long start = System.currentTimeMillis();
         DBBroker broker = null;
         
         Collection collection = null;
@@ -1016,9 +1016,10 @@ public class RpcConnection extends Thread {
                 LOG.debug("document " + documentPath + " not found!");
                 throw new EXistException("document not found");
             }
+            DocumentMetadata metadata = doc.getMetadata();
             Vector vector = new Vector(2);
-            vector.addElement(new Date(doc.getCreated()));
-            vector.addElement(new Date(doc.getLastModified()));
+            vector.addElement(new Date(metadata.getCreated()));
+            vector.addElement(new Date(metadata.getLastModified()));
             return vector;
         } finally {
             if(doc != null)
@@ -1140,11 +1141,11 @@ public class RpcConnection extends Thread {
             }
             
             if (created != null)
-                info.getDocument().setCreated( created.getTime());
+                info.getDocument().getMetadata().setCreated( created.getTime());
             
             
             if (modified != null)
-                info.getDocument().setLastModified( modified.getTime());
+                info.getDocument().getMetadata().setLastModified( modified.getTime());
             collection.store(txn, broker, info, source, false);
             transact.commit(txn);
             
@@ -1224,10 +1225,10 @@ public class RpcConnection extends Thread {
             }
             
             if (created != null)
-                info.getDocument().setCreated(created.getTime());
+                info.getDocument().getMetadata().setCreated(created.getTime());
             
             if (modified != null)
-                info.getDocument().setLastModified(modified.getTime());
+                info.getDocument().getMetadata().setLastModified(modified.getTime());
             collection.store(txn, broker, info, source, false);
             transact.commit(txn);
         } catch (Exception e) {
@@ -1279,9 +1280,9 @@ public class RpcConnection extends Thread {
             
             doc = collection.addBinaryResource(txn, broker, docName, data, mimeType);
             if (created != null)
-                doc.setCreated(created.getTime());
+                doc.getMetadata().setCreated(created.getTime());
             if (modified != null)
-                doc.setLastModified(modified.getTime());
+                doc.getMetadata().setLastModified(modified.getTime());
             transact.commit(txn);
         } catch (Exception e) {
             transact.abort(txn);
@@ -2088,7 +2089,6 @@ public class RpcConnection extends Thread {
     }
     
     public Hashtable summary(User user, int resultId) throws EXistException, XPathException {
-        long startTime = System.currentTimeMillis();
         QueryResult qr = (QueryResult) connectionPool.resultSets.get(resultId);
         if (qr == null)
             throw new EXistException("result set unknown or timed out");
@@ -2273,26 +2273,6 @@ public class RpcConnection extends Thread {
         return properties;
     }
     
-    private CachedQuery getCachedQuery(String query) {
-        CachedQuery found = null;
-        CachedQuery cached;
-        for (Iterator i = cachedExpressions.iterator(); i.hasNext(); ) {
-            cached = (CachedQuery) i.next();
-            if (cached.queryString.equals(query)) {
-                found = cached;
-                found.expression.reset();
-                cached.timestamp = System.currentTimeMillis();
-            } else {
-                // timeout: release the compiled expression
-                if (System.currentTimeMillis() - cached.timestamp > 120000) {
-                    LOG.debug("Releasing compiled expression");
-                    i.remove();
-                }
-            }
-        }
-        return found;
-    }
-    
     class CachedQuery {
         
         PathExpr expression;
@@ -2357,7 +2337,7 @@ public class RpcConnection extends Thread {
         RandomAccessFile os = new RandomAccessFile(file.getAbsolutePath(), "r");
         LOG.debug("Read from: " + start + " to: " + (start + len));
         os.seek(start);
-        int reada = os.read(buffer);
+        os.read(buffer);
         os.close();
         return buffer;
     }

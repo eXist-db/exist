@@ -33,6 +33,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
 import org.exist.http.webdav.WebDAV;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -86,8 +87,9 @@ public class Get extends AbstractWebDAVMethod {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
 				return;
 			}
-			response.setContentType(resource.getMimeType());
-			response.addDateHeader("Last-Modified", resource.getLastModified());
+			DocumentMetadata metadata = resource.getMetadata();
+			response.setContentType(metadata.getMimeType());
+			response.addDateHeader("Last-Modified", metadata.getLastModified());
 			
 			if(resource.getResourceType() == DocumentImpl.XML_FILE) {
 				Serializer serializer = broker.getSerializer();

@@ -88,7 +88,7 @@ public class Update extends Modification {
                     continue;
                 }
                 doc = (DocumentImpl) node.getOwnerDocument();
-                doc.setIndexListener(listener);
+                doc.getMetadata().setIndexListener(listener);
                 modifiedDocs.add(doc);
                 if (!doc.getPermissions().validate(broker.getUser(),
                         Permission.UPDATE))
@@ -123,7 +123,8 @@ public class Update extends Modification {
                     default:
                         throw new EXistException("unsupported node-type");
                 }
-                doc.setLastModified(System.currentTimeMillis());
+                doc.getMetadata().clearIndexListener();
+                doc.getMetadata().setLastModified(System.currentTimeMillis());
                 broker.storeDocument(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }

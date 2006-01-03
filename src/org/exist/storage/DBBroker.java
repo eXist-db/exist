@@ -508,6 +508,8 @@ public abstract class DBBroker extends Observable {
 
     public abstract void readDocuments(Collection collection);
 	
+    public abstract void readDocumentMeta(DocumentImpl doc);
+    
     /**
      * Stores the given data under the given binary resource descriptor 
      * (BinaryDocument).

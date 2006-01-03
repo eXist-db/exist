@@ -83,13 +83,13 @@ public class Append extends Modification {
 			for(int i = 0; i < ql.length; i++) {
 				node = ql[i];
 				doc = (DocumentImpl) node.getOwnerDocument();
-				doc.setIndexListener(listener);
+				doc.getMetadata().setIndexListener(listener);
 				modifiedDocs.add(doc);
 				if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 					throw new PermissionDeniedException("permission to update document denied");
                 node.appendChildren(transaction, children, child);
-                doc.clearIndexListener();
-                doc.setLastModified(System.currentTimeMillis());
+                doc.getMetadata().clearIndexListener();
+                doc.getMetadata().setLastModified(System.currentTimeMillis());
                 broker.storeDocument(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);
 			}

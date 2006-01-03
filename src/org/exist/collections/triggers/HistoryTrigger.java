@@ -63,7 +63,7 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
         
         // construct the destination document name
         DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss:SSS");
-        String name = formatter.format(new Date(doc.getLastModified()));
+        String name = formatter.format(new Date(doc.getMetadata().getLastModified()));
         
         // create the destination document
         try {

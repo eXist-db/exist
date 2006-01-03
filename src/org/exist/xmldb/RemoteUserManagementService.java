@@ -287,8 +287,8 @@ public class RemoteUserManagementService implements UserManagementService {
 			params.addElement(((RemoteCollection) coll).getPath());
 			Hashtable result = (Hashtable) parent.getClient().execute("getPermissions", params);
 			perm =
-				new Permission((String) result.get("owner"), (String) result.get("group"));
-			perm.setPermissions(((Integer) result.get("permissions")).intValue());
+				new Permission((String) result.get("owner"), (String) result.get("group"),
+						((Integer) result.get("permissions")).intValue());
 			return perm;
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -317,8 +317,8 @@ public class RemoteUserManagementService implements UserManagementService {
 			params.addElement(path);
 			Hashtable result = (Hashtable) parent.getClient().execute("getPermissions", params);
 			Permission perm =
-				new Permission((String) result.get("owner"), (String) result.get("group"));
-			perm.setPermissions(((Integer) result.get("permissions")).intValue());
+				new Permission((String) result.get("owner"), (String) result.get("group"),
+						((Integer) result.get("permissions")).intValue());
 			return perm;
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);

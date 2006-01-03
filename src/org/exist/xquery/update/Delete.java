@@ -101,7 +101,7 @@ public class Delete extends Modification {
                         transact.abort(transaction);    
                         throw new XPathException(getASTNode(), "permission to update document denied");
                     }
-                    doc.setIndexListener(listener);
+                    doc.getMetadata().setIndexListener(listener);
                     modifiedDocs.add(doc);
                     parent = (StoredNode) node.getParentNode();
                     if (parent.getNodeType() != Node.ELEMENT_NODE) {
@@ -112,8 +112,8 @@ public class Delete extends Modification {
                                         + "instead");
                     } else
                         parent.removeChild(transaction, node);
-                    doc.clearIndexListener();
-                    doc.setLastModified(System.currentTimeMillis());
+                    doc.getMetadata().clearIndexListener();
+                    doc.getMetadata().setLastModified(System.currentTimeMillis());
                     context.getBroker().storeDocument(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }

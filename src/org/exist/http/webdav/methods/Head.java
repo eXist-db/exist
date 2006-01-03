@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -71,10 +72,11 @@ public class Head extends AbstractWebDAVMethod {
 			if(!resource.getPermissions().validate(user, Permission.READ)) {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
 				return;
-			} 
-			response.setContentType(resource.getMimeType());
+			}
+			DocumentMetadata metadata = resource.getMetadata();
+			response.setContentType(metadata.getMimeType());
 			response.setContentLength(resource.getContentLength());
-			response.addDateHeader("Last-Modified", resource.getLastModified());
+			response.addDateHeader("Last-Modified", metadata.getLastModified());
 		} catch (EXistException e) {
 			throw new ServletException(e.getMessage(), e);
 		} catch (PermissionDeniedException e) {

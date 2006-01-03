@@ -1285,7 +1285,7 @@ public class XQueryContext {
                         if (sourceDoc == null)
                             throw new XPathException("source for module " + location + " not found in database");
                         if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                                !sourceDoc.getMimeType().equals("application/xquery"))
+                                !sourceDoc.getMetadata().getMimeType().equals("application/xquery"))
                             throw new XPathException("source for module " + location + " is not an XQuery or " +
                             "declares a wrong mime-type");
                         source = new DBSource(broker, (BinaryDocument) sourceDoc, true);

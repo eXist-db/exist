@@ -117,7 +117,7 @@ public class Put extends AbstractWebDAVMethod {
 			if(mime.isXMLType()) {
 				InputSource is = new InputSource(url);
 				IndexInfo info = collection.validate(txn, broker, path, is);
-                info.getDocument().setMimeType(contentType);
+                info.getDocument().getMetadata().setMimeType(contentType);
 				collection.release();
 				collectionLocked = false;
 				collection.store(txn, broker, info, is, false);
@@ -148,7 +148,7 @@ public class Put extends AbstractWebDAVMethod {
             transact.abort(txn);
 			response.sendError(HttpServletResponse.SC_CONFLICT);
 		} finally {
-			if(collectionLocked)
+			if(collectionLocked && collection != null)
 				collection.release();
 			pool.release(broker);
 		}

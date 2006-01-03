@@ -219,10 +219,6 @@ public final class ClusterCollection extends Collection {
         collection.addDocument(transaction, broker, doc);
     }
 
-    public void unlinkDocument(DocumentImpl doc) {
-        collection.unlinkDocument(doc);
-    }
-
     public Iterator collectionIterator() {
         return collection.collectionIterator();
     }

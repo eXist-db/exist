@@ -49,6 +49,7 @@ import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
 import org.exist.dom.DocumentSet;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -68,6 +69,7 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.util.SyntaxException;
 import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.serializer.DOMStreamer;
@@ -1016,12 +1018,14 @@ public  class Collection extends Observable
      */
     private void manageDocumentInformation(DBBroker broker, String name, DocumentImpl oldDoc,
             DocumentImpl document ) {
+    	DocumentMetadata metadata = new DocumentMetadata();
+    	document.setMetadata(metadata);
         if (oldDoc != null) {
-            document.setCreated(oldDoc.getCreated());
-            document.setLastModified(System.currentTimeMillis());
+            metadata.setCreated(oldDoc.getMetadata().getCreated());
+            metadata.setLastModified(System.currentTimeMillis());
             document.setPermissions(oldDoc.getPermissions());
         } else {
-            document.setCreated(System.currentTimeMillis());
+            metadata.setCreated(System.currentTimeMillis());
             document.getPermissions().setOwner(broker.getUser());
             document.getPermissions().setGroup(
                     broker.getUser().getPrimaryGroup());
@@ -1111,8 +1115,9 @@ public  class Collection extends Observable
             throw new PermissionDeniedException("Database is read-only");
         BinaryDocument blob = null;
         DocumentImpl oldDoc = getDocument(broker, name);
+
         blob = new BinaryDocument(broker, name, this);
-        blob.setMimeType(mimeType);
+
         try {
             getLock().acquire(Lock.WRITE_LOCK);
             checkPermissions(transaction, broker, name, oldDoc);
@@ -1130,6 +1135,8 @@ public  class Collection extends Observable
             }
             
             manageDocumentInformation(broker, name, oldDoc, blob );
+            DocumentMetadata metadata = blob.getMetadata();
+            metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
             
             if (oldDoc != null) {
                 LOG.debug("removing old document " + oldDoc.getFileName());
@@ -1140,10 +1147,10 @@ public  class Collection extends Observable
             }
             
             if(created != null)
-                blob.setCreated(created.getTime());
+                metadata.setCreated(created.getTime());
             
             if(modified != null)
-                blob.setLastModified(modified.getTime());
+            	metadata.setLastModified(modified.getTime());
             
             broker.storeBinaryResource(transaction, blob, data);
             addDocument(transaction, broker, blob);
