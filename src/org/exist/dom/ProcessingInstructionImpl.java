@@ -15,8 +15,8 @@ import org.w3c.dom.ProcessingInstruction;
  */
 public class ProcessingInstructionImpl extends StoredNode implements ProcessingInstruction {
 
-    protected String target;
-    protected String data;
+    protected String target = null;
+    protected String data = null;
 
     public ProcessingInstructionImpl() {
         super(Node.PROCESSING_INSTRUCTION_NODE);
@@ -25,7 +25,6 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     public ProcessingInstructionImpl( long gid ) {
         super( Node.PROCESSING_INSTRUCTION_NODE, gid );
     }
-
 
     /**
      *  Constructor for the ProcessingInstructionImpl object
@@ -103,7 +102,6 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         buf.append( " ?>" );
         return buf.toString();
     }
-
 
     /**
      *  Description of the Method
