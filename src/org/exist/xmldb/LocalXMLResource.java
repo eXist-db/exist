@@ -19,6 +19,8 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.DOMStreamer;
@@ -37,6 +39,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+import org.w3c.dom.DocumentType;
 
 /**
  * Local implementation of XMLResource.
@@ -448,4 +451,55 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	        pool.release(broker);
 	    }
 	}
+
+	public  DocumentType getDocType() throws XMLDBException {
+		DBBroker broker = null;
+		try {
+			broker = pool.get(user);
+			DocumentImpl document = getDocument(broker, false);
+			if (!document.getPermissions().validate(user, Permission.READ))
+				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+						"permission denied to read resource");
+
+			return  document.getDoctype();			
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(),
+					e);
+		} finally {
+			pool.release(broker);
+		}
+}
+	
+	public void setDocType(DocumentType doctype) throws XMLDBException {
+		DBBroker broker = null;
+		DocumentImpl document = null;
+		 TransactionManager transact = pool.getTransactionManager();
+	        Txn transaction = transact.beginTransaction();
+		try {
+			broker = pool.get(user);
+			document = openDocument(broker, Lock.WRITE_LOCK);
+           	
+			if (document == null) {
+                throw new EXistException("Resource "
+                        + document.getFileName() + " not found");
+            }
+			
+			if (!document.getPermissions().validate(user, Permission.UPDATE))
+				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
+						"User is not allowed to lock resource " + document.getFileName());
+			
+			document.setDocumentType(doctype);
+         	broker.storeDocument(transaction, document);
+            transact.commit(transaction);
+
+
+		} catch (EXistException e) {
+            transact.abort(transaction);
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(),
+					e);
+		} finally {
+			closeDocument(document, Lock.WRITE_LOCK);
+			pool.release(broker);
+		}
+}
 }

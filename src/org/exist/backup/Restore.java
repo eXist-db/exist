@@ -38,6 +38,9 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.w3c.dom.DocumentType;
+import org.exist.dom.DocumentTypeImpl;
+
 
 /**
  * Restore.java
@@ -228,6 +231,10 @@ public class Restore extends DefaultHandler {
 				final String mimetype = atts.getValue("mimetype");
 				final String created = atts.getValue("created");
 				final String modified = atts.getValue("modified");
+
+				final String publicid = atts.getValue("publicid");
+				final String systemid = atts.getValue("systemid");
+				final String namedoctype = atts.getValue("namedoctype");
 				
 				if (filename == null) filename = name;
 
@@ -250,8 +257,12 @@ public class Restore extends DefaultHandler {
 						current.createResource(name, type);
 					if (mimetype != null)
 						((EXistResource)res).setMimeType(mimetype);
-					
+
 					res.setContent(f);
+					
+				
+					
+
 					if(dialog == null)
 						System.out.println("Restoring " + name);
 					
@@ -273,6 +284,18 @@ public class Restore extends DefaultHandler {
 						} 
 					
 					current.storeResource(res, date_created, date_modified);
+					
+					
+					if (publicid != null  || systemid != null )
+					{
+						DocumentType doctype = new DocumentTypeImpl(namedoctype,publicid,systemid );
+						try {
+						((EXistResource)res).setDocType(doctype);
+						} catch (XMLDBException e1) {							
+							e1.printStackTrace();							
+						}
+					}
+					
 					UserManagementService service =
 						(UserManagementService) current.getService("UserManagementService", "1.0");
 					User u = new User(owner, null, group);
