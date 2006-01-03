@@ -86,9 +86,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	// the document's id
 	protected int docId = UNKNOWN_DOCUMENT_ID;
 
-	// document's document type
-	protected transient DocumentType docType = null;
-
 	// the document's file name
 	protected String fileName = null;
 	
@@ -789,11 +786,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     }
     
     public DocumentType getDoctype() {
-        return docType;
+        return getMetadata().getDocType();
     }     
     
     public void setDocumentType(DocumentType docType) {
-        this.docType = docType;
+        getMetadata().setDocType(docType);
     }    
     
     public Document getOwnerDocument() {
