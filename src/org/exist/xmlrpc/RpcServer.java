@@ -1841,4 +1841,31 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
          
          return retVal;
      }
+     
+     public Vector getDocType(User user, String documentName)
+			throws PermissionDeniedException, EXistException {
+		RpcConnection con = pool.get();
+		try {
+			return con.getDocType(user, documentName);
+		} catch (Exception e) {
+			handleException(e);
+			return null;
+		} finally {
+			pool.release(con);
+		}
+	}
+
+     public boolean setDocType(User user, String documentName, String doctypename, String publicid, String systemid) throws EXistException,
+             PermissionDeniedException {
+         RpcConnection con = null;
+         try {
+             con = pool.get();
+             return con.setDocType(user, documentName, doctypename, publicid, systemid);
+         } catch (Exception e) {
+             handleException(e);
+             return false;
+         } finally {
+             pool.release(con);
+         }
+     }
 }

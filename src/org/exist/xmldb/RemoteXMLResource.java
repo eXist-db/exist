@@ -21,6 +21,7 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
 import org.apache.xmlrpc.XmlRpcException;
+import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Compressor;
@@ -427,11 +428,45 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 
 
     public  DocumentType getDocType() throws XMLDBException {
-    	
-    	return null;
+    	DocumentType result = null;
+    	Vector params = new Vector(1);
+    	Vector request = null;
+    	params.addElement(path);
+    	try {
+    		
+    		request = (Vector) parent.getClient().execute("getDocType", params);
+    		
+    		if (!((String)request.get(0)).equals("")) {
+    			result = new DocumentTypeImpl((String)request.get(0),(String)request.get(1),(String)request.get(2) );
+    		}
+    		
+    	    return result;
+    	    
+    	} catch (XmlRpcException e) {
+    	    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+    	} catch (IOException e) {
+    	    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+    	}
         }
     
     public void setDocType(DocumentType doctype) throws XMLDBException {
+    	if (doctype != null ) {
+    		Vector params = new Vector(4);
+    		params.addElement(path);
+    		params.addElement(doctype.getName());
+    		params.addElement(doctype.getPublicId() == null ? "" : doctype.getPublicId());
+    		params.addElement(doctype.getSystemId() == null ? "" : doctype.getSystemId());
+    		
+    		try {
+    		    parent.getClient().execute("setDocType", params);
+    		} catch (XmlRpcException e) {
+    		    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+    		} catch (IOException e) {
+    		    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+    		}
+    		
+    		System.out.println("++++a"+doctype.getName());
+    	}
 		
 }
 }

@@ -805,5 +805,10 @@ public interface RpcAPI {
     
     /// DWES
     boolean isValid(User user, String name)	throws EXistException, PermissionDeniedException;
-
+    
+    Vector getDocType(User user, String documentName)
+	throws PermissionDeniedException, EXistException;
+    
+    boolean setDocType(User user, String documentName, String doctypename, String publicid, String systemid)
+	throws EXistException, PermissionDeniedException;
 }
