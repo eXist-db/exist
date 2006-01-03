@@ -465,7 +465,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     		    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
     		}
     		
-    		System.out.println("++++a"+doctype.getName());
+
     	}
 		
 }
