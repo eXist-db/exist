@@ -57,6 +57,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.DocumentTypeImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -2516,4 +2517,89 @@ public class RpcConnection extends Thread {
         }
         return retVal;
     }
+    
+    public Vector getDocType(User user, String documentPath)
+    throws PermissionDeniedException, EXistException {
+        DBBroker broker = null;
+        DocumentImpl doc = null;
+        
+        try {
+            broker = brokerPool.get(user);
+            documentPath = XmldbURI.checkPath2(documentPath, DBBroker.ROOT_COLLECTION);
+            doc = (DocumentImpl) broker.openDocument(documentPath, Lock.READ_LOCK);
+            if (doc == null) {
+                LOG.debug("document " + documentPath + " not found!");
+                throw new EXistException("document not found");
+            }
+            
+            Vector vector = new Vector(3);
+                        
+            if (doc.getDoctype() != null)
+            {            	
+            	vector.addElement(doc.getDoctype().getName()); 
+            	
+            	if (doc.getDoctype().getPublicId() != null) {  
+            		vector.addElement(doc.getDoctype().getPublicId());             	  
+            	} else {
+            		vector.addElement("");
+            	}
+            		
+            	if (doc.getDoctype().getSystemId() != null) {
+            		vector.addElement(doc.getDoctype().getSystemId());
+            	} else {
+            		vector.addElement("");
+            	}
+            } else
+            {
+            	vector.addElement("");
+            	vector.addElement("");
+            	vector.addElement("");
+            }
+            return vector;
+        } finally {
+            if(doc != null)
+                doc.getUpdateLock().release(Lock.READ_LOCK);
+            brokerPool.release(broker);
+        }
+    }
+    
+
+    public boolean setDocType(User user, String documentName, String doctypename, String publicid, String systemid) throws
+    Exception {
+        DBBroker broker = null;
+        DocumentImpl doc = null;
+        DocumentType result = null;
+        TransactionManager transact = brokerPool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
+        try {
+            broker = brokerPool.get(user);
+            doc = (DocumentImpl) broker.openDocument(documentName, Lock.WRITE_LOCK);
+            if (doc == null) {
+                throw new EXistException("Resource "
+                        + documentName + " not found");
+            }
+            if (!doc.getPermissions().validate(user, Permission.UPDATE))
+                throw new PermissionDeniedException("User is not allowed to lock resource " + documentName);
+            
+            if (!doctypename.equals("") ) {
+            	result = new DocumentTypeImpl(doctypename,
+            			publicid.equals("") ? null : publicid,
+            			systemid.equals("") ? null : systemid );
+            	
+            }
+            	            
+            doc.setDocumentType(result);
+            broker.storeDocument(transaction, doc);
+            transact.commit(transaction);
+            return true;
+        } catch (Exception e) {
+            transact.abort(transaction);
+            throw e;
+        } finally {
+            if(doc != null)
+                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            brokerPool.release(broker);
+        }
+    }
 }
+
