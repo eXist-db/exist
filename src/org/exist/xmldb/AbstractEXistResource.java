@@ -31,6 +31,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.LockException;
 import org.exist.xquery.Constants;
+import org.w3c.dom.DocumentType;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -118,4 +119,11 @@ public abstract class AbstractEXistResource implements EXistResource {
 		doc.getUpdateLock().release(lockMode);
 	}
 
+    public  DocumentType getDocType() throws XMLDBException {
+    	return null;
+        }
+
+    public void setDocType(DocumentType doctype) throws XMLDBException {
+		
+    }
 }
