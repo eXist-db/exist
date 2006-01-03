@@ -30,12 +30,14 @@ import org.exist.dom.QName;
 import org.exist.xquery.Atomize;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.DynamicCardinalityCheck;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.util.Error;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -57,7 +59,7 @@ public class FunConcat extends Function {
 				"the argument is treated as the zero-length string.",
 				new SequenceType[] {
                     //More complicated : see below
-				    new SequenceType(Type.ATOMIC, Cardinality.ONE_OR_MORE)
+				    new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
 				},
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				true
@@ -79,7 +81,9 @@ public class FunConcat extends Function {
 	public void setArguments(List arguments) throws XPathException {
 		for(Iterator i = arguments.iterator(); i.hasNext(); ) {
 			Expression next = (Expression) i.next();
-            if(!Type.subTypeOf(next.returnsType(), Type.ATOMIC))
+            next = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, next,
+                    new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));                
+            if (!Type.subTypeOf(next.returnsType(), Type.ATOMIC))
                 next = new Atomize(context, next);
 			steps.add(next);
 		}
