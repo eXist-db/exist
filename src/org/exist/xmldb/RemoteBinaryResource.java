@@ -33,6 +33,7 @@ import java.util.Vector;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
 import org.exist.xquery.Constants;
+import org.w3c.dom.DocumentType;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -212,5 +213,13 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
      */
     public String getMimeType() {
         return mimeType;
+    }
+    
+    public  DocumentType getDocType() throws XMLDBException {
+    	return null;
+        }
+
+    public void setDocType(DocumentType doctype) throws XMLDBException {
+		
     }
 }
