@@ -49,6 +49,13 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
         this.publicId = publicId;
         this.systemId = systemId;
     }
+    
+    public void clear() {
+        super.clear();   
+        this.publicId = null;;
+        this.systemId = null;
+        this.name = null;           
+    }     
 
     public String getName() {
         return name;
