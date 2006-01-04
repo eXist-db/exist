@@ -317,6 +317,9 @@ public class LocationStep extends Step {
         } else if(!(contextSet instanceof VirtualNodeSet) &&
         		axis == Constants.ATTRIBUTE_AXIS && 
         		contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD) {
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                        "OPTIMIZATION", "direct attribute selection");
             NodeProxy proxy = contextSet.get(0);
             if (proxy != null && proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
                 return contextSet.directSelectAttribute(test.getName(), inPredicate);          
