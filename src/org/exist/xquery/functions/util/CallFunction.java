@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionCall;

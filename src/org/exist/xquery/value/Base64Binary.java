@@ -21,11 +21,9 @@
  */
 package org.exist.xquery.value;
 
-import java.lang.reflect.Array;
 import java.text.Collator;
 
 import org.apache.xmlrpc.Base64;
-import org.exist.util.FastStringBuffer;
 import org.exist.xquery.XPathException;
 
 public class Base64Binary extends AtomicValue {

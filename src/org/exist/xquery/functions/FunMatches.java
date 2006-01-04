@@ -41,7 +41,6 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.DynamicCardinalityCheck;
-import org.exist.xquery.DynamicTypeCheck;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;

@@ -24,7 +24,6 @@
 package org.exist.xquery.value;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.Collator;
 
 import org.exist.storage.Indexable;

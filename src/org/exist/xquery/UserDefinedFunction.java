@@ -91,16 +91,12 @@ public class UserDefinedFunction extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		// Save the local variable stack
 		LocalVariable mark = context.markLocalVariables(true);
 		
 		QName varName;
-		LocalVariable var;
-		Sequence argSeq;
+		LocalVariable var;		
 		int j = 0;
 		for(Iterator i = parameters.iterator(); i.hasNext(); j++) {
 			varName = (QName)i.next();

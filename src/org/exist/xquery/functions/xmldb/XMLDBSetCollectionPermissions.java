@@ -25,27 +25,20 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
-
-import org.exist.xmldb.UserManagementService;
+import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.User;
-
-import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
+import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.IntegerValue;
-
-import java.util.Iterator;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
 public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipulator {
 
