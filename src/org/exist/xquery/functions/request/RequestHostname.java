@@ -71,7 +71,7 @@ public class RequestHostname extends BasicFunction {
 			throw new XPathException("Variable $request is not bound to an Java object.");
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		String uri;
+		
 		if (value.getObject() instanceof RequestWrapper)
 			return new StringValue(((RequestWrapper) value.getObject()).getRemoteHost());
 		else

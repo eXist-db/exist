@@ -122,8 +122,7 @@ public class ExtRegexp extends Function {
 				cached = new CachedResult((NodeSet)contextSequence, result);
 			return result;
 		} else {
-			Item current;
-			String arg;
+			Item current;			
 			NodeSet nodes;
 			NodeSet result = new ExtArrayNodeSet();
 			Sequence temp;

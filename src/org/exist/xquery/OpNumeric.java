@@ -27,7 +27,6 @@ import org.exist.dom.NodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.ComputableValue;
-import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;

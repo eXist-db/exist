@@ -22,19 +22,18 @@
  */
 package org.exist.xquery.functions.request;
 
+import java.net.URLDecoder;
+
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-
-import java.net.URLDecoder;
 
 /**
  * @author Adam Retter (adam.retter@devon.gov.uk)

@@ -25,7 +25,6 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.parser.XQueryAST;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
 /**
