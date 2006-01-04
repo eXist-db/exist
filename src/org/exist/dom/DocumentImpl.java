@@ -188,7 +188,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	    children = 0;
 	    treeLevelOrder = other.treeLevelOrder;
 	    treeLevelStartPoints = other.treeLevelStartPoints;
-	    metadata = new DocumentMetadata(other.getMetadata());
+	    metadata.setLastModified(other.getMetadata().getLastModified());
 	    // reset pageCount: will be updated during storage
 	    metadata.setPageCount(0);
 	}

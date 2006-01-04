@@ -71,7 +71,6 @@ public class DocumentMetadata {
 		this.mimeType = other.mimeType;
 		this.created = other.created;
 		this.lastModified = other.lastModified;
-		this.userLock = other.userLock;
 	}
 	
 	public long getCreated() {
@@ -132,11 +131,9 @@ public class DocumentMetadata {
         ostream.writeInt(pageCount);
         ostream.writeInt(userLock);
         if (docType != null) {
-        	System.out.println("Writing doctype info...");
             ostream.writeByte(HAS_DOCTYPE);
             ((DocumentTypeImpl) docType).write(ostream);
         } else {
-        	System.out.println("NO DOCTYPE");
             ostream.writeByte((byte) 0);
         }
 	}
