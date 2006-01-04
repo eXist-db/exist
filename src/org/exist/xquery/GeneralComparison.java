@@ -35,18 +35,12 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.Indexable;
-import org.exist.storage.NativeTextEngine;
-import org.exist.storage.analysis.SimpleTokenizer;
-import org.exist.storage.analysis.TextToken;
-import org.exist.storage.serializers.Serializer;
-import org.exist.xquery.functions.ExtFulltext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
@@ -180,10 +174,7 @@ public class GeneralComparison extends BinaryOp {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
-        
+
         Sequence result = null;
 		/* 
 		 * If we are inside a predicate and one of the arguments is a node set, 
@@ -192,9 +183,13 @@ public class GeneralComparison extends BinaryOp {
 		 * operand.
 		 */     
 		if (inPredicate)
-		{
-			if((getDependencies() & Dependency.CONTEXT_ITEM) == 0 && Type.subTypeOf(getLeft().returnsType(), Type.NODE))
-			{ 
+		{            
+			if (!(Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM))&&
+			        Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
+                
+                if(contextItem != null)
+                    contextSequence = contextItem.toSequence();                                
+                
 			    /*
 			     * TODO quickNodeSetCompare() is NOT being called for xqueries like -
 			     * 		collection("/db/CommunityDirectory/data")/communitygroup[validation/lastapproved/date = current-dateTime()]
@@ -218,7 +213,7 @@ public class GeneralComparison extends BinaryOp {
                         context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");                    
 					result = nodeSetCompare(contextSequence);
 				}
-			}
+            }            
 		}
 		
         if(result == null) {

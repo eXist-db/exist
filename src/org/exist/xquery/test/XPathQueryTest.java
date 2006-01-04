@@ -239,7 +239,7 @@ public class XPathQueryTest extends XMLTestCase {
 			
 			queryResource(service, "nested2.xml", "/RootElement/descendant::*/parent::ChildA", 1);
 			queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildB]/parent::RootElement", 0);
-			queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildA]/parent::RootElement", 1);
+            queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildA]/parent::RootElement", 1);
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}
@@ -252,18 +252,28 @@ public class XPathQueryTest extends XMLTestCase {
 			
 			queryResource(service, "nested2.xml", "//ChildB/ancestor::*[1]/self::ChildA", 1);
 			queryResource(service, "nested2.xml", "//ChildB/ancestor::*[2]/self::RootElement", 1);
+            queryResource(service, "nested2.xml", "//ChildB/ancestor::*[position() = 1]/self::ChildA", 1);
+            queryResource(service, "nested2.xml", "//ChildB/ancestor::*[position() = 2]/self::RootElement", 1);            
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}
 	}
 	
-	public void bugtestAncestorPosition() {
+	public void testPosition() {
 		try {
-			XQueryService service = 
-				storeXMLStringAndGetQueryService("nested2.xml", nested2);
-			
-			queryResource(service, "nested2.xml", "//ChildB/ancestor::*[position() = 1]/self::ChildA", 1);
-			queryResource(service, "nested2.xml", "//ChildB/ancestor::*[position() = 2]/self::RootElement", 1);
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("numbers.xml", numbers);
+            
+            queryResource(service, "numbers.xml", "//item[position() = 3]", 1);
+            queryResource(service, "numbers.xml", "//item[position() < 3]", 2);
+            queryResource(service, "numbers.xml", "//item[position() <= 3]", 3);
+            queryResource(service, "numbers.xml", "//item[position() > 3]", 1);     
+            queryResource(service, "numbers.xml", "//item[position() >= 3]", 2);  
+            queryResource(service, "numbers.xml", "//item[position() eq 3]", 1);
+            queryResource(service, "numbers.xml", "//item[position() lt 3]", 2);
+            queryResource(service, "numbers.xml", "//item[position() le 3]", 3);
+            queryResource(service, "numbers.xml", "//item[position() gt 3]", 1);     
+            queryResource(service, "numbers.xml", "//item[position() ge 3]", 2);              
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}
@@ -271,11 +281,11 @@ public class XPathQueryTest extends XMLTestCase {
 	
 	public void testNumbers() {
 		try {
-			XQueryService service = 
-				storeXMLStringAndGetQueryService("numbers.xml", numbers);
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("numbers.xml", numbers);
 			
-			ResourceSet result = queryResource(service, "numbers.xml", "sum(/test/item/price)", 1);
-			assertEquals( "96.94", result.getResource(0).getContent() );
+            ResourceSet result = queryResource(service, "numbers.xml", "sum(/test/item/price)", 1);
+            assertEquals( "96.94", result.getResource(0).getContent() );
 
 			result = queryResource(service, "numbers.xml", "round(sum(/test/item/price))", 1);
 			assertEquals( "97.0", result.getResource(0).getContent() );
@@ -548,7 +558,7 @@ public class XPathQueryTest extends XMLTestCase {
 	/** test involving ancestor::
 	* >>>>>>> currently this produces variable corruption :
 	* 			The result is the ancestor <<<<<<<<<< */
-	public void bugtestAncestor() {
+	public void testAncestor() {
 		ResourceSet result;
 		try {
 			XQueryService service = 

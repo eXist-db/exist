@@ -117,8 +117,8 @@ public class Predicate extends PathExpr {
 			result = Sequence.EMPTY_SEQUENCE;
         else {
             // just to be sure: change mode to boolean if the predicate expression returns a number
-            //TODO : the code, likely correct, seems to implement the exact contrary     
-            if(Type.subTypeOf(inner.returnsType(), Type.NUMBER) && executionMode == BOOLEAN) {
+            //TODO : the code, likely to be correct, implements the exact contrary     
+            if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && executionMode == BOOLEAN) {
                 executionMode = POSITIONAL;
             }        
     		switch(executionMode) {
@@ -161,12 +161,11 @@ public class Predicate extends PathExpr {
 	private Sequence evalBoolean(Sequence contextSequence, Expression inner) throws XPathException {
 		Sequence result = new ValueSequence();
 		int p = 0;
-        //TODO : as such the following expression is useless : do we have a 0 or 1 based sequence ?
-		context.setContextPosition(0);
-		for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
+		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
 			Item item = i.nextItem();
-			context.setContextPosition(p);
-			Sequence innerSeq = inner.eval(contextSequence, item);
+			context.setContextPosition(p); 
+            Sequence innerSeq;            
+            innerSeq = inner.eval(contextSequence, item);
 			if(innerSeq.effectiveBooleanValue())
 				result.add(item);
 		}
