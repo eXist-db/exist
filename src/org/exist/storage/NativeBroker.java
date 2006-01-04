@@ -1570,7 +1570,8 @@ public class NativeBroker extends DBBroker {
 			doc.getMetadata().setPageCount(tempDoc.getMetadata().getPageCount());
 			
 			storeDocument(transaction, doc);
-			LOG.debug("new doc address = " + StorageAddress.toString(doc.getInternalAddress()));
+            //Commented out since DocmentImpl has no more internal address
+			//LOG.debug("new doc address = " + StorageAddress.toString(doc.getInternalAddress()));
 			closeDocument();
 //			new DOMTransaction(this, domDb, Lock.READ_LOCK) {
 //				public Object start() throws ReadOnlyException {
@@ -3280,7 +3281,8 @@ public class NativeBroker extends DBBroker {
                 else
                     doc = new DocumentImpl(NativeBroker.this, collection);
                 doc.read(istream);
-                doc.setInternalAddress(pointer);
+                //Commented since 
+                //doc.setInternalAddress(pointer);
                 collection.addDocument(null, NativeBroker.this, doc);
             } catch (EOFException e) {
                 LOG.debug("EOFException while reading document data", e);

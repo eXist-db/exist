@@ -1614,8 +1614,9 @@ public class DOMFile extends BTree implements Lockable {
             if (showPageContents)
                 LOG.debug(debugPageContents(page));
 		}
-		buf.append("; Document metadata at "
-				+ StorageAddress.toString(doc.getInternalAddress()));
+        //Commented out since DocmentImpl has no more internal address
+		//buf.append("; Document metadata at "
+		//		+ StorageAddress.toString(doc.getInternalAddress()));
 		return buf.toString();
 	}
 

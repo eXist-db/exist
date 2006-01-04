@@ -103,7 +103,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	
 	protected transient long metadataLocation = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 	
-	protected DocumentMetadata metadata = null;
+	private DocumentMetadata metadata = null;
 	
 	public DocumentImpl(DBBroker broker, Collection collection) {
 		this.broker = broker;
@@ -486,7 +486,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         this.broker = broker;
     }    
 
+    /*
     public long getGID() {
+        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
         return 0;
     }
 
@@ -496,16 +498,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     public long getInternalAddress() {
         return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
     }
-    
-    /* (non-Javadoc)
-     * @see org.exist.dom.NodeImpl#setInternalAddress(long)
-     */
+
     public void setInternalAddress(long address) {
     }    
 
     public long getParentGID() {
         return StoredNode.NODE_IMPL_UNKNOWN_GID;
     }
+    */
 
     /* (non-Javadoc)
      * @see org.exist.dom.NodeImpl#updateChild(org.w3c.dom.Node, org.w3c.dom.Node)
@@ -630,37 +630,35 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * @see org.w3c.dom.Node#getFirstChild()
 	 */
 	public Node getFirstChild() {
-		if(children == 0)
+		if (children == 0)
 		    return null;
 		long address = childList[0];
-		return broker.objectWith(new NodeProxy(this,
-				// 1,
-				NodeProxy.DOCUMENT_ELEMENT_GID, address));
+		return broker.objectWith(
+            new NodeProxy(this, NodeProxy.DOCUMENT_ELEMENT_GID, address)
+        );
 	}
 	
 	public long getFirstChildAddress() {
-		if(children == 0)
+		if (children == 0)
 			return NodeProxy.UNKNOWN_NODE_ADDRESS;
 		return childList[0];
 	}
 	
 	public NodeList getChildNodes() {
-		NodeListImpl list = new NodeListImpl();
-		Node child;
+		NodeListImpl list = new NodeListImpl();		
 		for (int i = 0; i < children; i++) {
-			child = broker.objectWith(new NodeProxy(this,
-					// 1,
-					NodeProxy.DOCUMENT_ELEMENT_GID, childList[i]));
+            Node child = broker.objectWith(
+			        new NodeProxy(this,	NodeProxy.DOCUMENT_ELEMENT_GID, childList[i])
+                );
 			list.add(child);
 		}
 		return list;
 	}
     
 	protected Node getPreviousSibling(StoredNode node) {
-		NodeList cl = getChildNodes();
-		StoredNode next;
+		NodeList cl = getChildNodes();		
 		for (int i = 0; i < cl.getLength(); i++) {
-			next = (StoredNode) cl.item(i);
+            StoredNode next = (StoredNode) cl.item(i);
 			if (StorageAddress.equals(node.getInternalAddress(), next.getInternalAddress()))
 				return i == 0 ? null : cl.item(i - 1);
 		}
@@ -668,10 +666,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	protected Node getFollowingSibling(StoredNode node) {
-		NodeList cl = getChildNodes();
-		StoredNode next;
+		NodeList cl = getChildNodes();		
 		for (int i = 0; i < cl.getLength(); i++) {
-			next = (StoredNode) cl.item(i);
+            StoredNode next = (StoredNode) cl.item(i);
 			if (StorageAddress.equals(node.getInternalAddress(), next.getInternalAddress()))
 				return i == children - 1 ? null : cl.item(i + 1);
 		}
