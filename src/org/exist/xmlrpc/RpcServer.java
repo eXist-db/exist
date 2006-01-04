@@ -1498,7 +1498,7 @@ try {
     }
     
     public boolean shutdown(User user, long delay) throws PermissionDeniedException {
-        if (!user.hasGroup("dba"))
+        if (!user.hasDbaRole())
                 throw new PermissionDeniedException("not allowed to shut down"
                         + "the database");
         if(delay > 0) {
@@ -1536,7 +1536,7 @@ try {
     }
 
 public boolean dataBackup(User user, String dest) throws PermissionDeniedException {
-    if (!user.hasGroup("dba")) {
+    if (!user.hasDbaRole()) {
         throw new PermissionDeniedException("not allowed to backup the database");
     }
 	

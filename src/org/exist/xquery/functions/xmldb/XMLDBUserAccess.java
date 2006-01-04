@@ -26,8 +26,6 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.util.Iterator;
-
 import org.exist.dom.QName;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
@@ -114,9 +112,9 @@ public class XMLDBUserAccess extends BasicFunction {
 				throw new XPathException(getASTNode(), "User not found: " + userName);
 			if(isCalledAs("get-user-groups")) {
 				ValueSequence groups = new ValueSequence();
-				for (Iterator i = user.getGroups(); i.hasNext(); ) {
-					String group = (String) i.next();
-					groups.add(new StringValue(group));
+				String[] gl = user.getGroups();
+				for (int i = 0; i < gl.length; i++) {
+					groups.add(new StringValue(gl[i]));
 				}
 				return groups;
 			// get-user-home

@@ -23,7 +23,6 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
-import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.LocalCollection;
@@ -72,7 +71,7 @@ public class XMLDBIsAdmin extends BasicFunction {
 			User user = ums.getUser(userName);
 			if(user == null)
 				return Sequence.EMPTY_SEQUENCE;
-			return user.hasGroup(SecurityManager.DBA_GROUP) ? BooleanValue.TRUE : BooleanValue.FALSE;
+			return user.hasDbaRole() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		} catch (XMLDBException xe) {
 			throw new XPathException(getASTNode(), "Failed to access user " + userName, xe);
         } finally {

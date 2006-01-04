@@ -27,7 +27,7 @@ public class LocalDatabaseInstanceManager implements DatabaseInstanceManager {
 	}
 
 	public void shutdown(long delay) throws XMLDBException {
-		if(!user.hasGroup("dba"))
+		if(!user.hasDbaRole())
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
 				"only users in group dba may " +				
 				"shut down the database");

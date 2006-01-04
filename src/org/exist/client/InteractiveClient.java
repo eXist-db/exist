@@ -710,11 +710,11 @@ public class InteractiveClient {
                 System.out.println("-----------------------------------------");
                 for (int i = 0; i < users.length; i++) {
                     System.out.print(users[i].getName() + "\t\t");
-                    for (Iterator j = users[i].getGroups(); j.hasNext(); ) {
-                        System.out.print(j.next());
-                        if (j.hasNext())
+                    String[] groups = users[i].getGroups();
+                    for (int j = 0; j < groups.length; j++) {
+                        System.out.print(groups[j]);
+                        if (j + 1< groups.length)
                             System.out.print(", ");
-                        
                     }
                     System.out.println();
                 }

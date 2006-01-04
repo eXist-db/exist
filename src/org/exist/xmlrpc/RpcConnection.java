@@ -1036,8 +1036,9 @@ public class RpcConnection extends Thread {
         Hashtable tab = new Hashtable();
         tab.put("name", u.getName());
         Vector groups = new Vector();
-        for (Iterator i = u.getGroups(); i.hasNext(); )
-            groups.addElement(i.next());
+        String[] gl = u.getGroups();
+		for (int i = 0; i < gl.length; i++)
+			groups.addElement(gl[i]);
         tab.put("groups", groups);
         if (u.getHome() != null)
             tab.put("home", u.getHome());
@@ -1052,8 +1053,9 @@ public class RpcConnection extends Thread {
             final Hashtable tab = new Hashtable();
             tab.put("name", users[i].getName());
             Vector groups = new Vector();
-            for (Iterator j = users[i].getGroups(); j.hasNext(); )
-                groups.addElement(j.next());
+            String[] gl = users[i].getGroups();
+    		for (int j = 0; j < gl.length; j++)
+                groups.addElement(gl[j]);
             tab.put("groups", groups);
             if (users[i].getHome() != null)
                 tab.put("home", users[i].getHome());
