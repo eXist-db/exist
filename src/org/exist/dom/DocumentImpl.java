@@ -369,16 +369,22 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     }    
     
    public long getLevelStartPoint(int level) {
-        if (level < 0 || level > maxDepth) {
-            LOG.fatal("tree level " + level + " does not exist");
-            return -1;
-        }
+       //TODO : check *before* calling ? -pb
+       if (level < 0) {           
+           return -1;
+       }
+       if (level > maxDepth) {           
+           LOG.error("tree level " + level + " does not exist (maximum " + maxDepth + ")");
+           //throw an exception ? -pb
+           return -1;
+       }       
         return treeLevelStartPoints[level];
     }
 
-    public int getTreeLevelOrder(int level) {
+    public int getTreeLevelOrder(int level) {        
         if (level > maxDepth) {
-            LOG.fatal("tree level " + level + " does not exist");
+            //throw an exception ? -pb
+            LOG.error("tree level " + level + " does not exist (maximum " + maxDepth + ")");
             return -1;
         }
         return treeLevelOrder[level];
@@ -398,11 +404,13 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     } 
     
     public void setTreeLevelOrder(int level, int order) {
+        //TODO : range check ? -pb
         treeLevelOrder[level] = order;
     }    
 
-    public void setMaxDepth(int depth) {
+    public void setMaxDepth(int depth) {        
         maxDepth = depth;
+        //Expand the array if maxDepth is now too big
         if (treeLevelOrder.length <= maxDepth) {
             int temp[] = new int[maxDepth + 1];
             System.arraycopy(treeLevelOrder, 0, temp, 0, treeLevelOrder.length);
@@ -412,12 +420,13 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     }
 
     public void incMaxDepth() {
-        ++maxDepth;
+        ++maxDepth; 
+        //Expand the array if maxDepth is now too big
         if (treeLevelOrder.length < maxDepth) {
             int temp[] = new int[maxDepth];
-            System.arraycopy(treeLevelOrder, 0, temp, 0, maxDepth - 1);
-            treeLevelOrder = temp;
+            System.arraycopy(treeLevelOrder, 0, temp, 0, maxDepth - 1);            
             treeLevelOrder[maxDepth - 1] = 0;
+            treeLevelOrder = temp;
         }
     }    
 	
