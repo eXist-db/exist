@@ -281,7 +281,7 @@ public class SecurityManager {
 	}
 	
 	public synchronized boolean hasAdminPrivileges(User user) {
-		return user.hasGroup(DBA_GROUP);
+		return user.hasDbaRole();
 	}
 
 	public synchronized boolean hasUser(String name) {
@@ -344,11 +344,10 @@ public class SecurityManager {
 		if (user.getUID() < 0)
 			user.setUID(++nextUserId);
 		users.put(user.getUID(), user);
-		String group;
-		for (Iterator i = user.getGroups(); i.hasNext();) {
-			group = (String) i.next();
-			if (!hasGroup(group))
-				addGroup(group);
+		String[] groups = user.getGroups();
+		for (int i = 0; i < groups.length; i++) {
+			if (!hasGroup(groups[i]))
+				addGroup(groups[i]);
 		}
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();

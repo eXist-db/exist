@@ -1159,7 +1159,7 @@ public class ClientFrame extends JFrame
                 }
             } else {
                 name = "...";
-                perm = new Permission("", "");
+                perm = new Permission("", "", Permission.DEFAULT_PERM);
             }
             ResourcePropertyDialog dialog = new ResourcePropertyDialog(this,
                     service, name, perm, created, modified, mimeType);

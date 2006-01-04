@@ -1,10 +1,7 @@
 package org.exist.security;
 
 import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.exist.util.SyntaxException;
@@ -51,18 +48,6 @@ public class Permission {
     }
 
     /**
-     *  Construct a Permission with given user and group
-     *
-     *@param  user   Description of the Parameter
-     *@param  group  Description of the Parameter
-     */
-    public Permission( String user, String group ) {
-        this.owner = user;
-        this.ownerGroup = group;
-    }
-
-
-    /**
      *  Construct a permission with given user, group and
      *  permissions
      *
@@ -74,22 +59,6 @@ public class Permission {
         this.owner = user;
         this.ownerGroup = group;
         this.permissions = permissions;
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     *@param  args           Description of the Parameter
-     *@exception  Exception  Description of the Exception
-     */
-    public static void main( String args[] ) throws Exception {
-        Permission perm = new Permission( "wolf", "bla", 0 );
-        System.out.println( perm );
-        perm.setPermissions( "user=+read,+write,+update,group=+read,other=+read" );
-        System.out.println( perm );
-        perm.setPermissions( "group=-read,user=+write,-update,group=+read" );
-        System.out.println( perm );
     }
 
 
@@ -325,15 +294,17 @@ public class Permission {
      */
     public boolean validate( User user, int perm ) {
         // group dba has full access
-        if ( user.hasGroup( SecurityManager.DBA_GROUP ) )
+        if ( user.hasDbaRole() )
             return true;
         // check if the user owns this resource
         if ( user.getName().equals( owner ) )
             return validateUser( perm );
         // check groups
-        for ( Iterator i = user.getGroups(); i.hasNext();  )
-            if ( ( (String) i.next() ).equals( ownerGroup ) )
+        String[] groups = user.getGroups();
+        for (int i = 0; i < groups.length; i++) {
+        	if ( groups[i].equals( ownerGroup ) )
                 return validateGroup( perm );
+		}
 
         // finally, check public access rights
         return validatePublic( perm );
@@ -351,19 +322,6 @@ public class Permission {
     private final boolean validateUser( int perm ) {
         perm = perm << 6;
         return ( permissions & perm ) == perm;
-    }
-
-    public void write( DataOutput ostream ) throws IOException {
-        ostream.writeUTF( owner );
-        ostream.writeUTF( ownerGroup );
-        ostream.writeByte( permissions );
-    }
-    
-    public void store( String prefix, Properties props ) {
-    	props.setProperty( prefix + ".owner", owner );
-    	props.setProperty( prefix + ".group", ownerGroup );
-    	props.setProperty( prefix + ".permissions", 
-    		Integer.toOctalString( permissions ) );
     }
 }
 

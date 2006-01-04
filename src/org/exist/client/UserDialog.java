@@ -14,7 +14,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
-import java.util.Iterator;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -405,8 +404,10 @@ class UserDialog extends JFrame {
 		password1.setText("");
 		password2.setText("");
 		homedir.setText(user.getHome());
-		for (Iterator i = user.getGroups(); i.hasNext();)
-			groupsModel.addElement(i.next());
+		String[] groups = user.getGroups();
+		for (int i = 0; i < groups.length; i++) {
+			groupsModel.addElement(groups[i]);
+		}
 	}
 
 	class UserTableModel extends AbstractTableModel {
@@ -457,9 +458,10 @@ class UserDialog extends JFrame {
 					return users[rowIndex].getName();
 				case 2 :
 					StringBuffer buf = new StringBuffer();
-					for (Iterator i = users[rowIndex].getGroups(); i.hasNext();) {
-						buf.append((String) i.next());
-						if (i.hasNext())
+					String[] groups = users[rowIndex].getGroups();
+					for (int i = 0; i < groups.length; i++) {
+						buf.append(groups[i]);
+						if (i + 1 < groups.length)
 							buf.append(';');
 					}
 					return buf.toString();

@@ -5,16 +5,15 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.exist.EXistException;
-import org.exist.security.*;
-import org.exist.security.User;
 import org.exist.security.SecurityManager;
+import org.exist.security.User;
+import org.exist.security.XmldbPrincipal;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -122,9 +121,9 @@ public class XmldbRealm extends org.apache.catalina.realm.RealmBase {
 		
 		// Accumulate the list of roles for this user
 		ArrayList list = new ArrayList();
-		Iterator groups = user.getGroups();
-		while (groups.hasNext()) {
-			list.add(groups.next());
+		String[] groups = user.getGroups();
+		for (int i = 0; i < groups.length; i++) {
+			list.add(groups[i]);
 		}
 		return (Principal) new DefaultXmldbPrinciple(this, username, user.getPassword(), list);
 	}

@@ -53,7 +53,6 @@ public class Restore extends DefaultHandler {
 	private String uri;
 	private String username;
 	private String pass;
-	private String adminPass = null;
 	private XMLReader reader;
 	private CollectionImpl current;
 	private Stack stack = new Stack();

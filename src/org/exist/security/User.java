@@ -2,12 +2,9 @@
 package org.exist.security;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.exist.util.DatabaseConfigurationException;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -53,11 +50,17 @@ public class User {
 		}
 	}
 	
-    private ArrayList groups = new ArrayList( 2 );
+    private String[] groups = null;
     private String password = null;
     private String user;
     private int uid = -1;
     private String home = null;
+    
+    /** 
+     * Indicates if the user belongs to the dba group,
+     * i.e. is a superuser.
+     */
+    private boolean hasDbaRole = false;
 
     /**
      *  Create a new user with name and password
@@ -122,7 +125,7 @@ public class User {
             group = gl.item( i );
             if(group.getNodeType() == Node.ELEMENT_NODE &&
             	group.getLocalName().equals(GROUP))
-            	groups.add( group.getFirstChild().getNodeValue() );
+            	addGroup( group.getFirstChild().getNodeValue() );
         }
     }
 
@@ -133,13 +136,25 @@ public class User {
      *@param  group  The feature to be added to the Group attribute
      */
     public final void addGroup( String group ) {
-        groups.add( group );
+    	if (groups == null) {
+    		groups = new String[1];
+    		groups[0] = group;
+    	} else {
+    		int len = groups.length;
+    		String[] ngroups = new String[len + 1];
+    		System.arraycopy(groups, 0, ngroups, 0, len);
+    		ngroups[len] = group;
+    		groups = ngroups;
+    	}
+    	if (SecurityManager.DBA_GROUP.equals(group))
+    		hasDbaRole = true;
     }
 
-    public final void setGroups(Iterator iter) {
-    	while(iter.hasNext()) {
-    		addGroup((String)iter.next());
-    	}
+    public final void setGroups(String[] groups) {
+    	this.groups = groups;
+    	for (int i = 0; i < groups.length; i++)
+    		if (SecurityManager.DBA_GROUP.equals(groups[i]))
+    			hasDbaRole = true;
     }
 
     /**
@@ -147,11 +162,14 @@ public class User {
      *
      *@return    The groups value
      */
-    public final Iterator getGroups() {
-        return groups.iterator();
+    public final String[] getGroups() {
+        return groups == null ? new String[0] : groups;
     }
 
-
+    public final boolean hasDbaRole() {
+    	return hasDbaRole;
+    }
+    
     /**
      *  Get the user name
      *
@@ -181,9 +199,9 @@ public class User {
      *@return    The primaryGroup value
      */
     public final String getPrimaryGroup() {
-        if ( groups.size() == 0 )
+        if ( groups == null || groups.length == 0 )
             return null;
-        return (String) groups.get( 0 );
+        return (String) groups[0];
     }
 
 
@@ -194,10 +212,8 @@ public class User {
      *@return        Description of the Return Value
      */
     public final boolean hasGroup( String group ) {
-        String g;
-        for (int i = 0; i < groups.size(); i++) {
-        	g = (String) groups.get(i);
-        	if (group.equals(g))
+        for (int i = 0; i < groups.length; i++) {
+        	if (groups[i].equals(group))
         		return true;
         }
         return false;
@@ -254,11 +270,9 @@ public class User {
 			buf.append("\">");
 		} else
 			buf.append(">");
-        String group;
-        for ( Iterator i = groups.iterator(); i.hasNext();  ) {
-            group = (String) i.next();
+        for (int i = 0; i < groups.length; i++) {
             buf.append( "<group>" );
-            buf.append( group );
+            buf.append( groups[i] );
             buf.append( "</group>" );
         }
         buf.append( "</user>" );
