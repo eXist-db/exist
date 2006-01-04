@@ -75,6 +75,7 @@ public class BinaryDocument extends DocumentImpl {
 		ostream.writeLong(pageNr);
 		SecurityManager secman = broker.getBrokerPool().getSecurityManager();
 		if (secman == null) {
+            //TODO : explain those 2 values -pb
 			ostream.writeInt(1);
 			ostream.writeInt(1);
 		} else {
@@ -83,8 +84,7 @@ public class BinaryDocument extends DocumentImpl {
 			ostream.writeInt(user.getUID());
 			ostream.writeInt(group.getId());
 		}
-		ostream.writeByte((byte) permissions.getPermissions());
-		
+		ostream.writeByte((byte) permissions.getPermissions());		
 		getMetadata().write(ostream);
 	}
 

@@ -228,7 +228,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	
 	public User getUserLock() {
 		int lockOwnerId = getMetadata().getUserLock();
-		if(lockOwnerId < 1)
+		if(lockOwnerId == 0)
 			return null;
 		final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
 		return secman.getUser(lockOwnerId);
@@ -287,8 +287,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		try {
             ostream.writeInt(docId);
             ostream.writeUTF(fileName);
-            SecurityManager secman = broker.getBrokerPool().getSecurityManager();
+            final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
             if (secman == null) {
+                //TODO : explain those 2 values -pb
                 ostream.writeInt(1);
                 ostream.writeInt(1);
             } else {
@@ -297,22 +298,18 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
                 ostream.writeInt(user.getUID());
                 ostream.writeInt(group.getId());
             }
-            ostream.writeInt(permissions.getPermissions());
-            
+            ostream.writeInt(permissions.getPermissions());            
             ostream.writeInt(maxDepth);
-            for (int i = 0; i < maxDepth; i++) {
-                //System.out.println("k[" + i + "] = " + treeLevelOrder[i]);
+            for (int i = 0; i < maxDepth; i++) {                
                 ostream.writeInt(treeLevelOrder[i]);
             }
             ostream.writeInt(children);
-			if(children > 0) {
+            if (children > 0) {
 			    for(int i = 0; i < children; i++) {
 					ostream.writeInt(StorageAddress.pageFromPointer(childList[i]));
 					ostream.writeShort(StorageAddress.tidFromPointer(childList[i]));
 			    }
-			}
-            
-            
+			}            
             StorageAddress.write(metadataLocation, ostream);
 		} catch (IOException e) {
 			LOG.warn("io error while writing document data", e);
@@ -323,10 +320,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		try {
             docId = istream.readInt();
             fileName = istream.readUTF();
-
             final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
             final int uid = istream.readInt();
             final int gid = istream.readInt();
+            //TODO : Why such a mask ? -pb
             final int perm = (istream.readInt() & 0777);
             if (secman == null) {
                 permissions.setOwner(SecurityManager.DBA_USER);
@@ -337,42 +334,30 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
                 if (group != null)
                     permissions.setGroup(group.getName());
             }
-            permissions.setPermissions(perm);
-            
+            permissions.setPermissions(perm);            
             maxDepth = istream.readInt();
             treeLevelOrder = new int[maxDepth + 1];
             for (int i = 0; i < maxDepth; i++) {
                 treeLevelOrder[i] = istream.readInt();
             }
-            children = istream.readInt();
+            //Should be > 0 ;-)
+            children = istream.readInt();            
 			childList = new long[children];
 			for (int i = 0; i < children; i++) { 
 				childList[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
 			}
-            
             metadataLocation = StorageAddress.read(istream);
 		} catch (IOException e) {
-			LOG.warn("IO error while reading document data for document " + fileName, e);
-		}
-        
+            LOG.error("IO error while reading document data for document " + fileName, e);
+		}        
         try {
             calculateTreeLevelStartPoints();
         } catch (EXistException e) {
+            LOG.error(e.getMessage(), e);
+            //TODO :rethrow ? -pb
         }
 	}
     
-    public void setTreeLevelOrder(int level, int order) {
-        treeLevelOrder[level] = order;
-    }    
-    
-   public long getLevelStartPoint(int level) {
-        if (level > maxDepth || level < 0) {
-            LOG.fatal("tree level " + level + " does not exist");
-            return -1;
-        }
-        return treeLevelStartPoints[level];
-    }    
-
     public int getTreeLevel(long gid) {
         for (int i = 0; i < maxDepth; i++) {
             if (gid < treeLevelStartPoints[i])
@@ -381,6 +366,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
                 return i;
         }
         return -1;
+    }    
+    
+   public long getLevelStartPoint(int level) {
+        if (level < 0 || level > maxDepth) {
+            LOG.fatal("tree level " + level + " does not exist");
+            return -1;
+        }
+        return treeLevelStartPoints[level];
     }
 
     public int getTreeLevelOrder(int level) {
@@ -402,6 +395,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             }
         }
         return order;
+    } 
+    
+    public void setTreeLevelOrder(int level, int order) {
+        treeLevelOrder[level] = order;
     }    
 
     public void setMaxDepth(int depth) {
@@ -438,8 +435,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			treeLevelStartPoints[i + 1] =
 				(treeLevelStartPoints[i] - treeLevelStartPoints[i - 1]) * treeLevelOrder[i]
 					+ treeLevelStartPoints[i];
-			if(treeLevelStartPoints[i + 1] > 0x6fffffffffffffffL ||
-				treeLevelStartPoints[i + 1] < 0) {
+			if(treeLevelStartPoints[i + 1] < 0 ||
+                    treeLevelStartPoints[i + 1] > 0x6fffffffffffffffL) {
 				throw new EXistException("The document is too complex/irregularily structured " +
 					"to be mapped into eXist's numbering scheme. Number of children per level of the " +
 					"tree: " + printTreeLevelOrder());
