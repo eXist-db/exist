@@ -41,7 +41,6 @@ import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.http.RESTServer;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.XmldbPrincipal;
 import org.exist.storage.BrokerPool;
@@ -65,7 +64,8 @@ public class EXistServlet extends HttpServlet {
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	
 	private BrokerPool pool = null;
-	private User defaultUser = null;
+	private String defaultUser = null;
+	private String defaultPass = null;
 	
 	private RESTServer server;
 
@@ -107,7 +107,8 @@ public class EXistServlet extends HttpServlet {
 					startup(configuration);
 			}
 			pool = BrokerPool.getInstance();
-			defaultUser = pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
+			defaultUser = config.getInitParameter("user");
+			defaultPass = config.getInitParameter("password");
 		} catch (EXistException e) {
 			throw new ServletException("No database instance available");
 		} catch (DatabaseConfigurationException e) {
@@ -335,7 +336,7 @@ public class EXistServlet extends HttpServlet {
 		
 		String auth = request.getHeader("Authorization");
 		if(auth == null)
-			return defaultUser;
+			return getDefaultUser();
 		byte[] c = Base64.decode(auth.substring(6).getBytes());
 		String s = new String(c);
 		int p = s.indexOf(':');
@@ -351,6 +352,19 @@ public class EXistServlet extends HttpServlet {
 		if (!user.validate(password))
 			return null;
 		return user;
+	}
+	
+	private User getDefaultUser() {
+		if (defaultUser != null) {
+			User user = pool.getSecurityManager().getUser(defaultUser);
+			if (user != null) {
+				System.out.println("User: " + user.getName() + "; pass: " + defaultPass);
+				if (!user.validate(defaultPass))
+					return null;
+			}
+			return user;
+		}
+		return null;
 	}
 	
 	private void startup(Configuration configuration) throws ServletException {

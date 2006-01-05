@@ -190,9 +190,6 @@ public class SecurityManager {
 	public synchronized void deleteUser(User user) throws PermissionDeniedException {
 		if(user == null)
 			return;
-		if(user.getName().equals("admin") || user.getName().equals("guest"))
-			throw new PermissionDeniedException("user " + user.getName() +
-				" is required by the system. It cannot be removed.");
 		user = (User)users.remove(user.getUID());
 		if(user != null)
 			LOG.debug("user " + user.getName() + " removed");
