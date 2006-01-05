@@ -266,13 +266,6 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
-    /**
-     * @param pool
-     * @param config
-     * @param dataDir
-     * @param buffers
-     * @throws DBException
-     */
     private void createIndexFiles() throws DBException {
         elementsDb = createValueIndexFile(ELEMENTS_DBX_ID, false, config, dataDir, ELEMENTS_DBX, "db-connection.elements", DEFAULT_VALUE_VALUE_THRESHOLD);
         elementIndex = new NativeElementIndex(this, elementsDb);
@@ -286,27 +279,22 @@ public class NativeBroker extends DBBroker {
             valuesDbQname = createValueIndexFile(VALUES_QNAME_DBX_ID, false, config, dataDir, VALUES_QNAME_DBX,
                     "db-connection2.values", DEFAULT_VALUE_VALUE_THRESHOLD);
             qnameValueIndex = new NativeValueIndexByQName(this, valuesDbQname);
-            addContentLoadingObserver(qnameValueIndex);
-        }
+            addContentLoadingObserver(qnameValueIndex);            
+        }        
         
-        if ((dbWords = (BFile) config.getProperty("db-connection.words")) == null) {
+        dbWords = (BFile) config.getProperty("db-connection.words");
+        if (dbWords == null) {
             File file = new File(dataDir + File.separatorChar + WORDS_DBX);
             LOG.debug("Creating '" + file.getName() + "'...");
         	dbWords = new BFile(pool, NativeBroker.WORDS_DBX_ID, false, file,                     
         	        pool.getCacheManager(), DEFAULT_WORD_CACHE_GROWTH, DEFAULT_WORD_KEY_THRESHOLD, DEFAULT_WORD_VALUE_THRESHOLD);
-            config.setProperty("db-connection.words", dbWords);
-            textEngine = new NativeTextEngine(this, config, dbWords);
-            addContentLoadingObserver(textEngine);
+            config.setProperty("db-connection.words", dbWords); 
         }
+        textEngine = new NativeTextEngine(this, config, dbWords);
+        addContentLoadingObserver(textEngine);
+        readOnly = readOnly & dbWords.isReadOnly();
     }
 
-    /**
-     * @param config
-     * @param dataDir
-     * @param buffers
-     * @param pathSep
-     * @throws DBException
-     */
     private BFile createValueIndexFile(byte id, boolean transactional, Configuration config, String dataDir, 
             String dataFile, String propertyName, double thresholdData ) throws DBException {
         
@@ -315,9 +303,9 @@ public class NativeBroker extends DBBroker {
             File file = new File(dataDir + File.separatorChar + dataFile);
             LOG.debug("Creating '" + file.getName() + "'...");
             db = new BFile(pool, id, transactional, file, pool.getCacheManager(), DEFAULT_VALUE_CACHE_GROWTH, DEFAULT_VALUE_KEY_THRESHOLD, thresholdData);            
-            config.setProperty(propertyName, db);
-            readOnly = readOnly & db.isReadOnly();
+            config.setProperty(propertyName, db);            
         }
+        readOnly = readOnly & db.isReadOnly();
         return db;
     }
 
@@ -332,8 +320,10 @@ public class NativeBroker extends DBBroker {
     
     public void deleteObservers() {
         super.deleteObservers();
-        textEngine.deleteObservers();
-        elementIndex.deleteObservers();
+        if (elementIndex != null)
+            elementIndex.deleteObservers();
+        if (textEngine != null)
+            textEngine.deleteObservers();
     }
     
     /** Remove all observers */
@@ -2701,26 +2691,22 @@ public class NativeBroker extends DBBroker {
 		return resultNodeSet;
 	}
 
-	public void shutdown() {
-		super.shutdown();
+	public void shutdown() {		
 		try {
 			flush();
 			sync(Sync.MAJOR_SYNC);
+            domDb.close();
             textEngine.close();
-			domDb.close();
+            collectionsDb.close();
 			elementsDb.close();
 			valuesDb.close();
-			collectionsDb.close();            
-			
-//            if (qnameValueIndexation)
-//                valuesDbQname.close();
 			if (qnameValueIndex != null)
-				qnameValueIndex.close();
-			
+				qnameValueIndex.close();			
 		} catch (Exception e) {
 			LOG.debug(e);
 			e.printStackTrace();
 		}
+        super.shutdown();
 	}
 
 	/**
@@ -2971,16 +2957,18 @@ public class NativeBroker extends DBBroker {
 				Runtime runtime = Runtime.getRuntime();
 				LOG.info("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
 						(runtime.maxMemory() / 1024) + "K max; " +
-						(runtime.freeMemory() / 1024) + "K free");
-				
-				// uncomment this to get statistics on page buffer usage
+						(runtime.freeMemory() / 1024) + "K free");				
+                
+                domDb.printStatistics(); 
                 collectionsDb.printStatistics();
-                elementsDb.printStatistics();
-				valuesDb.printStatistics();
-				domDb.printStatistics();                
+                if (elementsDb != null)
+                    elementsDb.printStatistics();                
+                if (valuesDb != null)
+                    valuesDb.printStatistics();             
 				if (valuesDbQname != null)
 					valuesDbQname.printStatistics();
-                textEngine.printStatistics();
+                if (textEngine != null)
+                    textEngine.printStatistics();
 			}
 		} catch (DBException dbe) {
 			dbe.printStackTrace();
