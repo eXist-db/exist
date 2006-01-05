@@ -129,12 +129,12 @@ public class NativeBroker extends DBBroker {
     public static final byte DOM_DBX_ID = 4;
     public static final byte VALUES_QNAME_DBX_ID = 5;
     
-    private static final String ELEMENTS_DBX = "elements.dbx";
-    private static final String VALUES_DBX = "values.dbx";
-    private static final String VALUES_QNAME_DBX = "values-by-qname.dbx";
-    private static final String DOM_DBX = "dom.dbx";
-    private static final String COLLECTIONS_DBX = "collections.dbx";
-    private static final String WORDS_DBX = "words.dbx";
+    public static final String ELEMENTS_DBX = "elements.dbx";
+    public static final String VALUES_DBX = "values.dbx";
+    public static final String VALUES_QNAME_DBX = "values-by-qname.dbx";
+    public static final String DOM_DBX = "dom.dbx";
+    public static final String COLLECTIONS_DBX = "collections.dbx";
+    public static final String WORDS_DBX = "words.dbx";
     
     private static final byte[] ALL_STORAGE_FILES = {
     	COLLECTIONS_DBX_ID, ELEMENTS_DBX_ID, VALUES_DBX_ID,
@@ -142,7 +142,6 @@ public class NativeBroker extends DBBroker {
     };
     
     private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
-
 	// private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
 	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
 	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
@@ -151,14 +150,24 @@ public class NativeBroker extends DBBroker {
      * Log4J Logger for this class
      */
     private static final Logger LOG = Logger.getLogger(NativeBroker.class);
-
-    private static final long TEMP_FRAGMENT_TIMEOUT = 300000;	
-	
-	/** default buffer size setting */
-	protected final static int BUFFERS = 256;
-
-	/** check available memory after storing MEM_LIMIT_CHECK nodes */
-	protected final static int MEM_LIMIT_CHECK = 10000;
+    
+    public final String DEFAULT_DATA_DIR = "data";
+    public final int DEFAULT_PAGE_SIZE = 4096;
+    public final int DEFAULT_INDEX_DEPTH = 1;
+    public final int DEFAULT_MIN_MEMORY = 5000000;
+    public static final long TEMP_FRAGMENT_TIMEOUT = 300000;
+    /** default buffer size setting */
+    public final static int BUFFERS = 256;
+    /** check available memory after storing DEFAULT_NODES_BEFORE_MEMORY_CHECK nodes */
+    public final static int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 10000;     
+    public final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
+    public final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
+    public final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
+    public final double DEFAULT_WORD_CACHE_GROWTH = 1.4;
+    public final double DEFAULT_WORD_KEY_THRESHOLD = 0.01;  
+    public final double DEFAULT_WORD_VALUE_THRESHOLD = 0.015;
+    
+    
 
 	/** the database files */
 	protected CollectionStore collectionsDb;
@@ -174,13 +183,14 @@ public class NativeBroker extends DBBroker {
 	protected NativeValueIndex valueIndex;
 	protected NativeValueIndexByQName qnameValueIndex;
     
+    protected IndexSpec idxConf;
+    
+    protected int defaultIndexDepth;    
+    
 	/** switch to activate/deactivate the feature "new index by QName" */
 	private boolean qnameValueIndexation = true; // false;
 	
-	protected Serializer xmlSerializer;
-	
-	protected int defaultIndexDepth = 1;
-	protected IndexSpec idxConf;
+	protected Serializer xmlSerializer;		
 	
 	protected boolean readOnly = false;
 	
@@ -203,20 +213,20 @@ public class NativeBroker extends DBBroker {
         
         dataDir = (String) config.getProperty("db-connection.data-dir");
 		if (dataDir == null)
-            dataDir = "data";
+            dataDir = DEFAULT_DATA_DIR;
 
         pageSize = config.getInteger("db-connection.page-size");
 		if (pageSize < 0)
-			pageSize = 4096;
+            pageSize = DEFAULT_PAGE_SIZE;
         Paged.setPageSize(pageSize);
 
         defaultIndexDepth = config.getInteger("indexer.index-depth");
 		if (defaultIndexDepth < 0)
-			defaultIndexDepth = 1;
+			defaultIndexDepth = DEFAULT_INDEX_DEPTH;
         
         memMinFree = config.getInteger("db-connection.min_free_memory");
 		if (memMinFree < 0)
-			memMinFree = 5000000;
+			memMinFree = DEFAULT_MIN_MEMORY;
         
         idxConf = (IndexSpec) config.getProperty("indexer.config");         
         xmlSerializer = new NativeSerializer(this, config);
@@ -227,28 +237,28 @@ public class NativeBroker extends DBBroker {
             // Initialize DOM storage     
             domDb = (DOMFile) config.getProperty("db-connection.dom");
 			if (domDb== null) {
-				domDb =	new DOMFile(pool, new File(dataDir + File.separatorChar + DOM_DBX),
-						    pool.getCacheManager());
+                File file= new File(dataDir + File.separatorChar + DOM_DBX);
+                LOG.debug("Creating '" + file.getName() + "'...");
+				domDb =	new DOMFile(pool, file, pool.getCacheManager());
 				config.setProperty("db-connection.dom", domDb);				
 			}
-            if (!readOnly)
-                readOnly = domDb.isReadOnly();
+            readOnly = readOnly & domDb.isReadOnly();
             
 			// Initialize collections storage            
             collectionsDb = (CollectionStore) config.getProperty("db-connection.collections");
 			if (collectionsDb == null) {
-				collectionsDb =new CollectionStore(pool, new File(dataDir + File.separatorChar + COLLECTIONS_DBX),
-                            pool.getCacheManager());
+                File file = new File(dataDir + File.separatorChar + COLLECTIONS_DBX);
+                LOG.debug("Creating '" + file.getName() + "'...");
+				collectionsDb = new CollectionStore(pool, file, pool.getCacheManager());
 				config.setProperty("db-connection.collections", collectionsDb);				
             }
-            if (!readOnly)
-                readOnly = collectionsDb.isReadOnly();
+            readOnly = readOnly & collectionsDb.isReadOnly();
             
             //TODO : is it necessary to create them if we are in read-only mode ?
 			createIndexFiles();
 			
 			if (readOnly)
-				LOG.info("database runs in read-only mode");
+				LOG.info("Database runs in read-only mode");
 
 		} catch (DBException e) {
 			LOG.debug(e.getMessage(), e);
@@ -264,30 +274,30 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */
     private void createIndexFiles() throws DBException {
-        elementsDb = createValueIndexFile(ELEMENTS_DBX_ID, false, config, dataDir, ELEMENTS_DBX, "db-connection.elements", 0.05 );
-        valuesDb = createValueIndexFile(VALUES_DBX_ID, false, config, dataDir, VALUES_DBX, "db-connection.values", 0.05 );
-        if ( qnameValueIndexation ) {
-                valuesDbQname = createValueIndexFile(VALUES_QNAME_DBX_ID, false, config, dataDir, VALUES_QNAME_DBX,
-                        "db-connection2.values", 0.4 );
-        }
+        elementsDb = createValueIndexFile(ELEMENTS_DBX_ID, false, config, dataDir, ELEMENTS_DBX, "db-connection.elements", DEFAULT_VALUE_VALUE_THRESHOLD);
+        elementIndex = new NativeElementIndex(this, elementsDb);
+        addContentLoadingObserver(elementIndex);
         
-        if ((dbWords = (BFile) config.getProperty("db-connection.words")) == null) {
-        	LOG.debug("Creating words.dbx ....\n\n");
-        	dbWords = new BFile(pool, NativeBroker.WORDS_DBX_ID, false, 
-                    new File(dataDir + File.separatorChar + WORDS_DBX), pool.getCacheManager(), 1.4, 0.01, 0.015);
-            config.setProperty("db-connection.words", dbWords);
-        }
-        textEngine = new NativeTextEngine(this, config, dbWords);
+        valuesDb = createValueIndexFile(VALUES_DBX_ID, false, config, dataDir, VALUES_DBX, "db-connection.values", DEFAULT_VALUE_VALUE_THRESHOLD);
         valueIndex = new NativeValueIndex(this, valuesDb);
-        if ( qnameValueIndexation ) {
+        addContentLoadingObserver(valueIndex);
+        
+        if (qnameValueIndexation) {
+            valuesDbQname = createValueIndexFile(VALUES_QNAME_DBX_ID, false, config, dataDir, VALUES_QNAME_DBX,
+                    "db-connection2.values", DEFAULT_VALUE_VALUE_THRESHOLD);
             qnameValueIndex = new NativeValueIndexByQName(this, valuesDbQname);
             addContentLoadingObserver(qnameValueIndex);
         }
-        elementIndex = new NativeElementIndex(this, elementsDb);
         
-        addContentLoadingObserver(textEngine);
-        addContentLoadingObserver(valueIndex);
-        addContentLoadingObserver(elementIndex);
+        if ((dbWords = (BFile) config.getProperty("db-connection.words")) == null) {
+            File file = new File(dataDir + File.separatorChar + WORDS_DBX);
+            LOG.debug("Creating '" + file.getName() + "'...");
+        	dbWords = new BFile(pool, NativeBroker.WORDS_DBX_ID, false, file,                     
+        	        pool.getCacheManager(), DEFAULT_WORD_CACHE_GROWTH, DEFAULT_WORD_KEY_THRESHOLD, DEFAULT_WORD_VALUE_THRESHOLD);
+            config.setProperty("db-connection.words", dbWords);
+            textEngine = new NativeTextEngine(this, config, dbWords);
+            addContentLoadingObserver(textEngine);
+        }
     }
 
     /**
@@ -299,15 +309,14 @@ public class NativeBroker extends DBBroker {
      */
     private BFile createValueIndexFile(byte id, boolean transactional, Configuration config, String dataDir, 
             String dataFile, String propertyName, double thresholdData ) throws DBException {
-        BFile db;
         
-        if ((db = (BFile) config.getProperty(propertyName))
-                == null) {
-            db =
-                new BFile(pool, id, transactional, new File(dataDir + File.separatorChar + dataFile ), pool.getCacheManager(), 1.25, 0.01, thresholdData);
-            
+        BFile db = (BFile) config.getProperty(propertyName);        
+        if (db == null) {
+            File file = new File(dataDir + File.separatorChar + dataFile);
+            LOG.debug("Creating '" + file.getName() + "'...");
+            db = new BFile(pool, id, transactional, file, pool.getCacheManager(), DEFAULT_VALUE_CACHE_GROWTH, DEFAULT_VALUE_KEY_THRESHOLD, thresholdData);            
             config.setProperty(propertyName, db);
-            readOnly = db.isReadOnly();
+            readOnly = readOnly & db.isReadOnly();
         }
         return db;
     }
@@ -1089,7 +1098,7 @@ public class NativeBroker extends DBBroker {
         
         /** check available memory */
         private void checkAvailableMemory() {
-            if (nodesCount > MEM_LIMIT_CHECK) {
+            if (nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
                 final int percent = (int) (run.freeMemory() /
                         (run.totalMemory() / 100));
                 if (percent < memMinFree) {
@@ -2768,7 +2777,7 @@ public class NativeBroker extends DBBroker {
 
     /** check available memory */
     private void checkAvailableMemory() {
-        if (nodesCount > MEM_LIMIT_CHECK) {
+        if (nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
             final int percent = (int) (run.freeMemory() /
                     (run.totalMemory() / 100));
             if (percent < memMinFree) {
