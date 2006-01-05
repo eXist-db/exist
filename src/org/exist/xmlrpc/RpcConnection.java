@@ -1898,10 +1898,6 @@ public class RpcConnection extends Thread {
             passwd = null;
         org.exist.security.SecurityManager manager = brokerPool
                 .getSecurityManager();
-        if(name.equals(org.exist.security.SecurityManager.GUEST_USER) &&
-                (!manager.hasAdminPrivileges(user)))
-            throw new PermissionDeniedException(
-                    "guest user cannot be modified");
         User u;
         if (!manager.hasUser(name)) {
             if (!manager.hasAdminPrivileges(user))
