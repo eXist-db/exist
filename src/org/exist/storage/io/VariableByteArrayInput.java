@@ -22,6 +22,7 @@ package org.exist.storage.io;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Implements VariableByteInput on top of a byte array.
@@ -127,6 +128,18 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
         return i;
     }
 
+    public String readUTF() throws IOException, EOFException {
+    	int len = readInt();
+    	String s;
+        try {
+            s = new String(data, position, len, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            s = new String(data, position, len);
+        }
+        position += len;
+    	return s;
+    }
+    
     public void copyTo(VariableByteOutputStream os, int count)
             throws IOException {
         byte more;
