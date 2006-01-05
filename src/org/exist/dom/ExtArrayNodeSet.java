@@ -454,8 +454,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                                         boolean directParent,
                                         boolean includeSelf, int level) {
         sort();
-        Part part = getPart(doc, false, initalSize);
-        return part == null ? null : part.parentWithChild(doc, gid, directParent, includeSelf, level);
+        lastPart = getPart(doc, false, initalSize);
+        return lastPart == null ? null : lastPart.parentWithChild(doc, gid, directParent, includeSelf, level);
     }
 
     /* (non-Javadoc)
