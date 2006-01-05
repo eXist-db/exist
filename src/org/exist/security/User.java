@@ -212,6 +212,8 @@ public class User {
      *@return        Description of the Return Value
      */
     public final boolean hasGroup( String group ) {
+    	if (groups == null)
+    		return false;
         for (int i = 0; i < groups.length; i++) {
         	if (groups[i].equals(group))
         		return true;
