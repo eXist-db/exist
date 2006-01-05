@@ -570,6 +570,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
         final SymbolTable symbols = broker.getSymbols();
         final Lock lock = dbNodes.getLock();
+        // true if the output document set is the same as the input document set
+        boolean sameDocSet = true;
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             //Compute a key for the node
             Collection collection = (Collection) i.next();
@@ -586,8 +588,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 lock.acquire(Lock.READ_LOCK);
                 VariableByteInput is = dbNodes.getAsStream(ref); 
                 //Does the node already has data in the index ?
-                if (is == null) 
-                    continue;                
+                if (is == null) {
+                	sameDocSet = false;
+                    continue;
+                }
                 while (is.available() > 0) {
                     int storedDocId = is.readInt();
                     int gidsCount = is.readInt();
@@ -615,7 +619,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                 storedNode.setInternalAddress(address);
                                 storedNode.setNodeType(nodeType);
                                 result.add(storedNode, gidsCount);
-                            }                                
+                            } else
+                            	sameDocSet = false;
                         }
                         previousGID = storedGID;                        
                     }
@@ -632,6 +637,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             }
         }
 //        LOG.debug("Found: " + result.getLength() + " for " + qname);
+        if (sameDocSet) {
+        	result.setDocumentSet(docs);
+        }
         return result;
     }
 
