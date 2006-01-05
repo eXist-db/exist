@@ -358,7 +358,6 @@ public class EXistServlet extends HttpServlet {
 		if (defaultUser != null) {
 			User user = pool.getSecurityManager().getUser(defaultUser);
 			if (user != null) {
-				System.out.println("User: " + user.getName() + "; pass: " + defaultPass);
 				if (!user.validate(defaultPass))
 					return null;
 			}
