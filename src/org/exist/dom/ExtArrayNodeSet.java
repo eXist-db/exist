@@ -485,6 +485,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         return cachedDocuments;
     }
 
+    public void setDocumentSet(DocumentSet docs) {
+    	cachedDocuments = docs;
+    }
+    
     /*
      * (non-Javadoc)
      * 
