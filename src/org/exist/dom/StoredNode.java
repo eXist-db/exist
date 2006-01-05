@@ -174,7 +174,7 @@ public class StoredNode extends NodeImpl {
 	 * @return
 	 */
 	public DBBroker getBroker() {
-		return (DBBroker) ownerDocument.broker;
+		return ownerDocument.getBroker();
 	}    
 
 	/**

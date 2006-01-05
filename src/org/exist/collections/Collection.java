@@ -936,7 +936,7 @@ public  class Collection extends Observable
         try {
             getLock().acquire(Lock.WRITE_LOCK);
             oldDoc = (DocumentImpl) documents.get(docName);
-            document = new DocumentImpl(broker, docName,	this);
+            document = new DocumentImpl(broker, this, docName);
             
             if (oldDoc == null) {
                 CollectionConfiguration config = getConfiguration(broker);

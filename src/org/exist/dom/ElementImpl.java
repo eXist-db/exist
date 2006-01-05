@@ -1303,7 +1303,7 @@ public class ElementImpl extends NamedNode implements Element {
 				String content = null;
                 final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
 				IndexSpec idxSpec = 
-                    owner.getCollection().getIdxConf(owner.broker);
+                    owner.getCollection().getIdxConf(owner.getBroker());
 				if (idxSpec != null) {
 					GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 					RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());

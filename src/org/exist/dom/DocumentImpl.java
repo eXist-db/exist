@@ -71,59 +71,59 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     public final static byte XML_FILE = 0;
 	public final static byte BINARY_FILE = 1;
 	
-	public final static byte DOCUMENT_NODE_SIGNATURE = 0x0F;
+	//public final static byte DOCUMENT_NODE_SIGNATURE = 0x0F;
 
-	protected transient DBBroker broker = null;
+	private transient DBBroker broker = null;
 
 	// number of child nodes
-	protected int children = 0;
+	private int children = 0;
 
-	protected long[] childList = null;
+	private long[] childList = null;
 
 	// the collection this document belongs to
-	protected transient Collection collection = null;
+	private transient Collection collection = null;
 
 	// the document's id
-	protected int docId = UNKNOWN_DOCUMENT_ID;
+	private int docId = UNKNOWN_DOCUMENT_ID;
 
 	// the document's file name
-	protected String fileName = null;
-	
-	// number of levels in this DOM tree
-	protected int maxDepth = 0;
+	private String fileName = null;
+    
+    //TODO : make private
+    protected Permission permissions = new Permission(Permission.DEFAULT_PERM);
+    
+    private transient Lock updateLock = null;
+    
+    private DocumentMetadata metadata = null;
+    
+    private transient long metadataLocation = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;    
 
-	protected Permission permissions = new Permission(Permission.DEFAULT_PERM);
-
-	// arity of the tree at every level
+    //number of levels in this DOM tree
+    private int maxDepth = 0;
+    
+    // arity of the tree at every level
+    //TODO : make private
 	protected int treeLevelOrder[] = new int[15];
 
+    //TODO : make private
 	protected transient long treeLevelStartPoints[] = new long[15];
+    
+    public DocumentImpl(DBBroker broker) {
+        this(broker, null, null);
+    }    
 	
-	private transient Lock updateLock = null;
-	
-	protected transient long metadataLocation = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
-	
-	private DocumentMetadata metadata = null;
-	
-	public DocumentImpl(DBBroker broker, Collection collection) {
+    public DocumentImpl(DBBroker broker, Collection collection) {
+        this(broker, collection, null);
+    }
+
+    public DocumentImpl(DBBroker broker, String fileName) {
+        this(broker, null, fileName);       
+    }
+
+	public DocumentImpl(DBBroker broker, Collection collection, String fileName) {
 		this.broker = broker;
-		this.collection = collection;
-		treeLevelOrder[0] = 1;
-	}
-
-	public DocumentImpl(DBBroker broker) {
-		this(broker, null, null);
-	}
-
-	public DocumentImpl(DBBroker broker, String fileName) {
-		this(broker, null, null);
-		this.fileName = fileName;
-	}
-
-	public DocumentImpl(DBBroker broker, String fileName, Collection collection) {
-		this.broker = broker;
-		this.fileName = fileName;
-		this.collection = collection;
+        this.collection = collection;
+		this.fileName = fileName;		
 		treeLevelOrder[0] = 1;
 	}
 
@@ -146,6 +146,68 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 //		for (int i = 0; i < treeLevelStartPoints.length; i++)
 //			treeLevelStartPoints[i] = old.treeLevelStartPoints[i];
 //	}
+    
+    /************************************************
+     * 
+     * Document metadata
+     *
+     ************************************************/
+    
+    public Collection getCollection() {
+        return collection;
+    }
+
+    public void setCollection(Collection parent) {
+        this.collection = parent;
+    }
+
+    public int getDocId() {
+        return docId;
+    }
+    
+    public void setDocId(int docId) {
+        this.docId = docId;
+    }     
+    
+    /**
+     * Returns the type of this resource, either  {@link #XML_FILE} or 
+     * {@link #BINARY_FILE}.
+     * 
+     * @return
+     */
+    public byte getResourceType() {
+        return XML_FILE;
+    }
+
+    public String getFileName() {
+        //checkAvail();
+        return fileName;
+    }
+    
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    } 
+    
+    public String getName() {
+        //TODO : use dedicated function in XmldbURI
+        return collection.getName() + "/" + fileName;
+    }
+    
+    public Permission getPermissions() {
+        return permissions;
+    }
+    
+    public void setPermissions(int mode) {
+        permissions.setPermissions(mode);
+    }
+
+    public void setPermissions(String mode) throws SyntaxException {
+        permissions.setPermissions(mode);
+    }
+
+    public void setPermissions(Permission perm) {
+        permissions = perm;
+    }     
     
 	public void setMetadata(DocumentMetadata meta) {
 		this.metadata = meta;
@@ -473,16 +535,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			return Constants.INFERIOR;
 		else
 			return Constants.SUPERIOR;
-	}  
-    
-    protected NodeList findElementsByTagName(StoredNode root, QName qname) {
-        DocumentSet docs = new DocumentSet();
-        docs.add(this);
-        NodeProxy p = new NodeProxy(this, root.getGID(), root.getInternalAddress());
-        NodeSelector selector = new DescendantSelector(p, false);
-        return (NodeSet) broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
-    }    
-    
+	} 
 
     public DBBroker getBroker() {
         return broker;
@@ -642,14 +695,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return broker.objectWith(
             new NodeProxy(this, NodeProxy.DOCUMENT_ELEMENT_GID, address)
         );
-	}
-	
+	}	
+    
 	public long getFirstChildAddress() {
 		if (children == 0)
 			return NodeProxy.UNKNOWN_NODE_ADDRESS;
 		return childList[0];
 	}
-	
+    	
 	public NodeList getChildNodes() {
 		NodeListImpl list = new NodeListImpl();		
 		for (int i = 0; i < children; i++) {
@@ -659,7 +712,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			list.add(child);
 		}
 		return list;
-	}
+	}    
     
 	protected Node getPreviousSibling(StoredNode node) {
 		NodeList cl = getChildNodes();		
@@ -679,68 +732,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 				return i == children - 1 ? null : cl.item(i + 1);
 		}
 		return null;
-	}
+	}     
     
-    /************************************************
-     * 
-     * Document metadata
-     *
-     ************************************************/
-    
-    public Collection getCollection() {
-        return collection;
-    }
-
-    public void setCollection(Collection parent) {
-        this.collection = parent;
-    }
-
-    public int getDocId() {
-        return docId;
-    }
-    
-    public void setDocId(int docId) {
-        this.docId = docId;
-    }     
-    
-    /**
-     * Returns the type of this resource, either  {@link #XML_FILE} or 
-     * {@link #BINARY_FILE}.
-     * 
-     * @return
-     */
-    public byte getResourceType() {
-        return XML_FILE;
-    }
-
-	public String getFileName() {
-		//checkAvail();
-		return fileName;
-	}
-    
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    } 
-    
-	public String getName() {
-        //TODO : use dedicated function in XmldbURI
-		return collection.getName() + "/" + fileName;
-	}
-    
-	public Permission getPermissions() {
-		return permissions;
-	}
-    
-    public void setPermissions(int mode) {
-        permissions.setPermissions(mode);
-    }
-
-    public void setPermissions(String mode) throws SyntaxException {
-        permissions.setPermissions(mode);
-    }
-
-    public void setPermissions(Permission perm) {
-        permissions = perm;
+    protected NodeList findElementsByTagName(StoredNode root, QName qname) {
+        DocumentSet docs = new DocumentSet();
+        docs.add(this);
+        NodeProxy p = new NodeProxy(this, root.getGID(), root.getInternalAddress());
+        NodeSelector selector = new DescendantSelector(p, false);
+        return (NodeSet) broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
     } 
     
     /************************************************
@@ -762,32 +761,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
                 node = new AttrImpl(gid);
                 break;
             default :
-                LOG.debug("unknown node type");
+                LOG.error("unknown node type");
                 node = null;
         }
         return node;
-    }
-    
-    public String getEncoding() {
-        return "UTF-8";
-    } 
-    
-    public void setEncoding(String enc) {
-        // allways  "UTF-8"  !?
-    } 
-    
-    public String getVersion() {
-        return "";
-    }
-    
-    public void setVersion(String version) {
-    }     
-    
-    public boolean getStandalone() {
-        return true;
-    }    
-    
-    public void setStandalone(boolean alone) {
     }
     
     public DocumentType getDoctype() {
@@ -798,11 +775,13 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         getMetadata().setDocType(docType);
     }    
     
-    public Document getOwnerDocument() {
+    public Document getOwnerDocument() {        
         return this;
     }
     
     public void setOwnerDocument(Document doc) {
+        if (doc != this)
+            throw new IllegalArgumentException("Can't set owner document");
     }     
     
     public QName getQName() {
@@ -814,10 +793,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     }
 
     public Node getPreviousSibling() {
+        //Documents don't have siblings
         return null;
     }
 
     public Node getNextSibling() {
+        //Documents don't have siblings
         return null;
     }    
     
@@ -843,18 +824,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         return attr;
     }
 
-    public CDATASection createCDATASection(String data) throws DOMException {
-        return null;
-    }
-
-    public Comment createComment(String data) {
-        return null;
-    }
-
-    public DocumentFragment createDocumentFragment() throws DOMException {
-        return null;
-    }
-
     public Element createElement(String tagName) throws DOMException {
         ElementImpl element = new ElementImpl(new QName(tagName, "", null));
         element.setOwnerDocument(this);
@@ -876,15 +845,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         element.setOwnerDocument(this);
         return element;
     }
- 
-    public EntityReference createEntityReference(String name) throws DOMException {
-        return null;
-    }
-
-    public ProcessingInstruction createProcessingInstruction(String target, String data)
-        throws DOMException {
-        return null;
-    }
 
     public Text createTextNode(String data) {
         TextImpl text = new TextImpl(data);
@@ -898,13 +858,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
     public Element getDocumentElement() {
         NodeList cl = getChildNodes();
-        for (int i = 0; i < cl.getLength(); i++)
+        for (int i = 0; i < cl.getLength(); i++) {
             if (cl.item(i).getNodeType() == Node.ELEMENT_NODE)
                 return (Element) cl.item(i);
-        return null;
-    }
-
-    public Element getElementById(String elementId) {
+        }
         return null;
     }
 
@@ -919,30 +876,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         return broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null);
     }
     
-    public org.w3c.dom.DOMImplementation getImplementation() {
-        return null;
-    } 
-
-    public boolean getStrictErrorChecking() {
-        return false;
-    }
-    
-    public Node adoptNode(Node node) throws DOMException {
-        return node;
-    }    
-
-    public Node importNode(Node importedNode, boolean deep) throws DOMException {
-        return null;
-    }
-
-    public boolean isSupported(String type, String value) {
-        return false;
-    }
-    
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getParentNode()
      */    
     public Node getParentNode() {
+        //Documents d'on have parents
         return null;
     }    
     
@@ -956,104 +894,179 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             childList = null;
     }
     
+    public String getEncoding() {
+        //TODO : on demand result (e.g. from serializer's settings) ? -pb
+        return "UTF-8";
+    } 
+    
+    public void setEncoding(String enc) {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setEncoding not implemented on class " + getClass().getName());
+    } 
+    
+    public String getVersion() {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getVersion not implemented on class " + getClass().getName());
+    }
+    
+    public void setVersion(String version) {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setVersion not implemented on class " + getClass().getName());
+    }     
+    
+    public boolean getStandalone() {
+        //TODO : on demand result (e.g. from serializer's settings) ? -pb
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getStandalone not implemented on class " + getClass().getName());
+    }    
+    
+    public void setStandalone(boolean alone) {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setStandalone not implemented on class " + getClass().getName());
+    }    
+    
+    public CDATASection createCDATASection(String data) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createCDATASection not implemented on class " + getClass().getName());        
+    }
+
+    public Comment createComment(String data) {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createComment not implemented on class " + getClass().getName());
+    }
+
+    public DocumentFragment createDocumentFragment() throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createDocumentFragment not implemented on class " + getClass().getName());
+    }
+    
+    public EntityReference createEntityReference(String name) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createEntityReference not implemented on class " + getClass().getName());
+    }
+
+    public ProcessingInstruction createProcessingInstruction(String target, String data)
+            throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createProcessingInstruction not implemented on class " + getClass().getName());
+    }     
+    
+    public Element getElementById(String elementId) {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getElementById not implemented on class " + getClass().getName());
+    }    
+    
+    public org.w3c.dom.DOMImplementation getImplementation() {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getImplementation not implemented on class " + getClass().getName());
+    } 
+
+    public boolean getStrictErrorChecking() {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getStrictErrorChecking not implemented on class " + getClass().getName());
+    }
+    
+    public Node adoptNode(Node node) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "adoptNode not implemented on class " + getClass().getName());
+    }    
+
+    public Node importNode(Node importedNode, boolean deep) throws DOMException {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "importNode not implemented on class " + getClass().getName());
+    }
+
+    public boolean isSupported(String type, String value) {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isSupported not implemented on class " + getClass().getName());
+    }    
+    
     public void setStrictErrorChecking(boolean strict) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setStrictErrorChecking(boolean strict) not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setStrictErrorChecking not implemented on class " + getClass().getName());
     }          
 
 	/** ? @see org.w3c.dom.Document#getInputEncoding()
 	 */
 	public String getInputEncoding() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "String getInputEncoding() not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "String getInputEncoding not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Document#getXmlEncoding()
 	 */
 	public String getXmlEncoding() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlEncoding() not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlEncoding not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Document#getXmlStandalone()
 	 */
 	public boolean getXmlStandalone() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlStandalone() not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlStandalone not implemented on class " + getClass().getName());
     }
 
 	/** ? @see org.w3c.dom.Document#setXmlStandalone(boolean)
 	 */
 	public void setXmlStandalone(boolean xmlStandalone) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setXmlStandalone(boolean xmlStandalone) not implemented on class " + getClass().getName());		
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setXmlStandalone not implemented on class " + getClass().getName());		
 	}
 
 	/** ? @see org.w3c.dom.Document#getXmlVersion()
 	 */
 	public String getXmlVersion() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlVersion() not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlVersion not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Document#setXmlVersion(java.lang.String)
 	 */
 	public void setXmlVersion(String xmlVersion) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setXmlVersion(String xmlVersion) not implemented on class " + getClass().getName());		
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setXmlVersion not implemented on class " + getClass().getName());		
 	}
 
 	/** ? @see org.w3c.dom.Document#getDocumentURI()
 	 */
 	public String getDocumentURI() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getDocumentURI() not implemented on class " + getClass().getName());
+        //TODO : easy to implement once we have stabule base-URIs -pb
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getDocumentURI not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Document#setDocumentURI(java.lang.String)
 	 */
 	public void setDocumentURI(String documentURI) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setDocumentURI(String documentURI) not implemented on class " + getClass().getName());	
+        //TODO : non-writable -pb
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setDocumentURI not implemented on class " + getClass().getName());	
 	}
 
 	/** ? @see org.w3c.dom.Document#getDomConfig()
 	 */
 	public DOMConfiguration getDomConfig() {
-		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getDomConfig() not implemented on class " + getClass().getName());
+		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getDomConfig not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Document#normalizeDocument()
 	 */
 	public void normalizeDocument() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "normalizeDocument() not implemented on class " + getClass().getName());	
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "normalizeDocument not implemented on class " + getClass().getName());	
 	}
 
 	/** ? @see org.w3c.dom.Document#renameNode(org.w3c.dom.Node, java.lang.String, java.lang.String)
 	 */
 	public Node renameNode(Node n, String namespaceURI, String qualifiedName) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "renameNode(Node n, String namespaceURI, String qualifiedName) not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "renameNode not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#getBaseURI()
 	 */
 	public String getBaseURI() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getBaseURI() not implemented on class " + getClass().getName());
+        //TODO : read it from broker's context -pb
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getBaseURI not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
 	 */
 	public short compareDocumentPosition(Node other) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "compareDocumentPosition(Node other) not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "compareDocumentPosition not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#getTextContent()
 	 */
 	public String getTextContent() throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getTextContent() not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getTextContent not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
 	 */
 	public void setTextContent(String textContent) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setTextContent(String textContent) not implemented on class " + getClass().getName());	
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setTextContent not implemented on class " + getClass().getName());	
 	}
 
 	/** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
 	 */
 	public boolean isSameNode(Node other) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isSameNode(Node other) not implemented on class " + getClass().getName());
+        //TODO : compare node identities ? -pb
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isSameNode not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
@@ -1065,36 +1078,37 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	/** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
 	 */
 	public boolean isDefaultNamespace(String namespaceURI) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isDefaultNamespace(String namespaceURI) not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isDefaultNamespace not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
 	 */
 	public String lookupNamespaceURI(String prefix) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "lookupNamespaceURI(String prefix) not implemented on class " + getClass().getName());
+        //TODO : use broker's context ? -pb
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "lookupNamespaceURI not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
 	 */
 	public boolean isEqualNode(Node arg) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isEqualNode(Node arg) not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isEqualNode not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
 	 */
 	public Object getFeature(String feature, String version) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getFeature(String feature, String version) not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getFeature not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
 	 */
 	public Object setUserData(String key, Object data, UserDataHandler handler) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setUserData(String key, Object data, UserDataHandler handler) not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setUserData not implemented on class " + getClass().getName());
 	}
 
 	/** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
 	 */
 	public Object getUserData(String key) {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getUserData(String key) not implemented on class " + getClass().getName());
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getUserData not implemented on class " + getClass().getName());
 	}
 }

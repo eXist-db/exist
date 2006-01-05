@@ -140,9 +140,12 @@ public interface Constants {
 	public final static int BEFORE = 16;
 	public final static int AFTER = 17;
 	
-	public final static String[] OPS = 
-	{ "<", ">", ">=", "<=", "=", "!=", "IN" , "=~", "+", 
-	  "-", "*", "div", "mod", "idiv", "is", "isnot", "<<", ">>" };
+    public final static String[] OPS = 
+    { "<", ">", ">=", "<=", "=", "!=", "IN" , "=~", "+", 
+      "-", "*", "div", "mod", "idiv", "is", "isnot", "<<", ">>" };
+    
+    public final static String[] VOPS = 
+    { "lt", "gt", "ge", "lt", "eq", "ne" };    
 
     public final static int KEEP_UNION = 0;
     public final static int KEEP_INTER = 1;
@@ -159,11 +162,15 @@ public interface Constants {
     public final static int FULLTEXT_OR = 0;
     public final static int FULLTEXT_AND = 1;
     
+    //TODO : move the following to an org.exist.utils.Constants.java file
+    
     //The definitive missing constant in java.lang.String
     public final static int STRING_NOT_FOUND = -1;
     //The definitive missing constants in java.lang.Comparable
     public final static int INFERIOR = -1;
     public final static int EQUAL = 0;
     public final static int SUPERIOR = 1;
+    //
+    public final static int NO_SIZE_HINT = -1;
     
 }

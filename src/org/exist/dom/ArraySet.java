@@ -108,14 +108,14 @@ public class ArraySet extends AbstractNodeSet {
 		while (low <= high) {
 			mid = (low + high) / 2;
             cmp = items[mid];
-			if (cmp.getDocument().docId == cmpDoc.docId) {
+			if (cmp.getDocument().getDocId() == cmpDoc.getDocId()) {
 				if (cmp.getGID() == gid)
 					return mid;
 				else if (cmp.getGID() > gid)
 					high = mid - 1;
 				else
 					low = mid + 1;
-			} else if (cmp.getDocument().docId > cmpDoc.docId)
+			} else if (cmp.getDocument().getDocId() > cmpDoc.getDocId())
 				high = mid - 1;
 			else
 				low = mid + 1;
@@ -203,23 +203,26 @@ public class ArraySet extends AbstractNodeSet {
 	public NodeProxy get(NodeProxy p) {
 		sort();
 		int pos = search(nodes, 0, counter - 1, p);
-		if (pos < 0) {
-			return null;
-		}
+		if (pos == -1)
+			return null;		
 		return nodes[pos];
 	}
 
 	public NodeProxy get(int pos) {
-		if (pos >= counter || pos < 0)
-			return null;
+        if (pos == -1)
+            return null;
+        if (pos >= counter)
+            return null;
 		sort();
 		return nodes[pos];
 	}
 
 	public NodeProxy getUnsorted(int pos) {
         //TODO : what if the Array has been sorted ?
-		if (pos >= counter || pos < 0)
-			return null;
+        if (pos == -1)
+            return null;
+        if (pos >= counter)
+            return null;
 		return nodes[pos];
 	}
 	
@@ -527,17 +530,15 @@ public class ArraySet extends AbstractNodeSet {
 		return search(nodes, 0, counter - 1, proxy);
 	}
 
-	public void remove(NodeProxy node) {
-		long start = System.currentTimeMillis();
+	public void remove(NodeProxy node) {		
 		int pos = search(nodes, 0, counter - 1, node);
-		if (pos > -1) {			
-    		NodeProxy[] temp = new NodeProxy[counter];
-    		System.arraycopy(nodes, 0, temp, 0, pos - 2);
-    		System.arraycopy(nodes, pos + 1, temp, pos + 1, temp.length - pos - 1);
-    		nodes = temp;
-    		counter--;
-        }
-		LOG.debug("Removal of node took " + (System.currentTimeMillis() - start));
+		if (pos == -1)
+            return;		
+		NodeProxy[] temp = new NodeProxy[counter];
+		System.arraycopy(nodes, 0, temp, 0, pos - 2);
+		System.arraycopy(nodes, pos + 1, temp, pos + 1, temp.length - pos - 1);
+		nodes = temp;
+		counter--;
 	}
 
 	
@@ -597,28 +598,28 @@ public class ArraySet extends AbstractNodeSet {
 	
 	private final static NodeProxy[] copyNodeSet(ArraySet al, ArraySet dl) {
 		int ax = 0, dx = 0;
-		int ad = al.nodes[ax].getDocument().docId, dd = dl.nodes[dx].getDocument().docId;
+		int ad = al.nodes[ax].getDocument().getDocId(), dd = dl.nodes[dx].getDocument().getDocId();
 		final int alen = al.counter - 1, dlen = dl.counter - 1;
 		final NodeProxy[] ol = new NodeProxy[dl.counter];
 		while (true) {
 			if (ad < dd) {
 				if (ax < alen) {
 					++ax;
-					ad = al.nodes[ax].getDocument().docId;
+					ad = al.nodes[ax].getDocument().getDocId();
 				} else
 					break;
 			} else if (ad > dd) {
 				if (dx < dlen) {
 					ol[dx] = null;
 					++dx;
-					dd = dl.nodes[dx].getDocument().docId;
+					dd = dl.nodes[dx].getDocument().getDocId();
 				} else
 					break;
 			} else {
 				ol[dx] = new NodeProxy(dl.nodes[dx]);
 				if (dx < dlen) {
 					++dx;
-					dd = dl.nodes[dx].getDocument().docId;
+					dd = dl.nodes[dx].getDocument().getDocId();
 				} else
 					break;
 			}
@@ -628,27 +629,27 @@ public class ArraySet extends AbstractNodeSet {
 
 	private final static void trimNodeSet(ArraySet al, ArraySet dl) {
 		int ax = 0, dx = 0;
-		int ad = al.nodes[ax].getDocument().docId, dd = dl.nodes[dx].getDocument().docId;
+		int ad = al.nodes[ax].getDocument().getDocId(), dd = dl.nodes[dx].getDocument().getDocId();
 		int count = 0;
 		final int alen = al.counter - 1, dlen = dl.counter - 1;
 		while (true) {
 			if (ad < dd) {
 				if (ax < alen) {
 					++ax;
-					ad = al.nodes[ax].getDocument().docId;
+					ad = al.nodes[ax].getDocument().getDocId();
 				} else
 					break;
 			} else if (ad > dd) {
 				if (dx < dlen) {
 					++dx;
-					dd = dl.nodes[dx].getDocument().docId;
+					dd = dl.nodes[dx].getDocument().getDocId();
 				} else
 					break;
 			} else {
 				if (dx < dlen) {
 					++dx;
 					count++;
-					dd = dl.nodes[dx].getDocument().docId;
+					dd = dl.nodes[dx].getDocument().getDocId();
 				} else
 					break;
 			}
@@ -693,12 +694,12 @@ public class ArraySet extends AbstractNodeSet {
 	 */
 	public int compare(int a, int b) {
 		NodeProxy anode = nodes[a], bnode = nodes[b];
-		if (anode.getDocument().docId == bnode.getDocument().docId) {
+		if (anode.getDocument().getDocId() == bnode.getDocument().getDocId()) {
 			return anode.getGID() == bnode.getGID()
 				? 0
 				: (anode.getGID() < bnode.getGID() ? Constants.INFERIOR : Constants.SUPERIOR);
 		}
-		return anode.getDocument().docId < bnode.getDocument().docId ? Constants.INFERIOR : Constants.SUPERIOR;
+		return anode.getDocument().getDocId() < bnode.getDocument().getDocId() ? Constants.INFERIOR : Constants.SUPERIOR;
 	}
 
 	/* (non-Javadoc)

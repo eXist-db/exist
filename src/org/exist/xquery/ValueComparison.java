@@ -29,6 +29,7 @@ import org.exist.dom.ContextItem;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
@@ -93,4 +94,18 @@ public class ValueComparison extends GeneralComparison {
 		}
 		return result;
 	}
+    
+    public void dump(ExpressionDumper dumper) {
+        getLeft().dump(dumper);
+        dumper.display(" ").display(Constants.VOPS[relation]).display(" ");
+        getRight().dump(dumper);
+    }
+    
+    public String toString() {
+        StringBuffer result = new StringBuffer();
+        result.append(getLeft().toString());
+        result.append(" ").append(Constants.VOPS[relation]).append(" ");
+        result.append(getRight().toString());
+        return result.toString();
+    }        
 }

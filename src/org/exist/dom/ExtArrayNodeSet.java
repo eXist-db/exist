@@ -27,6 +27,7 @@ import java.util.Iterator;
 import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
 import org.exist.util.Range;
+import org.exist.xquery.Constants;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -102,22 +103,22 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     }
 
     protected Part getPart(DocumentImpl doc, boolean create, int sizeHint) {
-        if (doc.docId == lastDoc && lastPart != null)
+        if (lastPart != null && doc.getDocId() == lastDoc)
             return lastPart;
-        int idx = ArrayUtils.binarySearch(documentIds, doc.docId, partCount);
+        int idx = ArrayUtils.binarySearch(documentIds, doc.getDocId(), partCount);
         Part part = null;
         if (idx >= 0) {
             part = parts[idx];
         } else if (create) {
             idx = - (idx + 1);
             part = new Part(sizeHint, doc);
-            insertPart(doc.docId, part, idx);
+            insertPart(doc.getDocId(), part, idx);
         }
         return part;
     }
     
     public boolean containsDoc(DocumentImpl doc) {
-        return ArrayUtils.binarySearch(documentIds, doc.docId, partCount) > -1;
+        return ArrayUtils.binarySearch(documentIds, doc.getDocId(), partCount) > -1;
     }
     
     private void insertPart(int docId, Part part, int idx) {
@@ -164,7 +165,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * If the size hint is correct, no further reallocations will be required.
      */
     public void add(NodeProxy proxy, int sizeHint) {
-        getPart(proxy.getDocument(), true, sizeHint > -1 ? sizeHint : initalSize).add(
+        getPart(proxy.getDocument(), true, sizeHint != Constants.NO_SIZE_HINT ? sizeHint : initalSize).add(
                 proxy);
         ++size;
         isSorted = false;
@@ -193,7 +194,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 
     public int getSizeHint(DocumentImpl doc) {
         Part part = getPart(doc, false, 0);
-        return part == null ? -1 : part.length;
+        return part == null ? Constants.NO_SIZE_HINT : part.length;
     }
 
     /*

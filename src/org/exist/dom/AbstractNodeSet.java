@@ -24,6 +24,7 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.util.Range;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AbstractSequence;
 import org.exist.xquery.value.Item;
@@ -307,11 +308,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * 
 	 * @return
 	 */
-	public NodeSet selectAncestorDescendant(
-		NodeSet al,
-		int mode,
-		boolean includeSelf,
-		boolean rememberContext) {
+	public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, boolean rememberContext) {
 		return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, rememberContext);
 	}
 	
@@ -590,7 +587,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public int getSizeHint(DocumentImpl doc) {
-		return -1;
+		return Constants.NO_SIZE_HINT;
 	}
 
 	/**
