@@ -315,10 +315,22 @@ public class NativeBroker extends DBBroker {
     /** Observer Design Pattern: List of ContentLoadingObserver objects */
     private List contentLoadingObservers = new ArrayList();
     
+    public void addObserver(Observer o) {
+        super.addObserver(o);
+        textEngine.addObserver(o);
+        elementIndex.addObserver(o);
+    }
+    
+    public void deleteObservers() {
+        super.deleteObservers();
+        textEngine.deleteObservers();
+        elementIndex.deleteObservers();
+    }
+    
     /** Remove all observers */
     public void clearContentLoadingObservers() {
-    	contentLoadingObservers.clear();
-    }
+        contentLoadingObservers.clear();
+    }    
     
     /** Observer Design Pattern: add an observer. */
     public void addContentLoadingObserver(ContentLoadingObserver observer) {
@@ -338,14 +350,20 @@ public class NativeBroker extends DBBroker {
             observer.startElement(elem, currentPath, index);
         }
 	}
-  
-	private void notifyStoreAttribute(AttrImpl attr, NodePath currentPath, boolean index) {
+    
+    private void notifyRemoveElement(ElementImpl elem, NodePath currentPath, String content) {
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
+            observer.removeElement(elem, currentPath, content);
+        }
+    }
+
+    private void notifyStoreAttribute(AttrImpl attr, NodePath currentPath, boolean index) {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.storeAttribute( attr, currentPath, index );
         }	
-	}
-	
+	}	
 
 	private void notifyStoreText(TextImpl text, NodePath currentPath, boolean index ) {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
@@ -354,50 +372,48 @@ public class NativeBroker extends DBBroker {
         }
 	}
 	
-
-	private void notifyRemoveElement(ElementImpl elem, NodePath currentPath, String content) {
-        for (int i = 0; i < contentLoadingObservers.size(); i++) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.removeElement(elem, currentPath, content);
-        }
-	}
-	
-    private void notifyDropIndex(DocumentImpl doc) throws ReadOnlyException {
-        for (int i = 0; i < contentLoadingObservers.size(); i++) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.dropIndex(doc);
-        }
-    }
-    private void notifyDropIndex(Collection collection) {
-        for (int i = 0; i < contentLoadingObservers.size(); i++) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.dropIndex(collection);
-        }
-    }
-    private void notifyFlush() {
-        for (int i = 0; i < contentLoadingObservers.size(); i++) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.flush();
-        }
-    }
-    private void notifyRemove() {
-        for (int i = 0; i < contentLoadingObservers.size(); i++) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.remove();
-        }
-    }
-    private void notifyReindex(final DocumentImpl oldDoc, final StoredNode node) {
-        for (int i = 0; i < contentLoadingObservers.size(); i++) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.reindex(oldDoc, node);
-        }
-    }
     private void notifySync() {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.sync();
         }
     }
+
+    private void notifyFlush() {
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
+            observer.flush();
+        }
+    }
+
+    private void notifyReindex(final DocumentImpl oldDoc, final StoredNode node) {
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
+            observer.reindex(oldDoc, node);
+        }
+    }
+
+    private void notifyDropIndex(Collection collection) {
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
+            observer.dropIndex(collection);
+        }
+    }
+
+    private void notifyDropIndex(DocumentImpl doc) throws ReadOnlyException {
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
+            observer.dropIndex(doc);
+        }
+    }
+    
+    private void notifyRemove() {
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
+            observer.remove();
+        }
+    }
+    
     // etc ... TODO for all methods of ContentLoadingObserver
     
 	/** changes // into /  */
@@ -413,38 +429,6 @@ public class NativeBroker extends DBBroker {
 				out.append(name.charAt(i));
 
 		return out.toString();
-	}
-
-    public void deleteObservers() {
-        super.deleteObservers();
-        textEngine.deleteObservers();
-        elementIndex.deleteObservers();
-    }
-    
-	public void addObserver(Observer o) {
-		super.addObserver(o);
-		textEngine.addObserver(o);
-		elementIndex.addObserver(o);
-	}
-
-	private final boolean compare(Collator collator, String o1, String o2, int relation) {
-		int cmp = Collations.compare(collator, o1, o2);
-		switch (relation) {
-			case Constants.LT :
-				return (cmp < 0);
-			case Constants.LTEQ :
-				return (cmp <= 0);
-			case Constants.GT :
-				return (cmp > 0);
-			case Constants.GTEQ :
-				return (cmp >= 0);
-			case Constants.EQ :
-				return (cmp == Constants.EQUAL);
-			case Constants.NEQ :
-				return (cmp != Constants.EQUAL);
-		}
-		return false;
-		// never reached
 	}
 
 	public ElementIndex getElementIndex() {
@@ -2666,9 +2650,36 @@ public class NativeBroker extends DBBroker {
 					if (Collations.indexOf(collator, cmp, expr) != Constants.STRING_NOT_FOUND)
 						resultNodeSet.add(p);
 					break;
-				case Constants.TRUNC_NONE :
-					if (compare(collator, cmp, expr, relation))
-						resultNodeSet.add(p);
+				case Constants.TRUNC_NONE :				
+                    int result = Collations.compare(collator, cmp, expr);
+                    switch (relation) {
+                        case Constants.LT :
+                            if (result < 0)
+                                resultNodeSet.add(p);
+                            break;
+                        case Constants.LTEQ :
+                            if (result <= 0)
+                                resultNodeSet.add(p);
+                            break;
+                        case Constants.GT :
+                            if (result > 0)
+                                resultNodeSet.add(p);
+                            break;
+                        case Constants.GTEQ :
+                            if (result >= 0)
+                                resultNodeSet.add(p);
+                            break;
+                        case Constants.EQ :
+                            if (result == Constants.EQUAL)
+                                resultNodeSet.add(p);
+                            break;
+                        case Constants.NEQ :
+                            if (result != Constants.EQUAL)
+                                resultNodeSet.add(p);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Illegal argument 'relation': " + relation);
+                    }
 					break;
 				case Constants.REGEXP :
                     Matcher matcher = regexp.matcher(cmp);
