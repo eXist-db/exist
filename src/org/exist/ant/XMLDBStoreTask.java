@@ -120,7 +120,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
         if (mime == null)
             mime = MimeTable.getInstance().getContentTypeFor(srcFile.getName());
         resourceType = mime.isXMLType() ? "XMLResource" : "BinaryResource";
-        log("Creating resource of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
+        log("Creating resource " + srcFile.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
         res = col.createResource(srcFile.getName(), resourceType);
         res.setContent(srcFile);
         ((EXistResource) res).setMimeType(mime.getName());
@@ -153,11 +153,14 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
               col = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION + path, relDir);
               prevDir = relDir;
             }
+          } else {
+        	 // No file separator found in resource name, reset col to the root collection
+        	 col = root;
           }
           if (mime == null)
               currentMime = MimeTable.getInstance().getContentTypeFor(file.getName());
           resourceType = currentMime.isXMLType() ? "XMLResource" : "BinaryResource";
-          log("Creating resource of type " + resourceType + " with mime-type: " + currentMime.getName());
+          log("Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG);
           res = col.createResource(file.getName(), resourceType);
           res.setContent(file);
           ((EXistResource) res).setMimeType(currentMime.getName());
