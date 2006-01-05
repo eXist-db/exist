@@ -23,8 +23,6 @@
 package org.exist.memtree;
 
 import org.exist.dom.NodeProxy;
-import org.w3c.dom.Node;
-
 
 /**
  * @author wolf

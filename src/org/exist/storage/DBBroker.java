@@ -376,7 +376,6 @@ public abstract class DBBroker extends Observable {
 	 *@param  first  unique id of the first node to retrieve
 	 *@param  last   unique id of the last node to retrieve
 	 */
-    public abstract NodeList getRange(Document doc, long first, long last, long parentPointer);
 	public abstract NodeList getRange(Document doc, long first, long last);
 
 	/**
@@ -413,7 +412,7 @@ public abstract class DBBroker extends Observable {
 	 *@param  gid  the node's unique identifier
 	 */
 	public abstract Node objectWith(Document doc, long gid);
-    public abstract Node objectWith(Document doc, long gid, long parentPointer);
+    
 	public abstract Node objectWith(NodeProxy p);
 
 	/**

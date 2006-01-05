@@ -166,12 +166,12 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		DocumentImpl d;
 		for (Iterator i = iterator(); i.hasNext();) {
 			d = (DocumentImpl) i.next();
-			if (other.containsKey(d.docId))
+			if (other.containsKey(d.getDocId()))
 				r.add(d);
 		}
 		for (Iterator i = other.iterator(); i.hasNext();) {
 			d = (DocumentImpl) i.next();
-			if (containsKey(d.docId) && (!r.containsKey(d.docId)))
+			if (containsKey(d.getDocId()) && (!r.containsKey(d.getDocId())))
 				r.add(d);
 		}
 		return r;
@@ -183,7 +183,7 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		DocumentImpl d;
 		for (Iterator i = iterator(); i.hasNext();) {
 			d = (DocumentImpl) i.next();
-			if (!result.containsKey(d.docId))
+			if (!result.containsKey(d.getDocId()))
 				result.add(d);
 		}
 		return result;
@@ -195,7 +195,7 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		DocumentImpl d;		
 		for (Iterator i = other.iterator(); i.hasNext();) {
 			d = (DocumentImpl) i.next();
-			if (!containsKey(d.docId))
+			if (!containsKey(d.getDocId()))
 				return false;
 		}
 		return true;

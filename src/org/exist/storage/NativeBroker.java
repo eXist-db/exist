@@ -200,57 +200,58 @@ public class NativeBroker extends DBBroker {
 	public NativeBroker(BrokerPool pool, Configuration config) throws EXistException {
 		super(pool, config);
 		LOG.debug("Initializing broker " + hashCode());
-		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)
-			dataDir = "data";
+        
+        dataDir = (String) config.getProperty("db-connection.data-dir");
+		if (dataDir == null)
+            dataDir = "data";
 
-		if ((pageSize = config.getInteger("db-connection.page-size")) < 0)
+        pageSize = config.getInteger("db-connection.page-size");
+		if (pageSize < 0)
 			pageSize = 4096;
+        Paged.setPageSize(pageSize);
 
-		if ((defaultIndexDepth = config.getInteger("indexer.index-depth")) < 0)
+        defaultIndexDepth = config.getInteger("indexer.index-depth");
+		if (defaultIndexDepth < 0)
 			defaultIndexDepth = 1;
-		if ((memMinFree = config.getInteger("db-connection.min_free_memory")) < 0)
+        
+        memMinFree = config.getInteger("db-connection.min_free_memory");
+		if (memMinFree < 0)
 			memMinFree = 5000000;
-		
-		Paged.setPageSize(pageSize);
-
+        
+        idxConf = (IndexSpec) config.getProperty("indexer.config");         
+        xmlSerializer = new NativeSerializer(this, config);
+        user = SecurityManager.SYSTEM_USER;            
+        
 		try {
 
-			if ((domDb = (DOMFile) config.getProperty("db-connection.dom")) == null) {
-				domDb =
-					new DOMFile(pool, new File(dataDir + File.separatorChar + DOM_DBX),
-						pool.getCacheManager());
-
-				config.setProperty("db-connection.dom", domDb);
-				if (!readOnly)
-					readOnly = domDb.isReadOnly();
+            // Initialize DOM storage     
+            domDb = (DOMFile) config.getProperty("db-connection.dom");
+			if (domDb== null) {
+				domDb =	new DOMFile(pool, new File(dataDir + File.separatorChar + DOM_DBX),
+						    pool.getCacheManager());
+				config.setProperty("db-connection.dom", domDb);				
 			}
-
-			// Initialize collections storage
+            if (!readOnly)
+                readOnly = domDb.isReadOnly();
             
-			if ((collectionsDb =
-				(CollectionStore) config.getProperty("db-connection.collections"))
-				== null) {
-				collectionsDb =
-					new CollectionStore(pool, new File(dataDir + File.separatorChar + COLLECTIONS_DBX),
+			// Initialize collections storage            
+            collectionsDb = (CollectionStore) config.getProperty("db-connection.collections");
+			if (collectionsDb == null) {
+				collectionsDb =new CollectionStore(pool, new File(dataDir + File.separatorChar + COLLECTIONS_DBX),
                             pool.getCacheManager());
-
-				config.setProperty("db-connection.collections", collectionsDb);
-				if (!readOnly)
-					readOnly = collectionsDb.isReadOnly();
+				config.setProperty("db-connection.collections", collectionsDb);				
             }
+            if (!readOnly)
+                readOnly = collectionsDb.isReadOnly();
             
+            //TODO : is it necessary to create them if we are in read-only mode ?
 			createIndexFiles();
 			
 			if (readOnly)
 				LOG.info("database runs in read-only mode");
-			
-			idxConf = (IndexSpec) config.getProperty("indexer.config");
 
-			
-			xmlSerializer = new NativeSerializer(this, config);
-			user = SecurityManager.SYSTEM_USER;
 		} catch (DBException e) {
-			LOG.debug("failed to initialize database: " + e.getMessage(), e);
+			LOG.debug(e.getMessage(), e);
 			throw new EXistException(e);
 		}
 	}
@@ -449,6 +450,10 @@ public class NativeBroker extends DBBroker {
 	public ElementIndex getElementIndex() {
 	    return elementIndex;
 	}
+    
+    public NativeValueIndexByQName getQNameValueIndex() {
+        return qnameValueIndex;
+    }    
 
 	public IndexSpec getIndexConfiguration() {
 	    return idxConf;
@@ -1435,7 +1440,7 @@ public class NativeBroker extends DBBroker {
                 byte[] data = getBinaryResourceData((BinaryDocument) doc); 
                 destination.addBinaryResource(transaction, this, newName, data, doc.getMetadata().getMimeType());
             } else {
-                DocumentImpl newDoc = new DocumentImpl(this, newName, destination);
+                DocumentImpl newDoc = new DocumentImpl(this, destination, newName);
                 newDoc.copyOf(doc);
                 newDoc.setDocId(getNextDocumentId(transaction, destination));
                 newDoc.setPermissions(doc.getPermissions()); 
@@ -1530,7 +1535,7 @@ public class NativeBroker extends DBBroker {
 			.run();
 			
 			// create a copy of the old doc to copy the nodes into it
-			DocumentImpl tempDoc = new DocumentImpl(this, doc.getFileName(), doc.getCollection());
+			DocumentImpl tempDoc = new DocumentImpl(this, doc.getCollection(), doc.getFileName());
 			tempDoc.copyOf(doc);
 			tempDoc.setDocId(doc.getDocId());
 			
@@ -1810,14 +1815,9 @@ public class NativeBroker extends DBBroker {
 	}
 
     public NodeList getRange(final Document doc, final long first, final long last) {
-        return getRange(doc, first, last, -1);
-    }
-    
-	/** @return all nodes whose global unique id's are in given interval. */	
-	public NodeList getRange(final Document doc, final long first, final long last, final long parentPointer) {
 		NodeListImpl result = new NodeListImpl((int) (last - first + 1));
 		for (long gid = first; gid <= last; gid++) {
-			result.add(objectWith(doc, gid, parentPointer));
+			result.add(objectWith(doc, gid));
 		}
 		return result;
 	}
@@ -1839,22 +1839,12 @@ public class NativeBroker extends DBBroker {
 		return new NativeSerializer(this, getConfiguration());
 	}
 
-    public Node objectWith(final Document doc, final long gid) {
-        return objectWith(doc, gid, -1);
-    }
-    
-	/** @return node with given global unique id. */	
-	public Node objectWith(final Document doc, final long gid, final long parentPointer) {
+    public Node objectWith(final Document doc, final long gid) {    
 		return (Node) new DOMTransaction(this, domDb) {
 			public Object start() {
 				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
-				if (val == null) {
-//				    if(LOG.isDebugEnabled()) {
-//				        LOG.debug("node " + gid + " not found in document " + ((DocumentImpl)doc).getDocId());
-//				        Thread.dumpStack();
-//				    }
-					return null;
-				}
+				if (val == null)
+					return null;				
 				StoredNode node =
 					StoredNode.deserialize(
 						val.getData(),
@@ -2492,7 +2482,7 @@ public class NativeBroker extends DBBroker {
 		    	DocumentImpl child = (DocumentImpl) i.next();
 		    	LOG.debug("Copying resource: '" + child.getName() + "'");
 		    	if (child.getResourceType() == DocumentImpl.XML_FILE) {
-			    	DocumentImpl newDoc = new DocumentImpl(this, child.getFileName(), destCollection);
+			    	DocumentImpl newDoc = new DocumentImpl(this, destCollection, child.getFileName());
 			        newDoc.copyOf(child);
 	                newDoc.setDocId(getNextDocumentId(transaction, destination));
 			        copyResource(transaction, child, newDoc);
@@ -3218,27 +3208,25 @@ public class NativeBroker extends DBBroker {
     
 
 	public final static class NodeRef extends Value {
-        /**
-         * Log4J Logger for this class
-         */
-//        private static final Logger LOG = Logger.getLogger(NodeRef.class);
 
+        /*
 		public NodeRef() {
 			data = new byte[12];
 		}
+        */
 
-		public NodeRef(int docId, long gid) {
+        public NodeRef(int docId) {
+            data = new byte[4];
+            ByteConversion.intToByte(docId, data, 0);
+            len = 4;
+            pos = 0;
+        }        
+        
+        public NodeRef(int docId, long gid) {
 			data = new byte[12];
 			ByteConversion.intToByte(docId, data, 0);
 			ByteConversion.longToByte(gid, data, 4);
 			len = 12;
-			pos = 0;
-		}
-
-		public NodeRef(int docId) {
-			data = new byte[4];
-			ByteConversion.intToByte(docId, data, 0);
-			len = 4;
 			pos = 0;
 		}
 
@@ -3246,21 +3234,20 @@ public class NativeBroker extends DBBroker {
 			return ByteConversion.byteToInt(data, 0);
 		}
 
+        /*
 		long getGid() {
 			return ByteConversion.byteToLong(data, 4);
 		}
+        */
 
+        /*
 		void set(int docId, long gid) {
 			ByteConversion.intToByte(docId, data, 0);
 			ByteConversion.longToByte(gid, data, 4);
 			len = 12;
 			pos = 0;
 		}
-	}
-
-
-	public NativeValueIndexByQName getQNameValueIndex() {
-		return qnameValueIndex;
+        */
 	}
 
     private final class DocumentCallback implements BTreeCallback {
@@ -3281,7 +3268,7 @@ public class NativeBroker extends DBBroker {
                 else
                     doc = new DocumentImpl(NativeBroker.this, collection);
                 doc.read(istream);
-                //Commented since 
+                //Commented since DocumentImpl forked from what is now StoredNode
                 //doc.setInternalAddress(pointer);
                 collection.addDocument(null, NativeBroker.this, doc);
             } catch (EOFException e) {

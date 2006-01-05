@@ -175,7 +175,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	/** Ordering first according to document ID; then if equal 
 	 * according to node gid. */
 	public int compareTo(NodeProxy other) {
-		final int diff = doc.docId - other.doc.docId;
+		final int diff = doc.getDocId() - other.doc.getDocId();
 		 if ( diff != 0 )
 			 return diff;
 		 return (int) (gid - other.gid);
@@ -219,7 +219,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
 			throw new XPathException("cannot compare persistent node with in-memory node");
 		NodeProxy node = (NodeProxy) other;
-		if (doc.docId != node.doc.docId)
+		if (doc.getDocId() != node.doc.getDocId())
 			return false;
 		//		System.out.println(gid + " << " + node.gid);
 		int la = doc.getTreeLevel(gid);
@@ -257,7 +257,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
 			throw new XPathException("cannot compare persistent node with in-memory node");
 		NodeProxy node = (NodeProxy) other;
-		if (doc.docId != node.doc.docId)
+		if (doc.getDocId() != node.doc.getDocId())
 			return false;
 		//		System.out.println(gid + " >> " + node.gid);
 		int la = doc.getTreeLevel(gid);

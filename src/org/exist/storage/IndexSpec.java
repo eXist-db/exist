@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
-import org.exist.collections.triggers.Trigger;
 import org.exist.dom.QName;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Attr;

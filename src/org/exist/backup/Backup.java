@@ -52,7 +52,6 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-import org.exist.dom.DocumentImpl;
 
 public class Backup {
 

@@ -285,14 +285,14 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 			return null;
 		Node tempNode = root;
 		while (tempNode != null) {
-			if (tempNode.data.getDocument().docId == doc.docId) {
+			if (tempNode.data.getDocument().getDocId() == doc.getDocId()) {
 				if (tempNode.data.getGID() == nodeId)
 					return tempNode.data;
 				else if (tempNode.data.getGID() < nodeId)
 					tempNode = tempNode.rightChild;
 				else
 					tempNode = tempNode.leftChild;
-			} else if (tempNode.data.getDocument().docId < doc.docId)
+			} else if (tempNode.data.getDocument().getDocId() < doc.getDocId())
 				tempNode = tempNode.rightChild;
 			else
 				tempNode = tempNode.leftChild;
@@ -305,9 +305,9 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 			return false;
 		Node tempNode = root;
 		while (tempNode != null) {
-			if (tempNode.data.getDocument().docId == doc.docId) {
+			if (tempNode.data.getDocument().getDocId() == doc.getDocId()) {
 				return true;
-			} else if (tempNode.data.getDocument().docId < doc.docId)
+			} else if (tempNode.data.getDocument().getDocId() < doc.getDocId())
 				tempNode = tempNode.rightChild;
 			else
 				tempNode = tempNode.leftChild;

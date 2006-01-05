@@ -46,12 +46,20 @@ public class BinaryDocument extends DocumentImpl {
 	
 	private long pageNr = Page.NO_PAGE;
     
+    public BinaryDocument(DBBroker broker) {
+        super(broker, null, null);
+    } 
+    
 	public BinaryDocument(DBBroker broker, Collection collection) {
 		super(broker, collection);
 	}
 
+    public BinaryDocument(DBBroker broker, String fileName) {
+        super(broker, null, fileName);       
+    }    
+
 	public BinaryDocument(DBBroker broker, String docName, Collection collection) {
-		super(broker, docName, collection);
+		super(broker, collection, docName);
 	}
 	
 	/* (non-Javadoc)
@@ -70,10 +78,10 @@ public class BinaryDocument extends DocumentImpl {
 	}
 
 	public void write(VariableByteOutputStream ostream) throws IOException {
-		ostream.writeInt(docId);
-		ostream.writeUTF(fileName);
+		ostream.writeInt(getDocId());
+		ostream.writeUTF(getFileName());
 		ostream.writeLong(pageNr);
-		SecurityManager secman = broker.getBrokerPool().getSecurityManager();
+		SecurityManager secman = getBroker().getBrokerPool().getSecurityManager();
 		if (secman == null) {
             //TODO : explain those 2 values -pb
 			ostream.writeInt(1);
@@ -90,11 +98,11 @@ public class BinaryDocument extends DocumentImpl {
 
 	public void read(VariableByteInput istream)
 		throws IOException, EOFException {
-		docId = istream.readInt();
-		fileName = istream.readUTF();
+		setDocId(istream.readInt());
+		setFileName(istream.readUTF());
 		pageNr = istream.readLong();
 		final SecurityManager secman =
-			broker.getBrokerPool().getSecurityManager();
+			getBroker().getBrokerPool().getSecurityManager();
 		final int uid = istream.readInt();
 		final int groupId = istream.readInt();
 		final int perm = (istream.readByte() & 0777);

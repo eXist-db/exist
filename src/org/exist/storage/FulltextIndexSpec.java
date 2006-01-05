@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.exist.collections.triggers.Trigger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;

@@ -31,7 +31,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.recovery.RecoveryManager;
-import org.exist.util.sanity.SanityCheck;
 
 /**
  * This is the central entry point to the transaction management service.

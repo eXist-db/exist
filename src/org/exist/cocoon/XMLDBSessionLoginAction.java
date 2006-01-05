@@ -13,7 +13,6 @@ import org.apache.cocoon.environment.Request;
 import org.apache.cocoon.environment.Session;
 import org.apache.cocoon.environment.SourceResolver;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;

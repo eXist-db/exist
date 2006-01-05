@@ -23,7 +23,6 @@ package org.exist.storage.txn;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
