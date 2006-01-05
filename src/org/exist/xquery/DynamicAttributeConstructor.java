@@ -141,5 +141,9 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     	result.append(valueExpr.toString());        
         result.append("} ");
     	return result.toString();
+    } 
+    
+    public void resetState() {
+        super.resetState();
     }    
 }
