@@ -101,7 +101,7 @@ public class DOMIndexerTest extends TestCase {
 	        pool = BrokerPool.getInstance();
 	        User user = pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);	              
             broker = pool.get(user);
-            org.exist.dom.DocumentImpl targetDoc = broker.storeTemporaryDoc(doc);
+            org.exist.dom.DocumentImpl targetDoc = broker.storeTempResource(doc);
             System.out.println("testIndexer(): " + targetDoc.printTreeLevelOrder());
             
             Serializer serializer = broker.getSerializer();

@@ -552,6 +552,25 @@ public class NativeBroker extends DBBroker {
             user = u;
             lock.release();
         }
+    } 
+    
+    /** remove temporary collection */  
+    public void cleanUpTempCollection() {
+        Collection temp = getCollection(TEMP_COLLECTION);
+        if(temp == null)
+            return;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
+        try {
+            removeCollection(txn, temp);
+            transact.commit(txn);
+        } catch (PermissionDeniedException e) {
+            transact.abort(txn);
+            LOG.warn("Failed to remove temporary collection: " + e.getMessage(), e);
+        } catch (TransactionException e) {
+            transact.abort(txn);
+            LOG.warn("Failed to remove temporary collection: " + e.getMessage(), e);
+        }
     }    
     
     public Collection getOrCreateCollection(Txn transaction, String name) throws PermissionDeniedException {
@@ -1072,8 +1091,75 @@ public class NativeBroker extends DBBroker {
 //          throw new PermissionDeniedException("not allowed to read document");
         
         return doc;
-    }    
+    }
+    
+    /** store into the temporary collection of the database a given in-memory Document */
+    public DocumentImpl storeTempResource(org.exist.memtree.DocumentImpl doc) 
+    throws EXistException, PermissionDeniedException, LockException {
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
+        
+        user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
+        String docName = MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis())) +
+            ".xml";
+        Collection temp = openCollection(TEMP_COLLECTION, Lock.WRITE_LOCK);
+        
+        try {
+            if(temp == null)
+                temp = createTempCollection(transaction);
+            else
+                transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
+            DocumentImpl targetDoc = new DocumentImpl(this, temp);
+            targetDoc.setFileName(docName);
+            targetDoc.setPermissions(0771);
+            long now = System.currentTimeMillis();
+            DocumentMetadata metadata = new DocumentMetadata();
+            metadata.setLastModified(now);
+            metadata.setCreated(now);
+            targetDoc.setMetadata(metadata);
+            targetDoc.setDocId(getNextDocumentId(transaction, temp));
 
+            DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
+            indexer.scan();
+            indexer.store();
+            temp.addDocument(transaction, this, targetDoc);
+            storeDocument(transaction, targetDoc);
+            closeDocument();
+            flush();
+            transact.commit(transaction);
+            return targetDoc;
+        } catch (Exception e) {
+            transact.abort(transaction);
+        }
+        return null;
+    }
+    
+    /** remove from the temporary collection of the database a given list of Documents. */
+    public void cleanUpTempResources(List docs) {
+        Collection temp = openCollection(TEMP_COLLECTION, Lock.WRITE_LOCK);
+        if(temp == null)
+            return;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
+        txn.registerLock(temp.getLock(), Lock.WRITE_LOCK);
+        try {
+            for(Iterator i = docs.iterator(); i.hasNext(); )
+                temp.removeDocument(txn, this, (String) i.next());
+            transact.commit(txn);
+        } catch (PermissionDeniedException e) {
+            transact.abort(txn);
+            LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
+        } catch (TriggerException e) {
+            transact.abort(txn);
+            LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
+        } catch (LockException e) {
+            transact.abort(txn);
+            LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
+        } catch (TransactionException e) {
+            transact.abort(txn);
+            LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
+        }
+    }
 
 	public DocumentImpl openDocument(String fileName, int lockMode) throws PermissionDeniedException {
         fileName = XmldbURI.checkPath2(fileName, ROOT_COLLECTION);
@@ -2832,93 +2918,6 @@ public class NativeBroker extends DBBroker {
 			}
 		}
 		.run();
-	}
-
-	/** store into the temporary collection of the database a given in-memory Document */
-	public DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) 
-    throws EXistException, PermissionDeniedException, LockException {
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
-        
-        user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
-		String docName = MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis())) +
-			".xml";
-		Collection temp = openCollection(TEMP_COLLECTION, Lock.WRITE_LOCK);
-        
-        try {
-            if(temp == null)
-                temp = createTempCollection(transaction);
-            else
-                transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
-            DocumentImpl targetDoc = new DocumentImpl(this, temp);
-            targetDoc.setFileName(docName);
-            targetDoc.setPermissions(0771);
-            long now = System.currentTimeMillis();
-            DocumentMetadata metadata = new DocumentMetadata();
-            metadata.setLastModified(now);
-            metadata.setCreated(now);
-            targetDoc.setMetadata(metadata);
-            targetDoc.setDocId(getNextDocumentId(transaction, temp));
-
-    		DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
-            indexer.scan();
-            indexer.store();
-            temp.addDocument(transaction, this, targetDoc);
-            storeDocument(transaction, targetDoc);
-            closeDocument();
-            flush();
-            transact.commit(transaction);
-            return targetDoc;
-        } catch (Exception e) {
-            transact.abort(transaction);
-        }
-        return null;
-	}
-	
-	/** remove from the temporary collection of the database a given list of Documents. */
-	public void removeTempDocs(List docs) {
-		Collection temp = openCollection(TEMP_COLLECTION, Lock.WRITE_LOCK);
-		if(temp == null)
-			return;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
-        txn.registerLock(temp.getLock(), Lock.WRITE_LOCK);
-		try {
-			for(Iterator i = docs.iterator(); i.hasNext(); )
-				temp.removeDocument(txn, this, (String) i.next());
-            transact.commit(txn);
-		} catch (PermissionDeniedException e) {
-            transact.abort(txn);
-			LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
-		} catch (TriggerException e) {
-            transact.abort(txn);
-			LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
-		} catch (LockException e) {
-            transact.abort(txn);
-			LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
-		} catch (TransactionException e) {
-            transact.abort(txn);
-            LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
-        }
-	}
-
-	/** remove temporary collection */	
-	public void cleanUpAll() {
-		Collection temp = getCollection(TEMP_COLLECTION);
-		if(temp == null)
-			return;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
-		try {
-			removeCollection(txn, temp);
-            transact.commit(txn);
-		} catch (PermissionDeniedException e) {
-            transact.abort(txn);
-			LOG.warn("Failed to remove temporary collection: " + e.getMessage(), e);
-		} catch (TransactionException e) {
-            transact.abort(txn);
-            LOG.warn("Failed to remove temporary collection: " + e.getMessage(), e);
-        }
 	}
 	
 	/** remove all documents from temporary collection */	

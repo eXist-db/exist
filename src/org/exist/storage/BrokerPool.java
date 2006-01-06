@@ -621,11 +621,12 @@ public class BrokerPool {
             isReadOnly = true;
         }
         
-		// run recovery
+		//Run the recovery process
+        //TODO : assume 
         boolean recovered = false;
 		if (isTransactional()) {
 			recovered = transactionManager.runRecovery(broker);
-		
+            //TODO : extract the following from this block ? What if we ware not transactional ? -pb 
             if (!recovered) {
             	if (broker.getCollection(DBBroker.ROOT_COLLECTION) == null) {
             		Txn txn = transactionManager.beginTransaction();
@@ -644,8 +645,8 @@ public class BrokerPool {
         // WM: attention: a small change in the sequence of calls can break
         // either normal startup or recovery.
         
-        // remove old temporary docs
-		broker.cleanUpAll();
+        // remove temporary docs
+		broker.cleanUpTempCollection();
         
         //create the security manager
 		//TODO : why only the first broker has a security manager ? Global or attached to each broker ?
@@ -654,11 +655,11 @@ public class BrokerPool {
 		securityManager = new org.exist.security.SecurityManager(this, broker);
 		initializing = false;
 		
-		//TODO : other brokers don't have one. Don't know if they need one though...
-        // WM: there's only one CollectionConfigurationManager per BrokerPool. The passed DBBroker
-        // is needed to initialize/read the /db/system/config collection.
+		//Get a manager to handle further collectios configuration
 		collectionConfigurationManager = new CollectionConfigurationManager(broker);
         
+        //If necessary, launch a task to repair the DB
+        //TODO : merge this with the recovery process ?
         if (recovered) {
             try {
                 broker.setUser(SecurityManager.SYSTEM_USER);
