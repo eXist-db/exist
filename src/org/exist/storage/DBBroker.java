@@ -586,7 +586,7 @@ public abstract class DBBroker extends Observable {
      * 
      * @param doc to defrag
      */
-	public abstract void defrag(Txn transaction, DocumentImpl doc);
+	public abstract void defragResource(Txn transaction, DocumentImpl doc);
 	
 	/**
 	 * Perform a consistency check on the specified document.
@@ -595,9 +595,9 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 * @param doc
 	 */
-	public abstract void checkTree(DocumentImpl doc);
+	public abstract void checkResourceTree(DocumentImpl doc);
 	
-	public abstract void consistencyCheck(DocumentImpl doc) throws EXistException;
+	public abstract void checkResourceConsistency(DocumentImpl doc) throws EXistException;
 	
     /**
      * Sync dom and collection state data (pages) to disk.
