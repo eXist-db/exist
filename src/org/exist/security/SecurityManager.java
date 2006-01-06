@@ -31,6 +31,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
@@ -77,6 +78,8 @@ public class SecurityManager {
 
 	private int defCollectionPermissions = Permission.DEFAULT_PERM;
     private int defResourcePermissions = Permission.DEFAULT_PERM;
+    
+    private ExistPDP pdp;
     
 	/**
 	 * Initialize the security manager.
@@ -181,8 +184,17 @@ public class SecurityManager {
 			broker.getConfiguration().getProperty("indexer.permissions.resource");
 		if (defOpt != null)
 			defResourcePermissions = defOpt.intValue();
+
+		Boolean enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
+		if(enableXACML != null && enableXACML.booleanValue()) {
+			pdp = new ExistPDP(pool);
+			LOG.debug("XACML enabled");
+		}
 	}
 
+	public ExistPDP getPDP() {
+		return pdp;
+	}
 	public synchronized void deleteUser(String name) throws PermissionDeniedException {
 		deleteUser(getUser(name));
 	}

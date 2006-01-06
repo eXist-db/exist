@@ -162,6 +162,10 @@ public class ExternalModuleImpl implements ExternalModule {
 		return (Variable) mStaticVariables.get(qname);
 	}
 	
+	public Source getSource() {
+		return mSource;
+	}
+	
 	public void setSource(Source source) {
 		mSource = source;
 	}

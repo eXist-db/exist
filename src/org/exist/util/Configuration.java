@@ -180,6 +180,11 @@ public class Configuration implements ErrorHandler {
                 configureXQuery((Element) xquery.item(0));
             }
             
+            NodeList xacml = doc.getElementsByTagName("xacml");
+            if (xacml.getLength() > 0) {
+                configureXACML((Element)xacml.item(0));
+            }
+            
             /*
             CLUSTER CONFIGURATION...
              */
@@ -279,6 +284,12 @@ public class Configuration implements ErrorHandler {
     
     public void setProperty(String name, Object obj) {
         config.put(name, obj);
+    }
+
+    public void configureXACML(Element xacml) {
+    	String enable = xacml.getAttribute("enable");
+    	if(enable != null)
+    		config.put("xacml.enable", Boolean.valueOf(enable.equals("yes")));
     }
     
     /**

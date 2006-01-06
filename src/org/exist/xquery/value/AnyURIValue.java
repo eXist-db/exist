@@ -38,6 +38,9 @@ public class AnyURIValue extends AtomicValue {
 
 	private String uri;
 
+	public AnyURIValue(URI uri) {
+		this.uri = uri.toString();
+	}
 	public AnyURIValue(String s) throws XPathException {
 		try {
 			URI uri = new URI(s);

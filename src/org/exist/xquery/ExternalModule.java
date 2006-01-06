@@ -53,6 +53,14 @@ public interface ExternalModule extends Module {
 	public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException;
 	
 	/**
+	 * Get the source object this module has been read from.
+	 *
+	 * This is required for query access control.
+	 * @return The source object this module has been read from.
+	 */
+	public Source getSource();
+	
+	/**
 	 * Set the source object this module has been read from.
 	 * 
 	 * This is required to check the validity of a compiled expression.
