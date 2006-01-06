@@ -379,6 +379,7 @@ public class GeneralComparison extends BinaryOp {
 		int indexType = nodes.getIndexType();
 		
 		//See if we have a range index defined on the nodes in this sequence
+        //TODO : use isSubType ??? -pb
 	    if(indexType != Type.ITEM)
 	    {
 	    	//Get the documents from the node set
@@ -397,6 +398,7 @@ public class GeneralComparison extends BinaryOp {
 		        	key = key.convertTo(Type.STRING);
 		        }
 		        //else if key is not the same type as the index
+                //TODO : use isSubType ??? -pb
 		        else if(key.getType() != indexType)
 		        {
 		        	//try and convert the key to the index type 
@@ -462,8 +464,7 @@ public class GeneralComparison extends BinaryOp {
 	                {
 	                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "nodeSetCompare");
 	                }
-	                
-		            return(nodeSetCompare(nodes, contextSequence));
+                    return(nodeSetCompare(nodes, contextSequence));
 	            }
         
 		//removed by Pierrick Brihaye
@@ -500,7 +501,7 @@ public class GeneralComparison extends BinaryOp {
             {
                 context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "nodeSetCompare");
             }
-		    
+
             return(nodeSetCompare(nodes, contextSequence));
 		}
 		
@@ -512,7 +513,7 @@ public class GeneralComparison extends BinaryOp {
 		}
 		
 		//return the result of the range index lookup(s) :-)
-		return(result);
+		return result;
 	}
 
 	//removed by Pierrick Brihaye
