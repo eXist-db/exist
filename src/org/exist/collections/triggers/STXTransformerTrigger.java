@@ -82,7 +82,7 @@ public class STXTransformerTrigger extends FilteringTrigger {
             if(p == Constants.STRING_NOT_FOUND)
                 stylesheet = parent.getName() + "/" + stylesheet;
             try {
-				doc = (DocumentImpl)broker.getDocument(stylesheet);
+				doc = (DocumentImpl)broker.getResource(stylesheet);
 				if(doc == null)
 					throw new CollectionConfigurationException("stylesheet " + stylesheet + " not found in database");
 				Serializer serializer = broker.getSerializer();

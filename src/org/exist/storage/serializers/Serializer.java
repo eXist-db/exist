@@ -308,7 +308,7 @@ public abstract class Serializer implements XMLReader {
 	public void parse(String systemId) throws IOException, SAXException {
 		try {
 			// try to load document from eXist
-			DocumentImpl doc = (DocumentImpl) broker.getDocument(systemId);
+			DocumentImpl doc = (DocumentImpl) broker.getResource(systemId);
 			if (doc == null)
 				throw new SAXException("document " + systemId + " not found in database");
 			else
@@ -536,7 +536,7 @@ public abstract class Serializer implements XMLReader {
 				// load stylesheet from eXist
 				DocumentImpl xsl = null;
 				try {
-					xsl = (DocumentImpl) broker.getDocument(stylesheet);
+					xsl = (DocumentImpl) broker.getResource(stylesheet);
 				} catch (PermissionDeniedException e) {
 					LOG.debug("permission denied to read stylesheet");
 				}

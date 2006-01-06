@@ -330,8 +330,7 @@ public abstract class DBBroker extends Observable {
 	 * @return the document or null if no document could be found at the
 	 * specified location.
 	 */
-	public abstract Document getDocument(String path)
-		throws PermissionDeniedException;
+	public abstract Document getResource(String path) throws PermissionDeniedException;
 
 	public abstract DocumentImpl openDocument(String docPath, int lockMode) 
 		throws PermissionDeniedException;
@@ -441,7 +440,7 @@ public abstract class DBBroker extends Observable {
 	 * @param collectionName
 	 * @throws PermissionDeniedException
 	 */
-	public abstract void reindex(String collectionName) 
+	public abstract void reindexCollection(String collectionName) 
 		throws PermissionDeniedException;
 	
     protected abstract void repair() throws PermissionDeniedException;
@@ -478,10 +477,10 @@ public abstract class DBBroker extends Observable {
 	 *      the Broker to determine if a node's content should be
 	 *      fulltext-indexed).
 	 */
-	public abstract void store(Txn transaction, StoredNode node, NodePath currentPath, boolean index);
+	public abstract void storeNode(Txn transaction, StoredNode node, NodePath currentPath, boolean index);
 
-	public void store(Txn transaction, StoredNode node, NodePath currentPath) {
-	    store(transaction, node, currentPath, true);
+	public void storeNode(Txn transaction, StoredNode node, NodePath currentPath) {
+	    storeNode(transaction, node, currentPath, true);
 	}
 	
 	/**
@@ -614,9 +613,7 @@ public abstract class DBBroker extends Observable {
 	 *
 	 *@param  node  Description of the Parameter
 	 */
-	public void update(Txn transaction, StoredNode node) {
-		throw new RuntimeException("not implemented");
-	}
+	public abstract void updateNode(Txn transaction, StoredNode node);
 
 	/**
 	 * Is the database running read-only? Returns false by default.
@@ -633,29 +630,21 @@ public abstract class DBBroker extends Observable {
 		return pool;
 	}
 
-	public abstract void insertAfter(Txn transaction, final StoredNode previous, final StoredNode node);
+	public abstract void insertNodeAfter(Txn transaction, final StoredNode previous, final StoredNode node);
 
-	public void reindex(Txn transaction, DocumentImpl oldDoc, DocumentImpl doc, StoredNode node) {
-		throw new RuntimeException("not implemented");
-	}
+	public abstract void reindexResource(Txn transaction, DocumentImpl oldDoc, DocumentImpl doc, StoredNode node);
 
-	public void index(Txn transaction, StoredNode node) {
-		index(transaction, node, null);
-	}
-	
-	public void index(Txn transaction, StoredNode node, NodePath currentPath) {
-		throw new RuntimeException("not implemented");
-	}
-
-	public void removeNode(Txn transaction, StoredNode node, NodePath currentPath, String content) {
-		throw new RuntimeException("not implemented");
-	}
-
-    public abstract void removeAll(Txn transaction, StoredNode node, NodePath currentPath);
+    public void indexNode(Txn transaction, StoredNode node) {
+        indexNode(transaction, node, null);
+    }
     
-	public void endRemove() {
-		throw new RuntimeException("not implemented");
-	}
+    public abstract void indexNode(Txn transaction, StoredNode node, NodePath currentPath);    
+
+	public abstract void removeNode(Txn transaction, StoredNode node, NodePath currentPath, String content);
+
+    public abstract void removeAllNodes(Txn transaction, StoredNode node, NodePath currentPath);
+    
+	public abstract void endRemove();
 
 	/**
 	 * Create a temporary document in the temp collection and store the
@@ -674,7 +663,13 @@ public abstract class DBBroker extends Observable {
 	 * Clean up any temporary resources.
 	 *
 	 */
-	public abstract void cleanUpTempCollection();
+	public abstract void cleanUpTempCollection();    
+	
+	/**
+	 * Clean up temporary resources. Called by the sync daemon.
+	 *
+	 */
+	public abstract void cleanUpTempResources();
     
     /**
      * Remove the temporary document fragments specified by a list
@@ -683,12 +678,7 @@ public abstract class DBBroker extends Observable {
      * @param docs
      */
     public abstract void cleanUpTempResources(List docs);    
-	
-	/**
-	 * Clean up temporary resources. Called by the sync daemon.
-	 *
-	 */
-	public abstract void cleanUp();
+    
 	
 	/**
 	 *   

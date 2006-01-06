@@ -164,7 +164,7 @@ public class TransactionManager {
     public void reindex(DBBroker broker) {
         broker.setUser(SecurityManager.SYSTEM_USER);
         try {
-            broker.reindex(DBBroker.ROOT_COLLECTION);
+            broker.reindexCollection(DBBroker.ROOT_COLLECTION);
         } catch (PermissionDeniedException e) {
             LOG.warn("Exception during reindex: " + e.getMessage(), e);
         }

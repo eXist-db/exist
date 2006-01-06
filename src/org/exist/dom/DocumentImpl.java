@@ -587,9 +587,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             broker.removeNode(transaction, oldNode, oldNode.getPath(), null);
             broker.endRemove();
             newNode.setGID(oldNode.getGID());
-            broker.insertAfter(null, previousNode, newNode);
+            broker.insertNodeAfter(null, previousNode, newNode);
             NodePath path = newNode.getPath();
-            broker.index(transaction, newNode, path);
+            broker.indexNode(transaction, newNode, path);
             broker.endElement(newNode, path, null);
             broker.flush();
         } else {
@@ -597,7 +597,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             broker.endRemove();
             //TOUNDERSTAND : what are the semantics of this 0 ? -pb            
             newNode.setGID(0);
-            broker.insertAfter(transaction, previousNode, newNode);
+            broker.insertNodeAfter(transaction, previousNode, newNode);
         }
     }
 
@@ -671,12 +671,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
                 pi.setTarget(((ProcessingInstruction) child).getTarget());
                 pi.setData(((ProcessingInstruction) child).getData());
                 pi.setOwnerDocument(this);              
-                broker.insertAfter(transaction, last, pi);
+                broker.insertNodeAfter(transaction, last, pi);
                 return pi;
             case Node.COMMENT_NODE :
                 final CommentImpl comment = new CommentImpl(0, ((Comment) child).getData());
                 comment.setOwnerDocument(this);
-                broker.insertAfter(transaction, last, comment);
+                broker.insertNodeAfter(transaction, last, comment);
                 return comment;
             default :
                 throw new DOMException(

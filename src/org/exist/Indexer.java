@@ -212,7 +212,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		comment.setOwnerDocument(document);
 		if (stack.empty()) {
 			if (!validate)
-				broker.store(transaction, comment, currentPath);
+				broker.storeNode(transaction, comment, currentPath);
 			document.appendChild(comment);
 		} else {
 			ElementImpl last = (ElementImpl) stack.peek();
@@ -229,7 +229,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			}
 			last.appendChildInternal(comment);
 			if (!validate)
-				broker.store(transaction, comment, currentPath);
+				broker.storeNode(transaction, comment, currentPath);
 		}
 	}
 
@@ -291,7 +291,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			} else {
 				document.setOwnerDocument(document);
 				if (childCnt == null && last.getChildCount() > 0) {
-					broker.update(transaction, last);
+					broker.updateNode(transaction, last);
 				}
 			}
 			level--;
@@ -348,7 +348,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		pi.setOwnerDocument(document);
 		if (stack.isEmpty()) {
 			if (!validate)
-				broker.store(transaction, pi, currentPath);
+				broker.storeNode(transaction, pi, currentPath);
 			document.appendChild(pi);
 		} else {
 			ElementImpl last = (ElementImpl) stack.peek();
@@ -368,7 +368,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			}
 			last.appendChildInternal(pi);
 			if (!validate)
-				broker.store(transaction, pi, currentPath);
+				broker.storeNode(transaction, pi, currentPath);
 		}
 	}
 
@@ -557,7 +557,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				}
 				node.appendChildInternal(attr);
 				if (!validate)
-					broker.store(transaction, attr, currentPath);
+					broker.storeNode(transaction, attr, currentPath);
 				attr.release();
 			}
 		}
@@ -583,11 +583,11 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				next.append(charBuf);
 			}
 		}
-		broker.store(transaction, text, currentPath);
+		broker.storeNode(transaction, text, currentPath);
 	}
 
 	private void storeElement(ElementImpl node) {
-		broker.store(transaction, node, currentPath);
+		broker.storeNode(transaction, node, currentPath);
         node.setChildCount(0);
 		if (GeneralRangeIndexSpec.hasQNameOrValueIndex(node.getIndexType())) {
 			XMLString contentBuf = new XMLString();
