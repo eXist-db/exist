@@ -140,7 +140,7 @@ public class XQueryWatchDog {
     public void cleanUp() {
     	if(tempFragments == null)
     		return;
-    	context.getBroker().removeTempDocs(tempFragments);
+    	context.getBroker().cleanUpTempResources(tempFragments);
     	tempFragments = null;
     }
     

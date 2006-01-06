@@ -667,28 +667,28 @@ public abstract class DBBroker extends Observable {
 	 * @throws PermissionDeniedException
 	 * @throws LockException
 	 */
-	public abstract DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) 
+	public abstract DocumentImpl storeTempResource(org.exist.memtree.DocumentImpl doc) 
 		throws EXistException, PermissionDeniedException, LockException;
 	
 	/**
 	 * Clean up any temporary resources.
 	 *
 	 */
-	public abstract void cleanUpAll();
+	public abstract void cleanUpTempCollection();
+    
+    /**
+     * Remove the temporary document fragments specified by a list
+     * of names.
+     * 
+     * @param docs
+     */
+    public abstract void cleanUpTempResources(List docs);    
 	
 	/**
 	 * Clean up temporary resources. Called by the sync daemon.
 	 *
 	 */
 	public abstract void cleanUp();
-	
-	/**
-	 * Remove the temporary document fragments specified by a list
-	 * of names.
-	 * 
-	 * @param docs
-	 */
-	public abstract void removeTempDocs(List docs);
 	
 	/**
 	 *   
