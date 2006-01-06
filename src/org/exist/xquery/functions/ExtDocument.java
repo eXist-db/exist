@@ -128,7 +128,7 @@ public class ExtDocument extends Function {
                     if(next.charAt(0) != '/')                        
 						next = context.getBaseURI() + "/" + next;
 					try {
-						DocumentImpl doc = (DocumentImpl) context.getBroker().getDocument(next);
+						DocumentImpl doc = (DocumentImpl) context.getBroker().getResource(next);
 						if(doc != null) {
 						    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
 							    throw new XPathException("Insufficient privileges to read resource " + next);

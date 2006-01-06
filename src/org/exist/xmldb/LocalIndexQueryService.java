@@ -64,7 +64,7 @@ public class LocalIndexQueryService implements IndexQueryService {
         DBBroker broker = null;
         try {
             broker = pool.get(user);
-            broker.reindex(parent.getCollection().getName());
+            broker.reindexCollection(parent.getCollection().getName());
             broker.sync(Sync.MAJOR_SYNC);
         } catch (PermissionDeniedException e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
@@ -84,7 +84,7 @@ public class LocalIndexQueryService implements IndexQueryService {
         DBBroker broker = null;
         try {
             broker = pool.get(user);
-            broker.reindex(path);
+            broker.reindexCollection(path);
             broker.sync(Sync.MAJOR_SYNC);
         } catch (PermissionDeniedException e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);

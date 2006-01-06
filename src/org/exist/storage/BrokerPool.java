@@ -1017,7 +1017,7 @@ public class BrokerPool {
 		broker.sync(syncEvent);
 		//TODO : strange that it is set *after* the sunc method has been called.
 		broker.setUser(SecurityManager.SYSTEM_USER);
-		broker.cleanUp();
+		broker.cleanUpTempResources();
         if (syncEvent == Sync.MAJOR_SYNC) {
             try {
                 if (!FORCE_CORRUPTION)

@@ -112,7 +112,7 @@ public class DOMIndexer {
         path.addComponent(ROOT_QNAME);
         
         stack.push(elem);
-        broker.store(transaction, elem, path);
+        broker.storeNode(transaction, elem, path);
         targetDoc.appendChild(elem);
         elem.setChildCount(0);
         
@@ -161,7 +161,7 @@ public class DOMIndexer {
             if(stack.empty()) {
                 initElement(nodeNr, elem);
                 stack.push(elem);
-                broker.store(transaction, elem, currentPath);
+                broker.storeNode(transaction, elem, currentPath);
                 targetDoc.appendChild(elem);
                 elem.setChildCount(0);
             } else {
@@ -170,7 +170,7 @@ public class DOMIndexer {
                 initElement(nodeNr, elem);
                 last.appendChildInternal(elem);
                 stack.push(elem);
-                broker.store(transaction, elem, currentPath);
+                broker.storeNode(transaction, elem, currentPath);
                 elem.setChildCount(0);
             }
             currentPath.addComponent(elem.getQName());
@@ -184,7 +184,7 @@ public class DOMIndexer {
             );
             text.setOwnerDocument(targetDoc);
             last.appendChildInternal(text);
-            broker.store(transaction, text, null);
+            broker.storeNode(transaction, text, null);
             text.clear();
         } else if (doc.nodeKind[nodeNr] == Node.COMMENT_NODE) {
             CommentImpl comment = 
@@ -193,13 +193,13 @@ public class DOMIndexer {
             comment.setOwnerDocument(targetDoc);
             if (stack.empty()) {
                 comment.setGID(1);
-                broker.store(transaction, comment, null);
+                broker.storeNode(transaction, comment, null);
                 targetDoc.appendChild(comment);
             } else {
                 ElementImpl last =
                     (ElementImpl) stack.peek();
                 last.appendChildInternal(comment);
-                broker.store(transaction, comment, null);
+                broker.storeNode(transaction, comment, null);
             }
         } else if (doc.nodeKind[nodeNr] == Node.PROCESSING_INSTRUCTION_NODE) {
             ProcessingInstructionImpl pi = new ProcessingInstructionImpl();
@@ -210,13 +210,13 @@ public class DOMIndexer {
                     doc.alphaLen[nodeNr]));
             if (stack.empty()) {
                 pi.setGID(1);
-                broker.store(transaction, pi, null);
+                broker.storeNode(transaction, pi, null);
                 targetDoc.appendChild(pi);
             } else {
                 ElementImpl last =
                     (ElementImpl) stack.peek();
                 last.appendChildInternal(pi);
-                broker.store(transaction, pi, null);
+                broker.storeNode(transaction, pi, null);
             }
         }
     }
@@ -267,7 +267,7 @@ public class DOMIndexer {
                 AttrImpl attrib = new AttrImpl(qn, doc.attrValue[attr]);
                 attrib.setOwnerDocument(targetDoc);
                 elem.appendChildInternal(attrib);
-                broker.store(transaction, attrib, path);
+                broker.storeNode(transaction, attrib, path);
                 ++attr;
             }
         }

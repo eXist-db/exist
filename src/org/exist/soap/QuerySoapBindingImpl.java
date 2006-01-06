@@ -163,7 +163,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(session.getUser());
-			DocumentImpl document = (DocumentImpl) broker.getDocument(name);
+			DocumentImpl document = (DocumentImpl) broker.getResource(name);
 			if (document == null)
 				throw new RemoteException("resource " + name + " not found");
 			if(!document.getPermissions().validate(broker.getUser(), Permission.READ))

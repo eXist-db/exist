@@ -731,7 +731,7 @@ public class RpcConnection extends Thread {
         DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
-            DocumentImpl doc = (DocumentImpl)broker.getDocument(resource);
+            DocumentImpl doc = (DocumentImpl)broker.getResource(resource);
             if (doc == null) {
                 transact.abort(transaction);
                 throw new EXistException("document " + resource + " not found");
@@ -1078,7 +1078,7 @@ public class RpcConnection extends Thread {
         DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
-            return (broker.getDocument(name) != null);
+            return (broker.getResource(name) != null);
         } finally {
             brokerPool.release(broker);
         }
@@ -1404,7 +1404,7 @@ public class RpcConnection extends Thread {
             if (docName != null && s_id != null) {
                 DocumentImpl doc;
                 if (!documentCache.containsKey(docName)) {
-                    doc = (DocumentImpl) broker.getDocument(docName);
+                    doc = (DocumentImpl) broker.getResource(docName);
                     documentCache.put(docName, doc);
                 } else
                     doc = (DocumentImpl) documentCache.get(docName);
@@ -1649,7 +1649,7 @@ public class RpcConnection extends Thread {
             DocumentImpl doc;
             if (!documentCache.containsKey(docName)) {
                 LOG.debug("loading doc " + docName);
-                doc = (DocumentImpl) broker.getDocument(docName);
+                doc = (DocumentImpl) broker.getResource(docName);
                 documentCache.put(docName, doc);
             } else
                 doc = (DocumentImpl) documentCache.get(docName);
@@ -2446,7 +2446,7 @@ public class RpcConnection extends Thread {
         DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
-            broker.reindex(name);
+            broker.reindexCollection(name);
             LOG.debug("collection " + name + " and sub collection reindexed");
         } catch (Exception e) {
             LOG.debug(e);
