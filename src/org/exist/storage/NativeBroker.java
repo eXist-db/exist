@@ -413,79 +413,155 @@ public class NativeBroker extends DBBroker {
         }
     }
     
-    // etc ... TODO for all methods of ContentLoadingObserver
+    // etc ... TODO for all methods of ContentLoadingObserver 
     
-	/** changes // into /  */
-	protected final static String normalizeCollectionName(String name) {
-		StringBuffer out = new StringBuffer();
-		for (int i = 0; i < name.length(); i++)
-            //TODO : use dedicated function in XmldbURI
-			if (name.charAt(i) == '/'
-				&& name.length() > i + 1
-				&& name.charAt(i + 1) == '/')
-				i++;
-			else
-				out.append(name.charAt(i));
-
-		return out.toString();
-	}
-
-	public ElementIndex getElementIndex() {
-	    return elementIndex;
-	}
+    /** Takes care of actually remove entries from the indices;
+     * must be called after one or more call to {@link #removeNode()}. */
+    public void endRemove() {
+        notifyRemove();
+    }
     
-    public NativeValueIndexByQName getQNameValueIndex() {
-        return qnameValueIndex;
+    public int getBackendType() {
+        return NATIVE;
+    }
+    
+    public boolean isReadOnly() {
+        return readOnly;
     }    
+    
+    public DOMFile getDOMFile() {
+        return domDb;
+    }
+    
+    public BTree getStorage(byte id) {
+        switch (id) {
+            case COLLECTIONS_DBX_ID :
+                return collectionsDb;
+            case ELEMENTS_DBX_ID :
+                return elementsDb;
+            case WORDS_DBX_ID :
+                return dbWords;
+            case VALUES_DBX_ID :
+                return valuesDb;
+            case VALUES_QNAME_DBX_ID :
+                return valuesDbQname;
+            case DOM_DBX_ID :
+                return domDb;
+            default:
+                return null;
+        }
+    }
+    
+    public byte[] getStorageFileIds() {
+        return ALL_STORAGE_FILES;
+    }        
 
 	public IndexSpec getIndexConfiguration() {
 	    return idxConf;
 	}
-	
-	public void flush() {
-		notifyFlush();
-		if (symbols != null && symbols.hasChanged())
-			try {
-				saveSymbols();
-			} catch (EXistException e) {
-				LOG.warn(e.getMessage(), e);
-			}
-		nodesCount = 0;
-	}
+    
+    public Serializer getSerializer() {
+        xmlSerializer.reset();
+        return xmlSerializer;
+    }
+    
+    public Serializer newSerializer() {
+        return new NativeSerializer(this, getConfiguration());
+    }    
+    
+    public ElementIndex getElementIndex() {
+        return elementIndex;
+    }    
 
-	/** Takes care of actually remove entries from the indices;
-	 * must be called after one or more call to {@link #removeNode()}. */
-	public void endRemove() {
-		notifyRemove();
-	}
-
-	/**
-	 *  Adds all the documents in the database to the specified DocumentSet.
-	 *
-	 * @param docs a (possibly empty) document set to which the found
-     *  documents are added.
-	 */
-	public DocumentSet getAllDocuments(DocumentSet docs) {
-		long start = System.currentTimeMillis();
-		Collection root = null;
-		try {
-			root = openCollection(ROOT_COLLECTION, Lock.READ_LOCK);
-			root.allDocs(this, docs, true, false);
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("getAllDocuments(DocumentSet) - end - "
-						+ "loading "
-						+ docs.getLength()
-						+ " documents from "
-						+ docs.getCollectionCount()
-						+ "collections took "
-						+ (System.currentTimeMillis() - start)
-						+ "ms.");
-			}
-			return docs;
-		} finally {
-			root.release();
-		}
-	}
+    public NativeValueIndex getValueIndex() {
+        return valueIndex;
+    }
+    
+    public NativeValueIndexByQName getQNameValueIndex() {
+        return qnameValueIndex;
+    }     
+    
+    public TextSearchEngine getTextEngine() {
+        return textEngine;
+    }
+    
+    /** create temporary collection */  
+    private Collection createTempCollection(Txn transaction) throws LockException, PermissionDeniedException {
+        User u = user;
+        Lock lock = null;
+        try {
+            lock = collectionsDb.getLock();
+            lock.acquire(Lock.WRITE_LOCK);
+            user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
+            Collection temp = getOrCreateCollection(transaction, TEMP_COLLECTION);
+            temp.setPermissions(0771);
+            saveCollection(transaction, temp);
+            return temp;
+        } finally {
+            user = u;
+            lock.release();
+        }
+    }    
+    
+    public Collection getOrCreateCollection(Txn transaction, String name) throws PermissionDeniedException {
+        name = XmldbURI.normalizeCollectionName(name);        
+        final CollectionCache collectionsCache = pool.getCollectionsCache();
+        synchronized(collectionsCache) {   
+            try {
+                //TODO : use dedicated function in XmldbURI           
+                StringTokenizer tok = new StringTokenizer(name, "/");
+                String temp = tok.nextToken();
+                String path = ROOT_COLLECTION;
+                Collection sub;
+                Collection current = getCollection(ROOT_COLLECTION);
+                if (current == null) {
+                    LOG.debug("Creating root collection '" + ROOT_COLLECTION + "'");
+                    current = new Collection(ROOT_COLLECTION);
+                    current.getPermissions().setPermissions(0777);
+                    current.getPermissions().setOwner(user);
+                    current.getPermissions().setGroup(user.getPrimaryGroup());
+                    current.setId(getNextCollectionId(transaction));
+                    current.setCreationTime(System.currentTimeMillis());
+                    if (transaction != null)
+                        transaction.acquireLock(current.getLock(), Lock.WRITE_LOCK);
+                    saveCollection(transaction, current);
+                }
+                while (tok.hasMoreTokens()) {
+                    temp = tok.nextToken();
+                    path = path + "/" + temp;
+                    if (current.hasSubcollection(temp)) {
+                        current = getCollection(path);
+                        if (current == null)
+                            LOG.debug("Collection '" + path + "' not found!");
+                    } else {
+                        if (readOnly)
+                            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+                        if (!current.getPermissions().validate(user, Permission.WRITE)) {
+                            LOG.error("Permission denied to create collection '" + path + "'");
+                            throw new PermissionDeniedException("User '"+ user.getName() + "' not allowed to write to collection '" + current.getName() + "'");
+                        }
+                        LOG.debug("Creating collection '" + path + "'...");
+                        sub = new Collection(path);
+                        sub.getPermissions().setOwner(user);
+                        sub.getPermissions().setGroup(user.getPrimaryGroup());
+                        sub.setId(getNextCollectionId(transaction));
+                        sub.setCreationTime(System.currentTimeMillis());
+                        if (transaction != null)
+                            transaction.acquireLock(sub.getLock(), Lock.WRITE_LOCK);
+                        current.addCollection(this, sub, true);
+                        saveCollection(transaction, current);
+                        current = sub;
+                    }
+                }
+                return current;  
+            } catch (LockException e) {
+                LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+                return null;                
+            } catch (ReadOnlyException e) {
+                throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+            }                
+        }
+    }    
 
 	public Collection getCollection(String name) {
 		return openCollection(name, BFile.UNKNOWN_ADDRESS, Lock.NO_LOCK);
@@ -507,25 +583,12 @@ public class NativeBroker extends DBBroker {
 	 *@return       The collection value
 	 */
 	public Collection openCollection(String name, long addr, int lockMode) {
-		
-        ///TODO : use dedicated function in XmldbURI
-		name = normalizeCollectionName(name);
-		if (name.length() > 0 && name.charAt(0) != '/')
-			name = "/" + name;
-
-		if (!name.startsWith(ROOT_COLLECTION))
-			name = ROOT_COLLECTION + name;
-
-		if (name.endsWith("/") && name.length() > 1)
-			name = name.substring(0, name.length() - 1);
-
-		Collection collection;
-		CollectionCache collectionsCache = pool.getCollectionsCache();
-        
-		synchronized(collectionsCache) {
-			collection = collectionsCache.get(name);
+        name = XmldbURI.normalizeCollectionName(name);        
+		final CollectionCache collectionsCache = pool.getCollectionsCache();        
+		synchronized(collectionsCache) {      
+            Collection collection = collectionsCache.get(name);
 			if (collection == null) {				
-				Lock lock = collectionsDb.getLock();
+				final Lock lock = collectionsDb.getLock();
 				try {
 					lock.acquire(Lock.READ_LOCK);					
 					collection = new Collection(name);
@@ -546,88 +609,356 @@ public class NativeBroker extends DBBroker {
                     
                 //TODO : rethrow exceptions ? -pb
                 } catch (UnsupportedEncodingException e) {
-                    LOG.info("Unable to encode " + name + "' in UTF-8");
+                    LOG.error("Unable to encode '" + name + "' in UTF-8");
                     return null;
                 } catch (LockException e) {
-					LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
-					return null;
+                    LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+                    return null;
                 } catch (IOException e) {
-                    LOG.warn(e.getMessage(), e);
+                    LOG.error(e.getMessage(), e);
                     return null;
 				} finally {
 					lock.release();
 				}
-			}            
-		}
-
-		if(lockMode != Lock.NO_LOCK) {
-			try {
-				collection.getLock().acquire(lockMode);
-			} catch (LockException e) {
-				LOG.warn("Could not acquire lock on collection '" + name+ "'");
 			}
+            if(lockMode != Lock.NO_LOCK) {
+                try {
+                    collection.getLock().acquire(lockMode);
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock on collection '" + name + "'");
+                }
+            }
+            return collection;            
 		}
-		return collection;
 	}
-	
-	public Iterator getDOMIterator(NodeProxy proxy) {
-		try {
-			return new DOMFileIterator(this, domDb, proxy);
-		} catch (BTreeException e) {
-			LOG.debug("failed to create DOM iterator", e);
-		} catch (IOException e) {
-			LOG.debug("failed to create DOM iterator", e);
-		}
-		return null;
-	}
-
-	public Iterator getNodeIterator(NodeProxy proxy) {
-//		domDb.setOwnerObject(this);
-		try {
-			return new NodeIterator(this, domDb, proxy, false);
-		} catch (BTreeException e) {
-			LOG.debug("failed to create node iterator", e);
-		} catch (IOException e) {
-			LOG.debug("failed to create node iterator", e);
-		}
-		return null;
-	}
-
-	/**
-	 *  get a document by its file name. The document's file name is used to
-	 *  identify a document.
-	 *
-	 *@param  fileName absolute file name in the database; 
+    
+    public void copyCollection(Txn transaction, Collection collection, Collection destination, String newName)
+    throws PermissionDeniedException, LockException {
+        if (readOnly)
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        if(!collection.getPermissions().validate(user, Permission.READ))
+            throw new PermissionDeniedException("Read permission denied on collection " +
+                    collection.getName());
+        if(collection.getId() == destination.getId())
+            throw new PermissionDeniedException("Cannot move collection to itself");
+        if(!destination.getPermissions().validate(user, Permission.WRITE))
+            throw new PermissionDeniedException("Insufficient privileges on target collection " +
+                    destination.getName());
+        if(newName == null) {
+            ///TODO : use dedicated function in XmldbURI
+            int p = collection.getName().lastIndexOf("/");
+            newName = collection.getName().substring(p + 1);
+        }
+        ///TODO : use dedicated function in XmldbURI
+        if(newName.indexOf("/") != Constants.STRING_NOT_FOUND)
+            throw new PermissionDeniedException("New collection name is illegal (may not contain a '/')");
+        //  check if another collection with the same name exists at the destination
+        //TODO : use dedicated function in XmldbURI
+        Collection old = openCollection(destination.getName() + "/" + newName, Lock.WRITE_LOCK);
+        if(old != null) {
+            LOG.debug("removing old collection: " + newName);
+            try {
+                removeCollection(transaction, old);
+            } finally {
+                old.release();
+            }
+        }
+        Collection destCollection = null;
+        Lock lock = null;
+        try {
+            lock = collectionsDb.getLock();
+            lock.acquire(Lock.WRITE_LOCK);
+            ///TODO : use dedicated function in XmldbURI
+            newName = destination.getName() + "/" + newName;
+            LOG.debug("Copying collection to '" + newName + "'");
+            destCollection = getOrCreateCollection(transaction, newName);
+            for(Iterator i = collection.iterator(this); i.hasNext(); ) {
+                DocumentImpl child = (DocumentImpl) i.next();
+                LOG.debug("Copying resource: '" + child.getName() + "'");
+                if (child.getResourceType() == DocumentImpl.XML_FILE) {
+                    DocumentImpl newDoc = new DocumentImpl(this, destCollection, child.getFileName());
+                    newDoc.copyOf(child);
+                    newDoc.setDocId(getNextDocumentId(transaction, destination));
+                    copyResource(transaction, child, newDoc);
+                    storeDocument(transaction, newDoc);
+                    destCollection.addDocument(transaction, this, newDoc);
+                } else {
+                    BinaryDocument newDoc = new BinaryDocument(this, child.getFileName(), destCollection);
+                    newDoc.copyOf(child);
+                    newDoc.setDocId(getNextDocumentId(transaction, destination));
+                    byte[] data = getBinaryResourceData((BinaryDocument) child);
+                    storeBinaryResource(transaction, newDoc, data);
+                    storeDocument(transaction, newDoc);
+                    destCollection.addDocument(transaction, this, newDoc);
+                }
+            }
+            saveCollection(transaction, destCollection);
+        } finally {
+            lock.release();
+        }
+        String name = collection.getName();
+        for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
+            String childName = (String)i.next();
+            ///TODO : use dedicated function in XmldbURI
+            Collection child = openCollection(name + "/" + childName, Lock.WRITE_LOCK);
+            if(child == null)
+                LOG.warn("Child collection '" + childName + "' not found");
+            else {
+                try {
+                    copyCollection(transaction, child, destCollection, childName);
+                } finally {
+                    child.release();
+                }
+            }
+        }
+        saveCollection(transaction, destCollection);
+        saveCollection(transaction, destination);
+    }
+    
+    public void moveCollection(Txn transaction, Collection collection, Collection destination, String newName) 
+    throws PermissionDeniedException, LockException {
+        if (readOnly)
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        if(collection.getId() == destination.getId())
+            throw new PermissionDeniedException("Cannot move collection to itself");
+        if(collection.getName().equals(ROOT_COLLECTION))
+            throw new PermissionDeniedException("Cannot move the db root collection");
+        if(!collection.getPermissions().validate(user, Permission.WRITE))
+            throw new PermissionDeniedException("Insufficient privileges to move collection " +
+                    collection.getName());
+        if(!destination.getPermissions().validate(user, Permission.WRITE))
+            throw new PermissionDeniedException("Insufficient privileges on target collection " +
+                    destination.getName());
+        if(newName == null) {
+            ///TODO : use dedicated function in XmldbURI
+            int p = collection.getName().lastIndexOf("/");
+            newName = collection.getName().substring(p + 1);
+        }
+        if(newName.indexOf("/") != Constants.STRING_NOT_FOUND)
+            throw new PermissionDeniedException("New collection name is illegal (may not contain a '/')");
+            // check if another collection with the same name exists at the destination
+        //TODO : use dedicated function in XmldbURI
+        Collection old = openCollection(destination.getName() + "/" + newName, Lock.WRITE_LOCK);
+        if(old != null) {
+            try {
+                removeCollection(transaction, old);
+            } finally {
+                old.release();
+            }
+        }
+        String name = collection.getName();
+        final CollectionCache collectionsCache = pool.getCollectionsCache();
+        synchronized(collectionsCache) {
+            Collection parent = openCollection(collection.getParentPath(), Lock.WRITE_LOCK);
+            if(parent != null) {
+                try {
+                    parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
+                } finally {
+                    parent.release();
+                }
+            }
+            Lock lock = null;
+            try {
+                lock = collectionsDb.getLock();
+                lock.acquire(Lock.WRITE_LOCK);
+                
+                collectionsCache.remove(collection);
+                Value key;
+                try {
+                    key = new Value(name.getBytes("UTF-8"));
+                } catch (UnsupportedEncodingException uee) {
+                    key = new Value(name.getBytes());
+                }   
+                collectionsDb.remove(transaction, key);
+                ///TODO : use dedicated function in XmldbURI
+                collection.setName(destination.getName() + "/" + newName);
+                collection.setCreationTime(System.currentTimeMillis());
+                
+                destination.addCollection(this, collection, false);
+                if(parent != null)
+                    saveCollection(transaction, parent);
+                if(parent != destination)
+                    saveCollection(transaction, destination);
+                saveCollection(transaction, collection);
+            } catch (ReadOnlyException e) {
+                throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+            } finally {
+                lock.release();
+            }
+            String childName;
+            Collection child;
+            for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
+                childName = (String)i.next();
+                ///TODO : use dedicated function in XmldbURI
+                child = openCollection(name + "/" + childName, Lock.WRITE_LOCK);
+                if(child == null)
+                    LOG.warn("Child collection " + childName + " not found");
+                else {
+                    try {
+                        moveCollection(transaction, child, collection, childName);
+                    } finally {
+                        child.release();
+                    }
+                }
+            }
+        }
+    }    
+    
+    public boolean removeCollection(final Txn transaction, Collection collection) throws PermissionDeniedException {
+        if (readOnly)
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);        
+        if (!collection.getPermissions().validate(user, Permission.WRITE))
+            throw new PermissionDeniedException("User '"+ user.getName() + "' not allowed to remove collection '" + collection.getName() + "'");
+        long start = System.currentTimeMillis();
+        final CollectionCache collectionsCache = pool.getCollectionsCache();
+        synchronized(collectionsCache) {
+            final String name = collection.getName();
+            final boolean isRoot = collection.getParentPath() == null;
+            //Drop all index entries
+            notifyDropIndex(collection);            
+            if (!isRoot) {
+                // remove from parent collection
+                Collection parent = openCollection(collection.getParentPath(), Lock.WRITE_LOCK);
+                // keep the lock for the transaction
+                if (transaction != null)
+                    transaction.registerLock(parent.getLock(), Lock.WRITE_LOCK);
+                if (parent != null) {
+                    try {
+                        LOG.debug("Removing collection '" + name + "' from its parent...");
+                        //TODO : resolve from collection's base URI
+                        parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
+                        saveCollection(transaction, parent);
+                    } catch (LockException e) {
+                        LOG.warn("LockException while removing collection '" + name + "'");
+                    } finally {
+                        if (transaction == null)
+                            collection.getLock().release();
+                    }
+                }
+            }
+            // remove child collections
+            LOG.debug("Removing children collections from their parent '" + name + "'...");
+            for (Iterator i = collection.collectionIterator(); i.hasNext();) {
+                final String childName = (String) i.next();
+                //TODO : resolve from collection's base URI
+                Collection childCollection = openCollection(name + "/" + childName, Lock.WRITE_LOCK);
+                try {                    
+                    removeCollection(transaction, childCollection);                    
+                } finally {
+                    childCollection.getLock().release();
+                }
+            }
+            //Update current state
+            Lock lock = collectionsDb.getLock();
+            try {
+                lock.acquire(Lock.WRITE_LOCK);
+                // if this is not the root collection remove it...
+                if (!isRoot) {
+                    Value key;
+                    try {
+                        key = new Value(name.getBytes("UTF-8"));
+                    } catch (UnsupportedEncodingException e) {
+                        //TODO : real exception ; we are in trouble ! -pb
+                        LOG.error("Can not encode '" + name + "' in UTF-8", e);
+                        key = new Value(name.getBytes());
+                    }  
+                    //... from the disk
+                    collectionsDb.remove(transaction, key);
+                    //... from the cache
+                    collectionsCache.remove(collection);
+                    //and free its id for any futher use
+                    freeCollectionId(transaction, collection.getId());
+                } else {
+                    //Simply save the collection on disk
+                    //It will remain cached
+                    //and its id well never be made available 
+                    saveCollection(transaction, collection);
+                }                
+            } catch (LockException e) {
+                LOG.warn("Failed to acquire lock on '" + collectionsDb.getFile().getName() + "'");
+            } catch (ReadOnlyException e) {
+                throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+            } finally {
+                lock.release();
+            }
+            //Remove child resources
+            LOG.debug("Removing resources in '" + name + "'...");
+            for (Iterator i = collection.iterator(this); i.hasNext();) {
+                final DocumentImpl doc = (DocumentImpl) i.next();
+                new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+                    public Object start() {
+                        if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                            domDb.removeOverflowValue(transaction, ((BinaryDocument)doc).getPage());
+                        } else {
+                            StoredNode node = (StoredNode)doc.getFirstChild();
+                            domDb.removeAll(transaction, node.getInternalAddress());
+                        }
+                        return null;
+                    }
+                }
+                .run();
+                //TOUNDERSTAND : is this ever used since we have called removeAll ?
+                new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+                    public Object start() {
+                        try {                            
+                            Value ref = new NodeRef(doc.getDocId());
+                            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);                           
+                            domDb.remove(transaction, query, null);
+                        } catch (BTreeException e) {
+                            LOG.warn("btree error while removing document", e);
+                        } catch (IOException e) {
+                            LOG.warn("io error while removing document", e);
+                        } catch (TerminatedException e) {
+                            LOG.warn("method terminated", e);
+                        }
+                        return null;
+                    }
+                }
+                .run();
+                removeDocMetadata(transaction, doc);
+                freeDocumentId(transaction, doc.getDocId());
+            }
+            LOG.debug("Removing collection '" + name + "' took " + (System.currentTimeMillis() - start));
+            return true;
+        }
+    }
+    
+    /**
+     *  get a document by its file name. The document's file name is used to
+     *  identify a document.
+     *
+     *@param  fileName absolute file name in the database; 
      *name can be given with or without the leading path /db/shakespeare.
-	 *@return  The document value
-	 *@exception  PermissionDeniedException  
-	 */
-	public Document getDocument(String fileName) throws PermissionDeniedException {
-		fileName = XmldbURI.checkPath2(fileName, ROOT_COLLECTION);
-		///TODO : use dedicated function in XmldbURI
-		int pos = fileName.lastIndexOf("/");
-		String collName = fileName.substring(0, pos);
-		String docName = fileName.substring(pos + 1);
-		
-		Collection collection = getCollection(collName);
-		if (collection == null) {
-			LOG.debug("collection '" + collName + "' not found!");
-			return null;
-		}
-		if (!collection.getPermissions().validate(user, Permission.READ))
-			throw new PermissionDeniedException("Permission denied to read collection '" + collName + "'");
+     *@return  The document value
+     *@exception  PermissionDeniedException  
+     */
+    public Document getDocument(String fileName) throws PermissionDeniedException {
+        fileName = XmldbURI.checkPath2(fileName, ROOT_COLLECTION);
+        //TODO : use dedicated function in XmldbURI
+        int pos = fileName.lastIndexOf("/");
+        String collName = fileName.substring(0, pos);
+        String docName = fileName.substring(pos + 1);
         
-		DocumentImpl doc = collection.getDocument(this, docName);
-		if (doc == null) {
-			LOG.debug("document '" + fileName + "' not found!");
-			return null;
-		}
+        Collection collection = getCollection(collName);
+        if (collection == null) {
+            LOG.debug("collection '" + collName + "' not found!");
+            return null;
+        }
+        if (!collection.getPermissions().validate(user, Permission.READ))
+            throw new PermissionDeniedException("Permission denied to read collection '" + collName + "'");
         
-//		if (!doc.getPermissions().validate(user, Permission.READ))
-//			throw new PermissionDeniedException("not allowed to read document");
+        DocumentImpl doc = collection.getDocument(this, docName);
+        if (doc == null) {
+            LOG.debug("document '" + fileName + "' not found!");
+            return null;
+        }
         
-		return doc;
-	}
+//      if (!doc.getPermissions().validate(user, Permission.READ))
+//          throw new PermissionDeniedException("not allowed to read document");
+        
+        return doc;
+    }    
+
 
 	public DocumentImpl openDocument(String fileName, int lockMode) throws PermissionDeniedException {
         fileName = XmldbURI.checkPath2(fileName, ROOT_COLLECTION);
@@ -665,6 +996,34 @@ public class NativeBroker extends DBBroker {
 		}
 		return null;
 	}
+    
+    /**
+     *  Adds all the documents in the database to the specified DocumentSet.
+     *
+     * @param docs a (possibly empty) document set to which the found
+     *  documents are added.
+     */
+    public DocumentSet getAllDocuments(DocumentSet docs) {
+        long start = System.currentTimeMillis();
+        Collection root = null;
+        try {
+            root = openCollection(ROOT_COLLECTION, Lock.READ_LOCK);
+            root.allDocs(this, docs, true, false);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("getAllDocuments(DocumentSet) - end - "
+                        + "loading "
+                        + docs.getLength()
+                        + " documents from "
+                        + docs.getCollectionCount()
+                        + "collections took "
+                        + (System.currentTimeMillis() - start)
+                        + "ms.");
+            }
+            return docs;
+        } finally {
+            root.release();
+        }
+    }
 
 	/**
 	 *  get all the documents in this database matching the given
@@ -690,6 +1049,29 @@ public class NativeBroker extends DBBroker {
 		}
 		return result;
 	}
+    
+    public Iterator getDOMIterator(NodeProxy proxy) {
+        try {
+            return new DOMFileIterator(this, domDb, proxy);
+        } catch (BTreeException e) {
+            LOG.debug("failed to create DOM iterator", e);
+        } catch (IOException e) {
+            LOG.debug("failed to create DOM iterator", e);
+        }
+        return null;
+    }
+
+    public Iterator getNodeIterator(NodeProxy proxy) {
+//      domDb.setOwnerObject(this);
+        try {
+            return new NodeIterator(this, domDb, proxy, false);
+        } catch (BTreeException e) {
+            LOG.debug("failed to create node iterator", e);
+        } catch (IOException e) {
+            LOG.debug("failed to create node iterator", e);
+        }
+        return null;
+    }    
 
 	/**
 	 * Release the collection id assigned to a collection so it can be
@@ -903,225 +1285,17 @@ public class NativeBroker extends DBBroker {
 		}
 		return nextDocId;
 	}
-	
-    /** Delegate for Node Processings : indexing */
-    private class NodeProcessor {
-        
-        private Txn transaction;
-        private StoredNode node;
-        private NodePath currentPath;
-        /** work variables */
-        private short nodeType;
-        private long gid;
-        private DocumentImpl doc;
-        private long address;
-        private IndexSpec idxSpec;
-        private FulltextIndexSpec ftIdx;
-        private int depth;
-        private int level;
-        
-        /** overall switch to activate fulltext indexation */
-        private boolean index = true;
-        private boolean repairMode = false;
-        
-        NodeProcessor() {
-        }
-
-        public void reset(Txn transaction, StoredNode node, NodePath currentPath) {            
-            if (node.getGID() < 0)
-                LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
-                //TODO : why continue processing ? return ? -pb
-            this.transaction = transaction;
-            this.node = node;
-            this.currentPath = currentPath;
-            nodeType = node.getNodeType();
-            gid = node.getGID();
-            doc = (DocumentImpl) node.getOwnerDocument();
-            address = node.getInternalAddress();
-            idxSpec = doc.getCollection().getIdxConf(NativeBroker.this);
-            ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
-            depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
-            level = doc.getTreeLevel(gid);
-        }
-        
-        public void reset(Txn transaction, StoredNode node, NodePath currentPath, boolean index) {
-            reset(transaction, node, currentPath);
-            this.index = index;
-        }
-
-        public void setRepairMode(boolean repair) {
-            this.repairMode = repair;
-        }
-        
-        /** Updates the various indices */
-        public void doIndex() {
-            int indexType = RangeIndexSpec.NO_INDEX;
-            final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
-            switch (nodeType) {
-                case Node.ELEMENT_NODE :
-                    if (idxSpec != null) {
-                        
-                        // --move to-- NativeValueIndex
-                        RangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-                        if(spec != null) {
-                            indexType = spec.getIndexType();
-                        }
-                        
-//                        // --move to-- NativeValueIndexByQName
-//                        RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-//                        if (qnIdx != null && qnameValueIndexation) {
-//                            indexType |= RangeIndexSpec.QNAME_INDEX;
-//                        }
-                    }
-                    
-                    // --move to-- NativeTextEngine
-                    if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
-                        indexType |= RangeIndexSpec.TEXT;
-                    if(node.getChildCount() - node.getAttributesCount() > 1) {
-                        indexType |= RangeIndexSpec.MIXED_CONTENT;
-                    }
-                    
-                    // --move to-- NativeValueIndex NativeTextEngine
-                    ((ElementImpl) node).setIndexType(indexType);
-                    
-                    // qnameValueIndex.startElement((ElementImpl)node, currentPath, index);
-                    notifyStartElement((ElementImpl)node, currentPath, index);
-                    break;
-                    
-                case Node.ATTRIBUTE_NODE :
-                    boolean indexAttribs = false;
-                    
-                    QName qname = node.getQName();
-    				if (currentPath != null)
-    					currentPath.addComponent(qname);
-    				
-                    // --move to-- NativeElementIndex NativeValueIndex NativeTextEngine
-                    if(index && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
-                        indexType |= RangeIndexSpec.TEXT;
-                        indexAttribs = true;
-                    }
-                    
-                    // --move to-- NativeValueIndex
-                    // TODO : valueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
-                    GeneralRangeIndexSpec valSpec = null;
-                    if (idxSpec != null) {
-                        valSpec = idxSpec.getIndexByPath(currentPath);
-                        if(valSpec != null) {
-                            indexType |= valSpec.getIndexType();
-                        }
-                    }
-                    if (valSpec != null) {
-                        valueIndex.setDocument(doc);
-                        valueIndex.storeAttribute(valSpec, (AttrImpl) node);
-                    }
-                    
-                    // qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
-                    notifyStoreAttribute( (AttrImpl)node, currentPath, index);
-                    
-                    // --move to-- NativeTextEngine
-                    // TODO : textEngine.storeAttribute( (AttrImpl)node, currentPath, index);
-                    if (indexAttribs && !isTemp )
-                        textEngine.storeAttribute(ftIdx, (AttrImpl) node);
-                    
-//                  --move to-- NativeElementIndex
-                    // TODO : elementIndex.storeAttribute(node, currentPath, index);
-                    elementIndex.setDocument(doc);
-                    final NodeProxy tempProxy = new NodeProxy(doc, gid, address);
-                    tempProxy.setIndexType(indexType);
-                    qname.setNameType(ElementValue.ATTRIBUTE);
-                    elementIndex.addNode(qname, tempProxy);
-                    
-                    // --move to-- NativeElementIndex
-                    // TODO : elementIndex.storeAttribute(node, currentPath, index);
-                    // if the attribute has type ID, store the ID-value
-                    // to the element index as well
-                    if (((AttrImpl) node).getType() == AttrImpl.ID) {
-                        qname = new QName(((AttrImpl) node).getValue(), "", null);
-                        //LOG.debug("found ID: " + qname.getLocalName());
-                        qname.setNameType(ElementValue.ATTRIBUTE_ID);
-                        elementIndex.addNode(qname, tempProxy);
-                    }
-                    
-//                    // --move to-- ???
-                    if (currentPath != null)
-                        currentPath.removeLastComponent();
-                    break;
-                    
-                case Node.TEXT_NODE:
-                    // --move to-- NativeTextEngine
-                    // TODO textEngine.storeText( (TextImpl) node, currentPath, index);
-                    // check if this textual content should be fulltext-indexed
-                    // by calling IndexPaths.match(path)
-                    boolean indexText = true;
-                    if (ftIdx != null && currentPath != null)
-                        indexText = ftIdx.match(currentPath);
-                    if (indexText && !isTemp && index ) {
-                        boolean valore = (ftIdx == null || currentPath == null ? false
-                                : ftIdx.preserveContent(currentPath));
-                        textEngine.storeText(ftIdx, (TextImpl) node, valore);
-                    }
-                    
-                    notifyStoreText( (TextImpl)node, currentPath, index );
-                    // storeText( TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
-                    break;
+    
+    public void flush() {
+        notifyFlush();
+        if (symbols != null && symbols.hasChanged())
+            try {
+                saveSymbols();
+            } catch (EXistException e) {
+                LOG.warn(e.getMessage(), e);
             }
-        }
-
-		/** Stores this node into the database, if it's an element */
-        public void store() {
-            if (!repairMode && nodeType == Node.ELEMENT_NODE && level <= depth) {
-                new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-                    public Object start() throws ReadOnlyException {
-                        try {
-                            domDb.addValue(transaction, new NodeRef(doc.getDocId(), gid), address);
-                        } catch (BTreeException e) {
-                            LOG.warn(EXCEPTION_DURING_REINDEX, e);
-                        } catch (IOException e) {
-                            LOG.warn(EXCEPTION_DURING_REINDEX, e);
-                        }
-                        return null;
-                    }
-                }
-                .run();
-            }
-        }
-        
-        /** check available memory */
-        private void checkAvailableMemory() {
-            if (nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
-                final int percent = (int) (run.freeMemory() /
-                        (run.totalMemory() / 100));
-                if (percent < memMinFree) {
-                    //LOG.info(
-                    //  "total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
-                    flush();
-                    System.gc();
-                    LOG.info(
-                        "total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
-                }
-            }
-        }
-        
-        /** Updates the various indices and stores this node into the database */
-        public void index() {
-            ++nodesCount;
-            checkAvailableMemory();
-            doIndex();
-            store();
-        }
-        
-        /** Updates the various indices and stores this node into the database
-         * if necessary */
-        public void reindex() {
-            if (level >= doc.getMetadata().reindexRequired()) {
-                NodeIndexListener listener = doc.getMetadata().getIndexListener();
-                if(listener != null)
-                    listener.nodeChanged(node);
-                store();
-                doIndex();
-            }
-        }
-    }
+        nodesCount = 0;
+    }    
     
 	/**
 	 * Index a single node, which has been added through an XUpdate
@@ -1162,11 +1336,10 @@ public class NativeBroker extends DBBroker {
 				try {
 					Value ref = new NodeRef(doc.getDocId());
 					IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-					final ArrayList nodes = domDb.findKeys(query);
-					long gid;
+					final ArrayList nodes = domDb.findKeys(query);					
 					for (Iterator i = nodes.iterator(); i.hasNext();) {
 						ref = (Value) i.next();
-						gid = ByteConversion.byteToLong(ref.data(), ref.start() + 4);
+                        long gid = ByteConversion.byteToLong(ref.data(), ref.start() + 4);
 						if (oldDoc.getTreeLevel(gid) >= doc.getMetadata().reindexRequired()) {
 							if (node != null) {
 								if (XMLUtil.isDescendant(oldDoc, node.getGID(), gid)) {
@@ -1188,20 +1361,15 @@ public class NativeBroker extends DBBroker {
 			// now reindex the nodes
 			Iterator iterator;
 			if (node == null) {
-				NodeList nodes = doc.getChildNodes();
-				StoredNode n;
+				NodeList nodes = doc.getChildNodes();				 
 				for (int i = 0; i < nodes.getLength(); i++) {
-					n = (StoredNode) nodes.item(i);
-					iterator =
-						getNodeIterator(
-							new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+                    StoredNode n = (StoredNode) nodes.item(i);
+					iterator =	getNodeIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
 					iterator.next();
 					scanNodes(transaction, iterator, n, new NodePath(), false, false);
 				}
 			} else {
-				iterator =
-					getNodeIterator(
-						new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
+				iterator = getNodeIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
 				iterator.next();
 				scanNodes(transaction, iterator, node, node.getPath(), false, false);
 			}
@@ -1225,6 +1393,77 @@ public class NativeBroker extends DBBroker {
         nodeProcessor.reset(transaction, node, currentPath);
         nodeProcessor.reindex();
 	}
+    
+    /**
+     * Reindex the nodes in the document. This method will either reindex all
+     * descendant nodes of the passed node, or all nodes below some level of
+     * the document if node is null.
+     */
+    private void reindex(Txn transaction, DocumentImpl doc, boolean repairMode) {
+        if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
+            doc.getCollection().setConfigEnabled(false);
+        Iterator iterator;
+        NodeList nodes = doc.getChildNodes();
+        StoredNode n;
+        for (int i = 0; i < nodes.getLength(); i++) {
+            n = (StoredNode) nodes.item(i);
+            iterator = getNodeIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+            iterator.next();
+            scanNodes(transaction, iterator, n, new NodePath(), true, repairMode);
+        }
+        flush();
+        if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
+            doc.getCollection().setConfigEnabled(true);
+    }    
+    
+    public void reindex(Collection collection, boolean repairMode) throws PermissionDeniedException {
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
+        try {
+            reindex(transaction, collection, repairMode);
+            transact.commit(transaction);
+        } catch (TransactionException e) {
+            transact.abort(transaction);
+            LOG.warn("An error occurred during reindex: " + e.getMessage(), e);
+        }
+    }
+    
+    public void reindex(Txn transaction, Collection collection, boolean repairMode) throws PermissionDeniedException {
+        if (!collection.getPermissions().validate(user, Permission.WRITE))
+            throw new PermissionDeniedException("insufficient privileges on collection " + collection.getName());
+        LOG.debug("Reindexing collection " + collection.getName());
+        
+        if (!repairMode)
+            dropIndex(collection);
+        for(Iterator i = collection.iterator(this); i.hasNext(); ) {
+            DocumentImpl next = (DocumentImpl)i.next();
+            reindex(transaction, next, repairMode);
+        }
+        for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
+            String next = (String)i.next();
+            ///TODO : use dedicated function in XmldbURI
+            Collection child = getCollection(collection.getName() + "/" + next);
+            if(child == null)
+                LOG.warn("Collection '" + next + "' not found");
+            else {
+                reindex(transaction, child, repairMode);
+            }
+        }
+    }
+    
+    public void reindex(String collectionName) throws PermissionDeniedException {
+        if (readOnly)
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        if (!collectionName.startsWith(ROOT_COLLECTION))
+            collectionName = ROOT_COLLECTION + collectionName;
+        
+        Collection collection = getCollection(collectionName);
+        if (collection == null) {
+            LOG.debug("collection " + collectionName + " not found!");
+            return;
+        }
+        reindex(collection, false);
+    }    
 
 	/**
 	 * Called by reindex to walk through all nodes in the tree and reindex them
@@ -1340,40 +1579,6 @@ public class NativeBroker extends DBBroker {
                 break;
         }
     }
-    
-    private final static class RemovedNode {
-        StoredNode node;
-        String content;
-        NodePath path;
-        
-        RemovedNode(StoredNode node, NodePath path, String content) {
-            this.node = node;
-            this.path = path;
-            this.content = content;
-        }
-    }
-    
-	/**
-	 * Reindex the nodes in the document. This method will either reindex all
-	 * descendant nodes of the passed node, or all nodes below some level of
-	 * the document if node is null.
-	 */
-	private void reindex(Txn transaction, DocumentImpl doc, boolean repairMode) {
-		if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
-		    doc.getCollection().setConfigEnabled(false);
-		Iterator iterator;
-		NodeList nodes = doc.getChildNodes();
-		StoredNode n;
-		for (int i = 0; i < nodes.getLength(); i++) {
-		    n = (StoredNode) nodes.item(i);
-		    iterator = getNodeIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
-		    iterator.next();
-		    scanNodes(transaction, iterator, n, new NodePath(), true, repairMode);
-		}
-		flush();
-		if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
-		    doc.getCollection().setConfigEnabled(true);
-	}
 	
 	public void copyResource(Txn transaction, DocumentImpl doc, Collection destination, String newName) 
 	throws PermissionDeniedException, LockException {
@@ -1725,77 +1930,7 @@ public class NativeBroker extends DBBroker {
 		return result;
 	}
 	
-	public Collection getOrCreateCollection(Txn transaction, String name)
-		throws PermissionDeniedException {
-		//		final long start = System.currentTimeMillis();        
-        
-	    //TODO : use dedicated function in XmldbURI
-		name = normalizeCollectionName(name);
-		if (name.length() > 0 && name.charAt(0) != '/')
-			name = "/" + name;
-		if (!name.startsWith(ROOT_COLLECTION))
-			name = ROOT_COLLECTION + name;
-		if (name.endsWith("/") && name.length() > 1)
-			name = name.substring(0, name.length() - 1);
-        
-		final CollectionCache collectionsCache = pool.getCollectionsCache();
-		synchronized(collectionsCache) {
-			try {
-				StringTokenizer tok = new StringTokenizer(name, "/");
-				String temp = tok.nextToken();
-				String path = ROOT_COLLECTION;
-				Collection sub;
-				Collection current = getCollection(ROOT_COLLECTION);
-				if (current == null) {
-					LOG.debug("creating root collection " + ROOT_COLLECTION);
-					current = new Collection(ROOT_COLLECTION);
-					current.getPermissions().setPermissions(0777);
-					current.getPermissions().setOwner(user);
-					current.getPermissions().setGroup(user.getPrimaryGroup());
-					current.setId(getNextCollectionId(transaction));
-					current.setCreationTime(System.currentTimeMillis());
-                    if (transaction != null)
-                        transaction.acquireLock(current.getLock(), Lock.WRITE_LOCK);
-					saveCollection(transaction, current);
-				}
-				while (tok.hasMoreTokens()) {
-					temp = tok.nextToken();
-					path = path + "/" + temp;
-					if (current.hasSubcollection(temp)) {
-						current = getCollection(path);
-                        if (current == null)
-                            LOG.debug("Collection " + path + " not found!");
-					} else {
-						if (readOnly)
-							throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-						if (!current.getPermissions().validate(user, Permission.WRITE)) {
-							LOG.debug("permission denied to create collection " + path);
-							throw new PermissionDeniedException("User '"+ user.getName() + "' not allowed to write to collection '" + current.getName() + "'");
-						}
-						LOG.debug("creating collection " + path);
-						sub = new Collection(path);
-						sub.getPermissions().setOwner(user);
-						sub.getPermissions().setGroup(user.getPrimaryGroup());
-						sub.setId(getNextCollectionId(transaction));
-						sub.setCreationTime(System.currentTimeMillis());
-                        if (transaction != null)
-                            transaction.acquireLock(sub.getLock(), Lock.WRITE_LOCK);
-                        current.addCollection(this, sub, true);
-                        saveCollection(transaction, current);
-						current = sub;
-					}
-				}
-				//			LOG.debug("getOrCreateCollection took " + 
-				//				(System.currentTimeMillis() - start) + "ms.");
-				return current;
-			} catch(ReadOnlyException e) {
-				throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-			} catch (LockException e) {
-                LOG.warn("Failed to acquire lock on collection", e);
-            }
-            return null;
-		}
-	}
+
 
     public NodeList getRange(final Document doc, final long first, final long last) {
 		NodeListImpl result = new NodeListImpl((int) (last - first + 1));
@@ -1804,24 +1939,7 @@ public class NativeBroker extends DBBroker {
 		}
 		return result;
 	}
-
-	public Serializer getSerializer() {
-		xmlSerializer.reset();
-		return xmlSerializer;
-	}
-
-	public TextSearchEngine getTextEngine() {
-		return textEngine;
-	}
-
-	public NativeValueIndex getValueIndex() {
-	    return valueIndex;
-	}
-	
-	public Serializer newSerializer() {
-		return new NativeSerializer(this, getConfiguration());
-	}
-
+    
     public Node objectWith(final Document doc, final long gid) {    
 		return (Node) new DOMTransaction(this, domDb) {
 			public Object start() {
@@ -1907,55 +2025,6 @@ public class NativeBroker extends DBBroker {
 	    }
 	}
 	
-    public void reindex(Collection collection, boolean repairMode) throws PermissionDeniedException {
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
-        try {
-            reindex(transaction, collection, repairMode);
-            transact.commit(transaction);
-        } catch (TransactionException e) {
-            transact.abort(transaction);
-            LOG.warn("An error occurred during reindex: " + e.getMessage(), e);
-        }
-    }
-    
-	public void reindex(Txn transaction, Collection collection, boolean repairMode) throws PermissionDeniedException {
-	    if (!collection.getPermissions().validate(user, Permission.WRITE))
-	        throw new PermissionDeniedException("insufficient privileges on collection " + collection.getName());
-	    LOG.debug("Reindexing collection " + collection.getName());
-        
-        if (!repairMode)
-            dropIndex(collection);
-        for(Iterator i = collection.iterator(this); i.hasNext(); ) {
-            DocumentImpl next = (DocumentImpl)i.next();
-            reindex(transaction, next, repairMode);
-        }
-        for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-            String next = (String)i.next();
-            ///TODO : use dedicated function in XmldbURI
-            Collection child = getCollection(collection.getName() + "/" + next);
-            if(child == null)
-                LOG.warn("Collection '" + next + "' not found");
-            else {
-                reindex(transaction, child, repairMode);
-            }
-        }
-	}
-	
-	public void reindex(String collectionName) throws PermissionDeniedException {
-	    if (readOnly)
-			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-	    if (!collectionName.startsWith(ROOT_COLLECTION))
-	        collectionName = ROOT_COLLECTION + collectionName;
-	    
-	    Collection collection = getCollection(collectionName);
-	    if (collection == null) {
-	        LOG.debug("collection " + collectionName + " not found!");
-	        return;
-	    }
-	    reindex(collection, false);
-	}
-	
     protected void repair() throws PermissionDeniedException {
         Collection root = getCollection(ROOT_COLLECTION);
         if (readOnly)
@@ -1988,130 +2057,7 @@ public class NativeBroker extends DBBroker {
         reindex(null, root, true);
     }
     
-    public boolean removeCollection(final Txn transaction, Collection collection) throws PermissionDeniedException {
-        if (readOnly)
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-        
-        if (!collection.getPermissions().validate(user, Permission.WRITE))
-            throw new PermissionDeniedException("User '"+ user.getName() + "' not allowed to remove collection '" + collection.getName() + "'");
-        
-        long start = System.currentTimeMillis();
-        
-        final boolean isRoot = collection.getParentPath() == null;
-        
-        final CollectionCache collectionsCache = pool.getCollectionsCache();
-        synchronized(collectionsCache) {
-            String name = collection.getName();
-            
-            if (!isRoot) {
-                // remove from parent collection
-                Collection parent = openCollection(collection.getParentPath(), Lock.WRITE_LOCK);
-                // keep the lock for the transaction
-                if (transaction != null)
-                    transaction.registerLock(parent.getLock(), Lock.WRITE_LOCK);
-                if (parent != null) {
-                    try {
-                        parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
-                        saveCollection(transaction, parent);
-                    } catch (LockException e) {
-                        LOG.warn("LockException while removing collection " + name);
-                    } finally {
-                        if (transaction == null)
-                            collection.getLock().release();
-                    }
-                }
-            }
-            
-            // remove child collections
-            String childName;
-            Collection childCollection;
-            LOG.debug("removing sub-collections");
-            for (Iterator i = collection.collectionIterator(); i.hasNext();) {
-                childName = (String) i.next();
-                //TODO : use dedicated function in XmldbURI
-                childCollection = openCollection(name + "/" + childName, Lock.WRITE_LOCK);
-                try {
-                    removeCollection(transaction, childCollection);
-                } finally {
-                    childCollection.getLock().release();
-                }
-            }
-            
-            Lock lock = collectionsDb.getLock();
-            try {
-                lock.acquire(Lock.WRITE_LOCK);
-                
-                // if this is not the root collection remove it completely
-                if (isRoot)
-                    saveCollection(transaction, collection);
-                else {
-                    Value key;
-                    try {
-                        key = new Value(name.getBytes("UTF-8"));
-                    } catch (UnsupportedEncodingException uee) {
-                        key = new Value(name.getBytes());
-                    }	
-                    collectionsDb.remove(transaction, key);
-                    collectionsCache.remove(collection);
-                    freeCollectionId(transaction, collection.getId());
-                }
-                
-            } catch (LockException e) {
-                LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
-            } catch (ReadOnlyException e) {
-                throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-            } finally {
-                lock.release();
-            }
-            
-            notifyDropIndex(collection);
-//            textEngine.dropIndex(collection);
-//            elementIndex.dropIndex(collection);
-//            valueIndex.dropIndex(collection);
-//            qnameValueIndex.dropIndex(collection);
-            
-            LOG.debug("removing resources ...");
-            for (Iterator i = collection.iterator(this); i.hasNext();) {
-                final DocumentImpl doc = (DocumentImpl) i.next();
-//                LOG.debug("removing document " + doc.getFileName());
-                new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-                    public Object start() {
-                        if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                            domDb.removeOverflowValue(transaction, ((BinaryDocument)doc).getPage());
-                        } else {
-                            StoredNode node = (StoredNode)doc.getFirstChild();
-                            domDb.removeAll(transaction, node.getInternalAddress());
-                        }
-                        return null;
-                    }
-                }
-                .run();
-                new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-                    public Object start() {
-                        try {
-                            Value ref = new NodeRef(doc.getDocId());
-                            IndexQuery query =
-                                new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-                            domDb.remove(transaction, query, null);
-                        } catch (BTreeException e) {
-                            LOG.warn("btree error while removing document", e);
-                        } catch (IOException e) {
-                            LOG.warn("io error while removing document", e);
-                        } catch (TerminatedException e) {
-                            LOG.warn("method terminated", e);
-                        }
-                        return null;
-                    }
-                }
-                .run();
-                removeDocMetadata(transaction, doc);
-                freeDocumentId(transaction, doc.getDocId());
-            }
-        }
-        if (LOG.isDebugEnabled())
-            LOG.debug("Removing collection took " + (System.currentTimeMillis() - start));
-        return true;
-    }
+
 
 	public void removeDocument(final Txn transaction, final DocumentImpl document, 
             boolean freeDocId) throws PermissionDeniedException {
@@ -2418,178 +2364,6 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException(e.getMessage());
         } finally {
 	        lock.release();
-	    }
-	}
-	
-	public void copyCollection(Txn transaction, Collection collection, Collection destination, String newName)
-	throws PermissionDeniedException, LockException {
-		if (readOnly)
-			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-		if(!collection.getPermissions().validate(user, Permission.READ))
-			throw new PermissionDeniedException("Read permission denied on collection " +
-					collection.getName());
-		if(collection.getId() == destination.getId())
-	    	throw new PermissionDeniedException("Cannot move collection to itself");
-		if(!destination.getPermissions().validate(user, Permission.WRITE))
-	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
-	                destination.getName());
-		if(newName == null) {
-            ///TODO : use dedicated function in XmldbURI
-            int p = collection.getName().lastIndexOf("/");
-            newName = collection.getName().substring(p + 1);
-        }
-        ///TODO : use dedicated function in XmldbURI
-	    if(newName.indexOf("/") != Constants.STRING_NOT_FOUND)
-	        throw new PermissionDeniedException("New collection name is illegal (may not contain a '/')");
-	    //	check if another collection with the same name exists at the destination
-	    //TODO : use dedicated function in XmldbURI
-        Collection old = openCollection(destination.getName() + "/" + newName, Lock.WRITE_LOCK);
-	    if(old != null) {
-	    	LOG.debug("removing old collection: " + newName);
-	    	try {
-	    		removeCollection(transaction, old);
-	    	} finally {
-	    		old.release();
-	    	}
-	    }
-	    Collection destCollection = null;
-	    Lock lock = null;
-	    try {
-	        lock = collectionsDb.getLock();
-	        lock.acquire(Lock.WRITE_LOCK);
-	        ///TODO : use dedicated function in XmldbURI
-	        newName = destination.getName() + "/" + newName;
-	        LOG.debug("Copying collection to '" + newName + "'");
-		    destCollection = getOrCreateCollection(transaction, newName);
-		    for(Iterator i = collection.iterator(this); i.hasNext(); ) {
-		    	DocumentImpl child = (DocumentImpl) i.next();
-		    	LOG.debug("Copying resource: '" + child.getName() + "'");
-		    	if (child.getResourceType() == DocumentImpl.XML_FILE) {
-			    	DocumentImpl newDoc = new DocumentImpl(this, destCollection, child.getFileName());
-			        newDoc.copyOf(child);
-	                newDoc.setDocId(getNextDocumentId(transaction, destination));
-			        copyResource(transaction, child, newDoc);
-	                storeDocument(transaction, newDoc);
-			        destCollection.addDocument(transaction, this, newDoc);
-		    	} else {
-		    		BinaryDocument newDoc = new BinaryDocument(this, child.getFileName(), destCollection);
-		    		newDoc.copyOf(child);
-	                newDoc.setDocId(getNextDocumentId(transaction, destination));
-	                byte[] data = getBinaryResourceData((BinaryDocument) child);
-	                storeBinaryResource(transaction, newDoc, data);
-	                storeDocument(transaction, newDoc);
-	                destCollection.addDocument(transaction, this, newDoc);
-		    	}
-		    }
-		    saveCollection(transaction, destCollection);
-	    } finally {
-	        lock.release();
-	    }
-	    String name = collection.getName();
-	    for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-	    	String childName = (String)i.next();
-            ///TODO : use dedicated function in XmldbURI
-	        Collection child = openCollection(name + "/" + childName, Lock.WRITE_LOCK);
-	        if(child == null)
-	            LOG.warn("Child collection '" + childName + "' not found");
-	        else {
-	            try {
-	            	copyCollection(transaction, child, destCollection, childName);
-	            } finally {
-	            	child.release();
-	            }
-	        }
-	    }
-	    saveCollection(transaction, destCollection);
-	    saveCollection(transaction, destination);
-	}
-	
-	public void moveCollection(Txn transaction, Collection collection, Collection destination, String newName) 
-	throws PermissionDeniedException, LockException {
-	    if (readOnly)
-			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-	    if(collection.getId() == destination.getId())
-	    	throw new PermissionDeniedException("Cannot move collection to itself");
-	    if(collection.getName().equals(ROOT_COLLECTION))
-	        throw new PermissionDeniedException("Cannot move the db root collection");
-	    if(!collection.getPermissions().validate(user, Permission.WRITE))
-	        throw new PermissionDeniedException("Insufficient privileges to move collection " +
-	                collection.getName());
-	    if(!destination.getPermissions().validate(user, Permission.WRITE))
-	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
-	                destination.getName());
-	    if(newName == null) {
-            ///TODO : use dedicated function in XmldbURI
-            int p = collection.getName().lastIndexOf("/");
-            newName = collection.getName().substring(p + 1);
-        }
-	    if(newName.indexOf("/") != Constants.STRING_NOT_FOUND)
-	        throw new PermissionDeniedException("New collection name is illegal (may not contain a '/')");
-	        // check if another collection with the same name exists at the destination
-	    //TODO : use dedicated function in XmldbURI
-	    Collection old = openCollection(destination.getName() + "/" + newName, Lock.WRITE_LOCK);
-	    if(old != null) {
-	    	try {
-	    		removeCollection(transaction, old);
-	    	} finally {
-	    		old.release();
-	    	}
-	    }
-	    String name = collection.getName();
-	    final CollectionCache collectionsCache = pool.getCollectionsCache();
-	    synchronized(collectionsCache) {
-		    Collection parent = openCollection(collection.getParentPath(), Lock.WRITE_LOCK);
-	        if(parent != null) {
-	        	try {
-	        		parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
-	        	} finally {
-	        		parent.release();
-	        	}
-	        }
-		    Lock lock = null;
-		    try {
-		    	lock = collectionsDb.getLock();
-		    	lock.acquire(Lock.WRITE_LOCK);
-			    
-		        collectionsCache.remove(collection);
-			    Value key;
-				try {
-					key = new Value(name.getBytes("UTF-8"));
-				} catch (UnsupportedEncodingException uee) {
-					key = new Value(name.getBytes());
-				}	
-				collectionsDb.remove(transaction, key);
-				///TODO : use dedicated function in XmldbURI
-			    collection.setName(destination.getName() + "/" + newName);
-			    collection.setCreationTime(System.currentTimeMillis());
-			    
-			    destination.addCollection(this, collection, false);
-			    if(parent != null)
-			        saveCollection(transaction, parent);
-			    if(parent != destination)
-			        saveCollection(transaction, destination);
-			    saveCollection(transaction, collection);
-		    } catch (ReadOnlyException e) {
-	            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-	        } finally {
-		        lock.release();
-		    }
-	        String childName;
-		    Collection child;
-		    for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-		        childName = (String)i.next();
-                ///TODO : use dedicated function in XmldbURI
-		        child = openCollection(name + "/" + childName, Lock.WRITE_LOCK);
-		        if(child == null)
-		            LOG.warn("Child collection " + childName + " not found");
-		        else {
-		            try {
-		            	moveCollection(transaction, child, collection, childName);
-		            } finally {
-		            	child.release();
-		            }
-		        }
-		    }
 	    }
 	}
 	
@@ -3044,10 +2818,6 @@ public class NativeBroker extends DBBroker {
 		.run();
 	}
 
-	public boolean isReadOnly() {
-		return readOnly;
-	}
-
 	/** store into the temporary collection of the database a given in-memory Document */
 	public DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) 
     throws EXistException, PermissionDeniedException, LockException {
@@ -3163,57 +2933,7 @@ public class NativeBroker extends DBBroker {
             transact.abort(txn);
             LOG.warn("Transaction aborted: " + e.getMessage(), e);
         }
-	}
-	
-	/** create temporary collection */	
-	private Collection createTempCollection(Txn transaction) throws LockException, PermissionDeniedException {
-		User u = user;
-		Lock lock = null;
-		try {
-			lock = collectionsDb.getLock();
-			lock.acquire(Lock.WRITE_LOCK);
-			user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
-			Collection temp = getOrCreateCollection(transaction, TEMP_COLLECTION);
-			temp.setPermissions(0771);
-			saveCollection(transaction, temp);
-			return temp;
-		} finally {
-			user = u;
-            lock.release();
-		}
-	}
-    
-    public int getBackendType() {
-        return NATIVE;
-    }
-    
-    public DOMFile getDOMFile() {
-        return domDb;
-    }
-    
-    public BTree getStorage(byte id) {
-        switch (id) {
-            case COLLECTIONS_DBX_ID :
-                return collectionsDb;
-            case ELEMENTS_DBX_ID :
-            	return elementsDb;
-            case WORDS_DBX_ID :
-            	return dbWords;
-            case VALUES_DBX_ID :
-                return valuesDb;
-            case VALUES_QNAME_DBX_ID :
-            	return valuesDbQname;
-            case DOM_DBX_ID :
-                return domDb;
-            default:
-                return null;
-        }
-    }
-    
-    public byte[] getStorageFileIds() {
-    	return ALL_STORAGE_FILES;
-    }
-    
+	}   
 
 	public final static class NodeRef extends Value {
 
@@ -3257,6 +2977,237 @@ public class NativeBroker extends DBBroker {
 		}
         */
 	}
+    
+    private final static class RemovedNode {
+        StoredNode node;
+        String content;
+        NodePath path;
+        
+        RemovedNode(StoredNode node, NodePath path, String content) {
+            this.node = node;
+            this.path = path;
+            this.content = content;
+        }
+    }    
+    
+    /** Delegate for Node Processings : indexing */
+    private class NodeProcessor {
+        
+        private Txn transaction;
+        private StoredNode node;
+        private NodePath currentPath;
+        /** work variables */
+        private short nodeType;
+        private long gid;
+        private DocumentImpl doc;
+        private long address;
+        private IndexSpec idxSpec;
+        private FulltextIndexSpec ftIdx;
+        private int depth;
+        private int level;
+        
+        /** overall switch to activate fulltext indexation */
+        private boolean index = true;
+        private boolean repairMode = false;
+        
+        NodeProcessor() {
+        }
+
+        public void reset(Txn transaction, StoredNode node, NodePath currentPath) {            
+            if (node.getGID() < 0)
+                LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
+                //TODO : why continue processing ? return ? -pb
+            this.transaction = transaction;
+            this.node = node;
+            this.currentPath = currentPath;
+            nodeType = node.getNodeType();
+            gid = node.getGID();
+            doc = (DocumentImpl) node.getOwnerDocument();
+            address = node.getInternalAddress();
+            idxSpec = doc.getCollection().getIdxConf(NativeBroker.this);
+            ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
+            depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
+            level = doc.getTreeLevel(gid);
+        }
+        
+        public void reset(Txn transaction, StoredNode node, NodePath currentPath, boolean index) {
+            reset(transaction, node, currentPath);
+            this.index = index;
+        }
+
+        public void setRepairMode(boolean repair) {
+            this.repairMode = repair;
+        }
+        
+        /** Updates the various indices */
+        public void doIndex() {
+            int indexType = RangeIndexSpec.NO_INDEX;
+            final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
+            switch (nodeType) {
+                case Node.ELEMENT_NODE :
+                    if (idxSpec != null) {
+                        
+                        // --move to-- NativeValueIndex
+                        RangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+                        if(spec != null) {
+                            indexType = spec.getIndexType();
+                        }
+                        
+//                        // --move to-- NativeValueIndexByQName
+//                        RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+//                        if (qnIdx != null && qnameValueIndexation) {
+//                            indexType |= RangeIndexSpec.QNAME_INDEX;
+//                        }
+                    }
+                    
+                    // --move to-- NativeTextEngine
+                    if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
+                        indexType |= RangeIndexSpec.TEXT;
+                    if(node.getChildCount() - node.getAttributesCount() > 1) {
+                        indexType |= RangeIndexSpec.MIXED_CONTENT;
+                    }
+                    
+                    // --move to-- NativeValueIndex NativeTextEngine
+                    ((ElementImpl) node).setIndexType(indexType);
+                    
+                    // qnameValueIndex.startElement((ElementImpl)node, currentPath, index);
+                    notifyStartElement((ElementImpl)node, currentPath, index);
+                    break;
+                    
+                case Node.ATTRIBUTE_NODE :
+                    boolean indexAttribs = false;
+                    
+                    QName qname = node.getQName();
+                    if (currentPath != null)
+                        currentPath.addComponent(qname);
+                    
+                    // --move to-- NativeElementIndex NativeValueIndex NativeTextEngine
+                    if(index && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
+                        indexType |= RangeIndexSpec.TEXT;
+                        indexAttribs = true;
+                    }
+                    
+                    // --move to-- NativeValueIndex
+                    // TODO : valueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
+                    GeneralRangeIndexSpec valSpec = null;
+                    if (idxSpec != null) {
+                        valSpec = idxSpec.getIndexByPath(currentPath);
+                        if(valSpec != null) {
+                            indexType |= valSpec.getIndexType();
+                        }
+                    }
+                    if (valSpec != null) {
+                        valueIndex.setDocument(doc);
+                        valueIndex.storeAttribute(valSpec, (AttrImpl) node);
+                    }
+                    
+                    // qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
+                    notifyStoreAttribute( (AttrImpl)node, currentPath, index);
+                    
+                    // --move to-- NativeTextEngine
+                    // TODO : textEngine.storeAttribute( (AttrImpl)node, currentPath, index);
+                    if (indexAttribs && !isTemp )
+                        textEngine.storeAttribute(ftIdx, (AttrImpl) node);
+                    
+//                  --move to-- NativeElementIndex
+                    // TODO : elementIndex.storeAttribute(node, currentPath, index);
+                    elementIndex.setDocument(doc);
+                    final NodeProxy tempProxy = new NodeProxy(doc, gid, address);
+                    tempProxy.setIndexType(indexType);
+                    qname.setNameType(ElementValue.ATTRIBUTE);
+                    elementIndex.addNode(qname, tempProxy);
+                    
+                    // --move to-- NativeElementIndex
+                    // TODO : elementIndex.storeAttribute(node, currentPath, index);
+                    // if the attribute has type ID, store the ID-value
+                    // to the element index as well
+                    if (((AttrImpl) node).getType() == AttrImpl.ID) {
+                        qname = new QName(((AttrImpl) node).getValue(), "", null);
+                        //LOG.debug("found ID: " + qname.getLocalName());
+                        qname.setNameType(ElementValue.ATTRIBUTE_ID);
+                        elementIndex.addNode(qname, tempProxy);
+                    }
+                    
+//                    // --move to-- ???
+                    if (currentPath != null)
+                        currentPath.removeLastComponent();
+                    break;
+                    
+                case Node.TEXT_NODE:
+                    // --move to-- NativeTextEngine
+                    // TODO textEngine.storeText( (TextImpl) node, currentPath, index);
+                    // check if this textual content should be fulltext-indexed
+                    // by calling IndexPaths.match(path)
+                    boolean indexText = true;
+                    if (ftIdx != null && currentPath != null)
+                        indexText = ftIdx.match(currentPath);
+                    if (indexText && !isTemp && index ) {
+                        boolean valore = (ftIdx == null || currentPath == null ? false
+                                : ftIdx.preserveContent(currentPath));
+                        textEngine.storeText(ftIdx, (TextImpl) node, valore);
+                    }
+                    
+                    notifyStoreText( (TextImpl)node, currentPath, index );
+                    // storeText( TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
+                    break;
+            }
+        }
+
+        /** Stores this node into the database, if it's an element */
+        public void store() {
+            if (!repairMode && nodeType == Node.ELEMENT_NODE && level <= depth) {
+                new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+                    public Object start() throws ReadOnlyException {
+                        try {
+                            domDb.addValue(transaction, new NodeRef(doc.getDocId(), gid), address);
+                        } catch (BTreeException e) {
+                            LOG.warn(EXCEPTION_DURING_REINDEX, e);
+                        } catch (IOException e) {
+                            LOG.warn(EXCEPTION_DURING_REINDEX, e);
+                        }
+                        return null;
+                    }
+                }
+                .run();
+            }
+        }
+        
+        /** check available memory */
+        private void checkAvailableMemory() {
+            if (nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
+                final int percent = (int) (run.freeMemory() /
+                        (run.totalMemory() / 100));
+                if (percent < memMinFree) {
+                    //LOG.info(
+                    //  "total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
+                    flush();
+                    System.gc();
+                    LOG.info(
+                        "total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
+                }
+            }
+        }
+        
+        /** Updates the various indices and stores this node into the database */
+        public void index() {
+            ++nodesCount;
+            checkAvailableMemory();
+            doIndex();
+            store();
+        }
+        
+        /** Updates the various indices and stores this node into the database
+         * if necessary */
+        public void reindex() {
+            if (level >= doc.getMetadata().reindexRequired()) {
+                NodeIndexListener listener = doc.getMetadata().getIndexListener();
+                if(listener != null)
+                    listener.nodeChanged(node);
+                store();
+                doIndex();
+            }
+        }
+    }    
 
     private final class DocumentCallback implements BTreeCallback {
         

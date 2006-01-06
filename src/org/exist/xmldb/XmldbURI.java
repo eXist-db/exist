@@ -165,6 +165,8 @@ public class XmldbURI {
 		this.escapedCollectionPath = null;
 		if (path != null) {				
 			if (host != null) {  
+                //Try to extract the protocol from the provided URI. 
+                //TODO : get rid of this and use a more robust approach (dedicated constructor ?) -pb
 	    		//TODO : use named constants  
 	        	index = path.lastIndexOf("/xmlrpc");        	         	
 	        	if (index > lastIndex) {
@@ -426,7 +428,7 @@ public class XmldbURI {
 	 * @return an supposedly correctly escaped URI <strong>string representation</string>
      * @deprecated By definition, using this method is strongly discouraged
 	 */
-	public static String recoverPseudoURIs(String pseudoURI) {		
+	public static String recoverPseudoURIs(String pseudoURI) throws URISyntaxException {		
 		Pattern p = Pattern.compile("/");
 		String[] parts = p.split(pseudoURI);
 		StringBuffer newURIString = new StringBuffer(parts[0]);
@@ -434,15 +436,16 @@ public class XmldbURI {
             newURIString.append("/");
 			if (!"".equals(parts[i])) {
 	    		try {
-	    			URI dummy = new URI(newURIString + parts[i]); 
+                    //Try to instantiate the parst as a URI
+	    			new URI(newURIString + parts[i]); 
                     newURIString.append(parts[i]);
 	    		} catch (URISyntaxException e) {		    			
-                    LOG.info("Had to escape : ''" + parts[i] + "' in '" + pseudoURI + "' !");                   		
+                    LOG.info("Trying to escape : ''" + parts[i] + "' in '" + pseudoURI + "' !");                   		
 	    			try {                        
 	    				newURIString.append(URIUtils.encodeForURI(parts[i]));
 	    			} catch (UnsupportedEncodingException ee) {	    				
 		    			LOG.warn("Can't do anything with : ''" + parts[i] + "' in '" + pseudoURI + "' !");    	
-	    				return null;
+	    				throw new URISyntaxException(pseudoURI, e.getMessage());
 	    			}
 	    		}
 			}			
@@ -611,8 +614,16 @@ public class XmldbURI {
 		//TODO : trim trailing slash if necessary
 		return wrappedURI.toString();
 	}
+    
+    public static String[] getPathComponents(String collectionPath) {       
+        Pattern p = Pattern.compile("/");
+        String [] split = p.split(collectionPath);
+        String [] result = new String[split.length - 1];
+        System.arraycopy(split, 1, result, 0, split.length - 1);
+        return result;       
+    }    
 	
-    /*
+    /* @deprecated Legacy method used here and there in the code
      * if the currentPath is null return the parentPath else 
      * if the currentPath doesnt not start with "/db/" and is not equal to "/db" then adjust the path to start with the parentPath
      * 
@@ -648,6 +659,11 @@ public class XmldbURI {
 	}	
     
     
+    /** @deprecated Legacy method used here and there in the code
+     * @param fileName
+     * @param parentPath
+     * @return
+     */
     public static String checkPath2(String fileName, String parentPath) {
         //if (!fileName.startsWith("/"))
         //    fileName = "/" + fileName;
@@ -655,15 +671,39 @@ public class XmldbURI {
             fileName = ROOT_COLLECTION + fileName;*/
         
         return checkPath(fileName, parentPath);
-    }
+    }    
+   
+    /**@deprecated Legacy method used here and there in the code and copied as such
+     * @param name
+     * @return
+     */
+    //TODO : changes // into /  */
+    public final static String normalizeCollectionName(String name) {
+        StringBuffer out = new StringBuffer();
+        for (int i = 0; i < name.length(); i++)
+            //TODO : use dedicated function in XmldbURI
+            if (name.charAt(i) == '/'
+                && name.length() > i + 1
+                && name.charAt(i + 1) == '/')
+                i++;
+            else
+                out.append(name.charAt(i));
+
+        String name2 = out.toString();
+        if (name2.length() > 0 && name2.charAt(0) != '/')
+            name2 = "/" + name2;
+
+        if (!name2.startsWith(DBBroker.ROOT_COLLECTION))
+            name2 = DBBroker.ROOT_COLLECTION + name2;
+
+        if (name2.endsWith("/") && name2.length() > 1)
+            name2 = name2.substring(0, name2.length() - 1); 
+        
+        return name2;
+        
+    }    
     
-    public static String[] getPathComponents(String collectionPath) {    	
-    	Pattern p = Pattern.compile("/");
-    	String [] split = p.split(collectionPath);
-    	String [] result = new String[split.length - 1];
-    	System.arraycopy(split, 1, result, 0, split.length - 1);
-    	return result;       
-    }
+
 
 	
 //	TODO : prefefined URIs as static classes...
