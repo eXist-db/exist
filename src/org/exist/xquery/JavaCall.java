@@ -22,6 +22,8 @@
  */
 package org.exist.xquery;
 
+import com.sun.xacml.ctx.RequestCtx;
+
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -30,6 +32,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.dom.QName;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.xacml.ExistPDP;
+import org.exist.security.xacml.RequestHelper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -68,9 +73,19 @@ public class JavaCall extends Function {
 
 		try {
 			LOG.debug("Trying to find class " + namespaceURI);
+			
+			//check access to the class
+			ExistPDP pdp = getPDP();
+			if(pdp != null) {
+				RequestCtx request = RequestHelper.createReflectionRequest(context.getUser(), null, namespaceURI, null);
+				pdp.evaluate(request);
+			}
+			
 			myClass = Class.forName(namespaceURI);
 		} catch (ClassNotFoundException e) {
 			throw new XPathException(getASTNode(), "Class: " + namespaceURI + " not found");
+		} catch (PermissionDeniedException pde) {
+			throw new XPathException(getASTNode(), "Access to class '" + namespaceURI + "' denied.", pde);
 		}
 
 		name = qname.getLocalName();
@@ -94,6 +109,23 @@ public class JavaCall extends Function {
 			name = buf.toString();
 			LOG.debug("converted method name to " + name);
 		}
+		
+		//check access to the actual method
+		try {
+			ExistPDP pdp = getPDP();
+			if(pdp != null)
+			{
+				RequestCtx request = RequestHelper.createReflectionRequest(context.getUser(), null, namespaceURI, name);
+				pdp.evaluate(request);
+			}
+		} catch (PermissionDeniedException pde) {
+			throw new XPathException(getASTNode(), "Access to method '" + name + "' in class '" + namespaceURI + "' denied.", pde);
+		}
+	}
+
+	private ExistPDP getPDP()
+	{
+		return context.getBroker().getBrokerPool().getSecurityManager().getPDP();
 	}
 
 	/* (non-Javadoc)

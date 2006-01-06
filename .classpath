@@ -13,6 +13,7 @@
 	<classpathentry kind="lib" path="lib/core/libreadline-java.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-1.2.9.jar"/>
 	<classpathentry kind="lib" path="lib/core/resolver.jar"/>
+	<classpathentry kind="lib" path="lib/core/sunxacml.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-1.2-patched.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/serializer-2.7.0.jar"/>
