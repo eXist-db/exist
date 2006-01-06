@@ -550,7 +550,7 @@ public class RemoteCollection implements CollectionImpl {
         return true;
     }
     
-    //You probably will have to call this methed from this cast :
+    //You probably will have to call this method from this cast :
     //((org.exist.xmldb.CollectionImpl)collection).getURI()
     public XmldbURI getURI() {
     	StringBuffer accessor = new StringBuffer(XmldbURI.XMLDB_URI_PREFIX);
