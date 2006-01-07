@@ -1,6 +1,6 @@
 /*
- * NativeBroker.java - eXist Open Source Native XML Database
- * Copyright (C) 2001-03 Wolfgang M. Meier
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-06 Wolfgang M. Meier
  * wolfgang@exist-db.org
  * http://exist.sourceforge.net
  *

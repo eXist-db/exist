@@ -1,5 +1,5 @@
 /*
- * eXist Open Source Native XML Database Copyright (C) 2001-03, Wolfgang M.
+ * eXist Open Source Native XML Database Copyright (C) 2001-06, Wolfgang M.
  * Meier (meier@ifs.tu-darmstadt.de)
  * 
  * This library is free software; you can redistribute it and/or modify it under

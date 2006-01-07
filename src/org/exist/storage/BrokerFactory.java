@@ -21,8 +21,8 @@
 
 package org.exist.storage;
 
-import org.exist.util.*;
-import org.exist.*;
+import org.exist.EXistException;
+import org.exist.util.Configuration;
 
 public class BrokerFactory {
 

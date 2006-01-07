@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  Copyright (C) 2001-06 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
