@@ -313,7 +313,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}  
     
     public NodeList getRange(long first, long last) {
-        return broker.getRange(this, first, last);
+        return broker.getNodeRange(this, first, last);
     }
 
     public SymbolTable getSymbols() {

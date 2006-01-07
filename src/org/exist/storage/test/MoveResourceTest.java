@@ -80,7 +80,7 @@ public class MoveResourceTest extends TestCase {
 			test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 			
             System.out.println("Moving document test.xml to new_test.xml ...");
-			broker.moveResource(transaction, info.getDocument(), root, "new_test.xml");
+			broker.moveXMLResource(transaction, info.getDocument(), root, "new_test.xml");
 			broker.saveCollection(transaction, root);
             
 			transact.commit(transaction);

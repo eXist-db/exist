@@ -161,7 +161,7 @@ public class Copy extends AbstractWebDAVMethod {
                 }
                 replaced = true;
             }
-            broker.copyResource(transaction, resource, destCollection, newResourceName);
+            broker.copyXMLResource(transaction, resource, destCollection, newResourceName);
             transact.commit(transaction);
             if(replaced)
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);

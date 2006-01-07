@@ -228,8 +228,8 @@ public abstract class Modification {
 	    for(Iterator i = docs.iterator(); i.hasNext(); ) {
 	        DocumentImpl next = (DocumentImpl) i.next();
 	        if(next.getMetadata().getSplitCount() > broker.getFragmentationLimit())
-	            broker.defragResource(transaction, next);
-	        broker.checkResourceConsistency(next);
+	            broker.defragXMLResource(transaction, next);
+	        broker.checkXMLResourceConsistency(next);
 	    }
 	}
 	

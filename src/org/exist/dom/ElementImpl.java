@@ -345,7 +345,7 @@ public class ElementImpl extends NamedNode implements Element {
             children++;
             Node node = appendChild(transaction, childGid, last, getPath(), child, true);
             getBroker().updateNode(transaction, this);
-            getBroker().reindexResource(transaction, owner, owner, null);
+            getBroker().reindexXMLResource(transaction, owner, owner, null);
             getBroker().storeXMLResource(transaction, owner);
             transact.commit(transaction);
             return node;
@@ -398,7 +398,7 @@ public class ElementImpl extends NamedNode implements Element {
 	        }
 	        attributes += attribs.getLength();
             getBroker().updateNode(transaction, this);
-            getBroker().reindexResource(transaction, owner, owner, null);
+            getBroker().reindexXMLResource(transaction, owner, owner, null);
     	}
     }
 
@@ -451,7 +451,7 @@ public class ElementImpl extends NamedNode implements Element {
             }
         }
         getBroker().updateNode(transaction, this);
-        getBroker().reindexResource(transaction, owner, owner, null);
+        getBroker().reindexXMLResource(transaction, owner, owner, null);
     }
 
     /**
@@ -1117,7 +1117,7 @@ public class ElementImpl extends NamedNode implements Element {
             }
             getBroker().updateNode(null, this);
             final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-            getBroker().reindexResource(null, owner, owner, null);
+            getBroker().reindexXMLResource(null, owner, owner, null);
             getBroker().storeXMLResource(null, owner);
             transact.commit(transaction);
             return result;
@@ -1156,10 +1156,10 @@ public class ElementImpl extends NamedNode implements Element {
         int reindex = owner.getMetadata().reindexRequired();
         if (reindex == DocumentMetadata.REINDEX_ALL) {
             owner.getMetadata().setReindexRequired(0);
-            getBroker().reindexResource(transaction, owner, owner, this);
+            getBroker().reindexXMLResource(transaction, owner, owner, this);
         } else {
             owner.getMetadata().setReindexRequired(level + 1);
-            getBroker().reindexResource(transaction, owner, owner, null);
+            getBroker().reindexXMLResource(transaction, owner, owner, null);
         }
     }
 
@@ -1187,10 +1187,10 @@ public class ElementImpl extends NamedNode implements Element {
         int reindex = owner.getMetadata().reindexRequired();
         if (reindex == DocumentMetadata.REINDEX_ALL) {
             owner.getMetadata().setReindexRequired(0);
-            getBroker().reindexResource(transaction, owner, owner, this);
+            getBroker().reindexXMLResource(transaction, owner, owner, this);
         } else {
             owner.getMetadata().setReindexRequired(level + 1);
-            getBroker().reindexResource(transaction, owner, owner, null);
+            getBroker().reindexXMLResource(transaction, owner, owner, null);
         }
     }
 
@@ -1228,7 +1228,7 @@ public class ElementImpl extends NamedNode implements Element {
         getBroker().updateNode(transaction, this);
         // reindex if required
         final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-        getBroker().reindexResource(transaction, owner, owner, null);
+        getBroker().reindexXMLResource(transaction, owner, owner, null);
     }
 
     /**
@@ -1292,7 +1292,7 @@ public class ElementImpl extends NamedNode implements Element {
         getBroker().updateNode(transaction, this);
         if (oldNode.getGID() < lastChild) {
             owner.getMetadata().setReindexRequired(level + 1);
-            getBroker().reindexResource(transaction, owner, owner, this);
+            getBroker().reindexXMLResource(transaction, owner, owner, this);
         }
         return oldNode;
     }
@@ -1366,7 +1366,7 @@ public class ElementImpl extends NamedNode implements Element {
 			attributes += appendList.getLength();
 		} finally {
             getBroker().updateNode(transaction, this);
-            getBroker().reindexResource(transaction, owner, owner, null);
+            getBroker().reindexXMLResource(transaction, owner, owner, null);
 		}
 	}
 
@@ -1390,7 +1390,7 @@ public class ElementImpl extends NamedNode implements Element {
         appendChild(transaction, oldNode.getGID(), new NodeImplRef(previous), getPath(), newChild, true);
         // reindex if required
         final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-        getBroker().reindexResource(transaction, owner, owner, null);
+        getBroker().reindexXMLResource(transaction, owner, owner, null);
         getBroker().storeXMLResource(transaction, owner);
         return oldChild;	// method is spec'd to return the old child, even though that's probably useless in this case
     }

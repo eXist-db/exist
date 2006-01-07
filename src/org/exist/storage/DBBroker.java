@@ -375,7 +375,7 @@ public abstract class DBBroker extends Observable {
 	 *@param  first  unique id of the first node to retrieve
 	 *@param  last   unique id of the last node to retrieve
 	 */
-	public abstract NodeList getRange(Document doc, long first, long last);
+	public abstract NodeList getNodeRange(Document doc, long first, long last);
 
 	/**
 	 *  Get an instance of the Serializer used for converting nodes back to XML.
@@ -558,7 +558,7 @@ public abstract class DBBroker extends Observable {
 	 * @param destination the destination collection
 	 * @param new Name the new name the resource should have in the destination collection
 	 */
-	public abstract void moveResource(Txn transaction, DocumentImpl doc, Collection destination, String newName)
+	public abstract void moveXMLResource(Txn transaction, DocumentImpl doc, Collection destination, String newName)
 	throws PermissionDeniedException, LockException;
 	
 	/**
@@ -580,7 +580,7 @@ public abstract class DBBroker extends Observable {
 	 * @throws PermissionDeniedException
 	 * @throws LockException
 	 */
-	public abstract void copyResource(Txn transaction, DocumentImpl doc, Collection destination, String newName) 
+	public abstract void copyXMLResource(Txn transaction, DocumentImpl doc, Collection destination, String newName) 
 	throws PermissionDeniedException, LockException;
 	
     /**
@@ -589,7 +589,7 @@ public abstract class DBBroker extends Observable {
      * 
      * @param doc to defrag
      */
-	public abstract void defragResource(Txn transaction, DocumentImpl doc);
+	public abstract void defragXMLResource(Txn transaction, DocumentImpl doc);
 	
 	/**
 	 * Perform a consistency check on the specified document.
@@ -598,9 +598,9 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 * @param doc
 	 */
-	public abstract void checkResourceTree(DocumentImpl doc);
+	public abstract void checkXMLResourceTree(DocumentImpl doc);
 	
-	public abstract void checkResourceConsistency(DocumentImpl doc) throws EXistException;
+	public abstract void checkXMLResourceConsistency(DocumentImpl doc) throws EXistException;
 	
     /**
      * Sync dom and collection state data (pages) to disk.
@@ -636,7 +636,7 @@ public abstract class DBBroker extends Observable {
 
 	public abstract void insertNodeAfter(Txn transaction, final StoredNode previous, final StoredNode node);
 
-	public abstract void reindexResource(Txn transaction, DocumentImpl oldDoc, DocumentImpl doc, StoredNode node);
+	public abstract void reindexXMLResource(Txn transaction, DocumentImpl oldDoc, DocumentImpl doc, StoredNode node);
 
     public void indexNode(Txn transaction, StoredNode node) {
         indexNode(transaction, node, null);
