@@ -1341,14 +1341,15 @@ public class InteractiveClient {
         String resourceType;
         MimeType mimeType;
         for (int i = 0; i < files.length; i++) {
+        	if (upload.isCancelled())
+        		break;
             if (files[i].canRead()) {
                 if (files[i].isDirectory()) {
                     totalSize = findRecursive(current, files[i], path, upload,
                             totalSize);
                 } else {
                     upload.reset();
-                    upload.setCurrentDir(files[i].getParentFile()
-                    .getAbsolutePath());
+                    upload.setCurrentDir(files[i].getParentFile().getAbsolutePath());
                     upload.setCurrent(files[i].getName());
                     upload.setCurrentSize(files[i].length());
                     try {
@@ -1373,7 +1374,7 @@ public class InteractiveClient {
         }
         if (current instanceof Observable)
             ((Observable) current).deleteObservers();
-        upload.setVisible(false);
+        upload.uploadCompleted();
         return true;
     }
     
@@ -1400,6 +1401,8 @@ public class InteractiveClient {
         String next;
         MimeType mimeType;
         for (int i = 0; i < temp.length; i++) {
+        	if (upload.isCancelled())
+        		return totalSize;
             ///TODO : use dedicated function in XmldbURI
             next = base + "/" + temp[i].getName();
             try {
