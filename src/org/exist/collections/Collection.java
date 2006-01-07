@@ -841,7 +841,7 @@ public  class Collection extends Observable
         try {
             doParse.run();
             
-            broker.storeResource(transaction, document);
+            broker.storeXMLResource(transaction, document);
             broker.closeDocument();
             broker.flush();
 //			broker.checkTree(document);
@@ -1154,7 +1154,7 @@ public  class Collection extends Observable
             
             broker.storeBinaryResource(transaction, blob, data);
             addDocument(transaction, broker, blob);
-            broker.storeResource(transaction, blob);
+            broker.storeXMLResource(transaction, blob);
             
             broker.closeDocument();
             

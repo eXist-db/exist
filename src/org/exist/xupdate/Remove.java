@@ -88,7 +88,7 @@ public class Remove extends Modification {
                     parent.removeChild(transaction, node);
                 doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
-                broker.storeResource(transaction, doc);
+                broker.storeXMLResource(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
             checkFragmentation(transaction, modifiedDocs);

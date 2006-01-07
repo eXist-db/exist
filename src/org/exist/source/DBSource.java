@@ -103,7 +103,7 @@ public class DBSource extends AbstractSource {
      * @see org.exist.source.Source#getReader()
      */
     public Reader getReader() throws IOException {
-        byte[] data = broker.getBinaryResourceData(doc);
+        byte[] data = broker.getBinaryResource(doc);
         ByteArrayInputStream is = new ByteArrayInputStream(data);
         checkEncoding(is);
         is.reset();
@@ -114,7 +114,7 @@ public class DBSource extends AbstractSource {
      * @see org.exist.source.Source#getContent()
      */
     public String getContent() throws IOException {
-        byte[] data = broker.getBinaryResourceData(doc);
+        byte[] data = broker.getBinaryResource(doc);
         ByteArrayInputStream is = new ByteArrayInputStream(data);
         checkEncoding(is);
         return new String(data, encoding);

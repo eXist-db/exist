@@ -104,7 +104,7 @@ public class RecoverBinaryTest extends TestCase {
         	assertNotNull(broker);
             BinaryDocument binDoc = (BinaryDocument) broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/binary.txt", Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
-            String data = new String(broker.getBinaryResourceData(binDoc));
+            String data = new String(broker.getBinaryResource(binDoc));
             assertNotNull(data);
             System.out.println(data);
 		} catch (Exception e) {            

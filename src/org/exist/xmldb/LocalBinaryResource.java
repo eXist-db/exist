@@ -93,7 +93,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 				if(!blob.getPermissions().validate(user, Permission.READ))
 				    throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 				    	"Permission denied to read resource");
-				rawData = broker.getBinaryResourceData(blob);
+				rawData = broker.getBinaryResource(blob);
 			} catch(EXistException e) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 					"error while loading binary resource " + getId(), e);

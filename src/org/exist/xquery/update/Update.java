@@ -145,7 +145,7 @@ public class Update extends Modification {
                     }
                     doc.getMetadata().clearIndexListener();
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
-                    context.getBroker().storeResource(transaction, doc);
+                    context.getBroker().storeXMLResource(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
                 checkFragmentation(transaction, modifiedDocs);

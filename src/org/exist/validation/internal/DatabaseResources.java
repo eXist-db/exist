@@ -308,7 +308,7 @@ public class DatabaseResources {
                     logger.error("Binary document '"
                             + documentPath + " does not exist.");
                 } else {
-                    data = broker.getBinaryResourceData(binDoc);
+                    data = broker.getBinaryResource(binDoc);
                     binDoc.getUpdateLock().release(Lock.READ_LOCK);
                 }
                 
