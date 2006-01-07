@@ -159,12 +159,14 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     } else {                        
                         values = null;                        
                         if (result.getLength() > 1) values = new ValueSequence();
-                        for (SequenceIterator iterInner = result.iterate(); iterInner.hasNext(); ) {
+                        int p = 0;
+                        for (SequenceIterator iterInner = result.iterate(); iterInner.hasNext(); p++) {
+                            context.setContextPosition(p);
                             current = iterInner.nextItem();
                             if (values == null)
                                 values = expr.eval(result, current);
                             else
-                                values.addAll(expr.eval(result, current));
+                                values.addAll(expr.eval(result, current));                           
                         }
                         result = values;
                     }
