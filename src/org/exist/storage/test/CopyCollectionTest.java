@@ -70,7 +70,7 @@ public class CopyCollectionTest extends TestCase {
             broker.saveCollection(transaction, test);
     
             File f = new File("samples/biblio.rdf");
-            IndexInfo info = test.validate(transaction, broker, "test.xml",
+            IndexInfo info = test.validateXMLResource(transaction, broker, "test.xml",
                     new InputSource(f.toURI().toASCIIString()));
             test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
             
@@ -142,7 +142,7 @@ public class CopyCollectionTest extends TestCase {
     
             File f = new File("samples/biblio.rdf");
             assertNotNull(f);
-            IndexInfo info = test2.validate(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
+            IndexInfo info = test2.validateXMLResource(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
             test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
             
             transact.commit(transaction);

@@ -116,7 +116,7 @@ public class Put extends AbstractWebDAVMethod {
             
 			if(mime.isXMLType()) {
 				InputSource is = new InputSource(url);
-				IndexInfo info = collection.validate(txn, broker, path, is);
+				IndexInfo info = collection.validateXMLResource(txn, broker, path, is);
                 info.getDocument().getMetadata().setMimeType(contentType);
 				collection.release();
 				collectionLocked = false;

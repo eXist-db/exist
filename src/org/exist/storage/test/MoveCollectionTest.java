@@ -76,7 +76,7 @@ public class MoveCollectionTest extends TestCase {
     
             File f = new File("samples/biblio.rdf");
             assertNotNull(f);
-            IndexInfo info = test.validate(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
+            IndexInfo info = test.validateXMLResource(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
             assertNotNull(info);
             test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
             
@@ -145,7 +145,7 @@ public class MoveCollectionTest extends TestCase {
     
             File f = new File("samples/biblio.rdf");
             assertNotNull(f);
-            IndexInfo info = test2.validate(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
+            IndexInfo info = test2.validateXMLResource(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
             assertNotNull(info);            
             test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
             

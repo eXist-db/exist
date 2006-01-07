@@ -1328,7 +1328,7 @@ public class NativeBroker extends DBBroker {
                 long modified = next.getMetadata().getLastModified();
                 if(now - modified > TEMP_FRAGMENT_TIMEOUT)
                     try {
-                        temp.removeDocument(txn, this, next.getFileName());
+                        temp.removeXMLResource(txn, this, next.getFileName());
                     } catch (PermissionDeniedException e) {
                         LOG.warn("Failed to remove temporary fragment: " + e.getMessage(), e);
                     } catch (TriggerException e) {
@@ -1354,7 +1354,7 @@ public class NativeBroker extends DBBroker {
         txn.registerLock(temp.getLock(), Lock.WRITE_LOCK);
         try {
             for(Iterator i = docs.iterator(); i.hasNext(); )
-                temp.removeDocument(txn, this, (String) i.next());
+                temp.removeXMLResource(txn, this, (String) i.next());
             transact.commit(txn);
         } catch (PermissionDeniedException e) {
             transact.abort(txn);
@@ -1621,7 +1621,7 @@ public class NativeBroker extends DBBroker {
                 if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
                     destination.removeBinaryResource(transaction, this, oldDoc);
                 else
-                    destination.removeDocument(transaction, this, oldDoc.getFileName());
+                    destination.removeXMLResource(transaction, this, oldDoc.getFileName());
             } else {
                 if(!destination.getPermissions().validate(user, Permission.WRITE))
                     throw new PermissionDeniedException("Insufficient privileges on target collection " +
@@ -1717,7 +1717,7 @@ public class NativeBroker extends DBBroker {
                 if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
                     destination.removeBinaryResource(transaction, this, oldDoc);
                 else
-                    destination.removeDocument(transaction, this, oldDoc.getFileName());
+                    destination.removeXMLResource(transaction, this, oldDoc.getFileName());
             } else
                 if(!destination.getPermissions().validate(user, Permission.WRITE))
                     throw new PermissionDeniedException("Insufficient privileges on target collection " +

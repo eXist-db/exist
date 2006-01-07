@@ -90,7 +90,7 @@ public class CollectionConfigurationManager {
             if (configurationDocumentName == null)
                 configurationDocumentName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
             //broker.saveCollection(transaction, confCol);
-			IndexInfo info = confCol.validate(transaction, broker, configurationDocumentName, config);
+			IndexInfo info = confCol.validateXMLResource(transaction, broker, configurationDocumentName, config);
 			confCol.store(transaction, broker, info, config, false);
 			//broker.sync(Sync.MAJOR_SYNC);
 		} catch (PermissionDeniedException e) {

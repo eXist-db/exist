@@ -69,8 +69,8 @@ public final class ClusterCollection extends Collection {
     }
 
 
-    public void removeDocument(Txn transaction, DBBroker broker, String docname) throws PermissionDeniedException, TriggerException, LockException {
-        collection.removeDocument(transaction, broker, docname);
+    public void removeXMLResource(Txn transaction, DBBroker broker, String docname) throws PermissionDeniedException, TriggerException, LockException {
+        collection.removeXMLResource(transaction, broker, docname);
         try {
             ClusterComunication cluster = ClusterComunication.getInstance();
             if(cluster!=null)
@@ -317,24 +317,24 @@ public final class ClusterCollection extends Collection {
         collection.removeBinaryResource(transaction, broker, doc);
     }
 
-    public IndexInfo validate(Txn txn, DBBroker broker, String name, InputSource source)
+    public IndexInfo validateXMLResource(Txn txn, DBBroker broker, String name, InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
-        return collection.validate(txn, broker, name, source);
+        return collection.validateXMLResource(txn, broker, name, source);
     }
 
 
-    public IndexInfo validate(Txn txn, DBBroker broker, String name, String data)
+    public IndexInfo validateXMLResource(Txn txn, DBBroker broker, String name, String data)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
-        return collection.validate(txn, broker, name, data);
+        return collection.validateXMLResource(txn, broker, name, data);
     }
 
 
-    public IndexInfo validate(Txn txn, DBBroker broker, String name, Node node)
+    public IndexInfo validateXMLResource(Txn txn, DBBroker broker, String name, Node node)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
-        return collection.validate(txn, broker, name, node);
+        return collection.validateXMLResource(txn, broker, name, node);
     }
 
     public void store(Txn txn, DBBroker broker, IndexInfo info, Node node, boolean privileged)

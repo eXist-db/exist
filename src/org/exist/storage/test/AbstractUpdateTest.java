@@ -96,7 +96,7 @@ public abstract class AbstractUpdateTest extends TestCase {
 	        Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
 	        broker.saveCollection(transaction, test);
 	        
-	        info = test.validate(transaction, broker, "test.xml", TEST_XML);
+	        info = test.validateXMLResource(transaction, broker, "test.xml", TEST_XML);
 	        test.store(transaction, broker, info, TEST_XML, false);
 	
 	        mgr.commit(transaction);	

@@ -380,7 +380,7 @@ public class DatabaseResources {
                         documentName, grammar, "text/text");
                 
             } else {
-                IndexInfo info = collection.validate( transaction, broker, documentName , new InputSource( new ByteArrayInputStream(grammar) ) );
+                IndexInfo info = collection.validateXMLResource( transaction, broker, documentName , new InputSource( new ByteArrayInputStream(grammar) ) );
                 collection.store(transaction, broker, info, new InputSource( new ByteArrayInputStream(grammar) ), false);
             }
             transact.commit(transaction);

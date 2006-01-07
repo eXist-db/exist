@@ -92,7 +92,7 @@ public class LexerTest extends TestCase {
 			// parse the xml source
 			broker = pool.get(user);
 			Collection collection = broker.getCollection(DBBroker.ROOT_COLLECTION + "/test");
-            IndexInfo info = collection.validate(null, broker, "test.xml", xml);
+            IndexInfo info = collection.validateXMLResource(null, broker, "test.xml", xml);
             collection.store(null, broker, info, xml, false);
 
 			// parse the query into the internal syntax tree

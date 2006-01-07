@@ -75,7 +75,7 @@ public class CopyResourceTest extends TestCase {
 
 			File f = new File("samples/shakespeare/r_and_j.xml");
 			assertNotNull(f);
-			IndexInfo info = test2.validate(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
+			IndexInfo info = test2.validateXMLResource(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
 			assertNotNull(info);
 			test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 
@@ -143,7 +143,7 @@ public class CopyResourceTest extends TestCase {
 
 			File f = new File("samples/shakespeare/r_and_j.xml");
 			assertNotNull(f);
-			IndexInfo info = test2.validate(transaction, broker, "test2.xml", new InputSource(f.toURI().toASCIIString()));
+			IndexInfo info = test2.validateXMLResource(transaction, broker, "test2.xml", new InputSource(f.toURI().toASCIIString()));
 			assertNotNull(info);
 			test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 

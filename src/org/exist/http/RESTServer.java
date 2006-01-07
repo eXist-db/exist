@@ -672,7 +672,7 @@ public class RESTServer {
             
             if (mime.isXMLType()) {
                 URI url = tempFile.toURI();
-                IndexInfo info = collection.validate(transaction, broker, docPath, createInputSource(charset,url));
+                IndexInfo info = collection.validateXMLResource(transaction, broker, docPath, createInputSource(charset,url));
                 info.getDocument().getMetadata().setMimeType(contentType);
                 collection.store(transaction, broker, info, createInputSource(charset,url), false);
                 response.sendError(HttpServletResponse.SC_OK, "Document " + docPath + " stored.");
@@ -744,7 +744,7 @@ public class RESTServer {
                         doc.getCollection().removeBinaryResource(txn, broker,
                                 docName);
                     else
-                        doc.getCollection().removeDocument(txn, broker, docName);
+                        doc.getCollection().removeXMLResource(txn, broker, docName);
                     response.sendError(HttpServletResponse.SC_OK, "Document " + path + " removed.");
                 }
             }

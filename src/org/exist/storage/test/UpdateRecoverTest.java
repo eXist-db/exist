@@ -91,7 +91,7 @@ public class UpdateRecoverTest extends TestCase {
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);
             
-            IndexInfo info = test2.validate(transaction, broker, "test.xml", TEST_XML);
+            IndexInfo info = test2.validateXMLResource(transaction, broker, "test.xml", TEST_XML);
             assertNotNull(info);
             test2.store(transaction, broker, info, TEST_XML, false);
             
