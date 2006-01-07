@@ -121,7 +121,7 @@ public class XPathQueryTest extends XMLTestCase {
 	}
 	/** test simple queries involving attributes */
 	public void testAttributes() {
-		ResourceSet result;
+        ResourceSet result;
 		try {
 			String testDocument = "numbers.xml";
 			String query;
@@ -130,13 +130,13 @@ public class XPathQueryTest extends XMLTestCase {
 					testDocument, numbers);
 
 			query = "/test/item[ @id='1' ]";
-			result = service.queryResource(testDocument, query);
-			System.out.println("testAttributes 1: ========");
-			printResult(result);
-			assertEquals("XPath: " + query, 1, result.getSize());
-			
-			XMLResource resource = (XMLResource)result.getResource(0);
-			assertEquals("XPath: " + query, "item", resource.getContentAsDOM().getNodeName());
+            result = service.queryResource(testDocument, query);
+            System.out.println("testAttributes 1: ========");
+            printResult(result);
+            assertEquals("XPath: " + query, 1, result.getSize());
+            
+            XMLResource resource = (XMLResource)result.getResource(0);
+            assertEquals("XPath: " + query, "item", resource.getContentAsDOM().getNodeName());
 		
 			query = "/test/item [ @type='alphanum' ]";
 			result = service.queryResource(testDocument, query);
@@ -273,7 +273,18 @@ public class XPathQueryTest extends XMLTestCase {
             queryResource(service, "numbers.xml", "//item[position() lt 3]", 2);
             queryResource(service, "numbers.xml", "//item[position() le 3]", 3);
             queryResource(service, "numbers.xml", "//item[position() gt 3]", 1);     
-            queryResource(service, "numbers.xml", "//item[position() ge 3]", 2);              
+            queryResource(service, "numbers.xml", "//item[position() ge 3]", 2); 
+            
+            String query = "for $a in (<a/>, <b/>, <c/>) return $a/position()";
+            ResourceSet  result = service.queryResource("numbers.xml", query);           
+            assertEquals("XPath: " + query, 3, result.getSize());            
+            XMLResource resource = (XMLResource)result.getResource(0); 
+            assertEquals("XPath: " + query, "1", resource.getContent().toString());
+            resource = (XMLResource)result.getResource(1); 
+            assertEquals("XPath: " + query, "1", resource.getContent().toString());
+            resource = (XMLResource)result.getResource(2); 
+            assertEquals("XPath: " + query, "1", resource.getContent().toString());            
+            
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}
