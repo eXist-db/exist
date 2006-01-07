@@ -65,7 +65,7 @@ public class LocalUserManagementService implements UserManagementService {
 						+ document.getPermissions().getOwner());
 
 			document.setPermissions(perm);
-            broker.storeDocument(transaction, document);
+            broker.storeResource(transaction, document);
             transact.commit(transaction);
 		} catch (EXistException e) {
             transact.abort(transaction);
@@ -197,7 +197,7 @@ public class LocalUserManagementService implements UserManagementService {
 					"you are not the owner of this resource");
             }
 			document.setPermissions(mode);
-			broker.storeDocument(transaction, document);
+			broker.storeResource(transaction, document);
             transact.commit(transaction);
 		} catch (EXistException e) {
             transact.abort(transaction);
@@ -276,7 +276,7 @@ public class LocalUserManagementService implements UserManagementService {
 					"you are not the owner of this resource");
             }
 			document.setPermissions(modeStr);
-			broker.storeDocument(transaction, document);
+			broker.storeResource(transaction, document);
 		} catch (EXistException e) {
             transact.abort(transaction);
 			throw new XMLDBException(
@@ -354,7 +354,7 @@ public class LocalUserManagementService implements UserManagementService {
 			Permission perm = document.getPermissions();
 			perm.setOwner(u);
 			perm.setGroup(group);
-            broker.storeDocument(transaction, document);
+            broker.storeResource(transaction, document);
             transact.commit(transaction);
 		} catch (EXistException e) {
             transact.abort(transaction);
@@ -416,7 +416,7 @@ public class LocalUserManagementService implements UserManagementService {
 							"Resource is already locked by user " + lockOwner.getName());
 			}
 			doc.setUserLock(u);
-            broker.storeDocument(transaction, doc);
+            broker.storeResource(transaction, doc);
             transact.commit(transaction);
 		} catch (EXistException e) {
             transact.abort(transaction);
@@ -446,7 +446,7 @@ public class LocalUserManagementService implements UserManagementService {
 						"Resource is already locked by user " + lockOwner.getName());
 			}
 			doc.setUserLock(null);
-            broker.storeDocument(transaction, doc);
+            broker.storeResource(transaction, doc);
             transact.commit(transaction);
 		} catch (EXistException e) {
             transact.abort(transaction);

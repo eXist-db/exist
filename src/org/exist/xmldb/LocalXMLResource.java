@@ -489,7 +489,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 						"User is not allowed to lock resource " + document.getFileName());
 			
 			document.setDocumentType(doctype);
-         	broker.storeDocument(transaction, document);
+         	broker.storeResource(transaction, document);
             transact.commit(transaction);
 
 

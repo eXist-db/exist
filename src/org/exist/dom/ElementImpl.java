@@ -346,7 +346,7 @@ public class ElementImpl extends NamedNode implements Element {
             Node node = appendChild(transaction, childGid, last, getPath(), child, true);
             getBroker().updateNode(transaction, this);
             getBroker().reindexResource(transaction, owner, owner, null);
-            getBroker().storeDocument(transaction, owner);
+            getBroker().storeResource(transaction, owner);
             transact.commit(transaction);
             return node;
         } catch (EXistException e) {
@@ -1118,7 +1118,7 @@ public class ElementImpl extends NamedNode implements Element {
             getBroker().updateNode(null, this);
             final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
             getBroker().reindexResource(null, owner, owner, null);
-            getBroker().storeDocument(null, owner);
+            getBroker().storeResource(null, owner);
             transact.commit(transaction);
             return result;
         } catch(TransactionException e) {
@@ -1391,7 +1391,7 @@ public class ElementImpl extends NamedNode implements Element {
         // reindex if required
         final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
         getBroker().reindexResource(transaction, owner, owner, null);
-        getBroker().storeDocument(transaction, owner);
+        getBroker().storeResource(transaction, owner);
         return oldChild;	// method is spec'd to return the old child, even though that's probably useless in this case
     }
 

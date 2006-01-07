@@ -114,7 +114,7 @@ public class Delete extends Modification {
                         parent.removeChild(transaction, node);
                     doc.getMetadata().clearIndexListener();
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
-                    context.getBroker().storeDocument(transaction, doc);
+                    context.getBroker().storeResource(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
                 checkFragmentation(transaction, modifiedDocs);
