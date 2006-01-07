@@ -109,7 +109,7 @@ public class RecoveryTest extends TestCase {
             for (int i = 0; i < files.length; i++) {
                 f = files[i];
                 try {
-                    info = test2.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    info = test2.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
                     assertNotNull(info);
                     test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
@@ -122,7 +122,7 @@ public class RecoveryTest extends TestCase {
             for (int i = 0; i < files.length; i++) {
                 f = files[i];
                 try {
-                    info = test2.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    info = test2.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
                     assertNotNull(info);
                     test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
@@ -131,12 +131,12 @@ public class RecoveryTest extends TestCase {
                 }
             }
     
-            info = test2.validate(transaction, broker, "test_string.xml", TEST_XML);
+            info = test2.validateXMLResource(transaction, broker, "test_string.xml", TEST_XML);
             assertNotNull(info);
             
             test2.store(transaction, broker, info, TEST_XML, false);            
             // remove last document
-            test2.removeDocument(transaction, broker, files[files.length - 1].getName());            
+            test2.removeXMLResource(transaction, broker, files[files.length - 1].getName());            
             
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
@@ -145,7 +145,7 @@ public class RecoveryTest extends TestCase {
             transaction = transact.beginTransaction();
             System.out.println("Transaction started ...");
             
-            test2.removeDocument(transaction, broker, files[0].getName());            
+            test2.removeXMLResource(transaction, broker, files[0].getName());            
             test2.removeBinaryResource(transaction, broker, doc);
             
 //          Don't commit...            

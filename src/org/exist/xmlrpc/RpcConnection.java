@@ -1136,7 +1136,7 @@ public class RpcConnection extends Thread {
                 }
                 InputStream is = new ByteArrayInputStream(xml);
                 source = new InputSource(is);
-                info = collection.validate(txn, broker, docName, source);
+                info = collection.validateXMLResource(txn, broker, docName, source);
             } finally {
                 if(collection != null)
                     collection.release();
@@ -1220,7 +1220,7 @@ public class RpcConnection extends Thread {
                     }
                 }
                 source = new InputSource(file.toURI().toASCIIString());
-                info = collection.validate(txn, broker, docName, source);
+                info = collection.validateXMLResource(txn, broker, docName, source);
             } finally {
                 if(collection != null)
                     collection.release();
@@ -1594,7 +1594,7 @@ public class RpcConnection extends Thread {
             if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
                 collection.removeBinaryResource(txn, broker, doc);
             else
-                collection.removeDocument(txn, broker, docName);
+                collection.removeXMLResource(txn, broker, docName);
             transact.commit(txn);
             documentCache.clear();
         } finally {

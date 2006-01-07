@@ -73,7 +73,7 @@ public class ShutdownTest extends TestCase {
                 f = files[i];
                 assertNotNull(f); 
                 try {
-                    info = test.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    info = test.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
                     assertNotNull(info); 
                     test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {

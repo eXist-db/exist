@@ -426,7 +426,7 @@ public abstract class DBBroker extends Observable {
 	 *  Remove a document from the database.
 	 *
 	 */
-	public void removeDocument(Txn transaction, DocumentImpl document)
+	public void removeXMLResource(Txn transaction, DocumentImpl document)
 	throws PermissionDeniedException {
 	    removeXMLResource(transaction, document, true);
 	}

@@ -512,7 +512,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 						"resource " + name + " not found");
             }
 			if (res.getResourceType().equals("XMLResource"))
-				collection.removeDocument(txn, broker, name);
+				collection.removeXMLResource(txn, broker, name);
 			else
 				collection.removeBinaryResource(txn, broker, name);
             transact.commit(txn);
@@ -618,11 +618,11 @@ public class LocalCollection extends Observable implements CollectionImpl {
     			}
     			if (uri != null) {
     				setupParser(collection, res);
-    			    info = collection.validate(txn, broker, name, new InputSource(uri));
+    			    info = collection.validateXMLResource(txn, broker, name, new InputSource(uri));
     			} else if (res.root != null)
-    			    info = collection.validate(txn, broker, name, res.root);
+    			    info = collection.validateXMLResource(txn, broker, name, res.root);
     			else
-    			    info = collection.validate(txn, broker, name, res.content);
+    			    info = collection.validateXMLResource(txn, broker, name, res.content);
                 info.getDocument().getMetadata().setMimeType(res.getMimeType());
                 
                 if (res.datecreated  != null) 

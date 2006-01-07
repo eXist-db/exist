@@ -98,7 +98,7 @@ public class Delete extends AbstractWebDAVMethod {
 				if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
 					collection.removeBinaryResource(txn, broker, resource.getFileName());
 				else
-					collection.removeDocument(txn, broker, resource.getFileName());
+					collection.removeXMLResource(txn, broker, resource.getFileName());
 			}
             transact.commit(txn);
 		} catch (EXistException e) {

@@ -76,7 +76,7 @@ public class RemoveCollectionTest extends TestCase {
             assertNotNull(f);   
             InputSource is = new InputSource(f.toURI().toASCIIString());
             assertNotNull(is);   
-            IndexInfo info = test.validate(transaction, broker, "biblio.rdf", is);
+            IndexInfo info = test.validateXMLResource(transaction, broker, "biblio.rdf", is);
             assertNotNull(info);   
             test.store(transaction, broker, info, is, false);
             

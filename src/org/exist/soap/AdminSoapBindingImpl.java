@@ -152,7 +152,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
 				collection.removeBinaryResource(txn, broker, doc);
 			else
-				collection.removeDocument(txn, broker, docName);
+				collection.removeXMLResource(txn, broker, docName);
             
             transact.commit(txn);
 			return true;
@@ -199,7 +199,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 }
 			}
 			long startTime = System.currentTimeMillis();
-            IndexInfo info = collection.validate(txn, broker, path, new InputSource(new ByteArrayInputStream(data)));
+            IndexInfo info = collection.validateXMLResource(txn, broker, path, new InputSource(new ByteArrayInputStream(data)));
             info.getDocument().getMetadata().setMimeType("text/xml");
             collection.store(txn, broker, info, new InputSource(new ByteArrayInputStream(data)), false);
             transact.commit(txn);

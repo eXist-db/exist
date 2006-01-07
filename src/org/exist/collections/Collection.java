@@ -671,7 +671,7 @@ public  class Collection extends Observable
      *
      *@param  name
      */
-    public void removeDocument(Txn transaction, DBBroker broker, String docname)
+    public void removeXMLResource(Txn transaction, DBBroker broker, String docname)
     throws PermissionDeniedException, TriggerException, LockException {
         try {
             getLock().acquire(Lock.READ_LOCK);
@@ -707,7 +707,7 @@ public  class Collection extends Observable
                         getName() + "/" + docname, doc);
             }
             
-            broker.removeDocument(transaction, doc);
+            broker.removeXMLResource(transaction, doc);
             documents.remove(docname);
             
             if (trigger != null) {
@@ -786,7 +786,7 @@ public  class Collection extends Observable
     
     public void store(Txn transaction, DBBroker broker, final IndexInfo info, final InputSource source, boolean privileged)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
-        storeInternal(transaction, broker, info, privileged, new StoreBlock() {
+        storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
             public void run() throws EXistException, SAXException {
                 try {
                     final InputStream is = source.getByteStream();
@@ -811,7 +811,7 @@ public  class Collection extends Observable
     
     public void store(Txn transaction, DBBroker broker, final IndexInfo info, final String data, boolean privileged)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
-        storeInternal(transaction, broker, info, privileged, new StoreBlock() {
+        storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
             public void run() throws SAXException, EXistException {
                 try {
                     info.getReader().parse(new InputSource(new StringReader(data)));
@@ -824,7 +824,7 @@ public  class Collection extends Observable
     
     public void store(Txn transaction, DBBroker broker, final IndexInfo info, final Node node, boolean privileged)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
-        storeInternal(transaction, broker, info, privileged, new StoreBlock() {
+        storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
             public void run() throws EXistException, SAXException {
                 info.getDOMStreamer().serialize(node, true);
             }
@@ -835,7 +835,7 @@ public  class Collection extends Observable
         public void run() throws EXistException, SAXException;
     }
     
-    private void storeInternal(Txn transaction, DBBroker broker, IndexInfo info, boolean privileged, StoreBlock doParse) throws EXistException, SAXException {
+    private void storeXMLInternal(Txn transaction, DBBroker broker, IndexInfo info, boolean privileged, StoreBlock doParse) throws EXistException, SAXException {
         DocumentImpl document = info.getIndexer().getDocument();
         LOG.debug("storing document " + document.getDocId() + " ...");
         try {
@@ -875,16 +875,16 @@ public  class Collection extends Observable
         }
     }
     
-    public IndexInfo validate(Txn transaction, DBBroker broker, String docName, String data)
+    public IndexInfo validateXMLResource(Txn transaction, DBBroker broker, String docName, String data)
     throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
-        return validate(transaction, broker, docName, new InputSource(new StringReader(data)));
+        return validateXMLResource(transaction, broker, docName, new InputSource(new StringReader(data)));
     }
     
-    public IndexInfo validate(Txn transaction, final DBBroker broker, String docName, final InputSource source)
+    public IndexInfo validateXMLResource(Txn transaction, final DBBroker broker, String docName, final InputSource source)
     throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
-        return validateInternal(transaction, broker, docName, new ValidateBlock() {
+        return validateXMLResourceInternal(transaction, broker, docName, new ValidateBlock() {
             public void run(IndexInfo info) throws SAXException, EXistException {
                 info.setReader(getReader(broker), Collection.this);
                 try {
@@ -896,10 +896,10 @@ public  class Collection extends Observable
         });
     }
     
-    public IndexInfo validate(Txn transaction, final DBBroker broker, String docName, final Node node)
+    public IndexInfo validateXMLResource(Txn transaction, final DBBroker broker, String docName, final Node node)
     throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
-        return validateInternal(transaction, broker, docName, new ValidateBlock() {
+        return validateXMLResourceInternal(transaction, broker, docName, new ValidateBlock() {
             public void run(IndexInfo info) throws SAXException {
                 info.setDOMStreamer(new DOMStreamer());
                 info.getDOMStreamer().serialize(node, true);
@@ -911,7 +911,7 @@ public  class Collection extends Observable
         public void run(IndexInfo info) throws SAXException, EXistException;
     }
     
-    private IndexInfo validateInternal(Txn transaction, DBBroker broker, String docName, ValidateBlock doValidate)
+    private IndexInfo validateXMLResourceInternal(Txn transaction, DBBroker broker, String docName, ValidateBlock doValidate)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         
         //Is it a collection configuration file ?
@@ -1143,7 +1143,7 @@ public  class Collection extends Observable
                 if (oldDoc instanceof BinaryDocument)
                     broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
                 else
-                    broker.removeDocument(transaction, oldDoc);
+                    broker.removeXMLResource(transaction, oldDoc);
             }
             
             if(created != null)

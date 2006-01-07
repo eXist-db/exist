@@ -330,7 +330,7 @@ public class SecurityManager {
 			broker.setUser(getUser(DBA_USER));
 			Collection sysCollection = broker.getCollection(DBBroker.SYSTEM_COLLECTION);
             String data = buf.toString();
-            IndexInfo info = sysCollection.validate(transaction, broker, ACL_FILE, data);
+            IndexInfo info = sysCollection.validateXMLResource(transaction, broker, ACL_FILE, data);
             DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
             sysCollection.store(transaction, broker, info, data, false);

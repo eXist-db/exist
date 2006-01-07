@@ -95,7 +95,7 @@ public class RecoveryTest3 extends TestCase {
                 f = files[i];
                 assertNotNull(f);
                 try {
-                    info = test2.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    info = test2.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
                     assertNotNull(info);
                     test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
@@ -159,7 +159,7 @@ public class RecoveryTest3 extends TestCase {
                 f = files[i];
                 assertNotNull(f);
                 try {
-                    info = test2.validate(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    info = test2.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
                     assertNotNull(info);
                     test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
