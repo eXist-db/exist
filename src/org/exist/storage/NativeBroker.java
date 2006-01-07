@@ -784,7 +784,7 @@ public class NativeBroker extends DBBroker {
                     DocumentImpl newDoc = new DocumentImpl(this, destCollection, child.getFileName());
                     newDoc.copyOf(child);
                     newDoc.setDocId(getNextResourceId(transaction, destination));
-                    copyResource(transaction, child, newDoc);
+                    copyXMLResource(transaction, child, newDoc);
                     storeXMLResource(transaction, newDoc);
                     destCollection.addDocument(transaction, this, newDoc);
                 } else {
@@ -1223,7 +1223,7 @@ public class NativeBroker extends DBBroker {
             dropCollectionIndex(collection);
         for(Iterator i = collection.iterator(this); i.hasNext(); ) {
             DocumentImpl next = (DocumentImpl)i.next();
-            reindexResource(transaction, next, repairMode);
+            reindexXMLResource(transaction, next, repairMode);
         }
         for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
             String next = (String)i.next();
@@ -1583,7 +1583,7 @@ public class NativeBroker extends DBBroker {
         }
     }
     
-    public void copyResource(Txn transaction, DocumentImpl doc, Collection destination, String newName) 
+    public void copyXMLResource(Txn transaction, DocumentImpl doc, Collection destination, String newName) 
     throws PermissionDeniedException, LockException {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
@@ -1635,7 +1635,7 @@ public class NativeBroker extends DBBroker {
                 newDoc.copyOf(doc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
                 newDoc.setPermissions(doc.getPermissions()); 
-                copyResource(transaction, doc, newDoc);
+                copyXMLResource(transaction, doc, newDoc);
                 destination.addDocument(transaction, this, newDoc);
                 storeXMLResource(transaction, newDoc);
             }
@@ -1649,7 +1649,7 @@ public class NativeBroker extends DBBroker {
         }
     }
     
-    private void copyResource(Txn transaction, DocumentImpl oldDoc, DocumentImpl newDoc) {
+    private void copyXMLResource(Txn transaction, DocumentImpl oldDoc, DocumentImpl newDoc) {
         LOG.debug("Copying document " + oldDoc.getFileName() + " to " + 
                 newDoc.getName());
         final long start = System.currentTimeMillis();
@@ -1670,7 +1670,7 @@ public class NativeBroker extends DBBroker {
     }
     
     /** move Resource to another collection, with possible rename */
-    public void moveResource(Txn transaction, DocumentImpl doc, Collection destination, String newName)
+    public void moveXMLResource(Txn transaction, DocumentImpl doc, Collection destination, String newName)
         throws PermissionDeniedException, LockException {
         
         if (readOnly)
@@ -1737,7 +1737,7 @@ public class NativeBroker extends DBBroker {
     
                 if(!renameOnly) {
                     // reindexing
-                    reindexResource(transaction, doc, false);
+                    reindexXMLResource(transaction, doc, false);
                 }
             } else {
                 // binary resource
@@ -1955,7 +1955,7 @@ public class NativeBroker extends DBBroker {
      * descendant nodes of the passed node, or all nodes below some level of
      * the document if node is null.
      */
-    public void reindexResource(final Txn transaction, final DocumentImpl oldDoc, final DocumentImpl doc, 
+    public void reindexXMLResource(final Txn transaction, final DocumentImpl oldDoc, final DocumentImpl doc, 
             final StoredNode node) {
         int idxLevel = doc.getMetadata().reindexRequired();     
         if (idxLevel == DocumentMetadata.REINDEX_ALL) {
@@ -2025,7 +2025,7 @@ public class NativeBroker extends DBBroker {
      * descendant nodes of the passed node, or all nodes below some level of
      * the document if node is null.
      */
-    private void reindexResource(Txn transaction, DocumentImpl doc, boolean repairMode) {
+    private void reindexXMLResource(Txn transaction, DocumentImpl doc, boolean repairMode) {
         if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
             doc.getCollection().setConfigEnabled(false);
         Iterator iterator;
@@ -2042,7 +2042,7 @@ public class NativeBroker extends DBBroker {
             doc.getCollection().setConfigEnabled(true);
     }  
     
-    public void defragResource(final Txn transaction, final DocumentImpl doc) {
+    public void defragXMLResource(final Txn transaction, final DocumentImpl doc) {
         //TODO : use dedicated function in XmldbURI
         LOG.debug("============> Defragmenting document " + 
                 doc.getCollection().getName() + "/" + doc.getFileName());
@@ -2158,17 +2158,17 @@ public class NativeBroker extends DBBroker {
     
     /** consistency Check of the database; useful after XUpdates;
      * called if xupdate.consistency-checks is true in configuration */ 
-    public void checkResourceConsistency(DocumentImpl doc) throws EXistException {
+    public void checkXMLResourceConsistency(DocumentImpl doc) throws EXistException {
         if(xupdateConsistencyChecks) {
             LOG.debug("Checking document " + doc.getFileName());
-            checkResourceTree(doc);
+            checkXMLResourceTree(doc);
 //          elementIndex.consistencyCheck(doc);
         }
     }
     
     /** consistency Check of the database; useful after XUpdates;
      * called by {@link #checkResourceConsistency()} */
-    public void checkResourceTree(final DocumentImpl doc) {
+    public void checkXMLResourceTree(final DocumentImpl doc) {
         LOG.debug("Checking DOM tree for document " + doc.getFileName());
         if(xupdateConsistencyChecks) {
             new DOMTransaction(this, domDb, Lock.READ_LOCK) {
@@ -2204,67 +2204,7 @@ public class NativeBroker extends DBBroker {
             }
             .run();
         }
-    }    
-    
-    public void flush() {
-        notifyFlush();
-        if (symbols != null && symbols.hasChanged())
-            try {
-                saveSymbols();
-            } catch (EXistException e) {
-                LOG.warn(e.getMessage(), e);
-            }
-        nodesCount = 0;
-    } 
-    
-    public void sync(int syncEvent) {
-        if (isReadOnly())
-            return;
-        try {
-            new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-                public Object start() {
-                    try {
-                        domDb.flush();
-                    } catch (DBException e) {
-                        LOG.warn("error while flushing dom.dbx", e);
-                    }
-                    return null;
-                }
-            }
-            .run();
-            if(syncEvent == Sync.MAJOR_SYNC) {
-                Lock lock = collectionsDb.getLock();
-                try {
-                    lock.acquire(Lock.WRITE_LOCK);
-                    collectionsDb.flush();
-                } catch (LockException e) {
-                    LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
-                } finally {
-                    lock.release();
-                }
-                notifySync();
-//              System.gc();
-                Runtime runtime = Runtime.getRuntime();
-                LOG.info("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
-                        (runtime.maxMemory() / 1024) + "K max; " +
-                        (runtime.freeMemory() / 1024) + "K free");              
-                
-                domDb.printStatistics(); 
-                collectionsDb.printStatistics();
-                if (elementsDb != null)
-                    elementsDb.printStatistics();                
-                if (valuesDb != null)
-                    valuesDb.printStatistics();             
-                if (valuesDbQname != null)
-                    valuesDbQname.printStatistics();
-                if (textEngine != null)
-                    textEngine.printStatistics();
-            }
-        } catch (DBException dbe) {
-            dbe.printStackTrace();
-            LOG.debug(dbe);
-        }
-    } 
+    }
     
     /**
      *  Store a node into the database. This method is called by the parser to
@@ -2370,33 +2310,148 @@ public class NativeBroker extends DBBroker {
             }
         }
         .run();
-    }     
-    
-    /**
-     * Index a single node, which has been added through an XUpdate
-     * operation. This method is only called if inserting the node is possible
-     * without changing the node identifiers of sibling or parent nodes. In other 
-     * cases, reindex will be called.
-     */
-    public void indexNode(Txn transaction, StoredNode node, NodePath currentPath) {
-        indexNode(transaction, node, currentPath, false);
     }
     
-    public void indexNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean repairMode) {
-        nodeProcessor.reset(transaction, node, currentPath);
-        nodeProcessor.index();
+    private void copyNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath, 
+            DocumentImpl newDoc, boolean index) {
+        if (node.getNodeType() == Node.ELEMENT_NODE)
+            currentPath.addComponent(node.getQName());
+        final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+        node.setOwnerDocument(newDoc);
+        node.setInternalAddress(BFile.UNKNOWN_ADDRESS);
+        storeNode(transaction, node, currentPath, index);
+        if (node.getNodeType() == Node.ELEMENT_NODE)
+            endElement(node, currentPath, null);        
+        if (node.getGID() == StoredNode.NODE_IMPL_ROOT_NODE_GID) {
+            newDoc.appendChild((StoredNode) node);
+        }
+        node.setOwnerDocument(doc);
+        
+        if (node.hasChildNodes()) {
+            final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());            
+            if (firstChildId < 0) {
+                LOG.fatal(
+                    "no child found: expected = "
+                        + node.getChildCount()
+                        + "; node = "
+                        + node.getNodeName()
+                        + "; gid = "
+                        + node.getGID());
+                throw new IllegalStateException("wrong node id");
+            }
+            final long lastChildId = firstChildId + node.getChildCount();
+            StoredNode child;
+            for (long gid = firstChildId; gid < lastChildId; gid++) {
+                child = (StoredNode) iterator.next();
+                if(child == null)
+                    LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
+                            "; last = " + lastChildId + "; children = " + node.getChildCount());
+                child.setGID(gid);
+                copyNodes(transaction, iterator, child, currentPath, newDoc, index);
+            }
+        }
+        if(node.getNodeType() == Node.ELEMENT_NODE) {
+            currentPath.removeLastComponent();
+        }
     }
     
-    /**
-     * Reindex the given node after the DOM tree has been 
-     * modified by an XUpdate.
-     * 
-     * @param node
-     * @param currentPath
+    /** Removes the Node Reference from the database.
+     * The index will be updated later, i.e. after all nodes have been physically 
+     * removed. See {@link #endRemove()}. 
+     * removeNode() just adds the node ids to the list in elementIndex 
+     * for later removal.
      */
-    private void reindexNode(final Txn transaction, final StoredNode node, NodePath currentPath) {
-        nodeProcessor.reset(transaction, node, currentPath);
-        nodeProcessor.reindex();
+    public void removeNode(final Txn transaction, final StoredNode node, NodePath currentPath, String content) {
+        final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
+        final IndexSpec idxSpec = 
+            doc.getCollection().getIdxConf(this);
+        final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
+        final long gid = node.getGID();
+        final short nodeType = node.getNodeType();
+//      final String nodeName = node.getNodeName();
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
+            public Object start() {
+                final long address = node.getInternalAddress();
+                if (address != BFile.UNKNOWN_ADDRESS)
+                    domDb.remove(transaction, new NodeRef(doc.getDocId(), node.getGID()), address);
+                else
+                    domDb.remove(transaction, new NodeRef(doc.getDocId(), node.getGID()));
+                return null;
+            }
+        }
+        .run();
+        NodeProxy tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
+        QName qname;
+        switch (nodeType) {
+            case Node.ELEMENT_NODE :
+                // save element by calling ElementIndex
+                qname = node.getQName();
+                qname.setNameType(ElementValue.ELEMENT);
+                elementIndex.setDocument(doc);
+                elementIndex.addNode(qname, tempProxy);
+                
+                if (idxSpec != null) {
+                    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+                    if(spec != null) {
+                        valueIndex.setDocument(doc);
+                        valueIndex.storeElement(spec.getType(), (ElementImpl) node, content);
+                    }
+                }               
+                // qnameValueIndex.removeElement((ElementImpl) node, currentPath, content);
+                notifyRemoveElement( (ElementImpl) node, currentPath, content );
+                break;
+                
+            case Node.ATTRIBUTE_NODE :
+                currentPath.addComponent(node.getQName());
+                elementIndex.setDocument(doc);
+                qname = node.getQName();
+                qname.setNameType(ElementValue.ATTRIBUTE);
+                elementIndex.addNode(qname, tempProxy);
+                
+                // check if attribute value should be fulltext-indexed
+                // by calling IndexPaths.match(path) 
+                boolean indexAttribs = true;
+                if(ftIdx != null) {
+                    indexAttribs = ftIdx.matchAttribute(currentPath);
+                }
+                if (indexAttribs)
+                    textEngine.storeAttribute(ftIdx, (AttrImpl) node);
+                if (idxSpec != null) {
+                    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+                    if(spec != null) {
+                        valueIndex.setDocument(doc);
+                        valueIndex.storeAttribute(spec, (AttrImpl) node);
+                    }                   
+//                  RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
+//                  if (qnIdx != null && qnameValueIndexation) {
+//                      qnameValueIndex.setDocument(doc);
+//                      qnameValueIndex.storeAttribute(qnIdx, (AttrImpl) node);
+//                  }
+                }
+                
+                if (qnameValueIndex != null)
+                    qnameValueIndex.removeAttribute( (AttrImpl)node, currentPath, true);
+                // qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, true);
+
+                
+                // if the attribute has type ID, store the ID-value
+                // to the element index as well
+                if (((AttrImpl) node).getType() == AttrImpl.ID) {
+                    qname = new QName(((AttrImpl) node).getValue(), "", null);
+                    qname.setNameType(ElementValue.ATTRIBUTE_ID);
+                    elementIndex.addNode(qname, tempProxy);
+                }
+                currentPath.removeLastComponent();
+                break;
+            case Node.TEXT_NODE :
+                // check if this textual content should be fulltext-indexed
+                // by calling IndexPaths.match(path)
+                if (ftIdx == null || ftIdx.match(currentPath)){
+                    boolean valore = (ftIdx == null ? false : ftIdx.preserveContent(currentPath));
+                    textEngine.storeText(ftIdx, (TextImpl) node, valore);
+                }
+                break;
+        }
     }    
 
     public void removeAllNodes(Txn transaction, StoredNode node, NodePath currentPath) {
@@ -2465,10 +2520,60 @@ public class NativeBroker extends DBBroker {
                 break;
         }
     }
-	
-
     
-
+    /**
+     * Index a single node, which has been added through an XUpdate
+     * operation. This method is only called if inserting the node is possible
+     * without changing the node identifiers of sibling or parent nodes. In other 
+     * cases, reindex will be called.
+     */
+    public void indexNode(Txn transaction, StoredNode node, NodePath currentPath) {
+        indexNode(transaction, node, currentPath, false);
+    }
+    
+    public void indexNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean repairMode) {
+        nodeProcessor.reset(transaction, node, currentPath);
+        nodeProcessor.index();
+    }
+    
+    /**
+     * Reindex the given node after the DOM tree has been 
+     * modified by an XUpdate.
+     * 
+     * @param node
+     * @param currentPath
+     */
+    private void reindexNode(final Txn transaction, final StoredNode node, NodePath currentPath) {
+        nodeProcessor.reset(transaction, node, currentPath);
+        nodeProcessor.reindex();
+    }
+    
+    private void checkNodeTree(Iterator iterator, StoredNode node) {
+        if (node.hasChildNodes()) {
+            final long firstChildId = XMLUtil.getFirstChildId((DocumentImpl)node.getOwnerDocument(), 
+                    node.getGID());          
+            if (firstChildId < 0) {
+                LOG.fatal(
+                    "no child found: expected = "
+                        + node.getChildCount()
+                        + "; node = "
+                        + node.getNodeName()
+                        + "; gid = "
+                        + node.getGID());
+                throw new IllegalStateException("wrong node id");
+            }
+            final long lastChildId = firstChildId + node.getChildCount();
+            StoredNode child;
+            for (long gid = firstChildId; gid < lastChildId; gid++) {
+                child = (StoredNode) iterator.next();
+                if(child == null)
+                    LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
+                            "; last = " + lastChildId + "; children = " + node.getChildCount());
+                child.setGID(gid);
+                checkNodeTree(iterator, child);
+            }
+        }
+    } 
     
     /**
      * Called by reindex to walk through all nodes in the tree and reindex them
@@ -2516,79 +2621,105 @@ public class NativeBroker extends DBBroker {
             }
             currentPath.removeLastComponent();
         }
-    }    
-	
-	private void copyNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath, 
-	        DocumentImpl newDoc, boolean index) {
-		if (node.getNodeType() == Node.ELEMENT_NODE)
-		    currentPath.addComponent(node.getQName());
-		final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-		node.setOwnerDocument(newDoc);
-		node.setInternalAddress(BFile.UNKNOWN_ADDRESS);
-		storeNode(transaction, node, currentPath, index);
-		if (node.getNodeType() == Node.ELEMENT_NODE)
-		    endElement(node, currentPath, null);		
-		if (node.getGID() == StoredNode.NODE_IMPL_ROOT_NODE_GID) {
-		    newDoc.appendChild((StoredNode) node);
-		}
-		node.setOwnerDocument(doc);
-		
-		if (node.hasChildNodes()) {
-			final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());            
-			if (firstChildId < 0) {
-				LOG.fatal(
-					"no child found: expected = "
-						+ node.getChildCount()
-						+ "; node = "
-						+ node.getNodeName()
-						+ "; gid = "
-						+ node.getGID());
-				throw new IllegalStateException("wrong node id");
-			}
-			final long lastChildId = firstChildId + node.getChildCount();
-			StoredNode child;
-			for (long gid = firstChildId; gid < lastChildId; gid++) {
-				child = (StoredNode) iterator.next();
-				if(child == null)
-					LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
-							"; last = " + lastChildId + "; children = " + node.getChildCount());
-				child.setGID(gid);
-				copyNodes(transaction, iterator, child, currentPath, newDoc, index);
-			}
-		}
-		if(node.getNodeType() == Node.ELEMENT_NODE) {
-		    currentPath.removeLastComponent();
-		}
-	}
-
-
-	
-	private void checkNodeTree(Iterator iterator, StoredNode node) {
-		if (node.hasChildNodes()) {
-			final long firstChildId = XMLUtil.getFirstChildId((DocumentImpl)node.getOwnerDocument(), 
-					node.getGID());          
-			if (firstChildId < 0) {
-				LOG.fatal(
-					"no child found: expected = "
-						+ node.getChildCount()
-						+ "; node = "
-						+ node.getNodeName()
-						+ "; gid = "
-						+ node.getGID());
-				throw new IllegalStateException("wrong node id");
-			}
-			final long lastChildId = firstChildId + node.getChildCount();
-			StoredNode child;
-			for (long gid = firstChildId; gid < lastChildId; gid++) {
-				child = (StoredNode) iterator.next();
-				if(child == null)
-					LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
-							"; last = " + lastChildId + "; children = " + node.getChildCount());
-				child.setGID(gid);
-                checkNodeTree(iterator, child);
-			}
-		}
-	}
+    }
+    
+    /**
+     *  Do a sequential search through the DOM-file.
+     *
+     *@param  context     Description of the Parameter
+     *@param  doc         Description of the Parameter
+     *@param  relation    Description of the Parameter
+     *@param  truncation  Description of the Parameter
+     *@param  expr        Description of the Parameter
+     *@return             Description of the Return Value
+     */
+    protected NodeSet scanNodesSequential(
+        NodeSet context,
+        DocumentSet doc,
+        int relation,
+        int truncation,
+        String expr,
+        Collator collator) {
+        ExtArrayNodeSet resultNodeSet = new ExtArrayNodeSet();
+        NodeProxy p;
+        String content;
+        String cmp;
+        Pattern regexp = null;
+        if (relation == Constants.REGEXP) {
+                regexp = Pattern.compile(expr.toLowerCase(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+                truncation = Constants.REGEXP;
+        }
+        for (Iterator i = context.iterator(); i.hasNext();) {
+            p = (NodeProxy) i.next();
+            try {
+                domDb.getLock().acquire(Lock.READ_LOCK);
+                domDb.setOwnerObject(this);
+                content = domDb.getNodeValue(p, false);
+            } catch (LockException e) {
+                LOG.warn("Failed to acquire read lock on " + domDb.getFile().getName());
+                continue;
+            } finally {
+                domDb.getLock().release();
+            }
+            if (isCaseSensitive())
+                cmp = StringValue.collapseWhitespace(content);
+            else {
+                cmp = StringValue.collapseWhitespace(content.toLowerCase());
+            }
+            switch (truncation) {
+                case Constants.TRUNC_LEFT :
+                    if (Collations.endsWith(collator, cmp, expr))
+                        resultNodeSet.add(p);
+                    break;
+                case Constants.TRUNC_RIGHT :
+                    if (Collations.startsWith(collator, cmp, expr))
+                        resultNodeSet.add(p);
+                    break;
+                case Constants.TRUNC_BOTH :
+                    if (Collations.indexOf(collator, cmp, expr) != Constants.STRING_NOT_FOUND)
+                        resultNodeSet.add(p);
+                    break;
+                case Constants.TRUNC_NONE :             
+                    int result = Collations.compare(collator, cmp, expr);
+                    switch (relation) {
+                        case Constants.LT :
+                            if (result < 0)
+                                resultNodeSet.add(p);
+                            break;
+                        case Constants.LTEQ :
+                            if (result <= 0)
+                                resultNodeSet.add(p);
+                            break;
+                        case Constants.GT :
+                            if (result > 0)
+                                resultNodeSet.add(p);
+                            break;
+                        case Constants.GTEQ :
+                            if (result >= 0)
+                                resultNodeSet.add(p);
+                            break;
+                        case Constants.EQ :
+                            if (result == Constants.EQUAL)
+                                resultNodeSet.add(p);
+                            break;
+                        case Constants.NEQ :
+                            if (result != Constants.EQUAL)
+                                resultNodeSet.add(p);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Illegal argument 'relation': " + relation);
+                    }
+                    break;
+                case Constants.REGEXP :
+                    Matcher matcher = regexp.matcher(cmp);
+                    if (regexp != null && matcher.find()) {
+                        resultNodeSet.add(p);
+                    }
+                    break;
+            }
+        }
+        return resultNodeSet;
+    } 
 	
 	public String getNodeValue(final NodeProxy proxy, final boolean addWhitespace) {
 		return (String) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
@@ -2610,7 +2741,7 @@ public class NativeBroker extends DBBroker {
 		// NodeSet temp;
 		if (!isCaseSensitive())
 			expr = expr.toLowerCase();
-		NodeSet result = scanSequential(context, docs, relation, truncation, expr, collator);
+		NodeSet result = scanNodesSequential(context, docs, relation, truncation, expr, collator);
 		//				LOG.debug(
 		//					"searching "
 		//						+ result.getLength()
@@ -2619,10 +2750,8 @@ public class NativeBroker extends DBBroker {
 		//						+ "ms.");
 		return result;
 	}
-	
 
-
-    public NodeList getRange(final Document doc, final long first, final long last) {
+    public NodeList getNodeRange(final Document doc, final long first, final long last) {
 		NodeListImpl result = new NodeListImpl((int) (last - first + 1));
 		for (long gid = first; gid <= last; gid++) {
 			result.add(objectWith(doc, gid));
@@ -2710,207 +2839,66 @@ public class NativeBroker extends DBBroker {
         LOG.info("Reindexing database files ...");
         reindexCollection(null, root, true);
     }
-
-	/** Removes the Node Reference from the database.
-	 * The index will be updated later, i.e. after all nodes have been physically 
-	 * removed. See {@link #endRemove()}. 
-	 * removeNode() just adds the node ids to the list in elementIndex 
-	 * for later removal.
-	 */
-    public void removeNode(final Txn transaction, final StoredNode node, NodePath currentPath, String content) {
-		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
-		final IndexSpec idxSpec = 
-		    doc.getCollection().getIdxConf(this);
-		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
-		final long gid = node.getGID();
-		final short nodeType = node.getNodeType();
-//		final String nodeName = node.getNodeName();
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
-			public Object start() {
-				final long address = node.getInternalAddress();
-				if (address != BFile.UNKNOWN_ADDRESS)
-					domDb.remove(transaction, new NodeRef(doc.getDocId(), node.getGID()), address);
-				else
-					domDb.remove(transaction, new NodeRef(doc.getDocId(), node.getGID()));
-				return null;
-			}
-		}
-		.run();
-		NodeProxy tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
-		QName qname;
-		switch (nodeType) {
-			case Node.ELEMENT_NODE :
-				// save element by calling ElementIndex
-				qname = node.getQName();
-				qname.setNameType(ElementValue.ELEMENT);
-				elementIndex.setDocument(doc);
-				elementIndex.addNode(qname, tempProxy);
-				
-				if (idxSpec != null) {
-				    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-				    if(spec != null) {
-				        valueIndex.setDocument(doc);
-				        valueIndex.storeElement(spec.getType(), (ElementImpl) node, content);
-				    }
-				}				
-				// qnameValueIndex.removeElement((ElementImpl) node, currentPath, content);
-				notifyRemoveElement( (ElementImpl) node, currentPath, content );
-				break;
-				
-			case Node.ATTRIBUTE_NODE :
-			    currentPath.addComponent(node.getQName());
-				elementIndex.setDocument(doc);
-				qname = node.getQName();
-				qname.setNameType(ElementValue.ATTRIBUTE);
-				elementIndex.addNode(qname, tempProxy);
-				
-				// check if attribute value should be fulltext-indexed
-				// by calling IndexPaths.match(path) 
-				boolean indexAttribs = true;
-				if(ftIdx != null) {
-					indexAttribs = ftIdx.matchAttribute(currentPath);
-				}
-				if (indexAttribs)
-					textEngine.storeAttribute(ftIdx, (AttrImpl) node);
-				if (idxSpec != null) {
-				    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-				    if(spec != null) {
-				        valueIndex.setDocument(doc);
-				        valueIndex.storeAttribute(spec, (AttrImpl) node);
-				    }				    
-//					RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
-//					if (qnIdx != null && qnameValueIndexation) {
-//						qnameValueIndex.setDocument(doc);
-//						qnameValueIndex.storeAttribute(qnIdx, (AttrImpl) node);
-//					}
-				}
-				
-				if (qnameValueIndex != null)
-					qnameValueIndex.removeAttribute( (AttrImpl)node, currentPath, true);
-                // qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, true);
-
-				
-				// if the attribute has type ID, store the ID-value
-				// to the element index as well
-				if (((AttrImpl) node).getType() == AttrImpl.ID) {
-					qname = new QName(((AttrImpl) node).getValue(), "", null);
-					qname.setNameType(ElementValue.ATTRIBUTE_ID);
-					elementIndex.addNode(qname, tempProxy);
-				}
-				currentPath.removeLastComponent();
-				break;
-			case Node.TEXT_NODE :
-				// check if this textual content should be fulltext-indexed
-				// by calling IndexPaths.match(path)
-				if (ftIdx == null || ftIdx.match(currentPath)){
-					boolean valore = (ftIdx == null ? false : ftIdx.preserveContent(currentPath));
-					textEngine.storeText(ftIdx, (TextImpl) node, valore);
-				}
-				break;
-		}
-	}
-
-
-
-
-	
-	/**
-	 *  Do a sequential search through the DOM-file.
-	 *
-	 *@param  context     Description of the Parameter
-	 *@param  doc         Description of the Parameter
-	 *@param  relation    Description of the Parameter
-	 *@param  truncation  Description of the Parameter
-	 *@param  expr        Description of the Parameter
-	 *@return             Description of the Return Value
-	 */
-	protected NodeSet scanSequential(
-		NodeSet context,
-		DocumentSet doc,
-		int relation,
-		int truncation,
-		String expr,
-		Collator collator) {
-		ExtArrayNodeSet resultNodeSet = new ExtArrayNodeSet();
-		NodeProxy p;
-		String content;
-		String cmp;
-		Pattern regexp = null;
-		if (relation == Constants.REGEXP) {
-				regexp = Pattern.compile(expr.toLowerCase(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-				truncation = Constants.REGEXP;
-		}
-		for (Iterator i = context.iterator(); i.hasNext();) {
-			p = (NodeProxy) i.next();
-			try {
-				domDb.getLock().acquire(Lock.READ_LOCK);
-				domDb.setOwnerObject(this);
-				content = domDb.getNodeValue(p, false);
-			} catch (LockException e) {
-				LOG.warn("Failed to acquire read lock on " + domDb.getFile().getName());
-				continue;
-			} finally {
-				domDb.getLock().release();
-			}
-			if (isCaseSensitive())
-				cmp = StringValue.collapseWhitespace(content);
-			else {
-				cmp = StringValue.collapseWhitespace(content.toLowerCase());
-			}
-			switch (truncation) {
-				case Constants.TRUNC_LEFT :
-					if (Collations.endsWith(collator, cmp, expr))
-						resultNodeSet.add(p);
-					break;
-				case Constants.TRUNC_RIGHT :
-					if (Collations.startsWith(collator, cmp, expr))
-						resultNodeSet.add(p);
-					break;
-				case Constants.TRUNC_BOTH :
-					if (Collations.indexOf(collator, cmp, expr) != Constants.STRING_NOT_FOUND)
-						resultNodeSet.add(p);
-					break;
-				case Constants.TRUNC_NONE :				
-                    int result = Collations.compare(collator, cmp, expr);
-                    switch (relation) {
-                        case Constants.LT :
-                            if (result < 0)
-                                resultNodeSet.add(p);
-                            break;
-                        case Constants.LTEQ :
-                            if (result <= 0)
-                                resultNodeSet.add(p);
-                            break;
-                        case Constants.GT :
-                            if (result > 0)
-                                resultNodeSet.add(p);
-                            break;
-                        case Constants.GTEQ :
-                            if (result >= 0)
-                                resultNodeSet.add(p);
-                            break;
-                        case Constants.EQ :
-                            if (result == Constants.EQUAL)
-                                resultNodeSet.add(p);
-                            break;
-                        case Constants.NEQ :
-                            if (result != Constants.EQUAL)
-                                resultNodeSet.add(p);
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Illegal argument 'relation': " + relation);
+    
+    public void flush() {
+        notifyFlush();
+        if (symbols != null && symbols.hasChanged())
+            try {
+                saveSymbols();
+            } catch (EXistException e) {
+                LOG.warn(e.getMessage(), e);
+            }
+        nodesCount = 0;
+    } 
+    
+    public void sync(int syncEvent) {
+        if (isReadOnly())
+            return;
+        try {
+            new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+                public Object start() {
+                    try {
+                        domDb.flush();
+                    } catch (DBException e) {
+                        LOG.warn("error while flushing dom.dbx", e);
                     }
-					break;
-				case Constants.REGEXP :
-                    Matcher matcher = regexp.matcher(cmp);
-					if (regexp != null && matcher.find()) {
-						resultNodeSet.add(p);
-					}
-					break;
-			}
-		}
-		return resultNodeSet;
-	}
+                    return null;
+                }
+            }
+            .run();
+            if(syncEvent == Sync.MAJOR_SYNC) {
+                Lock lock = collectionsDb.getLock();
+                try {
+                    lock.acquire(Lock.WRITE_LOCK);
+                    collectionsDb.flush();
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
+                } finally {
+                    lock.release();
+                }
+                notifySync();
+//              System.gc();
+                Runtime runtime = Runtime.getRuntime();
+                LOG.info("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
+                        (runtime.maxMemory() / 1024) + "K max; " +
+                        (runtime.freeMemory() / 1024) + "K free");              
+                
+                domDb.printStatistics(); 
+                collectionsDb.printStatistics();
+                if (elementsDb != null)
+                    elementsDb.printStatistics();                
+                if (valuesDb != null)
+                    valuesDb.printStatistics();             
+                if (valuesDbQname != null)
+                    valuesDbQname.printStatistics();
+                if (textEngine != null)
+                    textEngine.printStatistics();
+            }
+        } catch (DBException dbe) {
+            dbe.printStackTrace();
+            LOG.debug(dbe);
+        }
+    }     
 
 	public void shutdown() {		
 		try {
@@ -2945,9 +2933,6 @@ public class NativeBroker extends DBBroker {
             }
         }
     }
-    
-    
-    
 
 	//TOUNDERSTAND : why not use shutdown ? -pb
 	public void closeDocument() {

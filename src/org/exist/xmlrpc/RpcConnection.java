@@ -2379,9 +2379,9 @@ public class RpcConnection extends Thread {
                 throw new EXistException("Destination collection " + destinationPath + " not found");
             }
             if(move)
-                broker.moveResource(transaction, doc, destination, newName);
+                broker.moveXMLResource(transaction, doc, destination, newName);
             else
-                broker.copyResource(transaction, doc, destination, newName);
+                broker.copyXMLResource(transaction, doc, destination, newName);
             transact.commit(transaction);
             documentCache.clear();
             return true;

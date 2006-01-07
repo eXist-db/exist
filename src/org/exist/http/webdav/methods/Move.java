@@ -218,7 +218,7 @@ public class Move extends AbstractWebDAVMethod {
                 }
                 replaced = true;
             }
-            broker.moveResource(transaction, resource, destCollection, newResourceName);
+            broker.moveXMLResource(transaction, resource, destCollection, newResourceName);
             transact.commit(transaction);
             if(replaced)
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
