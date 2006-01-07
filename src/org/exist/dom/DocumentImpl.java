@@ -215,7 +215,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	
 	public DocumentMetadata getMetadata() {
 		if (metadata == null) {
-			broker.readDocumentMeta(this);
+			broker.getResourceMetadata(this);
 		}
 		return metadata;
 	}

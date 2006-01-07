@@ -301,7 +301,7 @@ public class DatabaseResources {
             
             if(isBinary){
                 BinaryDocument binDoc = (BinaryDocument) broker
-                        .openDocument(documentPath, Lock.READ_LOCK);
+                        .getXMLResource(documentPath, Lock.READ_LOCK);
                 
                 // if document is not present, null is returned
                 if(binDoc == null){
@@ -315,7 +315,7 @@ public class DatabaseResources {
             } else {
                 
                 DocumentImpl doc = broker
-                                    .openDocument(documentPath, Lock.READ_LOCK);
+                                    .getXMLResource(documentPath, Lock.READ_LOCK);
                 
                 // if document is not present, null is returned
                 if(doc == null){

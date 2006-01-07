@@ -82,7 +82,7 @@ public class ExtDoctype extends Function {
 			Sequence seq = getArgument(i).eval(contextSequence, contextItem);
 			for (SequenceIterator j = seq.iterate(); j.hasNext();) {
 				String next = j.nextItem().getStringValue();
-				context.getBroker().getDocumentsByDoctype(next, docs);
+				context.getBroker().getXMLResourcesByDoctype(next, docs);
 			}
 		}
         

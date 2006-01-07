@@ -61,7 +61,7 @@ public class BinaryDoc extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         String path = args[0].getStringValue();
         try {
-            DocumentImpl doc = context.getBroker().openDocument(path, Lock.READ_LOCK);
+            DocumentImpl doc = context.getBroker().getXMLResource(path, Lock.READ_LOCK);
             if (doc == null)
                 return Sequence.EMPTY_SEQUENCE;
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)

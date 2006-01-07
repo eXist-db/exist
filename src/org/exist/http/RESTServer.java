@@ -250,7 +250,7 @@ public class RESTServer {
         DocumentImpl resource = null;
         try {
             // first, check if path leads to an XQuery resource
-            resource = (DocumentImpl) broker.openDocument(path, Lock.READ_LOCK);
+            resource = (DocumentImpl) broker.getXMLResource(path, Lock.READ_LOCK);
             if (resource != null) {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
                         "application/xquery".equals(resource.getMetadata().getMimeType())) {
@@ -347,7 +347,7 @@ public class RESTServer {
             NotFoundException, IOException {
         DocumentImpl resource = null;
         try {
-            resource = broker.openDocument(path, Lock.READ_LOCK);
+            resource = broker.getXMLResource(path, Lock.READ_LOCK);
             if(resource == null) {
                 throw new NotFoundException("Resouce " + path + " not found");
             }
@@ -387,7 +387,7 @@ public class RESTServer {
         // if yes, the resource is loaded and the XQuery executed.
         DocumentImpl resource = null;
         try {
-            resource = (DocumentImpl) broker.openDocument(path, Lock.READ_LOCK);
+            resource = (DocumentImpl) broker.getXMLResource(path, Lock.READ_LOCK);
             if (resource != null) {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
                         "application/xquery".equals(resource.getMetadata().getMimeType())) {
@@ -532,7 +532,7 @@ public class RESTServer {
                         }
                         docs.add(xupdateDoc);
                     } else
-                        broker.getAllDocuments(docs);
+                        broker.getAllXMLResources(docs);
                 }
                 
                 XUpdateProcessor processor = new XUpdateProcessor(broker, docs);

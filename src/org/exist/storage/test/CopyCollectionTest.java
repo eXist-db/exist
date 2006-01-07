@@ -104,7 +104,7 @@ public class CopyCollectionTest extends TestCase {
             Serializer serializer = broker.getSerializer();
             serializer.reset(); 
             
-            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/destination/test3/test.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/destination/test3/test.xml", Lock.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             String data = serializer.serialize(doc);
             System.out.println(data);
@@ -180,7 +180,7 @@ public class CopyCollectionTest extends TestCase {
         	
             Serializer serializer = broker.getSerializer();
             serializer.reset();            
-            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/destination/test3/test.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/destination/test3/test.xml", Lock.READ_LOCK);
             assertNotNull("Document should be null", doc);
 	    } catch (Exception e) {            
 	        fail(e.getMessage());              

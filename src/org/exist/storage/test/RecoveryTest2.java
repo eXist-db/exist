@@ -139,7 +139,7 @@ public class RecoveryTest2 extends TestCase {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/terms-eng.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/test2/terms-eng.xml", Lock.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);

@@ -105,7 +105,7 @@ public class MoveResourceTest extends TestCase {
 	        Serializer serializer = broker.getSerializer();
 	        serializer.reset();
 	        
-	        DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/new_test.xml", Lock.READ_LOCK);
+	        DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/new_test.xml", Lock.READ_LOCK);
 	        assertNotNull("Document should not be null", doc);
 	        String data = serializer.serialize(doc);
 	        assertNotNull(data);

@@ -112,7 +112,7 @@ public class RemoveCollectionTest extends TestCase {
             Collection test = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.READ_LOCK);            
             assertNotNull("Collection '" + DBBroker.ROOT_COLLECTION +  "/test' not found", test);
             
-            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/biblio.rdf", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/biblio.rdf", Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION +  "/test/biblio.rdf' should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);

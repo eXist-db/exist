@@ -458,7 +458,7 @@ public class RpcConnection extends Thread {
         DocumentImpl doc = null;
         Hashtable hash = new Hashtable(5);
         try {
-            doc = (DocumentImpl) broker.openDocument(resourceName, Lock.READ_LOCK);
+            doc = (DocumentImpl) broker.getXMLResource(resourceName, Lock.READ_LOCK);
             if (doc == null) {
                 LOG.debug("document " + resourceName + " not found!");
                 return hash;
@@ -670,7 +670,7 @@ public class RpcConnection extends Thread {
         DocumentImpl doc = null;
         try {
             broker = brokerPool.get(user);
-            doc = (DocumentImpl) broker.openDocument(name, Lock.READ_LOCK);
+            doc = (DocumentImpl) broker.getXMLResource(name, Lock.READ_LOCK);
             if (doc == null)
                 throw new EXistException("Resource " + name + " not found");
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
@@ -784,7 +784,7 @@ public class RpcConnection extends Thread {
         DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
-            DocumentSet docs = broker.getAllDocuments(new DocumentSet());
+            DocumentSet docs = broker.getAllXMLResources(new DocumentSet());
             String names[] = docs.getNames();
             Vector vec = new Vector();
             for (int i = 0; i < names.length; i++)
@@ -965,7 +965,7 @@ public class RpcConnection extends Thread {
             Collection collection = broker.openCollection(name, Lock.READ_LOCK);
             Permission perm = null;
             if (collection == null) {
-                DocumentImpl doc = (DocumentImpl) broker.openDocument(name, Lock.READ_LOCK);
+                DocumentImpl doc = (DocumentImpl) broker.getXMLResource(name, Lock.READ_LOCK);
                 if (doc == null)
                     throw new EXistException("document or collection " + name
                             + " not found");
@@ -1011,7 +1011,7 @@ public class RpcConnection extends Thread {
         try {
             broker = brokerPool.get(user);
             documentPath = XmldbURI.checkPath2(documentPath, DBBroker.ROOT_COLLECTION);
-            doc = (DocumentImpl) broker.openDocument(documentPath, Lock.READ_LOCK);
+            doc = (DocumentImpl) broker.getXMLResource(documentPath, Lock.READ_LOCK);
             if (doc == null) {
                 LOG.debug("document " + documentPath + " not found!");
                 throw new EXistException("document not found");
@@ -1773,7 +1773,7 @@ public class RpcConnection extends Thread {
                     .getSecurityManager();
             collection = broker.openCollection(resource, Lock.WRITE_LOCK);
             if (collection == null) {
-                doc = (DocumentImpl) broker.openDocument(resource, Lock.WRITE_LOCK);
+                doc = (DocumentImpl) broker.getXMLResource(resource, Lock.WRITE_LOCK);
                 if (doc == null)
                     throw new EXistException("document or collection "
                             + resource + " not found");
@@ -1843,7 +1843,7 @@ public class RpcConnection extends Thread {
                     .getSecurityManager();
             collection = broker.openCollection(resource, Lock.WRITE_LOCK);
             if (collection == null) {
-                doc = (DocumentImpl) broker.openDocument(resource, Lock.WRITE_LOCK);
+                doc = (DocumentImpl) broker.getXMLResource(resource, Lock.WRITE_LOCK);
                 if (doc == null)
                     throw new EXistException("document or collection "
                             + resource + " not found");
@@ -1936,7 +1936,7 @@ public class RpcConnection extends Thread {
         Txn transaction = transact.beginTransaction();
         try {
             broker = brokerPool.get(user);
-            doc = (DocumentImpl) broker.openDocument(path, Lock.WRITE_LOCK);
+            doc = (DocumentImpl) broker.getXMLResource(path, Lock.WRITE_LOCK);
             if (doc == null) {
                 throw new EXistException("Resource "
                         + path + " not found");
@@ -1970,7 +1970,7 @@ public class RpcConnection extends Thread {
         DocumentImpl doc = null;
         try {
             broker = brokerPool.get(user);
-            doc = (DocumentImpl) broker.openDocument(path, Lock.READ_LOCK);
+            doc = (DocumentImpl) broker.getXMLResource(path, Lock.READ_LOCK);
             if(!doc.getPermissions().validate(user, Permission.READ))
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
             if (doc == null)
@@ -1989,7 +1989,7 @@ public class RpcConnection extends Thread {
         DocumentImpl doc = null;
         try {
             broker = brokerPool.get(user);
-            doc = (DocumentImpl) broker.openDocument(path, Lock.WRITE_LOCK);
+            doc = (DocumentImpl) broker.getXMLResource(path, Lock.WRITE_LOCK);
             if (doc == null)
                 throw new EXistException("Resource "
                         + path + " not found");
@@ -2504,7 +2504,7 @@ public class RpcConnection extends Thread {
         try {
             broker = brokerPool.get(user);
             documentPath = XmldbURI.checkPath2(documentPath, DBBroker.ROOT_COLLECTION);
-            doc = (DocumentImpl) broker.openDocument(documentPath, Lock.READ_LOCK);
+            doc = (DocumentImpl) broker.getXMLResource(documentPath, Lock.READ_LOCK);
             if (doc == null) {
                 LOG.debug("document " + documentPath + " not found!");
                 throw new EXistException("document not found");
@@ -2551,7 +2551,7 @@ public class RpcConnection extends Thread {
         Txn transaction = transact.beginTransaction();
         try {
             broker = brokerPool.get(user);
-            doc = (DocumentImpl) broker.openDocument(documentName, Lock.WRITE_LOCK);
+            doc = (DocumentImpl) broker.getXMLResource(documentName, Lock.WRITE_LOCK);
             if (doc == null) {
                 throw new EXistException("Resource "
                         + documentName + " not found");

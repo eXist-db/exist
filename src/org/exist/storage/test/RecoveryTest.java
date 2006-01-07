@@ -177,14 +177,14 @@ public class RecoveryTest extends TestCase {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/hamlet.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/test2/hamlet.xml", Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
-            doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/test_string.xml", Lock.READ_LOCK);
+            doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/test2/test_string.xml", Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", doc);
             data = serializer.serialize(doc);
             assertNotNull(data);
@@ -194,7 +194,7 @@ public class RecoveryTest extends TestCase {
             File files[] = dir.listFiles();
             assertNotNull(files);
             
-            doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/" + files[files.length - 1].getName(), Lock.READ_LOCK);
+            doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/test2/" + files[files.length - 1].getName(), Lock.READ_LOCK);
             assertNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/'" + files[files.length - 1].getName() + " should not exist anymore", doc);
             
             XQuery xquery = broker.getXQueryService();
@@ -207,7 +207,7 @@ public class RecoveryTest extends TestCase {
                 System.out.println(serializer.serialize((NodeValue) next));
             }
             
-            BinaryDocument binDoc = (BinaryDocument) broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/binary.txt", Lock.READ_LOCK);
+            BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/test2/binary.txt", Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
             data = new String(broker.getBinaryResource(binDoc));
             assertNotNull(data);

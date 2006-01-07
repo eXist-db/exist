@@ -63,7 +63,7 @@ public abstract class AbstractUpdateTest extends TestCase {
             DocumentImpl doc;
             String data;
             
-            doc = broker.openDocument(TEST_COLLECTION + "/test2/test.xml", Lock.READ_LOCK);
+            doc = broker.getXMLResource(TEST_COLLECTION + "/test2/test.xml", Lock.READ_LOCK);
             assertNotNull("Document '"+ TEST_COLLECTION + "/test2/test.xml' should not be null", doc);
             data = serializer.serialize(doc);
             System.out.println(data);

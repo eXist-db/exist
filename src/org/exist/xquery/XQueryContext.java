@@ -581,13 +581,13 @@ public class XQueryContext {
 		staticDocuments = new DocumentSet();
 		if(staticDocumentPaths == null)
             // no path defined: return all documents in the db 
-			broker.getAllDocuments(staticDocuments);
+			broker.getAllXMLResources(staticDocuments);
 		else {
 			DocumentImpl doc;
 			Collection collection;
 			for(int i = 0; i < staticDocumentPaths.length; i++) {
 				try {
-					doc = broker.openDocument(staticDocumentPaths[i], Lock.READ_LOCK);
+					doc = broker.getXMLResource(staticDocumentPaths[i], Lock.READ_LOCK);
 					if(doc != null) {
 						if(doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
 							staticDocuments.add(doc);
@@ -1281,7 +1281,7 @@ public class XQueryContext {
                     String path = location.substring(XMLDB_URI_START.length());
                     DocumentImpl sourceDoc = null;
                     try {
-                        sourceDoc = broker.openDocument(path, Lock.READ_LOCK);
+                        sourceDoc = broker.getXMLResource(path, Lock.READ_LOCK);
                         if (sourceDoc == null)
                             throw new XPathException("source for module " + location + " not found in database");
                         if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||

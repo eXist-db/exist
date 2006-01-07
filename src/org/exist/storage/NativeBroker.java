@@ -783,14 +783,14 @@ public class NativeBroker extends DBBroker {
                 if (child.getResourceType() == DocumentImpl.XML_FILE) {
                     DocumentImpl newDoc = new DocumentImpl(this, destCollection, child.getFileName());
                     newDoc.copyOf(child);
-                    newDoc.setDocId(getNextDocumentId(transaction, destination));
+                    newDoc.setDocId(getNextResourceId(transaction, destination));
                     copyResource(transaction, child, newDoc);
                     storeXMLResource(transaction, newDoc);
                     destCollection.addDocument(transaction, this, newDoc);
                 } else {
                     BinaryDocument newDoc = new BinaryDocument(this, child.getFileName(), destCollection);
                     newDoc.copyOf(child);
-                    newDoc.setDocId(getNextDocumentId(transaction, destination));
+                    newDoc.setDocId(getNextResourceId(transaction, destination));
                     byte[] data = getBinaryResource((BinaryDocument) child);
                     storeBinaryResource(transaction, newDoc, data);
                     storeXMLResource(transaction, newDoc);
@@ -991,7 +991,7 @@ public class NativeBroker extends DBBroker {
             for (Iterator i = collection.iterator(this); i.hasNext();) {
                 final DocumentImpl doc = (DocumentImpl) i.next();
                 //Remove doc's metadata
-                removeDocMetadata(transaction, doc);
+                removeResourceMetadata(transaction, doc);
                 //Remove document nodes' index entries
                 new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                     public Object start() {
@@ -1024,7 +1024,7 @@ public class NativeBroker extends DBBroker {
                 }
                 .run();
                 //Make doc's id available again
-                freeDocumentId(transaction, doc.getDocId());
+                freeResourceId(transaction, doc.getDocId());
             }
             LOG.debug("Removing collection '" + name + "' took " + (System.currentTimeMillis() - start));
             return true;
@@ -1297,7 +1297,7 @@ public class NativeBroker extends DBBroker {
             metadata.setLastModified(now);
             metadata.setCreated(now);
             targetDoc.setMetadata(metadata);
-            targetDoc.setDocId(getNextDocumentId(transaction, temp));
+            targetDoc.setDocId(getNextResourceId(transaction, temp));
 
             DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
             indexer.scan();
@@ -1442,6 +1442,43 @@ public class NativeBroker extends DBBroker {
         return doc;
     }
     
+    public DocumentImpl getXMLResource(String fileName, int lockMode) throws PermissionDeniedException {
+        fileName = XmldbURI.checkPath2(fileName, ROOT_COLLECTION);
+        ///TODO : use dedicated function in XmldbURI
+        int pos = fileName.lastIndexOf("/");
+        String collName = fileName.substring(0, pos);
+        String docName = fileName.substring(pos + 1);
+        
+        Collection collection = openCollection(collName, lockMode);
+        if (collection == null) {
+            LOG.debug("collection '" + collName + "' not found!");
+            return null;
+        }
+        if (!collection.getPermissions().validate(user, Permission.READ))
+            throw new PermissionDeniedException("Permission denied to read collection '" + collName + "'");
+        
+        try {
+            DocumentImpl doc = collection.getDocumentWithLock(this, docName, lockMode);
+            if (doc == null) {
+                LOG.debug("document '" + fileName + "' not found!");
+                return null;
+            }
+            
+    //      if (!doc.getPermissions().validate(user, Permission.READ))
+    //          throw new PermissionDeniedException("not allowed to read document");
+            
+            return doc;
+        } catch (LockException e) {
+            LOG.warn("Could not acquire lock on document " + fileName, e);
+            //TODO : exception ? -pb
+        } finally {
+            //TOUNDERSTAND : by whom is this lock acquired ? -pb
+            if(collection != null)
+                collection.release();            
+        }
+        return null;
+    }    
+    
     public byte[] getBinaryResource(final BinaryDocument blob) {
         byte[] data = (byte[]) new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
             public Object start() throws ReadOnlyException {
@@ -1450,9 +1487,10 @@ public class NativeBroker extends DBBroker {
         }
         .run();
         return data;
-    }    
+    }
     
-    public void readDocuments(Collection collection) {
+    //TODO : consider a better cooperation with Collection -pb
+    public void getCollectionResources(Collection collection) {
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire();            
@@ -1472,61 +1510,30 @@ public class NativeBroker extends DBBroker {
         }
     }
     
-    public void readDocumentMeta(DocumentImpl doc) {
-        Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire();
-            SanityCheck.ASSERT(doc.getMetadataLocation() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS, 
-                    "Missing pointer to metadata location in document " + doc.getDocId());
-            VariableByteInput istream = collectionsDb.getAsStream(doc.getMetadataLocation());
-            DocumentMetadata metadata = new DocumentMetadata();
-            metadata.read(istream);
-            doc.setMetadata(metadata);
-        } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
-        } catch (IOException e) {
-            LOG.warn("IOException while reading document data", e);
-        } finally {
-            lock.release();
+    /**
+     *  get all the documents in this database matching the given
+     *  document-type's name.
+     *
+     *@param  doctypeName  Description of the Parameter
+     *@param  user         Description of the Parameter
+     *@return              The documentsByDoctype value
+     */
+    public DocumentSet getXMLResourcesByDoctype(String doctypeName, DocumentSet result) {
+        DocumentSet docs = getAllXMLResources(new DocumentSet());
+        DocumentImpl doc;
+        DocumentType doctype;
+        for (Iterator i = docs.iterator(); i.hasNext();) {
+            doc = (DocumentImpl) i.next();
+            doctype = doc.getDoctype();
+            if (doctype == null)
+                continue;
+            if (doctypeName.equals(doctype.getName())
+                && doc.getCollection().getPermissions().validate(user, Permission.READ)
+                && doc.getPermissions().validate(user, Permission.READ))
+                result.add(doc);
         }
+        return result;
     }
-
-	public DocumentImpl openDocument(String fileName, int lockMode) throws PermissionDeniedException {
-        fileName = XmldbURI.checkPath2(fileName, ROOT_COLLECTION);
-		///TODO : use dedicated function in XmldbURI
-		int pos = fileName.lastIndexOf("/");
-		String collName = fileName.substring(0, pos);
-		String docName = fileName.substring(pos + 1);
-		
-		Collection collection = openCollection(collName, lockMode);
-        if (collection == null) {
-            LOG.debug("collection '" + collName + "' not found!");
-            return null;
-        }
-        if (!collection.getPermissions().validate(user, Permission.READ))
-            throw new PermissionDeniedException("Permission denied to read collection '" + collName + "'");
-        
-		try {
-			DocumentImpl doc = collection.getDocumentWithLock(this, docName, lockMode);
-			if (doc == null) {
-                LOG.debug("document '" + fileName + "' not found!");
-				return null;
-			}
-            
-	//		if (!doc.getPermissions().validate(user, Permission.READ))
-	//			throw new PermissionDeniedException("not allowed to read document");
-            
-			return doc;
-		} catch (LockException e) {
-			LOG.warn("Could not acquire lock on document " + fileName, e);
-            //TODO : exception ? -pb
-		} finally {
-		    //TOUNDERSTAND : by whom is this lock acquired ? -pb
-			if(collection != null)
-				collection.release();            
-		}
-		return null;
-	}
     
     /**
      *  Adds all the documents in the database to the specified DocumentSet.
@@ -1534,7 +1541,7 @@ public class NativeBroker extends DBBroker {
      * @param docs a (possibly empty) document set to which the found
      *  documents are added.
      */
-    public DocumentSet getAllDocuments(DocumentSet docs) {
+    public DocumentSet getAllXMLResources(DocumentSet docs) {
         long start = System.currentTimeMillis();
         Collection root = null;
         try {
@@ -1554,32 +1561,27 @@ public class NativeBroker extends DBBroker {
         } finally {
             root.release();
         }
+    }    
+    
+    //TODO : consider a better cooperation with Collection -pb
+    public void getResourceMetadata(DocumentImpl doc) {
+        Lock lock = collectionsDb.getLock();
+        try {
+            lock.acquire();
+            SanityCheck.ASSERT(doc.getMetadataLocation() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS, 
+                    "Missing pointer to metadata location in document " + doc.getDocId());
+            VariableByteInput istream = collectionsDb.getAsStream(doc.getMetadataLocation());
+            DocumentMetadata metadata = new DocumentMetadata();
+            metadata.read(istream);
+            doc.setMetadata(metadata);
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+        } catch (IOException e) {
+            LOG.warn("IOException while reading document data", e);
+        } finally {
+            lock.release();
+        }
     }
-
-	/**
-	 *  get all the documents in this database matching the given
-	 *  document-type's name.
-	 *
-	 *@param  doctypeName  Description of the Parameter
-	 *@param  user         Description of the Parameter
-	 *@return              The documentsByDoctype value
-	 */
-	public DocumentSet getDocumentsByDoctype(String doctypeName, DocumentSet result) {
-		DocumentSet docs = getAllDocuments(new DocumentSet());
-		DocumentImpl doc;
-		DocumentType doctype;
-		for (Iterator i = docs.iterator(); i.hasNext();) {
-			doc = (DocumentImpl) i.next();
-			doctype = doc.getDoctype();
-			if (doctype == null)
-				continue;
-			if (doctypeName.equals(doctype.getName())
-				&& doc.getCollection().getPermissions().validate(user, Permission.READ)
-				&& doc.getPermissions().validate(user, Permission.READ))
-				result.add(doc);
-		}
-		return result;
-	}
     
     public void copyResource(Txn transaction, DocumentImpl doc, Collection destination, String newName) 
     throws PermissionDeniedException, LockException {
@@ -1631,7 +1633,7 @@ public class NativeBroker extends DBBroker {
             } else {
                 DocumentImpl newDoc = new DocumentImpl(this, destination, newName);
                 newDoc.copyOf(doc);
-                newDoc.setDocId(getNextDocumentId(transaction, destination));
+                newDoc.setDocId(getNextResourceId(transaction, destination));
                 newDoc.setPermissions(doc.getPermissions()); 
                 copyResource(transaction, doc, newDoc);
                 destination.addDocument(transaction, this, newDoc);
@@ -1723,7 +1725,7 @@ public class NativeBroker extends DBBroker {
                 
             boolean renameOnly = collection.getId() == destination.getId();
             collection.unlinkDocument(doc);
-            removeDocMetadata(transaction, doc);
+            removeResourceMetadata(transaction, doc);
             doc.setFileName(newName);
             doc.setCollection(destination);
             if (doc.getResourceType() == DocumentImpl.XML_FILE) {
@@ -1794,10 +1796,10 @@ public class NativeBroker extends DBBroker {
             }
             .run();
             
-            removeDocMetadata(transaction, document);
+            removeResourceMetadata(transaction, document);
             
             if(freeDocId)
-                freeDocumentId(transaction, document.getDocId());
+                freeResourceId(transaction, document.getDocId());
         } catch (ReadOnlyException e) {
             LOG.warn("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
         }
@@ -1816,14 +1818,14 @@ public class NativeBroker extends DBBroker {
             }
         }
         .run();
-        removeDocMetadata(transaction, blob);
+        removeResourceMetadata(transaction, blob);
     }
 
     /**
      * @param transaction
      * @param document
      */
-    private void removeDocMetadata(final Txn transaction, final DocumentImpl document) {
+    private void removeResourceMetadata(final Txn transaction, final DocumentImpl document) {
         // remove document metadata
         Lock lock = collectionsDb.getLock();
         try {
@@ -1846,7 +1848,7 @@ public class NativeBroker extends DBBroker {
 	 * @param id
 	 * @throws PermissionDeniedException
 	 */
-	protected void freeDocumentId(Txn transaction, int id) throws PermissionDeniedException {		
+	protected void freeResourceId(Txn transaction, int id) throws PermissionDeniedException {		
 		Lock lock = collectionsDb.getLock();
 		try {
 			lock.acquire(Lock.WRITE_LOCK);
@@ -1880,7 +1882,7 @@ public class NativeBroker extends DBBroker {
 	 * @return
 	 * @throws ReadOnlyException
 	 */
-	public int getFreeDocumentId(Txn transaction) throws ReadOnlyException {
+	public int getFreeResourceId(Txn transaction) throws ReadOnlyException {
 		int freeDocId = DocumentImpl.UNKNOWN_DOCUMENT_ID;		
 		Lock lock = collectionsDb.getLock();
 		try {
@@ -1910,10 +1912,10 @@ public class NativeBroker extends DBBroker {
 	}
 	
     /** get next Free Doc Id */
-	public int getNextDocumentId(Txn transaction, Collection collection) {
+	public int getNextResourceId(Txn transaction, Collection collection) {
 		int nextDocId;
 		try {
-			nextDocId = getFreeDocumentId(transaction);
+			nextDocId = getFreeResourceId(transaction);
 		} catch (ReadOnlyException e) {
             //TODO : rethrow ? -pb
 			return 1;
@@ -2943,7 +2945,11 @@ public class NativeBroker extends DBBroker {
             }
         }
     }
-	
+    
+    
+    
+
+	//TOUNDERSTAND : why not use shutdown ? -pb
 	public void closeDocument() {
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 			public Object start() {

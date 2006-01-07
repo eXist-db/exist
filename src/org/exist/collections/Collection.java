@@ -236,7 +236,7 @@ public  class Collection extends Observable
      */
     public void addDocument(Txn transaction, DBBroker broker, DocumentImpl doc) {
         if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID)
-            doc.setDocId(broker.getNextDocumentId(transaction, this));
+            doc.setDocId(broker.getNextResourceId(transaction, this));
         documents.put(doc.getFileName(), doc);
     }
     
@@ -649,7 +649,7 @@ public  class Collection extends Observable
         }
         ///TODO : why this mask ? -pb
         permissions.setPermissions(perm & 0777);
-        broker.readDocuments(this);
+        broker.getCollectionResources(this);
     }
     
     /**
@@ -983,7 +983,7 @@ public  class Collection extends Observable
                 document = oldDoc;
             } else {
                 document.getUpdateLock().acquire(Lock.WRITE_LOCK);
-                document.setDocId(broker.getNextDocumentId(transaction, this));
+                document.setDocId(broker.getNextResourceId(transaction, this));
                 addDocument(transaction, broker, document);
             }
             

@@ -290,7 +290,7 @@ public class UpdateRecoverTest extends TestCase {
             assertNotNull(serializer);
             serializer.reset();
             
-            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/test.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/test2/test.xml", Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);

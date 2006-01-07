@@ -320,7 +320,7 @@ public class Transform extends BasicFunction {
 				String docPath = uri.substring("xmldb:exist://".length());
 				DocumentImpl doc = null;
 				try {
-					doc = context.getBroker().openDocument(docPath, Lock.READ_LOCK);
+					doc = context.getBroker().getXMLResource(docPath, Lock.READ_LOCK);
 					if (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified))
 						templates = getSource(factory, doc);
 					lastModified = doc.getMetadata().getLastModified();

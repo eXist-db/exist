@@ -147,7 +147,7 @@ public class DocUtils {
 			DocumentImpl doc = null;
 			try {
 				// try to open the document and acquire a lock
-				doc = (DocumentImpl) context.getBroker().openDocument(path, Lock.READ_LOCK);
+				doc = (DocumentImpl) context.getBroker().getXMLResource(path, Lock.READ_LOCK);
 				if (doc != null) {				
 					if (!doc.getPermissions().validate(context.getUser(), Permission.READ)) {
 						doc.getUpdateLock().release(Lock.READ_LOCK);

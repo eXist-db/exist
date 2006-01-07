@@ -75,7 +75,7 @@ public class Get extends AbstractWebDAVMethod {
         Collection collection = null;
 		try {
 			broker = pool.get();
-			resource = broker.openDocument(path, Lock.READ_LOCK);
+			resource = broker.getXMLResource(path, Lock.READ_LOCK);
 			if(resource == null) {
                 collection = broker.openCollection(path, Lock.READ_LOCK);
                 if(collection == null)
