@@ -1787,7 +1787,7 @@ public class RpcConnection extends Thread {
                     }
                     if (permissions != null && permissions.length() > 0)
                         perm.setPermissions(permissions);
-                    broker.storeDocument(transaction, doc);
+                    broker.storeResource(transaction, doc);
                     transact.commit(transaction);
                     broker.flush();
                     return true;
@@ -1856,7 +1856,7 @@ public class RpcConnection extends Thread {
                         perm.setGroup(ownerGroup);
                     }
                     perm.setPermissions(permissions);
-                    broker.storeDocument(transaction, doc);
+                    broker.storeResource(transaction, doc);
                     transact.commit(transaction);
                     broker.flush();
                     return true;
@@ -1952,7 +1952,7 @@ public class RpcConnection extends Thread {
                 throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());
             doc.setUserLock(user);
-            broker.storeDocument(transaction, doc);
+            broker.storeResource(transaction, doc);
             transact.commit(transaction);
             return true;
         } catch (Exception e) {
@@ -2003,7 +2003,7 @@ public class RpcConnection extends Thread {
             TransactionManager transact = brokerPool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
             doc.setUserLock(null);
-            broker.storeDocument(transaction, doc);
+            broker.storeResource(transaction, doc);
             transact.commit(transaction);
             return true;
         } finally {
@@ -2567,7 +2567,7 @@ public class RpcConnection extends Thread {
             }
             	            
             doc.setDocumentType(result);
-            broker.storeDocument(transaction, doc);
+            broker.storeResource(transaction, doc);
             transact.commit(transaction);
             return true;
         } catch (Exception e) {

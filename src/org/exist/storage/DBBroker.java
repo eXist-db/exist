@@ -502,12 +502,8 @@ public abstract class DBBroker extends Observable {
 	 *
 	 * @param doc the document's metadata to store.
 	 */
-	public abstract void storeDocument(Txn transaction, DocumentImpl doc);
+	public abstract void storeResource(Txn transaction, DocumentImpl doc);
 
-    public abstract void readDocuments(Collection collection);
-	
-    public abstract void readDocumentMeta(DocumentImpl doc);
-    
     /**
      * Stores the given data under the given binary resource descriptor 
      * (BinaryDocument).
@@ -515,7 +511,9 @@ public abstract class DBBroker extends Observable {
      * @param blob the binary document descriptor
      * @param data the document binary data
      */
-	public abstract void storeBinaryResource(Txn transaction, BinaryDocument blob, byte[] data);
+    public abstract void storeBinaryResource(Txn transaction, BinaryDocument blob, byte[] data);
+    
+    public abstract void readDocuments(Collection collection);
 	
     /**
      * Retrieve the binary data stored under the resource descriptor
@@ -524,7 +522,13 @@ public abstract class DBBroker extends Observable {
      * @param blob the binary document descriptor
      * @return the document binary data
      */
-	public abstract byte[] getBinaryResourceData(BinaryDocument blob);
+    public abstract byte[] getBinaryResourceData(BinaryDocument blob);
+    
+    public abstract void readDocumentMeta(DocumentImpl doc);
+    
+
+	
+
 	
     /**
      * Completely delete this binary document (descriptor and binary
