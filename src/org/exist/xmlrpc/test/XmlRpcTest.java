@@ -21,26 +21,21 @@
 package org.exist.xmlrpc.test;
 
 import java.net.BindException;
-import java.net.MalformedURLException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
 import javax.xml.transform.OutputKeys;
 
-import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
-import org.apache.xmlrpc.WebServer;
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
+import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.StandaloneServer;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.xmldb.test.DOMTestJUnit;
 import org.mortbay.util.MultiException;
-
-import org.custommonkey.xmlunit.*;
 
 /**
  * JUnit test for XMLRPC interface methods.

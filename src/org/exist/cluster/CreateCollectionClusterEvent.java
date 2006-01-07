@@ -3,12 +3,6 @@ package org.exist.cluster;
 
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.modules.CollectionManagementService;
-import org.exist.cluster.ClusterEvent;
-import org.exist.cluster.ClusterException;
-
-import java.io.DataOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 /**
  * Created by Francesco Mondora.

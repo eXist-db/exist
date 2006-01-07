@@ -8,7 +8,6 @@ import java.util.Vector;
 
 import javax.xml.transform.OutputKeys;
 
-import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;

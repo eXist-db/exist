@@ -1,17 +1,16 @@
 
 package org.exist.xmldb;
 import java.io.IOException;
+import java.util.Date;
 import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NativeBroker;
 import org.w3c.dom.Document;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
-import java.util.Date; 
 
 
 public class RemoteCollectionManagementService implements CollectionManagementServiceImpl {

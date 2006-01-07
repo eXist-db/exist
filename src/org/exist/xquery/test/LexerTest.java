@@ -12,26 +12,17 @@ import junit.framework.TestCase;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
-import org.exist.util.LockException;
 import org.exist.xquery.PathExpr;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Sequence;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xmldb.api.base.XMLDBException;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
 import antlr.collections.AST;
 
 public class LexerTest extends TestCase {

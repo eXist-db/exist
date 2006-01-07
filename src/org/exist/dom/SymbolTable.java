@@ -32,7 +32,6 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
-import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

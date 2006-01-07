@@ -22,16 +22,15 @@
 
 package org.exist.validation.test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URISyntaxException;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;

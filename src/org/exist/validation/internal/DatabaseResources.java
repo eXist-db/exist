@@ -23,13 +23,14 @@
 package org.exist.validation.internal;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
@@ -38,20 +39,13 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
-import org.exist.xquery.Constants;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-
-import org.apache.log4j.Logger;
-import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Constants;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
