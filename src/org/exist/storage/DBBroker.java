@@ -330,7 +330,7 @@ public abstract class DBBroker extends Observable {
 	 * @return the document or null if no document could be found at the
 	 * specified location.
 	 */
-	public abstract Document getResource(String path) throws PermissionDeniedException;
+	public abstract Document getXMLResource(String path) throws PermissionDeniedException;
 
 	public abstract DocumentImpl openDocument(String docPath, int lockMode) 
 		throws PermissionDeniedException;
@@ -428,10 +428,10 @@ public abstract class DBBroker extends Observable {
 	 */
 	public void removeDocument(Txn transaction, DocumentImpl document)
 	throws PermissionDeniedException {
-	    removeDocument(transaction, document, true);
+	    removeXMLResource(transaction, document, true);
 	}
 	
-	public abstract void removeDocument(Txn transaction, DocumentImpl document, boolean freeDocId)
+	public abstract void removeXMLResource(Txn transaction, DocumentImpl document, boolean freeDocId)
 		throws PermissionDeniedException;
 
 	/**

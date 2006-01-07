@@ -976,7 +976,7 @@ public  class Collection extends Observable
                 if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
                     broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
                 else
-                    broker.removeDocument(transaction, oldDoc, false);
+                    broker.removeXMLResource(transaction, oldDoc, false);
                 oldDoc.copyOf(document);
                 indexer.setDocumentObject(oldDoc);
                 oldDocLocked = false;		// old has become new at this point

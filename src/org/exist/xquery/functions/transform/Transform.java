@@ -393,7 +393,7 @@ public class Transform extends BasicFunction {
 				path = collection.getName() + "/" + href;
 			DocumentImpl xslDoc;
 			try {
-				xslDoc = (DocumentImpl) context.getBroker().getResource(path);
+				xslDoc = (DocumentImpl) context.getBroker().getXMLResource(path);
 			} catch (PermissionDeniedException e) {
 				throw new TransformerException(e.getMessage(), e);
 			}
