@@ -33,12 +33,10 @@ import org.exist.dom.DocumentImpl;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.XMLFilenameFilter;
-import org.exist.xmldb.test.concurrent.DBUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 

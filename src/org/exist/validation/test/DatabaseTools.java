@@ -27,27 +27,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-
-import org.exist.EXistException;
-import org.exist.security.PermissionDeniedException;
-import org.exist.storage.DBBroker;
-import org.exist.security.SecurityManager;
-import org.exist.dom.BinaryDocument;
-import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
-import org.exist.util.LockException;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.internal.DatabaseResources;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 /**
  *
  * @author wessels

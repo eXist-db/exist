@@ -21,11 +21,9 @@
  */
 package org.exist.xmldb;
 
-import java.io.File;
 import java.util.Date;
 
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 

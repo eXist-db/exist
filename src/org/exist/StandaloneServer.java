@@ -47,7 +47,6 @@ import org.apache.xmlrpc.XmlRpc;
 import org.exist.memtree.SAXAdapter;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.ShutdownListener;
 import org.mortbay.http.HttpContext;
 import org.mortbay.http.HttpServer;

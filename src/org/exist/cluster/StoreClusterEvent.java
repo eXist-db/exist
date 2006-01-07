@@ -5,10 +5,6 @@ import org.apache.log4j.Logger;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.modules.XMLResource;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 /**
  * Created by Francesco Mondora.
  *

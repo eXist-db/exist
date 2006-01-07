@@ -31,7 +31,6 @@ import org.exist.validation.service.ValidationService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
-import org.xmldb.api.base.XMLDBException;
 
 
 /**
