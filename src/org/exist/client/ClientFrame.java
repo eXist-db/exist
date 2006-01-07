@@ -1024,7 +1024,6 @@ public class ClientFrame extends JFrame
                             showErrorMessage("XMLDBException: "
                                     + e.getMessage(), e);
                         }
-                        upload.setVisible(false);
                     }
                 }.start();
             }

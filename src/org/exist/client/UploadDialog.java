@@ -3,10 +3,13 @@ package org.exist.client;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
@@ -27,6 +30,9 @@ class UploadDialog extends JFrame {
 	JProgressBar progress;
 	JProgressBar byDirProgress;
 
+	boolean cancelled = false;
+	final JButton closeBtn;
+	
 	public UploadDialog() {
 		super("Storing files ...");
 		GridBagLayout grid = new GridBagLayout();
@@ -138,6 +144,25 @@ class UploadDialog extends JFrame {
 		grid.setConstraints(scroll, c);
 		getContentPane().add(scroll);
 
+		closeBtn = new JButton("Cancel");
+		closeBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if ("Close".equals(closeBtn.getText()))
+					setVisible(false);
+				else {
+					cancelled = true;
+					closeBtn.setText("Close");
+				}
+			}
+		});
+		c.gridx = 0;
+		c.gridy = 6;
+		c.gridwidth = 2;
+		c.anchor = GridBagConstraints.EAST;
+		c.fill = GridBagConstraints.NONE;
+		grid.setConstraints(closeBtn, c);
+		getContentPane().add(closeBtn);
+		
 		pack();
 	}
 
@@ -172,6 +197,20 @@ class UploadDialog extends JFrame {
 		byDirProgress.setValue((int) (count / 1024));
 	}
 
+	public boolean isCancelled() {
+		return cancelled;
+	}
+	
+	public void uploadCompleted() {
+		closeBtn.setText("Close");
+		progress.setIndeterminate(false);
+		progress.setValue(100);
+		progress.setString("");
+		byDirProgress.setIndeterminate(false);
+		byDirProgress.setString(null);
+		byDirProgress.setValue(byDirProgress.getMaximum());
+	}
+	
 	public void showMessage(String msg) {
 		messages.append(msg + "\n");
 		messages.setCaretPosition(messages.getDocument().getLength());
