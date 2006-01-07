@@ -1125,7 +1125,7 @@ public class NativeBroker extends DBBroker {
      * @return
      * @throws ReadOnlyException
      */
-    protected short getFreeCollectionId(Txn transaction) throws ReadOnlyException {
+    public short getFreeCollectionId(Txn transaction) throws ReadOnlyException {
         short freeCollectionId = Collection.UNKNOWN_COLLECTION_ID;      
         Lock lock = collectionsDb.getLock();
         try {
@@ -1159,7 +1159,7 @@ public class NativeBroker extends DBBroker {
      * @return
      * @throws ReadOnlyException
      */
-    protected short getNextCollectionId(Txn transaction) throws ReadOnlyException {
+    public short getNextCollectionId(Txn transaction) throws ReadOnlyException {
         
         short nextCollectionId = getFreeCollectionId(transaction);
         
@@ -1415,7 +1415,7 @@ public class NativeBroker extends DBBroker {
      *@return  The document value
      *@exception  PermissionDeniedException  
      */
-    public Document getResource(String fileName) throws PermissionDeniedException {
+    public Document getXMLResource(String fileName) throws PermissionDeniedException {
         fileName = XmldbURI.checkPath2(fileName, ROOT_COLLECTION);
         //TODO : use dedicated function in XmldbURI
         int pos = fileName.lastIndexOf("/");
@@ -1750,24 +1750,9 @@ public class NativeBroker extends DBBroker {
         } finally {
             lock.release();
         }
-    } 
+    }
     
-    public void removeBinaryResource(final Txn transaction, final BinaryDocument blob)
-    throws PermissionDeniedException {
-        if (readOnly)
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-        LOG.info("removing binary resource " + blob.getDocId() + "...");
-        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-            public Object start() throws ReadOnlyException {
-                domDb.removeOverflowValue(transaction, blob.getPage());
-                return null;
-            }
-        }
-        .run();
-        removeDocMetadata(transaction, blob);
-    }  
-    
-    public void removeDocument(final Txn transaction, final DocumentImpl document, 
+    public void removeXMLResource(final Txn transaction, final DocumentImpl document, 
             boolean freeDocId) throws PermissionDeniedException {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
@@ -1816,6 +1801,22 @@ public class NativeBroker extends DBBroker {
         } catch (ReadOnlyException e) {
             LOG.warn("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
         }
+    }
+    
+    
+    public void removeBinaryResource(final Txn transaction, final BinaryDocument blob)
+    throws PermissionDeniedException {
+        if (readOnly)
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        LOG.info("removing binary resource " + blob.getDocId() + "...");
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() throws ReadOnlyException {
+                domDb.removeOverflowValue(transaction, blob.getPage());
+                return null;
+            }
+        }
+        .run();
+        removeDocMetadata(transaction, blob);
     }
 
     /**
@@ -1879,7 +1880,7 @@ public class NativeBroker extends DBBroker {
 	 * @return
 	 * @throws ReadOnlyException
 	 */
-	protected int getFreeDocumentId(Txn transaction) throws ReadOnlyException {
+	public int getFreeDocumentId(Txn transaction) throws ReadOnlyException {
 		int freeDocId = DocumentImpl.UNKNOWN_DOCUMENT_ID;		
 		Lock lock = collectionsDb.getLock();
 		try {
@@ -1947,185 +1948,75 @@ public class NativeBroker extends DBBroker {
 		return nextDocId;
 	}
     
-    /** consistency Check of the database; useful after XUpdates;
-     * called if xupdate.consistency-checks is true in configuration */ 
-    public void checkResourceConsistency(DocumentImpl doc) throws EXistException {
-        if(xupdateConsistencyChecks) {
-            LOG.debug("Checking document " + doc.getFileName());
-            checkResourceTree(doc);
-//          elementIndex.consistencyCheck(doc);
-        }
-    }
-    
-    /** consistency Check of the database; useful after XUpdates;
-     * called by {@link #checkResourceConsistency()} */
-    public void checkResourceTree(final DocumentImpl doc) {
-        LOG.debug("Checking DOM tree for document " + doc.getFileName());
-        if(xupdateConsistencyChecks) {
-            new DOMTransaction(this, domDb, Lock.READ_LOCK) {
-                public Object start() throws ReadOnlyException {
-                    LOG.debug("Pages used: " + domDb.debugPages(doc, false));
-                    return null;
-                }
-            }.run();
-            
-            NodeList nodes = doc.getChildNodes();
-            StoredNode n;
-            for (int i = 0; i < nodes.getLength(); i++) {
-                n = (StoredNode) nodes.item(i);
-                Iterator iterator =
-                    getNodeIterator(
-                            new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
-                iterator.next();
-                checkNodeTree(iterator, n);
-            }
-            NodeRef ref = new NodeRef(doc.getDocId());
-            final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-            new DOMTransaction(this, domDb) {
-                public Object start() {
-                    try {
-                        domDb.findKeys(idx);
-                    } catch (BTreeException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);
-                    } catch (IOException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);
-                    }
-                    return null;
-                }
-            }
-            .run();
-        }
-    }    
-    
-    public void flush() {
-        notifyFlush();
-        if (symbols != null && symbols.hasChanged())
-            try {
-                saveSymbols();
-            } catch (EXistException e) {
-                LOG.warn(e.getMessage(), e);
-            }
-        nodesCount = 0;
-    } 
-    
-    public void sync(int syncEvent) {
-        if (isReadOnly())
+    /**
+     * Reindex the nodes in the document. This method will either reindex all
+     * descendant nodes of the passed node, or all nodes below some level of
+     * the document if node is null.
+     */
+    public void reindexResource(final Txn transaction, final DocumentImpl oldDoc, final DocumentImpl doc, 
+            final StoredNode node) {
+        int idxLevel = doc.getMetadata().reindexRequired();     
+        if (idxLevel == DocumentMetadata.REINDEX_ALL) {
+            flush();
             return;
-        try {
-            new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-                public Object start() {
-                    try {
-                        domDb.flush();
-                    } catch (DBException e) {
-                        LOG.warn("error while flushing dom.dbx", e);
-                    }
-                    return null;
-                }
-            }
-            .run();
-            if(syncEvent == Sync.MAJOR_SYNC) {
-                Lock lock = collectionsDb.getLock();
-                try {
-                    lock.acquire(Lock.WRITE_LOCK);
-                    collectionsDb.flush();
-                } catch (LockException e) {
-                    LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
-                } finally {
-                    lock.release();
-                }
-                notifySync();
-//              System.gc();
-                Runtime runtime = Runtime.getRuntime();
-                LOG.info("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
-                        (runtime.maxMemory() / 1024) + "K max; " +
-                        (runtime.freeMemory() / 1024) + "K free");              
-                
-                domDb.printStatistics(); 
-                collectionsDb.printStatistics();
-                if (elementsDb != null)
-                    elementsDb.printStatistics();                
-                if (valuesDb != null)
-                    valuesDb.printStatistics();             
-                if (valuesDbQname != null)
-                    valuesDbQname.printStatistics();
-                if (textEngine != null)
-                    textEngine.printStatistics();
-            }
-        } catch (DBException dbe) {
-            dbe.printStackTrace();
-            LOG.debug(dbe);
         }
-    } 
-    
-	/**
-	 * Reindex the nodes in the document. This method will either reindex all
-	 * descendant nodes of the passed node, or all nodes below some level of
-	 * the document if node is null.
-	 */
-	public void reindexResource(final Txn transaction, final DocumentImpl oldDoc, final DocumentImpl doc, 
-			final StoredNode node) {
-		int idxLevel = doc.getMetadata().reindexRequired();     
-		if (idxLevel == DocumentMetadata.REINDEX_ALL) {
-			flush();
-			return;
-		}
-		oldDoc.getMetadata().setReindexRequired(idxLevel);
-		if (node == null)
-			LOG.debug("reindexing level " + idxLevel + " of document " + doc.getDocId());
-//		checkTree(doc);
-		
-		final long start = System.currentTimeMillis();
-		// remove all old index keys from the btree 
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-			public Object start() throws ReadOnlyException {
-				try {
-					Value ref = new NodeRef(doc.getDocId());
-					IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-					final ArrayList nodes = domDb.findKeys(query);					
-					for (Iterator i = nodes.iterator(); i.hasNext();) {
-						ref = (Value) i.next();
+        oldDoc.getMetadata().setReindexRequired(idxLevel);
+        if (node == null)
+            LOG.debug("reindexing level " + idxLevel + " of document " + doc.getDocId());
+//      checkTree(doc);
+        
+        final long start = System.currentTimeMillis();
+        // remove all old index keys from the btree 
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() throws ReadOnlyException {
+                try {
+                    Value ref = new NodeRef(doc.getDocId());
+                    IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+                    final ArrayList nodes = domDb.findKeys(query);                  
+                    for (Iterator i = nodes.iterator(); i.hasNext();) {
+                        ref = (Value) i.next();
                         long gid = ByteConversion.byteToLong(ref.data(), ref.start() + 4);
-						if (oldDoc.getTreeLevel(gid) >= doc.getMetadata().reindexRequired()) {
-							if (node != null) {
-								if (XMLUtil.isDescendant(oldDoc, node.getGID(), gid)) {
-									domDb.removeValue(transaction, ref);
-								}
-							} else
-								domDb.removeValue(transaction, ref);
-						}
-					}
-				} catch (BTreeException e) {
-					LOG.debug("Exception while reindexing document: " + e.getMessage(), e);
-				} catch (IOException e) {
-					LOG.debug("Exception while reindexing document: " + e.getMessage(), e);
-				}
-				return null;
-			}
-		}.run();
-		try {
-			// now reindex the nodes
-			Iterator iterator;
-			if (node == null) {
-				NodeList nodes = doc.getChildNodes();				 
-				for (int i = 0; i < nodes.getLength(); i++) {
+                        if (oldDoc.getTreeLevel(gid) >= doc.getMetadata().reindexRequired()) {
+                            if (node != null) {
+                                if (XMLUtil.isDescendant(oldDoc, node.getGID(), gid)) {
+                                    domDb.removeValue(transaction, ref);
+                                }
+                            } else
+                                domDb.removeValue(transaction, ref);
+                        }
+                    }
+                } catch (BTreeException e) {
+                    LOG.debug("Exception while reindexing document: " + e.getMessage(), e);
+                } catch (IOException e) {
+                    LOG.debug("Exception while reindexing document: " + e.getMessage(), e);
+                }
+                return null;
+            }
+        }.run();
+        try {
+            // now reindex the nodes
+            Iterator iterator;
+            if (node == null) {
+                NodeList nodes = doc.getChildNodes();                
+                for (int i = 0; i < nodes.getLength(); i++) {
                     StoredNode n = (StoredNode) nodes.item(i);
-					iterator =	getNodeIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
-					iterator.next();
-					scanNodes(transaction, iterator, n, new NodePath(), false, false);
-				}
-			} else {
-				iterator = getNodeIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
-				iterator.next();
-				scanNodes(transaction, iterator, node, node.getPath(), false, false);
-			}
-		} catch(Exception e) {
-			LOG.error("Error occured while reindexing document: " + e.getMessage(), e);
-		}
+                    iterator =  getNodeIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+                    iterator.next();
+                    scanNodes(transaction, iterator, n, new NodePath(), false, false);
+                }
+            } else {
+                iterator = getNodeIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
+                iterator.next();
+                scanNodes(transaction, iterator, node, node.getPath(), false, false);
+            }
+        } catch(Exception e) {
+            LOG.error("Error occured while reindexing document: " + e.getMessage(), e);
+        }
         notifyReindex(oldDoc, node);
-		doc.getMetadata().setReindexRequired(DocumentMetadata.REINDEX_ALL);
-//		checkTree(doc);
-		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
-	}
+        doc.getMetadata().setReindexRequired(DocumentMetadata.REINDEX_ALL);
+//      checkTree(doc);
+        LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
+    }
     
     /**
      * Reindex the nodes in the document. This method will either reindex all
@@ -2147,76 +2038,7 @@ public class NativeBroker extends DBBroker {
         flush();
         if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
             doc.getCollection().setConfigEnabled(true);
-    }
-
-    public void removeAllNodes(Txn transaction, StoredNode node, NodePath currentPath) {
-        Iterator iterator = 
-            getNodeIterator(new NodeProxy((DocumentImpl)node.getOwnerDocument(), node.getGID(), node.getInternalAddress()));
-        iterator.next();
-        Stack stack = new Stack();
-        collectNodesForRemoval(stack, iterator, node, currentPath);
-        RemovedNode next;
-        while (!stack.isEmpty()) {
-            next = (RemovedNode) stack.pop();
-            removeNode(transaction, next.node, next.path, next.content);
-        }
-    }
-    
-    private void collectNodesForRemoval(Stack stack, Iterator iterator, StoredNode node, NodePath currentPath) {
-        RemovedNode removed;
-        switch (node.getNodeType()) {
-            case Node.ELEMENT_NODE:
-                DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
-                String content = null;
-                IndexSpec idxSpec = 
-                    doc.getCollection().getIdxConf(this);
-                if (idxSpec != null) {
-                    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-                    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-                    if (spec != null || qnIdx != null) {
-                        NodeProxy p = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
-                        content = getNodeValue(p, false);
-                    }
-                }
-                removed = new RemovedNode(node, new NodePath(currentPath), content);
-                stack.push(removed);
-
-                if (node.hasChildNodes()) {
-                    final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());                    
-                    if (firstChildId < 0) {
-                        LOG.fatal(
-                            "no child found: expected = "
-                                + node.getChildCount()
-                                + "; node = "
-                                + node.getNodeName()
-                                + "; gid = "
-                                + node.getGID());
-                        throw new IllegalStateException("wrong node id");
-                    }
-                    final long lastChildId = firstChildId + node.getChildCount();
-                    StoredNode child;
-                    for (long gid = firstChildId; gid < lastChildId; gid++) {
-                        child = (StoredNode) iterator.next();
-                        if(child == null)
-                            LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
-                                    "; last = " + lastChildId + "; children = " + node.getChildCount());
-                        child.setGID(gid);
-                        if (child.getNodeType() == Node.ELEMENT_NODE)
-                            currentPath.addComponent(((ElementImpl) child).getQName());
-                        collectNodesForRemoval(stack, iterator, child, currentPath);
-                        if (child.getNodeType() == Node.ELEMENT_NODE)
-                            currentPath.removeLastComponent();
-                    }
-                }
-                break;
-            default :
-                removed = new RemovedNode(node, new NodePath(currentPath), null);
-                stack.push(removed);
-                break;
-        }
-    }
-	
-
+    }  
     
     public void defragResource(final Txn transaction, final DocumentImpl doc) {
         //TODO : use dedicated function in XmldbURI
@@ -2330,7 +2152,321 @@ public class NativeBroker extends DBBroker {
         } catch (ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY, e);
         }
+    }        
+    
+    /** consistency Check of the database; useful after XUpdates;
+     * called if xupdate.consistency-checks is true in configuration */ 
+    public void checkResourceConsistency(DocumentImpl doc) throws EXistException {
+        if(xupdateConsistencyChecks) {
+            LOG.debug("Checking document " + doc.getFileName());
+            checkResourceTree(doc);
+//          elementIndex.consistencyCheck(doc);
+        }
+    }
+    
+    /** consistency Check of the database; useful after XUpdates;
+     * called by {@link #checkResourceConsistency()} */
+    public void checkResourceTree(final DocumentImpl doc) {
+        LOG.debug("Checking DOM tree for document " + doc.getFileName());
+        if(xupdateConsistencyChecks) {
+            new DOMTransaction(this, domDb, Lock.READ_LOCK) {
+                public Object start() throws ReadOnlyException {
+                    LOG.debug("Pages used: " + domDb.debugPages(doc, false));
+                    return null;
+                }
+            }.run();
+            
+            NodeList nodes = doc.getChildNodes();
+            StoredNode n;
+            for (int i = 0; i < nodes.getLength(); i++) {
+                n = (StoredNode) nodes.item(i);
+                Iterator iterator =
+                    getNodeIterator(
+                            new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+                iterator.next();
+                checkNodeTree(iterator, n);
+            }
+            NodeRef ref = new NodeRef(doc.getDocId());
+            final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+            new DOMTransaction(this, domDb) {
+                public Object start() {
+                    try {
+                        domDb.findKeys(idx);
+                    } catch (BTreeException e) {
+                        LOG.warn("start() - " + "error while removing doc", e);
+                    } catch (IOException e) {
+                        LOG.warn("start() - " + "error while removing doc", e);
+                    }
+                    return null;
+                }
+            }
+            .run();
+        }
     }    
+    
+    public void flush() {
+        notifyFlush();
+        if (symbols != null && symbols.hasChanged())
+            try {
+                saveSymbols();
+            } catch (EXistException e) {
+                LOG.warn(e.getMessage(), e);
+            }
+        nodesCount = 0;
+    } 
+    
+    public void sync(int syncEvent) {
+        if (isReadOnly())
+            return;
+        try {
+            new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+                public Object start() {
+                    try {
+                        domDb.flush();
+                    } catch (DBException e) {
+                        LOG.warn("error while flushing dom.dbx", e);
+                    }
+                    return null;
+                }
+            }
+            .run();
+            if(syncEvent == Sync.MAJOR_SYNC) {
+                Lock lock = collectionsDb.getLock();
+                try {
+                    lock.acquire(Lock.WRITE_LOCK);
+                    collectionsDb.flush();
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
+                } finally {
+                    lock.release();
+                }
+                notifySync();
+//              System.gc();
+                Runtime runtime = Runtime.getRuntime();
+                LOG.info("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
+                        (runtime.maxMemory() / 1024) + "K max; " +
+                        (runtime.freeMemory() / 1024) + "K free");              
+                
+                domDb.printStatistics(); 
+                collectionsDb.printStatistics();
+                if (elementsDb != null)
+                    elementsDb.printStatistics();                
+                if (valuesDb != null)
+                    valuesDb.printStatistics();             
+                if (valuesDbQname != null)
+                    valuesDbQname.printStatistics();
+                if (textEngine != null)
+                    textEngine.printStatistics();
+            }
+        } catch (DBException dbe) {
+            dbe.printStackTrace();
+            LOG.debug(dbe);
+        }
+    } 
+    
+    /**
+     *  Store a node into the database. This method is called by the parser to
+     *  write a node to the storage backend.
+     *
+     *@param  node         the node to be stored
+     *@param  currentPath  path expression which points to this node's
+     *      element-parent or to itself if it is an element (currently used by
+     *      the Broker to determine if a node's content should be
+     *      fulltext-indexed).  @param index switch to activate fulltext indexation
+     */
+    public void storeNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean index) {
+        checkAvailableMemory();
+        
+        final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
+//        final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
+        final IndexSpec idxSpec = 
+            doc.getCollection().getIdxConf(this);
+//        final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
+        final long gid = node.getGID();        
+        if (gid < 0) {
+            LOG.debug("illegal node: " + gid + "; " + node.getNodeName());
+            Thread.dumpStack();
+            return;
+        }
+        final short nodeType = node.getNodeType();
+        final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
+            public Object start() throws ReadOnlyException {
+                long address = BFile.UNKNOWN_ADDRESS;
+                final byte data[] = node.serialize();
+                if (nodeType == Node.TEXT_NODE
+                    || nodeType == Node.ATTRIBUTE_NODE
+                    || doc.getTreeLevel(gid) > depth)
+                    address = domDb.add(transaction, data);
+                else {
+                    address = domDb.put(transaction, new NodeRef(doc.getDocId(), gid), data);
+                }
+                if (address == BFile.UNKNOWN_ADDRESS)
+                    LOG.warn("address is missing");
+                //TODO : how can we continue here ? -pb
+                node.setInternalAddress(address);
+                ByteArrayPool.releaseByteArray(data);
+                return null;
+            }
+        }
+        .run();
+        ++nodesCount;
+
+        nodeProcessor.reset(transaction, node, currentPath, index);
+        nodeProcessor.doIndex();
+    }
+    
+    public void updateNode(final Txn transaction, final StoredNode node) {
+        try {
+            final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
+            final long internalAddress = node.getInternalAddress();
+            final byte[] data = node.serialize();
+            new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+                public Object start() throws ReadOnlyException {
+                    if (internalAddress != BFile.UNKNOWN_ADDRESS)
+                        domDb.update(transaction, internalAddress, data);
+                    else {
+                        domDb.update(transaction, new NodeRef(doc.getDocId(), node.getGID()), data);
+                    }
+                    return null;
+                }
+            }
+            .run();
+            ByteArrayPool.releaseByteArray(data);
+        } catch (Exception e) {
+            Value oldVal = domDb.get(node.getInternalAddress());
+            StoredNode old = 
+                StoredNode.deserialize(oldVal.data(), oldVal.start(), oldVal.getLength(), 
+                        (DocumentImpl)node.getOwnerDocument(), false);
+            LOG.debug(
+                "Exception while storing "
+                    + node.getNodeName()
+                    + "; gid = "
+                    + node.getGID()
+                    + "; old = " + old.getNodeName(),
+                e);
+        }
+    }
+
+    /**
+     * Physically insert a node into the DOM storage.
+     */
+    public void insertNodeAfter(final Txn transaction, final StoredNode previous, final StoredNode node) {
+        final byte data[] = node.serialize();
+        final DocumentImpl doc = (DocumentImpl) previous.getOwnerDocument();
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
+            public Object start() {
+                long address = previous.getInternalAddress();
+                if (address != BFile.UNKNOWN_ADDRESS) {
+                    address = domDb.insertAfter(transaction, doc, address, data);
+                } else {
+                    NodeRef ref = new NodeRef(doc.getDocId(), previous.getGID());
+                    address = domDb.insertAfter(transaction, doc, ref, data);
+                }
+                node.setInternalAddress(address);
+                return null;
+            }
+        }
+        .run();
+    }     
+    
+    /**
+     * Index a single node, which has been added through an XUpdate
+     * operation. This method is only called if inserting the node is possible
+     * without changing the node identifiers of sibling or parent nodes. In other 
+     * cases, reindex will be called.
+     */
+    public void indexNode(Txn transaction, StoredNode node, NodePath currentPath) {
+        indexNode(transaction, node, currentPath, false);
+    }
+    
+    public void indexNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean repairMode) {
+        nodeProcessor.reset(transaction, node, currentPath);
+        nodeProcessor.index();
+    }
+    
+    /**
+     * Reindex the given node after the DOM tree has been 
+     * modified by an XUpdate.
+     * 
+     * @param node
+     * @param currentPath
+     */
+    private void reindexNode(final Txn transaction, final StoredNode node, NodePath currentPath) {
+        nodeProcessor.reset(transaction, node, currentPath);
+        nodeProcessor.reindex();
+    }    
+
+    public void removeAllNodes(Txn transaction, StoredNode node, NodePath currentPath) {
+        Iterator iterator = 
+            getNodeIterator(new NodeProxy((DocumentImpl)node.getOwnerDocument(), node.getGID(), node.getInternalAddress()));
+        iterator.next();
+        Stack stack = new Stack();
+        collectNodesForRemoval(stack, iterator, node, currentPath);
+        RemovedNode next;
+        while (!stack.isEmpty()) {
+            next = (RemovedNode) stack.pop();
+            removeNode(transaction, next.node, next.path, next.content);
+        }
+    }
+    
+    private void collectNodesForRemoval(Stack stack, Iterator iterator, StoredNode node, NodePath currentPath) {
+        RemovedNode removed;
+        switch (node.getNodeType()) {
+            case Node.ELEMENT_NODE:
+                DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
+                String content = null;
+                IndexSpec idxSpec = 
+                    doc.getCollection().getIdxConf(this);
+                if (idxSpec != null) {
+                    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+                    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
+                    if (spec != null || qnIdx != null) {
+                        NodeProxy p = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
+                        content = getNodeValue(p, false);
+                    }
+                }
+                removed = new RemovedNode(node, new NodePath(currentPath), content);
+                stack.push(removed);
+
+                if (node.hasChildNodes()) {
+                    final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());                    
+                    if (firstChildId < 0) {
+                        LOG.fatal(
+                            "no child found: expected = "
+                                + node.getChildCount()
+                                + "; node = "
+                                + node.getNodeName()
+                                + "; gid = "
+                                + node.getGID());
+                        throw new IllegalStateException("wrong node id");
+                    }
+                    final long lastChildId = firstChildId + node.getChildCount();
+                    StoredNode child;
+                    for (long gid = firstChildId; gid < lastChildId; gid++) {
+                        child = (StoredNode) iterator.next();
+                        if(child == null)
+                            LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
+                                    "; last = " + lastChildId + "; children = " + node.getChildCount());
+                        child.setGID(gid);
+                        if (child.getNodeType() == Node.ELEMENT_NODE)
+                            currentPath.addComponent(((ElementImpl) child).getQName());
+                        collectNodesForRemoval(stack, iterator, child, currentPath);
+                        if (child.getNodeType() == Node.ELEMENT_NODE)
+                            currentPath.removeLastComponent();
+                    }
+                }
+                break;
+            default :
+                removed = new RemovedNode(node, new NodePath(currentPath), null);
+                stack.push(removed);
+                break;
+        }
+    }
+	
+
+    
+
     
     /**
      * Called by reindex to walk through all nodes in the tree and reindex them
@@ -2790,87 +2926,7 @@ public class NativeBroker extends DBBroker {
 			e.printStackTrace();
 		}
         super.shutdown();
-	}
-
-	/**
-	 *  Store a node into the database. This method is called by the parser to
-	 *  write a node to the storage backend.
-	 *
-	 *@param  node         the node to be stored
-	 *@param  currentPath  path expression which points to this node's
-	 *      element-parent or to itself if it is an element (currently used by
-	 *      the Broker to determine if a node's content should be
-	 *      fulltext-indexed).  @param index switch to activate fulltext indexation
-	 */
-	public void storeNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean index) {
-	    checkAvailableMemory();
-        
-        final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
-//        final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
-        final IndexSpec idxSpec = 
-            doc.getCollection().getIdxConf(this);
-//        final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
-        final long gid = node.getGID();        
-        if (gid < 0) {
-            LOG.debug("illegal node: " + gid + "; " + node.getNodeName());
-            Thread.dumpStack();
-            return;
-        }
-        final short nodeType = node.getNodeType();
-        final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
-        new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
-            public Object start() throws ReadOnlyException {
-                long address = BFile.UNKNOWN_ADDRESS;
-                final byte data[] = node.serialize();
-                if (nodeType == Node.TEXT_NODE
-                    || nodeType == Node.ATTRIBUTE_NODE
-                    || doc.getTreeLevel(gid) > depth)
-                    address = domDb.add(transaction, data);
-                else {
-                    address = domDb.put(transaction, new NodeRef(doc.getDocId(), gid), data);
-                }
-                if (address == BFile.UNKNOWN_ADDRESS)
-                    LOG.warn("address is missing");
-                //TODO : how can we continue here ? -pb
-                node.setInternalAddress(address);
-                ByteArrayPool.releaseByteArray(data);
-                return null;
-            }
-        }
-        .run();
-        ++nodesCount;
-
-        nodeProcessor.reset(transaction, node, currentPath, index);
-        nodeProcessor.doIndex();
-	}
-    
-    /**
-     * Index a single node, which has been added through an XUpdate
-     * operation. This method is only called if inserting the node is possible
-     * without changing the node identifiers of sibling or parent nodes. In other 
-     * cases, reindex will be called.
-     */
-    public void indexNode(Txn transaction, StoredNode node, NodePath currentPath) {
-        indexNode(transaction, node, currentPath, false);
-    }
-    
-    public void indexNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean repairMode) {
-        nodeProcessor.reset(transaction, node, currentPath);
-        nodeProcessor.index();
-    }
-    
-    /**
-     * Reindex the given node after the DOM tree has been 
-     * modified by an XUpdate.
-     * 
-     * @param node
-     * @param currentPath
-     */
-    private void reindexNode(final Txn transaction, final StoredNode node, NodePath currentPath) {
-        nodeProcessor.reset(transaction, node, currentPath);
-        nodeProcessor.reindex();
-    }
-    
+	}    
 
     /** check available memory */
     private void checkAvailableMemory() {
@@ -2897,60 +2953,6 @@ public class NativeBroker extends DBBroker {
 		}
 		.run();
 	}
-
-	public void updateNode(final Txn transaction, final StoredNode node) {
-		try {
-			final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
-			final long internalAddress = node.getInternalAddress();
-			final byte[] data = node.serialize();
-			new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-				public Object start() throws ReadOnlyException {
-					if (internalAddress != BFile.UNKNOWN_ADDRESS)
-						domDb.update(transaction, internalAddress, data);
-					else {
-						domDb.update(transaction, new NodeRef(doc.getDocId(), node.getGID()), data);
-					}
-					return null;
-				}
-			}
-			.run();
-			ByteArrayPool.releaseByteArray(data);
-		} catch (Exception e) {
-		    Value oldVal = domDb.get(node.getInternalAddress());
-		    StoredNode old = 
-		        StoredNode.deserialize(oldVal.data(), oldVal.start(), oldVal.getLength(), 
-		                (DocumentImpl)node.getOwnerDocument(), false);
-			LOG.debug(
-				"Exception while storing "
-					+ node.getNodeName()
-					+ "; gid = "
-					+ node.getGID()
-					+ "; old = " + old.getNodeName(),
-				e);
-		}
-	}
-
-	/**
-	 * Physically insert a node into the DOM storage.
-	 */
-	public void insertNodeAfter(final Txn transaction, final StoredNode previous, final StoredNode node) {
-		final byte data[] = node.serialize();
-		final DocumentImpl doc = (DocumentImpl) previous.getOwnerDocument();
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
-			public Object start() {
-				long address = previous.getInternalAddress();
-				if (address != BFile.UNKNOWN_ADDRESS) {
-					address = domDb.insertAfter(transaction, doc, address, data);
-				} else {
-					NodeRef ref = new NodeRef(doc.getDocId(), previous.getGID());
-					address = domDb.insertAfter(transaction, doc, ref, data);
-				}
-				node.setInternalAddress(address);
-				return null;
-			}
-		}
-		.run();
-	} 
 
 	public final static class NodeRef extends Value {
 

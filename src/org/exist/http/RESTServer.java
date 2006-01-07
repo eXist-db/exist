@@ -522,7 +522,7 @@ public class RESTServer {
                 if (collection != null) {
                     collection.allDocs(broker, docs, true, true);
                 } else {
-                    DocumentImpl xupdateDoc = (DocumentImpl) broker.getResource(path);
+                    DocumentImpl xupdateDoc = (DocumentImpl) broker.getXMLResource(path);
                     if (xupdateDoc != null) {
                         if (!xupdateDoc.getPermissions().validate(
                                 broker.getUser(), Permission.READ)) {
@@ -726,7 +726,7 @@ public class RESTServer {
                 broker.removeCollection(txn, collection);
                 response.sendError(HttpServletResponse.SC_OK, "Collection " + path + " removed.");
             } else {
-                DocumentImpl doc = (DocumentImpl) broker.getResource(path);
+                DocumentImpl doc = (DocumentImpl) broker.getXMLResource(path);
                 if (doc == null) {
                     transact.abort(txn);
                     throw new NotFoundException(

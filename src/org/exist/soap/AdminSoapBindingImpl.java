@@ -296,7 +296,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(session.getUser());
-			DocumentImpl doc = (DocumentImpl)broker.getResource(documentName);
+			DocumentImpl doc = (DocumentImpl)broker.getXMLResource(documentName);
 			if (doc == null) {
                 transact.abort(transaction);
 				throw new RemoteException(
