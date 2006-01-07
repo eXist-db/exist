@@ -44,6 +44,10 @@ body {
     font-size: 75%;
 }
 
+#user {
+	float: right;
+}
+
 #errors {
 	height: 3em;
 	margin-bottom: 3px;

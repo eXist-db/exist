@@ -148,6 +148,7 @@ declare function sandbox:display-page() as element() {
             </div>
             
             <div id="content">
+                <!--div id="user">Logged in as guest: <a href="#" id="change-user">Change</a></div-->
                 <div id="errors">{sandbox:check-paths()}</div>
                 <form name="main">
                     <div id="top-panel">

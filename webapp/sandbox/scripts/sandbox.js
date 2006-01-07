@@ -24,6 +24,7 @@ var behaviourRules = {
 	'#export-resource' : function (element) {
 			element.onclick = function() {
 				new XOpenDialog('export-resource', X_SELECT_RESOURCE, '/db');
+				return false;
 			}
 	},
 	'#next' : function (element) {
@@ -65,6 +66,7 @@ var behaviourRules = {
 	'#maximize' : function (element) {
 			element.onclick = function() {
 				resizeQueryBox(false);
+				return false;
 			}
 	}
 };
@@ -76,6 +78,8 @@ var hitCount = 0;
 var startOffset = 0;
 var currentOffset = 0;
 var endOffset = 0;
+
+var timer = null;
 
 /** onLoad handler to initialize display */
 function init() {
@@ -183,17 +187,32 @@ function exportResponse(request) {
  *  query box. Send an AJAX request to the server and
  *  check the query.
  */
-function checkQuery() {
+function checkQuery(event) {
+	if (timer) clearTimeout(timer);
+	switch (event.keyCode) {
+		case Event.KEY_RIGHT :
+		case Event.KEY_LEFT :
+		case Event.KEY_UP :
+		case Event.KEY_DOWN :
+		case Event.KEY_ESC :
+			return;
+	}
+	timer = setTimeout('compileAndCheck()', 1000);
+}
+
+function compileAndCheck() {
 	var query = $F('query');
 	if (query) {
+		$('errors').innerHTML = 'Checking syntax ...';
 		var params = 'check=' + escapeQuery(query);
 		var ajax = new Ajax.Updater('errors', "sandbox.xql", {
 				method: 'post', parameters: params, 
 				onFailure: requestFailed
 			});
 	}
+	timer = null;
 }
-	
+
 /** Called if the user clicked on the "send" button.
  *  Execute the query.
  */	
@@ -252,6 +271,7 @@ function browseNext() {
 			" to " + endOffset;
 		retrieveNext();
 	}
+	return false;
 }
 
 /** Called if user clicks on "previous" link in query results. */
@@ -269,6 +289,7 @@ function browsePrevious() {
 			" to " + endOffset;
 		retrieveNext();
 	}
+	return false;
 }
 
 function requestFailed(request) {

@@ -1,5 +1,5 @@
-var X_SELECT_COLLECTION = 'collection';
 var X_SELECT_RESOURCE = 'resource';
+var X_SELECT_COLLECTION = 'collection';
 
 var openDialog;
 
@@ -71,12 +71,12 @@ XOpenDialog.prototype = {
 		if (rootCol == '')
 			rootCol = '/db';
 		var html = '<ul id="xmldb-collections">' +
-				'<li><a href="#" onclick="selectCol(&quot;' +
+				'<li><a href="#" onclick="return selectCol(&quot;' +
 				rootCol + '&quot;)">..</a></li>';
 		var collections = root.getElementsByTagName('collection');
 		for (var i = 0; i < collections.length; i++) {
 			var node = collections[i];
-			html += '<li><a href="#" onclick="selectCol(&quot;' +
+			html += '<li><a href="#" onclick="return selectCol(&quot;' +
 				node.getAttribute('path') + '&quot;)">' + 
 				node.getAttribute('name') + '</a></li>';
 		}
@@ -87,7 +87,7 @@ XOpenDialog.prototype = {
 			var resources = root.getElementsByTagName('resource');
 			for (var i = 0; i < resources.length; i++) {
 				var node = resources[i];
-				html += '<li><a href="#" onclick="selectResource(&quot;' +
+				html += '<li><a href="#" onclick="return selectResource(&quot;' +
 					node.getAttribute('path') + '&quot;)">' + 
 					node.getAttribute('name') + '</a></li>';
 			}
@@ -111,4 +111,5 @@ function selectResource(path) {
 
 function submit() {
 	openDialog.submit();
+	return false;
 }
