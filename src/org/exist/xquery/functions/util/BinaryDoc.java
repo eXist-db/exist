@@ -67,7 +67,7 @@ public class BinaryDoc extends BasicFunction {
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
                 throw new XPathException(getASTNode(), path + " exists but is not a binary resource");
             BinaryDocument bin = (BinaryDocument) doc;
-            byte[] data = context.getBroker().getBinaryResourceData(bin);
+            byte[] data = context.getBroker().getBinaryResource(bin);
             return new Base64Binary(data);
         } catch (PermissionDeniedException e) {
             throw new XPathException(getASTNode(), path + ": permission denied to read resource");

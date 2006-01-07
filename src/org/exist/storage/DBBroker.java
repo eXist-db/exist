@@ -502,7 +502,7 @@ public abstract class DBBroker extends Observable {
 	 *
 	 * @param doc the document's metadata to store.
 	 */
-	public abstract void storeResource(Txn transaction, DocumentImpl doc);
+	public abstract void storeXMLResource(Txn transaction, DocumentImpl doc);
 
     /**
      * Stores the given data under the given binary resource descriptor 
@@ -522,7 +522,7 @@ public abstract class DBBroker extends Observable {
      * @param blob the binary document descriptor
      * @return the document binary data
      */
-    public abstract byte[] getBinaryResourceData(BinaryDocument blob);
+    public abstract byte[] getBinaryResource(BinaryDocument blob);
     
     public abstract void readDocumentMeta(DocumentImpl doc);
     

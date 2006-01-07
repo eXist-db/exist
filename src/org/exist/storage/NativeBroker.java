@@ -540,6 +540,29 @@ public class NativeBroker extends DBBroker {
         return textEngine;
     }
     
+    public Iterator getDOMIterator(NodeProxy proxy) {
+        try {
+            return new DOMFileIterator(this, domDb, proxy);
+        } catch (BTreeException e) {
+            LOG.debug("failed to create DOM iterator", e);
+        } catch (IOException e) {
+            LOG.debug("failed to create DOM iterator", e);
+        }
+        return null;
+    }
+
+    public Iterator getNodeIterator(NodeProxy proxy) {
+//      domDb.setOwnerObject(this);
+        try {
+            return new NodeIterator(this, domDb, proxy, false);
+        } catch (BTreeException e) {
+            LOG.debug("failed to create node iterator", e);
+        } catch (IOException e) {
+            LOG.debug("failed to create node iterator", e);
+        }
+        return null;
+    }    
+    
     /** create temporary collection */  
     private Collection createTempCollection(Txn transaction) throws LockException, PermissionDeniedException {
         User u = user;
@@ -762,15 +785,15 @@ public class NativeBroker extends DBBroker {
                     newDoc.copyOf(child);
                     newDoc.setDocId(getNextDocumentId(transaction, destination));
                     copyResource(transaction, child, newDoc);
-                    storeResource(transaction, newDoc);
+                    storeXMLResource(transaction, newDoc);
                     destCollection.addDocument(transaction, this, newDoc);
                 } else {
                     BinaryDocument newDoc = new BinaryDocument(this, child.getFileName(), destCollection);
                     newDoc.copyOf(child);
                     newDoc.setDocId(getNextDocumentId(transaction, destination));
-                    byte[] data = getBinaryResourceData((BinaryDocument) child);
+                    byte[] data = getBinaryResource((BinaryDocument) child);
                     storeBinaryResource(transaction, newDoc, data);
-                    storeResource(transaction, newDoc);
+                    storeXMLResource(transaction, newDoc);
                     destCollection.addDocument(transaction, this, newDoc);
                 }
             }
@@ -1280,7 +1303,7 @@ public class NativeBroker extends DBBroker {
             indexer.scan();
             indexer.store();
             temp.addDocument(transaction, this, targetDoc);
-            storeResource(transaction, targetDoc);
+            storeXMLResource(transaction, targetDoc);
             closeDocument();
             flush();
             transact.commit(transaction);
@@ -1349,7 +1372,7 @@ public class NativeBroker extends DBBroker {
     }
     
     /** store Document entry into its collection. */
-    public void storeResource(final Txn transaction, final DocumentImpl doc) {
+    public void storeXMLResource(final Txn transaction, final DocumentImpl doc) {
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire();
@@ -1371,6 +1394,17 @@ public class NativeBroker extends DBBroker {
             lock.release();
         }
     }
+    
+    public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final byte[] data) {
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() throws ReadOnlyException {
+                LOG.debug("Storing binary resource " + blob.getFileName());
+                blob.setPage(domDb.addBinary(transaction, blob, data));
+                return null;
+            }
+        }
+        .run();
+    }    
     
     /**
      *  get a document by its file name. The document's file name is used to
@@ -1406,7 +1440,56 @@ public class NativeBroker extends DBBroker {
 //          throw new PermissionDeniedException("not allowed to read document");
         
         return doc;
+    }
+    
+    public byte[] getBinaryResource(final BinaryDocument blob) {
+        byte[] data = (byte[]) new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() throws ReadOnlyException {
+                return domDb.getBinary(blob.getPage());
+            }
+        }
+        .run();
+        return data;
     }    
+    
+    public void readDocuments(Collection collection) {
+        Lock lock = collectionsDb.getLock();
+        try {
+            lock.acquire();            
+            Value key = new DocumentKey(collection.getId());
+            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
+            collectionsDb.query(query, new DocumentCallback(collection));
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+        } catch (IOException e) {
+            LOG.warn("IOException while reading document data", e);
+        } catch (BTreeException e) {
+            LOG.warn("Exception while reading document data", e);
+        } catch (TerminatedException e) {
+            LOG.warn("Exception while reading document data", e);
+        } finally {
+            lock.release();
+        }
+    }
+    
+    public void readDocumentMeta(DocumentImpl doc) {
+        Lock lock = collectionsDb.getLock();
+        try {
+            lock.acquire();
+            SanityCheck.ASSERT(doc.getMetadataLocation() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS, 
+                    "Missing pointer to metadata location in document " + doc.getDocId());
+            VariableByteInput istream = collectionsDb.getAsStream(doc.getMetadataLocation());
+            DocumentMetadata metadata = new DocumentMetadata();
+            metadata.read(istream);
+            doc.setMetadata(metadata);
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+        } catch (IOException e) {
+            LOG.warn("IOException while reading document data", e);
+        } finally {
+            lock.release();
+        }
+    }
 
 	public DocumentImpl openDocument(String fileName, int lockMode) throws PermissionDeniedException {
         fileName = XmldbURI.checkPath2(fileName, ROOT_COLLECTION);
@@ -1498,27 +1581,261 @@ public class NativeBroker extends DBBroker {
 		return result;
 	}
     
-    public Iterator getDOMIterator(NodeProxy proxy) {
-        try {
-            return new DOMFileIterator(this, domDb, proxy);
-        } catch (BTreeException e) {
-            LOG.debug("failed to create DOM iterator", e);
-        } catch (IOException e) {
-            LOG.debug("failed to create DOM iterator", e);
+    public void copyResource(Txn transaction, DocumentImpl doc, Collection destination, String newName) 
+    throws PermissionDeniedException, LockException {
+        if (readOnly)
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        Collection collection = doc.getCollection();
+        if(!collection.getPermissions().validate(user, Permission.READ))
+            throw new PermissionDeniedException("Insufficient privileges to copy resource " +
+                    doc.getFileName());
+        if(!doc.getPermissions().validate(user, Permission.READ))
+            throw new PermissionDeniedException("Insufficient privileges to copy resource " +
+                    doc.getFileName());
+        if(newName == null) {
+            ///TODO : use dedicated function in XmldbURI
+            int p = doc.getFileName().lastIndexOf("/");
+            newName = doc.getFileName().substring(p + 1);
         }
-        return null;
+
+        Lock lock = null;
+        try {
+            lock = collectionsDb.getLock();
+            lock.acquire(Lock.WRITE_LOCK);
+            // check if the move would overwrite a collection
+            ///TODO : use dedicated function in XmldbURI
+            if(getCollection(destination.getName() + "/" + newName) != null)
+                throw new PermissionDeniedException("A resource can not replace an existing collection");
+            DocumentImpl oldDoc = destination.getDocument(this, newName);
+            if(oldDoc != null) {
+                if(doc.getDocId() == oldDoc.getDocId())
+                    throw new PermissionDeniedException("Cannot copy resource to itself");
+                if(!destination.getPermissions().validate(user, Permission.UPDATE))
+                    throw new PermissionDeniedException("Resource with same name exists in target " +
+                            "collection and update is denied");
+                if(!oldDoc.getPermissions().validate(user, Permission.UPDATE))
+                    throw new PermissionDeniedException("Resource with same name exists in target " +
+                            "collection and update is denied");
+                if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
+                    destination.removeBinaryResource(transaction, this, oldDoc);
+                else
+                    destination.removeDocument(transaction, this, oldDoc.getFileName());
+            } else {
+                if(!destination.getPermissions().validate(user, Permission.WRITE))
+                    throw new PermissionDeniedException("Insufficient privileges on target collection " +
+                            destination.getName());
+            }
+            if (doc.getResourceType() == DocumentImpl.BINARY_FILE)  {
+                byte[] data = getBinaryResource((BinaryDocument) doc); 
+                destination.addBinaryResource(transaction, this, newName, data, doc.getMetadata().getMimeType());
+            } else {
+                DocumentImpl newDoc = new DocumentImpl(this, destination, newName);
+                newDoc.copyOf(doc);
+                newDoc.setDocId(getNextDocumentId(transaction, destination));
+                newDoc.setPermissions(doc.getPermissions()); 
+                copyResource(transaction, doc, newDoc);
+                destination.addDocument(transaction, this, newDoc);
+                storeXMLResource(transaction, newDoc);
+            }
+//          saveCollection(destination);
+        } catch (EXistException e) {
+            LOG.warn("An error occurred while copying resource", e);
+        } catch (TriggerException e) {
+            throw new PermissionDeniedException(e.getMessage());
+        } finally {
+            lock.release();
+        }
+    }
+    
+    private void copyResource(Txn transaction, DocumentImpl oldDoc, DocumentImpl newDoc) {
+        LOG.debug("Copying document " + oldDoc.getFileName() + " to " + 
+                newDoc.getName());
+        final long start = System.currentTimeMillis();
+        Iterator iterator;
+        NodeList nodes = oldDoc.getChildNodes();
+        StoredNode n;
+        for (int i = 0; i < nodes.getLength(); i++) {
+            n = (StoredNode) nodes.item(i);
+            iterator =
+                getNodeIterator(
+                        new NodeProxy(oldDoc, n.getGID(), n.getInternalAddress()));
+            iterator.next();
+            copyNodes(transaction, iterator, n, new NodePath(), newDoc, true);
+        }
+        flush();
+        closeDocument();
+        LOG.debug("Copy took " + (System.currentTimeMillis() - start) + "ms.");
+    }
+    
+    /** move Resource to another collection, with possible rename */
+    public void moveResource(Txn transaction, DocumentImpl doc, Collection destination, String newName)
+        throws PermissionDeniedException, LockException {
+        
+        if (readOnly)
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        
+        //TODO : somewhat inconsistent (READ is enough for original doc whereas WRITE is mandatory for destination) -pb
+        Collection collection = doc.getCollection();                
+        if(!collection.getPermissions().validate(user, Permission.WRITE))
+            throw new PermissionDeniedException("Insufficient privileges to move resource " +
+                    doc.getFileName());
+        if(!doc.getPermissions().validate(user, Permission.WRITE))
+            throw new PermissionDeniedException("Insufficient privileges to move resource " +
+                    doc.getFileName());
+      
+        User docUser = doc.getUserLock();
+        if (docUser != null) {
+           if(!(user.getName()).equals(docUser.getName()))
+                throw new PermissionDeniedException("Cannot move '" + doc.getFileName() + 
+                        " because is locked by user '" + docUser.getName() + "'");
+        }
+        
+        if(newName == null) {
+            ///TODO : use dedicated function in XmldbURI
+            int p = doc.getFileName().lastIndexOf("/");
+            newName = doc.getFileName().substring(p + 1);
+        }
+        Lock lock = collectionsDb.getLock();
+        try {           
+            lock.acquire(Lock.WRITE_LOCK);
+            // check if the move would overwrite a collection
+            ///TODO : use dedicated function in XmldbURI
+            if(getCollection(destination.getName() + "/" + newName) != null)
+                throw new PermissionDeniedException("A resource can not replace an existing collection");
+            DocumentImpl oldDoc = destination.getDocument(this, newName);
+            if(oldDoc != null) {
+                if(doc.getDocId() == oldDoc.getDocId())
+                    throw new PermissionDeniedException("Cannot move resource to itself");
+                if(!destination.getPermissions().validate(user, Permission.UPDATE))
+                    throw new PermissionDeniedException("Resource with same name exists in target " +
+                            "collection and update is denied");
+                if(!oldDoc.getPermissions().validate(user, Permission.UPDATE))
+                    throw new PermissionDeniedException("Resource with same name exists in target " +
+                            "collection and update is denied");
+                if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
+                    destination.removeBinaryResource(transaction, this, oldDoc);
+                else
+                    destination.removeDocument(transaction, this, oldDoc.getFileName());
+            } else
+                if(!destination.getPermissions().validate(user, Permission.WRITE))
+                    throw new PermissionDeniedException("Insufficient privileges on target collection " +
+                            destination.getName());
+                
+            boolean renameOnly = collection.getId() == destination.getId();
+            collection.unlinkDocument(doc);
+            removeDocMetadata(transaction, doc);
+            doc.setFileName(newName);
+            doc.setCollection(destination);
+            if (doc.getResourceType() == DocumentImpl.XML_FILE) {
+                if(!renameOnly) {
+                    notifyDropIndex(doc);
+                    saveCollection(transaction, collection);
+                }
+                destination.addDocument(transaction, this, doc);
+    
+                if(!renameOnly) {
+                    // reindexing
+                    reindexResource(transaction, doc, false);
+                }
+            } else {
+                // binary resource
+                destination.addDocument(transaction, this, doc);
+            }
+            storeXMLResource(transaction, doc);
+            saveCollection(transaction, destination);
+        } catch (TriggerException e) {
+            throw new PermissionDeniedException(e.getMessage());
+        } catch (ReadOnlyException e) {
+            throw new PermissionDeniedException(e.getMessage());
+        } finally {
+            lock.release();
+        }
+    } 
+    
+    public void removeBinaryResource(final Txn transaction, final BinaryDocument blob)
+    throws PermissionDeniedException {
+        if (readOnly)
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        LOG.info("removing binary resource " + blob.getDocId() + "...");
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() throws ReadOnlyException {
+                domDb.removeOverflowValue(transaction, blob.getPage());
+                return null;
+            }
+        }
+        .run();
+        removeDocMetadata(transaction, blob);
+    }  
+    
+    public void removeDocument(final Txn transaction, final DocumentImpl document, 
+            boolean freeDocId) throws PermissionDeniedException {
+        if (readOnly)
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        try {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("Removing document "
+                    + document.getFileName()
+                    + " ...");
+            }
+            
+            notifyDropIndex(document);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("removeDocument() - removing dom");
+            }
+            new DOMTransaction(this, domDb) {
+                public Object start() {
+                    StoredNode node = (StoredNode)document.getFirstChild();
+                    domDb.removeAll(transaction, node.getInternalAddress());
+                    return null;
+                }
+            }
+            .run();
+            
+            NodeRef ref = new NodeRef(document.getDocId());
+            final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+            new DOMTransaction(this, domDb) {
+                public Object start() {
+                    try {
+                        domDb.remove(transaction, idx, null);
+                    } catch (BTreeException e) {
+                        LOG.warn("start() - " + "error while removing doc", e);                 
+                    } catch (IOException e) {
+                        LOG.warn("start() - " + "error while removing doc", e);
+                    } catch (TerminatedException e) {
+                        LOG.warn("method terminated", e);
+                    }
+                    return null;
+                }
+            }
+            .run();
+            
+            removeDocMetadata(transaction, document);
+            
+            if(freeDocId)
+                freeDocumentId(transaction, document.getDocId());
+        } catch (ReadOnlyException e) {
+            LOG.warn("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
+        }
     }
 
-    public Iterator getNodeIterator(NodeProxy proxy) {
-//      domDb.setOwnerObject(this);
+    /**
+     * @param transaction
+     * @param document
+     */
+    private void removeDocMetadata(final Txn transaction, final DocumentImpl document) {
+        // remove document metadata
+        Lock lock = collectionsDb.getLock();
         try {
-            return new NodeIterator(this, domDb, proxy, false);
-        } catch (BTreeException e) {
-            LOG.debug("failed to create node iterator", e);
-        } catch (IOException e) {
-            LOG.debug("failed to create node iterator", e);
+            lock.acquire();            
+            Value key = new DocumentKey(document.getCollection().getId(), document.getResourceType(), document.getDocId());
+            collectionsDb.remove(transaction, key);
+        } catch (ReadOnlyException e) {
+            LOG.warn(DATABASE_IS_READ_ONLY);
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+        } finally {
+            lock.release();
         }
-        return null;
     }
 
 	/**
@@ -1629,6 +1946,56 @@ public class NativeBroker extends DBBroker {
 		}
 		return nextDocId;
 	}
+    
+    /** consistency Check of the database; useful after XUpdates;
+     * called if xupdate.consistency-checks is true in configuration */ 
+    public void checkResourceConsistency(DocumentImpl doc) throws EXistException {
+        if(xupdateConsistencyChecks) {
+            LOG.debug("Checking document " + doc.getFileName());
+            checkResourceTree(doc);
+//          elementIndex.consistencyCheck(doc);
+        }
+    }
+    
+    /** consistency Check of the database; useful after XUpdates;
+     * called by {@link #checkResourceConsistency()} */
+    public void checkResourceTree(final DocumentImpl doc) {
+        LOG.debug("Checking DOM tree for document " + doc.getFileName());
+        if(xupdateConsistencyChecks) {
+            new DOMTransaction(this, domDb, Lock.READ_LOCK) {
+                public Object start() throws ReadOnlyException {
+                    LOG.debug("Pages used: " + domDb.debugPages(doc, false));
+                    return null;
+                }
+            }.run();
+            
+            NodeList nodes = doc.getChildNodes();
+            StoredNode n;
+            for (int i = 0; i < nodes.getLength(); i++) {
+                n = (StoredNode) nodes.item(i);
+                Iterator iterator =
+                    getNodeIterator(
+                            new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+                iterator.next();
+                checkNodeTree(iterator, n);
+            }
+            NodeRef ref = new NodeRef(doc.getDocId());
+            final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+            new DOMTransaction(this, domDb) {
+                public Object start() {
+                    try {
+                        domDb.findKeys(idx);
+                    } catch (BTreeException e) {
+                        LOG.warn("start() - " + "error while removing doc", e);
+                    } catch (IOException e) {
+                        LOG.warn("start() - " + "error while removing doc", e);
+                    }
+                    return null;
+                }
+            }
+            .run();
+        }
+    }    
     
     public void flush() {
         notifyFlush();
@@ -1787,7 +2154,7 @@ public class NativeBroker extends DBBroker {
             getNodeIterator(new NodeProxy((DocumentImpl)node.getOwnerDocument(), node.getGID(), node.getInternalAddress()));
         iterator.next();
         Stack stack = new Stack();
-        collectNodesForRemove(stack, iterator, node, currentPath);
+        collectNodesForRemoval(stack, iterator, node, currentPath);
         RemovedNode next;
         while (!stack.isEmpty()) {
             next = (RemovedNode) stack.pop();
@@ -1795,7 +2162,7 @@ public class NativeBroker extends DBBroker {
         }
     }
     
-    private void collectNodesForRemove(Stack stack, Iterator iterator, StoredNode node, NodePath currentPath) {
+    private void collectNodesForRemoval(Stack stack, Iterator iterator, StoredNode node, NodePath currentPath) {
         RemovedNode removed;
         switch (node.getNodeType()) {
             case Node.ELEMENT_NODE:
@@ -1836,7 +2203,7 @@ public class NativeBroker extends DBBroker {
                         child.setGID(gid);
                         if (child.getNodeType() == Node.ELEMENT_NODE)
                             currentPath.addComponent(((ElementImpl) child).getQName());
-                        collectNodesForRemove(stack, iterator, child, currentPath);
+                        collectNodesForRemoval(stack, iterator, child, currentPath);
                         if (child.getNodeType() == Node.ELEMENT_NODE)
                             currentPath.removeLastComponent();
                     }
@@ -1849,176 +2216,7 @@ public class NativeBroker extends DBBroker {
         }
     }
 	
-	public void copyResource(Txn transaction, DocumentImpl doc, Collection destination, String newName) 
-	throws PermissionDeniedException, LockException {
-		if (readOnly)
-			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-	    Collection collection = doc.getCollection();
-	    if(!collection.getPermissions().validate(user, Permission.READ))
-	        throw new PermissionDeniedException("Insufficient privileges to copy resource " +
-	                doc.getFileName());
-	    if(!doc.getPermissions().validate(user, Permission.READ))
-	    	throw new PermissionDeniedException("Insufficient privileges to copy resource " +
-	                doc.getFileName());
-	    if(newName == null) {
-            ///TODO : use dedicated function in XmldbURI
-            int p = doc.getFileName().lastIndexOf("/");
-            newName = doc.getFileName().substring(p + 1);
-        }
 
-	    Lock lock = null;
-	    try {
-	        lock = collectionsDb.getLock();
-	        lock.acquire(Lock.WRITE_LOCK);
-	        // check if the move would overwrite a collection
-            ///TODO : use dedicated function in XmldbURI
-	        if(getCollection(destination.getName() + "/" + newName) != null)
-	            throw new PermissionDeniedException("A resource can not replace an existing collection");
-	        DocumentImpl oldDoc = destination.getDocument(this, newName);
-	        if(oldDoc != null) {
-	        	if(doc.getDocId() == oldDoc.getDocId())
-	            	throw new PermissionDeniedException("Cannot copy resource to itself");
-	            if(!destination.getPermissions().validate(user, Permission.UPDATE))
-	                throw new PermissionDeniedException("Resource with same name exists in target " +
-	                		"collection and update is denied");
-	            if(!oldDoc.getPermissions().validate(user, Permission.UPDATE))
-	                throw new PermissionDeniedException("Resource with same name exists in target " +
-	                		"collection and update is denied");
-                if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
-                    destination.removeBinaryResource(transaction, this, oldDoc);
-                else
-                    destination.removeDocument(transaction, this, oldDoc.getFileName());
-	        } else {
-	        	if(!destination.getPermissions().validate(user, Permission.WRITE))
-	    	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
-	    	                destination.getName());
-	        }
-            if (doc.getResourceType() == DocumentImpl.BINARY_FILE)  {
-                byte[] data = getBinaryResourceData((BinaryDocument) doc); 
-                destination.addBinaryResource(transaction, this, newName, data, doc.getMetadata().getMimeType());
-            } else {
-                DocumentImpl newDoc = new DocumentImpl(this, destination, newName);
-                newDoc.copyOf(doc);
-                newDoc.setDocId(getNextDocumentId(transaction, destination));
-                newDoc.setPermissions(doc.getPermissions()); 
-                copyResource(transaction, doc, newDoc);
-                destination.addDocument(transaction, this, newDoc);
-                storeResource(transaction, newDoc);
-            }
-//	        saveCollection(destination);
-        } catch (EXistException e) {
-            LOG.warn("An error occurred while copying resource", e);
-		} catch (TriggerException e) {
-			throw new PermissionDeniedException(e.getMessage());
-		} finally {
-	    	lock.release();
-	    }
-	}
-	
-	private void copyResource(Txn transaction, DocumentImpl oldDoc, DocumentImpl newDoc) {
-		LOG.debug("Copying document " + oldDoc.getFileName() + " to " + 
-				newDoc.getName());
-		final long start = System.currentTimeMillis();
-		Iterator iterator;
-		NodeList nodes = oldDoc.getChildNodes();
-		StoredNode n;
-		for (int i = 0; i < nodes.getLength(); i++) {
-		    n = (StoredNode) nodes.item(i);
-		    iterator =
-		        getNodeIterator(
-		                new NodeProxy(oldDoc, n.getGID(), n.getInternalAddress()));
-		    iterator.next();
-		    copyNodes(transaction, iterator, n, new NodePath(), newDoc, true);
-		}
-		flush();
-		closeDocument();
-		LOG.debug("Copy took " + (System.currentTimeMillis() - start) + "ms.");
-	}
-    
-    /** move Resource to another collection, with possible rename */
-    public void moveResource(Txn transaction, DocumentImpl doc, Collection destination, String newName)
-        throws PermissionDeniedException, LockException {
-        
-        if (readOnly)
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-        
-        //TODO : somewhat inconsistent (READ is enough for original doc whereas WRITE is mandatory for destination) -pb
-        Collection collection = doc.getCollection();                
-        if(!collection.getPermissions().validate(user, Permission.WRITE))
-            throw new PermissionDeniedException("Insufficient privileges to move resource " +
-                    doc.getFileName());
-        if(!doc.getPermissions().validate(user, Permission.WRITE))
-            throw new PermissionDeniedException("Insufficient privileges to move resource " +
-                    doc.getFileName());
-      
-        User docUser = doc.getUserLock();
-        if (docUser != null) {
-           if(!(user.getName()).equals(docUser.getName()))
-                throw new PermissionDeniedException("Cannot move '" + doc.getFileName() + 
-                        " because is locked by user '" + docUser.getName() + "'");
-        }
-        
-        if(newName == null) {
-            ///TODO : use dedicated function in XmldbURI
-            int p = doc.getFileName().lastIndexOf("/");
-            newName = doc.getFileName().substring(p + 1);
-        }
-        Lock lock = collectionsDb.getLock();
-        try {           
-            lock.acquire(Lock.WRITE_LOCK);
-            // check if the move would overwrite a collection
-            ///TODO : use dedicated function in XmldbURI
-            if(getCollection(destination.getName() + "/" + newName) != null)
-                throw new PermissionDeniedException("A resource can not replace an existing collection");
-            DocumentImpl oldDoc = destination.getDocument(this, newName);
-            if(oldDoc != null) {
-                if(doc.getDocId() == oldDoc.getDocId())
-                    throw new PermissionDeniedException("Cannot move resource to itself");
-                if(!destination.getPermissions().validate(user, Permission.UPDATE))
-                    throw new PermissionDeniedException("Resource with same name exists in target " +
-                            "collection and update is denied");
-                if(!oldDoc.getPermissions().validate(user, Permission.UPDATE))
-                    throw new PermissionDeniedException("Resource with same name exists in target " +
-                            "collection and update is denied");
-                if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
-                    destination.removeBinaryResource(transaction, this, oldDoc);
-                else
-                    destination.removeDocument(transaction, this, oldDoc.getFileName());
-            } else
-                if(!destination.getPermissions().validate(user, Permission.WRITE))
-                    throw new PermissionDeniedException("Insufficient privileges on target collection " +
-                            destination.getName());
-                
-            boolean renameOnly = collection.getId() == destination.getId();
-            collection.unlinkDocument(doc);
-            removeDocMetadata(transaction, doc);
-            doc.setFileName(newName);
-            doc.setCollection(destination);
-            if (doc.getResourceType() == DocumentImpl.XML_FILE) {
-                if(!renameOnly) {
-                    notifyDropIndex(doc);
-                    saveCollection(transaction, collection);
-                }
-                destination.addDocument(transaction, this, doc);
-    
-                if(!renameOnly) {
-                    // reindexing
-                    reindexResource(transaction, doc, false);
-                }
-            } else {
-                // binary resource
-                destination.addDocument(transaction, this, doc);
-            }
-            storeResource(transaction, doc);
-            saveCollection(transaction, destination);
-        } catch (TriggerException e) {
-            throw new PermissionDeniedException(e.getMessage());
-        } catch (ReadOnlyException e) {
-            throw new PermissionDeniedException(e.getMessage());
-        } finally {
-            lock.release();
-        }
-    } 
     
     public void defragResource(final Txn transaction, final DocumentImpl doc) {
         //TODO : use dedicated function in XmldbURI
@@ -2116,7 +2314,7 @@ public class NativeBroker extends DBBroker {
             doc.getMetadata().setSplitCount(0);
             doc.getMetadata().setPageCount(tempDoc.getMetadata().getPageCount());
             
-            storeResource(transaction, doc);
+            storeXMLResource(transaction, doc);
             //Commented out since DocmentImpl has no more internal address
             //LOG.debug("new doc address = " + StorageAddress.toString(doc.getInternalAddress()));
             closeDocument();
@@ -2126,7 +2324,7 @@ public class NativeBroker extends DBBroker {
 //                  return null;
 //              }
 //          }.run();
-            storeResource(transaction, doc);
+            storeXMLResource(transaction, doc);
 //            checkTree(doc);
             LOG.debug("Defragmentation took " + (System.currentTimeMillis() - start) + "ms.");
         } catch (ReadOnlyException e) {
@@ -2225,55 +2423,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
-	/** consistency Check of the database; useful after XUpdates;
-	 * called if xupdate.consistency-checks is true in configuration */	
-	public void checkResourceConsistency(DocumentImpl doc) throws EXistException {
-		if(xupdateConsistencyChecks) {
-			LOG.debug("Checking document " + doc.getFileName());
-			checkResourceTree(doc);
-//			elementIndex.consistencyCheck(doc);
-		}
-	}
-	
-	/** consistency Check of the database; useful after XUpdates;
-	 * called by {@link #checkResourceConsistency()} */
-	public void checkResourceTree(final DocumentImpl doc) {
-		LOG.debug("Checking DOM tree for document " + doc.getFileName());
-		if(xupdateConsistencyChecks) {
-			new DOMTransaction(this, domDb, Lock.READ_LOCK) {
-				public Object start() throws ReadOnlyException {
-					LOG.debug("Pages used: " + domDb.debugPages(doc, false));
-					return null;
-				}
-			}.run();
-			
-			NodeList nodes = doc.getChildNodes();
-			StoredNode n;
-			for (int i = 0; i < nodes.getLength(); i++) {
-			    n = (StoredNode) nodes.item(i);
-			    Iterator iterator =
-			        getNodeIterator(
-			                new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
-			    iterator.next();
-                checkNodeTree(iterator, n);
-			}
-			NodeRef ref = new NodeRef(doc.getDocId());
-			final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-			new DOMTransaction(this, domDb) {
-				public Object start() {
-					try {
-						domDb.findKeys(idx);
-					} catch (BTreeException e) {
-			            LOG.warn("start() - " + "error while removing doc", e);
-					} catch (IOException e) {
-			            LOG.warn("start() - " + "error while removing doc", e);
-					}
-					return null;
-				}
-			}
-			.run();
-		}
-	}
+
 	
 	private void checkNodeTree(Iterator iterator, StoredNode node) {
 		if (node.hasChildNodes()) {
@@ -2421,79 +2571,6 @@ public class NativeBroker extends DBBroker {
         }
         LOG.info("Reindexing database files ...");
         reindexCollection(null, root, true);
-    }
-    
-
-
-	public void removeDocument(final Txn transaction, final DocumentImpl document, 
-            boolean freeDocId) throws PermissionDeniedException {
-		if (readOnly)
-			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-		try {
-            if (LOG.isInfoEnabled()) {
-                LOG.info("Removing document "
-                    + document.getFileName()
-                    + " ...");
-            }
-            
-            notifyDropIndex(document);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("removeDocument() - removing dom");
-            }
-			new DOMTransaction(this, domDb) {
-				public Object start() {
-				    StoredNode node = (StoredNode)document.getFirstChild();
-					domDb.removeAll(transaction, node.getInternalAddress());
-					return null;
-				}
-			}
-			.run();
-			
-			NodeRef ref = new NodeRef(document.getDocId());
-			final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-			new DOMTransaction(this, domDb) {
-				public Object start() {
-					try {
-						domDb.remove(transaction, idx, null);
-					} catch (BTreeException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);					
-					} catch (IOException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);
-					} catch (TerminatedException e) {
-                        LOG.warn("method terminated", e);
-                    }
-					return null;
-				}
-			}
-			.run();
-            
-            removeDocMetadata(transaction, document);
-            
-			if(freeDocId)
-                freeDocumentId(transaction, document.getDocId());
-		} catch (ReadOnlyException e) {
-            LOG.warn("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
-		}
-	}
-
-    /**
-     * @param transaction
-     * @param document
-     */
-    private void removeDocMetadata(final Txn transaction, final DocumentImpl document) {
-        // remove document metadata
-        Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire();            
-            Value key = new DocumentKey(document.getCollection().getId(), document.getResourceType(), document.getDocId());
-            collectionsDb.remove(transaction, key);
-        } catch (ReadOnlyException e) {
-            LOG.warn(DATABASE_IS_READ_ONLY);
-        } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
-        } finally {
-            lock.release();
-        }
     }
 
 	/** Removes the Node Reference from the database.
@@ -2810,81 +2887,6 @@ public class NativeBroker extends DBBroker {
             }
         }
     }
-
-    public void readDocuments(Collection collection) {
-        Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire();            
-            Value key = new DocumentKey(collection.getId());
-            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
-            collectionsDb.query(query, new DocumentCallback(collection));
-        } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
-        } catch (IOException e) {
-            LOG.warn("IOException while reading document data", e);
-        } catch (BTreeException e) {
-            LOG.warn("Exception while reading document data", e);
-        } catch (TerminatedException e) {
-            LOG.warn("Exception while reading document data", e);
-        } finally {
-            lock.release();
-        }
-    }
-	
-    public void readDocumentMeta(DocumentImpl doc) {
-    	Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire();
-            SanityCheck.ASSERT(doc.getMetadataLocation() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS, 
-            		"Missing pointer to metadata location in document " + doc.getDocId());
-            VariableByteInput istream = collectionsDb.getAsStream(doc.getMetadataLocation());
-            DocumentMetadata metadata = new DocumentMetadata();
-            metadata.read(istream);
-            doc.setMetadata(metadata);
-        } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
-        } catch (IOException e) {
-            LOG.warn("IOException while reading document data", e);
-        } finally {
-            lock.release();
-        }
-    }
-    
-	public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final byte[] data) {
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-			public Object start() throws ReadOnlyException {
-				LOG.debug("Storing binary resource " + blob.getFileName());
-				blob.setPage(domDb.addBinary(transaction, blob, data));
-				return null;
-			}
-		}
-		.run();
-	}
-	
-	public byte[] getBinaryResourceData(final BinaryDocument blob) {
-		byte[] data = (byte[]) new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-			public Object start() throws ReadOnlyException {
-				return domDb.getBinary(blob.getPage());
-			}
-		}
-		.run();
-		return data;
-	}
-
-	public void removeBinaryResource(final Txn transaction, final BinaryDocument blob)
-		throws PermissionDeniedException {
-		if (readOnly)
-			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-		LOG.info("removing binary resource " + blob.getDocId() + "...");
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-			public Object start() throws ReadOnlyException {
-				domDb.removeOverflowValue(transaction, blob.getPage());
-				return null;
-			}
-		}
-		.run();
-        removeDocMetadata(transaction, blob);
-	}
 	
 	public void closeDocument() {
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {

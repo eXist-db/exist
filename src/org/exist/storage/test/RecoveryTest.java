@@ -209,7 +209,7 @@ public class RecoveryTest extends TestCase {
             
             BinaryDocument binDoc = (BinaryDocument) broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/test2/binary.txt", Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
-            data = new String(broker.getBinaryResourceData(binDoc));
+            data = new String(broker.getBinaryResource(binDoc));
             assertNotNull(data);
             System.out.println(data);
             

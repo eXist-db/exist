@@ -310,7 +310,7 @@ public class RESTServer {
                     if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
                         // binary resource
                         response.setContentType(resource.getMetadata().getMimeType());
-                        writeResponse(response, broker.getBinaryResourceData((BinaryDocument) resource));
+                        writeResponse(response, broker.getBinaryResource((BinaryDocument) resource));
                     } else {
                         // xml resource
                         Serializer serializer = broker.getSerializer();

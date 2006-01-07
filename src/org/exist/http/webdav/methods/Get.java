@@ -102,7 +102,7 @@ public class Get extends AbstractWebDAVMethod {
 					throw new ServletException(SERIALIZE_ERROR + e.getMessage(), e);
 				}
 			} else
-				contentData = broker.getBinaryResourceData((BinaryDocument)resource);
+				contentData = broker.getBinaryResource((BinaryDocument)resource);
 		} catch (EXistException e) {
 			throw new ServletException(SERIALIZE_ERROR + e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
