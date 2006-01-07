@@ -105,7 +105,7 @@ public class CopyResourceTest extends TestCase {
 			Serializer serializer = broker.getSerializer();
 			serializer.reset();
 
-			DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION + "/test/new_test.xml", Lock.READ_LOCK);
+			DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/new_test.xml", Lock.READ_LOCK);
 			assertNotNull("Document should not be null", doc);
 			String data = serializer.serialize(doc);
 			assertNotNull(data);
@@ -179,14 +179,14 @@ public class CopyResourceTest extends TestCase {
 			Serializer serializer = broker.getSerializer();
 			serializer.reset();
 
-			DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/test/test2/test2.xml",	Lock.READ_LOCK);
+			DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION +  "/test/test2/test2.xml",	Lock.READ_LOCK);
 			assertNotNull("Document should not be null", doc);
 			String data = serializer.serialize(doc);
 			assertNotNull(data);
 			System.out.println(data);
 			doc.getUpdateLock().release(Lock.READ_LOCK);
 
-			doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/test/new_test2.xml", Lock.READ_LOCK);
+			doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION +  "/test/new_test2.xml", Lock.READ_LOCK);
 			assertNull("Document should not exist", doc);
 	    } catch (Exception e) {            
 	        fail(e.getMessage());  			

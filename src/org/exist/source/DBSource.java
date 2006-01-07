@@ -73,7 +73,7 @@ public class DBSource extends AbstractSource {
     public int isValid(DBBroker broker) {
         DocumentImpl doc = null;
         try {
-            doc = broker.openDocument(key, Lock.READ_LOCK);
+            doc = broker.getXMLResource(key, Lock.READ_LOCK);
             if (doc == null)
                 return INVALID;
             if (doc.getMetadata().getLastModified() > lastModified)

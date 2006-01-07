@@ -64,7 +64,7 @@ public class Head extends AbstractWebDAVMethod {
                 response.addDateHeader("Last-Modified", collection.getCreationTime());
 				return;
 			}
-			resource = broker.openDocument(path, Lock.READ_LOCK);
+			resource = broker.getXMLResource(path, Lock.READ_LOCK);
 			if(resource == null) {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Resource not found");
 				return;

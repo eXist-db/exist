@@ -109,7 +109,7 @@ public class ExtDocument extends Function {
 	            docs = cached.getDocumentSet();
 	        } else {
 		        docs = new DocumentSet();
-		        context.getBroker().getAllDocuments(docs);
+		        context.getBroker().getAllXMLResources(docs);
 	        }
 	    } else {
 		    List args = getParameterValues(contextSequence, contextItem);

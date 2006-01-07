@@ -83,7 +83,7 @@ public class ResourceThread extends Thread {
             broker = brokerPool.get(SecurityManager.SYSTEM_USER);
             
             
-            DocumentImpl doc = broker.openDocument(resourceId, Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(resourceId, Lock.READ_LOCK);
             
             if(doc==null){
                 logger.error("Document '"+resourceId+"' does not exist");

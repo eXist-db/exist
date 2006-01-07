@@ -107,7 +107,7 @@ public class MoveCollectionTest extends TestCase {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/destination1/test3/test.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION +  "/destination1/test3/test.xml", Lock.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
@@ -183,7 +183,7 @@ public class MoveCollectionTest extends TestCase {
             assertNotNull(broker);
             Serializer serializer = broker.getSerializer();
             serializer.reset();            
-            DocumentImpl doc = broker.openDocument(DBBroker.ROOT_COLLECTION +  "/destination2/test3/test.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION +  "/destination2/test3/test.xml", Lock.READ_LOCK);
             assertNull("Document should be null", doc);
 	    } catch (Exception e) {            
 	        fail(e.getMessage());              

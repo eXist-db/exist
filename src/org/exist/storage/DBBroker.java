@@ -241,7 +241,7 @@ public abstract class DBBroker extends Observable {
      *  documents are added.
 	 *
 	 */
-	public abstract DocumentSet getAllDocuments(DocumentSet docs);
+	public abstract DocumentSet getAllXMLResources(DocumentSet docs);
 
 	/**
 	 *  Returns the database collection identified by the specified path.
@@ -332,13 +332,13 @@ public abstract class DBBroker extends Observable {
 	 */
 	public abstract Document getXMLResource(String path) throws PermissionDeniedException;
 
-	public abstract DocumentImpl openDocument(String docPath, int lockMode) 
+	public abstract DocumentImpl getXMLResource(String docPath, int lockMode) 
 		throws PermissionDeniedException;
 
 	/**
 	 * Get a new document id that does not yet exist within the collection.
 	 */
-	public abstract int getNextDocumentId(Txn transaction, Collection collection);
+	public abstract int getNextResourceId(Txn transaction, Collection collection);
 
 	/**
 	 * Get the string value of the specified node.
@@ -513,7 +513,7 @@ public abstract class DBBroker extends Observable {
      */
     public abstract void storeBinaryResource(Txn transaction, BinaryDocument blob, byte[] data);
     
-    public abstract void readDocuments(Collection collection);
+    public abstract void getCollectionResources(Collection collection);
 	
     /**
      * Retrieve the binary data stored under the resource descriptor
@@ -524,7 +524,7 @@ public abstract class DBBroker extends Observable {
      */
     public abstract byte[] getBinaryResource(BinaryDocument blob);
     
-    public abstract void readDocumentMeta(DocumentImpl doc);
+    public abstract void getResourceMetadata(DocumentImpl doc);
     
 
 	
@@ -687,7 +687,7 @@ public abstract class DBBroker extends Observable {
 	/**
 	 *   
 	 */
-	public abstract DocumentSet getDocumentsByDoctype(
+	public abstract DocumentSet getXMLResourcesByDoctype(
 		String doctype,
 		DocumentSet result);
 
