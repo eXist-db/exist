@@ -197,7 +197,11 @@ public class LocationStep extends Step {
                     result = getParents(context, contextSequence.toNodeSet());
                     break;                    
     			case Constants.SELF_AXIS :
-                    result = getSelf(context, contextSequence.toNodeSet());
+    				if (!(contextSequence instanceof VirtualNodeSet) && 
+    						Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC))
+    					result = getSelfAtomic(contextSequence);
+    				else
+    					result = getSelf(context, contextSequence.toNodeSet());
     				break;
     			case Constants.ATTRIBUTE_AXIS :    				
     			case Constants.DESCENDANT_ATTRIBUTE_AXIS :
@@ -307,6 +311,12 @@ public class LocationStep extends Step {
 		}
 	}
 
+	protected Sequence getSelfAtomic(Sequence contextSequence) throws XPathException {
+		if (!test.isWildcardTest())
+			throw new XPathException(getASTNode(), test.toString() + " cannot be applied to an atomic value.");
+		return contextSequence;
+	}
+	
 	protected NodeSet getAttributes(XQueryContext context, NodeSet contextSet) {		
 		if (test.isWildcardTest()) {
             NodeSet result = new VirtualNodeSet(axis, test, contextSet);

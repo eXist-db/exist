@@ -120,7 +120,11 @@ public class Predicate extends PathExpr {
             //TODO : the code, likely to be correct, implements the exact contrary     
             if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && executionMode == BOOLEAN) {
                 executionMode = POSITIONAL;
-            }        
+            }
+            if (!(contextSequence instanceof VirtualNodeSet) && 
+            		Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC))
+            	executionMode = BOOLEAN;
+            
     		switch(executionMode) {
     			case NODE: 
                     if (context.getProfiler().isEnabled())
