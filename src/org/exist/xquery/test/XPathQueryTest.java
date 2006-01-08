@@ -119,6 +119,29 @@ public class XPathQueryTest extends XMLTestCase {
 			e.printStackTrace();
 		}
 	}
+    
+    public void testPathExpression() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("numbers.xml", numbers); 
+            ResourceSet result;
+            
+            boolean exceptionThrown = false;
+            String message = "";
+            try {
+                result = queryAndAssert(service, "('a', 'b', 'c')/position()", -1, null);                
+            } catch (XMLDBException e) {
+                exceptionThrown = true;
+                message = e.getMessage();
+            }
+            assertTrue("Exception wanted: " + message, exceptionThrown);
+            
+            result = queryAndAssert(service, "()/position()", 0, null);
+            
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }    
 	/** test simple queries involving attributes */
 	public void testAttributes() {
         ResourceSet result;
@@ -259,8 +282,8 @@ public class XPathQueryTest extends XMLTestCase {
 		}
 	}
 	
-	public void testPosition() {
-		try {
+    public void testPosition() {
+        try {
             XQueryService service = 
                 storeXMLStringAndGetQueryService("numbers.xml", numbers);
             
@@ -283,12 +306,12 @@ public class XPathQueryTest extends XMLTestCase {
             resource = (XMLResource)result.getResource(1); 
             assertEquals("XPath: " + query, "1", resource.getContent().toString());
             resource = (XMLResource)result.getResource(2); 
-            assertEquals("XPath: " + query, "1", resource.getContent().toString());            
+            assertEquals("XPath: " + query, "1", resource.getContent().toString()); 
             
-		} catch (XMLDBException e) {
-			fail(e.getMessage());
-		}
-	}
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }
 	
 	public void testNumbers() {
 		try {
@@ -859,17 +882,17 @@ public class XPathQueryTest extends XMLTestCase {
 			fail(e.getMessage());
 		}
 
-		boolean exceptionThrowed = false;
-		String message = "";
-		try {
-			result = queryAndAssert(service,
-					"let $doc := <element attribute=''/>"
-							+ "	return boolean( (1,2,$doc) )", 1, "");
-		} catch (XMLDBException e) {
-			exceptionThrowed = true;
-			message = e.getMessage();
-		}
-		assertTrue("Exception wanted: " + message, exceptionThrowed);
+        boolean exceptionThrown = false;
+        String message = "";
+        try {
+            result = queryAndAssert(service,
+                    "let $doc := <element attribute=''/>"
+                            + " return boolean( (1,2,$doc) )", 1, "");
+        } catch (XMLDBException e) {
+            exceptionThrown = true;
+            message = e.getMessage();
+        }
+        assertTrue("Exception wanted: " + message, exceptionThrown);
 	}
 
 	public static void main(String[] args) {
