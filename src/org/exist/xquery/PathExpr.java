@@ -146,6 +146,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             if (contextDocs != null)
             	setContextDocSet(contextDocs);          
            
+            //To prevent computing nodes after atomic values...
+            //TODO : let the parser do it ? -pb
+            boolean gotAtomic = false;
             for (Iterator iter = steps.iterator(); iter.hasNext();) {  
                 expr = (Expression) iter.next();
                 if (contextDocs != null) 
@@ -171,17 +174,20 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 } else {
                     result = expr.eval(result);
                 }
-                //TODO ! maybe this could be detected by the parser ? -pb
-                if (iter.hasNext()) { 
-                    //TOUNDERSTAND : why did I have to write this test :-) ? -pb
-                    //it looks like an empty sequence could be considered as a sub-type of Type.NODE
-                    //well, no so stupid I think...
-                    if (result.getLength() > 0) {
-                        if (!Type.subTypeOf(result.getItemType(), Type.NODE))
+                //TODO ! maybe this could be detected by the parser ? -pb                
+                //TOUNDERSTAND : why did I have to write this test :-) ? -pb
+                //it looks like an empty sequence could be considered as a sub-type of Type.NODE
+                //well, no so stupid I think...
+                if (result.getLength() > 0) {
+                    if (!Type.subTypeOf(result.getItemType(), Type.NODE)) {
+                        if (!gotAtomic) {                            
+                            gotAtomic = true;
+                        } else {
                             throw new XPathException("XPTY0019: left operand of '/' must be a node. Got '" + 
-                                    Type.getTypeName(result.getItemType()) + "'");
+                                    Type.getTypeName(result.getItemType()) + "'");                            
+                        }
                     }
-                }                 
+                }                               
                 
                 if(steps.size() > 1)
                     // remove duplicate nodes if this is a path 
