@@ -44,16 +44,12 @@ public class OrderedValueSequence extends AbstractSequence {
 	private Entry[] items = null;
 	private int count = 0;
 	
+	// used to keep track of the type of added items.
+    private int itemType = Type.ANY_TYPE;
+    
 	public OrderedValueSequence(OrderSpec orderSpecs[], int size) {
 		this.orderSpecs = orderSpecs;
 		this.items = new Entry[size];
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#getItemType()
-	 */
-	public int getItemType() {
-		return Type.ATOMIC;
 	}
 
 	/* (non-Javadoc)
@@ -87,6 +83,7 @@ public class OrderedValueSequence extends AbstractSequence {
 			items = newItems;
 		}
 		items[count++] = new Entry(item);
+		checkItemType(item.getType());
 	}
 
 	/* (non-Javadoc)
@@ -118,6 +115,22 @@ public class OrderedValueSequence extends AbstractSequence {
 			return null;
 	}
 
+	private void checkItemType(int type) {
+        if(itemType == Type.NODE || itemType == type)
+            return;
+        if(itemType == Type.ANY_TYPE)
+            itemType = type;
+        else
+            itemType = Type.NODE;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#getItemType()
+     */
+    public int getItemType() {
+        return itemType;
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
