@@ -1244,7 +1244,7 @@ public class ClientFrame extends JFrame
     }
     
     private void AboutAction() {
-        JOptionPane.showMessageDialog(this, "eXist version 1.0, Copyright (C) 2004 Wolfgang Meier\n"
+        JOptionPane.showMessageDialog(this, "eXist version 1.0, Copyright (C) 2001-2006 Wolfgang Meier\n"
                 + "eXist comes with ABSOLUTELY NO WARRANTY.\n"
                 + "This is free software, and you are welcome to\n"
                 + "redistribute it under certain conditions;\n"
