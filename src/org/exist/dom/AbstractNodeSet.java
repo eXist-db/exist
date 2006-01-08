@@ -515,22 +515,23 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public NodeSet getParents(boolean rememberContext) {
-		NodeSet parents = new ExtArrayNodeSet();
-		NodeProxy p;
-		long pid;
+		NodeSet parents = new ExtArrayNodeSet();		 
 		NodeProxy parent = null;
 		for (Iterator i = iterator(); i.hasNext();) {
-			p = (NodeProxy) i.next();
+            NodeProxy p = (NodeProxy) i.next();
 			// calculate parent's gid
-			pid = XMLUtil.getParentId(p.getDocument(), p.getGID());
-			if (pid != NodeProxy.DOCUMENT_NODE_GID) {
-				if (parent == null || parent.getDocument().getDocId() != p.getDocument().getDocId() || pid != parent.getGID())
-					parent = new NodeProxy(p.getDocument(), pid, Node.ELEMENT_NODE);
+            long pid = XMLUtil.getParentId(p.getDocument(), p.getGID());            
+            if (pid != NodeProxy.DOCUMENT_NODE_GID && 
+                    //Remove the temorary nodes wrapper element 
+                    //TODO : optimize this !!!
+                    !(pid == NodeProxy.DOCUMENT_ELEMENT_GID && p.getDocument().getCollection().isTempCollection())) {                
+				if (parent == null || parent.getDocument().getDocId() != p.getDocument().getDocId() || pid != parent.getGID())                 
+                    parent = new NodeProxy(p.getDocument(), pid, Node.ELEMENT_NODE);
 				if (rememberContext)
 					parent.addContextNode(p);
 				else
 					parent.copyContext(p);
-				parents.add(parent);
+                parents.add(parent);
 			}
 		}
 		return parents;
@@ -538,26 +539,29 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
     public NodeSet getAncestors(boolean rememberContext, boolean includeSelf) {
         NodeSet ancestors = new ExtArrayNodeSet();
-        NodeProxy p;
-        long gid;
         for (Iterator i = iterator(); i.hasNext();) {
-            p = (NodeProxy) i.next();
+            NodeProxy p = (NodeProxy) i.next();
             if (includeSelf) {
             	if (rememberContext)
             		p.addContextNode(p);
                 ancestors.add(p);
             }
-            gid = p.getGID();
+            long gid = p.getGID();
             // calculate parent's gid
-            while((gid = XMLUtil.getParentId(p.getDocument(), gid)) > 0) {
-            	NodeProxy parent = ancestors.get(p.getDocument(), gid);
-            	if (parent == null)
-            		parent = new NodeProxy(p.getDocument(), gid, Node.ELEMENT_NODE);
-                if (rememberContext)
-                    parent.addContextNode(p);
-                else
-                    parent.copyContext(p);
-                ancestors.add(parent);
+            while ((gid = XMLUtil.getParentId(p.getDocument(), gid)) > 0) {
+                if (gid != NodeProxy.DOCUMENT_NODE_GID && 
+                        //Remove the temorary nodes wrapper element 
+                        //TODO : optimize this !!!
+                        !(gid == NodeProxy.DOCUMENT_ELEMENT_GID && p.getDocument().getCollection().isTempCollection())) {                
+                	NodeProxy parent = ancestors.get(p.getDocument(), gid);
+                	if (parent == null)
+                		parent = new NodeProxy(p.getDocument(), gid, Node.ELEMENT_NODE);
+                    if (rememberContext)
+                        parent.addContextNode(p);
+                    else
+                        parent.copyContext(p);
+                    ancestors.add(parent);
+                }
             }
         }
         return ancestors;
