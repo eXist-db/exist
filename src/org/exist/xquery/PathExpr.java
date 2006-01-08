@@ -144,11 +144,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             }
     
             if (contextDocs != null)
-            	setContextDocSet(contextDocs);
-            
-            Item current;
-            Sequence values;
-            for (Iterator iter = steps.iterator(); iter.hasNext();) {
+            	setContextDocSet(contextDocs);          
+           
+            for (Iterator iter = steps.iterator(); iter.hasNext();) {  
                 expr = (Expression) iter.next();
                 if (contextDocs != null) 
                     expr.setContextDocSet(contextDocs);
@@ -157,12 +155,12 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         result = expr.eval(null, null);
                     //TODO : strange design : should rather use : else if (result.getLength() == 1) ? -pb
                     } else {                        
-                        values = null;                        
+                        Sequence values = null;                        
                         if (result.getLength() > 1) values = new ValueSequence();
                         int p = 0;
                         for (SequenceIterator iterInner = result.iterate(); iterInner.hasNext(); p++) {
                             context.setContextPosition(p);
-                            current = iterInner.nextItem();
+                            Item current = iterInner.nextItem();                            
                             if (values == null)
                                 values = expr.eval(result, current);
                             else
@@ -173,10 +171,22 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 } else {
                     result = expr.eval(result);
                 }
+                //TODO ! maybe this could be detected by the parser ? -pb
+                if (iter.hasNext()) { 
+                    //TOUNDERSTAND : why did I have to write this test :-) ? -pb
+                    //it looks like an empty sequence could be considered as a sub-type of Type.NODE
+                    //well, no so stupid I think...
+                    if (result.getLength() > 0) {
+                        if (!Type.subTypeOf(result.getItemType(), Type.NODE))
+                            throw new XPathException("XPTY0019: left operand of '/' must be a node. Got '" + 
+                                    Type.getTypeName(result.getItemType()) + "'");
+                    }
+                }                 
+                
                 if(steps.size() > 1)
                     // remove duplicate nodes if this is a path 
                     // expression with more than one step
-                    result.removeDuplicates();
+                    result.removeDuplicates();                
             }
         }
         

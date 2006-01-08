@@ -87,10 +87,9 @@ public class FilteredExpression extends AbstractExpression {
 			result = Sequence.EMPTY_SEQUENCE;
         else {            
     		seq.setSelfAsContext(); 
-    		result = seq;
-            Predicate pred;
+    		result = seq;           
     		for (Iterator i = predicates.iterator(); i.hasNext();) {
-    			pred = (Predicate) i.next();
+                Predicate pred = (Predicate) i.next();
     			result = pred.evalPredicate(contextSequence, result, Constants.DESCENDANT_SELF_AXIS);
     		}
         }
