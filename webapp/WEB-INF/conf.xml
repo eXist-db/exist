@@ -192,7 +192,7 @@
         Catalogs are used to resolve external entities in XML documents.
         -->
 		<entity-resolver>
-			<catalog file="catalog"/>
+			<catalog file="catalog.xml"/>
 		</entity-resolver>
     </indexer>
    
