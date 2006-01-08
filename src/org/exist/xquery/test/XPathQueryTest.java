@@ -204,16 +204,19 @@ public class XPathQueryTest extends XMLTestCase {
 			System.out.println("testStarAxis(): XMLDBException: "+e);
 			fail(e.getMessage());
 		}
-	}
-
-	/** Various tests involving operators * . []
-	* >>>>>>>>>> currently this crashes <<<<<<<<<< */
-	public void bugtestStarAxisConstraints() {
+	}	
+	
+	public void testStarAxisConstraints() {
 		ResourceSet result;
 		try {
 			XQueryService service = 
 				storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
 			service.setNamespace("t", "http://www.foo.com");
+
+            query =  "// t:title/text() [ . != 'aaaa' ]";
+            result = service.queryResource( "namespaces.xml", query );
+            System.out.println("testStarAxis2 : ========" );        printResult(result);
+            assertEquals( "XPath: "+query, 1, result.getSize() );            
 
             result = service.queryResource("namespaces.xml", "/t:test/*:section[. &= 'comment']");
             assertEquals(1, result.getSize());
@@ -222,51 +225,72 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals(1, result.getSize());
             result = service.queryResource("namespaces.xml", "/t:test/t:section[. &= 'comment']");
             assertEquals(1, result.getSize());
-            
-			// Note: this is OK:
+			
             result = service.queryResource("namespaces.xml", "/t:test/t:section/*[. &= 'comment']");
 			assertEquals("", 1, result.getSize());
-	
-			/* currently all this crashes
-	Caused by: org.exist.xquery.XPathException: Internal evaluation error: context node is missing for node 116!
-    at org.exist.xquery.Predicate.selectByNodeSet(Predicate.java:178)
-    at org.exist.xquery.Predicate.evalPredicate(Predicate.java:117)
-    at org.exist.xquery.LocationStep.applyPredicate(LocationStep.java:106)
-    at org.exist.xquery.LocationStep.eval(LocationStep.java:195)
-			*/
 
-			// Note: all this is OK:
-			// query =  "/ * / * [ t:title ]";
-			// query =  "/ t:test / t:section [ t:title ]";
-			// query =  "/ t:test / t:section";
-			query =  "/ * [ ./ * / t:title ]";
-			result = service.queryResource( "namespaces.xml", query );
-			System.out.println("testStarAxis2 : ========" ); 		printResult(result);
-			assertEquals( "XPath: "+query, 1, result.getSize() );
-
-			query =  "// t:title/text() [ . != 'aaaa' ]";
-			result = service.queryResource( "namespaces.xml", query );
-			System.out.println("testStarAxis2 : ========" ); 		printResult(result);
-			assertEquals( "XPath: "+query, 1, result.getSize() );
+			 query =  "/ * / * [ t:title ]";
+            result = service.queryResource( "namespaces.xml", query );
+            System.out.println("testStarAxis2 : ========" );        
+            printResult(result);
+            assertEquals( "XPath: "+query, 1, result.getSize() );   
+            
+			query =  "/ t:test / t:section [ t:title ]";
+            result = service.queryResource( "namespaces.xml", query );
+            System.out.println("testStarAxis2 : ========" );        
+            printResult(result);
+            assertEquals( "XPath: "+query, 1, result.getSize() ); 
+            
+			query =  "/ t:test / t:section";
+            result = service.queryResource( "namespaces.xml", query );
+            System.out.println("testStarAxis2 : ========" );        
+            printResult(result);
+            assertEquals( "XPath: "+query, 1, result.getSize() );
+            
+            /* currently this crashes
+            Caused by: org.exist.xquery.XPathException: Internal evaluation error: context node is missing for node 116!
+            at org.exist.xquery.Predicate.selectByNodeSet(Predicate.java:178)
+            at org.exist.xquery.Predicate.evalPredicate(Predicate.java:117)
+            at org.exist.xquery.LocationStep.applyPredicate(LocationStep.java:106)
+            at org.exist.xquery.LocationStep.eval(LocationStep.java:195)
+                    */           
+            
+            //query =  "/ * [ ./ * / t:title ]";
+            //result = service.queryResource( "namespaces.xml", query );
+            //System.out.println("testStarAxis2 : ========" );        
+            //printResult(result);
+            //assertEquals( "XPath: "+query, 1, result.getSize() );            
 
 			} catch (XMLDBException e) {
 				System.out.println("testStarAxis(): XMLDBException: "+e);
 				fail(e.getMessage());
 		}
 	}
-	
-	public void testParentSelfAxis() {
-		try {
-			XQueryService service = 
-				storeXMLStringAndGetQueryService("nested2.xml", nested2);
-			
-			queryResource(service, "nested2.xml", "/RootElement/descendant::*/parent::ChildA", 1);
-			queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildB]/parent::RootElement", 0);
+    
+    
+    public void testParentAxis() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("nested2.xml", nested2);
+            
+            queryResource(service, "nested2.xml", "(<a/>, <b/>, <c/>)/parent::*", 0);
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }    
+    
+    public void testParentSelfAxis() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("nested2.xml", nested2);
+            
+            queryResource(service, "nested2.xml", "/RootElement/descendant::*/parent::ChildA", 1);
+            queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildB]/parent::RootElement", 0);
             queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildA]/parent::RootElement", 1);
-		} catch (XMLDBException e) {
-			fail(e.getMessage());
-		}
-	}
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }
 	
 	public void testAncestorIndex() {
 		try {
@@ -276,7 +300,9 @@ public class XPathQueryTest extends XMLTestCase {
 			queryResource(service, "nested2.xml", "//ChildB/ancestor::*[1]/self::ChildA", 1);
 			queryResource(service, "nested2.xml", "//ChildB/ancestor::*[2]/self::RootElement", 1);
             queryResource(service, "nested2.xml", "//ChildB/ancestor::*[position() = 1]/self::ChildA", 1);
+            queryResource(service, "nested2.xml", "//ChildB/ancestor::*[position() = 2]/self::RootElement", 1);
             queryResource(service, "nested2.xml", "//ChildB/ancestor::*[position() = 2]/self::RootElement", 1);            
+            queryResource(service, "nested2.xml", "(<a/>, <b/>, <c/>)/ancestor::*", 0);
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}

@@ -559,13 +559,21 @@ public class LocationStep extends Step {
                 }
                 long parentID = XMLUtil.getParentId(p.getDocument(), p.getGID());               
                 while (parentID > 0) {
-                    ancestor = new NodeProxy(p.getDocument(), parentID, Node.ELEMENT_NODE);                    
-                    if (test.matches(ancestor)) {
-                        if (inPredicate)
-                            ancestor.addContextNode(p);
-                        else
-                            ancestor.copyContext(p);
-                        result.add(ancestor);                        
+                    ancestor = new NodeProxy(p.getDocument(), parentID, Node.ELEMENT_NODE);   
+                    
+                    //TODO : optimize !!!! -pb
+                    if (parentID != NodeProxy.DOCUMENT_NODE_GID && 
+                            //Remove the temorary nodes wrapper element 
+                            //TODO : optimize this !!!
+                            !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && p.getDocument().getCollection().isTempCollection())) {               
+                                                             
+                        if (test.matches(ancestor)) {
+                            if (inPredicate)
+                                ancestor.addContextNode(p);
+                            else
+                                ancestor.copyContext(p);
+                            result.add(ancestor);                        
+                        }
                     }
                     parentID = XMLUtil.getParentId(ancestor);
                 }
