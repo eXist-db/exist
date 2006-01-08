@@ -148,9 +148,19 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
            
             //To prevent computing nodes after atomic values...
             //TODO : let the parser do it ? -pb
-            boolean gotAtomic = false;
-            for (Iterator iter = steps.iterator(); iter.hasNext();) {  
+            boolean gotAtomicResult = false;
+            for (Iterator iter = steps.iterator(); iter.hasNext();) {                              
+
                 expr = (Expression) iter.next();
+                
+                //TODO : maybe this could be detected by the parser ? -pb    
+                if (gotAtomicResult && !Type.subTypeOf(expr.returnsType(), Type.NODE)
+                        //Ugly workaround to allow preceding *text* nodes.
+                        && !(expr instanceof EnclosedExpr)) {
+                    throw new XPathException("XPTY0019: left operand of '/' must be a node. Got '" + 
+                            Type.getTypeName(result.getItemType()) + Cardinality.toString(result.getCardinality()) + "'");                    
+                } 
+                
                 if (contextDocs != null) 
                     expr.setContextDocSet(contextDocs);
                 if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_ITEM)) {
@@ -174,21 +184,13 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 } else {
                     result = expr.eval(result);
                 }
-                //TODO ! maybe this could be detected by the parser ? -pb                
+            
                 //TOUNDERSTAND : why did I have to write this test :-) ? -pb
                 //it looks like an empty sequence could be considered as a sub-type of Type.NODE
-                //well, no so stupid I think...
-                if (result.getLength() > 0) {
-                    if (!Type.subTypeOf(result.getItemType(), Type.NODE)) {
-                        if (!gotAtomic) {                            
-                            gotAtomic = true;
-                        } else {
-                            throw new XPathException("XPTY0019: left operand of '/' must be a node. Got '" + 
-                                    Type.getTypeName(result.getItemType()) + "'");                            
-                        }
-                    }
-                }                               
-                
+                //well, no so stupid I think...                
+                if (result.getLength() > 0 && !Type.subTypeOf(result.getItemType(), Type.NODE))
+                    gotAtomicResult = true;
+            
                 if(steps.size() > 1)
                     // remove duplicate nodes if this is a path 
                     // expression with more than one step
