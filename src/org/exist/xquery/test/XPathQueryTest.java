@@ -206,12 +206,12 @@ public class XPathQueryTest extends XMLTestCase {
 		}
 	}	
 	
-	public void testStarAxisConstraints() {
-		ResourceSet result;
-		try {
-			XQueryService service = 
-				storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
-			service.setNamespace("t", "http://www.foo.com");
+    public void testStarAxisConstraints() {
+        ResourceSet result;
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
+            service.setNamespace("t", "http://www.foo.com");
 
             query =  "// t:title/text() [ . != 'aaaa' ]";
             result = service.queryResource( "namespaces.xml", query );
@@ -246,26 +246,31 @@ public class XPathQueryTest extends XMLTestCase {
             System.out.println("testStarAxis2 : ========" );        
             printResult(result);
             assertEquals( "XPath: "+query, 1, result.getSize() );
-            
-            /* currently this crashes
-            Caused by: org.exist.xquery.XPathException: Internal evaluation error: context node is missing for node 116!
-            at org.exist.xquery.Predicate.selectByNodeSet(Predicate.java:178)
-            at org.exist.xquery.Predicate.evalPredicate(Predicate.java:117)
-            at org.exist.xquery.LocationStep.applyPredicate(LocationStep.java:106)
-            at org.exist.xquery.LocationStep.eval(LocationStep.java:195)
-                    */           
-            
-            //query =  "/ * [ ./ * / t:title ]";
-            //result = service.queryResource( "namespaces.xml", query );
-            //System.out.println("testStarAxis2 : ========" );        
-            //printResult(result);
-            //assertEquals( "XPath: "+query, 1, result.getSize() );            
 
-			} catch (XMLDBException e) {
-				System.out.println("testStarAxis(): XMLDBException: "+e);
-				fail(e.getMessage());
-		}
-	}
+        } catch (XMLDBException e) {
+            System.out.println("testStarAxis(): XMLDBException: "+e);
+            fail(e.getMessage());
+    }
+}
+    
+    public void bugtestStarAxisConstraints2() {
+        ResourceSet result;
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
+            service.setNamespace("t", "http://www.foo.com");
+            
+            query =  "/ * [ ./ * / t:title ]";
+            result = service.queryResource( "namespaces.xml", query );
+            System.out.println("testStarAxis2 : ========" );        
+            printResult(result);
+            assertEquals( "XPath: "+query, 1, result.getSize() ); 
+        } catch (XMLDBException e) {
+            //org.xmldb.api.base.XMLDBException: Internal evaluation error: context node is missing for node 3 !
+            System.out.println("testStarAxis(): XMLDBException: "+e);
+            fail(e.getMessage());
+    }
+}  
     
     
     public void testParentAxis() {
