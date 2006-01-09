@@ -136,6 +136,16 @@ public class XPathQueryTest extends XMLTestCase {
             }
             assertTrue("Exception wanted: " + message, exceptionThrown);
             
+            exceptionThrown = false;
+            message = "";
+            try {
+                result = queryAndAssert(service, "for $a in (<a/>, <b/>, doh, <c/>) return $a", -1, null);                
+            } catch (XMLDBException e) {
+                exceptionThrown = true;
+                message = e.getMessage();
+            }
+            assertTrue("Exception wanted: " + message, exceptionThrown);            
+            
             result = queryAndAssert(service, "()/position()", 0, null);
             
         } catch (XMLDBException e) {
@@ -292,6 +302,8 @@ public class XPathQueryTest extends XMLTestCase {
             queryResource(service, "nested2.xml", "/RootElement/descendant::*/parent::ChildA", 1);
             queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildB]/parent::RootElement", 0);
             queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildA]/parent::RootElement", 1);
+            queryResource(service, "nested2.xml", "let $a := ('', 'b', '', '') for $b in $a[.] return <blah>{$b}</blah>", 1);
+
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
@@ -358,6 +370,11 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals("XPath: " + query, "1", resource.getContent().toString());
             resource = (XMLResource)result.getResource(2); 
             assertEquals("XPath: " + query, "1", resource.getContent().toString()); 
+            
+            query = "let $a := ('a', 'b', 'c') for $b in $a[position()] return <blah>{$b}</blah>";
+            result = service.queryResource("numbers.xml", query); 
+            assertEquals("XPath: " + query, 3, result.getSize());             
+            
             
         } catch (XMLDBException e) {
             fail(e.getMessage());
