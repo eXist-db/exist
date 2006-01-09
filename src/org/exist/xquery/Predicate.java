@@ -121,7 +121,8 @@ public class Predicate extends PathExpr {
             if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && executionMode == BOOLEAN) {
                 executionMode = POSITIONAL;
             }
-            if (!(contextSequence instanceof VirtualNodeSet) && 
+            if (executionMode == NODE &&
+            		!(contextSequence instanceof VirtualNodeSet) && 
             		Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
             	executionMode = BOOLEAN;
             }
