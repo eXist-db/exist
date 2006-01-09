@@ -37,7 +37,11 @@ public class ContextItem {
 		return nextItem;
 	}
 	
-	public void setNextItem(ContextItem next) {
-		nextItem = next;
-	}
+    public void setNextItem(ContextItem next) {
+        nextItem = next;
+    }
+    
+    public String toString() {
+        return "Context. Current:" + node + "Next:" + nextItem;
+    }    
 }

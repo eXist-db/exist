@@ -253,10 +253,17 @@ public class StoredNode extends NodeImpl {
 	 * @see org.w3c.dom.Node#getParentNode()
 	 */
 	public Node getParentNode() {
-		long pid = getParentGID();       
-		if (pid == NODE_IMPL_UNKNOWN_GID)
+		long parentID = getParentGID();       
+		if (parentID == NODE_IMPL_UNKNOWN_GID)
             return null;
-        return ownerDocument.getNode(pid);
+        //Filter out the temporary nodes wrapper element 
+        if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
+                parentID == NodeProxy.DOCUMENT_ELEMENT_GID && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection()) {
+            //Is this ever called ?
+            LOG.info("Filtered out wrapper element in " + this.getClass().getName());
+            return null;    
+        }
+        return ownerDocument.getNode(parentID);
 	}
     
     protected StoredNode getLastNode(StoredNode node) {        
@@ -274,7 +281,7 @@ public class StoredNode extends NodeImpl {
         final long lastChild = firstChild + node.getChildCount();
         StoredNode next = null;
         for (long gid = firstChild; gid < lastChild; gid++) {
-            next = (StoredNode) iterator.next();
+            next = (StoredNode) iterator.next();            
             next.setGID(gid);
             //Recursivity helps taversing...
             next = getLastNode(iterator, next);
@@ -289,13 +296,19 @@ public class StoredNode extends NodeImpl {
 		int level = ownerDocument.getTreeLevel(getGID());
 		if (level == 0)
 			return ownerDocument.getPreviousSibling(this);
-		long pid =
+        //TODO : use XMLUtils routine ? -pb
+		long parentID =
 			(getGID() - ownerDocument.getLevelStartPoint(level))
 				/ ownerDocument.getTreeLevelOrder(level)
 				+ ownerDocument.getLevelStartPoint(level - 1);
+        //Filter out the temporary nodes wrapper element 
+        //TODO : use level == 1 ?
+        if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
+                parentID == NodeProxy.DOCUMENT_ELEMENT_GID && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
+            return null;        
         //TODO : use XMLUtils routine ? -pb
 		long firstChildId =
-			(pid - ownerDocument.getLevelStartPoint(level - 1))
+			(parentID - ownerDocument.getLevelStartPoint(level - 1))
 				* ownerDocument.getTreeLevelOrder(level)
 				+ ownerDocument.getLevelStartPoint(level);
 		if (getGID() > firstChildId)
@@ -310,13 +323,20 @@ public class StoredNode extends NodeImpl {
 		int level = ownerDocument.getTreeLevel(getGID());
 		if (level == 0)
 			return ownerDocument.getFollowingSibling(this);
-		long pid =
+        //TODO : use XMLUtils routine ? -pb
+		long parentID =
 			(getGID() - ownerDocument.getLevelStartPoint(level))
 				/ ownerDocument.getTreeLevelOrder(level)
 				+ ownerDocument.getLevelStartPoint(level - 1);
+        //Filter out the temporary nodes wrapper element 
+        //TODO : use level == 1 ?
+        if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
+                parentID == NodeProxy.DOCUMENT_ELEMENT_GID && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
+            return null;
+
         //TODO : use XMLUtils routine ? -pb
 		long firstChildId =
-			(pid - ownerDocument.getLevelStartPoint(level - 1))
+			(parentID - ownerDocument.getLevelStartPoint(level - 1))
 				* ownerDocument.getTreeLevelOrder(level)
 				+ ownerDocument.getLevelStartPoint(level);
 		if (getGID() < firstChildId + ownerDocument.getTreeLevelOrder(level) - 1)

@@ -50,6 +50,8 @@ public class CachedResult {
 	}
 	
 	public boolean isValid(Sequence context) {
+        if (context == null)
+            return false;
 		if(Type.subTypeOf(context.getItemType(), Type.NODE) &&
 			cachedContext == context) {
 			if(((NodeSet)context).hasChanged(timestamp)) {

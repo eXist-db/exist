@@ -120,29 +120,28 @@ public abstract class BindingExpression extends AbstractExpression {
 			Type.subTypeOf(whereExpr.returnsType(), Type.NODE) &&
 			Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
 			// if the where expression returns a node set, check the context
-			// node of each node in the set
+			// node of each node in the set           
 			NodeSet contextSet = contextSequence.toNodeSet();
-			boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
-			NodeSet nodes = whereExpr.eval(contextSequence).toNodeSet();
-			NodeProxy current;
-			ContextItem contextNode;
-			NodeProxy next;
-			DocumentImpl lastDoc = null;
-			int count = 0, sizeHint = -1;
+			boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;          
+            Sequence seq = whereExpr.eval(contextSequence);
+            NodeSet nodes = seq.toNodeSet(); 
 			NodeSet result = new ExtArrayNodeSet();
+            DocumentImpl lastDoc = null;
+            int count = 0;
 			for (Iterator i = nodes.iterator(); i.hasNext(); count++) {
-				current = (NodeProxy) i.next();
+                NodeProxy current = (NodeProxy) i.next();
+                int sizeHint = Constants.NO_SIZE_HINT;
 				if(lastDoc == null || current.getDocument() != lastDoc) {
 					lastDoc = current.getDocument();
 					sizeHint = nodes.getSizeHint(lastDoc);
 				}
-				contextNode = current.getContext();
+                ContextItem	contextNode = current.getContext();
 				if (contextNode == null) {
 					throw new XPathException("Internal evaluation error: context node is missing for node " +
 						current.getGID() + "!");
 				}
 				while (contextNode != null) {
-					next = contextNode.getNode();
+                    NodeProxy next = contextNode.getNode();                    
 					if(contextIsVirtual || contextSet.contains(next)) {
 						next.addMatches(current);
 						result.add(next, sizeHint);

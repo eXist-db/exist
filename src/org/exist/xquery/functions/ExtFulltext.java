@@ -92,8 +92,7 @@ public class ExtFulltext extends Function {
 	protected void getSearchTerms(XQueryContext context, String searchString)
 		throws EXistException {
 		List tokens = new ArrayList();
-		Tokenizer tokenizer =
-			context.getBroker().getTextEngine().getTokenizer();
+		Tokenizer tokenizer = context.getBroker().getTextEngine().getTokenizer();
 		tokenizer.setText(searchString);
 		org.exist.storage.analysis.TextToken token;
 		String word;
@@ -140,10 +139,7 @@ public class ExtFulltext extends Function {
 				path == null
 					? contextSequence.toNodeSet()
 					: path.eval(contextSequence).toNodeSet();
-			String arg =
-				searchTerm
-					.eval(contextSequence)
-					.getStringValue();
+			String arg = searchTerm.eval(contextSequence).getStringValue();
 			result = evalQuery(arg, nodes).toNodeSet();
 			if(canCache && contextSequence instanceof NodeSet)
 				cached = new CachedResult((NodeSet)contextSequence, result);
@@ -155,14 +151,9 @@ public class ExtFulltext extends Function {
 			NodeSet nodes = null;
 			result = new ExtArrayNodeSet();
 			Sequence temp;
-			for (SequenceIterator i = contextSequence.iterate();
-				i.hasNext();
-				) {
+			for (SequenceIterator i = contextSequence.iterate(); i.hasNext();) {
 				current = i.nextItem();
-				arg =
-					searchTerm
-						.eval(current.toSequence())
-						.getStringValue();
+				arg = searchTerm.eval(current.toSequence()).getStringValue();
 				nodes =
 					path == null
 					? contextSequence.toNodeSet()
@@ -181,17 +172,13 @@ public class ExtFulltext extends Function {
 		return result;
 	}
 
-	public Sequence evalQuery(
-		String searchArg,
-		NodeSet nodes)
-		throws XPathException {
+	public Sequence evalQuery(String searchArg, NodeSet nodes) throws XPathException {
 		try {
 			getSearchTerms(context, searchArg);
 		} catch (EXistException e) {
 			throw new XPathException(e.getMessage(), e);
 		}
 		NodeSet hits = processQuery(nodes);
-
 		if (hits == null)
 			return NodeSet.EMPTY_SET;
 		return hits;
@@ -226,8 +213,7 @@ public class ExtFulltext extends Function {
 		return in_docs;
 	}
 
-	protected NodeSet processQuery(
-		NodeSet contextSet) throws XPathException {
+	protected NodeSet processQuery(NodeSet contextSet) throws XPathException {
 		if (terms == null)
 			throw new RuntimeException("no search terms");
 		if(terms.length == 0)
