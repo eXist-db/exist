@@ -56,6 +56,7 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentMetadata;
 import org.exist.dom.DocumentSet;
+import org.exist.http.Descriptor;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.RequestWrapper;
@@ -150,10 +151,16 @@ public class RESTServer {
     
     private String formEncoding;
     private String containerEncoding;
+    private Descriptor descriptor = null;
     
-    public RESTServer(String formEncoding, String containerEncoding) {
+
+    //Constructor
+    public RESTServer(String formEncoding, String containerEncoding)
+    {
         this.formEncoding = formEncoding;
         this.containerEncoding = containerEncoding;
+    
+        descriptor = new Descriptor(null);
     }
     
     /**
@@ -249,7 +256,13 @@ public class RESTServer {
         // Process the request
         DocumentImpl resource = null;
         try {
-            // first, check if path leads to an XQuery resource
+        	//first, see if a mapping is specified on the path
+        	if(descriptor != null)
+        	{
+        		path = descriptor.mapPath(path);
+        	}
+        	
+            // second, check if path leads to an XQuery resource
             resource = (DocumentImpl) broker.getXMLResource(path, Lock.READ_LOCK);
             if (resource != null) {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
@@ -347,6 +360,13 @@ public class RESTServer {
             NotFoundException, IOException {
         DocumentImpl resource = null;
         try {
+        	
+        	//first, see if a mapping is specified on the path
+        	if(descriptor != null)
+        	{
+        		path = descriptor.mapPath(path);
+        	}
+        	
             resource = broker.getXMLResource(path, Lock.READ_LOCK);
             if(resource == null) {
                 throw new NotFoundException("Resouce " + path + " not found");
@@ -383,10 +403,16 @@ public class RESTServer {
             HttpServletResponse response, String path)
             throws BadRequestException, PermissionDeniedException, IOException {
         Properties outputProperties = new Properties(defaultProperties);
-        // first, check if path leads to an XQuery resource.
-        // if yes, the resource is loaded and the XQuery executed.
         DocumentImpl resource = null;
         try {
+        	//first, see if a mapping is specified on the path
+        	if(descriptor != null)
+        	{
+        		path = descriptor.mapPath(path);
+        	}
+        	
+            // second, check if path leads to an XQuery resource.
+            // if yes, the resource is loaded and the XQuery executed.
             resource = (DocumentImpl) broker.getXMLResource(path, Lock.READ_LOCK);
             if (resource != null) {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
@@ -632,6 +658,12 @@ public class RESTServer {
         TransactionManager transact = broker.getBrokerPool().getTransactionManager();
         Txn transaction = transact.beginTransaction();
         try {
+        	//first, see if a mapping is specified on the docPath
+        	if(descriptor != null)
+        	{
+        		docPath = descriptor.mapPath(docPath);
+        	}
+        	
             //TODO : use dedicated function in XmldbURI
             int p = docPath.lastIndexOf("/");
             if (p == Constants.STRING_NOT_FOUND || p == docPath.length() - 1) {
@@ -719,6 +751,12 @@ public class RESTServer {
         TransactionManager transact = broker.getBrokerPool().getTransactionManager();
         Txn txn = transact.beginTransaction();
         try {
+        	//first, see if a mapping is specified on the path
+        	if(descriptor != null)
+        	{
+        		path = descriptor.mapPath(path);
+        	}
+        	
             Collection collection = broker.getCollection(path);
             if (collection != null) {
                 // remove the collection
