@@ -219,6 +219,8 @@ public class Descriptor implements ErrorHandler
     //else it returns the passed in path
     public String mapPath(String path)
     {
+    	if (mapList == null)
+    		return path;
     	//Iterate through the mappings
     	for(int i = 0; i < mapList.length; i++)
     	{
