@@ -48,8 +48,10 @@ import org.xml.sax.XMLReader;
 
 public class Configuration implements ErrorHandler {
     
-    private final static Logger LOG = Logger.getLogger(Configuration.class);
-    
+    private final static Logger LOG = Logger.getLogger(Configuration.class);	//Logger
+    protected DocumentBuilder builder = null;									
+    protected HashMap config = new HashMap();									//Configuration						
+    protected String file = null;												//config file (conf.xml)
     public static final class SystemTaskConfig {
         
         private String className;
@@ -74,59 +76,69 @@ public class Configuration implements ErrorHandler {
         }
     }
     
-    protected DocumentBuilder builder = null;
-    
-    protected HashMap config = new HashMap();
-    
-    protected String file = null;
-    
-    public Configuration(String file) throws DatabaseConfigurationException {
+    //Constructor (wrapper)
+    public Configuration(String file) throws DatabaseConfigurationException
+	{
         this(file, null);
     }
     
-    public Configuration(String file, String dbHome)
-    throws DatabaseConfigurationException {
-        try {
+    //Constructor
+    public Configuration(String file, String dbHome) throws DatabaseConfigurationException
+	{
+        try
+		{
             InputStream is = null;
-            // first try to read the configuration from a file within the
-            // classpath
-            if (file == null) {
-                is = Configuration.class.getClassLoader()
-                .getResourceAsStream(file);
-                if (is != null) {
-                    LOG.info("Reading configuration from classloader");
-                } else
-                    file = "conf.xml";
+        
+            //firstly, try to read the configuration from a file within the classpath
+            if(file != null)
+            {
+            	is = Configuration.class.getClassLoader().getResourceAsStream(file);
+            	if(is != null)
+            	{
+            		LOG.info("Reading configuration from classloader");
+            	}
             }
-            if (is == null) {
-                // try to read configuration from file. Guess the location if
-                // necessary
-                File f = new File(file);
-                if ((!f.isAbsolute()) && dbHome != null) {
+            else
+            {
+            	//Default file name
+            	file = "conf.xml";
+            }
+            
+            
+            //otherise, secondly try to read configuration from file. Guess the location if necessary
+            if(is == null)
+            {
+                //try and read the config file from the specified home folder 
+            	File f = new File(file);
+                if((!f.isAbsolute()) && dbHome != null)
+                {
                     file = dbHome + File.separatorChar + file;
                     f = new File(file);
                 }
-                if (!f.canRead()) {
-                    LOG
-                            .info("unable to read configuration. Trying to guess location ...");
+                
+                //if cant read config from specified home folder
+                if(!f.canRead())
+                {
+                    LOG.info("Unable to read configuration. Trying to guess location ...");
                     
-                    // fall back and try to read from home directory
-                    if (dbHome == null) {
+                    //Read from the configration file from the guessed home folder
+                    if(dbHome == null)
+                    {
                         // try to determine exist home directory
                         dbHome = System.getProperty("exist.home");
                         
-                        if (dbHome == null)
+                        if(dbHome == null)
                             dbHome = System.getProperty("user.dir");
                     }
-                    
-                    if (dbHome != null)
+                    if(dbHome != null)
                         file = dbHome + File.separatorChar + file;
                     f = new File(file);
-                    if (!f.canRead()) {
+                    if(!f.canRead())
+                    {
                         LOG.warn("giving up");
-                        throw new DatabaseConfigurationException(
-                                "unable to read configuration file");
+                        throw new DatabaseConfigurationException("Unable to read configuration file");
                     }
+                    
                 }
                 this.file = file;
                 is = new FileInputStream(file);
@@ -154,32 +166,37 @@ public class Configuration implements ErrorHandler {
             
             Document doc = adapter.getDocument();
             
-            // indexer settings
+            //indexer settings
             NodeList indexer = doc.getElementsByTagName("indexer");
             if (indexer.getLength() > 0) {
                 configureIndexer(dbHome, doc, indexer);
             }
             
+            //db connection settings
             NodeList dbcon = doc.getElementsByTagName("db-connection");
             if (dbcon.getLength() > 0) {
                 configureBackend(dbHome, dbcon);
             }
             
+            //serializer settings
             NodeList serializers = doc.getElementsByTagName("serializer");
             if (serializers.getLength() > 0) {
                 configureSerializer(serializers);
             }
             
+            //XUpdate settings
             NodeList xupdates = doc.getElementsByTagName("xupdate");
             if (xupdates.getLength() > 0) {
                 configureXUpdate(xupdates);
             }
             
+            //XQuery settings
             NodeList xquery = doc.getElementsByTagName("xquery");
             if (xquery.getLength() > 0) {
                 configureXQuery((Element) xquery.item(0));
             }
             
+            //XACML settings
             NodeList xacml = doc.getElementsByTagName("xacml");
             if (xacml.getLength() > 0) {
                 configureXACML((Element)xacml.item(0));
@@ -195,13 +212,19 @@ public class Configuration implements ErrorHandler {
             /*
             END CLUSTER CONFIGURATION....
              */
-        } catch (SAXException e) {
+        }
+        catch (SAXException e)
+		{
             LOG.warn("error while reading config file: " + file, e);
             throw new DatabaseConfigurationException(e.getMessage());
-        } catch (ParserConfigurationException cfg) {
+        }
+        catch (ParserConfigurationException cfg)
+		{
             LOG.warn("error while reading config file: " + file, cfg);
             throw new DatabaseConfigurationException(cfg.getMessage());
-        } catch (IOException io) {
+        }
+        catch (IOException io)
+		{
             LOG.warn("error while reading config file: " + file, io);
             throw new DatabaseConfigurationException(io.getMessage());
         }
@@ -773,6 +796,11 @@ public class Configuration implements ErrorHandler {
         return file;
     }
     
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
+     */
     public void error(SAXParseException exception) throws SAXException {
         System.err.println("error occured while reading configuration file "
                 + "[line: " + exception.getLineNumber() + "]:"
