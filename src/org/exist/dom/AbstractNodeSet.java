@@ -518,19 +518,17 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		NodeSet parents = new ExtArrayNodeSet();		 
 		NodeProxy parent = null;
 		for (Iterator i = iterator(); i.hasNext();) {
-            NodeProxy p = (NodeProxy) i.next();
-			// calculate parent's gid
-            long pid = XMLUtil.getParentId(p.getDocument(), p.getGID());            
-            if (pid != NodeProxy.DOCUMENT_NODE_GID && 
-                    //Remove the temorary nodes wrapper element 
-                    //TODO : optimize this !!!
-                    !(pid == NodeProxy.DOCUMENT_ELEMENT_GID && p.getDocument().getCollection().isTempCollection())) {                
-				if (parent == null || parent.getDocument().getDocId() != p.getDocument().getDocId() || pid != parent.getGID())                 
-                    parent = new NodeProxy(p.getDocument(), pid, Node.ELEMENT_NODE);
+            NodeProxy current = (NodeProxy) i.next();			
+            long parentID = XMLUtil.getParentId(current.getDocument(), current.getGID()); 
+            //Filter out the temporary nodes wrapper element 
+            if (parentID != NodeProxy.DOCUMENT_NODE_GID && 
+                    !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && current.getDocument().getCollection().isTempCollection())) {                
+				if (parent == null || parent.getDocument().getDocId() != current.getDocument().getDocId() || parentID != parent.getGID())                 
+                    parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
 				if (rememberContext)
-					parent.addContextNode(p);
+					parent.addContextNode(current);
 				else
-					parent.copyContext(p);
+					parent.copyContext(current);
                 parents.add(parent);
 			}
 		}
@@ -540,28 +538,27 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeSet getAncestors(boolean rememberContext, boolean includeSelf) {
         NodeSet ancestors = new ExtArrayNodeSet();
         for (Iterator i = iterator(); i.hasNext();) {
-            NodeProxy p = (NodeProxy) i.next();
+            NodeProxy current = (NodeProxy) i.next();
             if (includeSelf) {
             	if (rememberContext)
-            		p.addContextNode(p);
-                ancestors.add(p);
+                    current.addContextNode(current);
+                ancestors.add(current);
             }
-            long gid = p.getGID();
-            // calculate parent's gid
-            while ((gid = XMLUtil.getParentId(p.getDocument(), gid)) > 0) {
-                if (gid != NodeProxy.DOCUMENT_NODE_GID && 
-                        //Remove the temorary nodes wrapper element 
-                        //TODO : optimize this !!!
-                        !(gid == NodeProxy.DOCUMENT_ELEMENT_GID && p.getDocument().getCollection().isTempCollection())) {                
-                	NodeProxy parent = ancestors.get(p.getDocument(), gid);
+            long parentID = XMLUtil.getParentId(current.getDocument(), current.getGID());            
+            while (parentID > 0) {
+                //Filter out the temporary nodes wrapper element 
+                if (parentID != NodeProxy.DOCUMENT_NODE_GID && 
+                        !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && current.getDocument().getCollection().isTempCollection())) {                
+                	NodeProxy parent = ancestors.get(current.getDocument(), parentID);
                 	if (parent == null)
-                		parent = new NodeProxy(p.getDocument(), gid, Node.ELEMENT_NODE);
+                		parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
                     if (rememberContext)
-                        parent.addContextNode(p);
+                        parent.addContextNode(current);
                     else
-                        parent.copyContext(p);
+                        parent.copyContext(current);
                     ancestors.add(parent);
                 }
+                parentID = XMLUtil.getParentId(current.getDocument(), parentID);    
             }
         }
         return ancestors;

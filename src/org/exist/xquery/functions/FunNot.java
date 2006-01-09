@@ -95,7 +95,7 @@ public class FunNot extends Function {
 		// the remaining set
 		if (Type.subTypeOf(arg.returnsType(), Type.NODE) &&
 			(arg.getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
-			if (contextSequence.getLength() == 0) {
+			if (contextSequence == null || contextSequence.getLength() == 0) {
 				// TODO: special treatment if the context sequence is empty:
 				// within a predicate, we just return the empty sequence
 				// otherwise evaluate the argument and return a boolean result			    
@@ -141,7 +141,7 @@ public class FunNot extends Function {
 	 * @throws XPathException
 	 */
 	private Sequence evalBoolean(Sequence contextSequence, Item contextItem, Expression arg) throws XPathException {
-		Sequence seq = arg.eval(contextSequence, contextItem);
+        Sequence seq = arg.eval(contextSequence, contextItem);
 		return seq.effectiveBooleanValue() ? BooleanValue.FALSE : BooleanValue.TRUE;
 	}
 }

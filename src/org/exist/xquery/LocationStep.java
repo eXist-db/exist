@@ -97,16 +97,14 @@ public class LocationStep extends Step {
 	 */
 	protected boolean preloadNodeSets() {
         //TODO : log elsewhere ?
-        if (preload) {
-        	if (context.isProfilingEnabled(5))
-        		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, null, "Preloaded NodeSets");
+        if (preload) {        	
+        	context.getProfiler().message(this, Profiler.OPTIMIZATIONS, null, "Preloaded NodeSets");
             return true;
         }
         if (inUpdate)
             return false;        
-        if ((parentDeps & Dependency.LOCAL_VARS) == Dependency.LOCAL_VARS) {
-        	if (context.isProfilingEnabled(5))
-        		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, null, "Preloaded NodeSets");
+        if ((parentDeps & Dependency.LOCAL_VARS) == Dependency.LOCAL_VARS) {        	
+        	context.getProfiler().message(this, Profiler.OPTIMIZATIONS, null, "Preloaded NodeSets");
             return true;
         }           
         return false;
@@ -162,10 +160,11 @@ public class LocationStep extends Step {
         if (contextItem != null)
 			contextSequence = contextItem.toSequence();
         
-		if(contextSequence == null)                
-			result = NodeSet.EMPTY_SET;        
+		/*if(contextSequence == null)   
+         //Commented because this the high level result nodeset is *really* null             
+			result = NodeSet.EMPTY_SET;  
         //Try to return cached results
-        else if(cached != null && cached.isValid(contextSequence)) { 
+        else*/ if(cached != null && cached.isValid(contextSequence)) { 
             
             //WARNING : commented since predicates are *also* applied below ! -pb
             /*
@@ -181,6 +180,8 @@ public class LocationStep extends Step {
             //}           
 		}   
         else if (needsComputation()) { 
+            if (contextSequence == null)
+                throw new XPathException(getASTNode(), "Null context sequence for '" + this.toString() + "'");
     		switch (axis) {
     			case Constants.DESCENDANT_AXIS :
     			case Constants.DESCENDANT_SELF_AXIS :
@@ -454,7 +455,25 @@ public class LocationStep extends Step {
 	}
 
 	protected NodeSet getSiblings(XQueryContext context, NodeSet contextSet) {		
-		if (!test.isWildcardTest()) {
+		if (test.isWildcardTest()) {
+            NodeSet result = new ExtArrayNodeSet(contextSet.getLength());
+            for (Iterator i = contextSet.iterator(); i.hasNext();) {
+                NodeProxy current = (NodeProxy) i.next();
+                StoredNode currentNode = (StoredNode) current.getNode();
+                while ((currentNode = getNextSibling(currentNode)) != null) {
+                    if (test.matches(currentNode)) {
+                        NodeProxy sibling = new NodeProxy((DocumentImpl) currentNode.getOwnerDocument(), currentNode.getGID(),
+                                currentNode.getInternalAddress());
+                        if (inPredicate)
+                            sibling.addContextNode(current);
+                        else
+                            sibling.copyContext(current);
+                        result.add(sibling);
+                    }
+                }
+            }
+            return result;
+        } else {    
 		    DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();	
@@ -472,43 +491,26 @@ public class LocationStep extends Step {
                     return currentSet.selectSiblings(contextSet, NodeSet.FOLLOWING);                   
                 default :
                     throw new IllegalArgumentException("Unsupported axis specified");                   
-            }			
-		} else {
-			NodeSet result = new ExtArrayNodeSet(contextSet.getLength());
-			NodeProxy p, sib;
-			StoredNode n;
-			for (Iterator i = contextSet.iterator(); i.hasNext();) {
-				p = (NodeProxy) i.next();
-				n = (StoredNode) p.getNode();
-				while ((n = getNextSibling(n)) != null) {
-					if (test.matches(n)) {
-						sib = new NodeProxy((DocumentImpl) n.getOwnerDocument(), n.getGID(),
-								n.getInternalAddress());
-                        if (inPredicate)
-                            sib.addContextNode(p);
-                        else
-                            sib.copyContext(p);
-                        result.add(sib);
-					}
-				}
-			}
-            return result;
+            }
 		}		
 	}
 
-	protected StoredNode getNextSibling(NodeImpl last) {
+	protected StoredNode getNextSibling(NodeImpl node) {
         switch (axis) {
             case Constants.FOLLOWING_SIBLING_AXIS :
-                return (StoredNode) last.getNextSibling();
+                return (StoredNode) node.getNextSibling();
             case Constants.PRECEDING_SIBLING_AXIS :             
-                return (StoredNode) last.getPreviousSibling();
+                return (StoredNode) node.getPreviousSibling();
             default :
                 throw new IllegalArgumentException("Unsupported axis specified");                   
         }
 	}
 
 	protected NodeSet getFollowing(XQueryContext context, NodeSet contextSet) throws XPathException {		
-		if(!test.isWildcardTest()) {            
+		if(test.isWildcardTest()) { 
+		    //TODO : throw an exception here ! Don't let this pass through
+            return NodeSet.EMPTY_SET;
+        } else {
 		    DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();		
@@ -521,12 +523,14 @@ public class LocationStep extends Step {
 			}
 			return currentSet.selectFollowing(contextSet);
 		}
-        //TODO : throw an exception here ! Don't let this pass through
-		return NodeSet.EMPTY_SET;
+        
 	}
 	
     protected NodeSet getPreceding(XQueryContext context, NodeSet contextSet) throws XPathException {        
-        if(!test.isWildcardTest()) {            
+        if(test.isWildcardTest()) { 
+            //TODO : throw an exception here ! Don't let this pass through
+            return NodeSet.EMPTY_SET;
+        } else {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex(); 
@@ -538,40 +542,34 @@ public class LocationStep extends Step {
                 registerUpdateListener();
             }
             return currentSet.selectPreceding(contextSet);
-        }
-        //TODO : throw an exception here ! Don't let this pass through
-        return NodeSet.EMPTY_SET;
+        }        
     }
     
 	protected NodeSet getAncestors(XQueryContext context, NodeSet contextSet) {		
 		if (test.isWildcardTest()) {
-            NodeSet result = new ExtArrayNodeSet();
-            NodeProxy p, ancestor;
+            NodeSet result = new ExtArrayNodeSet();            
             for (Iterator i = contextSet.iterator(); i.hasNext();) {
-                p = (NodeProxy) i.next();
-                if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(p)) {
-                    ancestor = new NodeProxy(p.getDocument(), p.getGID(), p.getInternalAddress());
+                NodeProxy current = (NodeProxy) i.next();
+                NodeProxy ancestor;
+                if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(current)) {
+                    ancestor = new NodeProxy(current.getDocument(), current.getGID(), current.getInternalAddress());
                     if (inPredicate)
-                        ancestor.addContextNode(p);
+                        ancestor.addContextNode(current);
                     else
-                        ancestor.copyContext(p);
+                        ancestor.copyContext(current);
                     result.add(ancestor);
                 }
-                long parentID = XMLUtil.getParentId(p.getDocument(), p.getGID());               
+                long parentID = XMLUtil.getParentId(current.getDocument(), current.getGID());               
                 while (parentID > 0) {
-                    ancestor = new NodeProxy(p.getDocument(), parentID, Node.ELEMENT_NODE);   
-                    
-                    //TODO : optimize !!!! -pb
+                    ancestor = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
+                    //Filter out the temporary nodes wrapper element 
                     if (parentID != NodeProxy.DOCUMENT_NODE_GID && 
-                            //Remove the temorary nodes wrapper element 
-                            //TODO : optimize this !!!
-                            !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && p.getDocument().getCollection().isTempCollection())) {               
-                                                             
+                            !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && current.getDocument().getCollection().isTempCollection())) {
                         if (test.matches(ancestor)) {
                             if (inPredicate)
-                                ancestor.addContextNode(p);
+                                ancestor.addContextNode(current);
                             else
-                                ancestor.copyContext(p);
+                                ancestor.copyContext(current);
                             result.add(ancestor);                        
                         }
                     }
@@ -687,4 +685,5 @@ public class LocationStep extends Step {
         //inUpdate = false; 
         //nodeTestType = null;       
 	}
+
 }

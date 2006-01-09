@@ -104,15 +104,15 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(Expression parent, int flags) throws XPathException {
-    	inPredicate = (flags & IN_PREDICATE) > 0;
+        inPredicate = (flags & IN_PREDICATE) > 0;
         for (int i = 0; i < steps.size(); i++) {
             // if this is a sequence of steps, the IN_PREDICATE flag
             // is only passed to the first step, so it has to be removed
             // for subsequent steps  
             //TODO : why not if (i > 0) then ??? -pb
             //We'd need a test case with more than 2 steps to demonstrate the feature 
-        	if(i == 1)
-        		flags = flags & (~IN_PREDICATE);
+            if(i == 1)
+                flags = flags & (~IN_PREDICATE);
             Expression expr = (Expression) steps.get(i);
             expr.analyze(this, flags);
         }
@@ -128,9 +128,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-        Sequence result = Sequence.EMPTY_SEQUENCE;
-        
-        if (steps.size() > 0) {
+        Sequence result = null;        
+        if (steps.size() == 0) {
+            result = Sequence.EMPTY_SEQUENCE;
+        } else {
  
             if (contextSequence != null)
                 result = contextSequence;
@@ -148,15 +149,16 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
            
             //To prevent computing nodes after atomic values...
             //TODO : let the parser do it ? -pb
-            boolean gotAtomicResult = false;
-            for (Iterator iter = steps.iterator(); iter.hasNext();) {                              
-
+            boolean gotAtomicResult = false;            
+            for (Iterator iter = steps.iterator(); iter.hasNext();) {
                 expr = (Expression) iter.next();
                 
                 //TODO : maybe this could be detected by the parser ? -pb    
                 if (gotAtomicResult && !Type.subTypeOf(expr.returnsType(), Type.NODE)
                         //Ugly workaround to allow preceding *text* nodes.
                         && !(expr instanceof EnclosedExpr)) {
+                    LOG.debug("Path steps:" + steps);
+                    LOG.debug("Current expression:" + expr);
                     throw new XPathException("XPTY0019: left operand of '/' must be a node. Got '" + 
                             Type.getTypeName(result.getItemType()) + Cardinality.toString(result.getCardinality()) + "'");                    
                 } 
@@ -164,7 +166,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if (contextDocs != null) 
                     expr.setContextDocSet(contextDocs);
                 if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_ITEM)) {
-                    if (result.getLength() == 0) {
+                    if (result == null || result.getLength() == 0) {
                         result = expr.eval(null, null);
                     //TODO : strange design : should rather use : else if (result.getLength() == 1) ? -pb
                     } else {                        
@@ -179,8 +181,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                             else
                                 values.addAll(expr.eval(result, current));                           
                         }
-                        result = values;
-                    }
+                        result = values;                    }                    
+               
                 } else {
                     result = expr.eval(result);
                 }
@@ -190,7 +192,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 //well, no so stupid I think...                
                 if (result.getLength() > 0 && !Type.subTypeOf(result.getItemType(), Type.NODE))
                     gotAtomicResult = true;
-            
+
                 if(steps.size() > 1)
                     // remove duplicate nodes if this is a path 
                     // expression with more than one step

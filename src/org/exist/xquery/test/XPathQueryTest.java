@@ -312,6 +312,26 @@ public class XPathQueryTest extends XMLTestCase {
 			fail(e.getMessage());
 		}
 	}
+    
+    public void testPrecedingSiblingAxis() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("nested2.xml", nested2);            
+            queryResource(service, "nested2.xml", "(<a/>, <b/>, <c/>)/following-sibling::*", 0);
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }     
+    
+    public void testFollowingSiblingAxis() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("nested2.xml", nested2);            
+            queryResource(service, "nested2.xml", "(<a/>, <b/>, <c/>)/following-sibling::*", 0);
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }     
 	
     public void testPosition() {
         try {
@@ -855,7 +875,7 @@ public class XPathQueryTest extends XMLTestCase {
 			
 			result = queryAndAssert( service,
 				"every $foo in (1,2,3) satisfies" +
-				"	let $bar := baz" +
+				"	let $bar := 'baz'" +
 				"		return false() ", 
 				1,  "" );
 			assertEquals( "satisfies + FLWR expression allways false 1", "false", result.getResource(0).getContent() );
