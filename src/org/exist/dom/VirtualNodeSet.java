@@ -225,8 +225,16 @@ public class VirtualNodeSet extends AbstractNodeSet {
     				NodeProxy docElemProxy =
     					new NodeProxy(proxy.getDocument(), node.getGID(), node.getNodeType());
     				docElemProxy.setInternalAddress(node.getInternalAddress());
-    				if (test.matches(docElemProxy))
+    				if (test.matches(docElemProxy)) {
     					result.add(docElemProxy);
+    					
+    					// I took these lines from addChildren() .
+    					// Certainly there is some refactoring here ...
+    					docElemProxy.copyContext(docElemProxy);
+						if (useSelfAsContext && inPredicate) {
+							docElemProxy.addContextNode(docElemProxy);
+						}
+    				}
     				if (node.getNodeType() == Node.ELEMENT_NODE &&
                         (axis == Constants.DESCENDANT_AXIS
     					|| axis == Constants.DESCENDANT_SELF_AXIS
@@ -258,7 +266,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		}
 		return result;
 	}
-
+	
+	/** recursively adds children nodes */
 	private final void addChildren(
 		NodeProxy contextNode,
 		NodeSet result,
