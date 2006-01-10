@@ -130,7 +130,7 @@ declare function admin:login() as xs:string* {
             admin:checkUser()
 };
 
-request:create-session,
+request:create-session(),
 let $logout := request:request-parameter("logout", ()),
     $s := if($logout) then request:invalidate-session() else request:create-session(),
     $credentials := admin:login(),
