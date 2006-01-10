@@ -58,7 +58,7 @@ public class XPathQueryTest extends XMLTestCase {
         "<ChildB id=\"2\"/>" +
         "</ChildA>" +
 		"</RootElement>";
-
+    
 	private final static String ids =
 	    "<!DOCTYPE test [" +
 	    "<!ELEMENT test (a*, b*)>" +
@@ -427,37 +427,75 @@ public class XPathQueryTest extends XMLTestCase {
 		}
 	}
 
-	public void testPredicates() throws Exception {
-		String numbers =
-			"<test>"
-				+ "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
-				+ "<item id='2'><price>7.4</price><stock>43</stock></item>"
-				+ "<item id='3'><price>18.4</price><stock>5</stock></item>"
-				+ "<item id='4'><price>65.54</price><stock>16</stock></item>"
-				+ "</test>";
-		try {
-			XQueryService service = 
-				storeXMLStringAndGetQueryService("numbers.xml", numbers);
-			service.setProperty(OutputKeys.INDENT, "no");
-			ResourceSet result = queryResource(service, "numbers.xml", "/test/item[2]/price/text()", 1);
-			assertEquals("7.4", result.getResource(0).getContent().toString());
-			
-			result = queryResource(service, "numbers.xml", "/test/item[5]", 0);
-			
-			result = queryResource(service, "numbers.xml", "/test/item[@id='4'][1]/price[1]/text()", 1);
-			assertEquals("65.54",
-					result.getResource(0).getContent().toString());
-			
-			result = queryResource(service, "numbers.xml", "for $i in //item return " +
-					"<item>{$i/price, $i/stock}</item>", 4);
-			assertXMLEqual("<item><price>5.6</price><stock>22</stock></item>",
-					result.getResource(0).getContent().toString());
-			assertXMLEqual("<item><price>65.54</price><stock>16</stock></item>",
-					result.getResource(3).getContent().toString());
-		} catch (XMLDBException e) {
-			fail(e.getMessage());
-		}
-	}
+    public void testPredicates() throws Exception {
+        String numbers =
+            "<test>"
+                + "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
+                + "<item id='2'><price>7.4</price><stock>43</stock></item>"
+                + "<item id='3'><price>18.4</price><stock>5</stock></item>"
+                + "<item id='4'><price>65.54</price><stock>16</stock></item>"
+                + "</test>";
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("numbers.xml", numbers);
+            service.setProperty(OutputKeys.INDENT, "no");
+            ResourceSet result = queryResource(service, "numbers.xml", "/test/item[2]/price/text()", 1);
+            assertEquals("7.4", result.getResource(0).getContent().toString());
+            
+            result = queryResource(service, "numbers.xml", "/test/item[5]", 0);
+            
+            result = queryResource(service, "numbers.xml", "/test/item[@id='4'][1]/price[1]/text()", 1);
+            assertEquals("65.54",
+                    result.getResource(0).getContent().toString());
+            
+            result = queryResource(service, "numbers.xml", "for $i in //item return " +
+                    "<item>{$i/price, $i/stock}</item>", 4);
+            assertXMLEqual("<item><price>5.6</price><stock>22</stock></item>",
+                    result.getResource(0).getContent().toString());
+            assertXMLEqual("<item><price>65.54</price><stock>16</stock></item>",
+                    result.getResource(3).getContent().toString());      
+            
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    public void bugtestPredicates2() throws Exception {
+        String numbers =
+            "<test>"
+                + "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
+                + "<item id='2'><price>7.4</price><stock>43</stock></item>"
+                + "<item id='3'><price>18.4</price><stock>5</stock></item>"
+                + "<item id='4'><price>65.54</price><stock>16</stock></item>"
+                + "</test>";
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("numbers.xml", numbers);
+            service.setProperty(OutputKeys.INDENT, "no");
+
+            
+            String query = "let $t := <test>" + "<a> <s>A</s> 1 </a>"
+                    + "<a> <s>Z</s> 2 </a>" + "<a> <s>B</s> 3 </a>"
+                    + "<a> <s>Z</s> 4 </a>" + "<a> <s>C</s> 5 </a>"
+                    + "<a> <s>Z</s> 6 </a>" + "</test>"
+                    + "return $t//a[s='Z' and preceding-sibling::*[1]/s='B']";
+            ResourceSet result = queryResource(service, "numbers.xml", query, 1);
+            assertXMLEqual("<a><s>Z</s> 4 </a>", result.getResource(0)
+                    .getContent().toString());
+
+            query = "let $t := <test>" + "<a> <s>A</s> 1 </a>"
+                    + "<a> <s>Z</s> 2 </a>" + "<a> <s>B</s> 3 </a>"
+                    + "<a> <s>Z</s> 4 </a>" + "<a> <s>C</s> 5 </a>"
+                    + "<a> <s>Z</s> 6 </a>" + "</test>"
+                    + "return $t//a[s='Z' and ./preceding-sibling::*[1]/s='B']";
+            result = queryResource(service, "numbers.xml", query, 1);
+            assertXMLEqual("<a><s>Z</s> 4 </a>", result.getResource(0)
+                    .getContent().toString());        
+            
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }    
 	
 	public void testStrings() {
 		try {

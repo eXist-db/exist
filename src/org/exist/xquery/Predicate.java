@@ -78,22 +78,21 @@ public class Predicate extends PathExpr {
         if(inner == null)
             return;
         super.analyze(this, flags);
-        int type = inner.returnsType();
         // Case 1: predicate expression returns a node set. 
         // Check the returned node set against the context set 
         // and return all nodes from the context, for which the
 		// predicate expression returns a non-empty sequence.
-		if (Type.subTypeOf(type, Type.NODE)) {
-			if(!Dependency.dependsOn(inner.getDependencies(), Dependency.CONTEXT_ITEM))
-			    executionMode = NODE;
-			else
-			    executionMode = BOOLEAN;
-		// Case 2: predicate expression returns a number.
-		} else if (Type.subTypeOf(type, Type.NUMBER)) {
-		    executionMode = POSITIONAL;
-		// Case 3: predicate expression evaluates to a boolean.
-		} else
-		    executionMode = BOOLEAN;
+        if (Type.subTypeOf(inner.returnsType(), Type.NODE)) {
+            if(!Dependency.dependsOn(inner.getDependencies(), Dependency.CONTEXT_ITEM))
+                executionMode = NODE;
+            else
+                executionMode = BOOLEAN;
+        // Case 2: predicate expression returns a number.
+        } else if (Type.subTypeOf(inner.returnsType(), Type.NUMBER)) {
+            executionMode = POSITIONAL;
+        // Case 3: predicate expression evaluates to a boolean.
+        } else
+            executionMode = BOOLEAN;
         
 		if(executionMode == BOOLEAN) {
 		    flags |= SINGLE_STEP_EXECUTION;
@@ -116,18 +115,23 @@ public class Predicate extends PathExpr {
 		if (inner == null)
 			result = Sequence.EMPTY_SEQUENCE;
         else {
+            int recomputedExecutionMode = executionMode; 
+            
+            //TODO : use an else/else if construct -pb
+
             // just to be sure: change mode to boolean if the predicate expression returns a number
             //TODO : the code, likely to be correct, implements the exact contrary     
-            if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && executionMode == BOOLEAN) {
-                executionMode = POSITIONAL;
-            }
+            if (executionMode == BOOLEAN && Type.subTypeOf(inner.returnsType(), Type.NUMBER)) {
+                recomputedExecutionMode = POSITIONAL;
+            }  
+            
             if (executionMode == NODE &&
             		!(contextSequence instanceof VirtualNodeSet) && 
             		Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
-            	executionMode = BOOLEAN;
+                recomputedExecutionMode = BOOLEAN;
             }
             
-    		switch(executionMode) {
+    		switch(recomputedExecutionMode) {
     			case NODE: 
                     if (context.getProfiler().isEnabled())
                         context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
@@ -147,7 +151,7 @@ public class Predicate extends PathExpr {
                     result = selectByPosition(outerSequence, contextSequence, mode, inner);
                     break;
     			default:
-                    throw new IllegalArgumentException("Unsupported execution mode: '" + executionMode + "'");			    
+                    throw new IllegalArgumentException("Unsupported execution mode: '" + recomputedExecutionMode + "'");			    
     		}            
         }
         
@@ -244,12 +248,14 @@ public class Predicate extends PathExpr {
 			outerSequence.getLength() > 0) {
 			Sequence result = new ExtArrayNodeSet(100);
 			NodeSet contextSet = contextSequence.toNodeSet();
-			boolean reverseAxis = isReverseAxis(mode);
-			if(!(reverseAxis 
-                    || mode == Constants.FOLLOWING_SIBLING_AXIS 
-                    || mode == Constants.FOLLOWING_AXIS
-					|| mode == Constants.SELF_AXIS)) {
-				outerSequence.clearContext();
+            switch(mode) {
+            case Constants.CHILD_AXIS:
+            case Constants.ATTRIBUTE_AXIS:
+            case Constants.DESCENDANT_AXIS:
+            case Constants.DESCENDANT_SELF_AXIS:
+            case Constants.DESCENDANT_ATTRIBUTE_AXIS: 
+            {                
+                outerSequence.clearContext();
 				Sequence ancestors = contextSet.selectAncestorDescendant(outerSequence.toNodeSet(),
 						NodeSet.ANCESTOR, true, true);
 				ArraySet temp = new ArraySet(100);
@@ -272,75 +278,81 @@ public class Predicate extends PathExpr {
 				        p = temp.getUnsorted(v.getInt() - 1);
 				        if (p != null)
 				        	result.add(p);
-                        //TODO : throw an exception for the else condition ?
+                        //TODO : does null make sense here ?
 				    }
 				}
-            //TODO : understand why we find other forward axes than the 3 ones above here
-			} else {
-				for(SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
-				    Item item = i.nextItem();
-				    NodeProxy p = (NodeProxy)item;
+                break;
+            }
+            default:
+				for (SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {				   
+				    NodeProxy p = (NodeProxy)i.nextItem();
 				    Sequence temp;
-				    switch(mode) {
-				    	case Constants.FOLLOWING_SIBLING_AXIS:
-				    	    temp = contextSet.selectSiblings(p, NodeSet.FOLLOWING);
-			    			break;
-				    	case Constants.PRECEDING_SIBLING_AXIS:
-				    	    temp = contextSet.selectSiblings(p, NodeSet.PRECEDING);
-				    		break;
-                        case Constants.PRECEDING_AXIS:
-                            temp = contextSet.selectPreceding(p);
-                            break;
-                        case Constants.FOLLOWING_AXIS:
-                            temp = contextSet.selectFollowing(p);
-                            break;
-				    	case Constants.PARENT_AXIS:
-				    	    temp = p.getParents(false);
-				    		break;
-				    	case Constants.ANCESTOR_AXIS:
-				    	   temp = contextSet.selectAncestors(p, false, false);
-				    		break;
-				    	case Constants.ANCESTOR_SELF_AXIS:
-				    	   temp = contextSet.selectAncestors(p, true, false);
-				    		break;
-				    	case Constants.SELF_AXIS:
-				    	    temp = p;
-				    		break;
-                        //TODO : explain this default given what is said above !!!
-				    	default:                            
-				    	    temp = contextSet.selectAncestorDescendant(p, NodeSet.DESCENDANT, false, false);
-				    		break;
-				    }
-				    Sequence innerSeq = inner.eval(contextSequence);
-				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {				     
-				        NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);                       
-				        int pos = (reverseAxis ? temp.getLength() - v.getInt() : v.getInt() - 1);
-				        if(pos < temp.getLength() && pos > -1)
-				            result.add(temp.itemAt(pos));
-                        //TODO : throw an exception for the else condition ?
-				    }
-				}
+                    boolean reverseAxis = true;
+                    switch(mode) {
+                    case Constants.ANCESTOR_AXIS:                            
+                        temp = contextSet.selectAncestors(p, false, false);
+                        break;
+                    case Constants.ANCESTOR_SELF_AXIS:
+                       temp = contextSet.selectAncestors(p, true, false);
+                        break;
+                    case Constants.PARENT_AXIS:
+                        temp = p.getParents(false);
+                        break;                            
+                    case Constants.PRECEDING_AXIS:
+                        temp = contextSet.selectPreceding(p);
+                        break;
+                    case Constants.PRECEDING_SIBLING_AXIS:
+                        temp = contextSet.selectSiblings(p, NodeSet.PRECEDING);
+                        break;
+                    case Constants.FOLLOWING_SIBLING_AXIS:
+                        temp = contextSet.selectSiblings(p, NodeSet.FOLLOWING);
+                        reverseAxis = false;
+                        break;    
+                    case Constants.FOLLOWING_AXIS:
+                        temp = contextSet.selectFollowing(p);
+                        reverseAxis = false;
+                        break;
+                    case Constants.SELF_AXIS:
+                        temp = p;
+                        reverseAxis = false;
+                        break;                            
+                    default:                            
+                        //temp = contextSet.selectAncestorDescendant(p, NodeSet.DESCENDANT, false, false);
+                        //break;
+                        throw new IllegalArgumentException("Tested unknown axis");
+                    }
+                    if (temp.getLength() > 0) {
+                        Sequence innerSeq = inner.eval(contextSequence);
+                        for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {                    
+                            NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);                        
+                            int pos = (reverseAxis ? temp.getLength() - v.getInt() : v.getInt() - 1);
+                            //Other positions are ignored    
+        				    if (pos >= 0 && pos < temp.getLength()) {                                 
+    				            result.add(temp.itemAt(pos));
+                            }                       
+    				    }
+                    }
+    			}
 			}
 			return result;
-		} else {
-			Sequence innerSeq = inner.eval(contextSequence);
-			ValueSequence result = new ValueSequence();
+		} else {   
+            //TODO : reconsider. If the fallback is confirmed, log it to the profiler
+            
+            /*
+            ValueSequence result = new ValueSequence();
+			Sequence innerSeq = inner.eval(contextSequence);			
 			for(SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
 				NumericValue v = (NumericValue)i.nextItem().convertTo(Type.NUMBER);
-				int pos = v.getInt();
-				if(pos > 0 && pos <= contextSequence.getLength())
-					result.add(contextSequence.itemAt(pos - 1));
-                //Other positions are ignored                
+				int pos = v.getInt() - 1;
+                //Other positions are ignored    
+				if(pos >= 0 && pos < contextSequence.getLength())
+					result.add(contextSequence.itemAt(pos));                            
 			}
 			return result;
+            */
+        
+            return evalBoolean(contextSequence, inner);
 		}
-	}
-
-    //TODO : move this to a dedicated Axis class -pb
-	public final static boolean isReverseAxis(int axis) {
-        if (axis == Constants.UNKNOWN_AXIS)
-            throw new IllegalArgumentException("Tested unknown axis");
-	    return (axis < Constants.CHILD_AXIS);
 	}
 	
 	public void setContextDocSet(DocumentSet contextSet) {
@@ -352,9 +364,8 @@ public class Predicate extends PathExpr {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
-	public void resetState() {
-        //TODO : does this actually do anything ?
+	public void resetState() {       
 		super.resetState();
-		cached = null;
+		cached = null;		
 	}
 }
