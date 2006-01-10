@@ -109,11 +109,13 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             // if this is a sequence of steps, the IN_PREDICATE flag
             // is only passed to the first step, so it has to be removed
             // for subsequent steps  
-            //TODO : why not if (i > 0) then ??? -pb
-            //We'd need a test case with more than 2 steps to demonstrate the feature 
-            if(i == 1)
-                flags = flags & (~IN_PREDICATE);
             Expression expr = (Expression) steps.get(i);
+            if ((flags & IN_PREDICATE) > 0 ) {
+                if(i == 1) {
+                	//take care : predicates in predicates are not marked as such ! -pb
+                    flags = flags & (~IN_PREDICATE);
+                }
+            }             
             expr.analyze(this, flags);
         }
     }
