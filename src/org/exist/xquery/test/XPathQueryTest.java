@@ -262,7 +262,7 @@ public class XPathQueryTest extends XMLTestCase {
     }
 }
     
-    public void bugtestStarAxisConstraints2() {
+    public void testStarAxisConstraints2() {
         ResourceSet result;
         try {
             XQueryService service = 
@@ -282,7 +282,7 @@ public class XPathQueryTest extends XMLTestCase {
         }
     }
     
-    public void bugtestStarAxisConstraints3() {
+    public void testStarAxisConstraints3() {
         ResourceSet result;
         try {
             XQueryService service = 
@@ -293,7 +293,7 @@ public class XPathQueryTest extends XMLTestCase {
             result = service.queryResource( "namespaces.xml", query );
             System.out.println("testStarAxisConstraints3 : ========" );        
             printResult(result);
-            assertEquals( "XPath: "+query, 1, result.getSize() );
+            assertEquals( "XPath: "+query, 4, result.getSize() );
             
         } catch (XMLDBException e) {
             //org.xmldb.api.base.XMLDBException: Internal evaluation error: context node is missing !
