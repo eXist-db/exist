@@ -124,12 +124,11 @@ public class XPathQueryTest extends XMLTestCase {
         try {
             XQueryService service = 
                 storeXMLStringAndGetQueryService("numbers.xml", numbers); 
-            ResourceSet result;
             
             boolean exceptionThrown = false;
             String message = "";
             try {
-                result = queryAndAssert(service, "('a', 'b', 'c')/position()", -1, null);                
+                queryAndAssert(service, "('a', 'b', 'c')/position()", -1, null);                
             } catch (XMLDBException e) {
                 exceptionThrown = true;
                 message = e.getMessage();
@@ -139,14 +138,14 @@ public class XPathQueryTest extends XMLTestCase {
             exceptionThrown = false;
             message = "";
             try {
-                result = queryAndAssert(service, "for $a in (<a/>, <b/>, doh, <c/>) return $a", -1, null);                
+                queryAndAssert(service, "for $a in (<a/>, <b/>, doh, <c/>) return $a", -1, null);                
             } catch (XMLDBException e) {
                 exceptionThrown = true;
                 message = e.getMessage();
             }
             assertTrue("Exception wanted: " + message, exceptionThrown);            
             
-            result = queryAndAssert(service, "()/position()", 0, null);
+            queryAndAssert(service, "()/position()", 0, null);
             
         } catch (XMLDBException e) {
             fail(e.getMessage());
@@ -272,12 +271,33 @@ public class XPathQueryTest extends XMLTestCase {
             
             query =  "/ * [ ./ * / t:title ]";
             result = service.queryResource( "namespaces.xml", query );
-            System.out.println("testStarAxis2 : ========" );        
+            System.out.println("testStarAxisConstraints2 : ========" );        
             printResult(result);
-            assertEquals( "XPath: "+query, 1, result.getSize() ); 
+            assertEquals( "XPath: "+query, 1, result.getSize() );
+            
         } catch (XMLDBException e) {
             //org.xmldb.api.base.XMLDBException: Internal evaluation error: context node is missing for node 3 !
-            System.out.println("testStarAxis(): XMLDBException: "+e);
+            System.out.println("testStarAxisConstraints2(): XMLDBException: "+e);
+            fail(e.getMessage());
+        }
+    }
+    
+    public void bugtestStarAxisConstraints3() {
+        ResourceSet result;
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
+            service.setNamespace("t", "http://www.foo.com");
+
+            query =  "// * [ . = 'Test Document' ]";
+            result = service.queryResource( "namespaces.xml", query );
+            System.out.println("testStarAxisConstraints3 : ========" );        
+            printResult(result);
+            assertEquals( "XPath: "+query, 1, result.getSize() );
+            
+        } catch (XMLDBException e) {
+            //org.xmldb.api.base.XMLDBException: Internal evaluation error: context node is missing !
+            System.out.println("testStarAxisConstraints3(): XMLDBException: "+e);
             fail(e.getMessage());
     }
 }  
