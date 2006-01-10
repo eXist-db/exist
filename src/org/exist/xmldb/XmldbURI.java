@@ -183,7 +183,7 @@ public class XmldbURI {
 	        		context = path.substring(0, index) + "/webdav";
 	        		lastIndex = index;
 	        	}    		
-	        	//Default : a local URI...
+	        	//Default : REST-style...
 	        	if (apiName == null) {	    			
 	        		apiName = API_REST;  
 	        		escapedCollectionPath =  path; 	
