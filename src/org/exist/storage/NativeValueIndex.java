@@ -501,8 +501,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             }
                         }
                     } catch (EOFException e) {
-                        //Is it expected ? Remove this block if not -pb
-                        LOG.warn("REPORT ME" + e.getMessage(), e);
+                        //EOFException expected
                     }
                 }
                 //TOUNDERSTAND (bis) : don't we lack the 2 following lines like in NativeElementIndex ? -pb
