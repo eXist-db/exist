@@ -309,7 +309,7 @@ public class Configuration implements ErrorHandler {
         config.put(name, obj);
     }
 
-    public void configureXACML(Element xacml) {
+    private void configureXACML(Element xacml) {
     	String enable = xacml.getAttribute("enable");
     	if(enable != null)
     		config.put("xacml.enable", Boolean.valueOf(enable.equals("yes")));
