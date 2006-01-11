@@ -55,44 +55,42 @@ public class NodeSetHelper {
 	 * @return
 	 */
 	public static NodeSet selectParentChild(NodeSet dl, NodeSet al, int mode, boolean rememberContext) {
-		NodeProxy n, p;
-		//		long start = System.currentTimeMillis();
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
 		DocumentImpl lastDoc = null;		
 		switch (mode) {
 			case NodeSet.DESCENDANT :
 				for (Iterator i = dl.iterator(); i.hasNext();) {
                     int sizeHint = Constants.NO_SIZE_HINT;
-					n = (NodeProxy) i.next();
-					if (lastDoc == null || n.getDocument() != lastDoc) {
-						lastDoc = n.getDocument();
+                    NodeProxy child = (NodeProxy) i.next();
+					if (lastDoc == null || child.getDocument() != lastDoc) {
+						lastDoc = child.getDocument();
 						sizeHint = dl.getSizeHint(lastDoc);
 					}
-                    p = al.parentWithChild(n, true, false, NodeProxy.UNKNOWN_NODE_LEVEL);
-					if (p != null) {
+                    NodeProxy parent = al.parentWithChild(child, true, false, NodeProxy.UNKNOWN_NODE_LEVEL);
+					if (parent != null) {
 						if (rememberContext)
-							n.addContextNode(p);
+                            child.addContextNode(parent);
 						else
-							n.copyContext(p);
-						result.add(n, sizeHint);
+                            child.copyContext(parent);
+						result.add(child, sizeHint);
 					}
 				}
 				break;
 			case NodeSet.ANCESTOR :
 				for (Iterator i = dl.iterator(); i.hasNext();) {
                     int sizeHint = Constants.NO_SIZE_HINT;
-					n = (NodeProxy) i.next();
-					if (lastDoc == null || n.getDocument() != lastDoc) {
-						lastDoc = n.getDocument();
+                    NodeProxy child = (NodeProxy) i.next();
+					if (lastDoc == null || child.getDocument() != lastDoc) {
+						lastDoc = child.getDocument();
 						sizeHint = al.getSizeHint(lastDoc);
 					}
-                    p = al.parentWithChild(n, true, false, NodeProxy.UNKNOWN_NODE_LEVEL);
-					if (p != null) {
+                    NodeProxy parent = al.parentWithChild(child, true, false, NodeProxy.UNKNOWN_NODE_LEVEL);
+					if (parent != null) {
 						if (rememberContext)
-							p.addContextNode(n);
+                            parent.addContextNode(child);
 						else
-							p.copyContext(n);
-						result.add(p, sizeHint);
+                            parent.copyContext(child);
+						result.add(parent, sizeHint);
 					}
 				}
 				break;
@@ -127,48 +125,47 @@ public class NodeSetHelper {
 	 * @return
 	 */
 	public static NodeSet selectAncestorDescendant(NodeSet dl, NodeSet al, int mode, boolean includeSelf,
-	        boolean rememberContext) {
-		NodeProxy n, p;
+	        boolean rememberContext) {		
         ExtArrayNodeSet result = new ExtArrayNodeSet();
 		DocumentImpl lastDoc = null;
 		switch (mode) {
 			case NodeSet.DESCENDANT :
 				for (Iterator i = dl.iterator(); i.hasNext();) {
                     int sizeHint = Constants.NO_SIZE_HINT;
-					n = (NodeProxy) i.next();
+                    NodeProxy descendant = (NodeProxy) i.next();
 					// get a size hint for every new document encountered
-					if (lastDoc == null || n.getDocument() != lastDoc) {
-						lastDoc = n.getDocument();
+					if (lastDoc == null || descendant.getDocument() != lastDoc) {
+						lastDoc = descendant.getDocument();
 						sizeHint = dl.getSizeHint(lastDoc);
 					}
-					if ((p = al.parentWithChild(n.getDocument(), n.getGID(), false, includeSelf,
-							NodeProxy.UNKNOWN_NODE_LEVEL ))
-						!= null) {
+                    NodeProxy ancestor = al.parentWithChild(descendant.getDocument(), descendant.getGID(), false, includeSelf,
+                            NodeProxy.UNKNOWN_NODE_LEVEL);
+					if (ancestor != null) {
 						if (rememberContext)
-							n.addContextNode(p);
+                            descendant.addContextNode(ancestor);
 						else
-							n.copyContext(p);
-						result.add(n, sizeHint);
+                            descendant.copyContext(ancestor);
+						result.add(descendant, sizeHint);
 					}
 				}
 				break;
 			case NodeSet.ANCESTOR :
 				for (Iterator i = dl.iterator(); i.hasNext();) {
                     int sizeHint = Constants.NO_SIZE_HINT;
-					n = (NodeProxy) i.next();
+                    NodeProxy descendant = (NodeProxy) i.next();
 					// get a size hint for every new document encountered
-					if (lastDoc == null || n.getDocument() != lastDoc) {
-						lastDoc = n.getDocument();
+					if (lastDoc == null || descendant.getDocument() != lastDoc) {
+						lastDoc = descendant.getDocument();
 						sizeHint = al.getSizeHint(lastDoc);
 					}
-					p = al.parentWithChild(n.getDocument(), n.getGID(), false, includeSelf,
-							NodeProxy.UNKNOWN_NODE_LEVEL );
-					if (p != null) {
+                    NodeProxy ancestor = al.parentWithChild(descendant.getDocument(), descendant.getGID(), false, includeSelf,
+							NodeProxy.UNKNOWN_NODE_LEVEL);
+					if (ancestor != null) {
 						if (rememberContext)
-							p.addContextNode(n);
+                            ancestor.addContextNode(descendant);
 						else
-							p.copyContext(n);
-						result.add(p, sizeHint);
+                            ancestor.copyContext(descendant);
+						result.add(ancestor, sizeHint);
 					}
 				}
                 break;
@@ -190,24 +187,23 @@ public class NodeSetHelper {
 	 * list of each returned node (this is used to track matches for predicate evaluation)
 	 *@return
 	 */
-    public static NodeSet selectAncestors(NodeSet al, NodeSet dl, boolean includeSelf, boolean rememberContext) {
-		NodeProxy n, p, temp;
+    public static NodeSet selectAncestors(NodeSet al, NodeSet dl, boolean includeSelf, boolean rememberContext) {		 
 		NodeSet result = new ExtArrayNodeSet();		
 		for (Iterator i = dl.iterator(); i.hasNext();) {
-			n = (NodeProxy) i.next();
-            NodeSet ancestors = ancestorsForChild(al, n, false, includeSelf, NodeProxy.UNKNOWN_NODE_LEVEL);
+            NodeProxy descendant = (NodeProxy) i.next();
+            NodeSet ancestors = ancestorsForChild(al, descendant, false, includeSelf, NodeProxy.UNKNOWN_NODE_LEVEL);
 			for(Iterator j = ancestors.iterator(); j.hasNext(); ) {
-			    p = (NodeProxy) j.next();
-				if (p != null) {
-                    temp = result.get(p);
+                NodeProxy ancestor = (NodeProxy) j.next();
+				if (ancestor != null) {
+                    NodeProxy temp = result.get(ancestor);
 					if (temp == null) {
 						if (rememberContext)
-							p.addContextNode(n);
+                            ancestor.addContextNode(descendant);
 						else
-							p.copyContext(n);
-						result.add(p);
+                            ancestor.copyContext(descendant);
+						result.add(ancestor);
 					} else if (rememberContext)
-						temp.addContextNode(n);
+						temp.addContextNode(descendant);
 				}
 			}
 		}
@@ -217,18 +213,18 @@ public class NodeSetHelper {
     /**
 	 * Return all nodes contained in the node set that are ancestors of the node p.  
 	 */
-	private static NodeSet ancestorsForChild(NodeSet ancestors,	NodeProxy p, boolean directParent,
+	private static NodeSet ancestorsForChild(NodeSet ancestors,	NodeProxy child, boolean directParent,
 	        boolean includeSelf, int level) {
 	    NodeSet result = new ExtArrayNodeSet(5);
-        long gid = p.getGID();
-		NodeProxy temp = ancestors.get(p.getDocument(), gid);		
+        long gid = child.getGID();
+		NodeProxy temp = ancestors.get(child.getDocument(), gid);		
 		if (includeSelf && temp != null)
 			result.add(temp);
 		if (level == NodeProxy.UNKNOWN_NODE_LEVEL)
-			level = p.getDocument().getTreeLevel(gid);
+			level = child.getDocument().getTreeLevel(gid);
 		while (gid > 0) {
-			gid = XMLUtil.getParentId(p.getDocument(), gid, level);
-            temp = ancestors.get(p.getDocument(), gid);
+			gid = XMLUtil.getParentId(child.getDocument(), gid, level);
+            temp = ancestors.get(child.getDocument(), gid);
 			if (temp != null)
 				result.add(temp);
 			else if (directParent)
@@ -292,10 +288,10 @@ public class NodeSetHelper {
 					// if its id is greater than the id of the other node
 					if (nb.getGID() < na.getGID()) {
 						// found a preceding sibling
-						if (mode == NodeSet.PRECEDING) {
-							nb.addContextNode(na);
-							result.add(nb);
-						}
+						if (mode == NodeSet.PRECEDING) { 
+                            nb.addContextNode(na);                            
+                            result.add(nb);
+                        }
 						if (ib.hasNext())
 							nb = (NodeProxy) ib.next();
 						else
@@ -303,9 +299,9 @@ public class NodeSetHelper {
 					} else if (nb.getGID() > na.getGID()) {
 						// found a following sibling						
 						if (mode == NodeSet.FOLLOWING) {
-							nb.addContextNode(na);
-							result.add(nb);
-						}
+                            nb.addContextNode(na);                            
+                            result.add(nb);
+                        }
 						if (ib.hasNext())
 							nb = (NodeProxy) ib.next();
 						else
