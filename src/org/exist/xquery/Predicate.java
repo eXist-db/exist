@@ -202,30 +202,29 @@ public class Predicate extends PathExpr {
                         "Using cached results", result);
             return cached.getResult();
         }
-		
-		NodeProxy current;
-		ContextItem contextNode;
-		NodeProxy next;
-		DocumentImpl lastDoc = null;
-		int count = 0, sizeHint = -1;
-		for (Iterator i = nodes.iterator(); i.hasNext(); count++) {
-			current = (NodeProxy) i.next();
-			if(lastDoc == null || current.getDocument() != lastDoc) {
-				lastDoc = current.getDocument();
+       
+		DocumentImpl lastDoc = null;      
+		for (Iterator i = nodes.iterator(); i.hasNext();) {               
+            NodeProxy currentNode = (NodeProxy) i.next();
+            int sizeHint = -1;
+			if(lastDoc == null || currentNode.getDocument() != lastDoc) {
+				lastDoc = currentNode.getDocument();
 				sizeHint = nodes.getSizeHint(lastDoc);
 			}
-			contextNode = current.getContext();
-			if (contextNode == null) {
-				throw new XPathException("Internal evaluation error: context node is missing for node " +
-					current.getGID() + " !");
+            ContextItem contextItem = currentNode.getContext();
+			if (contextItem == null) {
+				throw new XPathException("Internal evaluation error: context is missing for node " +
+                        currentNode.getGID() + " !");
 			}
-			while (contextNode != null) {
-				next = contextNode.getNode();
+            int count = 0;
+			while (contextItem != null) {
+                context.setContextPosition(count);
+                NodeProxy next = contextItem.getNode();
 				if(contextIsVirtual || contextSet.contains(next)) {
-					next.addMatches(current);
+					next.addMatches(currentNode);
 					result.add(next, sizeHint);
 				}
-				contextNode = contextNode.getNextItem();
+                contextItem = contextItem.getNextItem();
 			}
 		}
         
@@ -302,7 +301,7 @@ public class Predicate extends PathExpr {
                         temp = contextSet.selectPreceding(p);
                         break;
                     case Constants.PRECEDING_SIBLING_AXIS:
-                        temp = contextSet.selectSiblings(p, NodeSet.PRECEDING);
+                        temp = contextSet.selectSiblings(p, NodeSet.PRECEDING);                       
                         break;
                     case Constants.FOLLOWING_SIBLING_AXIS:
                         temp = contextSet.selectSiblings(p, NodeSet.FOLLOWING);
