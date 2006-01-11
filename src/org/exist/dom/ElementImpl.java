@@ -1021,7 +1021,8 @@ public class ElementImpl extends NamedNode implements Element {
         StringBuffer children = new StringBuffer();
         buf.append('<');
         buf.append(nodeName);
-        if (top) {
+        //Remove false to have a verbose output
+        if (top && false) {
             buf.append(" xmlns:exist=\"http://exist.sourceforge.net/NS/exist\"");
             buf.append(" exist:id=\"");
             buf.append(getGID());
@@ -1039,13 +1040,15 @@ public class ElementImpl extends NamedNode implements Element {
                 namespace = (String) entry.getValue();
                 if (prefix.length() == 0) {
                     buf.append(" xmlns=\"");
-                    buf.append(namespace);
+                    //buf.append(namespace);
+                    buf.append("...");
                 }
                 else {
                     buf.append(" xmlns:");
                     buf.append(prefix);
                     buf.append("=\"");
-                    buf.append(namespace);
+                    //buf.append(namespace);
+                    buf.append("...");
                 }
                 buf.append("\" ");
                 namespaces.add(namespace);
