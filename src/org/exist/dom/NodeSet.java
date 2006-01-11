@@ -216,7 +216,7 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @param mode either FOLLOWING or PRECEDING
 	 * @return
 	 */
-	public NodeSet selectSiblings(NodeSet siblings, int mode);
+	public NodeSet selectSiblings(NodeSet siblings, int mode, boolean rememberContext);
 	
 	public NodeSet selectFollowing(NodeSet following) throws XPathException;
 		

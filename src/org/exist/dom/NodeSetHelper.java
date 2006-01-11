@@ -246,7 +246,7 @@ public class NodeSetHelper {
 	 * @param mode either FOLLOWING or PRECEDING
 	 * @return
 	 */
-	public static NodeSet selectSiblings(NodeSet set, NodeSet siblings, int mode) {
+	public static NodeSet selectSiblings(NodeSet set, NodeSet siblings, int mode, boolean rememberContext) {
 		if (siblings.getLength() == 0 || set.getLength() == 0)
 			return NodeSet.EMPTY_SET;
 		NodeSet result = new ExtArrayNodeSet();
@@ -288,10 +288,13 @@ public class NodeSetHelper {
 					// if its id is greater than the id of the other node
 					if (nb.getGID() < na.getGID()) {
 						// found a preceding sibling
-						if (mode == NodeSet.PRECEDING) { 
-                            nb.addContextNode(na);                            
-                            result.add(nb);
-                        }
+						if (mode == NodeSet.PRECEDING) {
+							if (rememberContext)
+								nb.addContextNode(na);
+							else
+								nb.copyContext(na);
+							result.add(nb);
+						}
 						if (ib.hasNext())
 							nb = (NodeProxy) ib.next();
 						else
@@ -299,18 +302,30 @@ public class NodeSetHelper {
 					} else if (nb.getGID() > na.getGID()) {
 						// found a following sibling						
 						if (mode == NodeSet.FOLLOWING) {
-                            nb.addContextNode(na);                            
-                            result.add(nb);
-                        }
+							if (rememberContext)
+								nb.addContextNode(na);
+							else
+								nb.copyContext(na);
+							result.add(nb);
+						}
 						if (ib.hasNext())
 							nb = (NodeProxy) ib.next();
 						else
 							break;
 						// equal nodes: proceed with next node
-					} else if (ib.hasNext())
-						nb = (NodeProxy) ib.next();
-					else
-						break;
+					} else {
+						if (mode == NodeSet.FOLLOWING) {
+							if (ib.hasNext())
+								nb = (NodeProxy) ib.next();
+							else
+								break;
+						} else {
+							if (ia.hasNext())
+								na = (NodeProxy) ia.next();
+							else
+								break;
+						}
+					}
 				}
 			}
 		}

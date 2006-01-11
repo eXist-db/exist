@@ -436,9 +436,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#selectSiblings(org.exist.dom.NodeSet, int)
      */
-    public NodeSet selectSiblings(NodeSet siblings, int mode) {
+    public NodeSet selectSiblings(NodeSet siblings, int mode, boolean rememberContext) {
         sort();
-        return super.selectSiblings(siblings, mode);
+        return super.selectSiblings(siblings, mode, rememberContext);
     }
     
     
