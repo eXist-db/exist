@@ -524,7 +524,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 			case Node.DOCUMENT_NODE:
 			    return Type.DOCUMENT;
 			//(yet) unknown type : return generic
-			default :                
+			default :
 				return Type.NODE;
 		}
 	}
@@ -1036,8 +1036,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#selectSiblings(org.exist.dom.NodeSet, int)
      */
-    public NodeSet selectSiblings(NodeSet siblings, int mode) {
-        return NodeSetHelper.selectSiblings(this, siblings, mode);
+    public NodeSet selectSiblings(NodeSet siblings, int mode, boolean rememberContext) {
+        return NodeSetHelper.selectSiblings(this, siblings, mode, rememberContext);
     }
     
     /* (non-Javadoc)

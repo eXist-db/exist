@@ -484,11 +484,12 @@ public class LocationStep extends Step {
                 currentDocs = docs;
                 registerUpdateListener();
 			} 
+			LOG.debug("Current Set: " + currentSet.getLength() + "; context: " + contextSet.getLength());
             switch (axis) {
                 case Constants.PRECEDING_SIBLING_AXIS :             
-                    return currentSet.selectSiblings(contextSet, NodeSet.PRECEDING);                    
+                    return currentSet.selectSiblings(contextSet, NodeSet.PRECEDING, inPredicate);                    
                 case Constants.FOLLOWING_SIBLING_AXIS :
-                    return currentSet.selectSiblings(contextSet, NodeSet.FOLLOWING);                   
+                    return currentSet.selectSiblings(contextSet, NodeSet.FOLLOWING, inPredicate);
                 default :
                     throw new IllegalArgumentException("Unsupported axis specified");                   
             }

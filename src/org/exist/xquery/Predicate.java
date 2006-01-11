@@ -301,10 +301,10 @@ public class Predicate extends PathExpr {
                         temp = contextSet.selectPreceding(p);
                         break;
                     case Constants.PRECEDING_SIBLING_AXIS:
-                        temp = contextSet.selectSiblings(p, NodeSet.PRECEDING);                       
+                        temp = contextSet.selectSiblings(p, NodeSet.PRECEDING, false);
                         break;
                     case Constants.FOLLOWING_SIBLING_AXIS:
-                        temp = contextSet.selectSiblings(p, NodeSet.FOLLOWING);
+                        temp = contextSet.selectSiblings(p, NodeSet.FOLLOWING, false);
                         reverseAxis = false;
                         break;    
                     case Constants.FOLLOWING_AXIS:
