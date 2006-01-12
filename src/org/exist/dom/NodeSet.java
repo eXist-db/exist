@@ -161,10 +161,7 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @return
 	 */
 	
-	public NodeSet selectParentChild(
-		NodeSet al,
-		int mode,
-		boolean rememberContext);
+	public NodeSet selectParentChild(NodeSet al, int mode, boolean rememberContext);
 		
 	/**
 	 * Check if any descendant nodes are found within this node set for a given
@@ -183,11 +180,7 @@ public interface NodeSet extends Sequence, NodeList {
 	 * list of each returned node (this is used to track matches for predicate evaluation)
 	 * @return
 	 */
-	public NodeSet selectAncestorDescendant(
-		NodeSet al,
-		int mode,
-		boolean includeSelf,
-		boolean rememberContext);
+	public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, boolean rememberContext);
 		
 	/**
 	 * For a given set of potential ancestor nodes, return all ancestors
@@ -200,27 +193,31 @@ public interface NodeSet extends Sequence, NodeList {
 	 * list of each returned node (this is used to track matches for predicate evaluation)
 	 *@return
 	 */
-	public NodeSet selectAncestors(
-		NodeSet al,
-		boolean includeSelf,
-		boolean rememberContext);
+	public NodeSet selectAncestors(NodeSet al, boolean includeSelf,	boolean rememberContext);
 		
-	/**
-	 * Select all nodes from the passed node set, which
-	 * are preceding or following siblings of the nodes in
-	 * this set. If mode is {@link #FOLLOWING}, only nodes following
-	 * the context node are selected. {@link #PRECEDING} selects
-	 * preceding nodes.
-	 * 
-	 * @param siblings a node set containing potential siblings
-	 * @param mode either FOLLOWING or PRECEDING
-	 * @return
-	 */
-	public NodeSet selectSiblings(NodeSet siblings, int mode, boolean rememberContext);
+    /**
+     * Select all nodes from the passed node set, which
+     * are preceding siblings of the nodes in
+     * this set.
+     * 
+     * @param siblings a node set containing potential siblings 
+     * @return
+     */
+    public NodeSet selectPrecedingSiblings(NodeSet siblings, boolean rememberContext);
+
+    /**
+     * Select all nodes from the passed node set, which
+     * are following siblings of the nodes in
+     * this set.
+     * 
+     * @param siblings a node set containing potential siblings    
+     * @return
+     */    
+    public NodeSet selectFollowingSiblings(NodeSet siblings, boolean rememberContext);
 	
-	public NodeSet selectFollowing(NodeSet following) throws XPathException;
-		
     public NodeSet selectPreceding(NodeSet preceding) throws XPathException;
+    
+    public NodeSet selectFollowing(NodeSet following) throws XPathException;
     
 	/**
 	 * Check if the node identified by its node id has an ancestor contained in this node set
@@ -233,11 +230,7 @@ public interface NodeSet extends Sequence, NodeList {
 	 * If includeSelf is true, the method returns also true if
 	 * the node itself is contained in the node set.
 	 */
-	public NodeProxy parentWithChild(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent,
-		boolean includeSelf);
+	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf);
 		
 	/**
 	 * Check if the node identified by its node id has an ancestor contained in this node set
@@ -250,11 +243,7 @@ public interface NodeSet extends Sequence, NodeList {
 	 * If includeSelf is true, the method returns also true if
 	 * the node itself is contained in the node set.
 	 */
-	public NodeProxy parentWithChild(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent,
-		boolean includeSelf,
+	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf,
 		int level);
 		
 	/**
@@ -268,11 +257,7 @@ public interface NodeSet extends Sequence, NodeList {
 	 * If includeSelf is true, the method returns also true if
 	 * the node itself is contained in the node set.
 	 */
-	public NodeProxy parentWithChild(
-		NodeProxy proxy,
-		boolean directParent,
-		boolean includeSelf,
-		int level);
+	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent,	boolean includeSelf, int level);
 	
 	/**
 	 * Return a new node set containing the parent nodes of all nodes in the 

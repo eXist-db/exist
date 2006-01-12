@@ -1029,9 +1029,9 @@ public class XQueryTest extends XMLTestCase {
 			try {				
 				Node n = ((XMLResource)result.getResource(0)).getContentAsDOM();	
 				DetailedDiff d = new DetailedDiff(compareXML(numbers, n.toString()));
-				//ignore eXist namespace's attributes
-				//TODO : should be improved !
-				assertEquals(1, d.getAllDifferences().size());
+                assertEquals(0, d.getAllDifferences().size());
+				//ignore eXist namespace's attributes				
+				//assertEquals(1, d.getAllDifferences().size());
 			} catch (Exception e) {
 				System.out.println("testFunctionDoc : XMLDBException: "+e);
 				fail(e.getMessage());

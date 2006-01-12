@@ -236,7 +236,7 @@ public class NodeSetHelper {
 	
 	/**
 	 * Select all nodes from the passed set of potential siblings, which
-	 * are preceding or following siblings of the nodes in
+	 * are preceding siblings of the nodes in
 	 * the other set. If mode is {@link #FOLLOWING}, only following
 	 * nodes are selected. {@link #PRECEDING} selects
 	 * preceding nodes.
@@ -246,14 +246,15 @@ public class NodeSetHelper {
 	 * @param mode either FOLLOWING or PRECEDING
 	 * @return
 	 */
-	public static NodeSet selectSiblings(NodeSet set, NodeSet siblings, int mode, boolean rememberContext) {
+	public static NodeSet selectPrecedingSiblings(NodeSet set, NodeSet siblings, boolean rememberContext) {
 		if (siblings.getLength() == 0 || set.getLength() == 0)
 			return NodeSet.EMPTY_SET;
 		NodeSet result = new ExtArrayNodeSet();
 		Iterator ia = siblings.iterator();
 		Iterator ib = set.iterator();
         NodeProxy na = (NodeProxy) ia.next();
-        NodeProxy nb = (NodeProxy) ib.next();		
+        NodeProxy nb = (NodeProxy) ib.next();	
+        //TODO : review : don't care about following siblings
 		while (true) {
 			// first, try to find nodes belonging to the same doc
 			if (na.getDocument().getDocId() < nb.getDocument().getDocId()) {
@@ -287,77 +288,130 @@ public class NodeSetHelper {
 					// now, compare the ids: a node is a following sibling
 					// if its id is greater than the id of the other node
 					if (nb.getGID() < na.getGID()) {
-						// found a preceding sibling
-						if (mode == NodeSet.PRECEDING) {
-							if (rememberContext)
-								nb.addContextNode(na);
-							else
-								nb.copyContext(na);
-							result.add(nb);
-						}
+						// found a preceding sibling						
+						if (rememberContext)
+                            //TODO : add composite context
+							nb.addContextNode(na);
+						else
+							nb.copyContext(na);
+						result.add(nb);						
 						if (ib.hasNext())
 							nb = (NodeProxy) ib.next();
 						else
 							break;
 					} else if (nb.getGID() > na.getGID()) {
-						// found a following sibling						
-						if (mode == NodeSet.FOLLOWING) {
-							if (rememberContext)
-								nb.addContextNode(na);
-							else
-								nb.copyContext(na);
-							result.add(nb);
-						}
+						// found a following sibling
 						if (ib.hasNext())
 							nb = (NodeProxy) ib.next();
 						else
 							break;
 						// equal nodes: proceed with next node
 					} else {
-						if (mode == NodeSet.FOLLOWING) {
-							if (ib.hasNext())
-								nb = (NodeProxy) ib.next();
-							else
-								break;
-						} else {
-							if (ia.hasNext())
-								na = (NodeProxy) ia.next();
-							else
-								break;
-						}
+						if (ia.hasNext())
+							na = (NodeProxy) ia.next();
+						else
+							break;
 					}
 				}
 			}
 		}
 		return result;
 	}
-	
-	public static NodeSet selectFollowing(NodeSet set, NodeSet following) throws XPathException {
-		if (following.getLength() == 0 || set.getLength() == 0)
-			return NodeSet.EMPTY_SET;
-		NodeSet result = new ExtArrayNodeSet();
-		for (Iterator si = set.iterator(); si.hasNext(); ) {
-            NodeProxy sn = (NodeProxy) si.next();
-            for (Iterator fi = following.iterator(); fi.hasNext(); ) {
-                NodeProxy fn = (NodeProxy) fi.next();
-                if (fn.after(sn)) {
-                    fn.addContextNode(sn);
-                    result.add(fn);
+    
+    /**
+     * Select all nodes from the passed set of potential siblings, which
+     * are following siblings of the nodes in
+     * the other set. If mode is {@link #FOLLOWING}, only following
+     * nodes are selected. {@link #PRECEDING} selects
+     * preceding nodes.
+     * 
+     * @param set the node set to check
+     * @param siblings a node set containing potential siblings
+     * @param mode either FOLLOWING or PRECEDING
+     * @return
+     */
+    public static NodeSet selectFollowingSiblings(NodeSet set, NodeSet siblings, boolean rememberContext) {
+        if (siblings.getLength() == 0 || set.getLength() == 0)
+            return NodeSet.EMPTY_SET;
+        NodeSet result = new ExtArrayNodeSet();
+        Iterator ia = siblings.iterator();
+        Iterator ib = set.iterator();
+        NodeProxy na = (NodeProxy) ia.next();
+        NodeProxy nb = (NodeProxy) ib.next();   
+        //TODO : review : don't care about preceding siblings
+        while (true) {
+            // first, try to find nodes belonging to the same doc
+            if (na.getDocument().getDocId() < nb.getDocument().getDocId()) {
+                if (ia.hasNext())
+                    na = (NodeProxy) ia.next();
+                else
+                    break;
+            } else if (na.getDocument().getDocId() > nb.getDocument().getDocId()) {
+                if (ib.hasNext())
+                    nb = (NodeProxy) ib.next();
+                else
+                    break;
+            } else {
+                // same document: check if the nodes have the same parent
+                long pa = XMLUtil.getParentId(na.getDocument(), na.getGID());
+                long pb = XMLUtil.getParentId(nb.getDocument(), nb.getGID());
+                if (pa < pb) {
+                    // wrong parent: proceed
+                    if (ia.hasNext())
+                        na = (NodeProxy) ia.next();
+                    else
+                        break;
+                } else if (pa > pb) {
+                    // wrong parent: proceed
+                    if (ib.hasNext())
+                        nb = (NodeProxy) ib.next();
+                    else
+                        break;
+                } else {
+                    // found two nodes with the same parent
+                    // now, compare the ids: a node is a following sibling
+                    // if its id is greater than the id of the other node
+                    if (nb.getGID() < na.getGID()) {
+                        // found a preceding sibling
+                        if (ib.hasNext())
+                            nb = (NodeProxy) ib.next();
+                        else
+                            break;
+                    } else if (nb.getGID() > na.getGID()) {
+                        // found a following sibling 
+                        if (rememberContext)
+                            //TODO : add composite context
+                            nb.addContextNode(na);
+                        else
+                            nb.copyContext(na);
+                        result.add(nb);                        
+                        if (ib.hasNext())
+                            nb = (NodeProxy) ib.next();
+                        else
+                            break;
+                        // equal nodes: proceed with next node
+                    } else {
+                        if (ib.hasNext())
+                            nb = (NodeProxy) ib.next();
+                        else
+                            break;
+                    }
                 }
             }
         }
-		return result;
-	}
+        return result;
+    }    
     
-    public static NodeSet selectPreceding(NodeSet set, NodeSet following) throws XPathException {
-        if (following.getLength() == 0 || set.getLength() == 0)
+    public static NodeSet selectPreceding(NodeSet set, NodeSet preceding) throws XPathException {
+        if (preceding.getLength() == 0 || set.getLength() == 0)
             return NodeSet.EMPTY_SET;
         NodeSet result = new ExtArrayNodeSet();
         for (Iterator si = set.iterator(); si.hasNext(); ) {
             NodeProxy sn = (NodeProxy) si.next();
-            for (Iterator fi = following.iterator(); fi.hasNext(); ) {
-                NodeProxy fn = (NodeProxy) fi.next();
+            for (Iterator fi = preceding.iterator(); fi.hasNext(); ) {
+                NodeProxy fn = (NodeProxy) fi.next();                                  
                 if (fn.before(sn)) {
+                    //TODO : add composite context
                     fn.addContextNode(sn);
                     result.add(fn);
                 }
@@ -365,6 +419,25 @@ public class NodeSetHelper {
         }
         return result;
     }
+    
+    public static NodeSet selectFollowing(NodeSet set, NodeSet following) throws XPathException {
+        if (following.getLength() == 0 || set.getLength() == 0)
+            return NodeSet.EMPTY_SET;
+        NodeSet result = new ExtArrayNodeSet();
+        for (Iterator si = set.iterator(); si.hasNext(); ) {
+            NodeProxy sn = (NodeProxy) si.next();
+            for (Iterator fi = following.iterator(); fi.hasNext(); ) {
+                NodeProxy fn = (NodeProxy) fi.next();
+                if (fn.after(sn)) {
+                    //TODO : add composite context
+                    fn.addContextNode(sn);
+                    result.add(fn);
+                }
+            }
+        }
+        return result;
+    }    
+
     
     public static NodeSet directSelectAttributes(NodeSet set, QName qname, boolean rememberContext) {
         NodeSet result = new ExtArrayNodeSet();

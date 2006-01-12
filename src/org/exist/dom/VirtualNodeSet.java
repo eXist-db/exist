@@ -168,8 +168,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		}
 	}
 
-	public NodeProxy nodeHasParent(DocumentImpl doc, long gid, 
-            boolean directParent, boolean includeSelf) {
+	public NodeProxy nodeHasParent(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf) {
         
 		final NodeProxy p =	getFirstParent(new NodeProxy(doc, gid), null, includeSelf, directParent, 0);
 		if (p != null)
@@ -177,8 +176,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		return p;
 	}
 
-	public NodeProxy nodeHasParent(NodeProxy node, 
-            boolean directParent, boolean includeSelf) {
+	public NodeProxy nodeHasParent(NodeProxy node, boolean directParent, boolean includeSelf) {
         
 		final NodeProxy p = getFirstParent(node, null, includeSelf, directParent, 0);
 		if (p != null)
@@ -193,16 +191,14 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		realSetIsComplete = false;
 	}
 
-	public NodeProxy parentWithChild(DocumentImpl doc, long gid,
-	        boolean directParent, boolean includeSelf) {
+	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf) {
 		NodeProxy first = getFirstParent(new NodeProxy(doc, gid), null, includeSelf, directParent, 0);
 		if (first != null)
 			addInternal(first);
 		return first;
 	}
 
-	public NodeProxy parentWithChild(NodeProxy proxy, 
-            boolean directParent, boolean includeSelf) {
+	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf) {
 		NodeProxy first = getFirstParent(proxy, null, includeSelf, directParent, 0);
 		if (first != null)
 			addInternal(first);		
@@ -268,12 +264,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	}
 	
 	/** recursively adds children nodes */
-	private final void addChildren(
-		NodeProxy contextNode,
-		NodeSet result,
-		StoredNode node,
-		Iterator iter,
-		int recursions) {
+	private final void addChildren(NodeProxy contextNode, NodeSet result, StoredNode node, Iterator iter,
+	        int recursions) {
 		if (node.hasChildNodes()) {
 			StoredNode child;
 			NodeProxy p;

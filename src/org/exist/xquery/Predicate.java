@@ -136,7 +136,7 @@ public class Predicate extends PathExpr {
                     if (context.getProfiler().isEnabled())
                         context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
                                 "OPTIMIZATION CHOICE", "selectByNodeSet");                    
-                    result = selectByNodeSet(contextSequence);
+                    result = selectByNodeSet(contextSequence);                    
                     break;
                 case BOOLEAN: 
                     if (context.getProfiler().isEnabled())
@@ -173,7 +173,7 @@ public class Predicate extends PathExpr {
 		int p = 0;
 		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
 			Item item = i.nextItem();
-			context.setContextPosition(p); 
+            context.setContextPosition(p); 
             Sequence innerSeq;            
             innerSeq = inner.eval(contextSequence, item);
 			if(innerSeq.effectiveBooleanValue())
@@ -216,15 +216,19 @@ public class Predicate extends PathExpr {
 				throw new XPathException("Internal evaluation error: context is missing for node " +
                         currentNode.getGID() + " !");
 			}
+           
             int count = 0;
-			while (contextItem != null) {
-                context.setContextPosition(count);
+			while (contextItem != null) { 
                 NodeProxy next = contextItem.getNode();
 				if(contextIsVirtual || contextSet.contains(next)) {
-					next.addMatches(currentNode);
-					result.add(next, sizeHint);
+                    //if (count ==  contextMark) {    
+                        next.addMatches(currentNode);
+                        result.add(next, sizeHint);
+                        //break;
+                    //}                     
 				}
                 contextItem = contextItem.getNextItem();
+                count++;
 			}
 		}
         
@@ -269,7 +273,7 @@ public class Predicate extends PathExpr {
                     //TODO : understand why we sort here...
 				    temp.sortInDocumentOrder();
 				    
-				    Sequence innerSeq = inner.eval(contextSequence);
+				    Sequence innerSeq = inner.eval(contextSequence);                    
 				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {				      
 				        NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);
 				        //... whereas we don't want a sorted array here
@@ -301,10 +305,10 @@ public class Predicate extends PathExpr {
                         temp = contextSet.selectPreceding(p);
                         break;
                     case Constants.PRECEDING_SIBLING_AXIS:
-                        temp = contextSet.selectSiblings(p, NodeSet.PRECEDING, false);
+                        temp = contextSet.selectPrecedingSiblings(p, true);
                         break;
                     case Constants.FOLLOWING_SIBLING_AXIS:
-                        temp = contextSet.selectSiblings(p, NodeSet.FOLLOWING, false);
+                        temp = contextSet.selectFollowingSiblings(p, true);
                         reverseAxis = false;
                         break;    
                     case Constants.FOLLOWING_AXIS:
@@ -321,10 +325,11 @@ public class Predicate extends PathExpr {
                         throw new IllegalArgumentException("Tested unknown axis");
                     }
                     if (temp.getLength() > 0) {
-                        Sequence innerSeq = inner.eval(contextSequence);
+                        //TODO : build a value sequence *one* time ? -pb
+                        Sequence innerSeq = inner.eval(contextSequence);                        
                         for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {                    
-                            NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);                        
-                            int pos = (reverseAxis ? temp.getLength() - v.getInt() : v.getInt() - 1);
+                            NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);                             
+                            int pos = (reverseAxis ? temp.getLength() - v.getInt() : v.getInt());
                             //Other positions are ignored    
         				    if (pos >= 0 && pos < temp.getLength()) {                                 
     				            result.add(temp.itemAt(pos));

@@ -1036,28 +1036,31 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#selectSiblings(org.exist.dom.NodeSet, int)
      */
-    public NodeSet selectSiblings(NodeSet siblings, int mode, boolean rememberContext) {
-        return NodeSetHelper.selectSiblings(this, siblings, mode, rememberContext);
+    public NodeSet selectPrecedingSiblings(NodeSet siblings, boolean rememberContext) {
+        return NodeSetHelper.selectPrecedingSiblings(this, siblings, rememberContext);
     }
+    
+    public NodeSet selectFollowingSiblings(NodeSet siblings, boolean rememberContext) {
+        return NodeSetHelper.selectFollowingSiblings(this, siblings, rememberContext);
+    }    
     
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#selectAncestorDescendant(org.exist.dom.NodeSet, int, boolean, boolean)
      */
-    public NodeSet selectAncestorDescendant(NodeSet al, int mode,
-            boolean includeSelf, boolean rememberContext) {
+    public NodeSet selectAncestorDescendant(NodeSet al, int mode, boolean includeSelf, boolean rememberContext) {
         return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, rememberContext);
     }
     
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#selectFollowing(org.exist.dom.NodeSet)
      */
-    public NodeSet selectFollowing(NodeSet following) throws XPathException {
-        return NodeSetHelper.selectFollowing(this, following);
-    }
-    
     public NodeSet selectPreceding(NodeSet preceding) throws XPathException {
         return NodeSetHelper.selectPreceding(this, preceding);
     }
+    
+    public NodeSet selectFollowing(NodeSet following) throws XPathException {
+        return NodeSetHelper.selectFollowing(this, following);
+    }    
     
     public NodeSet directSelectAttribute(QName qname, boolean rememberContext) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)

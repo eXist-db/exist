@@ -234,14 +234,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param rememberContext
 	 * @return
 	 */
-	protected NodeSet hasChildrenInSet(
-		NodeSet al,
-		int mode,
-		boolean rememberContext) {
-		NodeSet result = new ExtArrayNodeSet();
-		NodeProxy node;
+	protected NodeSet hasChildrenInSet(NodeSet al, int mode, boolean rememberContext) {
+		NodeSet result = new ExtArrayNodeSet();		
 		for (Iterator i = al.iterator(); i.hasNext(); ) {
-			node = (NodeProxy) i.next();
+            NodeProxy node = (NodeProxy) i.next();
 			Range range = XMLUtil.getChildRange(node.getDocument(), node.getGID());
 			getRange(result, node.getDocument(), range.getStart(), range.getEnd());
 		}
@@ -388,10 +384,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * list of each returned node (this is used to track matches for predicate evaluation)
 	 * @return
 	 */
-	public NodeSet selectAncestors(
-		NodeSet dl,
-		boolean includeSelf,
-		boolean rememberContext) {
+	public NodeSet selectAncestors(NodeSet dl, boolean includeSelf,	boolean rememberContext) {
 		return NodeSetHelper.selectAncestors(this, dl, includeSelf, rememberContext);
 	}
 
@@ -414,9 +407,13 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param mode either FOLLOWING or PRECEDING
 	 * @return
 	 */
-	public NodeSet selectSiblings(NodeSet siblings, int mode, boolean rememberContext) {
-		return NodeSetHelper.selectSiblings(this, siblings, mode, rememberContext);
-	}
+    public NodeSet selectPrecedingSiblings(NodeSet siblings, boolean rememberContext) {
+        return NodeSetHelper.selectPrecedingSiblings(this, siblings, rememberContext);
+    }
+    
+    public NodeSet selectFollowingSiblings(NodeSet siblings, boolean rememberContext) {
+        return NodeSetHelper.selectFollowingSiblings(this, siblings, rememberContext);
+    }    
 
     public NodeSet directSelectAttribute(QName qname, boolean rememberContext) {
         return NodeSetHelper.directSelectAttributes(this, qname, rememberContext);
@@ -432,8 +429,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 *
 	 */
 	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent) {
-		return parentWithChild(doc, gid, directParent, false,
-				NodeProxy.UNKNOWN_NODE_LEVEL );
+		return parentWithChild(doc, gid, directParent, false, NodeProxy.UNKNOWN_NODE_LEVEL );
 	}
 
 	/**
@@ -447,13 +443,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * If includeSelf is true, the method returns also true if
 	 * the node itself is contained in the node set.
 	 */
-	public NodeProxy parentWithChild(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent,
-		boolean includeSelf) {
-		return parentWithChild(doc, gid, directParent, includeSelf, 
-				NodeProxy.UNKNOWN_NODE_LEVEL );
+	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf) {
+		return parentWithChild(doc, gid, directParent, includeSelf,	NodeProxy.UNKNOWN_NODE_LEVEL );
 	}
 
 	/**
@@ -467,20 +458,17 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * If includeSelf is true, the method returns also true if
 	 * the node itself is contained in the node set.
 	 */
-	public NodeProxy parentWithChild(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent,
-		boolean includeSelf,
-		int level) {
-		NodeProxy temp;
-		if (includeSelf && (temp = get(doc, gid)) != null)
+	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf,
+	        int level) {
+		NodeProxy temp = get(doc, gid);
+		if (includeSelf && temp != null)
 			return temp;
 		if (level == NodeProxy.UNKNOWN_NODE_LEVEL)
 			level = doc.getTreeLevel(gid);
 		while (gid != NodeProxy.DOCUMENT_NODE_GID) {
 			gid = XMLUtil.getParentId(doc, gid, level);
-			if ((temp = get(doc, gid)) != null)
+            temp = get(doc, gid);
+			if (temp != null)
 				return temp;
 			else if (directParent)
 				return null;
@@ -501,11 +489,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * If includeSelf is true, the method returns also true if
 	 * the node itself is contained in the node set.
 	 */
-	public NodeProxy parentWithChild(
-		NodeProxy proxy,
-		boolean directParent,
-		boolean includeSelf,
-		int level) {
+	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent,	boolean includeSelf, int level) {
 		return parentWithChild(proxy.getDocument(), proxy.getGID(), directParent, includeSelf, level);
 	}
 	
@@ -678,6 +662,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return result;
 	}
 
+    //TOUNDERSTAND : what is this mthod for ? -pb
 	public NodeSet getContextNodes(boolean rememberContext) {
 		NodeProxy current, context;
 		ContextItem contextNode;

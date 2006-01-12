@@ -22,13 +22,22 @@ package org.exist.dom;
 
 public class ContextItem {
 
-	private NodeProxy node;
+    private NodeProxy node;
+    private ContextItem subcontext;
 	private ContextItem nextItem;
 	
-	public ContextItem(NodeProxy node) {
-		this.node = node;
-	}
-	
+    public ContextItem(NodeProxy node) {
+        if (this.subcontext != null)
+            throw new IllegalArgumentException ("Context Item is allready set");            
+        this.node = node;
+    }
+    
+    public ContextItem(ContextItem subcontext) {
+        if (this.node != null)
+            throw new IllegalArgumentException ("Context Item is allready set");            
+        this.subcontext = subcontext;
+    } 
+    
 	public NodeProxy getNode() {
 		return node;
 	}

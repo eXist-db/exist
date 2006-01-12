@@ -436,24 +436,27 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#selectSiblings(org.exist.dom.NodeSet, int)
      */
-    public NodeSet selectSiblings(NodeSet siblings, int mode, boolean rememberContext) {
+    public NodeSet selectPrecedingSiblings(NodeSet siblings, boolean rememberContext) {
         sort();
-        return super.selectSiblings(siblings, mode, rememberContext);
+        return super.selectPrecedingSiblings(siblings, rememberContext);
     }
+    
+    public NodeSet selectFollowingSiblings(NodeSet siblings, boolean rememberContext) {
+        sort();
+        return super.selectPrecedingSiblings(siblings, rememberContext);
+    }    
     
     
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#selectAncestors(org.exist.dom.NodeSet, boolean, boolean)
      */
-    public NodeSet selectAncestors(NodeSet al, boolean includeSelf,
-            boolean rememberContext) {
+    public NodeSet selectAncestors(NodeSet al, boolean includeSelf, boolean rememberContext) {
         sort();
         return super.selectAncestors(al, includeSelf, rememberContext);
     }
     
-    public NodeProxy parentWithChild(DocumentImpl doc, long gid,
-                                        boolean directParent,
-                                        boolean includeSelf, int level) {
+    public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf, 
+            int level) {
         sort();
         lastPart = getPart(doc, false, initalSize);
         return lastPart == null ? null : lastPart.parentWithChild(doc, gid, directParent, includeSelf, level);
@@ -592,8 +595,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
          * If includeSelf is true, the method returns also true if the node
          * itself is contained in the node set.
          */
-        NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent,
-                                            boolean includeSelf, int level) {
+        NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf, 
+                int level) {
             NodeProxy temp;
             if (includeSelf && (temp = get(gid)) != null)
                 return temp;

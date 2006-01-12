@@ -487,9 +487,9 @@ public class LocationStep extends Step {
 			LOG.debug("Current Set: " + currentSet.getLength() + "; context: " + contextSet.getLength());
             switch (axis) {
                 case Constants.PRECEDING_SIBLING_AXIS :             
-                    return currentSet.selectSiblings(contextSet, NodeSet.PRECEDING, inPredicate);                    
+                    return currentSet.selectPrecedingSiblings(contextSet, inPredicate);                    
                 case Constants.FOLLOWING_SIBLING_AXIS :
-                    return currentSet.selectSiblings(contextSet, NodeSet.FOLLOWING, inPredicate);
+                    return currentSet.selectFollowingSiblings(contextSet, inPredicate);
                 default :
                     throw new IllegalArgumentException("Unsupported axis specified");                   
             }
@@ -506,27 +506,7 @@ public class LocationStep extends Step {
                 throw new IllegalArgumentException("Unsupported axis specified");                   
         }
 	}
-
-	protected NodeSet getFollowing(XQueryContext context, NodeSet contextSet) throws XPathException {		
-		if(test.isWildcardTest()) { 
-		    //TODO : throw an exception here ! Don't let this pass through
-            return NodeSet.EMPTY_SET;
-        } else {
-		    DocumentSet docs = getDocumentSet(contextSet);
-			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-                ElementIndex index = context.getBroker().getElementIndex();		
-                if (context.getProfiler().isEnabled())
-                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
-                            "OPTIMIZATION", "using index '" + index.toString() + "'");
-				currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
-                currentDocs = docs;
-                registerUpdateListener();
-			}
-			return currentSet.selectFollowing(contextSet);
-		}
-        
-	}
-	
+    
     protected NodeSet getPreceding(XQueryContext context, NodeSet contextSet) throws XPathException {        
         if(test.isWildcardTest()) { 
             //TODO : throw an exception here ! Don't let this pass through
@@ -544,7 +524,26 @@ public class LocationStep extends Step {
             }
             return currentSet.selectPreceding(contextSet);
         }        
-    }
+    }    
+
+	protected NodeSet getFollowing(XQueryContext context, NodeSet contextSet) throws XPathException {		
+		if(test.isWildcardTest()) { 
+		    //TODO : throw an exception here ! Don't let this pass through
+            return NodeSet.EMPTY_SET;
+        } else {
+		    DocumentSet docs = getDocumentSet(contextSet);
+			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+                ElementIndex index = context.getBroker().getElementIndex();		
+                if (context.getProfiler().isEnabled())
+                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
+                            "OPTIMIZATION", "using index '" + index.toString() + "'");
+				currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
+                currentDocs = docs;
+                registerUpdateListener();
+			}
+			return currentSet.selectFollowing(contextSet);
+		}        
+	}
     
 	protected NodeSet getAncestors(XQueryContext context, NodeSet contextSet) {		
 		if (test.isWildcardTest()) {
