@@ -22,9 +22,13 @@
  */
 package org.exist.xquery;
 
+import com.sun.xacml.ctx.RequestCtx;
+
 import java.util.List;
 
 import org.exist.dom.QName;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.xacml.ExistPDP;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -156,7 +160,23 @@ public class FunctionCall extends Function {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }        
-        
+
+		//check access to the method
+		try {
+			ExistPDP pdp = context.getPDP();
+			if(pdp != null) {
+				RequestCtx request = pdp.getRequestHelper().createFunctionRequest(context, null, getName());
+				//if request is null, this function belongs to a main module and is allowed to be called
+				//otherwise, the access must be checked
+				if(request != null)
+					pdp.evaluate(request);
+			}
+		} catch (PermissionDeniedException pde) {
+			XPathException xe = new XPathException(getASTNode(), "Access to function '" + getName() + "'  denied.", pde);
+			xe.addFunctionCall(functionDef, getASTNode());
+			throw xe;
+		}
+		
         functionDef.setArguments(seq);
         LocalVariable mark = context.markLocalVariables(true);
         try {

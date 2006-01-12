@@ -22,6 +22,8 @@
  */
 package org.exist.xquery;
 
+import com.sun.xacml.ctx.RequestCtx;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
@@ -47,6 +49,7 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.xacml.ExistPDP;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -796,6 +799,7 @@ public class XQueryContext {
 //			LOG.debug("module " + namespaceURI + " is already present");
 			return module;
 		}
+		
 		try {
             Class mClass = (Class) moduleClasses.get(moduleClass);
             if (mClass == null) {
@@ -832,6 +836,18 @@ public class XQueryContext {
 		return module;
 	}
 
+	/**
+	 * Convenience method that returns the XACML Policy Decision Point for 
+	 * this database instance.  If XACML has not been enabled, this returns
+	 * null.
+	 * 
+	 * @return the PDP for this database instance, or null if XACML is disabled 
+	 */
+	public ExistPDP getPDP()
+	{
+		return broker.getBrokerPool().getSecurityManager().getPDP();
+	}
+	
 	/**
 	 * Declare a user-defined function. All user-defined functions are kept
 	 * in a single hash map.
@@ -1326,6 +1342,7 @@ public class XQueryContext {
      */
     private Module compileModule(String namespaceURI, String location, Module module, Source source) throws XPathException {
         LOG.debug("Loading module from " + location);
+        
         Reader reader;
         try {
         	reader = source.getReader();
