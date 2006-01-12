@@ -54,7 +54,7 @@ public class QueryExample {
         // retrieve first 10 results, indenting is on, xinclude is off, matches in elements 
         // are highlighted (tagged)
 		byte[][] hits = query.retrieveData( sessionId, 1, 10,
-			true, false, "elements");
+			true, false, "elements").getElements();
 		for(int i = 0; i < hits.length; i++) {
 			System.out.println(new String(hits[i], "UTF-8"));
 		}

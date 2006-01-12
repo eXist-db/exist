@@ -1,240 +1,345 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<wsdl:definitions targetNamespace="urn:exist" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="urn:exist" xmlns:intf="urn:exist" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<wsdl:definitions xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="urn:exist" xmlns:intf="urn:exist" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="query" targetNamespace="urn:exist">
+<!--WSDL created by Apache Axis version: 1.2.1
+Built on Jun 14, 2005 (09:15:57 EDT)-->
  <wsdl:types>
-  <schema targetNamespace="urn:exist" xmlns="http://www.w3.org/2001/XMLSchema">
-      <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
-
+  <schema xmlns="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="urn:exist">
+   <element name="getResource">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="path" type="xsd:string"/>
+      <element name="indent" type="xsd:boolean"/>
+      <element name="xinclude" type="xsd:boolean"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="getResourceResponse">
+    <complexType>
+     <sequence>
+      <element name="getResourceReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="query">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="xpath" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="queryResponse">
+    <complexType>
+     <sequence>
+      <element name="queryReturn" type="impl:QueryResponse"/>
+     </sequence>
+    </complexType>
+   </element>
    <complexType name="QueryResponseDocument">
     <sequence>
-     <element name="documentName" nillable="true" type="xsd:string"/>
+     <element name="documentName" type="xsd:string"/>
      <element name="hitCount" type="xsd:int"/>
     </sequence>
    </complexType>
-   <complexType name="ArrayOfQueryResponseDocument">
-    <complexContent>
-     <restriction base="soapenc:Array">
-      <attribute ref="soapenc:arrayType" wsdl:arrayType="impl:QueryResponseDocument[]"/>
-     </restriction>
-    </complexContent>
+   <complexType name="QueryResponseDocuments">
+    <sequence>
+     <element maxOccurs="unbounded" minOccurs="0" name="elements" type="impl:QueryResponseDocument"/>
+    </sequence>
    </complexType>
    <complexType name="QueryResponseCollection">
     <sequence>
-     <element name="collectionName" nillable="true" type="xsd:string"/>
-     <element name="documents" nillable="true" type="impl:ArrayOfQueryResponseDocument"/>
+     <element name="collectionName" type="xsd:string"/>
+     <element name="documents" type="impl:QueryResponseDocuments"/>
     </sequence>
    </complexType>
-   <complexType name="ArrayOfQueryResponseCollection">
-    <complexContent>
-     <restriction base="soapenc:Array">
-      <attribute ref="soapenc:arrayType" wsdl:arrayType="impl:QueryResponseCollection[]"/>
-     </restriction>
-    </complexContent>
+   <complexType name="QueryResponseCollections">
+    <sequence>
+     <element maxOccurs="unbounded" minOccurs="0" name="elements" type="impl:QueryResponseCollection"/>
+    </sequence>
    </complexType>
    <complexType name="QueryResponse">
     <sequence>
-     <element name="collections" nillable="true" type="impl:ArrayOfQueryResponseCollection"/>
+     <element name="collections" type="impl:QueryResponseCollections" nillable="true"/>
      <element name="hits" type="xsd:int"/>
      <element name="queryTime" type="xsd:long"/>
     </sequence>
    </complexType>
-   <complexType name="ArrayOf_xsd_string">
-    <complexContent>
-     <restriction base="soapenc:Array">
-      <attribute ref="soapenc:arrayType" wsdl:arrayType="xsd:string[]"/>
-     </restriction>
-    </complexContent>
-   </complexType>
-   <complexType name="ArrayOf_xsd_base64Binary">
-    <complexContent>
-     <restriction base="soapenc:Array">
-      <attribute ref="soapenc:arrayType" wsdl:arrayType="xsd:byte[][]"/>
-     </restriction>
-    </complexContent>
-   </complexType>
+   <element name="connect">
+    <complexType>
+     <sequence>
+      <element name="userId" type="xsd:string"/>
+      <element name="password" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="connectResponse">
+    <complexType>
+     <sequence>
+      <element name="connectReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="retrieve">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="start" type="xsd:int"/>
+      <element name="howmany" type="xsd:int"/>
+      <element name="indent" type="xsd:boolean"/>
+      <element name="xinclude" type="xsd:boolean"/>
+      <element name="highlight" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="retrieveResponse">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="retrieveReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="disconnect">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="disconnectResponse">
+    <complexType/>
+   </element>
+   <element name="getResourceData">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="path" type="xsd:string"/>
+      <element name="indent" type="xsd:boolean"/>
+      <element name="xinclude" type="xsd:boolean"/>
+      <element name="processXSLPI" type="xsd:boolean"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="getResourceDataResponse">
+    <complexType>
+     <sequence>
+      <element name="getResourceDataReturn" type="xsd:base64Binary"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="xquery">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="xquery" type="xsd:base64Binary"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="xqueryResponse">
+    <complexType>
+     <sequence>
+      <element name="xqueryReturn" type="impl:QueryResponse"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="retrieveData">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="start" type="xsd:int"/>
+      <element name="howmany" type="xsd:int"/>
+      <element name="indent" type="xsd:boolean"/>
+      <element name="xinclude" type="xsd:boolean"/>
+      <element name="highlight" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="retrieveDataResponse">
+    <complexType>
+     <sequence>
+      <element name="retrieveDataReturn" type="impl:Base64BinaryArray"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="retrieveByDocument">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="start" type="xsd:int"/>
+      <element name="howmany" type="xsd:int"/>
+      <element name="path" type="xsd:string"/>
+      <element name="indent" type="xsd:boolean"/>
+      <element name="xinclude" type="xsd:boolean"/>
+      <element name="highlight" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="retrieveByDocumentResponse">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="retrieveByDocumentReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="listCollection">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="path" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="listCollectionResponse">
+    <complexType>
+     <sequence>
+      <element name="listCollectionReturn" type="impl:Collection"/>
+     </sequence>
+    </complexType>
+   </element>
    <complexType name="Collection">
     <sequence>
-     <element name="collections" nillable="true" type="impl:ArrayOf_xsd_string"/>
-     <element name="resources" nillable="true" type="impl:ArrayOf_xsd_string"/>
+     <element name="collections" type="impl:StringArray"/>
+     <element name="resources" type="impl:StringArray"/>
     </sequence>
    </complexType>
+   <complexType name="StringArray">
+   	<sequence>
+   		<element name="elements" type="string" minOccurs="0" maxOccurs="unbounded" nillable="true"></element>
+   	</sequence>
+   </complexType>
+
+   <complexType name="Base64BinaryArray">
+   	<sequence>
+   		<element name="elements" type="base64Binary" maxOccurs="unbounded"></element>
+   	</sequence>
+   </complexType>
+
   </schema>
  </wsdl:types>
 
    <wsdl:message name="xqueryRequest">
 
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:base64Binary"/>
+      <wsdl:part element="impl:xquery" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="retrieveByDocumentResponse">
 
-      <wsdl:part name="retrieveByDocumentReturn" type="impl:ArrayOf_xsd_string"/>
+      <wsdl:part element="impl:retrieveByDocumentResponse" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="listCollectionResponse">
 
-      <wsdl:part name="listCollectionReturn" type="impl:Collection"/>
+      <wsdl:part element="impl:listCollectionResponse" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="queryRequest">
 
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:string"/>
+      <wsdl:part element="impl:query" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="connectRequest">
 
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:string"/>
+      <wsdl:part element="impl:connect" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="listCollectionRequest">
 
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:string"/>
+      <wsdl:part element="impl:listCollection" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="getResourceResponse">
 
-      <wsdl:part name="getResourceReturn" type="xsd:string"/>
+      <wsdl:part element="impl:getResourceResponse" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="retrieveDataRequest">
 
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:int"/>
-
-      <wsdl:part name="in2" type="xsd:int"/>
-
-      <wsdl:part name="in3" type="xsd:boolean"/>
-
-      <wsdl:part name="in4" type="xsd:boolean"/>
-
-      <wsdl:part name="in5" type="xsd:string"/>
+      <wsdl:part element="impl:retrieveData" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="retrieveResponse">
 
-      <wsdl:part name="retrieveReturn" type="impl:ArrayOf_xsd_string"/>
+      <wsdl:part element="impl:retrieveResponse" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="disconnectRequest">
 
-      <wsdl:part name="in0" type="xsd:string"/>
+      <wsdl:part element="impl:disconnect" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="connectResponse">
 
-      <wsdl:part name="connectReturn" type="xsd:string"/>
+      <wsdl:part element="impl:connectResponse" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="retrieveByDocumentRequest">
 
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:int"/>
-
-      <wsdl:part name="in2" type="xsd:int"/>
-
-      <wsdl:part name="in3" type="xsd:string"/>
-
-      <wsdl:part name="in4" type="xsd:boolean"/>
-
-      <wsdl:part name="in5" type="xsd:boolean"/>
-
-      <wsdl:part name="in6" type="xsd:string"/>
+      <wsdl:part element="impl:retrieveByDocument" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="getResourceDataRequest">
 
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:string"/>
-
-      <wsdl:part name="in2" type="xsd:boolean"/>
-
-      <wsdl:part name="in3" type="xsd:boolean"/>
-
-      <wsdl:part name="in4" type="xsd:boolean"/>
+      <wsdl:part element="impl:getResourceData" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="getResourceDataResponse">
 
-      <wsdl:part name="getResourceDataReturn" type="xsd:base64Binary"/>
+      <wsdl:part element="impl:getResourceDataResponse" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="xqueryResponse">
 
-      <wsdl:part name="xqueryReturn" type="impl:QueryResponse"/>
+      <wsdl:part element="impl:xqueryResponse" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="getResourceRequest">
 
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:string"/>
-
-      <wsdl:part name="in2" type="xsd:boolean"/>
-
-      <wsdl:part name="in3" type="xsd:boolean"/>
+      <wsdl:part element="impl:getResource" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="queryResponse">
 
-      <wsdl:part name="queryReturn" type="impl:QueryResponse"/>
+      <wsdl:part element="impl:queryResponse" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="retrieveDataResponse">
 
-      <wsdl:part name="retrieveDataReturn" type="impl:ArrayOf_xsd_base64Binary"/>
+      <wsdl:part element="impl:retrieveDataResponse" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:message name="disconnectResponse">
 
+      <wsdl:part element="impl:disconnectResponse" name="parameters"/>
+
    </wsdl:message>
 
    <wsdl:message name="retrieveRequest">
 
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:int"/>
-
-      <wsdl:part name="in2" type="xsd:int"/>
-
-      <wsdl:part name="in3" type="xsd:boolean"/>
-
-      <wsdl:part name="in4" type="xsd:boolean"/>
-
-      <wsdl:part name="in5" type="xsd:string"/>
+      <wsdl:part element="impl:retrieve" name="parameters"/>
 
    </wsdl:message>
 
    <wsdl:portType name="Query">
 
-      <wsdl:operation name="getResource" parameterOrder="in0 in1 in2 in3">
+      <wsdl:operation name="getResource">
 
          <wsdl:input message="impl:getResourceRequest" name="getResourceRequest"/>
 
@@ -242,7 +347,7 @@
 
       </wsdl:operation>
 
-      <wsdl:operation name="query" parameterOrder="in0 in1">
+      <wsdl:operation name="query">
 
          <wsdl:input message="impl:queryRequest" name="queryRequest"/>
 
@@ -250,7 +355,7 @@
 
       </wsdl:operation>
 
-      <wsdl:operation name="connect" parameterOrder="in0 in1">
+      <wsdl:operation name="connect">
 
          <wsdl:input message="impl:connectRequest" name="connectRequest"/>
 
@@ -258,7 +363,7 @@
 
       </wsdl:operation>
 
-      <wsdl:operation name="retrieve" parameterOrder="in0 in1 in2 in3 in4 in5">
+      <wsdl:operation name="retrieve">
 
          <wsdl:input message="impl:retrieveRequest" name="retrieveRequest"/>
 
@@ -266,7 +371,7 @@
 
       </wsdl:operation>
 
-      <wsdl:operation name="disconnect" parameterOrder="in0">
+      <wsdl:operation name="disconnect">
 
          <wsdl:input message="impl:disconnectRequest" name="disconnectRequest"/>
 
@@ -274,7 +379,7 @@
 
       </wsdl:operation>
 
-      <wsdl:operation name="getResourceData" parameterOrder="in0 in1 in2 in3 in4">
+      <wsdl:operation name="getResourceData">
 
          <wsdl:input message="impl:getResourceDataRequest" name="getResourceDataRequest"/>
 
@@ -282,7 +387,7 @@
 
       </wsdl:operation>
 
-      <wsdl:operation name="xquery" parameterOrder="in0 in1">
+      <wsdl:operation name="xquery">
 
          <wsdl:input message="impl:xqueryRequest" name="xqueryRequest"/>
 
@@ -290,7 +395,7 @@
 
       </wsdl:operation>
 
-      <wsdl:operation name="retrieveData" parameterOrder="in0 in1 in2 in3 in4 in5">
+      <wsdl:operation name="retrieveData">
 
          <wsdl:input message="impl:retrieveDataRequest" name="retrieveDataRequest"/>
 
@@ -298,7 +403,7 @@
 
       </wsdl:operation>
 
-      <wsdl:operation name="retrieveByDocument" parameterOrder="in0 in1 in2 in3 in4 in5 in6">
+      <wsdl:operation name="retrieveByDocument">
 
          <wsdl:input message="impl:retrieveByDocumentRequest" name="retrieveByDocumentRequest"/>
 
@@ -306,7 +411,7 @@
 
       </wsdl:operation>
 
-      <wsdl:operation name="listCollection" parameterOrder="in0 in1">
+      <wsdl:operation name="listCollection">
 
          <wsdl:input message="impl:listCollectionRequest" name="listCollectionRequest"/>
 
@@ -318,7 +423,7 @@
 
    <wsdl:binding name="QuerySoapBinding" type="impl:Query">
 
-      <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 
       <wsdl:operation name="getResource">
 
@@ -326,13 +431,13 @@
 
          <wsdl:input name="getResourceRequest">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:input>
 
          <wsdl:output name="getResourceResponse">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:output>
 
@@ -344,13 +449,13 @@
 
          <wsdl:input name="queryRequest">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:input>
 
          <wsdl:output name="queryResponse">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:output>
 
@@ -362,13 +467,13 @@
 
          <wsdl:input name="connectRequest">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:input>
 
          <wsdl:output name="connectResponse">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:output>
 
@@ -380,13 +485,13 @@
 
          <wsdl:input name="retrieveRequest">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:input>
 
          <wsdl:output name="retrieveResponse">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:output>
 
@@ -398,13 +503,13 @@
 
          <wsdl:input name="disconnectRequest">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:input>
 
          <wsdl:output name="disconnectResponse">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:output>
 
@@ -416,13 +521,13 @@
 
          <wsdl:input name="getResourceDataRequest">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:input>
 
          <wsdl:output name="getResourceDataResponse">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:output>
 
@@ -434,13 +539,13 @@
 
          <wsdl:input name="xqueryRequest">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:input>
 
          <wsdl:output name="xqueryResponse">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:output>
 
@@ -452,13 +557,13 @@
 
          <wsdl:input name="retrieveDataRequest">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:input>
 
          <wsdl:output name="retrieveDataResponse">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:output>
 
@@ -470,13 +575,13 @@
 
          <wsdl:input name="retrieveByDocumentRequest">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:input>
 
          <wsdl:output name="retrieveByDocumentResponse">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:output>
 
@@ -488,13 +593,13 @@
 
          <wsdl:input name="listCollectionRequest">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:input>
 
          <wsdl:output name="listCollectionResponse">
 
-            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+            <wsdlsoap:body use="literal"/>
 
          </wsdl:output>
 

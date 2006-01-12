@@ -1,39 +1,63 @@
+/**
+ * Collection.java
+ *
+ * This file was auto-generated from WSDL
+ * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ */
+
 package org.exist.soap;
 
-/**
- * A wrapper around collection information.
- * 
- * @author wolf
- */
 public class Collection  implements java.io.Serializable {
-    private java.lang.String[] collections;
-    private java.lang.String[] resources;
+    private org.exist.soap.StringArray collections;
+    private org.exist.soap.StringArray resources;
 
     public Collection() {
     }
 
-	/**
-	 * Return the list of child collections in this collection.
-	 * 
-	 * @return
-	 */
-    public java.lang.String[] getCollections() {
+    public Collection(
+           org.exist.soap.StringArray collections,
+           org.exist.soap.StringArray resources) {
+           this.collections = collections;
+           this.resources = resources;
+    }
+
+
+    /**
+     * Gets the collections value for this Collection.
+     * 
+     * @return collections
+     */
+    public org.exist.soap.StringArray getCollections() {
         return collections;
     }
 
-    public void setCollections(java.lang.String[] collections) {
+
+    /**
+     * Sets the collections value for this Collection.
+     * 
+     * @param collections
+     */
+    public void setCollections(org.exist.soap.StringArray collections) {
         this.collections = collections;
     }
 
-	/**
-	 * Return the list of resources contained in this collection.
-	 * @return
-	 */
-    public java.lang.String[] getResources() {
+
+    /**
+     * Gets the resources value for this Collection.
+     * 
+     * @return resources
+     */
+    public org.exist.soap.StringArray getResources() {
         return resources;
     }
 
-    public void setResources(java.lang.String[] resources) {
+
+    /**
+     * Sets the resources value for this Collection.
+     * 
+     * @param resources
+     */
+    public void setResources(org.exist.soap.StringArray resources) {
         this.resources = resources;
     }
 
@@ -51,10 +75,10 @@ public class Collection  implements java.io.Serializable {
         _equals = true && 
             ((this.collections==null && other.getCollections()==null) || 
              (this.collections!=null &&
-              java.util.Arrays.equals(this.collections, other.getCollections()))) &&
+              this.collections.equals(other.getCollections()))) &&
             ((this.resources==null && other.getResources()==null) || 
              (this.resources!=null &&
-              java.util.Arrays.equals(this.resources, other.getResources())));
+              this.resources.equals(other.getResources())));
         __equalsCalc = null;
         return _equals;
     }
@@ -67,26 +91,10 @@ public class Collection  implements java.io.Serializable {
         __hashCodeCalc = true;
         int _hashCode = 1;
         if (getCollections() != null) {
-            for (int i=0;
-                 i<java.lang.reflect.Array.getLength(getCollections());
-                 i++) {
-                java.lang.Object obj = java.lang.reflect.Array.get(getCollections(), i);
-                if (obj != null &&
-                    !obj.getClass().isArray()) {
-                    _hashCode += obj.hashCode();
-                }
-            }
+            _hashCode += getCollections().hashCode();
         }
         if (getResources() != null) {
-            for (int i=0;
-                 i<java.lang.reflect.Array.getLength(getResources());
-                 i++) {
-                java.lang.Object obj = java.lang.reflect.Array.get(getResources(), i);
-                if (obj != null &&
-                    !obj.getClass().isArray()) {
-                    _hashCode += obj.hashCode();
-                }
-            }
+            _hashCode += getResources().hashCode();
         }
         __hashCodeCalc = false;
         return _hashCode;
@@ -94,19 +102,21 @@ public class Collection  implements java.io.Serializable {
 
     // Type metadata
     private static org.apache.axis.description.TypeDesc typeDesc =
-        new org.apache.axis.description.TypeDesc(Collection.class);
+        new org.apache.axis.description.TypeDesc(Collection.class, true);
 
     static {
         typeDesc.setXmlType(new javax.xml.namespace.QName("urn:exist", "Collection"));
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("collections");
-        elemField.setXmlName(new javax.xml.namespace.QName("", "collections"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "collections"));
+        elemField.setXmlType(new javax.xml.namespace.QName("urn:exist", "StringArray"));
+        elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("resources");
-        elemField.setXmlName(new javax.xml.namespace.QName("", "resources"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "resources"));
+        elemField.setXmlType(new javax.xml.namespace.QName("urn:exist", "StringArray"));
+        elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }
 

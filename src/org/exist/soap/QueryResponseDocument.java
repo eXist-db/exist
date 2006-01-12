@@ -1,10 +1,12 @@
+/**
+ * QueryResponseDocument.java
+ *
+ * This file was auto-generated from WSDL
+ * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ */
+
 package org.exist.soap;
 
-/**
- * Wrapper class containing a query result summary for a single document.
- *  
- * @author wolf
- */
 public class QueryResponseDocument  implements java.io.Serializable {
     private java.lang.String documentName;
     private int hitCount;
@@ -12,28 +14,49 @@ public class QueryResponseDocument  implements java.io.Serializable {
     public QueryResponseDocument() {
     }
 
-	/**
-	 * Returns the name of the document represented by this object.
-	 * 
-	 * @return
-	 */
+    public QueryResponseDocument(
+           java.lang.String documentName,
+           int hitCount) {
+           this.documentName = documentName;
+           this.hitCount = hitCount;
+    }
+
+
+    /**
+     * Gets the documentName value for this QueryResponseDocument.
+     * 
+     * @return documentName
+     */
     public java.lang.String getDocumentName() {
         return documentName;
     }
 
+
+    /**
+     * Sets the documentName value for this QueryResponseDocument.
+     * 
+     * @param documentName
+     */
     public void setDocumentName(java.lang.String documentName) {
         this.documentName = documentName;
     }
 
-	/**
-	 * Returns the number of hits found within this document.
-	 * 
-	 * @return
-	 */
+
+    /**
+     * Gets the hitCount value for this QueryResponseDocument.
+     * 
+     * @return hitCount
+     */
     public int getHitCount() {
         return hitCount;
     }
 
+
+    /**
+     * Sets the hitCount value for this QueryResponseDocument.
+     * 
+     * @param hitCount
+     */
     public void setHitCount(int hitCount) {
         this.hitCount = hitCount;
     }
@@ -75,19 +98,21 @@ public class QueryResponseDocument  implements java.io.Serializable {
 
     // Type metadata
     private static org.apache.axis.description.TypeDesc typeDesc =
-        new org.apache.axis.description.TypeDesc(QueryResponseDocument.class);
+        new org.apache.axis.description.TypeDesc(QueryResponseDocument.class, true);
 
     static {
         typeDesc.setXmlType(new javax.xml.namespace.QName("urn:exist", "QueryResponseDocument"));
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("documentName");
-        elemField.setXmlName(new javax.xml.namespace.QName("", "documentName"));
+        elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "documentName"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("hitCount");
-        elemField.setXmlName(new javax.xml.namespace.QName("", "hitCount"));
+        elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "hitCount"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
+        elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }
 

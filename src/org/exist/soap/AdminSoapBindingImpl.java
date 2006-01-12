@@ -3,6 +3,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.rmi.RemoteException;
+import java.util.Iterator;
+import java.util.Vector;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -10,17 +12,23 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.Occurrences;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
@@ -49,37 +57,35 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
 	}
 
-	public String connect(String user, String password)
-		throws java.rmi.RemoteException {
-		User u = pool.getSecurityManager().getUser(user);
+    public java.lang.String connect(java.lang.String userId, java.lang.String password) throws java.rmi.RemoteException {
+		User u = pool.getSecurityManager().getUser(userId);
 		if (u == null)
-			throw new RemoteException("user " + user + " does not exist");
+			throw new RemoteException("user " + userId + " does not exist");
 		if (!u.validate(password))
 			throw new RemoteException("the supplied password is invalid");
-		LOG.debug("user " + user + " connected");
+		LOG.debug("user " + userId + " connected");
 		return SessionManager.getInstance().createSession(u);
-	}
+    }
 
-	public void disconnect(String id) throws RemoteException {
+    public void disconnect(java.lang.String sessionId) throws java.rmi.RemoteException {
 		SessionManager manager = SessionManager.getInstance();
-		Session session = manager.getSession(id);
+		Session session = manager.getSession(sessionId);
 		if (session != null) {
-			LOG.debug("disconnecting session " + id);
-			manager.disconnect(id);
+			LOG.debug("disconnecting session " + sessionId);
+			manager.disconnect(sessionId);
 		}
-	}
+    }
 
-	public boolean createCollection(String sessionId, String collection)
-		throws RemoteException {
+    public boolean createCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
 		try {
 			broker = pool.get(session.getUser());
-			LOG.debug("creating collection " + collection);
+			LOG.debug("creating collection " + path);
 			org.exist.collections.Collection coll =
-				broker.getOrCreateCollection(txn, collection);
+				broker.getOrCreateCollection(txn, path);
 			if (coll == null) {
 				LOG.debug("failed to create collection");
 				return false;
@@ -98,15 +104,14 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
 	}
 
-	public boolean removeCollection(String sessionId, String name)
-		throws RemoteException {
+    public boolean removeCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
 		try {
 			broker = pool.get(session.getUser());
-			Collection collection = broker.getCollection(name);
+			Collection collection = broker.getCollection(path);
 			if(collection == null) {
                 transact.abort(txn);
 				return false;
@@ -123,8 +128,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
 	}
 
-	public boolean removeDocument(String sessionId, String path)
-		throws RemoteException {
+    public boolean removeDocument(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
         TransactionManager transact = pool.getTransactionManager();
@@ -152,7 +156,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
 				collection.removeBinaryResource(txn, broker, doc);
 			else
-				collection.removeXMLResource(txn, broker, docName);
+				collection.removeDocument(txn, broker, docName);
+//??				collection.removeXMLResource(txn, broker, docName);
             
             transact.commit(txn);
 			return true;
@@ -165,13 +170,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
 	}
 
-	public void store(
-		String sessionId,
-		byte[] data,
-		java.lang.String encoding,
-		java.lang.String path,
-		boolean replace)
-		throws RemoteException {
+    public void store(java.lang.String sessionId, byte[] data, java.lang.String encoding, java.lang.String path, boolean replace) throws java.rmi.RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
         TransactionManager transact = pool.getTransactionManager();
@@ -199,7 +198,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 }
 			}
 			long startTime = System.currentTimeMillis();
-            IndexInfo info = collection.validateXMLResource(txn, broker, path, new InputSource(new ByteArrayInputStream(data)));
+            IndexInfo info = collection.validate(txn, broker, path, new InputSource(new ByteArrayInputStream(data)));
+//??            IndexInfo info = collection.validateXMLResource(txn, broker, path, new InputSource(new ByteArrayInputStream(data)));
             info.getDocument().getMetadata().setMimeType("text/xml");
             collection.store(txn, broker, info, new InputSource(new ByteArrayInputStream(data)), false);
             transact.commit(txn);
@@ -229,8 +229,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 	/* (non-Javadoc)
 	 * @see org.exist.soap.Admin#xupdate(java.lang.String, java.lang.String)
 	 */
-	public int xupdate(String sessionId, String collectionName, String xupdate)
-		throws RemoteException {
+    public int xupdate(java.lang.String sessionId, java.lang.String collectionName, java.lang.String xupdate) throws java.rmi.RemoteException {
 		DBBroker broker = null;
 		Session session = getSession(sessionId);
         TransactionManager transact = pool.getTransactionManager();
@@ -285,18 +284,15 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 	/* (non-Javadoc)
 		 * @see org.exist.soap.Admin#xupdate(java.lang.String, java.lang.String)
 		 */
-	public int xupdateResource(
-		String sessionId,
-		String documentName,
-		String xupdate)
-		throws RemoteException {
+    public int xupdateResource(java.lang.String sessionId, java.lang.String documentName, java.lang.String xupdate) throws java.rmi.RemoteException {
 		DBBroker broker = null;
 		Session session = getSession(sessionId);
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(session.getUser());
-			DocumentImpl doc = (DocumentImpl)broker.getXMLResource(documentName);
+			DocumentImpl doc = (DocumentImpl)broker.getDocument(documentName);
+//??			DocumentImpl doc = (DocumentImpl)broker.getXMLResource(documentName);
 			if (doc == null) {
                 transact.abort(transaction);
 				throw new RemoteException(
@@ -343,5 +339,698 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         } finally {
 			pool.release(broker);
 		}
-	}
+
+    }
+
+    public void storeBinary(java.lang.String sessionId, byte[] data, java.lang.String path, java.lang.String mimeType, boolean replace) throws java.rmi.RemoteException {
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+        Collection collection = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
+        try {
+            broker = pool.get(session.getUser());
+            int p = path.lastIndexOf('/');
+            if (p < 0 || p == path.length() - 1)
+                throw new EXistException("Illegal document path");
+            String collectionName = path.substring(0, p);
+            path = path.substring(p + 1);
+            collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
+            if (collection == null)
+                throw new EXistException("Collection " + collectionName
+                        + " not found");
+            if (!replace) {
+                DocumentImpl old = collection.getDocument(broker, path);
+                if (old != null)
+                    throw new PermissionDeniedException(
+                            "Old document exists and overwrite is not allowed");
+            }
+            LOG.debug("Storing binary resource to collection " + collection.getName());
+            
+            /*DocumentImpl doc = */
+            collection.addBinaryResource(txn, broker, path, data, mimeType);
+//            if (created != null)
+//                doc.setCreated(created.getTime());
+//            if (modified != null)
+//                doc.setLastModified(modified.getTime());
+            transact.commit(txn);
+        } catch (Exception e) {
+            transact.abort(txn);
+			throw new RemoteException(e.getMessage(), e);
+        } finally {
+            if(collection != null)
+                collection.release();
+            pool.release(broker);
+        }
+//        documentCache.clear();
+//        return doc != null;
+    }
+
+    public byte[] getBinaryResource(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException {
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+        DocumentImpl doc = null;
+        try {
+            broker = pool.get(session.getUser());
+            doc = (DocumentImpl) broker.openDocument(name, Lock.READ_LOCK);
+            if (doc == null)
+                throw new EXistException("Resource " + name + " not found");
+            if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
+                throw new EXistException("Document " + name
+                        + " is not a binary resource");
+            if(!doc.getPermissions().validate(session.getUser(), Permission.READ))
+                throw new PermissionDeniedException("Insufficient privileges to read resource");
+            return broker.getBinaryResourceData((BinaryDocument) doc);
+        } catch (Exception ex) {
+        	throw new RemoteException(ex.getMessage());
+        } finally {
+            if(doc != null)
+                doc.getUpdateLock().release(Lock.READ_LOCK);
+            pool.release(broker);
+        }
+    }
+
+    public org.exist.soap.CollectionDesc getCollectionDesc(java.lang.String sessionId, java.lang.String collectionName) throws java.rmi.RemoteException {
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+        Collection collection = null;
+        try {
+        	broker = pool.get(session.getUser());
+            ///TODO : use dedicated function in XmldbURI
+            if (collectionName == null)
+                collectionName = DBBroker.ROOT_COLLECTION;
+            
+            collection = broker.openCollection(collectionName, Lock.READ_LOCK);
+            if (collection == null)
+                throw new EXistException("collection " + collectionName
+                        + " not found!");
+            CollectionDesc desc = new CollectionDesc();
+            Vector docs = new Vector();
+            Vector collections = new Vector();
+            if (collection.getPermissions().validate(session.getUser(), Permission.READ)) {
+                DocumentImpl doc;
+//              Hashtable hash;
+                Permission perms;
+                for (Iterator i = collection.iterator(broker); i.hasNext(); ) 
+                {
+                    doc = (DocumentImpl) i.next();
+                    perms = doc.getPermissions();
+                    DocumentDesc dd = new DocumentDesc();
+//                    hash = new Hashtable(4);
+                    dd.setName(doc.getFileName());
+                    dd.setOwner(perms.getOwner());
+                    dd.setGroup(perms.getOwnerGroup());
+                    dd.setPermissions(perms.getPermissions());
+                    dd.setType(doc.getResourceType() == DocumentImpl.BINARY_FILE
+                            ? DocumentType.BinaryResource
+                            : DocumentType.XMLResource);
+                    docs.addElement(dd);
+                }
+                for (Iterator i = collection.collectionIterator(); i.hasNext(); )
+                    collections.addElement((String) i.next());
+            }
+            Permission perms = collection.getPermissions();
+            desc.setCollections(new Strings((String[]) collections.toArray(new String[collections.size()])));
+            desc.setDocuments(new DocumentDescs((DocumentDesc[])docs.toArray(new DocumentDesc[docs.size()])));
+            desc.setName(collection.getName());
+            desc.setCreated(collection.getCreationTime());
+            desc.setOwner(perms.getOwner());
+            desc.setGroup(perms.getOwnerGroup());
+            desc.setPermissions(perms.getPermissions());
+            return desc;
+        } catch (Exception ex){
+        	throw new RemoteException(ex.getMessage());
+        } finally {
+            if(collection != null)
+                collection.release();
+            pool.release(broker);
+        }
+    }
+
+    public void setPermissions(java.lang.String sessionId, java.lang.String resource, java.lang.String owner, java.lang.String ownerGroup, int permissions) throws java.rmi.RemoteException {
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+        Collection collection = null;
+        DocumentImpl doc = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
+        try {
+            broker = pool.get(session.getUser());
+            org.exist.security.SecurityManager manager = pool
+                    .getSecurityManager();
+            collection = broker.openCollection(resource, Lock.WRITE_LOCK);
+            if (collection == null) {
+                doc = (DocumentImpl) broker.openDocument(resource, Lock.WRITE_LOCK);
+                if (doc == null)
+                    throw new RemoteException("document or collection "
+                            + resource + " not found");
+                LOG.debug("changing permissions on document " + resource);
+                Permission perm = doc.getPermissions();
+                if (perm.getOwner().equals(session.getUser().getName())
+                || manager.hasAdminPrivileges(session.getUser())) {
+                    if (owner != null) {
+                        perm.setOwner(owner);
+                        perm.setGroup(ownerGroup);
+                    }
+                    perm.setPermissions(permissions);
+                    broker.storeDocument(transaction, doc);
+                    transact.commit(transaction);
+                    broker.flush();
+                    return;
+//                    return true;
+                }
+                transact.abort(transaction);
+                throw new PermissionDeniedException("not allowed to change permissions");
+            }
+            LOG.debug("changing permissions on collection " + resource);
+            Permission perm = collection.getPermissions();
+            if (perm.getOwner().equals(session.getUser().getName())
+            || manager.hasAdminPrivileges(session.getUser())) {
+                perm.setPermissions(permissions);
+                if (owner != null) {
+                    perm.setOwner(owner);
+                    perm.setGroup(ownerGroup);
+                }
+                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+                broker.saveCollection(transaction, collection);
+                transact.commit(transaction);
+                broker.flush();
+                return;
+            }
+            transact.abort(transaction);
+            throw new PermissionDeniedException("not allowed to change permissions");
+        } catch (PermissionDeniedException e) {
+            transact.abort(transaction);
+            throw new RemoteException(e.getMessage());
+        } catch (TransactionException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (EXistException e) {
+            throw new RemoteException(e.getMessage());
+        } finally {
+            if(doc != null)
+                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            pool.release(broker);
+        }
+    }
+
+    private void moveOrCopyResource(String sessionId, String docPath, String destinationPath,
+            String newName, boolean move)
+        throws RemoteException
+    {
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+        Collection collection = null;
+        Collection destination = null;
+        DocumentImpl doc = null;
+        try {
+            broker = pool.get(session.getUser());
+            // get source document
+            int p = docPath.lastIndexOf('/');
+            if (p < 0 || p == docPath.length() - 1) {
+                transact.abort(transaction);
+                throw new RemoteException("Illegal document path");
+            }
+            String collectionName = docPath.substring(0, p);
+            String docName = docPath.substring(p + 1);
+            collection = broker.openCollection(collectionName, move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
+            if (collection == null) {
+                transact.abort(transaction);
+                throw new RemoteException("Collection " + collectionName
+                        + " not found");
+            }
+            doc = collection.getDocumentWithLock(broker, docName, Lock.WRITE_LOCK);
+            if(doc == null) {
+                transact.abort(transaction);
+                throw new RemoteException("Document " + docPath + " not found");
+            }
+            
+            // get destination collection
+            destination = broker.openCollection(destinationPath, Lock.WRITE_LOCK);
+            if(destination == null) {
+                transact.abort(transaction);
+                throw new RemoteException("Destination collection " + destinationPath + " not found");
+            }
+            if(move)
+                broker.moveResource(transaction, doc, destination, newName);
+            else
+                broker.copyResource(transaction, doc, destination, newName);
+            transact.commit(transaction);
+//            documentCache.clear();
+            return;
+        } catch (LockException e) {
+            transact.abort(transaction);
+            throw new RemoteException("Could not acquire lock on document " + docPath);
+        } catch (PermissionDeniedException e) {
+            transact.abort(transaction);
+            throw new RemoteException("Could not move/copy document " + docPath);
+        } catch (TransactionException e) {
+        	throw new RemoteException("Error commiting transaction " + e.getMessage());
+        } catch (EXistException e) {
+        	throw new RemoteException(e.getMessage());
+        } finally {
+            if(collection != null)
+                collection.release();
+            if(destination != null)
+                destination.release();
+            if(doc != null)
+                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            pool.release(broker);
+        }
+    }
+    
+    private boolean moveOrCopyCollection(String sessionId, String collectionPath, String destinationPath,
+            String newName, boolean move)
+            throws EXistException, PermissionDeniedException, RemoteException {
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+        Collection collection = null;
+        Collection destination = null;
+        try {
+        	User user = session.getUser();
+            broker = pool.get(user);
+            // get source document
+            collection = broker.openCollection(collectionPath, move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
+            if (collection == null) {
+                transact.abort(transaction);
+                throw new EXistException("Collection " + collectionPath
+                        + " not found");
+            }
+            // get destination collection
+            destination = broker.openCollection(destinationPath, Lock.WRITE_LOCK);
+            if(destination == null) {
+                transact.abort(transaction);
+                throw new EXistException("Destination collection " + destinationPath + " not found");
+            }
+            if(move)
+                broker.moveCollection(transaction, collection, destination, newName);
+            else
+                broker.copyCollection(transaction, collection, destination, newName);
+            transact.commit(transaction);
+//            documentCache.clear();
+            return true;
+        } catch (LockException e) {
+            transact.abort(transaction);
+            throw new PermissionDeniedException(e.getMessage());
+        } finally {
+            if(collection != null)
+                collection.release();
+            if(destination != null)
+                destination.release();
+            pool.release(broker);
+        }
+    }
+    
+    public void copyResource(java.lang.String sessionId, java.lang.String docPath, java.lang.String destinationPath, java.lang.String newName) throws java.rmi.RemoteException {
+    	moveOrCopyResource(sessionId,docPath,destinationPath,newName,false);
+    }
+
+    public void copyCollection(java.lang.String sessionId, java.lang.String collectionPath, java.lang.String destinationPath, java.lang.String newName) throws java.rmi.RemoteException {
+    		try {
+				moveOrCopyCollection(sessionId,collectionPath,destinationPath,newName,false);
+			} catch (RemoteException e) {
+				throw new RemoteException(e.getMessage());
+			} catch (EXistException e) {
+				throw new RemoteException(e.getMessage());
+			} catch (PermissionDeniedException e) {
+				throw new RemoteException(e.getMessage());
+			}
+    }
+
+    public void setUser(java.lang.String sessionId, java.lang.String name, java.lang.String password, org.exist.soap.Strings groups, java.lang.String home) throws java.rmi.RemoteException {
+        if (password.length() == 0)
+            password = null;
+		Session session = getSession(sessionId);
+		User user = session.getUser();
+        
+        org.exist.security.SecurityManager manager = pool.getSecurityManager();
+        if(name.equals(org.exist.security.SecurityManager.GUEST_USER) &&
+                (!manager.hasAdminPrivileges(user)))
+            throw new RemoteException(
+                    "guest user cannot be modified");
+        User u;
+        if (!manager.hasUser(name)) {
+            if (!manager.hasAdminPrivileges(user))
+                throw new RemoteException(
+                        "not allowed to create user");
+            u = new User(name);
+            u.setPasswordDigest(password);
+        } else {
+            u = manager.getUser(name);
+            if (!(u.getName().equals(user.getName()) || manager
+                    .hasAdminPrivileges(user)))
+                throw new RemoteException(
+                        "you are not allowed to change this user");
+            u.setPasswordDigest(password);
+        }
+        for (int i = 0; i < groups.getElements().length; i++ ) {
+            if (!u.hasGroup(groups.getElements()[i])) {
+                if(!manager.hasAdminPrivileges(user))
+                    throw new RemoteException(
+                            "User is not allowed to add groups");
+                u.addGroup(groups.getElements()[i]);
+            }
+        }
+        if (home != null)
+            u.setHome(home);
+        manager.setUser(u);
+    }
+
+    public org.exist.soap.UserDesc getUser(java.lang.String sessionId, java.lang.String user) throws java.rmi.RemoteException {
+        User u = pool.getSecurityManager().getUser(user);
+        if (u == null)
+            throw new RemoteException("user " + user + " does not exist");
+        UserDesc desc = new UserDesc();
+        desc.setName(u.getName());
+/*
+        Vector groups = new Vector();
+        for (Iterator i = u.getGroups(); i.hasNext(); )
+            groups.addElement(i.next());
+        desc.setGroups(new Strings((String[])groups.toArray(new String[groups.size()])));
+*/
+        desc.setGroups(new Strings(u.getGroups()));
+        if (u.getHome() != null)
+        {
+        	desc.setHome(u.getHome());
+        }
+        return desc;
+    }
+
+    public void removeUser(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException {
+    	User user = getSession(sessionId).getUser();
+        org.exist.security.SecurityManager manager = pool
+        .getSecurityManager();
+        if (!manager.hasAdminPrivileges(user))
+        	throw new RemoteException(
+            	"you are not allowed to remove users");
+
+        try {
+			manager.deleteUser(name);
+		} catch (PermissionDeniedException e) {
+			throw new RemoteException(e.getMessage());
+		}
+    }
+
+    public org.exist.soap.UserDescs getUsers(java.lang.String sessionId) throws java.rmi.RemoteException {
+        User users[] = pool.getSecurityManager().getUsers();
+        UserDesc[] r = new UserDesc[users.length];
+        for (int i = 0; i < users.length; i++) {
+        	r[i] = new UserDesc();
+        	r[i].setName(users[i].getName());
+/*
+            Vector groups = new Vector();
+            for (Iterator j = users[i].getGroups(); j.hasNext(); )
+                groups.addElement(j.next());
+            r[i].setGroups(new Strings((String[])groups.toArray(new String[groups.size()])));
+*/
+        	r[i].setGroups(new Strings(users[i].getGroups()));
+            if (users[i].getHome() != null)
+            	r[i].setHome(users[i].getHome());
+        }
+        return new UserDescs(r);
+    }
+
+    public org.exist.soap.Strings getGroups(java.lang.String sessionId) throws java.rmi.RemoteException {
+        String[] groups = pool.getSecurityManager().getGroups();
+        Vector v = new Vector(groups.length);
+        for (int i = 0; i < groups.length; i++) {
+            v.addElement(groups[i]);
+        }
+        return new Strings((String[])v.toArray(new String[v.size()]));
+    }
+
+    public void moveCollection(java.lang.String sessionId, java.lang.String collectionPath, java.lang.String destinationPath, java.lang.String newName) throws java.rmi.RemoteException {
+		try {
+			moveOrCopyCollection(sessionId,collectionPath,destinationPath,newName,true);
+		} catch (RemoteException e) {
+			throw new RemoteException(e.getMessage());
+		} catch (EXistException e) {
+			throw new RemoteException(e.getMessage());
+		} catch (PermissionDeniedException e) {
+			throw new RemoteException(e.getMessage());
+		}
+    }
+
+    public void moveResource(java.lang.String sessionId, java.lang.String docPath, java.lang.String destinationPath, java.lang.String newName) throws java.rmi.RemoteException {
+    	moveOrCopyResource(sessionId,docPath,destinationPath,newName,true);
+    }
+
+    public void lockResource(java.lang.String sessionId, java.lang.String path, java.lang.String userName) throws java.rmi.RemoteException {
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+		User user = session.getUser();
+        DocumentImpl doc = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
+        try {
+            broker = pool.get(user);
+            doc = (DocumentImpl) broker.openDocument(path, Lock.WRITE_LOCK);
+            if (doc == null) {
+                throw new EXistException("Resource "
+                        + path + " not found");
+            }
+            if (!doc.getPermissions().validate(user, Permission.UPDATE))
+                throw new PermissionDeniedException("User is not allowed to lock resource " + path);
+            org.exist.security.SecurityManager manager = pool.getSecurityManager();
+            if (!(userName.equals(user.getName()) || manager.hasAdminPrivileges(user)))
+                throw new PermissionDeniedException("User " + user.getName() + " is not allowed " +
+                        "to lock the resource for user " + userName);
+            User lockOwner = doc.getUserLock();
+            if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
+                throw new PermissionDeniedException("Resource is already locked by user " +
+                        lockOwner.getName());
+            User lo = manager.getUser(userName);
+            doc.setUserLock(lo);
+            broker.storeDocument(transaction, doc);
+            transact.commit(transaction);
+            return;
+        } catch (Exception e) {
+            transact.abort(transaction);
+            throw new RemoteException(e.getMessage());
+        } finally {
+            if(doc != null)
+                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            pool.release(broker);
+        }
+    }
+
+    public void unlockResource(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+		User user = session.getUser();
+        DocumentImpl doc = null;
+        try {
+            broker = pool.get(user);
+            doc = (DocumentImpl) broker.openDocument(path, Lock.WRITE_LOCK);
+            if (doc == null)
+                throw new EXistException("Resource "
+                        + path + " not found");
+            if (!doc.getPermissions().validate(user, Permission.UPDATE))
+                throw new PermissionDeniedException("User is not allowed to lock resource " + path);
+            org.exist.security.SecurityManager manager = pool.getSecurityManager();
+            User lockOwner = doc.getUserLock();
+            if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
+                throw new PermissionDeniedException("Resource is already locked by user " +
+                        lockOwner.getName());
+            TransactionManager transact = pool.getTransactionManager();
+            Txn transaction = transact.beginTransaction();
+            doc.setUserLock(null);
+            broker.storeDocument(transaction, doc);
+            transact.commit(transaction);
+            return;
+        } catch (Exception ex){
+        	throw new RemoteException(ex.getMessage());
+        } finally {
+            if(doc != null)
+                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            pool.release(broker);
+        }
+    }
+
+    public java.lang.String hasUserLock(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+		User user = session.getUser();
+        DocumentImpl doc = null;
+        try {
+            broker = pool.get(user);
+            doc = (DocumentImpl) broker.openDocument(path, Lock.READ_LOCK);
+            if (doc == null)
+                throw new EXistException("Resource "
+                        + path + " not found");
+            if(!doc.getPermissions().validate(user, Permission.READ))
+                throw new PermissionDeniedException("Insufficient privileges to read resource");
+            if (doc == null)
+                throw new EXistException("Resource " + path + " not found");
+            User u = doc.getUserLock();
+            return u == null ? "" : u.getName();
+        } catch (Exception ex) {
+        	throw new RemoteException(ex.getMessage());
+        } finally {
+            if(doc != null)
+                doc.getUpdateLock().release(Lock.READ_LOCK);
+            pool.release(broker);
+        }
+    }
+
+    public org.exist.soap.Permissions getPermissions(java.lang.String sessionId, java.lang.String resource) throws java.rmi.RemoteException {
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+		User user = session.getUser();
+        try {
+            broker = pool.get(user);
+            resource = XmldbURI.checkPath2(resource, DBBroker.ROOT_COLLECTION);
+//            if (!resource.startsWith("/"))
+//                resource = '/' + resource;
+            /*if (!name.startsWith("/db"))
+                name = "/db" + name;*/
+//            resource = NativeBroker.checkPath(resource, "/db");
+            Collection collection = broker.openCollection(resource, Lock.READ_LOCK);
+            Permission perm = null;
+            if (collection == null) {
+                DocumentImpl doc = (DocumentImpl) broker.openDocument(resource, Lock.READ_LOCK);
+                if (doc == null)
+                    throw new EXistException("document or collection " + resource
+                            + " not found");
+                perm = doc.getPermissions();
+                doc.getUpdateLock().release(Lock.READ_LOCK);
+            } else {
+                perm = collection.getPermissions();
+                collection.release();
+            }
+            Permissions p = new Permissions();
+            p.setOwner(perm.getOwner());
+            p.setGroup(perm.getOwnerGroup());
+            p.setPermissions(perm.getPermissions());
+            return p;
+        } catch (Exception ex) {
+        	throw new RemoteException(ex.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
+    public org.exist.soap.EntityPermissionsList listCollectionPermissions(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException {
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+		User user = session.getUser();
+        Collection collection = null;
+        try {
+            broker = pool.get(user);
+            name = XmldbURI.checkPath2(name, DBBroker.ROOT_COLLECTION);
+//            if (!name.startsWith("/"))
+//                name = '/' + name;
+            /*if (!name.startsWith("/db"))
+                name = "/db" + name;*/
+//            name = NativeBroker.checkPath(name, "/db");
+            collection = broker.openCollection(name, Lock.READ_LOCK);
+            if (collection == null)
+                throw new EXistException("Collection " + name + " not found");
+            if (!collection.getPermissions().validate(user, Permission.READ))
+                throw new PermissionDeniedException(
+                        "not allowed to read collection " + name);
+            EntityPermissions[] result = new EntityPermissions[collection.getChildCollectionCount()];
+            String child, path;
+            Collection childColl;
+            Permission perm;
+            int cnt = 0;
+            for (Iterator i = collection.collectionIterator(); i.hasNext(); ) {
+                child = (String) i.next();
+                ///TODO : use dedicated function in XmldbURI
+                path = name + '/' + child;
+                childColl = broker.getCollection(path);
+                perm = childColl.getPermissions();
+                result[cnt] = new EntityPermissions();
+                result[cnt].setName(child);
+                result[cnt].setOwner(perm.getOwner());
+                result[cnt].setGroup(perm.getOwnerGroup());
+                result[cnt].setPermissions(perm.getPermissions()); 
+                cnt++;
+            }
+            return new EntityPermissionsList(result);
+        } catch (Exception ex) {
+        	throw new RemoteException(ex.getMessage());
+        } finally {
+            if(collection != null)
+                collection.release();
+            pool.release(broker);
+        }
+    }
+
+    public org.exist.soap.EntityPermissionsList listDocumentPermissions(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException {
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+		User user = session.getUser();
+        Collection collection = null;
+        try {
+            broker = pool.get(user);
+            name = XmldbURI.checkPath2(name, DBBroker.ROOT_COLLECTION);
+//..            if (!name.startsWith("/"))
+//..                name = '/' + name;
+            /*if (!name.startsWith("/db"))
+                name = "/db" + name;*/
+//..            name = NativeBroker.checkPath(name, "/db");
+            collection = broker.openCollection(name, Lock.READ_LOCK);
+            if (collection == null)
+                throw new EXistException("Collection " + name + " not found");
+            if (!collection.getPermissions().validate(user, Permission.READ))
+                throw new PermissionDeniedException(
+                        "not allowed to read collection " + name);
+            EntityPermissions[] result = new EntityPermissions[collection.getDocumentCount()];
+            DocumentImpl doc;
+            Permission perm;
+            int cnt = 0;
+            for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
+                doc = (DocumentImpl) i.next();
+                perm = doc.getPermissions();
+                result[cnt] = new EntityPermissions();
+                result[cnt].setName(doc.getFileName());
+                result[cnt].setOwner(perm.getOwner());
+                result[cnt].setGroup(perm.getOwnerGroup());
+                result[cnt].setPermissions(perm.getPermissions());
+                cnt++;
+            }
+            return new EntityPermissionsList(result);
+        } catch (Exception ex) {
+        	throw new RemoteException(ex.getMessage());
+        } finally {
+            if(collection != null)
+                collection.release();
+            pool.release(broker);
+        }
+    }
+
+    public org.exist.soap.IndexedElements getIndexedElements(java.lang.String sessionId, java.lang.String collectionName, boolean inclusive) throws java.rmi.RemoteException {
+        DBBroker broker = null;
+		Session session = getSession(sessionId);
+		User user = session.getUser();
+        Collection collection = null;
+        try {
+            broker = pool.get(user);
+            collection = broker.openCollection(collectionName, Lock.READ_LOCK);
+            if (collection == null)
+                throw new EXistException("collection " + collectionName
+                        + " not found");
+            Occurrences occurrences[] = broker.getElementIndex().scanIndexedElements(collection,
+                    inclusive);
+            IndexedElement[] result = new IndexedElement[occurrences.length];
+            for (int i = 0; i < occurrences.length; i++) {
+                QName qname = (QName)occurrences[i].getTerm();
+            	result[i] = new IndexedElement(qname.getLocalName(),qname.getNamespaceURI(),
+            								   qname.getPrefix() == null ? "" : qname.getPrefix(),
+            								   occurrences[i].getOccurrences());
+            }
+            return new IndexedElements(result);
+        } catch (Exception ex) {
+        	throw new RemoteException(ex.getMessage());
+        } finally {
+            if(collection != null)
+                collection.release();
+            pool.release(broker);
+        }
+    }
+
 }
