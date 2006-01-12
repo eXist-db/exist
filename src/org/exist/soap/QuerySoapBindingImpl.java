@@ -79,7 +79,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			c[k].setCollectionName((String) entry.getKey());
 			documents = (TreeMap) entry.getValue();
 			docs = new QueryResponseDocument[documents.size()];
-			c[k].setDocuments(docs);
+			c[k].setDocuments(new QueryResponseDocuments(docs));
 			l = 0;
 			for (Iterator j = documents.entrySet().iterator(); j.hasNext(); l++) {
 				Map.Entry docEntry = (Map.Entry) j.next();
@@ -112,30 +112,29 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		return session;
 	}
 
-	public String connect(String user, String password) throws java.rmi.RemoteException {
-		User u = pool.getSecurityManager().getUser(user);
+    public java.lang.String connect(java.lang.String userId, java.lang.String password) throws java.rmi.RemoteException {
+		User u = pool.getSecurityManager().getUser(userId);
 		if (u == null)
-			throw new RemoteException("user " + user + " does not exist");
+			throw new RemoteException("user " + userId + " does not exist");
 		if (!u.validate(password))
 			throw new RemoteException("the supplied password is invalid");
-		LOG.debug("user " + user + " connected");
+		LOG.debug("user " + userId + " connected");
 		return SessionManager.getInstance().createSession(u);
 	}
 
-	public void disconnect(String id) throws RemoteException {
+    public void disconnect(java.lang.String sessionId) throws java.rmi.RemoteException {
 		SessionManager manager = SessionManager.getInstance();
-		Session session = manager.getSession(id);
+		Session session = manager.getSession(sessionId);
 		if (session != null) {
-			LOG.debug("disconnecting session " + id);
-			manager.disconnect(id);
+			LOG.debug("disconnecting session " + sessionId);
+			manager.disconnect(sessionId);
 		}
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.soap.Query#getResourceData(java.lang.String, byte[], boolean, boolean)
 	 */
-	public byte[] getResourceData(String sessionId, String path,
-			boolean indent, boolean xinclude, boolean processXSLPI) throws RemoteException {
+	public byte[] getResourceData(java.lang.String sessionId, java.lang.String path, boolean indent, boolean xinclude, boolean processXSLPI) throws java.rmi.RemoteException {
 		Properties outputProperties = new Properties();
 		outputProperties.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
 		outputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, xinclude ? "yes" : "no");
@@ -149,21 +148,22 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		}
 	}
 	
-	public String getResource(String sessionId, String name, boolean indent, boolean xinclude)
-	throws java.rmi.RemoteException {
+	public java.lang.String getResource(java.lang.String sessionId, java.lang.String name, boolean indent, boolean xinclude) throws java.rmi.RemoteException 
+	{
 		Properties outputProperties = new Properties();
 		outputProperties.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
 		outputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, xinclude ? "yes" : "no");
 		return getResource(sessionId, name, outputProperties);
 	}
 	
-	protected String getResource(String sessionId, String name, Properties outputProperties)
-		throws java.rmi.RemoteException {
+	protected String getResource(String sessionId, String name,
+			Properties outputProperties) throws java.rmi.RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
 		try {
 			broker = pool.get(session.getUser());
-			DocumentImpl document = (DocumentImpl) broker.getXMLResource(name);
+			DocumentImpl document = (DocumentImpl) broker.getDocument(name);
+//??			DocumentImpl document = (DocumentImpl) broker.getXMLResource(name);
 			if (document == null)
 				throw new RemoteException("resource " + name + " not found");
 			if(!document.getPermissions().validate(broker.getUser(), Permission.READ))
@@ -193,7 +193,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		}
 	}
 
-	public Collection listCollection(String sessionId, String path) throws RemoteException {
+	public org.exist.soap.Collection listCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
 		try {
@@ -224,8 +224,8 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 				p = resource.lastIndexOf("/");
 				resources[j] = (p == Constants.STRING_NOT_FOUND) ? resource : resource.substring(p + 1);
 			}
-			c.setResources(resources);
-			c.setCollections(childCollections);
+			c.setResources(new StringArray(resources));
+			c.setCollections(new StringArray(childCollections));
 			return c;
 		} catch (EXistException e) {
 			throw new RemoteException(e.getMessage());
@@ -237,8 +237,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 	/* (non-Javadoc)
 	 * @see org.exist.soap.Query#xquery(java.lang.String, byte[])
 	 */
-	public QueryResponse xquery(String sessionId, byte[] xquery)
-			throws RemoteException {
+    public org.exist.soap.QueryResponse xquery(java.lang.String sessionId, byte[] xquery) throws java.rmi.RemoteException {
 		String query;
 		try {
 			query = new String(xquery, "UTF-8");
@@ -248,20 +247,19 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		return query(sessionId, query);
 	}
 	
-	public org.exist.soap.QueryResponse query(String sessionId, java.lang.String query)
-		throws java.rmi.RemoteException {
+    public org.exist.soap.QueryResponse query(java.lang.String sessionId, java.lang.String xpath) throws java.rmi.RemoteException {
 		Session session = getSession(sessionId);
 
 		QueryResponse resp = new QueryResponse();
 		resp.setHits(0);
 		DBBroker broker = null;
 		try {
-			query = StringValue.expand(query);
-			LOG.debug("query: " + query);
+			xpath = StringValue.expand(xpath);
+			LOG.debug("query: " + xpath);
 			broker = pool.get(session.getUser());
 			XQueryContext context = new XQueryContext(broker);
 			
-			XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
+			XQueryLexer lexer = new XQueryLexer(context, new StringReader(xpath));
 			XQueryParser parser = new XQueryParser(lexer);
 			XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			parser.xpath();
@@ -287,7 +285,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			if (seq.getLength() > 0 && Type.subTypeOf(seq.getItemType(), Type.NODE))
 				collections = collectQueryInfo(scanResults(seq));
 			session.addQueryResult(seq);
-			resp.setCollections(collections);
+			resp.setCollections(new QueryResponseCollections(collections));
 			resp.setHits(seq.getLength());
 			resp.setQueryTime(System.currentTimeMillis() - start);
 			expr.reset();
@@ -304,9 +302,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 	/* (non-Javadoc)
 	 * @see org.exist.soap.Query#retrieveData(java.lang.String, int, int, boolean, boolean, java.lang.String)
 	 */
-	public byte[][] retrieveData(String sessionId, int start, int howmany,
-			boolean indent, boolean xinclude, String highlight)
-			throws RemoteException {
+	public org.exist.soap.Base64BinaryArray retrieveData(java.lang.String sessionId, int start, int howmany, boolean indent, boolean xinclude, java.lang.String highlight) throws java.rmi.RemoteException {
 		String[] results = retrieve(sessionId, start, howmany, indent, xinclude, highlight);
 		byte[][] data = new byte[results.length][];
 		for(int i = 0; i < results.length; i++) {
@@ -315,17 +311,10 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			} catch (UnsupportedEncodingException e) {
 			}
 		}
-		return data;
+		return new Base64BinaryArray(data);
 	}
 	
-	public String[] retrieve(
-		String sessionId,
-		int start,
-		int howmany,
-		boolean indent,
-		boolean xinclude,
-		String highlight)
-		throws java.rmi.RemoteException {
+	public java.lang.String[] retrieve(java.lang.String sessionId, int start, int howmany, boolean indent, boolean xinclude, java.lang.String highlight) throws java.rmi.RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
 		try {
@@ -370,15 +359,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		}
 	}
 
-	public String[] retrieveByDocument(
-		String sessionId,
-		int start,
-		int howmany,
-		String docPath,
-		boolean indent,
-		boolean xinclude,
-		String highlight)
-		throws RemoteException {
+    public java.lang.String[] retrieveByDocument(java.lang.String sessionId, int start, int howmany, java.lang.String path, boolean indent, boolean xinclude, java.lang.String highlight) throws java.rmi.RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
 		try {
@@ -388,15 +369,17 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 				throw new RemoteException("result set unknown or timed out");
 			String xml[] = null;
 			if (Type.subTypeOf(qr.getItemType(), Type.NODE)) {
-				NodeList resultSet = (NodeSet)qr;
+			    // Fix typecast exception RMT
+//				NodeList resultSet = (NodeSet)qr;
 				ArraySet hitsByDoc = new ArraySet(50);
 				NodeProxy p;
-				String path;
-				for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
-					p = (NodeProxy) i.next();
-                    ///TODO : use dedicated function in XmldbURI
-					path = p.getDocument().getCollection().getName() + "/" + p.getDocument().getFileName();
-					if (path.equals(docPath))
+				String ppath;
+				for (SequenceIterator i = qr.iterate(); i.hasNext(); ) {
+//				for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
+					p = (NodeProxy) i.nextItem();
+		            ///TODO : use dedicated function in XmldbURI
+					ppath = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
+					if (ppath.equals(path))
 						hitsByDoc.add(p);
 				}
 				--start;

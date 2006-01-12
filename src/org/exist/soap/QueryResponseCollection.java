@@ -1,41 +1,63 @@
+/**
+ * QueryResponseCollection.java
+ *
+ * This file was auto-generated from WSDL
+ * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ */
+
 package org.exist.soap;
 
-/**
- * A wrapper class containing a query summary for all documents for which hits
- * have been found in the collection.
- */
 public class QueryResponseCollection  implements java.io.Serializable {
     private java.lang.String collectionName;
-    private org.exist.soap.QueryResponseDocument[] documents;
+    private org.exist.soap.QueryResponseDocuments documents;
 
     public QueryResponseCollection() {
     }
 
-	/**
-	 * Returns the name of the collection represented by this 
-	 * object.
-	 * 
-	 * @return
-	 */
+    public QueryResponseCollection(
+           java.lang.String collectionName,
+           org.exist.soap.QueryResponseDocuments documents) {
+           this.collectionName = collectionName;
+           this.documents = documents;
+    }
+
+
+    /**
+     * Gets the collectionName value for this QueryResponseCollection.
+     * 
+     * @return collectionName
+     */
     public java.lang.String getCollectionName() {
         return collectionName;
     }
 
+
+    /**
+     * Sets the collectionName value for this QueryResponseCollection.
+     * 
+     * @param collectionName
+     */
     public void setCollectionName(java.lang.String collectionName) {
         this.collectionName = collectionName;
     }
 
-	/**
-	 * Returns a query result summary for each of the documents
-	 * for which hits have been found in this collection.
-	 * 
-	 * @return
-	 */
-    public org.exist.soap.QueryResponseDocument[] getDocuments() {
+
+    /**
+     * Gets the documents value for this QueryResponseCollection.
+     * 
+     * @return documents
+     */
+    public org.exist.soap.QueryResponseDocuments getDocuments() {
         return documents;
     }
 
-    public void setDocuments(org.exist.soap.QueryResponseDocument[] documents) {
+
+    /**
+     * Sets the documents value for this QueryResponseCollection.
+     * 
+     * @param documents
+     */
+    public void setDocuments(org.exist.soap.QueryResponseDocuments documents) {
         this.documents = documents;
     }
 
@@ -56,7 +78,7 @@ public class QueryResponseCollection  implements java.io.Serializable {
               this.collectionName.equals(other.getCollectionName()))) &&
             ((this.documents==null && other.getDocuments()==null) || 
              (this.documents!=null &&
-              java.util.Arrays.equals(this.documents, other.getDocuments())));
+              this.documents.equals(other.getDocuments())));
         __equalsCalc = null;
         return _equals;
     }
@@ -72,15 +94,7 @@ public class QueryResponseCollection  implements java.io.Serializable {
             _hashCode += getCollectionName().hashCode();
         }
         if (getDocuments() != null) {
-            for (int i=0;
-                 i<java.lang.reflect.Array.getLength(getDocuments());
-                 i++) {
-                java.lang.Object obj = java.lang.reflect.Array.get(getDocuments(), i);
-                if (obj != null &&
-                    !obj.getClass().isArray()) {
-                    _hashCode += obj.hashCode();
-                }
-            }
+            _hashCode += getDocuments().hashCode();
         }
         __hashCodeCalc = false;
         return _hashCode;
@@ -88,19 +102,21 @@ public class QueryResponseCollection  implements java.io.Serializable {
 
     // Type metadata
     private static org.apache.axis.description.TypeDesc typeDesc =
-        new org.apache.axis.description.TypeDesc(QueryResponseCollection.class);
+        new org.apache.axis.description.TypeDesc(QueryResponseCollection.class, true);
 
     static {
         typeDesc.setXmlType(new javax.xml.namespace.QName("urn:exist", "QueryResponseCollection"));
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("collectionName");
-        elemField.setXmlName(new javax.xml.namespace.QName("", "collectionName"));
+        elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "collectionName"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("documents");
-        elemField.setXmlName(new javax.xml.namespace.QName("", "documents"));
-        elemField.setXmlType(new javax.xml.namespace.QName("urn:exist", "QueryResponseDocument"));
+        elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "documents"));
+        elemField.setXmlType(new javax.xml.namespace.QName("urn:exist", "QueryResponseDocuments"));
+        elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }
 

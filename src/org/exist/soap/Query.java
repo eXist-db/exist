@@ -1,14 +1,34 @@
+/**
+ * Query.java
+ *
+ * This file was auto-generated from WSDL
+ * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ */
+
 package org.exist.soap;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
-/**
- * This interface defines eXist's SOAP service for (read-only) 
- * queries on the database.
- */
-public interface Query extends Remote {
-	
+public interface Query extends java.rmi.Remote {
+	/**
+	 * Retrieve a document from the database.
+	 * 
+	 * @param sessionId a valid session id as returned by connect().
+	 * @param path the full path to the document.
+	 * @param indent should the document be pretty-printed (indented)?
+	 * @param xinclude should xinclude tags be expanded?
+	 * @return the resource as string
+	 * @throws RemoteException
+	 */
+    public java.lang.String getResource(java.lang.String sessionId, java.lang.String path, boolean indent, boolean xinclude) throws java.rmi.RemoteException;
+    /**
+     * Execute a simple XPath query passed as string.
+     * 
+     * @param sessionId a valid session id as returned by connect().
+     * @param xpath XPath query string.
+     * @return QueryResponse describing the query results.
+     * @throws RemoteException
+     * @deprecated use {@link #xquery(String, byte[])} instead.
+     */
+    public org.exist.soap.QueryResponse query(java.lang.String sessionId, java.lang.String xpath) throws java.rmi.RemoteException;
 	/**
 	 * Create a new user session. Authenticates the user against the database.
 	 * The user has to be a valid database user. If the provided user information
@@ -26,68 +46,7 @@ public interface Query extends Remote {
 	 * @return session-id a unique id for the created session 
 	 * @throws RemoteException if the user cannot log in
 	 */
-	public String connect(String user, String password) throws RemoteException;
-	
-	/**
-	 * Release a user session. This will free all resources (including result sets).
-	 * 
-	 * @param sessionId a valid session id as returned by connect().
-	 * @throws java.rmi.RemoteException
-	 */
-	public void disconnect(String sessionId) throws java.rmi.RemoteException;
-	
-	/**
-	 * Retrieve a document from the database.
-	 * 
-	 * @param sessionId a valid session id as returned by connect().
-	 * @param path the full path to the document.
-	 * @param indent should the document be pretty-printed (indented)?
-	 * @param xinclude should xinclude tags be expanded?
-	 * @return the resource as string
-	 * @throws RemoteException
-	 */
-    public String getResource(String sessionId, String path, boolean indent, boolean xinclude) 
-    throws RemoteException;
-    
-    /**
-     * Retrieve a document from the database.
-     * 
-     * This method returns the document data in binary form to avoid possible
-     * conflicts.
-     * 
-     * @param sessionId a valid session id as returned by connect().
-     * @param path the full path to the document.
-     * @param indent should the document be pretty-printed (indented)?
-     * @param xinclude should xinclude tags be expanded?
-     * @param processXSLPI should XSL processing instructions be processed?
-     * @return the resource in base64 binary encoding
-     * @throws RemoteException
-     */
-    public byte[] getResourceData(String sessionId, String path, boolean indent, boolean xinclude,
-    		boolean processXSLPI) 
-	throws RemoteException;
-    
-    /**
-     * Execute a simple XPath query passed as string.
-     * 
-     * @param sessionId a valid session id as returned by connect().
-     * @param xpath XPath query string.
-     * @return QueryResponse describing the query results.
-     * @throws RemoteException
-     * @deprecated use {@link #xquery(String, byte[])} instead.
-     */
-    public QueryResponse query(String sessionId, String xpath) throws RemoteException;
-    
-    /**
-     * Execute an XQuery.
-     * 
-     * @param sessionId a valid session id as returned by connect().
-     * @param xquery the XQuery script in binary encoding.
-     * @return
-     * @throws RemoteException
-     */
-    public QueryResponse xquery(String sessionId, byte[] xquery) throws RemoteException;
-    
+    public java.lang.String connect(java.lang.String userId, java.lang.String password) throws java.rmi.RemoteException;
     /**
      * Retrieve a set of query results from the last query executed within
      * the current session.
@@ -110,9 +69,38 @@ public interface Query extends Remote {
      * @return
      * @throws RemoteException
      */
-    public String[] retrieve(String sessionId, int start, int howmany, boolean indent, 
-    	boolean xinclude, String highlight) throws RemoteException;
-
+    public java.lang.String[] retrieve(java.lang.String sessionId, int start, int howmany, boolean indent, boolean xinclude, java.lang.String highlight) throws java.rmi.RemoteException;
+	/**
+	 * Release a user session. This will free all resources (including result sets).
+	 * 
+	 * @param sessionId a valid session id as returned by connect().
+	 * @throws java.rmi.RemoteException
+	 */
+    public void disconnect(java.lang.String sessionId) throws java.rmi.RemoteException;
+    /**
+     * Retrieve a document from the database.
+     * 
+     * This method returns the document data in binary form to avoid possible
+     * conflicts.
+     * 
+     * @param sessionId a valid session id as returned by connect().
+     * @param path the full path to the document.
+     * @param indent should the document be pretty-printed (indented)?
+     * @param xinclude should xinclude tags be expanded?
+     * @param processXSLPI should XSL processing instructions be processed?
+     * @return the resource in base64 binary encoding
+     * @throws RemoteException
+     */
+    public byte[] getResourceData(java.lang.String sessionId, java.lang.String path, boolean indent, boolean xinclude, boolean processXSLPI) throws java.rmi.RemoteException;
+    /**
+     * Execute an XQuery.
+     * 
+     * @param sessionId a valid session id as returned by connect().
+     * @param xquery the XQuery script in binary encoding.
+     * @return
+     * @throws RemoteException
+     */
+    public org.exist.soap.QueryResponse xquery(java.lang.String sessionId, byte[] xquery) throws java.rmi.RemoteException;
     /**
      * Retrieve a set of query results from the last query executed within
      * the current session.
@@ -136,9 +124,7 @@ public interface Query extends Remote {
      * @return
      * @throws RemoteException
      */
-    public byte[][] retrieveData(String sessionId, int start, int howmany, boolean indent, 
-    		boolean xinclude, String highlight) throws RemoteException;
-    
+    public org.exist.soap.Base64BinaryArray retrieveData(java.lang.String sessionId, int start, int howmany, boolean indent, boolean xinclude, java.lang.String highlight) throws java.rmi.RemoteException;
 	/**
 	 * For the specified document, retrieve a set of query results from 
 	 * the last query executed within the current session. Only hits in
@@ -163,9 +149,7 @@ public interface Query extends Remote {
 	 * @return
 	 * @throws RemoteException
 	 */
-    public String[] retrieveByDocument(String sessionId, int start, int howmany, 
-    	String path, boolean indent, boolean xinclude, String highlight) throws RemoteException;
-    
+    public java.lang.String[] retrieveByDocument(java.lang.String sessionId, int start, int howmany, java.lang.String path, boolean indent, boolean xinclude, java.lang.String highlight) throws java.rmi.RemoteException;
     /**
      * Get information on the specified collection.
      * 
@@ -174,5 +158,5 @@ public interface Query extends Remote {
      * @return
      * @throws java.rmi.RemoteException
      */
-    public Collection listCollection(String sessionId, String path) throws java.rmi.RemoteException;
+    public org.exist.soap.Collection listCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException;
 }
