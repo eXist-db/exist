@@ -15,7 +15,9 @@ import com.sun.xacml.finder.PolicyFinderResult;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -54,6 +56,8 @@ import org.w3c.dom.Element;
 public class ExistPolicyModule extends PolicyFinderModule
 {
 	private static final Logger LOG = Logger.getLogger(ExistPolicyModule.class);
+	
+	private static final Map POLICY_CACHE = Collections.synchronizedMap(new HashMap(8));
 
 	private PolicyFinder finder;
 	private BrokerPool pool;
@@ -115,19 +119,17 @@ public class ExistPolicyModule extends PolicyFinderModule
 		{
 			for(Iterator it = mainPolicyDocs.iterator(); it.hasNext();)
 			{
-				policy = parsePolicyDocument((Document)it.next());
+				policy = getPolicyDocument((DocumentImpl)it.next());
 				match = policy.match(context);
 				result = match.getResult();
 				if(result == MatchResult.INDETERMINATE)
-				{
 					return new PolicyFinderResult(match.getStatus());
-				}
 				else if(result == MatchResult.MATCH)
 				{
 					if(matchedPolicy == null)
 						matchedPolicy = policy;
 					else
-						return errorResult("Matched multiple profiles for reqest", null);
+						return errorResult("Matched multiple policies for reqest", null);
 				}
 			}
 		}
@@ -151,11 +153,11 @@ public class ExistPolicyModule extends PolicyFinderModule
 		try
 		{
 			broker = pool.get();
-			Document policyDoc = getPolicyDocument(broker, idAttributeQName, idReference);
+			DocumentImpl policyDoc = getPolicyDocument(broker, idAttributeQName, idReference);
 			if(policyDoc == null)
 				return new PolicyFinderResult();
 
-			AbstractPolicy policy = parsePolicyDocument(policyDoc);
+			AbstractPolicy policy = getPolicyDocument(policyDoc);
 			if(policy == null)
 				return new PolicyFinderResult();
 
@@ -190,7 +192,7 @@ public class ExistPolicyModule extends PolicyFinderModule
 		return policyCollection.allDocs(broker, documentSet, recursive, false);
 	}
 	//resolves a reference to a policy document
-	private Document getPolicyDocument(DBBroker broker, QName idAttributeQName, URI idReference) throws ProcessingException, XPathException
+	private DocumentImpl getPolicyDocument(DBBroker broker, QName idAttributeQName, URI idReference) throws ProcessingException, XPathException
 	{
 		if(idReference == null)
 			return null;
@@ -234,6 +236,19 @@ public class ExistPolicyModule extends PolicyFinderModule
 		return new PolicyFinderResult(new Status(Collections.singletonList(Status.STATUS_PROCESSING_ERROR), message));
 	}
 
+	//if the document has already been parsed, returns the cached AbstractPolicy
+	//otherwise, parses and caches the document
+	private AbstractPolicy getPolicyDocument(DocumentImpl policyDoc) throws ParsingException
+	{
+		String uri = policyDoc.getName();
+		AbstractPolicy policy = (AbstractPolicy)POLICY_CACHE.get(uri);
+		if(policy == null)
+		{
+			policy = parsePolicyDocument(policyDoc);
+			POLICY_CACHE.put(uri, policy);
+		}
+		return policy;
+	}
 	//parses a DOM representation of a policy document into an AbstractPolicy
 	private AbstractPolicy parsePolicyDocument(Document policyDoc) throws ParsingException
 	{
