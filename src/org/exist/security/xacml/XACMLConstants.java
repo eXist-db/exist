@@ -65,78 +65,92 @@ public final class XACMLConstants
 	* constants.
 	*/
 	public static final String RESOURCE_NS = EXIST_XACML_NS + "/resource";
+	/**
+	* The namespace used for subject-related eXist-specific XACML
+	* constants.
+	*/
+	public static final String SUBJECT_NS = EXIST_XACML_NS + "/subject";
 
 	/**
 	* The attribute ID for the attribute that provides the namespace
 	* URI of a module.
 	*/
-	public static final URI MODULE_NS_ATTRIBUTE = URI.create(EXIST_XACML_NS + "#module-namespace");
+	public static final URI SUBJECT_NS_ATTRIBUTE = URI.create(SUBJECT_NS + "#subject-namespace");
+	/**
+	* The attribute ID for the attribute that provides the namespace
+	* URI of a module.
+	*/
+	public static final URI RESOURCE_NS_ATTRIBUTE = URI.create(RESOURCE_NS + "#resource-namespace");
 	/**
 	* The attribute ID for the attribute that provides the category
 	* of an XQuery module.
 	*/
 	public static final URI MODULE_CATEGORY_ATTRIBUTE = URI.create(EXIST_XACML_NS + "#module-category");
 	/**
+	 * The attribute ID for the attribute the describes a module's source. 
+	 */
+	public static final URI MODULE_SRC_ATTRIBUTE = URI.create(SUBJECT_NS + "#module-src");
+	/**
 	* The attribute ID for the attribute that provides the category of
 	* a resource.
 	*/
 	public static final URI RESOURCE_CATEGORY_ATTRIBUTE = URI.create(RESOURCE_NS + "#resource-category");
+	/**
+	* The attribute ID for the attribute that provides the name of a Java class
+	* being reflectively loaded.
+	*/
+	public static final URI CLASS_ATTRIBUTE = URI.create(RESOURCE_NS + "#class");
+	/**
+	* The attribute ID for the attribute that provides the name of a user.
+	*/
+	public static final URI USER_NAME_ATTRIBUTE = URI.create(SUBJECT_NS + "#name");
+	/**
+	* The attribute ID for the attribute that provides the names of the groups
+	* to which a user belongs.
+	*/
+	public static final URI GROUP_ATTRIBUTE = URI.create(SUBJECT_NS + "#group");
 
 
 	/**
-	* The internal/builtin XQuery module type.
+	* The internal/builtin XQuery library module type.
 	*/
-	public static final String INTERNAL_MODULE_ATTR_VALUE = "internal";
+	public static final String INTERNAL_LIBRARY_MODULE = "internal library";
 	/**
-	* The external/non-builtin XQuery module type.
+	* The external/non-builtin XQuery library module type.
 	*/
-	public static final String EXTERNAL_MODULE_ATTR_VALUE = "external";
+	public static final String EXTERNAL_LIBRARY_MODULE = "external library";
+	/**
+	* The external/non-builtin XQuery library module type.
+	*/
+	public static final String EXTERNAL_MAIN_MODULE = "external main";
+	/**
+	* The external/non-builtin XQuery library module type.
+	*/
+	public static final String CONSTRUCTED_MAIN_MODULE = "constructed main";
 
 
-	/**
-	* The action-id corresponding to a request to reflectively load a
-	* Java class in XQuery.
-	*/
-	public static final String LOAD_CLASS_ACTION = "load class";
 	/**
 	* The action-id corresponding to a request to reflectively invoke a
 	* method of a Java class in XQuery.
 	*/
 	public static final String INVOKE_METHOD_ACTION = "invoke method";
-	
-	/**
-	* The action-id corresponding to a request to import an XQuery module.
-	*/
-	public static final String IMPORT_MODULE_ACTION = "import module";
 	/**
 	* The action-id corresponding to a request to call a function in an XQuery.
 	*/
 	public static final String CALL_FUNCTION_ACTION = "call function";
 
-
-	/**
-	* The XQuery resource type.
-	*/
-	public static final String QUERY_RESOURCE = "query";
 	/**
 	* The Java method resource type.
 	*/
 	public static final String METHOD_RESOURCE = "method";
 	/**
-	* The Java class resource type.
+	* The query function resource type.
 	*/
-	public static final String CLASS_RESOURCE = "class";
-
+	public static final String FUNCTION_RESOURCE = "function";
 	/**
-	* The attribute ID for the attribute that provides the name of a Java class
-	* being reflectively loaded.
+	* The main XQuery module resource type.
 	*/
-	public static final URI CLASS_ATTRIBUTE = URI.create(EXIST_XACML_NS + "/class");
-	/**
-	* The attribute ID for the attribute that provides the names of the groups
-	* to which a user belongs.
-	*/
-	public static final URI GROUP_ATTRIBUTE = URI.create(EXIST_XACML_NS + "/group");
+	public static final String MAIN_MODULE_RESOURCE = "main module";
 	
 	private XACMLConstants() {}
 }

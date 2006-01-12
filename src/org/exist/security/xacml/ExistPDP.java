@@ -11,19 +11,16 @@ import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.ResourceFinder;
 import com.sun.xacml.finder.impl.CurrentEnvModule;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 
-/*
-* requires sunxacml.jar to be on the classpath
-* Added getSource() to ExternalModule interface and implemented getSource()
-*	in ExternalModuleImpl
-*/
 /**
 * This class is responsible for creating the XACML Policy Decision Point (PDP)
 * for a database instance.  The PDP is the entity that accepts access requests
@@ -56,6 +53,10 @@ public class ExistPDP
 	private static final Logger LOG = Logger.getLogger(ExistPDP.class);
 
 	private PDP pdp;
+	/**
+	 * Assists client in creating <code>RequestCtx</code>s.
+	 */
+	private RequestHelper helper;
 
 	private ExistPDP() {}
 	/**
@@ -64,8 +65,10 @@ public class ExistPDP
 	*/
 	public ExistPDP(BrokerPool pool)
 	{
+		java.util.logging.Logger.getLogger("com.sun.xacml").setLevel(java.util.logging.Level.WARNING);
 		PDPConfig config = new PDPConfig(createAttributeFinder(pool), createPolicyFinder(pool), createResourceFinder(pool));
 		pdp = new PDP(config);
+		helper = new RequestHelper();
 	}
 
 	/**
@@ -140,7 +143,7 @@ public class ExistPDP
 		if(decision == Result.DECISION_PERMIT)
 			return;
 
-		throw new PermissionDeniedException("The response did not permit the request.  The decision was " + getDecisionString(decision, result.getStatus()));
+		throw new PermissionDeniedException("The response did not permit the request.  The decision was: " + getDecisionString(decision, result.getStatus()));
 	}
 	//only really intended to be used by handleResult
 	private static String getDecisionString(final int decision, final Status status)
@@ -148,20 +151,20 @@ public class ExistPDP
 		switch(decision)
 		{
 			case Result.DECISION_PERMIT:
-				return "to permit the request";
+				return "permit the request";
 			case Result.DECISION_DENY:
-				return "to deny the request";
+				return "deny the request";
 			case Result.DECISION_INDETERMINATE:
 				String error = (status == null) ? null : status.getMessage();
 				if(error == null)
 					error = "";
 				else if(error.length() > 0)
 					error = ": " + error;
-				return "indeterminate because there was an error" + error;
+				return "indeterminate (there was an error)" + error;
 			case Result.DECISION_NOT_APPLICABLE:
 				return "the request was not applicable to the policy";
 			default:
-				return "of an unknown type";
+				return ": of an unknown type";
 		}
 	}
 
@@ -188,6 +191,16 @@ public class ExistPDP
 	{
 		return pdp;
 	}
+	
+	/**
+	 * Gets a <code>RequestHelper</code>
+	 * 
+	 * @return The <code>RequestHelper</code> for this database instance
+	 */
+	public RequestHelper getRequestHelper()
+	{
+		return helper;
+	}
 
 	/**
 	* Creates a <code>ResourceFinder</code> that is used by the
@@ -210,7 +223,10 @@ public class ExistPDP
 	* by the request context.  The XACML specification requires that certain
 	* attributes of the environment always be available, so the CurrentEnvModule
 	* is a provided <code>AttributeFinderModule</code> in the returned
-	* <code>AttributeFinder</code>.  No other modules are yet provided.
+	* <code>AttributeFinder</code>.  The other module looks up attributes
+	* for a <code>User</code>.  This module, <code>UserAttributeModule</code>,
+	* finds the user's name and the user's groups from the subject-id (which is
+	* the uid of the user).
 	* 
 	* @param pool The <code>BrokerPool</code> to be used to access the
 	*		database if needed.
@@ -218,8 +234,12 @@ public class ExistPDP
 	*/
 	private AttributeFinder createAttributeFinder(BrokerPool pool)
 	{
+		List modules = new ArrayList(2);
+		modules.add(new UserAttributeModule(pool));
+		modules.add(new CurrentEnvModule());
+		
 		AttributeFinder attributeFinder = new AttributeFinder();
-		attributeFinder.setModules(Collections.singletonList(new CurrentEnvModule()));
+		attributeFinder.setModules(modules);
 		return attributeFinder;
 	}
 	/**

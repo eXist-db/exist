@@ -202,7 +202,7 @@ public class FunctionFactory {
 					}
 					Function func = Function.createFunction(context, ast, def );
 					func.setArguments(params);
-					step = func;
+					step = new InternalFunctionCall(func);
 				} else {
                     // function is from an imported XQuery module
 					UserDefinedFunction func = ((ExternalModule)module).getFunction(qname, params.size());

@@ -2,7 +2,6 @@ package org.exist.security.xacml;
 
 import com.sun.xacml.attr.AnyURIAttribute;
 import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.ctx.Attribute;
 import com.sun.xacml.ctx.RequestCtx;
@@ -13,9 +12,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.exist.dom.QName;
 import org.exist.security.User;
 import org.exist.xquery.ExternalModule;
 import org.exist.xquery.Module;
+import org.exist.xquery.XQueryContext;
 
 /*
 * Source.getKey().toString() needs to be unique:
@@ -33,12 +34,9 @@ public class RequestHelper
 {
 	/**
 	* Creates a <code>RequestCtx</code> for a request concerning reflective
-	* access to Java code from an XQuery.  This handles both the case where
-	* the class itself is obtained with <code>Class.forName</code> and
-	* when a method is being invoked on the class in question.  In the case
-	* where the class is being loaded, <code>methodName</code> should be null.
-	* <p>
-	* This method creates a request with the following content:
+	* access to Java code from an XQuery.  This handles occurs when a method
+	* is being invoked on the class in question. This method creates a
+	* request with the following content:
 	* <ul>
 	*
 	*  <li>Subjects for the contextModule and user are created with the 
@@ -48,8 +46,7 @@ public class RequestHelper
 	* <code>createReflectionResource</code> method.</li>
 	*
 	*  <li>Action attributes are created with the
-	* <code>createBasicAction</code> method.  The action is either
-	* {@link XACMLConstants#LOAD_CLASS_ACTION load class} or
+	* <code>createBasicAction</code> method.  The action-id is
 	* {@link XACMLConstants#INVOKE_METHOD_ACTION invoke method}.</li>
 	*
 	*  <li>No environment attributes are explicitly generated; these
@@ -58,50 +55,50 @@ public class RequestHelper
 	*
 	* </ul>
 	*
-	* @param user The current user running the query.
+	* @param user The current user executing the query.
 	* @param contextModule The query containing the reflection.
 	* @param className The name of the class that is being accessed or loaded.
-	* @param methodName The name of the method that is being invoked or null
-	*	if no method is being invoked.
+	* @param methodName The name of the method that is being invoked
 	* @return A <code>RequestCtx</code> that represents the access in question.
 	*/
-	public static RequestCtx createReflectionRequest(User user, Module contextModule, String className, String methodName)
+	public RequestCtx createReflectionRequest(User user, Module contextModule, String className, String methodName)
 	{
 		Set subjects = createQuerySubjects(user, contextModule);
-
 		Set resourceAttributes = createReflectionResource(className, methodName);
-
-		String actionID = (methodName == null) ? XACMLConstants.LOAD_CLASS_ACTION : XACMLConstants.INVOKE_METHOD_ACTION;
-		Set actionAttributes = createBasicAction(actionID);
+		Set actionAttributes = createBasicAction(XACMLConstants.INVOKE_METHOD_ACTION);
 
 		return new RequestCtx(subjects, resourceAttributes, actionAttributes, Collections.EMPTY_SET);
 	}
 	
 	/**
 	* Creates a <code>RequestCtx</code> for a request concerning access
-	* to an XQuery module.
+	* to a function in an XQuery library module.  If the function is
+	* from a main module, this method returns null to indicate that.
+	* The client should interpret this to mean that the request is
+	* granted because access to a main module implies access to its
+	* functions.
+	*
 	* <p>
 	* This method creates a request with the following content:
 	* <ul>
 	*
-	*  <li>Subjects for the contextModule and user are created with the 
-	* createQuerySubjects method.</li>
+	*  <li>Subjects for the contextModule and user (obtained from the
+	* XQueryContext) are created with the createQuerySubjects method.</li>
 	*
-	*  <li>The specified <code>moduleID</code> parameter is the value of the
-	* {@link XACMLConstants#RESOURCE_ID_ATTRIBUTE subject-id} attribute.  The 
-	* {@link XACMLConstants#RESOURCE_CATEGORY_ATTRIBUTE resource-category}
-	* attribute is {@link XACMLConstants#QUERY_RESOURCE query}.  The value of
-	* the {@link XACMLConstants#MODULE_NS_ATTRIBUTE module namespace} attribute
-	* is the namespace URI of the module specified by the parameter
-	* <code>moduleNamespaceURI</code>.  The
+	*  <li>The specified functionModule parameter is used to generate the
+	* {@link XACMLConstants#MODULE_SRC_ATTRIBUTE modules source} and the
 	* {@link XACMLConstants#MODULE_CATEGORY_ATTRIBUTE module category}
-	* attribute is the type of module, either
-	* {@link XACMLConstants#INTERNAL_MODULE_ATTR_VALUE internal} or
-	* {@link XACMLConstants#EXTERNAL_MODULE_ATTR_VALUE external}.</li>
-	*
+	* attributes. The functionName parameter is the value of the
+	* {@link XACMLConstants#RESOURCE_ID_ATTRIBUTE subject-id} attribute
+	* (the local part) and of the 
+	* {@link XACMLConstants#RESOURCE_NS_ATTRIBUTE resource namespace}
+	*  attribute (the namespace URI part).  The 
+	* {@link XACMLConstants#RESOURCE_CATEGORY_ATTRIBUTE resource-category}
+	* attribute is {@link XACMLConstants#FUNCTION_RESOURCE function}.
+	* 
 	*  <li>Action attributes are created with the
-	* <code>createBasicAction</code> method using the specified parameter
-	* <code>action</code></li>
+	* <code>createBasicAction</code> method.  The action is
+	* {@link XACMLConstants#CALL_FUNCTION_ACTION call function}. 
 	*
 	*  <li>No environment attributes are explicitly generated; these
 	* will be handled by the <code>CurrentEnvModule</code> if a policy
@@ -109,24 +106,34 @@ public class RequestHelper
 	*
 	* </ul>
 	*
-	* @param user The current user.
+	* @param context The query context.
 	* @param contextModule The query making the access.
-	* @param moduleNamespaceURI The namespace URI for the module being accessed.
-	* @param moduleID a unique identifier for the module being accessed
-	* @param moduleCategory The type of module being accessed.
-	* @param action The action-id of the action being taken.
-	* @return A <code>RequestCtx</code> that represents the access in question.
+	* @param functionName The <code>QName</code> of the function being called.
+	* @return A <code>RequestCtx</code> that represents the access in question 
+	*	or <code>null</code> if the function belongs to a main module and
+	*	not a library module.
 	*/
-	public static RequestCtx createModuleRequest(User user, Module contextModule, String moduleNamespaceURI, String moduleID, String moduleCategory, String action)
+	public RequestCtx createFunctionRequest(XQueryContext context, Module contextModule, QName functionName)
 	{
+		String namespaceURI = functionName.getNamespaceURI();
+		Module functionModule = context.getModule(namespaceURI);
+		if(functionModule == null)
+		{
+			//main module, not a library module, so access to function is always allowed
+			return null;
+		}
+		
+		User user = context.getUser();
 		Set subjects = createQuerySubjects(user, contextModule);
 
 		Set resourceAttributes = new HashSet(8);
-		addModuleAttributes(resourceAttributes, moduleNamespaceURI, moduleCategory);
-		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, XACMLConstants.QUERY_RESOURCE);
-		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, moduleID);
+		addStringAttribute(resourceAttributes, XACMLConstants.MODULE_CATEGORY_ATTRIBUTE, getModuleCategory(functionModule));
+		addStringAttribute(resourceAttributes, XACMLConstants.MODULE_SRC_ATTRIBUTE, generateModuleID(functionModule));
+		addURIAttribute(resourceAttributes, XACMLConstants.RESOURCE_NS_ATTRIBUTE, namespaceURI);		
+		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, XACMLConstants.FUNCTION_RESOURCE);
+		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, functionName.getLocalName());
 
-		Set actionAttributes = createBasicAction(action);
+		Set actionAttributes = createBasicAction(XACMLConstants.CALL_FUNCTION_ACTION);
 
 		return new RequestCtx(subjects, resourceAttributes, actionAttributes, Collections.EMPTY_SET);
 	}
@@ -142,22 +149,11 @@ public class RequestHelper
 	* @param user The user making the request
 	* @return A <code>Subject</code> for use in a <code>RequestCtx</code>
 	*/
-	public static Subject createUserSubject(User user)
+	public Subject createUserSubject(User user)
 	{
-		Set attributes = new HashSet(4);
-
-		addStringAttribute(attributes, XACMLConstants.SUBJECT_ID_ATTRIBUTE, user.getName());
-
-		Set groups = new HashSet(8);
-		String[] groupArray = user.getGroups();
-		for(int i = 0; i < groupArray.length; ++i)
-			groups.add(new StringAttribute(groupArray[i]));
-
-		AttributeValue value = new BagAttribute(XACMLConstants.STRING_TYPE, groups);
-		Attribute attr = new Attribute(XACMLConstants.GROUP_ATTRIBUTE, null, null, value);
-		attributes.add(attr);
-
-		return new Subject(XACMLConstants.ACCESS_SUBJECT, attributes);
+		AttributeValue value = new StringAttribute(user.getName());
+		Attribute attr = new Attribute(XACMLConstants.SUBJECT_ID_ATTRIBUTE, null, null, value);
+		return new Subject(XACMLConstants.ACCESS_SUBJECT, Collections.singleton(attr));
 	}
 	/**
 	* Creates the basic attributes needed to describe a simple action
@@ -172,14 +168,14 @@ public class RequestHelper
 	* @return A <code>Set</code> that contains attributes describing the
 	*	action for use in a <code>RequestCtx</code>
 	*/
-	public static Set createBasicAction(String action)
+	public Set createBasicAction(String action)
 	{
 		if(action == null)
 			return null;
 
 		Set attributes = new HashSet(4);
 		addStringAttribute(attributes, XACMLConstants.ACTION_ID_ATTRIBUTE, action);
-		addURIAttribute(attributes, XACMLConstants.ACTION_NS_ATTRIBUTE,XACMLConstants.ACTION_NS);
+		addURIAttribute(attributes, XACMLConstants.ACTION_NS_ATTRIBUTE, XACMLConstants.ACTION_NS);
 
 		return attributes;
 	}
@@ -190,23 +186,24 @@ public class RequestHelper
 	* {@link XACMLConstants#SUBJECT_ID_ATTRIBUTE subject-id} attribute, otherwise,
 	* the name of the implementing class is used.  The subject-category is 
 	* {@link XACMLConstants#CODEBASE_SUBJECT codebase}.  The value of the 
-	* {@link XACMLConstants#MODULE_NS_ATTRIBUTE module namespace} attribute
+	* {@link XACMLConstants#SUBJECT_NS_ATTRIBUTE module namespace} attribute
 	* is the namespace URI of the module.  The
 	* {@link XACMLConstants#MODULE_CATEGORY_ATTRIBUTE module category}
 	* attribute is the type of module, either
-	* {@link XACMLConstants#INTERNAL_MODULE_ATTR_VALUE internal} or
-	* {@link XACMLConstants#EXTERNAL_MODULE_ATTR_VALUE external}.
+	* {@link XACMLConstants#INTERNAL_LIBRARY_MODULE internal} or
+	* {@link XACMLConstants#EXTERNAL_LIBRARY_MODULE external}.
 	*
 	* @param module A query module involved in making the request
 	* @return A <code>Subject</code> for use in a <code>RequestCtx</code>
 	*/
-	public static Subject createModuleSubject(Module module)
+	public Subject createModuleSubject(Module module)
 	{
 		if(module == null)
 			return null;
 
 		Set attributes = new HashSet(8);
-		addModuleAttributes(attributes, module);
+		addURIAttribute(attributes, XACMLConstants.SUBJECT_NS_ATTRIBUTE, module.getNamespaceURI());
+		addStringAttribute(attributes, XACMLConstants.MODULE_CATEGORY_ATTRIBUTE, getModuleCategory(module));
 		addStringAttribute(attributes, XACMLConstants.SUBJECT_ID_ATTRIBUTE, generateModuleID(module));
 
 		return new Subject(XACMLConstants.CODEBASE_SUBJECT, attributes);
@@ -215,49 +212,31 @@ public class RequestHelper
 
 	/**
 	* Creates a <code>Set</code> of <code>Attribute</code>s for a resource
-	* representing Java reflection in an XQuery.  If a method is being
-	* invoked, both the fully qualified class name and the method name
-	* should be supplied.  If a class is being loaded, the method name
-	* should be null.
-	* <p>
+	* representing Java reflection in an XQuery.
 	* The {@link XACMLConstants#RESOURCE_CATEGORY_ATTRIBUTE resource-category}
-	* attribute is either {@link XACMLConstants#CLASS_RESOURCE class} 
-	* (for class loading) or
-	* {@link XACMLConstants#METHOD_RESOURCE method} (for method invocation).
+	* attribute is {@link XACMLConstants#METHOD_RESOURCE method}.
 	* The {@link XACMLConstants#CLASS_ATTRIBUTE class} attribute is
 	* the class name.  The
 	* {@link XACMLConstants#RESOURCE_ID_ATTRIBUTE resource-id} attribute 
-	* for class loading is the class name and is the method name for
-	* method invocation.
+	* for class loading is the method name.
 	*
 	* @param className The name of the Java class
-	* @param methodName The name of the method being invoked, or null
-	* if the class is being loaded.
+	* @param methodName The name of the method being invoked
 	* @return A <code>Set</code> containing the <code>Attribute</code>s
 	* describing access to Java code by reflection.
 	*/
-	public static Set createReflectionResource(String className, String methodName)
+	public Set createReflectionResource(String className, String methodName)
 	{
 		if(className == null)
 			throw new NullPointerException("Class name cannot be null");
+		if(methodName == null)
+			throw new NullPointerException("Method name cannot be null");
 		
 		Set resourceAttributes = new HashSet(4);
 
-		String resourceCategory;
-		String ID;
-		if(methodName == null)
-		{
-			resourceCategory = XACMLConstants.CLASS_RESOURCE;
-			ID = className;
-		}
-		else
-		{
-			resourceCategory = XACMLConstants.METHOD_RESOURCE;
-			ID = methodName;
-		}
-		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, resourceCategory);
+		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, XACMLConstants.METHOD_RESOURCE);
 		addStringAttribute(resourceAttributes, XACMLConstants.CLASS_ATTRIBUTE, className);
-		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, ID);
+		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, methodName);
 
 		return resourceAttributes;
 	}
@@ -275,7 +254,7 @@ public class RequestHelper
 	* @return A <code>Set</code> containing a <code>Subject</code> for each
 	* the context module if there is one and the user.
 	*/
-	public static Set createQuerySubjects(User user, Module contextModule)
+	public Set createQuerySubjects(User user, Module contextModule)
 	{
 		if(user == null)
 			throw new NullPointerException("User cannot be null");
@@ -309,22 +288,19 @@ public class RequestHelper
 			return ((ExternalModule)module).getSource().getKey().toString();
 	}
 
-	//convenience methods for adding attributes representing a module to a Set
-	private static void addModuleAttributes(Set attributes, String namespaceURI, String moduleCategory)
+	private static String getModuleCategory(Module module)
 	{
-		addURIAttribute(attributes, XACMLConstants.MODULE_NS_ATTRIBUTE, namespaceURI);
-		addStringAttribute(attributes, XACMLConstants.MODULE_CATEGORY_ATTRIBUTE, moduleCategory);
-	}
-	private static void addModuleAttributes(Set attributes, Module module)
-	{
-		String moduleCategory = module.isInternalModule() ? XACMLConstants.INTERNAL_MODULE_ATTR_VALUE : XACMLConstants.EXTERNAL_MODULE_ATTR_VALUE;
-		addModuleAttributes(attributes, module.getNamespaceURI(), moduleCategory);
+		if(module == null)
+			return null;
+		return module.isInternalModule() ? XACMLConstants.INTERNAL_LIBRARY_MODULE : XACMLConstants.EXTERNAL_LIBRARY_MODULE;
 	}
 
 	//convenience methods for adding an AttributeValue to a Set of attributes
 	private static void addStringAttribute(Set attributes, URI attrID, String attrValue)
 	{
-		AttributeValue value = attrValue == null ? null : new StringAttribute(attrValue);
+		if(attrValue == null)
+			throw new NullPointerException("Attribute value cannot be null");
+		AttributeValue value = new StringAttribute(attrValue);
 		Attribute attr = new Attribute(attrID, null, null, value);
 		attributes.add(attr);
 	}
@@ -336,5 +312,5 @@ public class RequestHelper
 		attributes.add(attr);
 	}
 
-	private RequestHelper() {}
+	RequestHelper() {}
 }
