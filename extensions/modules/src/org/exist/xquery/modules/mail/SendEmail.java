@@ -38,6 +38,9 @@ import org.exist.xquery.functions.util.ExistVersion;
 
 
 //send-email specific imports
+import org.apache.xmlrpc.Base64;
+import org.w3c.dom.Node;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -61,8 +64,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 
-import org.w3c.dom.Node;
-
 
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
@@ -73,6 +74,8 @@ public class SendEmail extends BasicFunction
 	//TODO: Feature - Add a facility for the user to add their own message headers.
 	//TODO: Feature - Add attachment support, will need base64 encoding etc...
 	//TODO: Read the location of sendmail from the configuration file. Can vary from system to system
+    
+    private String charset;
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -93,7 +96,7 @@ public class SendEmail extends BasicFunction
 	public SendEmail(XQueryContext context)
 	{
 		super(context, signature);
-	}
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
@@ -102,6 +105,16 @@ public class SendEmail extends BasicFunction
 	{
 		try
 		{	
+			//get the charset parameter, default to UTF-8
+            if (args[2].getLength() > 0)
+            {
+                charset =  args[2].getStringValue();
+            }
+            else
+            {
+                charset =  "UTF-8";
+            }
+            
 			//Parse the XML <mail> into a mail Object
 			mail theMail = ParseMailXML( ((NodeValue)args[0].itemAt(0)).getNode() );
 			
@@ -109,7 +122,7 @@ public class SendEmail extends BasicFunction
 			if(args[1].getLength() > 0)
 			{
 				//SMTP
-				if(SendSMTP(theMail, args[1].getStringValue(), args[2].getStringValue()))
+				if(SendSMTP(theMail, args[1].getStringValue()))
 				{
 					return(BooleanValue.TRUE);
 				}
@@ -117,7 +130,7 @@ public class SendEmail extends BasicFunction
 			else
 			{
 				//Sendmail
-				if(SendSendmail(theMail, args[2].getStringValue()))
+				if(SendSendmail(theMail))
 				{
 					return(BooleanValue.TRUE);
 				}
@@ -134,7 +147,7 @@ public class SendEmail extends BasicFunction
 	
 	
 	//Sends an email using the system's sendmail binary
-	private boolean SendSendmail(mail aMail, String ContentType_Charset)
+	private boolean SendSendmail(mail aMail)
 	{
 		try
 		{	
@@ -166,10 +179,10 @@ public class SendEmail extends BasicFunction
 			Process p = Runtime.getRuntime().exec("/usr/sbin/sendmail" + recipients);
 			
 			//Get a Buffered Print Writer to the Processes stdOut
-			PrintWriter out = new PrintWriter(p.getOutputStream());
+			PrintWriter out = new PrintWriter(new OutputStreamWriter(p.getOutputStream(),charset));
 			
 			//Send the Message
-			WriteMessage(out, aMail, ContentType_Charset);
+			WriteMessage(out, aMail);
 			
 			//Close the stdOut
 			out.close();
@@ -186,7 +199,7 @@ public class SendEmail extends BasicFunction
 	}
 	
 	//Sends an email using an SMTP Server
-	private boolean SendSMTP(mail aMail, String SMTPServer, String ContentType_Charset)
+	private boolean SendSMTP(mail aMail, String SMTPServer)
 	{
 		final int TCP_PROTOCOL_SMTP = 25;									//SMTP Protocol
 		String SMTPResult = "";												//Holds the server Result code when an SMTP Command is executed
@@ -200,7 +213,7 @@ public class SendEmail extends BasicFunction
 			BufferedReader in = new BufferedReader(new InputStreamReader(smtpSock.getInputStream()));
 				
 			//Create an Output Writer for the Socket
-			PrintWriter out = new PrintWriter(new OutputStreamWriter(smtpSock.getOutputStream()));
+			PrintWriter out = new PrintWriter(new OutputStreamWriter(smtpSock.getOutputStream(),charset));
 			
 			//First line sent to us from the SMTP server should be "220 blah blah", 220 indicates okay
 			SMTPResult = in.readLine();
@@ -287,7 +300,7 @@ public class SendEmail extends BasicFunction
 			}
 			
 			//Send the Message
-			WriteMessage(out, aMail, ContentType_Charset);
+			WriteMessage(out, aMail);
 			
 			//Get end message response, should be "250 blah blah"
 			SMTPResult = in.readLine();
@@ -309,30 +322,28 @@ public class SendEmail extends BasicFunction
 	
 	
 	//Writes an email payload (Headers + Body) from a mail object
-	private void WriteMessage(PrintWriter out, mail aMail, String ContentType_Charset) throws IOException
+	private void WriteMessage(PrintWriter out, mail aMail) throws IOException
 	{
 			String Version = eXistVersion();									//Version of eXist
 			String MultipartBoundary = "eXist.multipart." + Version;			//Multipart Boundary
 			
-			if(ContentType_Charset == "")										//set default charset if requied
-				ContentType_Charset = "UTF-8";								
-				
 			//write the message headers
-			out.println("From: " + encode(aMail.getFrom(), ContentType_Charset));
+            
+			out.println("From: " + encode64Address(aMail.getFrom()));
 			for(int x = 0; x < aMail.countTo(); x++)
 			{	
-				out.println("To: " + encode(aMail.getTo(x), ContentType_Charset));
+				out.println("To: " + encode64Address(aMail.getTo(x)));
 			}
 			for(int x = 0; x < aMail.countCC(); x++)
 			{	
-				out.println("CC: " + encode(aMail.getCC(x), ContentType_Charset));
+				out.println("CC: " + encode64Address(aMail.getCC(x)));
 			}
 			for(int x = 0; x < aMail.countBCC(); x++)
 			{	
-				out.println("BCC: " + encode(aMail.getBCC(x), ContentType_Charset));
+				out.println("BCC: " + encode64Address(aMail.getBCC(x)));
 			}
 			out.println("Date: " + getDateRFC822());
-			out.println("Subject: " + encode(aMail.getSubject(), ContentType_Charset));
+			out.println("Subject: " + encode64(aMail.getSubject()));
 			out.println("X-Mailer: eXist " + Version + " util:send-email()");
 			out.println("MIME-Version: 1.0");
 			
@@ -343,20 +354,20 @@ public class SendEmail extends BasicFunction
 				out.println("Content-Type: multipart/alternative; boundary=\"" + MultipartBoundary + "\";");
 				
 				//Mime warning
-				out.println(encode("Error your mail client is not MIME Compatible", ContentType_Charset));
+				out.println("Error your mail client is not MIME Compatible");
 				
 				//send the text part first 
 				out.println("--" + MultipartBoundary);
-				out.println("Content-Type: text/plain; charset=" + ContentType_Charset);
-				out.println("Content-Transfer-Encoding: quoted-printable");
+				out.println("Content-Type: text/plain; charset=" + charset);
+				out.println("Content-Transfer-Encoding: 8bit");
 				out.println(aMail.getText());
 				
 				//send the html part next
 				out.println("--" + MultipartBoundary);
-				out.println("Content-Type: text/html; charset=" + ContentType_Charset);
-				out.println("Content-Transfer-Encoding: quoted-printable");
-				out.println(encode("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">", ContentType_Charset));
-				out.println(encode(aMail.getXHTML(), ContentType_Charset));
+				out.println("Content-Type: text/html; charset=" + charset);
+				out.println("Content-Transfer-Encoding: 8bit");
+				out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">");
+				out.println(aMail.getXHTML());
 				
 				//Emd multipart message
 				out.println("--" + MultipartBoundary + "--");
@@ -368,23 +379,23 @@ public class SendEmail extends BasicFunction
 				if(!aMail.getText().toString().equals(""))
 				{
 					//Yes, text email
-					out.println("Content-Type: text/plain; charset=" + ContentType_Charset);
-					out.println("Content-Transfer-Encoding: quoted-printable");
+					out.println("Content-Type: text/plain; charset=" + charset);
+					out.println("Content-Transfer-Encoding: 8bit");
 					
 					//now send the trxt message
 					out.println();
-					out.println(encode(aMail.getText(), ContentType_Charset));
+					out.println(aMail.getText());
 				}
 				else
 				{
 					//No, its a HTML email
-					out.println("Content-Type: text/html; charset=" + ContentType_Charset);
-					out.println("Content-Transfer-Encoding: quoted-printable");
+					out.println("Content-Type: text/html; charset=" + charset);
+					out.println("Content-Transfer-Encoding: 8bit");
 					
 					//now send the html message
 					out.println();
-					out.println(encode("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">", ContentType_Charset));
-					out.println(encode(aMail.getXHTML(), ContentType_Charset));
+					out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">");
+					out.println(aMail.getXHTML());
 				}
 			}
 			
@@ -675,19 +686,33 @@ public class SendEmail extends BasicFunction
 		return(dateString);
 	}
 	
-	//encodes a string to the charset
-	private String encode (String str, String ContentType_Charset)
+	//Base65 Encodes a string (used for message subject)
+	private String encode64 (String str) throws java.io.UnsupportedEncodingException
 	{
-		try
-		{
-			return new String(str.getBytes(), ContentType_Charset);
-		}
-		catch(java.io.UnsupportedEncodingException e)
-		{
-			return str;
-		}
+        String result = new String(Base64.encode(str.getBytes(charset)));
+        result = result.substring(0,result.length()-1);
+        result = result.replaceAll("\n","?=\n =?UTF-8?B?");
+        result = "=?"+charset+"?B?" + result + "?=";
+        return(result);
 	}
-	
+
+	//Base64 Encodes an email address
+	private String encode64Address (String str) throws java.io.UnsupportedEncodingException
+	{
+        String result;
+        int idx = str.indexOf("<");
+        
+        if(idx != -1)
+        {
+            result = encode64(str.substring(0,idx)) + " " + str.substring(idx);
+        }
+        else
+        {
+            result = str;
+        }
+        return(result);
+	}
+
 	//Class that Represents an email
 	private class mail
 	{
