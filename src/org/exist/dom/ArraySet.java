@@ -28,6 +28,9 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
 
+/** @deprecated : use ExtArrayNodeSet
+  *
+ */
 public class ArraySet extends AbstractNodeSet {
 
 	protected int counter = 0;

@@ -22,35 +22,66 @@ package org.exist.dom;
 
 public class ContextItem {
 
+    boolean isTransverseAxis= false;
     private NodeProxy node;
-    private ContextItem subcontext;
-	private ContextItem nextItem;
+    //"direct" axis are ancestor, parent, self, child, descendant and...
+    //attribute.
+    //The later, although conceptually transverse is considered as direct, 
+    //thanks to its dpth of 1
+    private ContextItem nextDirect;
+    //"transverse" axis are preceding, preceding-sibling, following-sibling, following
+    private ContextItem nextTransverse;
 	
-    public ContextItem(NodeProxy node) {
-        if (this.subcontext != null)
-            throw new IllegalArgumentException ("Context Item is allready set");            
+	
+    public ContextItem(NodeProxy node) {        
         this.node = node;
     }
-    
-    public ContextItem(ContextItem subcontext) {
-        if (this.node != null)
-            throw new IllegalArgumentException ("Context Item is allready set");            
-        this.subcontext = subcontext;
-    } 
     
 	public NodeProxy getNode() {
 		return node;
 	}
+    
+    public boolean hasNextDirect() {
+        return (nextDirect != null);
+    }
+    
+    public boolean hasNextTransverse() {
+        return (nextTransverse != null);
+    }     
 	
-	public ContextItem getNextItem() {
-		return nextItem;
-	}
+    public ContextItem getNextDirect() {
+        return nextDirect;
+    }
+    
+    public ContextItem getNextTransverse() {
+        return nextTransverse;
+    }    
+    
+    public void setTransverseAxis() {
+        isTransverseAxis = true;  
+    }
 	
-    public void setNextItem(ContextItem next) {
-        nextItem = next;
+    public void setNextContextItem(ContextItem next) {
+        if (isTransverseAxis)
+            nextTransverse = next;
+        else
+            nextDirect = next;
     }
     
     public String toString() {
-        return "Context. Current:" + node + "Next:" + nextItem;
+        StringBuffer buf = new StringBuffer(); 
+        if (nextTransverse != null)
+            buf.append("(");
+        buf.append(node);
+        ContextItem temp = nextTransverse;
+        while (temp != null) {
+            buf.append(", " + temp);
+            temp = temp.nextTransverse;
+        }
+        if (nextTransverse != null)
+            buf.append(")");        
+        if (nextDirect != null)
+            buf.append("/" + nextDirect);
+        return buf.toString();
     }    
 }

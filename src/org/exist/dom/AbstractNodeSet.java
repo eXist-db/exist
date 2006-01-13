@@ -662,7 +662,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return result;
 	}
 
-    //TOUNDERSTAND : what is this mthod for ? -pb
+    //TOUNDERSTAND : what is this method for ? -pb
 	public NodeSet getContextNodes(boolean rememberContext) {
 		NodeProxy current, context;
 		ContextItem contextNode;
@@ -683,7 +683,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 					} else
 						result.add(context);
 				}
-				contextNode = contextNode.getNextItem();
+				contextNode = contextNode.getNextDirect();
 			}
 		}
 		return result;

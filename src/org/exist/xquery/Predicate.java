@@ -216,7 +216,7 @@ public class Predicate extends PathExpr {
 				throw new XPathException("Internal evaluation error: context is missing for node " +
                         currentNode.getGID() + " !");
 			}
-           
+           //TODO : review to consider transverse context
             int count = 0;
 			while (contextItem != null) { 
                 NodeProxy next = contextItem.getNode();
@@ -227,7 +227,7 @@ public class Predicate extends PathExpr {
                         //break;
                     //}                     
 				}
-                contextItem = contextItem.getNextItem();
+                contextItem = contextItem.getNextDirect();
                 count++;
 			}
 		}
@@ -268,7 +268,7 @@ public class Predicate extends PathExpr {
 				    temp.reset();
 				    while (contextNode != null) {
 				    	temp.add(contextNode.getNode());
-				    	contextNode = contextNode.getNextItem();
+				    	contextNode = contextNode.getNextDirect();
 				    }
                     //TODO : understand why we sort here...
 				    temp.sortInDocumentOrder();
@@ -299,6 +299,9 @@ public class Predicate extends PathExpr {
                        temp = contextSet.selectAncestors(p, true, false);
                         break;
                     case Constants.PARENT_AXIS:
+                        //TODO : understand why the contextSet is not involved here
+                        //NodeProxy.getParent returns a *theoretical* parent 
+                        //which is *not* guaranteed to be in the context set !
                         temp = p.getParents(false);
                         break;                            
                     case Constants.PRECEDING_AXIS:

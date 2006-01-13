@@ -246,69 +246,69 @@ public class NodeSetHelper {
 	 * @param mode either FOLLOWING or PRECEDING
 	 * @return
 	 */
-	public static NodeSet selectPrecedingSiblings(NodeSet set, NodeSet siblings, boolean rememberContext) {
-		if (siblings.getLength() == 0 || set.getLength() == 0)
+	public static NodeSet selectPrecedingSiblings(NodeSet candidates, NodeSet references, boolean rememberContext) {
+		if (references.getLength() == 0 || candidates.getLength() == 0)
 			return NodeSet.EMPTY_SET;
 		NodeSet result = new ExtArrayNodeSet();
-		Iterator ia = siblings.iterator();
-		Iterator ib = set.iterator();
-        NodeProxy na = (NodeProxy) ia.next();
-        NodeProxy nb = (NodeProxy) ib.next();	
-        //TODO : review : don't care about following siblings
+		Iterator iReferences = references.iterator();
+		Iterator iCandidates = candidates.iterator();
+        NodeProxy reference = (NodeProxy) iReferences.next();
+        NodeProxy candidate = (NodeProxy) iCandidates.next();
 		while (true) {
 			// first, try to find nodes belonging to the same doc
-			if (na.getDocument().getDocId() < nb.getDocument().getDocId()) {
-				if (ia.hasNext())
-					na = (NodeProxy) ia.next();
+			if (reference.getDocument().getDocId() < candidate.getDocument().getDocId()) {
+				if (iReferences.hasNext())
+                    reference = (NodeProxy) iReferences.next();
 				else
 					break;
-			} else if (na.getDocument().getDocId() > nb.getDocument().getDocId()) {
-				if (ib.hasNext())
-					nb = (NodeProxy) ib.next();
+			} else if (reference.getDocument().getDocId() > candidate.getDocument().getDocId()) {
+				if (iCandidates.hasNext())
+                    candidate = (NodeProxy) iCandidates.next();
 				else
 					break;
 			} else {
 				// same document: check if the nodes have the same parent
-                long pa = XMLUtil.getParentId(na.getDocument(), na.getGID());
-                long pb = XMLUtil.getParentId(nb.getDocument(), nb.getGID());
+                long pa = XMLUtil.getParentId(reference.getDocument(), reference.getGID());
+                long pb = XMLUtil.getParentId(candidate.getDocument(), candidate.getGID());
 				if (pa < pb) {
 					// wrong parent: proceed
-					if (ia.hasNext())
-						na = (NodeProxy) ia.next();
+					if (iReferences.hasNext())
+                        reference = (NodeProxy) iReferences.next();
 					else
 						break;
 				} else if (pa > pb) {
 					// wrong parent: proceed
-					if (ib.hasNext())
-						nb = (NodeProxy) ib.next();
+					if (iCandidates.hasNext())
+                        candidate = (NodeProxy) iCandidates.next();
 					else
 						break;
 				} else {
 					// found two nodes with the same parent
 					// now, compare the ids: a node is a following sibling
 					// if its id is greater than the id of the other node
-					if (nb.getGID() < na.getGID()) {
+					if (candidate.getGID() < reference.getGID()) {
 						// found a preceding sibling						
 						if (rememberContext)
-                            //TODO : add composite context
-							nb.addContextNode(na);
+                            //TODO : add transverse context
+                            candidate.addContextNode(reference);
 						else
-							nb.copyContext(na);
-						result.add(nb);						
-						if (ib.hasNext())
-							nb = (NodeProxy) ib.next();
+                            candidate.copyContext(reference);
+						result.add(candidate);						
+						if (iCandidates.hasNext())
+                            candidate = (NodeProxy) iCandidates.next();
 						else
 							break;
-					} else if (nb.getGID() > na.getGID()) {
+					} else if (candidate.getGID() > reference.getGID()) {
 						// found a following sibling
-						if (ib.hasNext())
-							nb = (NodeProxy) ib.next();
+						if (iCandidates.hasNext())
+                            //TODO : break ?
+                            candidate = (NodeProxy) iCandidates.next();
 						else
 							break;
 						// equal nodes: proceed with next node
 					} else {
-						if (ia.hasNext())
-							na = (NodeProxy) ia.next();
+						if (iReferences.hasNext())
+                            reference = (NodeProxy) iReferences.next();
 						else
 							break;
 					}
@@ -330,69 +330,69 @@ public class NodeSetHelper {
      * @param mode either FOLLOWING or PRECEDING
      * @return
      */
-    public static NodeSet selectFollowingSiblings(NodeSet set, NodeSet siblings, boolean rememberContext) {
-        if (siblings.getLength() == 0 || set.getLength() == 0)
+    public static NodeSet selectFollowingSiblings(NodeSet candidates, NodeSet references, boolean rememberContext) {
+        if (references.getLength() == 0 || candidates.getLength() == 0)
             return NodeSet.EMPTY_SET;
         NodeSet result = new ExtArrayNodeSet();
-        Iterator ia = siblings.iterator();
-        Iterator ib = set.iterator();
-        NodeProxy na = (NodeProxy) ia.next();
-        NodeProxy nb = (NodeProxy) ib.next();   
+        Iterator iReferences = references.iterator();
+        Iterator iCandidates = candidates.iterator();
+        NodeProxy reference = (NodeProxy) iReferences.next();
+        NodeProxy candidate = (NodeProxy) iCandidates.next();   
         //TODO : review : don't care about preceding siblings
         while (true) {
             // first, try to find nodes belonging to the same doc
-            if (na.getDocument().getDocId() < nb.getDocument().getDocId()) {
-                if (ia.hasNext())
-                    na = (NodeProxy) ia.next();
+            if (reference.getDocument().getDocId() < candidate.getDocument().getDocId()) {
+                if (iReferences.hasNext())
+                    reference = (NodeProxy) iReferences.next();
                 else
                     break;
-            } else if (na.getDocument().getDocId() > nb.getDocument().getDocId()) {
-                if (ib.hasNext())
-                    nb = (NodeProxy) ib.next();
+            } else if (reference.getDocument().getDocId() > candidate.getDocument().getDocId()) {
+                if (iCandidates.hasNext())
+                    candidate = (NodeProxy) iCandidates.next();
                 else
                     break;
             } else {
                 // same document: check if the nodes have the same parent
-                long pa = XMLUtil.getParentId(na.getDocument(), na.getGID());
-                long pb = XMLUtil.getParentId(nb.getDocument(), nb.getGID());
+                long pa = XMLUtil.getParentId(reference.getDocument(), reference.getGID());
+                long pb = XMLUtil.getParentId(candidate.getDocument(), candidate.getGID());
                 if (pa < pb) {
                     // wrong parent: proceed
-                    if (ia.hasNext())
-                        na = (NodeProxy) ia.next();
+                    if (iReferences.hasNext())
+                        reference = (NodeProxy) iReferences.next();
                     else
                         break;
                 } else if (pa > pb) {
                     // wrong parent: proceed
-                    if (ib.hasNext())
-                        nb = (NodeProxy) ib.next();
+                    if (iCandidates.hasNext())
+                        candidate = (NodeProxy) iCandidates.next();
                     else
                         break;
                 } else {
                     // found two nodes with the same parent
                     // now, compare the ids: a node is a following sibling
                     // if its id is greater than the id of the other node
-                    if (nb.getGID() < na.getGID()) {
+                    if (candidate.getGID() < reference.getGID()) {
                         // found a preceding sibling
-                        if (ib.hasNext())
-                            nb = (NodeProxy) ib.next();
+                        if (iCandidates.hasNext())
+                            candidate = (NodeProxy) iCandidates.next();
                         else
                             break;
-                    } else if (nb.getGID() > na.getGID()) {
+                    } else if (candidate.getGID() > reference.getGID()) {
                         // found a following sibling 
                         if (rememberContext)
-                            //TODO : add composite context
-                            nb.addContextNode(na);
+                            //TODO : add transverse context
+                            candidate.addContextNode(reference);
                         else
-                            nb.copyContext(na);
-                        result.add(nb);                        
-                        if (ib.hasNext())
-                            nb = (NodeProxy) ib.next();
+                            candidate.copyContext(reference);
+                        result.add(candidate);                        
+                        if (iCandidates.hasNext())
+                            candidate = (NodeProxy) iCandidates.next();
                         else
                             break;
                         // equal nodes: proceed with next node
                     } else {
-                        if (ib.hasNext())
-                            nb = (NodeProxy) ib.next();
+                        if (iCandidates.hasNext())
+                            candidate = (NodeProxy) iCandidates.next();
                         else
                             break;
                     }
@@ -402,36 +402,36 @@ public class NodeSetHelper {
         return result;
     }    
     
-    public static NodeSet selectPreceding(NodeSet set, NodeSet preceding) throws XPathException {
-        if (preceding.getLength() == 0 || set.getLength() == 0)
+    public static NodeSet selectPreceding(NodeSet references, NodeSet candidates) throws XPathException {
+        if (candidates.getLength() == 0 || references.getLength() == 0)
             return NodeSet.EMPTY_SET;
         NodeSet result = new ExtArrayNodeSet();
-        for (Iterator si = set.iterator(); si.hasNext(); ) {
-            NodeProxy sn = (NodeProxy) si.next();
-            for (Iterator fi = preceding.iterator(); fi.hasNext(); ) {
-                NodeProxy fn = (NodeProxy) fi.next();                                  
-                if (fn.before(sn)) {
-                    //TODO : add composite context
-                    fn.addContextNode(sn);
-                    result.add(fn);
+        for (Iterator iReferences = references.iterator(); iReferences.hasNext(); ) {
+            NodeProxy reference = (NodeProxy) iReferences.next();
+            for (Iterator iCandidates = candidates.iterator(); iCandidates.hasNext(); ) {
+                NodeProxy candidate = (NodeProxy) iCandidates.next();                                  
+                if (candidate.before(reference)) {
+                    //TODO : add transverse context
+                    candidate.addContextNode(reference);
+                    result.add(candidate);
                 }
             }
         }
         return result;
     }
     
-    public static NodeSet selectFollowing(NodeSet set, NodeSet following) throws XPathException {
-        if (following.getLength() == 0 || set.getLength() == 0)
+    public static NodeSet selectFollowing(NodeSet references, NodeSet candidates) throws XPathException {
+        if (candidates.getLength() == 0 || references.getLength() == 0)
             return NodeSet.EMPTY_SET;
         NodeSet result = new ExtArrayNodeSet();
-        for (Iterator si = set.iterator(); si.hasNext(); ) {
-            NodeProxy sn = (NodeProxy) si.next();
-            for (Iterator fi = following.iterator(); fi.hasNext(); ) {
-                NodeProxy fn = (NodeProxy) fi.next();
-                if (fn.after(sn)) {
-                    //TODO : add composite context
-                    fn.addContextNode(sn);
-                    result.add(fn);
+        for (Iterator iReferences = references.iterator(); iReferences.hasNext(); ) {
+            NodeProxy reference = (NodeProxy) iReferences.next();
+            for (Iterator iCandidates = candidates.iterator(); iCandidates.hasNext(); ) {
+                NodeProxy candidate = (NodeProxy) iCandidates.next();
+                if (candidate.after(reference)) {
+                    //TODO : add transverse context
+                    candidate.addContextNode(reference);
+                    result.add(candidate);
                 }
             }
         }
@@ -439,11 +439,13 @@ public class NodeSetHelper {
     }    
 
     
-    public static NodeSet directSelectAttributes(NodeSet set, QName qname, boolean rememberContext) {
+    public static NodeSet directSelectAttributes(NodeSet candidates, QName qname, boolean rememberContext) {
+        if (candidates.getLength() == 0)
+            return NodeSet.EMPTY_SET;        
         NodeSet result = new ExtArrayNodeSet();
-        for (Iterator i = set.iterator(); i.hasNext(); ) {
-            NodeProxy n = (NodeProxy) i.next();
-            result.addAll(n.directSelectAttribute(qname, rememberContext));
+        for (Iterator iCandidates = candidates.iterator(); iCandidates.hasNext(); ) {
+            NodeProxy candidate = (NodeProxy) iCandidates.next();
+            result.addAll(candidate.directSelectAttribute(qname, rememberContext));
         }
         return result;
     }

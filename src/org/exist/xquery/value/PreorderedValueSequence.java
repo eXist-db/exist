@@ -68,13 +68,14 @@ public class PreorderedValueSequence extends AbstractSequence {
 			for(Iterator j = result.iterator(); j.hasNext(); ) {
 				NodeProxy p = (NodeProxy)j.next();
 				ContextItem context = p.getContext();
+				//TODO : review to consider transverse context
 				while(context != null) {
 					if(context.getNode() instanceof OrderedNodeProxy) {
 						OrderedNodeProxy cp = (OrderedNodeProxy)context.getNode();
 						cp.values[i] = p.atomize();
 						System.out.println(cp.values[i]);
 					}
-					context = context.getNextItem();
+					context = context.getNextDirect();
 				}
 			}
 		}
