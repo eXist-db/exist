@@ -140,13 +140,14 @@ public abstract class BindingExpression extends AbstractExpression {
 					throw new XPathException("Internal evaluation error: context node is missing for node " +
 						current.getGID() + "!");
 				}
+				//TODO : review to consider transverse context
 				while (contextNode != null) {
                     NodeProxy next = contextNode.getNode();                    
 					if(contextIsVirtual || contextSet.contains(next)) {
 						next.addMatches(current);
 						result.add(next, sizeHint);
 					}
-					contextNode = contextNode.getNextItem();
+					contextNode = contextNode.getNextDirect();
 				}
 			}
 			return result;

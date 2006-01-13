@@ -291,6 +291,7 @@ public class GeneralComparison extends BinaryOp {
 				if(c == null)
 					throw new XPathException(getASTNode(), "Internal error: context node missing");
                 lv = current.atomize();
+                //TODO : review to consider transverse context
 				do
 				{					
                     rs = getRight().eval(c.getNode().toSequence());
@@ -302,7 +303,7 @@ public class GeneralComparison extends BinaryOp {
 							result.add(current);
 						}
 					}
-				}while ((c = c.getNextItem()) != null);
+				}while ((c = c.getNextDirect()) != null);
 			}
 		}
 		else

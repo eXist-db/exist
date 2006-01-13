@@ -81,6 +81,7 @@ public class ValueComparison extends GeneralComparison {
 		AtomicValue lv;		
 		for (Iterator i = nodes.iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
+			//TODO : review to consider transverse context
 			c = current.getContext();
 			do {
 				lv = current.atomize();
@@ -90,7 +91,7 @@ public class ValueComparison extends GeneralComparison {
                 Collator collator = getCollator(contextSequence);
                 if (compareValues(collator, lv, rs.itemAt(0).atomize()))
 					result.add(current);
-			} while ((c = c.getNextItem()) != null);
+			} while ((c = c.getNextDirect()) != null);
 		}
 		return result;
 	}

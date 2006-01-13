@@ -473,11 +473,11 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         while (next != null) {
             if (next.getNode().gid == proxy.gid)
                 break;
-            if (next.getNextItem() == null) {
-                next.setNextItem(new ContextItem(proxy));
+            if (next.getNextDirect() == null) {
+                next.setNextContextItem(new ContextItem(proxy));
                 break;
             }
-            next = next.getNextItem();
+            next = next.getNextDirect();
         }
     }
 
@@ -487,7 +487,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		while (next != null) {
 			System.out.print(next.getNode().gid);
 			System.out.print(' ');
-			next = next.getNextItem();
+			next = next.getNextDirect();
 		}
 		System.out.println();
 	}
@@ -865,7 +865,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		            p.addContextNode(p);
 		        result.add(p);
 		    }
-		    contextNode = contextNode.getNextItem();
+		    contextNode = contextNode.getNextDirect();
 		}
 		return result;
     }
@@ -923,36 +923,6 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         return doc.getDocId() == document.getDocId();
     }
     
-    /* (non-Javadoc)
-     * @see org.exist.dom.NodeSet#getParents(boolean)
-     */
-    public NodeSet getParents(boolean rememberContext) {
-        long pid = XMLUtil.getParentId(doc, gid);
-		if (pid == DOCUMENT_NODE_GID) 
-            return NodeSet.EMPTY_SET;
-		NodeProxy parent = new NodeProxy(doc, pid, Node.ELEMENT_NODE);
-		if (rememberContext)
-			parent.addContextNode(this);
-		else
-			parent.copyContext(this);
-		return parent;
-    }
-    
-    public NodeSet getAncestors(boolean rememberContext, boolean includeSelf) {
-        NodeSet ancestors = new ExtArrayNodeSet();
-        if (includeSelf)
-            ancestors.add(this);        
-        long pid = gid;        
-        while((pid = XMLUtil.getParentId(getDocument(), pid)) > 0) {
-            NodeProxy parent = new NodeProxy(getDocument(), pid, Node.ELEMENT_NODE);
-            if (rememberContext)
-                parent.addContextNode(this);
-            else
-                parent.copyContext(this);
-            ancestors.add(parent);
-        }
-        return ancestors;
-    }
     
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#intersection(org.exist.dom.NodeSet)
@@ -994,36 +964,72 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     }
     
     /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#getParents(boolean)
+     */    
+    public NodeSet getParents(boolean rememberContext) {        
+        long pid = XMLUtil.getParentId(doc, gid);
+        if (pid == DOCUMENT_NODE_GID) 
+            return NodeSet.EMPTY_SET;
+        NodeProxy parent = new NodeProxy(doc, pid, Node.ELEMENT_NODE);
+        if (rememberContext)
+            parent.addContextNode(this);
+        else
+            parent.copyContext(this);
+        return parent;
+    }
+    
+    public NodeSet getAncestors(boolean rememberContext, boolean includeSelf) {        
+        NodeSet ancestors = new ExtArrayNodeSet();
+        if (includeSelf)
+            ancestors.add(this);        
+        long pid = gid;        
+        while((pid = XMLUtil.getParentId(getDocument(), pid)) > 0) {
+            NodeProxy parent = new NodeProxy(getDocument(), pid, Node.ELEMENT_NODE);
+            if (rememberContext)
+                parent.addContextNode(this);
+            else
+                parent.copyContext(this);
+            ancestors.add(parent);
+        }
+        return ancestors;       
+    }    
+    
+    /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#selectParentChild(org.exist.dom.NodeSet, int)
      */
     public NodeSet selectParentChild(NodeSet al, int mode) {
-		return selectParentChild(al, mode, false);
-	}
+        return selectParentChild(al, mode, false);
+    }
     
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#selectParentChild(org.exist.dom.NodeSet, int, boolean)
      */
     public NodeSet selectParentChild(NodeSet al, int mode, boolean rememberContext) {
-        NodeProxy p = al.parentWithChild(this, true, false,	UNKNOWN_NODE_LEVEL);
-        if(p == null)
+        return NodeSetHelper.selectParentChild(this, al, mode, rememberContext);
+        
+        /*
+        NodeProxy parent = al.parentWithChild(this, true, false,	UNKNOWN_NODE_LEVEL);
+        if(parent == null)
             return NodeSet.EMPTY_SET;  
         switch (mode){
             case NodeSet.DESCENDANT : {
     			if (rememberContext)
-    				addContextNode(p);
+    				addContextNode(parent);
     			else
-    				copyContext(p);
+    				copyContext(parent);
     			return this;
             }
-            //TODO : refine switch -pb
-            default : {
+            case NodeSet.ANCESTOR : {
                 if (rememberContext)
-    				p.addContextNode(this);
+                    parent.addContextNode(this);
     			else
-    				p.copyContext(this);
-                return p;
+                    parent.copyContext(this);
+                return parent;
             }
+            default :
+                throw new IllegalArgumentException("Invalid axis");
         }
+        */
     }
     
     /* (non-Javadoc)
@@ -1031,7 +1037,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      */
     public NodeSet selectAncestors(NodeSet al, boolean includeSelf, boolean rememberContext) {
         return NodeSetHelper.selectAncestors(this, al, includeSelf, rememberContext);
-    }
+    }    
     
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#selectSiblings(org.exist.dom.NodeSet, int)
