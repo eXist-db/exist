@@ -86,7 +86,7 @@ public class DatabaseImpl implements Database {
     	if(initdb != null)
     		autoCreate = initdb.equalsIgnoreCase("true");
     }
-
+    
     /**
      *  In embedded mode: configure the database instance
      *
@@ -255,8 +255,6 @@ public class DatabaseImpl implements Database {
         Collection current = new RemoteCollection(rpcClient, null, rootName); 
         for (int i = 1 ; i < components.length ; i++) {
             current = ((RemoteCollection)current).getChildCollection(components[i]);
-            if (current == null)
-                throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION , "Could not find collection: " + c);
         }
         return current;
     }    
