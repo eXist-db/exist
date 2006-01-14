@@ -61,7 +61,6 @@ public class PreorderedValueSequence extends AbstractSequence {
 	}
 	
 	private void processAll() throws XPathException {
-		long start = System.currentTimeMillis();
 		for(int i = 0; i < orderSpecs.length; i++) {
 			Expression expr = orderSpecs[i].getSortExpression();
 			NodeSet result = expr.eval(null).toNodeSet();
@@ -73,13 +72,11 @@ public class PreorderedValueSequence extends AbstractSequence {
 					if(context.getNode() instanceof OrderedNodeProxy) {
 						OrderedNodeProxy cp = (OrderedNodeProxy)context.getNode();
 						cp.values[i] = p.atomize();
-						System.out.println(cp.values[i]);
 					}
 					context = context.getNextDirect();
 				}
 			}
 		}
-		System.out.println("Sorting took " + (System.currentTimeMillis() - start));
 	}
 
 	/* (non-Javadoc)
