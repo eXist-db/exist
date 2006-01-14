@@ -119,12 +119,13 @@ public class GeneralComparison extends BinaryOp {
         //TODO : should we also use simplify() here ? -pb
 	}
 
-	/* (non-Javadoc)
-     * @see org.exist.xquery.BinaryOp#analyze(org.exist.xquery.Expression, int)
+    /* (non-Javadoc)
+     * @see org.exist.xquery.BinaryOp#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        super.analyze(parent, flags);
-        inWhereClause = (flags & IN_WHERE_CLAUSE) != 0; 
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
+        super.analyze(contextInfo);
+        inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0; 
     }
     
 	/* (non-Javadoc)

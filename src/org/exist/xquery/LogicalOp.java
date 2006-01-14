@@ -60,8 +60,8 @@ public abstract class LogicalOp extends BinaryOp {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BinaryOp#analyze(org.exist.xquery.Expression, int)
 	 */
-	public void analyze(Expression parent, int flags) throws XPathException {
-		super.analyze(parent, flags);
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		super.analyze(contextInfo);
 		if(Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 				Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
 				(getLeft().getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&

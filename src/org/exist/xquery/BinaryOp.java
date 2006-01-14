@@ -63,11 +63,11 @@ public abstract class BinaryOp extends PathExpr {
      * 
      * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-    	inPredicate = (flags & IN_PREDICATE) != 0;
-        inWhereClause = (flags & IN_WHERE_CLAUSE) != 0;
-        getLeft().analyze(this, flags);
-        getRight().analyze(this, flags);
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) != 0;
+        inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0;
+        getLeft().analyze(contextInfo);
+        getRight().analyze(contextInfo);
     }
 
     /*

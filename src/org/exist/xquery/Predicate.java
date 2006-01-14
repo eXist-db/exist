@@ -68,16 +68,19 @@ public class Predicate extends PathExpr {
         }
 	}
 	
-	/* (non-Javadoc)
-     * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
+    /* (non-Javadoc)
+     * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        flags |= IN_PREDICATE; // set flag to signal subexpression that we are in a predicate
-        flags &= ~IN_WHERE_CLAUSE;	// remove where clause flag
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        contextInfo.addFlag(IN_PREDICATE); // set flag to signal subexpression that we are in a predicate
+        contextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
         Expression inner = getExpression(0);
         if(inner == null)
             return;
-        super.analyze(this, flags);
+        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+    	newContextInfo.setParent(this);
+        super.analyze(newContextInfo);
+        
         // Case 1: predicate expression returns a node set. 
         // Check the returned node set against the context set 
         // and return all nodes from the context, for which the
@@ -95,9 +98,9 @@ public class Predicate extends PathExpr {
             executionMode = BOOLEAN;
         
 		if(executionMode == BOOLEAN) {
-		    flags |= SINGLE_STEP_EXECUTION;
+		    contextInfo.addFlag(SINGLE_STEP_EXECUTION);
 		    // need to re-analyze:
-		    super.analyze(parent, flags);
+		    super.analyze(contextInfo);
 		}
     }
     

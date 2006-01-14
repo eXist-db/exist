@@ -50,9 +50,10 @@ public abstract class CombiningExpression extends AbstractExpression {
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        left.analyze(this, flags);
-        right.analyze(this, flags);
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
+        left.analyze(contextInfo);
+        right.analyze(contextInfo);
     }
     
 	/* (non-Javadoc)

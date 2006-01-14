@@ -48,12 +48,13 @@ public class SimpleStep extends Step {
 		this.expression.setPrimaryAxis(axis);
 	}
 
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Step#analyze(org.exist.xquery.Expression)
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        expression.analyze(this, flags);
-        super.analyze(this, flags);
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
+        expression.analyze(contextInfo);
+        super.analyze(contextInfo);
     }
     
 	/* (non-Javadoc)

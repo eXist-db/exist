@@ -27,6 +27,7 @@ import java.util.List;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.analysis.Tokenizer;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.DynamicCardinalityCheck;
@@ -84,11 +85,12 @@ public class FtIndexLookup extends Function {
         steps.add(arg);
     }
     
-    public void analyze(Expression parent, int flags) throws XPathException {
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
         // call analyze for each argument
-        inPredicate = (flags & IN_PREDICATE) > 0;
+        inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         for(int i = 0; i < getArgumentCount(); i++) {
-            getArgument(i).analyze(this, flags);
+            getArgument(i).analyze(contextInfo);
         }
     }
     

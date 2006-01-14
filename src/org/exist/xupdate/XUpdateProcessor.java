@@ -49,6 +49,7 @@ import org.exist.dom.XMLUtil;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FastStringBuffer;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Constants;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
@@ -695,7 +696,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			if (treeParser.foundErrors()) {
 				throw new SAXException(treeParser.getErrorMessage());
 			}
-			expr.analyze(null, 0);
+			expr.analyze(new AnalyzeContextInfo());
 			Sequence seq = expr.eval(null, null);
 			return seq;
 		} catch (RecognitionException e) {

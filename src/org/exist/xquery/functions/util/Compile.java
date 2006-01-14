@@ -3,6 +3,7 @@ package org.exist.xquery.functions.util;
 import java.io.StringReader;
 
 import org.exist.dom.QName;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -66,7 +67,7 @@ public class Compile extends BasicFunction {
 				throw new XPathException("error found while executing expression: " +
 						astParser.getErrorMessage(), astParser.getLastException());
 			}
-			path.analyze(null, 0);
+			path.analyze(new AnalyzeContextInfo());
 		} catch (RecognitionException e) {			
 			return new StringValue(e.toString());
 		} catch (TokenStreamException e) {

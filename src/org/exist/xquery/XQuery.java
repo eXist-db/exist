@@ -112,7 +112,7 @@ public class XQuery {
             		treeParser.getLastException());
             }
             LOG.debug("Query diagnostics:\n" + ExpressionDumper.dump(expr));
-            expr.analyze(null, 0);
+            expr.analyze(new AnalyzeContextInfo());
             LOG.debug("Compilation took "  +  (System.currentTimeMillis() - start));
             return expr;
         } catch (RecognitionException e) {

@@ -71,7 +71,7 @@ public class CDATAConstructor extends NodeConstructor {
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     }
 
     /* (non-Javadoc)

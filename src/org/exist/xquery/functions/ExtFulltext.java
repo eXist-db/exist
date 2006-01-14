@@ -29,6 +29,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.analysis.Tokenizer;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.CachedResult;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
@@ -108,12 +109,13 @@ public class ExtFulltext extends Function {
 		return terms.length;
 	}
 
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Function#analyze(org.exist.xquery.Expression)
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        path.analyze(this, flags);
-        searchTerm.analyze(this, flags);
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
+        path.analyze(contextInfo);
+        searchTerm.analyze(contextInfo);
     }
     
 	public Sequence eval(

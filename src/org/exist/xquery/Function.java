@@ -309,13 +309,14 @@ public abstract class Function extends PathExpr {
 	/* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         // statically check the argument list
         checkArguments();
         // call analyze for each argument
-    	inPredicate = (flags & IN_PREDICATE) > 0;
+    	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+    	contextInfo.setParent(this);
         for(int i = 0; i < getArgumentCount(); i++) {
-            getArgument(i).analyze(this, flags);
+            getArgument(i).analyze(contextInfo);
         }
     }
     

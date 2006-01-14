@@ -24,6 +24,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
@@ -57,9 +58,9 @@ public class FunNot extends Function {
 	/* (non-Javadoc)
      * @see org.exist.xquery.Function#analyze(org.exist.xquery.Expression, int)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        super.analyze(parent, flags);
-        inWhereClause = (flags & IN_WHERE_CLAUSE) != 0;
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        super.analyze(contextInfo);
+        inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0;
     }
     
 	public int returnsType() {

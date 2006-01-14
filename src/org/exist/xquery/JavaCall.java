@@ -156,7 +156,10 @@ public class JavaCall extends Function {
 		}
 	}
 
-    public void analyze(Expression parent, int flags) throws XPathException {
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
+     */
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     }
     
 	/* (non-Javadoc)

@@ -42,6 +42,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.AbstractExpression;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -101,10 +102,12 @@ public abstract class Modification extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
 	 */
-	public void analyze(Expression parent, int flags) throws XPathException {
-		select.analyze(this, flags | IN_UPDATE);
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		contextInfo.setParent(this);
+		contextInfo.addFlag(IN_UPDATE);
+		select.analyze(contextInfo);
 		if (value != null)
-			value.analyze(this, flags | IN_UPDATE);
+			value.analyze(contextInfo);
 	}
 	
 	/**

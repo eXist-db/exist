@@ -77,6 +77,7 @@ public class CatchFunction extends Function {
 //                context.popDocumentContext();
             }
         } catch(Exception e) {
+        	LOG.debug("Caught exception in util:catch: " + e.getMessage(), e);
 //            context.popDocumentContext();
             context.getWatchDog().reset();
             for(SequenceIterator i = exceptionClasses.iterate(); i.hasNext(); ) {

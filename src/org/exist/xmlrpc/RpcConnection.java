@@ -89,6 +89,7 @@ import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
 import org.exist.validation.internal.ResourceInputStream;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
 import org.exist.xquery.PathExpr;
@@ -260,7 +261,7 @@ public class RpcConnection extends Thread {
         if (treeParser.foundErrors()) {
             throw new EXistException(treeParser.getErrorMessage());
         }
-        expr.analyze(null, 0);
+        expr.analyze(new AnalyzeContextInfo());
         return expr;
     }
     

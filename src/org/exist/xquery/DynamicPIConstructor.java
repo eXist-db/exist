@@ -58,11 +58,12 @@ public class DynamicPIConstructor extends NodeConstructor {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        name.analyze(this, flags);
-        content.analyze(this, flags);
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
+        name.analyze(contextInfo);
+        content.analyze(contextInfo);
     }
     
     /* (non-Javadoc)

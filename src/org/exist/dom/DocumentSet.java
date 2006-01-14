@@ -33,7 +33,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
-import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -251,10 +250,6 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		return hasEqualKeys(o);
 	}
 	
-	public void lock(XQueryContext context) throws LockException {
-	    lock(context.inExclusiveMode());
-	}
-	
 	public void lock(boolean exclusive) throws LockException {
 	    DocumentImpl d;
 	    Lock dlock;
@@ -268,10 +263,6 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	        else
 	            dlock.acquire(Lock.READ_LOCK);
 	    }
-	}
-	
-	public void unlock(XQueryContext context) {
-	    unlock(context.inExclusiveMode());
 	}
 	
 	public void unlock(boolean exclusive) {
