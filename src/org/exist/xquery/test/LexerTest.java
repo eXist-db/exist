@@ -16,6 +16,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
@@ -106,7 +107,7 @@ public class LexerTest extends TestCase {
 				System.err.println(treeParser.getErrorMessage());
 				return;
 			}
-			expr.analyze(null, 0);
+			expr.analyze(new AnalyzeContextInfo());
 			// execute the query
 			Sequence result = expr.eval(null, null);
 

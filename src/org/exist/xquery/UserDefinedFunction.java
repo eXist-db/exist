@@ -65,9 +65,9 @@ public class UserDefinedFunction extends Function {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.Expression, int)
+	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
 	 */
-	public void analyze(Expression parent, int flags) throws XPathException {
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		if(!inRecursion) {
 			inRecursion = true;
 			// Save the local variable stack
@@ -80,7 +80,8 @@ public class UserDefinedFunction extends Function {
 				context.declareVariableBinding(var);
 			}
 			
-			body.analyze(this, flags);
+			contextInfo.setParent(this);
+			body.analyze(contextInfo);
 			
 			// restore the local variable stack
 			context.popLocalVariables(mark);

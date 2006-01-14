@@ -22,12 +22,15 @@
 package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
+import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
 public abstract class AbstractExpression implements Expression {
 
+	private int expressionId = EXPRESSION_ID_INVALID;
+		
 	protected XQueryContext context;
 
 	protected XQueryAST astNode = null;
@@ -36,8 +39,15 @@ public abstract class AbstractExpression implements Expression {
 	
 	public AbstractExpression(XQueryContext context) {
 		this.context = context;
+		this.expressionId = context.nextExpressionId();
 	}
 
+	public int getExpressionId() {
+		SanityCheck.THROW_ASSERT(expressionId != EXPRESSION_ID_INVALID, 
+				"The expression " + toString() + " should have a unique id!");
+		return expressionId;
+	}
+	
 	public Sequence eval(Sequence contextSequence)
 		throws XPathException {
 		return eval(contextSequence, null);

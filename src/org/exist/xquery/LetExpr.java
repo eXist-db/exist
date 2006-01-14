@@ -45,11 +45,12 @@ public class LetExpr extends BindingExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
 	 */
-	public void analyze(Expression parent, int flags, OrderSpec orderBy[]) throws XPathException {
+	public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[]) throws XPathException {
         // Save the local variable stack
 		LocalVariable mark = context.markLocalVariables(false);
 		
-		inputSequence.analyze(this, flags);
+		contextInfo.setParent(this);
+		inputSequence.analyze(contextInfo);
 		
 		// Declare the iteration variable
         LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
@@ -57,16 +58,18 @@ public class LetExpr extends BindingExpression {
 		context.declareVariableBinding(inVar);
 		
 		if(whereExpr != null) {
-		    whereExpr.analyze(this, flags | IN_PREDICATE | IN_WHERE_CLAUSE);
+			AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+			newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
+		    whereExpr.analyze(newContextInfo);
 		}
 		if(returnExpr instanceof BindingExpression) {
-		    ((BindingExpression)returnExpr).analyze(this, flags, orderBy);
+		    ((BindingExpression)returnExpr).analyze(contextInfo, orderBy);
 		} else {
 			if(orderBy != null) {
 			    for(int i = 0; i < orderBy.length; i++)
-			        orderBy[i].analyze(this, flags);
+			        orderBy[i].analyze(contextInfo);
 			}
-			returnExpr.analyze(this, flags);
+			returnExpr.analyze(contextInfo);
 		}
 		
 		// restore the local variable stack

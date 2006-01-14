@@ -64,11 +64,12 @@ public class ConditionalExpression extends AbstractExpression {
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        flags &= (~IN_PREDICATE);
-        testExpr.analyze(this, flags);
-        thenExpr.analyze(this, flags);
-        elseExpr.analyze(this, flags);
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        contextInfo.setFlags(contextInfo.getFlags() & (~IN_PREDICATE));
+        contextInfo.setParent(this);
+        testExpr.analyze(contextInfo);
+        thenExpr.analyze(contextInfo);
+        elseExpr.analyze(contextInfo);
     }
     
 	/* (non-Javadoc)

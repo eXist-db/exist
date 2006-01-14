@@ -23,9 +23,11 @@
 package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeProxy;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -46,11 +48,12 @@ public class DynamicTypeCheck extends AbstractExpression {
 		this.expression = expr;
 	}
 	
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        expression.analyze(this, flags);
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
+        expression.analyze(contextInfo);
     }
     
 	/* (non-Javadoc)
@@ -62,9 +65,15 @@ public class DynamicTypeCheck extends AbstractExpression {
 		throws XPathException {
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		Item item;
+		int type;
 		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 			item = i.nextItem();
-			if(!Type.subTypeOf(item.getType(), requiredType)) {
+			type = item.getType();
+			if (type == Type.NODE &&
+					((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+				type = ((NodeProxy) item).getNode().getNodeType();
+			}
+			if(!Type.subTypeOf(type, requiredType)) {
 				throw new XPathException(expression.getASTNode(), "Type error in expression" +
 					": required type is " + Type.getTypeName(requiredType) +
 					"; got: " + Type.getTypeName(item.getType()) + ": " + item.getStringValue());

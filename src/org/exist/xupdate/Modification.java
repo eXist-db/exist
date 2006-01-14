@@ -122,7 +122,6 @@ public abstract class Modification {
 		else
 		    context = compiled.getContext();
 
-		context.setExclusiveMode(true);
 		context.setStaticallyKnownDocuments(docs);
 		declareNamespaces(context);
 		declareVariables(context);

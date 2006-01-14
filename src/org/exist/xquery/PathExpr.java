@@ -103,20 +103,21 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        inPredicate = (flags & IN_PREDICATE) > 0;
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
+        inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         for (int i = 0; i < steps.size(); i++) {
             // if this is a sequence of steps, the IN_PREDICATE flag
             // is only passed to the first step, so it has to be removed
             // for subsequent steps  
             Expression expr = (Expression) steps.get(i);
-            if ((flags & IN_PREDICATE) > 0 ) {
+            if ((contextInfo.getFlags() & IN_PREDICATE) > 0 ) {
                 if(i == 1) {
                 	//take care : predicates in predicates are not marked as such ! -pb
-                    flags = flags & (~IN_PREDICATE);
+                    contextInfo.setFlags(contextInfo.getFlags() & (~IN_PREDICATE));
                 }
-            }             
-            expr.analyze(this, flags);
+            }
+            expr.analyze(contextInfo);
         }
     }
     

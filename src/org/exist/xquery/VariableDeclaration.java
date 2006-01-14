@@ -59,10 +59,11 @@ public class VariableDeclaration extends AbstractExpression {
 		this.sequenceType = type;
 	}
 	
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
         QName qn = QName.parse(context, qname, null);
 		Module myModule = context.getModule(qn.getNamespaceURI());
 		if(myModule != null) {
@@ -78,7 +79,7 @@ public class VariableDeclaration extends AbstractExpression {
 			Variable var = new Variable(qn);
 			context.declareGlobalVariable(var);
 		}
-		expression.analyze(this, flags);
+		expression.analyze(contextInfo);
     }
     
 	/* (non-Javadoc)

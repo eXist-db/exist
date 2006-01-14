@@ -50,8 +50,9 @@ public class DynamicCardinalityCheck extends AbstractExpression {
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        expression.analyze(this, flags);
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
+        expression.analyze(contextInfo);
     }
     
 	/* (non-Javadoc)

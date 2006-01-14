@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.dom.QName;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionCall;
@@ -84,7 +85,7 @@ public class CallFunction extends Function {
             params.add(getArgument(i));
         }
         call.setArguments(params);
-        call.analyze(this, 0);
+        call.analyze(new AnalyzeContextInfo(this, 0));
         // Evaluate the function
         return call.eval(contextSequence);
     }

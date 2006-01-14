@@ -8,6 +8,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.OrderedLinkedList;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Constants;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
@@ -72,7 +73,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 			if (treeParser.foundErrors()) {
 				LOG.debug(treeParser.getErrorMessage());
 			}
-			expr.analyze(null, 0);
+			expr.analyze(new AnalyzeContextInfo());
 			for (SequenceIterator i = other.iterate(); i.hasNext();) {
 				p = (NodeProxy) i.nextItem();
 				item = new IteratorItem(broker, p, expr, docs, context);

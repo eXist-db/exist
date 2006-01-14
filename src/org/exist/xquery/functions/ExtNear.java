@@ -35,6 +35,7 @@ import org.exist.storage.NativeTextEngine;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.util.GlobToRegex;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -64,19 +65,17 @@ public class ExtNear extends ExtFulltext {
 		super(context, Constants.FULLTEXT_AND);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.xquery.functions.ExtFulltext#analyze(org.exist.xquery.Expression)
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.functions.ExtFulltext#analyze(org.exist.xquery.AnalyzeContextInfo)
 	 */
-	public void analyze(Expression parent, int flags) throws XPathException {
-		super.analyze(parent, flags);
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		super.analyze(contextInfo);
 
 		if (maxDistance != null) {
-			maxDistance.analyze(this, flags);
+			maxDistance.analyze(contextInfo);
 		}
 		if (minDistance != null) {
-			minDistance.analyze(this, flags);
+			minDistance.analyze(contextInfo);
 		}
 	}
 

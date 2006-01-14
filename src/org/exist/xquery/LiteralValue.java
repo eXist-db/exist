@@ -52,10 +52,10 @@ public class LiteralValue extends AbstractExpression {
 		this.value = value;
 	}
 	
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     }
     
 	/* (non-Javadoc)

@@ -64,11 +64,12 @@ public class ForExpr extends BindingExpression {
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
-    public void analyze(Expression parent, int flags, OrderSpec orderBy[]) throws XPathException {
+    public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[]) throws XPathException {
         // Save the local variable stack
 		LocalVariable mark = context.markLocalVariables(false);
 		
-		inputSequence.analyze(this, flags);
+		contextInfo.setParent(this);
+		inputSequence.analyze(contextInfo);
 		
 		// Declare the iteration variable
         LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
@@ -83,20 +84,26 @@ public class ForExpr extends BindingExpression {
         }
         
 		if(whereExpr != null) {
-		    whereExpr.analyze(this, flags | IN_PREDICATE | IN_WHERE_CLAUSE);
+			AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+			newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
+		    whereExpr.analyze(newContextInfo);
 		}
 		// the order by specs should be analyzed by the last binding expression
 		// in the chain to have access to all variables. So if the return expression
 		// is another binding expression, we just forward the order specs.
 		if(returnExpr instanceof BindingExpression) {
-		    ((BindingExpression)returnExpr).analyze(this, flags | SINGLE_STEP_EXECUTION, orderBy);
+			AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+			newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
+		    ((BindingExpression)returnExpr).analyze(newContextInfo, orderBy);
 		} else {
 		    // analyze the order specs
 			if(orderBy != null) {
+				AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+				newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
 			    for(int i = 0; i < orderBy.length; i++)
-			        orderBy[i].analyze(this, flags | SINGLE_STEP_EXECUTION);
+			        orderBy[i].analyze(newContextInfo);
 			}
-			returnExpr.analyze(this, flags);
+			returnExpr.analyze(contextInfo);
 		}
 		
 		// restore the local variable stack

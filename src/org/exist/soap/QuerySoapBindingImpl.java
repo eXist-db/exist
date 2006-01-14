@@ -25,6 +25,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Constants;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XQueryContext;
@@ -278,7 +279,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             }
             LOG.info("query: " + ExpressionDumper.dump(expr));
             long start = System.currentTimeMillis();
-            expr.analyze(null, 0);
+            expr.analyze(new AnalyzeContextInfo());
             Sequence seq= expr.eval(null, null);
             
             QueryResponseCollection[] collections = null;

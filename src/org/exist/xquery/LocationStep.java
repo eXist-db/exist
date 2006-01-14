@@ -133,16 +133,16 @@ public class LocationStep extends Step {
 	/* (non-Javadoc)
      * @see org.exist.xquery.Step#analyze(org.exist.xquery.Expression)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        this.parent = parent;
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        this.parent = contextInfo.getParent();
         parentDeps = parent.getDependencies();
-        if ((flags & IN_UPDATE) > 0)
+        if ((contextInfo.getFlags() & IN_UPDATE) > 0)
             inUpdate = true;
-        if((flags & SINGLE_STEP_EXECUTION) > 0) {
+        if((contextInfo.getFlags() & SINGLE_STEP_EXECUTION) > 0) {
             preload = true;
         }
         //TODO : log somewhere ?
-        super.analyze(parent, flags);
+        super.analyze(contextInfo);
     }
     
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {

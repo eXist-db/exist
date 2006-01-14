@@ -54,12 +54,13 @@ public abstract class Step extends AbstractExpression {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-    	inPredicate = (flags & IN_PREDICATE) > 0;
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+    	contextInfo.setParent(this);
         for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
-            ((Predicate) i.next()).analyze(this, flags);
+            ((Predicate) i.next()).analyze(contextInfo);
         }
     }
     

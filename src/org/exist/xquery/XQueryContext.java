@@ -22,8 +22,6 @@
  */
 package org.exist.xquery;
 
-import com.sun.xacml.ctx.RequestCtx;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
@@ -209,12 +207,11 @@ public class XQueryContext {
 	private Expression rootExpression;
 	
 	/**
-	 * Flag to indicate that the query should put an exclusive
-	 * lock on all documents involved.
-	 * 
-	 * TODO: No longer needed?
+	 * An incremental counter to count the expressions in
+	 * the current XQuery. Used during compilation to assign
+	 * a unique ID to every expression.
 	 */
-	private boolean exclusive = false;
+	private int expressionCounter = 0;
 	
 	/**
 	 * Should all documents loaded by the query be locked?
@@ -235,71 +232,6 @@ public class XQueryContext {
     
     //For holding XQuery Context variables from setXQueryContextVar() and getXQueryContextVar()
     HashMap XQueryContextVars = new HashMap();
-    
-    //set an XQuery Context variable; called by context:set-var()
-    public void setXQueryContextVar(String name, Object XQvar)
-    {
-    	XQueryContextVars.put(name, XQvar);
-    }
-    
-    //get an XQuery Context variable; called by context:get-var()
-    public Object getXQueryContextVar(String name)
-    {
-    	return(XQueryContextVars.get(name));
-    }
-    
-    //set the serializer to use for output; called by context:set-serializer()
-    public void setXQuerySerializer(String name, boolean indent, boolean omitxmldeclaration) throws XPathException
-    {
-    	Pragma pragma;
-
-    	//Has a exist:serialize pragma already been set?
-    	for(int i = 0; i < pragmas.size(); i++)
-    	{
-    		pragma = (Pragma)pragmas.get(i);
-    		if((pragma.getQName().equals("exist:serialize")) /*&& (pragma.getContents().indexOf("method") != Constants.STRING_NOT_FOUND)*/ )
-    		{
-    			//yes, so modify the content from the existing pragma
-    			String content = pragma.getContents();
-    			if(content.indexOf("method=") != Constants.STRING_NOT_FOUND)
-    			{
-    				content = content.replaceFirst("method=[^/ ]*", "method=" + name);
-    			}
-    			else
-    			{
-    				content += " method=" + name;
-    			}
-    			if(content.indexOf("indent=") != Constants.STRING_NOT_FOUND)
-    			{
-    				content = content.replaceFirst("indent=[^/ ]*", "indent=" + (indent ? "yes":"no"));
-    			}
-    			else
-    			{
-    				content += " indent" + (indent ? "yes":"no");
-    			}
-    			if(content.indexOf("omit-xml-declaration") != Constants.STRING_NOT_FOUND)
-    			{
-    				content = content.replaceFirst("omit-xml-declaration=[^/ ]*", "omit-xml-declaration=" + (omitxmldeclaration ? "yes":"no"));
-    			}
-    			else
-    			{
-    				content += " omit-xml-declaration" +  (omitxmldeclaration ? "yes":"no");
-    			}
-    			
-    			//Delete the existing serialize pragma
-    			pragmas.remove(i);
-    			
-    			//Add the new serialize pragma
-    			addPragma("exist:serialize", content);
-    			
-    			return; //done
-    		}
-    	}
-    	
-    	//no, so set a pragma for serialization
-    	addPragma("exist:serialize", "method=" + name + " indent=" + (indent ? "yes":"no") + " omit-xml-declaration=" + (omitxmldeclaration ? "yes":"no"));
-    	
-    }
     
 	protected XQueryContext() {
 		builder = new MemTreeBuilder(this);
@@ -351,6 +283,17 @@ public class XQueryContext {
 	 */
 	public Expression getRootExpression() {
 		return rootExpression;
+	}
+	
+	/**
+	 * Returns the next unique expression id. Every expression
+	 * in the XQuery is identified by a unique id. During compilation,
+	 * expressions are assigned their id by calling this method.
+	 *  
+	 * @return
+	 */
+	protected int nextExpressionId() {
+		return expressionCounter++;
 	}
 	
 	/**
@@ -1371,7 +1314,7 @@ public class XQueryContext {
         				+ astParser.getErrorMessage(),
         			astParser.getLastException());
         	}
-        	path.analyze(null, 0);
+        	path.analyze(new AnalyzeContextInfo());
         	ExternalModule modExternal = astParser.getModule();
         	if(modExternal == null)
         		throw new XPathException("source at " + location + " is not a valid module");
@@ -1441,20 +1384,6 @@ public class XQueryContext {
 					"Call to undeclared function: " + call.getQName().toString());
 			call.resolveForwardReference(func);
 		}
-	}
-	
-	/**
-	 * Called by XUpdate to tell the query engine that it is running in
-	 * exclusive mode, i.e. no other query is executed at the same time.
-	 * 
-	 * @param exclusive
-	 */
-	public void setExclusiveMode(boolean exclusive) {
-	    this.exclusive = exclusive;
-	}
-	
-	public boolean inExclusiveMode() {
-	    return exclusive;
 	}
 	
 	public void addPragma(String qnameString, String contents) throws XPathException {
@@ -1529,6 +1458,71 @@ public class XQueryContext {
 			throw new XPathException(TEMP_STORE_ERROR, e);
 		}
 	}
+    
+//	set an XQuery Context variable; called by context:set-var()
+    public void setXQueryContextVar(String name, Object XQvar)
+    {
+    	XQueryContextVars.put(name, XQvar);
+    }
+    
+    //get an XQuery Context variable; called by context:get-var()
+    public Object getXQueryContextVar(String name)
+    {
+    	return(XQueryContextVars.get(name));
+    }
+    
+    //set the serializer to use for output; called by context:set-serializer()
+    public void setXQuerySerializer(String name, boolean indent, boolean omitxmldeclaration) throws XPathException
+    {
+    	Pragma pragma;
+
+    	//Has a exist:serialize pragma already been set?
+    	for(int i = 0; i < pragmas.size(); i++)
+    	{
+    		pragma = (Pragma)pragmas.get(i);
+    		if((pragma.getQName().equals("exist:serialize")) /*&& (pragma.getContents().indexOf("method") != Constants.STRING_NOT_FOUND)*/ )
+    		{
+    			//yes, so modify the content from the existing pragma
+    			String content = pragma.getContents();
+    			if(content.indexOf("method=") != Constants.STRING_NOT_FOUND)
+    			{
+    				content = content.replaceFirst("method=[^/ ]*", "method=" + name);
+    			}
+    			else
+    			{
+    				content += " method=" + name;
+    			}
+    			if(content.indexOf("indent=") != Constants.STRING_NOT_FOUND)
+    			{
+    				content = content.replaceFirst("indent=[^/ ]*", "indent=" + (indent ? "yes":"no"));
+    			}
+    			else
+    			{
+    				content += " indent" + (indent ? "yes":"no");
+    			}
+    			if(content.indexOf("omit-xml-declaration") != Constants.STRING_NOT_FOUND)
+    			{
+    				content = content.replaceFirst("omit-xml-declaration=[^/ ]*", "omit-xml-declaration=" + (omitxmldeclaration ? "yes":"no"));
+    			}
+    			else
+    			{
+    				content += " omit-xml-declaration" +  (omitxmldeclaration ? "yes":"no");
+    			}
+    			
+    			//Delete the existing serialize pragma
+    			pragmas.remove(i);
+    			
+    			//Add the new serialize pragma
+    			addPragma("exist:serialize", content);
+    			
+    			return; //done
+    		}
+    	}
+    	
+    	//no, so set a pragma for serialization
+    	addPragma("exist:serialize", "method=" + name + " indent=" + (indent ? "yes":"no") + " omit-xml-declaration=" + (omitxmldeclaration ? "yes":"no"));
+    	
+    }
     
 	/**
 	 * Load the default prefix/namespace mappings table and set up

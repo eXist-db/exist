@@ -52,8 +52,8 @@ public class OrderSpec {
 		this.context = context;
 	}
 
-	public void analyze(Expression parent, int flags) throws XPathException {
-	    expression.analyze(parent, flags);
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+	    expression.analyze(contextInfo);
 	}
 	
 	public void setModifiers(int modifiers) {

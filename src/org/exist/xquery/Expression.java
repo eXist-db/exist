@@ -34,7 +34,7 @@ import org.exist.xquery.value.Sequence;
  * read the description there.
  */
 public interface Expression {
-	
+	 
 	// Flags to be passed to analyze:
 	
 	/**
@@ -65,18 +65,32 @@ public interface Expression {
     public final static int IN_UPDATE = 8;
     
     /**
+     * Indicates that no context id is supplied to an expression.
+     */
+    public final static int NO_CONTEXT_ID = -1;
+    
+    /**
+     * Marks an invalid expression id.
+     */
+    public final static int EXPRESSION_ID_INVALID = -1;
+    
+    /**
+     * Returns an id which uniquely identifies this expression
+     * within the compiled expression tree of the query.
+     * 
+     * @return unique id or {@link #EXPRESSION_ID_INVALID}
+     */
+    public int getExpressionId();
+    
+    /**
      * Statically analyze the expression and its subexpressions.
      * 
      * During the static analysis phase, the query engine can detect
      * unknown variables and some type errors.
      * 
-     * @param parent the parent expression which calls this method
-     * @param flags int value containing a set of flags. See the constants defined
-     * in this class.
-     * 
      * @throws XPathException
      */
-    public void analyze(Expression parent, int flags) throws XPathException;
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException;
     
 	/**
 	 * Evaluate the expression represented by this object.

@@ -68,10 +68,15 @@ public class InternalFunctionCall extends Function
 		return function.getCardinality();
 	}
 	
-	public void analyze(Expression parent, int flags) throws XPathException
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
+	 */
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException
 	{
-		function.analyze(parent, flags);
+		contextInfo.setParent(this);
+		function.analyze(contextInfo);
 	}
+	
 	public void setParent(Expression parent)
 	{
 		function.setParent(parent);

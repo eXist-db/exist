@@ -62,9 +62,10 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        qnameExpr.analyze(this, flags);
-        valueExpr.analyze(this, flags);
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
+        qnameExpr.analyze(contextInfo);
+        valueExpr.analyze(contextInfo);
     }
     
     /* (non-Javadoc)

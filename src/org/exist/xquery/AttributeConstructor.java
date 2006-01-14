@@ -70,11 +70,12 @@ public class AttributeConstructor extends NodeConstructor {
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
         for(Iterator i = contents.iterator(); i.hasNext(); ) {
 			Object next = (Object)i.next();
 			if(next instanceof Expression)
-				((Expression)next).analyze(this, flags);
+				((Expression)next).analyze(contextInfo);
 		}
     }
     

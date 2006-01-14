@@ -96,11 +96,11 @@ public abstract class BindingExpression extends AbstractExpression {
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        analyze(parent, flags, orderSpecs);
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        analyze(contextInfo, orderSpecs);
     }
     
-    public abstract void analyze(Expression parent, int flags, OrderSpec orderBy[]) throws XPathException;
+    public abstract void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[]) throws XPathException;
     
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)

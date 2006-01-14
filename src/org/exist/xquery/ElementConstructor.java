@@ -94,18 +94,19 @@ public class ElementConstructor extends NodeConstructor {
 		}
 	}
 	
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
-    public void analyze(Expression parent, int flags) throws XPathException {
-        qnameExpr.analyze(this, flags);
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
+        qnameExpr.analyze(contextInfo);
         if(attributes != null) {
 	        for(int i = 0; i < attributes.length; i++) {
-	            attributes[i].analyze(this, flags);
+	            attributes[i].analyze(contextInfo);
 	        }
         }
         if(content != null)
-            content.analyze(this, flags);
+            content.analyze(contextInfo);
     }
     
 	/* (non-Javadoc)

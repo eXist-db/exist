@@ -54,12 +54,13 @@ public class QuantifiedExpression extends BindingExpression {
     /* (non-Javadoc)
      * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
      */
-    public void analyze(Expression parent, int flags, OrderSpec orderBy[]) throws XPathException {
+    public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[]) throws XPathException {
         LocalVariable mark = context.markLocalVariables(false);
 		context.declareVariableBinding(new LocalVariable(QName.parse(context, varName, null)));
 		
-		inputSequence.analyze(this, flags);
-		returnExpr.analyze(this, flags);
+		contextInfo.setParent(this);
+		inputSequence.analyze(contextInfo);
+		returnExpr.analyze(contextInfo);
 		
 		context.popLocalVariables(mark);
     }

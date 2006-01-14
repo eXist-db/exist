@@ -83,11 +83,12 @@ public class FunctionCall extends Function {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.Expression, int)
+	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
 	 */
-	public void analyze(Expression parent, int flags) throws XPathException {
-		super.analyze(parent, flags);
-		expression.analyze(this, flags);
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		contextInfo.setParent(this);
+		super.analyze(contextInfo);
+		expression.analyze(contextInfo);
 	}
 	
     /**
