@@ -195,6 +195,8 @@ public class Predicate extends PathExpr {
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
 		NodeSet contextSet = contextSequence.toNodeSet();
 		boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
+		if (!contextIsVirtual)
+			contextSet.setSelfAsContext(getExpressionId());
 		NodeSet nodes =	super.eval(contextSet, null).toNodeSet();
 		
 		/* if the predicate expression returns results from the cache
@@ -258,8 +260,7 @@ public class Predicate extends PathExpr {
             case Constants.DESCENDANT_AXIS:
             case Constants.DESCENDANT_SELF_AXIS:
             case Constants.DESCENDANT_ATTRIBUTE_AXIS: 
-            {                
-                outerSequence.clearContext();
+            {
 				Sequence ancestors = contextSet.selectAncestorDescendant(outerSequence.toNodeSet(),
 						NodeSet.ANCESTOR, true, getExpressionId());
 				ArraySet temp = new ArraySet(100);
@@ -347,7 +348,7 @@ public class Predicate extends PathExpr {
 		} else {   
             //TODO : reconsider. If the fallback is confirmed, log it to the profiler
             
-            /*
+            
             ValueSequence result = new ValueSequence();
 			Sequence innerSeq = inner.eval(contextSequence);			
 			for(SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
@@ -358,9 +359,9 @@ public class Predicate extends PathExpr {
 					result.add(contextSequence.itemAt(pos));                            
 			}
 			return result;
-            */
+            
         
-            return evalBoolean(contextSequence, inner);
+//            return evalBoolean(contextSequence, inner);
 		}
 	}
 	

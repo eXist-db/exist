@@ -328,6 +328,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		useSelfAsContext = true;
 	}
 
+	public void setContextId(int contextId) {
+		this.contextId = contextId;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#hasIndex()
 	 */

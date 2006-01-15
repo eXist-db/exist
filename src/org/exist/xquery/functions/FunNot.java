@@ -116,9 +116,9 @@ public class FunNot extends Function {
     					current.addContextNode(getExpressionId(), current);
     				}
     			}
-                
+
     			// evaluate argument expression
-    			Sequence argSeq = arg.eval(contextSequence, contextItem);
+    			Sequence argSeq = arg.eval(result);
     			NodeSet argSet = argSeq.toNodeSet().getContextNodes(getExpressionId());
     			result = ((NodeSet)result).except(argSet);
             }
