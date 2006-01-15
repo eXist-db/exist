@@ -29,6 +29,7 @@ import org.exist.storage.StorageAddress;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
@@ -414,21 +415,21 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * context nodes returned by the filter expression and compare them to its context
 	 * node set.
 	 */
-    public void addContextNode(NodeValue node) {
+    public void addContextNode(int contextId, NodeValue node) {
         if (node.getImplementationType() != NodeValue.PERSISTENT_NODE)
             return;
         NodeProxy contextNode = (NodeProxy) node;
         if (context == null) {
-            context = new ContextItem(contextNode);
+            context = new ContextItem(contextId, contextNode);
             return;
         }
         ContextItem next = context;
         while (next != null) {
-            if (next.getNode().gid == contextNode.gid)
-                //TODO : why break here ? What about nodes that are context for themselves ? -pb 
+            if (contextId == next.getContextId() && next.getNode().gid == contextNode.gid )
+                // Ignore duplicate context nodes
                 break;
             if (next.getNextDirect() == null) {
-                next.setNextContextItem(new ContextItem(contextNode));
+                next.setNextContextItem(new ContextItem(contextId, contextNode));
                 break;
             }
             next = next.getNextDirect();
@@ -647,8 +648,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#setSelfAsContext()
      */
-    public void setSelfAsContext() {
-        addContextNode(this);
+    public void setSelfAsContext(int contextId) {
+        addContextNode(contextId, this);
     }
    
     
@@ -822,7 +823,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#getContextNodes(boolean)
      */
-    public NodeSet getContextNodes(boolean rememberContext) {
+    public NodeSet getContextNodes(int contextId) {
         ExtArrayNodeSet result = new ExtArrayNodeSet();
         ContextItem contextNode = getContext();
         while (contextNode != null) {
@@ -830,8 +831,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             p.addMatches(this);
             if (!result.contains(p)) {
                 //TODO : why isn't "this" involved here ? -pb
-                if (rememberContext)
-                    p.addContextNode(p);
+                if (contextId != Expression.NO_CONTEXT_ID)
+                    p.addContextNode(contextId, p);
                 result.add(p);
             }
             contextNode = contextNode.getNextDirect();
@@ -936,27 +937,27 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#getParents(boolean)
      */    
-    public NodeSet getParents(boolean rememberContext) {        
+    public NodeSet getParents(int contextId) {        
         long pid = NodeSetHelper.getParentId(doc, gid);
         if (pid == DOCUMENT_NODE_GID) 
             return NodeSet.EMPTY_SET;
         NodeProxy parent = new NodeProxy(doc, pid, Node.ELEMENT_NODE);
-        if (rememberContext)
-            parent.addContextNode(this);
+        if (contextId != Expression.NO_CONTEXT_ID)
+            parent.addContextNode(contextId, this);
         else
             parent.copyContext(this);
         return parent;
     }
     
-    public NodeSet getAncestors(boolean rememberContext, boolean includeSelf) {        
+    public NodeSet getAncestors(int contextId, boolean includeSelf) {        
         NodeSet ancestors = new ExtArrayNodeSet();
         if (includeSelf)
             ancestors.add(this);        
         long pid = gid;        
         while((pid = NodeSetHelper.getParentId(getDocument(), pid)) > 0) {
             NodeProxy parent = new NodeProxy(getDocument(), pid, Node.ELEMENT_NODE);
-            if (rememberContext)
-                parent.addContextNode(this);
+            if (contextId != Expression.NO_CONTEXT_ID)
+                parent.addContextNode(contextId, this);
             else
                 parent.copyContext(this);
             ancestors.add(parent);
@@ -968,14 +969,14 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @see org.exist.dom.NodeSet#selectParentChild(org.exist.dom.NodeSet, int)
      */
     public NodeSet selectParentChild(NodeSet al, int mode) {
-        return selectParentChild(al, mode, false);
+        return selectParentChild(al, mode, Expression.NO_CONTEXT_ID);
     }
     
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#selectParentChild(org.exist.dom.NodeSet, int, boolean)
      */
-    public NodeSet selectParentChild(NodeSet al, int mode, boolean rememberContext) {
-        return NodeSetHelper.selectParentChild(this, al, mode, rememberContext);
+    public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
+        return NodeSetHelper.selectParentChild(this, al, mode, contextId);
         
         /*
         NodeProxy parent = al.parentWithChild(this, true, false,	UNKNOWN_NODE_LEVEL);
@@ -1003,28 +1004,31 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     }
     
     /* (non-Javadoc)
-     * @see org.exist.dom.NodeSet#selectAncestors(org.exist.dom.NodeSet, boolean, boolean)
+     * @see org.exist.dom.NodeSet#selectAncestors(org.exist.dom.NodeSet, boolean, int)
      */
-    public NodeSet selectAncestors(NodeSet al, boolean includeSelf, boolean rememberContext) {
-        return NodeSetHelper.selectAncestors(this, al, includeSelf, rememberContext);
+    public NodeSet selectAncestors(NodeSet al, boolean includeSelf, int contextId) {
+        return NodeSetHelper.selectAncestors(this, al, includeSelf, contextId);
     }    
     
     /* (non-Javadoc)
-     * @see org.exist.dom.NodeSet#selectSiblings(org.exist.dom.NodeSet, int)
+     * @see org.exist.dom.NodeSet#selectPrecedingSiblings(org.exist.dom.NodeSet, int)
      */
-    public NodeSet selectPrecedingSiblings(NodeSet siblings, boolean rememberContext) {
-        return NodeSetHelper.selectPrecedingSiblings(this, siblings, rememberContext);
+    public NodeSet selectPrecedingSiblings(NodeSet siblings, int contextId) {
+        return NodeSetHelper.selectPrecedingSiblings(this, siblings, contextId);
     }
     
-    public NodeSet selectFollowingSiblings(NodeSet siblings, boolean rememberContext) {
-        return NodeSetHelper.selectFollowingSiblings(this, siblings, rememberContext);
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#selectFollowingSiblings(org.exist.dom.NodeSet, int)
+     */
+    public NodeSet selectFollowingSiblings(NodeSet siblings, int contextId) {
+        return NodeSetHelper.selectFollowingSiblings(this, siblings, contextId);
     }    
     
     /* (non-Javadoc)
-     * @see org.exist.dom.NodeSet#selectAncestorDescendant(org.exist.dom.NodeSet, int, boolean, boolean)
+     * @see org.exist.dom.NodeSet#selectAncestorDescendant(org.exist.dom.NodeSet, int, boolean, int)
      */
-    public NodeSet selectAncestorDescendant(NodeSet al, int mode, boolean includeSelf, boolean rememberContext) {
-        return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, rememberContext);
+    public NodeSet selectAncestorDescendant(NodeSet al, int mode, boolean includeSelf, int contextId) {
+        return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
     }
     
     /* (non-Javadoc)
@@ -1038,7 +1042,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         return NodeSetHelper.selectFollowing(this, following);
     }    
     
-    public NodeSet directSelectAttribute(QName qname, boolean rememberContext) {
+    public NodeSet directSelectAttribute(QName qname, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
             return NodeSet.EMPTY_SET;
         NodeImpl node = (NodeImpl) getNode();
@@ -1049,8 +1053,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         if (attr == null)
             return NodeSet.EMPTY_SET;
         NodeProxy child = new NodeProxy(doc, attr.getGID(), Node.ATTRIBUTE_NODE, attr.getInternalAddress());
-        if (rememberContext)
-            child.addContextNode(this);
+        if (Expression.NO_CONTEXT_ID != contextId)
+            child.addContextNode(contextId, this);
         else
             child.copyContext(this);
         return child;

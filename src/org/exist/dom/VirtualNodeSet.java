@@ -24,6 +24,7 @@ package org.exist.dom;
 import java.util.Iterator;
 
 import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
@@ -55,8 +56,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	protected boolean realSetIsComplete = false;
 	protected boolean inPredicate = false;
 	protected boolean useSelfAsContext = false;
+	protected int contextId = Expression.NO_CONTEXT_ID;
 
-	public VirtualNodeSet(int axis, NodeTest test, NodeSet context) {
+	public VirtualNodeSet(int axis, NodeTest test, int contextId, NodeSet context) {
 		this.axis = axis;
 		this.test = test;
 		this.context = context;
@@ -119,9 +121,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				if (parent != null) {
 					node.copyContext(parent);
 					if (useSelfAsContext && inPredicate) {
-						node.addContextNode(node);
+						node.addContextNode(contextId, node);
 					} else if (inPredicate)
-						node.addContextNode(parent);
+						node.addContextNode(contextId, parent);
 					return node;
 				}
 			} else
@@ -151,9 +153,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
 			}
 			node.copyContext(parent);
 			if (useSelfAsContext && inPredicate) {
-				node.addContextNode(node);
+				node.addContextNode(contextId, node);
 			} else if (inPredicate) {
-				node.addContextNode(parent);
+				node.addContextNode(contextId, parent);
 			}
 			// Timo Boehme: we return the ancestor which is child of context			
 			return node;		
@@ -228,7 +230,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
     					// Certainly there is some refactoring here ...
     					docElemProxy.copyContext(docElemProxy);
 						if (useSelfAsContext && inPredicate) {
-							docElemProxy.addContextNode(docElemProxy);
+							docElemProxy.addContextNode(contextId, docElemProxy);
 						}
     				}
     				if (node.getNodeType() == Node.ELEMENT_NODE &&
@@ -247,7 +249,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 					if (axis == Constants.SELF_AXIS || axis == Constants.ANCESTOR_SELF_AXIS || 
 							axis == Constants.DESCENDANT_SELF_AXIS) {				
 						if(inPredicate)
-							proxy.addContextNode(proxy);
+							proxy.addContextNode(contextId, proxy);
 						result.add(proxy);
 					}
 				} 
@@ -291,9 +293,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
 						result.add(p);
 						p.copyContext(contextNode);
 						if (useSelfAsContext && inPredicate) {
-							p.addContextNode(p);
+							p.addContextNode(contextId, p);
 						} else if (inPredicate)
-							p.addContextNode(contextNode);
+							p.addContextNode(contextId, contextNode);
 					}
 				}
 				addChildren(contextNode, result, child, iter, recursions + 1);

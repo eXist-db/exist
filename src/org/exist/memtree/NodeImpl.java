@@ -171,7 +171,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 		return document.getNode(next);
 	}
 
-    public void addContextNode(NodeValue node) {
+    public void addContextNode(int contextId, NodeValue node) {
     }
     
 	/* (non-Javadoc)
@@ -630,9 +630,9 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#setSelfAsContext()
+	 * @see org.exist.xquery.value.Sequence#setSelfAsContext(int)
 	 */
-	public void setSelfAsContext() {
+	public void setSelfAsContext(int contextId) {
 	}
 	
 	/* (non-Javadoc)

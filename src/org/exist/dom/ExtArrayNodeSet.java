@@ -28,6 +28,7 @@ import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
 import org.exist.util.Range;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -354,7 +355,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         part.getRange(result, lower, upper);
     }
 
-    protected NodeSet hasChildrenInSet(NodeSet al, int mode, boolean rememberContext) {
+    protected NodeSet hasChildrenInSet(NodeSet al, int mode, int contextId) {
     	NodeSet result = new ExtArrayNodeSet();
 		NodeProxy node;
 		Part part;
@@ -362,7 +363,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 			node = (NodeProxy) i.next();
 			part = getPart(node.getDocument(), false, 0);
 	        if (part != null)
-	        	part.getChildrenInSet(result, node, mode, rememberContext);
+	        	part.getChildrenInSet(result, node, mode, contextId);
 		}
 		return result;
     }
@@ -410,15 +411,15 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * 
      * @see org.exist.xquery.value.AbstractSequence#setSelfAsContext()
      */
-    public void setSelfAsContext() {
+    public void setSelfAsContext(int contextId) {
         for (int i = 0; i < partCount; i++) {
-            parts[i].setSelfAsContext();
+            parts[i].setSelfAsContext(contextId);
         }
     }
 
-    public NodeSet selectParentChild(NodeSet al, int mode, boolean rememberContext) {
+    public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
         sort();
-        return super.selectParentChild(al, mode, rememberContext);
+        return super.selectParentChild(al, mode, contextId);
     }
     
     
@@ -426,33 +427,33 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * @see org.exist.dom.AbstractNodeSet#selectAncestorDescendant(org.exist.dom.NodeSet, int, boolean, boolean)
      */
     public NodeSet selectAncestorDescendant(NodeSet al, int mode,
-            boolean includeSelf, boolean rememberContext) {
+            boolean includeSelf, int contextId) {
         sort();
         return super.selectAncestorDescendant(al, mode, includeSelf,
-                rememberContext);
+                contextId);
     }
     
     
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#selectSiblings(org.exist.dom.NodeSet, int)
      */
-    public NodeSet selectPrecedingSiblings(NodeSet siblings, boolean rememberContext) {
+    public NodeSet selectPrecedingSiblings(NodeSet siblings, int contextId) {
         sort();
-        return super.selectPrecedingSiblings(siblings, rememberContext);
+        return super.selectPrecedingSiblings(siblings, contextId);
     }
     
-    public NodeSet selectFollowingSiblings(NodeSet siblings, boolean rememberContext) {
+    public NodeSet selectFollowingSiblings(NodeSet siblings, int contextId) {
         sort();
-        return super.selectPrecedingSiblings(siblings, rememberContext);
+        return super.selectPrecedingSiblings(siblings, contextId);
     }    
     
     
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#selectAncestors(org.exist.dom.NodeSet, boolean, boolean)
      */
-    public NodeSet selectAncestors(NodeSet al, boolean includeSelf, boolean rememberContext) {
+    public NodeSet selectAncestors(NodeSet al, boolean includeSelf, int contextId) {
         sort();
-        return super.selectAncestors(al, includeSelf, rememberContext);
+        return super.selectAncestors(al, includeSelf, contextId);
     }
     
     public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf, 
@@ -623,7 +624,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
          * @param rememberContext
          * @return
          */
-        NodeSet getChildrenInSet(NodeSet result, NodeProxy parent, int mode, boolean rememberContext) {
+        NodeSet getChildrenInSet(NodeSet result, NodeProxy parent, int mode, int contextId) {
             // get the range of node ids reserved for children of the parent
             // node
             Range range = NodeSetHelper.getChildRange(parent.getDocument(), parent.getGID());
@@ -652,16 +653,16 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             for (int i = mid; i < length && array[i].getGID() <= range.getEnd(); i++) {
                 switch (mode) {
                     case NodeSet.DESCENDANT :
-                        if (rememberContext)
-                            array[i].addContextNode(parent);
+                        if (Expression.NO_CONTEXT_ID != contextId)
+                            array[i].addContextNode(contextId, parent);
                         else
                             array[i].copyContext(parent);
                         array[i].addMatches(parent);
                         result.add(array[i], range.getDistance());
                         break;
                     case NodeSet.ANCESTOR :
-                        if (rememberContext)
-                            parent.addContextNode(array[i]);
+                        if (Expression.NO_CONTEXT_ID != contextId)
+                            parent.addContextNode(contextId, array[i]);
                         else
                             parent.copyContext(array[i]);
                         parent.addMatches(array[i]);
@@ -766,9 +767,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 		    }
         }
         
-        void setSelfAsContext() {
+        void setSelfAsContext(int contextId) {
             for (int i = 0; i < length; i++) {
-                array[i].addContextNode(array[i]);
+                array[i].addContextNode(contextId, array[i]);
             }
         }
     }

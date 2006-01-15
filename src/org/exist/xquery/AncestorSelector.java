@@ -29,9 +29,9 @@ public class AncestorSelector implements NodeSelector {
 
     private NodeSet ancestors;
     
-    public AncestorSelector(NodeSet descendants, boolean rememberContext, boolean includeSelf) {
+    public AncestorSelector(NodeSet descendants, int contextId, boolean includeSelf) {
         super();
-        ancestors = descendants.getAncestors(rememberContext, includeSelf);        
+        ancestors = descendants.getAncestors(contextId, includeSelf);        
     }
 
     public NodeProxy match(DocumentImpl doc, long gid) {            

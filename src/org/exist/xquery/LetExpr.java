@@ -129,7 +129,7 @@ public class LetExpr extends BindingExpression {
         //  PreorderedValueSequence applies the order specs to all items
         // in one single processing step
         if(fastOrderBy) {
-            in = new PreorderedValueSequence(orderSpecs, in.toNodeSet());
+            in = new PreorderedValueSequence(orderSpecs, in.toNodeSet(), getExpressionId());
         }
 
         // Otherwise, if there's an order by clause, wrap the result into

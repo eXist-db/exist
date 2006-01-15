@@ -219,7 +219,7 @@ public abstract class BindingExpression extends AbstractExpression {
 		}
 	}
 	
-	protected final static void setContext(Sequence seq) {
+	protected final static void setContext(int contextId, Sequence seq) {
 		if (seq instanceof VirtualNodeSet) {
 			((VirtualNodeSet)seq).setSelfIsContext();
 			((VirtualNodeSet)seq).setInPredicate(true);
@@ -228,7 +228,7 @@ public abstract class BindingExpression extends AbstractExpression {
 			for (SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
 				next = i.nextItem();
 				if (next instanceof NodeProxy)
-					 ((NodeProxy) next).addContextNode((NodeProxy) next);
+					 ((NodeProxy) next).addContextNode(contextId, (NodeProxy) next);
 			}
 		}
 	}

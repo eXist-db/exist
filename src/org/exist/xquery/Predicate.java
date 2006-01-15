@@ -74,6 +74,7 @@ public class Predicate extends PathExpr {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.addFlag(IN_PREDICATE); // set flag to signal subexpression that we are in a predicate
         contextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
+        contextInfo.setContextId(getExpressionId());
         Expression inner = getExpression(0);
         if(inner == null)
             return;
@@ -220,18 +221,15 @@ public class Predicate extends PathExpr {
                         currentNode.getGID() + " !");
 			}
            //TODO : review to consider transverse context
-            int count = 0;
-			while (contextItem != null) { 
-                NodeProxy next = contextItem.getNode();
-				if(contextIsVirtual || contextSet.contains(next)) {
-                    //if (count ==  contextMark) {    
-                        next.addMatches(currentNode);
-                        result.add(next, sizeHint);
-                        //break;
-                    //}                     
+			while (contextItem != null) {
+				if (contextItem.getContextId() == getExpressionId()) {
+	                NodeProxy next = contextItem.getNode();
+					if(contextIsVirtual || contextSet.contains(next)) {    
+						next.addMatches(currentNode);
+						result.add(next, sizeHint);
+					}
 				}
-                contextItem = contextItem.getNextDirect();
-                count++;
+				contextItem = contextItem.getNextDirect();
 			}
 		}
         
@@ -263,14 +261,15 @@ public class Predicate extends PathExpr {
             {                
                 outerSequence.clearContext();
 				Sequence ancestors = contextSet.selectAncestorDescendant(outerSequence.toNodeSet(),
-						NodeSet.ANCESTOR, true, true);
+						NodeSet.ANCESTOR, true, getExpressionId());
 				ArraySet temp = new ArraySet(100);
 				for(SequenceIterator i = ancestors.iterate(); i.hasNext(); ) {					
 				    NodeProxy p = (NodeProxy)i.nextItem();
 				    ContextItem contextNode = p.getContext();
 				    temp.reset();
 				    while (contextNode != null) {
-				    	temp.add(contextNode.getNode());
+				    	if (contextNode.getContextId() == getExpressionId())
+				    		temp.add(contextNode.getNode());
 				    	contextNode = contextNode.getNextDirect();
 				    }
                     //TODO : understand why we sort here...
@@ -296,25 +295,25 @@ public class Predicate extends PathExpr {
                     boolean reverseAxis = true;
                     switch(mode) {
                     case Constants.ANCESTOR_AXIS:                            
-                        temp = contextSet.selectAncestors(p, false, false);
+                        temp = contextSet.selectAncestors(p, false, Expression.NO_CONTEXT_ID);
                         break;
                     case Constants.ANCESTOR_SELF_AXIS:
-                       temp = contextSet.selectAncestors(p, true, false);
+                       temp = contextSet.selectAncestors(p, true, Expression.NO_CONTEXT_ID);
                         break;
                     case Constants.PARENT_AXIS:
                         //TODO : understand why the contextSet is not involved here
                         //NodeProxy.getParent returns a *theoretical* parent 
                         //which is *not* guaranteed to be in the context set !
-                        temp = p.getParents(false);
+                        temp = p.getParents(Expression.NO_CONTEXT_ID);
                         break;                            
                     case Constants.PRECEDING_AXIS:
                         temp = contextSet.selectPreceding(p);
                         break;
                     case Constants.PRECEDING_SIBLING_AXIS:
-                        temp = contextSet.selectPrecedingSiblings(p, true);
+                        temp = contextSet.selectPrecedingSiblings(p, getExpressionId());
                         break;
                     case Constants.FOLLOWING_SIBLING_AXIS:
-                        temp = contextSet.selectFollowingSiblings(p, true);
+                        temp = contextSet.selectFollowingSiblings(p, getExpressionId());
                         reverseAxis = false;
                         break;    
                     case Constants.FOLLOWING_AXIS:

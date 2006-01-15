@@ -25,6 +25,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.exist.util.Range;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AbstractSequence;
 import org.exist.xquery.value.Item;
@@ -234,7 +235,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param rememberContext
 	 * @return
 	 */
-	protected NodeSet hasChildrenInSet(NodeSet al, int mode, boolean rememberContext) {
+	protected NodeSet hasChildrenInSet(NodeSet al, int mode, int contextId) {
 		NodeSet result = new ExtArrayNodeSet();		
 		for (Iterator i = al.iterator(); i.hasNext(); ) {
             NodeProxy node = (NodeProxy) i.next();
@@ -258,7 +259,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public NodeSet selectParentChild(NodeSet al, int mode) {
-		return selectParentChild(al, mode, false);
+		return selectParentChild(al, mode, Expression.NO_CONTEXT_ID);
 	}
 
 	/**
@@ -272,18 +273,19 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 *  
 	 * @param al a node set containing potential parent nodes
 	 * @param mode selection mode
-	 * @param rememberContext if true, add the matching nodes to the context node
-	 * list of each returned node (this is used to track matches for predicate evaluation)
+	 * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
 	 * @return
 	 */
-	public NodeSet selectParentChild(NodeSet al, int mode, boolean rememberContext) {
+	public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
 		if (!(al instanceof VirtualNodeSet)) {
 		    if(al.getLength() < 10)
-		        return hasChildrenInSet(al, mode, rememberContext);
+		        return hasChildrenInSet(al, mode, contextId);
 		    else
-		        return quickSelectParentChild(al, mode, rememberContext);
+		        return quickSelectParentChild(al, mode, contextId);
 		}
-		return NodeSetHelper.selectParentChild(this, al, mode, rememberContext);
+		return NodeSetHelper.selectParentChild(this, al, mode, contextId);
 	}
 
 	/**
@@ -299,16 +301,17 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param mode selection mode
 	 * @param includeSelf if true, check if the ancestor node itself is contained in
 	 * the set of descendant nodes (descendant-or-self axis)
-	 * @param rememberContext if true, add the matching nodes to the context node
-	 * list of each returned node (this is used to track matches for predicate evaluation)
+	 * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
 	 * 
 	 * @return
 	 */
-	public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, boolean rememberContext) {
-		return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, rememberContext);
+	public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId) {
+		return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
 	}
 	
-	private NodeSet quickSelectParentChild(NodeSet al, int mode, boolean rememberContext) {
+	private NodeSet quickSelectParentChild(NodeSet al, int mode, int contextId) {
 	    final NodeSet result = new ExtArrayNodeSet();
 		final Iterator ia = al.iterator();
 		final Iterator ib = iterator();
@@ -340,14 +343,14 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 //				System.out.println("comparing " + pa + " -> " + pb);
 				if(pa == pb) {
 				    if(mode == NodeSet.DESCENDANT) {
-				        if (rememberContext)
-				            nb.addContextNode(na);
+				        if (Expression.NO_CONTEXT_ID != contextId)
+				            nb.addContextNode(contextId, na);
 				        else
 				            nb.copyContext(na);
 				        result.add(nb);
 				    } else {
-				        if (rememberContext)
-				            na.addContextNode(nb);
+				        if (Expression.NO_CONTEXT_ID != contextId)
+				            na.addContextNode(contextId, nb);
 				        else
 				            na.copyContext(nb);
 				        result.add(na);
@@ -384,8 +387,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * list of each returned node (this is used to track matches for predicate evaluation)
 	 * @return
 	 */
-	public NodeSet selectAncestors(NodeSet dl, boolean includeSelf,	boolean rememberContext) {
-		return NodeSetHelper.selectAncestors(this, dl, includeSelf, rememberContext);
+	public NodeSet selectAncestors(NodeSet dl, boolean includeSelf, int contextId) {
+		return NodeSetHelper.selectAncestors(this, dl, includeSelf, contextId);
 	}
 
 	public NodeSet selectFollowing(NodeSet fl) throws XPathException {
@@ -404,19 +407,21 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * preceding nodes.
 	 * 
 	 * @param siblings a node set containing potential siblings
-	 * @param mode either FOLLOWING or PRECEDING
+	 * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
 	 * @return
 	 */
-    public NodeSet selectPrecedingSiblings(NodeSet siblings, boolean rememberContext) {
-        return NodeSetHelper.selectPrecedingSiblings(this, siblings, rememberContext);
+    public NodeSet selectPrecedingSiblings(NodeSet siblings, int contextId) {
+        return NodeSetHelper.selectPrecedingSiblings(this, siblings, contextId);
     }
     
-    public NodeSet selectFollowingSiblings(NodeSet siblings, boolean rememberContext) {
-        return NodeSetHelper.selectFollowingSiblings(this, siblings, rememberContext);
+    public NodeSet selectFollowingSiblings(NodeSet siblings, int contextId) {
+        return NodeSetHelper.selectFollowingSiblings(this, siblings, contextId);
     }    
 
-    public NodeSet directSelectAttribute(QName qname, boolean rememberContext) {
-        return NodeSetHelper.directSelectAttributes(this, qname, rememberContext);
+    public NodeSet directSelectAttribute(QName qname, int contextId) {
+        return NodeSetHelper.directSelectAttributes(this, qname, contextId);
     }
     
 	/**
@@ -498,7 +503,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * current set.
 	 * @return
 	 */
-	public NodeSet getParents(boolean rememberContext) {
+	public NodeSet getParents(int contextId) {
 		NodeSet parents = new ExtArrayNodeSet();		 
 		NodeProxy parent = null;
 		for (Iterator i = iterator(); i.hasNext();) {
@@ -509,8 +514,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                     !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && current.getDocument().getCollection().isTempCollection())) {                
 				if (parent == null || parent.getDocument().getDocId() != current.getDocument().getDocId() || parentID != parent.getGID())                 
                     parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
-				if (rememberContext)
-					parent.addContextNode(current);
+				if (Expression.NO_CONTEXT_ID != contextId)
+					parent.addContextNode(contextId, current);
 				else
 					parent.copyContext(current);
                 parents.add(parent);
@@ -519,13 +524,13 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return parents;
 	}
 
-    public NodeSet getAncestors(boolean rememberContext, boolean includeSelf) {
+    public NodeSet getAncestors(int contextId, boolean includeSelf) {
         NodeSet ancestors = new ExtArrayNodeSet();
         for (Iterator i = iterator(); i.hasNext();) {
             NodeProxy current = (NodeProxy) i.next();
             if (includeSelf) {
-            	if (rememberContext)
-                    current.addContextNode(current);
+            	if (Expression.NO_CONTEXT_ID != contextId)
+                    current.addContextNode(contextId, current);
                 ancestors.add(current);
             }
             long parentID = NodeSetHelper.getParentId(current.getDocument(), current.getGID());            
@@ -536,8 +541,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                 	NodeProxy parent = ancestors.get(current.getDocument(), parentID);
                 	if (parent == null)
                 		parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
-                    if (rememberContext)
-                        parent.addContextNode(current);
+                    if (Expression.NO_CONTEXT_ID != contextId)
+                        parent.addContextNode(contextId, current);
                     else
                         parent.copyContext(current);
                     ancestors.add(parent);
@@ -662,8 +667,16 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return result;
 	}
 
-    //TOUNDERSTAND : what is this method for ? -pb
-	public NodeSet getContextNodes(boolean rememberContext) {
+	/**
+	 * Returns all context nodes associated with the nodes in
+	 * this node set.
+	 *  
+	 * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
+	 * @return
+	 */
+	public NodeSet getContextNodes(int contextId) {
 		NodeProxy current, context;
 		ContextItem contextNode;
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
@@ -672,16 +685,18 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			current = (NodeProxy) i.next();
 			contextNode = current.getContext();
 			while (contextNode != null) {
-				context = contextNode.getNode();
-				context.addMatches(current);
-				if (!result.contains(context)) {
-					if (rememberContext)
-						context.addContextNode(context);
-					if(lastDoc != null && lastDoc.getDocId() != context.getDocument().getDocId()) {
-						lastDoc = context.getDocument();
-						result.add(context, getSizeHint(lastDoc));
-					} else
-						result.add(context);
+				if (contextNode.getContextId() == contextId) {
+					context = contextNode.getNode();
+					context.addMatches(current);
+					if (!result.contains(context)) {
+						if (Expression.NO_CONTEXT_ID != contextId)
+							context.addContextNode(contextId, context);
+						if(lastDoc != null && lastDoc.getDocId() != context.getDocument().getDocId()) {
+							lastDoc = context.getDocument();
+							result.add(context, getSizeHint(lastDoc));
+						} else
+							result.add(context);
+					}
 				}
 				contextNode = contextNode.getNextDirect();
 			}

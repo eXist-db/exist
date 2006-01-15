@@ -65,7 +65,7 @@ public class LocationStep extends Step {
 	protected int parentDeps = Dependency.UNKNOWN_DEPENDENCY;
 	protected boolean preload = false;
 	protected boolean inUpdate = false;
-    
+	
     //Cache for the current NodeTest type 
     private Integer nodeTestType = null;
     
@@ -135,6 +135,7 @@ public class LocationStep extends Step {
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         this.parent = contextInfo.getParent();
+        
         parentDeps = parent.getDependencies();
         if ((contextInfo.getFlags() & IN_UPDATE) > 0)
             inUpdate = true;
@@ -272,7 +273,7 @@ public class LocationStep extends Step {
             if (nodeTestType == null)
                 nodeTestType = new Integer(test.getType());   
 			if (Type.subTypeOf(nodeTestType.intValue(), Type.NODE)) {
-				if (inPredicate) {
+				if (Expression.NO_CONTEXT_ID != contextId) {
 					if (contextSet instanceof VirtualNodeSet) {
 						((VirtualNodeSet) contextSet).setInPredicate(true);
 						((VirtualNodeSet) contextSet).setSelfIsContext();                     
@@ -281,29 +282,19 @@ public class LocationStep extends Step {
 						for (Iterator i = contextSet.iterator(); i.hasNext();) {
 							p = (NodeProxy) i.next();
 							if (test.matches(p))
-								p.addContextNode(p); 
+								p.addContextNode(contextId, p); 
 						}
 					}
 				}
 				return contextSet;
 			} else {
-//                NodeSet result = new ExtArrayNodeSet();
-//                NodeProxy p;
-//                for (Iterator i = contextSet.iterator(); i.hasNext(); ) {
-//                    p = (NodeProxy) i.next();
-//                    if (test.matches(p)) {
-//                        result.add(p);
-//                        p.addContextNode(p);
-//                    }
-//                }
-//                return result;
-				VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
-                vset.setInPredicate(inPredicate);                
+				VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId, contextSet);
+                vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 				return vset;
 			}
 		} else {            
 			DocumentSet docs = getDocumentSet(contextSet);
-		    NodeSelector selector = new SelfSelector(contextSet, inPredicate);
+		    NodeSelector selector = new SelfSelector(contextSet, contextId);
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
@@ -320,8 +311,8 @@ public class LocationStep extends Step {
 	
 	protected NodeSet getAttributes(XQueryContext context, NodeSet contextSet) {		
 		if (test.isWildcardTest()) {
-            NodeSet result = new VirtualNodeSet(axis, test, contextSet);
-			((VirtualNodeSet) result).setInPredicate(inPredicate);           
+            NodeSet result = new VirtualNodeSet(axis, test, contextId, contextSet);
+			((VirtualNodeSet) result).setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return result;
 		// if there's just a single known node in the context, it is faster
 	    // do directly search for the attribute in the parent node.
@@ -333,7 +324,7 @@ public class LocationStep extends Step {
                         "OPTIMIZATION", "direct attribute selection");
             NodeProxy proxy = contextSet.get(0);
             if (proxy != null && proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
-                return contextSet.directSelectAttribute(test.getName(), inPredicate);          
+                return contextSet.directSelectAttribute(test.getName(), contextId);          
         }
         if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
@@ -349,9 +340,9 @@ public class LocationStep extends Step {
             }
             switch (axis) {
                 case Constants.ATTRIBUTE_AXIS :
-                    return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);                              
+                    return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, contextId);                              
                 case Constants.DESCENDANT_ATTRIBUTE_AXIS :             
-                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, inPredicate);                    
+                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, contextId);                    
                 default:
                     throw new IllegalArgumentException("Unsupported axis specified");                   
             }       
@@ -361,10 +352,10 @@ public class LocationStep extends Step {
             //TODO : why a selector here ? We havn't one above !
             switch (axis) {
                 case Constants.ATTRIBUTE_AXIS :
-                    selector = new ChildSelector(contextSet, inPredicate);  
+                    selector = new ChildSelector(contextSet, contextId);  
                     break;
                 case Constants.DESCENDANT_ATTRIBUTE_AXIS : 
-                    selector = new DescendantSelector(contextSet, inPredicate); 
+                    selector = new DescendantSelector(contextSet, contextId); 
                     break;
                default:
                    throw new IllegalArgumentException("Unsupported axis specified");                   
@@ -380,8 +371,8 @@ public class LocationStep extends Step {
 	protected NodeSet getChildren(XQueryContext context, NodeSet contextSet) {
 		if (test.isWildcardTest()) {
 			// test is one out of *, text(), node()
-			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
-			vset.setInPredicate(inPredicate);
+			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId, contextSet);
+			vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 			return vset;
 		} else if (preloadNodeSets()) {
 			DocumentSet docs = getDocumentSet(contextSet);
@@ -395,14 +386,14 @@ public class LocationStep extends Step {
                 currentDocs = docs;
                 registerUpdateListener();
             }
-            return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
+            return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, contextId);
 		} else {
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
                         "OPTIMIZATION", "using index '" + index.toString() + "'");            
 		    DocumentSet docs = getDocumentSet(contextSet);
-		    NodeSelector selector = new ChildSelector(contextSet, inPredicate);            
+		    NodeSelector selector = new ChildSelector(contextSet, contextId);            
 		    return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
 		}
 	}
@@ -410,8 +401,8 @@ public class LocationStep extends Step {
 	protected NodeSet getDescendants(XQueryContext context,	NodeSet contextSet) {
 		if (test.isWildcardTest()) {
 			// test is one out of *, text(), node()
-			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
-			vset.setInPredicate(inPredicate);
+			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId, contextSet);
+			vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 			return vset;
 		} else if (preloadNodeSets()) {             
 		    DocumentSet docs = getDocumentSet(contextSet);
@@ -427,9 +418,9 @@ public class LocationStep extends Step {
             }            
             switch (axis) {
                 case Constants.DESCENDANT_SELF_AXIS :                 
-                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, true, inPredicate);
+                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, true, contextId);
                 case Constants.DESCENDANT_AXIS :                
-                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, inPredicate);
+                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, contextId);
                 default:
                     throw new IllegalArgumentException("Unsupported axis specified");
             }            
@@ -438,10 +429,10 @@ public class LocationStep extends Step {
 			DocumentSet docs = contextSet.getDocumentSet();            
             switch (axis) {
                 case Constants.DESCENDANT_SELF_AXIS : 
-                    selector = new DescendantOrSelfSelector(contextSet, inPredicate);
+                    selector = new DescendantOrSelfSelector(contextSet, contextId);
                     break;
                 case Constants.DESCENDANT_AXIS :
-                    selector = new DescendantSelector(contextSet, inPredicate);
+                    selector = new DescendantSelector(contextSet, contextId);
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported axis specified");                          
@@ -464,8 +455,8 @@ public class LocationStep extends Step {
                     if (test.matches(currentNode)) {
                         NodeProxy sibling = new NodeProxy((DocumentImpl) currentNode.getOwnerDocument(), currentNode.getGID(),
                                 currentNode.getInternalAddress());
-                        if (inPredicate)
-                            sibling.addContextNode(current);
+                        if (Expression.NO_CONTEXT_ID != contextId)
+                            sibling.addContextNode(contextId, current);
                         else
                             sibling.copyContext(current);
                         result.add(sibling);
@@ -484,12 +475,11 @@ public class LocationStep extends Step {
                 currentDocs = docs;
                 registerUpdateListener();
 			} 
-			LOG.debug("Current Set: " + currentSet.getLength() + "; context: " + contextSet.getLength());
             switch (axis) {
                 case Constants.PRECEDING_SIBLING_AXIS :             
-                    return currentSet.selectPrecedingSiblings(contextSet, inPredicate);                    
+                    return currentSet.selectPrecedingSiblings(contextSet, contextId);                    
                 case Constants.FOLLOWING_SIBLING_AXIS :
-                    return currentSet.selectFollowingSiblings(contextSet, inPredicate);
+                    return currentSet.selectFollowingSiblings(contextSet, contextId);
                 default :
                     throw new IllegalArgumentException("Unsupported axis specified");                   
             }
@@ -553,8 +543,8 @@ public class LocationStep extends Step {
                 NodeProxy ancestor;
                 if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(current)) {
                     ancestor = new NodeProxy(current.getDocument(), current.getGID(), current.getInternalAddress());
-                    if (inPredicate)
-                        ancestor.addContextNode(current);
+                    if (Expression.NO_CONTEXT_ID != contextId)
+                        ancestor.addContextNode(contextId, current);
                     else
                         ancestor.copyContext(current);
                     result.add(ancestor);
@@ -566,8 +556,8 @@ public class LocationStep extends Step {
                     if (parentID != NodeProxy.DOCUMENT_NODE_GID && 
                             !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && current.getDocument().getCollection().isTempCollection())) {
                         if (test.matches(ancestor)) {
-                            if (inPredicate)
-                                ancestor.addContextNode(current);
+                            if (Expression.NO_CONTEXT_ID != contextId)
+                                ancestor.addContextNode(contextId, current);
                             else
                                 ancestor.copyContext(current);
                             result.add(ancestor);                        
@@ -590,9 +580,9 @@ public class LocationStep extends Step {
             }           
             switch (axis) {
                 case Constants.ANCESTOR_SELF_AXIS :
-                    return currentSet.selectAncestors(contextSet, true, inPredicate);                   
+                    return currentSet.selectAncestors(contextSet, true, contextId);                   
                 case Constants.ANCESTOR_AXIS :             
-                    return currentSet.selectAncestors(contextSet, false, inPredicate);                    
+                    return currentSet.selectAncestors(contextSet, false, contextId);                    
                 default :
                     throw new IllegalArgumentException("Unsupported axis specified");                   
             }        
@@ -601,10 +591,10 @@ public class LocationStep extends Step {
             DocumentSet docs = getDocumentSet(contextSet);
             switch (axis) {
                 case Constants.ANCESTOR_SELF_AXIS :
-                    selector = new AncestorSelector(contextSet, inPredicate, true); 
+                    selector = new AncestorSelector(contextSet, contextId, true); 
                     break;
                 case Constants.ANCESTOR_AXIS :             
-                    selector = new AncestorSelector(contextSet, inPredicate, false);
+                    selector = new AncestorSelector(contextSet, contextId, false);
                     break;
                 default :
                     throw new IllegalArgumentException("Unsupported axis specified");                   
@@ -619,10 +609,10 @@ public class LocationStep extends Step {
 
 	protected NodeSet getParents(XQueryContext context, NodeSet contextSet) {        
 		if(test.isWildcardTest()) {
-			return contextSet.getParents(inPredicate);
+			return contextSet.getParents(contextId);
 		} else {            
 		    DocumentSet docs = getDocumentSet(contextSet);
-		    NodeSelector selector = new ParentSelector(contextSet, inPredicate);
+		    NodeSelector selector = new ParentSelector(contextSet, contextId);
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 

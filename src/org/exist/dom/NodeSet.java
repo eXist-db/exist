@@ -24,6 +24,7 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -156,12 +157,13 @@ public interface NodeSet extends Sequence, NodeList {
 	 *  
 	 * @param al a node set containing potential parent nodes
 	 * @param mode selection mode
-	 * @param rememberContext if true, add the matching nodes to the context node
-	 * list of each returned node (this is used to track matches for predicate evaluation)
+	 * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
 	 * @return
 	 */
 	
-	public NodeSet selectParentChild(NodeSet al, int mode, boolean rememberContext);
+	public NodeSet selectParentChild(NodeSet al, int mode, int contextId);
 		
 	/**
 	 * Check if any descendant nodes are found within this node set for a given
@@ -176,11 +178,12 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @param mode selection mode
 	 * @param includeSelf if true, check if the ancestor node itself is contained in
 	 * the set of descendant nodes (descendant-or-self axis)
-	 * @param rememberContext if true, add the matching nodes to the context node
-	 * list of each returned node (this is used to track matches for predicate evaluation)
+	 * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
 	 * @return
 	 */
-	public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, boolean rememberContext);
+	public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId);
 		
 	/**
 	 * For a given set of potential ancestor nodes, return all ancestors
@@ -189,31 +192,38 @@ public interface NodeSet extends Sequence, NodeList {
 	 *@param  al    node set containing potential ancestors
 	 * @param includeSelf if true, check if the ancestor node itself is contained
 	 * in this node set (ancestor-or-self axis)
-	 * @param rememberContext if true, add the matching nodes to the context node
-	 * list of each returned node (this is used to track matches for predicate evaluation)
+	 * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
 	 *@return
 	 */
-	public NodeSet selectAncestors(NodeSet al, boolean includeSelf,	boolean rememberContext);
+	public NodeSet selectAncestors(NodeSet al, boolean includeSelf,	int contextId);
 		
     /**
      * Select all nodes from the passed node set, which
      * are preceding siblings of the nodes in
      * this set.
      * 
-     * @param siblings a node set containing potential siblings 
+     * @param siblings a node set containing potential siblings
+     * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection.  
      * @return
      */
-    public NodeSet selectPrecedingSiblings(NodeSet siblings, boolean rememberContext);
+    public NodeSet selectPrecedingSiblings(NodeSet siblings, int contextId);
 
     /**
      * Select all nodes from the passed node set, which
      * are following siblings of the nodes in
      * this set.
      * 
-     * @param siblings a node set containing potential siblings    
+     * @param siblings a node set containing potential siblings
+     * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection.     
      * @return
      */    
-    public NodeSet selectFollowingSiblings(NodeSet siblings, boolean rememberContext);
+    public NodeSet selectFollowingSiblings(NodeSet siblings, int contextId);
 	
     public NodeSet selectPreceding(NodeSet preceding) throws XPathException;
     
@@ -264,11 +274,21 @@ public interface NodeSet extends Sequence, NodeList {
 	 * current set.
 	 * @return
 	 */
-	public NodeSet getParents(boolean rememberContext);
+	public NodeSet getParents(int contextId);
 	
-    public NodeSet getAncestors(boolean rememberContext, boolean includeSelf);
+    public NodeSet getAncestors(int contextId, boolean includeSelf);
     
-    public NodeSet directSelectAttribute(QName qname, boolean rememberContext);
+    /**
+     * Optimized method to select attributes. Use this if the context has just one or
+     * two nodes. Attributes will be directly looked up in the persistent DOM store.
+     *  
+     * @param qname the QName of the attribute
+     * @param contextId used to track context nodes when evaluating predicate 
+     * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+     * will be added to each result of the of the selection. 
+     * @return
+     */
+    public NodeSet directSelectAttribute(QName qname, int contextId);
     
 	/**
 	 * If all nodes in this set have an index, returns the common
@@ -345,7 +365,16 @@ public interface NodeSet extends Sequence, NodeList {
 	 */
 	public NodeSet except(NodeSet other);
 	
-	public NodeSet getContextNodes(boolean rememberContext);
+	/**
+	 * Returns all context nodes associated with the nodes in
+	 * this node set.
+	 *  
+	 * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
+	 * @return
+	 */
+	public NodeSet getContextNodes(int contextId);
 	
 	public boolean hasChanged(int previousState);
 	

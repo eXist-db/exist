@@ -24,6 +24,7 @@ import java.util.Iterator;
 
 import org.exist.util.FastQSort;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
@@ -233,84 +234,6 @@ public class ArraySet extends AbstractNodeSet {
 		return get(pos);
 	}
 
-	public NodeSet getChildrenX(NodeSet ancestors, int mode, boolean rememberContext) {
-		if (!(ancestors instanceof ArraySet))
-			return super.selectParentChild(ancestors, mode, rememberContext);
-		ArraySet al = (ArraySet) ancestors;
-		if (al.counter == 0 || counter == 0) {
-			return new ArraySet(1);
-		}
-		long start = System.currentTimeMillis();
-		sort();
-		al.sort();
-		final ArraySet result = new ArraySet(al.counter);
-		// get a deep copy of array - will be modified
-		NodeProxy[] dl = null;
-		if (mode == DESCENDANT) {
-			dl = copyNodeSet(al, this);
-            //TODO : understand why this can be true ?  -pb
-            //Would, at best, have expected result.sortedNaturally = this.sortedNaturally
-            //Why not also handle sortedInDocumentOrder ?
-            result.sortedNaturally = true;            
-		} else
-			dl = nodes;
-		//result.sorted = true;
-		int ax = 0;
-		int dx = 0;
-		final int dlen = dl.length;
-		int cmp;
-		getParentSet(dl, dlen);
-		while (dx < dlen) {
-			while (dl[dx] == null && ++dx < dlen);
-			if (dx == dlen)
-				break;
-			//			          System.out.println(
-			//			              dl[dx].doc.getDocId()
-			//			                  + ":"
-			//			                  + dl[dx].gid
-			//			                  + " = "
-			//			                  + al.nodes[ax].doc.getDocId()
-			//			                  + ':'
-			//			                  + al.nodes[ax].gid);
-			cmp = dl[dx].compareTo(al.nodes[ax]);
-			if (cmp > 0) {
-				if (ax < al.counter - 1)
-					ax++;
-				else
-					break;
-			} else if (cmp < 0)
-				dx++;
-			else {
-				switch (mode) {
-					case ANCESTOR :
-						al.nodes[ax].addMatches(dl[dx]);
-						if (rememberContext)
-							al.nodes[ax].addContextNode(dl[dx]);
-						else
-							al.nodes[ax].copyContext(dl[dx]);
-						result.add(al.nodes[ax]);
-						break;
-					case DESCENDANT :
-						nodes[dx].addMatches(al.nodes[ax]);
-						if (rememberContext)
-							nodes[dx].addContextNode(al.nodes[ax]);
-						else
-							nodes[dx].copyContext(al.nodes[ax]);
-						result.add(nodes[dx]);
-						break;
-				}
-				dx++;
-			}
-		}
-		LOG.debug(
-			"getChildren found "
-				+ result.getLength()
-				+ " in "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
-		return result;
-	}
-
 	/**
 	 *  For a given set of potential ancestor nodes, get the
 	 * descendants in this node set
@@ -319,105 +242,9 @@ public class ArraySet extends AbstractNodeSet {
 	 *@param  mode  Description of the Parameter
 	 *@return       The descendants value
 	 */
-	public NodeSet getDescendantsX(NodeSet other, int mode,	boolean includeSelf, boolean rememberContext) {
-		//		if (other.getLength() < CHOOSE_TOP_DOWN_MAX)
-		//			return getDescendantsTopDown(other, mode, rememberContext);
+	public NodeSet selectAncestors(NodeSet other, boolean includeSelf, int contextId) {
 		if (!(other instanceof ArraySet))
-			return super.selectAncestorDescendant(other, mode, includeSelf,	rememberContext);
-		ArraySet al = (ArraySet) other;
-		if (al.counter == 0 || counter == 0)
-			return NodeSet.EMPTY_SET;
-		long start = System.currentTimeMillis();
-		al.sort();
-		sort();
-		// the descendant set will be modified: copy if required 
-		NodeProxy[] dl = null;
-		if (mode == DESCENDANT) {
-			dl = copyNodeSet(al, this);
-			//			dl = new NodeProxy[counter];
-			//			LOG.debug("copying " + counter + " nodes");
-			//			for(int i = 0; i < dl.length; i++) {
-			//				dl[i] = new NodeProxy( nodes[i] );
-			//			}
-			//			LOG.debug("nodes copied");
-		} else
-			dl = nodes;
-
-		ArraySet result = new ArraySet(dl.length);
-		//result.sorted = true;
-		int ax;
-		int dx;
-		int cmp;
-		final int dlen = dl.length;
-		boolean more = includeSelf ? true : getParentSet(dl, dlen);
-		while (more) {
-			ax = 0;
-			dx = 0;
-			while (dx < dlen) {
-				if (dl[dx] == null) { // || dl[dx].gid < 1) {
-					dx++;
-					continue;
-				}
-				//System.out.println(dl[dx].gid + " == " + al.nodes[ax].gid);
-				cmp = dl[dx].compareTo(al.nodes[ax]);
-				if (cmp > 0) {
-					if (ax < al.counter - 1)
-						ax++;
-					else
-						break;
-				} else if (cmp < 0)
-					dx++;
-				else {
-					// found a matching node
-					switch (mode) {
-						case ANCESTOR :
-							// remember the ancestor-node
-							al.nodes[ax].addMatches(dl[dx]);
-							if (rememberContext)
-								al.nodes[ax].addContextNode(nodes[dx]);
-							else
-								al.nodes[ax].copyContext(nodes[dx]);
-							result.add(al.nodes[ax]);
-							//System.out.println("found: " + al.nodes[ax]);
-							break;
-						case DESCENDANT :
-							// remember the descendant-node
-							nodes[dx].addMatches(al.nodes[ax]);
-							if (rememberContext)
-								nodes[dx].addContextNode(al.nodes[ax]);
-							else
-								nodes[dx].copyContext(al.nodes[ax]);
-							result.add(nodes[dx]);
-							break;
-					}
-					dx++;
-				}
-			}
-			// calculate parent id for each node in the
-			// descendant set. Returns false if no more
-			// valid nodes are found
-			more = getParentSet(dl, dlen);
-		}
-		LOG.debug(
-			"getDescendants found "
-				+ result.getLength()
-				+ " in "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
-		return result;
-	}
-
-	/**
-		 *  For a given set of potential ancestor nodes, get the
-		 * descendants in this node set
-		 *
-		 *@param  al    Description of the Parameter
-		 *@param  mode  Description of the Parameter
-		 *@return       The descendants value
-		 */
-	public NodeSet selectAncestors(NodeSet other, boolean includeSelf, boolean rememberContext) {
-		if (!(other instanceof ArraySet))
-			return super.selectAncestors(other, includeSelf, rememberContext);
+			return super.selectAncestors(other, includeSelf, contextId);
 		ArraySet al = (ArraySet) other;
 		if (al.counter == 0 || counter == 0)
 			return new ArraySet(1);
@@ -442,7 +269,6 @@ public class ArraySet extends AbstractNodeSet {
 			while (dx < dlen) {
 				if (dl[dx] == null) { // || dl[dx].gid < 1) {
 					dx++;
-					System.out.println("skipping " + dx);
 					continue;
 				}
 				//System.out.println(dl[dx].gid + " == " + al.nodes[ax].gid);
@@ -459,14 +285,13 @@ public class ArraySet extends AbstractNodeSet {
 					if ((temp = result.get(al.nodes[ax])) == null) {
 						// remember the ancestor-node
 						al.nodes[ax].addMatches(nodes[dx]);
-						if (rememberContext)
-							al.nodes[ax].addContextNode(nodes[dx]);
+						if (Expression.NO_CONTEXT_ID != contextId)
+							al.nodes[ax].addContextNode(contextId, nodes[dx]);
 						else
 							al.nodes[ax].copyContext(nodes[dx]);
 						result.add(al.nodes[ax]);
-						//System.out.println("found: " + al.nodes[ax]);
-					} else if (rememberContext)
-						temp.addContextNode(nodes[dx]);
+					} else if (Expression.NO_CONTEXT_ID != contextId)
+						temp.addContextNode(contextId, nodes[dx]);
 					dx++;
 				}
 			}

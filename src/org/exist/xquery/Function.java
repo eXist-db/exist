@@ -314,6 +314,7 @@ public abstract class Function extends PathExpr {
         checkArguments();
         // call analyze for each argument
     	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+    	contextId = contextInfo.getContextId();
     	contextInfo.setParent(this);
         for(int i = 0; i < getArgumentCount(); i++) {
             getArgument(i).analyze(contextInfo);

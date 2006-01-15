@@ -178,7 +178,7 @@ public class ForExpr extends BindingExpression {
 		// If possible, apply the where expression ahead of the iteration
 		if(fastExec) {
 			if(!in.isCached())
-				setContext(in);
+				setContext(getExpressionId(), in);
 			in = applyWhereExpression(in);
 			if(!in.isCached())
 				clearContext(in);
@@ -187,9 +187,9 @@ public class ForExpr extends BindingExpression {
 		// PreorderedValueSequence applies the order specs to all items
 		// in one single processing step
 		if(fastOrderBy) {
-			in = new PreorderedValueSequence(orderSpecs, in);
+			in = new PreorderedValueSequence(orderSpecs, in, getExpressionId());
 		}
-		
+
 		// Otherwise, if there's an order by clause, wrap the result into
 		// an OrderedValueSequence. OrderedValueSequence will compute
 		// order expressions for every item when it is added to the result sequence.
@@ -199,7 +199,7 @@ public class ForExpr extends BindingExpression {
 			else
 				resultSequence = new ValueSequence();
 		}
-			
+
 		Sequence val = null;
 		int p = 1;
 		IntegerValue atVal = new IntegerValue(1);
@@ -226,7 +226,7 @@ public class ForExpr extends BindingExpression {
 			// check optional where clause
 			if (whereExpr != null && (!fastExec)) {
 				if(contextItem instanceof NodeProxy)
-					((NodeProxy)contextItem).addContextNode((NodeProxy)contextItem);
+					((NodeProxy)contextItem).addContextNode(getExpressionId(), (NodeProxy)contextItem);
 				Sequence bool = applyWhereExpression(null);
 				if(contextItem instanceof NodeProxy)
 					((NodeProxy)contextItem).clearContext();

@@ -208,7 +208,7 @@ public interface Sequence {
 	 */
 	public void clearContext();
 	
-	public void setSelfAsContext();
+	public void setSelfAsContext(int contextId);
     
     public boolean isPersistentSet();
 }
