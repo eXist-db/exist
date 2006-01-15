@@ -1,8 +1,7 @@
 /*
- *  Collection.java - eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-06 The eXist Project
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -14,11 +13,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ *  $Id$
  */
 package org.exist.collections;
 
@@ -41,7 +40,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
-import org.apache.xml.resolver.tools.CatalogResolver;
+
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.triggers.DocumentTrigger;
@@ -73,6 +72,7 @@ import org.exist.util.MimeType;
 import org.exist.util.SyntaxException;
 import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.serializer.DOMStreamer;
+import org.exist.validation.resolver.eXistCatalogResolver;
 import org.exist.xquery.Constants;
 import org.w3c.dom.Node;
 import org.xml.sax.EntityResolver;
@@ -130,7 +130,7 @@ public  class Collection extends Observable
     // creation time
     private long created = 0;
     
-    private CatalogResolver resolver;
+    private eXistCatalogResolver resolver;
     
     private Observer[] observers = null;
     
@@ -1328,7 +1328,7 @@ public  class Collection extends Observable
             return userReader;
         
         Configuration config = broker.getConfiguration();
-        resolver = (CatalogResolver) config.getProperty("resolver");
+        resolver = (eXistCatalogResolver) config.getProperty("resolver");
         return broker.getBrokerPool().getParserPool().borrowXMLReader();
     }
     

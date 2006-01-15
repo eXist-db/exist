@@ -1,20 +1,21 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001,  Wolfgang M. Meier
+ *  Copyright (C) 2001-06 The eXist Project
+ *  http://exist-db.org
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
  *
- *  This library is distributed in the hope that it will be useful,
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *  $Id$
  */
@@ -33,13 +34,16 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
-import org.apache.xml.resolver.tools.CatalogResolver;
+
 import org.exist.memtree.SAXAdapter;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
+import org.exist.validation.resolver.eXistCatalogResolver;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -147,7 +151,7 @@ public class Configuration implements ErrorHandler {
             // Create resolver
             System.out.println("Creating CatalogResolver");
             System.setProperty("xml.catalog.verbosity", "10");
-            CatalogResolver resolver = new CatalogResolver(true);
+            eXistCatalogResolver resolver = new eXistCatalogResolver(true);
             config.put("resolver", resolver);
             
             // initialize xml parser
@@ -738,7 +742,7 @@ public class Configuration implements ErrorHandler {
                 config.put("stopwords", stopwordFile);
         }
         
-        CatalogResolver resolver = (CatalogResolver) config.get("resolver");
+        eXistCatalogResolver resolver = (eXistCatalogResolver) config.get("resolver");
         NodeList entityResolver = p.getElementsByTagName("entity-resolver");
         
         if (entityResolver.getLength() > 0) {
