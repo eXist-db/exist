@@ -46,25 +46,21 @@ public class StoredNode extends NodeImpl {
 	private long gid = 0;
 	private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
     private DocumentImpl ownerDocument = null;
-	private short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;	
-
-    //Made this constructor protected since we need it from DocumentImpl -pb
-	private StoredNode() {
-	}
-
+	private short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;
+    
 	public StoredNode(short nodeType) {
         //TOUNDERSTAND : what are the semantics of this 0 ? -pb
 		this(nodeType, 0);
 	}
-
-	public StoredNode(long gid) {
-		this(UNKNOWN_NODE_IMPL_NODE_TYPE, gid);
-	}
-
-	public StoredNode(short nodeType, long gid) {
-		this.nodeType = nodeType;
-		this.gid = gid;
-	}
+    
+    public StoredNode(long gid) {
+        this(UNKNOWN_NODE_IMPL_NODE_TYPE, gid);
+    } 
+    
+    public StoredNode(short nodeType, long gid) {
+        this.nodeType = nodeType;
+        this.gid = gid;
+    }
 
     /**
      * Copy constructor: creates a copy of the other node.
@@ -75,7 +71,7 @@ public class StoredNode extends NodeImpl {
         this.nodeType = other.nodeType;
         this.gid = other.gid;
         this.internalAddress = other.internalAddress;
-        this.ownerDocument = other.ownerDocument;
+        this.ownerDocument = other.ownerDocument;        
     }
     
     /**
@@ -87,7 +83,7 @@ public class StoredNode extends NodeImpl {
         this.gid = 0;
         this.internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
         this.ownerDocument = null;
-        //this.nodeType is *immutable*       
+        //this.nodeType is *immutable*         
     } 
     
     public byte[] serialize() {
@@ -243,11 +239,11 @@ public class StoredNode extends NodeImpl {
 	 *@return    The parentGID value
 	 */
 	public long getParentGID() {
-	    return NodeSetHelper.getParentId(ownerDocument, getGID());
+        return NodeSetHelper.getParentId(ownerDocument, getGID());
 	}
     
     public long firstChildID(){
-        throw new DOMException(DOMException.INVALID_ACCESS_ERR, "firstChildID() not implemented in " + getClass().getName());
+        return NodeSetHelper.getFirstChildId(ownerDocument, getGID());
     }
 
 	/**
@@ -265,6 +261,53 @@ public class StoredNode extends NodeImpl {
             return null;    
         }
         return ownerDocument.getNode(parentID);
+	}      
+
+	/**
+	 * @see org.w3c.dom.Node#getPreviousSibling()
+	 */
+	public Node getPreviousSibling() {
+        int level = ownerDocument.getTreeLevel(getGID());
+		if (level == 0)
+			return ownerDocument.getPreviousSibling(this);
+        
+        long parentID = NodeSetHelper.getParentId(ownerDocument, getGID(), level);
+        
+        //Filter out the temporary nodes wrapper element         
+        //TODO : use level == 1 ?
+        if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
+                parentID == NodeProxy.DOCUMENT_ELEMENT_GID && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
+            return null;       
+        
+        long firstChildId = NodeSetHelper.getFirstChildId(ownerDocument, parentID, level - 1);
+		if (getGID() > firstChildId)
+			return ownerDocument.getNode(getGID() - 1);
+		return null;
+	}
+
+	/**
+	 * @see org.w3c.dom.Node#getNextSibling()
+	 */
+	public Node getNextSibling() {
+		int level = ownerDocument.getTreeLevel(getGID());
+		if (level == 0)
+			return ownerDocument.getFollowingSibling(this);
+        
+        long parentID = NodeSetHelper.getParentId(ownerDocument, getGID(), level);
+        
+        //Filter out the temporary nodes wrapper element 
+        //TODO : use level == 1 ?
+        if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
+                (parentID == NodeProxy.DOCUMENT_ELEMENT_GID && 
+                 ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection()))
+            return null;
+
+        long firstChildId = NodeSetHelper.getFirstChildId(ownerDocument, parentID, level - 1);
+        
+        //TODO : avoid using getTreeLevelOrder
+		if (getGID() < firstChildId + ownerDocument.getTreeLevelOrder(level) - 1)
+			return ownerDocument.getNode(getGID() + 1);
+		return null;
 	}
     
     protected StoredNode getLastNode(StoredNode node) {        
@@ -288,62 +331,7 @@ public class StoredNode extends NodeImpl {
             next = getLastNode(iterator, next);
         }
         return next;
-    }       
-
-	/**
-	 * @see org.w3c.dom.Node#getPreviousSibling()
-	 */
-	public Node getPreviousSibling() {
-		int level = ownerDocument.getTreeLevel(getGID());
-		if (level == 0)
-			return ownerDocument.getPreviousSibling(this);
-        //TODO : use XMLUtils routine ? -pb
-		long parentID =
-			(getGID() - ownerDocument.getLevelStartPoint(level))
-				/ ownerDocument.getTreeLevelOrder(level)
-				+ ownerDocument.getLevelStartPoint(level - 1);
-        //Filter out the temporary nodes wrapper element 
-        //TODO : use level == 1 ?
-        if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
-                parentID == NodeProxy.DOCUMENT_ELEMENT_GID && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
-            return null;        
-        //TODO : use XMLUtils routine ? -pb
-		long firstChildId =
-			(parentID - ownerDocument.getLevelStartPoint(level - 1))
-				* ownerDocument.getTreeLevelOrder(level)
-				+ ownerDocument.getLevelStartPoint(level);
-		if (getGID() > firstChildId)
-			return ownerDocument.getNode(getGID() - 1);
-		return null;
-	}
-
-	/**
-	 * @see org.w3c.dom.Node#getNextSibling()
-	 */
-	public Node getNextSibling() {
-		int level = ownerDocument.getTreeLevel(getGID());
-		if (level == 0)
-			return ownerDocument.getFollowingSibling(this);
-        //TODO : use XMLUtils routine ? -pb
-		long parentID =
-			(getGID() - ownerDocument.getLevelStartPoint(level))
-				/ ownerDocument.getTreeLevelOrder(level)
-				+ ownerDocument.getLevelStartPoint(level - 1);
-        //Filter out the temporary nodes wrapper element 
-        //TODO : use level == 1 ?
-        if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
-                parentID == NodeProxy.DOCUMENT_ELEMENT_GID && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
-            return null;
-
-        //TODO : use XMLUtils routine ? -pb
-		long firstChildId =
-			(parentID - ownerDocument.getLevelStartPoint(level - 1))
-				* ownerDocument.getTreeLevelOrder(level)
-				+ ownerDocument.getLevelStartPoint(level);
-		if (getGID() < firstChildId + ownerDocument.getTreeLevelOrder(level) - 1)
-			return ownerDocument.getNode(getGID() + 1);
-		return null;
-	}
+    }     
     
     public NodePath getPath() {
         NodePath path = new NodePath();

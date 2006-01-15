@@ -31,16 +31,9 @@ import java.io.UnsupportedEncodingException;
 
 import javax.xml.transform.TransformerException;
 
-import org.exist.util.Range;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.xquery.Constants;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  *  Defines some static utility methods. 

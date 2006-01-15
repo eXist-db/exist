@@ -23,7 +23,6 @@
 package org.exist.storage;
 
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
@@ -161,23 +160,19 @@ public class NodePath {
         addComponent(qn);
     }
     
-    private void init( Map namespaces, String path ) {
-        StringTokenizer tokenizer = new StringTokenizer(path, "/");
+    private void init( Map namespaces, String path ) {        
         FastStringBuffer token = new FastStringBuffer();
-        String next;
         int pos = 0;
-		char ch = 0;
-		final int pathLen = path.length();
-        while ( pos < pathLen ) {
-			ch = path.charAt(pos);
-            switch ( ch ) {
+        while (pos < path.length()) {
+            char ch = path.charAt(pos);
+            switch (ch) {
             case '/':
-                next = token.toString();
+                String next = token.toString();
                 token.reset();
-                if ( next.length(  ) > 0 )
-                    addComponent( namespaces, next );
-                if ( path.charAt( ++pos ) == '/' )
-                    addComponent( WILDCARD );
+                if (next.length() > 0)
+                    addComponent(namespaces, next);
+                if (path.charAt(++pos ) == '/')
+                    addComponent(WILDCARD);
                 break;
 
             default:
@@ -185,7 +180,7 @@ public class NodePath {
                 pos++;
             }
         }
-        if ( token.length() > 0 )
-            addComponent( namespaces, token.toString() );
+        if (token.length() > 0)
+            addComponent(namespaces, token.toString());
     }
 }

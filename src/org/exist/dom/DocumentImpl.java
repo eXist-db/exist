@@ -102,12 +102,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     //number of levels in this DOM tree
     private int maxDepth = 0;
     
-    // arity of the tree at every level
-    //TODO : make private
-	protected int treeLevelOrder[] = new int[15];
+    // arity of the tree at every level    
+    private int treeLevelOrder[] = new int[15];
 
     //TODO : make private
-	protected transient long treeLevelStartPoints[] = new long[15];
+    private transient long treeLevelStartPoints[] = new long[15];
     
     public DocumentImpl(DBBroker broker) {
         this(broker, null, null);
@@ -431,7 +430,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         return -1;
     }    
     
-   public long getLevelStartPoint(int level) {
+    public long getLevelStartPoint(int level) {
        //TODO : check *before* calling ? -pb
        if (level < 0) {           
            return -1;

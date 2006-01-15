@@ -75,9 +75,12 @@ public class Predicate extends PathExpr {
         contextInfo.addFlag(IN_PREDICATE); // set flag to signal subexpression that we are in a predicate
         contextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
         contextInfo.setContextId(getExpressionId());
-        Expression inner = getExpression(0);
-        if(inner == null)
+        //TODO : how can it be possible ?
+        Expression inner = getExpression(0);        
+        if(inner == null) {
+            LOG.info("REPORT ME : null Inner Sequence");
             return;
+        }
         AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
     	newContextInfo.setParent(this);
         super.analyze(newContextInfo);
@@ -212,7 +215,7 @@ public class Predicate extends PathExpr {
 		DocumentImpl lastDoc = null;      
 		for (Iterator i = nodes.iterator(); i.hasNext();) {               
             NodeProxy currentNode = (NodeProxy) i.next();
-            int sizeHint = -1;
+            int sizeHint = Constants.NO_SIZE_HINT;
 			if(lastDoc == null || currentNode.getDocument() != lastDoc) {
 				lastDoc = currentNode.getDocument();
 				sizeHint = nodes.getSizeHint(lastDoc);
