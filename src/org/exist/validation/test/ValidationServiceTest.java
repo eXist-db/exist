@@ -137,4 +137,20 @@ public class ValidationServiceTest  extends TestCase {
             fail(e.getMessage());  
         }    
     }
+    
+    public void failTestNoDoctype() {
+    	try {
+            assertFalse( service.validateResource("/db/grammar/hamlet_nodoctype.xml") );
+        } catch (Exception e) {            
+            fail(e.getMessage());  
+        }    
+    }
+    
+    public void failTestWrongDoctype() {
+    	try {
+            assertFalse( service.validateResource("/db/grammar/hamlet_wrongdoctype.xml") );
+        } catch (Exception e) {            
+            fail(e.getMessage());  
+        }    
+    }
 }

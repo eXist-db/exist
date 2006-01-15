@@ -173,7 +173,15 @@ public class DatabaseResourcesTest extends TestCase {
 
         file = new File(eXistHome , DTDFILES+"/hamlet_invalid.xml");
         data = dt.readFile(file);
-        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/hamlet_invalid.xml",data) );       
+        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/hamlet_invalid.xml",data) ); 
+        
+        file = new File(eXistHome , DTDFILES+"/hamlet_nodoctype.xml");
+        data = dt.readFile(file);
+        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/hamlet_nodoctype.xml",data) );  
+        
+        file = new File(eXistHome , DTDFILES+"/hamlet_wrongdoctype.xml");
+        data = dt.readFile(file);
+        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/hamlet_wrongdoctype.xml",data) );  
         
         System.out.println("<<<");
     }
