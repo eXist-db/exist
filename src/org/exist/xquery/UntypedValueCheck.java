@@ -48,8 +48,7 @@ public class UntypedValueCheck extends AbstractExpression {
         this(context, requiredType, expression, new Error(Error.TYPE_MISMATCH));
     }
     
-	public UntypedValueCheck(XQueryContext context, int requiredType, Expression expression, 
-            Error error) {
+	public UntypedValueCheck(XQueryContext context, int requiredType, Expression expression, Error error) {
 		super(context);
 		this.requiredType = requiredType;
 		this.expression = expression;

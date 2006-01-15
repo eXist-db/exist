@@ -117,6 +117,7 @@ public class EntityResolver  implements XMLEntityResolver {
      */
     public void setStartGrammarPath(String path){
         
+        //TODO : use XmldbURI methods !
         if(path.startsWith("/db")){
             path="xmldb:exist://"+path;
         } else if (path.startsWith("/")) {
@@ -126,6 +127,7 @@ public class EntityResolver  implements XMLEntityResolver {
         // TODO help...
         startGrammarPath=path;
         
+        //TODO : read from mime types
         if( path.endsWith(".xml") ){
             // Catalog is specified
             logger.debug("Using catalog '"+path+"'.");

@@ -86,15 +86,16 @@ public class Main {
     }
 
     boolean isAvailable(String classname, Classpath classpath) {
+        Class check; //unused
         try {
-            Class check = Class.forName(classname);
+            check = Class.forName(classname);
             return true;
         } catch (ClassNotFoundException e) {
         }
 
         ClassLoader loader = classpath.getClassLoader(null);
         try {
-            Class check = loader.loadClass(classname);
+            check = loader.loadClass(classname);
             return true;
         } catch (ClassNotFoundException e) {
         }
@@ -103,11 +104,8 @@ public class Main {
     }
 
     public static void invokeMain(ClassLoader classloader, String classname, String[] args)
-            throws
-            IllegalAccessException,
-            InvocationTargetException,
-            NoSuchMethodException,
-            ClassNotFoundException {
+            throws IllegalAccessException, InvocationTargetException, 
+            NoSuchMethodException, ClassNotFoundException {
         Class invoked_class = null;
         invoked_class = classloader.loadClass(classname);
         Class[] method_param_types = new Class[1];
@@ -119,18 +117,14 @@ public class Main {
         main.invoke(null, method_params);
     }
 
-    void configureClasspath(String home,
-                            Classpath classpath,
-                            InputStream config,
-                            String[] args,
-                            String mode) {
+    void configureClasspath(String home, Classpath classpath, InputStream config, String[] args, String mode) {
         try {
             BufferedReader cfg = new BufferedReader(new InputStreamReader(config, "ISO-8859-1"));
             Version java_version = new Version(System.getProperty("java.version"));
             Version ver = new Version();
 
             // JAR's already processed
-            java.util.Hashtable done = new Hashtable();
+            Hashtable done = new Hashtable();
             String line = cfg.readLine();
             while (line != null) {
                 try {

@@ -218,8 +218,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	 * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
 	 */
 	public NodeList getElementsByTagName(String name) {
-		NodeListImpl nl = new NodeListImpl();
-		short level = (short)(document.treeLevel[nodeNumber] + 1);
+		NodeListImpl nl = new NodeListImpl();		
 		int nextNode = nodeNumber;
 		while (++nextNode < document.size) {
 			if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
@@ -301,8 +300,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	 */
 	public NodeList getElementsByTagNameNS(String namespaceURI, String name) {
 		QName qname = new QName(name, namespaceURI);
-		NodeListImpl nl = new NodeListImpl();
-		short level = (short)(document.treeLevel[nodeNumber] + 1);
+		NodeListImpl nl = new NodeListImpl();		
 		int nextNode = nodeNumber;
 		while (++nextNode < document.size) {
 			if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {

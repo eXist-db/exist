@@ -28,18 +28,13 @@ import org.exist.dom.NodeSet;
 public class AncestorSelector implements NodeSelector {
 
     private NodeSet ancestors;
-    private boolean rememberContext = false;
-    private boolean includeSelf = false;
     
     public AncestorSelector(NodeSet descendants, boolean rememberContext, boolean includeSelf) {
         super();
-        ancestors = descendants.getAncestors(rememberContext, includeSelf);
-        ancestors.getLength();
-        this.rememberContext = rememberContext;
+        ancestors = descendants.getAncestors(rememberContext, includeSelf);        
     }
 
-    public NodeProxy match(DocumentImpl doc, long gid) {
-        NodeProxy p = ancestors.get(doc, gid);        
-        return p;            
+    public NodeProxy match(DocumentImpl doc, long gid) {            
+        return ancestors.get(doc, gid);          
     }
 }

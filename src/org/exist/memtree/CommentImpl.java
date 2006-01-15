@@ -83,8 +83,7 @@ public class CommentImpl extends NodeImpl implements Comment {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.CharacterData#replaceData(int, int, java.lang.String)
 	 */
-	public void replaceData(int arg0, int arg1, String arg2)
-		throws DOMException {
+	public void replaceData(int arg0, int arg1, String arg2) throws DOMException {
 		// TODO Auto-generated method stub
 
 	}

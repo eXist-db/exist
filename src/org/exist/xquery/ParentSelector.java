@@ -31,22 +31,19 @@ import org.exist.dom.NodeSet;
  */
 public class ParentSelector implements NodeSelector {
 
-	private NodeSet parents;
-	private boolean rememberContext = false;
+	private NodeSet parents;	
 	
 	/**
 	 * 
 	 */
 	public ParentSelector(NodeSet contextSet, boolean rememberContext) {
-		this.parents = contextSet.getParents(rememberContext);
-		this.rememberContext = rememberContext;
+		this.parents = contextSet.getParents(rememberContext);		
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.DocumentImpl, long)
 	 */
-	public NodeProxy match(DocumentImpl doc, long gid) {
-		NodeProxy p = parents.get(doc, gid);
-        return p;			
+	public NodeProxy match(DocumentImpl doc, long gid) {		
+        return parents.get(doc, gid);			
 	}
 }

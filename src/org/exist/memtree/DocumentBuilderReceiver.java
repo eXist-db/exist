@@ -87,8 +87,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
 	 */
-	public void startPrefixMapping(String arg0, String arg1)
-		throws SAXException {
+	public void startPrefixMapping(String arg0, String arg1) throws SAXException {
 	}
 
 	/* (non-Javadoc)
@@ -100,19 +99,15 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
-	public void startElement(
-		String namespaceURI,
-		String localName,
-		String qName,
-		Attributes attrs)
-		throws SAXException {
+	public void startElement(String namespaceURI, String localName,	String qName, Attributes attrs)
+            throws SAXException {
 		builder.startElement(namespaceURI, localName, qName, attrs);
 	}
 
 	public void startElement(QName qname, AttrList attribs) {
 		builder.startElement(qname, null);
 		if(attribs != null) {
-			for(int i = 0; i < attribs.getLength(); i++) {
+			for (int i = 0; i < attribs.getLength(); i++) {
 				builder.addAttribute(attribs.getQName(i), attribs.getValue(i));
 			}
 		}
@@ -121,8 +116,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public void endElement(String arg0, String arg1, String arg2)
-		throws SAXException {
+	public void endElement(String arg0, String arg1, String arg2) throws SAXException {
 		builder.endElement();
 	}
 
@@ -145,8 +139,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
 	 */
-	public void characters(char[] ch, int start, int len)
-		throws SAXException {
+	public void characters(char[] ch, int start, int len) throws SAXException {
 		builder.characters(ch, start, len);
 	}
 
@@ -157,15 +150,13 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
 	 */
-	public void ignorableWhitespace(char[] arg0, int arg1, int arg2)
-		throws SAXException {
+	public void ignorableWhitespace(char[] arg0, int arg1, int arg2) throws SAXException {
 	}
 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
 	 */
-	public void processingInstruction(String target, String data)
-		throws SAXException {
+	public void processingInstruction(String target, String data) throws SAXException {
 	    builder.processingInstruction(target, data);
 	}
 
@@ -203,8 +194,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         // TODO Ignored
     }
 
-	public void documentType(String name, String publicId, String systemId) 
-	throws SAXException {
+	public void documentType(String name, String publicId, String systemId)throws SAXException {
 		builder.documentType(name, publicId, systemId);
 	}
 	

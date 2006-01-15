@@ -30,43 +30,26 @@ import org.exist.dom.NodeSet;
  * @author wolf
  */
 public class SelfSelector implements NodeSelector {
-
-	private NodeSet context;
+	
 	private boolean rememberContext = false;
 	
 	/**
 	 * 
 	 */
-	public SelfSelector(NodeSet contextSet, boolean rememberContext) {
-		this.context = contextSet;
+	public SelfSelector(NodeSet contextSet, boolean rememberContext) {		
 		this.rememberContext = rememberContext;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.DocumentImpl, long)
 	 */
-	public NodeProxy match(DocumentImpl doc, long gid) {
-        
+	public NodeProxy match(DocumentImpl doc, long gid) {        
         NodeProxy p = new NodeProxy(doc, gid);
         if (p == null) 
             return null;  
-        NodeProxy contextNode;       
-        
-        contextNode = p;       
+        NodeProxy contextNode = p;
         if (rememberContext)             
             p.addContextNode(contextNode);       
         return p;
-        	
-        
-        /*
-        NodeProxy p = context.get(doc, gid);
-		if(p == null)
-            return null;            
-		if (rememberContext) {
-            contextNode = p;
-			p.addContextNode(p);
-        }		
-		return p;
-		*/
 	}
 }

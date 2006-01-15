@@ -67,13 +67,13 @@ import org.w3c.dom.UserDataHandler;
  */
 public class ElementImpl extends NamedNode implements Element {
 
-    protected short attributes = 0;
-    protected int children = 0;
-    protected long firstChild = StoredNode.NODE_IMPL_UNKNOWN_GID;    
-	protected int position = 0;
-    protected Map namespaceMappings = null;
-    protected int indexType = RangeIndexSpec.NO_INDEX;
-	protected boolean preserveWS = false;
+    private short attributes = 0;
+    private int children = 0;
+    private long firstChild = StoredNode.NODE_IMPL_UNKNOWN_GID;    
+    private int position = 0;
+    private Map namespaceMappings = null;
+    private int indexType = RangeIndexSpec.NO_INDEX;
+    private boolean preserveWS = false;
     
     public ElementImpl() {
         super(Node.ELEMENT_NODE);

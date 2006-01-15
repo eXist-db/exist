@@ -27,8 +27,7 @@ import antlr.collections.AST;
 public class SortedNodeSet extends AbstractNodeSet {
 
 	private PathExpr expr;
-	private OrderedLinkedList list = new OrderedLinkedList();
-	private DocumentSet ndocs;
+	private OrderedLinkedList list = new OrderedLinkedList();	
 	private String sortExpr;
 	private BrokerPool pool;
 	private User user = null;
@@ -44,13 +43,10 @@ public class SortedNodeSet extends AbstractNodeSet {
 	}
 	
 	public void addAll(NodeSet other) {
-		long start = System.currentTimeMillis();
-		NodeProxy p;
-		IteratorItem item;
-		Item next;
+		long start = System.currentTimeMillis();		
 		DocumentSet docs = new DocumentSet();
 		for (Iterator i = other.iterator(); i.hasNext();) {
-			p = (NodeProxy)i.next();
+            NodeProxy p = (NodeProxy)i.next();
 			docs.add(p.getDocument());
 		}
 		DBBroker broker = null;
@@ -62,12 +58,11 @@ public class SortedNodeSet extends AbstractNodeSet {
 			XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			parser.xpath();
 			if (parser.foundErrors()) {
+                //TODO : error ?
 				LOG.debug(parser.getErrorMessage());
 			}
-
 			AST ast = parser.getAST();
 			LOG.debug("generated AST: " + ast.toStringTree());
-
 			expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
@@ -75,8 +70,8 @@ public class SortedNodeSet extends AbstractNodeSet {
 			}
 			expr.analyze(new AnalyzeContextInfo());
 			for (SequenceIterator i = other.iterate(); i.hasNext();) {
-				p = (NodeProxy) i.nextItem();
-				item = new IteratorItem(broker, p, expr, docs, context);
+                NodeProxy p = (NodeProxy) i.nextItem();
+                IteratorItem item = new IteratorItem(broker, p, expr, docs, context);
 				list.add(item);
 			}
 		} catch (antlr.RecognitionException re) {
@@ -108,10 +103,9 @@ public class SortedNodeSet extends AbstractNodeSet {
 		return contains(new NodeProxy(doc, nodeId));
 	}
 
-	public boolean contains(NodeProxy proxy) {
-		NodeProxy p;
+	public boolean contains(NodeProxy proxy) {		
 		for (Iterator i = list.iterator(); i.hasNext();) {
-			p = ((IteratorItem) i.next()).proxy;
+            NodeProxy p = ((IteratorItem) i.next()).proxy;
 			if (p.compareTo(proxy) == 0)
 				return true;
 		}
@@ -123,21 +117,19 @@ public class SortedNodeSet extends AbstractNodeSet {
 		return item == null ? null : item.proxy;
 	}
 
-	public NodeProxy get(DocumentImpl doc, long nodeId) {
-		NodeProxy p;
+	public NodeProxy get(DocumentImpl doc, long nodeId) {		
 		NodeProxy proxy = new NodeProxy(doc, nodeId);
 		for (Iterator i = list.iterator(); i.hasNext();) {
-			p = ((IteratorItem) i.next()).proxy;
+            NodeProxy p = ((IteratorItem) i.next()).proxy;
 			if (p.compareTo(proxy) == 0)
 				return p;
 		}
 		return null;
 	}
 
-	public NodeProxy get(NodeProxy proxy) {
-		NodeProxy p;
+	public NodeProxy get(NodeProxy proxy) {		
 		for (Iterator i = list.iterator(); i.hasNext();) {
-			p = ((IteratorItem) i.next()).proxy;
+            NodeProxy p = ((IteratorItem) i.next()).proxy;
 			if (p.compareTo(proxy) == 0)
 				return p;
 		}
@@ -211,12 +203,8 @@ public class SortedNodeSet extends AbstractNodeSet {
 		NodeProxy proxy;
 		String value = null;
 
-		public IteratorItem(
-			DBBroker broker,
-			NodeProxy proxy,
-			PathExpr expr,
-			DocumentSet ndocs,
-			XQueryContext context) {
+		public IteratorItem(DBBroker broker, NodeProxy proxy, PathExpr expr, DocumentSet ndocs, 
+                XQueryContext context) {
 			this.proxy = proxy;
 			try {
 				Sequence seq = expr.eval(proxy);
@@ -254,6 +242,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#add(org.exist.dom.NodeProxy)
 	 */
 	public void add(NodeProxy proxy) {
+        LOG.info("Called SortedNodeSet.add()");
 	}
 
 }
