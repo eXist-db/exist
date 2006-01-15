@@ -45,7 +45,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeListImpl;
-import org.exist.dom.XMLUtil;
+import org.exist.dom.NodeSetHelper;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FastStringBuffer;
@@ -430,7 +430,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				for (SequenceIterator i = seq.iterate(); i.hasNext();) {
 					item = i.nextItem();
 					if(Type.subTypeOf(item.getType(), Type.NODE)) { 
-						Node node = XMLUtil.copyNode(doc, ((NodeValue)item).getNode());
+						Node node = NodeSetHelper.copyNode(doc, ((NodeValue)item).getNode());
 						if (stack.isEmpty())
 							contents.add(node);
 						else {

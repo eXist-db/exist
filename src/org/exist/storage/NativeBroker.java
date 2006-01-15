@@ -53,6 +53,7 @@ import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.NodeSetHelper;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
@@ -1980,7 +1981,7 @@ public class NativeBroker extends DBBroker {
                         long gid = ByteConversion.byteToLong(ref.data(), ref.start() + 4);
                         if (oldDoc.getTreeLevel(gid) >= doc.getMetadata().reindexRequired()) {
                             if (node != null) {
-                                if (XMLUtil.isDescendant(oldDoc, node.getGID(), gid)) {
+                                if (NodeSetHelper.isDescendant(oldDoc, node.getGID(), gid)) {
                                     domDb.removeValue(transaction, ref);
                                 }
                             } else
@@ -2328,7 +2329,7 @@ public class NativeBroker extends DBBroker {
         node.setOwnerDocument(doc);
         
         if (node.hasChildNodes()) {
-            final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());            
+            final long firstChildId = NodeSetHelper.getFirstChildId(doc, node.getGID());            
             if (firstChildId < 0) {
                 LOG.fatal(
                     "no child found: expected = "
@@ -2487,7 +2488,7 @@ public class NativeBroker extends DBBroker {
                 stack.push(removed);
 
                 if (node.hasChildNodes()) {
-                    final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());                    
+                    final long firstChildId = NodeSetHelper.getFirstChildId(doc, node.getGID());                    
                     if (firstChildId < 0) {
                         LOG.fatal(
                             "no child found: expected = "
@@ -2550,7 +2551,7 @@ public class NativeBroker extends DBBroker {
     
     private void checkNodeTree(Iterator iterator, StoredNode node) {
         if (node.hasChildNodes()) {
-            final long firstChildId = XMLUtil.getFirstChildId((DocumentImpl)node.getOwnerDocument(), 
+            final long firstChildId = NodeSetHelper.getFirstChildId((DocumentImpl)node.getOwnerDocument(), 
                     node.getGID());          
             if (firstChildId < 0) {
                 LOG.fatal(
@@ -2593,7 +2594,7 @@ public class NativeBroker extends DBBroker {
             reindexNode(transaction, node, currentPath);
         final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
         if (node.hasChildNodes()) {
-            final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());            
+            final long firstChildId = NodeSetHelper.getFirstChildId(doc, node.getGID());            
             if (firstChildId < 0) {
                 LOG.fatal(
                     "no child found: expected = "

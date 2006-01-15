@@ -238,7 +238,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		NodeSet result = new ExtArrayNodeSet();		
 		for (Iterator i = al.iterator(); i.hasNext(); ) {
             NodeProxy node = (NodeProxy) i.next();
-			Range range = XMLUtil.getChildRange(node.getDocument(), node.getGID());
+			Range range = NodeSetHelper.getChildRange(node.getDocument(), node.getGID());
 			getRange(result, node.getDocument(), range.getStart(), range.getEnd());
 		}
 		 return result;
@@ -336,7 +336,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			    pa = na.getGID();
 			    pb = nb.getGID();
 //			    System.out.println(pa + " -> " + pb);
-				pb = XMLUtil.getParentId(nb.getDocument(), pb, nb.getDocument().getTreeLevel(pb));
+				pb = NodeSetHelper.getParentId(nb.getDocument(), pb, nb.getDocument().getTreeLevel(pb));
 //				System.out.println("comparing " + pa + " -> " + pb);
 				if(pa == pb) {
 				    if(mode == NodeSet.DESCENDANT) {
@@ -466,7 +466,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		if (level == NodeProxy.UNKNOWN_NODE_LEVEL)
 			level = doc.getTreeLevel(gid);
 		while (gid != NodeProxy.DOCUMENT_NODE_GID) {
-			gid = XMLUtil.getParentId(doc, gid, level);
+			gid = NodeSetHelper.getParentId(doc, gid, level);
             temp = get(doc, gid);
 			if (temp != null)
 				return temp;
@@ -503,7 +503,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		NodeProxy parent = null;
 		for (Iterator i = iterator(); i.hasNext();) {
             NodeProxy current = (NodeProxy) i.next();			
-            long parentID = XMLUtil.getParentId(current.getDocument(), current.getGID()); 
+            long parentID = NodeSetHelper.getParentId(current.getDocument(), current.getGID()); 
             //Filter out the temporary nodes wrapper element 
             if (parentID != NodeProxy.DOCUMENT_NODE_GID && 
                     !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && current.getDocument().getCollection().isTempCollection())) {                
@@ -528,7 +528,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                     current.addContextNode(current);
                 ancestors.add(current);
             }
-            long parentID = XMLUtil.getParentId(current.getDocument(), current.getGID());            
+            long parentID = NodeSetHelper.getParentId(current.getDocument(), current.getGID());            
             while (parentID > 0) {
                 //Filter out the temporary nodes wrapper element 
                 if (parentID != NodeProxy.DOCUMENT_NODE_GID && 
@@ -542,7 +542,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                         parent.copyContext(current);
                     ancestors.add(parent);
                 }
-                parentID = XMLUtil.getParentId(current.getDocument(), parentID);    
+                parentID = NodeSetHelper.getParentId(current.getDocument(), parentID);    
             }
         }
         return ancestors;

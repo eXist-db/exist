@@ -37,11 +37,11 @@ import org.exist.dom.DocumentTypeImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.Match;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSetHelper;
 import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
-import org.exist.dom.XMLUtil;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
@@ -172,7 +172,7 @@ public class NativeSerializer extends Serializer {
             int count = 0;
             // int childLen;
             StoredNode child = null;
-            if (children > 0) gid = XMLUtil.getFirstChildId(doc, gid);
+            if (children > 0) gid = NodeSetHelper.getFirstChildId(doc, gid);
             while (count < children) {
                 child = (StoredNode) iter.next();
                 if (child.getNodeType() == Node.ATTRIBUTE_NODE) {

@@ -227,7 +227,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		long pa = gid, pb = node.gid;
 		if (la > lb) {
 			while (la > lb) {
-				pa = XMLUtil.getParentId(doc, pa, la);
+				pa = NodeSetHelper.getParentId(doc, pa, la);
 				--la;
 			}
 			if (pa == pb)
@@ -237,7 +237,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 				return pa < pb;
 		} else if (lb > la) {
 			while (lb > la) {
-				pb = XMLUtil.getParentId(node.doc, pb, lb);
+				pb = NodeSetHelper.getParentId(node.doc, pb, lb);
 				--lb;
 			}
 			if (pb == pa)
@@ -265,7 +265,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		long pa = gid, pb = node.gid;
 		if (la > lb) {
 			while (la > lb) {
-				pa = XMLUtil.getParentId(doc, pa, la);
+				pa = NodeSetHelper.getParentId(doc, pa, la);
 				--la;
 			}
 			// a is a descendant of b
@@ -275,7 +275,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 				return pa > pb;
 		} else if (lb > la) {
 			while (lb > la) {
-				pb = XMLUtil.getParentId(node.doc, pb, lb);
+				pb = NodeSetHelper.getParentId(node.doc, pb, lb);
 				--lb;
 			}
 			if (pb == pa)
@@ -839,7 +839,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		if (level == UNKNOWN_NODE_LEVEL)
 			level = doc.getTreeLevel(otherId);
 		while (otherId > 0) {
-			otherId = XMLUtil.getParentId(doc, otherId, level);
+			otherId = NodeSetHelper.getParentId(doc, otherId, level);
 			if(otherId == gid)
 				return this;
 			else if (directParent)
@@ -967,7 +967,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @see org.exist.dom.NodeSet#getParents(boolean)
      */    
     public NodeSet getParents(boolean rememberContext) {        
-        long pid = XMLUtil.getParentId(doc, gid);
+        long pid = NodeSetHelper.getParentId(doc, gid);
         if (pid == DOCUMENT_NODE_GID) 
             return NodeSet.EMPTY_SET;
         NodeProxy parent = new NodeProxy(doc, pid, Node.ELEMENT_NODE);
@@ -983,7 +983,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         if (includeSelf)
             ancestors.add(this);        
         long pid = gid;        
-        while((pid = XMLUtil.getParentId(getDocument(), pid)) > 0) {
+        while((pid = NodeSetHelper.getParentId(getDocument(), pid)) > 0) {
             NodeProxy parent = new NodeProxy(getDocument(), pid, Node.ELEMENT_NODE);
             if (rememberContext)
                 parent.addContextNode(this);
