@@ -26,6 +26,7 @@ import java.util.Iterator;
 
 import org.exist.util.Range;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -57,11 +58,12 @@ public class NodeSetHelper {
 	 * @param dl a node set containing potential child nodes
 	 * @param al a node set containing potential parent nodes
 	 * @param mode selection mode
-	 * @param rememberContext if true, add the matching nodes to the context node
-	 * list of each returned node (this is used to track matches for predicate evaluation)
+	 * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
 	 * @return
 	 */
-	public static NodeSet selectParentChild(NodeSet dl, NodeSet al, int mode, boolean rememberContext) {
+	public static NodeSet selectParentChild(NodeSet dl, NodeSet al, int mode, int contextId) {
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
 		DocumentImpl lastDoc = null;		
 		switch (mode) {
@@ -75,8 +77,8 @@ public class NodeSetHelper {
 					}
                     NodeProxy parent = al.parentWithChild(child, true, false, NodeProxy.UNKNOWN_NODE_LEVEL);
 					if (parent != null) {
-						if (rememberContext)
-                            child.addContextNode(parent);
+						if (Expression.NO_CONTEXT_ID != contextId)
+                            child.addContextNode(contextId, parent);
 						else
                             child.copyContext(parent);
 						result.add(child, sizeHint);
@@ -93,8 +95,8 @@ public class NodeSetHelper {
 					}
                     NodeProxy parent = al.parentWithChild(child, true, false, NodeProxy.UNKNOWN_NODE_LEVEL);
 					if (parent != null) {
-						if (rememberContext)
-                            parent.addContextNode(child);
+						if (Expression.NO_CONTEXT_ID != contextId)
+                            parent.addContextNode(contextId, child);
 						else
                             parent.copyContext(child);
 						result.add(parent, sizeHint);
@@ -126,13 +128,14 @@ public class NodeSetHelper {
 	 * @param mode selection mode
 	 * @param includeSelf if true, check if the ancestor node itself is contained in
 	 * the set of descendant nodes (descendant-or-self axis)
-	 * @param rememberContext if true, add the matching nodes to the context node
-	 * list of each returned node (this is used to track matches for predicate evaluation)
+	 * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
 	 * 
 	 * @return
 	 */
 	public static NodeSet selectAncestorDescendant(NodeSet dl, NodeSet al, int mode, boolean includeSelf,
-	        boolean rememberContext) {		
+	        int contextId) {		
         ExtArrayNodeSet result = new ExtArrayNodeSet();
 		DocumentImpl lastDoc = null;
 		switch (mode) {
@@ -148,8 +151,8 @@ public class NodeSetHelper {
                     NodeProxy ancestor = al.parentWithChild(descendant.getDocument(), descendant.getGID(), false, includeSelf,
                             NodeProxy.UNKNOWN_NODE_LEVEL);
 					if (ancestor != null) {
-						if (rememberContext)
-                            descendant.addContextNode(ancestor);
+						if (Expression.NO_CONTEXT_ID != contextId)
+                            descendant.addContextNode(contextId, ancestor);
 						else
                             descendant.copyContext(ancestor);
 						result.add(descendant, sizeHint);
@@ -168,8 +171,8 @@ public class NodeSetHelper {
                     NodeProxy ancestor = al.parentWithChild(descendant.getDocument(), descendant.getGID(), false, includeSelf,
 							NodeProxy.UNKNOWN_NODE_LEVEL);
 					if (ancestor != null) {
-						if (rememberContext)
-                            ancestor.addContextNode(descendant);
+						if (Expression.NO_CONTEXT_ID != contextId)
+                            ancestor.addContextNode(contextId, descendant);
 						else
                             ancestor.copyContext(descendant);
 						result.add(ancestor, sizeHint);
@@ -190,11 +193,12 @@ public class NodeSetHelper {
 	 * @param dl node set containing potential descendants
 	 * @param includeSelf if true, check if the ancestor node itself is contained
 	 * in this node set (ancestor-or-self axis)
-	 * @param rememberContext if true, add the matching nodes to the context node
-	 * list of each returned node (this is used to track matches for predicate evaluation)
+	 * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
 	 *@return
 	 */
-    public static NodeSet selectAncestors(NodeSet al, NodeSet dl, boolean includeSelf, boolean rememberContext) {		 
+    public static NodeSet selectAncestors(NodeSet al, NodeSet dl, boolean includeSelf, int contextId) {		 
 		NodeSet result = new ExtArrayNodeSet();		
 		for (Iterator i = dl.iterator(); i.hasNext();) {
             NodeProxy descendant = (NodeProxy) i.next();
@@ -204,13 +208,13 @@ public class NodeSetHelper {
 				if (ancestor != null) {
                     NodeProxy temp = result.get(ancestor);
 					if (temp == null) {
-						if (rememberContext)
-                            ancestor.addContextNode(descendant);
+						if (Expression.NO_CONTEXT_ID != contextId)
+                            ancestor.addContextNode(contextId, descendant);
 						else
                             ancestor.copyContext(descendant);
 						result.add(ancestor);
-					} else if (rememberContext)
-						temp.addContextNode(descendant);
+					} else if (Expression.NO_CONTEXT_ID != contextId)
+						temp.addContextNode(contextId, descendant);
 				}
 			}
 		}
@@ -244,16 +248,16 @@ public class NodeSetHelper {
 	/**
 	 * Select all nodes from the passed set of potential siblings, which
 	 * are preceding siblings of the nodes in
-	 * the other set. If mode is {@link #FOLLOWING}, only following
-	 * nodes are selected. {@link #PRECEDING} selects
-	 * preceding nodes.
+	 * the other set.
 	 * 
-	 * @param set the node set to check
-	 * @param siblings a node set containing potential siblings
-	 * @param mode either FOLLOWING or PRECEDING
+	 * @param candidates the node set to check
+	 * @param references a node set containing potential siblings
+	 * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
 	 * @return
 	 */
-	public static NodeSet selectPrecedingSiblings(NodeSet candidates, NodeSet references, boolean rememberContext) {
+	public static NodeSet selectPrecedingSiblings(NodeSet candidates, NodeSet references, int contextId) {
 		if (references.getLength() == 0 || candidates.getLength() == 0)
 			return NodeSet.EMPTY_SET;
 		NodeSet result = new ExtArrayNodeSet();
@@ -295,9 +299,9 @@ public class NodeSetHelper {
 					// if its id is greater than the id of the other node
 					if (candidate.getGID() < reference.getGID()) {
 						// found a preceding sibling						
-						if (rememberContext)
+						if (Expression.NO_CONTEXT_ID != contextId)
                             //TODO : add transverse context
-                            candidate.addContextNode(reference);
+                            candidate.addContextNode(contextId, reference);
 						else
                             candidate.copyContext(reference);
 						result.add(candidate);						
@@ -328,16 +332,16 @@ public class NodeSetHelper {
     /**
      * Select all nodes from the passed set of potential siblings, which
      * are following siblings of the nodes in
-     * the other set. If mode is {@link #FOLLOWING}, only following
-     * nodes are selected. {@link #PRECEDING} selects
-     * preceding nodes.
+     * the other set.
      * 
-     * @param set the node set to check
-     * @param siblings a node set containing potential siblings
-     * @param mode either FOLLOWING or PRECEDING
+     * @param candidates the node set to check
+     * @param references a node set containing potential siblings
+     * @param contextId used to track context nodes when evaluating predicate 
+	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+	 * will be added to each result of the of the selection. 
      * @return
      */
-    public static NodeSet selectFollowingSiblings(NodeSet candidates, NodeSet references, boolean rememberContext) {
+    public static NodeSet selectFollowingSiblings(NodeSet candidates, NodeSet references, int contextId) {
         if (references.getLength() == 0 || candidates.getLength() == 0)
             return NodeSet.EMPTY_SET;
         NodeSet result = new ExtArrayNodeSet();
@@ -386,9 +390,9 @@ public class NodeSetHelper {
                             break;
                     } else if (candidate.getGID() > reference.getGID()) {
                         // found a following sibling 
-                        if (rememberContext)
+                        if (Expression.NO_CONTEXT_ID != contextId)
                             //TODO : add transverse context
-                            candidate.addContextNode(reference);
+                            candidate.addContextNode(contextId, reference);
                         else
                             candidate.copyContext(reference);
                         result.add(candidate);                        
@@ -409,6 +413,9 @@ public class NodeSetHelper {
         return result;
     }    
     
+    /**
+     * TODO: doesn't work!!!
+     */
     public static NodeSet selectPreceding(NodeSet references, NodeSet candidates) throws XPathException {
         if (candidates.getLength() == 0 || references.getLength() == 0)
             return NodeSet.EMPTY_SET;
@@ -419,7 +426,7 @@ public class NodeSetHelper {
                 NodeProxy candidate = (NodeProxy) iCandidates.next();                                  
                 if (candidate.before(reference)) {
                     //TODO : add transverse context
-                    candidate.addContextNode(reference);
+                    candidate.addContextNode(Expression.NO_CONTEXT_ID, reference);
                     result.add(candidate);
                 }
             }
@@ -427,6 +434,9 @@ public class NodeSetHelper {
         return result;
     }
     
+    /**
+     * TODO: doesn't work!!!
+     */
     public static NodeSet selectFollowing(NodeSet references, NodeSet candidates) throws XPathException {
         if (candidates.getLength() == 0 || references.getLength() == 0)
             return NodeSet.EMPTY_SET;
@@ -437,7 +447,7 @@ public class NodeSetHelper {
                 NodeProxy candidate = (NodeProxy) iCandidates.next();
                 if (candidate.after(reference)) {
                     //TODO : add transverse context
-                    candidate.addContextNode(reference);
+                    candidate.addContextNode(Expression.NO_CONTEXT_ID, reference);
                     result.add(candidate);
                 }
             }
@@ -446,13 +456,13 @@ public class NodeSetHelper {
     }    
 
     
-    public static NodeSet directSelectAttributes(NodeSet candidates, QName qname, boolean rememberContext) {
+    public static NodeSet directSelectAttributes(NodeSet candidates, QName qname, int contextId) {
         if (candidates.getLength() == 0)
             return NodeSet.EMPTY_SET;        
         NodeSet result = new ExtArrayNodeSet();
         for (Iterator iCandidates = candidates.iterator(); iCandidates.hasNext(); ) {
             NodeProxy candidate = (NodeProxy) iCandidates.next();
-            result.addAll(candidate.directSelectAttribute(qname, rememberContext));
+            result.addAll(candidate.directSelectAttribute(qname, contextId));
         }
         return result;
     }

@@ -33,11 +33,11 @@ import org.exist.dom.NodeSet;
 public class DescendantSelector implements NodeSelector {
 	
 	protected NodeSet context;
-	protected boolean rememberContext = false;
+	protected int contextId;
 	
-	public DescendantSelector(NodeSet contextSet, boolean rememberContext) {
+	public DescendantSelector(NodeSet contextSet, int contextId) {
 		this.context = contextSet;
-		this.rememberContext = rememberContext;
+		this.contextId = contextId;
 	}
 	
 	
@@ -51,8 +51,8 @@ public class DescendantSelector implements NodeSelector {
 		NodeProxy contextNode = context.parentWithChild(doc, gid, false, false, NodeProxy.UNKNOWN_NODE_LEVEL);
 		if (contextNode == null)
             return null;	    
-		if (rememberContext)
-            p.addContextNode(contextNode);
+		if (Expression.NO_CONTEXT_ID != contextId)
+            p.addContextNode(contextId, contextNode);
 		else
             p.copyContext(contextNode);
 		return p;

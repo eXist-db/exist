@@ -52,7 +52,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     protected List steps = new ArrayList();
 
     protected boolean inPredicate = false;
-
+    protected int contextId = Expression.NO_CONTEXT_ID;
+    
     public PathExpr(XQueryContext context) {
         super(context);
     }
@@ -106,6 +107,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+        contextId = contextInfo.getContextId();
+        
         for (int i = 0; i < steps.size(); i++) {
             // if this is a sequence of steps, the IN_PREDICATE flag
             // is only passed to the first step, so it has to be removed
@@ -115,6 +118,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if(i == 1) {
                 	//take care : predicates in predicates are not marked as such ! -pb
                     contextInfo.setFlags(contextInfo.getFlags() & (~IN_PREDICATE));
+                    contextInfo.setContextId(Expression.NO_CONTEXT_ID);
                 }
             }
             expr.analyze(contextInfo);

@@ -20,6 +20,8 @@
  */
 package org.exist.dom;
 
+import org.exist.xquery.Expression;
+
 public class ContextItem {
 
     boolean isTransverseAxis= false;
@@ -32,8 +34,14 @@ public class ContextItem {
     //"transverse" axis are preceding, preceding-sibling, following-sibling, following
     private ContextItem nextTransverse;
 	
+	private int contextId;
 	
-    public ContextItem(NodeProxy node) {        
+	public ContextItem(NodeProxy node) {
+		this(Expression.NO_CONTEXT_ID, node);
+	}
+	
+    public ContextItem(int contextId, NodeProxy node) {
+    	this.contextId = contextId;
         this.node = node;
     }
     
@@ -41,6 +49,10 @@ public class ContextItem {
 		return node;
 	}
     
+	public int getContextId() {
+		return contextId;
+	}
+	
     public boolean hasNextDirect() {
         return (nextDirect != null);
     }

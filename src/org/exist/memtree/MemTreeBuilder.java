@@ -113,6 +113,7 @@ public class MemTreeBuilder {
 	 */
 	public int startElement(QName qn, Attributes attributes) {
 		int nodeNr = doc.addNode(Node.ELEMENT_NODE, level, qn);
+//		System.out.println("start: " + qn + "; nodeNr = " + nodeNr + "; level = " + level);
 		if(attributes != null) {
 			// parse attributes
 			String attrPrefix;
@@ -125,8 +126,8 @@ public class MemTreeBuilder {
 				attrLocalName = attributes.getLocalName(i);
 				attrQName = attributes.getQName(i);
 				// skip xmlns-attributes and attributes in eXist's namespace
-				if (!(attrQName.startsWith("xmlns")
-					|| attrNS.equals("http://exist.sourceforge.net/NS/exist"))) {
+				if (!(attrQName.startsWith("xmlns"))) {
+//					|| attrNS.equals("http://exist.sourceforge.net/NS/exist"))) {
 					p = attrQName.indexOf(':');
 					attrPrefix = (p > Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
 					p =
@@ -156,6 +157,7 @@ public class MemTreeBuilder {
 	 * Close the last element created.
 	 */
 	public void endElement() {
+//		System.out.println("end-element: level = " + level);
 		prevNodeInLevel[level] = -1;
 		--level;
 	}
@@ -185,6 +187,7 @@ public class MemTreeBuilder {
 	public int characters(char[] ch, int start, int len) {
 		int nodeNr = doc.addNode(Node.TEXT_NODE, level, null);
 		doc.addChars(nodeNr, ch, start, len);
+//		System.out.println("nodeNr = " + nodeNr + "; level = " + level);
 		linkNode(nodeNr);
 		return nodeNr;
 	}

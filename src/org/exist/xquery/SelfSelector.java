@@ -31,13 +31,13 @@ import org.exist.dom.NodeSet;
  */
 public class SelfSelector implements NodeSelector {
 	
-	private boolean rememberContext = false;
+	private int contextId;
 	
 	/**
 	 * 
 	 */
-	public SelfSelector(NodeSet contextSet, boolean rememberContext) {		
-		this.rememberContext = rememberContext;
+	public SelfSelector(NodeSet contextSet, int contextId) {		
+		this.contextId = contextId;
 	}
 
 	/* (non-Javadoc)
@@ -48,8 +48,8 @@ public class SelfSelector implements NodeSelector {
         if (p == null) 
             return null;  
         NodeProxy contextNode = p;
-        if (rememberContext)             
-            p.addContextNode(contextNode);       
+        if (Expression.NO_CONTEXT_ID != contextId)             
+            p.addContextNode(contextId, contextNode);
         return p;
 	}
 }

@@ -48,14 +48,14 @@ public class PreorderedValueSequence extends AbstractSequence {
 	private OrderSpec orderSpecs[];
 	private OrderedNodeProxy[] nodes;
 	
-	public PreorderedValueSequence(OrderSpec specs[], Sequence input) throws XPathException {
+	public PreorderedValueSequence(OrderSpec specs[], Sequence input, int contextId) throws XPathException {
 		this.orderSpecs = specs;
 		nodes = new OrderedNodeProxy[input.getLength()];
 		int j = 0;
 		for(SequenceIterator i = input.unorderedIterator(); i.hasNext(); j++) {
 			NodeProxy p = (NodeProxy)i.nextItem();
 			nodes[j] = new OrderedNodeProxy(p);
-			p.addContextNode(nodes[j]);
+			p.addContextNode(contextId, nodes[j]);
 		}
 		processAll();
 	}

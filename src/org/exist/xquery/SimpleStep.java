@@ -81,10 +81,10 @@ public class SimpleStep extends Step {
         else {        
     		switch(axis) {
     			case Constants.DESCENDANT_SELF_AXIS:
-    				set = set.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, inPredicate);
+    				set = set.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, contextId);
     				break;
     			case Constants.CHILD_AXIS:
-    				set = set.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, inPredicate);
+    				set = set.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, contextId);
     				break;
     			default:
     				throw new XPathException("Wrong axis specified");

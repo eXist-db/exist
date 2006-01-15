@@ -103,11 +103,11 @@ public class FunLang extends Function {
     		}
     		if (temp.getLength() > 0) {
     			result = ((NodeSet) contextSequence).selectAncestorDescendant(
-    					temp, NodeSet.DESCENDANT, true, false);
+    					temp, NodeSet.DESCENDANT, true, contextId);
     			for (Iterator i = ((NodeSet)result).iterator(); i.hasNext();) {
                     NodeProxy p = (NodeProxy) i.next();
-    				p.addContextNode(p);
-    			}                
+    				p.addContextNode(contextId, p);
+    			}
     		}
             else result = Sequence.EMPTY_SEQUENCE;
         }

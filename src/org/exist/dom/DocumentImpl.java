@@ -42,6 +42,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.SyntaxException;
 import org.exist.xquery.Constants;
 import org.exist.xquery.DescendantSelector;
+import org.exist.xquery.Expression;
 import org.exist.xquery.NodeSelector;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
@@ -738,7 +739,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         DocumentSet docs = new DocumentSet();
         docs.add(this);
         NodeProxy p = new NodeProxy(this, root.getGID(), root.getInternalAddress());
-        NodeSelector selector = new DescendantSelector(p, false);
+        NodeSelector selector = new DescendantSelector(p, Expression.NO_CONTEXT_ID);
         return (NodeSet) broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
     } 
     

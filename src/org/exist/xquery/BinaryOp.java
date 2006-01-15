@@ -65,9 +65,10 @@ public abstract class BinaryOp extends PathExpr {
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) != 0;
-        inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0;
-        getLeft().analyze(contextInfo);
-        getRight().analyze(contextInfo);
+    	contextId = contextInfo.getContextId();
+    	inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0;
+    	getLeft().analyze(contextInfo);
+    	getRight().analyze(contextInfo);
     }
 
     /*

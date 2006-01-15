@@ -53,7 +53,7 @@ public class FunInScopePrefixes extends BasicFunction {
 		NodeValue node = (NodeValue) args[0].itemAt(0);
 		if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy) node;
-			NodeSet ancestors = proxy.getAncestors(false, true);
+			NodeSet ancestors = proxy.getAncestors(contextId, true);
 			for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
 				proxy = (NodeProxy) i.next();
 				collectNamespacePrefixes((ElementImpl) proxy.getNode(), prefixes);

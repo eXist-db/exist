@@ -63,7 +63,7 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
 		Map prefixes = new HashMap();
 		if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy) node;
-			NodeSet ancestors = proxy.getAncestors(false, true);
+			NodeSet ancestors = proxy.getAncestors(contextId, true);
 			for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
 				proxy = (NodeProxy) i.next();
 				FunInScopePrefixes.collectNamespacePrefixes((ElementImpl) proxy.getNode(), prefixes);

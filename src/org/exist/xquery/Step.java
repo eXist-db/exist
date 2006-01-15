@@ -39,6 +39,11 @@ public abstract class Step extends AbstractExpression {
     protected NodeTest test;
 	protected boolean inPredicate = false;
 	
+	/**
+	 * Holds the context id for the context of this expression.
+	 */
+	protected int contextId = Expression.NO_CONTEXT_ID;
+	
     public Step( XQueryContext context, int axis ) {
         super(context);
         this.axis = axis;
@@ -58,6 +63,7 @@ public abstract class Step extends AbstractExpression {
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+    	this.contextId = contextInfo.getContextId();
     	contextInfo.setParent(this);
         for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
             ((Predicate) i.next()).analyze(contextInfo);

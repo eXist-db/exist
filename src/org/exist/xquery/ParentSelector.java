@@ -36,8 +36,8 @@ public class ParentSelector implements NodeSelector {
 	/**
 	 * 
 	 */
-	public ParentSelector(NodeSet contextSet, boolean rememberContext) {
-		this.parents = contextSet.getParents(rememberContext);		
+	public ParentSelector(NodeSet contextSet, int contextId) {
+		this.parents = contextSet.getParents(contextId);		
 	}
 
 	/* (non-Javadoc)

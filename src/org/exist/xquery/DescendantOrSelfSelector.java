@@ -32,8 +32,8 @@ import org.exist.dom.NodeSet;
  */
 public class DescendantOrSelfSelector extends DescendantSelector {
 	
-	public DescendantOrSelfSelector(NodeSet contextSet, boolean rememberContext) {
-		super(contextSet, rememberContext);
+	public DescendantOrSelfSelector(NodeSet contextSet, int contextId) {
+		super(contextSet, contextId);
 	}
 	
 	/* (non-Javadoc)
@@ -46,8 +46,8 @@ public class DescendantOrSelfSelector extends DescendantSelector {
         NodeProxy contextNode = context.parentWithChild(doc, gid, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
         if(contextNode == null)
             return null;        
-		if (rememberContext)
-			p.addContextNode(contextNode);
+		if (Expression.NO_CONTEXT_ID != contextId)
+			p.addContextNode(contextId, contextNode);
 		else
 			p.copyContext(contextNode);
 		return p;

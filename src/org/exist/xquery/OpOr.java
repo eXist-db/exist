@@ -58,9 +58,9 @@ public class OpOr extends LogicalOp {
 		Expression right = getRight();
 		if(optimize) {
 			NodeSet rl = left.eval(contextSequence, null).toNodeSet();
-			rl = rl.getContextNodes(inPredicate);
+			rl = rl.getContextNodes(contextId);
 			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
-			rr = rr.getContextNodes(inPredicate);
+			rr = rr.getContextNodes(contextId);
             result = rl.union(rr);			
 		} else {
 			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
