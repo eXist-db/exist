@@ -13,10 +13,10 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation, Inc.
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- * 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  *  $Id$
  */
 
@@ -106,6 +106,11 @@ public class eXistCatalogResolver implements org.xml.sax.EntityResolver,
         System.out.println("Getting catalog from eXistCatalogResolver.");
         
         Catalog catalog = catalogResolver.getCatalog();
+        
+        if(catalog==null){
+            logger.error("Catalog could not be retrieved.");
+        }
+            
         return catalog;
     }
     
@@ -127,14 +132,34 @@ public class eXistCatalogResolver implements org.xml.sax.EntityResolver,
      *         to request that the parser open a regular URI connection to the
      *         system identifier.
      */
-    public InputSource resolveEntity(String publicId, String systemId)  
-                                              throws SAXException, IOException {
+    public InputSource resolveEntity(String publicId, String systemId)
+    throws SAXException, IOException {
         
         logger.debug("resolveEntity( publicId='" +publicId + "', systemId='"+systemId+"').");
         InputSource inputsource =catalogResolver.resolveEntity(publicId, systemId);
         
-        logger.debug("resolved publicId='"+inputsource.getPublicId()
-        + "' systemId='"+inputsource.getSystemId()+"'.");
+        if(inputsource==null){
+            // According to the spec 'null' must be returned. However, this
+            // value is for the Parser the hint to use the systemId that is 
+            // supplied to the resolver. Unfortunately this value does not make
+            // any sence; cocoon let is point to it cache:
+            // tools/jetty/work/Jetty__8080__exist/cocoon-files/cache-dir/*.dtd
+            // With this value is seems this resolver is not functional at all.
+            // We'll return null at this moment.
+            logger.debug("Entity could not be resolved");
+            return null;
+            
+        } else {
+            
+            logger.debug("resolved publicId='"+inputsource.getPublicId()
+                        + "' systemId='"+inputsource.getSystemId()+"'.");
+        }
+        
+        if(inputsource.getByteStream()==null){
+            logger.debug("No data stream returned from resolved Entitity.");
+            //inputsource.setSystemId(null);
+        }
+        
         return inputsource;
     }
     
@@ -158,7 +183,11 @@ public class eXistCatalogResolver implements org.xml.sax.EntityResolver,
         logger.debug("resolve( href='" +href + "', base='"+base+"').");
         Source source= catalogResolver.resolve(href, base);
         
-        logger.debug("systemId="+source.getSystemId());
+        if(source==null){
+            logger.debug("href could not be resolved");
+        } else {
+            logger.debug("systemId="+source.getSystemId());
+        }
         
         return source;
     }
