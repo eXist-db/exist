@@ -53,8 +53,7 @@ public class CollectionCache extends LRDCache {
 		Collection old;
 		Lock lock;
 		double rd = 0, minRd = -1;
-		int bucket = -1;
-		boolean unloadable;
+		int bucket = -1;		
 		for (int i = 0; i < items.length; i++) {
 			old = (Collection)items[i];
 			if (old == null) {
@@ -116,10 +115,11 @@ public class CollectionCache extends LRDCache {
             for (int i = 0; i < count; i++) {
                 newItems[i] = items[i];
                 newMap.put(items[i].getKey(), items[i]);
-                names.put(((Collection) items[i]).getName(), items[i].getKey());
+                newNames.put(((Collection) items[i]).getName(), items[i].getKey());
             }
             this.size = newSize;
             this.map = newMap;
+            this.names = newNames;
             accounting.reset();
             accounting.setTotalSize(size);
         }
