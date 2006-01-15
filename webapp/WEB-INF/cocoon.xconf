@@ -331,8 +331,9 @@
       |     <parameter name="verbosity" value="2"/>
       +-->
   <entity-resolver logger="core.resolver">
-    <parameter name="catalog" value="WEB-INF/entities/catalog"/>
-    <parameter name="verbosity" value="1"/>
+    <parameter name="catalog-class-name" 
+               value="org.exist.validation.resolver.eXistCatalogResolver" />
+    <parameter name="verbosity" value="2"/>
   </entity-resolver>
 
   <!--+
