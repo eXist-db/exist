@@ -57,7 +57,6 @@ import org.exist.dom.NodeSetHelper;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
-import org.exist.dom.XMLUtil;
 import org.exist.memtree.DOMIndexer;
 import org.exist.security.MD5;
 import org.exist.security.Permission;
@@ -2338,15 +2337,17 @@ public class NativeBroker extends DBBroker {
                         + node.getNodeName()
                         + "; gid = "
                         + node.getGID());
-                throw new IllegalStateException("wrong node id");
+                throw new IllegalStateException("Wrong node id");
             }
             final long lastChildId = firstChildId + node.getChildCount();
             StoredNode child;
             for (long gid = firstChildId; gid < lastChildId; gid++) {
                 child = (StoredNode) iterator.next();
-                if(child == null)
-                    LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
+                if(child == null) {
+                    LOG.fatal("child " + gid + " not found for node: " + node.getNodeName() +
                             "; last = " + lastChildId + "; children = " + node.getChildCount());
+                    throw new IllegalStateException("Wrong node id");
+                }
                 child.setGID(gid);
                 copyNodes(transaction, iterator, child, currentPath, newDoc, index);
             }
@@ -2497,15 +2498,17 @@ public class NativeBroker extends DBBroker {
                                 + node.getNodeName()
                                 + "; gid = "
                                 + node.getGID());
-                        throw new IllegalStateException("wrong node id");
+                        throw new IllegalStateException("Wrong node id");
                     }
                     final long lastChildId = firstChildId + node.getChildCount();
                     StoredNode child;
                     for (long gid = firstChildId; gid < lastChildId; gid++) {
                         child = (StoredNode) iterator.next();
-                        if(child == null)
-                            LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
+                        if(child == null) {
+                            LOG.fatal("child " + gid + " not found for node: " + node.getNodeName() +
                                     "; last = " + lastChildId + "; children = " + node.getChildCount());
+                            throw new IllegalStateException("Wrong node id");
+                        }
                         child.setGID(gid);
                         if (child.getNodeType() == Node.ELEMENT_NODE)
                             currentPath.addComponent(((ElementImpl) child).getQName());
@@ -2551,8 +2554,8 @@ public class NativeBroker extends DBBroker {
     
     private void checkNodeTree(Iterator iterator, StoredNode node) {
         if (node.hasChildNodes()) {
-            final long firstChildId = NodeSetHelper.getFirstChildId((DocumentImpl)node.getOwnerDocument(), 
-                    node.getGID());          
+            final long firstChildId = NodeSetHelper.getFirstChildId(
+                    (DocumentImpl)node.getOwnerDocument(), node.getGID());          
             if (firstChildId < 0) {
                 LOG.fatal(
                     "no child found: expected = "
@@ -2561,15 +2564,17 @@ public class NativeBroker extends DBBroker {
                         + node.getNodeName()
                         + "; gid = "
                         + node.getGID());
-                throw new IllegalStateException("wrong node id");
+                throw new IllegalStateException("Wrong node id");
             }
             final long lastChildId = firstChildId + node.getChildCount();
             StoredNode child;
             for (long gid = firstChildId; gid < lastChildId; gid++) {
                 child = (StoredNode) iterator.next();
-                if(child == null)
-                    LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
+                if(child == null) {
+                    LOG.fatal("child " + gid + " not found for node: " + node.getNodeName() +
                             "; last = " + lastChildId + "; children = " + node.getChildCount());
+                    throw new IllegalStateException("Wrong node id");
+                }
                 child.setGID(gid);
                 checkNodeTree(iterator, child);
             }
@@ -2603,15 +2608,17 @@ public class NativeBroker extends DBBroker {
                         + node.getNodeName()
                         + "; gid = "
                         + node.getGID());
-                throw new IllegalStateException("wrong node id");
+                throw new IllegalStateException("Wrong node id");
             }
             final long lastChildId = firstChildId + node.getChildCount();
             StoredNode child;
             for (long gid = firstChildId; gid < lastChildId; gid++) {
                 child = (StoredNode) iterator.next();
-                if(child == null)
-                    LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
+                if(child == null) {
+                    LOG.fatal("child " + gid + " not found for node: " + node.getNodeName() +
                             "; last = " + lastChildId + "; children = " + node.getChildCount());
+                    throw new IllegalStateException("Wrong node id");
+                }
                 child.setGID(gid);
                 scanNodes(transaction, iterator, child, currentPath, fullReindex, repairMode);
             }
@@ -2634,13 +2641,8 @@ public class NativeBroker extends DBBroker {
      *@param  expr        Description of the Parameter
      *@return             Description of the Return Value
      */
-    protected NodeSet scanNodesSequential(
-        NodeSet context,
-        DocumentSet doc,
-        int relation,
-        int truncation,
-        String expr,
-        Collator collator) {
+    protected NodeSet scanNodesSequential(NodeSet context, DocumentSet doc, 
+            int relation, int truncation, String expr, Collator collator) {
         ExtArrayNodeSet resultNodeSet = new ExtArrayNodeSet();
         NodeProxy p;
         String content;
@@ -2731,25 +2733,11 @@ public class NativeBroker extends DBBroker {
 		.run();
 	}
 
-	public NodeSet getNodesEqualTo(
-		NodeSet context,
-		DocumentSet docs,
-		int relation,
-        int truncation,
-		String expr,
-		Collator collator) {
-		//		long start = System.currentTimeMillis();
-		// NodeSet temp;
+	public NodeSet getNodesEqualTo(NodeSet context, DocumentSet docs, 
+            int relation, int truncation, String expr, Collator collator) {
 		if (!isCaseSensitive())
 			expr = expr.toLowerCase();
-		NodeSet result = scanNodesSequential(context, docs, relation, truncation, expr, collator);
-		//				LOG.debug(
-		//					"searching "
-		//						+ result.getLength()
-		//						+ " nodes took "
-		//						+ (System.currentTimeMillis() - start)
-		//						+ "ms.");
-		return result;
+		return scanNodesSequential(context, docs, relation, truncation, expr, collator);		
 	}
 
     public NodeList getNodeRange(final Document doc, final long first, final long last) {
@@ -2766,12 +2754,7 @@ public class NativeBroker extends DBBroker {
 				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
 				if (val == null)
 					return null;				
-				StoredNode node =
-					StoredNode.deserialize(
-						val.getData(),
-						0,
-						val.getLength(),
-						(DocumentImpl) doc);
+				StoredNode node = StoredNode.deserialize(val.getData(),	0, val.getLength(),	(DocumentImpl) doc);
 				node.setGID(gid);
 				node.setOwnerDocument(doc);
 				node.setInternalAddress(val.getAddress());
@@ -2794,12 +2777,8 @@ public class NativeBroker extends DBBroker {
 //					return null;
 					return objectWith(p.getDocument(), p.getGID()); // retry?
 				}
-				StoredNode node =
-					StoredNode.deserialize(
-						val.getData(),
-						0,
-						val.getLength(),
-						(DocumentImpl) p.getDocument());
+				StoredNode node = StoredNode.deserialize(val.getData(), 0, val.getLength(), 
+                        (DocumentImpl) p.getDocument());
 				node.setGID(p.getGID());
 				node.setOwnerDocument(p.getDocument());
 				node.setInternalAddress(p.getInternalAddress());
