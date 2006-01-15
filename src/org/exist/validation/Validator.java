@@ -61,7 +61,9 @@ public class Validator {
     // Required Xerces version.
     public final static String XERCESVERSION = "Xerces-J 2.7.1";
     
-    // Xerces feature and property names    
+    // Xerces feature and property names
+    final static String FEATURE_VALIDATION
+            ="http://xml.org/sax/features/validation";
     final static String FEATURE_DYNAMIC
             ="http://apache.org/xml/features/validation/dynamic";
     final static String FEATURE_SCHEMA
@@ -70,7 +72,10 @@ public class Validator {
             ="http://apache.org/xml/properties/internal/grammar-pool";
     final static String PROPERTIES_RESOLVER
             ="http://apache.org/xml/properties/internal/entity-resolver";
-    
+    final static String PROPERTIES_LOAD_EXT_DTD
+            ="http://apache.org/xml/features/nonvalidating/load-external-dtd";
+    final static String PROPERTIES_NS_PRFXS
+            ="http://xml.org/sax/features/namespace-prefixes";
     /**
      *  Setup Validator object with brokerpool as centre.
      */
@@ -87,15 +92,15 @@ public class Validator {
             
             if(!XERCESVERSION.equals(version)){
                 logger.error("Xerces version mismatch! eXist requires '"
-                             + XERCESVERSION+"' but found '"+version+"'. "
-                             + "Please add correct Xerces libraries to the "
-                             + "endorsed folder of your JRE or webcontainer.");
+                        + XERCESVERSION+"' but found '"+version+"'. "
+                        + "Please add correct Xerces libraries to the "
+                        + "endorsed folder of your JRE or webcontainer.");
             }
             
         } catch (Exception ex){
-            logger.error("Could not determine Xerces version. "                             
-                         + "Please add correct Xerces libraries to the "
-                         + "endorsed folder of your JRE or webcontainer.");
+            logger.error("Could not determine Xerces version. "
+                    + "Please add correct Xerces libraries to the "
+                    + "endorsed folder of your JRE or webcontainer.");
         }
         
         
@@ -117,30 +122,34 @@ public class Validator {
         // setup sax factory ; be sure just one instance!
         if(saxFactory==null){
             saxFactory = SAXParserFactory.newInstance();
-        }
-        
-        // Enable validation stuff
-        saxFactory.setValidating(true);
-        saxFactory.setNamespaceAware(true);
-        
-        try{
-            // Enable validation features of xerces
-            saxFactory.setFeature(FEATURE_DYNAMIC, true);
-            saxFactory.setFeature(FEATURE_SCHEMA,true);
             
-        } catch (ParserConfigurationException ex){
-            logger.error(ex);
             
-        } catch (SAXNotRecognizedException ex){
-            logger.error(ex);
+            // Enable validation stuff
+            saxFactory.setValidating(true);
+            saxFactory.setNamespaceAware(true);
             
-        } catch (SAXNotSupportedException ex){
-            logger.error(ex);
-            
+            try{
+                // Enable validation features of xerces
+                saxFactory.setFeature(FEATURE_VALIDATION, true);
+                saxFactory.setFeature(FEATURE_DYNAMIC, false);
+                saxFactory.setFeature(FEATURE_SCHEMA,true);
+                saxFactory.setFeature(PROPERTIES_LOAD_EXT_DTD, true);
+                saxFactory.setFeature(PROPERTIES_NS_PRFXS, true);
+                
+            } catch (ParserConfigurationException ex){
+                logger.error(ex);
+                
+            } catch (SAXNotRecognizedException ex){
+                logger.error(ex);
+                
+            } catch (SAXNotSupportedException ex){
+                logger.error(ex);
+                
+            }
         }
     }
     
-   
+    
     /**
      *  Validate XML data in inputstream.
      *
@@ -162,14 +171,14 @@ public class Validator {
         return validate( new InputStreamReader(is), grammarPath );
         
     }
-
+    
     /**
      *  Validate XML data from reader.
      * @param reader    XML input
      * @return          Validation report containing all validation info.
      */
     public ValidationReport validate(Reader reader) {
-            return validate(reader, null);
+        return validate(reader, null);
     }
     
     /**
@@ -180,7 +189,7 @@ public class Validator {
      *      /db/doc/ : start search start in specified collection
      *
      *      /db/doc/schema/schema.xsd :start with this schema, no search needed.
-     * 
+     *
      * @return Validation report containing all validation info.
      * @param grammarPath   User supplied path to grammar.
      * @param reader        XML input.
@@ -215,12 +224,12 @@ public class Validator {
             
             report.setValidationDuration(stop-start);
             logger.debug("Parse end." +
-                         "Validation performed in " + (stop-start) + " msec.");
+                    "Validation performed in " + (stop-start) + " msec.");
             
             if( ! report.isValid() ){
                 logger.debug( "Parse errors \n" + report.toString() )  ;
             }
-                        
+            
         } catch (IOException ex){
             logger.error(ex);
             report.setException(ex);
