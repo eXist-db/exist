@@ -123,8 +123,7 @@ public class StoredNode extends NodeImpl {
 	 * @param doc
 	 * @return
 	 */
-	public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc,
-	        boolean pooled) {
+	public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc, boolean pooled) {
 	    short type = Signatures.getType(data[start]);
 		switch (type) {
 			case Node.TEXT_NODE :
@@ -138,7 +137,7 @@ public class StoredNode extends NodeImpl {
 			case Node.COMMENT_NODE :
 				return CommentImpl.deserialize(data, start, len, pooled);
 			default :
-				LOG.error("Unknown node type: " + type);
+                LOG.error("Unknown node type: " + type);
 				return null;
 		}
 	}
@@ -153,8 +152,10 @@ public class StoredNode extends NodeImpl {
 			    return QName.COMMENT_QNAME;
 			case Node.DOCUMENT_TYPE_NODE:
 			    return QName.DOCTYPE_QNAME;
-		}
-		return null;
+            default:
+                LOG.error("Unknown node type: " + nodeType); 
+                return null;
+		}		
 	}
  
 	/**

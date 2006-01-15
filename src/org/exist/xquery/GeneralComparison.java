@@ -93,13 +93,12 @@ public class GeneralComparison extends BinaryOp {
 		this.relation = relation;
 	}
 
-	public GeneralComparison(XQueryContext context, Expression left, Expression right,
-	        int relation) {
+	public GeneralComparison(XQueryContext context, Expression left, Expression right, int relation) {
 		this(context, left, right, relation, Constants.TRUNC_NONE);
 	}
 	
-	public GeneralComparison(XQueryContext context,	Expression left, Expression right,
-	        int relation, int truncation) {
+	public GeneralComparison(XQueryContext context,	Expression left, Expression right, int relation, 
+            int truncation) {
 		super(context);
 		this.relation = relation;
 		this.truncation = truncation;
@@ -132,7 +131,7 @@ public class GeneralComparison extends BinaryOp {
 	 * @see org.exist.xquery.BinaryOp#returnsType()
 	 */
 	public int returnsType() {
-		if (inPredicate && (getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
+		if (inPredicate && (!Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM))) {
 			/* If one argument is a node set we directly
 			 * return the matching nodes from the context set. This works
 			 * only inside predicates.
@@ -577,8 +576,7 @@ public class GeneralComparison extends BinaryOp {
 	 * Cast the atomic operands into a comparable type
 	 * and compare them.
 	 */
-	protected boolean compareValues(Collator collator, AtomicValue lv, AtomicValue rv)
-		    throws XPathException {
+	protected boolean compareValues(Collator collator, AtomicValue lv, AtomicValue rv) throws XPathException {
 		try {
 			return compareAtomic(collator, lv, rv, context.isBackwardsCompatible(), truncation, relation);
 		} catch (XPathException e) {
@@ -587,9 +585,8 @@ public class GeneralComparison extends BinaryOp {
 		}
 	}
 
-	public static boolean compareAtomic(Collator collator, AtomicValue lv, 
-            AtomicValue rv, boolean backwardsCompatible, int truncation, int relation) 
-	        throws XPathException{
+	public static boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv, 
+            boolean backwardsCompatible, int truncation, int relation) throws XPathException{
 		int ltype = lv.getType();
 		int rtype = rv.getType();
 		if (ltype == Type.ITEM || ltype == Type.ATOMIC) {
@@ -649,16 +646,12 @@ public class GeneralComparison extends BinaryOp {
         return false;
     }
 
-    private boolean checkArgumentTypes(XQueryContext context, DocumentSet docs)
-		throws XPathException { 
-		DocumentImpl doc;
-		IndexSpec idxSpec;
-		FulltextIndexSpec idx;
+    private boolean checkArgumentTypes(XQueryContext context, DocumentSet docs)	throws XPathException {			 
 		for (Iterator i = docs.iterator(); i.hasNext();) {
-			doc = (DocumentImpl) i.next();
-			idxSpec = doc.getCollection().getIdxConf(context.getBroker());
+            DocumentImpl doc = (DocumentImpl) i.next();
+            IndexSpec idxSpec = doc.getCollection().getIdxConf(context.getBroker());
 			if(idxSpec != null) {
-			    idx = idxSpec.getFulltextIndexSpec();
+                FulltextIndexSpec idx = idxSpec.getFulltextIndexSpec();
                 if (idx != null) {
     			    if(idx.isSelective())
     			        return true;

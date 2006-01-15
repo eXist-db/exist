@@ -64,16 +64,14 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
 	 */
-	public void characters(char[] ch, int start, int length)
-			throws SAXException {
+	public void characters(char[] ch, int start, int length) throws SAXException {
 		builder.characters(ch, start, length);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
 	 */
-	public void ignorableWhitespace(char[] ch, int start, int length)
-			throws SAXException {
+	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
 	}
 
 	/* (non-Javadoc)
@@ -97,16 +95,14 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
 	 */
-	public void processingInstruction(String target, String data)
-			throws SAXException {
+	public void processingInstruction(String target, String data) throws SAXException {
 		builder.processingInstruction(target, data);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
 	 */
-	public void startPrefixMapping(String prefix, String uri)
-			throws SAXException {
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		if(namespaces == null)
 			namespaces = new HashMap();
 		namespaces.put(prefix, uri);
@@ -115,16 +111,15 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public void endElement(String namespaceURI, String localName, String qName)
-			throws SAXException {
+	public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 		builder.endElement();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
-	public void startElement(String namespaceURI, String localName,
-			String qName, Attributes atts) throws SAXException {
+	public void startElement(String namespaceURI, String localName,	String qName, Attributes atts) 
+            throws SAXException {
 		builder.startElement(namespaceURI, localName, qName, atts);
 		if(namespaces != null) {
 			for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {

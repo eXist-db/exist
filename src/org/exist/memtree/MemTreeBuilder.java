@@ -161,9 +161,8 @@ public class MemTreeBuilder {
 	}
 
 	public int addReferenceNode(NodeProxy proxy) {
-		int nodeNr = doc.addNode(NodeImpl.REFERENCE_NODE, level, null);
-		doc.addReferenceNode(nodeNr, proxy);
-		int prevNr = prevNodeInLevel[level];
+		final int nodeNr = doc.addNode(NodeImpl.REFERENCE_NODE, level, null);
+		doc.addReferenceNode(nodeNr, proxy);		
 		linkNode(nodeNr);
 		return nodeNr;
 	}
