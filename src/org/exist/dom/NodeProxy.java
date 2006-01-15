@@ -314,14 +314,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * @param internalAddress The internalAddress to set
 	 */
 	public void setInternalAddress(long internalAddress) {
-        if (this.internalAddress != UNKNOWN_NODE_ADDRESS && this.internalAddress != internalAddress)
+        if (this.internalAddress != UNKNOWN_NODE_ADDRESS /*&& this.internalAddress != internalAddress*/)
             throw new IllegalArgumentException("Internal address already affected");        
 		this.internalAddress = internalAddress;
 	}
     
 	public void setIndexType(int type) {
-        //TODO : check wether the allready set internal address can be changed here -pb
-	    internalAddress = StorageAddress.setIndexType(internalAddress, (short) type);
+	    this.internalAddress = StorageAddress.setIndexType(internalAddress, (short) type); 
 	}
 
 	public int getIndexType() {
@@ -953,14 +952,15 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         NodeSet ancestors = new ExtArrayNodeSet();
         if (includeSelf)
             ancestors.add(this);        
-        long pid = gid;        
-        while((pid = NodeSetHelper.getParentId(getDocument(), pid)) > 0) {
+        long pid = NodeSetHelper.getParentId(getDocument(), gid);        
+        while(pid > 0) {
             NodeProxy parent = new NodeProxy(getDocument(), pid, Node.ELEMENT_NODE);
             if (contextId != Expression.NO_CONTEXT_ID)
                 parent.addContextNode(contextId, this);
             else
                 parent.copyContext(this);
             ancestors.add(parent);
+            pid = NodeSetHelper.getParentId(getDocument(), pid);    
         }
         return ancestors;       
     }    

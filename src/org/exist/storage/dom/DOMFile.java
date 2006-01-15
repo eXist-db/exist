@@ -1044,7 +1044,7 @@ public class DOMFile extends BTree implements Lockable {
 			final long firstChildId = NodeSetHelper.getFirstChildId(
                     (DocumentImpl) node.getOwnerDocument(), node.getGID());
 			if (firstChildId < 0) {
-				LOG.debug("first child not found: " + node.getGID());
+				LOG.error("First child not found for node : " + node.getGID());
 				return 0;
 			}
 			final long lastChildId = firstChildId + node.getChildCount();

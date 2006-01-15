@@ -132,8 +132,7 @@ public class NativeSerializer extends Serializer {
     }
     
     protected void serializeToReceiver(StoredNode node, Iterator iter,
-            DocumentImpl doc, long gid, boolean first, Match match, Set namespaces) 
-    throws SAXException {
+            DocumentImpl doc, long gid, boolean first, Match match, Set namespaces) throws SAXException {
         if (node == null) node = (StoredNode) iter.next();
         if (node == null) return;
         // char ch[];
@@ -177,8 +176,7 @@ public class NativeSerializer extends Serializer {
                 child = (StoredNode) iter.next();
                 if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
                     if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) > 0)
-                        cdata = processAttribute(((AttrImpl) child).getValue(),
-                                gid, match);
+                        cdata = processAttribute(((AttrImpl) child).getValue(), gid, match);
                     else
                         cdata = ((AttrImpl) child).getValue();
                     attribs.addAttribute(child.getQName(), cdata);
@@ -199,14 +197,13 @@ public class NativeSerializer extends Serializer {
             receiver.endElement(node.getQName());
             if (((ElementImpl) node).declaresNamespacePrefixes()) {
                 String prefix;
-                for (Iterator i = ((ElementImpl) node).getPrefixes(); i
-                        .hasNext();) {
+                for (Iterator i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
                     prefix = (String) i.next();
                     receiver.endPrefixMapping(prefix);
                 }
             }
             if (ns.length() > 0 && (!namespaces.contains(ns)))
-                    receiver.endPrefixMapping(node.getPrefix());
+                receiver.endPrefixMapping(node.getPrefix());
             node.release();
             break;
         case Node.TEXT_NODE:
@@ -336,8 +333,7 @@ public class NativeSerializer extends Serializer {
         }
     }
     
-    private final void textToReceiver(String data, Receiver receiver)
-            throws SAXException {
+    private final void textToReceiver(String data, Receiver receiver) throws SAXException {
         int p0 = 0, p1;
         boolean inTerm = false;
         while (p0 < data.length()) {

@@ -612,8 +612,10 @@ public class ElementImpl extends NamedNode implements Element {
         //TOUNDERSTAND : what are the semantics of this 0 ? -pb
         if (getGID() == 0)
             return 0;
+        //Return if already computed
         if (firstChild != StoredNode.NODE_IMPL_UNKNOWN_GID)
             return firstChild;
+        //Compute
         firstChild = NodeSetHelper.getFirstChildId((DocumentImpl)getOwnerDocument(), getGID());
         return firstChild;
     }
