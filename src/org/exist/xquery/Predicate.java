@@ -132,11 +132,15 @@ public class Predicate extends PathExpr {
                 recomputedExecutionMode = POSITIONAL;
             }  
             
-            if (executionMode == NODE &&
-            		!(contextSequence instanceof VirtualNodeSet) && 
-            		Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
+            if (executionMode == NODE && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
+                    && !(contextSequence instanceof VirtualNodeSet)) {
                 recomputedExecutionMode = BOOLEAN;
             }
+            
+            if (executionMode == POSITIONAL && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
+                    && !(contextSequence instanceof VirtualNodeSet)) {
+                recomputedExecutionMode = BOOLEAN;
+            }            
             
     		switch(recomputedExecutionMode) {
     			case NODE: 
@@ -348,10 +352,7 @@ public class Predicate extends PathExpr {
     			}
 			}
 			return result;
-		} else {   
-            //TODO : reconsider. If the fallback is confirmed, log it to the profiler
-            
-            
+		} else { 
             ValueSequence result = new ValueSequence();
 			Sequence innerSeq = inner.eval(contextSequence);			
 			for(SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
@@ -362,9 +363,6 @@ public class Predicate extends PathExpr {
 					result.add(contextSequence.itemAt(pos));                            
 			}
 			return result;
-            
-        
-//            return evalBoolean(contextSequence, inner);
 		}
 	}
 	
