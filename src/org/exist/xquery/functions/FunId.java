@@ -7,8 +7,8 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.NodeSetHelper;
 import org.exist.dom.QName;
-import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Cardinality;
@@ -103,16 +103,13 @@ public class FunId extends Function {
         
 	}
 
-	private void getId(
-		NodeSet result,
-		DocumentSet docs,
-		QName id) {
-		NodeSet attribs =
-			(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(ElementValue.ATTRIBUTE_ID, docs, id, null);
+	private void getId(NodeSet result, DocumentSet docs, QName id) {
+		NodeSet attribs = (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
+                ElementValue.ATTRIBUTE_ID, docs, id, null);
 		NodeProxy n, p;
 		for (Iterator i = attribs.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			p = new NodeProxy(n.getDocument(), XMLUtil.getParentId(n), Node.ELEMENT_NODE);
+			p = new NodeProxy(n.getDocument(), NodeSetHelper.getParentId(n), Node.ELEMENT_NODE);
 			result.add(p);
 		}
 	}

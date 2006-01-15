@@ -24,8 +24,15 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
+import org.exist.util.Range;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * Collection of static methods operating on node sets.
@@ -223,7 +230,7 @@ public class NodeSetHelper {
 		if (level == NodeProxy.UNKNOWN_NODE_LEVEL)
 			level = child.getDocument().getTreeLevel(gid);
 		while (gid > 0) {
-			gid = XMLUtil.getParentId(child.getDocument(), gid, level);
+			gid = getParentId(child.getDocument(), gid, level);
             temp = ancestors.get(child.getDocument(), gid);
 			if (temp != null)
 				result.add(temp);
@@ -268,8 +275,8 @@ public class NodeSetHelper {
 					break;
 			} else {
 				// same document: check if the nodes have the same parent
-                long pa = XMLUtil.getParentId(reference.getDocument(), reference.getGID());
-                long pb = XMLUtil.getParentId(candidate.getDocument(), candidate.getGID());
+                long pa = getParentId(reference.getDocument(), reference.getGID());
+                long pb = getParentId(candidate.getDocument(), candidate.getGID());
 				if (pa < pb) {
 					// wrong parent: proceed
 					if (iReferences.hasNext())
@@ -353,8 +360,8 @@ public class NodeSetHelper {
                     break;
             } else {
                 // same document: check if the nodes have the same parent
-                long pa = XMLUtil.getParentId(reference.getDocument(), reference.getGID());
-                long pb = XMLUtil.getParentId(candidate.getDocument(), candidate.getGID());
+                long pa = getParentId(reference.getDocument(), reference.getGID());
+                long pb = getParentId(candidate.getDocument(), candidate.getGID());
                 if (pa < pb) {
                     // wrong parent: proceed
                     if (iReferences.hasNext())
@@ -449,4 +456,107 @@ public class NodeSetHelper {
         }
         return result;
     }
+    
+    public final static void copyChildren(Document new_doc, Node node, Node new_node) {
+        NodeList children = node.getChildNodes();
+        Node child;
+        Node new_child;
+        for (int i = 0; i < children.getLength(); i++) {
+            child = children.item(i);
+            if (child == null)
+                continue;
+            switch (child.getNodeType()) {
+                case Node.ELEMENT_NODE :
+                    {
+                        new_child = copyNode(new_doc, child);
+                        new_node.appendChild(new_child);
+                        break;
+                    }
+                case Node.ATTRIBUTE_NODE :
+                    {
+                        new_child = copyNode(new_doc, child);
+                        ((Element) new_node).setAttributeNode((Attr) new_child);
+                        break;
+                    }
+                case Node.TEXT_NODE :
+                    {
+                        new_child = copyNode(new_doc, child);
+                        new_node.appendChild(new_child);
+                        break;
+                    }
+                //TODO : error for any other one -pb
+            }
+        }
+    }
+
+    public final static Node copyNode(Document new_doc, Node node) {
+        Node new_node;
+        switch (node.getNodeType()) {
+            case Node.ELEMENT_NODE :
+                new_node = new_doc.createElementNS(node.getNamespaceURI(), node.getNodeName());
+                copyChildren(new_doc, node, new_node);
+                return new_node;
+            case Node.TEXT_NODE :
+                new_node = new_doc.createTextNode(((Text) node).getData());
+                return new_node;
+            case Node.ATTRIBUTE_NODE :
+                new_node = new_doc.createAttributeNS(node.getNamespaceURI(), node.getNodeName());
+                ((Attr) new_node).setValue(((Attr) node).getValue());
+                return new_node;
+            default :                
+                //TODO : error ? -pb
+                return null;
+        }
+    }
+
+    public final static long getParentId( NodeProxy node ) {
+        return getParentId(node.getDocument(), node.getGID());
+    }
+
+    public final static long getParentId(final DocumentImpl doc, final long gid) {
+        final int level = doc.getTreeLevel(gid);
+        return getParentId(doc, gid, level);
+    }
+    
+    public final static long getParentId(final DocumentImpl doc, final long gid, final int level) {       
+        if(level < 1)
+            return NodeProxy.DOCUMENT_NODE_GID;
+        return (gid - doc.treeLevelStartPoints[level]) / doc.treeLevelOrder[level] 
+             + doc.treeLevelStartPoints[level - 1];
+    }        
+
+    public final static long getFirstChildId(DocumentImpl doc, long gid) {
+        final int level = doc.getTreeLevel(gid);
+        if (level < 0)
+            throw new RuntimeException("Node level out of bounds");
+        return getFirstChildId(doc, gid, level);
+    }
+
+    public final static long getFirstChildId(DocumentImpl doc, long gid, int level) {
+        final int order = doc.getTreeLevelOrder(level + 1);
+        if (order < 0) 
+            throw new RuntimeException("Node level order out of bounds");       
+        return (gid - doc.getLevelStartPoint(level)) * order + doc.getLevelStartPoint(level + 1);
+    }
+
+    public final static Range getChildRange(DocumentImpl doc, long gid) {
+        final int level = doc.getTreeLevel(gid);
+        final int order = doc.getTreeLevelOrder(level + 1);
+        final long start = (gid - doc.getLevelStartPoint(level)) * order + doc.getLevelStartPoint(level + 1);
+        return new Range(start, start + order - 1);
+    }
+    
+    public final static boolean isDescendantOrSelf(DocumentImpl doc, long ancestor, long descendant) {
+        if (ancestor == descendant)
+            return true;
+        return isDescendant(doc, ancestor, descendant);
+    }
+
+    public final static boolean isDescendant(DocumentImpl doc, long ancestor, long descendant) {
+        while ((descendant = getParentId(doc, descendant)) != NodeProxy.DOCUMENT_NODE_GID) {
+            if (descendant == ancestor)
+                return true;
+        }
+        return false;
+    }     
 }

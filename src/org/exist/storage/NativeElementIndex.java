@@ -38,11 +38,11 @@ import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.NodeSetHelper;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
 import org.exist.dom.TextImpl;
-import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -474,7 +474,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                             storedGIDList.add(new NodeProxy(document, storedGID, address));
                                         }
                                     } else {
-                                        if (!XMLUtil.isDescendant(document, node.getGID(), storedGID)) {
+                                        if (!NodeSetHelper.isDescendant(document, node.getGID(), storedGID)) {
                                             //TOUNDERSTAND : given what is below, why not use storedGIDList ? -pb
                                             newGIDList.add(new NodeProxy(document, storedGID, address));
                                         }

@@ -28,8 +28,8 @@ import java.util.Iterator;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.NodeSetHelper;
 import org.exist.dom.QName;
-import org.exist.dom.XMLUtil;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
@@ -81,25 +81,20 @@ public class FunLang extends Function {
             String lang = getArgument(0).eval(contextSequence).getStringValue();
             QName qname = new QName("lang", context.getURIForPrefix("xml"), "xml");
     		NodeSet attribs = context.getBroker().getElementIndex().getAttributesByName(contextSequence.toNodeSet().getDocumentSet(), qname, null);
-    		NodeSet temp = new ExtArrayNodeSet();
-    		NodeProxy p;
-    		String langValue;
-    		int hyphen;
-    		boolean include;
-    		for (Iterator i = attribs.iterator(); i.hasNext();) {
-    			include = false;
-    			p = (NodeProxy) i.next();
-    			langValue = p.getNodeValue();
-    			include = lang.equalsIgnoreCase(langValue);
+    		NodeSet temp = new ExtArrayNodeSet(); 
+    		for (Iterator i = attribs.iterator(); i.hasNext();) {    			
+                NodeProxy p = (NodeProxy) i.next();
+                String langValue = p.getNodeValue();
+                boolean include = lang.equalsIgnoreCase(langValue);
     			if (!include) {
-    				hyphen = langValue.indexOf('-');
+                    int hyphen = langValue.indexOf('-');
     				if (hyphen != Constants.STRING_NOT_FOUND) {
     					langValue = langValue.substring(0, hyphen);
     					include = lang.equalsIgnoreCase(langValue);
     				}
     			}
     			if (include) {
-                    long parentID = XMLUtil.getParentId(p);                
+                    long parentID = NodeSetHelper.getParentId(p);                
     				if (parentID != NodeProxy.DOCUMENT_NODE_GID) {
                         NodeProxy parent = new NodeProxy(p.getDocument(), parentID, Node.ELEMENT_NODE);                       
     					temp.add(parent);
@@ -107,14 +102,10 @@ public class FunLang extends Function {
     			}
     		}
     		if (temp.getLength() > 0) {
-    			result =
-    				((NodeSet) contextSequence).selectAncestorDescendant(
-    					temp,
-    					NodeSet.DESCENDANT,
-    					true,
-    					false);
+    			result = ((NodeSet) contextSequence).selectAncestorDescendant(
+    					temp, NodeSet.DESCENDANT, true, false);
     			for (Iterator i = ((NodeSet)result).iterator(); i.hasNext();) {
-    				p = (NodeProxy) i.next();
+                    NodeProxy p = (NodeProxy) i.next();
     				p.addContextNode(p);
     			}                
     		}

@@ -243,7 +243,7 @@ public class StoredNode extends NodeImpl {
 	 *@return    The parentGID value
 	 */
 	public long getParentGID() {
-	    return XMLUtil.getParentId(ownerDocument, getGID());
+	    return NodeSetHelper.getParentId(ownerDocument, getGID());
 	}
     
     public long firstChildID(){

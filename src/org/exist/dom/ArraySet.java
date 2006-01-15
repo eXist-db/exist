@@ -62,7 +62,7 @@ public class ArraySet extends AbstractNodeSet {
 				nl[i] = null;
 				continue;
 			}	          
-            nl[i] = new NodeProxy(nl[i].getDocument(), XMLUtil.getParentId(nl[i]));			
+            nl[i] = new NodeProxy(nl[i].getDocument(), NodeSetHelper.getParentId(nl[i]));			
             foundParentNode = true;
 		}
 		return foundParentNode;

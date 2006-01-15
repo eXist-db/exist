@@ -56,7 +56,7 @@ public class DocumentOrderComparator implements Comparator {
 			long pa = p1.getGID(), pb = p2.getGID();
 			if (la > lb) {
 				while (la > lb) {
-					pa = XMLUtil.getParentId(doc, pa, la);
+					pa = NodeSetHelper.getParentId(doc, pa, la);
 					--la;
 				}
 				if (pa == pb)
@@ -65,7 +65,7 @@ public class DocumentOrderComparator implements Comparator {
 					return pa < pb ? Constants.INFERIOR : Constants.SUPERIOR;
 			} else {
 				while (lb > la) {
-					pb = XMLUtil.getParentId(doc, pb, lb);
+					pb = NodeSetHelper.getParentId(doc, pb, lb);
 					--lb;
 				}
 				if (pb == pa)

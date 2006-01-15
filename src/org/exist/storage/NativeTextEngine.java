@@ -45,9 +45,9 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.Match;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.NodeSetHelper;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
-import org.exist.dom.XMLUtil;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.btree.BTreeCallback;
@@ -1065,7 +1065,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                                     is.skip(freq);
                                                 
 		                                    } else {
-		                                        if (!XMLUtil.isDescendantOrSelf(
+		                                        if (!NodeSetHelper.isDescendantOrSelf(
                                                         document,
                                                         node.getGID(),
                                                         storedGID)) {

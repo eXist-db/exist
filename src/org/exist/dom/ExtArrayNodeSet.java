@@ -603,7 +603,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             if (level < 0)
                 level = doc.getTreeLevel(gid);
             while (gid > 0) {
-                gid = XMLUtil.getParentId(doc, gid, level);
+                gid = NodeSetHelper.getParentId(doc, gid, level);
                 if ((temp = get(gid)) != null) {
                     return temp;
                 } else if (directParent)
@@ -626,7 +626,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         NodeSet getChildrenInSet(NodeSet result, NodeProxy parent, int mode, boolean rememberContext) {
             // get the range of node ids reserved for children of the parent
             // node
-            Range range = XMLUtil.getChildRange(parent.getDocument(), parent.getGID());
+            Range range = NodeSetHelper.getChildRange(parent.getDocument(), parent.getGID());
             int low = 0;
             int high = length - 1;
             int mid = 0;

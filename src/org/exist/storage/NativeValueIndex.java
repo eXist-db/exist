@@ -39,9 +39,9 @@ import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.NodeSetHelper;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
-import org.exist.dom.XMLUtil;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.DBException;
@@ -492,7 +492,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                         if (document.getTreeLevel(storedGID) < document.getMetadata().reindexRequired())
                                             storedGIDList.add(storedGID);
                                     } else {
-                                         if (!XMLUtil.isDescendant(document, node.getGID(), storedGID))
+                                         if (!NodeSetHelper.isDescendant(document, node.getGID(), storedGID))
                                              //TO UNDERSTAND : what will these GIDs become ? -pb
                                              newGIDList.add(storedGID);
                                     }

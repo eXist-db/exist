@@ -614,7 +614,7 @@ public class ElementImpl extends NamedNode implements Element {
             return 0;
         if (firstChild != StoredNode.NODE_IMPL_UNKNOWN_GID)
             return firstChild;
-        firstChild = XMLUtil.getFirstChildId((DocumentImpl)getOwnerDocument(), getGID());
+        firstChild = NodeSetHelper.getFirstChildId((DocumentImpl)getOwnerDocument(), getGID());
         return firstChild;
     }
 

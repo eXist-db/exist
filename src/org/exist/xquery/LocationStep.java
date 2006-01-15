@@ -28,9 +28,9 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.NodeSetHelper;
 import org.exist.dom.StoredNode;
 import org.exist.dom.VirtualNodeSet;
-import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NotificationService;
@@ -559,7 +559,7 @@ public class LocationStep extends Step {
                         ancestor.copyContext(current);
                     result.add(ancestor);
                 }
-                long parentID = XMLUtil.getParentId(current.getDocument(), current.getGID());               
+                long parentID = NodeSetHelper.getParentId(current.getDocument(), current.getGID());               
                 while (parentID > 0) {
                     ancestor = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
                     //Filter out the temporary nodes wrapper element 
@@ -573,7 +573,7 @@ public class LocationStep extends Step {
                             result.add(ancestor);                        
                         }
                     }
-                    parentID = XMLUtil.getParentId(ancestor);
+                    parentID = NodeSetHelper.getParentId(ancestor);
                 }
             }
             return result;

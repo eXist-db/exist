@@ -68,7 +68,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		//              therefore test if node is child of context
         if (first != null)
             return true;
-		if (context.get(doc, XMLUtil.getParentId(doc, nodeId)) != null)
+		if (context.get(doc, NodeSetHelper.getParentId(doc, nodeId)) != null)
             return true;
         return false;
 	}
@@ -79,7 +79,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		//              therefore test if node is child of context
         if (first != null)
             return true;
-		if (context.get(p.getDocument(), XMLUtil.getParentId(p.getDocument(), p.getGID())) != null)
+		if (context.get(p.getDocument(), NodeSetHelper.getParentId(p.getDocument(), p.getGID())) != null)
             return true;
         return false;           
 	}
@@ -103,7 +103,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	private NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
             boolean includeSelf, boolean directParent, int recursions) {
 		
-        long pid = XMLUtil.getParentId(node.getDocument(), node.getGID());
+        long pid = NodeSetHelper.getParentId(node.getDocument(), node.getGID());
         //no matching node has been found in the context
         if (pid == NodeProxy.DOCUMENT_NODE_GID)
             return null;

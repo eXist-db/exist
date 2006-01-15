@@ -32,8 +32,8 @@ import java.util.Iterator;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSetHelper;
 import org.exist.dom.StoredNode;
-import org.exist.dom.XMLUtil;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.CacheManager;
@@ -1041,8 +1041,8 @@ public class DOMFile extends BTree implements Lockable {
 
 	private long findNode(StoredNode node, long target, Iterator iter) {
 		if (node.hasChildNodes()) {
-			final long firstChildId = XMLUtil.getFirstChildId(
-					(DocumentImpl) node.getOwnerDocument(), node.getGID());
+			final long firstChildId = NodeSetHelper.getFirstChildId(
+                    (DocumentImpl) node.getOwnerDocument(), node.getGID());
 			if (firstChildId < 0) {
 				LOG.debug("first child not found: " + node.getGID());
 				return 0;
@@ -1092,7 +1092,7 @@ public class DOMFile extends BTree implements Lockable {
 			long id = node.getGID();
 			long parentPointer = -1;
 			do {
-				id = XMLUtil.getParentId(doc, id);
+				id = NodeSetHelper.getParentId(doc, id);
 				if (id < 1) {
 					SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getGID() + " not found.");
 					throw new BTreeException("node " + node.getGID() + " not found.");
