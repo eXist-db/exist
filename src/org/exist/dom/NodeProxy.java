@@ -28,6 +28,7 @@ import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
@@ -71,7 +72,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	public static final int DOCUMENT_ELEMENT_GID = 1;
 	
 	public static final int UNKNOWN_NODE_LEVEL = -1;
-	public static final int UNKNOWN_NODE_TYPE = -1;	
+	public static final short UNKNOWN_NODE_TYPE = -1;	
 	public static final int UNKNOWN_NODE_ADDRESS = -1;
 	
 	/**
@@ -92,13 +93,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * dom.dbx file, if known.
 	 * @link #UNKNOWN_NODE_ADDRESS
 	 */
-	private long internalAddress = UNKNOWN_NODE_ADDRESS;
+	private long internalAddress;
 	
 	/**
 	 * The type of this node (as defined by DOM), if known. 
 	 * @link #UNKNOWN_NODE_TYPE
 	 */
-	private short nodeType = UNKNOWN_NODE_TYPE;
+	private short nodeType;
 
 	/**
 	 * The first {@link Match} object associated with this node.
@@ -109,33 +110,18 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	private Match match = null;
 
 	private ContextItem context = null;
-	
-	public NodeProxy() {
-	}
 
-	/**
-	 *  Construct a node proxy with unique id gid and owned by document doc.
-	 *
-	 *@param  doc  Description of the Parameter
-	 *@param  gid  Description of the Parameter
-	 */
 	public NodeProxy(DocumentImpl doc, long gid) {
-		this.doc = doc;
-		this.gid = gid;
+        this(doc, gid, UNKNOWN_NODE_TYPE, UNKNOWN_NODE_ADDRESS);		
 	}
 
-	/**
-	 *  as above, but a hint is given about the node type of this proxy-object.
-	 *
-	 *@param  doc       Description of the Parameter
-	 *@param  gid       Description of the Parameter
-	 *@param  nodeType  Description of the Parameter
-	 */
 	public NodeProxy(DocumentImpl doc, long gid, short nodeType) {
-		this.doc = doc;
-		this.gid = gid;
-		this.nodeType = nodeType;
+        this(doc, gid, nodeType, UNKNOWN_NODE_ADDRESS);
 	}
+    
+    public NodeProxy(DocumentImpl doc, long gid, long address) {
+        this(doc, gid, UNKNOWN_NODE_TYPE, address);
+    }    
 
 	public NodeProxy(DocumentImpl doc, long gid, short nodeType, long address) {
 		this.doc = doc;
@@ -144,25 +130,15 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		this.internalAddress = address;
 	}
 
-	public NodeProxy(DocumentImpl doc, long gid, long address) {
-		this.gid = gid;
-		this.doc = doc;
-		this.internalAddress = address;
-	}
-
 	public NodeProxy(NodeProxy p) {
-		doc = p.doc;
-		gid = p.gid;
-		nodeType = p.nodeType;
+        this(p.doc, p.gid, p.nodeType, p.internalAddress);
 		match = p.match;
-		internalAddress = p.internalAddress;
+        //TODO : what about node's context ?		
 	}
 
 	/** create a proxy to a document node */
 	public NodeProxy(DocumentImpl doc) {
-		this.doc = doc;
-		this.gid = DOCUMENT_NODE_GID;
-		this.nodeType = Node.DOCUMENT_NODE;
+        this(doc, DOCUMENT_NODE_GID, Node.DOCUMENT_NODE, UNKNOWN_NODE_ADDRESS);
 	}
 	
 	/* (non-Javadoc)
@@ -176,26 +152,26 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * according to node gid. */
 	public int compareTo(NodeProxy other) {
 		final int diff = doc.getDocId() - other.doc.getDocId();
-		 if ( diff != 0 )
-			 return diff;
-		 return (int) (gid - other.gid);
+		if (diff != 0)
+            return diff;
+        return (int) (gid - other.gid);
 	}
 	
 	public int compareTo(Object other) {
 		if(!(other instanceof NodeProxy))
             //Always superior...
-			return 1;
+			return Constants.SUPERIOR;
 		return compareTo((NodeProxy) other);
 	}
 
 	public boolean equals(Object other) {
 		if (!(other instanceof NodeProxy))
             //Always different...
-			return false;
-		NodeProxy node = (NodeProxy) other;
-        if(node.gid != gid)
             return false;
-        if (node.doc.getDocId() != doc.getDocId())
+		NodeProxy otherNode = (NodeProxy) other;
+        if (otherNode.doc.getDocId() != doc.getDocId())
+            return false;        
+        if (otherNode.gid != gid)
             return false;
         return true;
 	}
@@ -203,10 +179,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	public boolean equals(NodeValue other) throws XPathException {
 		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
 			throw new XPathException("cannot compare persistent node with in-memory node");		
-		NodeProxy node = (NodeProxy) other;
-        if(node.gid != gid)
+		NodeProxy otherNode = (NodeProxy) other;
+        if (otherNode.doc.getDocId() != doc.getDocId())
             return false;
-        if (node.doc.getDocId() != doc.getDocId())
+        if(otherNode.gid != gid)
             return false;
         return true;
 	}
@@ -218,13 +194,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	protected boolean before(NodeValue other, boolean includeAncestors) throws XPathException {
 		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
 			throw new XPathException("cannot compare persistent node with in-memory node");
-		NodeProxy node = (NodeProxy) other;
-		if (doc.getDocId() != node.doc.getDocId())
-			return false;
-		//		System.out.println(gid + " << " + node.gid);
+		NodeProxy otherNode = (NodeProxy) other;
+		if (doc.getDocId() != otherNode.doc.getDocId())
+			return false;		
 		int la = doc.getTreeLevel(gid);
-		int lb = doc.getTreeLevel(node.gid);
-		long pa = gid, pb = node.gid;
+		int lb = doc.getTreeLevel(otherNode.gid);
+		long pa = gid;
+        long pb = otherNode.gid;
 		if (la > lb) {
 			while (la > lb) {
 				pa = NodeSetHelper.getParentId(doc, pa, la);
@@ -237,7 +213,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 				return pa < pb;
 		} else if (lb > la) {
 			while (lb > la) {
-				pb = NodeSetHelper.getParentId(node.doc, pb, lb);
+				pb = NodeSetHelper.getParentId(otherNode.doc, pb, lb);
 				--lb;
 			}
 			if (pb == pa)
@@ -256,13 +232,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	protected boolean after(NodeValue other, boolean includeDescendants) throws XPathException {
 		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
 			throw new XPathException("cannot compare persistent node with in-memory node");
-		NodeProxy node = (NodeProxy) other;
-		if (doc.getDocId() != node.doc.getDocId())
-			return false;
-		//		System.out.println(gid + " >> " + node.gid);
+		NodeProxy otherNode = (NodeProxy) other;
+		if (doc.getDocId() != otherNode.doc.getDocId())
+			return false;		
 		int la = doc.getTreeLevel(gid);
-		int lb = doc.getTreeLevel(node.gid);
-		long pa = gid, pb = node.gid;
+		int lb = doc.getTreeLevel(otherNode.gid);
+		long pa = gid;
+        long pb = otherNode.gid;
 		if (la > lb) {
 			while (la > lb) {
 				pa = NodeSetHelper.getParentId(doc, pa, la);
@@ -275,7 +251,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 				return pa > pb;
 		} else if (lb > la) {
 			while (lb > la) {
-				pb = NodeSetHelper.getParentId(node.doc, pb, lb);
+				pb = NodeSetHelper.getParentId(otherNode.doc, pb, lb);
 				--lb;
 			}
 			if (pb == pa)
@@ -294,6 +270,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		return doc;
 	}
 	
+    public boolean isDocument() {
+        return nodeType == Node.DOCUMENT_NODE;
+    }
+    
 	public long getGID() {
 		return gid;
 	}
@@ -304,42 +284,19 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		else
 			return doc.getNode(this);
 	}
-
-	public boolean isDocument() {
-		return nodeType == Node.DOCUMENT_NODE;
-	}
-
-	
+    
 	public short getNodeType() {
 		return nodeType;
 	}
 
-	public String getNodeValue() {
-		if (isDocument()) {
-			StoredNode root = (StoredNode) doc.getDocumentElement();
-			return doc.getBroker().getNodeValue(new NodeProxy(doc, root.getGID(), root.getInternalAddress()), false);
-		} else {
-			return doc.getBroker().getNodeValue(this, false);
-		}
-	}
-
-    public String getNodeValueSeparated() {
-        return doc.getBroker().getNodeValue(this, true);
-    }
-    
-	public String toString() {
-		return doc.getNode(gid).toString();
-		//return ("doc: " + this.getDocument() + " gid:" + this.getGID() + " address :" + 
-        //        this.getInternalAddress() + " type :" + this.getNodeType()
-        //        );
-	}
-
 	/**
-		 * Sets the nodeType.
-		 * @param nodeType The nodeType to set
-		 */
+	 * Sets the nodeType.
+	 * @param nodeType The nodeType to set
+	 */
 	public void setNodeType(short nodeType) {
-		this.nodeType = nodeType;
+        if (this.nodeType != UNKNOWN_NODE_TYPE && this.nodeType != nodeType)
+            throw new IllegalArgumentException("Node type already affected");
+        this.nodeType = nodeType;
 	}
  
 	/**
@@ -356,29 +313,26 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * @param internalAddress The internalAddress to set
 	 */
 	public void setInternalAddress(long internalAddress) {
+        if (this.internalAddress != UNKNOWN_NODE_ADDRESS && this.internalAddress != internalAddress)
+            throw new IllegalArgumentException("Internal address already affected");        
 		this.internalAddress = internalAddress;
 	}
-
+    
 	public void setIndexType(int type) {
+        //TODO : check wether the allready set internal address can be changed here -pb
 	    internalAddress = StorageAddress.setIndexType(internalAddress, (short) type);
 	}
 
 	public int getIndexType() {
-	    return RangeIndexSpec.indexTypeToXPath(
-	            StorageAddress.indexTypeFromPointer(internalAddress)
-	    );
+	    return RangeIndexSpec.indexTypeToXPath(StorageAddress.indexTypeFromPointer(internalAddress));
 	}
 	
 	public boolean hasTextIndex() {
-		return RangeIndexSpec.hasFulltextIndex(
-		        StorageAddress.indexTypeFromPointer(internalAddress)
-		);
+		return RangeIndexSpec.hasFulltextIndex(StorageAddress.indexTypeFromPointer(internalAddress));
 	}
 
 	public boolean hasMixedContent() {
-	    return RangeIndexSpec.hasMixedContent(
-	            StorageAddress.indexTypeFromPointer(internalAddress)
-	    );
+	    return RangeIndexSpec.hasMixedContent(StorageAddress.indexTypeFromPointer(internalAddress));
 	}
 	
 	public Match getMatches() {
@@ -401,8 +355,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	}
 
 	public void addMatch(Match m) {
-		if (match == null) {
-            //Useless
+		if (match == null) {            
 			match = m;
 			match.prevMatch = null;
 			match.nextMatch = null;
@@ -464,33 +417,23 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public void addContextNode(NodeValue node) {
         if (node.getImplementationType() != NodeValue.PERSISTENT_NODE)
             return;
-        NodeProxy proxy = (NodeProxy) node;
+        NodeProxy contextNode = (NodeProxy) node;
         if (context == null) {
-            context = new ContextItem(proxy);
+            context = new ContextItem(contextNode);
             return;
         }
         ContextItem next = context;
         while (next != null) {
-            if (next.getNode().gid == proxy.gid)
+            if (next.getNode().gid == contextNode.gid)
+                //TODO : why break here ? What about nodes that are context for themselves ? -pb 
                 break;
             if (next.getNextDirect() == null) {
-                next.setNextContextItem(new ContextItem(proxy));
+                next.setNextContextItem(new ContextItem(contextNode));
                 break;
             }
             next = next.getNextDirect();
         }
     }
-
-	public void printContext() {
-		ContextItem next = context;
-		System.out.print(gid + ": ");
-		while (next != null) {
-			System.out.print(next.getNode().gid);
-			System.out.print(' ');
-			next = next.getNextDirect();
-		}
-		System.out.println();
-	}
 	
 	public void copyContext(NodeProxy node) {
 		context = node.getContext();
@@ -528,6 +471,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 				return Type.NODE;
 		}
 	}
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#isPersistentSet()
+     */
+    public boolean isPersistentSet() {
+        return true;
+    } 
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toSequence()
@@ -535,6 +485,19 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	public Sequence toSequence() {
 		return this;
 	}
+
+    public String getNodeValue() {
+        if (isDocument()) {         
+            NodeProxy root = (NodeProxy) doc.getDocumentElement();
+            return doc.getBroker().getNodeValue(new NodeProxy(doc, root.getGID(), root.getInternalAddress()), false);
+        } else {
+            return doc.getBroker().getNodeValue(this, false);
+        }
+    }     
+
+    public String getNodeValueSeparated() {
+        return doc.getBroker().getNodeValue(this, true);
+    }    
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#getStringValue()
@@ -687,6 +650,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public void setSelfAsContext() {
         addContextNode(this);
     }
+   
     
 	/* -----------------------------------------------*
 	 * Methods of class NodeSet
@@ -739,30 +703,35 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * @see org.exist.dom.NodeSet#addAll(org.exist.dom.NodeSet)
 	 */
 	public void addAll(NodeSet other) {
+        throw new RuntimeException("Method not supported");
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#add(org.exist.dom.NodeProxy)
 	 */
 	public void add(NodeProxy proxy) {
+        throw new RuntimeException("Method not supported");
 	}
 
 	/* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
      */
     public void add(Item item) throws XPathException {
+        throw new RuntimeException("Method not supported");
     }
     
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#add(org.exist.dom.NodeProxy, int)
      */
     public void add(NodeProxy proxy, int sizeHint) {
+        throw new RuntimeException("Method not supported");
     }
     
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#addAll(org.exist.xquery.value.Sequence)
      */
     public void addAll(Sequence other) throws XPathException {
+        throw new RuntimeException("Method not supported");
     }
     
 	/* (non-Javadoc)
@@ -849,26 +818,27 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		}
 		return null;
 	}
-	
-	/* (non-Javadoc)
+    
+    /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#getContextNodes(boolean)
      */
     public NodeSet getContextNodes(boolean rememberContext) {
-		ExtArrayNodeSet result = new ExtArrayNodeSet();
-		ContextItem contextNode = getContext();
-		while (contextNode != null) {
-		    NodeProxy p = contextNode.getNode();
-		    p.addMatches(this);
-		    if (!result.contains(p)) {
+        ExtArrayNodeSet result = new ExtArrayNodeSet();
+        ContextItem contextNode = getContext();
+        while (contextNode != null) {
+            NodeProxy p = contextNode.getNode();
+            p.addMatches(this);
+            if (!result.contains(p)) {
                 //TODO : why isn't "this" involved here ? -pb
-		        if (rememberContext)
-		            p.addContextNode(p);
-		        result.add(p);
-		    }
-		    contextNode = contextNode.getNextDirect();
-		}
-		return result;
-    }
+                if (rememberContext)
+                    p.addContextNode(p);
+                result.add(p);
+            }
+            contextNode = contextNode.getNextDirect();
+        }
+        return result;
+    }    
+
     
     /* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#getRange(org.exist.dom.DocumentImpl, long, long)
@@ -1086,6 +1056,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         return child;
     }
     
+    public String toString() {
+        return doc.getNode(gid).toString();
+        //return ("doc: " + this.getDocument() + " gid:" + this.getGID() + " address :" + 
+        //        this.getInternalAddress() + " type :" + this.getNodeType()
+        //        );
+    }    
+    
 	private final static class SingleNodeIterator implements Iterator, SequenceIterator {
 
 		private boolean hasNext = true;
@@ -1106,8 +1083,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 			return node;
 		}
 
-		public void remove() {
-			throw new RuntimeException("not supported");
+		public void remove() {            
+            throw new RuntimeException("Method not supported");
 		}
 
 		/* (non-Javadoc)
@@ -1122,11 +1099,4 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 
 	}
 
-    
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#isPersistentSet()
-     */
-    public boolean isPersistentSet() {
-        return true;
-    }
 }
