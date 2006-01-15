@@ -531,8 +531,8 @@ public class NodeSetHelper {
     public final static long getParentId(final DocumentImpl doc, final long gid, final int level) {       
         if(level < 1)
             return NodeProxy.DOCUMENT_NODE_GID;
-        return (gid - doc.treeLevelStartPoints[level]) / doc.treeLevelOrder[level] 
-             + doc.treeLevelStartPoints[level - 1];
+        return (gid - doc.getLevelStartPoint(level)) / doc.getTreeLevelOrder(level) 
+             + doc.getLevelStartPoint(level - 1);
     }        
 
     public final static long getFirstChildId(DocumentImpl doc, long gid) {

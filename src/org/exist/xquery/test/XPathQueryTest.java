@@ -460,7 +460,7 @@ public class XPathQueryTest extends XMLTestCase {
         }
     }
     
-    public void bugtestPredicates2() throws Exception {
+    public void testPredicates2() throws Exception {
         String numbers =
             "<test>"
                 + "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"

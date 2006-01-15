@@ -139,9 +139,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         if (steps.size() == 0) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
- 
-            if (contextSequence != null)
-                result = contextSequence;
+            //we will filter out nodes from the contextSequence
+            result = contextSequence;
             
             DocumentSet contextDocs = null;
             Expression expr = (Expression) steps.get(0);
