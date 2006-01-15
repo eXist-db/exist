@@ -43,7 +43,7 @@ public class ValidationServiceTest  extends TestCase {
     private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private Collection rootCollection = null;
-    private ValidationService service = null;    
+    private ValidationService service = null;
     private String eXistHome = null;
     
     public ValidationServiceTest(String testName) {
@@ -56,101 +56,101 @@ public class ValidationServiceTest  extends TestCase {
     }
     
     public void setUp() {
-    	try {
-	        System.out.println(">>> setUp");
-	        eXistHome = System.getProperty("exist.home");
-	        
-	        Class cl = Class.forName(DRIVER);
-	        Database database = (Database) cl.newInstance();
-	        database.setProperty("create-database", "true");
-	        DatabaseManager.registerDatabase(database);
-	        rootCollection = DatabaseManager.getCollection(URI, "admin", null);
-	        assertNotNull("Could not connect to database.");  
-	        service = getValidationService();        
-	        System.out.println("<<<\n");
-        } catch (Exception e) {            
-            fail(e.getMessage());  
+        try {
+            System.out.println(">>> setUp");
+            eXistHome = System.getProperty("exist.home");
+            
+            Class cl = Class.forName(DRIVER);
+            Database database = (Database) cl.newInstance();
+            database.setProperty("create-database", "true");
+            DatabaseManager.registerDatabase(database);
+            rootCollection = DatabaseManager.getCollection(URI, "admin", null);
+            assertNotNull("Could not connect to database.");
+            service = getValidationService();
+            System.out.println("<<<\n");
+        } catch (Exception e) {
+            fail(e.getMessage());
         }
     }
     
     private ValidationService getValidationService() {
-    	try {
-    		return (ValidationService) rootCollection.getService("ValidationService", "1.0");
-        } catch (Exception e) {            
-            fail(e.getMessage());  
-        }    
+        try {
+            return (ValidationService) rootCollection.getService("ValidationService", "1.0");
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
         return null;
     }
     
     public void testGetName() {
-    	try {    
-        Assert.assertEquals("ValidationService check", service.getName(),  "ValidationService" );
-	    } catch (Exception e) {            
-	        fail(e.getMessage());  
-	    }    
+        try {
+            Assert.assertEquals("ValidationService check", service.getName(),  "ValidationService" );
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
     
     public void testGetVersion() {
-    	try {    
-        assertEquals("ValidationService check", service.getVersion(),   "1.0" );
-	    } catch (Exception e) {            
-	        fail(e.getMessage());  
-	    }    
-	 }
+        try {
+            assertEquals("ValidationService check", service.getVersion(),   "1.0" );
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
     
-    public void testXsdValidDocument() {   
-    	try {   
-    		assertTrue( service.validateResource("/db/grammar/addressbook_valid.xml") );
-	    } catch (Exception e) {            
-	        fail(e.getMessage());  
-	    }    
+    public void testXsdValidDocument() {
+        try {
+            assertTrue( service.validateResource("/db/grammar/addressbook_valid.xml") );
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
     
     public void testXsdInvalidDocument() {
-    	try {       
-    		assertFalse( service.validateResource("/db/grammar/addressbook_invalid.xml") );
-	    } catch (Exception e) {            
-	        fail(e.getMessage());  
-	    }    
+        try {
+            assertFalse( service.validateResource("/db/grammar/addressbook_invalid.xml") );
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
     
     public void testNonexistingDocument() {
-    	try {
-    		assertFalse( service.validateResource(DBBroker.ROOT_COLLECTION + "/foobar.xml") );
-        } catch (Exception e) {            
-            fail(e.getMessage());  
-        }          
+        try {
+            assertFalse( service.validateResource(DBBroker.ROOT_COLLECTION + "/foobar.xml") );
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
     
     public void testDtdValidDocument() {
-    	try {       
-    		assertTrue( service.validateResource("/db/grammar/hamlet_valid.xml") );
-        } catch (Exception e) {            
-            fail(e.getMessage());  
-        }    
+        try {
+            assertTrue( service.validateResource("/db/grammar/hamlet_valid.xml") );
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
     
     public void testDtdInvalidDocument() {
-    	try {
+        try {
             assertFalse( service.validateResource("/db/grammar/hamlet_invalid.xml") );
-        } catch (Exception e) {            
-            fail(e.getMessage());  
-        }    
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
     
-    public void failTestNoDoctype() {
-    	try {
+    public void testNoDoctype() {
+        try {
             assertFalse( service.validateResource("/db/grammar/hamlet_nodoctype.xml") );
-        } catch (Exception e) {            
-            fail(e.getMessage());  
-        }    
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
     
-    public void failTestWrongDoctype() {
-    	try {
+    public void testWrongDoctype() {
+        try {
             assertFalse( service.validateResource("/db/grammar/hamlet_wrongdoctype.xml") );
-        } catch (Exception e) {            
-            fail(e.getMessage());  
-        }    
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
 }
