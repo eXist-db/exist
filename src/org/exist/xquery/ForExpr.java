@@ -86,6 +86,7 @@ public class ForExpr extends BindingExpression {
 		if(whereExpr != null) {
 			AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
 			newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
+			newContextInfo.setContextId(getExpressionId());
 		    whereExpr.analyze(newContextInfo);
 		}
 		// the order by specs should be analyzed by the last binding expression

@@ -47,12 +47,13 @@ public class ChildSelector implements NodeSelector {
         NodeProxy p = new NodeProxy(doc, gid);
         if(p == null) 
             return null;         
-        NodeProxy contextNode = context.parentWithChild(doc, gid, true, false, NodeProxy.UNKNOWN_NODE_LEVEL);            
+        NodeProxy contextNode = context.parentWithChild(doc, gid, true, false, NodeProxy.UNKNOWN_NODE_LEVEL);  
 		if (contextNode == null)
            return null;
-        if (Expression.NO_CONTEXT_ID != contextId)
+        if (Expression.NO_CONTEXT_ID != contextId) {
+        	p.copyContext(contextNode);
             p.addContextNode(contextId, contextNode);
-        else
+        } else
             p.copyContext(contextNode);        
  		return p;			
 	}

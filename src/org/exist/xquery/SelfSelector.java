@@ -48,8 +48,10 @@ public class SelfSelector implements NodeSelector {
         if (p == null) 
             return null;  
         NodeProxy contextNode = p;
-        if (Expression.NO_CONTEXT_ID != contextId)             
+        if (Expression.NO_CONTEXT_ID != contextId) {
+        	p.copyContext(contextNode);
             p.addContextNode(contextId, contextNode);
+        }
         return p;
 	}
 }

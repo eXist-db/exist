@@ -424,9 +424,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         }
         ContextItem next = context;
         while (next != null) {
-            if (contextId == next.getContextId() && next.getNode().gid == contextNode.gid )
+            if (contextId == next.getContextId() && next.getNode().gid == contextNode.gid ) {
                 // Ignore duplicate context nodes
                 break;
+            }
             if (next.getNextDirect() == null) {
                 next.setNextContextItem(new ContextItem(contextId, contextNode));
                 break;
@@ -445,6 +446,21 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	
 	public ContextItem getContext() {
 		return context;
+	}
+	
+	public String debugContext() {
+		StringBuffer buf = new StringBuffer();
+		buf.append("Context for " + gid + ": ");
+		ContextItem next = context;
+		while(next != null) {
+			buf.append('[');
+			buf.append(next.getNode().gid);
+			buf.append(':');
+			buf.append(next.getContextId());
+			buf.append("] ");
+			next = next.getNextDirect();
+		}
+		return buf.toString();
 	}
 	
 	//	methods of interface Item

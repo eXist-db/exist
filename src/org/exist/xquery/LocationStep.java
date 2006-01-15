@@ -133,18 +133,18 @@ public class LocationStep extends Step {
 	/* (non-Javadoc)
      * @see org.exist.xquery.Step#analyze(org.exist.xquery.Expression)
      */
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        this.parent = contextInfo.getParent();
-        
-        parentDeps = parent.getDependencies();
-        if ((contextInfo.getFlags() & IN_UPDATE) > 0)
-            inUpdate = true;
-        if((contextInfo.getFlags() & SINGLE_STEP_EXECUTION) > 0) {
-            preload = true;
-        }
-        //TODO : log somewhere ?
-        super.analyze(contextInfo);
-    }
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		this.parent = contextInfo.getParent();
+		
+		parentDeps = parent.getDependencies();
+		if ((contextInfo.getFlags() & IN_UPDATE) > 0)
+			inUpdate = true;
+		if((contextInfo.getFlags() & SINGLE_STEP_EXECUTION) > 0) {
+			preload = true;
+		}
+		//TODO : log somewhere ?
+		super.analyze(contextInfo);
+	}
     
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
@@ -276,7 +276,8 @@ public class LocationStep extends Step {
 				if (Expression.NO_CONTEXT_ID != contextId) {
 					if (contextSet instanceof VirtualNodeSet) {
 						((VirtualNodeSet) contextSet).setInPredicate(true);
-						((VirtualNodeSet) contextSet).setSelfIsContext();                     
+						((VirtualNodeSet) contextSet).setSelfIsContext();
+						((VirtualNodeSet) contextSet).setContextId(contextId);
                     } else if (Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
 						NodeProxy p;
 						for (Iterator i = contextSet.iterator(); i.hasNext();) {
@@ -352,7 +353,7 @@ public class LocationStep extends Step {
             //TODO : why a selector here ? We havn't one above !
             switch (axis) {
                 case Constants.ATTRIBUTE_AXIS :
-                    selector = new ChildSelector(contextSet, contextId);  
+                    selector = new ChildSelector(contextSet, contextId);
                     break;
                 case Constants.DESCENDANT_ATTRIBUTE_AXIS : 
                     selector = new DescendantSelector(contextSet, contextId); 
@@ -363,7 +364,7 @@ public class LocationStep extends Step {
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
-                        "OPTIMIZATION", "using index '" + index.toString() + "'");              
+                        "OPTIMIZATION", "using index '" + index.toString() + "'");
             return index.getAttributesByName(docs, test.getName(), selector);
 		}
 	}

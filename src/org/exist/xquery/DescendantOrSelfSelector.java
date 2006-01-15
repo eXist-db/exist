@@ -46,9 +46,10 @@ public class DescendantOrSelfSelector extends DescendantSelector {
         NodeProxy contextNode = context.parentWithChild(doc, gid, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
         if(contextNode == null)
             return null;        
-		if (Expression.NO_CONTEXT_ID != contextId)
+		if (Expression.NO_CONTEXT_ID != contextId) {
+			p.copyContext(contextNode);
 			p.addContextNode(contextId, contextNode);
-		else
+		} else
 			p.copyContext(contextNode);
 		return p;
 
