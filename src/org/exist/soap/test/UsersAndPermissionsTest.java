@@ -59,7 +59,7 @@ public class UsersAndPermissionsTest extends TestCase {
         }
     }
     
-    public void bugTestCreateUser() throws RemoteException {
+    public void testCreateUser() throws RemoteException {
         UserDesc desc;
         try {
             desc = admin.getUser(sessionId,testUser);
