@@ -243,8 +243,9 @@ public class DatabaseImpl implements Database {
             return readCollection(xmldbURI.getCollectionPath(), rpcClient);         
         } catch (MalformedURLException e) {
             //Should never happen          
-            throw new XMLDBException(ErrorCodes.INVALID_DATABASE, e.getMessage());   
-        }       
+            throw new XMLDBException(ErrorCodes.INVALID_DATABASE, e.getMessage());  
+        } catch (XMLDBException e) {
+            return null; }  
     }    
     
     public static Collection readCollection(String c, XmlRpcClient rpcClient) throws XMLDBException {
@@ -255,6 +256,8 @@ public class DatabaseImpl implements Database {
         Collection current = new RemoteCollection(rpcClient, null, rootName); 
         for (int i = 1 ; i < components.length ; i++) {
             current = ((RemoteCollection)current).getChildCollection(components[i]);
+            if (current == null)
+                throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION , "Could not find collection: " + c);
         }
         return current;
     }    
