@@ -7,12 +7,15 @@ import org.exist.soap.Admin;
 import org.exist.soap.AdminService;
 import org.exist.soap.AdminServiceLocator;
 import org.exist.soap.Query;
-import org.exist.soap.QueryService;
 import org.exist.soap.QueryServiceLocator;
 
 import junit.framework.TestCase;
+import org.exist.soap.QueryService;
+import org.exist.start.Main;
 
 public class CopyMoveTest extends TestCase {
+    
+    static Main mn = null;
     
     static String query_url = "http://localhost:8080/exist/services/Query";
     static String admin_url = "http://localhost:8080/exist/services/Admin";
@@ -28,7 +31,13 @@ public class CopyMoveTest extends TestCase {
     }
     
     protected void setUp() throws Exception {
-        super.setUp();
+        
+        if(mn==null){
+            mn = new Main("jetty");
+            mn.run(new String[]{"jetty"});
+        }
+        
+        //super.setUp();
         QueryService service = new QueryServiceLocator();
         query = service.getQuery(new URL(query_url));
         q_session = query.connect("admin","");
@@ -45,6 +54,8 @@ public class CopyMoveTest extends TestCase {
         } catch (RemoteException rex) {
             rex.printStackTrace();
         }
+        
+        //mn.shutdown();
     }
     
     private void setupTestCollection() throws RemoteException {
@@ -62,7 +73,7 @@ public class CopyMoveTest extends TestCase {
         admin.store(a_session,"<sample/>".getBytes(),"UTF-8",collA + "/docB",true);
     }
     
-    public void bugTestCopyResourceChangeName() throws RemoteException {
+    public void testCopyResourceChangeName() throws RemoteException {
         setupTestCollection();
         admin.store(a_session,"<sample/>".getBytes(),"UTF-8",testColl + "/original",true);
         admin.copyResource(a_session,testColl + "/original",testColl,"duplicate");
@@ -73,7 +84,7 @@ public class CopyMoveTest extends TestCase {
         System.out.println(content);
     }
     
-    public void bugTestMoveResource() throws RemoteException {
+    public void testMoveResource() throws RemoteException {
         setupTestCollection();
         admin.store(a_session,"<sample/>".getBytes(),"UTF-8",testColl + "/original",true);
         admin.moveResource(a_session,testColl + "/original",testColl,"duplicate");
@@ -82,7 +93,7 @@ public class CopyMoveTest extends TestCase {
         assertTrue(resources[0].equals("duplicate"));
     }
     
-    public void bugTestCopyCollectionChangeName() throws RemoteException {
+    public void testCopyCollectionChangeName() throws RemoteException {
         setupTestCollections();
         admin.copyCollection(a_session,testColl + "/testA",testColl,"testAcopy");
         String[] collections = query.listCollection(a_session,testColl).getCollections().getElements();
@@ -91,7 +102,7 @@ public class CopyMoveTest extends TestCase {
         assertEquals(resources.length,2);
     }
     
-    public void bugTestMoveCollection() throws RemoteException {
+    public void testMoveCollection() throws RemoteException {
         setupTestCollections();
         admin.moveCollection(a_session,testColl + "/testA",testColl,"testAcopy");
         String[] collections = query.listCollection(a_session,testColl).getCollections().getElements();
@@ -99,5 +110,9 @@ public class CopyMoveTest extends TestCase {
         assertEquals(collections[0],"testAcopy");
         String[] resources = query.listCollection(a_session,testColl + "/testAcopy").getResources().getElements();
         assertEquals(resources.length,2);
+    }
+    
+    public void testRemoveThisEmptyTest() throws Exception {
+//        assertEquals(1,1);
     }
 }

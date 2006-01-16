@@ -13,8 +13,11 @@ import org.exist.soap.QueryService;
 import org.exist.soap.QueryServiceLocator;
 
 import junit.framework.TestCase;
+import org.exist.start.Main;
 
 public class XQueryTest extends TestCase {
+    
+    static Main mn = null;
     
     static String query_url = "http://localhost:8080/exist/services/Query";
     static String admin_url = "http://localhost:8080/exist/services/Admin";
@@ -28,7 +31,7 @@ public class XQueryTest extends TestCase {
         super(arg0);
     }
     
-    public void bugTestXQuery() throws RemoteException {
+    public void testXQuery() throws RemoteException {
         admin.removeCollection(sessionId,testColl);
         admin.createCollection(sessionId,testColl);
         String data = "<test>" +
@@ -128,7 +131,12 @@ public class XQueryTest extends TestCase {
     }
     
     protected void setUp() throws Exception {
-        super.setUp();
+        
+        if(mn==null){
+            mn = new Main("jetty");
+            mn.run(new String[]{"jetty"});
+        }
+        
         QueryService service = new QueryServiceLocator();
         query = service.getQuery(new URL(query_url));
         sessionId = query.connect("admin","");
@@ -137,12 +145,17 @@ public class XQueryTest extends TestCase {
     }
     
     protected void tearDown() throws Exception {
-        super.tearDown();
+        
         try {
             query.disconnect(sessionId);
         } catch (RemoteException rex) {
             rex.printStackTrace();
         }
+        //mn.shutdown();
+    }
+    
+    public void testRemoveThisEmptyTest() throws Exception {
+//        assertEquals(1,1);
     }
     
 }

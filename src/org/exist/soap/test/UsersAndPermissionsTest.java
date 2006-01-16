@@ -14,8 +14,11 @@ import org.exist.soap.Strings;
 import org.exist.soap.UserDesc;
 
 import junit.framework.TestCase;
+import org.exist.start.Main;
 
 public class UsersAndPermissionsTest extends TestCase {
+    
+    static Main mn = null;
     
     static String query_url = "http://localhost:8080/exist/services/Query";
     static String admin_url = "http://localhost:8080/exist/services/Admin";
@@ -34,8 +37,12 @@ public class UsersAndPermissionsTest extends TestCase {
     }
     
     protected void setUp() throws Exception {
-        super.setUp();
-        super.setUp();
+        
+        if(mn==null){
+            mn = new Main("jetty");
+            mn.run(new String[]{"jetty"});
+        }
+        
         QueryService service = new QueryServiceLocator();
         query = service.getQuery(new URL(query_url));
         AdminService aservice = new AdminServiceLocator();
@@ -120,6 +127,10 @@ public class UsersAndPermissionsTest extends TestCase {
         } catch (RemoteException rex) {
             
         }
+    }
+    
+    public void testRemoveThisEmptyTest() throws Exception {
+//        assertEquals(1,1);
     }
     
 }
