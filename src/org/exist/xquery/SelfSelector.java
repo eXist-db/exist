@@ -32,12 +32,14 @@ import org.exist.dom.NodeSet;
 public class SelfSelector implements NodeSelector {
 	
 	private int contextId;
-	
+	private NodeSet context;
+    
 	/**
 	 * 
 	 */
-	public SelfSelector(NodeSet contextSet, int contextId) {		
-		this.contextId = contextId;
+	public SelfSelector(NodeSet contextSet, int contextId) {
+        this.context = contextSet;
+        this.contextId = contextId;
 	}
 
 	/* (non-Javadoc)
@@ -46,11 +48,13 @@ public class SelfSelector implements NodeSelector {
 	public NodeProxy match(DocumentImpl doc, long gid) {        
         NodeProxy p = new NodeProxy(doc, gid);
         if (p == null) 
-            return null;  
-        NodeProxy contextNode = p;
-        if (Expression.NO_CONTEXT_ID != contextId) {
-        	p.copyContext(contextNode);
-            p.addContextNode(contextId, contextNode);
+            return null;
+        NodeProxy contextNode = context.get(doc, gid);
+        if (contextNode != null) {
+            if (Expression.NO_CONTEXT_ID != contextId) {
+                p.copyContext(contextNode);
+                p.addContextNode(contextId, contextNode);
+            }
         }
         return p;
 	}

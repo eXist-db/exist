@@ -81,6 +81,9 @@ public class XPathQueryTest extends XMLTestCase {
 	private final static String ws =
 		"<test><parent xml:space=\"preserve\"><text> </text><text xml:space=\"default\"> </text></parent></test>";
 	
+	private final static String self =
+		"<test-self><a>Hello</a><b>World!</b></test-self>";
+	
 	private Collection testCollection;
 	private String query;
 	
@@ -324,6 +327,18 @@ public class XPathQueryTest extends XMLTestCase {
             queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildA]/parent::RootElement", 1);
             queryResource(service, "nested2.xml", "let $a := ('', 'b', '', '') for $b in $a[.] return <blah>{$b}</blah>", 1);
 
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    public void testSelfAxis() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("self.xml", self);
+            
+            queryResource(service, "self.xml", "/test-self/*[not(self::a)]", 1);
+            queryResource(service, "self.xml", "/test-self/*[self::a]", 1);
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
