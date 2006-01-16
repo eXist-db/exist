@@ -109,11 +109,14 @@ public class FunNot extends Function {
     			if(contextSequence.getLength() > 0)
     				result.addAll(contextSequence);
     			
-                NodeProxy current;
+    			NodeProxy current;
     			if (inPredicate) {
     				for (SequenceIterator i = result.iterate(); i.hasNext();) {
     					current = (NodeProxy) i.nextItem();
+    					if (contextId != Expression.NO_CONTEXT_ID)
+                            current.addContextNode(contextId, current);
     					current.addContextNode(getExpressionId(), current);
+//    					LOG.debug("Context: " + current.debugContext());
     				}
     			}
 
