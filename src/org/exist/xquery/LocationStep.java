@@ -194,8 +194,7 @@ public class LocationStep extends Step {
             // }
         } else if (needsComputation()) {
             if (contextSequence == null)
-                throw new XPathException(getASTNode(),
-                        "Null context sequence for '" + this.toString() + "'");
+                throw new XPathException(getASTNode(), "XPDY0002 : undefined context sequence for '" + this.toString() + "'");
             switch (axis) {
                 case Constants.DESCENDANT_AXIS:
                 case Constants.DESCENDANT_SELF_AXIS:
