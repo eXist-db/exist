@@ -132,7 +132,7 @@ public class EXistServlet extends HttpServlet {
 					"Permission denied: unknown user or password");
 			return;
 		}
-		
+        
 		String path = adjustPath(request);
 		ServletInputStream is = request.getInputStream();
 		int len = request.getContentLength();
