@@ -296,6 +296,17 @@ public class XQueryContext {
 		return expressionCounter++;
 	}
 	
+    /**
+     * Returns the number of expression objects in the internal
+     * representation of the query. Used to estimate the size
+     * of the query.
+     * 
+     * @return
+     */
+    public int getExpressionCount() {
+        return expressionCounter;
+    }
+    
 	/**
 	 * Declare a user-defined prefix/namespace mapping.
 	 * 
