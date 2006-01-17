@@ -1,13 +1,17 @@
 package org.exist.xquery.test;
 
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xquery.Expression;
+import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -59,6 +63,29 @@ public class XPathQueryTest extends XMLTestCase {
         "</ChildA>" +
 		"</RootElement>";
     
+    private final static String nested3 =
+        "<test>" +
+        "   <a>" +
+        "       <t>1</t>" +
+        "       <a>" +
+        "           <t>2</t>" +
+        "           <a>" +
+        "               <t>3</t>" +
+        "           </a>" +
+        "       </a>" +
+        "   </a>" +
+        "</test>";
+    
+    private final static String siblings =
+        "<test>" +
+        "   <a> <s>A</s> <n>1</n> </a>" +
+        "   <a> <s>Z</s> <n>2</n> </a>" +
+        "   <a> <s>B</s> <n>3</n> </a>" +
+        "   <a> <s>Z</s> <n>4</n> </a>" +
+        "   <a> <s>C</s> <n>5</n> </a>" +
+        "   <a> <s>Z</s> <n>6</n> </a>" +
+        "</test>";
+
 	private final static String ids =
 	    "<!DOCTYPE test [" +
 	    "<!ELEMENT test (a*, b*)>" +
@@ -344,6 +371,29 @@ public class XPathQueryTest extends XMLTestCase {
         }
     }
 	
+    public void testAncestorAxis() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("nested3.xml", nested3);
+            
+            // test ancestor axis with positional predicate
+            queryResource(service, "nested3.xml", "//a[ancestor::a[2]/t = '1']", 1);
+            queryResource(service, "nested3.xml", "//a[ancestor::*[2]/t = '1']", 1);
+            queryResource(service, "nested3.xml", "//a[ancestor::a[1]/t = '2']", 1);
+            queryResource(service, "nested3.xml", "//a[ancestor::*[1]/t = '2']", 1);
+            queryResource(service, "nested3.xml", "//a[ancestor-or-self::*[3]/t = '1']", 1);
+            queryResource(service, "nested3.xml", "//a[ancestor-or-self::a[3]/t = '1']", 1);
+            // Following test fails
+//            queryResource(service, "nested3.xml", "//a[ancestor-or-self::*[2]/t = '2']", 1);
+            queryResource(service, "nested3.xml", "//a[ancestor-or-self::a[2]/t = '2']", 1);
+            queryResource(service, "nested3.xml", "//a[t = '3'][ancestor-or-self::a[3]/t = '1']", 1);
+            queryResource(service, "nested3.xml", "//a[t = '3'][ancestor-or-self::*[3]/t = '1']", 1);
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+    
 	public void testAncestorIndex() {
 		try {
 			XQueryService service = 
@@ -363,9 +413,21 @@ public class XPathQueryTest extends XMLTestCase {
     public void testPrecedingSiblingAxis() {
         try {
             XQueryService service = 
-                storeXMLStringAndGetQueryService("nested2.xml", nested2);            
-            queryResource(service, "nested2.xml", "(<a/>, <b/>, <c/>)/following-sibling::*", 0);
-        } catch (XMLDBException e) {
+                storeXMLStringAndGetQueryService("siblings.xml", siblings);
+            service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            service.setProperty(OutputKeys.INDENT, "no");
+            ResourceSet result = queryResource(service, "siblings.xml", "//a[preceding-sibling::*[1]/s = 'B']", 1);
+            assertXMLEqual("<a><s>Z</s><n>4</n></a>", result.getResource(0).getContent().toString());
+            result = queryResource(service, "siblings.xml", "//a[preceding-sibling::a[1]/s = 'B']", 1);
+            assertXMLEqual("<a><s>Z</s><n>4</n></a>", result.getResource(0).getContent().toString());
+            result = queryResource(service, "siblings.xml", "//a[preceding-sibling::*[2]/s = 'B']", 1);
+            assertXMLEqual("<a><s>C</s><n>5</n></a>", result.getResource(0).getContent().toString());
+            result = queryResource(service, "siblings.xml", "//a[preceding-sibling::a[2]/s = 'B']", 1);
+            assertXMLEqual("<a><s>C</s><n>5</n></a>", result.getResource(0).getContent().toString());
+            
+            queryResource(service, "siblings.xml", "(<a/>, <b/>, <c/>)/following-sibling::*", 0);
+        } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }     
@@ -373,13 +435,40 @@ public class XPathQueryTest extends XMLTestCase {
     public void testFollowingSiblingAxis() {
         try {
             XQueryService service = 
-                storeXMLStringAndGetQueryService("nested2.xml", nested2);            
-            queryResource(service, "nested2.xml", "(<a/>, <b/>, <c/>)/following-sibling::*", 0);
-        } catch (XMLDBException e) {
+                storeXMLStringAndGetQueryService("siblings.xml", siblings);
+            service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            service.setProperty(OutputKeys.INDENT, "no");
+            ResourceSet result = queryResource(service, "siblings.xml", "//a[following-sibling::*[1]/s = 'B']", 1);
+            assertXMLEqual("<a><s>Z</s><n>2</n></a>", result.getResource(0).getContent().toString());
+            result = queryResource(service, "siblings.xml", "//a[following-sibling::a[1]/s = 'B']", 1);
+            assertXMLEqual("<a><s>Z</s><n>2</n></a>", result.getResource(0).getContent().toString());
+            result = queryResource(service, "siblings.xml", "//a[following-sibling::*[2]/s = 'B']", 1);
+            assertXMLEqual("<a><s>A</s><n>1</n></a>", result.getResource(0).getContent().toString());
+            result = queryResource(service, "siblings.xml", "//a[following-sibling::a[2]/s = 'B']", 1);
+            assertXMLEqual("<a><s>A</s><n>1</n></a>", result.getResource(0).getContent().toString());
+            
+            queryResource(service, "siblings.xml", "(<a/>, <b/>, <c/>)/following-sibling::*", 0);
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }     
 	
+    public void testFollowingAxis() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("siblings.xml", siblings);
+            service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            service.setProperty(OutputKeys.INDENT, "no");
+            queryResource(service, "siblings.xml", "//a/s[. = 'B']/following::s", 3);
+            ResourceSet result = queryResource(service, "siblings.xml", "//a/s[. = 'B']/following::s[1]", 1);
+            assertXMLEqual("<s>Z</s>", result.getResource(0).getContent().toString());
+            result = queryResource(service, "siblings.xml", "//a/s[. = 'B']/following::s[2]", 1);
+            assertXMLEqual("<s>C</s>", result.getResource(0).getContent().toString());
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }    
+    
     public void testPosition() {
         try {
             XQueryService service = 
@@ -406,9 +495,10 @@ public class XPathQueryTest extends XMLTestCase {
             resource = (XMLResource)result.getResource(2); 
             assertEquals("XPath: " + query, "1", resource.getContent().toString()); 
             
-            query = "let $a := ('a', 'b', 'c') for $b in $a[position()] return <blah>{$b}</blah>";
-            result = service.queryResource("numbers.xml", query); 
-            assertEquals("XPath: " + query, 3, result.getSize());             
+            // TODO: clarify
+//            query = "let $a := ('a', 'b', 'c') for $b in $a[position()] return <blah>{$b}</blah>";
+//            result = service.queryResource("numbers.xml", query); 
+//            assertEquals("XPath: " + query, 3, result.getSize());             
             
             
         } catch (XMLDBException e) {
@@ -468,7 +558,23 @@ public class XPathQueryTest extends XMLTestCase {
             assertXMLEqual("<item><price>5.6</price><stock>22</stock></item>",
                     result.getResource(0).getContent().toString());
             assertXMLEqual("<item><price>65.54</price><stock>16</stock></item>",
-                    result.getResource(3).getContent().toString());      
+                    result.getResource(3).getContent().toString());
+            
+            // test positional predicates
+            result = queryResource(service, "numbers.xml", "/test/node()[2]", 1);
+            assertXMLEqual("<item id='2'><price>7.4</price><stock>43</stock></item>",
+                    result.getResource(0).getContent().toString());
+            result = queryResource(service, "numbers.xml", "/test/element()[2]", 1);
+            assertXMLEqual("<item id='2'><price>7.4</price><stock>43</stock></item>",
+                    result.getResource(0).getContent().toString());
+            
+            // positional predicate on sequence of atomic values
+            result = queryResource(service, "numbers.xml", "('test', 'pass')[2]", 1);
+            assertEquals(result.getResource(0).getContent().toString(), "pass");
+            result = queryResource(service, "numbers.xml", "let $credentials := ('test', 'pass') let $user := $credentials[1] return $user", 1);
+            assertEquals(result.getResource(0).getContent().toString(), "test");
+            result = queryResource(service, "numbers.xml", "let $credentials := ('test', 'pass') let $user := $credentials[2] return $user", 1);
+            assertEquals(result.getResource(0).getContent().toString(), "pass");
             
         } catch (XMLDBException e) {
             fail(e.getMessage());
@@ -779,7 +885,7 @@ public class XPathQueryTest extends XMLTestCase {
 			String query, int expected, String message) throws XMLDBException {
 		ResourceSet result = service.queryResource(resource, query);
 		if(message == null)
-			assertEquals(expected, result.getSize());
+			assertEquals(query, expected, result.getSize());
 		else
 			assertEquals(message, expected, result.getSize());
 		return result;

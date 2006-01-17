@@ -331,7 +331,7 @@ public class ArraySet extends AbstractNodeSet {
 		return (p == null) ? null : p.getNode();
 	}
 
-	public Iterator iterator() {
+	public NodeSetIterator iterator() {
 		sort();
 		return new ArraySetIterator();
 	}
@@ -485,7 +485,7 @@ public class ArraySet extends AbstractNodeSet {
 		System.out.println("dl = " + dlen + "; copy = " + count);
 	}
 
-	private class ArraySetIterator implements Iterator {
+	private class ArraySetIterator implements NodeSetIterator {
 
 		private int pos = 0;
 
@@ -497,6 +497,12 @@ public class ArraySet extends AbstractNodeSet {
 			return hasNext() ? nodes[pos++] : null;
 		}
 
+        public void setPosition(NodeProxy proxy) {
+            int pos = search(nodes, 0, counter - 1, proxy);
+            if (pos == -1)
+                pos = counter;
+        }
+        
 		public void remove() {
 		}
 	}

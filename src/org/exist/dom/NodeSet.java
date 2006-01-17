@@ -55,7 +55,7 @@ public interface NodeSet extends Sequence, NodeList {
 	 * 
 	 * @return
 	 */
-	public Iterator iterator();
+	public NodeSetIterator iterator();
 	
 	/**
 	 * Check if this node set contains a node matching the document and

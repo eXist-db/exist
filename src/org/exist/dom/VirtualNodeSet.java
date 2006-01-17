@@ -396,7 +396,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		return realSet.get(proxy);
 	}
 
-	public Iterator iterator() {
+	public NodeSetIterator iterator() {
 		realize();
 		return realSet.iterator();
 	}

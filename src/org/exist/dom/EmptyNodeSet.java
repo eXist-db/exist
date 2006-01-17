@@ -21,18 +21,16 @@
  */
 package org.exist.dom;
 
-import java.util.Iterator;
-
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public final class EmptyNodeSet extends AbstractNodeSet {
 
 	private final static EmptyNodeSetIterator EMPTY_ITERATOR = new EmptyNodeSetIterator();
 	
-    public Iterator iterator() {
+    public NodeSetIterator iterator() {
 	    return EMPTY_ITERATOR;
     }
     
@@ -104,7 +102,7 @@ public final class EmptyNodeSet extends AbstractNodeSet {
     	return null;
     }
 
-	private final static class EmptyNodeSetIterator implements Iterator {
+	private final static class EmptyNodeSetIterator implements NodeSetIterator {
 
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#remove()
@@ -125,6 +123,9 @@ public final class EmptyNodeSet extends AbstractNodeSet {
 		public Object next() {
 			return null;
 		}
+        
+        public void setPosition(NodeProxy proxy) {
+        }
         
         public String toString() {
             StringBuffer result = new StringBuffer();
