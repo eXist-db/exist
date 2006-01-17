@@ -62,6 +62,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		this.axis = axis;
 		this.test = test;
 		this.context = context;
+        this.contextId = contextId;
 	}
 
 	public boolean contains(DocumentImpl doc, long nodeId) {
