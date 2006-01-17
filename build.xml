@@ -310,7 +310,7 @@
     <!-- Run JUnit tests                                                    -->
 	<!-- ================================================================== -->
     <target name="test"
-            depends="test-prepare,test-recovery, test-local, test-concurrent, test-remote, test-wrapup"
+            depends="test-prepare,test-recovery, test-local, test-jetty, test-concurrent, test-remote, test-wrapup"
             description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->
@@ -353,7 +353,6 @@
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
-            <classpath refid="classpath.jetty"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test fork="yes" name="org.exist.xmldb.test.LocalTests" todir="${junit.reports.dat}"/>
@@ -370,12 +369,35 @@
                     <exclude name="**/xmlrpc/test/*.java"/>
                     <exclude name="**/http/test/*.java"/>
                     <exclude name="**/storage/test/*.java"/>
+                    <exclude name="**/soap/test/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
     </target>
+    
+    <!-- Test set 2 : jetty server -->
+    <target name="test-jetty">
+        <echo message="------------------------------------------"/>
+        <echo message="Running tests on a jetty server"/>
+        <echo message="------------------------------------------"/>
+        
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
+            <sysproperty key="exist.home" value="${basedir}" />
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <formatter type="plain"/>
+            <formatter type="xml"/>
 
-    <!-- Test set 2 : concurrent tests -->
+            <batchtest fork="yes" todir="${junit.reports.dat}">
+                <fileset dir="${src}">
+                    <include name="org/exist/soap/test/*Test.java"/>
+                </fileset>
+            </batchtest>
+       </junit>
+    </target>
+
+
+    <!-- Test set 3 : concurrent tests -->
     <target name="test-concurrent">
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
@@ -391,6 +413,7 @@
         </junit>
     </target>
 
+    <!-- Test set 4 : recovery tests -->
     <target name="test-recovery">
         <echo message="--------------"/>
         <echo message="Recovery tests"/>
@@ -419,7 +442,7 @@
         <echo>Server started.</echo>
     </target>
 
-    <!-- Test set 3 : tests on remote server -->
+    <!-- Test set 5 : tests on remote server -->
     <target name="test-remote" depends="jar">
         <mkdir dir="${junit.reports}"/>
         <echo message="--------------------------------"/>
