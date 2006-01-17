@@ -632,7 +632,11 @@ public class DocumentImpl extends NodeImpl implements Document {
             NodeImpl nextNode = (NodeImpl) node.getFirstChild();
             while (nextNode == null) {
                 copyEndNode(node, receiver);
-                if (top != null && top.nodeNumber == node.nodeNumber) break;
+                if (top != null && top.nodeNumber == node.nodeNumber) 
+                    break;
+                //No nextNode if the top node is a Document node
+                if (top != null && top.nodeNumber == 0) 
+                    break;
                 nextNode = (NodeImpl) node.getNextSibling();
                 if (nextNode == null) {
                     node = (NodeImpl) node.getParentNode();
@@ -652,15 +656,12 @@ public class DocumentImpl extends NodeImpl implements Document {
         int nr = node.nodeNumber;
         switch (node.getNodeType()) {
             case Node.ELEMENT_NODE:
-                QName nodeName = (QName) document.namePool
-                        .get(document.nodeName[nr]);
+                QName nodeName = (QName) document.namePool.get(document.nodeName[nr]);
                 receiver.startElement(nodeName, null);
                 int attr = document.alpha[nr];
                 if (-1 < attr) {
-                    while (attr < document.nextAttr
-                            && document.attrParent[attr] == nr) {
-                        QName attrQName = (QName) document.namePool
-                                .get(document.attrName[attr]);
+                    while (attr < document.nextAttr && document.attrParent[attr] == nr) {
+                        QName attrQName = (QName) document.namePool.get(document.attrName[attr]);
                         receiver.attribute(attrQName, attrValue[attr]);
                         ++attr;
                     }
@@ -668,10 +669,8 @@ public class DocumentImpl extends NodeImpl implements Document {
                 int ns = document.alphaLen[nr];
                 if (-1 < ns) {
                 	XQueryContext context = receiver.getContext();
-                	while (ns < document.nextNamespace
-                			&& document.namespaceParent[ns] == nr) {
-                		QName nsQName = (QName) document.namePool
-                        	.get(document.namespaceCode[ns]);
+                	while (ns < document.nextNamespace	&& document.namespaceParent[ns] == nr) {
+                		QName nsQName = (QName) document.namePool.get(document.namespaceCode[ns]);
                 		receiver.addNamespaceNode(nsQName);
                         if ("xmlns".equals(nsQName.getLocalName()))
                             context.declareInScopeNamespace("", nsQName.getNamespaceURI());

@@ -90,11 +90,7 @@ public class MemTreeBuilder {
 	 * 
 	 * @return the node number of the created element
 	 */
-	public int startElement(
-		String namespaceURI,
-		String localName,
-		String qname,
-		Attributes attributes) {
+	public int startElement(String namespaceURI, String localName, String qname, Attributes attributes) {
 		int p = qname.indexOf(':');
 		String prefix = null;
 		if(context != null) {
@@ -102,7 +98,7 @@ public class MemTreeBuilder {
 		}
 		if(prefix == null)
 			prefix = (p != Constants.STRING_NOT_FOUND) ? qname.substring(0, p) : "";
-		QName qn = new QName(localName, namespaceURI, prefix);
+        QName qn = new QName(localName, namespaceURI, prefix);
 		return startElement(qn, attributes);
 	}
 
@@ -115,26 +111,18 @@ public class MemTreeBuilder {
 		int nodeNr = doc.addNode(Node.ELEMENT_NODE, level, qn);
 //		System.out.println("start: " + qn + "; nodeNr = " + nodeNr + "; level = " + level);
 		if(attributes != null) {
-			// parse attributes
-			String attrPrefix;
-			String attrLocalName;
-			String attrNS;
-			String attrQName;
-			int p;
+			// parse attributes	
 			for (int i = 0; i < attributes.getLength(); i++) {
-				attrNS = attributes.getURI(i);
-				attrLocalName = attributes.getLocalName(i);
-				attrQName = attributes.getQName(i);
+                String attrNS = attributes.getURI(i);
+                String attrLocalName = attributes.getLocalName(i);
+                String attrQName = attributes.getQName(i);
 				// skip xmlns-attributes and attributes in eXist's namespace
 				if (!(attrQName.startsWith("xmlns"))) {
 //					|| attrNS.equals("http://exist.sourceforge.net/NS/exist"))) {
-					p = attrQName.indexOf(':');
-					attrPrefix = (p > Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
-					p =
-						doc.addAttribute(
-							nodeNr,
-							new QName(attrLocalName, attrNS, attrPrefix),
-							attributes.getValue(i));
+                    int p = attrQName.indexOf(':');
+                    String attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
+                    QName attrQn = new QName(attrLocalName, attrNS, attrPrefix);
+					doc.addAttribute(nodeNr, attrQn, attributes.getValue(i));
 				}
 			}
 		}
