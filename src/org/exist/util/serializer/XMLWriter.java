@@ -106,6 +106,10 @@ public class XMLWriter {
 		charSet = CharacterSet.getCharacterSet(encoding);
 	}
 
+	protected void reset() {
+        writer = null;
+    }
+
 	/**
 	 * Set a new writer. Calling this method will reset the state of the object.
 	 * 
