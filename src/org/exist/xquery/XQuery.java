@@ -111,7 +111,11 @@ public class XQuery {
             		treeParser.getErrorMessage(),
             		treeParser.getLastException());
             }
-            LOG.debug("Query diagnostics:\n" + ExpressionDumper.dump(expr));
+            
+            // Log the query if it is not too large, but avoid
+            // dumping huge queries to the log
+            if (context.getExpressionCount() < 150)
+                LOG.debug("Query diagnostics:\n" + ExpressionDumper.dump(expr));
             expr.analyze(new AnalyzeContextInfo());
             LOG.debug("Compilation took "  +  (System.currentTimeMillis() - start));
             return expr;
