@@ -37,7 +37,7 @@ import org.exist.util.hashtable.SequencedLongHashMap;
  */
 public class Accounting {
 
-    private final Object DUMMY = new Object();
+    private final static Object DUMMY = new Object();
     
     /** the period (in milliseconds) for which trashing is recorded. */
     private int checkPeriod = 30000;

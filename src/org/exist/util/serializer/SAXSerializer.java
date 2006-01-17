@@ -103,6 +103,8 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 		nsSupport.reset();
 		namespaceDecls.clear();
 		optionalNamespaceDecls.clear();
+        for (int i = 0; i < writers.length; i++)
+            writers[i].reset();
 	}
 	
 	/* (non-Javadoc)

@@ -63,6 +63,11 @@ public class TEXTWriter extends XMLWriter {
         this.writer = writer;
     }
     
+    protected void reset() {
+        super.reset();
+        writer = null;
+    }
+    
     /**
      * Set the output properties.
      *
