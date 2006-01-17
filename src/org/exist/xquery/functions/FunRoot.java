@@ -24,6 +24,7 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.Cardinality;
@@ -31,8 +32,8 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -97,9 +98,17 @@ public class FunRoot extends Function {
     		if (!Type.subTypeOf(item.getType(), Type.NODE))
     			throw new XPathException("Context item is not a node; got " + Type.getTypeName(item.getType()));
     		if (item instanceof NodeProxy) {
-                result = new NodeProxy(((NodeProxy) item).getDocument()); // , -1, Node.DOCUMENT_NODE);
+                NodeProxy p = ((NodeProxy) item);
+                org.exist.dom.DocumentImpl doc = p.getDocument();
+    		    //Filter out the temporary nodes wrapper element 
+                if (doc.getCollection().isTempCollection()) {
+                    //TODO check that we only have one child
+                    StoredNode trueRoot = (StoredNode)doc.getDocumentElement().getFirstChild();
+                    result = new NodeProxy(doc, trueRoot.getGID(), trueRoot.getInternalAddress());
+                } else                
+                    result = new NodeProxy(((NodeProxy) item).getDocument());
     		} else
-                result = (DocumentImpl) ((NodeImpl) item).getOwnerDocument();
+    		    result = (DocumentImpl) ((NodeImpl) item).getOwnerDocument();
         }
         
         if (context.getProfiler().isEnabled()) 

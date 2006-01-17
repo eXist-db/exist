@@ -155,6 +155,7 @@ public class XPathQueryTest extends XMLTestCase {
             XQueryService service = 
                 storeXMLStringAndGetQueryService("numbers.xml", numbers); 
             
+            //Invalid path expression left operand (not a node set).
             boolean exceptionThrown = false;
             String message = "";
             try {
@@ -163,8 +164,9 @@ public class XPathQueryTest extends XMLTestCase {
                 exceptionThrown = true;
                 message = e.getMessage();
             }
-            assertTrue("Exception wanted: " + message, exceptionThrown);
+            assertTrue("Exception wanted: " + message, message.contains("XPTY0019"));
             
+            //Undefined context sequence
             exceptionThrown = false;
             message = "";
             try {
@@ -173,7 +175,19 @@ public class XPathQueryTest extends XMLTestCase {
                 exceptionThrown = true;
                 message = e.getMessage();
             }
-            assertTrue("Exception wanted: " + message, exceptionThrown);            
+            assertTrue("Exception wanted: " + message, message.contains("XPDY0002")); 
+            
+            exceptionThrown = false;
+            message = "";
+            try {
+                //"1 to 2" is resolved as a (1, 2), i.e. a sequence of *integers* which is *not* a singleton
+                queryAndAssert(service, "let $a := (1, 2, 3) for $b in $a[1 to 2] return $b", -1, null);                
+            } catch (XMLDBException e) {
+                exceptionThrown = true;
+                message = e.getMessage();
+            }
+            //No effective boolean value for such a kind of sequence !
+            assertTrue("Exception wanted: " + message, message.contains("FORG0006"));
             
             queryAndAssert(service, "()/position()", 0, null);
             
@@ -329,9 +343,24 @@ public class XPathQueryTest extends XMLTestCase {
             //org.xmldb.api.base.XMLDBException: Internal evaluation error: context node is missing !
             System.out.println("testStarAxisConstraints3(): XMLDBException: "+e);
             fail(e.getMessage());
-    }
-}  
+        }
+    } 
     
+    public void testRoot() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("nested2.xml", nested2);
+            
+            String query = "let $doc := <a><b/></a> return root($doc)";
+            ResourceSet result = service.queryResource("numbers.xml", query);
+            assertEquals("XPath: " + query, 1, result.getSize());            
+            XMLResource resource = (XMLResource)result.getResource(0);
+            assertEquals("XPath: " + query, "a", resource.getContentAsDOM().getFirstChild().getLocalName());          
+            
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    } 
     
     public void testParentAxis() {
         try {
