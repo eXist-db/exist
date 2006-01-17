@@ -20,8 +20,6 @@
  */
 package org.exist.dom;
 
-import java.util.Iterator;
-
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
 import org.exist.storage.RangeIndexSpec;
@@ -314,7 +312,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * @param internalAddress The internalAddress to set
 	 */
 	public void setInternalAddress(long internalAddress) {
-        if (this.internalAddress != UNKNOWN_NODE_ADDRESS /*&& this.internalAddress != internalAddress*/)
+        if (this.internalAddress != UNKNOWN_NODE_ADDRESS && this.internalAddress != internalAddress)
             throw new IllegalArgumentException("Internal address already affected");        
 		this.internalAddress = internalAddress;
 	}
@@ -434,6 +432,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             }
             next = next.getNextDirect();
         }
+//        System.out.println("NodeProxy.addContextNode: " + contextNode.debugContext());
     }
 	
 	public void copyContext(NodeProxy node) {
@@ -450,11 +449,11 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	
 	public String debugContext() {
 		StringBuffer buf = new StringBuffer();
-		buf.append("Context for " + gid + ": ");
+		buf.append("Context for " + gid + "[ " + toString() + "] : ");
 		ContextItem next = context;
 		while(next != null) {
 			buf.append('[');
-			buf.append(next.getNode().gid);
+			buf.append(next.getNode());
 			buf.append(':');
 			buf.append(next.getContextId());
 			buf.append("] ");
@@ -675,7 +674,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#iterator()
 	 */
-	public Iterator iterator() {
+	public NodeSetIterator iterator() {
 		return new SingleNodeIterator(this);
 	}
 
@@ -1083,7 +1082,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         //        );
     }    
     
-	private final static class SingleNodeIterator implements Iterator, SequenceIterator {
+	private final static class SingleNodeIterator implements NodeSetIterator, SequenceIterator {
 
 		private boolean hasNext = true;
 		private NodeProxy node;
@@ -1117,6 +1116,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 			return node;			
 		}
 
+        public void setPosition(NodeProxy proxy) {
+            node = proxy;
+            hasNext = true;
+        }
 	}
 
 }

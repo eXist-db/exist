@@ -150,7 +150,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 		return p == null ? null : p;
 	}
 	
-	public Iterator iterator() {
+	public NodeSetIterator iterator() {
 		return new SortedNodeSetIterator(list.iterator());
 	}
 
@@ -168,7 +168,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 		return new SortedNodeSetIterator(list.iterator());
 	}
 	
-	private final static class SortedNodeSetIterator implements Iterator, SequenceIterator {
+	private final static class SortedNodeSetIterator implements NodeSetIterator, SequenceIterator {
 
 		Iterator pi;
 
@@ -197,6 +197,10 @@ public class SortedNodeSet extends AbstractNodeSet {
 		
 		public void remove() {
 		}
+        
+        public void setPosition(NodeProxy proxy) {
+            throw new RuntimeException("NodeSetIterator.setPosition() is not supported by SortedNodeSetIterator");
+        }
 	}
 	
 	private static final class IteratorItem extends OrderedLinkedList.Node {

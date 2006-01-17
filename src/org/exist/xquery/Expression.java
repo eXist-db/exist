@@ -69,6 +69,8 @@ public interface Expression {
      */
     public final static int NO_CONTEXT_ID = -1;
     
+    public final static int IGNORE_CONTEXT = -2;
+    
     /**
      * Marks an invalid expression id.
      */

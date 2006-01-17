@@ -53,6 +53,8 @@ public class Predicate extends PathExpr {
 	
 	private int executionMode = BOOLEAN;
 	
+    private int outerContextId;
+    
 	public Predicate(XQueryContext context) {
 		super(context);
 	}
@@ -74,6 +76,7 @@ public class Predicate extends PathExpr {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.addFlag(IN_PREDICATE); // set flag to signal subexpression that we are in a predicate
         contextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
+        outerContextId = contextInfo.getContextId();
         contextInfo.setContextId(getExpressionId());
         //TODO : how can it be possible ?
         Expression inner = getExpression(0);        
@@ -137,10 +140,10 @@ public class Predicate extends PathExpr {
                 recomputedExecutionMode = BOOLEAN;
             }
             
-            if (executionMode == POSITIONAL && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
-                    && !(contextSequence instanceof VirtualNodeSet)) {
-                recomputedExecutionMode = BOOLEAN;
-            }            
+//            if (executionMode == POSITIONAL && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
+//                    && !(contextSequence instanceof VirtualNodeSet)) {
+//                recomputedExecutionMode = BOOLEAN;
+//            }            
             
     		switch(recomputedExecutionMode) {
     			case NODE: 
@@ -301,10 +304,10 @@ public class Predicate extends PathExpr {
                     boolean reverseAxis = true;
                     switch(mode) {
                     case Constants.ANCESTOR_AXIS:                            
-                        temp = contextSet.selectAncestors(p, false, Expression.NO_CONTEXT_ID);
+                        temp = contextSet.selectAncestors(p, false, Expression.IGNORE_CONTEXT);
                         break;
                     case Constants.ANCESTOR_SELF_AXIS:
-                       temp = contextSet.selectAncestors(p, true, Expression.NO_CONTEXT_ID);
+                       temp = contextSet.selectAncestors(p, true, Expression.IGNORE_CONTEXT);
                         break;
                     case Constants.PARENT_AXIS:
                         //TODO : understand why the contextSet is not involved here
@@ -316,10 +319,10 @@ public class Predicate extends PathExpr {
                         temp = contextSet.selectPreceding(p);
                         break;
                     case Constants.PRECEDING_SIBLING_AXIS:
-                        temp = contextSet.selectPrecedingSiblings(p, getExpressionId());
+                        temp = contextSet.selectPrecedingSiblings(p, Expression.IGNORE_CONTEXT);
                         break;
                     case Constants.FOLLOWING_SIBLING_AXIS:
-                        temp = contextSet.selectFollowingSiblings(p, getExpressionId());
+                        temp = contextSet.selectFollowingSiblings(p, Expression.IGNORE_CONTEXT);
                         reverseAxis = false;
                         break;    
                     case Constants.FOLLOWING_AXIS:
@@ -340,12 +343,25 @@ public class Predicate extends PathExpr {
                         Sequence innerSeq = inner.eval(contextSequence);                        
                         for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {                    
                             NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);                             
-                            int pos = (reverseAxis ? temp.getLength() - v.getInt() : v.getInt());
-                            //Other positions are ignored    
-        				    if (pos >= 0 && pos < temp.getLength()) {                                 
-    				            result.add(temp.itemAt(pos));
+                            int pos = (reverseAxis ? temp.getLength() - v.getInt() : v.getInt() - 1);
+                            //Other positions are ignored
+                            if (pos >= 0 && pos < temp.getLength()) {
+                                NodeProxy t = (NodeProxy) temp.itemAt(pos);
+                                // for the current context: filter out those context items
+                                // not selected by the positional predicate
+                                ContextItem ctx = t.getContext();
+                                t.clearContext();
+                                while (ctx != null) {
+                                    if (ctx.getContextId() == outerContextId) {
+                                        if (ctx.getNode().getGID() == p.getGID())
+                                            t.addContextNode(outerContextId, ctx.getNode());
+                                    } else
+                                        t.addContextNode(ctx.getContextId(), ctx.getNode());
+                                    ctx = ctx.getNextDirect();
+                                }
+                                result.add(t);
                             }                       
-    				    }
+                        }
                     }
     			}
 			}

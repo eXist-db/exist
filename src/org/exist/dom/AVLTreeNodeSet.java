@@ -379,11 +379,11 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 		}
 	}
 
-	public Iterator iterator() {
+	public NodeSetIterator iterator() {
 		return (this.new InorderTraversal());
 	}
 
-	class InorderTraversal implements Iterator, SequenceIterator {
+	class InorderTraversal implements NodeSetIterator, SequenceIterator {
 
 		private Stack nodes;
 
@@ -420,6 +420,18 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 			return currentNode.getData();
 		}
 
+        public void setPosition(NodeProxy proxy) {
+            Node n = searchData(proxy);
+            nodes.clear();
+            if (n != null) {
+                Node tempNode = n;
+                do {
+                    nodes.push(tempNode);
+                    tempNode = tempNode.leftChild;
+                } while (tempNode != null);
+            }
+        }
+        
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#remove()
 		 */

@@ -65,7 +65,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * 
 	 * @return
 	 */
-	public abstract Iterator iterator();
+	public abstract NodeSetIterator iterator();
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#iterate()

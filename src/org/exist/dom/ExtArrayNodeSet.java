@@ -203,7 +203,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * 
      * @see org.exist.dom.NodeSet#iterator()
      */
-    public Iterator iterator() {
+    public NodeSetIterator iterator() {
         if (!isSorted())
             sort();
         return new ExtArrayIterator();
@@ -444,7 +444,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     
     public NodeSet selectFollowingSiblings(NodeSet siblings, int contextId) {
         sort();
-        return super.selectPrecedingSiblings(siblings, contextId);
+        return super.selectFollowingSiblings(siblings, contextId);
     }    
     
     
@@ -773,7 +773,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             }
         }
     }
-    private class ExtArrayIterator implements Iterator, SequenceIterator {
+    private class ExtArrayIterator implements NodeSetIterator, SequenceIterator {
 
         Part currentPart = null;
         int partPos = 0;
@@ -787,6 +787,31 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                 next = currentPart.get(0);
         }
 
+        public void setPosition(NodeProxy proxy) {
+            partPos = ArrayUtils.binarySearch(documentIds, proxy.getDocument().getDocId(), partCount);
+            if (partPos >= 0) {
+                currentPart = parts[partPos];
+                int low = 0;
+                int high = currentPart.length - 1;
+                int mid;
+                NodeProxy p;
+                while (low <= high) {
+                    mid = (low + high) / 2;
+                    p = currentPart.array[mid];
+                    if (p.getGID() == proxy.getGID()) {
+                        pos = mid;
+                        next = p;
+                        return;
+                    }
+                    if (p.getGID() > proxy.getGID())
+                        high = mid - 1;
+                    else
+                        low = mid + 1;
+                }
+            }
+            next = null;
+        }
+        
         /*
          * (non-Javadoc)
          * 
