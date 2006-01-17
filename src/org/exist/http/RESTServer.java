@@ -201,7 +201,9 @@ public class RESTServer {
     public void doGet(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path)
     throws BadRequestException, PermissionDeniedException,
             NotFoundException, IOException {
-        
+    	if (request.getCharacterEncoding() == null)
+			request.setCharacterEncoding(formEncoding);
+    	
         // Process special parameters
         
         int howmany = 10;
@@ -402,6 +404,8 @@ public class RESTServer {
     public void doPost(DBBroker broker, HttpServletRequest request,
             HttpServletResponse response, String path)
             throws BadRequestException, PermissionDeniedException, IOException {
+    	if (request.getCharacterEncoding() == null)
+			request.setCharacterEncoding(formEncoding);
         Properties outputProperties = new Properties(defaultProperties);
         DocumentImpl resource = null;
         try {
