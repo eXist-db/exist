@@ -170,6 +170,8 @@ public class XQueryServlet extends HttpServlet {
 	 */
 	protected void process(HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException {
+		if (request.getCharacterEncoding() == null)
+			request.setCharacterEncoding(formEncoding);
 		ServletOutputStream sout = response.getOutputStream();
 		PrintWriter output = 
 			new PrintWriter(new OutputStreamWriter(sout, formEncoding));
