@@ -171,8 +171,8 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 							"permission denied to read resource");
 				if (proxy != null)
 					return document.getNode(proxy);
-				else
-                    return document.getDocumentElement();
+                // <frederic.glorieux@ajlsm.com> return a full to get root PI and comments 
+                return document;
 			} catch (EXistException e) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e
 						.getMessage(), e);

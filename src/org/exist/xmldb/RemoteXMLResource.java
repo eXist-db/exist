@@ -202,7 +202,8 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	    factory.setValidating(false);
 	    DocumentBuilder builder = factory.newDocumentBuilder();
 	    Document doc = builder.parse(new InputSource(new StringReader(content)));
-	    return doc.getDocumentElement();
+        // <frederic.glorieux@ajlsm.com> return a full DOM doc, with root PI and comments
+	    return doc;
 	} catch (SAXException saxe) {
 	    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
 	} catch (ParserConfigurationException pce) {
