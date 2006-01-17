@@ -164,7 +164,7 @@ public class XPathQueryTest extends XMLTestCase {
                 exceptionThrown = true;
                 message = e.getMessage();
             }
-            assertTrue("Exception wanted: " + message, message.contains("XPTY0019"));
+            assertTrue("Exception wanted: " + message, message.indexOf("XPTY0019") > -1);
             
             //Undefined context sequence
             exceptionThrown = false;
@@ -175,7 +175,7 @@ public class XPathQueryTest extends XMLTestCase {
                 exceptionThrown = true;
                 message = e.getMessage();
             }
-            assertTrue("Exception wanted: " + message, message.contains("XPDY0002")); 
+            assertTrue("Exception wanted: " + message, message.indexOf("XPDY0002") > -1); 
             
             exceptionThrown = false;
             message = "";
@@ -187,7 +187,7 @@ public class XPathQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             //No effective boolean value for such a kind of sequence !
-            assertTrue("Exception wanted: " + message, message.contains("FORG0006"));
+            assertTrue("Exception wanted: " + message, message.indexOf("FORG0006") >-1);
             
             queryAndAssert(service, "()/position()", 0, null);
             
