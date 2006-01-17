@@ -98,7 +98,7 @@ public class Predicate extends PathExpr {
             else
                 executionMode = BOOLEAN;
         // Case 2: predicate expression returns a number.
-        } else if (Type.subTypeOf(inner.returnsType(), Type.NUMBER)) {
+        } else if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && inner.getCardinality() == Cardinality.EXACTLY_ONE) {
             executionMode = POSITIONAL;
         // Case 3: predicate expression evaluates to a boolean.
         } else
@@ -131,7 +131,8 @@ public class Predicate extends PathExpr {
 
             // just to be sure: change mode to boolean if the predicate expression returns a number
             //TODO : the code, likely to be correct, implements the exact contrary     
-            if (executionMode == BOOLEAN && Type.subTypeOf(inner.returnsType(), Type.NUMBER)) {
+            if (executionMode == BOOLEAN && Type.subTypeOf(inner.returnsType(), Type.NUMBER) && 
+                    inner.getCardinality() == Cardinality.EXACTLY_ONE) {
                 recomputedExecutionMode = POSITIONAL;
             }  
             
@@ -140,10 +141,10 @@ public class Predicate extends PathExpr {
                 recomputedExecutionMode = BOOLEAN;
             }
             
-//            if (executionMode == POSITIONAL && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
-//                    && !(contextSequence instanceof VirtualNodeSet)) {
-//                recomputedExecutionMode = BOOLEAN;
-//            }            
+            //if (executionMode == POSITIONAL && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
+            //&& !(contextSequence instanceof VirtualNodeSet)) {
+            //recomputedExecutionMode = BOOLEAN;
+            //}            
             
     		switch(recomputedExecutionMode) {
     			case NODE: 
