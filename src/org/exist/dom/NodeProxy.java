@@ -266,7 +266,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	}
 	
 	public final DocumentImpl getDocument()  {
-		return doc;
+        return doc;
 	}
 	
     public boolean isDocument() {
@@ -1076,7 +1076,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     }
     
     public String toString() {
-        return doc.getNode(gid).toString();
+        if (doc.getNode(gid) != null)
+            return doc.getNode(gid).toString();
+        else
+            return "Document node for " + doc.getDocId();
         //return ("doc: " + this.getDocument() + " gid:" + this.getGID() + " address :" + 
         //        this.getInternalAddress() + " type :" + this.getNodeType()
         //        );
