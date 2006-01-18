@@ -13,6 +13,8 @@ import org.exist.util.Configuration;
 public class RpcServlet extends HttpServlet {
 
     protected XmlRpcServer xmlrpc;
+    /** id of the database registred against the BrokerPool */
+    protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
 
 
     /**
@@ -54,17 +56,20 @@ public class RpcServlet extends HttpServlet {
      */
     public void init( ServletConfig config ) throws ServletException {
         super.init( config );
-        if ( !BrokerPool.isConfigured() )
+        // <frederic.glorieux@ajlsm.com> to allow multi-instance xmlrpc server, use a databaseid everywhere
+        String id = config.getInitParameter("database-id");
+        if (id != null && !"".equals(id)) this.databaseid=id;
+        if ( !BrokerPool.isConfigured(databaseid) )
             throw new ServletException( "database is not running" );
         boolean enableDebug = false;
         String param = config.getInitParameter("debug");
         if(param != null)
         	enableDebug = param.equalsIgnoreCase("true");
         try {
-        	BrokerPool pool = BrokerPool.getInstance();
+        	BrokerPool pool = BrokerPool.getInstance(databaseid);
             Configuration conf = pool.getConfiguration();
             xmlrpc = new XmlRpcServer();
-            AuthenticatedHandler rpcserv = new AuthenticatedHandler( conf );
+            AuthenticatedHandler rpcserv = new AuthenticatedHandler( conf, databaseid );
             //RpcServer rpcserv = new RpcServer( conf );
             xmlrpc.addHandler( "$default", rpcserv );
             XmlRpc.setDebug( enableDebug );

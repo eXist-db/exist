@@ -20,6 +20,8 @@ public class AuthenticatedHandler implements AuthenticatedXmlRpcHandler {
 
     private RpcAPI handler;
     private BrokerPool pool = null;
+    /** id of the database registred against the BrokerPool */
+    private String databaseid=BrokerPool.DEFAULT_INSTANCE_NAME;
 
 
     /**
@@ -28,10 +30,11 @@ public class AuthenticatedHandler implements AuthenticatedXmlRpcHandler {
      *@param  conf                 Description of the Parameter
      *@exception  XmlRpcException  Description of the Exception
      */
-    public AuthenticatedHandler( Configuration conf ) throws XmlRpcException {
+    public AuthenticatedHandler( Configuration conf, String id ) throws XmlRpcException {
+        if (id != null && !"".equals(id)) this.databaseid=id;
         try {
-            handler = new RpcServer( conf );
-            pool = BrokerPool.getInstance();
+            handler = new RpcServer( conf, this.databaseid );
+            pool = BrokerPool.getInstance(this.databaseid);
         } catch ( EXistException e ) {
             throw new XmlRpcException( 0, e.toString() );
         }
