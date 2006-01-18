@@ -132,7 +132,9 @@ public abstract class AbstractSequence implements Sequence {
 		if ( ! OLD_EXIST_VERSION_COMPATIBILITY )
 			if (len > 1)
 			throw new XPathException(
-				"error FORG0006: effectiveBooleanValue: first item not a node, and sequence length>1");
+				"error FORG0006: effectiveBooleanValue: first item of '" + 
+                (toString().length() < 20 ? toString() : toString().substring(0, 20)+ "...") + 
+                            "' is not a node, and sequence length > 1");
 
 		// If $arg is a singleton value of type xs:boolean or a derived from xs:boolean, fn:boolean returns $arg.
 		if(first instanceof StringValue)
