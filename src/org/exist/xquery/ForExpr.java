@@ -208,6 +208,7 @@ public class ForExpr extends BindingExpression {
 			at.setValue(atVal);
 		
 		// Loop through each variable binding
+        p = 0;
 		for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
 		    context.proceed(this);
 			contextItem = i.nextItem();
