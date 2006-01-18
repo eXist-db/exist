@@ -328,13 +328,12 @@ public class XQueryTest extends XMLTestCase {
             "return $bar " +
             "return $b";
             result = service.queryResource(NUMBERS_XML, query );
-            //assertEquals( "XQuery: " + query, 2, result.getSize() );
+            assertEquals( "XQuery: " + query, 2, result.getSize() );
             printResult(result);
             resu = (XMLResource) result.getResource(0);
-            //assertEquals( "XQuery: " + query, "2", ((Element)resu.getContentAsDOM()).getAttribute("name") );    
+            assertEquals( "XQuery: " + query, "2", ((Element)resu.getContentAsDOM()).getAttribute("name") );    
             resu = (XMLResource) result.getResource(1);
-            //assertEquals( "XQuery: " + query, "3", ((Element)resu.getContentAsDOM()).getAttribute("name") );                
-                        
+            assertEquals( "XQuery: " + query, "3", ((Element)resu.getContentAsDOM()).getAttribute("name") ); 
 			
 		} catch (XMLDBException e) {
 			System.out.println("testVariable : XMLDBException: "+e);

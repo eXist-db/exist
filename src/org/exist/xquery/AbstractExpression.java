@@ -36,17 +36,23 @@ public abstract class AbstractExpression implements Expression {
 	protected XQueryAST astNode = null;
 	
 	protected DocumentSet contextDocSet = null;
+    
+    protected int contextId = Expression.NO_CONTEXT_ID;
 	
 	public AbstractExpression(XQueryContext context) {
 		this.context = context;
 		this.expressionId = context.nextExpressionId();
 	}
 
-	public int getExpressionId() {
+    public int getExpressionId() {
 		SanityCheck.THROW_ASSERT(expressionId != EXPRESSION_ID_INVALID, 
 				"The expression " + toString() + " should have a unique id!");
 		return expressionId;
 	}
+    
+    public int getContextId() {
+        return contextId;
+    }
 	
 	public Sequence eval(Sequence contextSequence)
 		throws XPathException {

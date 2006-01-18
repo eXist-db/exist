@@ -181,6 +181,8 @@ public interface Expression {
 	public void dump(ExpressionDumper dumper);
 	
 	public void setContextDocSet(DocumentSet contextSet);
+    
+    public int getContextId();
 	
 	public DocumentSet getContextDocSet();
 	
