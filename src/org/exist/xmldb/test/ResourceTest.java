@@ -85,7 +85,13 @@ public class ResourceTest extends TestCase {
 
 			XMLResource doc = (XMLResource) testCollection.getResource("r_and_j.xml");
 			assertNotNull(doc);
-			Element elem = (Element) doc.getContentAsDOM();
+			Node n = doc.getContentAsDOM();
+            Element elem=null;
+            if ( n instanceof Element ) {
+                elem = (Element)n;
+            } else if ( n instanceof Document ) {
+                elem = ((Document)n).getDocumentElement();
+            }
 			assertNotNull(elem);
 			assertEquals(elem.getNodeName(), "PLAY");
 			System.out.println("Root element: " + elem.getNodeName());
