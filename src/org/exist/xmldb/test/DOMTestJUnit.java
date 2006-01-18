@@ -13,6 +13,7 @@ import junit.textui.TestRunner;
 import org.exist.StandaloneServer;
 import org.exist.storage.DBBroker;
 import org.mortbay.util.MultiException;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -56,7 +57,7 @@ public class DOMTestJUnit extends TestCase {
 			assertNotNull(rootColl);			
 
 			XMLResource r = (XMLResource)rootColl.createResource(name, XMLResource.RESOURCE_TYPE);
-			r.setContent("<properties><property key=\"type\">Table</property></properties>");
+			r.setContent("<?xml-stylesheet type=\"text/xsl\" href=\"test.xsl\"?><!-- Root Comment --><properties><property key=\"type\">Table</property></properties>");
 			rootColl.storeResource(r);
 		} catch(Exception e) {			
 			fail(e.getMessage());
@@ -104,23 +105,51 @@ public class DOMTestJUnit extends TestCase {
 				String content = (String) index.getContent();
 				System.out.println(content);
 			}
-			Node rootNode = index.getContentAsDOM();
-			Document doc = rootNode.getOwnerDocument();
+            Document doc=null;
+            Element root=null;
+            NodeList nl=null;
+			Node n = index.getContentAsDOM();
+            if (n instanceof Document) { 
+                doc=(Document)n;
+                root=doc.getDocumentElement();
+            }
+            else if (n instanceof Element) {
+                doc = n.getOwnerDocument();
+                root=(Element)n;
+            }
+            else {
+                fail("RemoteXMLResource unable to return a Document either an Element");
+            }
+
+            System.out.println("Retrieving root comments and PIs");
+            nl = doc.getChildNodes();
+            for (int i = 0; i < nl.getLength(); i++) {
+                System.out.println(" * "+nl.item(i).getNodeName());
+            }
+
+            
 			Element schemaNode = doc.createElement("schema");
 			schemaNode.setAttribute("targetNamespace", "targetNamespace");
 			schemaNode.setAttribute("resourceName", "filename");
 			
-			rootNode.appendChild(schemaNode);
-			index.setContentAsDOM(rootNode);
+			root.appendChild(schemaNode);
+			index.setContentAsDOM(doc);
 			rootColl.storeResource(index);
 	
 			System.out.println("Retrieving modified content:");
 			index = (XMLResource) rootColl.getResource(name);
 			String content = (String) index.getContent();
 			System.out.println(content);
-			rootNode = index.getContentAsDOM();
-			Element rootElem = ((Element)rootNode);
-			NodeList nl = rootElem.getChildNodes();
+			n = index.getContentAsDOM();
+            if (n instanceof Document) { 
+                doc=(Document)n;
+                root=doc.getDocumentElement();
+            }
+            else if (n instanceof Element) {
+                doc = n.getOwnerDocument();
+                root=(Element)n;
+            }
+			nl = root.getChildNodes();
 			for (int i = 0; i < nl.getLength(); i++) {
 				System.out.println(nl.item(i).getNodeName());
 			}
