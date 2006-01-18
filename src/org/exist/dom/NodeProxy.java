@@ -460,26 +460,28 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     }
     
     public void clearContext(int contextId) {
-        if (contextId == Expression.IGNORE_CONTEXT) {
-            context = null;
-            return;
-        }
-        ContextItem newContext = null;
-        ContextItem last = null;
-        ContextItem next = context;
-        while (next != null) {
-            if (next.getContextId() != contextId) {
-                if (newContext == null) {
-                    newContext = next;
-                } else {
-                    last.setNextContextItem(next);
-                }
-                last = next;
-                last.setNextContextItem(null);
-            }
-            next = next.getNextDirect();
-        }
-        this.context = newContext;
+        context = null;
+        return;
+//        if (contextId == Expression.IGNORE_CONTEXT) {
+//            context = null;
+//            return;
+//        }
+//        ContextItem newContext = null;
+//        ContextItem last = null;
+//        ContextItem next = context;
+//        while (next != null) {
+//            if (next.getContextId() != contextId) {
+//                if (newContext == null) {
+//                    newContext = next;
+//                } else {
+//                    last.setNextContextItem(next);
+//                }
+//                last = next;
+//                last.setNextContextItem(null);
+//            }
+//            next = next.getNextDirect();
+//        }
+//        this.context = newContext;
     }
     
 	public ContextItem getContext() {
