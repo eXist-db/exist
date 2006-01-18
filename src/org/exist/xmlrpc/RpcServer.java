@@ -90,8 +90,9 @@ public class RpcServer implements RpcAPI {
      * @exception EXistException
      *                        Description of the Exception
      */
-    public RpcServer(Configuration conf) throws EXistException {
-        pool = new ConnectionPool(MIN_CONNECT, MAX_CONNECT, conf);
+    public RpcServer(Configuration conf, String databaseid) throws EXistException {
+        databaseid=(databaseid != null && !"".equals(databaseid))?databaseid:BrokerPool.DEFAULT_INSTANCE_NAME;
+        pool = new ConnectionPool(MIN_CONNECT, MAX_CONNECT, conf, databaseid);
     }
 
     public boolean createCollection(User user, String name)
@@ -1572,8 +1573,12 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
         protected Stack pool = new Stack();
 
         protected ArrayList threads = new ArrayList();
+        /** id of the database registred against the BrokerPool */
+        protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
 
-        public ConnectionPool(int min, int max, Configuration conf) {
+
+        public ConnectionPool(int min, int max, Configuration conf, String databaseid) {
+            if (databaseid != null && !"".equals(databaseid)) this.databaseid=databaseid;
             this.min = min;
             this.max = max;
             this.conf = conf;
@@ -1593,7 +1598,7 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
 
         protected RpcConnection createConnection() {
             try {
-                RpcConnection con = new RpcConnection(conf, this);
+                RpcConnection con = new RpcConnection(conf, this, this.databaseid);
                 threads.add(con);
                 con.start();
                 connections++;

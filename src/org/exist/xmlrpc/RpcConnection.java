@@ -137,11 +137,16 @@ public class RpcConnection extends Thread {
     
     private static final int MAX_DOWNLOAD_CHUNK_SIZE = 0x40000;
     
-    public RpcConnection(Configuration conf, RpcServer.ConnectionPool pool)
+    /** id of the database registred against the BrokerPool */
+    protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
+
+    
+    public RpcConnection(Configuration conf, RpcServer.ConnectionPool pool, String id)
     throws EXistException {
         super();
+        if (id != null && !"".equals(id)) this.databaseid=id;
         connectionPool = pool;
-        brokerPool = BrokerPool.getInstance();
+        brokerPool = BrokerPool.getInstance(this.databaseid);
     }
     
     public void createCollection(User user, String name, Date created) throws Exception,
