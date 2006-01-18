@@ -56,6 +56,8 @@ public class WebDAV {
 	//	default content types
 	public final static String BINARY_CONTENT = "application/octet-stream";
 	public final static String XML_CONTENT = "text/xml";
+    /** id of the database registred against the BrokerPool */
+    protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
 	
 	//	default output properties for the XML serialization
 	public final static Properties OUTPUT_PROPERTIES = new Properties();
@@ -77,9 +79,10 @@ public class WebDAV {
 	private Authenticator basicAuth;
 	private BrokerPool pool;
 	
-	public WebDAV(int authenticationMethod) throws ServletException {
+	public WebDAV(int authenticationMethod, String id) throws ServletException {
+        if (id != null && !"".equals(id)) this.databaseid=id;
 		try {
-			pool = BrokerPool.getInstance();
+			pool = BrokerPool.getInstance(this.databaseid);
 		} catch (EXistException e) {
 			throw new ServletException("Error found while initializing database: " + e.getMessage(), e);
 		}
