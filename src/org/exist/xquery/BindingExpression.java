@@ -122,35 +122,35 @@ public abstract class BindingExpression extends AbstractExpression {
 			// if the where expression returns a node set, check the context
 			// node of each node in the set           
 			NodeSet contextSet = contextSequence.toNodeSet();
-			boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;          
-			Sequence seq = whereExpr.eval(contextSequence);
+			boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;            
+			Sequence seq = whereExpr.eval(contextSequence); 
 			NodeSet nodes = seq.toNodeSet(); 
 			NodeSet result = new ExtArrayNodeSet();
 			DocumentImpl lastDoc = null;
 			int count = 0;
 			for (Iterator i = nodes.iterator(); i.hasNext(); count++) {
-				NodeProxy current = (NodeProxy) i.next();
+				NodeProxy current = (NodeProxy) i.next();                
 				int sizeHint = Constants.NO_SIZE_HINT;
 				if(lastDoc == null || current.getDocument() != lastDoc) {
 					lastDoc = current.getDocument();
 					sizeHint = nodes.getSizeHint(lastDoc);
 				}
-				ContextItem	contextNode = current.getContext();
-				if (contextNode == null) {
+				ContextItem	context = current.getContext();                
+				if (context == null) {               
 					throw new XPathException("Internal evaluation error: context node is missing for node " +
 							current.getGID() + "!");
 				}
-				LOG.debug(current.debugContext());
-				//TODO : review to consider transverse context
-				while (contextNode != null) {
-					if (contextNode.getContextId() == getExpressionId()) {
-						NodeProxy next = contextNode.getNode();                    
-						if(contextIsVirtual || contextSet.contains(next)) {
-							next.addMatches(current);
-							result.add(next, sizeHint);
+				LOG.debug(current.debugContext());				
+				while (context != null) {
+                    //TODO : Is this the context we want ? Not sure... would have prefered the LetExpr.
+					if (context.getContextId() == whereExpr.getContextId()) {
+						NodeProxy contextNode = context.getNode();                    
+						if(contextIsVirtual || contextSet.contains(contextNode)) {
+                            contextNode.addMatches(current);
+							result.add(contextNode, sizeHint);
 						}
 					}
-					contextNode = contextNode.getNextDirect();
+                    context = context.getNextDirect();
 				}
 			}
 			return result;

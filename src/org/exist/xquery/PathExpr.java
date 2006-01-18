@@ -52,7 +52,6 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     protected List steps = new ArrayList();
 
     protected boolean inPredicate = false;
-    protected int contextId = Expression.NO_CONTEXT_ID;
     
     public PathExpr(XQueryContext context) {
         super(context);
@@ -118,7 +117,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if(i == 1) {
                 	//take care : predicates in predicates are not marked as such ! -pb
                     contextInfo.setFlags(contextInfo.getFlags() & (~IN_PREDICATE));
-                    contextInfo.setContextId(Expression.NO_CONTEXT_ID);
+                    //Where clauses should be identified. TODO : pass bound variable's inputSequence ? -pb
+                    if ((contextInfo.getFlags() & IN_WHERE_CLAUSE) == 0)
+                        contextInfo.setContextId(Expression.NO_CONTEXT_ID);                    
                 }
             }
             expr.analyze(contextInfo);
