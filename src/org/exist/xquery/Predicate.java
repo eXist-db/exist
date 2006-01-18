@@ -99,6 +99,7 @@ public class Predicate extends PathExpr {
                 executionMode = BOOLEAN;
         // Case 2: predicate expression returns a number.
         } else if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && inner.getCardinality() == Cardinality.EXACTLY_ONE) {
+            //Just a hint : inner's cardinality may still be potential
             executionMode = POSITIONAL;
         // Case 3: predicate expression evaluates to a boolean.
         } else
@@ -127,13 +128,12 @@ public class Predicate extends PathExpr {
         else {
             int recomputedExecutionMode = executionMode; 
             
-            //TODO : use an else/else if construct -pb
-
-            // just to be sure: change mode to boolean if the predicate expression returns a number
-            //TODO : the code, likely to be correct, implements the exact contrary     
-            if (executionMode == BOOLEAN && Type.subTypeOf(inner.returnsType(), Type.NUMBER) && 
-                    inner.getCardinality() == Cardinality.EXACTLY_ONE) {
-                recomputedExecutionMode = POSITIONAL;
+            //Try to promote a boolean evaluation to a positionnal one  
+            if (executionMode == BOOLEAN && Type.subTypeOf(inner.returnsType(), Type.NUMBER)) {
+                Sequence innerSeq = inner.eval(contextSequence);   
+                //Only if we have an actual *singleton* of numeric items
+                if (innerSeq.getLength() == 1)
+                    recomputedExecutionMode = POSITIONAL;
             }  
             
             if (executionMode == NODE && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
@@ -285,7 +285,7 @@ public class Predicate extends PathExpr {
                     //TODO : understand why we sort here...
 				    temp.sortInDocumentOrder();
 				    
-				    Sequence innerSeq = inner.eval(contextSequence);                    
+                    Sequence innerSeq = inner.eval(contextSequence);                    
 				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {				      
 				        NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);
 				        //... whereas we don't want a sorted array here
