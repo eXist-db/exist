@@ -20,6 +20,7 @@
  */
 package org.exist.dom;
 
+import org.apache.log4j.Logger;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
 import org.exist.storage.RangeIndexSpec;
@@ -438,11 +439,49 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	public void copyContext(NodeProxy node) {
 		context = node.getContext();
 	}
-
-	public void clearContext() {
-		context = null;
-	}
 	
+    public void deepCopyContext(NodeProxy node, int addContextId) {
+        context = null;
+        
+        ContextItem newContext = null;
+        ContextItem next = node.context;
+        while (next != null) {
+            if (newContext == null) {
+                newContext = new ContextItem(next.getContextId(), next.getNode());
+                context = newContext;
+            } else {
+                newContext.setNextContextItem(new ContextItem(next.getContextId(), next.getNode()));
+                newContext = newContext.getNextDirect();
+            }
+            next = next.getNextDirect();
+        }
+        
+        addContextNode(addContextId, node);
+    }
+    
+    public void clearContext(int contextId) {
+        if (contextId == Expression.IGNORE_CONTEXT) {
+            context = null;
+            return;
+        }
+        ContextItem newContext = null;
+        ContextItem last = null;
+        ContextItem next = context;
+        while (next != null) {
+            if (next.getContextId() != contextId) {
+                if (newContext == null) {
+                    newContext = next;
+                } else {
+                    last.setNextContextItem(next);
+                }
+                last = next;
+                last.setNextContextItem(null);
+            }
+            next = next.getNextDirect();
+        }
+        this.context = newContext;
+    }
+    
 	public ContextItem getContext() {
 		return context;
 	}
@@ -453,7 +492,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		ContextItem next = context;
 		while(next != null) {
 			buf.append('[');
-			buf.append(next.getNode());
+			buf.append(next.getNode().getGID());
 			buf.append(':');
 			buf.append(next.getContextId());
 			buf.append("] ");

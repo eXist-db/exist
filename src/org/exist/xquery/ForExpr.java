@@ -137,7 +137,7 @@ public class ForExpr extends BindingExpression {
 		
 		// Evaluate the "in" expression
 		Sequence in = inputSequence.eval(null, null);        
-		clearContext(in); 
+		clearContext(getExpressionId(), in); 
         
 		// Declare the iteration variable
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
@@ -182,7 +182,7 @@ public class ForExpr extends BindingExpression {
 				setContext(getExpressionId(), in);
 			in = applyWhereExpression(in);
 			if(!in.isCached())
-				clearContext(in);
+				clearContext(getExpressionId(), in);
 		}
 		
 		// PreorderedValueSequence applies the order specs to all items
@@ -230,7 +230,7 @@ public class ForExpr extends BindingExpression {
 					((NodeProxy)contextItem).addContextNode(getExpressionId(), (NodeProxy)contextItem);
 				Sequence bool = applyWhereExpression(null);
 				if(contextItem instanceof NodeProxy)
-					((NodeProxy)contextItem).clearContext();
+					((NodeProxy)contextItem).clearContext(getExpressionId());
 				// if where returned false, continue
 				if(!bool.effectiveBooleanValue())
 					continue;
@@ -252,6 +252,8 @@ public class ForExpr extends BindingExpression {
 		if(orderSpecs != null && !fastOrderBy)
 			((OrderedValueSequence)resultSequence).sort();
 		
+        clearContext(getExpressionId(), in);
+
 		// restore the local variable stack
 		context.popLocalVariables(mark);
 		

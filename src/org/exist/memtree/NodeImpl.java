@@ -748,7 +748,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
         return false;
     }
 
-	public void clearContext() {
+	public void clearContext(int contextId) {
 		// ignored for in-memory nodes		
 	}
 }

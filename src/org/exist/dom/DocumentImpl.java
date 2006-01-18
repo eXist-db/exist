@@ -485,14 +485,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         ++maxDepth; 
         //Expand the array if maxDepth is now too big
         if (treeLevelOrder.length < maxDepth) {
-            try {
-                int temp[] = new int[maxDepth];
-                System.arraycopy(treeLevelOrder, 0, temp, 0, maxDepth - 1);            
-                treeLevelOrder = temp;
-                treeLevelOrder[maxDepth - 1] = 0;
-            } catch (ArrayIndexOutOfBoundsException e) {
-                LOG.error("Severe error: ArrayIndexOutOfBoundsException " + e.getMessage() + "; maxDepth = " + maxDepth);
-            }
+            int temp[] = new int[maxDepth];
+            System.arraycopy(treeLevelOrder, 0, temp, 0, maxDepth - 1);            
+            treeLevelOrder = temp;
+            treeLevelOrder[maxDepth - 1] = 0;
         }
     }    
 	

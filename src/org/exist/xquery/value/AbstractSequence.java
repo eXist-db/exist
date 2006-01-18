@@ -198,12 +198,12 @@ public abstract class AbstractSequence implements Sequence {
 		return null;
 	}
 	
-	public void clearContext() {
+	public void clearContext(int contextId) {
 		Item next;
 		for (SequenceIterator i = unorderedIterator(); i.hasNext(); ) {
 			next = i.nextItem();
 			if (next instanceof NodeProxy)
-				((NodeProxy)next).clearContext();
+				((NodeProxy)next).clearContext(contextId);
 		}
 	}
 	

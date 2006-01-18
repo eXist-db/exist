@@ -351,7 +351,7 @@ public class Predicate extends PathExpr {
                                 // for the current context: filter out those context items
                                 // not selected by the positional predicate
                                 ContextItem ctx = t.getContext();
-                                t.clearContext();
+                                t.clearContext(Expression.IGNORE_CONTEXT);
                                 while (ctx != null) {
                                     if (ctx.getContextId() == outerContextId) {
                                         if (ctx.getNode().getGID() == p.getGID())

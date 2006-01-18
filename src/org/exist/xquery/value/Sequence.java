@@ -206,8 +206,8 @@ public interface Sequence {
 	 * feature is used for node sets, which may store information
 	 * about their context node.
 	 */
-	public void clearContext();
-	
+    public void clearContext(int contextId);
+    
 	public void setSelfAsContext(int contextId);
     
     public boolean isPersistentSet();

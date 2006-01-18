@@ -231,6 +231,13 @@ public class ValueSequence extends AbstractSequence {
 		noDuplicates = true;
 	}
 	
+    public void clearContext(int contextId) {
+        for (int i = 0; i <= size; i++) {
+            if (Type.subTypeOf(values[i].getType(), Type.NODE))
+                ((NodeValue) values[i]).clearContext(contextId);
+        }
+    }
+    
 	public String toString() {
 		StringBuffer result = new StringBuffer();
 		result.append("(");
