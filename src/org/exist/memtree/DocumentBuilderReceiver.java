@@ -22,6 +22,8 @@
  */
 package org.exist.memtree;
 
+import java.util.HashSet;
+
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.util.serializer.AttrList;
@@ -43,6 +45,7 @@ import org.xml.sax.ext.LexicalHandler;
 public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, Receiver {
 
 	private MemTreeBuilder builder = null;
+    private HashSet attributes = new HashSet();
 	
 	public DocumentBuilderReceiver() {
 		super();
@@ -102,10 +105,12 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	public void startElement(String namespaceURI, String localName,	String qName, Attributes attrs)
             throws SAXException {
 		builder.startElement(namespaceURI, localName, qName, attrs);
+        attributes.clear();
 	}
 
 	public void startElement(QName qname, AttrList attribs) {
 		builder.startElement(qname, null);
+        attributes.clear();
 		if(attribs != null) {
 			for (int i = 0; i < attribs.getLength(); i++) {
 				builder.addAttribute(attribs.getQName(i), attribs.getValue(i));
@@ -118,10 +123,12 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	 */
 	public void endElement(String arg0, String arg1, String arg2) throws SAXException {
 		builder.endElement();
+        attributes.clear();
 	}
 
 	public void endElement(QName qname) throws SAXException {
 		builder.endElement();
+        attributes.clear();
 	}
 
 	public void addReferenceNode(NodeProxy proxy) throws SAXException {
@@ -144,6 +151,8 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	}
 
 	public void attribute(QName qname, String value) throws SAXException {
+        if (!attributes.add(qname))
+            throw new SAXException("Error XQDY0025: element has more than one attribute '" + qname + "'");
 		builder.addAttribute(qname, value);
 	}
 	
