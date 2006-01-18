@@ -769,17 +769,12 @@ public class LocationStep extends Step {
      * @see org.exist.xquery.Step#resetState()
      */
     public void resetState() {
-        // TODO : uncomment some comments ?
         super.resetState();
         currentSet = null;
         currentDocs = null;
-        // listener = null;
-        // parent = null;
         cached = null;
-        // parentDeps = Dependency.UNKNOWN_DEPENDENCY;
-        // preload = false;
-        // inUpdate = false;
-        // nodeTestType = null;
+        deregisterUpdateListener();
+        listener = null;
     }
 
 }
