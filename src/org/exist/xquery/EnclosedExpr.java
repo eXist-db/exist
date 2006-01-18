@@ -99,9 +99,10 @@ public class EnclosedExpr extends PathExpr {
 				receiver.characters(buf);
 		} catch (SAXException e) {
 		    LOG.warn("SAXException during serialization: " + e.getMessage(), e);
-			throw new XPathException(getASTNode(),
-				"Encountered SAX exception while serializing enclosed expression: "
-					+ ExpressionDumper.dump(this));
+            throw new XPathException(getASTNode(), e.getMessage());
+			//throw new XPathException(getASTNode(),
+			//	"Encountered SAX exception while serializing enclosed expression: "
+			//		+ ExpressionDumper.dump(this));
 		}
         
        if (context.getProfiler().isEnabled())           
