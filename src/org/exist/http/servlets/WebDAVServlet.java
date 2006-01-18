@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.exist.http.webdav.WebDAV;
+import org.exist.storage.BrokerPool;
 
 /**
  * Provides a WebDAV interface to the database. All WebDAV requests
@@ -42,17 +43,23 @@ import org.exist.http.webdav.WebDAV;
 public class WebDAVServlet extends HttpServlet {
 	
 	private WebDAV webdav;
+    /** id of the database registred against the BrokerPool */
+    protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
+
 	
 	/* (non-Javadoc)
 	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
 	 */
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
+        // <frederic.glorieux@ajlsm.com> to allow multi-instance webdav server, use a databaseid everywhere
+        String id = config.getInitParameter("database-id");
+        if (id != null && !"".equals(id)) this.databaseid=id;
 		int authMethod = WebDAV.DIGEST_AUTH;
 		String param = config.getInitParameter("authentication");
 		if(param != null && "basic".equalsIgnoreCase(param))
 		    authMethod = WebDAV.BASIC_AUTH;
-		webdav = new WebDAV(authMethod);
+		webdav = new WebDAV(authMethod, this.databaseid);
 	}
 	
 	/* (non-Javadoc)
