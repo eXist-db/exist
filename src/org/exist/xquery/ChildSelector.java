@@ -51,8 +51,7 @@ public class ChildSelector implements NodeSelector {
 		if (contextNode == null)
            return null;
         if (Expression.NO_CONTEXT_ID != contextId) {
-        	p.copyContext(contextNode);
-            p.addContextNode(contextId, contextNode);
+            p.deepCopyContext(contextNode, contextId);
         } else
             p.copyContext(contextNode);        
  		return p;			

@@ -79,6 +79,12 @@ public class PreorderedValueSequence extends AbstractSequence {
 		}
 	}
 
+    public void clearContext(int contextId) {
+        for (int i = 0; i < nodes.length; i++) {
+            nodes[i].clearContext(contextId);
+        }
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AbstractSequence#getItemType()
 	 */

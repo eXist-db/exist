@@ -792,11 +792,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	    return hasMixedContent;
 	}
     
-	public void clearContext() {
+	public void clearContext(int contextId) {
 		NodeProxy p;
 		for (Iterator i = iterator(); i.hasNext(); ) {
 			p = (NodeProxy) i.next();
-			p.clearContext();
+			p.clearContext(contextId);
 		}
 	}
 	

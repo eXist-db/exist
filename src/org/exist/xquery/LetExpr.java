@@ -98,7 +98,7 @@ public class LetExpr extends BindingExpression {
         
         // evaluate input sequence
         Sequence in = inputSequence.eval(null, null);
-        clearContext(in);
+        clearContext(getExpressionId(), in);
         
         // Declare the iteration variable
         LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
@@ -152,6 +152,8 @@ public class LetExpr extends BindingExpression {
         if(orderSpecs != null && !fastOrderBy)
             ((OrderedValueSequence)resultSequence).sort();
 
+        clearContext(getExpressionId(), in);
+        
         // Restore the local variable stack
         context.popLocalVariables(mark);
        

@@ -278,7 +278,7 @@ public abstract class AtomicValue implements Item, Sequence {
 		// ignore
 	}
 	
-	public void clearContext() {
+	public void clearContext(int contextId) {
 		// ignore
 	}
 	

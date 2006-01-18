@@ -52,8 +52,7 @@ public class SelfSelector implements NodeSelector {
         NodeProxy contextNode = context.get(doc, gid);
         if (contextNode != null) {
             if (Expression.NO_CONTEXT_ID != contextId) {
-                p.copyContext(contextNode);
-                p.addContextNode(contextId, contextNode);
+                p.deepCopyContext(contextNode, contextId);
             }
         }
         return p;
