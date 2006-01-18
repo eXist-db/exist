@@ -187,8 +187,10 @@ public class XPathQueryTest extends XMLTestCase {
                 message = e.getMessage();
             }
             //No effective boolean value for such a kind of sequence !
-            assertTrue("Exception wanted: " + message, message.indexOf("FORG0006") >-1);
+            assertTrue("Exception wanted: " + message, message.indexOf("FORG0006") >-1);            
             
+            queryAndAssert(service, "let $a := ('a', 'b', 'c') return $a[2 to 2]", 1, null);
+            queryAndAssert(service, "let $a := ('a', 'b', 'c') return $a[(2 to 2)]", 1, null);
             queryAndAssert(service, "()/position()", 0, null);
             
         } catch (XMLDBException e) {
