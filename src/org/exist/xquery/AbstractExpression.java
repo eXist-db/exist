@@ -22,7 +22,6 @@
 package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
-import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -45,8 +44,6 @@ public abstract class AbstractExpression implements Expression {
 	}
 
     public int getExpressionId() {
-		SanityCheck.THROW_ASSERT(expressionId != EXPRESSION_ID_INVALID, 
-				"The expression should have a unique id!");
 		return expressionId;
 	}
     
