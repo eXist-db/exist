@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <book xmlns:ci="http://apache.org/cocoon/include/1.0">
     <bookinfo>
@@ -47,6 +47,16 @@
 
         <section>
             <title>WinXP Webfolder</title>
+            
+            <note>
+            <para>Be aware that there are multiple 
+                  versions of webdav Microsoft libraries (and different flavours of bugs).
+                  To avoid some frustration if the steps below don't work for you,
+                  <ulink url="http://support.microsoft.com/?kbid=892211">update windows XP for web folders</ulink>,
+                  or take more information about 
+                  <ulink url="http://greenbytes.de/tech/webdav/webfolder-client-list.html">Web
+                   Folder Client (MSDAIPP.DLL) Versions and Issues</ulink>.</para>
+            </note>
 
             <para>Perform the following steps in Internet Explorer:
                 <itemizedlist>
