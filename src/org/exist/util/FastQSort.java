@@ -397,7 +397,9 @@ public final class FastQSort {
 	}
 	
 	public static void sort(NodeProxy[] a, int lo, int hi) {
-		IntroSort(a, lo, hi, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
+	    if (lo == hi)
+	        return; // just one item, doesn't need sorting
+	    IntroSort(a, lo, hi, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 	}
 
 	public static void sortByNodeId(NodeProxy[] a, int lo, int hi) {

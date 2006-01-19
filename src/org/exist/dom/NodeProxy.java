@@ -436,6 +436,20 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 //        System.out.println("NodeProxy.addContextNode: " + contextNode.debugContext());
     }
 	
+    /**
+     * Add all context nodes from the other NodeProxy to the
+     * context of this NodeProxy.
+     * 
+     * @param other
+     */
+    public void addContext(NodeProxy other) {
+        ContextItem next = other.context;
+        while (next != null) {
+            addContextNode(next.getContextId(), next.getNode());
+            next = next.getNextDirect();
+        }
+    }
+    
 	public void copyContext(NodeProxy node) {
 		context = node.getContext();
 	}

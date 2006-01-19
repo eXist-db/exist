@@ -524,34 +524,33 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return parents;
 	}
 
-    public NodeSet getAncestors(int contextId, boolean includeSelf) {
-        NodeSet ancestors = new ExtArrayNodeSet();
-        for (Iterator i = iterator(); i.hasNext();) {
-            NodeProxy current = (NodeProxy) i.next();
-            if (includeSelf) {
-            	if (Expression.NO_CONTEXT_ID != contextId)
-                    current.addContextNode(contextId, current);
-                ancestors.add(current);
-            }
-            long parentID = NodeSetHelper.getParentId(current.getDocument(), current.getGID());            
-            while (parentID > 0) {
-                //Filter out the temporary nodes wrapper element 
-                if (parentID != NodeProxy.DOCUMENT_NODE_GID && 
-                        !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && current.getDocument().getCollection().isTempCollection())) {                
-                	NodeProxy parent = ancestors.get(current.getDocument(), parentID);
-                	if (parent == null)
-                		parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
-                    if (Expression.NO_CONTEXT_ID != contextId)
-                        parent.addContextNode(contextId, current);
-                    else
-                        parent.copyContext(current);
-                    ancestors.add(parent);
-                }
-                parentID = NodeSetHelper.getParentId(current.getDocument(), parentID);    
-            }
-        }
-        return ancestors;
-    }
+	public NodeSet getAncestors(int contextId, boolean includeSelf) {
+	    ExtArrayNodeSet ancestors = new ExtArrayNodeSet();
+	    for (Iterator i = iterator(); i.hasNext();) {
+	        NodeProxy current = (NodeProxy) i.next();
+	        if (includeSelf) {
+	            if (Expression.NO_CONTEXT_ID != contextId)
+	                current.addContextNode(contextId, current);
+	            ancestors.add(current);
+	        }
+	        long parentID = NodeSetHelper.getParentId(current.getDocument(), current.getGID());            
+	        while (parentID > 0) {
+	            //Filter out the temporary nodes wrapper element 
+	            if (parentID != NodeProxy.DOCUMENT_NODE_GID && 
+	                    !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && current.getDocument().getCollection().isTempCollection())) {
+	                NodeProxy parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
+	                if (Expression.NO_CONTEXT_ID != contextId)
+	                    parent.addContextNode(contextId, current);
+	                else
+	                    parent.copyContext(current);
+	                ancestors.add(parent);
+	            }
+	            parentID = NodeSetHelper.getParentId(current.getDocument(), parentID);    
+	        }
+	    }
+        ancestors.mergeDuplicates();
+	    return ancestors;
+	}
     
 	/**
 	 * Return a sub-range of this node set containing the range of nodes greater than or including

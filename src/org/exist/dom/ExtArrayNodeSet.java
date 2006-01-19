@@ -372,7 +372,19 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         return isSorted || isInDocumentOrder;
     }
     
+    /**
+     * Remove all duplicate nodes, but merge their
+     * contexts.
+     */
+    public void mergeDuplicates() {
+        sort(true);
+    }
+    
     public void sort() {
+        sort(false);
+    }
+    
+    public void sort(boolean mergeContexts) {
 //              long start = System.currentTimeMillis();
         if (isSorted)
             return;
@@ -381,7 +393,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         for (int i = 0; i < partCount; i++) {
             part = parts[i];
             part.sort();
-            size += part.removeDuplicates();
+            size += part.removeDuplicates(mergeContexts);
         }
         isSorted = true;
         isInDocumentOrder = false;
@@ -398,7 +410,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         for (int i = 0; i < partCount; i++) {
             part = parts[i];
             part.sortInDocumentOrder();
-            size += part.removeDuplicates();
+            size += part.removeDuplicates(false);
         }
         isSorted = false;
         isInDocumentOrder = true;
@@ -728,12 +740,14 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
          * 
          * @return the new length of the part, after removing all duplicates
          */
-        int removeDuplicates() {
+        int removeDuplicates(boolean mergeContext) {
             int j = 0;
             for (int i = 1; i < length; i++) {
                 if (array[i].getGID() != array[j].getGID()) {
                     if (i != ++j)
                         array[j] = array[i];
+                } else if (mergeContext) {
+                    array[j].addContext(array[i]);
                 }
             }
             length = ++j;
