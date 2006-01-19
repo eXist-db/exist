@@ -108,7 +108,7 @@ public class ComplexUpdateAction extends Action {
 		}
 		System.out.println("------------------------------------------------------------------");
 		
-		r = service.query("//USER-SESSION-DATA[1]/@version");
+		r = service.query("string(//USER-SESSION-DATA[1]/@version)");
 		Assert.assertEquals(1, r.getSize());
 		Assert.assertEquals(repeat, Integer.parseInt(r.getResource(0).getContent().toString()));
 	}
