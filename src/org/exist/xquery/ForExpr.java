@@ -208,7 +208,7 @@ public class ForExpr extends BindingExpression {
 			at.setValue(atVal);
 		
 		// Loop through each variable binding
-        p = 0;
+		p = 0;
 		for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
 		    context.proceed(this);
 			contextItem = i.nextItem();
@@ -216,13 +216,13 @@ public class ForExpr extends BindingExpression {
 			
 //			atVal.setValue(p); // seb: this does not create a new Value. the old Value is referenced from results
 			if(positionalVariable != null)
-				at.setValue(new IntegerValue(p));
+				at.setValue(new IntegerValue(p + 1));
 			 
 			contextSequence = contextItem.toSequence();
 
 			// set variable value to current item
 			var.setValue(contextSequence);
-            var.checkType();
+           var.checkType();
 			val = contextSequence;
 			
 			// check optional where clause
