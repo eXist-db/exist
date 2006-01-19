@@ -46,7 +46,7 @@ public abstract class AbstractExpression implements Expression {
 
     public int getExpressionId() {
 		SanityCheck.THROW_ASSERT(expressionId != EXPRESSION_ID_INVALID, 
-				"The expression " + toString() + " should have a unique id!");
+				"The expression should have a unique id!");
 		return expressionId;
 	}
     
