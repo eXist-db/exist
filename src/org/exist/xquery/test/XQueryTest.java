@@ -296,10 +296,10 @@ public class XQueryTest extends XMLTestCase {
 					+ "declare variable $a {\"2nd instance\"};\n"
 					+ "$a";
 				result = service.query(query);
-			} catch (XMLDBException e) {
-				message = e.getMessage();
-			}
-			assertTrue(message.indexOf("XQST0049") > -1);
+            } catch (XMLDBException e) {
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("XQST0049") > -1);
 						
 			System.out.println("testVariable 5: ========" );
 			query = "xquery version \"1.0\";\n" 				
@@ -335,10 +335,10 @@ public class XQueryTest extends XMLTestCase {
             resu = (XMLResource) result.getResource(1);
             assertEquals( "XQuery: " + query, "3", ((Element)resu.getContentAsDOM()).getAttribute("name") ); 
 			
-		} catch (XMLDBException e) {
-			System.out.println("testVariable : XMLDBException: "+e);
-			fail(e.getMessage());
-		}
+        } catch (XMLDBException e) {
+            System.out.println("testVariable : XMLDBException: "+e);
+            fail(e.getMessage());
+        }
 	}			
 	
 	public void testTypedVariables() {
@@ -550,11 +550,11 @@ public class XQueryTest extends XMLTestCase {
 			XPathQueryService service = 
 				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 	
-			System.out.println("testImprobableAxesAndNodeTestsCombinations 1: ========" );
-			query = "let $a := <x>a<!--b-->c</x>/self::comment() return <z>{$a}</z>";
-			result = service.query(query);				
-			assertEquals( "XQuery: " + query, 1, result.getSize() );
-			assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
+            System.out.println("testImprobableAxesAndNodeTestsCombinations 1: ========" );
+            query = "let $a := <x>a<!--b-->c</x>/self::comment() return <z>{$a}</z>";
+            result = service.query(query);              
+            assertEquals( "XQuery: " + query, 1, result.getSize() );
+            assertEquals( "XQuery: " + query, "<z/>", ((XMLResource)result.getResource(0)).getContent());
 
 			System.out.println("testImprobableAxesAndNodeTestsCombinations 2: ========" );
 			query = "let $a := <x>a<!--b-->c</x>/parent::comment() return <z>{$a}</z>";
@@ -917,13 +917,13 @@ public class XQueryTest extends XMLTestCase {
 				+ "(:: redefine variable ::)\n"
 				+ "declare variable $blah:param  {\"value-2\"};\n"			
 				+ "$blah:param";
-			try {
-				message = "";	
-				result = service.query(query);	
-			} catch (XMLDBException e) {
-				message = e.getMessage();				
-			}			
-			assertTrue(message.indexOf("XQST0049") > -1);
+            try {
+                message = "";   
+                result = service.query(query);  
+            } catch (XMLDBException e) {
+                message = e.getMessage();               
+            }           
+            assertTrue(message.indexOf("XQST0049") > -1);
 			
 			System.out.println("testModule 3: ========" );
 			query = "xquery version \"1.0\";\n" 
@@ -1193,10 +1193,12 @@ public class XQueryTest extends XMLTestCase {
             XPathQueryService service = 
                 storeXMLStringAndGetQueryService(file_name, xml);
             
-            query = "(<c id=\"OK\">b</c>)/descendant-or-self::*/attribute::id";
+            query = "let $node := (<c id=\"OK\">b</c>)/descendant-or-self::*/attribute::id "+
+            "return <a>{$node}</a>";
             result = service.query(query );
             printResult(result);
-            assertEquals( "XQuery: " + query, "OK", result.getResource(0).getContent());    
+            resu = (XMLResource) result.getResource(0);
+            assertEquals( "XQuery: " + query, "OK", ((Element)resu.getContentAsDOM()).getAttribute("id"));    
         } catch (XMLDBException e) {
             System.out.println("testAttributeAxis(): XMLDBException: "+e);
             fail(e.getMessage());
@@ -1260,6 +1262,43 @@ public class XQueryTest extends XMLTestCase {
 			fail(e.getMessage());
 		}
 	}
+    
+    public void testSerialization() {
+        ResourceSet result;
+        String query;
+        boolean exceptionThrown;
+        String message;         
+        
+        try {
+            XPathQueryService service = 
+                storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);    
+            
+            query = "let $a := <test><foo name='bar'/><foo name='bar'/></test>" +
+            "return <attribute>{$a/foo/@name}</attribute>";
+            try {
+                message = "";   
+                result = service.query(query);  
+            } catch (XMLDBException e) {
+                message = e.getMessage();               
+            }             
+            assertTrue(message.indexOf("XQDY0025") > -1); 
+            
+            query = "let $a := <foo name='bar'/> return $a/@name";            
+            try {
+                message = "";   
+                result = service.query(query);
+            } catch (XMLDBException e) {
+                message = e.getMessage();               
+            }  
+            //TODO : how toserialize this resultand get the error ? -pb
+            //assertTrue(message.indexOf("XQDY0025") > -1); 
+        
+        } catch (XMLDBException e) {
+            System.out.println("testVariable : XMLDBException: "+e);
+            fail(e.getMessage());
+        }
+    }       
+        
 	
 	/** CAUTION side effect on field xml
 	 * @return the large string contained in the atrbute(s)

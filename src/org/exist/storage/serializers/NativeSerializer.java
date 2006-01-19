@@ -230,15 +230,19 @@ public class NativeSerializer extends Serializer {
                         match);
             else
                 cdata = ((AttrImpl) node).getValue();
-        	if(first && createContainerElements) {
-        		AttrList tattribs = new AttrList();
-                if (showId > 0) {
-                    tattribs.addAttribute(ID_ATTRIB, Long.toString(gid));
-                    tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileName());
+        	if(first) {
+                if (createContainerElements) {               
+            		AttrList tattribs = new AttrList();
+                    if (showId > 0) {
+                        tattribs.addAttribute(ID_ATTRIB, Long.toString(gid));
+                        tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileName());
+                    }
+                    tattribs.addAttribute(((AttrImpl)node).getQName(), cdata);
+                    receiver.startElement(ATTRIB_ELEMENT, tattribs);
+                    receiver.endElement(ATTRIB_ELEMENT);
                 }
-                tattribs.addAttribute(((AttrImpl)node).getQName(), cdata);
-                receiver.startElement(ATTRIB_ELEMENT, tattribs);
-                receiver.endElement(ATTRIB_ELEMENT);
+                else
+                    throw new SAXException("Error XTDE0410: attribute '" + ((AttrImpl)node).getQName() + "' has no parent element");
         	} else
         		receiver.attribute(node.getQName(), cdata);
             node.release();
