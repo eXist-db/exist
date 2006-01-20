@@ -45,6 +45,17 @@ public class SequenceConstructor extends PathExpr {
 		super(context);
 	}
 	
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        contextInfo.setParent(this);
+        inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+        contextId = contextInfo.getContextId();
+        
+        for (int i = 0; i < steps.size(); i++) {
+            Expression expr = (Expression) steps.get(i);
+            expr.analyze(contextInfo);
+        }
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
