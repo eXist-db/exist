@@ -168,24 +168,24 @@ declare function f:eval($query as xs:string) as element()+
 		$collection := request:request-parameter("collection", ())
 	return
 		util:catch("org.exist.xquery.TerminatedException",
-            util:catch("org.exist.xquery.XPathException",
-                let	$result := util:eval($query, $collection),
-                    $count := count($result),
-                    $queryTime := util:system-time() - $startTime
-                return (
-                    <p>Found {$count} hits in
-                    {seconds-from-duration($queryTime)} seconds.
-                    {if($count gt 100) then "Max. 100 will be shown." else ()}
-                    </p>,
-                    request:set-session-attribute(
-                        "results", 
-                        subsequence($result, 1, 100)
-                    ),
-                    f:add-to-history($query),
-                    f:display($result, $count)
-                ),
-                <p><b>Error found: </b>{$util:exception-message}.</p>
-            ),
+                        util:catch("org.exist.xquery.XPathException",
+                            let	$result := util:eval($query),
+                                $count := count($result),
+                                $queryTime := util:system-time() - $startTime
+                            return (
+                                <p>Found {$count} hits in
+                                {seconds-from-duration($queryTime)} seconds.
+                                {if($count gt 100) then "Max. 100 will be shown." else ()}
+                                </p>,
+                                request:set-session-attribute(
+                                    "results", 
+                                    subsequence($result, 1, 100)
+                                ),
+                                f:add-to-history($query),
+                                f:display($result, $count)
+                            ),
+                            <p><b>Error found: </b>{$util:exception-message}.</p>
+                        ),
 			f:handleException()
 		)
 };
