@@ -87,7 +87,7 @@ a, a:visited {
 
 #sidebar {
     position: absolute;
-    width: 16%;
+    width: 18%;
 	top: 215px;
     display: block;
     overflow: hidden;
@@ -96,7 +96,7 @@ a, a:visited {
 @media screen {
     #content2col {
         position: absolute;
-        left: 18%;
+        left: 19%;
         width: 80%;
 		top: 215px;
         display: block;
@@ -106,7 +106,7 @@ a, a:visited {
     
     #content {
         position: absolute;
-        left: 18%;
+        left: 19%;
         width: 62%;
 		top: 215px;
         display: block;
@@ -117,11 +117,44 @@ a, a:visited {
 
 #news {
     position: absolute;
-    width: 18%;
+    width: 17%;
     left: 82%;
 	top: 215px;
     display: block;
     overflow: hidden;
+}
+
+#quotes {
+	text-align: center;
+	padding: 8px 5px;
+}
+
+#quotes blockquote {
+	font-size: 75%;
+	margin: 0;
+	padding: 0;
+	line-height: 1.5em;
+}
+
+#quotes blockquote:before {
+	content: open-quote; 
+	font-weight: bold;
+	font-family: serif;
+	font-size: 160%;
+}
+
+#quotes blockquote:after { 
+	content: close-quote; 
+	font-weight: bold;
+	font-family: serif;
+	font-size: 160%;
+}
+
+#quotes .source {
+	text-align: right;
+	font-size: 75%;
+	font-style: italic;
+	padding-top: 3px;
 }
 
 @media print {
@@ -232,6 +265,16 @@ select.choose {
 .banner {
     text-align: center;
     margin-top: 20px;
+}
+
+.reference {
+	margin-top: 30px;
+	text-align: center;
+}
+
+.reference h3 {
+	font-size: 75%;
+	text-align: left;
 }
 
 .block {
@@ -424,8 +467,7 @@ div.example_title {
 }
 
 .warning h4 {
-    font-size: smaller;
     font-weight: bold;
     color: red;
-    margin: 0;
+    margin: 5px 0;
 }
