@@ -60,7 +60,7 @@ import org.exist.xquery.value.Type;
 /**
  * Implements the fn:matches() function.
  * 
- * Based on the jakarta ORO package for regular expression support.
+ * Based on the java.util.regex package for regular expression support.
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
@@ -71,9 +71,10 @@ public class FunMatches extends Function {
 			new QName("matches", Function.BUILTIN_FUNCTION_NS),
 			"Returns true if the first argument string matches the regular expression specified " +
 			"by the second argument. This function is optimized internally if a range index of type xs:string " +
-			"is defined on the nodes passed to the first argument.",
+			"is defined on the nodes passed to the first argument. Please note that - in contrast - with the " +
+            "specification - this method allows zero or more items for the string argument.",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
@@ -82,9 +83,10 @@ public class FunMatches extends Function {
 			new QName("matches", Function.BUILTIN_FUNCTION_NS),
 			"Returns true if the first argument string matches the regular expression specified " +
 			"by the second argument. This function is optimized internally if a range index of type xs:string " +
-			"is defined on the nodes passed to the first argument.",
+			"is defined on the nodes passed to the first argument. Please note that - in contrast - with the " +
+            "specification - this method allows zero or more items for the string argument.",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
@@ -107,10 +109,6 @@ public class FunMatches extends Function {
 	 */
 	public void setArguments(List arguments) throws XPathException {
         Expression arg = (Expression) arguments.get(0);
-        arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg,
-                new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));    
-        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
-            arg = new Atomize(context, arg);
         steps.add(arg);
         
         arg = (Expression) arguments.get(1);
@@ -195,7 +193,8 @@ public class FunMatches extends Function {
             result = evalWithIndex(contextSequence, contextItem, input);
         } else {
             if (context.isProfilingEnabled())
-                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Generic evaluation");            
+                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Generic evaluation");
+            LOG.debug("GENERIC");
             result = evalGeneric(contextSequence, contextItem, input);
         }
         
