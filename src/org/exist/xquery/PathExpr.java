@@ -174,7 +174,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     expr.setContextDocSet(contextDocs);
                 if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_ITEM)) {
                     if (result == null || result.getLength() == 0) {
-                        result = expr.eval(null, null);
+                        result = expr.eval(Sequence.EMPTY_SEQUENCE, null);
                     //TODO : strange design : should rather use : else if (result.getLength() == 1) ? -pb
                     } else {                        
                         Sequence values = null;                        
@@ -188,7 +188,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                             else
                                 values.addAll(expr.eval(result, current));                           
                         }
-                        result = values;                    }                    
+                        result = values;                    
+                    }                    
                
                 } else {
                     result = expr.eval(result);
