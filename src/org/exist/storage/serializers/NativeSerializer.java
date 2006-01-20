@@ -242,7 +242,7 @@ public class NativeSerializer extends Serializer {
                     receiver.endElement(ATTRIB_ELEMENT);
                 }
                 else
-                    throw new SAXException("Error XTDE0410: attribute '" + ((AttrImpl)node).getQName() + "' has no parent element");
+                    throw new SAXException("Error SENR0001: attribute '" + ((AttrImpl)node).getQName() + "' has no parent element");
         	} else
         		receiver.attribute(node.getQName(), cdata);
             node.release();
