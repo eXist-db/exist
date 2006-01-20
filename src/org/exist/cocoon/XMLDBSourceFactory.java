@@ -1,17 +1,24 @@
 /*
- * Copyright 1999-2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
  */
 package org.exist.cocoon;
 
@@ -51,11 +58,14 @@ import org.xmldb.api.base.XMLDBException;
  * for paths that do not start with "<code>//</code>".
  * <p>
  * The returned sources are traversable, modifiable and xml-izable.
- *
- * frederic.glorieux@ajlsm.com
- * Come from Cocoon trunk, work in Cocoon 2.1.5
- * no modification
  * 
+ * <p>
+ * This class is an import of Cocoon trunk
+ * <a 
+ *  href="http://svn.apache.org/viewcvs.cgi/cocoon/blocks/xmldb/trunk/java/org/apache/cocoon/components/source/impl/XMLDBSourceFactory.java?rev=349157&view=markup"
+ * >XMLDBSourceFactory</a>, to ensure connexion with a modified XMLDBSource.
+ * </p>
+ *  
  * @author cziegeler
  * @version $Id$
  */
