@@ -24,15 +24,9 @@ import org.exist.xquery.Expression;
 
 public class ContextItem {
 
-    boolean isTransverseAxis= false;
     private NodeProxy node;
-    //"direct" axis are ancestor, parent, self, child, descendant and...
-    //attribute.
-    //The later, although conceptually transverse is considered as direct, 
-    //thanks to its dpth of 1
+
     private ContextItem nextDirect;
-    //"transverse" axis are preceding, preceding-sibling, following-sibling, following
-    private ContextItem nextTransverse;
 	
 	private int contextId;
 	
@@ -56,42 +50,18 @@ public class ContextItem {
     public boolean hasNextDirect() {
         return (nextDirect != null);
     }
-    
-    public boolean hasNextTransverse() {
-        return (nextTransverse != null);
-    }     
 	
     public ContextItem getNextDirect() {
         return nextDirect;
     }
-    
-    public ContextItem getNextTransverse() {
-        return nextTransverse;
-    }    
-    
-    public void setTransverseAxis() {
-        isTransverseAxis = true;  
-    }
 	
     public void setNextContextItem(ContextItem next) {
-        if (isTransverseAxis)
-            nextTransverse = next;
-        else
             nextDirect = next;
     }
     
     public String toString() {
         StringBuffer buf = new StringBuffer(); 
-        if (nextTransverse != null)
-            buf.append("(");
-        buf.append(node);
-        ContextItem temp = nextTransverse;
-        while (temp != null) {
-            buf.append(", " + temp);
-            temp = temp.nextTransverse;
-        }
-        if (nextTransverse != null)
-            buf.append(")");        
+        buf.append(node);        
         if (nextDirect != null)
             buf.append("/" + nextDirect);
         return buf.toString();
