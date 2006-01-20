@@ -77,7 +77,10 @@
 <db-connection database="native" files="data" cacheSize="48M" free_mem_min="5" 
   pageSize="4096">
   <pool min="1" max="15" sync-period="240000" wait-before-shutdown="60000"/>
+  <recovery enabled="yes" sync-on-commit="no" group-commit="no"
+     size="100M" journal-dir="webapp/WEB-INF/data"/>
   <watchdog query-timeout="-1" output-size-limit="10000"/>
+  <default-permissions collection="0775" resource="0775"/>
 </db-connection>
 ]]></programlisting>
 			</example>
@@ -202,6 +205,14 @@
                     output fragments.</para>
                     </listitem>
                 </itemizedlist>
+            </section>
+            <section>
+				<title>default-permissions</title>
+				<para>All resources and collections in Exist have permissions
+				(see <ulink url="security.xml">User Authentication and Access Control</ulink>).
+				Without configuration, the "mod" (like Unix "chmod") is set to 775 for resources
+				and collections. A default value may be configured for an instance
+				(local overrides are also possible).</para>
             </section>
 		</section>
 		<section>
