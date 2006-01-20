@@ -145,7 +145,7 @@ order by $country/name
 return
     <country name="{$country/name}">
     {
-        $cities[1 to 3]
+        subsequence($cities, 1, 3)
     }
     </country>]]></code>
     </query>
