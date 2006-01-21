@@ -1,17 +1,13 @@
 package org.exist.xquery.test;
 
-import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XPathQueryServiceImpl;
-import org.exist.xquery.Expression;
-import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -1095,37 +1091,118 @@ public class XPathQueryTest extends XMLTestCase {
 		}
 	}
 
-	public void testSatisfies() {
-		try {
-			XQueryService service = getQueryService();
-			ResourceSet result;
-			
-			result = queryAndAssert( service,
-				"every $foo in (1,2,3) satisfies" +
-				"	let $bar := 'baz'" +
-				"		return false() ", 
-				1,  "" );
-			assertEquals( "satisfies + FLWR expression allways false 1", "false", result.getResource(0).getContent() );
+    public void testSatisfies() {
+        try {
+            XQueryService service = getQueryService();
+            ResourceSet result;
+            
+            result = queryAndAssert( service,
+                "every $foo in (1,2,3) satisfies" +
+                "   let $bar := 'baz'" +
+                "       return false() ", 
+                1,  "" );
+            assertEquals( "satisfies + FLWR expression allways false 1", "false", result.getResource(0).getContent() );
 
-			result = queryAndAssert( service,
-					"declare function local:foo() { false() };" +
-					"	every $bar in (1,2,3) satisfies" +
-					"	local:foo()",
-				1,  "" );
-			assertEquals( "satisfies + FLWR expression allways false 2", "false", result.getResource(0).getContent() );
-			
-			query = "every $x in () satisfies false()";
-			result = queryAndAssert( service, query, 1,  "" );
-			assertEquals( query, "true", result.getResource(0).getContent() );
+            result = queryAndAssert( service,
+                    "declare function local:foo() { false() };" +
+                    "   every $bar in (1,2,3) satisfies" +
+                    "   local:foo()",
+                1,  "" );
+            assertEquals( "satisfies + FLWR expression allways false 2", "false", result.getResource(0).getContent() );
+            
+            query = "every $x in () satisfies false()";
+            result = queryAndAssert( service, query, 1,  "" );
+            assertEquals( query, "true", result.getResource(0).getContent() );
 
-			query = "some $x in () satisfies true()";
-			result = queryAndAssert( service, query, 1,  "" );
-			assertEquals( query, "false", result.getResource(0).getContent() );
+            query = "some $x in () satisfies true()";
+            result = queryAndAssert( service, query, 1,  "" );
+            assertEquals( query, "false", result.getResource(0).getContent() );
 
-		} catch (XMLDBException e) {
-			fail(e.getMessage());
-		}
-	}
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    public void testIntersect() {
+        try {
+            XQueryService service = getQueryService();
+            ResourceSet result;
+            
+            query = "()  intersect ()";
+            result = queryAndAssert( service, query, 0, ""); 
+            
+            query = "()  intersect  (1)";
+            result = queryAndAssert( service, query, 0, ""); 
+            
+            query = "(1)  intersect  ()";
+            result = queryAndAssert( service, query, 0, "");             
+
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }   
+    
+    public void testUnion() {
+        try {
+            XQueryService service = getQueryService();
+            ResourceSet result;
+            
+            query = "()  union ()";
+            result = queryAndAssert( service, query, 0, ""); 
+            
+            boolean exceptionThrown = false;
+            String message = "";
+            try {
+                 query = "()  union  (1)";
+                result = queryAndAssert( service, query, 0, ""); 
+            } catch (XMLDBException e) {
+                exceptionThrown = true;
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("XPTY0004") > -1);         
+            
+            exceptionThrown = false;
+            message = "";
+            try {                
+                query = "(1)  union  ()";
+                result = queryAndAssert( service, query, 0, "");             
+            } catch (XMLDBException e) {
+                exceptionThrown = true;
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("XPTY0004") > -1); 
+            
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    } 
+    
+    public void testExcept() {
+        try {
+            XQueryService service = getQueryService();
+            ResourceSet result;
+            
+            query = "()  except ()";
+            result = queryAndAssert( service, query, 0, ""); 
+            
+            query = "()  except  (1)";
+            result = queryAndAssert( service, query, 0, ""); 
+            
+            boolean exceptionThrown = false;
+            String message = "";
+            try {                
+                query = "(1)  except  ()";
+                result = queryAndAssert( service, query, 0, "");             
+            } catch (XMLDBException e) {
+                exceptionThrown = true;
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("XPTY0004") > -1); 
+            
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }     
 
 	public void testConvertToBoolean() throws XMLDBException {
 

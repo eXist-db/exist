@@ -74,24 +74,19 @@ public class ValueComparison extends GeneralComparison {
 	}
 
 	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {
-		NodeSet result = new ExtArrayNodeSet();
-		NodeProxy current;
-		ContextItem c;
-		Sequence rs;
-		AtomicValue lv;		
+		NodeSet result = new ExtArrayNodeSet();	
 		for (Iterator i = nodes.iterator(); i.hasNext();) {
-			current = (NodeProxy) i.next();
-			//TODO : review to consider transverse context
-			c = current.getContext();
+            NodeProxy current = (NodeProxy) i.next();			
+            ContextItem context = current.getContext();
 			do {
-				lv = current.atomize();
-				rs = getRight().eval(c.getNode().toSequence());
+                AtomicValue lv = current.atomize();
+                Sequence rs = getRight().eval(context.getNode().toSequence());
 				if (rs.getLength() != 1)
 					throw new XPathException("Type error: sequence with less or more than one item is not allowed here");
                 Collator collator = getCollator(contextSequence);
                 if (compareValues(collator, lv, rs.itemAt(0).atomize()))
 					result.add(current);
-			} while ((c = c.getNextDirect()) != null);
+			} while ((context = context.getNextDirect()) != null);
 		}
 		return result;
 	}

@@ -55,34 +55,33 @@ public class Intersection extends CombiningExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        }
+        }        
         
-        Sequence result;
 		Sequence lval = left.eval(contextSequence, contextItem);        	
 		Sequence rval = right.eval(contextSequence, contextItem);
         lval.removeDuplicates();
-        rval.removeDuplicates();        
+        rval.removeDuplicates();
         
-		if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
-			throw new XPathException(getASTNode(), "intersect operand is not a node sequence");
-
-        if(lval.getLength() == 0 )
-            result = Sequence.EMPTY_SEQUENCE;         
-        if(rval.getLength() == 0)
-            result = Sequence.EMPTY_SEQUENCE;        
-        if (lval.isPersistentSet() && rval.isPersistentSet())
-            result = lval.toNodeSet().intersection(rval.toNodeSet());
+        Sequence result;        
+        if (lval.getLength() == 0 || rval.getLength() == 0) 
+            result = Sequence.EMPTY_SEQUENCE;
         else {
-            result = new ValueSequence();
-            Set set = new TreeSet();
-            for (SequenceIterator i = lval.unorderedIterator(); i.hasNext(); )
-                set.add(i.nextItem());
-            for (SequenceIterator i = rval.unorderedIterator(); i.hasNext(); ) {
-                Item next = i.nextItem();
-                if (set.contains(next))
-                    result.add(next);
+    		if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
+    			throw new XPathException(getASTNode(), "Error XPTY0004 : intersect operand is not a node sequence");                  
+            if (lval.isPersistentSet() && rval.isPersistentSet())
+                result = lval.toNodeSet().intersection(rval.toNodeSet());
+            else {
+                result = new ValueSequence();
+                Set set = new TreeSet();
+                for (SequenceIterator i = lval.unorderedIterator(); i.hasNext(); )
+                    set.add(i.nextItem());
+                for (SequenceIterator i = rval.unorderedIterator(); i.hasNext(); ) {
+                    Item next = i.nextItem();
+                    if (set.contains(next))
+                        result.add(next);
+                }
+                result.removeDuplicates();            
             }
-            result.removeDuplicates();            
         }
         
         if (context.getProfiler().isEnabled())           
