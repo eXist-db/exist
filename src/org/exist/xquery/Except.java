@@ -59,29 +59,28 @@ public class Except extends CombiningExpression {
         lval.removeDuplicates();
 		rval.removeDuplicates();         
         
-        
-        if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
-			throw new XPathException(getASTNode(), "except operand is not a node sequence");
-
         Sequence result;
-        
-        if(lval.getLength() == 0)
-            result = Sequence.EMPTY_SEQUENCE; 
-        else if(rval.getLength() == 0)
-            result = lval;          
-        else if (lval.isPersistentSet() && rval.isPersistentSet())
-            result = lval.toNodeSet().except(rval.toNodeSet());
-        else { 
-            result = new ValueSequence();
-            Set set = new TreeSet();
-            for (SequenceIterator i = rval.unorderedIterator(); i.hasNext(); )
-                set.add(i.nextItem());
-            for (SequenceIterator i = lval.unorderedIterator(); i.hasNext(); ) {
-                Item next = i.nextItem();
-                if (!set.contains(next))
-                    result.add(next);
+        if (lval.getLength() == 0)
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+            if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
+                throw new XPathException(getASTNode(), "Error XPTY0004 : except operand is not a node sequence");            
+            if(rval.getLength() == 0)
+                result = lval;          
+            else if (lval.isPersistentSet() && rval.isPersistentSet())
+                result = lval.toNodeSet().except(rval.toNodeSet());
+            else { 
+                result = new ValueSequence();
+                Set set = new TreeSet();
+                for (SequenceIterator i = rval.unorderedIterator(); i.hasNext(); )
+                    set.add(i.nextItem());
+                for (SequenceIterator i = lval.unorderedIterator(); i.hasNext(); ) {
+                    Item next = i.nextItem();
+                    if (!set.contains(next))
+                        result.add(next);
+                }
+                result.removeDuplicates();            
             }
-            result.removeDuplicates();            
         }
         
         if (context.getProfiler().isEnabled())           
