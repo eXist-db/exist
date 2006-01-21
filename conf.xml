@@ -69,6 +69,8 @@
 		<!--system-task class="org.exist.storage.DataBackup" period="120000">
 			<parameter name="output-dir" value="backup"/>
 		</system-task-->
+		<!--default-permissions collection="0775" resource="0775"/-->
+
     </db-connection>
 	   
     <!-- Default settings for the serializer. Most of these can be changed
