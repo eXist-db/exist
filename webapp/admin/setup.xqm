@@ -85,7 +85,7 @@ declare function setup:importFromURLs() as element()+ {
                     if($includeXmlad) then (
                         setup:create-collection("/db", "xmlad"),
                         setup:load-URL("/db/xmlad",
-                            "http://mesh.dl.sourceforge.net/sourceforge/xmlad/xmlad.xml",
+                            "http://surfnet.dl.sourceforge.net/sourceforge/xmlad/xmlad.xml",
                             "xmlad.xml")
                     ) else (),
                     if($includeMondial) then (
