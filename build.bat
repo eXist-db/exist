@@ -26,4 +26,4 @@ echo _LIBJARS=%_LIBJARS%
 echo Starting Ant...
 echo
 
-"%JAVA_HOME%\bin\java" "%JAVA_OPTS%" -classpath "%_LIBJARS%" org.apache.tools.ant.launch.Launcher %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%JAVA_HOME%\bin\java" %JAVA_OPTS% -classpath "%_LIBJARS%" org.apache.tools.ant.launch.Launcher %1 %2 %3 %4 %5 %6 %7 %8 %9
