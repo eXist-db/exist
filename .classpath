@@ -33,7 +33,7 @@
 	<classpathentry kind="lib" path="lib/optional/commons-collections-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-fileupload-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-httpclient-2.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-httpclient-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-jexl-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-jxpath-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-lang-2.0-20041007T2305.jar"/>
