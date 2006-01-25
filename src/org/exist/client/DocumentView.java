@@ -64,6 +64,7 @@ import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 class DocumentView extends JFrame {
 	
 	protected InteractiveClient client;
@@ -73,6 +74,7 @@ class DocumentView extends JFrame {
 	protected boolean readOnly = false;
 	protected ClientTextArea text;
 	protected JButton saveButton;
+	protected JButton saveAsButton;
 	protected JTextField statusMessage;
 	protected JProgressBar progress;
 	protected JPopupMenu popup;
@@ -193,7 +195,10 @@ class DocumentView extends JFrame {
 	}
 	
 	private void setupComponents() throws XMLDBException {
+		
 		JToolBar toolbar = new JToolBar();
+		
+		//Save button
 		URL url = getClass().getResource("icons/Save24.gif");
 		saveButton = new JButton(new ImageIcon(url));
 		saveButton
@@ -204,6 +209,20 @@ class DocumentView extends JFrame {
 			}
 		});
 		toolbar.add(saveButton);
+		
+		//Save As button
+		url = getClass().getResource("icons/SaveAs24.gif");
+		saveAsButton = new JButton(new ImageIcon(url));
+		saveAsButton
+				.setToolTipText("Store a new document into the database.");
+		saveAsButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				saveAs();
+			}
+		});
+		toolbar.add(saveAsButton);
+		
+		//Export button
 		url = getClass().getResource("icons/Export24.gif");
 		JButton button = new JButton(new ImageIcon(url));
 		button.setToolTipText("Export to file.");
@@ -217,7 +236,10 @@ class DocumentView extends JFrame {
 			}
 		});
 		toolbar.add(button);
+		
 		toolbar.addSeparator();
+		
+		//Copy button
 		url = getClass().getResource("icons/Copy24.gif");
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText("Copy selection.");
@@ -227,6 +249,8 @@ class DocumentView extends JFrame {
 			}
 		});
 		toolbar.add(button);
+		
+		//Cut button
 		url = getClass().getResource("icons/Cut24.gif");
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText("Cut selection.");
@@ -236,6 +260,8 @@ class DocumentView extends JFrame {
 			}
 		});
 		toolbar.add(button);
+		
+		//Paste button
 		url = getClass().getResource("icons/Paste24.gif");
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText("Paste selection.");
@@ -245,7 +271,10 @@ class DocumentView extends JFrame {
 			}
 		});
 		toolbar.add(button);
+		
 		toolbar.addSeparator();
+		
+		//Refresh button
 		url = getClass().getResource("icons/Refresh24.gif");
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText("Refresh Document.");
@@ -297,6 +326,49 @@ class DocumentView extends JFrame {
 							+ e.getMessage(), e);
 				} finally {
 					progress.setVisible(false);
+				}
+			}
+		}.start();
+	}
+	
+	private void saveAs()
+	{
+		new Thread()
+		{
+			public void run()
+			{
+
+				//Get the name to save the resource as
+				String nameres = JOptionPane.showInputDialog(null, "Name of the XML resource (extension incluse)");
+				if (nameres != null)
+				{
+					try
+					{
+						//Change status message and display a progress dialog
+						statusMessage.setText("Storing " + nameres);
+						if (collection instanceof Observable)
+							((Observable) collection).addObserver(new ProgressObserver());
+						progress.setIndeterminate(true);
+						progress.setVisible(true);
+					
+						//Create a new resource as named, set the content, store the resource
+						XMLResource result = null;
+						result = (XMLResource) collection.createResource(nameres, XMLResource.RESOURCE_TYPE);
+						result.setContent(text.getText());
+						collection.storeResource(result);
+						client.reloadCollection();	//reload the client collection
+						if (collection instanceof Observable)
+							((Observable) collection).deleteObservers();
+					}
+					catch (XMLDBException e)
+					{
+						ClientFrame.showErrorMessage("XMLDBException: " + e.getMessage(), e);
+					}
+					finally
+					{
+						//hide the progress dialog
+						progress.setVisible(false);
+					}
 				}
 			}
 		}.start();
