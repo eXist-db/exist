@@ -60,14 +60,16 @@ public class Except extends CombiningExpression {
 		rval.removeDuplicates();         
         
         Sequence result;
-        if (lval.getLength() == 0)
+        if (lval.getLength() == 0) {
             result = Sequence.EMPTY_SEQUENCE;
-        else {
+        } else if (rval.getLength() == 0) {
+            if(!Type.subTypeOf(lval.getItemType(), Type.NODE))
+                throw new XPathException(getASTNode(), "Error XPTY0004 : except operand is not a node sequence");               
+            result = lval;                  
+        } else {
             if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
-                throw new XPathException(getASTNode(), "Error XPTY0004 : except operand is not a node sequence");            
-            if(rval.getLength() == 0)
-                result = lval;          
-            else if (lval.isPersistentSet() && rval.isPersistentSet())
+                throw new XPathException(getASTNode(), "Error XPTY0004 : except operand is not a node sequence"); 
+            if (lval.isPersistentSet() && rval.isPersistentSet())
                 result = lval.toNodeSet().except(rval.toNodeSet());
             else { 
                 result = new ValueSequence();
