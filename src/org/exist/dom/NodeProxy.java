@@ -20,7 +20,6 @@
  */
 package org.exist.dom;
 
-import org.apache.log4j.Logger;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
 import org.exist.storage.RangeIndexSpec;

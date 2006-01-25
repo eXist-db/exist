@@ -21,7 +21,6 @@ package org.exist.util.serializer;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Arrays;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
