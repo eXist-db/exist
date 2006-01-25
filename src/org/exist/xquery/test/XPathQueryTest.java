@@ -1206,6 +1206,14 @@ public class XPathQueryTest extends XMLTestCase {
             }
             assertTrue(message.indexOf("XPTY0004") > -1); 
             
+            query = "<a/>  except ()";
+            result = queryAndAssert( service, query, 1, "");
+            query = "()  except <a/>";
+            result = queryAndAssert( service, query, 0, ""); 
+            //Not the same nodes
+            query = "<a/> except <a/>";  
+            result = queryAndAssert( service, query, 1, ""); 
+            
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }

@@ -45,22 +45,22 @@ public class Union extends CombiningExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		Sequence lval = left.eval(contextSequence, contextItem);
-		lval.removeDuplicates();
+		Sequence lval = left.eval(contextSequence, contextItem);		
 		Sequence rval = right.eval(contextSequence, contextItem);
+        lval.removeDuplicates();
 		rval.removeDuplicates();
        
         Sequence result;
-        if (lval.getLength() == 0 && rval.getLength() == 0) 
+        if (lval.getLength() == 0 && rval.getLength() == 0) {
             result = Sequence.EMPTY_SEQUENCE;
-        else if(lval.getLength() == 0) {
-            if(!Type.subTypeOf(rval.getItemType(), Type.NODE))
-                throw new XPathException(getASTNode(), "Error XPTY0004 : union operand is not a node sequence");                 
-            result = rval;
         } else if(rval.getLength() == 0) {
             if(!Type.subTypeOf(lval.getItemType(), Type.NODE))
                 throw new XPathException(getASTNode(), "Error XPTY0004 : union operand is not a node sequence");
             result = lval;
+        } else if(lval.getLength() == 0) {
+            if(!Type.subTypeOf(rval.getItemType(), Type.NODE))
+                throw new XPathException(getASTNode(), "Error XPTY0004 : union operand is not a node sequence");                 
+            result = rval;            
         } else {
             if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
                 throw new XPathException(getASTNode(), "Error XPTY0004 : union operand is not a node sequence");            
