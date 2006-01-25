@@ -1172,6 +1172,13 @@ public class XPathQueryTest extends XMLTestCase {
             }
             assertTrue(message.indexOf("XPTY0004") > -1); 
             
+            query = "<a/>  union ()";
+            result = queryAndAssert( service, query, 1, "");
+            query = "()  union <a/>";
+            result = queryAndAssert( service, query, 1, ""); 
+            //Not the same nodes
+            query = "<a/> union <a/>";
+            result = queryAndAssert( service, query, 2, "");  
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }

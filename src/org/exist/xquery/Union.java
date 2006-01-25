@@ -53,14 +53,18 @@ public class Union extends CombiningExpression {
         Sequence result;
         if (lval.getLength() == 0 && rval.getLength() == 0) 
             result = Sequence.EMPTY_SEQUENCE;
-        else {
+        else if(lval.getLength() == 0) {
+            if(!Type.subTypeOf(rval.getItemType(), Type.NODE))
+                throw new XPathException(getASTNode(), "Error XPTY0004 : union operand is not a node sequence");                 
+            result = rval;
+        } else if(rval.getLength() == 0) {
+            if(!Type.subTypeOf(lval.getItemType(), Type.NODE))
+                throw new XPathException(getASTNode(), "Error XPTY0004 : union operand is not a node sequence");
+            result = lval;
+        } else {
             if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
-                throw new XPathException(getASTNode(), "Error XPTY0004 : union operand is not a node sequence"); 
-            if(lval.getLength() == 0)
-                result = rval;
-            else if(rval.getLength() == 0)
-                result = lval;
-            else if (lval.isPersistentSet() && rval.isPersistentSet()) {
+                throw new XPathException(getASTNode(), "Error XPTY0004 : union operand is not a node sequence");            
+            if (lval.isPersistentSet() && rval.isPersistentSet()) {        
                 result = lval.toNodeSet().union(rval.toNodeSet());
             } else {
                 ValueSequence values = new ValueSequence();
