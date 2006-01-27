@@ -200,8 +200,9 @@ public class LetExpr extends BindingExpression {
     	StringBuffer result = new StringBuffer();
     	result.append("let ");        
     	result.append("$").append(varName);
-    	result.append(" := ");
-    	result.append(inputSequence.toString());        
+        result.append(" := ");
+    	result.append(inputSequence.toString());   
+        result.append(" ");
         if(whereExpr != null) {
         	result.append(" where ");
         	result.append(whereExpr.toString());
