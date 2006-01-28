@@ -381,6 +381,14 @@ public class XPathQueryTest extends XMLTestCase {
             queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildA]/parent::RootElement", 1);
             queryResource(service, "nested2.xml", "let $a := ('', 'b', '', '') for $b in $a[.] return <blah>{$b}</blah>", 1);
 
+            String query = "let $doc := <root><page><a>a</a><b>b</b></page></root>" +
+            "return " +
+            "for $element in $doc/page/* " +
+            "return " +
+            "if($element[self::a] or $element[self::b]) then (<found/>) else (<notfound/>)";
+            ResourceSet result = service.queryResource("numbers.xml", query);
+            assertEquals(2, result.getSize());
+            
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
