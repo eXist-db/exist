@@ -25,6 +25,10 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 
+/** I propose that we put here in XQueryTest the tests involving all the 
+ * others constructs of the XQuery language, besides XPath expressions.
+ * And in {@link XPathQueryTest} we will put the tests involving only XPath expressions.
+ * TODO maybe move the various eXist XQuery extensions in another class ... */
 public class XQueryTest extends XMLTestCase {
 
 	private static final String NUMBERS_XML = "numbers.xml";
@@ -1351,6 +1355,35 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}
 	
+	public void bugtestXUpdateWithAdvancentTextNodes() {
+		ResourceSet result;
+		String query;	
+		
+        query = 
+		"let $coll := xmldb:collection('/db', 'guest', 'guest')" +
+		"let $name := xmldb:store($coll , 'xupdateTest.xml', <test>aaa</test>)" +
+		"let $xu :=" +
+		"<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
+		  "<xu:append select='/test'>" +
+		    "<xu:text>yyy</xu:text>" +
+		  "</xu:append>" +
+		"</xu:modifications>" +
+		"let $count := xmldb:update($coll , $xu)" +
+		"for $textNode in document('/db/xupdateTest.xml')/test/text()" +
+		"	return <text id='{util:node-id($textNode)}'>{$textNode}</text>";
+		
+		try {
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
+	
+            System.out.println("testXUpdateWithAdvancentTextNodes 1: ========" );
+            result = service.query(query);              
+            assertEquals( "XQuery: " + query, 1, result.getSize() );
+	} catch (XMLDBException e) {
+		System.out.println("testXUpdateWithAdvancentTextNodes(): XMLDBException: "+ e);
+		fail(e.getMessage());
+	}
+}		
 	/**
 	 * @return
 	 * @throws XMLDBException
