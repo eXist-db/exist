@@ -1361,8 +1361,13 @@ public class ClientFrame extends JFrame
     class ResourceTableModel extends AbstractTableModel {
         
 		private static final long serialVersionUID = 1L;
-		private final String[] columnNames = new String[]{"Permissions",
-                "Owner", "Group", "Resource", "Date" };
+		private final String[] columnNames = new String[]{
+                  "Resource" 
+                , "Date"
+                , "Owner"
+                , "Group"  
+                , "Permissions"
+                };
                 
                 private List rows = null;
                 
@@ -1412,11 +1417,11 @@ public class ClientFrame extends JFrame
                     ResourceDescriptor row = getRow(rowIndex);
                     
                     switch (columnIndex) {
-                        case 0: return row.getPermissions();
-                        case 1: return row.getOwner();
-                        case 2: return row.getGroup();
-                        case 3: return row.getName();
-                        case 4: return row.getDate();
+                        case 0: return row.getName();
+                        case 1: return row.getDate();
+                        case 2: return row.getOwner();
+                        case 3: return row.getGroup();
+                        case 4: return row.getPermissions();
                         default: throw new RuntimeException("Column does not eXist!");
                     }
                 }
