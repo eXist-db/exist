@@ -157,11 +157,15 @@ public class InteractiveClient {
     protected String[] resources = null;
     protected ResourceSet result = null;
     protected HashMap namespaceMappings = new HashMap();
+    /** number of files of a recursive store  */
     protected int filesCount = 0;
+    /** total length of a recursive store   */
+    protected long totalLength =0;
     
     protected boolean quiet = false;
     protected boolean verbose = false;
-    protected boolean recurseDirs = false;
+    /** default recursive, maybe override by client.properties */
+    protected boolean recurseDirs = true;
     protected boolean startGUI = true;
     
     protected Writer traceWriter = null;
@@ -576,7 +580,7 @@ public class InteractiveClient {
                     
                     nextInSet = start + count + 1;
                     for (int i = start; i < start + count; i++) {
-                        Resource r = result.getResource((long) i);
+                        Resource r = result.getResource(i);
                         if (startGUI)
                             frame.display((String) r.getContent());
                         else
@@ -676,11 +680,8 @@ public class InteractiveClient {
                     while (true) {
                         p1 = Readline.readline("password: ");
                         p2 = Readline.readline("re-enter password: ");
-                        if (p1.equals(p2))
-                            break;
-                        else
-                            System.out
-                                    .println("\nentered passwords differ. Try again...");
+                        if (p1.equals(p2)) break;
+                        System.out.println("\nentered passwords differ. Try again...");
                         
                     }
                     String home = Readline.readline("home collection [none]: ");
@@ -740,12 +741,8 @@ public class InteractiveClient {
                     while (true) {
                         p1 = Readline.readline("password: ");
                         p2 = Readline.readline("re-enter password: ");
-                        if (p1.equals(p2))
-                            break;
-                        else
-                            System.out
-                                    .println("\nentered passwords differ. Try again...");
-                        
+                        if (p1.equals(p2)) break;
+                        System.out.println("\nentered passwords differ. Try again...");
                     }
                     user.setPassword(p1);
                     mgtService.updateUser(user);
@@ -1111,8 +1108,8 @@ public class InteractiveClient {
         if (res == null) {
             messageln("document not found.");
             return null;
-        } else
-            return res;
+        } 
+        return res;
     }
     
     private final void remove(String pattern) throws XMLDBException {
@@ -1282,6 +1279,7 @@ public class InteractiveClient {
             ((Observable) current).addObserver(observer);
         }
         if (file.canRead()) {
+            // TODO, same logic as for the graphic client
             if (file.isDirectory()) {
                 if (recurseDirs) {
                     filesCount = 0;
@@ -1291,8 +1289,8 @@ public class InteractiveClient {
                             + ((System.currentTimeMillis() - start) / 1000)
                             + "sec.");
                     return result;
-                } else
-                    files = file.listFiles();
+                } 
+                files = file.listFiles();
             } else {
                 files = new File[1];
                 files[0] = file;
@@ -1328,49 +1326,27 @@ public class InteractiveClient {
         return true;
     }
     
+    /**
+     * 
+     * Method called by the store Dialog
+     * 
+     * @param files  : selected
+     * @param upload : GUI object 
+     * @return
+     * @throws XMLDBException
+     */
     protected synchronized boolean parse(File[] files, UploadDialog upload)
     throws XMLDBException {
-        Resource document;
         if (!upload.isVisible())
             upload.setVisible(true);
         if (current instanceof Observable) {
             ((Observable) current).addObserver(upload.getObserver());
         }
         upload.setTotalSize(calculateFileSizes(files));
-        long totalSize = 0;
-        String resourceType;
-        MimeType mimeType;
         for (int i = 0; i < files.length; i++) {
-        	if (upload.isCancelled())
-        		break;
-            if (files[i].canRead()) {
-                if (files[i].isDirectory()) {
-                    totalSize = findRecursive(current, files[i], path, upload,
-                            totalSize);
-                } else {
-                    upload.reset();
-                    upload.setCurrentDir(files[i].getParentFile().getAbsolutePath());
-                    upload.setCurrent(files[i].getName());
-                    upload.setCurrentSize(files[i].length());
-                    try {
-                        mimeType = MimeTable.getInstance().getContentTypeFor(files[i].getName());
-                        if (mimeType == null)
-                            mimeType = MimeType.BINARY_TYPE;
-                        resourceType = mimeType.getType() == MimeType.XML ? "XMLResource" : "BinaryResource";
-                        document = current.createResource(
-                                files[i].getName(), resourceType);
-                        ((EXistResource)document).setMimeType(mimeType.getName());
-                        document.setContent(files[i]);
-                        current.storeResource(document);
-                        totalSize += files[i].length();
-                        upload.setStoredSize(totalSize);
-                    } catch (XMLDBException e) {
-                        upload.showMessage("could not parse file "
-                                + files[i].getAbsolutePath() + ": "
-                                + e.getMessage());
-                    }
-                }
-            }
+        	if (upload.isCancelled()) break;
+            // should replace the lines above
+            store(current, files[i], upload);
         }
         if (current instanceof Observable)
             ((Observable) current).deleteObservers();
@@ -1391,63 +1367,92 @@ public class InteractiveClient {
         return size;
     }
     
-    private long findRecursive(Collection collection, File dir,
-            String base, UploadDialog upload, long totalSize) {
-        upload.setCurrentDir(dir.getAbsolutePath());
-        File temp[] = dir.listFiles();
-        Collection c;
-        Resource document;
-        CollectionManagementService mgtService;
-        String next;
-        MimeType mimeType;
-        for (int i = 0; i < temp.length; i++) {
-        	if (upload.isCancelled())
-        		return totalSize;
-            ///TODO : use dedicated function in XmldbURI
-            next = base + "/" + temp[i].getName();
+    /**
+     * Pass to this method a java file object 
+     * (may be a file or a directory), GUI object
+     * will create relative collections or resources
+     * recursively
+     */
+    
+    private void store(
+            Collection collection, 
+            File file,
+            UploadDialog upload 
+    ) {
+        
+        // cancel, stop crawl
+        if (upload.isCancelled()) return;
+        
+        // can't read there, inform client
+        if (!file.canRead()) {
+            upload.showMessage(file.getAbsolutePath()+ " impossible to read ");
+            return;
+        }
+        
+        // Directory, create collection, and crawl it
+        if (file.isDirectory()) {
+            Collection c=null;
             try {
-                if (temp[i].isDirectory()) {
-                    upload.setCurrentDir(temp[i].getAbsolutePath());
-                    c = collection.getChildCollection(temp[i].getName());
-                    if (c == null) {
-                        mgtService = (CollectionManagementService) collection
-                                .getService("CollectionManagementService",
-                                "1.0");
-                        c = mgtService.createCollection(temp[i].getName());
-                        
-                    }
-                    if (c instanceof Observable) {
-                        ((Observable) c).addObserver(upload.getObserver());
-                    }
-                    totalSize = findRecursive(c, temp[i], next, upload,
-                            totalSize);
-                } else {
-                    upload.reset();
-                    upload.setCurrent(temp[i].getName());
-                    upload.setCurrentSize(temp[i].length());
-                    
-                    mimeType = MimeTable.getInstance().getContentTypeFor(temp[i].getName());
-                    if(mimeType == null)
-                        upload.showMessage("File " + temp[i].getName() + " has an unknown " +
-                                "suffix. Cannot determine file type.");
-                    else {
-                        document = collection.createResource(temp[i]
-                                .getName(), mimeType.getXMLDBType());
-                        ((EXistResource) document).setMimeType(mimeType.getName());
-                        document.setContent(temp[i]);
-                        collection.storeResource(document);
-                    }
-                    ++filesCount;
-                    totalSize += temp[i].length();
-                    upload.setStoredSize(totalSize);
+                c = collection.getChildCollection(file.getName());
+                if (c == null) {
+                    CollectionManagementService mgtService = (CollectionManagementService) collection
+                            .getService("CollectionManagementService",
+                            "1.0");
+                    c = mgtService.createCollection(file.getName());
                 }
             } catch (XMLDBException e) {
-                upload.showMessage("could not parse file "
-                        + temp[i].getAbsolutePath() + ": " + e.getMessage());
+                upload.showMessage("Impossible to create a collection "
+                        + file.getAbsolutePath() + ": " + e.getMessage());
             }
+            // change displayed collection if it's OK
+            upload.setCurrentDir(file.getAbsolutePath());
+            if (c instanceof Observable) {
+                ((Observable) c).addObserver(upload.getObserver());
+            }
+            // maybe a depth or recurs flag could be added here
+            File temp[] = file.listFiles();
+            for (int i = 0; i < temp.length; i++) {
+                store(c, temp[i], upload);
+            }
+            return;
         }
-        return totalSize;
+        
+        // File, create and store resource
+        if (file.isFile()) {
+            upload.reset();
+            upload.setCurrent(file.getName());
+            upload.setCurrentSize(file.length());
+            
+            MimeType mimeType = MimeTable.getInstance().getContentTypeFor(file.getName());
+            // unknown mime type, here prefered is to do nothing
+            if(mimeType == null) {
+                upload.showMessage(file.getAbsolutePath() +
+                        " - unknown suffix in : " + MimeTable.getInstance().getSrc());
+                return;
+                // if some one prefers to store it as binary by default, but dangerous
+                // if (mimeType == null) mimeType = MimeType.BINARY_TYPE;
+            }
+            try {
+                Resource res = collection.createResource(
+                        file.getName(), 
+                        mimeType.getXMLDBType()
+                );
+                ((EXistResource) res).setMimeType(mimeType.getName());
+                res.setContent(file);
+                collection.storeResource(res);
+                ++filesCount;
+                this.totalLength += file.length();
+                upload.setStoredSize(this.totalLength);
+            } catch (XMLDBException e) {
+                upload.showMessage("Impossible to store a resource "
+                        + file.getAbsolutePath() + ": " + e.getMessage());
+            }
+
+        }
+        // should never arrive
     }
+        
+    
     
     private void mkcol(String collPath) throws XMLDBException {
         System.out.println("creating '" + collPath + "'");
@@ -1863,15 +1868,11 @@ public class InteractiveClient {
                         maxResults = (int) result.getSize();
                     if (cOpt.optionOutputFile == null) {
                         for (int i = 0; i < maxResults && i < result.getSize(); i++)
-                            System.out.println(((Resource) result
-                                    .getResource((long) i)).getContent());
+                            System.out.println((result.getResource(i)).getContent());
                     } else {
-                        FileWriter writer = new FileWriter(cOpt.optionOutputFile,
-                                false);
+                        FileWriter writer = new FileWriter(cOpt.optionOutputFile, false);
                         for (int i = 0; i < maxResults && i < result.getSize(); i++)
-                            writer.write(((Resource) result
-                                    .getResource((long) i)).getContent()
-                                    .toString());
+                            writer.write((result.getResource(i)).getContent().toString());
                         writer.close();
                     }
                 } catch (XMLDBException e) {
