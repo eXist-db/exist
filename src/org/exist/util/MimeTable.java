@@ -63,6 +63,8 @@ public class MimeTable {
     private static final String MIME_TYPES_XML_DEFAULT = "org/exist/util/" + MIME_TYPES_XML;    
     
     private static MimeTable instance = null;
+    /** From where the mime table is loeaded for message purpose */
+    private String src;
     
     /**
      * Returns the singleton.
@@ -81,7 +83,14 @@ public class MimeTable {
     public MimeTable() {
         load();
     }
-     
+    /**
+     * Inform from where a mime-table is loaded
+     * @return
+     */
+    public String getSrc() {
+        return this.src;
+    }
+    
     public MimeType getContentTypeFor(String fileName) {
         String ext = getExtension(fileName);
         return ext == null ? null : (MimeType) extensions.get(ext);
@@ -120,6 +129,7 @@ public class MimeTable {
                     System.out.println("Loading mime table from file " + f.getAbsolutePath());
                     loadMimeTypes(new FileInputStream(f));
                     loaded = true;
+                    this.src=f.toURI().toString();
                 } catch (FileNotFoundException e) {
                     System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
                 } catch (ParserConfigurationException e) {
@@ -139,6 +149,7 @@ public class MimeTable {
             }
             try {
                 loadMimeTypes(is);
+                this.src="resource://"+MIME_TYPES_XML_DEFAULT;
             } catch (ParserConfigurationException e) {
                 System.err.println(LOAD_FAILED_ERR);
             } catch (SAXException e) {
