@@ -637,17 +637,10 @@ public class ElementImpl extends NamedNode implements Element {
      * @see org.w3c.dom.Element#getAttribute(java.lang.String)
      */
     public String getAttribute(String name) {
-        long start = firstChildID();
-        for (long i = start; i < start + children; i++) {
-            Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
-            if (child == null)
-                continue;
-            if (child.getNodeType() != Node.ATTRIBUTE_NODE)
-                continue;
-            if (child.getNodeName().equals(name))
-                return ((AttrImpl) child).getValue();
-        }
-        return null;
+        Attr attr = getAttributeNode(name);
+        if ( attr != null )
+        	return attr.getValue();
+    	return null;
     }
 
     /**
@@ -1157,7 +1150,11 @@ public class ElementImpl extends NamedNode implements Element {
             StoredNode prev = (StoredNode) ref.getPreviousSibling();
             appendChildren(transaction, ref.getGID(), new NodeImplRef(getLastNode(prev)), getPath(), nodes, false);
         }
-        getBroker().updateNode(transaction, this);
+        updateNodeAndReindex(transaction, owner, level);
+    }
+
+	private void updateNodeAndReindex(Txn transaction, final DocumentImpl owner, final int level) {
+		getBroker().updateNode(transaction, this);
         int reindex = owner.getMetadata().reindexRequired();
         if (reindex == DocumentMetadata.REINDEX_ALL) {
             owner.getMetadata().setReindexRequired(0);
@@ -1166,7 +1163,7 @@ public class ElementImpl extends NamedNode implements Element {
             owner.getMetadata().setReindexRequired(level + 1);
             getBroker().reindexXMLResource(transaction, owner, owner, null);
         }
-    }
+	}
 
     /**
      * Insert a list of nodes at the position following the reference
@@ -1188,15 +1185,7 @@ public class ElementImpl extends NamedNode implements Element {
         final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
         final int level = owner.getTreeLevel(getGID());
         appendChildren(transaction, ref.getGID() + 1, new NodeImplRef(getLastNode(ref)), getPath(), nodes, false);
-        getBroker().updateNode(transaction, this);
-        int reindex = owner.getMetadata().reindexRequired();
-        if (reindex == DocumentMetadata.REINDEX_ALL) {
-            owner.getMetadata().setReindexRequired(0);
-            getBroker().reindexXMLResource(transaction, owner, owner, this);
-        } else {
-            owner.getMetadata().setReindexRequired(level + 1);
-            getBroker().reindexXMLResource(transaction, owner, owner, null);
-        }
+        updateNodeAndReindex(transaction, owner, level);
     }
 
     /**
