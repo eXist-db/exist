@@ -14,7 +14,7 @@
     <!-- Mime types stored as XML -->
     <mime-type name="text/xml" type="xml">
         <description>XML document</description>
-        <extensions>.xml,.xsl,.xslt,.xsd,.mods,.xmi,.xconf</extensions>
+        <extensions>.xml,.xsl,.xslt,.xsd,.rng,.mods,.xmp,.xmi,.xconf,.xmap,.xsp,.wsdl,.x3d,.rdf,.owl,.dbx,.tei,.ead</extensions>
     </mime-type>
     <mime-type name="application/xml" type="xml">
         <description>XML document</description>
@@ -22,7 +22,7 @@
     </mime-type>
     <mime-type name="application/rdf+xml" type="xml">
         <description>RDF document</description>
-        <extensions>.rdf</extensions>
+        <extensions>.rdf,.rdfs</extensions>
     </mime-type>
     <mime-type name="application/xhtml+xml" type="xml">
         <description>XHTML document</description>
@@ -60,11 +60,15 @@
     </mime-type>
     <mime-type name="text/plain" type="binary">
         <description>Plain text</description>
-        <extensions>.txt,.text,.java,.dtd</extensions>
+        <extensions>.txt,.text,.java,.dtd,.rnc</extensions>
     </mime-type>
     <mime-type name="text/css" type="binary">
         <description>CSS stylesheet</description>
         <extensions>.css</extensions>
+    </mime-type>
+    <mime-type name="image/png" type="binary">
+        <description>PNG image</description>
+        <extensions>.png</extensions>
     </mime-type>
     <mime-type name="image/gif" type="binary">
         <description>GIF image</description>
