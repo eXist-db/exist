@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Arrays;
+import java.util.Properties;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -63,10 +64,10 @@ import javax.swing.event.ListSelectionListener;
 public class LoginPanel extends JPanel {
     
     public static final int TYPE_REMOTE = 0;
-    public static final int TYPE_LOCAL = 1;
+    public static final int TYPE_EMBEDED = 1;
     
     /** Uri for local connections */
-    public static final String URI_LOCAL = "xmldb:exist://";
+    public static final String URI_EMBEDED = "xmldb:exist://";
     
     /** Default uri for remote connections */
     public static final String URI_REMOTE = "xmldb:exist://localhost:8080/exist/xmlrpc";
@@ -74,10 +75,17 @@ public class LoginPanel extends JPanel {
     /** Name of Preference node containing favourites */
     public static final String FAVOURITES_NODE = "favourites";
     
+    /** The properties modified by this panel */
+    protected Properties properties;
+
+    
     /** Ui components */
     JTextField username;
     JPasswordField password;
     JTextField cur_url;
+    JTextField configuration;
+    JButton selectConf;
+    
     JComboBox type;
     JList favourites;
     DefaultListModel favouritesModel;
@@ -90,50 +98,52 @@ public class LoginPanel extends JPanel {
     JButton btnImportFavourite;
     
     /**
-     * Creates a new login panel with the given user and uri.
+     * Creates a new login panel with properties
      *
-     * @param defaultUser the initial user
-     * @param uri the uri to connect to
+     * @param a list of properties modified by the panel
      */
-    public LoginPanel(String defaultUser, String uri) {
+    public LoginPanel(Properties props) {
         super(false);
-        setupComponents(defaultUser, uri);
+        this.properties=new Properties(props);
+        setupComponents();
     }
     
     /**
      * Sets up the graphical components.
-     *
-     * @param defaultUser the initial user
-     * @param uri the uri to connect to
      */
-    private void setupComponents(final String defaultUser, final String uri) {
+    private void setupComponents() {
         GridBagLayout grid = new GridBagLayout();
         setLayout(grid);
         GridBagConstraints c = new GridBagConstraints();
         final int inset = 5;
         c.insets = new Insets(inset, inset, inset, inset);
         
+        // y pos as a counter
+        int gridy=0;
+        
         JLabel label = new JLabel("Username");
         c.gridx = 0;
-        c.gridy = 0;
+        c.gridy = gridy;
         c.gridwidth = 1;
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
         grid.setConstraints(label, c);
         add(label);
         
-        username = new JTextField(defaultUser, 12);
+        username = new JTextField(properties.getProperty(InteractiveClient.USER), 12);
         c.gridx = 1;
-        c.gridy = 0;
+        c.gridy = gridy;
         c.gridwidth = 2;
         c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
         grid.setConstraints(username, c);
         add(username);
         
+        gridy++;
+        
         label = new JLabel("Password");
         c.gridx = 0;
-        c.gridy = 1;
+        c.gridy = gridy;
         c.gridwidth = 1;
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
@@ -142,16 +152,19 @@ public class LoginPanel extends JPanel {
         
         password = new JPasswordField(12);
         c.gridx = 1;
-        c.gridy = 1;
+        c.gridy = gridy;
         c.gridwidth = 2;
         c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
         grid.setConstraints(password, c);
         add(password);
         
+        gridy++;
+        
+        
         label = new JLabel("Type");
         c.gridx = 0;
-        c.gridy = 2;
+        c.gridy = gridy;
         c.gridwidth = 1;
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
@@ -161,32 +174,82 @@ public class LoginPanel extends JPanel {
         type = new JComboBox();
         type.addItem("Remote");
         
-        type.addItem("Local");
-        type.setSelectedIndex(uri.equals(URI_LOCAL) ? TYPE_LOCAL : TYPE_REMOTE);
+        type.addItem("Embeded");
+        final String uri=properties.getProperty("uri");
+        type.setSelectedIndex(uri.equals(URI_EMBEDED) ? TYPE_EMBEDED : TYPE_REMOTE);
         type.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 switch (type.getSelectedIndex()) {
-                    case TYPE_LOCAL:
-                        cur_url.setText(URI_LOCAL);
+                    // in case local, default URL, may be a conf file
+                    case TYPE_EMBEDED:
+                        cur_url.setText(URI_EMBEDED);
                         cur_url.setEnabled(false);
+                        configuration.setEnabled(true);
+                        selectConf.setEnabled(true);
                         break;
                     case TYPE_REMOTE:
-                        cur_url.setText(!uri.equals(URI_LOCAL) ? uri : URI_REMOTE);
+                        cur_url.setText(!uri.equals(URI_EMBEDED) ? uri : URI_REMOTE);
                         cur_url.setEnabled(true);
+                        configuration.setEnabled(false);
+                        selectConf.setEnabled(false);
                         break;
                 }
             }
         });
         c.gridx = 1;
-        c.gridy = 2;
+        c.gridy = gridy;
         c.gridwidth = 2;
         c.anchor = GridBagConstraints.WEST;
         grid.setConstraints(type, c);
         add(type);
+
+        gridy++;
         
+        // File chooser for a conf file in local, active in local mode
+        label = new JLabel("Configuration");
+        c.gridx = 0;
+        c.gridy = gridy;
+        c.gridwidth = 1;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        grid.setConstraints(label, c);
+        add(label);
+
+        configuration = new JTextField(properties.getProperty(InteractiveClient.CONFIGURATION), 40);
+        // the client will run by itself the Database (needs exclusive access otherwise access is read-only)
+        configuration.setToolTipText("An eXist configuration file for an embed instance");
+        // if default is remote, select a conf file should be disable
+        configuration.setEnabled(false);
+        c.gridx = 1;
+        c.gridy = gridy;
+        c.anchor = GridBagConstraints.EAST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        grid.setConstraints(configuration, c);
+        add(configuration);
+
+        selectConf = new JButton("Select");
+        selectConf.setToolTipText("Select an alternate conf file for embed mode.");
+        selectConf.setEnabled(false);
+        selectConf.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String conf=configuration.getText();
+                if (conf == null) selectConfFile(null); 
+                else selectConfFile(new File(conf).getParentFile());
+            }
+        });
+        c.gridx = 2;
+        c.gridy = gridy;
+        c.anchor = GridBagConstraints.EAST;
+        c.fill = GridBagConstraints.NONE;
+        grid.setConstraints(selectConf, c);
+        add(selectConf);
+
+        gridy++;
+        
+        // URI, active in remote mode
         label = new JLabel("URL");
         c.gridx = 0;
-        c.gridy = 3;
+        c.gridy = gridy;
         c.gridwidth = 1;
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
@@ -194,18 +257,21 @@ public class LoginPanel extends JPanel {
         add(label);
         
         cur_url = new JTextField(uri, 20);
-        cur_url.setEnabled(!uri.equals(URI_LOCAL));
+        cur_url.setEnabled(!uri.equals(URI_EMBEDED));
         c.gridx = 1;
-        c.gridy = 3;
+        c.gridy = gridy;
         c.gridwidth = 2;
         c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
         grid.setConstraints(cur_url, c);
         add(cur_url);
         
+        gridy++;
+        gridy++;
+        
         label = new JLabel("Title");
         c.gridx = 0;
-        c.gridy = 4;
+        c.gridy = gridy;
         c.gridwidth = 1;
         c.insets = new Insets(20, inset, inset, inset);
         c.anchor = GridBagConstraints.EAST;
@@ -226,7 +292,7 @@ public class LoginPanel extends JPanel {
             }
         });
         c.gridx = 1;
-        c.gridy = 4;
+        c.gridy = gridy;
         c.gridwidth = 2;
         c.insets = new Insets(20, inset, inset, inset);
         c.anchor = GridBagConstraints.WEST;
@@ -234,9 +300,11 @@ public class LoginPanel extends JPanel {
         grid.setConstraints(title, c);
         add(title);
         
+        gridy++;
+        
         label = new JLabel("Favourites");
         c.gridx = 0;
-        c.gridy = 5;
+        c.gridy = gridy;
         c.gridwidth = 1;
         c.gridheight = 4;
         c.insets = new Insets(inset, inset, inset, inset);
@@ -264,7 +332,7 @@ public class LoginPanel extends JPanel {
                     title.setText(f.getName());
                     username.setText(f.getUsername());
                     password.setText(f.getPassword());
-                    type.setSelectedIndex(URI_LOCAL.equals(f.getUrl()) ? TYPE_LOCAL : TYPE_REMOTE);
+                    type.setSelectedIndex(URI_EMBEDED.equals(f.getUrl()) ? TYPE_EMBEDED : TYPE_REMOTE);
                     cur_url.setText(f.getUrl());
                 }
             }
@@ -274,7 +342,7 @@ public class LoginPanel extends JPanel {
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scroll.setPreferredSize(new Dimension(200, 130));
         c.gridx = 1;
-        c.gridy = 5;
+        c.gridy = gridy;
         c.gridheight = 4;
         c.insets = new Insets(inset, inset, inset, inset);
         c.anchor = GridBagConstraints.NORTHWEST;
@@ -291,12 +359,13 @@ public class LoginPanel extends JPanel {
                 title.setText(f.getName());
                 username.setText(f.getUsername());
                 password.setText(f.getPassword());
-                type.setSelectedIndex(URI_LOCAL.equals(f.getUrl()) ? TYPE_LOCAL : TYPE_REMOTE);
+                configuration.setText(f.getConfiguration());
+                type.setSelectedIndex(URI_EMBEDED.equals(f.getUrl()) ? TYPE_EMBEDED : TYPE_REMOTE);
                 cur_url.setText(f.getUrl());
             }
         });
         c.gridx = 2;
-        c.gridy = 5;
+        c.gridy = gridy;
         c.gridwidth = 1;
         c.gridheight = 1;
         c.anchor = GridBagConstraints.WEST;
@@ -304,6 +373,8 @@ public class LoginPanel extends JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         grid.setConstraints(btnLoadFavourite, c);
         add(btnLoadFavourite);
+        
+        gridy++;
         
         btnAddFavourite = new JButton("Save");
         btnAddFavourite.setToolTipText("Save settings");
@@ -322,17 +393,18 @@ public class LoginPanel extends JPanel {
                     }
                 }
                 Favourite f = new Favourite(
-                        title.getText(),
-                        username.getText(),
-                        new String(password.getPassword()),
-                        cur_url.getText()
-                        );
+                          title.getText()
+                        , username.getText()
+                        , new String(password.getPassword())
+                        , cur_url.getText()
+                        , configuration.getText() 
+                );
                 favouritesModel.addElement(f);
                 storeFavourites(favouritesModel);
             }
         });
         c.gridx = 2;
-        c.gridy = 6;
+        c.gridy = gridy;
         c.gridwidth = 1;
         c.gridheight = 1;
         c.anchor = GridBagConstraints.WEST;
@@ -353,8 +425,11 @@ public class LoginPanel extends JPanel {
                 repaint();
             }
         });
+        
+        gridy++;
+        
         c.gridx = 2;
-        c.gridy = 7;
+        c.gridy = gridy;
         c.gridwidth = 1;
         c.gridheight = 1;
         c.anchor = GridBagConstraints.WEST;
@@ -389,8 +464,11 @@ public class LoginPanel extends JPanel {
                 repaint();
             }
         });
+        
+        gridy++;
+        
         c.gridx = 2;
-        c.gridy = 8;
+        c.gridy = gridy;
         c.gridwidth = 1;
         c.gridheight = 1;
         c.anchor = GridBagConstraints.WEST;
@@ -428,8 +506,11 @@ public class LoginPanel extends JPanel {
                 repaint();
             }
         });
+        
+        gridy++;
+        
         c.gridx = 2;
-        c.gridy = 9;
+        c.gridy = gridy;
         c.gridwidth = 1;
         c.gridheight = 1;
         c.anchor = GridBagConstraints.WEST;
@@ -447,6 +528,33 @@ public class LoginPanel extends JPanel {
         add(spacer);
         
     }
+    
+    /**
+     * Set and return the modified properties
+     */
+    public Properties getProperties() {
+        this.properties.setProperty(InteractiveClient.PASSWORD , new String(password.getPassword()));
+        this.properties.setProperty(InteractiveClient.URI , cur_url.getText());
+        this.properties.setProperty(InteractiveClient.USER , username.getText());
+        this.properties.setProperty(InteractiveClient.CONFIGURATION , configuration.getText());
+        return this.properties;
+    }
+    
+    /**
+     * File chooser for a configuration file
+     */
+      private void selectConfFile(File dir) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setMultiSelectionEnabled(false);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setCurrentDirectory(dir);
+        if (chooser.showDialog(this, "Select an Exist instance configuration file")
+            == JFileChooser.APPROVE_OPTION) {
+            File f = chooser.getSelectedFile();
+            configuration.setText(f.getAbsolutePath());
+        }
+    }
+
     
     /**
      * Loads the connection favourites using the Preferences API.
@@ -472,10 +580,12 @@ public class LoginPanel extends JPanel {
             Preferences node = favouritesNode.node( favouriteNodeNames[i]);
             
             Favourite favourite = new Favourite(
-                    favouriteNodeNames[i],
-                    node.get(Favourite.USERNAME, ""),
-                    node.get(Favourite.PASSWORD, ""),
-                    node.get(Favourite.URL, ""));
+                    favouriteNodeNames[i]
+                  , node.get(Favourite.USERNAME, "")
+                  , node.get(Favourite.PASSWORD, "")
+                  , node.get(Favourite.URL, "")
+                  , node.get(Favourite.CONFIGURATION, "")
+            );
             
             favourites[i]=favourite;
         }
@@ -512,6 +622,7 @@ public class LoginPanel extends JPanel {
                 favouriteNode.put(Favourite.USERNAME, favs[i].getUsername());
                 favouriteNode.put(Favourite.PASSWORD, favs[i].getPassword());
                 favouriteNode.put(Favourite.URL, favs[i].getUrl());
+                favouriteNode.put(Favourite.CONFIGURATION, favs[i].getConfiguration());
             }
         }
     }
@@ -569,32 +680,6 @@ public class LoginPanel extends JPanel {
         return exportOk;
     }
     
-    /**
-     * Returns the username that is used to connect to the database.
-     *
-     * @return the username
-     */
-    public String getUsername() {
-        return username.getText();
-    }
-    
-    /**
-     * Returns the password that is used to connect to the database.
-     *
-     * @return the password
-     */
-    public String getPassword() {
-        return new String(password.getPassword());
-    }
-    
-    /**
-     * Returns the database uri.
-     *
-     * @return the uri
-     */
-    public String getUri() {
-        return cur_url.getText();
-    }
     
     /**
      * Wrapper used to hold a favourite's connection information.
@@ -607,11 +692,14 @@ public class LoginPanel extends JPanel {
         public static final String USERNAME="username";
         public static final String PASSWORD="password";
         public static final String URL="url";
+        public static final String CONFIGURATION="configuration";
         
         private String name;
         private String username;
         private String password;
         private String url;
+        /** path to an alternate configuration file for emebeded mode */
+        private String configuration;
         
         /**
          * Creates a new connection favourite from the given parameters.
@@ -621,11 +709,12 @@ public class LoginPanel extends JPanel {
          * @param password the password
          * @param url the url
          */
-        public Favourite(String name, String username, String password, String url) {
+        public Favourite(String name, String username, String password, String url, String configuration) {
             this.name = name;
             this.username = username;
             this.password = password;
             this.url = url;
+            this.configuration = configuration;
         }
         
         /**
@@ -663,7 +752,16 @@ public class LoginPanel extends JPanel {
         public String getUrl() {
             return url;
         }
-        
+
+        /**
+         * Returns the configuration file path for emebeded mode.
+         *
+         * @return the url
+         */
+        public String getConfiguration() {
+            return configuration;
+        }
+
         /**
          * Compares <code>o</code> to this favourite by comparing the
          * connection names to the object's toString() output.

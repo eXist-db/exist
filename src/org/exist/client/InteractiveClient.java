@@ -40,6 +40,7 @@ import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -119,20 +120,30 @@ public class InteractiveClient {
     private final static String ANSI_WHITE = "\033[0;37m";
     
     // properties
+
+    // keys
+    public static final String USER="user";
+    public static final String PASSWORD="password";
+    public static final String URI="uri";
+    public static final String CONFIGURATION="configuration";
+    public static final String DRIVER="driver";
+    
+    // values
     protected static String EDIT_CMD = "xemacs $file";
     protected static String ENCODING = "ISO-8859-1";
     protected static String PASS = null;
-    protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
-    protected static String USER = org.exist.security.SecurityManager.DBA_USER;
+    protected static String URI_DEFAULT = "xmldb:exist://localhost:8080/exist/xmlrpc";
+    protected static String USER_DEFAULT = org.exist.security.SecurityManager.DBA_USER;
     protected static int PARALLEL_THREADS = 5;
+    // Set
     protected static Properties defaultProps = new Properties();
     {
-        defaultProps.setProperty("driver", driver);
-        defaultProps.setProperty("uri", URI);
+        defaultProps.setProperty(DRIVER, driver);
+        defaultProps.setProperty(URI, URI_DEFAULT);
+        defaultProps.setProperty(USER, USER_DEFAULT);
         defaultProps.setProperty("editor", EDIT_CMD);
         defaultProps.setProperty("indent", "true");
         defaultProps.setProperty("encoding", ENCODING);
-        defaultProps.setProperty("user", USER);
         defaultProps.setProperty("colors", "false");
         defaultProps.setProperty("permissions", "false");
         defaultProps.setProperty("expand-xincludes", "true");
@@ -233,12 +244,12 @@ public class InteractiveClient {
     protected void connect() throws Exception {
         if (startGUI && frame != null)
             frame.setStatus("connecting to " + properties.getProperty("uri"));
-        Class cl = Class.forName(properties.getProperty("driver"));
+        Class cl = Class.forName(properties.getProperty(DRIVER));
         Database database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
-        if (properties.containsKey("configuration"))
-            database.setProperty("configuration", properties
-                    .getProperty("configuration"));
+        // secure empty configuration
+        String configuration=properties.getProperty("configuration");
+        if (configuration != null && !"".equals(configuration)) database.setProperty("configuration", configuration);
         DatabaseManager.registerDatabase(database);
         current = DatabaseManager.getCollection(properties.getProperty("uri")
         + path, properties.getProperty("user"), properties
@@ -1542,6 +1553,8 @@ public class InteractiveClient {
         
         
         String home = System.getProperty("exist.home");
+        
+        
         File propFile;
         if (home == null)
             propFile = new File("client.properties");
@@ -1905,15 +1918,12 @@ public class InteractiveClient {
      */
     private boolean getGuiLoginData(Properties props){
         
-        String[] loginData = ClientFrame.getLoginData(properties
-                .getProperty("user"), properties.getProperty("uri"));
+        Properties loginData = ClientFrame.getLoginData(properties);
         if (loginData == null) {
             // User pressed <cancel>
             return false;
         }
-        props.setProperty("user", loginData[0]);
-        props.setProperty("password", loginData[1]);
-        props.setProperty("uri", loginData[2]);
+        props.putAll(loginData);
         
         return true;
     }
@@ -1945,8 +1955,23 @@ public class InteractiveClient {
      */
     public void run(String args[]) throws Exception {
         
-        // initialize with default properties, add client properties
+        // Resolve exist.home
+        String home = System.getProperty("exist.home");
+        if (home == null)
+            home = System.getProperty("user.dir");
+
+        
+        // initialize with default properties, before add client properties
         properties = new Properties(defaultProps);
+        
+        // get default configuration filename from the driver class and set it in properties
+        Class cl = Class.forName(properties.getProperty(DRIVER));
+        Field CONF_XML=cl.getDeclaredField("CONF_XML");
+        if (CONF_XML != null) {
+            File configuration=new File(home, (String)CONF_XML.get(new String()));
+            properties.setProperty(CONFIGURATION, configuration.getAbsolutePath());
+        }
+        
         properties.putAll(loadClientProperties());
         
         // parse command-line options
@@ -1977,11 +2002,7 @@ public class InteractiveClient {
             } catch (Exception e) {
             }
         }
-        
-        String home = System.getProperty("exist.home");
-        
-        if (home == null)
-            home = System.getProperty("user.dir");
+
         
         historyFile = new File(home + File.separatorChar + ".exist_history");
         queryHistoryFile = new File(home + File.separatorChar
