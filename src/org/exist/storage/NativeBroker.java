@@ -680,46 +680,46 @@ public class NativeBroker extends DBBroker {
 	 *@return       The collection value
 	 */
 	public Collection openCollection(String name, long addr, int lockMode) {
-        name = XmldbURI.normalizeCollectionName(name);    
-        Collection collection;
-		final CollectionCache collectionsCache = pool.getCollectionsCache();        
-		synchronized(collectionsCache) {      
-            collection = collectionsCache.get(name);
-			if (collection == null) {				
-				final Lock lock = collectionsDb.getLock();
-				try {
-					lock.acquire(Lock.READ_LOCK);					
-					collection = new Collection(name);
-                    VariableByteInput is;
-					if (addr == BFile.UNKNOWN_ADDRESS) {
-                        Value key = new Value(name.getBytes("UTF-8"));
-                        is = collectionsDb.getAsStream(key);
-					} else {
-					    is = collectionsDb.getAsStream(addr);
-					}
-					if (is == null) return null;   
-                    
-					collection.read(this, is);
-                    
-                    //TODO : manage this from within the cache -pb
-                    if(!pool.isInitializing())
-                        collectionsCache.add(collection);
-                    
-                //TODO : rethrow exceptions ? -pb
-                } catch (UnsupportedEncodingException e) {
-                    LOG.error("Unable to encode '" + name + "' in UTF-8");
-                    return null;
-                } catch (LockException e) {
-                    LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
-                    return null;
-                } catch (IOException e) {
-                    LOG.error(e.getMessage(), e);
-                    return null;
-				} finally {
-					lock.release();
-				}
-			}         
-		}
+	    name = XmldbURI.normalizeCollectionName(name);    
+	    Collection collection;
+	    final CollectionCache collectionsCache = pool.getCollectionsCache();        
+	    synchronized(collectionsCache) {      
+	        collection = collectionsCache.get(name);
+	        if (collection == null) {				
+	            final Lock lock = collectionsDb.getLock();
+	            try {
+	                lock.acquire(Lock.READ_LOCK);
+	                VariableByteInput is;
+	                if (addr == BFile.UNKNOWN_ADDRESS) {
+	                    Value key = new Value(name.getBytes("UTF-8"));
+	                    is = collectionsDb.getAsStream(key);
+	                } else {
+	                    is = collectionsDb.getAsStream(addr);
+	                }
+	                if (is == null) return null;   
+	                
+	                collection = new Collection(name);
+	                collection.read(this, is);
+	                
+	                //TODO : manage this from within the cache -pb
+	                if(!pool.isInitializing())
+	                    collectionsCache.add(collection);
+	                
+	                //TODO : rethrow exceptions ? -pb
+	            } catch (UnsupportedEncodingException e) {
+	                LOG.error("Unable to encode '" + name + "' in UTF-8");
+	                return null;
+	            } catch (LockException e) {
+	                LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+	                return null;
+	            } catch (IOException e) {
+	                LOG.error(e.getMessage(), e);
+	                return null;
+	            } finally {
+	                lock.release();
+	            }
+	        }         
+	    }
         //Important : 
         //This code must remain ouside of the synchonized block
         //because another thread may already own a lock on the collection
@@ -1342,7 +1342,7 @@ public class NativeBroker extends DBBroker {
             transact.abort(txn);
             LOG.warn("Transaction aborted: " + e.getMessage(), e);
         }
-    }          
+    }
     
     /** remove from the temporary collection of the database a given list of Documents. */
     public void cleanUpTempResources(List docs) {
@@ -2883,6 +2883,7 @@ public class NativeBroker extends DBBroker {
 	public void shutdown() {		
 		try {
 			flush();
+            cleanUpTempCollection();
 			sync(Sync.MAJOR_SYNC);
             domDb.close();
             textEngine.close();
@@ -2901,8 +2902,7 @@ public class NativeBroker extends DBBroker {
     /** check available memory */
     private void checkAvailableMemory() {
         if (nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
-            final int percent = (int) (run.freeMemory() /
-                    (run.totalMemory() / 100));
+            final double percent = ((double) run.freeMemory() / (double) run.maxMemory()) * 100;
             if (percent < memMinFree) {
                 //LOG.info(
                 //  "total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
