@@ -68,6 +68,10 @@ public class DatabaseImpl implements Database {
     protected final static int LOCAL_CONNECTION = 0;
     protected final static int REMOTE_CONNECTION = 1;
     
+    /** Default config filename to configure an Instance */
+    public final static String CONF_XML="conf.xml";
+    
+    
     protected boolean autoCreate = false;
     protected String configuration = null;
     protected String currentInstanceName = null;
@@ -94,7 +98,7 @@ public class DatabaseImpl implements Database {
      */    
     private void configure(String instanceName) throws XMLDBException {        
         String home;
-        String file = "conf.xml";     
+        String file = CONF_XML;     
         if(configuration == null) {
             home = findExistHomeFromProperties();
         } else {
