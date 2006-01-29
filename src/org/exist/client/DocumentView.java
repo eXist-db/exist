@@ -24,6 +24,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -45,6 +46,9 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
@@ -52,6 +56,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import javax.swing.border.BevelBorder;
 
 import javax.xml.transform.OutputKeys;
@@ -195,7 +200,45 @@ class DocumentView extends JFrame {
 	}
 	
 	private void setupComponents() throws XMLDBException {
-		
+
+        /* start of menubar */
+        JMenuBar menubar = new JMenuBar();
+
+        JMenu fileMenu = new JMenu("File");
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+        menubar.add(fileMenu); 
+
+        JMenuItem item;
+        // Save to database
+        item = new JMenuItem("Save", KeyEvent.VK_S);
+        item.setAccelerator(KeyStroke.getKeyStroke("control S"));
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                save();
+            }
+        });
+        fileMenu.add(item);
+        /*
+        // Refresh
+        item = new JMenuItem("Refresh", KeyEvent.VK_R);
+        item.setAccelerator(KeyStroke.getKeyStroke("control R"));
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    refresh() ;
+                } catch (XMLDBException u) {
+                    u.printStackTrace();
+                }
+            }
+        });
+        fileMenu.add(item);
+        */
+
+        setJMenuBar(menubar);
+        /* end of menubar */
+        
+        /* The icon toolbar */
+
 		JToolBar toolbar = new JToolBar();
 		
 		//Save button
@@ -280,11 +323,11 @@ class DocumentView extends JFrame {
 		button.setToolTipText("Refresh Document.");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e)  {
-			try {
-				refresh() ;
-			} catch (XMLDBException u) {
-				u.printStackTrace();
-			}
+    			try {
+    				refresh() ;
+    			} catch (XMLDBException u) {
+    				u.printStackTrace();
+    			}
 			}
 		});
 		toolbar.add(button);

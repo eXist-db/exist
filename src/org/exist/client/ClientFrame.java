@@ -485,9 +485,9 @@ public class ClientFrame extends JFrame
         });
         toolsMenu.add(item);
         
-        JMenu dbMenu = new JMenu("Database");
-        dbMenu.setMnemonic(KeyEvent.VK_D);
-        menubar.add(dbMenu);
+        JMenu connectMenu = new JMenu("Connection");
+        connectMenu.setMnemonic(KeyEvent.VK_D);
+        menubar.add(connectMenu);
         
         item = new JMenuItem("Shutdown", KeyEvent.VK_S);
         item.addActionListener(new ActionListener() {
@@ -496,48 +496,37 @@ public class ClientFrame extends JFrame
                 process.setAction("shutdown");
             }
         });
-        dbMenu.add(item);
+        connectMenu.add(item);
         
-        dbMenu.addSeparator();
-        
-        ButtonGroup group = new ButtonGroup();
-        
-        item = new JRadioButtonMenuItem(properties.getProperty("uri"), true);
+        // Show LoginPanel to Reconnect
+        item = new JMenuItem("Connect", KeyEvent.VK_U);
+        item.setToolTipText("Open login panel to connect to change server or identity.");
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                newServerURIAction(properties.getProperty("uri"));
-            }
-        });
-        dbMenu.add(item);
-        group.add(item);
-        
-        String next;
-        for (Enumeration e = properties.propertyNames(); e
-                .hasMoreElements(); ) {
-            next = (String) e.nextElement();
-            if (next.startsWith("alternate_uri_")) {
-                final String uri = properties.getProperty(next);
-                if (uri.equals(properties.getProperty("uri")))
-                    continue;
-                item = new JRadioButtonMenuItem(uri, false);
-                item.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        newServerURIAction(uri);
+                // load properties modified by the login panel
+                Properties loginData=getLoginData(properties);
+                if (loginData == null) return;
+                Properties oldProps=properties;
+                properties.putAll(loginData);
+                statusbar.setText("eXist Admin Client connected - " + properties.getProperty("user") + "@" + properties.getProperty("uri"));
+                try {
+                    client.shutdown(false);
+                    client.connect();
+                    client.reloadCollection();
+                } catch (Exception u) {
+                    showErrorMessage("Connection to " + properties.getProperty("uri") + " failed!", u);
+                    properties=oldProps;
+                    try { 
+                        client.connect();
                     }
-                });
-                dbMenu.add(item);
-                group.add(item);
-            }
-        }
-        
-        dbMenu.addSeparator();
-        item = new JMenuItem("Connect to alternate URI", KeyEvent.VK_C);
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                newServerURIAction(null);
+                    catch (Exception uu) {
+                        showErrorMessage("Can't reconnect to " + properties.getProperty("uri") , u);
+                    }
+                }
             }
         });
-        dbMenu.add(item);
+        connectMenu.add(item);
+
         
         JMenu optionsMenu = new JMenu("Options");
         optionsMenu.setMnemonic(KeyEvent.VK_O);
@@ -575,26 +564,6 @@ public class ClientFrame extends JFrame
         });
         optionsMenu.add(check);
         
-        optionsMenu.addSeparator();
-        item = new JMenuItem("Change User-Identity", KeyEvent.VK_U);
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String[] loginData = getLoginData(properties
-                        .getProperty("user"), properties.getProperty("uri"));
-                if (loginData == null)
-                    return;
-                properties.setProperty("user", loginData[0]);
-                properties.setProperty("password", loginData[1]);
-                properties.setProperty("uri", loginData[2]);
-                statusbar.setText("eXist Admin Client connected - " + properties.getProperty("user") + "@" + properties.getProperty("uri"));
-                try {
-                    client.reloadCollection();
-                } catch (XMLDBException e1) {
-                    showErrorMessage("Login failed!", e1);
-                }
-            }
-        });
-        optionsMenu.add(item);
         
         JMenu HelpMenu = new JMenu("Help");
         HelpMenu.setMnemonic(KeyEvent.VK_H);
@@ -920,7 +889,7 @@ public class ClientFrame extends JFrame
             showErrorMessage(e.getMessage(), e);
             return;
         }
-        Object val = JOptionPane.showInputDialog(this, "Select target collection", "Move", JOptionPane.QUESTION_MESSAGE,
+        Object val = JOptionPane.showInputDialog(this, "Select target collection", "Copy", JOptionPane.QUESTION_MESSAGE,
                 null, collections, collections[0]);
         if(val == null)
             return;
@@ -1004,6 +973,7 @@ public class ClientFrame extends JFrame
     }
     
     private void uploadAction(ActionEvent ev) {
+        // TODO store last file choose in properties
         String dir = properties.getProperty("working-dir", System
                 .getProperty("exist.home"));
         JFileChooser chooser = new JFileChooser(dir);
@@ -1427,16 +1397,17 @@ public class ClientFrame extends JFrame
                 }
     }
     
-    protected static String[] getLoginData(String defaultUser, String uri) {
-        LoginPanel login = new LoginPanel(defaultUser, uri);
+    /**
+     * @param   properties pass properties to the login panel
+     * @return  the modiefied properties
+     */
+    
+    protected static Properties getLoginData(Properties properties) {
+        LoginPanel login = new LoginPanel(properties);
         if (JOptionPane.showOptionDialog(null, login, "eXist Database Login",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                 null, null, null) == JOptionPane.OK_OPTION) {
-            String[] ret = new String[3];
-            ret[0] = login.getUsername();
-            ret[1] = login.getPassword();
-            ret[2] = login.getUri();
-            return ret;
+            return login.getProperties();
         }
         return null;
     }
