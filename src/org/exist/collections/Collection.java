@@ -628,7 +628,7 @@ public  class Collection extends Observable
     public void read(DBBroker broker, VariableByteInput istream) throws IOException {
         collectionId = istream.readShort();
         final int collLen = istream.readInt();
-        subcollections = new ObjectHashSet(collLen);
+        subcollections = new ObjectHashSet(collLen == 0 ? 19 : collLen);
         for (int i = 0; i < collLen; i++)
             subcollections.add(istream.readUTF());
         final int uid = istream.readInt();
