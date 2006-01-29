@@ -64,10 +64,10 @@ import javax.swing.event.ListSelectionListener;
 public class LoginPanel extends JPanel {
     
     public static final int TYPE_REMOTE = 0;
-    public static final int TYPE_EMBEDED = 1;
+    public static final int TYPE_EMBEDDED = 1;
     
     /** Uri for local connections */
-    public static final String URI_EMBEDED = "xmldb:exist://";
+    public static final String URI_EMBEDDED = "xmldb:exist://";
     
     /** Default uri for remote connections */
     public static final String URI_REMOTE = "xmldb:exist://localhost:8080/exist/xmlrpc";
@@ -173,22 +173,22 @@ public class LoginPanel extends JPanel {
         
         type = new JComboBox();
         type.addItem("Remote");
+        type.addItem("Embedded");
         
-        type.addItem("Embeded");
         final String uri=properties.getProperty("uri");
-        type.setSelectedIndex(uri.equals(URI_EMBEDED) ? TYPE_EMBEDED : TYPE_REMOTE);
+        type.setSelectedIndex(uri.equals(URI_EMBEDDED) ? TYPE_EMBEDDED : TYPE_REMOTE);
         type.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 switch (type.getSelectedIndex()) {
-                    // in case local, default URL, may be a conf file
-                    case TYPE_EMBEDED:
-                        cur_url.setText(URI_EMBEDED);
+                    // in case embedded, default URL xmldb:exist//, allow to change conf file
+                    case TYPE_EMBEDDED:
+                        cur_url.setText(URI_EMBEDDED);
                         cur_url.setEnabled(false);
                         configuration.setEnabled(true);
                         selectConf.setEnabled(true);
                         break;
                     case TYPE_REMOTE:
-                        cur_url.setText(!uri.equals(URI_EMBEDED) ? uri : URI_REMOTE);
+                        cur_url.setText(!uri.equals(URI_EMBEDDED) ? uri : URI_REMOTE);
                         cur_url.setEnabled(true);
                         configuration.setEnabled(false);
                         selectConf.setEnabled(false);
@@ -218,8 +218,8 @@ public class LoginPanel extends JPanel {
         configuration = new JTextField(properties.getProperty(InteractiveClient.CONFIGURATION), 40);
         // the client will run by itself the Database (needs exclusive access otherwise access is read-only)
         configuration.setToolTipText("An eXist configuration file for an embed instance");
-        // if default is remote, select a conf file should be disable
-        configuration.setEnabled(false);
+        // if type selected is remote, select a conf file should be disable
+        if (type.getSelectedIndex() == TYPE_REMOTE) configuration.setEnabled(false);
         c.gridx = 1;
         c.gridy = gridy;
         c.anchor = GridBagConstraints.EAST;
@@ -229,7 +229,7 @@ public class LoginPanel extends JPanel {
 
         selectConf = new JButton("Select");
         selectConf.setToolTipText("Select an alternate conf file for embed mode.");
-        selectConf.setEnabled(false);
+        if (type.getSelectedIndex() == TYPE_REMOTE) selectConf.setEnabled(false);
         selectConf.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String conf=configuration.getText();
@@ -257,7 +257,7 @@ public class LoginPanel extends JPanel {
         add(label);
         
         cur_url = new JTextField(uri, 20);
-        cur_url.setEnabled(!uri.equals(URI_EMBEDED));
+        cur_url.setEnabled(!uri.equals(URI_EMBEDDED));
         c.gridx = 1;
         c.gridy = gridy;
         c.gridwidth = 2;
@@ -332,7 +332,8 @@ public class LoginPanel extends JPanel {
                     title.setText(f.getName());
                     username.setText(f.getUsername());
                     password.setText(f.getPassword());
-                    type.setSelectedIndex(URI_EMBEDED.equals(f.getUrl()) ? TYPE_EMBEDED : TYPE_REMOTE);
+                    configuration.setText(f.getConfiguration());
+                    type.setSelectedIndex(URI_EMBEDDED.equals(f.getUrl()) ? TYPE_EMBEDDED : TYPE_REMOTE);
                     cur_url.setText(f.getUrl());
                 }
             }
@@ -360,7 +361,7 @@ public class LoginPanel extends JPanel {
                 username.setText(f.getUsername());
                 password.setText(f.getPassword());
                 configuration.setText(f.getConfiguration());
-                type.setSelectedIndex(URI_EMBEDED.equals(f.getUrl()) ? TYPE_EMBEDED : TYPE_REMOTE);
+                type.setSelectedIndex(URI_EMBEDDED.equals(f.getUrl()) ? TYPE_EMBEDDED : TYPE_REMOTE);
                 cur_url.setText(f.getUrl());
             }
         });
