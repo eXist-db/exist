@@ -187,6 +187,12 @@ public class RESTServer {
      * <li>_indent: if set to "yes", the returned XML will be pretty-printed.
      * </li>
      *
+     * <li>_source: if set to "yes" and a resource with mime-type "application/xquery" is requested
+     * then the xquery will not be executed, instead the source of the document will be returned.
+     * Must be enabled in descriptor.xml with the following syntax 
+     * <xquery-app><allow-source><xquery path="/db/mycollection/myquery.xql"/></allow-source></xquery-app>
+     * </li>
+     * 
      * <li>_xsl: an URI pointing to an XSL stylesheet that will be applied to
      * the returned XML.</li>
      *
@@ -209,6 +215,7 @@ public class RESTServer {
         int howmany = 10;
         int start = 1;
         boolean wrap = true;
+        boolean source = false;
         Properties outputProperties = new Properties();
         String query = request.getParameter("_xpath");
         if (query == null)
@@ -237,6 +244,8 @@ public class RESTServer {
             wrap = option.equals("yes");
         if ((option = request.getParameter("_indent")) != null)
             outputProperties.setProperty(OutputKeys.INDENT, option);
+        if((option = request.getParameter("_source")) != null)
+        	source = option.equals("yes");
         String stylesheet;
         if ((stylesheet = request.getParameter("_xsl")) != null) {
             if (stylesheet.equals("no"))
@@ -266,22 +275,52 @@ public class RESTServer {
         	
             // second, check if path leads to an XQuery resource
             resource = (DocumentImpl) broker.getXMLResource(path, Lock.READ_LOCK);
-            if (resource != null) {
-                if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
-                        "application/xquery".equals(resource.getMetadata().getMimeType())) {
-                    // found an XQuery resource
-                    try {
-                        String result = executeXQuery(broker, resource, request, response, outputProperties);
-                        encoding = outputProperties.getProperty(OutputKeys.ENCODING, encoding);
-                        String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-                        if (!response.isCommitted())
-                            response.setContentType(mimeType);
-                        writeResponse(response, result, encoding);
-                    } catch (XPathException e) {
-                        response.setContentType("text/html");
-                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                        writeResponse(response, formatXPathException(query, path, e), encoding);
-                    }
+            if (resource != null)
+            {
+                if (resource.getResourceType() == DocumentImpl.BINARY_FILE && "application/xquery".equals(resource.getMetadata().getMimeType()))
+                {
+                	// found an XQuery resource
+                    
+                	//Should we display the source of the XQuery or execute it
+                	if(source && descriptor != null)
+                	{
+                		//show the source
+                		
+                		//check are we allowed to show the xquery source - descriptor.xml
+                		if(descriptor.allowSourceXQuery(path))
+                		{
+                			//TODO: change writeResourceAs to use a serializer that will serialize xquery to syntax coloured xhtml, replace the asMimeType parameter with a method for specifying the serializer, or split the code into two methods. - deliriumsky
+                			
+                			//Show the source of the XQuery
+                			writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
+                		}
+                		else
+                		{
+                			//we are not allowed to show the source - query not allowed in descriptor.xml
+                			//TODO: is this the correct exception to throw or should we return a http response?
+                			throw new PermissionDeniedException("Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");
+                		}
+                		
+                	}
+                	else
+            		{
+            			//Execute the XQuery
+            			try
+						{
+                            String result = executeXQuery(broker, resource, request, response, outputProperties);
+                            encoding = outputProperties.getProperty(OutputKeys.ENCODING, encoding);
+                            String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
+                            if (!response.isCommitted())
+                                response.setContentType(mimeType);
+                            writeResponse(response, result, encoding);
+                        }
+            			catch (XPathException e)
+						{
+                            response.setContentType("text/html");
+                            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                            writeResponse(response, formatXPathException(query, path, e), encoding);
+                        }
+            		}
                     return;
                 }
             }
@@ -318,42 +357,74 @@ public class RESTServer {
                     }
                 } else {
                     // document found: serialize it
-                    if (!resource.getPermissions().validate(broker.getUser(),
-                            Permission.READ))
-                        throw new PermissionDeniedException(
-                                "Not allowed to read resource");
-                    if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
-                        // binary resource
-                        response.setContentType(resource.getMetadata().getMimeType());
-                        writeResponse(response, broker.getBinaryResource((BinaryDocument) resource));
-                    } else {
-                        // xml resource
-                        Serializer serializer = broker.getSerializer();
-                        serializer.reset();
-                        
-                        if (stylesheet != null) {
-                            serializer.setStylesheet(resource, stylesheet);
-                        }
-                        try {
-                            serializer.setProperties(outputProperties);
-                            String output = serializer.serialize(resource);
-                            if (serializer.isStylesheetApplied()) {
-                                response.setContentType("text/html");
-                            } else
-                                response.setContentType(resource.getMetadata().getMimeType());
-                            writeResponse(response, output, encoding);
-                        } catch (SAXException saxe) {
-                            LOG.warn(saxe);
-                            throw new BadRequestException(
-                                    "Error while serializing XML: "
-                                    + saxe.getMessage());
-                        }
-                    }
+                    writeResourceAs(resource, broker, stylesheet, encoding, null, outputProperties, response);
                 }
             }
         } finally {
             if (resource != null)
                 resource.getUpdateLock().release(Lock.READ_LOCK);
+        }
+    }
+    
+    //writes out a resource, uses asMimeType as the specified mime-type or if null uses the type of the resource
+    private void writeResourceAs(DocumentImpl resource, DBBroker broker, String stylesheet, String encoding, String asMimeType, Properties outputProperties, HttpServletResponse response) throws BadRequestException, PermissionDeniedException, IOException
+    {
+    	//Do we have permission to read the resource
+    	if (!resource.getPermissions().validate(broker.getUser(), Permission.READ))
+    		throw new PermissionDeniedException("Not allowed to read resource");
+    	
+        if (resource.getResourceType() == DocumentImpl.BINARY_FILE)
+        {
+        	// binary resource
+        	if(asMimeType != null) //was a mime-type specified?
+        	{
+        		response.setContentType(asMimeType);
+        	}
+        	else
+        	{
+        		response.setContentType(resource.getMetadata().getMimeType());
+        	}
+            writeResponse(response, broker.getBinaryResource((BinaryDocument) resource));
+        }
+        else
+        {
+            // xml resource
+            Serializer serializer = broker.getSerializer();
+            serializer.reset();
+            
+            //use a stylesheet if specified in query parameters
+            if (stylesheet != null)
+            {
+                serializer.setStylesheet(resource, stylesheet);
+            }
+            
+            //Serialize the document
+            try
+			{
+                serializer.setProperties(outputProperties);
+                String output = serializer.serialize(resource);
+                if(asMimeType != null) //was a mime-type specified?
+                {
+                	response.setContentType(asMimeType);
+                }
+                else
+                {
+	                if (serializer.isStylesheetApplied())
+	                {
+	                    response.setContentType("text/html");
+	                }
+	                else
+	                {
+	                    response.setContentType(resource.getMetadata().getMimeType());
+	                }
+                }
+                writeResponse(response, output, encoding);
+            }
+            catch (SAXException saxe)
+			{
+                LOG.warn(saxe);
+                throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
+            }
         }
     }
     
