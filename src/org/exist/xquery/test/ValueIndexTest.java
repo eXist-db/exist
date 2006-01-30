@@ -26,6 +26,7 @@ import java.io.File;
 import junit.framework.TestCase;
 
 import org.exist.storage.DBBroker;
+import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -88,6 +89,17 @@ public class ValueIndexTest extends TestCase {
         }
     }
 
+    /*
+     * @see TestCase#tearDown()
+     */
+    protected void tearDown() throws Exception {
+        DatabaseInstanceManager dim =
+            (DatabaseInstanceManager) testCollection.getService("DatabaseInstanceManager", "1.0");
+        dim.shutdown();
+        testCollection = null;
+        //System.out.println("tearDown PASSED");
+    }
+    
 	/**
 	 * @throws XMLDBException
 	 */

@@ -146,6 +146,9 @@ public class XQueryTest extends XMLTestCase {
 			(DatabaseInstanceManager) testCollection.getService(
 				"DatabaseInstanceManager", "1.0");
 		dim.shutdown();
+        testCollection = null;
+        database = null;
+        
 		System.out.println("tearDown PASSED");
 	}
 	
