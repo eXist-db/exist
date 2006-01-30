@@ -107,6 +107,16 @@ public class XPathException extends Exception {
         return buf.toString();
 	}
     
+    /**
+     * Returns just the error message, not including
+     * line numbers or the call stack.
+     * 
+     * @return
+     */
+    public String getDetailMessage() {
+        return message;
+    }
+    
     public String getMessageAsHTML() {
         StringBuffer buf = new StringBuffer();
         if(message == null)
