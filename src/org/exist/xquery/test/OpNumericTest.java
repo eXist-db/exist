@@ -50,6 +50,8 @@ public class OpNumericTest extends TestCase {
     	try {
 	        BrokerPool.getInstance().release(broker);
 	        BrokerPool.stopAll(false);
+            broker = null;
+            context = null;
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}	        

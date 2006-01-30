@@ -311,6 +311,8 @@ public class DeepEqualTest extends TestCase {
 	protected void tearDown() {
 		try {
 			if (c != null) c.close();
+            c = null;
+            query = null;
 		} catch (XMLDBException e) {
 			throw new RuntimeException("failed teardown", e);
 		}
