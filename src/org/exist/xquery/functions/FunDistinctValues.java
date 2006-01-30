@@ -28,12 +28,13 @@ import java.util.TreeSet;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -128,7 +129,9 @@ public class FunDistinctValues extends Function {
 			try {
 				return ((AtomicValue) o1).compareTo(collator, (AtomicValue) o2);
 			} catch (XPathException e) {
-				throw new IllegalArgumentException("cannot compare values");
+				//throw new IllegalArgumentException("cannot compare values");
+                //Values that cannot be compared, i.e. the eq operator is not defined for their types, are considered to be distinct
+                return Constants.INFERIOR;
 			}
 		}
 	}

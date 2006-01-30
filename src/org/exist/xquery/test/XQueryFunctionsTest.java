@@ -171,7 +171,10 @@ public class XQueryFunctionsTest extends TestCase {
 			
 			result 	= service.query( "declare variable $c { distinct-values((<a>a</a>, <b>a</b>)) }; $c" );
 			r 		= (String) result.getResource(0).getContent();
-			assertEquals( "a", r );				
+			assertEquals( "a", r );	
+            
+            result  = service.query( "let $seq := ('A', 2, 'B', 2) return distinct-values($seq) " );      
+            assertEquals( 3, result.getSize() ); 
 		
 		} catch (XMLDBException e) {
 			System.out.println("testTokenize(): " + e);
