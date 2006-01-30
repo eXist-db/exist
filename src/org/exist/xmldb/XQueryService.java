@@ -25,6 +25,7 @@ package org.exist.xmldb;
 import java.io.Writer;
 
 import org.exist.source.Source;
+import org.exist.xquery.XPathException;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
@@ -72,6 +73,16 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	 */
 	public CompiledExpression compile(String query) throws XMLDBException;
 	
+    /**
+     * Tries to compile the specified XQuery and returns a handle to the compiled
+     * code, which can then be passed to {@link #execute(CompiledExpression)}.
+     * If a static error is detected, an {@link XPathException} will be thrown.
+     * 
+     * @param query
+     * @return
+     */
+	public CompiledExpression compileAndCheck(String query) throws XMLDBException, XPathException;
+    
 	public ResourceSet execute(Source source) throws XMLDBException;
 	
 	/**

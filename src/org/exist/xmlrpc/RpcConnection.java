@@ -79,6 +79,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.Compressor;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
@@ -231,49 +232,30 @@ public class RpcConnection extends Thread {
         }
     }
     
-    protected PathExpr compile(User user, DBBroker broker, String xquery,
-            Hashtable parameters) throws Exception {
-        String baseURI = (String) parameters.get(RpcAPI.BASE_URI);
-        XQueryContext context = new XQueryContext(broker);
-        context.setBaseURI(baseURI);
-        Hashtable namespaces = (Hashtable)parameters.get(RpcAPI.NAMESPACES);
-        if(namespaces != null && namespaces.size() > 0) {
-            context.declareNamespaces(namespaces);
-        }
-        //	declare static variables
-        Hashtable variableDecls = (Hashtable)parameters.get(RpcAPI.VARIABLES);
-        if(variableDecls != null) {
-            for (Iterator i = variableDecls.entrySet().iterator(); i.hasNext();) {
-                Map.Entry entry = (Map.Entry) i.next();
-                LOG.debug("declaring " + entry.getKey().toString() + " = " + entry.getValue());
-                context.declareVariable((String) entry.getKey(), entry.getValue());
-            }
-        }
-        LOG.debug("compiling " + xquery);
-        XQueryLexer lexer = new XQueryLexer(context, new StringReader(xquery));
-        XQueryParser parser = new XQueryParser(lexer);
-        XQueryTreeParser treeParser = new XQueryTreeParser(context);
-        
-        parser.xpath();
-        if (parser.foundErrors()) {
-            throw new EXistException(parser.getErrorMessage());
-        }
-        
-        AST ast = parser.getAST();
-        
-        PathExpr expr = new PathExpr(context);
-        treeParser.xpath(ast, expr);
-        if (treeParser.foundErrors()) {
-            throw new EXistException(treeParser.getErrorMessage());
-        }
-        expr.analyze(new AnalyzeContextInfo());
-        return expr;
-    }
-    
     protected QueryResult doQuery(User user, DBBroker broker, String xpath,
             NodeSet contextSet, Hashtable parameters)
             throws Exception {
+        XQuery xquery = broker.getXQueryService();
+        XQueryPool pool = xquery.getXQueryPool();
         Source source = new StringSource(xpath);
+        CompiledXQuery compiled = compile(user, broker, source, parameters);
+        checkPragmas(compiled.getContext(), parameters);
+        try {
+            long start = System.currentTimeMillis();
+            Sequence result = xquery.execute(compiled, contextSet);
+            // pass last modified date to the HTTP response
+            HTTPUtils.addLastModifiedHeader( result, compiled.getContext() );
+            LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
+            return new QueryResult(compiled.getContext(), result);
+        } catch (XPathException e) {
+            return new QueryResult(e);
+        } finally {
+            if(compiled != null)
+                pool.returnCompiledXQuery(source, compiled);
+        }
+    }
+    
+    private CompiledXQuery compile(User user, DBBroker broker, Source source, Hashtable parameters) throws XPathException, IOException {
         XQuery xquery = broker.getXQueryService();
         XQueryPool pool = xquery.getXQueryPool();
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
@@ -287,7 +269,7 @@ public class RpcConnection extends Thread {
         if(namespaces != null && namespaces.size() > 0) {
             context.declareNamespaces(namespaces);
         }
-        //	declare static variables
+        //  declare static variables
         Hashtable variableDecls = (Hashtable)parameters.get(RpcAPI.VARIABLES);
         if(variableDecls != null) {
             for (Iterator i = variableDecls.entrySet().iterator(); i.hasNext();) {
@@ -308,23 +290,9 @@ public class RpcConnection extends Thread {
         } else if(context.getBaseURI() != null) {
             context.setStaticallyKnownDocuments(new String[] { context.getBaseURI() });
         }
-        try {
-            if(compiled == null)
-                compiled = xquery.compile(context, source);
-            checkPragmas(context, parameters);
-            
-            long start = System.currentTimeMillis();
-            Sequence result = xquery.execute(compiled, contextSet);
-            // pass last modified date to the HTTP response
-            HTTPUtils.addLastModifiedHeader( result, context );
-            LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
-            return new QueryResult(context, result);
-        } catch (XPathException e) {
-            return new QueryResult(e);
-        } finally {
-            if(compiled != null)
-                pool.returnCompiledXQuery(source, compiled);
-        }
+        if(compiled == null)
+            compiled = xquery.compile(context, source);
+        return compiled;
     }
     
     public String printDiagnostics(User user, String query, Hashtable parameters) throws Exception {
@@ -336,7 +304,7 @@ public class RpcConnection extends Thread {
             XQueryPool pool = xquery.getXQueryPool();
             CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
             if(compiled == null)
-                compiled = compile(user, broker, query, parameters);
+                compiled = compile(user, broker, source, parameters);
             StringWriter writer = new StringWriter();
             compiled.dump(writer);
             return writer.toString();
@@ -1304,7 +1272,7 @@ public class RpcConnection extends Thread {
         return doc != null;
     }
     
-    public String upload(User user, byte[] chunk, int length, String fileName)
+    public String upload(User user, byte[] chunk, int length, String fileName, boolean compressed)
     throws EXistException, IOException {
         File file;
         if (fileName == null || fileName.length() == 0) {
@@ -1313,13 +1281,16 @@ public class RpcConnection extends Thread {
             fileName = file.getAbsolutePath();
             LOG.debug("created temporary file " + file.getAbsolutePath());
         } else {
-            LOG.debug("appending to file " + fileName);
+//            LOG.debug("appending to file " + fileName);
             file = new File(fileName);
         }
         if (!file.canWrite())
             throw new EXistException("cannot write to file " + fileName);
-        FileOutputStream os = new FileOutputStream(file.getAbsolutePath(), true);
-        os.write(chunk, 0, length);
+        FileOutputStream os = new FileOutputStream(file, true);
+        if (compressed)
+            Compressor.uncompress(chunk, os);
+        else
+            os.write(chunk, 0, length);
         os.close();
         return fileName;
     }
@@ -1369,6 +1340,31 @@ public class RpcConnection extends Thread {
         }
         writer.write("\n</exist:result>");
         return writer.toString();
+    }
+    
+    public Hashtable compile(User user, String query, Hashtable parameters) throws Exception {
+        Hashtable ret = new Hashtable();
+        DBBroker broker = null;
+        XQueryPool pool = null;
+        CompiledXQuery compiled = null;
+        Source source = new StringSource(query);
+        try {
+            broker = brokerPool.get(user);
+            XQuery xquery = broker.getXQueryService();
+            pool = xquery.getXQueryPool();
+            compiled = compile(user, broker, source, parameters);
+        } catch (XPathException e) {
+            ret.put(RpcAPI.ERROR, e.getMessage());
+            if(e.getLine() != 0) {
+                ret.put(RpcAPI.LINE, new Integer(e.getLine()));
+                ret.put(RpcAPI.COLUMN, new Integer(e.getColumn()));
+            }
+        } finally {
+            brokerPool.release(broker);
+            if(compiled != null && pool != null)
+                pool.returnCompiledXQuery(source, compiled);
+        }
+        return ret;
     }
     
     public String query(User user, String xpath, int howmany, int start,

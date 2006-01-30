@@ -196,28 +196,34 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		}
 	
 	public CompiledExpression compile(String query) throws XMLDBException {
-		DBBroker broker = null;
 		try {
-			long start = System.currentTimeMillis();
-			broker = brokerPool.get(user);
-			XQuery xquery = broker.getXQueryService();
-			XQueryContext context = xquery.newContext();
-			setupContext(context);
-			CompiledXQuery expr = xquery.compile(context, new StringReader(query));
-			checkPragmas(context);
-			LOG.debug("compilation took "  +  (System.currentTimeMillis() - start));
-			return expr;
-		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+			return compileAndCheck(query);
 		} catch (XPathException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} catch (IllegalArgumentException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} finally {
-			brokerPool.release(broker);
 		}
 	}
 
+    public CompiledExpression compileAndCheck(String query) throws XMLDBException, XPathException {
+        DBBroker broker = null;
+        try {
+            long start = System.currentTimeMillis();
+            broker = brokerPool.get(user);
+            XQuery xquery = broker.getXQueryService();
+            XQueryContext context = xquery.newContext();
+            setupContext(context);
+            CompiledXQuery expr = xquery.compile(context, new StringReader(query));
+            checkPragmas(context);
+            LOG.debug("compilation took "  +  (System.currentTimeMillis() - start));
+            return expr;
+        } catch (EXistException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        } finally {
+            brokerPool.release(broker);
+        }
+    }
+    
     public ResourceSet queryResource(String resource, String query)
     	throws XMLDBException {
     	LocalXMLResource res = (LocalXMLResource) collection.getResource(resource);

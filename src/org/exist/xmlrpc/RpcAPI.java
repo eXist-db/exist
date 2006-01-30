@@ -295,6 +295,8 @@ public interface RpcAPI {
 	public byte[] retrieveAll(User user, int resultId, Hashtable parameters) 
 	throws EXistException, PermissionDeniedException;
 	
+   Hashtable compile(User user, byte[] xquery, Hashtable parameters) throws Exception;
+   
 	Hashtable queryP(User user, byte[] xpath, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 
