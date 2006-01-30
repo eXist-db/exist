@@ -253,6 +253,8 @@ public class FtQueryTest extends XMLTestCase {
 	            (DatabaseInstanceManager) testCollection.getService(
 	                "DatabaseInstanceManager", "1.0");
 	        dim.shutdown();
+            database = null;
+            testCollection = null;
 	        System.out.println("tearDown PASSED");
 		} catch (XMLDBException e) {
 			fail(e.getMessage());

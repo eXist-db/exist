@@ -137,4 +137,7 @@ public class LexerTest extends TestCase {
 			configure();
 	}
 
+    protected void tearDown() throws Exception {
+        BrokerPool.stopAll(false);
+    }
 }

@@ -1,7 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  Copyright (C) 2001-06 The eXist Project
+ *  http://exist-db.org
  *  http://exist.sourceforge.net
  *  
  *  This program is free software; you can redistribute it and/or
@@ -22,16 +22,13 @@
  */
 package org.exist.xquery.test;
 
-import org.exist.storage.DBBroker;
-
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-/**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
- */
-public class AllTests {
+import org.exist.storage.DBBroker;
 
+public class RemoteTests {
+    
     public static void main(String[] args) {
         junit.textui.TestRunner.run(suite());
     }
@@ -39,18 +36,8 @@ public class AllTests {
     public static Test suite() {
         TestSuite suite = new TestSuite("Test for org.exist.xquery.test");
         //$JUnit-BEGIN$
-        XPathQueryTest.setURI("xmldb:exist://" + DBBroker.ROOT_COLLECTION);
-        suite.addTestSuite(XQueryFunctionsTest.class);
+        XPathQueryTest.setURI("xmldb:exist://localhost:8088/xmlrpc" + DBBroker.ROOT_COLLECTION);
         suite.addTestSuite(XPathQueryTest.class);
-        suite.addTestSuite(XQueryTest.class);
-        suite.addTestSuite(ValueIndexTest.class);
-        suite.addTestSuite(LexerTest.class); // jmv: Note: LexerTest needs /db/test created by XPathQueryTest
-        suite.addTestSuite(DeepEqualTest.class);
-        suite.addTestSuite(SeqOpTest.class);
-        suite.addTestSuite(XMLNodeAsXQueryParameterTest.class);
-        suite.addTestSuite(OpNumericTest.class);
-        suite.addTestSuite(FtQueryTest.class);
-        //		suite.addTestSuite(XQueryUseCasesTest.class);
         //$JUnit-END$
         return suite;
     }
