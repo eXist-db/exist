@@ -61,7 +61,7 @@ public class RemoteCollection implements CollectionImpl {
 	// if the resource exceeds this limit, the data is split into
 	// junks and uploaded to the server via the update() call
 	private static final int MAX_CHUNK_LENGTH = 512 * 1024;
-	private static final int MAX_UPLOAD_CHUNK = 1 * 1024 * 1024;
+	private static final int MAX_UPLOAD_CHUNK = 10 * 1024 * 1024;
 	
 	protected Map childCollections = null;
 	protected String name;

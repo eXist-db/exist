@@ -48,7 +48,6 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.xml.sax.SAXException;
 
-
 /**
  *  Handler class for XMLRPC calls. <p>
  *
@@ -69,8 +68,7 @@ import org.xml.sax.SAXException;
  *  and are automatically BASE64-encoded by the XMLRPC engine. This way the
  *  correct character encoding is preserved during transport.</p>
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    18. Mai 2002
+ *@author     Wolfgang Meier
  */
 public class RpcServer implements RpcAPI {
 
@@ -91,28 +89,30 @@ public class RpcServer implements RpcAPI {
      *                        Description of the Exception
      */
     public RpcServer(Configuration conf, String databaseid) throws EXistException {
-        databaseid=(databaseid != null && !"".equals(databaseid))?databaseid:BrokerPool.DEFAULT_INSTANCE_NAME;
+        databaseid = (databaseid != null && !"".equals(databaseid)) ? databaseid
+                : BrokerPool.DEFAULT_INSTANCE_NAME;
         pool = new ConnectionPool(MIN_CONNECT, MAX_CONNECT, conf, databaseid);
     }
 
-    public boolean createCollection(User user, String name)
-            throws EXistException, PermissionDeniedException {
+    public boolean createCollection(User user, String name) throws EXistException,
+            PermissionDeniedException {
         return createCollection(user, name, null);
     }
 
-    public boolean createCollection(User user, String name, Date created)
-    throws EXistException, PermissionDeniedException {
-RpcConnection con = pool.get();
-try {
-    con.createCollection(user, name, created);
-    return true;
-} catch (Exception e) {
-    handleException(e);
-    return false;
-} finally {
-    pool.release(con);
-}
-}
+    public boolean createCollection(User user, String name, Date created) throws EXistException,
+            PermissionDeniedException {
+        RpcConnection con = pool.get();
+        try {
+            con.createCollection(user, name, created);
+            return true;
+        } catch (Exception e) {
+            handleException(e);
+            return false;
+        } finally {
+            pool.release(con);
+        }
+    }
+
     public String createId(User user, String collection) throws EXistException,
             PermissionDeniedException {
         RpcConnection con = pool.get();
@@ -123,8 +123,8 @@ try {
         }
     }
 
-    public int executeQuery(User user, String xpath, Hashtable parameters)
-            throws EXistException, PermissionDeniedException {
+    public int executeQuery(User user, String xpath, Hashtable parameters) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.executeQuery(user, xpath, parameters);
@@ -136,70 +136,68 @@ try {
         }
     }
 
-    public int executeQuery(User user, byte[] xpath, String encoding,
-            Hashtable parameters) throws EXistException,
-            PermissionDeniedException {
+    public int executeQuery(User user, byte[] xpath, String encoding, Hashtable parameters)
+            throws EXistException, PermissionDeniedException {
         String xpathString = null;
-        if (encoding != null) try {
-            xpathString = new String(xpath, encoding);
-        } catch (UnsupportedEncodingException e) {
-        }
+        if (encoding != null)
+            try {
+                xpathString = new String(xpath, encoding);
+            } catch (UnsupportedEncodingException e) {
+            }
 
-        if (xpathString == null) xpathString = new String(xpath);
+        if (xpathString == null)
+            xpathString = new String(xpath);
 
         LOG.debug("query: " + xpathString);
         return executeQuery(user, xpathString, parameters);
     }
 
-    public int executeQuery(User user, byte[] xpath, Hashtable parameters)
-            throws EXistException, PermissionDeniedException {
+    public int executeQuery(User user, byte[] xpath, Hashtable parameters) throws EXistException,
+            PermissionDeniedException {
         return executeQuery(user, xpath, null, parameters);
     }
 
-    public Hashtable getCollectionDesc(User user, String rootCollection)
-            throws EXistException, PermissionDeniedException {
+    public Hashtable getCollectionDesc(User user, String rootCollection) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.getCollectionDesc(user, rootCollection);
         } catch (Exception e) {
             handleException(e);
-            throw new EXistException("collection " + rootCollection
-                    + " not found!");
+            throw new EXistException("collection " + rootCollection + " not found!");
         } finally {
             pool.release(con);
         }
     }
 
-    public Hashtable describeResource(User user, String resourceName)
-	throws EXistException, PermissionDeniedException {
+    public Hashtable describeResource(User user, String resourceName) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.describeResource(user, resourceName);
         } catch (Exception e) {
             handleException(e);
-            throw new EXistException("resource " + resourceName
-                    + " not found!");
+            throw new EXistException("resource " + resourceName + " not found!");
         } finally {
             pool.release(con);
         }
     }
-    
-    public Hashtable describeCollection(User user, String rootCollection)
-	throws EXistException, PermissionDeniedException {
+
+    public Hashtable describeCollection(User user, String rootCollection) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.describeCollection(user, rootCollection);
         } catch (Exception e) {
             handleException(e);
-            throw new EXistException("collection " + rootCollection
-                    + " not found!");
+            throw new EXistException("collection " + rootCollection + " not found!");
         } finally {
             pool.release(con);
         }
     }
-    
-    public byte[] getDocument(User user, String name, String encoding,
-            int prettyPrint) throws EXistException, PermissionDeniedException {
+
+    public byte[] getDocument(User user, String name, String encoding, int prettyPrint)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             Hashtable parametri = new Hashtable();
@@ -217,7 +215,7 @@ try {
             String xml = con.getDocument(user, name, parametri);
 
             if (xml == null)
-                    throw new EXistException("document " + name + " not found!");
+                throw new EXistException("document " + name + " not found!");
             try {
                 return xml.getBytes(encoding);
             } catch (UnsupportedEncodingException uee) {
@@ -231,9 +229,8 @@ try {
         }
     }
 
-    public byte[] getDocument(User user, String name, String encoding,
-            int prettyPrint, String stylesheet) throws EXistException,
-            PermissionDeniedException {
+    public byte[] getDocument(User user, String name, String encoding, int prettyPrint,
+            String stylesheet) throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
 
@@ -255,7 +252,7 @@ try {
             // encoding, stylesheet);
             String xml = con.getDocument(user, name, parametri);
             if (xml == null)
-                    throw new EXistException("document " + name + " not found!");
+                throw new EXistException("document " + name + " not found!");
             try {
                 return xml.getBytes(encoding);
             } catch (UnsupportedEncodingException uee) {
@@ -274,8 +271,8 @@ try {
         return getDocumentAsString(user, name, prettyPrint, null);
     }
 
-    public String getDocumentAsString(User user, String name, int prettyPrint,
-            String stylesheet) throws EXistException, PermissionDeniedException {
+    public String getDocumentAsString(User user, String name, int prettyPrint, String stylesheet)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             //String xml = con.getDocument(user, name, (prettyPrint > 0),
@@ -306,8 +303,8 @@ try {
         }
     }
 
-    public byte[] getBinaryResource(User user, String name)
-            throws EXistException, PermissionDeniedException {
+    public byte[] getBinaryResource(User user, String name) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.getBinaryResource(user, name);
@@ -322,9 +319,8 @@ try {
     /**
      * Retrieve a document. The document data is returned as a string.
      */
-    public String getDocumentAsString(User user, String name,
-            Hashtable parameters) throws EXistException,
-            PermissionDeniedException {
+    public String getDocumentAsString(User user, String name, Hashtable parameters)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.getDocument(user, name, parameters);
@@ -336,8 +332,8 @@ try {
         }
     }
 
-    public byte[] getDocument(User user, String name, Hashtable parametri)
-            throws EXistException, PermissionDeniedException {
+    public byte[] getDocument(User user, String name, Hashtable parametri) throws EXistException,
+            PermissionDeniedException {
 
         String encoding = "UTF-8";
         String compression = "no";
@@ -349,15 +345,14 @@ try {
         }
 
         if (((String) parametri.get(EXistOutputKeys.COMPRESS_OUTPUT)) != null) {
-            compression = (String) parametri
-                    .get(EXistOutputKeys.COMPRESS_OUTPUT);
+            compression = (String) parametri.get(EXistOutputKeys.COMPRESS_OUTPUT);
         }
 
         RpcConnection con = pool.get();
         try {
             String xml = con.getDocument(user, name, parametri);
             if (xml == null)
-                    throw new EXistException("document " + name + " not found!");
+                throw new EXistException("document " + name + " not found!");
             try {
                 if (compression.equals("no")) {
                     return xml.getBytes(encoding);
@@ -385,9 +380,9 @@ try {
     }
 
     public Hashtable getDocumentData(User user, String name, Hashtable parameters)
-	throws EXistException, PermissionDeniedException {
-    	RpcConnection con = pool.get();
-    	try {
+            throws EXistException, PermissionDeniedException {
+        RpcConnection con = pool.get();
+        try {
             return con.getDocumentData(user, name, parameters);
         } catch (Exception e) {
             handleException(e);
@@ -396,11 +391,11 @@ try {
             pool.release(con);
         }
     }
-    
-    public Hashtable getNextChunk(User user, String handle, int offset) 
-    throws EXistException, PermissionDeniedException {
-    	RpcConnection con = pool.get();
-    	try {
+
+    public Hashtable getNextChunk(User user, String handle, int offset) throws EXistException,
+            PermissionDeniedException {
+        RpcConnection con = pool.get();
+        try {
             return con.getNextChunk(user, handle, offset);
         } catch (Exception e) {
             handleException(e);
@@ -409,9 +404,8 @@ try {
             pool.release(con);
         }
     }
-    
-    public Vector getDocumentListing(User user) throws EXistException,
-            PermissionDeniedException {
+
+    public Vector getDocumentListing(User user) throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             Vector result = con.getDocumentListing(user);
@@ -424,8 +418,8 @@ try {
         }
     }
 
-    public Vector getDocumentListing(User user, String collection)
-            throws EXistException, PermissionDeniedException {
+    public Vector getDocumentListing(User user, String collection) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             Vector result = con.getDocumentListing(user, collection);
@@ -438,8 +432,8 @@ try {
         }
     }
 
-    public Hashtable listDocumentPermissions(User user, String name)
-            throws EXistException, PermissionDeniedException {
+    public Hashtable listDocumentPermissions(User user, String name) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.listDocumentPermissions(user, name);
@@ -448,8 +442,8 @@ try {
         }
     }
 
-    public Hashtable listCollectionPermissions(User user, String name)
-            throws EXistException, PermissionDeniedException {
+    public Hashtable listCollectionPermissions(User user, String name) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.listCollectionPermissions(user, name);
@@ -461,8 +455,7 @@ try {
         }
     }
 
-    public int getHits(User user, int resultId) throws EXistException,
-            PermissionDeniedException {
+    public int getHits(User user, int resultId) throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.getHits(user, resultId);
@@ -471,8 +464,8 @@ try {
         }
     }
 
-    public Hashtable getPermissions(User user, String docName)
-            throws EXistException, PermissionDeniedException {
+    public Hashtable getPermissions(User user, String docName) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.getPermissions(user, docName);
@@ -484,8 +477,8 @@ try {
         }
     }
 
-    public Date getCreationDate(User user, String collectionName)
-            throws PermissionDeniedException, EXistException {
+    public Date getCreationDate(User user, String collectionName) throws PermissionDeniedException,
+            EXistException {
         RpcConnection con = pool.get();
         try {
             return con.getCreationDate(user, collectionName);
@@ -497,8 +490,8 @@ try {
         }
     }
 
-    public Vector getTimestamps(User user, String documentName)
-            throws PermissionDeniedException, EXistException {
+    public Vector getTimestamps(User user, String documentName) throws PermissionDeniedException,
+            EXistException {
         RpcConnection con = pool.get();
         try {
             return con.getTimestamps(user, documentName);
@@ -534,8 +527,7 @@ try {
         }
     }
 
-    public Vector getUsers(User user) throws EXistException,
-            PermissionDeniedException {
+    public Vector getUsers(User user) throws EXistException, PermissionDeniedException {
         RpcConnection con = null;
         try {
             con = pool.get();
@@ -550,8 +542,7 @@ try {
      * 
      * @see org.exist.xmlrpc.RpcAPI#getGroups(org.exist.security.User)
      */
-    public Vector getGroups(User user) throws EXistException,
-            PermissionDeniedException {
+    public Vector getGroups(User user) throws EXistException, PermissionDeniedException {
         RpcConnection con = null;
         try {
             con = pool.get();
@@ -561,8 +552,8 @@ try {
         }
     }
 
-    public Vector getIndexedElements(User user, String collectionName,
-            boolean inclusive) throws EXistException, PermissionDeniedException {
+    public Vector getIndexedElements(User user, String collectionName, boolean inclusive)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = null;
         try {
             con = pool.get();
@@ -572,34 +563,32 @@ try {
         }
     }
 
-    public Vector scanIndexTerms(User user, String collectionName,
-            String start, String end, boolean inclusive)
-            throws PermissionDeniedException, EXistException {
+    public Vector scanIndexTerms(User user, String collectionName, String start, String end,
+            boolean inclusive) throws PermissionDeniedException, EXistException {
         RpcConnection con = null;
         try {
             con = pool.get();
-            return con.scanIndexTerms(user, collectionName, start, end,
-                    inclusive);
+            return con.scanIndexTerms(user, collectionName, start, end, inclusive);
         } finally {
             pool.release(con);
         }
     }
 
     /* (non-Javadoc)
-	 * @see org.exist.xmlrpc.RpcAPI#scanIndexTerms(org.exist.security.User, java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public Vector scanIndexTerms(User user, String xpath, String start, String end) throws PermissionDeniedException, EXistException, XPathException {
-		RpcConnection con = null;
+     * @see org.exist.xmlrpc.RpcAPI#scanIndexTerms(org.exist.security.User, java.lang.String, java.lang.String, java.lang.String)
+     */
+    public Vector scanIndexTerms(User user, String xpath, String start, String end)
+            throws PermissionDeniedException, EXistException, XPathException {
+        RpcConnection con = null;
         try {
             con = pool.get();
             return con.scanIndexTerms(user, xpath, start, end);
         } finally {
             pool.release(con);
         }
-	}
-	
-    private void handleException(Exception e) throws EXistException,
-            PermissionDeniedException {
+    }
+
+    private void handleException(Exception e) throws EXistException, PermissionDeniedException {
         LOG.debug(e.getMessage(), e);
         if (e instanceof EXistException)
             throw (EXistException) e;
@@ -636,7 +625,7 @@ try {
             pool.release(con);
         }
     }
-    
+
     /**
      * does a document called <code>name</code> exist in the repository?
      * 
@@ -662,10 +651,9 @@ try {
             pool.release(con);
         }
     }
-    
 
-    public int getResourceCount(User user, String collectionName)
-	throws EXistException, PermissionDeniedException {
+    public int getResourceCount(User user, String collectionName) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.getResourceCount(user, collectionName);
@@ -676,7 +664,7 @@ try {
             pool.release(con);
         }
     }
-    
+
     /**
      * parse an XML document and store it into the database. The document will
      * later be identified by <code>docName</code>. Some xmlrpc clients seem
@@ -695,13 +683,13 @@ try {
      * @exception PermissionDeniedException
      *                        Description of the Exception
      */
-    public boolean parse(User user, byte[] xmlData, String docName)
-            throws EXistException, PermissionDeniedException {
+    public boolean parse(User user, byte[] xmlData, String docName) throws EXistException,
+            PermissionDeniedException {
         return parse(user, xmlData, docName, 0);
     }
 
-    public boolean parse(User user, byte[] xmlData, String docName,
-            int overwrite) throws EXistException, PermissionDeniedException {
+    public boolean parse(User user, byte[] xmlData, String docName, int overwrite)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.parse(user, xmlData, docName, (overwrite != 0));
@@ -714,8 +702,8 @@ try {
         }
     }
 
-    public boolean parse(User user, byte[] xmlData, String docName,
-            int overwrite, Date created, Date modified) throws EXistException, PermissionDeniedException {
+    public boolean parse(User user, byte[] xmlData, String docName, int overwrite, Date created,
+            Date modified) throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.parse(user, xmlData, docName, (overwrite != 0), created, modified);
@@ -727,13 +715,12 @@ try {
             pool.release(con);
         }
     }
-    
+
     public boolean parse(User user, String xml, String docName, int overwrite)
             throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
-            return con.parse(user, xml.getBytes("UTF-8"), docName,
-                    (overwrite != 0));
+            return con.parse(user, xml.getBytes("UTF-8"), docName, (overwrite != 0));
         } catch (Exception e) {
             handleException(e);
             return false;
@@ -753,18 +740,17 @@ try {
      * @throws EXistException
      * @throws IOException
      */
-    public boolean parseLocal(User user, String localFile, String docName,
-            boolean replace) throws EXistException, PermissionDeniedException,
-            SAXException {
-        return parseLocal (user, localFile, docName, replace, null, null);
+    public boolean parseLocal(User user, String localFile, String docName, boolean replace)
+            throws EXistException, PermissionDeniedException, SAXException {
+        return parseLocal(user, localFile, docName, replace, null, null);
     }
 
-    public boolean parseLocal(User user, String localFile, String docName,
-            boolean replace, Date created, Date modified) throws EXistException, PermissionDeniedException,
+    public boolean parseLocal(User user, String localFile, String docName, boolean replace,
+            Date created, Date modified) throws EXistException, PermissionDeniedException,
             SAXException {
         RpcConnection con = pool.get();
         try {
-            return con.parseLocal(user, localFile, docName, replace, created , modified);
+            return con.parseLocal(user, localFile, docName, replace, created, modified);
         } catch (Exception e) {
             handleException(e);
             return false;
@@ -774,20 +760,16 @@ try {
         }
     }
 
-    
-    
-    public String uploadCompressed(User user, byte[] data, int length)
-    	throws EXistException, PermissionDeniedException {
+    public String uploadCompressed(User user, byte[] data, int length) throws EXistException,
+            PermissionDeniedException {
         return uploadCompressed(user, null, data, length);
     }
-    
+
     public String uploadCompressed(User user, String file, byte[] data, int length)
-    throws EXistException, PermissionDeniedException {
-        LOG.debug("Compressed upload: " + data.length);
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
-            data = Compressor.uncompress(data);
-            return con.upload(user, data, data.length, file);
+            return con.upload(user, data, data.length, file, true);
         } catch (Exception e) {
             handleException(e);
             return null;
@@ -796,17 +778,17 @@ try {
             pool.release(con);
         }
     }
-    
-    public String upload(User user, byte[] data, int length)
-            throws EXistException, PermissionDeniedException {
+
+    public String upload(User user, byte[] data, int length) throws EXistException,
+            PermissionDeniedException {
         return upload(user, null, data, length);
     }
 
-    public String upload(User user, String file, byte[] data, int length)
-            throws EXistException, PermissionDeniedException {
+    public String upload(User user, String file, byte[] data, int length) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
-            return con.upload(user, data, length, file);
+            return con.upload(user, data, length, file, false);
         } catch (Exception e) {
             handleException(e);
             return null;
@@ -816,19 +798,19 @@ try {
         }
     }
 
-    public boolean parse(User user, String xml, String docName)
-            throws EXistException, PermissionDeniedException {
+    public boolean parse(User user, String xml, String docName) throws EXistException,
+            PermissionDeniedException {
         return parse(user, xml, docName, 0);
     }
 
     public boolean storeBinary(User user, byte[] data, String docName, String mimeType,
             boolean replace) throws EXistException, PermissionDeniedException {
-            return storeBinary(user, data, docName, mimeType, replace, null, null);
+        return storeBinary(user, data, docName, mimeType, replace, null, null);
     }
 
-    
     public boolean storeBinary(User user, byte[] data, String docName, String mimeType,
-            boolean replace, Date created, Date modified) throws EXistException, PermissionDeniedException {
+            boolean replace, Date created, Date modified) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.storeBinary(user, data, docName, mimeType, replace, created, modified);
@@ -841,16 +823,14 @@ try {
         }
     }
 
-    
-    
     /*
      * (non-Javadoc)
      * 
      * @see org.exist.xmlrpc.RpcAPI#createResourceId(org.exist.security.User,
      *           java.lang.String)
      */
-    public String createResourceId(User user, String collection)
-            throws EXistException, PermissionDeniedException {
+    public String createResourceId(User user, String collection) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.createResourceId(user, collection);
@@ -863,14 +843,33 @@ try {
         }
     }
 
-    public Hashtable queryP(User user, byte[] xpath, Hashtable parameters)
-            throws EXistException, PermissionDeniedException {
+    public Hashtable compile(User user, byte[] xquery, Hashtable parameters) throws Exception {
+        String queryString = null;
+        try {
+            queryString = new String(xquery, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new EXistException("failed to decode xpath expression");
+        }
+        
+        RpcConnection con = pool.get();
+        try {
+            return con.compile(user, queryString, parameters);
+        } catch (Exception e) {
+            handleException(e);
+            return null;
+        } finally {
+            con.synchronize();
+            pool.release(con);
+        }
+    }
+    
+    public Hashtable queryP(User user, byte[] xpath, Hashtable parameters) throws EXistException,
+            PermissionDeniedException {
         return queryP(user, xpath, null, null, parameters);
     }
 
-    public Hashtable queryP(User user, byte[] xpath, String docName,
-            String s_id, Hashtable parameters) throws EXistException,
-            PermissionDeniedException {
+    public Hashtable queryP(User user, byte[] xpath, String docName, String s_id,
+            Hashtable parameters) throws EXistException, PermissionDeniedException {
         String xpathString = null;
         try {
             xpathString = new String(xpath, "UTF-8");
@@ -881,8 +880,7 @@ try {
         // some clients (Perl) encode strings with a \0 at the end.
         // remove it ...
         if (xpathString.charAt(xpathString.length() - 1) == 0x0)
-                xpathString = xpathString
-                        .substring(0, xpathString.length() - 1);
+            xpathString = xpathString.substring(0, xpathString.length() - 1);
         RpcConnection con = pool.get();
         try {
             return con.queryP(user, xpathString, docName, s_id, parameters);
@@ -893,20 +891,20 @@ try {
             pool.release(con);
         }
     }
-    
-     public Hashtable execute(User user, String path, Hashtable parameters) throws EXistException,
-            PermissionDeniedException {
-    	RpcConnection con = pool.get();
 
-        byte[] doc = getBinaryResource(user,path);
-        String xpath = null; 
+    public Hashtable execute(User user, String path, Hashtable parameters) throws EXistException,
+            PermissionDeniedException {
+        RpcConnection con = pool.get();
+
+        byte[] doc = getBinaryResource(user, path);
+        String xpath = null;
         try {
             xpath = new String(doc, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new EXistException("failed to decode xpath expression");
-        }  	
-    	    	
-    	try {
+        }
+
+        try {
             return con.execute(user, xpath, parameters);
         } catch (Exception e) {
             handleException(e);
@@ -916,8 +914,8 @@ try {
         }
     }
 
-    public String printDiagnostics(User user, String query, Hashtable parameters) 
-    throws PermissionDeniedException, EXistException {
+    public String printDiagnostics(User user, String query, Hashtable parameters)
+            throws PermissionDeniedException, EXistException {
         RpcConnection con = pool.get();
         try {
             return con.printDiagnostics(user, query, parameters);
@@ -928,7 +926,7 @@ try {
             pool.release(con);
         }
     }
-    
+
     public boolean releaseQueryResult(User user, int handle) {
         RpcConnection con = pool.get();
         try {
@@ -945,17 +943,16 @@ try {
      * is set to >0 (true), results are pretty printed.
      *  
      */
-    public byte[] query(User user, byte[] xquery, int howmany, int start,
-            Hashtable parameters) throws EXistException,
-            PermissionDeniedException {
+    public byte[] query(User user, byte[] xquery, int howmany, int start, Hashtable parameters)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         String xqueryStr;
         try {
-        	xqueryStr = new String(xquery, "UTF-8");
-        } catch(UnsupportedEncodingException e) {
-        	xqueryStr = new String(xquery);
+            xqueryStr = new String(xquery, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            xqueryStr = new String(xquery);
         }
-        
+
         String result = null;
         try {
             result = con.query(user, xqueryStr, howmany, start, parameters);
@@ -968,74 +965,74 @@ try {
         }
     }
 
-    public Hashtable querySummary(User user, int resultId)
-			throws EXistException, PermissionDeniedException, XPathException {
-		RpcConnection con = pool.get();
-		try {
-			return con.summary(user, resultId);
-		} catch (Exception e) {
-			handleException(e);
-			return null;
-		} finally {
-			pool.release(con);
-		}
-	}
+    public Hashtable querySummary(User user, int resultId) throws EXistException,
+            PermissionDeniedException, XPathException {
+        RpcConnection con = pool.get();
+        try {
+            return con.summary(user, resultId);
+        } catch (Exception e) {
+            handleException(e);
+            return null;
+        } finally {
+            pool.release(con);
+        }
+    }
 
     /**
-	 * execute XPath query and return a summary of hits per document and hits
-	 * per doctype. This method returns a struct with the following fields:
-	 * 
-	 * <tableborder="1">
-	 * 
-	 * <tr>
-	 * 
-	 * <td>"queryTime"</td>
-	 * 
-	 * <td>int</td>
-	 * 
-	 * </tr>
-	 * 
-	 * <tr>
-	 * 
-	 * <td>"hits"</td>
-	 * 
-	 * <td>int</td>
-	 * 
-	 * </tr>
-	 * 
-	 * <tr>
-	 * 
-	 * <td>"documents"</td>
-	 * 
-	 * <td>array of array: Object[][3]</td>
-	 * 
-	 * </tr>
-	 * 
-	 * <tr>
-	 * 
-	 * <td>"doctypes"</td>
-	 * 
-	 * <td>array of array: Object[][2]</td>
-	 * 
-	 * </tr>
-	 * 
-	 * </table> Documents and doctypes represent tables where each row describes
-	 * one document or doctype for which hits were found. Each document entry
-	 * has the following structure: docId (int), docName (string), hits (int)
-	 * The doctype entry has this structure: doctypeName (string), hits (int)
-	 * 
-	 * @param xpath
-	 *            Description of the Parameter
-	 * @param user
-	 *            Description of the Parameter
-	 * @return Description of the Return Value
-	 * @exception EXistException
-	 *                Description of the Exception
-	 * @exception PermissionDeniedException
-	 *                Description of the Exception
-	 */
-    public Hashtable querySummary(User user, String xpath)
-            throws EXistException, PermissionDeniedException {
+     * execute XPath query and return a summary of hits per document and hits
+     * per doctype. This method returns a struct with the following fields:
+     * 
+     * <tableborder="1">
+     * 
+     * <tr>
+     * 
+     * <td>"queryTime"</td>
+     * 
+     * <td>int</td>
+     * 
+     * </tr>
+     * 
+     * <tr>
+     * 
+     * <td>"hits"</td>
+     * 
+     * <td>int</td>
+     * 
+     * </tr>
+     * 
+     * <tr>
+     * 
+     * <td>"documents"</td>
+     * 
+     * <td>array of array: Object[][3]</td>
+     * 
+     * </tr>
+     * 
+     * <tr>
+     * 
+     * <td>"doctypes"</td>
+     * 
+     * <td>array of array: Object[][2]</td>
+     * 
+     * </tr>
+     * 
+     * </table> Documents and doctypes represent tables where each row describes
+     * one document or doctype for which hits were found. Each document entry
+     * has the following structure: docId (int), docName (string), hits (int)
+     * The doctype entry has this structure: doctypeName (string), hits (int)
+     * 
+     * @param xpath
+     *            Description of the Parameter
+     * @param user
+     *            Description of the Parameter
+     * @return Description of the Return Value
+     * @exception EXistException
+     *                Description of the Exception
+     * @exception PermissionDeniedException
+     *                Description of the Exception
+     */
+    public Hashtable querySummary(User user, String xpath) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.summary(user, xpath);
@@ -1075,10 +1072,9 @@ try {
         }
     }
 
-    public boolean copyCollection(User user, String collectionPath,
-    String destinationPath, String newName) throws EXistException,
-    PermissionDeniedException {
-    	RpcConnection con = pool.get();
+    public boolean copyCollection(User user, String collectionPath, String destinationPath,
+            String newName) throws EXistException, PermissionDeniedException {
+        RpcConnection con = pool.get();
         try {
             return con.moveOrCopyCollection(user, collectionPath, destinationPath, newName, false);
         } catch (Exception e) {
@@ -1089,13 +1085,12 @@ try {
             pool.release(con);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.xmlrpc.RpcAPI#moveCollection(org.exist.security.User, java.lang.String, java.lang.String, java.lang.String)
      */
-    public boolean moveCollection(User user, String collectionPath,
-            String destinationPath, String newName) throws EXistException,
-            PermissionDeniedException {
+    public boolean moveCollection(User user, String collectionPath, String destinationPath,
+            String newName) throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.moveOrCopyCollection(user, collectionPath, destinationPath, newName, true);
@@ -1107,14 +1102,12 @@ try {
             pool.release(con);
         }
     }
-    
-    
+
     /* (non-Javadoc)
      * @see org.exist.xmlrpc.RpcAPI#moveResource(org.exist.security.User, java.lang.String, java.lang.String, java.lang.String)
      */
-    public boolean moveResource(User user, String docPath,
-            String destinationPath, String newName) throws EXistException,
-            PermissionDeniedException {
+    public boolean moveResource(User user, String docPath, String destinationPath, String newName)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.moveOrCopyResource(user, docPath, destinationPath, newName, true);
@@ -1126,10 +1119,9 @@ try {
             pool.release(con);
         }
     }
-    
-    public boolean copyResource(User user, String docPath,
-            String destinationPath, String newName) throws EXistException,
-            PermissionDeniedException {
+
+    public boolean copyResource(User user, String docPath, String destinationPath, String newName)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.moveOrCopyResource(user, docPath, destinationPath, newName, false);
@@ -1141,9 +1133,9 @@ try {
             pool.release(con);
         }
     }
-    
-    public boolean removeCollection(User user, String name)
-            throws EXistException, PermissionDeniedException {
+
+    public boolean removeCollection(User user, String name) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.removeCollection(user, name);
@@ -1182,8 +1174,8 @@ try {
      * @exception PermissionDeniedException
      *                        Description of the Exception
      */
-    public byte[] retrieve(User user, String doc, String id)
-            throws EXistException, PermissionDeniedException {
+    public byte[] retrieve(User user, String doc, String id) throws EXistException,
+            PermissionDeniedException {
         return retrieve(user, doc, id, null);
     }
 
@@ -1207,16 +1199,16 @@ try {
      * @exception PermissionDeniedException
      *                        Description of the Exception
      */
-    public byte[] retrieve(User user, String doc, String id,
-            Hashtable parameters) throws EXistException,
-            PermissionDeniedException {
+    public byte[] retrieve(User user, String doc, String id, Hashtable parameters)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         String xml = null;
         try {
             xml = con.retrieve(user, doc, id, parameters);
             try {
                 String encoding = (String) parameters.get(OutputKeys.ENCODING);
-                if (encoding == null) encoding = "UTF-8";
+                if (encoding == null)
+                    encoding = "UTF-8";
                 return xml.getBytes(encoding);
             } catch (UnsupportedEncodingException uee) {
                 return xml.getBytes();
@@ -1229,9 +1221,8 @@ try {
         }
     }
 
-    public String retrieveAsString(User user, String doc, String id,
-            Hashtable parameters) throws EXistException,
-            PermissionDeniedException {
+    public String retrieveAsString(User user, String doc, String id, Hashtable parameters)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             return con.retrieve(user, doc, id, parameters);
@@ -1243,29 +1234,28 @@ try {
         }
     }
 
-     public byte[] retrieve(User user, int resultId, int num,
-            Hashtable parameters) throws EXistException,
-            PermissionDeniedException {
+    public byte[] retrieve(User user, int resultId, int num, Hashtable parameters)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
-        String compression ="no"; 
+        String compression = "no";
         if (((String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT)) != null) {
-            compression = (String) parameters
-                    .get(EXistOutputKeys.COMPRESS_OUTPUT);
+            compression = (String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT);
         }
 
         try {
             String xml = con.retrieve(user, resultId, num, parameters);
             String encoding = (String) parameters.get(OutputKeys.ENCODING);
-            if (encoding == null) encoding = "UTF-8";
+            if (encoding == null)
+                encoding = "UTF-8";
             try {
-            	
-            	 if (compression.equals("no")) {
+
+                if (compression.equals("no")) {
                     return xml.getBytes(encoding);
                 } else {
                     LOG.debug("get result with compression");
                     return Compressor.compress(xml.getBytes(encoding));
                 }
-            	
+
             } catch (UnsupportedEncodingException uee) {
 
                 if (compression.equals("no")) {
@@ -1289,14 +1279,15 @@ try {
      * @see org.exist.xmlrpc.RpcAPI#retrieveAll(org.exist.security.User, int,
      *           java.util.Hashtable)
      */
-    public byte[] retrieveAll(User user, int resultId, Hashtable parameters)
-            throws EXistException, PermissionDeniedException {
+    public byte[] retrieveAll(User user, int resultId, Hashtable parameters) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = null;
         try {
             con = pool.get();
             String xml = con.retrieveAll(user, resultId, parameters);
             String encoding = (String) parameters.get(OutputKeys.ENCODING);
-            if (encoding == null) encoding = "UTF-8";
+            if (encoding == null)
+                encoding = "UTF-8";
             try {
                 return xml.getBytes(encoding);
             } catch (UnsupportedEncodingException uee) {
@@ -1349,14 +1340,12 @@ try {
      * @exception PermissionDeniedException
      *                        Description of the Exception
      */
-    public boolean setPermissions(User user, String resource, String owner,
-            String ownerGroup, String permissions) throws EXistException,
-            PermissionDeniedException {
+    public boolean setPermissions(User user, String resource, String owner, String ownerGroup,
+            String permissions) throws EXistException, PermissionDeniedException {
         RpcConnection con = null;
         try {
             con = pool.get();
-            return con.setPermissions(user, resource, owner, ownerGroup,
-                    permissions);
+            return con.setPermissions(user, resource, owner, ownerGroup, permissions);
         } catch (Exception e) {
             handleException(e);
             return false;
@@ -1387,14 +1376,12 @@ try {
      * @see org.exist.xmlrpc.RpcAPI#setPermissions(org.exist.security.User,
      *           java.lang.String, java.lang.String, java.lang.String, int)
      */
-    public boolean setPermissions(User user, String resource, String owner,
-            String ownerGroup, int permissions) throws EXistException,
-            PermissionDeniedException {
+    public boolean setPermissions(User user, String resource, String owner, String ownerGroup,
+            int permissions) throws EXistException, PermissionDeniedException {
         RpcConnection con = null;
         try {
             con = pool.get();
-            return con.setPermissions(user, resource, owner, ownerGroup,
-                    permissions);
+            return con.setPermissions(user, resource, owner, ownerGroup, permissions);
         } catch (Exception e) {
             handleException(e);
             return false;
@@ -1420,9 +1407,8 @@ try {
      * @exception PermissionDeniedException
      *                        Description of the Exception
      */
-    public boolean setUser(User user, String name, String password,
-            Vector groups, String home) throws EXistException,
-            PermissionDeniedException {
+    public boolean setUser(User user, String name, String password, Vector groups, String home)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = null;
         try {
             con = pool.get();
@@ -1435,8 +1421,8 @@ try {
         }
     }
 
-    public boolean setUser(User user, String name, String password,
-            Vector groups) throws EXistException, PermissionDeniedException {
+    public boolean setUser(User user, String name, String password, Vector groups)
+            throws EXistException, PermissionDeniedException {
         return setUser(user, name, password, groups, null);
     }
 
@@ -1478,9 +1464,8 @@ try {
      * @see org.exist.xmlrpc.RpcAPI#xupdateResource(org.exist.security.User,
      *           java.lang.String, byte[])
      */
-    public int xupdateResource(User user, String resource, byte[] xupdate,
-            String encoding) throws PermissionDeniedException, EXistException,
-            SAXException {
+    public int xupdateResource(User user, String resource, byte[] xupdate, String encoding)
+            throws PermissionDeniedException, EXistException, SAXException {
         RpcConnection con = null;
         try {
             con = pool.get();
@@ -1495,32 +1480,31 @@ try {
     }
 
     public boolean shutdown(User user) throws PermissionDeniedException {
-    	return shutdown(user, 0);
+        return shutdown(user, 0);
     }
-    
+
     public boolean shutdown(User user, long delay) throws PermissionDeniedException {
         if (!user.hasDbaRole())
-                throw new PermissionDeniedException("not allowed to shut down"
-                        + "the database");
-        if(delay > 0) {
-        	TimerTask task = new TimerTask() {
-				public void run() {
-					try {
-						BrokerPool.stop();
-					} catch (EXistException e) {
-			            LOG.warn("shutdown failed", e);
-			        }
-				}
-			};
-			Timer timer = new Timer();
-			timer.schedule(task, delay);
+            throw new PermissionDeniedException("not allowed to shut down" + "the database");
+        if (delay > 0) {
+            TimerTask task = new TimerTask() {
+                public void run() {
+                    try {
+                        BrokerPool.stop();
+                    } catch (EXistException e) {
+                        LOG.warn("shutdown failed", e);
+                    }
+                }
+            };
+            Timer timer = new Timer();
+            timer.schedule(task, delay);
         } else {
-	        try {
-	            BrokerPool.stop();
-	        } catch (EXistException e) {
-	            LOG.warn("shutdown failed", e);
-	            return false;
-	        }
+            try {
+                BrokerPool.stop();
+            } catch (EXistException e) {
+                LOG.warn("shutdown failed", e);
+                return false;
+            }
         }
         return true;
     }
@@ -1536,21 +1520,20 @@ try {
         return true;
     }
 
-public boolean dataBackup(User user, String dest) throws PermissionDeniedException {
-    if (!user.hasDbaRole()) {
-        throw new PermissionDeniedException("not allowed to backup the database");
-    }
-	
-        RpcConnection con = null;
-        try {    
-        	con = pool.get();
-            con.dataBackup(user,dest);
-        } finally {
-        	pool.release(con);
+    public boolean dataBackup(User user, String dest) throws PermissionDeniedException {
+        if (!user.hasDbaRole()) {
+            throw new PermissionDeniedException("not allowed to backup the database");
         }
-            return true;
+
+        RpcConnection con = null;
+        try {
+            con = pool.get();
+            con.dataBackup(user, dest);
+        } finally {
+            pool.release(con);
+        }
+        return true;
     }
-    
 
     class ConnectionPool {
 
@@ -1573,12 +1556,13 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
         protected Stack pool = new Stack();
 
         protected ArrayList threads = new ArrayList();
+
         /** id of the database registred against the BrokerPool */
         protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
 
-
         public ConnectionPool(int min, int max, Configuration conf, String databaseid) {
-            if (databaseid != null && !"".equals(databaseid)) this.databaseid=databaseid;
+            if (databaseid != null && !"".equals(databaseid))
+                this.databaseid = databaseid;
             this.min = min;
             this.max = max;
             this.conf = conf;
@@ -1625,7 +1609,7 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
             RpcConnection con = (RpcConnection) pool.pop();
             this.notifyAll();
             if (System.currentTimeMillis() - lastCheck > CHECK_INTERVAL)
-                    checkResultSets();
+                checkResultSets();
             return con;
         }
 
@@ -1664,8 +1648,8 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
         }
     }
 
-    public boolean copyCollection(User user, String name, String namedest)
-            throws EXistException, PermissionDeniedException {
+    public boolean copyCollection(User user, String name, String namedest) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
 
@@ -1718,8 +1702,8 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
      * @see org.exist.xmlrpc.RpcAPI#lockResource(org.exist.security.User,
      *           java.lang.String, java.lang.String)
      */
-    public boolean lockResource(User user, String path, String userName)
-            throws EXistException, PermissionDeniedException {
+    public boolean lockResource(User user, String path, String userName) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             con.lockResource(user, path, userName);
@@ -1757,8 +1741,8 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
      * @see org.exist.xmlrpc.RpcAPI#unlockResource(org.exist.security.User,
      *           java.lang.String)
      */
-    public boolean unlockResource(User user, String path)
-            throws EXistException, PermissionDeniedException {
+    public boolean unlockResource(User user, String path) throws EXistException,
+            PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
             con.unlockResource(user, path);
@@ -1771,106 +1755,104 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
         }
     }
 
-	
-	//FIXME: Check it for possible security hole. The name of file is not generated in random mode
-	public Vector getDocumentChunk(User user, String name, Hashtable parameters)
-			throws EXistException, PermissionDeniedException, IOException {
-		Vector result = new Vector();
-		File file;
-		file = File.createTempFile("rpc", ".xml");
-		FileOutputStream os = new FileOutputStream(file.getAbsolutePath(), true);
-		os.write(getDocument(user, name, parameters));
-		os.close();
-		result.addElement(file.getName());
-		result.addElement(Long.toString(file.length()));
-		file.deleteOnExit();
-		LOG.debug("The file is created with name: "+file.getName());
-		return result;
-	}
-	
+    //FIXME: Check it for possible security hole. The name of file is not generated in random mode
+    public Vector getDocumentChunk(User user, String name, Hashtable parameters)
+            throws EXistException, PermissionDeniedException, IOException {
+        Vector result = new Vector();
+        File file;
+        file = File.createTempFile("rpc", ".xml");
+        FileOutputStream os = new FileOutputStream(file.getAbsolutePath(), true);
+        os.write(getDocument(user, name, parameters));
+        os.close();
+        result.addElement(file.getName());
+        result.addElement(Long.toString(file.length()));
+        file.deleteOnExit();
+        LOG.debug("The file is created with name: " + file.getName());
+        return result;
+    }
 
-	public byte[] getDocumentChunk(User user, String name, int start, int len)
-			throws EXistException, PermissionDeniedException, IOException {
-		RpcConnection con = pool.get();
-		try {
-			return con.getDocumentChunk(user, name, start, len);
-		} finally {
-			pool.release(con);
-		}
-	}
-	
-	 public boolean reindexCollection(User user, String name)
-     throws EXistException, PermissionDeniedException {
-	     RpcConnection con = pool.get();
-	     try {
-	         con.reindexCollection(user, name);
-	         return true;
-	     } catch (Exception e) {
-	         handleException(e);
-	         return false;
-	     } finally {
-	         pool.release(con);
-	     }
-	 }
+    public byte[] getDocumentChunk(User user, String name, int start, int len)
+            throws EXistException, PermissionDeniedException, IOException {
+        RpcConnection con = pool.get();
+        try {
+            return con.getDocumentChunk(user, name, start, len);
+        } finally {
+            pool.release(con);
+        }
+    }
+
+    public boolean reindexCollection(User user, String name) throws EXistException,
+            PermissionDeniedException {
+        RpcConnection con = pool.get();
+        try {
+            con.reindexCollection(user, name);
+            return true;
+        } catch (Exception e) {
+            handleException(e);
+            return false;
+        } finally {
+            pool.release(con);
+        }
+    }
 
     /* (non-Javadoc)
      * @see org.exist.xmlrpc.RpcAPI#configureCollection(org.exist.security.User, java.lang.String, java.lang.String)
      */
-    public boolean configureCollection(User user, String collection, String configuration) 
-    	throws EXistException, PermissionDeniedException {
+    public boolean configureCollection(User user, String collection, String configuration)
+            throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
-	     try {
-	         con.configureCollection(user, collection, configuration);
-	         return true;
-	     } catch (Exception e) {
-	         handleException(e);
-	         return false;
-	     } finally {
-	         pool.release(con);
-	     }
+        try {
+            con.configureCollection(user, collection, configuration);
+            return true;
+        } catch (Exception e) {
+            handleException(e);
+            return false;
+        } finally {
+            pool.release(con);
+        }
     }
-    
+
     // DWES
-     public boolean isValid(User user, String name) throws EXistException, PermissionDeniedException{
-         boolean retVal=false;
-         RpcConnection con = pool.get();
-	     try {
-	         retVal = con.isValid(user,name);
+    public boolean isValid(User user, String name) throws EXistException, PermissionDeniedException {
+        boolean retVal = false;
+        RpcConnection con = pool.get();
+        try {
+            retVal = con.isValid(user, name);
 
-	     } catch (Exception e) {
-	         handleException(e);
+        } catch (Exception e) {
+            handleException(e);
 
-	     } finally {
-	         pool.release(con);
-	     }
-         
-         return retVal;
-     }
-     
-     public Vector getDocType(User user, String documentName)
-			throws PermissionDeniedException, EXistException {
-		RpcConnection con = pool.get();
-		try {
-			return con.getDocType(user, documentName);
-		} catch (Exception e) {
-			handleException(e);
-			return null;
-		} finally {
-			pool.release(con);
-		}
-	}
+        } finally {
+            pool.release(con);
+        }
 
-     public boolean setDocType(User user, String documentName, String doctypename, String publicid, String systemid) throws EXistException,
-             PermissionDeniedException {
-         RpcConnection con = null;
-         try {
-             con = pool.get();
-             return con.setDocType(user, documentName, doctypename, publicid, systemid);
-         } catch (Exception e) {
-             handleException(e);
-             return false;
-         } finally {
-             pool.release(con);
-         }
-     }
+        return retVal;
+    }
+
+    public Vector getDocType(User user, String documentName) throws PermissionDeniedException,
+            EXistException {
+        RpcConnection con = pool.get();
+        try {
+            return con.getDocType(user, documentName);
+        } catch (Exception e) {
+            handleException(e);
+            return null;
+        } finally {
+            pool.release(con);
+        }
+    }
+
+    public boolean setDocType(User user, String documentName, String doctypename, String publicid,
+            String systemid) throws EXistException, PermissionDeniedException {
+        RpcConnection con = null;
+        try {
+            con = pool.get();
+            return con.setDocType(user, documentName, doctypename, publicid, systemid);
+        } catch (Exception e) {
+            handleException(e);
+            return false;
+        } finally {
+            pool.release(con);
+        }
+    }
 }

@@ -67,8 +67,33 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         }
     }
 
+    public CompiledExpression compileAndCheck(String query) throws XMLDBException, XPathException {
+        try {
+            Hashtable optParams = new Hashtable();
+            if(namespaceMappings.size() > 0)
+                optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
+            if(variableDecls.size() > 0)
+                optParams.put(RpcAPI.VARIABLES, variableDecls);
+            optParams.put(RpcAPI.BASE_URI, 
+                    outputProperties.getProperty("base-uri", collection.getPath()));
+            Vector params = new Vector();
+            params.addElement(query.getBytes("UTF-8"));
+            params.addElement(optParams);
+            Hashtable result = (Hashtable) collection.getClient().execute( "compile", params );
+            
+            if (result.get(RpcAPI.ERROR) != null)
+                throwXPathException(result);
+            return new RemoteCompiledExpression(query);
+        } catch ( XmlRpcException xre ) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
+        } catch ( IOException ioe ) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe );
+        }
+    }
+    
     /**
 	 * @param result
+     * @throws XPathException 
 	 */
 	private void throwException(Hashtable result) throws XMLDBException {
 		String message = (String)result.get(RpcAPI.ERROR);
@@ -80,6 +105,15 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, message, cause);
 	}
 
+    private void throwXPathException(Hashtable result) throws XPathException {
+        String message = (String)result.get(RpcAPI.ERROR);
+        Integer lineInt = (Integer)result.get(RpcAPI.LINE);
+        Integer columnInt = (Integer)result.get(RpcAPI.COLUMN);
+        int line = lineInt == null ? 0 : lineInt.intValue();
+        int column = columnInt == null ? 0 : columnInt.intValue();
+        throw new XPathException(message, line, column);
+    }
+    
 	/* (non-Javadoc)
      * @see org.exist.xmldb.XQueryService#execute(org.exist.source.Source)
      */
