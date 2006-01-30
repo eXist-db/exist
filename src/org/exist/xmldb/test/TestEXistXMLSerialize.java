@@ -75,6 +75,8 @@ public class TestEXistXMLSerialize extends TestCase{
     public void tearDown() {
     	try {
     		DatabaseManager.deregisterDatabase(database);
+            c = null;
+            database = null;
         } catch (Exception e) {            
             fail(e.getMessage()); 
         }    		

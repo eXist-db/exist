@@ -48,6 +48,10 @@ public class CreateCollectionsTest extends TestCase {
 		}
 	}
 
+    protected void tearDown() throws Exception {
+        root = null;
+    }
+    
 	public void testCreateCollection() {		
 		try {
 			System.out.println(

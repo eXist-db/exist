@@ -74,7 +74,11 @@ public class DBUtils {
         return generateXMLFile(elementCnt, attrCnt, wordList, false);
     }
     
-	public static File generateXMLFile(int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
+    public static File generateXMLFile(int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
+        return generateXMLFile(3, elementCnt, attrCnt, wordList, false);
+    }
+    
+	public static File generateXMLFile(int depth, int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
 		File file = File.createTempFile(Thread.currentThread().getName(), ".xml");
 		if(file.exists() && !file.canWrite())
 			throw new IllegalArgumentException("Cannot write to output file " + file.getAbsolutePath());
@@ -82,7 +86,7 @@ public class DBUtils {
 		System.out.println("Generating XML file " + file.getAbsolutePath());
 		Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
 		
-		XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, 3, wordList, namespaces);
+		XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, depth, wordList, namespaces);
 		gen.generateXML(writer);
 		writer.close();
 		return file;
