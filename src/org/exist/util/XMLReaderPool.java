@@ -22,7 +22,9 @@ package org.exist.util;
 
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.StackObjectPool;
+import org.exist.storage.BrokerPool;
 import org.xml.sax.XMLReader;
+import org.xml.sax.ext.DefaultHandler2;
 
 /**
  * Maintains a pool of XMLReader objects. The pool is available through
@@ -32,31 +34,36 @@ import org.xml.sax.XMLReader;
  */
 public class XMLReaderPool extends StackObjectPool {
 
-	/**
-	 * @param arg0
-	 * @param arg1
-	 * @param arg2
-	 */
-	public XMLReaderPool(PoolableObjectFactory factory, int maxIdle, int initIdleCapacity) {
-		super(factory, maxIdle, initIdleCapacity);
-	}
+    private final static DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
+    
+    /**
+     * @param arg0
+     * @param arg1
+     * @param arg2
+     */
+    public XMLReaderPool(PoolableObjectFactory factory, int maxIdle, int initIdleCapacity) {
+        super(factory, maxIdle, initIdleCapacity);
+    }
 
-	public synchronized XMLReader borrowXMLReader() {
-		try {
-			return (XMLReader)borrowObject();
-		} catch(Exception e) {
-			throw new IllegalStateException("error while returning XMLReader: " + e.getMessage());
-		}
-	}
-	
-	public synchronized void returnXMLReader(XMLReader reader) {
-		if(reader == null) {
-			return;
-		}
-		try {
-			returnObject(reader);
-		} catch (Exception e) {
-			throw new IllegalStateException("error while returning XMLReader: " + e.getMessage());
-		}
-	}
+    public synchronized XMLReader borrowXMLReader() {
+        try {
+            return (XMLReader) borrowObject();
+        } catch (Exception e) {
+            throw new IllegalStateException("error while returning XMLReader: " + e.getMessage());
+        }
+    }
+
+    public synchronized void returnXMLReader(XMLReader reader) {
+        if (reader == null) {
+            return;
+        }
+        try {
+            reader.setContentHandler(DUMMY_HANDLER);
+            reader.setErrorHandler(DUMMY_HANDLER);
+            reader.setProperty("http://xml.org/sax/properties/lexical-handler", DUMMY_HANDLER);
+            returnObject(reader);
+        } catch (Exception e) {
+            throw new IllegalStateException("error while returning XMLReader: " + e.getMessage());
+        }
+    }
 }
