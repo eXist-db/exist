@@ -407,6 +407,7 @@
         <echo message="-----------------"/>
         <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="no">
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test name="org.exist.xmldb.test.concurrent.AllTests" todir="${junit.reports.dat}"/>
@@ -456,6 +457,7 @@
             <formatter type="xml"/>
             <test fork="yes" name="org.exist.xmlrpc.test.XmlRpcTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xmldb.test.RemoteTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xquery.test.RemoteTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.http.test.RESTServiceTest" todir="${junit.reports.dat}"/>
         </junit>
     </target>
