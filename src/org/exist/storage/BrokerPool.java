@@ -580,6 +580,16 @@ public class BrokerPool {
         }
         return true;
     }	
+    protected SecurityManager newSecurityManager() 
+    {
+       try {
+          Class smClass = (Class)conf.getProperty("db-connection.security.class");
+          return (SecurityManager)smClass.newInstance();
+       } catch (Throwable ex) {
+          LOG.warn("Exception while instantiating security manager class.", ex);
+       }
+       return null;
+    }
 	
 	/**Initializes the database instance.
 	 * @throws EXistException
@@ -652,7 +662,10 @@ public class BrokerPool {
 		//TODO : why only the first broker has a security manager ? Global or attached to each broker ?
         // WM: there's only one security manager per BrokerPool, but it needs a DBBroker instance to read
         // the system collection.
-		securityManager = new org.exist.security.SecurityManager(this, broker);
+		SecurityManager localSecurityManager = newSecurityManager();
+		securityManager = null;
+		localSecurityManager.attach(this, broker);
+		securityManager = localSecurityManager;
 		initializing = false;
 		
 		//Get a manager to handle further collectios configuration
@@ -998,7 +1011,8 @@ public class BrokerPool {
     // WM: this is called from the Collection.store() methods to signal that /db/system/users.xml has changed.
     // A broker is already available in these methods, so we use it here.
 	public void reloadSecurityManager(DBBroker broker) {
-		securityManager = new SecurityManager(this, broker);
+		securityManager = newSecurityManager();
+		securityManager.attach(this, broker);
 		LOG.debug("Security manager reloaded");
 	}
 
