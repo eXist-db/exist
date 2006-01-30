@@ -51,10 +51,11 @@ import org.xml.sax.XMLReader;
 public class Descriptor implements ErrorHandler
 {
 	private final static Logger LOG = Logger.getLogger(Descriptor.class);	//Logger
-	private String file = null;											//descriptor file (descriptor.xml)
+	private String file = null;												//descriptor file (descriptor.xml)
 	
 	//Data
-	private String mapList[][] = null;	//Array of Mappings
+	private String allowSourceXQueryList[] = null; 	//Array of xql files to allow source to be viewed 
+	private String mapList[][] = null;	 				//Array of Mappings
 	
 	
 	//Constructor (wrapper)
@@ -140,7 +141,14 @@ public class Descriptor implements ErrorHandler
             
             Document doc = adapter.getDocument();
             
-            //maps settings
+            //load <allow-source> settings
+            NodeList allowsourcexqueries = doc.getElementsByTagName("allow-source");
+            if (allowsourcexqueries.getLength() > 0)
+            {
+                configureAllowSourceXQuery((Element) allowsourcexqueries.item(0));
+            }
+            
+            //load <maps> settings
             NodeList maps = doc.getElementsByTagName("maps");
             if (maps.getLength() > 0)
             {
@@ -165,9 +173,41 @@ public class Descriptor implements ErrorHandler
         }
     }
     
+    //loads <allow-source> settings from the descriptor.xml file
+    private void configureAllowSourceXQuery(Element allowsourcexqueries)
+    {
+    	//Get the xquery element(s)
+    	NodeList nlXQuery = allowsourcexqueries.getElementsByTagName("xquery");
+    	
+    	//Setup the hashmap to hold the xquery elements
+    	allowSourceXQueryList = new String[nlXQuery.getLength()];
+    	
+    	Element elem = null; //temporary holds xquery elements
+    	
+    	//Iterate through the xquery elements
+        for(int i = 0; i < nlXQuery.getLength(); i++)
+        {
+            elem = (Element) nlXQuery.item(i);				//<xquery>
+            String path = elem.getAttribute("path");		//@path
+
+            //must be a path to allow source for
+            if (path == null)
+            {
+                LOG.warn("error element 'xquery' requires an attribute 'path'");
+            	return;
+            }
+            
+            //store the path
+            allowSourceXQueryList[i] = path;
+
+        }
+    }
     
+    //loads <maps> settings from the descriptor.xml file
     private void configureMaps(Element maps)
 	{
+    	//TODO: add pattern support for mappings, as an alternative to path - deliriumsky
+    	
     	//Get the map element(s)
     	NodeList nlMap = maps.getElementsByTagName("map");
     	
@@ -215,12 +255,34 @@ public class Descriptor implements ErrorHandler
     }
     
     //takes a path such as that from RESTServer.doGet()
+    //if it finds a matching allowsourcexquery path then it returns true
+    //else it returns false
+    public boolean allowSourceXQuery(String path)
+    {
+    	if(allowSourceXQueryList != null)
+    	{
+    		//Iterate through the xqueries that source viewing is allowed for
+        	for(int i = 0; i < allowSourceXQueryList.length; i++)
+        	{
+        		//does the path match the <allow-source><xquery path=""/></allow-source> path
+        		if((allowSourceXQueryList[i].equals(path)) || (path.indexOf(allowSourceXQueryList[i]) > -1))
+        		{
+        			//yes, return true
+        			return(true);
+        		}
+        	}
+    	}
+    	return(false);
+    }
+    
+    //takes a path such as that from RESTServer.doGet()
     //if it finds a matching map path then it returns the map view
     //else it returns the passed in path
     public String mapPath(String path)
     {
-    	if (mapList == null)
-    		return path;
+    	if (mapList == null) //has a list of mappings been specified?
+    		return(path);
+    	
     	//Iterate through the mappings
     	for(int i = 0; i < mapList.length; i++)
     	{
