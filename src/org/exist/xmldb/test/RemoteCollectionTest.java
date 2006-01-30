@@ -37,7 +37,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	
 	public RemoteCollectionTest(String name) {
 		super(name);
-	}	
+	}
 	
 	protected void setUp() {
 		try {

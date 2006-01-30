@@ -123,6 +123,8 @@ public class ContentAsDOMTest extends TestCase {
 	        DatabaseInstanceManager mgr = (DatabaseInstanceManager)
 	            root.getService("DatabaseInstanceManager", "1.0");
 	        mgr.shutdown();
+            
+            root = null;
         } catch (Exception e) {
             fail(e.getMessage());
         }
