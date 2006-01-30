@@ -67,6 +67,14 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         }
     }
 
+    public CompiledExpression compile(String query) throws XMLDBException {
+        try {
+            return compileAndCheck(query);
+        } catch (XPathException e) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, e.getMessage(), e );
+        }
+    }
+    
     public CompiledExpression compileAndCheck(String query) throws XMLDBException, XPathException {
         try {
             Hashtable optParams = new Hashtable();
@@ -227,16 +235,6 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	 */
 	public void declareVariable(String qname, Object initialValue) throws XMLDBException {
 		variableDecls.put(qname, initialValue);
-	}
-
-	/**
-	 * The XML-RPC server automatically caches compiled queries.
-	 * Thus calling this method has no effect.
-	 * 
-	 * @see org.exist.xmldb.XQueryService#compile(java.lang.String)
-	 */
-	public CompiledExpression compile(String query) throws XMLDBException {
-		return new RemoteCompiledExpression(query);
 	}
     
 	/* (non-Javadoc)

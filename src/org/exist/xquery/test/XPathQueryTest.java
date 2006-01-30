@@ -418,8 +418,26 @@ public class XPathQueryTest extends XMLTestCase {
         try {
             XQueryService service = 
                 storeXMLStringAndGetQueryService("nested2.xml", nested2);
+            String numbers =
+                "<test>"
+                    + "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
+                    + "<item id='2'><price>7.4</price><stock>43</stock></item>"
+                    + "<item id='3'><price>18.4</price><stock>5</stock></item>"
+                    + "<item id='4'><price>65.54</price><stock>16</stock></item>"
+                    + "</test>";
             
             queryResource(service, "nested2.xml", "(<a/>, <b/>, <c/>)/parent::*", 0);
+            queryResource(service, "nested2.xml", "/RootElement//ChildB/parent::*", 1);
+            queryResource(service, "nested2.xml", "/RootElement//ChildB/parent::*/ChildB", 1);
+            queryResource(service, "nested2.xml", "/RootElement/ChildA/parent::*/ChildA/ChildB", 1);
+            
+            service = 
+                storeXMLStringAndGetQueryService("numbers.xml", numbers);
+            queryResource(service, "numbers.xml", "//price[. = 18.4]/parent::*[@id = '3']", 1);
+            queryResource(service, "numbers.xml", "//price[. = 18.4]/parent::item[@id = '3']", 1);
+            queryResource(service, "numbers.xml", "//price/parent::item[@id = '3']", 1);
+            queryResource(service, "numbers.xml", 
+                    "for $price in //price where $price/parent::*[@id = '3']/stock = '5' return $price", 1);
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
@@ -1330,19 +1348,33 @@ public class XPathQueryTest extends XMLTestCase {
     public void testCompile() throws XMLDBException {
         String invalidQuery = "for $i in (1 to 10)\n return $b";
         String validQuery = "for $i in (1 to 10) return $i";
+        String validModule = "module namespace foo=\"urn:foo\";\n" +
+                "declare function foo:test() { \"Hello World!\" };";
+        String invalidModule = "module namespace foo=\"urn:foo\";\n" +
+            "declare function foo:test() { \"Hello World! };";
+        
         org.exist.xmldb.XQueryService service = (org.exist.xmldb.XQueryService) getQueryService();
         boolean exceptionOccurred = false;
         try {
-            service.compileAndCheck(invalidQuery);
+            service.compile(invalidQuery);
+        } catch (XMLDBException e) {
+            assertEquals(((XPathException)e.getCause()).getLine(), 2);
+            exceptionOccurred = true;
+        }
+        assertTrue("Expected an exception", exceptionOccurred);
+        
+        exceptionOccurred = false;
+        try {
+            service.compileAndCheck(invalidModule);
         } catch (XPathException e) {
-            assertEquals(e.getLine(), 2);
             exceptionOccurred = true;
         }
         assertTrue("Expected an exception", exceptionOccurred);
         
         try {
-            service.compileAndCheck(validQuery);
-        } catch (XPathException e) {
+            service.compile(validQuery);
+            service.compile(validModule);
+        } catch (XMLDBException e) {
             fail(e.getMessage());
         }
     }
