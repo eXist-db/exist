@@ -23,6 +23,7 @@ package org.exist.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -71,18 +72,23 @@ public class Compressor {
      */
     public static byte[] uncompress(byte[] whatToUncompress)
 	throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        uncompress(whatToUncompress, baos);
+        return baos.toByteArray();
+    }
+    
+    public static void uncompress(byte[] whatToUncompress, OutputStream os)
+    throws IOException {
         ByteArrayInputStream bais = new ByteArrayInputStream(whatToUncompress);
         ZipInputStream gzis = new ZipInputStream(bais);
         ZipEntry zipentry = gzis.getNextEntry();
-        int len = Integer.parseInt(zipentry.getName());
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Integer.parseInt(zipentry.getName());
         byte[] buf = new byte[512];
         int bread;
         while ((bread = gzis.read(buf)) != -1)
-            baos.write(buf, 0, bread);
+            os.write(buf, 0, bread);
         gzis.closeEntry();
         gzis.close();
-        return baos.toByteArray();
     }
 }
 

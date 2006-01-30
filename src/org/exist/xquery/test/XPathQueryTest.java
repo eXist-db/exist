@@ -1,13 +1,21 @@
 package org.exist.xquery.test;
 
+import java.net.BindException;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.transform.OutputKeys;
 
 import org.custommonkey.xmlunit.XMLTestCase;
+import org.exist.StandaloneServer;
 import org.exist.storage.DBBroker;
+import org.exist.xmldb.CollectionImpl;
+import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xquery.XPathException;
+import org.mortbay.util.MultiException;
+import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -22,8 +30,6 @@ import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XQueryService;
 
 public class XPathQueryTest extends XMLTestCase {
-
-	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	
 	private final static String nested =
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -107,14 +113,20 @@ public class XPathQueryTest extends XMLTestCase {
 	private final static String self =
 		"<test-self><a>Hello</a><b>World!</b></test-self>";
 	
+    private static String uri = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    
+    public static void setURI(String collectionURI) {
+        uri = collectionURI;
+    }
+    
+    private static StandaloneServer server = null;
+    
 	private Collection testCollection;
 	private String query;
-	
-	public XPathQueryTest(String name) {
-		super(name);
-	}
 
 	protected void setUp() {
+       if (uri.startsWith("xmldb:exist://localhost"))
+           initServer();
 		try {
 			// initialize driver
 			Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -124,7 +136,7 @@ public class XPathQueryTest extends XMLTestCase {
 			
 			Collection root =
 				DatabaseManager.getCollection(
-					URI,
+					uri,
 					"admin",
 					null);
 			CollectionManagementService service =
@@ -133,11 +145,6 @@ public class XPathQueryTest extends XMLTestCase {
 					"1.0");
 			testCollection = service.createCollection("test");
 			assertNotNull(testCollection);
-			
-//			XMLResource doc =
-//				(XMLResource) root.createResource("r_and_j.xml", "XMLResource");
-//			doc.setContent(new File("samples/shakespeare/r_and_j.xml"));
-//			root.storeResource(doc);
 		} catch (ClassNotFoundException e) {
 		} catch (InstantiationException e) {
 		} catch (IllegalAccessException e) {
@@ -146,40 +153,84 @@ public class XPathQueryTest extends XMLTestCase {
 		}
 	}
     
+    private void initServer() {
+        try {
+            if (server == null) {
+                server = new StandaloneServer();
+                if (!server.isStarted()) {          
+                    try {               
+                        System.out.println("Starting standalone server...");
+                        String[] args = {};
+                        server.run(args);
+                        while (!server.isStarted()) {
+                            Thread.sleep(1000);
+                        }
+                    } catch (MultiException e) {
+                        boolean rethrow = true;
+                        Iterator i = e.getExceptions().iterator();
+                        while (i.hasNext()) {
+                            Exception e0 = (Exception)i.next();
+                            if (e0 instanceof BindException) {
+                                System.out.println("A server is running already !");
+                                rethrow = false;
+                                break;
+                            }
+                        }
+                        if (rethrow) throw e;
+                    }
+                }               
+            }
+        } catch(Exception e) {          
+            fail(e.getMessage());
+        }           
+    }   
+    
+    protected void tearDown() throws Exception {
+        try {
+            if (!((CollectionImpl) testCollection).isRemoteCollection()) {
+                DatabaseInstanceManager dim =
+                    (DatabaseInstanceManager) testCollection.getService(
+                        "DatabaseInstanceManager", "1.0");
+                dim.shutdown();
+            }
+            testCollection = null;
+
+            System.out.println("tearDown PASSED");
+            
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+    
     public void testPathExpression() {
         try {
             XQueryService service = 
                 storeXMLStringAndGetQueryService("numbers.xml", numbers); 
             
             //Invalid path expression left operand (not a node set).
-            boolean exceptionThrown = false;
             String message = "";
             try {
                 queryAndAssert(service, "('a', 'b', 'c')/position()", -1, null);                
             } catch (XMLDBException e) {
-                exceptionThrown = true;
                 message = e.getMessage();
             }
             assertTrue("Exception wanted: " + message, message.indexOf("XPTY0019") > -1);
             
             //Undefined context sequence
-            exceptionThrown = false;
             message = "";
             try {
                 queryAndAssert(service, "for $a in (<a/>, <b/>, doh, <c/>) return $a", -1, null);                
             } catch (XMLDBException e) {
-                exceptionThrown = true;
                 message = e.getMessage();
             }
             assertTrue("Exception wanted: " + message, message.indexOf("XPDY0002") > -1); 
             
-            exceptionThrown = false;
             message = "";
             try {
                 //"1 to 2" is resolved as a (1, 2), i.e. a sequence of *integers* which is *not* a singleton
                 queryAndAssert(service, "let $a := (1, 2, 3) for $b in $a[1 to 2] return $b", -1, null);                
             } catch (XMLDBException e) {
-                exceptionThrown = true;
                 message = e.getMessage();
             }
             //No effective boolean value for such a kind of sequence !
@@ -210,7 +261,10 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals("XPath: " + query, 1, result.getSize());
             
             XMLResource resource = (XMLResource)result.getResource(0);
-            assertEquals("XPath: " + query, "item", resource.getContentAsDOM().getNodeName());
+            Node node = resource.getContentAsDOM();
+            if (node.getNodeType() == Node.DOCUMENT_NODE)
+                node = node.getFirstChild();
+            assertEquals("XPath: " + query, "item", node.getNodeName());
 		
 			query = "/test/item [ @type='alphanum' ]";
 			result = service.queryResource(testDocument, query);
@@ -832,8 +886,11 @@ public class XPathQueryTest extends XMLTestCase {
             
             ResourceSet result = service.execute(expr);
             
-            Resource r = result.getResource(0);
-            assertEquals("string", ((XMLResource)r).getContentAsDOM().getNodeName());
+            XMLResource r = (XMLResource) result.getResource(0);
+            Node node = r.getContentAsDOM();
+            if (node.getNodeType() == Node.DOCUMENT_NODE)
+                node = node.getFirstChild();
+            assertEquals("string", node.getNodeName());
         } catch (XMLDBException e) {
             System.out.println("testExternalVars(): XMLDBException");
             e.printStackTrace();
@@ -1195,32 +1252,29 @@ public class XPathQueryTest extends XMLTestCase {
     public void testExcept() {
         try {
             XQueryService service = getQueryService();
-            ResourceSet result;
             
             query = "()  except ()";
-            result = queryAndAssert( service, query, 0, ""); 
+            queryAndAssert( service, query, 0, ""); 
             
             query = "()  except  (1)";
-            result = queryAndAssert( service, query, 0, ""); 
+            queryAndAssert( service, query, 0, ""); 
             
-            boolean exceptionThrown = false;
             String message = "";
             try {                
                 query = "(1)  except  ()";
-                result = queryAndAssert( service, query, 0, "");             
+                queryAndAssert( service, query, 0, "");             
             } catch (XMLDBException e) {
-                exceptionThrown = true;
                 message = e.getMessage();
             }
             assertTrue(message.indexOf("XPTY0004") > -1); 
             
             query = "<a/>  except ()";
-            result = queryAndAssert( service, query, 1, "");
+            queryAndAssert( service, query, 1, "");
             query = "()  except <a/>";
-            result = queryAndAssert( service, query, 0, ""); 
+            queryAndAssert( service, query, 0, ""); 
             //Not the same nodes
             query = "<a/> except <a/>";  
-            result = queryAndAssert( service, query, 1, ""); 
+            queryAndAssert( service, query, 1, ""); 
             
         } catch (XMLDBException e) {
             fail(e.getMessage());
@@ -1273,6 +1327,26 @@ public class XPathQueryTest extends XMLTestCase {
         assertTrue("Exception wanted: " + message, exceptionThrown);
 	}
 
+    public void testCompile() throws XMLDBException {
+        String invalidQuery = "for $i in (1 to 10)\n return $b";
+        String validQuery = "for $i in (1 to 10) return $i";
+        org.exist.xmldb.XQueryService service = (org.exist.xmldb.XQueryService) getQueryService();
+        boolean exceptionOccurred = false;
+        try {
+            service.compileAndCheck(invalidQuery);
+        } catch (XPathException e) {
+            assertEquals(e.getLine(), 2);
+            exceptionOccurred = true;
+        }
+        assertTrue("Expected an exception", exceptionOccurred);
+        
+        try {
+            service.compileAndCheck(validQuery);
+        } catch (XPathException e) {
+            fail(e.getMessage());
+        }
+    }
+    
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(XPathQueryTest.class);
 	}
