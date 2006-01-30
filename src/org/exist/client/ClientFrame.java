@@ -48,13 +48,11 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -69,7 +67,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
@@ -877,29 +874,47 @@ public class ClientFrame extends JFrame
     }
     
     private void copyAction(ActionEvent ev) {
-        final ResourceDescriptor[] res = getSelectedResources();
         
-        String[] collections = null;
-        try {
-            Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
+    	final ResourceDescriptor[] res = getSelectedResources();
+    	String[] collections = null;
+        
+    	//get an array of collection paths
+        try
+		{    
+        	Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
             Vector collectionsVec = getCollections(root, new Vector());
             collections = new String[collectionsVec.size()];
             collectionsVec.toArray(collections);
-        } catch (XMLDBException e) {
+        } 
+        catch (XMLDBException e)
+		{
             showErrorMessage(e.getMessage(), e);
             return;
         }
-        Object val = JOptionPane.showInputDialog(this, "Select target collection", "Copy", JOptionPane.QUESTION_MESSAGE,
-                null, collections, collections[0]);
+        
+        //prompt the user for a destination collection from the list
+        Object val = JOptionPane.showInputDialog(this, "Select target collection", "Copy", JOptionPane.QUESTION_MESSAGE, null, collections, collections[0]);
         if(val == null)
             return;
+	    
         final String destinationPath = (String)val;
+               
         Runnable moveTask = new Runnable() {
             public void run() {
                 try {
                     CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
                     client.current.getService("CollectionManagementService", "1.0");
                     for(int i = 0; i < res.length; i++) {
+                        
+                    	//TODO
+                    	//what happens if the source and destination paths are the same?
+                        //we need to check and prompt the user to either skip or choose a new name
+                        //this function can copy multiple resources/collections selected by the user,
+                    	//so may need to prompt the user multiple times? is in this thread the correct
+                    	//place to do it? also need to do something similar for moveAction()
+                    	//
+                    	//Its too late and brain hurts - deliriumsky
+                    	
                         setStatus("Copying " + res[i].getName() + " to " + destinationPath + "...");
                         if(res[i].isCollection())
                             service.copy(res[i].getName(), destinationPath, null);
