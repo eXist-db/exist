@@ -423,6 +423,7 @@ public class Journal {
 			syncThread.join();
 		} catch (InterruptedException e) {
 		}
+        currentBuffer = null;
     }
     
     /**
