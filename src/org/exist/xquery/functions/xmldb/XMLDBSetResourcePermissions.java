@@ -46,7 +46,10 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("set-resource-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                        "Sets the permissions of the specified Resource. Required: user, group, mode (as xs:integer). "+
+                        "Sets the permissions of the specified resource. $a is the collection, which can be specified " +
+                        "as a simple collection path, an XMLDB URI or a collection object. $b denotes the resource to" +
+                        "change. $c specifies the user which will become the owner of the resource, $d the group. " +
+                        "The final argument contains the permissions, specified as an xs:integer value. "+
                         "PLEASE REMEMBER that 0755 is 7*64+5*8+5, NOT decimal 755.",
 			new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
