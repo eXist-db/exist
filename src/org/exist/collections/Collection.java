@@ -54,6 +54,7 @@ import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
+import org.exist.security.XMLSecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -847,8 +848,9 @@ public  class Collection extends Observable
 //			broker.checkTree(document);
             LOG.debug("document stored.");
             // if we are running in privileged mode (e.g. backup/restore), notify the SecurityManager about changes
-            if (getName().equals(DBBroker.SYSTEM_COLLECTION) && document.getFileName().equals(SecurityManager.ACL_FILE)
-            && privileged == false) {
+            if (getName().equals(DBBroker.SYSTEM_COLLECTION) 
+                && document.getFileName().equals(XMLSecurityManager.ACL_FILE)
+                && privileged == false) {
                 // inform the security manager that system data has changed
                 LOG.debug("users.xml changed");
                 broker.getBrokerPool().reloadSecurityManager(broker);

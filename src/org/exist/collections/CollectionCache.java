@@ -90,7 +90,6 @@ public class CollectionCache extends LRDCache {
         accounting.replacedPage(item);
         if (cacheManager != null && accounting.resizeNeeded()) {
             cacheManager.requestMem(this);
-            accounting.stats();
         }
 		return old;
 	}

@@ -448,6 +448,20 @@ public class Configuration implements ErrorHandler {
                         new Integer(freeMem));
             } catch (NumberFormatException nfe) {
             }
+        NodeList securityConf = con.getElementsByTagName("security");
+        String securityManagerClassName = "org.exist.security.XMLSecurityManager";
+        if (securityConf.getLength()>0) {
+           securityManagerClassName = ((Element)securityConf.item(0)).getAttribute("class");
+        }
+        try {
+           config.put("db-connection.security.class",config.getClass().forName(securityManagerClassName));
+        } catch (Throwable ex) {
+           if (ex instanceof ClassNotFoundException) {
+              throw new DatabaseConfigurationException("Cannot find security manager class "+securityManagerClassName);
+           } else {
+              throw new DatabaseConfigurationException("Cannot load security manager class "+securityManagerClassName+" due to "+ex.getMessage());
+           }
+        }
         NodeList poolConf = con.getElementsByTagName("pool");
         if (poolConf.getLength() > 0) {
             configurePool(poolConf);
