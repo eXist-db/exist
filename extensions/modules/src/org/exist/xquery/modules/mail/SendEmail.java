@@ -686,7 +686,7 @@ public class SendEmail extends BasicFunction
 		return(dateString);
 	}
 	
-	//Base65 Encodes a string (used for message subject)
+	//Base64 Encodes a string (used for message subject)
 	private String encode64 (String str) throws java.io.UnsupportedEncodingException
 	{
         String result = new String(Base64.encode(str.getBytes(charset)));
