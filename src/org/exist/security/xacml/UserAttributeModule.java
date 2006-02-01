@@ -17,7 +17,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import org.exist.security.User;
-import org.exist.storage.BrokerPool;
 
 /**
 * This class looks up attributes for a Subject with a subject-category
@@ -31,7 +30,7 @@ public class UserAttributeModule extends AttributeFinderModule
 {
 	private static final Logger LOG = Logger.getLogger(UserAttributeModule.class);
 	
-	private BrokerPool pool;
+	private ExistPDP pdp;
 	
 	private UserAttributeModule() {}
 	
@@ -39,12 +38,12 @@ public class UserAttributeModule extends AttributeFinderModule
 	* Creates an <code>AttributeFinderModule</code> capable of retrieving attributes
 	* for a <code>User</code>.
 	*
-	* @param pool The <code>BrokerPool</code> that is used to obtain information
+	* @param pdp The <code>ExistPDP</code> that is used to obtain information
 	* about a given <code>User</code>.
 	*/
-	public UserAttributeModule(BrokerPool pool)
+	public UserAttributeModule(ExistPDP pdp)
 	{
-		this.pool = pool;
+		this.pdp = pdp;
 	}
 	public EvaluationResult findAttribute(URI attributeType, URI attributeId, URI issuer, URI subjectCategory, EvaluationCtx context, int designatorType)
 	{
@@ -78,7 +77,7 @@ public class UserAttributeModule extends AttributeFinderModule
 			return errorResult("Error finding attribute: Subject-id attribute must be a string.");
 		
 		String uid = ((StringAttribute)value).getValue();
-		User user = pool.getSecurityManager().getUser(uid);
+		User user = pdp.getBrokerPool().getSecurityManager().getUser(uid);
 		if(user == null)
 			return errorResult("No user exists for UID '" + uid + "'");
 		

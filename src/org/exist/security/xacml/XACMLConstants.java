@@ -1,7 +1,13 @@
 package org.exist.security.xacml;
 
 import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.AnyURIAttribute;
+import com.sun.xacml.attr.DateAttribute;
+import com.sun.xacml.attr.DateTimeAttribute;
 import com.sun.xacml.attr.StringAttribute;
+import com.sun.xacml.attr.TimeAttribute;
+import com.sun.xacml.finder.impl.CurrentEnvModule;
+
 import java.net.URI;
 import org.exist.storage.DBBroker;
 
@@ -17,14 +23,20 @@ import org.exist.storage.DBBroker;
 public final class XACMLConstants
 {
 	/* **************** XACML constants **************************** */
+	public static final String XQUERY_OPERATORS_NS = "http://www.w3c.org/TR/2002/WD-xquery-operators-20020816";
 	//the base to namespaces, attribute ids, etc... in the XACML specification
 	public static final String XACML_BASE = "urn:oasis:names:tc:xacml:";
 	public static final String VERSION_1_0 = "1.0:";
 	public static final String VERSION_1_0_BASE = XACML_BASE + VERSION_1_0;
+
+	public static final String RULE_COMBINING_BASE = VERSION_1_0_BASE + "rule-combining-algorithm:";
+	public static final String POLICY_COMBINING_BASE = VERSION_1_0_BASE + "policy-combining-algorithm:";
+	public static final String XACML_DATATYPE_BASE = VERSION_1_0_BASE +  "data-type:";
 	
-	//XACML namespaces, one for a request context, the other for policies
+	//XACML namespaces, one for policies, one for a request context
 	public static final String XACML_POLICY_NAMESPACE = VERSION_1_0_BASE + "policy";
 	public static final String XACML_REQUEST_NAMESPACE = VERSION_1_0_BASE +  "context";
+	
 
 	//XACML root element names and referencing attribute names
 	public static final String POLICY_SET_ELEMENT_LOCAL_NAME = "PolicySet";
@@ -42,15 +54,27 @@ public final class XACMLConstants
 	public static final URI ACCESS_SUBJECT = URI.create(VERSION_1_0_BASE + "subject-category:access-subject");
 	public static final URI CODEBASE_SUBJECT = URI.create(VERSION_1_0_BASE + "subject-category:codebase");
 
+	public static final URI CURRENT_DATE_ATTRIBUTE = URI.create(CurrentEnvModule.ENVIRONMENT_CURRENT_DATE);
+	public static final URI CURRENT_TIME_ATTRIBUTE = URI.create(CurrentEnvModule.ENVIRONMENT_CURRENT_TIME);
+	public static final URI CURRENT_DATETIME_ATTRIBUTE = URI.create(CurrentEnvModule.ENVIRONMENT_CURRENT_DATETIME);
 	//datatype URIs
 	public static final URI STRING_TYPE = URI.create(StringAttribute.identifier);
+	public static final URI URI_TYPE = URI.create(AnyURIAttribute.identifier);
+	public static final URI DATE_TYPE = URI.create(DateAttribute.identifier);
+	public static final URI DATETIME_TYPE = URI.create(DateTimeAttribute.identifier);
+	public static final URI TIME_TYPE = URI.create(TimeAttribute.identifier);
 
 	/***************** eXist-specific constants *****************************/
 	
 	/**
+	* The name of the policies collection.
+	*/
+	public static final String POLICY_COLLECTION_NAME = "policies";
+	
+	/**
 	* The location of the top-level Policy and/or PolicySet documents.
 	*/
-	public static final String POLICY_COLLECTION = DBBroker.SYSTEM_COLLECTION + "/policies";
+	public static final String POLICY_COLLECTION = DBBroker.SYSTEM_COLLECTION + '/' + POLICY_COLLECTION_NAME;
 
 	/**
 	* The namespace used for eXist-specific XACML constants.
@@ -80,7 +104,7 @@ public final class XACMLConstants
 	* The attribute ID for the attribute that provides the namespace
 	* URI of a module.
 	*/
-	public static final URI RESOURCE_NS_ATTRIBUTE = URI.create(RESOURCE_NS + "#resource-namespace");
+	public static final URI MODULE_NS_ATTRIBUTE = URI.create(EXIST_XACML_NS + "#module-namespace");
 	/**
 	* The attribute ID for the attribute that provides the category
 	* of an XQuery module.
@@ -120,11 +144,11 @@ public final class XACMLConstants
 	*/
 	public static final String EXTERNAL_LIBRARY_MODULE = "external library";
 	/**
-	* The external/non-builtin XQuery library module type.
+	* The external/non-builtin XQuery main module type.
 	*/
 	public static final String EXTERNAL_MAIN_MODULE = "external main";
 	/**
-	* The external/non-builtin XQuery library module type.
+	* The constructed XQuery main module type.
 	*/
 	public static final String CONSTRUCTED_MAIN_MODULE = "constructed main";
 

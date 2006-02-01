@@ -91,7 +91,7 @@ public class RequestHelper
 	* attributes. The functionName parameter is the value of the
 	* {@link XACMLConstants#RESOURCE_ID_ATTRIBUTE subject-id} attribute
 	* (the local part) and of the 
-	* {@link XACMLConstants#RESOURCE_NS_ATTRIBUTE resource namespace}
+	* {@link XACMLConstants#MODULE_NS_ATTRIBUTE module namespace}
 	*  attribute (the namespace URI part).  The 
 	* {@link XACMLConstants#RESOURCE_CATEGORY_ATTRIBUTE resource-category}
 	* attribute is {@link XACMLConstants#FUNCTION_RESOURCE function}.
@@ -129,7 +129,7 @@ public class RequestHelper
 		Set resourceAttributes = new HashSet(8);
 		addStringAttribute(resourceAttributes, XACMLConstants.MODULE_CATEGORY_ATTRIBUTE, getModuleCategory(functionModule));
 		addStringAttribute(resourceAttributes, XACMLConstants.MODULE_SRC_ATTRIBUTE, generateModuleID(functionModule));
-		addURIAttribute(resourceAttributes, XACMLConstants.RESOURCE_NS_ATTRIBUTE, namespaceURI);		
+		addURIAttribute(resourceAttributes, XACMLConstants.MODULE_NS_ATTRIBUTE, namespaceURI);		
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, XACMLConstants.FUNCTION_RESOURCE);
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, functionName.getLocalName());
 

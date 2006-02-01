@@ -52,11 +52,22 @@ public class ExistPDP
 {
 	private static final Logger LOG = Logger.getLogger(ExistPDP.class);
 
+	private PDPConfig pdpConfig;
+	//the per database instance util object
+	private XACMLUtil util;
+	//the PDP object that actually evaluates requests
 	private PDP pdp;
+	private BrokerPool pool;
+	
 	/**
 	 * Assists client in creating <code>RequestCtx</code>s.
 	 */
-	private RequestHelper helper;
+	private RequestHelper helper = new RequestHelper();
+
+	static
+	{
+		java.util.logging.Logger.getLogger("com.sun.xacml").setLevel(java.util.logging.Level.WARNING);
+	}
 
 	private ExistPDP() {}
 	/**
@@ -65,12 +76,57 @@ public class ExistPDP
 	*/
 	public ExistPDP(BrokerPool pool)
 	{
-		java.util.logging.Logger.getLogger("com.sun.xacml").setLevel(java.util.logging.Level.WARNING);
-		PDPConfig config = new PDPConfig(createAttributeFinder(pool), createPolicyFinder(pool), createResourceFinder(pool));
-		pdp = new PDP(config);
-		helper = new RequestHelper();
+		if(pool == null)
+			throw new NullPointerException("BrokerPool cannot be null");
+		this.pool = pool;
+		
+		util = new XACMLUtil(this);
+		
+		pdpConfig = new PDPConfig(createAttributeFinder(), createPolicyFinder(), createResourceFinder());
+		pdp = new PDP(pdpConfig);
+	}
+	
+	/**
+	* Returns the <code>PDPConfig</code> used to initialize the
+	* underlying <code>PDP</code>.
+	*
+	* @return the <code>PDPConfig</code>
+	*/
+	public PDPConfig getPDPConfig()
+	{
+		return pdpConfig;
+	}
+	
+	/**
+	 * Obtains the <code>BrokerPool</code> with which this instance
+	 * is associated.
+	 * 
+	 * @return This instance's associated <code>BrokerPool</code>
+	 */
+	public BrokerPool getBrokerPool()
+	{
+		return pool;
+	}
+	
+	/**
+	 * Obtains the XACML utility instance for this database instance.
+	 *  
+	 * @return the associated XACML utility object
+	 */
+	public XACMLUtil getUtil()
+	{
+		return util;
 	}
 
+	/**
+	* Performs any necessary cleanup operations.  Generally only
+	* called if XACML has been disabled.
+	*/
+	public void close()
+	{
+		util.close();
+	}
+	
 	/**
 	* The method that will be used most of the time.  It provides the
 	* simplest interface to the underlying <code>PDP</code> by
@@ -207,12 +263,10 @@ public class ExistPDP
 	* <code>PDP</code> to locate hierarchical resources.  Hierarchical resources
 	* are not currently supported (org.exist.security.xacml, not sunxacml) so
 	* this method returns null.
-	* 
-	* @param pool The <code>BrokerPool</code> to be used to access the
-	*		database if needed.
+	*
 	* @return A <code>ResourceFinder</code> for hierarchical resources.
 	*/
-	private ResourceFinder createResourceFinder(BrokerPool pool)
+	private ResourceFinder createResourceFinder()
 	{
 		return null;
 	}
@@ -228,14 +282,12 @@ public class ExistPDP
 	* finds the user's name and the user's groups from the subject-id (which is
 	* the uid of the user).
 	* 
-	* @param pool The <code>BrokerPool</code> to be used to access the
-	*		database if needed.
 	* @return An <code>AttributeFinder</code> for unspecified attributes.
 	*/
-	private AttributeFinder createAttributeFinder(BrokerPool pool)
+	private AttributeFinder createAttributeFinder()
 	{
 		List modules = new ArrayList(2);
-		modules.add(new UserAttributeModule(pool));
+		modules.add(new UserAttributeModule(this));
 		modules.add(new CurrentEnvModule());
 		
 		AttributeFinder attributeFinder = new AttributeFinder();
@@ -249,13 +301,11 @@ public class ExistPDP
 	* <code>ExistPolicyModule</code> for both resolving policy references and
 	* finding the applicable policy for a given request.
 	* 
-	* @param pool The <code>BrokerPool</code> to be used to access the
-	*		database if needed.
 	* @return A <code>PolicyFinder</code> for unspecified attributes.
 	*/
-	private PolicyFinder createPolicyFinder(BrokerPool pool)
+	private PolicyFinder createPolicyFinder()
 	{
-		ExistPolicyModule policyModule = new ExistPolicyModule(pool);
+		ExistPolicyModule policyModule = new ExistPolicyModule(this);
 
 		PolicyFinder policyFinder = new PolicyFinder();
 		policyFinder.setModules(Collections.singleton(policyModule));
