@@ -89,6 +89,7 @@ import javax.xml.transform.OutputKeys;
 import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
 import org.exist.backup.Restore;
+import org.exist.client.xacml.XACMLEditor;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -455,11 +456,20 @@ public class ClientFrame extends JFrame
         
         toolsMenu.addSeparator();
         
-        item = new JMenuItem("Edit users", KeyEvent.VK_F);
+        item = new JMenuItem("Edit users", KeyEvent.VK_U);
         item.setAccelerator(KeyStroke.getKeyStroke("control U"));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 newUserAction(e);
+            }
+        });
+        toolsMenu.add(item);
+        
+        item = new JMenuItem("Edit Policies", KeyEvent.VK_O);
+        item.setAccelerator(KeyStroke.getKeyStroke("control O"));
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                editPolicies();
             }
         });
         toolsMenu.add(item);
@@ -1105,6 +1115,19 @@ public class ClientFrame extends JFrame
             showErrorMessage("Failed to retrieve UserManagementService", e);
             e.printStackTrace();
         }
+    }
+    
+    private void editPolicies() {
+        Collection systemCollection;
+        try {
+            systemCollection = client.getCollection(DBBroker.SYSTEM_COLLECTION);
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            showErrorMessage("Could not get system collection", e);
+            return;
+        }
+        XACMLEditor editor = new XACMLEditor(systemCollection);
+        editor.show();
     }
     
     private void findAction(ActionEvent ev) {

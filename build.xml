@@ -231,6 +231,7 @@
                 <include name="icons/**.png"/>
                 <include name="icons/**.gif"/>
                 <include name="*.xsl"/>
+				<include name="**/*.xconf"/>
             </fileset>
         </copy>
         <copy todir="${build.classes}/org/exist/xquery/lib">
@@ -374,8 +375,8 @@
             </batchtest>
         </junit>
     </target>
-    
-    <!-- Test set 2 : jetty server -->
+	
+        <!-- Test set 2 : jetty server -->
     <target name="test-jetty">
         <echo message="------------------------------------------"/>
         <echo message="Running tests on a jetty server"/>
