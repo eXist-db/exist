@@ -63,5 +63,9 @@ public class FunCurrentDateTime extends Function {
         
         return result;        
 	}
+    
+    public int getDependencies() {
+        return Dependency.CONTEXT_SET;
+    }
 
 }

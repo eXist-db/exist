@@ -15,6 +15,8 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
+import java.text.*;
+import java.util.*;
 
 /** Tests for various standart XQuery functions
  * @author jens
@@ -492,6 +494,24 @@ public class XQueryFunctionsTest extends TestCase {
 			fail(e.getMessage());
 		}
 	}
+    
+    public void testCurrentDateTime() throws XPathException {
+        ResourceSet result      = null;
+        String      r           = "";
+        try {   
+            //Do not use this test around midnight on the last day of a month ;-)
+            result  = service.query(
+            "('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', " +
+            "'Oct', 'Nov', 'Dec')[month-from-dateTime(current-dateTime())]");
+            r       = (String) result.getResource(0).getContent();
+            SimpleDateFormat df = new SimpleDateFormat("MMM", new Locale("en", "US"));
+            Date date = new Date();
+            assertEquals(df.format(date), r );
+        } catch (XMLDBException e) {
+            System.out.println("current-dateTime(): " + e);
+            fail(e.getMessage());
+        }
+    }
 	
 	/*
 	 * @see TestCase#setUp()
