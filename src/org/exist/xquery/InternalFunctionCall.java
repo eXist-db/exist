@@ -29,8 +29,6 @@ public class InternalFunctionCall extends Function
 	public InternalFunctionCall(Function f)
 	{
 		super(f.getContext(), f.getSignature());
-		if(f == null)
-			throw new NullPointerException("Function cannot be null");
 		this.function = f;
 	}
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
