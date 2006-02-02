@@ -33,7 +33,7 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
     public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append( "<!-- " );
-        buf.append( cdata );
+        buf.append( cdata.toString() );
         buf.append( " -->" );
         return buf.toString();
     }
