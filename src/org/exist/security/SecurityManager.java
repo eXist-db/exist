@@ -69,6 +69,8 @@ public interface SecurityManager {
    
    void attach(BrokerPool pool, DBBroker sysBroker);
 
+   boolean isXACMLEnabled();
+   
    ExistPDP getPDP();
 
    void deleteUser(String name) 

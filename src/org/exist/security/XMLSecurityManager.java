@@ -193,7 +193,9 @@ public class XMLSecurityManager implements SecurityManager {
 			LOG.debug("XACML enabled");
 		}
 	}
-
+	public boolean isXACMLEnabled() {
+		return pdp != null;
+	}
 	public ExistPDP getPDP() {
 		return pdp;
 	}

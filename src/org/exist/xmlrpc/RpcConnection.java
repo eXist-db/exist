@@ -749,6 +749,10 @@ public class RpcConnection extends Thread {
         return true;
     }
     
+    public boolean isXACMLEnabled() {
+    	return brokerPool.getSecurityManager().isXACMLEnabled();
+    }
+    
     public boolean dataBackup(User user, String dest ) {
         brokerPool.triggerSystemTask( new DataBackup(dest));
         return true;
