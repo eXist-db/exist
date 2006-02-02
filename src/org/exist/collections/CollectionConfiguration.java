@@ -236,34 +236,33 @@ public class CollectionConfiguration {
 			Class clazz = Class.forName(classname);
 			if(!Trigger.class.isAssignableFrom(clazz))
 				throw new CollectionConfigurationException("Trigger's class '" + classname + 
-                        "' is not assignable from '" + Trigger.class + "'");			
+                        "' is not assignable from '" + Trigger.class + "'");	
+             Trigger trigger = (Trigger)clazz.newInstance();
             
 			NodeList nodes = node.getElementsByTagNameNS(NAMESPACE, PARAMETER_ELEMENT);
             //TODO : rely on schema-driven validation -pb
-            if (nodes.getLength() == 0)
+            if (nodes.getLength() > 0) {
+                Map parameters = new HashMap(nodes.getLength()); 
+                for (int i = 0 ; i < nodes.getLength();  i++) {
+                    Element param = (Element)nodes.item(i);
+                    //TODO : rely on schema-driven validation -pb
+                    String name = param.getAttribute(PARAM_NAME_ATTRIBUTE);
+                    if(name == null)
+                        throw new CollectionConfigurationException("Expected attribute '" + PARAM_NAME_ATTRIBUTE +
+                                "' for element '" + PARAMETER_ELEMENT + "' in trigger's configuration."); 
+                    String value = param.getAttribute(PARAM_VALUE_ATTRIBUTE);
+                    if(value == null)
+                        throw new CollectionConfigurationException("Expected attribute '" + PARAM_VALUE_ATTRIBUTE +
+                                "' for element '" + PARAMETER_ELEMENT + "' in trigger's configuration."); 
+                    
+                    parameters.put(name, value);  
+                }
+                trigger.configure(broker, collection, parameters);            
+            } /* else {
                 throw new CollectionConfigurationException("Expected '" + PARAM_NAME_ATTRIBUTE +
-                    "' elements in namespace '" + NAMESPACE + "' in trigger's configuration.");             
-     
-            Map parameters = new HashMap(5); 
-            for (int i = 0 ; i < nodes.getLength();  i++) {
-                Element param = (Element)nodes.item(i);
-                //TODO : rely on schema-driven validation -pb
-                String name = param.getAttribute(PARAM_NAME_ATTRIBUTE);
-                if(name == null)
-                    throw new CollectionConfigurationException("Expected attribute '" + PARAM_NAME_ATTRIBUTE +
-                            "' for element '" + PARAMETER_ELEMENT + "' in trigger's configuration."); 
-                String value = param.getAttribute(PARAM_VALUE_ATTRIBUTE);
-                if(value == null)
-                    throw new CollectionConfigurationException("Expected attribute '" + PARAM_NAME_ATTRIBUTE +
-                            "' for element '" + PARAMETER_ELEMENT + "' in trigger's configuration."); 
-                
-                parameters.put(name, value);                        
-            }     
-			
-            Trigger trigger = (Trigger)clazz.newInstance();
-			trigger.configure(broker, collection, parameters);
+                        "' elements in namespace '" + NAMESPACE + "' in trigger's configuration.");     
+            } */			
             return trigger;
-            
 		} catch (ClassNotFoundException e) {
 			throw new CollectionConfigurationException(e.getMessage(), e);
 		} catch (InstantiationException e) {
