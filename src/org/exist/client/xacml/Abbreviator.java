@@ -120,7 +120,6 @@ public class Abbreviator
 	
 	public String getAbbreviatedFunctionId(URI functionId)
 	{
-		System.err.println("getAbbrev(" + functionId + ")");
 		if(functionId == null)
 			return null;
 	
@@ -129,12 +128,10 @@ public class Abbreviator
 			toString = toString.substring(FunctionBase.FUNCTION_NS.length());
 		else
 		{
-			System.err.println(" functionId did not start with FUNCTION_NS");
 			functionMap.put(functionId, toString);
 			return toString;
 		}
-		System.err.println(" functionId started with FUNCTION_NS, is now '" + toString + "'");
-
+		
 		if(toString.equals("regexp-string-match"))
 			toString = "string-match";
 		
@@ -143,11 +140,9 @@ public class Abbreviator
 			if(toString.endsWith(comparisonMap[i][0]))
 			{
 				toString = comparisonMap[i][1];
-				System.err.println(" functionId was in comparison map, returning '" + toString + "'");
 				return toString;
 			}
 		}
-		System.err.println(" functionId was not in comparison map, returning '" + toString + "'");
 		functionMap.put(functionId, toString);
 		return toString;
 	}

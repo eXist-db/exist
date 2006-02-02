@@ -9,18 +9,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.exist.security.SecurityManager;
+import org.exist.client.ClientFrame;
 import org.exist.security.User;
 import org.exist.security.xacml.XACMLConstants;
+import org.exist.xmldb.UserManagementService;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
 public class UserAttributeHandler implements AttributeHandler
 {
-	private SecurityManager manager;
+	private Collection collection;
 
 	private UserAttributeHandler() {}
-	public UserAttributeHandler(SecurityManager manager)
+	public UserAttributeHandler(DatabaseInterface dbInterface)
 	{
-		this.manager = manager;
+		if(dbInterface == null)
+			throw new NullPointerException("Database interface cannot be null");
+		this.collection = dbInterface.getPolicyCollection();
 	}
 	public void filterFunctions(Set functions, AttributeDesignator attribute)
 	{
@@ -42,21 +47,21 @@ public class UserAttributeHandler implements AttributeHandler
 		URI id = attribute.getId();
 		if(id.equals(XACMLConstants.SUBJECT_ID_ATTRIBUTE))
 		{
-			User[] users = manager.getUsers();
+			User[] users = getUsers();
 			for(int i = 0; i < users.length; ++i)
 				values.add(new Integer(users[i].getUID()));
 			return false;
 		}
 		if(id.equals(XACMLConstants.USER_NAME_ATTRIBUTE))
 		{
-			User[] users = manager.getUsers();
+			User[] users = getUsers();
 			for(int i = 0; i < users.length; ++i)
 				values.add(users[i].getName());
 			return false;
 		}
 		if(id.equals(XACMLConstants.GROUP_ATTRIBUTE))
 		{
-			String[] groupNames = manager.getGroups();
+			String[] groupNames = getGroups();
 			for(int i = 0; i < groupNames.length; ++i)
 				values.add(groupNames[i]);
 			return false;
@@ -67,6 +72,49 @@ public class UserAttributeHandler implements AttributeHandler
 			return false;
 		}
 		return true;
+	}
+	
+	private User[] getUsers()
+	{
+		UserManagementService service = getUserService();
+		if(service == null)
+			return new User[0];
+		try
+		{
+			return service.getUsers();
+		}
+		catch (XMLDBException xe)
+		{
+			ClientFrame.showErrorMessage("Could not get list of users: user attributes will be invalid", xe);
+			return new User[0];
+		}
+	}
+	private String[] getGroups()
+	{
+		UserManagementService service = getUserService();
+		if(service == null)
+			return new String[0];
+		try
+		{
+			return service.getGroups();
+		}
+		catch (XMLDBException xe)
+		{
+			ClientFrame.showErrorMessage("Could not get list of groups: group attributes will be invalid", xe);
+			return new String[0];
+		}
+	}
+	private UserManagementService getUserService()
+	{
+		try
+		{
+			return (UserManagementService)collection.getService("UserManagementService", "1.0");
+		}
+		catch (XMLDBException xe)
+		{
+			ClientFrame.showErrorMessage("Could not get user management service: user and group attributes will be invalid.", xe);
+			return null;
+		}
 	}
 
 	public void checkUserValue(AttributeValue value, AttributeDesignator attribute) throws ParsingException

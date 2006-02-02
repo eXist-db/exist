@@ -27,6 +27,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.exist.client.ClientFrame;
@@ -45,7 +47,8 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 	private List listeners = new ArrayList(2);
 	private List attributeHandlers = new ArrayList(2);
 	
-	private boolean tempIgnoreChanges = false;
+	private Object currentFunction;
+	private Object currentValue;
 	
 	private MatchEditor() {}
 	public MatchEditor(Abbreviator abbrev)
@@ -93,18 +96,21 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 	}
 	public void setMatch(AttributeDesignator attribute, URI functionId, AttributeValue value)
 	{
-		tempIgnoreChanges = true;
-		
-		commitEdit();
 		valueBox.removeActionListener(this);
 		functionBox.removeActionListener(this);
+		Component comp = valueBox.getEditor().getEditorComponent();
+		Document doc = null;
+		if(comp instanceof JTextComponent)
+		{
+			doc = ((JTextComponent)comp).getDocument();
+			doc.removeDocumentListener(this);
+		}
 		
 		this.attribute = attribute;
 		if(attribute == null)
 		{
 			label.setText(EMPTY_TEXT);
 			setBoxesVisible(false);
-			tempIgnoreChanges = false;
 			return;
 		}
 		
@@ -147,9 +153,12 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 		
 		valueBox.setSelectedItem((value == null) ? null : value.encode());
 		setBoxesVisible(true);
+		currentValue = valueBox.getSelectedItem();
+		currentFunction = functionBox.getSelectedItem();
 		valueBox.addActionListener(this);
 		functionBox.addActionListener(this);
-		tempIgnoreChanges = false;
+		if(doc != null)
+			doc.addDocumentListener(this);
 	}
 	
 	private Dimension restrictWidth(Dimension size)
@@ -166,21 +175,17 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 	}
 	public URI getFunctionId()
 	{
-		return abbrev.getFullFunctionId((String)functionBox.getSelectedItem(), attribute.getType());
+		return (currentFunction == null) ? null : abbrev.getFullFunctionId((String)currentFunction, attribute.getType());
 	}
 	public AttributeValue getValue()
 	{
-		if(attribute == null)
+		if(attribute == null || currentValue == null)
 			return null;
-		commitEdit();
 		
-		Object item = valueBox.getSelectedItem();
-		if(item == null)
-			return null;
 		AttributeFactory factory = AttributeFactory.getInstance();
 		try
 		{
-			AttributeValue value = factory.createValue(attribute.getType(), item.toString());
+			AttributeValue value = factory.createValue(attribute.getType(), currentValue.toString());
 			for(Iterator it = attributeHandlers.iterator(); it.hasNext();)
 				((AttributeHandler)it.next()).checkUserValue(value, attribute);
 			return value;
@@ -192,20 +197,15 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 		}
 		catch (ParsingException e)
 		{
-			ClientFrame.showErrorMessage("Invalid value '" + item + "'", e);
+			ClientFrame.showErrorMessage("Invalid value '" + currentValue + "'", e);
 			return null;
 		}
-	}
-	public void commitEdit()
-	{
-		functionBox.setSelectedItem(functionBox.getEditor().getItem());
-		valueBox.setSelectedItem(valueBox.getEditor().getItem());
 	}
 	public AttributeDesignator getAttribute()
 	{
 		return attribute;
 	}
-	
+		
 	public void addAttributeHandler(AttributeHandler ah)
 	{
 		if(ah == null)
@@ -224,12 +224,17 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 
 	public void actionPerformed(ActionEvent event)
 	{
+		Object source = event.getSource();
+		if(source == functionBox)
+			currentFunction = functionBox.getSelectedItem();
+		else if(source == valueBox)
+			currentValue = valueBox.getSelectedItem();
+		else
+			return;
 		fireChanged();
 	}
 	private void fireChanged()
 	{
-		if(tempIgnoreChanges)
-			return;
 		ChangeEvent event = new ChangeEvent(this);
 		for(Iterator it = listeners.iterator(); it.hasNext();)
 			((ChangeListener)it.next()).stateChanged(event);
@@ -245,16 +250,29 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 			listeners.remove(listeners);
 	}
 	
+	private void documentUpdated(DocumentEvent event)
+	{
+		Document doc = event.getDocument(); 
+		try
+		{
+			currentValue = doc.getText(0, doc.getLength());
+		}
+		catch (BadLocationException e)
+		{
+			return;
+		}
+		fireChanged();
+	}
 	public void changedUpdate(DocumentEvent event)
 	{
-		fireChanged();
+		documentUpdated(event);
 	}
 	public void insertUpdate(DocumentEvent event)
 	{
-		fireChanged();
+		documentUpdated(event);
 	}
 	public void removeUpdate(DocumentEvent event)
 	{
-		fireChanged();
+		documentUpdated(event);
 	}
 }

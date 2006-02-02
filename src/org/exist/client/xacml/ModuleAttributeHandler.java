@@ -10,18 +10,15 @@ import java.util.List;
 import java.util.Set;
 
 import org.exist.security.xacml.XACMLConstants;
-import org.exist.util.Configuration;
 import org.exist.xquery.Function;
 
 //TODO give user more help through this class
+//
 public class ModuleAttributeHandler implements AttributeHandler
 {
-	private Configuration config;
 	
-	private ModuleAttributeHandler() {}
-	public ModuleAttributeHandler(Configuration config)
+	public ModuleAttributeHandler()
 	{
-		this.config = config;
 	}
 	public void filterFunctions(Set functions, AttributeDesignator attribute)
 	{
@@ -69,14 +66,17 @@ public class ModuleAttributeHandler implements AttributeHandler
 		}
 		return true;
 	}
+	//TODO: because BrokerPool and thus Configuration are not
+	//	available remotely, this is commented until a remote
+	//	solution is written
 	//index = 0 for namespaces, 1 for the class name
 	private void addInternal(Set values, int index)
 	{
-		String modules[][] = (String[][])config.getProperty("xquery.modules");
+		/*String modules[][] = (String[][])config.getProperty("xquery.modules");
 		if(modules == null)
 			return;
 		for(int i = 0; i < modules.length; i++)
-			values.add(modules[i][index]);
+			values.add(modules[i][index]);*/
 	}
 
 	public void checkUserValue(AttributeValue value, AttributeDesignator attribute) throws ParsingException

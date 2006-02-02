@@ -26,7 +26,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
@@ -36,6 +35,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.xmldb.api.base.Collection;
 
@@ -54,7 +54,7 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 	
 	private static final int MIN_FRAME_WIDTH = 600;
 	private static final int MIN_FRAME_HEIGHT = 350;
-	private static final int MINIMUM_TREE_WIDTH = 0;
+	private static final int MINIMUM_TREE_WIDTH = 100;
 		
 	private DatabaseInterface dbInterface;
 	private XACMLTreeModel model;
@@ -92,6 +92,7 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 		
 		
 		tree = new JTree(model);
+		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		TreeMutator mutator = new TreeMutator(tree);
 		tree.addTreeSelectionListener(this);
 		tree.setCellRenderer(new CustomRenderer(mutator));
@@ -107,7 +108,7 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 		JScrollPane scroll = new JScrollPane(tree);
 		
 		split.setLeftComponent(scroll);
-		split.setRightComponent(new JPanel());
+		split.setRightComponent(new JScrollPane());
 		split.setOneTouchExpandable(false);
 	}
 	public void close()
@@ -133,6 +134,7 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 		if(editor != null)
 			editor.pushChanges();
 		dbInterface.writePolicies((RootNode)model.getRoot());
+		tree.repaint();
 	}
 	
 	public static PolicySet createDefaultPolicySet(PolicyElementContainer parent)
@@ -235,15 +237,16 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 		else if(value instanceof ConditionNode)
 			editor = null;//TODO: implement condition editing
 		else if(value instanceof TargetNode)
-			editor = new TargetEditor(dbInterface.getBrokerPool());
+			editor = new TargetEditor(dbInterface);
 		
 		int dividerLocation = split.getDividerLocation();
+		JScrollPane scroll = ((JScrollPane)split.getRightComponent());
 		if(editor == null)
-			split.setRightComponent(new JPanel());
+			scroll.setViewportView(null);
 		else				
 		{
 			editor.setNode((XACMLTreeNode)value);
-			split.setRightComponent(editor.getComponent());
+			scroll.setViewportView(editor.getComponent());
 		}
 		split.setDividerLocation(dividerLocation);
 			
