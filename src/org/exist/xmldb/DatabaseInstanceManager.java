@@ -39,4 +39,11 @@ public interface DatabaseInstanceManager extends Service {
 	 * @return
 	 */
 	public boolean isLocalInstance();
+	
+	/**
+	 * Returns true if XACML is enabled for the database instance. 
+	 *
+	 * @returns if XACML is enabled
+	 */
+	public boolean isXACMLEnabled() throws XMLDBException;
 }

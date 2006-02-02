@@ -63,6 +63,12 @@ public interface RpcAPI {
 	public boolean shutdown(User user, long delay) throws PermissionDeniedException;
 	
 	public boolean sync(User user);
+	
+	/**
+	 * Returns true if XACML is enabled for the current database instance
+	 * @return if XACML is enabled
+	 */
+	public boolean isXACMLEnabled(User user);
 
 	/**
 	 *  Retrieve document by name. XML content is indented if prettyPrint is set

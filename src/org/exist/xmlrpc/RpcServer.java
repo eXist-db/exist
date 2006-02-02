@@ -1519,6 +1519,16 @@ public class RpcServer implements RpcAPI {
         }
         return true;
     }
+    
+    public boolean isXACMLEnabled(User user) {
+        RpcConnection con = null;
+        try {
+            con = pool.get();
+            return con.isXACMLEnabled();
+        } finally {
+            pool.release(con);
+        }
+    }
 
     public boolean dataBackup(User user, String dest) throws PermissionDeniedException {
         if (!user.hasDbaRole()) {

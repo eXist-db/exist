@@ -84,4 +84,8 @@ public class LocalDatabaseInstanceManager implements DatabaseInstanceManager {
 	public void setProperty(String arg0, String arg1) throws XMLDBException {
 	}
 
+	public boolean isXACMLEnabled() throws XMLDBException {
+		return pool.getSecurityManager().isXACMLEnabled();
+	}
+
 }
