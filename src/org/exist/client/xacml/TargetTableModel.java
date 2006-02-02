@@ -138,7 +138,7 @@ public class TargetTableModel implements TableModel
 			LOG.warn("String representation of a non-null attribute value was unexpectedly null.  (Row " + row + ", column " + col + ")");
 			return UNSPECIFIED;
 		}
-		return "<html>" + XACMLUtil.XMLEscape(functionString) + " <b>" + XACMLUtil.XMLEscape(stringValue) + "</b>";
+		return "<html>" + XACMLUtil.XMLEscape(functionString) + "&nbsp;<b>" + XACMLUtil.XMLEscape(stringValue) + "</b>";
 	}
 
 	public void setValueAt(Object value, int row, int col)

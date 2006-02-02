@@ -5,6 +5,7 @@ import com.sun.xacml.Policy;
 import com.sun.xacml.PolicySet;
 import com.sun.xacml.PolicyTreeElement;
 import com.sun.xacml.Target;
+import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 
 import java.net.URI;
@@ -47,7 +48,10 @@ public class PolicySetNode extends AbstractPolicyNode
 	}
 	public PolicySet createPolicySet(URI id)
 	{
-		PolicyCombiningAlgorithm algorithm = (PolicyCombiningAlgorithm)getCombiningAlgorithm();
+		CombiningAlgorithm alg = getCombiningAlgorithm();
+		if(!(alg instanceof PolicyCombiningAlgorithm))
+			throw new IllegalStateException("Combining algorithm must be a policy combining algorithm");
+		PolicyCombiningAlgorithm algorithm = (PolicyCombiningAlgorithm)alg;
 		Target target = getTarget().getTarget();
 		List copy = new ArrayList(children.size());
 		for(Iterator it = children.iterator(); it.hasNext();)

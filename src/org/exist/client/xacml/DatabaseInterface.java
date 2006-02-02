@@ -16,17 +16,11 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
-import org.exist.EXistException;
 import org.exist.client.ClientFrame;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
 import org.exist.security.xacml.XACMLConstants;
-import org.exist.security.xacml.XACMLUtil;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.DatabaseStatus;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
@@ -52,6 +46,9 @@ public class DatabaseInterface
 	
 	private void setup(Collection systemCollection)
 	{
+		if(systemCollection == null)
+			throw new NullPointerException("System collection cannot be null");
+			
 		InputStream in = null;
 		try
 		{
@@ -142,6 +139,7 @@ public class DatabaseInterface
 				
 				xres.setContent(out.toString());
 				policyCollection.storeResource(xres);
+				node.commit(true);
 			}
 			catch (XMLDBException e)
 			{
@@ -184,48 +182,40 @@ public class DatabaseInterface
 	}
 	private void findPolicies(RootNode root)
 	{
-		BrokerPool pool = getBrokerPool();
-		if(pool == null)
-			return;
-		
-		DBBroker broker;
 		try
 		{
-			broker = pool.get();
+			String[] resourceIds = policyCollection.listResources();
+			for(int i = 0; i < resourceIds.length; ++i)
+			{
+				String resourceId = resourceIds[i];
+				Resource resource = policyCollection.getResource(resourceId);
+				if(resource != null && resource instanceof XMLResource)
+					handleResource((XMLResource)resource, root);
+			}
 		}
-		catch(EXistException ee)
+		catch (XMLDBException xe)
 		{
-			LOG.warn("Could not get DBBroker", ee);
+			ClientFrame.showErrorMessage("Error scanning for policies", xe);
+		}
+	}
+	private void handleResource(XMLResource xres, RootNode root) throws XMLDBException
+	{
+		String documentName = xres.getDocumentId();
+		Node content = xres.getContentAsDOM();
+		Element rootElement;
+		if(content instanceof Document)
+			rootElement = ((Document)content).getDocumentElement();
+		else if(content instanceof Element)
+			rootElement = (Element)content;
+		else
+		{
+			LOG.warn("The DOM representation of resource '" + documentName + "' in the policy collection was not a Document or Element node.");
 			return;
 		}
 		
-		try
-		{
-			findPolicies(broker, root);
-		}
-		finally
-		{
-			pool.release(broker);
-		}
-	}
-	private void findPolicies(DBBroker broker, RootNode root)
-	{
-		DocumentSet policies = XACMLUtil.getPolicyDocuments(broker, false);
-		if(policies == null)
-			return;
-		
-		for(Iterator it = policies.iterator(); it.hasNext();)
-			handleDocument((DocumentImpl)it.next(), root);
-	}
-	private void handleDocument(DocumentImpl doc, RootNode root)
-	{
-		String documentName = doc.getFileName();
-		Element rootElement = doc.getDocumentElement();
-		if(rootElement == null)
-			return;
 		String namespace = rootElement.getNamespaceURI();
 		String tagName = rootElement.getTagName();
-
+		
 		//sunxacml does not do namespaces, so this part is commented out for now
 		if(/*XACMLConstants.XACML_POLICY_NAMESPACE.equals(namespace) && */XACMLConstants.POLICY_ELEMENT_LOCAL_NAME.equals(tagName))
 		{
@@ -270,30 +260,5 @@ public class DatabaseInterface
 		while((read = reader.read(buffer)) > -1)
 			writer.write(buffer, 0, read);
 		return writer.toString();
-	}
-	public BrokerPool getBrokerPool()
-	{
-		DatabaseStatus status;
-		try
-		{
-			DatabaseInstanceManager manager = (DatabaseInstanceManager)policyCollection.getService("DatabaseInstanceManager", "1.0");
-			status = manager.getStatus();
-		}
-		catch(XMLDBException xe)
-		{
-			LOG.warn("Could not get BrokerPool instance: " + xe.getMessage(), xe);
-			return null;
-		}
-		
-		String id = status.getId();
-		try
-		{
-			return BrokerPool.getInstance(id);
-		}
-		catch(EXistException ee)
-		{
-			LOG.warn("Could not get BrokerPool instance: " + ee.getMessage(), ee);
-			return null;
-		}
 	}
 }

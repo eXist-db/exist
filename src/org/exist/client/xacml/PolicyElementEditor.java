@@ -2,7 +2,6 @@ package org.exist.client.xacml;
 
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.combine.CombiningAlgorithm;
-import com.sun.xacml.combine.RuleCombiningAlgorithm;
 import com.sun.xacml.combine.StandardCombiningAlgFactory;
 
 import java.awt.Color;
@@ -158,18 +157,16 @@ public abstract class PolicyElementEditor extends AbstractNodeEditor implements 
 	
 	public CombiningAlgorithm getAlgorithm()
 	{
-		URI ruleAlgURI = abbrev.getFullCombiningURI((String)comboBox.getSelectedItem(), true);
-		RuleCombiningAlgorithm algorithm;
+		URI algURI = abbrev.getFullCombiningURI((String)comboBox.getSelectedItem(), (node instanceof PolicyNode));
 		try
 		{
-			algorithm = (RuleCombiningAlgorithm)StandardCombiningAlgFactory.getInstance().createAlgorithm(ruleAlgURI);
+			return StandardCombiningAlgFactory.getInstance().createAlgorithm(algURI);
 		}
 		catch (UnknownIdentifierException e)
 		{
-			ClientFrame.showErrorMessage("Invalid rule combining algorithm '" + ruleAlgURI + "'", e);
+			ClientFrame.showErrorMessage("Invalid rule combining algorithm '" + algURI + "'", e);
 			return null;
 		}
-		return algorithm;
 	}
 	public void setNode(XACMLTreeNode treeNode)
 	{

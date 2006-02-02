@@ -21,9 +21,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.exist.security.SecurityManager;
-import org.exist.storage.BrokerPool;
-
 public class TargetEditor extends AbstractNodeEditor implements ChangeListener, ListSelectionListener
 {
 	private Abbreviator abbrev;
@@ -42,12 +39,12 @@ public class TargetEditor extends AbstractNodeEditor implements ChangeListener, 
 	private TargetNode node;
 	
 	private TargetEditor() {}
-	public TargetEditor(BrokerPool pool)
+	public TargetEditor(DatabaseInterface dbInterface)
 	{
 		abbrev = new Abbreviator();
-		setup(pool);
+		setup(dbInterface);
 	}
-	private void setup(BrokerPool pool)
+	private void setup(DatabaseInterface dbInterface)
 	{
 		comp = new JPanel(new BorderLayout());
 		comp.setOpaque(true);
@@ -56,7 +53,7 @@ public class TargetEditor extends AbstractNodeEditor implements ChangeListener, 
 		matchEditor = new MatchEditor(abbrev);
 		matchEditor.addChangeListener(this);
 		comp.add(matchEditor, BorderLayout.NORTH);
-		setupHandlers(matchEditor, pool);
+		setupHandlers(matchEditor, dbInterface);
 		
 		tabbed = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		comp.add(tabbed, BorderLayout.CENTER);
@@ -72,13 +69,12 @@ public class TargetEditor extends AbstractNodeEditor implements ChangeListener, 
 		return comp;
 	}
 
-	private void setupHandlers(MatchEditor matchEditor, BrokerPool pool)
+	private void setupHandlers(MatchEditor matchEditor, DatabaseInterface dbInterface)
 	{
-		SecurityManager manager = pool.getSecurityManager();
-		matchEditor.addAttributeHandler(new UserAttributeHandler(manager));
+		matchEditor.addAttributeHandler(new UserAttributeHandler(dbInterface));
 		matchEditor.addAttributeHandler(new ActionAttributeHandler());
 		matchEditor.addAttributeHandler(new ResourceCategoryAttributeHandler());
-		matchEditor.addAttributeHandler(new ModuleAttributeHandler(pool.getConfiguration()));
+		matchEditor.addAttributeHandler(new ModuleAttributeHandler());
 	}
 
 	private JTable createTargetPanel(int type, JTabbedPane tabbed)
@@ -94,6 +90,16 @@ public class TargetEditor extends AbstractNodeEditor implements ChangeListener, 
 		JScrollPane scroll = new JScrollPane(table);
 		tabbed.add(getLabel(type), scroll);
 		return table;
+	}
+	private void addSelectionListeners(JTable table)
+	{
+		table.getSelectionModel().addListSelectionListener(this);
+		table.getColumnModel().getSelectionModel().addListSelectionListener(this);
+	}
+	private void removeSelectionListeners(JTable table)
+	{
+		table.getSelectionModel().removeListSelectionListener(this);
+		table.getColumnModel().getSelectionModel().removeListSelectionListener(this);
 	}
 	private static String getLabel(int type)
 	{
@@ -198,7 +204,11 @@ public class TargetEditor extends AbstractNodeEditor implements ChangeListener, 
 		
 		URI functionId = matchEditor.getFunctionId();
 		AttributeValue value = matchEditor.getValue();
+		removeSelectionListeners(table);
 		((TargetTableModel)table.getModel()).setValue(functionId, value, selectedRow, selectedColumn);
+		table.setRowSelectionInterval(selectedRow, selectedRow);
+		table.setColumnSelectionInterval(selectedColumn, selectedColumn);
+		addSelectionListeners(table);
 		node.setModified(true);
 	}
 }
