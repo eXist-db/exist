@@ -96,6 +96,7 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.MimeTable;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
@@ -1122,10 +1123,20 @@ public class ClientFrame extends JFrame
         try {
             systemCollection = client.getCollection(DBBroker.SYSTEM_COLLECTION);
         } catch (XMLDBException e) {
-            e.printStackTrace();
             showErrorMessage("Could not get system collection", e);
             return;
         }
+        try {
+        	DatabaseInstanceManager dim = (DatabaseInstanceManager)systemCollection.getService("DatabaseInstanceManager", "1.0");
+        	if(!dim.isXACMLEnabled()) {
+        		showErrorMessage("XACML is not currently enabled.  To enable it, add\n\n   <xacml enabled=\"yes\"/>\n\nto conf.xml and restart eXist.", null);
+        		return;
+        	}
+        } catch (XMLDBException e) {
+            showErrorMessage("Could not get database instance manager to determine if XACML is enabled", e);
+        	return;
+        }
+        
         XACMLEditor editor = new XACMLEditor(systemCollection);
         editor.show();
     }
