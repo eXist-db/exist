@@ -139,7 +139,7 @@ public class CollectionConfigurationManager {
     			        if(confDoc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
                             if (!configFound) {
                                 LOG.debug("Reading collection configuration for '" + collection.getName() + "' from '" + confDoc.getName() + "'");
-        			            conf.read(broker, confDoc, confDoc.getFileName());                            
+        			            conf.read(broker, confDoc, next, confDoc.getFileName());                            
                                 configFound = true;
                                 //Allow just one configuration document per collection
                                 //TODO : do not break if a system property allows several ones -pb

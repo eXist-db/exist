@@ -63,6 +63,7 @@ public class CollectionConfiguration {
 	private Collection collection;
     
     private String docName = null;
+    private String srcCollectionName;
 	
 	private int defCollPermissions;
 	private int defResPermissions;
@@ -75,11 +76,14 @@ public class CollectionConfiguration {
 	
 	/**
      * @param broker
-     * @param collection
+     * @param srcCollectionName The collection from which the document is being read.  This
+     * is not necessarily the same as this.collection.getName() because the
+     * source document may have come from a parent collection.
+     * @param docName The name of the document being read
      * @param doc
      * @throws CollectionConfigurationException
      */
-    protected void read(DBBroker broker, Document doc, String docName) throws CollectionConfigurationException {
+    protected void read(DBBroker broker, Document doc, String srcCollectionName, String docName) throws CollectionConfigurationException {
         Element root = doc.getDocumentElement();
         if (root == null)
             throw new CollectionConfigurationException("Configuration document can not be parsed"); 
@@ -92,6 +96,7 @@ public class CollectionConfiguration {
                     "' in configuration document. Got '" + root.getNamespaceURI() + "'");     
         
         this.docName = docName;        
+        this.srcCollectionName = srcCollectionName;
         
         NodeList childNodes = root.getChildNodes();
 		Node node;
@@ -164,7 +169,10 @@ public class CollectionConfiguration {
     public Collection getCollection() {
     	return collection;
     }
-    
+
+    public String getSourceCollectionName() {
+        return srcCollectionName;
+    }    
     public int getDefCollPermissions() {
     	return defCollPermissions;
     }
