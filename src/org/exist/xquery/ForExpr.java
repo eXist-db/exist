@@ -237,6 +237,9 @@ public class ForExpr extends BindingExpression {
 					continue;
 			} else
 				val = contextItem.toSequence();
+            
+            //Reset the context position
+            context.setContextPosition(0);
 			
 			/* if the returnExpr is another BindingExpression, call it
 			 * with the result sequence.
@@ -245,7 +248,7 @@ public class ForExpr extends BindingExpression {
 				((BindingExpression)returnExpr).eval(null, null, resultSequence);
 			
 			// otherwise call the return expression and add results to resultSequence
-			else {
+			else {                
 				val = returnExpr.eval(null);
 				resultSequence.addAll(val);
 			}
