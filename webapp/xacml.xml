@@ -40,8 +40,10 @@
 					<section>
 						<title>User</title>
 						<para>
-							All access may be restricted by user as well.  The user's name and group may
-							be used to control access to any of the supported resources mentioned above.
+							All access may be restricted by the user initiating access to a resource, 
+							currently XQueries.  The user's name and the names of the groups of which
+							the user is a member may be used to control access to any of the supported
+							resources mentioned below.
 						</para>
 					</section>
 					<section>
@@ -68,8 +70,8 @@
 						<title>Internal XQuery Library Modules</title>
 						<para>
 							Calls to XQuery functions in modules written in Java may be restricted
-							by the name of the implementing class, the module's namespace URI, and
-							the name of the function.
+							by the name of the implementing module's class, the module's namespace URI,
+							and the name of the function.
 						</para>
 					</section>
 					<section>
@@ -89,7 +91,7 @@
 							and is a priority.
 						</para>
 					</section>
-					<note><para>Overloaded Java methods and XQuery functions must share the same access
+					<note><para>Overloaded Java methods and XQuery functions share the same access
 					control settings.</para></note>
 				</section>
 				
