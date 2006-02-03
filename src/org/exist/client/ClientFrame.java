@@ -1129,7 +1129,7 @@ public class ClientFrame extends JFrame
         try {
         	DatabaseInstanceManager dim = (DatabaseInstanceManager)systemCollection.getService("DatabaseInstanceManager", "1.0");
         	if(!dim.isXACMLEnabled()) {
-        		showErrorMessage("XACML is not currently enabled.  To enable it, add\n\n   <xacml enabled=\"yes\"/>\n\nto conf.xml and restart eXist.", null);
+        		showErrorMessage("XACML is not currently enabled.  To enable it, add\n\n   <xacml enable=\"yes\"/>\n\nto conf.xml and restart eXist.", null);
         		return;
         	}
         } catch (XMLDBException e) {
