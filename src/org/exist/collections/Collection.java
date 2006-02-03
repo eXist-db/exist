@@ -867,13 +867,15 @@ public  class Collection extends Observable
                 (info.getEvent() == Trigger.UPDATE_DOCUMENT_EVENT ? UpdateListener.UPDATE : UpdateListener.ADD));
         
         //Is it a collection configuration file ?
-        if (getName().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION)) {
-            if (getConfiguration(broker).getDocName() == null ||
-                    getConfiguration(broker).getDocName().equals(document.getFileName())) {
-                broker.sync(Sync.MAJOR_SYNC);
-                //TODO : ugly construct since we should re-read the configuration
-                getConfiguration(broker).setDocName(document.getFileName());
-            }
+        String docName = document.getFileName();
+        if (getName().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION)
+        		&& docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
+        	
+        	broker.sync(Sync.MAJOR_SYNC);
+
+            CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
+            if (manager != null)
+            	manager.invalidateAll(getName());
         }
     }
     
@@ -913,24 +915,32 @@ public  class Collection extends Observable
         public void run(IndexInfo info) throws SAXException, EXistException;
     }
     
+    private void checkConfiguration(Txn transaction, DBBroker broker, String docName) throws EXistException {
+//    	Is it a collection configuration file ?
+        if (!getName().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION))
+        	return;
+        if (!docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX))
+        	return;
+        //Allow just one configuration document per collection
+        //TODO : do not throw the exception if a system property allows several ones -pb
+    	for(Iterator i = iterator(broker); i.hasNext(); ) {
+	        DocumentImpl confDoc = (DocumentImpl) i.next();
+	        String currentConfDocName = confDoc.getFileName();
+	        if(currentConfDocName != null && !currentConfDocName.equals(docName)) {
+	        	throw new EXistException("Could not store configuration '" + docName + "': A configuration document with a different name ("
+	        			+ currentConfDocName + ") already exists in this collection (" + getName() + ")");
+	        }
+        }
+    }
+    
     private IndexInfo validateXMLResourceInternal(Txn transaction, DBBroker broker, String docName, ValidateBlock doValidate)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         
-        //Is it a collection configuration file ?
-        if (getName().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION) &&
-                docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
-            //Allow just one configuration document per collection
-            //TODO : do not throw the exception if a system property allows several ones -pb
-            if (getConfiguration(broker).getDocName() != null &&
-                    !getConfiguration(broker).getDocName().equals(docName))
-                throw new EXistException("Trying to validate another configuration document");
-            //Banzaï ! This code seems to solve some long standing issues
-            else {
-                broker.saveCollection(transaction, this);
-                CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
-                confMgr.invalidateAll(getName());
-            }
-        }
+        checkConfiguration(transaction, broker, docName);
+
+        broker.saveCollection(transaction, this);
+        CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+        confMgr.invalidateAll(getName());
         
         if (broker.isReadOnly()) throw new PermissionDeniedException("Database is read-only");
         DocumentImpl document, oldDoc = null;
@@ -1260,11 +1270,11 @@ public  class Collection extends Observable
         } catch (CollectionConfigurationException e) {
             LOG.warn("Failed to load collection configuration for '" + getName() + "'", e);
         }
-        //TODO : we should not consider the collectiona configured after a failure ! -pb
-        collectionConfEnabled = true;
+	        //TODO : we should not consider the collectiona configured after a failure ! -pb
+	        collectionConfEnabled = true;
         
         return configuration;
-    }
+        }
     
     /**
      * Should the collection configuration document be enabled
@@ -1276,7 +1286,7 @@ public  class Collection extends Observable
     public void setConfigEnabled(boolean enabled) {
         collectionConfEnabled = enabled;
     }
-    
+        
     public void invalidateConfiguration() {
         configuration = null;
     }
