@@ -24,8 +24,19 @@ public class CollectionConfigurationTest extends TestCase {
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
     private final static String TEST_COLLECTION = "testIndexConfiguration";
+    private static final String TEST_COLLECTION_2 = "conf2";
+    
+
+    private static final String CONF_COLL_PATH = CollectionConfigurationManager.CONFIG_COLLECTION
+            + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;     
+
+    private final static String coll1 = CONF_COLL_PATH;
+    private final static String coll2 = coll1 + "/" + TEST_COLLECTION_2;
 
     private final static String DOCUMENT_NAME = "test.xml";
+
+	private static final String TEST_CONFIG_NAME_1 = "test1.xconf";
+	private static final String TEST_CONFIG_NAME_2 = "test2.xconf";
 
     private final static String DOCUMENT_CONTENT = "<test>" + "<a>001</a>"
             + "<a>01</a>" + "<a>1</a>" + "<b>001</b>" + "<b>01</b>"
@@ -38,15 +49,7 @@ public class CollectionConfigurationTest extends TestCase {
             + "  </index>"
             + "</collection>";
 
-    private String CONFIG2 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
-            + "  <index>"
-            + "    <create qname=\"b\" type=\"xs:integer\"/>"
-            + "    <create qname=\"a\" type=\"xs:string\"/>"
-            + "  </index>"
-            + "</collection>";
-
     private Collection testCollection;
-    private String configurationFileName;
 
     protected void setUp() {
         try {
@@ -60,7 +63,13 @@ public class CollectionConfigurationTest extends TestCase {
                     .getService("CollectionManagementService", "1.0");
             testCollection = service.createCollection(TEST_COLLECTION);
             assertNotNull(testCollection);
-            configurationFileName = null;
+
+            Collection configColl = DatabaseManager.getCollection(URI + CONF_COLL_PATH, "admin", null);
+         	if(configColl == null) {
+           	  System.out.println("creating collection '" + CONF_COLL_PATH + "'");
+           	  CollectionManagementService cms = (CollectionManagementService)testCollection.getService("CollectionManagementService", "1.0");
+           	  configColl = cms.createCollection(CONF_COLL_PATH);
+         	}
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -75,16 +84,8 @@ public class CollectionConfigurationTest extends TestCase {
             service.removeCollection(TEST_COLLECTION);
             testCollection = null;
             
-            //Removes the collection config collection *manually*            
-            if (configurationFileName == null)
-                configurationFileName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-            String configPath = CollectionConfigurationManager.CONFIG_COLLECTION
-                    + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;                    
-            System.out.println("Manually removing '" + configPath + "/" + configurationFileName + "'");
-            Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);  
-            assertNotNull(configColl);
-            configColl.removeResource(configColl.getResource(configurationFileName));
-            //TODO remove the config collection as well ?
+            //Removes the collection config collection *manually*          
+            service.removeCollection(CONF_COLL_PATH);
             
             DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
             mgr.shutdown();
@@ -164,19 +165,9 @@ public class CollectionConfigurationTest extends TestCase {
     public void testCollectionConfigurationService3() { 
         ResourceSet result; 
         try {
-            //Configure collection *manually*            
-            String configPath = CollectionConfigurationManager.CONFIG_COLLECTION
-                    + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;
-            configurationFileName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-            System.out.println("Manually adding '" + configPath + "/"
-                    + configurationFileName + "'");
-            Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);             
-            assertNotNull(configColl);
-            Resource res = configColl.createResource(configurationFileName, "XMLResource");
-            assertNotNull(res);
-            res.setContent(CONFIG1);            
-            configColl.storeResource(res);             
-
+            //Configure collection *manually*
+            storeConfiguration(CONF_COLL_PATH, CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE, CONFIG1);
+            
             //... then index document 
             XMLResource doc = (XMLResource)
             testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
@@ -206,18 +197,9 @@ public class CollectionConfigurationTest extends TestCase {
            doc.setContent(DOCUMENT_CONTENT);
            testCollection.storeResource(doc);
 
-           // ... then configure collection *manually*           
-           String configPath = CollectionConfigurationManager.CONFIG_COLLECTION
-                   + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;
-           configurationFileName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-           System.out.println("Manually adding '" + configPath + "/"
-                   + configurationFileName + "'");
-           Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);            
-           Resource res = configColl.createResource(configurationFileName, "XMLResource");
-           assertNotNull(res);
-           res.setContent(CONFIG1);            
-           configColl.storeResource(res); 
-
+           // ... then configure collection *manually*
+           storeConfiguration(CONF_COLL_PATH, CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE, CONFIG1);
+           
            XPathQueryService service = (XPathQueryService) testCollection
                    .getService("XPathQueryService", "1.0");
 
@@ -248,17 +230,9 @@ public class CollectionConfigurationTest extends TestCase {
    public void testCollectionConfigurationService5() {
        ResourceSet result;
        try {
-           //Configure collection *manually*           
-           String configPath = CollectionConfigurationManager.CONFIG_COLLECTION
-                   + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;
-           configurationFileName = "foo" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX;
-           System.out.println("Manually adding '" + configPath + "/"
-                   + configurationFileName + "'");
-           Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);            
-           Resource res = configColl.createResource(configurationFileName, "XMLResource");
-           assertNotNull(res);
-           res.setContent(CONFIG1);            
-           configColl.storeResource(res);            
+           //Configure collection *manually*
+           String configurationFileName = "foo" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX;
+           storeConfiguration(CONF_COLL_PATH, configurationFileName, CONFIG1);
            
            // ... then configure collection automatically
            IndexQueryService idxConf = (IndexQueryService) testCollection
@@ -302,17 +276,9 @@ public class CollectionConfigurationTest extends TestCase {
            doc.setContent(DOCUMENT_CONTENT);
            testCollection.storeResource(doc);
 
-           //... then configure collection *manually* 
-           String configPath = CollectionConfigurationManager.CONFIG_COLLECTION
-                   + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;
-           configurationFileName = "foo" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX;
-           System.out.println("Manually adding '" + configPath + "/"
-                   + configurationFileName + "'");
-           Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);            
-           Resource res = configColl.createResource(configurationFileName, "XMLResource");
-           assertNotNull(res);
-           res.setContent(CONFIG1);            
-           configColl.storeResource(res); 
+           //... then configure collection *manually*
+           String configurationFileName = "foo" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX;
+           storeConfiguration(CONF_COLL_PATH, configurationFileName, CONFIG1);
            
            //... then configure collection automatically 
            IndexQueryService idxConf = (IndexQueryService)
@@ -357,50 +323,86 @@ public class CollectionConfigurationTest extends TestCase {
        }
    } 
    
-   public void testCollectionConfigurationService7() {
-       ResourceSet result;
-       boolean exceptionThrown = false;
-       String message;
-       try {
-           //Configure collection *manually* 
-           String configPath = CollectionConfigurationManager.CONFIG_COLLECTION
-                   + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;
-           configurationFileName = "foo" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX;
-           System.out.println("Manually adding '" + configPath + "/"
-                   + configurationFileName + "'");
-           Collection configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);            
-           Resource res = configColl.createResource(configurationFileName, "XMLResource");
-           assertNotNull(res);
-           res.setContent(CONFIG1);            
-           configColl.storeResource(res);            
 
-           try {
-           
-               //Reconfigure collection *manually* 
-               configPath = CollectionConfigurationManager.CONFIG_COLLECTION
-                       + DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION;   
-               configurationFileName = "bar" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX;
-               System.out.println("Manually adding '" + configPath + "/"
-                       + configurationFileName + "'");
-               configColl = DatabaseManager.getCollection(URI + configPath, "admin", null);            
-               res = configColl.createResource(configurationFileName, "XMLResource");
-               assertNotNull(res);
-               res.setContent(CONFIG1);            
-               configColl.storeResource(res);  
-           } catch (XMLDBException e) {
-                exceptionThrown = true;
-                message = e.getMessage();
-            }
-            assertTrue(configurationFileName, exceptionThrown);
-            configurationFileName = "foo" + CollectionConfiguration.COLLECTION_CONFIG_SUFFIX;
-           
-       } catch (Exception e) {
-           fail(e.getMessage());
-       }
-   }    
-
-
-// TODO : 2 manual configurations (exception because foo.xonf/bar.xconf)
+   public void testMultipleConfigurations00() {     	  
+       checkStoreConf(coll1, TEST_CONFIG_NAME_1, coll1, TEST_CONFIG_NAME_1, true);
+   }
+   public void testMultipleConfigurations01() {
+       checkStoreConf(coll1, TEST_CONFIG_NAME_1, coll1, TEST_CONFIG_NAME_2, false);
+   }
+   public void testMultipleConfigurations02() {
+       checkStoreConf(coll1, TEST_CONFIG_NAME_1, coll2, TEST_CONFIG_NAME_1, true);
+   }
+   public void testMultipleConfigurations03() {
+       checkStoreConf(coll1, TEST_CONFIG_NAME_1, coll2, TEST_CONFIG_NAME_2, true);
+   }
+   public void testMultipleConfigurations04() {
+       checkStoreConf(coll1, TEST_CONFIG_NAME_2, coll1, TEST_CONFIG_NAME_1, false);
+   }
+   public void testMultipleConfigurations05() {
+       checkStoreConf(coll1, TEST_CONFIG_NAME_2, coll1, TEST_CONFIG_NAME_2, true);
+   }
+   public void testMultipleConfigurations06() {
+       checkStoreConf(coll1, TEST_CONFIG_NAME_2, coll2, TEST_CONFIG_NAME_1, true);
+   }
+   public void testMultipleConfigurations07() {
+       checkStoreConf(coll1, TEST_CONFIG_NAME_2, coll2, TEST_CONFIG_NAME_2, true);
+   }
+   public void testMultipleConfigurations08() {          
+       checkStoreConf(coll2, TEST_CONFIG_NAME_1, coll1, TEST_CONFIG_NAME_1, true);
+   }
+   public void testMultipleConfigurations09() {
+       checkStoreConf(coll2, TEST_CONFIG_NAME_1, coll1, TEST_CONFIG_NAME_2, true);
+   }
+   public void testMultipleConfigurations10() {
+       checkStoreConf(coll2, TEST_CONFIG_NAME_1, coll2, TEST_CONFIG_NAME_1, true);
+   }
+   public void testMultipleConfigurations11() {
+       checkStoreConf(coll2, TEST_CONFIG_NAME_1, coll2, TEST_CONFIG_NAME_2, false);
+   }
+   public void testMultipleConfigurations12() {
+       checkStoreConf(coll2, TEST_CONFIG_NAME_2, coll1, TEST_CONFIG_NAME_1, true);
+   }
+   public void testMultipleConfigurations13() {
+       checkStoreConf(coll2, TEST_CONFIG_NAME_2, coll1, TEST_CONFIG_NAME_2, true);
+   }
+   public void testMultipleConfigurations14() {
+       checkStoreConf(coll2, TEST_CONFIG_NAME_2, coll2, TEST_CONFIG_NAME_1, false);
+   }
+   public void testMultipleConfigurations15() {
+       checkStoreConf(coll2, TEST_CONFIG_NAME_2, coll2, TEST_CONFIG_NAME_2, true);
+   }
+  
+   private void checkStoreConf(String coll1, String confName1, String coll2, String confName2, boolean shouldSucceed) {
+   	  try {
+	   	  storeConfiguration(coll1, confName1, CONFIG1);
+	   	  storeConfiguration(coll2, confName2, CONFIG1);
+	   	  if(!shouldSucceed) {
+	   	  	fail("Should not have been able to store '" + confName1 + "' to '" + coll1 +
+	   	  			"'\n\tand then '" + confName2 + "' to '" + coll2 + "'");
+	   	  }
+	   	  	
+   	  } catch (XMLDBException xe) {
+   	  	  if(shouldSucceed) {
+   	  	      fail("Should have been able to store '" + confName1 + "' to '" + coll1 +
+   	  	      		"'\n\tand then '" + confName2 + "' to '" + coll2 + "': " + xe.getMessage());
+   	  	  }
+   	  }
+   }
+   private void storeConfiguration(String collPath, String confName, String confContent) throws XMLDBException {
+       String fullCollPath = URI + collPath;
+   	   System.out.println("Storing configuration '" + confName + "' to '" + collPath + "'" );
+   	   Collection configColl = DatabaseManager.getCollection(fullCollPath, "admin", null);
+   	   if(configColl == null) {
+     	   CollectionManagementService cms = (CollectionManagementService)testCollection.getService("CollectionManagementService", "1.0");
+           configColl = cms.createCollection(collPath);
+   	   }
+       assertNotNull(configColl);
+       Resource res = configColl.createResource(confName, "XMLResource");
+       assertNotNull(res);
+       res.setContent(confContent);            
+       configColl.storeResource(res);
+   }
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(CollectionConfigurationTest.class);        
