@@ -62,6 +62,10 @@ public class LetExpr extends BindingExpression {
 			newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
 		    whereExpr.analyze(newContextInfo);
 		}
+        
+        //Reset the context position
+        context.setContextPosition(0);
+        
 		if(returnExpr instanceof BindingExpression) {
 		    ((BindingExpression)returnExpr).analyze(contextInfo, orderBy);
 		} else {
