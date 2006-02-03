@@ -114,7 +114,7 @@ enter groups: users]]></screen>
             database users.</para>
         </section>
         <section>
-            <title>Permissions</title>
+            <title>Resource Permissions</title>
             <para>The interactive client displays the permissions
                 assigned to each resource (if you have set the
                 <option>permissions=true</option> property in the
@@ -272,5 +272,9 @@ to authenticate a user against the database -->
 </map:match>]]></screen>
             </example>
         </section>
+		  <section>
+			  <title>XQuery Access Control</title>
+			  <para>Please see the separate documentation on <ulink href="xacml.xml">XACML in eXist</ulink>.</para>
+		  </section>
     </chapter>
 </book>
