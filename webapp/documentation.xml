@@ -59,7 +59,8 @@
                 </listitem>
                 <listitem>
                     <para><ulink href="security.xml">Security</ulink>: creating/changing users, passwords
-                    and permissions.</para>
+                    and resource permissions.</para>
+                    <para><ulink href="xacml.xml">XACML</ulink>: XQuery access control.</para>
                 </listitem>
                 <listitem>
                     <para><ulink href="configuration.xml">Server Configuration</ulink>: configuration

@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<!--<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "docbookx.dtd">-->
+
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+	
+	<bookinfo>
+		<graphic fileref="logo.jpg"/>
+		<title>Open Source Native XML Database</title>
+		<author> 
+			<firstname>Mark</firstname>
+			<surname>Harrah</surname>
+			<affiliation>
+				<address format="linespecific">
+					<email>harrah@umd.edu</email>
+				</address>
+			</affiliation>
+		</author>
+	</bookinfo>
+
+	<ci:include src="sidebar.xml"/>
+		
+	<chapter>
+		<title>Access Control in eXist</title>
+		<para>
+			eXist uses the OASIS standard
+			<ulink href="http://www.oasis-open.org/committees/tc_home.php?wg_abbrev=xacml">
+				eXtensible Access Control Markup Language (XACML)
+			</ulink>
+			for XQuery access control.
+		</para>
+		<section>
+				<title>Capabilities</title>
+				<para>
+					This provides an overview of what may currently be controlled using
+					XACML policies in eXist.
+				</para>
+				
+				<section>
+					<title>Subjects</title>
+					<section>
+						<title>User</title>
+						<para>
+							All access may be restricted by user as well.  The user's name and group may
+							be used to control access to any of the supported resources mentioned above.
+						</para>
+					</section>
+					<section>
+						<title>Intermediaries</title>
+						<para>
+							There is no support yet for access control based on the route taken to the
+							resource.  This type of control allows a user to use a library module
+							library.xqm by running query.xql but not through a query passed directly
+							in the HTTP request.  This support is planned but not a high priority compared
+							to support for main modules (below).
+						</para>
+					</section>
+				</section>
+				<section>
+					<title>Resources</title>
+					<section>
+						<title>Java Reflection</title>
+						<para>
+							Invocation of Java methods by reflection may be restricted by class and
+							method name.
+						</para>
+					</section>
+					<section>
+						<title>Internal XQuery Library Modules</title>
+						<para>
+							Calls to XQuery functions in modules written in Java may be restricted
+							by the name of the implementing class, the module's namespace URI, and
+							the name of the function.
+						</para>
+					</section>
+					<section>
+						<title>External XQuery Library Modules</title>
+						<para>
+							Restricting calls to XQuery functions in library modules stored in the
+							database or the file system is not fully operational.  The namespace URI
+							of the module and the function name may be used to determine access control.
+							However, the module's location cannot be used yet.
+						</para>
+					</section>
+					<section>
+						<title>XQuery Main Modules</title>
+						<para>
+							There is no support for restricting access to either stored queries or queries
+							constructed on the fly (such as with REST or XML:DB).  This support is planned
+							and is a priority.
+						</para>
+					</section>
+					<note><para>Overloaded Java methods and XQuery functions must share the same access
+					control settings.</para></note>
+				</section>
+				
+		</section>
+	</chapter>
+</book>
