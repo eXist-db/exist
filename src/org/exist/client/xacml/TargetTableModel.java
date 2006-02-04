@@ -276,7 +276,8 @@ public class TargetTableModel implements TableModel
 					try
 					{
 						f = FunctionFactory.getTargetInstance().createFunction(functionId);
-						matches.add(new TargetMatch(type, f, attributes[col], value));
+						if(f != null)
+							matches.add(new TargetMatch(type, f, attributes[col], value));
 					}
 					catch (UnknownIdentifierException e)
 					{

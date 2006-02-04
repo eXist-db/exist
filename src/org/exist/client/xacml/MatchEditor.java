@@ -185,7 +185,10 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 		AttributeFactory factory = AttributeFactory.getInstance();
 		try
 		{
-			AttributeValue value = factory.createValue(attribute.getType(), currentValue.toString());
+			String textValue = currentValue.toString();
+			if(textValue == null || textValue.length() == 0)
+				return null;
+			AttributeValue value = factory.createValue(attribute.getType(), textValue);
 			for(Iterator it = attributeHandlers.iterator(); it.hasNext();)
 				((AttributeHandler)it.next()).checkUserValue(value, attribute);
 			return value;
