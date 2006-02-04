@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-06 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -55,16 +55,19 @@ public class Profiler {
     private int verbosity = 0;   
     
     public static int TIME = 1;
-    //An abstract level to pass some sequences
-    public static int START_SEQUENCES = 2;    
-    public static int ITEM_COUNT = 3;    
-    //For a truncated string representation of sequences (TODO) 
-    public static int SEQUENCE_PREVIEW = 4; 
-    //For computations that will trigger further optimizations 
-    public static int OPTIMIZATION_FLAGS = 5;  
     //For optimizations
-    public static int OPTIMIZATIONS = 6;
-    public static int DEPENDENCIES = 7;
+    public static int OPTIMIZATIONS = 2;
+    //For computations that will trigger further optimizations 
+    public static int OPTIMIZATION_FLAGS = 3;
+    //Indicates the dependencies of the expression
+    public static int DEPENDENCIES = 4;
+    //An abstract level for viewing the expression's context sequence/item
+    public static int START_SEQUENCES = 4;  
+    //Just returns the number of items in the sequence
+    public static int ITEM_COUNT = 5;    
+    //For a truncated string representation of then context sequence (TODO) 
+    public static int SEQUENCE_PREVIEW = 6;     
+    //For a full representation of the context sequence (TODO)
     public static int SEQUENCE_DUMP = 8;  
     
     /**
