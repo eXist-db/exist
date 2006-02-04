@@ -367,16 +367,16 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         dbTokens.remove(ref);
                     } else {                        
                         if (dbTokens.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                            LOG.error("Could not put index data for token '" +  token + "'");
+                            LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + "'");
                         }                    
                     }
                 }
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);                
             } catch (IOException e) {
-                LOG.error(e.getMessage(), e);                
+                LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);                
             } catch (ReadOnlyException e) {
-                LOG.error(e.getMessage(), e);                       
+                LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);                       
             } finally {
                 lock.release();
             }
@@ -471,7 +471,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 storedNode = new NodeProxy(storedDocument, storedGID, Node.TEXT_NODE);
                                 break;
                             default :
-                                throw new IllegalArgumentException("Invalid section type");
+                                throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                         }						
 						// if a context set is specified, we can directly check if the
 						// matching text node is a descendant of one of the nodes
@@ -486,7 +486,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     parent = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                                     break;
                                 default :
-                                    throw new IllegalArgumentException("Invalid section type");
+                                    throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                             }                               
 							if (parent != null) {
                                 Match match = new Match(storedGID, token, freq);
@@ -510,11 +510,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				}
             } catch (EOFException e) {
                 // EOF is expected here 
-                //TODO : confirm this -pb
+                LOG.warn("REPORT ME for confirmation " + e.getMessage(), e); 
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);              
 			} catch (IOException e) {
-                LOG.error(e.getMessage(), e);                
+                LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);                
                 //TODO : return ?
 			} finally {
 				lock.release();
@@ -829,7 +829,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             os.writeByte(ATTRIBUTE_SECTION);
                             break;
                         default :
-                            throw new IllegalArgumentException("Invalid inverted index");
+                            throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
+                            "' (inverted index)");
                     }                    
                     os.writeInt(termCount);
                     //TOUNDERSTAND -pb             
@@ -876,11 +877,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 lock.acquire(Lock.WRITE_LOCK);          
                 dbTokens.append(new WordRef(collectionId, token), data);
             } catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "' (inverted index)", e);
             } catch (ReadOnlyException e) {
-                LOG.warn(e.getMessage(), e);  
+                LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "' (inverted index)", e);
             } catch (IOException e) {
-                LOG.error(e.getMessage(), e);          
+                LOG.error(e.getMessage() + "' in '" + dbTokens.getFile().getName() + "' (inverted index)", e);   
             } finally {
                 lock.release();
             }
@@ -950,7 +951,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     				            }
                             } catch (EOFException e) {
                                 //Is it expected ? -pb
-                                LOG.warn(e.getMessage(), e);                            
+                                LOG.warn("REPORT ME " + e.getMessage(), e);                            
                             }                                
                             //append the data from the new list
                             if(newOccurencesList.getSize() > 0) {
@@ -966,7 +967,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         os.writeByte(ATTRIBUTE_SECTION);
                                         break;
                                     default :
-                                        throw new IllegalArgumentException("Invalid inverted index");
+                                        throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
+                                                "' (inverted index)");
                                 }                                      
                                 os.writeInt(termCount);
                                 //TOUNDERSTAND -pb           
@@ -994,19 +996,21 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					        if (value == null)
                                 //TOUNDERSTAND : is this ever called ? -pb
 					            if (dbTokens.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                    LOG.error("Could not put index data for token '" +  token + "'");  
+                                    LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
+                                        "' (inverted index)");  
                                 }                    
 					        else
 					            if (dbTokens.update(value.getAddress(), ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                    LOG.error("Could not update index data for token '" +  token + "'");  
+                                    LOG.error("Could not update index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
+                                        "' (inverted index)");
                                 }                    						    
 					    }
 					} catch (LockException e) {
-                        LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+                        LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "' (inverted index)", e);
                     } catch (ReadOnlyException e) {
-                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "'", e);
+                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "' (inverted index)", e);
                     } catch (IOException e) {
-                        LOG.error(e.getMessage(), e);
+                        LOG.error(e.getMessage() + "' in '" + dbTokens.getFile().getName() + "' (inverted index)", e);
                     } finally {
 					    lock.release();
 					}
@@ -1097,7 +1101,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     os.writeByte(ATTRIBUTE_SECTION);
                                     break;
                                 default :
-                                    throw new IllegalArgumentException("Invalid inverted index");
+                                    throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
+                                        "' (inverted index)");
                             }         
     		                os.writeInt(termCount);
                             //TOUNDERSTAND -pb         
@@ -1121,20 +1126,22 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	                    if (is == null) {
                             //TOUNDERSTAND : Should is be null, what will there be in os.data() ? -pb
 	                        if (dbTokens.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                LOG.error("Could not put index data for token '" +  token + "'"); 
+                                LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
+                                        "' (inverted index)");
                             }
-	                    }else {  
+	                    } else {  
                             long address = ((BFile.PageInputStream) is).getAddress();
 	                        if (dbTokens.update(address, ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                LOG.error("Could not update index data for value '" +  token + "'");  
+                                LOG.error("Could not update index data for value '" +  token +  "' in '" + dbTokens.getFile().getName() + 
+                                    "' (inverted index)"); 
                             }
 	                    }		                
 		            } catch (LockException e) {
-                        LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);		               
+                        LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "' (inverted index)", e);		               
                     } catch (ReadOnlyException e) {
-                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "'", e);                        
+                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "' (inverted index)", e);                        
 		            } catch (IOException e) {
-		                LOG.error("io error while reindexing word '" + token  + "'");		               
+		                LOG.error("io error while reindexing word '" + token  + "' in '" + dbTokens.getFile().getName() + "' (inverted index)", e);		               
 		            } finally {
 		                lock.release(Lock.WRITE_LOCK);
 		            }
@@ -1237,7 +1244,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     storedNode = new NodeProxy(storedDocument, storedGID, Node.ATTRIBUTE_NODE);
                                     break;
                                 default :
-                                    throw new IllegalArgumentException("Invalid inverted index");
+                                    throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                             } 
 							if (contextSet != null) {
                                 NodeProxy parentNode;  
@@ -1249,7 +1256,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         parentNode = contextSet.get(storedNode);
                                         break;
                                     default :
-                                        throw new IllegalArgumentException("Invalid inverted index");
+                                        throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                                 }
 								if (parentNode != null) {
                                     Match match = new Match(storedGID, word.toString(), freq);
@@ -1271,7 +1278,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				} catch (EOFException e) {
 					// EOFExceptions are normal
 				} catch (IOException e) {
-                    LOG.error(e.getMessage(), e);   
+                    LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);   
                     //TODO : return early -pb
 				}
 			}
@@ -1349,7 +1356,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     include = (parentNode != null && parentNode.getNodeType() == Node.ATTRIBUTE_NODE);
                                     break;
                                 default :
-                                    throw new IllegalArgumentException("Invalid inverted index");
+                                    throw new IllegalArgumentException("Invalid section type  in '" + dbTokens.getFile().getName() + "'");
                             } 
                             if (include) {
                                 Occurrences oc = (Occurrences) map.get(term);
@@ -1370,7 +1377,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			} catch(EOFException e) {
                 //EOFExceptions are expected 
 			} catch(IOException e) {
-                LOG.error(e.getMessage(), e);   
+                LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);   
                 //TODO : return early -pb
 			}
 			return true;
