@@ -5,11 +5,8 @@ import com.sun.xacml.Policy;
 import com.sun.xacml.PolicySet;
 
 import java.io.ByteArrayOutputStream;
-import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
@@ -18,6 +15,7 @@ import java.util.TreeSet;
 import org.apache.log4j.Logger;
 import org.exist.client.ClientFrame;
 import org.exist.security.xacml.XACMLConstants;
+import org.exist.security.xacml.XACMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -63,7 +61,7 @@ public class DatabaseInterface
 			if(in == null)
 				LOG.warn("Could not find policy collection configuration file '" + confName + "'");
 			
-			String content = toString(in);
+			String content = XACMLUtil.toString(in);
 			res.setContent(content);
 			confCol.storeResource(res);
 		}
@@ -247,18 +245,5 @@ public class DatabaseInterface
 		}
 		else
 			LOG.warn("Document '" + documentName + "' in policy collection is not a policy: root tag has namespace '" + namespace + "' and name '" + tagName + "'");
-	}
-	//reads a stream into a string
-	private String toString(InputStream in) throws IOException
-	{
-		if(in == null)
-			return null;
-		Reader reader = new InputStreamReader(in);
-		char[] buffer = new char[100];
-		CharArrayWriter writer = new CharArrayWriter(1000);
-		int read;
-		while((read = reader.read(buffer)) > -1)
-			writer.write(buffer, 0, read);
-		return writer.toString();
 	}
 }

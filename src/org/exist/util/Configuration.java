@@ -36,6 +36,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 
 import org.exist.memtree.SAXAdapter;
+import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
 import org.exist.validation.resolver.eXistCatalogResolver;
@@ -314,9 +315,30 @@ public class Configuration implements ErrorHandler {
     }
 
     private void configureXACML(Element xacml) {
-    	String enable = xacml.getAttribute("enable");
-    	if(enable != null)
-    		config.put("xacml.enable", Boolean.valueOf(enable.equals("yes")));
+    	String enable = xacml.getAttribute(XACMLConstants.ENABLE_XACML_ATTRIBUTE);
+    	config.put(XACMLConstants.ENABLE_XACML_PROPERTY, parseBoolean(enable, false));
+    	
+    	String loadDefaults = xacml.getAttribute(XACMLConstants.LOAD_DEFAULT_POLICIES_ATTRIBUTE);
+    	config.put(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY, parseBoolean(loadDefaults, true));
+    }
+    
+    /**
+     * Takes the passed string and converts it to a non-null
+     * <code>Boolean</code> object.  If value is null, the specified
+     * default value is used.  Otherwise, Boolean.TRUE is returned if
+     * and only if the passed string equals &quot;yes&quot; or
+     * &quot;true&quot;, ignoring case. 
+     * 
+     * @param value The string to parse
+     * @param defaultValue The default if the string is null
+     * @return The parsed <code>Boolean</code>
+     */
+    private Boolean parseBoolean(String value, boolean defaultValue)
+    {
+    	if(value == null)
+    		return Boolean.valueOf(defaultValue);
+    	value = value.toLowerCase();
+    	return Boolean.valueOf(value.equals("yes") || value.equals("true"));
     }
     
     /**

@@ -22,6 +22,12 @@ import org.exist.storage.DBBroker;
 */
 public final class XACMLConstants
 {
+	/* *********** Configuration property names ******************* */
+	public static final String ENABLE_XACML_ATTRIBUTE = "enable";
+	public static final String ENABLE_XACML_PROPERTY = "xacml.enable";
+	public static final String LOAD_DEFAULT_POLICIES_ATTRIBUTE = "load-defaults";
+	public static final String LOAD_DEFAULT_POLICIES_PROPERTY = "xacml.load.defaults";
+	
 	/* **************** XACML constants **************************** */
 	public static final String XQUERY_OPERATORS_NS = "http://www.w3c.org/TR/2002/WD-xquery-operators-20020816";
 	//the base to namespaces, attribute ids, etc... in the XACML specification
