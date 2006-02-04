@@ -4438,7 +4438,7 @@ tryAgain:
 						else if (((LA(1)=='\'') && (true) && (true) && (true))&&( !(parseStringLiterals || inElementContent) )) {
 							mAPOS(false);
 							if ( inputState.guessing==0 ) {
-								_ttype = APOS; System.out.println("APOS");
+								_ttype = APOS;
 							}
 						}
 						else if (((_tokenSet_22.member(LA(1))) && (true) && (true) && (true))&&( inElementContent )) {

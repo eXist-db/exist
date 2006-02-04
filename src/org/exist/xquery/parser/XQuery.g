@@ -1702,7 +1702,7 @@ options {
 	QUOT { $setType(QUOT); }
 	|
 	{ !(parseStringLiterals || inElementContent) }?
-	APOS { $setType(APOS); System.out.println("APOS"); }
+	APOS { $setType(APOS); }
 	|
 	{ inElementContent }?
 	ELEMENT_CONTENT
