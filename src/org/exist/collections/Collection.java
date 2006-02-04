@@ -915,7 +915,7 @@ public  class Collection extends Observable
         public void run(IndexInfo info) throws SAXException, EXistException;
     }
     
-    private void checkConfiguration(Txn transaction, DBBroker broker, String docName) throws EXistException {
+    private void checkConfiguration(Txn transaction, DBBroker broker, String docName) throws EXistException, PermissionDeniedException {
 //    	Is it a collection configuration file ?
         if (!getName().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION))
         	return;
@@ -931,6 +931,11 @@ public  class Collection extends Observable
 	        			+ currentConfDocName + ") already exists in this collection (" + getName() + ")");
 	        }
         }
+    	
+        broker.saveCollection(transaction, this);
+        CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+        if(confMgr != null)
+        	confMgr.invalidateAll(getName());
     }
     
     private IndexInfo validateXMLResourceInternal(Txn transaction, DBBroker broker, String docName, ValidateBlock doValidate)
@@ -938,10 +943,6 @@ public  class Collection extends Observable
         
         checkConfiguration(transaction, broker, docName);
 
-        broker.saveCollection(transaction, this);
-        CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
-        confMgr.invalidateAll(getName());
-        
         if (broker.isReadOnly()) throw new PermissionDeniedException("Database is read-only");
         DocumentImpl document, oldDoc = null;
         boolean oldDocLocked = false;
