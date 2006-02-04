@@ -564,7 +564,7 @@
             <example>
                 <title>Restore a Collection</title>
                 <screen>
-<![CDATA[<xdbrestore base="xmldb:exist://" user="admin" password=""
+<![CDATA[<xdbrestore uri="xmldb:exist://" user="admin" password=""
     dir="${backup.dir}/db/home"/>]]></screen>
             </example>
         </section>
