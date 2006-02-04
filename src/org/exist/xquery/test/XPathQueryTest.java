@@ -90,12 +90,17 @@ public class XPathQueryTest extends XMLTestCase {
 
 	private final static String ids =
 	    "<!DOCTYPE test [" +
-	    "<!ELEMENT test (a*, b*)>" +
+	    "<!ELEMENT test (a | b | c | d)*>" +
+        "<!ATTLIST test xml:space CDATA #IMPLIED>" +
 	    "<!ELEMENT a EMPTY>" +
 	    "<!ELEMENT b (name)>" +
+        "<!ELEMENT c (name)>" +
+        "<!ELEMENT d EMPTY>" +
+        "<!ATTLIST d ref IDREF #IMPLIED>" +
 	    "<!ELEMENT name (#PCDATA)>" +
 	    "<!ATTLIST a ref IDREF #IMPLIED>" +
-	    "<!ATTLIST b id ID #IMPLIED>]>" +
+	    "<!ATTLIST b id ID #IMPLIED>" +
+        "<!ATTLIST c xml:id ID #IMPLIED>]>" +
 	    "<test xml:space=\"preserve\">" +
 	    "<a ref=\"id1\"/>" +
 	    "<a ref=\"id1\"/>" +
@@ -910,6 +915,7 @@ public class XPathQueryTest extends XMLTestCase {
 			queryResource(service, "ids.xml", "id('id4')", 1);
 		} catch (XMLDBException e) {
 			System.out.println("testIds(): XMLDBException: "+e);
+            e.printStackTrace();
 			fail(e.getMessage());
 		}
 	}
