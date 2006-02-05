@@ -99,7 +99,7 @@ public class XQueryTriggerTest extends XMLTestCase {
     private final static String DOCUMENT_UPDATE =
         "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
         "<!-- special offer -->" +
-        "<xu:update select='/test/item[@id = '3']/price'>" +       
+        "<xu:update select='/test/item[@id = \"3\"]/price'>" +       
         	"15.2"+
         "</xu:update>" +
       "</xu:modifications>";
@@ -243,7 +243,7 @@ public class XQueryTriggerTest extends XMLTestCase {
     }
 
     /** test a trigger fired by a Document Update */
-    public void ttttestUpdateDocument() {
+    public void bugtestUpdateDocument() {
     	
     	ResourceSet result;
     	
@@ -260,7 +260,7 @@ public class XQueryTriggerTest extends XMLTestCase {
 
 	        XPathQueryService service = (XPathQueryService) testCollection
     		.getService("XPathQueryService", "1.0");	        
-	        //TODO : understand why it is necessary !
+	        // this is necessary to compare with MODIFIED_DOCUMENT_CONTENT ; TODO better compare with XML diff tool
 	        service.setProperty(OutputKeys.INDENT, "no");
 
 	        result = service.query("/events/event[@id = 'trigger2']");
@@ -291,7 +291,7 @@ public class XQueryTriggerTest extends XMLTestCase {
     }
 
     /** test a trigger fired by a Document Delete */
-    public void ttttestDeleteDocument() {
+    public void testDeleteDocument() {
     	
     	ResourceSet result;
     	
@@ -306,7 +306,7 @@ public class XQueryTriggerTest extends XMLTestCase {
 			
 	        XPathQueryService service = (XPathQueryService) testCollection
 	        	.getService("XPathQueryService", "1.0");
-	        //TODO : understand why it is necessary !
+
 	        service.setProperty(OutputKeys.INDENT, "no");        
 
 	        result = service.query("/events/event[@id = 'trigger3']");
