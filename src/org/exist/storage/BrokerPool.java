@@ -667,7 +667,10 @@ public class BrokerPool {
 		localSecurityManager.attach(this, broker);
 		securityManager = localSecurityManager;
 		initializing = false;
-		
+		//have to do this after initializing = false
+		// so that the policies collection is saved
+		if(securityManager.isXACMLEnabled())
+			securityManager.getPDP().initializePolicyCollection();
 		//Get a manager to handle further collectios configuration
 		collectionConfigurationManager = new CollectionConfigurationManager(broker);
         
