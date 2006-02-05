@@ -50,6 +50,9 @@ public class FtQueryTest extends XMLTestCase {
     
     private final static File SHAKES_DIR = new File("samples" + File.separator + "shakespeare");
     private final static File MODS_DIR = new File("samples" + File.separator + "mods");
+
+	private static final String TEST_COLLECTION_NAME = "testft";
+    private static final String TEST_COLLECTION_PATH = DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION_NAME;
     
     private Database database;
     private Collection testCollection;
@@ -104,15 +107,15 @@ public class FtQueryTest extends XMLTestCase {
 	        
 	        XQueryService service = (XQueryService)
 	            testCollection.getService("XQueryService", "1.0");
-	        String query = queryBody + "t:index-terms(collection('" + DBBroker.ROOT_COLLECTION + "'), \'is\', util:function(\'f:term-callback\', 2), 1000)";
+	        String query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "'), \'is\', util:function(\'f:term-callback\', 2), 1000)";
 	        ResourceSet result = service.query(query);
 	        assertEquals(7, result.getSize());
 	        
-	        query = queryBody + "t:index-terms(collection('"  + DBBroker.ROOT_COLLECTION + "')//LINE, \'is\', util:function(\'f:term-callback\', 2), 1000)";
+	        query = queryBody + "t:index-terms(collection('"  + TEST_COLLECTION_PATH + "')//LINE, \'is\', util:function(\'f:term-callback\', 2), 1000)";
 	        result = service.query(query);
 	        assertEquals(6, result.getSize());
 	        
-	        query = queryBody + "t:index-terms(collection('" + DBBroker.ROOT_COLLECTION + "')//mods:title, \'s\', util:function(\'f:term-callback\', 2), 1000)";
+	        query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//mods:title, \'s\', util:function(\'f:term-callback\', 2), 1000)";
 	        result = service.query(query);
 	        assertEquals(20, result.getSize());
 		} catch (XMLDBException e) {
@@ -204,7 +207,7 @@ public class FtQueryTest extends XMLTestCase {
                 (CollectionManagementService) root.getService(
                     "CollectionManagementService",
                     "1.0");
-            testCollection = service.createCollection("testft");
+            testCollection = service.createCollection(TEST_COLLECTION_NAME);
             assertNotNull(testCollection);
 
             for (int i = 0; i < FILES.length; i++) {
@@ -246,7 +249,7 @@ public class FtQueryTest extends XMLTestCase {
 	            (CollectionManagementService) root.getService(
 	                "CollectionManagementService",
 	                "1.0");
-	        service.removeCollection("testft");
+	        service.removeCollection(TEST_COLLECTION_NAME);
 	        
 	        DatabaseManager.deregisterDatabase(database);
 	        DatabaseInstanceManager dim =
