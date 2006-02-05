@@ -239,6 +239,11 @@
                 <include name="**.xq"/>
             </fileset>
         </copy>
+		  <copy todir="${build.classes}/org/exist/security/xacml/policies">
+			  <fileset dir="${src}/org/exist/security/xacml/policies">
+				  <include name="*.xml"/>
+			  </fileset>
+        </copy>
         <copy file="${src}/org/exist/xquery/util/messages.properties"
                 todir="${build.classes}/org/exist/xquery/util"/>
         <copy file="${src}/org/exist/ant/antlib.xml"
@@ -323,7 +328,7 @@
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx,*.log"/>
         </delete>
-        
+        	
         <delete dir="${junit.reports.dat}"/>
         <delete dir="${junit.reports.html}"/>
 
@@ -353,7 +358,7 @@
 
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
             <sysproperty key="exist.home" value="${basedir}" />
-            <classpath refid="classpath.core"/>
+				<classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
