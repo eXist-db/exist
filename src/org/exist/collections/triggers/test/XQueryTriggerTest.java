@@ -22,6 +22,7 @@ package org.exist.collections.triggers.test;
 
 import javax.xml.transform.OutputKeys;
 
+import org.exist.collections.triggers.XQueryTrigger;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
@@ -37,7 +38,7 @@ import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
 import org.custommonkey.xmlunit.*;
 
-/**
+/** class under test : {@link XQueryTrigger}
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class XQueryTriggerTest extends XMLTestCase {
@@ -45,35 +46,43 @@ public class XQueryTriggerTest extends XMLTestCase {
 	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String TEST_COLLECTION = "testXQueryTrigger";
 
-    private String CONFIG =
-    	"<exist:collection xmlns:exist=\"http://exist-db.org/collection-config/1.0\">" +
+    private final String COLLECTION_CONFIG =
+    	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
 	    "  <exist:triggers>" +
-		"     <exist:trigger event=\"store\"" +
-		"                    class=\"org.exist.collections.triggers.XQueryTrigger\">" +
-		"	     <exist:parameter name=\"query\" value=\"import module namespace log = 'log' at '" + URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "'; log:log('trigger1')\"/>" +
-		"	     <exist:parameter name=\"bindingPrefix\" value=\"log\"/>" +
+		"     <exist:trigger event='store'" +
+		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"	     <exist:parameter name='query' " +
+		"			value=\"import module namespace log = 'log' at '" +
+						URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "';" +
+						"log:log('trigger1')\" />" +
+		"	     <exist:parameter name='bindingPrefix' value='log'/>" +
 		"        />" +
 		"     </exist:trigger>" +
 		
-		"     <exist:trigger event=\"update\"" +
-		"                    class=\"org.exist.collections.triggers.XQueryTrigger\">" +
-		"	     <exist:parameter name=\"query\" value=\"import module namespace log = 'log' at '" + URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "'; log:log('trigger2')\"/>" +
+		"     <exist:trigger event='update'" +
+		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"	     <exist:parameter name='query' " +
+		"			value=\"import module namespace log = 'log' at '" +
+						URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "';" +
+						"log:log('trigger2')\" />" +
 		"	     <exist:parameter name=\"bindingPrefix\" value=\"log\"/>" +
 		"        />" +
 		"     </exist:trigger>" +
 
-		"     <exist:trigger event=\"remove\"" +
-		"                    class=\"org.exist.collections.triggers.XQueryTrigger\">" +
-		"	     <exist:parameter name=\"query\" value=\"import module namespace log = 'log' at '" + URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "'; log:log('trigger3')\"/>" +
-		"	     <exist:parameter name=\"bindingPrefix\" value=\"log\"/>" +
+		"     <exist:trigger event='remove'" +
+		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"	     <exist:parameter name=\"query\" value=\"import module namespace log = 'log' at '" + 
+					URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "';" +
+							"log:log('trigger3')\"/>" +
+		"	     <exist:parameter name='bindingPrefix' value='log' />" +
 		"        />" +
 		"     </exist:trigger>" +
 		
 		"  </exist:triggers>" +
         "</exist:collection>";    
 
-    private String EMPTY_CONFIG =
-    	"<exist:collection xmlns:exist=\"http://exist-db.org/collection-config/1.0\">" +
+    private final String EMPTY_COLLECTION_CONFIG =
+    	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
         "</exist:collection>";    
     
     private final static String DOCUMENT_NAME = "test.xml";
@@ -86,23 +95,29 @@ public class XQueryTriggerTest extends XMLTestCase {
 		+ "<item id='4'><price>65.54</price><stock>16</stock></item>"
 		+ "</test>";    
 
+    /** XUpdate document update specification */
     private final static String DOCUMENT_UPDATE =
-        "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+        "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
         "<!-- special offer -->" +
-        "<xu:update select=\"/test/item[@id = '3']/price\">" +       
-        "15.2"+
+        "<xu:update select='/test/item[@id = '3']/price'>" +       
+        	"15.2"+
         "</xu:update>" +
       "</xu:modifications>";
     
-
-    private final static String MODIFIED_DOCUMENT_CONTENT = DOCUMENT_CONTENT.replaceAll("<price>18.4</price>", "<price>15.2</price>");
+    private final static String MODIFIED_DOCUMENT_CONTENT = 
+    	DOCUMENT_CONTENT.replaceAll("<price>18.4</price>", "<price>15.2</price>");
    
+    /** "log" document that will be updated by the trigger */
     private final static String LOG_NAME = "XQueryTriggerLog.xml";
     
+    /** initial content of the "log" document */
     private final static String EMPTY_LOG = "<events/>";
     
+    /** XQuery module implementing the trigger under test */
     private final static String MODULE_NAME = "XQueryTriggerLogger.xqm";
-    	
+    
+    /** XQuery module implementing the trigger under test; 
+     * the log() XQuery function will add an <event> element inside <events> element */
     private final static String MODULE =
     	"module namespace log='log'; " +
     	"import module namespace xmldb='http://exist-db.org/xquery/xmldb'; " +
@@ -113,15 +128,15 @@ public class XQueryTriggerTest extends XMLTestCase {
     	"declare function log:log($id as xs:string?) {" +
     	  "xmldb:update("+
     	    "xmldb:collection('" + URI + "/" + TEST_COLLECTION + "', 'admin', ''), " +
-            "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
-              "<xu:append select=\"/events\">" +
-                "<xu:element name=\"event\">" +
-                  "<xu:attribute name=\"id\">{$id}</xu:attribute>" +
-                  "<xu:attribute name=\"time\">{current-dateTime()}</xu:attribute>" +
-                  "<xu:element name=\"collectionName\">{$log:collectionName}</xu:element>" +
-                  "<xu:element name=\"documentName\">{$log:documentName}</xu:element>" +
-                  "<xu:element name=\"triggerEvent\">{$log:triggerEvent}</xu:element>" +                 
-                  "<xu:element name=\"document\">{$log:document}</xu:element>" +   
+            "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
+              "<xu:append select='/events'>" +
+                "<xu:element name='event'>" +
+                  "<xu:attribute name='id'>{$id}</xu:attribute>" +
+                  "<xu:attribute name='time'>{current-dateTime()}</xu:attribute>" +
+                  "<xu:element name='collectionName'>{$log:collectionName}</xu:element>" +
+                  "<xu:element name='documentName'>{$log:documentName}</xu:element>" +
+                  "<xu:element name='triggerEvent'>{$log:triggerEvent}</xu:element>" +                 
+                  "<xu:element name='document'>{$log:document}</xu:element>" +   
                 "</xu:element>" +            
               "</xu:append>" +
             "</xu:modifications>" +
@@ -130,6 +145,7 @@ public class XQueryTriggerTest extends XMLTestCase {
     
     private Collection testCollection;
 
+    /** just start the DB and create the test collection */
     protected void setUp() {
         try {
             // initialize driver
@@ -155,6 +171,8 @@ public class XQueryTriggerTest extends XMLTestCase {
         }
     }
 
+    /** create "log" document that will be updated by the trigger,
+     * and store the XQuery module implementing the trigger under test */
     public void testStorePreliminaryDocuments() {
     	try {
 			XMLResource doc =
@@ -173,22 +191,25 @@ public class XQueryTriggerTest extends XMLTestCase {
         }    	
     }
 
+    /** test a trigger fired by storing a Document  */
     public void testStoreDocument() {
     	
     	ResourceSet result;
     	
     	try {    		
-    		
+    		// configure the Collection with the trigger under test
 			IndexQueryService idxConf = (IndexQueryService)
 			testCollection.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(CONFIG);
-				
+			idxConf.configureCollection(COLLECTION_CONFIG);
+			
+			// this will fire the trigger
 			XMLResource doc =
 				(XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
 			doc.setContent(DOCUMENT_CONTENT);
 			testCollection.storeResource(doc);
 			
-			idxConf.configureCollection(EMPTY_CONFIG);			
+    		// remove the trigger for the Collection under test
+			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
 
 	        XPathQueryService service = (XPathQueryService) testCollection
     			.getService("XPathQueryService", "1.0");
@@ -221,20 +242,21 @@ public class XQueryTriggerTest extends XMLTestCase {
 			
     }
 
-    public void bugtestUpdateDocument() {
+    /** test a trigger fired by a Document Update */
+    public void ttttestUpdateDocument() {
     	
     	ResourceSet result;
     	
     	try {
 			IndexQueryService idxConf = (IndexQueryService)
 			testCollection.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(CONFIG);
+			idxConf.configureCollection(COLLECTION_CONFIG);
 	       
 			//TODO : trigger UPDATE events !
 	        XUpdateQueryService update = (XUpdateQueryService) testCollection.getService("XUpdateQueryService", "1.0");
 	        update.updateResource(DOCUMENT_NAME, DOCUMENT_UPDATE);
 	        
-	        idxConf.configureCollection(EMPTY_CONFIG);
+	        idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
 	        XPathQueryService service = (XPathQueryService) testCollection
     		.getService("XPathQueryService", "1.0");	        
@@ -267,19 +289,20 @@ public class XQueryTriggerTest extends XMLTestCase {
     	}	
         
     }
-    
-    public void testDeleteDocument() {
+
+    /** test a trigger fired by a Document Delete */
+    public void ttttestDeleteDocument() {
     	
     	ResourceSet result;
     	
     	try {
 			IndexQueryService idxConf = (IndexQueryService)
 			testCollection.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(CONFIG);
+			idxConf.configureCollection(COLLECTION_CONFIG);
 	
 			testCollection.removeResource(testCollection.getResource(DOCUMENT_NAME));
 
-			idxConf.configureCollection(EMPTY_CONFIG);
+			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 			
 	        XPathQueryService service = (XPathQueryService) testCollection
 	        	.getService("XPathQueryService", "1.0");
