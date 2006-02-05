@@ -85,6 +85,11 @@ public class ExistPDP
 		pdpConfig = new PDPConfig(createAttributeFinder(), createPolicyFinder(), createResourceFinder());
 		pdp = new PDP(pdpConfig);
 	}
+
+	public void initializePolicyCollection()
+	{
+		util.initializePolicyCollection();
+	}
 	
 	/**
 	* Returns the <code>PDPConfig</code> used to initialize the
