@@ -26,6 +26,7 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.triggers.Trigger;
+import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -43,12 +44,14 @@ public class CollectionConfiguration {
     public final static String NAMESPACE = "http://exist-db.org/collection-config/1.0";
     
 	private final static String ROOT_ELEMENT = "collection";
+	/** First level element in a collection configuration document */
 	private final static String TRIGGERS_ELEMENT = "triggers";
 	private final static String EVENT_ATTRIBUTE = "event";
 	private final static String CLASS_ATTRIBUTE = "class";
 	private final static String PARAMETER_ELEMENT = "parameter";
 	private final static String PARAM_NAME_ATTRIBUTE = "name";
 	private final static String PARAM_VALUE_ATTRIBUTE = "value";
+	/** First level element in a collection configuration document */
 	private final static String INDEX_ELEMENT = "index";
 	private final static String PERMISSIONS_ELEMENT = "default-permissions";
 	private final static String RESOURCE_PERMISSIONS_ATTR = "resource";
@@ -73,6 +76,16 @@ public class CollectionConfiguration {
     	this.defResPermissions = pool.getSecurityManager().getResourceDefaultPerms();
 		this.defCollPermissions = pool.getSecurityManager().getCollectionDefaultPerms();
     }
+    
+    
+	public static boolean isCollectionConfigDocument(String docName) {
+		return docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX);
+	}
+	
+	public static boolean isCollectionConfigDocument(DocumentImpl doc ) {
+		String docName = doc.getName();
+		return isCollectionConfigDocument( docName );
+	}
 	
 	/**
      * @param broker
@@ -80,7 +93,7 @@ public class CollectionConfiguration {
      * is not necessarily the same as this.collection.getName() because the
      * source document may have come from a parent collection.
      * @param docName The name of the document being read
-     * @param doc
+     * @param doc collection configuration document
      * @throws CollectionConfigurationException
      */
     protected void read(DBBroker broker, Document doc, String srcCollectionName, String docName) throws CollectionConfigurationException {
