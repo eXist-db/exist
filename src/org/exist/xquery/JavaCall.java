@@ -75,7 +75,7 @@ public class JavaCall extends Function {
 			
 			myClass = Class.forName(namespaceURI);
 		} catch (ClassNotFoundException e) {
-			throw new XPathException(getASTNode(), "Class: " + namespaceURI + " not found");
+			throw new XPathException(getASTNode(), "Class: " + namespaceURI + " not found", e);
 		}
 
 		name = qname.getLocalName();
@@ -128,9 +128,12 @@ public class JavaCall extends Function {
 					}
 				}
 			}
-			if (candidateMethods.size() == 0)
+			if (candidateMethods.size() == 0) {
+				String message = "no constructor found with " + argCount + " arguments"; 
 				throw new XPathException(getASTNode(),
-					"no constructor found with " + argCount + " arguments");
+					message,
+					new NoSuchMethodException(message));
+			}
 		} else {
 			Method[] methods = myClass.getMethods();
 			for (int i = 0; i < methods.length; i++) {
@@ -150,9 +153,12 @@ public class JavaCall extends Function {
 					}
 				}
 			}
-			if (candidateMethods.size() == 0)
+			if (candidateMethods.size() == 0) {
+				String message = "no method matches " + name + " with " + argCount + " arguments"; 
 				throw new XPathException(getASTNode(),
-					"no method matches " + name + " with " + argCount + " arguments");
+					message,
+					new NoSuchMethodException(message));
+			}
 		}
 	}
 

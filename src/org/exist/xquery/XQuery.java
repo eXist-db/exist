@@ -95,7 +95,7 @@ public class XQuery {
                 parser.xpath();
             if (parser.foundErrors()) {
             	LOG.debug(parser.getErrorMessage());
-            	throw new XPathException(
+            	throw new StaticXQueryException(
             		parser.getErrorMessage());
             }
 
@@ -107,7 +107,7 @@ public class XQuery {
             else
                 treeParser.xpath(ast, expr);
             if (treeParser.foundErrors()) {
-            	throw new XPathException(
+            	throw new StaticXQueryException(
             		treeParser.getErrorMessage(),
             		treeParser.getLastException());
             }
@@ -120,13 +120,14 @@ public class XQuery {
             LOG.debug("Compilation took "  +  (System.currentTimeMillis() - start));
             return expr;
         } catch (RecognitionException e) {
-			e.printStackTrace();
+			LOG.debug("Error compiling query: " + e.getMessage(), e);
 			String msg = e.getMessage();
 			if (msg.endsWith(", found 'null'"))
 				msg = msg.substring(0, msg.length() - ", found 'null'".length());
-            throw new XPathException(msg, e.getLine(), e.getColumn());
+            throw new StaticXQueryException(msg, e.getLine(), e.getColumn());
         } catch (TokenStreamException e) {
-            throw new XPathException(e.getMessage());
+			LOG.debug("Error compiling query: " + e.getMessage(), e);
+            throw new StaticXQueryException(e.getMessage(), e);
         }
     }
     
