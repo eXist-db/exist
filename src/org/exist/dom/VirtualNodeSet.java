@@ -107,9 +107,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
             boolean includeSelf, boolean directParent, int recursions) {
 		
         long pid = NodeSetHelper.getParentId(node.getDocument(), node.getGID());
-        //no matching node has been found in the context
-        if (pid == NodeProxy.DOCUMENT_NODE_GID)
-            return null;
         
 		NodeProxy parent;
 		// check if the start-node should be included, e.g. to process an
@@ -134,14 +131,16 @@ public class VirtualNodeSet extends AbstractNodeSet {
         
 		// if this is the first call to this method, remember the first parent node
 		// and re-evaluate the method
-		if (first == null) {
-            first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);            
-            if (directParent)
-                return first;            
-			// Timo Boehme: we need a real parent (child from context)
-			return getFirstParent(first, first, false, false, recursions + 1);
-		}
-
+        if (first == null) {
+            if (pid < 0) {
+                // given node was already document element -> no parent
+                return null;
+            }
+            first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);
+            // Timo Boehme: we need a real parent (child from context)
+            return getFirstParent(first, first, false, directParent, recursions + 1);
+        }
+        
 		// is pid member of the context set?
 		parent = context.get(node.getDocument(), pid);
 
@@ -159,11 +158,13 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				node.addContextNode(contextId, parent);
 			}
 			// Timo Boehme: we return the ancestor which is child of context			
-			return node;		
-        //Removed : the directParent case is handled above
-		//} else if (directParent && axis == Constants.CHILD_AXIS && recursions == 1) {
-			//break here if the expression is like /*/n          
-			//return null;        
+			return node;
+        } else if (pid < 0) {
+            // no matching node has been found in the context
+            return null;
+		} else if (directParent && axis == Constants.CHILD_AXIS && recursions == 1) {
+			// break here if the expression is like /*/n          
+			return null;        
 		} else {
 			// continue for expressions like //*/n or /*//n
 			parent = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);
@@ -193,23 +194,20 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		realSet.add(p);
 		realSetIsComplete = false;
 	}
-
-//    public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf) {
-//        return parentWithChild(doc, gid, directParent, includeSelf, NodeProxy.UNKNOWN_NODE_LEVEL);
-//    }
     
 	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, 
-            boolean includeSelf) {
+            boolean includeSelf, int level) {
 		NodeProxy first = getFirstParent(new NodeProxy(doc, gid), null, includeSelf, directParent, 0);
 		if (first != null)
 			addInternal(first);
 		return first;
 	}
 
-	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf) {
+	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf,
+            int level) {
 		NodeProxy first = getFirstParent(proxy, null, includeSelf, directParent, 0);
 		if (first != null)
-			addInternal(first);		
+			addInternal(first);
 		return first;
 	}
 
@@ -327,7 +325,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	public final void realize() {
 		if (realSet != null && realSetIsComplete)
 			return;
-        
+        LOG.warn("REALIZE!!!!");
+        Thread.dumpStack();
 		realSet = getNodes();
 		realSetIsComplete = true;
 	}
