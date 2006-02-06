@@ -40,9 +40,14 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
 public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
-
+	private boolean errorIfAbsent;
+	
 	public XMLDBAbstractCollectionManipulator(XQueryContext context, FunctionSignature signature) {
+		this(context, signature, true);
+	}
+	public XMLDBAbstractCollectionManipulator(XQueryContext context, FunctionSignature signature, boolean errorIfAbsent) {
 		super(context, signature);
+		this.errorIfAbsent = errorIfAbsent;
 	}
 	
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
@@ -107,10 +112,12 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                         collection = org.xmldb.api.DatabaseManager.getCollection(collectionURI);
                     }
                 } catch (XMLDBException xe) {
-                    throw new XPathException(getASTNode(), "Could not locate collection: "+collectionURI, xe);
+                    if(errorIfAbsent)
+                        throw new XPathException(getASTNode(), "Could not locate collection: "+collectionURI, xe);
+                    collection = null;
                 }
             }
-            if (null == collection) {
+            if (null == collection && errorIfAbsent) {
                 throw new XPathException(getASTNode(), "Unable to find collection: "+collectionURI);
             }
         } else {
@@ -122,7 +129,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         try {
             s = evalWithCollection(collection, args, contextSequence);
         } finally {
-            if (collectionNeedsClose)
+            if (collectionNeedsClose && collection != null)
                 try { collection.close(); } catch (Exception e) { throw new XPathException(getASTNode(), "Unable to close collection", e); }
         }
         return s;
