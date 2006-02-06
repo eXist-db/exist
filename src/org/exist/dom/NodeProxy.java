@@ -432,7 +432,6 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             }
             next = next.getNextDirect();
         }
-//        System.out.println("NodeProxy.addContextNode: " + contextNode.debugContext());
     }
 	
     /**
@@ -453,9 +452,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		context = node.getContext();
 	}
 	
-    public void deepCopyContext(NodeProxy node, int addContextId) {
+    public void deepCopyContext(NodeProxy node) {
         context = null;
-        
         ContextItem newContext = null;
         ContextItem next = node.context;
         while (next != null) {
@@ -466,9 +464,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
                 newContext.setNextContextItem(new ContextItem(next.getContextId(), next.getNode()));
                 newContext = newContext.getNextDirect();
             }
+//          System.out.println("NodeProxy.copyContext: " + next.getNode().debugContext());
             next = next.getNextDirect();
         }
-        
+    }
+    
+    public void deepCopyContext(NodeProxy node, int addContextId) {
+        deepCopyContext(node);
         addContextNode(addContextId, node);
     }
     
