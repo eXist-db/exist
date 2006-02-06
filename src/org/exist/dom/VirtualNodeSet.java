@@ -325,8 +325,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	public final void realize() {
 		if (realSet != null && realSetIsComplete)
 			return;
-        LOG.warn("REALIZE!!!!");
-        Thread.dumpStack();
 		realSet = getNodes();
 		realSetIsComplete = true;
 	}
