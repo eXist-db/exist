@@ -28,7 +28,6 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -37,11 +36,9 @@ import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
 
-public class XMLDBCollectionExists extends BasicFunction {
+public class XMLDBCollectionExists extends XMLDBAbstractCollectionManipulator {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -52,33 +49,11 @@ public class XMLDBCollectionExists extends BasicFunction {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 
-	/**
-	 * @param context
-	 * @param signature
-	 */
 	public XMLDBCollectionExists(XQueryContext context) {
-		super(context, signature);
+		super(context, signature, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(
-		Sequence args[],
-		Sequence contextSequence)
-		throws XPathException {
-		String collectionURI = args[0].getStringValue();
-		Collection collection = null;
-		try {
-			collection = DatabaseManager.getCollection(collectionURI);
-		} catch (XMLDBException e) {
-		    LOG.debug(e.getMessage(), e);
-			throw new XPathException(getASTNode(), 
-				"exception while retrieving collection: " + e.getMessage(), e);
-        } finally {
-            if (null != collection)
-                try { collection.close(); } catch (Exception e) { throw new XPathException(getASTNode(), "Unable to close collection", e); }
-		}
-		return (null == collection) ? BooleanValue.FALSE : BooleanValue.TRUE;
+	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
+		return (collection == null) ? BooleanValue.FALSE : BooleanValue.TRUE;
 	}
 }
