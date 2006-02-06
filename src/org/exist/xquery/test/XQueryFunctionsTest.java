@@ -568,7 +568,9 @@ public class XQueryFunctionsTest extends TestCase {
     		assertNotNull(result);
     		assertTrue(result.getSize() == 1);
     		assertNotNull(result.getResource(0));
-    		assertEquals(expectedResult, Boolean.valueOf(result.getResource(0).toString()).booleanValue());
+    		String content = (String)result.getResource(0).getContent();
+    		assertNotNull(content);
+    		assertEquals(expectedResult, Boolean.valueOf(content).booleanValue());
     	} catch(XMLDBException xe) {
     		System.err.println("Error calling xmldb:collection-exists:");
     		xe.printStackTrace();
