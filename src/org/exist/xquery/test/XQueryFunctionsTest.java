@@ -14,6 +14,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
 import java.text.*;
 import java.util.*;
@@ -512,6 +513,69 @@ public class XQueryFunctionsTest extends TestCase {
             fail(e.getMessage());
         }
     }
+    //ensure the test collection is removed and call collection-exists,
+    //which should return false, no exception thrown
+    public void testCollectionExists1() {
+    	//remove the test collection if it already exists
+    	String collectionName = "testCollectionExists";
+    	String collectionPath = DBBroker.ROOT_COLLECTION + "/" + collectionName;
+    	try
+		{
+			Collection testCollection = root.getChildCollection(collectionName);
+			if(testCollection != null)
+			{
+				CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+				cms.removeCollection(collectionPath);
+			}
+		}
+		catch (XMLDBException e)
+		{
+			System.err.println("Error removing existing test collection:");
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		runCollectionExistsTest(collectionPath, false);
+    }
+    //create a collection and call collection-exists, which should return true,
+    //no exception thrown
+    public void testCollectionExists2() {
+    	//add the test collection
+    	String collectionName = "testCollectionExists";
+    	String collectionPath = DBBroker.ROOT_COLLECTION + "/" + collectionName;
+    	try
+		{
+    		Collection testCollection = root.getChildCollection(collectionName);
+			if(testCollection == null)
+			{
+				CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+				cms.createCollection(collectionPath);
+			}
+		} catch(XMLDBException xe) {
+			System.err.println("Error determining if test collection already exists:");
+			xe.printStackTrace();
+			fail(xe.getMessage());
+		}
+		runCollectionExistsTest(collectionPath, true);
+    }
+    private void runCollectionExistsTest(String collectionPath, boolean expectedResult) {
+    	//collection-exists should not throw an exception and should return expectedResult
+    	String importXMLDB = "import module namespace xmldb=\"http://exist-db.org/xquery/xmldb\";";
+    	String collectionExists = "xmldb:collection-exists('" + collectionPath + "')";
+    	String query = importXMLDB + collectionExists;
+    	try {
+    		ResourceSet result = service.query(query);
+    		assertNotNull(result);
+    		assertTrue(result.getSize() == 1);
+    		assertNotNull(result.getResource(0));
+    		assertEquals(expectedResult, Boolean.valueOf(result.getResource(0).toString()).booleanValue());
+    	} catch(XMLDBException xe) {
+    		System.err.println("Error calling xmldb:collection-exists:");
+    		xe.printStackTrace();
+    		fail(xe.getMessage());
+    	}
+    }
+    
 	
 	/*
 	 * @see TestCase#setUp()
