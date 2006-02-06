@@ -108,6 +108,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		
         long pid = NodeSetHelper.getParentId(node.getDocument(), node.getGID());
         
+        /* if the node has no parent, i.e. pid == -1, we still need to complete this method
+         * to check if we have found a potential parent in one of the iterations before.
+         */
 		NodeProxy parent;
 		// check if the start-node should be included, e.g. to process an
 		// expression like *[. = 'xxx'] 
@@ -130,7 +133,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		}
         
 		// if this is the first call to this method, remember the first parent node
-		// and re-evaluate the method
+		// and re-evaluate the method. We can't just return the first parent as
+        // we need a parent that is actually contained in the context set. We thus
+        // call the method again to complete.
         if (first == null) {
             if (pid < 0) {
                 // given node was already document element -> no parent
