@@ -45,10 +45,10 @@ public class XPathQueryTest extends XMLTestCase {
 
 	private final static String namespaces =
 		"<test xmlns='http://www.foo.com'>"
-			+ "<section>"
-			+ "<title>Test Document</title>"
-			+ "<c:comment xmlns:c='http://www.other.com'>This is my comment</c:comment>"
-			+ "</section>"
+			+ "  <section>"
+			+ "      <title>Test Document</title>"
+			+ "      <c:comment xmlns:c='http://www.other.com'>This is my comment</c:comment>"
+			+ "  </section>"
 			+ "</test>";
 
 	private final static String strings =
@@ -376,6 +376,12 @@ public class XPathQueryTest extends XMLTestCase {
             printResult(result);
             assertEquals( "XPath: "+query, 1, result.getSize() );
             
+            query =  "/ * [ * / t:title ]";
+            result = service.queryResource( "namespaces.xml", query );
+            System.out.println("testStarAxisConstraints2 : ========" );        
+            printResult(result);
+            assertEquals( "XPath: "+query, 1, result.getSize() );
+            
         } catch (XMLDBException e) {
             //org.xmldb.api.base.XMLDBException: Internal evaluation error: context node is missing for node 3 !
             System.out.println("testStarAxisConstraints2(): XMLDBException: "+e);
@@ -394,7 +400,13 @@ public class XPathQueryTest extends XMLTestCase {
             result = service.queryResource( "namespaces.xml", query );
             System.out.println("testStarAxisConstraints3 : ========" );        
             printResult(result);
-            assertEquals( "XPath: "+query, 4, result.getSize() );
+            assertEquals( "XPath: "+query, 1, result.getSize() );
+            
+            query =  "// * [ . &= 'Test Document' ]";
+            result = service.queryResource( "namespaces.xml", query );
+            System.out.println("testStarAxisConstraints3 : ========" );        
+            printResult(result);
+            assertEquals( "XPath: "+query, 1, result.getSize() );
             
         } catch (XMLDBException e) {
             //org.xmldb.api.base.XMLDBException: Internal evaluation error: context node is missing !
