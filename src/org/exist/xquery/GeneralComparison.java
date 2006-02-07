@@ -31,6 +31,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.VirtualNodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.IndexSpec;
@@ -360,7 +361,7 @@ public class GeneralComparison extends BinaryOp {
       
 		//get the NodeSet on the left
 		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);		
-        if(nodes.getLength() == 0) //nothing on the left, so nothing to do
+        if(!(nodes instanceof VirtualNodeSet) && nodes.getLength() == 0) //nothing on the left, so nothing to do
         {
             return(Sequence.EMPTY_SEQUENCE);
         }
