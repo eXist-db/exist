@@ -27,6 +27,7 @@ import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.XQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -34,7 +35,6 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.modules.XQueryService;
 
 public class FtQueryTest extends XMLTestCase {
  
@@ -83,8 +83,21 @@ public class FtQueryTest extends XMLTestCase {
 	        assertEquals(1, result.getSize());
 	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[match-all(mods:title, '.*ploy.*')]");
 	        assertEquals(3, result.getSize());
-		} catch (Exception e) {
-			fail(e.getMessage());
+
+            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
+                    "//mods:titleInfo/mods:title[. &= 'alternative']");
+            assertEquals(0, result.getSize());
+
+            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
+                    "//mods:titleInfo/mods:title[attribute() &= 'alternative']");
+            assertEquals(9, result.getSize());
+
+            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
+                    "//mods:titleInfo/mods:title[@type &= 'alternative']");
+            assertEquals(9, result.getSize());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
 		}
 	}
     
