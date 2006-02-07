@@ -37,17 +37,7 @@ import java.util.regex.Pattern;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.NodeSetHelper;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.btree.BTreeCallback;
@@ -112,8 +102,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	/**
 	 * Checks if the given string could be a regular expression.
 	 * 
-	 * @param str The string	                 
-	 * @return 
+	 * @param str The string
 	 */
 	public final static boolean containsWildcards(String str) {
         if (str == null || str.length() == 0)
@@ -188,13 +177,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     /**
      * Indexes the tokens contained in a text node.
      * 
-     * @param idx The index configuration
+     * @param indexSpec The index configuration
      * @param text The text node to be indexed
      * @param noTokenizing
      *                if <code>true</code>, given text is indexed as a single token
      *                if <code>false</code>, it is tokenized before being indexed
-     * @return boolean indicates if all of the text content has been added to
-     *            the index
      */
     //TODO : use an indexSpec member in order to get rid of <code>noTokenizing</code>
     public void storeText(FulltextIndexSpec indexSpec, TextImpl text, boolean noTokenizing) {
@@ -480,7 +467,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             NodeProxy parent;
                             switch(storedSection) {
                                 case ATTRIBUTE_SECTION :
-                                    parent = contextSet.get(storedNode);
+                                    if (contextSet instanceof VirtualNodeSet) {
+                                        parent = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                        if (parent != null && parent.getGID() != storedGID)
+                                            parent = null;
+                                    } else
+                                        parent = contextSet.get(storedNode);
                                     break;
                                 case TEXT_SECTION :
                                     parent = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
@@ -554,7 +546,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	 * @see org.exist.storage.TextSearchEngine#getNodes(org.exist.xquery.XQueryContext, org.exist.dom.DocumentSet, org.exist.dom.NodeSet, org.exist.storage.TermMatcher, java.lang.CharSequence)
 	 */
 	public NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet,
-			TermMatcher matcher, CharSequence startTerm) throws TerminatedException {;
+			TermMatcher matcher, CharSequence startTerm) throws TerminatedException {
 		final NodeSet result = new ExtArrayNodeSet();
         final SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, docs); 
 		final Lock lock = dbTokens.getLock();		
@@ -712,7 +704,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     tokenizer.setText(val);
                     TextToken token;
                     while (null != (token = tokenizer.nextToken())) {
-                        String word = token.getText().toString();
+                        String word = token.getText();
                         if (stoplist.contains(word))
                             continue;
                         words.add(word.toLowerCase());
@@ -1253,7 +1245,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                                         break;
                                     case ATTRIBUTE_SECTION :
-                                        parentNode = contextSet.get(storedNode);
+                                        if (contextSet instanceof VirtualNodeSet) {
+                                        parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                        if (parentNode != null && parentNode.getGID() != storedGID)
+                                            parentNode = null;
+                                        } else
+                                            parentNode = contextSet.get(storedNode);
                                         break;
                                     default :
                                         throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
@@ -1529,12 +1526,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		
 		public void incLastTerm() {
 			if(last != null)
-				((TermFreq)last).increment();
+				last.increment();
 		}
 		
 		public void setLastTermFreq(int freq) {
 			if(last != null)
-				((TermFreq)last).count = freq;
+				last.count = freq;
 		}
 		
 		public long getLast() {
@@ -1563,7 +1560,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			TermFreq next = first;
 			int i = 0;
 			while( next != null ) {
-				data[i++] = (TermFreq)next;
+				data[i++] = next;
 				next = next.next;
 			}
 			return data;
