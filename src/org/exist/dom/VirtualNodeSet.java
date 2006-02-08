@@ -28,6 +28,7 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -63,6 +64,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		this.test = test;
 		this.context = context;
         this.contextId = contextId;
+	}
+	
+	public void setNodeTest(NodeTest test) {
+		this.test = test;
 	}
 
 	public boolean contains(DocumentImpl doc, long nodeId) {
@@ -141,7 +146,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 // given node was already document element -> no parent
                 return null;
             }
+            //first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);
             first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);
+            if (test.getType() == Type.ATTRIBUTE)
+            	return first;
             // Timo Boehme: we need a real parent (child from context)
             return getFirstParent(first, first, false, directParent, recursions + 1);
         }
