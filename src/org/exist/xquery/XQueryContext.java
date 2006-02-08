@@ -779,7 +779,7 @@ public class XQueryContext {
 			modules.put(module.getNamespaceURI(), module);
 			//LOG.debug("module " + module.getNamespaceURI() + " loaded successfully.");
 		} catch (ClassNotFoundException e) {
-			//LOG.warn("module class " + moduleClass + " not found. Skipping...");
+			LOG.warn("module class " + moduleClass + " not found. Skipping...");
 		} catch (InstantiationException e) {
 			LOG.warn("error while instantiating module class " + moduleClass, e);
 		} catch (IllegalAccessException e) {
