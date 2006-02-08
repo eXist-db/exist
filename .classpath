@@ -3,9 +3,10 @@
 	<classpathentry kind="src" path="samples"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="tools/wrapper/src"/>
+	<classpathentry kind="src" path="extensions/modules/src"/>
 	<classpathentry sourcepath="/jEdit-syntax" kind="lib" path="lib/core/jEdit-syntax.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>	
-﻿	<classpathentry kind="lib" path="lib/core/antlr.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/core/antlr.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-pool-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/javax.servlet.jar"/>
