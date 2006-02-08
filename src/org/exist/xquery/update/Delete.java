@@ -79,7 +79,7 @@ public class Delete extends Modification {
 			contextSequence = contextItem.toSequence();
         
 		Sequence inSeq = select.eval(contextSequence);
-        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
+        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE) && inSeq.getLength() > 0)
             throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
         
 		if (inSeq.getLength() > 0) {
