@@ -82,7 +82,7 @@ public class Replace extends Modification {
 		Sequence inSeq = select.eval(contextSequence);
 		if (inSeq.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE))
+		if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE) && inSeq.getLength() > 0)
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
 		
 		Sequence contentSeq = value.eval(contextSequence);
