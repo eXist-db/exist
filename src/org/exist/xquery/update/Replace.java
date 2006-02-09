@@ -41,6 +41,7 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
@@ -48,7 +49,9 @@ import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Node;
 
 /**
@@ -82,8 +85,36 @@ public class Replace extends Modification {
 		Sequence inSeq = select.eval(contextSequence);
 		if (inSeq.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE) && inSeq.getLength() > 0)
-			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+				
+		//START trap Replace failure
+        /* If we try and Replace a node at an invalid location,
+         * trap the error in a context variable,
+         * this is then accessible from xquery via. the context extension module - deliriumsky
+         * TODO: This trapping could be expanded further - basically where XPathException is thrown from thiss class
+         * TODO: Maybe we could provide more detailed messages in the trap, e.g. couldnt replace node `xyz` into `abc` becuase... this would be nicer for the end user of the xquery application 
+         */
+        if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE)) 
+        {
+        	//Indicate the failure to perform this update by adding it to the sequence in the context variable "_eXist_xquery_update_error"
+        	ValueSequence prevUpdateErrors = null;
+        	
+        	XPathException xpe = new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        	Object ctxVarObj = context.getXQueryContextVar("_eXist_xquery_update_error");
+        	if(ctxVarObj == null)
+        	{
+        		prevUpdateErrors = new ValueSequence();
+        	}
+        	else
+        	{
+        		prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
+        	}
+        	prevUpdateErrors.add(new StringValue(xpe.getMessage()));
+			context.setXQueryContextVar("_eXist_xquery_update_error", prevUpdateErrors);
+			
+        	if(inSeq.getLength() > 0)
+        		throw xpe;	//TODO: should we trap this instead of throwing an exception - deliriumsky?
+        }
+        //END trap Replace failure
 		
 		Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.getLength() == 0)
