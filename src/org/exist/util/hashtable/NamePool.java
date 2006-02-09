@@ -24,17 +24,21 @@ package org.exist.util.hashtable;
 
 import java.util.Iterator;
 
+import org.exist.dom.QName;
+
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class NamePool extends AbstractHashtable {
 	
-	protected Object[] values;
+    private final static QName REMOVED = new QName("REMOVED", "");
+    
+	private QName[] values;
 	
 	public NamePool() {
 		super();
-		values = new Object[tabSize];
+		values = new QName[tabSize];
 	}
 	
 	/**
@@ -47,7 +51,7 @@ public class NamePool extends AbstractHashtable {
 	 */
 	public NamePool(int iSize) {
 		super(iSize);
-		values = new Object[tabSize];
+		values = new QName[tabSize];
 	}
 	
 	public synchronized int size() {
@@ -59,7 +63,7 @@ public class NamePool extends AbstractHashtable {
 		return obj == null || obj == REMOVED ? null : obj;
 	}
 	
-	public synchronized int add(Object value) {
+	public synchronized int add(QName value) {
 		try {
 			return insert(value);
 		} catch(HashtableOverflowException e) {
@@ -68,7 +72,7 @@ public class NamePool extends AbstractHashtable {
 		}
 	}
 	
-	protected int insert(Object value) throws HashtableOverflowException {
+	protected int insert(QName value) throws HashtableOverflowException {
 		if (value == null)
 			throw new IllegalArgumentException("Illegal value: null");
 		int idx = hash(value) % tabSize;
@@ -84,7 +88,7 @@ public class NamePool extends AbstractHashtable {
 			// remember the bucket, but continue to check
 			// for duplicate keys
 			bucket = idx;
-		} else if (values[idx].equals(value)) {
+		} else if (eq(values[idx], value)) {
 			// duplicate value
 			return idx;
 		}
@@ -102,7 +106,7 @@ public class NamePool extends AbstractHashtable {
 				values[idx] = value;
 				++items;
 				return idx;
-			} else if (values[idx].equals(value)) {
+			} else if (eq(values[idx], value)) {
 				// duplicate value
 				return idx;
 			}
@@ -118,13 +122,13 @@ public class NamePool extends AbstractHashtable {
 		throw new HashtableOverflowException();
 	}
 
-	public synchronized void remove(Object value) {
+	public synchronized void remove(QName value) {
 		int idx = hash(value) % tabSize;
 		if (idx < 0)
 			idx *= -1;
 		if (values[idx] == null) {
 			return; // key does not exist
-		} else if (values[idx].equals(value)) {
+		} else if (eq(values[idx], value)) {
 			values[idx] = REMOVED;
 			--items;
 			return;
@@ -134,7 +138,7 @@ public class NamePool extends AbstractHashtable {
 			idx = (idx + rehashVal) % tabSize;
 			if (values[idx] == null) {
 				return; // key not found
-			} else if (values[idx].equals(value)) {
+			} else if (eq(values[idx], value)) {
 				values[idx] = REMOVED;
 				--items;
 				return;
@@ -142,6 +146,12 @@ public class NamePool extends AbstractHashtable {
 		}
 	}
 	
+    private final static boolean eq(QName q1, QName q2) {
+        if (q1.getNameType() == q2.getNameType())
+            return q1.equals(q2);
+        return false;
+    }
+    
 	protected int rehash(int iVal) {
 		int retVal = (iVal + iVal / 2) % tabSize;
 		if (retVal == 0)
