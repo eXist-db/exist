@@ -28,6 +28,7 @@ import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
+import org.exist.storage.ElementValue;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.NamePool;
@@ -218,6 +219,7 @@ public class DocumentImpl extends NodeImpl implements Document {
             throws DOMException {
         if (nodeKind == null) init();
         if (nextAttr == attrName.length) growAttributes();
+        qname.setNameType(ElementValue.ATTRIBUTE);
         attrParent[nextAttr] = nodeNr;
         attrName[nextAttr] = namePool.add(qname);
         attrValue[nextAttr] = value;
