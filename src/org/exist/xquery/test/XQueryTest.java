@@ -1271,13 +1271,13 @@ public class XQueryTest extends XMLTestCase {
 	}
 
     public void testNameConflicts() {
-        String query = "let $a := <test name=\"Test\"/> return <wrapper>{$a/@name}</wrapper>";
+        String query = "let $a := <name name=\"Test\"/> return <wrap>{$a//@name}</wrap>";
         try {
             XPathQueryService service = (XPathQueryService) testCollection.getService(
                     "XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals(1, result.getSize());
-            assertEquals("<wrapper name=\"Test\">", result.getResource(0).getContent().toString());
+            assertEquals("<wrap name=\"Test\"/>", result.getResource(0).getContent().toString());
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
