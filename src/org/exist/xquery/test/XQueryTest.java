@@ -1269,6 +1269,19 @@ public class XQueryTest extends XMLTestCase {
 			fail(e.getMessage());
 		}
 	}
+
+    public void testNameConflicts() {
+        String query = "let $a := <test name=\"Test\"/> return <wrapper>{$a/@name}</wrapper>";
+        try {
+            XPathQueryService service = (XPathQueryService) testCollection.getService(
+                    "XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals(1, result.getSize());
+            assertEquals("<wrapper name=\"Test\">", result.getResource(0).getContent().toString());
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }
     
     public void testSerialization() {
         ResourceSet result;
