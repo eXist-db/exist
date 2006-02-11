@@ -43,7 +43,15 @@ public class XPathQueryTest extends XMLTestCase {
 			+ "<item id='4'><price>65.54</price><stock>16</stock></item>"
 			+ "</test>";
 
-	private final static String namespaces =
+    private final static String numbers2 =
+		"<test xmlns=\"http://numbers.org\">"
+			+ "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
+			+ "<item id='2'><price>7.4</price><stock>43</stock></item>"
+			+ "<item id='3'><price>18.4</price><stock>5</stock></item>"
+			+ "<item id='4'><price>65.54</price><stock>16</stock></item>"
+			+ "</test>";
+
+    private final static String namespaces =
 		"<test xmlns='http://www.foo.com'>"
 			+ "  <section>"
 			+ "      <title>Test Document</title>"
@@ -57,7 +65,7 @@ public class XPathQueryTest extends XMLTestCase {
 			+ "<string value='Hello World!'/>"
 			+ "<string>Hello</string>"
 			+ "</test>";
-	
+
 	private final static String nested2 =
 		"<RootElement>" +
         "<ChildA>" +
@@ -435,13 +443,6 @@ public class XPathQueryTest extends XMLTestCase {
         try {
             XQueryService service = 
                 storeXMLStringAndGetQueryService("nested2.xml", nested2);
-            String numbers =
-                "<test>"
-                    + "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
-                    + "<item id='2'><price>7.4</price><stock>43</stock></item>"
-                    + "<item id='3'><price>18.4</price><stock>5</stock></item>"
-                    + "<item id='4'><price>65.54</price><stock>16</stock></item>"
-                    + "</test>";
             
             queryResource(service, "nested2.xml", "(<a/>, <b/>, <c/>)/parent::*", 0);
             queryResource(service, "nested2.xml", "/RootElement//ChildB/parent::*", 1);
@@ -449,12 +450,20 @@ public class XPathQueryTest extends XMLTestCase {
             queryResource(service, "nested2.xml", "/RootElement/ChildA/parent::*/ChildA/ChildB", 1);
             
             service = 
-                storeXMLStringAndGetQueryService("numbers.xml", numbers);
-            queryResource(service, "numbers.xml", "//price[. = 18.4]/parent::*[@id = '3']", 1);
-            queryResource(service, "numbers.xml", "//price[. = 18.4]/parent::item[@id = '3']", 1);
-            queryResource(service, "numbers.xml", "//price/parent::item[@id = '3']", 1);
+                storeXMLStringAndGetQueryService("numbers.xml", numbers2);
+            service.setNamespace("n", "http://numbers.org");
+            queryResource(service, "numbers.xml", "//n:price[. = 18.4]/parent::*[@id = '3']", 1);
+            queryResource(service, "numbers.xml", "//n:price[. = 18.4]/parent::n:item[@id = '3']", 1);
+            queryResource(service, "numbers.xml", "//n:price/parent::n:item[@id = '3']", 1);
+            ResourceSet result =
+                    queryResource(service, "numbers.xml", "//n:price[. = 18.4]/parent::n:*/string(@id)", 1);
+            assertEquals(result.getResource(0).getContent().toString(), "3");
+            result = queryResource(service, "numbers.xml", "//n:price[. = 18.4]/parent::*:item/string(@id)", 1);
+            assertEquals(result.getResource(0).getContent().toString(), "3");
+            result = queryResource(service, "numbers.xml", "//n:price[. = 18.4]/../string(@id)", 1);
+            assertEquals(result.getResource(0).getContent().toString(), "3");
             queryResource(service, "numbers.xml", 
-                    "for $price in //price where $price/parent::*[@id = '3']/stock = '5' return $price", 1);
+                    "for $price in //n:price where $price/parent::*[@id = '3']/n:stock = '5' return $price", 1);
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
