@@ -82,7 +82,7 @@ public class LogFunction extends BasicFunction {
 					buf.append(serializer.serialize((NodeValue) next));
 				} catch (SAXException e) {
 					throw new XPathException(getASTNode(), "An exception occurred while serializing node to log: " +
-							"e.getMessage()", e);
+							e.getMessage(), e);
 				}
 			} else
 				buf.append(next.getStringValue());
