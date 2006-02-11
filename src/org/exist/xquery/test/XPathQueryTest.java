@@ -462,6 +462,8 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals(result.getResource(0).getContent().toString(), "3");
             result = queryResource(service, "numbers.xml", "//n:price[. = 18.4]/../string(@id)", 1);
             assertEquals(result.getResource(0).getContent().toString(), "3");
+            result = queryResource(service, "numbers.xml", "//n:price[. = 18.4]/parent::n:item/string(@id)", 1);
+            assertEquals(result.getResource(0).getContent().toString(), "3");
             queryResource(service, "numbers.xml", 
                     "for $price in //n:price where $price/parent::*[@id = '3']/n:stock = '5' return $price", 1);
         } catch (XMLDBException e) {

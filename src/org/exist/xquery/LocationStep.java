@@ -707,8 +707,7 @@ public class LocationStep extends Step {
     }
 
     protected NodeSet getParents(XQueryContext context, NodeSet contextSet) {
-        if (test.isWildcardTest() ||
-                (!(contextSet instanceof VirtualNodeSet) && contextSet.getLength() < 3)) {
+        if (test.isWildcardTest()) {
             NodeSet temp = contextSet.getParents(contextId);
             NodeSet result = new ExtArrayNodeSet();
             NodeProxy p;
@@ -718,6 +717,21 @@ public class LocationStep extends Step {
                    result.add(p);
             }
             return result;
+        } else if (preloadNodeSets()) {
+            DocumentSet docs = getDocumentSet(contextSet);
+            if (currentSet == null || currentDocs == null
+                    || !(docs.equals(currentDocs))) {
+                ElementIndex index = context.getBroker().getElementIndex();
+                if (context.getProfiler().isEnabled())
+                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+                            "OPTIMIZATION",
+                            "using index '" + index.toString() + "'");
+                currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
+                        docs, test.getName(), null);
+                currentDocs = docs;
+                registerUpdateListener();
+            }
+            return contextSet.selectParentChild(currentSet, NodeSet.ANCESTOR);
         } else {
             DocumentSet docs = getDocumentSet(contextSet);
             NodeSelector selector = new ParentSelector(contextSet, contextId);
