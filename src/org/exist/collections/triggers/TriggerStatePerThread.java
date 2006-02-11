@@ -1,11 +1,17 @@
 package org.exist.collections.triggers;
 
+import org.exist.dom.DocumentImpl;
 import org.exist.storage.txn.Txn;
 
-/** Finite State Machine, managing the state of a Running trigger, 
+/** Finite State Machine, managing the state of a Running trigger;
  * allows to avoid infinite recursions by forbidding another trigger to run
- * where there is allready one; feature trigger_update
- * TODO: apply "state" design pattern */
+ * where there is allready one; feature trigger_update .
+ * I implemented that when a trigger is running , another trigger in the same
+ * Thread cannot be fired .
+ * There is a second condition that  when a trigger is running triggered by 
+ * some document d, even the same trigger cannot run on a different document .
+
+ * maybe TODO: apply "state" design pattern */
 public class TriggerStatePerThread {
 
 	public static final int NO_TRIGGER_RUNNING = (0);
@@ -18,23 +24,41 @@ public class TriggerStatePerThread {
 	    };
 	};
 
-	public static boolean verifyUniqueTriggerPerThreadBeforePrepare(DocumentTrigger trigger) {
-		if( getTriggerRunningState() == NO_TRIGGER_RUNNING ) {
-			setTriggerRunningState( TRIGGER_RUNNING_PREPARE, trigger );
+	/** */
+	public static boolean verifyUniqueTriggerPerThreadBeforePrepare(
+			DocumentTrigger trigger, DocumentImpl modifiedDocument) {
+		if (getTriggerRunningState() == NO_TRIGGER_RUNNING) {
+			setTriggerRunningState(TRIGGER_RUNNING_PREPARE, trigger,
+					modifiedDocument);
 			return true;
 		} else {
 			return false;
 		}
 	}
 	
-	public static boolean verifyUniqueTriggerPerThreadBeforeFinish(DocumentTrigger trigger) {
+	/**
+	 * @param modifiedDocument
+	 *            the document whose modification triggered the trigger
+	 */
+	public static boolean verifyUniqueTriggerPerThreadBeforeFinish(
+			DocumentTrigger trigger, DocumentImpl modifiedDocument) {
 
 		// another trigger is allready running
-		if( trigger != getRunningTrigger() )
+		DocumentTrigger runningTrigger = getRunningTrigger();
+		if ( runningTrigger != null && 
+			trigger != runningTrigger ) {
 			return false;
-		
-		if ( getTriggerRunningState() == TRIGGER_RUNNING_PREPARE) {
-			setTriggerRunningState( TRIGGER_RUNNING_FINISH, trigger );
+		}
+
+		// current trigger is busy with another document
+		if ( getModifiedDocument() != null && 
+				modifiedDocument != getModifiedDocument() ) {
+			return false;
+		}
+
+		if (getTriggerRunningState() == TRIGGER_RUNNING_PREPARE) {
+			setTriggerRunningState(TRIGGER_RUNNING_FINISH, trigger,
+					modifiedDocument);
 			return true;
 		} else {
 			return false;
@@ -45,17 +69,22 @@ public class TriggerStatePerThread {
 		private int state;
 		private DocumentTrigger currentTrigger;
 		private Txn transaction;
+		private DocumentImpl modifiedDocument;
 		public TriggerState(int state) {
 			super();
-			this.setState(state, null);
+			this.setState(state, null, null);
 		}
 		
-		private void setState( int state, DocumentTrigger trigger) {
+		private void setState(int state, DocumentTrigger trigger,
+				DocumentImpl modifiedDocument) {
 			this.state = state;
-			if( state == NO_TRIGGER_RUNNING )
+			if (state == NO_TRIGGER_RUNNING) {
 				this.currentTrigger = null;
-			else
+				this.setModifiedDocument(null);
+			} else {
 				this.currentTrigger = trigger;
+				this.setModifiedDocument(modifiedDocument);
+			}
 		}
 
 		private int getState() {
@@ -71,6 +100,14 @@ public class TriggerStatePerThread {
 
 		public DocumentTrigger getTrigger() {
 			return currentTrigger;
+		}
+
+		private void setModifiedDocument(DocumentImpl modifiedDocument) {
+			this.modifiedDocument = modifiedDocument;
+		}
+
+		private DocumentImpl getModifiedDocument() {
+			return modifiedDocument;
 		}	
 	}
 	
@@ -82,8 +119,10 @@ public class TriggerStatePerThread {
 		return ((TriggerState)triggerRunningState.get()).getTrigger();
 	}
 	
-	public static void setTriggerRunningState(int state, DocumentTrigger trigger) {
-		((TriggerState)triggerRunningState.get()).setState(state, trigger);
+	public static void setTriggerRunningState( int state, 
+			DocumentTrigger trigger,
+			DocumentImpl modifiedDocument ) {
+		((TriggerState)triggerRunningState.get()).setState(state, trigger, modifiedDocument);
 	}
 
 	public static Txn getTransaction() {
@@ -91,6 +130,10 @@ public class TriggerStatePerThread {
 	}
 	public static void setTransaction(Txn transaction) {
 		((TriggerState)triggerRunningState.get()).setTransaction(transaction);
+	}
+	
+	public static DocumentImpl getModifiedDocument() {
+		return ((TriggerState)triggerRunningState.get()).getModifiedDocument();		
 	}
 
 }
