@@ -707,8 +707,17 @@ public class LocationStep extends Step {
     }
 
     protected NodeSet getParents(XQueryContext context, NodeSet contextSet) {
-        if (test.isWildcardTest()) {
-            return contextSet.getParents(contextId);
+        if (test.isWildcardTest() ||
+                (!(contextSet instanceof VirtualNodeSet) && contextSet.getLength() < 3)) {
+            NodeSet temp = contextSet.getParents(contextId);
+            NodeSet result = new ExtArrayNodeSet();
+            NodeProxy p;
+            for (Iterator i = temp.iterator(); i.hasNext(); ) {
+                p = (NodeProxy) i.next();
+                if (test.matches(p))
+                   result.add(p);
+            }
+            return result;
         } else {
             DocumentSet docs = getDocumentSet(contextSet);
             NodeSelector selector = new ParentSelector(contextSet, contextId);
