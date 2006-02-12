@@ -76,18 +76,18 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	private transient DBBroker broker = null;
 
-	// number of child nodes
+	/** number of child nodes */
 	private int children = 0;
 
 	private long[] childList = null;
 
-	// the collection this document belongs to
+	/** the collection this document belongs to */
 	private transient Collection collection = null;
 
-	// the document's id
+	/** the document's id */
 	private int docId = UNKNOWN_DOCUMENT_ID;
 
-	// the document's file name
+	/** the document's file name */
 	private String fileName = null;
     
     //TODO : make private
@@ -99,13 +99,13 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     
     private transient long metadataLocation = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;    
 
-    //number of levels in this DOM tree
+    /** number of levels in this DOM tree */
     private int maxDepth = 0;
     
-    // arity of the tree at every level    
+    /** arity of the tree at every level */    
     private int treeLevelOrder[] = new int[15];
 
-    //TODO : make private
+    /** Id's of first node at each depth level */
     private transient long treeLevelStartPoints[] = new long[15];
     
     public DocumentImpl(DBBroker broker) {
@@ -664,26 +664,27 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         */
     }
 
-    private Node appendChild(Txn transaction, StoredNode last, Node child) throws DOMException {
-        switch (child.getNodeType()) {
-            case Node.PROCESSING_INSTRUCTION_NODE :
-                final ProcessingInstructionImpl pi = new ProcessingInstructionImpl(0);
-                pi.setTarget(((ProcessingInstruction) child).getTarget());
-                pi.setData(((ProcessingInstruction) child).getData());
-                pi.setOwnerDocument(this);              
-                broker.insertNodeAfter(transaction, last, pi);
-                return pi;
-            case Node.COMMENT_NODE :
-                final CommentImpl comment = new CommentImpl(0, ((Comment) child).getData());
-                comment.setOwnerDocument(this);
-                broker.insertNodeAfter(transaction, last, comment);
-                return comment;
-            default :
-                throw new DOMException(
-                    DOMException.INVALID_MODIFICATION_ERR,
-                    "you cannot append a node of this type");
-        }
-    }    
+    // Never used locally !
+//    private Node appendChild(Txn transaction, StoredNode last, Node child) throws DOMException {
+//        switch (child.getNodeType()) {
+//            case Node.PROCESSING_INSTRUCTION_NODE :
+//                final ProcessingInstructionImpl pi = new ProcessingInstructionImpl(0);
+//                pi.setTarget(((ProcessingInstruction) child).getTarget());
+//                pi.setData(((ProcessingInstruction) child).getData());
+//                pi.setOwnerDocument(this);              
+//                broker.insertNodeAfter(transaction, last, pi);
+//                return pi;
+//            case Node.COMMENT_NODE :
+//                final CommentImpl comment = new CommentImpl(0, ((Comment) child).getData());
+//                comment.setOwnerDocument(this);
+//                broker.insertNodeAfter(transaction, last, comment);
+//                return comment;
+//            default :
+//                throw new DOMException(
+//                    DOMException.INVALID_MODIFICATION_ERR,
+//                    "you cannot append a node of this type");
+//        }
+//    }    
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getFirstChild()
@@ -1110,5 +1111,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 */
 	public Object getUserData(String key) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getUserData not implemented on class " + getClass().getName());
+	}
+	public String toString() {
+		return getName() + " - <" + getDocumentElement().getNodeName() + ">";	
 	}
 }
