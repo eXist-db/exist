@@ -61,8 +61,9 @@ import org.w3c.dom.Text;
 import org.w3c.dom.UserDataHandler;
 
 /**
- *  Represents a persistent document object in the database.
- *
+ *  Represents a persistent document object in the database;
+ *  it can be an XML_FILE , a BINARY_FILE, or Xquery source code.
+ *  
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
 public class DocumentImpl extends NodeImpl implements Document, Comparable {
@@ -1113,6 +1114,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getUserData not implemented on class " + getClass().getName());
 	}
 	public String toString() {
-		return getName() + " - <" + getDocumentElement().getNodeName() + ">";	
+		return getName() + " - <" + 
+		( getDocumentElement() != null ? getDocumentElement().getNodeName() : null ) + ">";	
 	}
 }
