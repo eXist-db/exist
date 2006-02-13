@@ -31,6 +31,12 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.Trigger;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.collections.triggers.TriggerStatePerThread;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeIndexListener;
@@ -62,14 +68,27 @@ public abstract class Modification {
 
 	protected final static Logger LOG = Logger.getLogger(Modification.class);
 
+	/** select Statement in the current XUpdate definition;
+	 * defines the set of nodes to which this XUpdate might apply. */
 	protected String selectStmt = null;
+	
+    /**
+     * NodeList to keep track of created document fragments within
+     * the currently processed XUpdate modification.
+     * see {@link XUpdateProcessor#contents}
+     */
 	protected NodeList content = null;
 	protected DBBroker broker;
+	/** Documents concerned by this XUpdate modification,
+	 * i.e. the set of documents to which this XUpdate might apply. */
 	protected DocumentSet docs;
 	protected Map namespaces;
 	protected Map variables;
 	protected DocumentSet lockedDocuments = null;
 
+	/** "null" design pattern */
+	final static NullDocumentTrigger nullDocumentTrigger = new NullDocumentTrigger();
+	
 	/**
 	 * Constructor for Modification.
 	 */
@@ -80,6 +99,7 @@ public abstract class Modification {
 		this.docs = docs;
 		this.namespaces = new HashMap(namespaces);
 		this.variables = new TreeMap(variables);
+		// DESIGN_QUESTION : wouldn't that be nice to apply selectStmt right here ?
 	}
 
 	/**
@@ -171,48 +191,103 @@ public abstract class Modification {
 	}
 
 	/**
-	 * Acquire a lock on all documents processed by this modification.
-	 * We have to avoid that node positions change during the
-	 * operation.
-	 * 
+	 * Acquire a lock on all documents processed by this modification. We have
+	 * to avoid that node positions change during the operation.
+	 * feature trigger_update :
+	 * At the same time we leverage on the fact that it's called before 
+	 * database modification to call the eventual triggers.
+
+	 * @param transaction
+	 *            TODO
 	 * @param nl
+	 * 
 	 * @return
 	 * @throws LockException
 	 */
-	protected StoredNode[] selectAndLock() throws LockException, PermissionDeniedException, 
-		EXistException, XPathException {
-	    Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
-	    try {
-	        globalLock.acquire(Lock.READ_LOCK);
-	        
-	        NodeList nl = select(docs);
-	        lockedDocuments = ((NodeSet)nl).getDocumentSet();
-	        
-		    // acquire a lock on all documents
-	        // we have to avoid that node positions change
-	        // during the modification
-	        lockedDocuments.lock(true);
-	        
-		    StoredNode ql[] = new StoredNode[nl.getLength()];
-		    DocumentImpl doc;
+	protected final StoredNode[] selectAndLock()
+			throws LockException, PermissionDeniedException, EXistException,
+			XPathException {
+		Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
+		try {
+			globalLock.acquire(Lock.READ_LOCK);
+
+			NodeList nl = select(docs);
+			lockedDocuments = ((NodeSet) nl).getDocumentSet();
+
+			// acquire a lock on all documents
+			// we have to avoid that node positions change
+			// during the modification
+			lockedDocuments.lock(true);
+
+			StoredNode ql[] = new StoredNode[nl.getLength()];
+			DocumentImpl doc;
 			for (int i = 0; i < ql.length; i++) {
-				ql[i] = (StoredNode)nl.item(i);
-				doc = (DocumentImpl)ql[i].getOwnerDocument();
+				ql[i] = (StoredNode) nl.item(i);
+				doc = (DocumentImpl) ql[i].getOwnerDocument();
 				doc.setBroker(broker);
+				
+				// call the eventual triggers
+				// TODO -jmv separate loop on docs and not on nodes
+				
+				if (!CollectionConfiguration.isCollectionConfigDocument(doc)) {
+					DocumentTrigger trigger = getTrigger(doc);
+					try {
+						if( trigger != null )
+							trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, broker,
+								TriggerStatePerThread.getTransaction(),
+								doc.getName() /* documentPath */, doc);
+					} catch (TriggerException e) {
+						throw new EXistException(
+								"Error in calling user trigger", e);
+					}
+				}
 			}
 			return ql;
-	    } finally {
-	        globalLock.release();
-	    }
+		} finally {
+			globalLock.release();
+		}
+	}
+	
+	/** get applicable trigger according to Collection Configuration */
+	private DocumentTrigger getTrigger(DocumentImpl doc) {
+		DocumentTrigger result = nullDocumentTrigger;
+		Collection coll = doc.getCollection();
+        CollectionConfiguration config = coll.getConfiguration(broker);
+        if (config != null) {
+        	result = (DocumentTrigger) 
+				config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+        }
+		return result;
 	}
 	
 	/**
-	 * Release all acquired document locks.
+	 * Release all acquired document locks;
+	 * feature trigger_update :
+	 * at the same time we leverage on the fact that it's called after 
+	 * database modification to call the eventual triggers
+	 * @param transaction
 	 */
-	protected void unlockDocuments() {
-	    if(lockedDocuments == null)
-	        return;
-	    lockedDocuments.unlock(true);
+	protected final void unlockDocuments() {
+
+		// do the job
+		
+		if (lockedDocuments != null)
+			lockedDocuments.unlock(true);
+
+		// and then call eventual triggers
+		
+		Iterator iterator = lockedDocuments.iterator();
+		DocumentImpl doc;
+		while (iterator.hasNext()) {
+			doc = (DocumentImpl) iterator.next();
+			if ( ! CollectionConfiguration.isCollectionConfigDocument(doc) ) {
+				DocumentTrigger trigger = getTrigger(doc);
+				if( trigger != null )
+					trigger.finish( // event, broker, transaction, document)
+							Trigger.UPDATE_DOCUMENT_EVENT, broker, 
+							TriggerStatePerThread.getTransaction(), doc);
+			}
+		}
 	}
 	
 	/**
@@ -220,7 +295,7 @@ public abstract class Modification {
 	 * 
 	 * Defragmentation will take place if the number of split pages in the
 	 * document exceeds the limit defined in the configuration file.
-	 *  
+	 * 
 	 * @param docs
 	 */
 	protected void checkFragmentation(Txn transaction, DocumentSet docs) throws EXistException {
