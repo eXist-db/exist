@@ -23,8 +23,9 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
- * A trigger that executes an XQuery statement when invoked.
- * External variables amy be resolved by the process  :
+ * A trigger that executes a user XQuery statement when invoked.
+ * The XQuery source executed is the value of the context parameter named "query".
+ * These external variables are accessible to the user XQuery statement :
  * <code>xxx:collectionName</code> : the name of the collection from which the event is triggered
  * <code>xxx:documentName</code> : the name of the document from wich the event is triggered
  * <code>xxx:triggeredEvent</code> : the kind of triggered event
@@ -36,6 +37,7 @@ public class XQueryTrigger extends FilteringTrigger {
 	private SAXAdapter adapter;
 	private Collection collection = null;
 	private String query = null;
+	/** namespace prefix associated to trigger */
 	private String bindingPrefix = null;
 	private XQuery service;
 	private ContentHandler originalOutputHandler;
@@ -44,7 +46,7 @@ public class XQueryTrigger extends FilteringTrigger {
 		adapter = new SAXAdapter();
 	}
 	
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.collections.Trigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
 	 */
 	public void configure(DBBroker broker, Collection parent, Map parameters)
@@ -60,10 +62,11 @@ public class XQueryTrigger extends FilteringTrigger {
 		service = broker.getXQueryService();
 	}
 	
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
 	 */
-	public void prepare(int event, DBBroker broker, Txn transaction, String documentName, DocumentImpl existingDocument)
+	public void prepare(int event, DBBroker broker, Txn transaction, 
+			String documentName, DocumentImpl existingDocument )
 		throws TriggerException {				
 		
 		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for document : '" + documentName + "'");
@@ -71,7 +74,13 @@ public class XQueryTrigger extends FilteringTrigger {
 		if (query == null)
 			return;        
                         
-        XQueryContext context = service.newContext();
+		// avoid infinite recursion by allowing just one trigger per thread		
+		if( ! TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforePrepare(this, existingDocument) ) {
+			return;
+		}
+		TriggerStatePerThread.setTransaction(transaction);
+		
+		XQueryContext context = service.newContext();
         //TODO : futher initializations ?
         CompiledXQuery compiledQuery;
         try {       	
@@ -130,11 +139,17 @@ public class XQueryTrigger extends FilteringTrigger {
 		
 	}
 	
-    /* (non-Javadoc)
+    /**
      * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
      */
     public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document) {		
     	
+		// avoid infinite recursion by allowing just one trigger per thread
+		if( !TriggerStatePerThread
+				.verifyUniqueTriggerPerThreadBeforeFinish(this, document) ) {
+			return;
+		}
+		
     	LOG.debug("Finishing " + eventToString(event) + "XQuery trigger for document : '" + document.getName() + "'");
 
 		if (query == null)
@@ -185,14 +200,21 @@ public class XQueryTrigger extends FilteringTrigger {
 	    }
 
         try {
-        	//TODO : should we provide another contextSet ?
-	        NodeSet contextSet = NodeSet.EMPTY_SET;	        
+
+			// TODO : should we provide another contextSet ?
+			NodeSet contextSet = NodeSet.EMPTY_SET;
 			service.execute(compiledQuery, contextSet);
-			//TODO : should we have a special processing ?
-			LOG.debug("done.");
-			
-        } catch (XPathException e) {
-        	//Should never be reached
+			// TODO : should we have a special processing ?
+
+			TriggerStatePerThread
+					.setTriggerRunningState( TriggerStatePerThread.NO_TRIGGER_RUNNING,
+							this, null );
+			TriggerStatePerThread.setTransaction(null);
+			LOG.debug("trigger done.");
+
+		} catch (XPathException e) {
+			// Should never be reached
+			LOG.error("trigger done with error: " + e );
 		}	   
     }	
       
@@ -216,11 +238,12 @@ public class XQueryTrigger extends FilteringTrigger {
 		
         XQueryContext context = service.newContext();
         //TODO : futher initializations ?
-        CompiledXQuery compiledQuery;
+        // CompiledXQuery compiledQuery;
         
         try {       	
         	
-        	compiledQuery = service.compile(context, new StringSource(query));
+        	// compiledQuery = 
+        	service.compile(context, new StringSource(query));
 
         	/*
         	Variable globalVar;
@@ -289,5 +312,10 @@ public class XQueryTrigger extends FilteringTrigger {
     		default : return null;
     	}
     }
-
+    
+	public String toString() {
+		return "collection=" + collection + "\n" +
+			"modifiedDocument=" + TriggerStatePerThread.getModifiedDocument() + "\n" +
+			( query != null ? query.substring(0, 40 ) : null );
+	}
 }
