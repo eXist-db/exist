@@ -52,13 +52,69 @@
 							There is no support yet for access control based on the route taken to the
 							resource.  This type of control allows a user to use a library module
 							library.xqm by running query.xql but not through a query passed directly
-							in the HTTP request.  This support is planned but not a high priority compared
-							to support for main modules (below).
+							in the HTTP request.  This support is planned but not a high priority.
 						</para>
 					</section>
 				</section>
 				<section>
 					<title>Resources</title>
+					<para>
+						All XQuery modules may be controlled by their source.  A
+						source has a type (Cocoon, URL, Class, File, Database, String, or 
+						class loader resource) and a key.  The key is specific to the source.  For
+						URLs, class loader resources, and Cocoon, the key is the URI or URL of the
+						source.
+					</para>
+					<itemizedlist>
+						<listitem>
+							<para>
+								A String source comes from directly passed queries.  This may occur
+								externally through the REST-style interface or XML:DB or eXist may
+								internally execute queries directly. The key is "String" for every
+								String source.  This source is only used for main modules.
+							</para>
+						</listitem>
+						<listitem>
+							<para>
+								A source of type File comes directly from the filesystem.  The key is the
+								absolute path to the file.  External library modules or main modules may
+								have this source type.
+							</para>
+						</listitem>
+						<listitem>
+							<para>
+								A source of type Database is stored in the database.  The key is the absolute
+								path to the resource (such as /db/test/test.xqm).  External library modules or
+								main modules may have this source type.
+							</para>
+						</listitem>
+						<listitem>
+							<para>
+								Cocoon sources are sources requested from a Cocoon context.  The key is the
+								URI to the resource.  Main modules may have this source type.
+							</para>
+						</listitem>
+						<listitem>
+							<para>
+								Class sources are sources that are Java classes.  The key is the fully
+								qualified name of the class.  These will always be the type of internal
+								library modules and reflective access to Java methods.
+							</para>
+						</listitem>
+						<listitem>
+							<para>
+								URL sources have as the key the URL.  External library modules or main modules
+								may have this source type.
+							</para>
+						</listitem>
+						<listitem>
+							<para>
+								Class loader sources are those resources found by the class loader.  The key is
+								the path to the resource.  External library modules or main modules may have this
+								source type.
+							</para>
+						</listitem>
+					</itemizedlist>
 					<section>
 						<title>Java Reflection</title>
 						<para>
@@ -77,24 +133,74 @@
 					<section>
 						<title>External XQuery Library Modules</title>
 						<para>
-							Restricting calls to XQuery functions in library modules stored in the
-							database or the file system is not fully operational.  The namespace URI
-							of the module and the function name may be used to determine access control.
-							However, the module's location cannot be used yet.
+							Calls to XQuery functions in library modules stored in the
+							database or the file system may be restricted by namespace URI, function name,
+							and module source.
 						</para>
 					</section>
 					<section>
 						<title>XQuery Main Modules</title>
 						<para>
-							There is no support for restricting access to either stored queries or queries
-							constructed on the fly (such as with REST or XML:DB).  This support is planned
-							and is a priority.
+							Query execution may be controlled by the source of the query.
 						</para>
 					</section>
-					<note><para>Overloaded Java methods and XQuery functions share the same access
-					control settings.</para></note>
+					<note>
+						<para>Overloaded Java methods and XQuery functions share the same access
+						control settings.
+						</para>
+					</note>
 				</section>
-				
+				<section>
+					<title>Environment</title>
+					<para>
+						Access may be controlled based on the method of access.  The following are
+						direct access contexts: REST, XML:DB (local), XML-RPC, WebDAV, and SOAP.
+						Additionally, some contexts are indirectly used: eXist internally executes
+						queries for validation, triggers may execute queries, and XInclude expansion
+						requries evaluation of a query.  There is also a context for unit tests
+						when they directly access the query classes without going through one
+						of the above interfaces.
+					</para>
+				</section>
+		</section>
+		<section>
+			<title>XACML Configuration</title>
+			<para>eXist loads policies from the /db/system/policies collection.  Policies may be
+				manually created and uploaded to the policies collection, however, the builtin editor
+				is recommended.</para>
+			<para>Policies currently have a range index defined on their ids for possible lookup for policy
+				references.  There is a fulltext index only on Description elements.  However, in the
+				future, more indices might be defined in order to more efficiently restrict the possible
+				policies applicable to a request.  This information may be important if an administrator
+				executes a query on the root or system collection that includes all subcollections.
+			</para>
+			<para>By default, access control through XACML is disabled.  To enable it, add
+				<synopsis>&lt;xacml enable=&quot;yes&quot;/&gt;</synopsis> to conf.xml.  When
+				XACML is enabled and no policies exist, it loads default policies.  This behavior
+				may be disabled by adding the attribute 'load-defaults' and setting it to 'no'.
+				<synopsis>&lt;xacml enable=&quot;yes&quot; load-defaults=&quot;no&quot;/&gt;</synopsis>
+			</para>
+		</section>
+		<section>
+			<title>XACML Background Information</title>
+			<section>
+				<title>The XACML Standard</title>
+				<para>The eXtensible Access Control Markup Language is an OASIS standard for restricting
+					access to resources.  TODO: complete section
+				</para>
+			</section>
+			<section>
+				<title>Sun's XACML Implementation</title>
+				<para>As the section title suggests, Sun developed an implementation of XACML in Java
+					called Sun's XACML Implementation.  It is open source and is hosted at SourceForge:
+					<ulink href="http://sunxacml.sourceforge.net/">http://sunxacml.sourceforge.net/</ulink>.
+					eXist uses this implementation to construct and evaluate access requests.
+					TODO: complete section
+				</para>
+				<para>Sun, Sun Microsystems, and Java are trademarks or registered trademarks of
+					Sun Microsystems, Inc. in the U.S. and other countries.
+				</para>
+			</section>
 		</section>
 	</chapter>
 </book>
