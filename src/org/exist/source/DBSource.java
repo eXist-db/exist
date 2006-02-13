@@ -62,6 +62,10 @@ public class DBSource extends AbstractSource {
     public Object getKey() {
         return key;
     }
+    
+    public String getDocumentPath() {
+    	return key;
+    }
 
     public long getLastModified() {
         return lastModified;

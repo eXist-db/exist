@@ -33,6 +33,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.SecurityManager;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
@@ -199,7 +200,7 @@ public class RecoveryTest extends TestCase {
             
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//SPEECH[LINE &= 'king']", null);
+            Sequence seq = xquery.execute("//SPEECH[LINE &= 'king']", null, AccessContext.TEST);
             assertNotNull(seq);
             System.out.println("Found: " + seq.getLength());
             for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {

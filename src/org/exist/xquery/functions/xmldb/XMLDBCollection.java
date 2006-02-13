@@ -86,7 +86,7 @@ public class XMLDBCollection extends BasicFunction {
 				// Must be a LOCAL collection
 				if (!localUser.getName().equals(user))
 					localUser = getUser(user, passwd);                 
-		        collection = new LocalCollection(localUser, context.getBroker().getBrokerPool(), collectionURI);
+		        collection = new LocalCollection(localUser, context.getBroker().getBrokerPool(), collectionURI, context.getAccessContext());
 			} else {
 				collection = DatabaseManager.getCollection(collectionURI, user, passwd);
 			}

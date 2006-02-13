@@ -75,7 +75,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				docs.add(doc);
 			}
 			if(processor == null)
-				processor = new XUpdateProcessor(broker, docs);
+				processor = new XUpdateProcessor(broker, docs, parent.getAccessContext());
 			else {
 				processor.setBroker(broker);
 				processor.setDocumentSet(docs);

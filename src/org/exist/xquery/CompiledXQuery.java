@@ -25,6 +25,7 @@ package org.exist.xquery;
 import java.io.Writer;
 
 import org.xmldb.api.base.CompiledExpression;
+import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.value.Sequence;
 
 
@@ -69,4 +70,17 @@ public interface CompiledXQuery extends CompiledExpression {
      * specified writer.
      */
     public void dump(Writer writer);
+    
+    /**
+     * Gets the source of this query.
+     * 
+     * @return This query's source
+     */
+    public XACMLSource getSource();
+    /**
+     * Sets the source of this query.
+     * 
+     * @param source This query's source
+     */
+    public void setSource(XACMLSource source);
 } 

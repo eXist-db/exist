@@ -7,6 +7,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.BinaryDocument;
 import org.exist.security.SecurityManager;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -83,7 +84,7 @@ public class ShutdownTest extends TestCase {
             
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery); 
-            Sequence result = xquery.execute("//SPEECH[LINE &= 'love']", Sequence.EMPTY_SEQUENCE);
+            Sequence result = xquery.execute("//SPEECH[LINE &= 'love']", Sequence.EMPTY_SEQUENCE, AccessContext.TEST);
             assertNotNull(result); 
             assertEquals(result.getLength(), 160);
             

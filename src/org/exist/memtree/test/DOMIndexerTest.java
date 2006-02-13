@@ -37,6 +37,7 @@ import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
@@ -142,7 +143,7 @@ public class DOMIndexerTest extends TestCase {
         	pool = BrokerPool.getInstance();	         
             broker = pool.get(SecurityManager.SYSTEM_USER);
             XQuery xquery = broker.getXQueryService();
-            Sequence result = xquery.execute(XQUERY, null);
+            Sequence result = xquery.execute(XQUERY, null, AccessContext.TEST);
             System.out.println("Found: " + result.getLength());
             StringWriter out = new StringWriter();
             Properties props = new Properties();

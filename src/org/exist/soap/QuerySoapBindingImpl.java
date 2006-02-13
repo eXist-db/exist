@@ -19,6 +19,7 @@ import org.exist.dom.NodeSet;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
 import org.exist.soap.Session.QueryResult;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -258,7 +259,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             xpath = StringValue.expand(xpath);
             LOG.debug("query: " + xpath);
             broker = pool.get(session.getUser());
-            XQueryContext context = new XQueryContext(broker);
+            XQueryContext context = new XQueryContext(broker, AccessContext.SOAP);
             
             XQueryLexer lexer = new XQueryLexer(context, new StringReader(xpath));
             XQueryParser parser = new XQueryParser(lexer);

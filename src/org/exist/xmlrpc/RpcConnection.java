@@ -68,6 +68,7 @@ import org.exist.memtree.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
@@ -261,7 +262,7 @@ public class RpcConnection extends Thread {
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
         XQueryContext context;
         if(compiled == null)
-            context = xquery.newContext();
+            context = xquery.newContext(AccessContext.XMLRPC);
         else
             context = compiled.getContext();
         context.setBaseURI((String) parameters.get(RpcAPI.BASE_URI));
@@ -676,7 +677,7 @@ public class RpcConnection extends Thread {
             }
             DocumentSet docs = collection.allDocs(broker, new DocumentSet(),
                     true, true);
-            XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
+            XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.XMLRPC);
             Modification modifications[] = processor.parse(new InputSource(
                     new StringReader(xupdate)));
             long mods = 0;
@@ -716,7 +717,7 @@ public class RpcConnection extends Thread {
             }
             DocumentSet docs = new DocumentSet();
             docs.add(doc);
-            XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
+            XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.XMLRPC);
             Modification modifications[] = processor.parse(new InputSource(
                     new StringReader(xupdate)));
             long mods = 0;
@@ -1443,7 +1444,7 @@ public class RpcConnection extends Thread {
             
             if (sortBy != null) {
                 SortedNodeSet sorted = new SortedNodeSet(brokerPool, user,
-                        sortBy);
+                        sortBy, AccessContext.XMLRPC);
                 sorted.addAll(resultSeq);
                 resultSeq = sorted;
             }
@@ -1518,7 +1519,7 @@ public class RpcConnection extends Thread {
             
             if (sortBy != null) {
                 SortedNodeSet sorted = new SortedNodeSet(brokerPool, user,
-                        sortBy);
+                        sortBy, AccessContext.XMLRPC);
                 sorted.addAll(resultSeq);
                 resultSeq = sorted;
             }
@@ -2226,7 +2227,7 @@ public class RpcConnection extends Thread {
         try {
             broker = brokerPool.get(user);
             XQuery xquery = broker.getXQueryService();
-            Sequence nodes = xquery.execute(xpath, null);
+            Sequence nodes = xquery.execute(xpath, null, AccessContext.XMLRPC);
             Vector result = scanIndexTerms(start, end, broker, nodes.getDocumentSet(), nodes.toNodeSet());
             return result;
         } finally {

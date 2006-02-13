@@ -56,6 +56,10 @@ public class FileSource extends AbstractSource {
     public Object getKey() {
         return filePath;
     }
+    
+    public String getFilePath() {
+    	return filePath;
+    }
 
     /* (non-Javadoc)
      * @see org.exist.source.Source#isValid()

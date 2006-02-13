@@ -13,6 +13,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -88,7 +89,7 @@ public class LexerTest extends TestCase {
             collection.store(null, broker, info, xml, false);
 
 			// parse the query into the internal syntax tree
-			XQueryContext context = new XQueryContext(broker);
+			XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
 			XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
 			XQueryParser xparser = new XQueryParser(lexer);
 			XQueryTreeParser treeParser = new XQueryTreeParser(context);

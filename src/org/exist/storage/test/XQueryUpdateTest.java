@@ -3,6 +3,7 @@ package org.exist.storage.test;
 import junit.textui.TestRunner;
 
 import org.exist.security.SecurityManager;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -39,17 +40,17 @@ public class XQueryUpdateTest extends AbstractUpdateTest {
             	"		</product>\n" +
             	"	into /products\n" +
             	")";
-            xquery.execute(query, null);
+            xquery.execute(query, null, AccessContext.TEST);
             
-            Sequence seq = xquery.execute("//product", null);
+            Sequence seq = xquery.execute("//product", null, AccessContext.TEST);
             assertEquals(seq.getLength(), 2000);
             
             query =
             	"for $i in 1 to 1000 return\n" +
             	"	update delete /products/product[last()]";
-            xquery.execute(query, null);
+            xquery.execute(query, null, AccessContext.TEST);
             
-            seq = xquery.execute("//product", null);
+            seq = xquery.execute("//product", null, AccessContext.TEST);
             assertEquals(seq.getLength(), 1000);
         } catch (Exception e) {            
             fail(e.getMessage());

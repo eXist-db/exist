@@ -14,6 +14,7 @@ import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xupdate.Modification;
@@ -61,7 +62,7 @@ public class ExampleTrigger extends FilteringTrigger {
 			// We would end up in infinite recursion if we don't do that
 			getCollection().setTriggersEnabled(false);
 			// create the XUpdate processor
-			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
+			XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.TRIGGER);
 			// process the XUpdate
 			Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
 			for(int i = 0; i < modifications.length; i++)

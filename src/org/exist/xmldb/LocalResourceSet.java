@@ -38,6 +38,7 @@ public class LocalResourceSet implements ResourceSet {
 	protected Properties outputProperties;
 	private User user;
 
+	private LocalResourceSet() {}
 	public LocalResourceSet(
 		User user,
 		BrokerPool pool,
@@ -46,6 +47,8 @@ public class LocalResourceSet implements ResourceSet {
 		Sequence val,
 		String sortExpr)
 		throws XMLDBException {
+		if(col == null)
+			throw new NullPointerException("Collection cannot be null");
 		this.user = user;
 		this.brokerPool = pool;
 		this.outputProperties = properties;
@@ -53,7 +56,7 @@ public class LocalResourceSet implements ResourceSet {
 		if(val.getLength() == 0)
 			return;
 		if(Type.subTypeOf(val.getItemType(), Type.NODE) && sortExpr != null) {
-			SortedNodeSet sorted = new SortedNodeSet(brokerPool, user, sortExpr);
+			SortedNodeSet sorted = new SortedNodeSet(brokerPool, user, sortExpr, collection.getAccessContext());
 			try {
 				sorted.addAll(val);
 			} catch (XPathException e) {
@@ -154,10 +157,9 @@ public class LocalResourceSet implements ResourceSet {
 			// than the one by which this resource set has been
 			// generated: adjust if necessary.
 			LocalCollection coll = collection;
-			if (coll == null
-				|| p.getDocument().getCollection() == null
+			if (p.getDocument().getCollection() == null
 				|| coll.getCollection().getId() != p.getDocument().getCollection().getId()) {
-				coll = new LocalCollection(user, brokerPool, null, p.getDocument().getCollection().getName());
+				coll = new LocalCollection(user, brokerPool, null, p.getDocument().getCollection().getName(), coll.getAccessContext());
 				coll.properties = outputProperties;
 			}
 			res = new LocalXMLResource(user, brokerPool, coll, p);

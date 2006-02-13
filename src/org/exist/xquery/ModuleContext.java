@@ -21,7 +21,7 @@ public class ModuleContext extends XQueryContext {
 	 * @param broker
 	 */
 	public ModuleContext(XQueryContext parentContext) {
-		super();
+		super(parentContext.getAccessContext());
 		this.parentContext = parentContext;
 		this.broker = parentContext.broker;
 		baseURI = parentContext.baseURI;

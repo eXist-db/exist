@@ -1,3 +1,25 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-06 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
+
 package org.exist.client.xacml;
 
 import com.sun.xacml.TargetMatch;
@@ -50,13 +72,14 @@ public class TargetTableModel implements TableModel
 		RESOURCE_ATTRIBUTES[1] = new AttributeDesignator(AttributeDesignator.RESOURCE_TARGET, XACMLConstants.URI_TYPE, XACMLConstants.MODULE_NS_ATTRIBUTE, false);
 		RESOURCE_ATTRIBUTES[2] = new AttributeDesignator(AttributeDesignator.RESOURCE_TARGET, XACMLConstants.STRING_TYPE, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, false);
 		RESOURCE_ATTRIBUTES[3] = new AttributeDesignator(AttributeDesignator.RESOURCE_TARGET, XACMLConstants.STRING_TYPE, XACMLConstants.MODULE_CATEGORY_ATTRIBUTE, false);
-		RESOURCE_ATTRIBUTES[4] = new AttributeDesignator(AttributeDesignator.RESOURCE_TARGET, XACMLConstants.URI_TYPE, XACMLConstants.MODULE_SRC_ATTRIBUTE, false);
-		RESOURCE_ATTRIBUTES[5] = new AttributeDesignator(AttributeDesignator.RESOURCE_TARGET, XACMLConstants.STRING_TYPE, XACMLConstants.CLASS_ATTRIBUTE, false);
+		RESOURCE_ATTRIBUTES[4] = new AttributeDesignator(AttributeDesignator.RESOURCE_TARGET, XACMLConstants.STRING_TYPE, XACMLConstants.SOURCE_KEY_ATTRIBUTE, false);
+		RESOURCE_ATTRIBUTES[5] = new AttributeDesignator(AttributeDesignator.RESOURCE_TARGET, XACMLConstants.STRING_TYPE, XACMLConstants.SOURCE_TYPE_ATTRIBUTE, false);
 		
-		ENVIRONMENT_ATTRIBUTES = new AttributeDesignator[3];
+		ENVIRONMENT_ATTRIBUTES = new AttributeDesignator[4];
 		ENVIRONMENT_ATTRIBUTES[0] = new AttributeDesignator(AttributeDesignator.ENVIRONMENT_TARGET, XACMLConstants.DATE_TYPE, XACMLConstants.CURRENT_DATE_ATTRIBUTE, false);
 		ENVIRONMENT_ATTRIBUTES[1] = new AttributeDesignator(AttributeDesignator.ENVIRONMENT_TARGET, XACMLConstants.TIME_TYPE, XACMLConstants.CURRENT_TIME_ATTRIBUTE, false);
 		ENVIRONMENT_ATTRIBUTES[2] = new AttributeDesignator(AttributeDesignator.ENVIRONMENT_TARGET, XACMLConstants.DATETIME_TYPE, XACMLConstants.CURRENT_DATETIME_ATTRIBUTE, false);
+		ENVIRONMENT_ATTRIBUTES[3] = new AttributeDesignator(AttributeDesignator.ENVIRONMENT_TARGET, XACMLConstants.STRING_TYPE, XACMLConstants.ACCESS_CONTEXT_ATTRIBUTE, false);
 	}
 	
 	private int type;

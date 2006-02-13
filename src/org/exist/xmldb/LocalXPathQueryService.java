@@ -37,7 +37,10 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
+import org.exist.security.xacml.NullAccessContextException;
 import org.exist.source.Source;
+import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
@@ -69,10 +72,18 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	protected boolean lockDocuments = false;
 	protected DocumentSet lockedDocuments = null;
 	
+	protected AccessContext accessCtx;
+	
+	private LocalXPathQueryService() {}
+	
 	public LocalXPathQueryService(
 		User user,
 		BrokerPool pool,
-		LocalCollection collection) {
+		LocalCollection collection,
+		AccessContext accessCtx) {
+		if(accessCtx == null)
+			throw new NullAccessContextException();
+		this.accessCtx = accessCtx;
 		this.user = user;
 		this.collection = collection;
 		this.brokerPool = pool;
@@ -162,7 +173,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 				XQueryContext context;
 				CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 				if(compiled == null)
-				    context = xquery.newContext();
+				    context = xquery.newContext(accessCtx);
 				else
 				    context = compiled.getContext();
 				context.setBackwardsCompatibility(xpathCompatible);
@@ -209,9 +220,9 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
             long start = System.currentTimeMillis();
             broker = brokerPool.get(user);
             XQuery xquery = broker.getXQueryService();
-            XQueryContext context = xquery.newContext();
+            XQueryContext context = xquery.newContext(accessCtx);
             setupContext(context);
-            CompiledXQuery expr = xquery.compile(context, new StringReader(query));
+            CompiledXQuery expr = xquery.compile(context, query);
             checkPragmas(context);
             LOG.debug("compilation took "  +  (System.currentTimeMillis() - start));
             return expr;

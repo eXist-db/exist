@@ -45,6 +45,8 @@ import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeSetHelper;
+import org.exist.security.xacml.AccessContext;
+import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FastStringBuffer;
@@ -191,11 +193,16 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      */
     private Stack conditionals = new Stack();
 
+	private AccessContext accessCtx;
+	
 	/**
 	 * Constructor for XUpdateProcessor.
 	 */
-	public XUpdateProcessor(DBBroker broker, DocumentSet docs)
+	public XUpdateProcessor(DBBroker broker, DocumentSet docs, AccessContext accessCtx)
 		throws ParserConfigurationException {
+		if(accessCtx == null)
+			throw new NullAccessContextException();
+		this.accessCtx = accessCtx;
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 		factory.setValidating(false);
@@ -213,8 +220,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		}
 	}
 
-	public XUpdateProcessor() throws ParserConfigurationException {
-	    this(null, null);
+	private XUpdateProcessor() throws ParserConfigurationException {
+	    this(null, null, null);
 	}
 	
 	public void setBroker(DBBroker broker) {
@@ -329,6 +336,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					throw new SAXException("xupdate:if is not allowed inside a modification");
 				select = atts.getValue("test");
 				Conditional cond = new Conditional(broker, documentSet, select, namespaces, variables);
+				cond.setAccessContext(accessCtx);
 				conditionals.push(cond);
 				return;
 			} else if (VALUE_OF.equals(localName)) {
@@ -589,6 +597,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				|| localName.equals(INSERT_AFTER)) {
 				inModification = false;
 				modification.setContent(contents);
+				modification.setAccessContext(accessCtx);
 				if(!conditionals.isEmpty()) {
 					Conditional cond = (Conditional) conditionals.peek();
 					cond.addModification(modification);
@@ -718,7 +727,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	
 	private Sequence processQuery(String select) throws SAXException {
 		try {
-			XQueryContext context = new XQueryContext(broker);
+			XQueryContext context = new XQueryContext(broker, accessCtx);
 			context.setStaticallyKnownDocuments(documentSet);
 			Map.Entry entry;
 			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {

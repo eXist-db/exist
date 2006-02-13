@@ -19,6 +19,7 @@ import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -245,7 +246,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             DocumentSet docs =
                     collection.allDocs(broker, new DocumentSet(), true, true);
             XUpdateProcessor processor =
-                    new XUpdateProcessor(broker, docs);
+                    new XUpdateProcessor(broker, docs, AccessContext.SOAP);
             Modification modifications[] =
                     processor.parse(new InputSource(new StringReader(xupdate)));
             long mods = 0;
@@ -306,7 +307,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             DocumentSet docs = new DocumentSet();
             docs.add(doc);
             XUpdateProcessor processor =
-                    new XUpdateProcessor(broker, docs);
+                    new XUpdateProcessor(broker, docs, AccessContext.SOAP);
             Modification modifications[] =
                     processor.parse(new InputSource(new StringReader(xupdate)));
             long mods = 0;
