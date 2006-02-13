@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-06 The eXist Project
+ *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -82,7 +81,10 @@ import antlr.TokenStreamException;
 import antlr.collections.AST;
 
 /**
- * XUpdateProcessor.java
+ * Main class to pre-process an XUpdate request. XUpdateProcessor
+ * will parse the request via SAX and compile it into a set of
+ * {@link Modification} objects as returned by the {@link #parse(org.xml.sax.InputSource)}
+ * method. The modifications can then be executed via {@link Modification#process(org.exist.storage.txn.Txn)}.
  * 
  * @author Wolfgang Meier
  * 
@@ -115,30 +117,79 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 
 	private final static Logger LOG = Logger.getLogger(XUpdateProcessor.class);
 
-	private NodeListImpl contents = null;
-	
-	private boolean inModification = false;
+    /**
+     * NodeList to keep track of created document fragments within
+     * the currently processed XUpdate modification.
+     */
+    private NodeListImpl contents = null;
+
+    // Flags needed during SAX processing
+    private boolean inModification = false;
 	private boolean inAttribute = false;
+
+    /**
+     * Whitespace preservation: the XUpdate processor
+     * will honour xml:space attribute settings.
+     */
     private boolean preserveWhitespace = false;
     private boolean preserveWhitespaceTemp = false;
+
+    /**
+     * Stack to maintain xml:space settings. The items on the
+     * stack are strings, containing either "default" or "preserve".
+     */
     private Stack spaceStack = null;
-	
-	private Modification modification = null;
-	private DocumentBuilder builder;
-	private Document doc;
-	
-	private Stack stack = new Stack();
-	private Node currentNode = null;
-	private DBBroker broker;
-	private DocumentSet documentSet;
-	
-	private List modifications = new ArrayList();
-	
-	private FastStringBuffer charBuf = new FastStringBuffer(6, 15, 5);
-	
-	private Map variables = new TreeMap();
-	private Map namespaces = new HashMap(10);
-	private Stack conditionals = new Stack();
+
+    /**
+     * The modification we are currently processing.
+     */
+    private Modification modification = null;
+
+    /** The DocumentBuilder used to create new nodes */
+    private DocumentBuilder builder;
+
+    /** The Document object used to create new nodes */
+    private Document doc;
+
+    /** The current element stack. Contains the last elements processed. */
+    private Stack stack = new Stack();
+
+    /** The last node that has been created */
+    private Node currentNode = null;
+
+    /** DBBroker for this instance */
+    private DBBroker broker;
+
+    /** The set of documents to which this XUpdate might apply. */
+    private DocumentSet documentSet;
+
+    /**
+     * The final list of modifications. All modifications encountered
+     * within the XUpdate will be added to this list. The final list
+     * will be returned to the caller.
+     */
+    private List modifications = new ArrayList();
+
+    /** Temporary string buffer used for collecting text chunks */
+    private FastStringBuffer charBuf = new FastStringBuffer(6, 15, 5);
+
+    // Environment
+
+    /** Contains all variables declared via xupdate:variable.
+     * Maps variable QName to the Sequence returned by
+     * evaluating the variable expression.
+     */
+    private Map variables = new TreeMap();
+
+    /**
+     * Keeps track of namespaces declared within the XUpdate.
+     */
+    private Map namespaces = new HashMap(10);
+
+    /**
+     * Stack used to track conditionals.
+     */
+    private Stack conditionals = new Stack();
 
 	/**
 	 * Constructor for XUpdateProcessor.
