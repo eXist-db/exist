@@ -279,4 +279,13 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	            dlock.release(Lock.READ_LOCK);
 	    }
 	}
+	
+	public String toString() {
+		StringBuffer result = new StringBuffer();
+		for( int i=0; i< getLength(); i++ ) {
+			result.append(item(i));
+			result.append(", ");
+		}
+		return result.toString();	
+	}
 }
