@@ -385,6 +385,10 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		}
 	}
 
+	/** Possible services: XPathQueryService, XQueryService,
+	 * CollectionManagementService (CollectionManager), UserManagementService,
+	 * DatabaseInstanceManager, XUpdateQueryService,  IndexQueryService,
+	 * ValidationService. */
 	public Service getService(String name, String version) throws XMLDBException {
 		if (name.equals("XPathQueryService"))
 			return new LocalXPathQueryService(user, brokerPool, this);
