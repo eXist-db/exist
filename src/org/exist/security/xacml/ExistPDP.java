@@ -1,5 +1,28 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-06 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
+
 package org.exist.security.xacml;
 
+import com.sun.xacml.Indenter;
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
 import com.sun.xacml.ctx.RequestCtx;
@@ -11,6 +34,7 @@ import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.ResourceFinder;
 import com.sun.xacml.finder.impl.CurrentEnvModule;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -147,7 +171,24 @@ public class ExistPDP
 	*/
 	public void evaluate(RequestCtx request) throws PermissionDeniedException
 	{
+		if(request == null)
+			throw new PermissionDeniedException("Request cannot be null");
+		
+		if(LOG.isDebugEnabled())
+		{
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			request.encode(out, new Indenter(4));
+			LOG.debug("Processing request:");
+			LOG.debug(out.toString());
+		}
 		ResponseCtx response = pdp.evaluate(request);
+		if(LOG.isDebugEnabled())
+		{
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			response.encode(out, new Indenter(4));
+			LOG.debug("PDP response to request:");
+			LOG.debug(out.toString());
+		}
 		handleResponse(response);
 	}
 	
