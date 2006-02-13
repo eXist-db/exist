@@ -128,7 +128,7 @@
     </mime-type>
     <mime-type name="application/vnd.ms-excel" type="binary">
     	<description>Microsoft excel Document</description>
-    	<extensions>.ppt</extensions>
+    	<extensions>.xls</extensions>
     </mime-type>
 
     <mime-type name="text/plain" type="binary">
