@@ -439,7 +439,8 @@ public class NativeBroker extends DBBroker {
         // TODO move_to NativeValueIndex
         if (RangeIndexSpec.hasRangeIndex(indexType)) {
                 if (content == null) {
-                    tempProxy.setInternalAddress(oldAddress);
+                    if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                        tempProxy.setInternalAddress(oldAddress);
                     content = getNodeValue(tempProxy, false);
                     tempProxy.setInternalAddress(node.getInternalAddress());
                 }
@@ -452,7 +453,8 @@ public class NativeBroker extends DBBroker {
         if ( RangeIndexSpec.hasQNameIndex(indexType) ) {
 //          RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
             if (content == null) {
-                tempProxy.setInternalAddress(oldAddress);
+                if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                    tempProxy.setInternalAddress(oldAddress);
                 content = getNodeValue(tempProxy, false);
                 tempProxy.setInternalAddress(node.getInternalAddress());
             }
@@ -2328,7 +2330,7 @@ public class NativeBroker extends DBBroker {
         node.setInternalAddress(BFile.UNKNOWN_ADDRESS);
         storeNode(transaction, node, currentPath, index);
         if (node.getNodeType() == Node.ELEMENT_NODE)
-            endElement(node, currentPath, null, oldAddress);        
+            endElement(node, currentPath, null, oldAddress);
         if (node.getGID() == StoredNode.NODE_IMPL_ROOT_NODE_GID) {
             newDoc.appendChild((StoredNode) node);
         }
