@@ -24,6 +24,14 @@
         </layout>
     </appender>
 
+    <appender name="exist.xacml" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/xacml.log"/>
+        <param name="MaximumFileSize" value="500000"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+
     <appender name="exist.xmldb" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/xmldb.log"/>
         <param name="MaximumFileSize" value="500000"/>
@@ -67,9 +75,14 @@
 	    <priority value="debug"/>
 	    <appender-ref ref="exist.profiling"/>
 	</category>
-	
+
+    <category name="org.exist.security.xacml" additivity="false">
+        <priority value="warn"/>
+        <appender-ref ref="exist.xacml"/>
+    </category>
+
     <category name="org.exist.xmldb" additivity="false">
-        <priority value="debug"/>
+		 <priority value="debug"/>
         <appender-ref ref="exist.xmldb"/>
     </category>
 
@@ -96,7 +109,7 @@
     </category>
 
     <root>
-        <priority value="debug"/>
+		 <priority value="debug"/>
         <appender-ref ref="exist.core"/>
     </root>
 </log4j:configuration>

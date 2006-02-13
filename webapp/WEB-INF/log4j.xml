@@ -17,15 +17,23 @@
     <!-- the following appenders write to files  -->
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${logger.dir}/exist.log"/>
-        <param name="MaximumFileSize" value="500000"/>
+		<param name="MaximumFileSize" value="500000"/>
         <param name="Encoding" value="UTF-8"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
 
+    <appender name="exist.xacml" class="org.apache.log4j.RollingFileAppender">
+		 <param name="File" value="${logger.dir}/xacml.log"/>
+        <param name="MaximumFileSize" value="500000"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+
     <appender name="exist.xmldb" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="${logger.dir}/xmldb.log"/>
+		<param name="File" value="${logger.dir}/xmldb.log"/>
         <param name="MaximumFileSize" value="500000"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
@@ -38,6 +46,11 @@
     <appender name="lf5" class="org.apache.log4j.lf5.LF5Appender">
         <param name="MaxNumberOfRecords" value="1000"/>
     </appender>
+
+    <category name="org.exist.security.xacml" additivity="false">
+        <priority value="warn"/>
+        <appender-ref ref="exist.xacml"/>
+    </category>
 
     <category name="org.exist.xmldb" additivity="false">
         <priority value="debug"/>
