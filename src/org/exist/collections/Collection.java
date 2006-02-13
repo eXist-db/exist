@@ -1500,6 +1500,7 @@ public  class Collection extends Observable
     
     public String toString() {
         StringBuffer buf = new StringBuffer();
+        buf.append( getName() );
         buf.append("[");
         for(Iterator i = documents.keySet().iterator(); i.hasNext(); ) {
             buf.append(i.next());
