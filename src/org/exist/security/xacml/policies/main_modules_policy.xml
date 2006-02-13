@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Policy PolicyId="ExternalPolicy" RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:ordered-permit-overrides" xmlns="urn:oasis:names:tc:xacml:1.0:policy" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<Description>
+		A sample policy that applies to all query executions.  It basically has the effect of allowing
+		all queries, which could be accomplished with a simpler policy, but it is intended to show some
+		of the possible attributes that can be used to restrict query execution.
+	</Description>
+	
+	<Target>
+		<Resources>
+			<Resource>
+				<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">query</AttributeValue>
+					<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml/resource#resource-category" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+				</ResourceMatch>
+			</Resource>
+		</Resources>
+	</Target>
+	
+	<Rule RuleId="AllowConstructed" Effect="Permit">
+		<Description>
+			Allow all constructed queries.
+		</Description>
+		
+		<Target>
+			<Resources>
+				<Resource>
+					<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">String</AttributeValue>
+						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml#source-type" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+					</ResourceMatch>
+				</Resource>
+			</Resources>
+		</Target>
+	</Rule>
+	
+	<Rule RuleId="AllowCocoon" Effect="Permit">
+		<Description>
+			Allow all queries done through Cocoon
+		</Description>
+		
+		<Target>
+			<Resources>
+				<Resource>
+					<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">Cocoon</AttributeValue>
+						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml#source-type" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+					</ResourceMatch>
+				</Resource>
+			</Resources>
+		</Target>
+	</Rule>
+	
+	<Rule RuleId="AllowRESTStoredQueries" Effect="Permit">
+		<Description>
+			Allow stored queries through rest (environment attributes are not targetable until XACML 2.0 is implemented in sunxacml)
+		</Description>
+		
+		<Target>
+			<Resources>
+				<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+					<Resource>
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">Database</AttributeValue>
+						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml#source-type" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+					</Resource>
+				</ResourceMatch>
+			</Resources>
+		</Target>
+		
+		<Condition FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
+				<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml/environment#access-context" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+			</Apply>
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">REST</AttributeValue>
+		</Condition>
+	</Rule>
+	
+	<Rule RuleId="DenyAll" Effect="Deny">
+		<Description>
+			Deny all external modules.
+		</Description>
+	</Rule>
+</Policy>

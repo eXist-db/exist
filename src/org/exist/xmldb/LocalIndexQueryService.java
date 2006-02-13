@@ -213,7 +213,7 @@ public class LocalIndexQueryService implements IndexQueryService {
 		try {
 			broker = pool.get(user);
 			XQuery xquery = broker.getXQueryService();
-			Sequence nodes = xquery.execute(xpath, null);
+			Sequence nodes = xquery.execute(xpath, null, parent.getAccessContext());
 			return broker.getTextEngine().scanIndexTerms(nodes.getDocumentSet(), 
 					nodes.toNodeSet(),  start, end);
 		} catch (EXistException e) {

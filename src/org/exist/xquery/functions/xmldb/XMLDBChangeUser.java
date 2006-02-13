@@ -69,7 +69,7 @@ public class XMLDBChangeUser extends BasicFunction {
 		String userName = args[0].getStringValue();
 		Collection collection = null;
 		try {
-            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), DBBroker.ROOT_COLLECTION);
+            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), DBBroker.ROOT_COLLECTION, context.getAccessContext());
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 			User oldUser = ums.getUser(userName);
 			User user = new User(oldUser.getName());

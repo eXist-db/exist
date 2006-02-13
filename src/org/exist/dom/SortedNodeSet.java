@@ -5,6 +5,8 @@ import java.util.Iterator;
 
 import org.exist.EXistException;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
+import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.OrderedLinkedList;
@@ -31,11 +33,16 @@ public class SortedNodeSet extends AbstractNodeSet {
 	private String sortExpr;
 	private BrokerPool pool;
 	private User user = null;
+	private AccessContext accessCtx;
 
-	public SortedNodeSet(BrokerPool pool, User user, String sortExpr) {
+	private SortedNodeSet() {}
+	public SortedNodeSet(BrokerPool pool, User user, String sortExpr, AccessContext accessCtx) {
 		this.sortExpr = sortExpr;
 		this.pool = pool;
 		this.user = user;
+		if(accessCtx == null)
+			throw new NullAccessContextException();
+		this.accessCtx = accessCtx;
 	}
 
 	public void addAll(Sequence other) throws XPathException {
@@ -52,7 +59,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			XQueryContext context = new XQueryContext(broker);
+			XQueryContext context = new XQueryContext(broker, accessCtx);
 			XQueryLexer lexer = new XQueryLexer(context, new StringReader(sortExpr));
 			XQueryParser parser = new XQueryParser(lexer);
 			XQueryTreeParser treeParser = new XQueryTreeParser(context);

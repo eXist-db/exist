@@ -55,6 +55,11 @@ public class URLSource extends AbstractSource {
         this.url = url;
     }
     
+    public URL getURL() {
+    	return url;
+    }
+
+    
 	private long getLastModification() {
 		try {
 			if(connection == null)

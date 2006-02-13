@@ -35,6 +35,7 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -115,7 +116,7 @@ public class DatabaseResources {
      * @param query  The xQuery
      * @return  Sequence when results are available, null when errors occur.
      */
-    public Sequence executeQuery(String query) {
+    private Sequence executeQuery(String query) {
         
         DBBroker broker = null;
         Sequence result= null;
@@ -127,7 +128,7 @@ public class DatabaseResources {
         }
         
         try {
-            result = broker.getXQueryService().execute(query, null);
+            result = broker.getXQueryService().execute(query, null, AccessContext.VALIDATION_INTERNAL);
         } catch (XPathException ex) {
             logger.error("Problem executing xquery", ex);
         } finally{
@@ -146,7 +147,7 @@ public class DatabaseResources {
      * @param   query  The xQuery
      * @return  String When a result is available, null when an error occured.
      */
-    public String executeQuerySingleResult(String xquery){
+    private String executeQuerySingleResult(String xquery){
         
         String result = null;
         
@@ -178,7 +179,7 @@ public class DatabaseResources {
      * @return  List of Strings when a result is available, null when an
      *          error occured.
      */
-    public List executeQueryListResult(String xquery){
+    private List executeQueryListResult(String xquery){
         
         List result = new ArrayList();
         

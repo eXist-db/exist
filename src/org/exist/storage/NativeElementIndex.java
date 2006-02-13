@@ -46,6 +46,7 @@ import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.IndexQuery;
@@ -683,7 +684,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     Occurrences oc = (Occurrences) map.get(qname);
                     if (oc == null) {
                         // required for namespace lookups
-                        final XQueryContext context = new XQueryContext(broker);                        
+                        final XQueryContext context = new XQueryContext(broker, AccessContext.INTERNAL_PREFIX_LOOKUP);                        
                         qname.setPrefix(context.getPrefixForURI(namespace));
                         oc = new Occurrences(qname);
                         map.put(qname, oc);

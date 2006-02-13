@@ -43,6 +43,8 @@ import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.xacml.AccessContext;
+import org.exist.security.xacml.NullAccessContextException;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
@@ -85,10 +87,13 @@ public abstract class Modification {
 	protected Map namespaces;
 	protected Map variables;
 	protected DocumentSet lockedDocuments = null;
-
+	
 	/** "null" design pattern */
 	final static NullDocumentTrigger nullDocumentTrigger = new NullDocumentTrigger();
 	
+	private AccessContext accessCtx;
+
+	private Modification() {}
 	/**
 	 * Constructor for Modification.
 	 */
@@ -102,6 +107,20 @@ public abstract class Modification {
 		// DESIGN_QUESTION : wouldn't that be nice to apply selectStmt right here ?
 	}
 
+	public final void setAccessContext(AccessContext accessCtx) {
+		if(accessCtx == null)
+			throw new NullAccessContextException();
+		if(this.accessCtx != null)
+			throw new IllegalStateException("Access context can only be set once.");
+		this.accessCtx = accessCtx;
+		
+	}
+	public final AccessContext getAccessContext() {
+		if(accessCtx == null)
+			throw new IllegalStateException("Access context has not been set.");
+		return accessCtx;
+	}
+	
 	/**
 	 * Process the modification. This is the main method that has to be implemented 
 	 * by all subclasses.
@@ -138,7 +157,7 @@ public abstract class Modification {
 		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 		XQueryContext context;
 		if(compiled == null)
-		    context = xquery.newContext();
+		    context = xquery.newContext(getAccessContext());
 		else
 		    context = compiled.getContext();
 
@@ -207,23 +226,23 @@ public abstract class Modification {
 	protected final StoredNode[] selectAndLock()
 			throws LockException, PermissionDeniedException, EXistException,
 			XPathException {
-		Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
-		try {
-			globalLock.acquire(Lock.READ_LOCK);
-
-			NodeList nl = select(docs);
-			lockedDocuments = ((NodeSet) nl).getDocumentSet();
-
-			// acquire a lock on all documents
-			// we have to avoid that node positions change
-			// during the modification
-			lockedDocuments.lock(true);
-
-			StoredNode ql[] = new StoredNode[nl.getLength()];
-			DocumentImpl doc;
+	    Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
+	    try {
+	        globalLock.acquire(Lock.READ_LOCK);
+	        
+	        NodeList nl = select(docs);
+	        lockedDocuments = ((NodeSet)nl).getDocumentSet();
+	        
+		    // acquire a lock on all documents
+	        // we have to avoid that node positions change
+	        // during the modification
+	        lockedDocuments.lock(true);
+	        
+		    StoredNode ql[] = new StoredNode[nl.getLength()];
+		    DocumentImpl doc;
 			for (int i = 0; i < ql.length; i++) {
-				ql[i] = (StoredNode) nl.item(i);
-				doc = (DocumentImpl) ql[i].getOwnerDocument();
+				ql[i] = (StoredNode)nl.item(i);
+				doc = (DocumentImpl)ql[i].getOwnerDocument();
 				doc.setBroker(broker);
 				
 				// call the eventual triggers
@@ -239,13 +258,13 @@ public abstract class Modification {
 					} catch (TriggerException e) {
 						throw new EXistException(
 								"Error in calling user trigger", e);
-					}
+			}
 				}
 			}
 			return ql;
-		} finally {
-			globalLock.release();
-		}
+	    } finally {
+	        globalLock.release();
+	    }
 	}
 	
 	/** get applicable trigger according to Collection Configuration */
@@ -272,7 +291,7 @@ public abstract class Modification {
 		// do the job
 		
 		if (lockedDocuments != null)
-			lockedDocuments.unlock(true);
+	    lockedDocuments.unlock(true);
 
 		// and then call eventual triggers
 		
@@ -286,7 +305,7 @@ public abstract class Modification {
 					trigger.finish( // event, broker, transaction, document)
 							Trigger.UPDATE_DOCUMENT_EVENT, broker, 
 							TriggerStatePerThread.getTransaction(), doc);
-			}
+	}
 		}
 	}
 	
@@ -295,7 +314,7 @@ public abstract class Modification {
 	 * 
 	 * Defragmentation will take place if the number of split pages in the
 	 * document exceeds the limit defined in the configuration file.
-	 * 
+	 *  
 	 * @param docs
 	 */
 	protected void checkFragmentation(Txn transaction, DocumentSet docs) throws EXistException {

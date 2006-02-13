@@ -38,6 +38,7 @@ import org.exist.http.webdav.WebDAV;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
 import org.exist.source.ClassLoaderSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -139,7 +140,7 @@ public class Get extends AbstractWebDAVMethod {
         XQueryContext context;
         try {
         	if(compiled == null)
-        		context = xquery.newContext();
+        		context = xquery.newContext(AccessContext.WEBDAV);
         	else {
         		compiled.reset();
         		context = compiled.getContext();

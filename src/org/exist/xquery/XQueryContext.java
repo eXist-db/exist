@@ -47,7 +47,9 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.ExistPDP;
+import org.exist.security.xacml.NullAccessContextException;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -233,16 +235,27 @@ public class XQueryContext {
     //For holding XQuery Context variables from setXQueryContextVar() and getXQueryContextVar()
     HashMap XQueryContextVars = new HashMap();
     
-	protected XQueryContext() {
+	private AccessContext accessCtx;
+    
+    private XQueryContext() {}
+	protected XQueryContext(AccessContext accessCtx) {
+		if(accessCtx == null)
+			throw new NullAccessContextException();
+		this.accessCtx = accessCtx;
 		builder = new MemTreeBuilder(this);
 		builder.startDocument();
 	}
 	
-	public XQueryContext(DBBroker broker) {
-		this();
+	public XQueryContext(DBBroker broker, AccessContext accessCtx) {
+		this(accessCtx);
 		this.broker = broker;
 		loadDefaults(broker.getConfiguration());
 	}
+	
+	public AccessContext getAccessContext() {
+		return accessCtx;
+	}
+	
 	
     /**
      * @return true if profiling is enabled for this context.

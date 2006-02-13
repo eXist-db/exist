@@ -186,7 +186,7 @@ public class JavaCall extends Function {
 		try {
 			ExistPDP pdp = context.getPDP();
 			if(pdp != null) {
-				RequestCtx request = pdp.getRequestHelper().createReflectionRequest(context.getUser(), null, myClass.getName(), name);
+				RequestCtx request = pdp.getRequestHelper().createReflectionRequest(context, null, myClass.getName(), name);
 				pdp.evaluate(request);
 			}
 		} catch (PermissionDeniedException pde) {

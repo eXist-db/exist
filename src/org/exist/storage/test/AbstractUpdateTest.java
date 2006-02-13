@@ -27,6 +27,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.SecurityManager;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -70,7 +71,7 @@ public abstract class AbstractUpdateTest extends TestCase {
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
             XQuery xquery = broker.getXQueryService();
-            Sequence seq = xquery.execute("/products/product[last()]", null);
+            Sequence seq = xquery.execute("/products/product[last()]", null, AccessContext.TEST);
             System.out.println("Found: " + seq.getLength());
             for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();

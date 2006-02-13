@@ -9,6 +9,7 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeSet;
 import org.exist.memtree.SAXAdapter;
+import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
@@ -74,14 +75,14 @@ public class XQueryTrigger extends FilteringTrigger {
 		if (query == null)
 			return;        
                         
-		// avoid infinite recursion by allowing just one trigger per thread		
+       // avoid infinite recursion by allowing just one trigger per thread		
 		if( ! TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforePrepare(this, existingDocument) ) {
 			return;
 		}
 		TriggerStatePerThread.setTransaction(transaction);
 		
-		XQueryContext context = service.newContext();
-        //TODO : futher initializations ?
+		XQueryContext context = service.newContext(AccessContext.TRIGGER);
+         //TODO : futher initializations ?
         CompiledXQuery compiledQuery;
         try {       	
         	
@@ -155,7 +156,7 @@ public class XQueryTrigger extends FilteringTrigger {
 		if (query == null)
 			return;
 		
-        XQueryContext context = service.newContext();
+        XQueryContext context = service.newContext(AccessContext.TRIGGER);
         CompiledXQuery compiledQuery = null;
         try {
         	
@@ -200,20 +201,19 @@ public class XQueryTrigger extends FilteringTrigger {
 	    }
 
         try {
-
-			// TODO : should we provide another contextSet ?
-			NodeSet contextSet = NodeSet.EMPTY_SET;
+        	//TODO : should we provide another contextSet ?
+	        NodeSet contextSet = NodeSet.EMPTY_SET;	        
 			service.execute(compiledQuery, contextSet);
-			// TODO : should we have a special processing ?
-
+			//TODO : should we have a special processing ?
+			
 			TriggerStatePerThread
 					.setTriggerRunningState( TriggerStatePerThread.NO_TRIGGER_RUNNING,
 							this, null );
 			TriggerStatePerThread.setTransaction(null);
 			LOG.debug("trigger done.");
 
-		} catch (XPathException e) {
-			// Should never be reached
+        } catch (XPathException e) {
+        	//Should never be reached
 			LOG.error("trigger done with error: " + e );
 		}	   
     }	
@@ -236,7 +236,7 @@ public class XQueryTrigger extends FilteringTrigger {
 		if (!isValidating())
 				return;				
 		
-        XQueryContext context = service.newContext();
+        XQueryContext context = service.newContext(AccessContext.TRIGGER);
         //TODO : futher initializations ?
         // CompiledXQuery compiledQuery;
         
@@ -312,10 +312,10 @@ public class XQueryTrigger extends FilteringTrigger {
     		default : return null;
     	}
     }
-    
+
 	public String toString() {
 		return "collection=" + collection + "\n" +
 			"modifiedDocument=" + TriggerStatePerThread.getModifiedDocument() + "\n" +
 			( query != null ? query.substring(0, 40 ) : null );
-	}
+}
 }

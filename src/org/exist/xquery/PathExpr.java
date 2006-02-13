@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
+import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -53,8 +54,17 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     protected boolean inPredicate = false;
     
+    protected XACMLSource source;
+    
     public PathExpr(XQueryContext context) {
         super(context);
+    }
+    
+    public void setSource(XACMLSource source) {
+    	this.source = source;
+    }
+    public XACMLSource getSource() {
+    	return source;
     }
 
     /**

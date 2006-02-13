@@ -1,3 +1,25 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-06 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
+
 package org.exist.security.xacml;
 
 import com.sun.xacml.EvaluationCtx;
@@ -100,6 +122,11 @@ public final class XACMLConstants
 	* constants.
 	*/
 	public static final String SUBJECT_NS = EXIST_XACML_NS + "/subject";
+	/**
+	* The namespace used for environment-related eXist-specific XACML
+	* constants
+	*/
+	public static final String ENVIRONMENT_NS = EXIST_XACML_NS + "/environment";
 
 	/**
 	* The attribute ID for the attribute that provides the namespace
@@ -117,19 +144,20 @@ public final class XACMLConstants
 	*/
 	public static final URI MODULE_CATEGORY_ATTRIBUTE = URI.create(EXIST_XACML_NS + "#module-category");
 	/**
-	 * The attribute ID for the attribute the describes a module's source. 
+	 * The attribute ID for the attribute the describes the source of some content,
+	 * such as a module, a query. 
 	 */
-	public static final URI MODULE_SRC_ATTRIBUTE = URI.create(SUBJECT_NS + "#module-src");
+	public static final URI SOURCE_KEY_ATTRIBUTE = URI.create(EXIST_XACML_NS + "#source-key");
+	/**
+	 * The attribute ID for the attribute the describes the type of source of some content,
+	 * such as a module, a query.
+	 */
+	public static final URI SOURCE_TYPE_ATTRIBUTE = URI.create(EXIST_XACML_NS + "#source-type");
 	/**
 	* The attribute ID for the attribute that provides the category of
 	* a resource.
 	*/
 	public static final URI RESOURCE_CATEGORY_ATTRIBUTE = URI.create(RESOURCE_NS + "#resource-category");
-	/**
-	* The attribute ID for the attribute that provides the name of a Java class
-	* being reflectively loaded.
-	*/
-	public static final URI CLASS_ATTRIBUTE = URI.create(RESOURCE_NS + "#class");
 	/**
 	* The attribute ID for the attribute that provides the name of a user.
 	*/
@@ -139,6 +167,11 @@ public final class XACMLConstants
 	* to which a user belongs.
 	*/
 	public static final URI GROUP_ATTRIBUTE = URI.create(SUBJECT_NS + "#group");
+	/**
+	* The attribute ID for the attribute that provides the names of the groups
+	* to which a user belongs.
+	*/
+	public static final URI ACCESS_CONTEXT_ATTRIBUTE = URI.create(ENVIRONMENT_NS + "#access-context");
 
 
 	/**
@@ -152,11 +185,7 @@ public final class XACMLConstants
 	/**
 	* The external/non-builtin XQuery main module type.
 	*/
-	public static final String EXTERNAL_MAIN_MODULE = "external main";
-	/**
-	* The constructed XQuery main module type.
-	*/
-	public static final String CONSTRUCTED_MAIN_MODULE = "constructed main";
+	public static final String MAIN_MODULE = "main";
 
 
 	/**
@@ -168,6 +197,10 @@ public final class XACMLConstants
 	* The action-id corresponding to a request to call a function in an XQuery.
 	*/
 	public static final String CALL_FUNCTION_ACTION = "call function";
+	/**
+	* The action-id corresponding to a request to execute a main XQuery module.
+	*/
+	public static final String EXECUTE_QUERY_ACTION = "execute query";
 
 	/**
 	* The Java method resource type.
@@ -180,7 +213,37 @@ public final class XACMLConstants
 	/**
 	* The main XQuery module resource type.
 	*/
-	public static final String MAIN_MODULE_RESOURCE = "main module";
+	public static final String MAIN_MODULE_RESOURCE = "query";
+	
+
+	/**
+	 * The source type for Java classes.
+	 */
+	public static final String CLASS_SOURCE_TYPE = "Class";
+	/**
+	 * The source type for files.
+	 */
+	public static final String FILE_SOURCE_TYPE = "File";
+	/**
+	 * The source type for documents from the database.
+	 */
+	public static final String DB_SOURCE_TYPE = "Database";
+	/**
+	 * The source type for URLs.
+	 */
+	public static final String URL_SOURCE_TYPE = "URL";
+	/**
+	 * The source type for resources loaded by the ClassLoader.
+	 */
+	public static final String CLASSLOADER_SOURCE_TYPE = "Classloader";
+	/**
+	 * The source type for constructed strings.
+	 */
+	public static final String STRING_SOURCE_TYPE = "String";
+	/**
+	 * The source type for cocoon sources.
+	 */
+	public static final String COCOON_SOURCE_TYPE = "Cocoon";
 	
 	private XACMLConstants() {}
 }

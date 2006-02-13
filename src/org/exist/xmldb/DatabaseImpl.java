@@ -31,6 +31,7 @@ import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.exist.EXistException;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -209,7 +210,7 @@ public class DatabaseImpl implements Database {
         }
         User u = getUser(user, password, pool);
         try {
-            Collection current = new LocalCollection(u, pool, xmldbURI.getCollectionPath());
+            Collection current = new LocalCollection(u, pool, xmldbURI.getCollectionPath(), AccessContext.XMLDB);
             return (current != null) ? current : null;
         } catch (XMLDBException e) {
             switch (e.errorCode) {

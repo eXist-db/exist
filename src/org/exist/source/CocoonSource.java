@@ -144,6 +144,10 @@ public class CocoonSource extends AbstractSource {
         return inputSource.getURI();
     }
 
+    public Source getWrappedSource() {
+    	return inputSource;
+    }
+    
     private void checkEncoding() throws IOException {
         if (checkEncoding) {
             String checkedEnc = guessXQueryEncoding(inputSource.getInputStream());

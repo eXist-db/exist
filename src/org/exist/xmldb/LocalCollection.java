@@ -42,6 +42,8 @@ import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
+import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -90,7 +92,10 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	protected boolean needsSync = false;
 
 	private XMLReader userReader = null;
+	
+	private AccessContext accessCtx;
 
+	private LocalCollection() {}
 	/**
 	 * Create a collection with no parent (root collection).
 	 * 
@@ -99,9 +104,9 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	 * @param collection
 	 * @throws XMLDBException
 	 */
-	public LocalCollection(User user, BrokerPool brokerPool, String collection)
+	public LocalCollection(User user, BrokerPool brokerPool, String collection, AccessContext accessCtx)
 		throws XMLDBException {
-		this(user, brokerPool, null, collection);
+		this(user, brokerPool, null, collection, accessCtx);
 	}
 
 	/**
@@ -117,8 +122,12 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		User user,
 		BrokerPool brokerPool,
 		LocalCollection parent,
-		String name)
+		String name,
+		AccessContext accessCtx)
 		throws XMLDBException {
+		if(accessCtx == null)
+			throw new NullAccessContextException();
+		this.accessCtx = accessCtx;
 		if (user == null)
 			user = new User("guest", "guest", "guest");
 		this.user = user;
@@ -128,6 +137,10 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		if (path == null)
 			path = DBBroker.ROOT_COLLECTION;
 		getCollection();
+	}
+	
+	public AccessContext getAccessContext() {
+		return accessCtx;
 	}
 
 	protected Collection getCollectionWithLock(int lockMode) throws XMLDBException {
@@ -273,7 +286,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			collection.release();
 		}
 		if(childName != null)
-			return new LocalCollection(user, brokerPool, this, childName);
+			return new LocalCollection(user, brokerPool, this, childName, accessCtx);
 		else
 			return null;
 	}
@@ -311,7 +324,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				collection = broker.openCollection(path, Lock.READ_LOCK);
 				if(collection == null)
 					throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-				parent = new LocalCollection(user, brokerPool, null, collection.getParentPath());
+				parent = new LocalCollection(user, brokerPool, null, collection.getParentPath(), accessCtx);
 			} catch (EXistException e) {
 				throw new XMLDBException(
 						ErrorCodes.UNKNOWN_ERROR,
@@ -391,14 +404,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	 * ValidationService. */
 	public Service getService(String name, String version) throws XMLDBException {
 		if (name.equals("XPathQueryService"))
-			return new LocalXPathQueryService(user, brokerPool, this);
+			return new LocalXPathQueryService(user, brokerPool, this, accessCtx);
 
 		if (name.equals("XQueryService"))
-			return new LocalXPathQueryService(user, brokerPool, this);
+			return new LocalXPathQueryService(user, brokerPool, this, accessCtx);
 
 		if (name.equals("CollectionManagementService")
 			|| name.equals("CollectionManager"))
-			return new LocalCollectionManagementService(user, brokerPool, this);
+			return new LocalCollectionManagementService(user, brokerPool, this, accessCtx);
 
 		if (name.equals("UserManagementService"))
 			return new LocalUserManagementService(user, brokerPool, this);
@@ -420,8 +433,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
 
 	public Service[] getServices() throws XMLDBException {
 		Service[] services = new Service[7];
-		services[0] = new LocalXPathQueryService(user, brokerPool, this);
-		services[1] = new LocalCollectionManagementService(user, brokerPool, this);
+		services[0] = new LocalXPathQueryService(user, brokerPool, this, accessCtx);
+		services[1] = new LocalCollectionManagementService(user, brokerPool, this, accessCtx);
 		services[2] = new LocalUserManagementService(user, brokerPool, this);
 		services[3] = new LocalDatabaseInstanceManager(user, brokerPool);
 		services[4] = new LocalXUpdateQueryService(user, brokerPool, this);

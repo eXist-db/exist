@@ -28,6 +28,8 @@ import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
+import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -45,14 +47,20 @@ public class LocalCollectionManagementService implements CollectionManagementSer
 
     protected LocalCollection parent = null;
     protected User user;
+    protected AccessContext accessCtx;
 
     private static Logger LOG =
         Logger.getLogger( LocalCollectionManagementService.class );
         
+    private LocalCollectionManagementService() {}
     public LocalCollectionManagementService( User user, BrokerPool pool,
-                                             LocalCollection parent ) {
+                                             LocalCollection parent,
+											 AccessContext accessCtx) {
+    	if(accessCtx == null)
+    		throw new NullAccessContextException();
+    	this.accessCtx = accessCtx;
         if ( user == null )
-            throw new RuntimeException();
+            throw new NullPointerException("User cannot be null");
         this.parent = parent;
         this.brokerPool = pool;
         this.user = user;
@@ -92,7 +100,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         } finally {
             brokerPool.release( broker );
         }
-        return new LocalCollection( user, brokerPool, parent, collName );
+        return new LocalCollection( user, brokerPool, parent, collName, accessCtx );
     }
 
     /**

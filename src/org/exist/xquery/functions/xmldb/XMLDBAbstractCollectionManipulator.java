@@ -50,6 +50,10 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 		this.errorIfAbsent = errorIfAbsent;
 	}
 	
+	protected LocalCollection createLocalCollection(String name) throws XMLDBException {
+		return new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), name, context.getAccessContext());
+	}
+	
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
         
@@ -72,7 +76,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         		org.exist.collections.Collection internalCol = ((NodeProxy)node).getDocument().getCollection();
         		LOG.debug("Found node");
         		try {
-					collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), internalCol.getName());
+					collection = createLocalCollection(internalCol.getName());
 					LOG.debug("Loaded collection " + collection.getName());
 				} catch (XMLDBException e) {
 					throw new XPathException(getASTNode(), "Failed to access collection: " + internalCol.getName(), e);
@@ -89,22 +93,22 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                 	if (!collectionURI.startsWith("xmldb:"))
                     {
                         // Must be a LOCAL collection
-                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI);
+                        collection = createLocalCollection(collectionURI);
                     }
                     else if(collectionURI.startsWith("xmldb:exist:///"))
                     {
                     	// Must be a LOCAL collection
-                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI.replaceFirst("xmldb:exist://", ""));
+                        collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://", ""));
                     }
                     else if(collectionURI.startsWith("xmldb:exist://localhost"))
                     {
                     	// Must be a LOCAL collection
-                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI.replaceFirst("xmldb:exist://localhost", ""));
+                        collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://localhost", ""));
                     }
                     else if(collectionURI.startsWith("xmldb:exist://127.0.0.1"))
                     {
                     	// Must be a LOCAL collection
-                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI.replaceFirst("xmldb:exist://127.0.0.1", ""));
+                        collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://127.0.0.1", ""));
                     }
                     else {
                         // Right now, the collection is retrieved as GUEST. Need to figure out how to

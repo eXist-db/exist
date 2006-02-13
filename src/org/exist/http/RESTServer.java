@@ -63,6 +63,7 @@ import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -636,7 +637,7 @@ public class RESTServer {
                         broker.getAllXMLResources(docs);
                 }
                 
-                XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
+                XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.REST);
                 Modification modifications[] = processor.parse(new InputSource(
                         new StringReader(content)));
                 long mods = 0;
@@ -908,7 +909,7 @@ public class RESTServer {
             CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
             XQueryContext context;
             if (compiled == null)
-                context = xquery.newContext();
+                context = xquery.newContext(AccessContext.REST);
             else
                 context = compiled.getContext();
             context.setStaticallyKnownDocuments(new String[] { path });
@@ -964,7 +965,7 @@ public class RESTServer {
         XQueryContext context;
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
         if(compiled == null)
-            context = xquery.newContext();
+            context = xquery.newContext(AccessContext.REST);
         else
             context = compiled.getContext();
         context.setModuleLoadPath("xmldb:exist://" + resource.getCollection().getName());

@@ -28,6 +28,7 @@ import junit.textui.TestRunner;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentSet;
 import org.exist.security.SecurityManager;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -56,7 +57,7 @@ public class AppendTest extends AbstractUpdateTest {
             IndexInfo info = init(broker, mgr);
             DocumentSet docs = new DocumentSet();
             docs.add(info.getDocument());
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
+            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             
             Txn transaction = mgr.beginTransaction();
             

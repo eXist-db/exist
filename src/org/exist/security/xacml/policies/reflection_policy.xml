@@ -14,6 +14,10 @@
 					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">method</AttributeValue>
 					<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml/resource#resource-category" DataType="http://www.w3.org/2001/XMLSchema#string"/>
 				</ResourceMatch>
+				<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">class</AttributeValue>
+					<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml#source-type" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+				</ResourceMatch>
 			</Resource>
 		</Resources>
 	</Target>
@@ -27,13 +31,13 @@
 				<Resource>
 					<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">java.lang.Math</AttributeValue>
-						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml/resource#class" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml#source-key" DataType="http://www.w3.org/2001/XMLSchema#string"/>
 					</ResourceMatch>
 				</Resource>
 				<Resource>
 					<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">java.util.Random</AttributeValue>
-						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml/resource#class" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml#source-key" DataType="http://www.w3.org/2001/XMLSchema#string"/>
 					</ResourceMatch>
 				</Resource>
 			</Resources>
@@ -52,7 +56,7 @@
 				<Resource>
 					<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">java.lang.File</AttributeValue>
-						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml/resource#class" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml#source-key" DataType="http://www.w3.org/2001/XMLSchema#string"/>
 					</ResourceMatch>
 				</Resource>
 			</Resources>
@@ -91,7 +95,7 @@
 				<Resource>
 					<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">org.xmldb.api.base.Collection</AttributeValue>
-						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml/resource#class" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml#source-key" DataType="http://www.w3.org/2001/XMLSchema#string"/>
 					</ResourceMatch>
 				</Resource>
 			</Resources>
@@ -150,7 +154,7 @@
 				<Resource>
 					<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">java.lang.Runtime</AttributeValue>
-						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml/resource#class" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml#source-key" DataType="http://www.w3.org/2001/XMLSchema#string"/>
 					</ResourceMatch>
 				</Resource>
 			</Resources>
@@ -194,7 +198,7 @@
 				<Resource>
 					<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">org.exist.xmldb.DatabaseInstanceManager</AttributeValue>
-						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml/resource#class" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+						<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml#source-key" DataType="http://www.w3.org/2001/XMLSchema#string"/>
 					</ResourceMatch>
 				</Resource>
 			</Resources>

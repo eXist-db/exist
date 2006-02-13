@@ -22,12 +22,18 @@
  */
 package org.exist.xquery;
 
+import com.sun.xacml.ctx.RequestCtx;
+
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 
 import org.apache.log4j.Logger;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.xacml.AccessContext;
+import org.exist.security.xacml.ExistPDP;
+import org.exist.security.xacml.XACMLSource;
 import org.exist.source.Source;
+import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.xquery.parser.XQueryLexer;
@@ -58,12 +64,23 @@ public class XQuery {
         this.broker = broker;
     }
 
-    public XQueryContext newContext() {
-        return new XQueryContext(broker);
+    public XQueryContext newContext(AccessContext accessCtx) {
+        return new XQueryContext(broker, accessCtx);
     }
     
     public XQueryPool getXQueryPool() {
         return broker.getBrokerPool().getXQueryPool();
+    }
+    
+    public CompiledXQuery compile(XQueryContext context, String expression) 
+    throws XPathException {
+    	Source source = new StringSource(expression);
+    	try {
+    		return compile(context, source);
+		} catch(IOException ioe) {
+			//should not happen because expression is a String
+			throw new XPathException(ioe.getMessage(), ioe);
+		}
     }
     
     public CompiledXQuery compile(XQueryContext context, Source source) 
@@ -73,17 +90,19 @@ public class XQuery {
     
     public CompiledXQuery compile(XQueryContext context, Source source, boolean xpointer) 
     throws XPathException, IOException {
+		
+    	XACMLSource xsource = XACMLSource.getInstance(source);
         Reader reader = source.getReader();
-        CompiledXQuery compiled = compile(context, reader, xpointer);
-        reader.close();
-        return compiled;
+        try {
+        	CompiledXQuery compiled = compile(context, reader, xpointer);
+        	compiled.setSource(xsource);
+            return compiled;
+		} finally {
+        	reader.close();
+		}
     }
     
-    public CompiledXQuery compile(XQueryContext context, Reader reader) throws XPathException {
-        return compile(context, reader, false);
-    }
-    
-    public CompiledXQuery compile(XQueryContext context, Reader reader, boolean xpointer) throws XPathException {
+    private CompiledXQuery compile(XQueryContext context, Reader reader, boolean xpointer) throws XPathException {
         long start = System.currentTimeMillis();
         XQueryLexer lexer = new XQueryLexer(context, reader);
 		XQueryParser parser = new XQueryParser(lexer);
@@ -136,7 +155,21 @@ public class XQuery {
     }
     
     public Sequence execute(CompiledXQuery expression, Sequence contextSequence, boolean resetContext) throws XPathException {
+    	
         XQueryContext context = expression.getContext();
+
+		//check access to the query
+		XACMLSource source = expression.getSource();
+		try {
+			ExistPDP pdp = context.getPDP();
+			if(pdp != null) {
+				RequestCtx request = pdp.getRequestHelper().createQueryRequest(context, source);
+				pdp.evaluate(request);
+			}
+		} catch (PermissionDeniedException pde) {
+			throw new XPathException("Permission to execute query: " + source.createId() + " denied.", pde);
+		}
+		
         expression.reset();
         if (resetContext) {
         	context.setBroker(broker);
@@ -158,9 +191,9 @@ public class XQuery {
     
 
 
-	public Sequence execute(String expression, Sequence contextSequence) throws XPathException {
-		XQueryContext context = new XQueryContext(broker);
-		CompiledXQuery compiled = compile(context, new StringReader(expression));
+	public Sequence execute(String expression, Sequence contextSequence, AccessContext accessCtx) throws XPathException {
+		XQueryContext context = new XQueryContext(broker, accessCtx);
+		CompiledXQuery compiled = compile(context, expression);
 		return execute(compiled, null);
     }
 }
