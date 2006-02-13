@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.DocumentSet;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.util.FastQSort;
@@ -237,8 +238,24 @@ public class ValueSequence extends AbstractSequence {
                 ((NodeValue) values[i]).clearContext(contextId);
         }
     }
-    
-	public String toString() {
+
+    /* (non-Javadoc)
+    * @see org.exist.xquery.value.Sequence#getDocumentSet()
+    */
+    public DocumentSet getDocumentSet() {
+        DocumentSet docs = new DocumentSet();
+        NodeValue node;
+        for (int i = 0; i <= size; i++) {
+            if (Type.subTypeOf(values[i].getType(), Type.NODE)) {
+                node = (NodeValue) values[i];
+                if (node.getImplementationType() == NodeValue.PERSISTENT_NODE)
+                    docs.add(node.getOwnerDocument());
+            }
+        }
+        return docs;
+    }
+
+    public String toString() {
 		StringBuffer result = new StringBuffer();
 		result.append("(");
 		boolean moreThanOne = false;
