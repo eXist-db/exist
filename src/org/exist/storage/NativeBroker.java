@@ -425,7 +425,7 @@ public class NativeBroker extends DBBroker {
      * @param content contains the string value of the element. Needed if a range index
      * is defined on it.
      */
-    public void endElement(final StoredNode node, NodePath currentPath, String content) {
+    public void endElement(final StoredNode node, NodePath currentPath, String content, long oldAddress) {
         final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 //      tempProxy.reset(doc, node.getGID(), node.getInternalAddress());
         final NodeProxy tempProxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
@@ -438,8 +438,11 @@ public class NativeBroker extends DBBroker {
         node.getQName().setNameType(ElementValue.ELEMENT);
         // TODO move_to NativeValueIndex
         if (RangeIndexSpec.hasRangeIndex(indexType)) {
-                if (content == null)
+                if (content == null) {
+                    tempProxy.setInternalAddress(oldAddress);
                     content = getNodeValue(tempProxy, false);
+                    tempProxy.setInternalAddress(node.getInternalAddress());
+                }
                 valueIndex.setDocument(doc);
                 valueIndex.storeElement(RangeIndexSpec.indexTypeToXPath(indexType), 
                         (ElementImpl) node, content.toString());
@@ -448,8 +451,11 @@ public class NativeBroker extends DBBroker {
         // TODO move_to NativeValueIndexByQName 
         if ( RangeIndexSpec.hasQNameIndex(indexType) ) {
 //          RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-            if (content == null)
+            if (content == null) {
+                tempProxy.setInternalAddress(oldAddress);
                 content = getNodeValue(tempProxy, false);
+                tempProxy.setInternalAddress(node.getInternalAddress());
+            }
             
 //          qnameValueIndex.setDocument(doc);
 //          qnameValueIndex.storeElement(qnIdx.getType(), 
@@ -2317,11 +2323,12 @@ public class NativeBroker extends DBBroker {
         if (node.getNodeType() == Node.ELEMENT_NODE)
             currentPath.addComponent(node.getQName());
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+        final long oldAddress = node.getInternalAddress();
         node.setOwnerDocument(newDoc);
         node.setInternalAddress(BFile.UNKNOWN_ADDRESS);
         storeNode(transaction, node, currentPath, index);
         if (node.getNodeType() == Node.ELEMENT_NODE)
-            endElement(node, currentPath, null);        
+            endElement(node, currentPath, null, oldAddress);        
         if (node.getGID() == StoredNode.NODE_IMPL_ROOT_NODE_GID) {
             newDoc.appendChild((StoredNode) node);
         }

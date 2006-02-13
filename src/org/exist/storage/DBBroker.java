@@ -482,8 +482,12 @@ public abstract class DBBroker extends Observable {
 	public void storeNode(Txn transaction, StoredNode node, NodePath currentPath) {
 	    storeNode(transaction, node, currentPath, true);
 	}
-	
-	/**
+
+    public void endElement(final StoredNode node, NodePath currentPath, String content) {
+        endElement(node, currentPath, content, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+    }
+
+    /**
      * Update indexes for the given element node. This method is called when the indexer
      * encounters a closing element tag. It updates any range indexes defined on the
      * element value and adds the element id to the structural index.
@@ -492,8 +496,9 @@ public abstract class DBBroker extends Observable {
      * @param currentPath node path leading to the element
      * @param content contains the string value of the element. Needed if a range index
      * is defined on it.
+     * @param oldAddress when copying a node, contains the storage address of the old node.
      */
-	public abstract void endElement(final StoredNode node, NodePath currentPath, String content);
+	public abstract void endElement(final StoredNode node, NodePath currentPath, String content, long oldAddress);
 	
 	/**
 	 * Store a document (descriptor) into the database

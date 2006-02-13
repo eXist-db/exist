@@ -312,8 +312,6 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * @param internalAddress The internalAddress to set
 	 */
 	public void setInternalAddress(long internalAddress) {
-        if (this.internalAddress != UNKNOWN_NODE_ADDRESS && this.internalAddress != internalAddress)
-            throw new IllegalArgumentException("Internal address already affected");        
 		this.internalAddress = internalAddress;
 	}
     
