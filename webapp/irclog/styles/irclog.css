@@ -148,6 +148,10 @@ td {
 	padding-right: 8px;
 }
 
+#current label {
+    margin-left: 10px;
+}
+
 #next {
 	float: right;
 }
