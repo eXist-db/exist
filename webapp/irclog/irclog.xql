@@ -45,6 +45,14 @@ declare function irc:display-page($channel as xs:string) as element() {
                         <div id="current">
                             <input readonly="readonly" type="text" id="current-date"/>
                             <button id="set-date" type="button">Change Date</button>
+                            <label>Refresh:</label>
+                            <select id="refresh">
+                                <option>off</option>
+                                <option value="1">1 minute</option>
+                                <option value="2">2 minutes</option>
+                                <option value="5">5 minutes</option>
+                                <option value="10">10 minutes</option>
+                            </select>
                         </div>
                     </div>
                     <div id="log-output"/>

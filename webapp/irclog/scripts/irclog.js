@@ -25,7 +25,18 @@ var behaviourRules = {
 			element.onchange = function () {
 				displayLog(this.value);
 			}
-	}
+	},
+    '#refresh' : function (element) {
+            element.onchange = function() {
+                var option = this.options[this.selectedIndex].value;
+                if (timer) clearInterval(timer);
+                if (option != 'off') {
+                    refreshPeriod = option * 60 * 1000;
+                    alert(refreshPeriod);
+                    timer = setInterval('autoRefresh()', refreshPeriod);
+                }
+            }
+    }
 };
 Behaviour.register(behaviourRules);
 
@@ -50,6 +61,9 @@ var lastColor = 0;
 
 var currentDate;
 var timer = null;
+
+// refresh display every 60 seconds by default
+var refreshPeriod = 60 * 1000;
 
 /** onLoad handler to initialize display */
 function init() {
@@ -108,7 +122,7 @@ function displayLog(date, query) {
 	$('current-date').value = dateStr;
 	currentDate = date;
 	
-	timer = setInterval('autoRefresh()', 30000);
+	timer = setInterval('autoRefresh()', refreshPeriod);
 }
 
 function displayResponse(request) {
