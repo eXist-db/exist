@@ -48,7 +48,7 @@ declare function irc:display-page($channel as xs:string) as element() {
                             <label>Refresh:</label>
                             <select id="refresh">
                                 <option>off</option>
-                                <option value="1">1 minute</option>
+                                <option value="1" selected="selected">1 minute</option>
                                 <option value="2">2 minutes</option>
                                 <option value="5">5 minutes</option>
                                 <option value="10">10 minutes</option>
