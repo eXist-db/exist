@@ -32,7 +32,6 @@ var behaviourRules = {
                 if (timer) clearInterval(timer);
                 if (option != 'off') {
                     refreshPeriod = option * 60 * 1000;
-                    alert(refreshPeriod);
                     timer = setInterval('autoRefresh()', refreshPeriod);
                 }
             }
