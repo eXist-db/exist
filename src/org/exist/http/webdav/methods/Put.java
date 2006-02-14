@@ -152,6 +152,7 @@ public class Put extends AbstractWebDAVMethod {
 				collection.release();
 			pool.release(broker);
 		}
+        tempFile.delete();
 		response.setStatus(HttpServletResponse.SC_CREATED);
 	}
 	
