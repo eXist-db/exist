@@ -125,6 +125,7 @@ public class Type {
 		defineSubType(NODE, NAMESPACE);
 
 		defineSubType(ITEM, ATOMIC);
+		//TODO :; haven't we here UNTYPED_ATOMIC descendants ?
 		defineSubType(ATOMIC, STRING);
 		defineSubType(ATOMIC, BOOLEAN);
 		defineSubType(ATOMIC, QNAME);
