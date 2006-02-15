@@ -41,7 +41,14 @@ public class DoubleValue extends NumericValue implements Indexable {
 
 	public DoubleValue(AtomicValue otherValue) throws XPathException {
 		try {
-			value = Double.parseDouble(otherValue.getStringValue());
+			if (otherValue.getStringValue().equals("INF"))
+				value = Double.POSITIVE_INFINITY;
+			else if (otherValue.getStringValue().equals("-INF"))
+				value = Double.NEGATIVE_INFINITY;
+			else if (otherValue.getStringValue().equals("NaN"))
+				value = Double.NaN;
+			else					
+				value = Double.parseDouble(otherValue.getStringValue());
 		} catch (NumberFormatException e) {
 			throw new XPathException(
 				"Cannot convert '" + Type.getTypeName(otherValue.getType()) + 

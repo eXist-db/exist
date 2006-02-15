@@ -143,7 +143,7 @@ public class XQueryFunctionsTest extends TestCase {
 			r 		= (String) result.getResource(0).getContent();
 			assertEquals( "true", r );
 		} catch (XMLDBException e) {
-			System.out.println("testTokenize(): " + e);
+			System.out.println("testDeepEqual(): " + e);
 			fail(e.getMessage());
 		}
 	}
@@ -159,7 +159,7 @@ public class XQueryFunctionsTest extends TestCase {
 			//r 		= (String) result.getResource(0).getContent();
 			//assertEquals( "0", r );			
 		} catch (XMLDBException e) {
-			System.out.println("testTokenize(): " + e);
+			System.out.println("testCompare(): " + e);
 			fail(e.getMessage());
 		}
 	}	
@@ -180,7 +180,7 @@ public class XQueryFunctionsTest extends TestCase {
             assertEquals( 3, result.getSize() ); 
 		
 		} catch (XMLDBException e) {
-			System.out.println("testTokenize(): " + e);
+			System.out.println("testDistinctValues(): " + e);
 			fail(e.getMessage());
 		}
 	}	
@@ -204,7 +204,7 @@ public class XQueryFunctionsTest extends TestCase {
 			
 
 		} catch (XMLDBException e) {
-			System.out.println("testTokenize(): " + e);
+			System.out.println("testSum(): " + e);
 			fail(e.getMessage());
 		}
 	}	
@@ -212,23 +212,48 @@ public class XQueryFunctionsTest extends TestCase {
 	public void testAvg() throws XPathException {
 		ResourceSet result 		= null;
 		String		r			= "";
+		String message;
 		try {
-			result 	= service.query( "declare variable $c { avg((2, 2)) }; $c" );
+			result 	= service.query( "avg((2, 2))" );
 			r 		= (String) result.getResource(0).getContent();
-			assertEquals( "2", r );	
+			assertEquals( "2.0", r );	
 			
-			result 	= service.query( "declare variable $c { avg((<a>2</a>, <b>2</b>)) }; $c" );
+			result 	= service.query( "avg((<a>2</a>, <b>2</b>))" );
 			r 		= (String) result.getResource(0).getContent();
 			//Any untyped atomic values in the resulting sequence 
 			//(typically, values extracted from nodes in a schemaless document)
 			//are converted to xs:double values ([MK Xpath 2.0], p. 301)
-			assertEquals( "2.0", r );	
+			assertEquals( "2.0", r );
 			
-			result 	= service.query( "declare variable $c { avg(()) }; $c" );		
-			assertEquals( 0, result.getSize());				
+			result 	= service.query( "avg((3, 4, 5))" );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "4.0", r );	
+			
+			result 	= service.query( "avg((xdt:yearMonthDuration('P20Y'), xdt:yearMonthDuration('P10M')))");
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals("P10Y5M", r );
+			
+			try {
+				message = "";
+				result 	= service.query( "avg((xdt:yearMonthDuration('P20Y') , (3, 4, 5)))");
+			} catch (XMLDBException e) {
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("FORG0006") > -1);
+            
+			result 	= service.query("avg(())");		
+			assertEquals( 0, result.getSize());	
+			
+			result 	= service.query( "avg(((xs:float('INF')), xs:float('-INF')))");
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "NaN", r );
+			
+			result 	= service.query( "avg(((3, 4, 5), xs:float('NaN')))");
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "NaN", r );
 
 		} catch (XMLDBException e) {
-			System.out.println("testTokenize(): " + e);
+			System.out.println("testAvg(): " + e);
 			fail(e.getMessage());
 		}
 	}	

@@ -75,24 +75,27 @@ public class FunAvg extends Function {
         }
         
         Sequence result;
-		Sequence inner = getArgument(0).eval(contextSequence, contextItem);
+		Sequence inner = getArgument(0).eval(contextSequence, contextItem);      
 		if (inner.getLength() == 0)
             result = Sequence.EMPTY_SEQUENCE;
         else {
-    		SequenceIterator iter = inner.iterate();
-    		Item nextItem;
-    		AtomicValue nextValue;
-    		nextItem = iter.nextItem();
-    		nextValue = nextItem.atomize();
-    		if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
-    			nextValue = nextValue.convertTo(Type.DOUBLE);
-    		ComputableValue sum = (ComputableValue) nextValue;
+        	SequenceIterator iter = inner.unorderedIterator();
+    		//SequenceIterator iter = inner.iterate();    		
+    		ComputableValue sum = null;
     		while (iter.hasNext()) {
-    			nextItem = iter.nextItem();
-    			nextValue = nextItem.atomize();
-    			if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
+    			Item nextItem = iter.nextItem();
+    			AtomicValue nextValue = nextItem.atomize();
+    			if (!Type.subTypeOf(nextValue.getType(), Type.DURATION))    			
     				nextValue = nextValue.convertTo(Type.DOUBLE);
-    			sum = sum.plus((NumericValue) nextValue);
+    			if (sum == null)
+    				sum = (ComputableValue)nextValue;
+    			else {
+    				try {
+    					sum = sum.plus((ComputableValue)nextValue);
+    				} catch(XPathException e) {
+    					throw new XPathException("FORG0006: " + e.getMessage(), e);    					
+    				}
+    			}
     		}
     		result = sum.div(new IntegerValue(inner.getLength()));
         }
