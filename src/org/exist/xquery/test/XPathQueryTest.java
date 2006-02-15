@@ -680,8 +680,8 @@ public class XPathQueryTest extends XMLTestCase {
 
 			queryResource(service, "numbers.xml", "/test/item[round(price + 3) > 60]", 1);
 
-			result = queryResource(service, "numbers.xml", "min( 123456789123456789123456789, " +
-					          "123456789123456789123456789123456789123456789 )", 1);
+			result = queryResource(service, "numbers.xml", "min(( 123456789123456789123456789, " +
+					          "123456789123456789123456789123456789123456789 ))", 1);
 			assertEquals("minimum of big integers",
 					"123456789123456789123456789", 
 					result.getResource(0).getContent() );

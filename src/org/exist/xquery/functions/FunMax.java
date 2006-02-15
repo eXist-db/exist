@@ -25,6 +25,7 @@ package org.exist.xquery.functions;
 import java.text.Collator;
 
 import org.exist.dom.QName;
+import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -101,24 +102,38 @@ public class FunMax extends CollatingFunction {
 		if(arg.getLength() == 0)
             result = Sequence.EMPTY_SEQUENCE;
         else {
+
+        	//TODO : test if a range index is defined *iff* it is compatible with the collator
     		Collator collator = getCollator(contextSequence, contextItem, 2);
     		SequenceIterator iter = arg.unorderedIterator();
-            ComputableValue max = null;
-    		while(iter.hasNext()) {
+    		AtomicValue max = null;
+    		while (iter.hasNext()) {
                 Item nextItem = iter.nextItem();
-                AtomicValue nextValue = nextItem.atomize();
-                if (Type.subTypeOf(nextValue.getType(), Type.NUMBER) && ((NumericValue)nextValue).isNaN()) {
-                    result = DoubleValue.NaN;
-                    break;
-                }
-                nextValue = nextValue.convertTo(Type.NUMBER);                  
+                AtomicValue nextValue = nextItem.atomize();                 
                 if (max == null)
-                    max = (ComputableValue)nextValue;
-                else
-                    //TODO : use ComputableValue.max with the collator ! -pb   
-                    //Ugly type-casting -pb
-                    max = (ComputableValue) max.max(collator, nextValue);
-    		}           
+                    max = nextValue;
+                else {
+                	if (Type.getCommonSuperType(max.getType(), nextValue.getType()) == Type.ATOMIC) {
+                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(max.getType()) + 
+                				" and " + Type.getTypeName(nextValue.getType()));
+                	}
+                	//Ugly test
+	                if (nextValue instanceof NumericValue) {	                	
+	                	if (((NumericValue) nextValue).isNaN()) {
+                           result = DoubleValue.NaN;
+                           break;
+                       } 
+	                }
+	                //Ugly test
+	                if (nextValue instanceof ComputableValue) {		                	
+	                    max = (ComputableValue) max.max(collator, nextValue);
+                	}
+	                else {
+	                	if (Collations.compare(collator, nextValue.getStringValue(), max.getStringValue()) > 0)	               
+	                		max = nextValue;	                	
+	                }
+                }
+            }           
             result = max;
         }
 

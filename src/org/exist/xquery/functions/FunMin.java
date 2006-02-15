@@ -25,6 +25,7 @@ package org.exist.xquery.functions;
 import java.text.Collator;
 
 import org.exist.dom.QName;
+import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -97,23 +98,36 @@ public class FunMin extends CollatingFunction {
 		if (arg.getLength() == 0)
 			result = Sequence.EMPTY_SEQUENCE;
         else {
+        	//TODO : test if a range index is defined *iff* it is compatible with the collator
     		Collator collator = getCollator(contextSequence, contextItem, 2);
     		SequenceIterator iter = arg.unorderedIterator();
-            ComputableValue min = null;
+    		AtomicValue min = null;
     		while (iter.hasNext()) {
                 Item nextItem = iter.nextItem();
-                AtomicValue nextValue = nextItem.atomize();
-                if (Type.subTypeOf(nextValue.getType(), Type.NUMBER) && ((NumericValue) nextValue).isNaN()) {
-                    result = DoubleValue.NaN;
-                    break;
-                }                
-                nextValue = nextValue.convertTo(Type.NUMBER);  
+                AtomicValue nextValue = nextItem.atomize();                 
                 if (min == null)
-                    min = (ComputableValue)nextValue;
-                else
-                    //TODO : use ComputableValue.max with the collator ! -pb   
-                    //Ugly type-casting -pb
-                    min = (ComputableValue) min.min(collator, nextValue);
+                    min = nextValue;
+                else {
+                	if (Type.getCommonSuperType(min.getType(), nextValue.getType()) == Type.ATOMIC) {
+                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
+                				" and " + Type.getTypeName(nextValue.getType()));
+                	}
+                	//Ugly test
+	                if (nextValue instanceof NumericValue) {	                	
+	                	if (((NumericValue) nextValue).isNaN()) {
+                           result = DoubleValue.NaN;
+                           break;
+                       } 
+	                }
+	                //Ugly test
+	                if (nextValue instanceof ComputableValue) {		                	
+	                    min = (ComputableValue) min.min(collator, nextValue);
+                	}
+	                else {
+	                	if (Collations.compare(collator, nextValue.getStringValue(), min.getStringValue()) < 0)	               
+	                		min = nextValue;	                	
+	                }
+                }
             }           
             result = min;
         }
