@@ -409,6 +409,7 @@ public class QueryDialog extends JFrame {
 				progress.setMinimum(1);
 				progress.setMaximum(howmany);
 				int j= 0;
+				int select=-1;
 				StringBuffer contents = new StringBuffer();
 				for (ResourceIterator i = result.getIterator(); i.hasMoreResources() && j < howmany; j++) {
 					resource= (XMLResource) i.nextResource();
@@ -417,9 +418,10 @@ public class QueryDialog extends JFrame {
 						contents.append((String) resource.getContent());
 						contents.append("\n");
 					} catch (XMLDBException e) {
-						ClientFrame.showErrorMessage(
+						select = ClientFrame.showErrorMessageQuery(
 								"An error occurred while retrieving results: "
 								+ InteractiveClient.getExceptionMessage(e), e);
+						if (select == 2) break;
 					}
 				}
 				resultDisplay.setText(contents.toString());
@@ -428,7 +430,7 @@ public class QueryDialog extends JFrame {
 				statusMessage.setText("Found " + result.getSize() + " items." + 
 					" Compilation: " + tCompiled + "ms, Execution: " + tResult+"ms");
 			} catch (Throwable e) {
-				ClientFrame.showErrorMessage(
+				ClientFrame.showErrorMessageQuery(
 						"An exception occurred during query execution: "
 						+ InteractiveClient.getExceptionMessage(e), e);
 			}
