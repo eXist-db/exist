@@ -110,8 +110,7 @@ public class Collations {
                         + " could not be found", e);
             }
         } else
-            // unknown collation
-            return null;
+            throw new XPathException("FOCH0002: Unknown collation : '" + uri + "'");           
     }
 
     public final static boolean equals(Collator collator, String s1, String s2) {

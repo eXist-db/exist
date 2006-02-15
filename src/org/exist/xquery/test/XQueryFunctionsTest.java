@@ -235,23 +235,44 @@ public class XQueryFunctionsTest extends TestCase {
 	
 	public void testMin() throws XPathException {
 		ResourceSet result 		= null;
-		String		r			= "";
+		String		r			= "";		
+		String message;					
 		try {
-			result 	= service.query( "declare variable $c { min((1, 2)) }; $c" );
+			result 	= service.query("min((1, 2))");
 			r 		= (String) result.getResource(0).getContent();
 			assertEquals( "1", r );	
 			
-			result 	= service.query( "declare variable $c { min((<a>1</a>, <b>2</b>)) }; $c" );
+			result 	= service.query("min((<a>1</a>, <b>2</b>))");
 			r 		= (String) result.getResource(0).getContent();
-			//Any untyped atomic values in the resulting sequence 
-			//(typically, values extracted from nodes in a schemaless document)
-			//are converted to xs:double values ([MK Xpath 2.0], p. 372)
-			assertEquals( "1.0", r );	
+			assertEquals( "1", r );	
 			
-			result 	= service.query( "declare variable $c { min(()) }; $c" );		
+			result 	= service.query("min(())");		
 			assertEquals( 0, result.getSize());	
 			
-
+			result 	= service.query("min((xs:dateTime('2005-12-19T16:22:40.006+01:00'), xs:dateTime('2005-12-19T16:29:40.321+01:00')))");		
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "2005-12-19T16:22:40.006+01:00", r );	
+			
+			result 	= service.query("min(('a', 'b'))");		
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "a", r );	
+			
+			try {
+				message = "";
+				result 	= service.query("min((xs:dateTime('2005-12-19T16:22:40.006+01:00'), 'a'))");	
+            } catch (XMLDBException e) {
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("FORG0006") > -1);
+            
+			try {
+				message = "";
+				result 	= service.query("min(1, 2)");	
+            } catch (XMLDBException e) {
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("FOCH0002") > -1);		            
+			
 		} catch (XMLDBException e) {
 			System.out.println("testMin(): " + e);
 			fail(e.getMessage());
@@ -261,20 +282,42 @@ public class XQueryFunctionsTest extends TestCase {
 	public void testMax() throws XPathException {
 		ResourceSet result 		= null;
 		String		r			= "";
+		String message;		
 		try {
-			result 	= service.query( "declare variable $c { max((1, 2)) }; $c" );
+			result 	= service.query( "max((1, 2))" );
 			r 		= (String) result.getResource(0).getContent();
 			assertEquals( "2", r );	
 			
-			result 	= service.query( "declare variable $c { max((<a>1</a>, <b>2</b>)) }; $c" );
+			result 	= service.query( "max((<a>1</a>, <b>2</b>))" );
 			r 		= (String) result.getResource(0).getContent();
-			//Any untyped atomic values in the resulting sequence 
-			//(typically, values extracted from nodes in a schemaless document)
-			//are converted to xs:double values ([MK Xpath 2.0], p. 370)
-			assertEquals( "2.0", r );	
+			assertEquals( "2", r );	
 			
-			result 	= service.query( "declare variable $c { max(()) }; $c" );		
+			result 	= service.query( "max(())" );		
 			assertEquals( 0, result.getSize());	
+			
+			result 	= service.query("max((xs:dateTime('2005-12-19T16:22:40.006+01:00'), xs:dateTime('2005-12-19T16:29:40.321+01:00')))");		
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "2005-12-19T16:29:40.321+01:00", r );	
+			
+			result 	= service.query("max(('a', 'b'))");		
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "b", r );	
+			
+			try {
+				message = "";
+				result 	= service.query("max((xs:dateTime('2005-12-19T16:22:40.006+01:00'), 'a'))");	
+            } catch (XMLDBException e) {
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("FORG0006") > -1);
+            
+			try {
+				message = "";
+				result 	= service.query("max(1, 2)");	
+            } catch (XMLDBException e) {
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("FOCH0002") > -1);				
 			
 
 		} catch (XMLDBException e) {
