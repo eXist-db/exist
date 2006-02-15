@@ -1489,6 +1489,38 @@ public class ClientFrame extends JFrame
         return;
     }
     
+    public static int showErrorMessageQuery(String message, Throwable t) {
+        JScrollPane scroll = null;
+        JTextArea msgArea = new JTextArea(message);
+        msgArea.setBorder(BorderFactory.createTitledBorder("Message:"));
+        msgArea.setEditable(false);
+        msgArea.setBackground(null);
+        if (t != null) {
+            StringWriter out = new StringWriter();
+            PrintWriter writer = new PrintWriter(out);
+            t.printStackTrace(writer);
+            JTextArea stacktrace = new JTextArea(out.toString(), 20, 50);
+            stacktrace.setBackground(null);
+            stacktrace.setEditable(false);
+            scroll = new JScrollPane(stacktrace);
+            scroll.setPreferredSize(new Dimension(250, 300));
+            scroll.setBorder(BorderFactory
+                    .createTitledBorder("Exception Stacktrace:"));
+        }
+        JOptionPane optionPane = new JOptionPane();
+        
+        optionPane.setMessage(new Object[]{msgArea, scroll});
+        optionPane.setMessageType(JOptionPane.ERROR_MESSAGE);
+        optionPane.setOptionType(optionPane.OK_CANCEL_OPTION);
+        JDialog dialog = optionPane.createDialog(null, "Error");
+        dialog.setResizable(true);
+        dialog.pack();
+        dialog.setVisible(true);
+       
+        Object result = optionPane.getValue();
+        if (result == null) return 2;
+        return  ((Integer)optionPane.getValue()).intValue();
+    }
     /*
      * (non-Javadoc)
      *
