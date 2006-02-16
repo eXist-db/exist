@@ -1,11 +1,13 @@
 package org.exist.xmldb.test;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -24,9 +26,11 @@ import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 /** Reproduce the EXistException "the document is too complex/irregularily structured
@@ -70,17 +74,26 @@ public class IndexingTest extends TestCase {
 		super(arg0);
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) 
+	throws XMLDBException, ParserConfigurationException, 
+	SAXException, IOException, ClassNotFoundException, 
+	IllegalAccessException, InstantiationException {
 		System.setProperty("exist.initdb", "true");
 		IndexingTest tester = new IndexingTest("");
 		// tester.runTestrregularilyStructured(false);
 		tester.testIrregularilyStructured(true);
 	}
 	
-	public void testIrregularilyStructured( ) {
+	public void testIrregularilyStructured( ) 
+		throws XMLDBException, ParserConfigurationException, SAXException, 
+		IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
+ {
+		
 		testIrregularilyStructured( true);
 	}
-	public void testIrregularilyStructured(boolean getContentAsDOM) {
+	
+	public void testIrregularilyStructured(boolean getContentAsDOM) 
+		throws XMLDBException, ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 		Database database = null;
 		final String testName = "IrregularilyStructured";
 		startTime = System.currentTimeMillis();
@@ -153,13 +166,10 @@ public class IndexingTest extends TestCase {
 			coll.removeResource(resource);
 
 			System.out.println("TEST> " + testName + " : PASSED");
-		} catch (Exception e) {
-			System.out.println("TEST> " + testName + " : FAILED");
-			e.printStackTrace();
+
 		} finally {
 			printTime();
 			if (database != null) {
-				try {
 					Collection coll =
 						DatabaseManager.getCollection(
 							baseURI,
@@ -172,8 +182,6 @@ public class IndexingTest extends TestCase {
 							"1.0");
 					dim.shutdown();
 					printTime();
-				} catch (Exception e) {
-				}
 			}
 		}
 	}
