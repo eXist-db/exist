@@ -21,14 +21,11 @@
  */
 package org.exist.numbering.test;
 
+import junit.framework.TestCase;
+import org.exist.numbering.DLN;
+
 import java.util.Arrays;
 import java.util.Random;
-
-import org.exist.numbering.DLNBase;
-import org.exist.numbering.DLN;
-import org.exist.numbering.MutableDLN;
-
-import junit.framework.TestCase;
 
 public class DLNTest extends TestCase {
 
@@ -121,7 +118,7 @@ public class DLNTest extends TestCase {
     
     public void testCreate() {
         System.out.println("------ testCreate ------");
-        MutableDLN dln = new MutableDLN();
+        DLN dln = new DLN();
         for (int i = 1; i < 500000; i++)
             dln.incrementLevelId();
         assertEquals(500000, dln.getLevelId(0));
@@ -136,27 +133,27 @@ public class DLNTest extends TestCase {
         int[] id2 = { 1, 8000656, 40, 3, 2 };
         int[] id3 = { 1, 1 };
         int[] id4 = { 1, 72 };
-        MutableDLN dln = new MutableDLN(id0);
+        DLN dln = new DLN(id0);
         System.out.println("ID: " + dln.debug());
         assertEquals("1.33.56.2.98.1.27", dln.toString());
         
-        dln = new MutableDLN(id1);
+        dln = new DLN(id1);
         System.out.println("ID: " + dln.debug());
         assertEquals("1.56.4.33.30.11.9.40.3.2", dln.toString());
         
-        dln = new MutableDLN(id2);
+        dln = new DLN(id2);
         System.out.println("ID: " + dln.debug());
         assertEquals("1.8000656.40.3.2", dln.toString());
 
-        dln = new MutableDLN(id3);
+        dln = new DLN(id3);
         System.out.println("ID: " + dln.debug());
         assertEquals("1.1", dln.toString());
 
-        dln = new MutableDLN(id4);
+        dln = new DLN(id4);
         System.out.println("ID: " + dln.debug());
         assertEquals("1.72", dln.toString());
 
-        dln = new MutableDLN();
+        dln = new DLN();
         for (int i = 0; i < id0.length; i++) {
             if (i > 0)
                 dln.addLevelId(1);
