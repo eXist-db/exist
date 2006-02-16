@@ -35,7 +35,18 @@ import java.io.IOException;
 public class DLN extends DLNBase {
 
     public DLN() {
-        super();
+        this(1);
+    }
+
+    public DLN(int[] id) {
+        this(id[0]);
+        for (int i = 1; i < id.length; i++)
+            addLevelId(id[i]);
+    }
+
+    public DLN(int id) {
+        bits = new byte[1];
+        addLevelId(id);
     }
 
     public DLN(DLN other) {
@@ -50,8 +61,70 @@ public class DLN extends DLNBase {
         super(is);
     }
 
+    /**
+     * Returns a new DLN representing the first child
+     * node of this node.
+     *
+     * @return new child node id
+     */
+    public DLN newChild() {
+        DLN child = new DLN(this);
+        child.addLevelId(1);
+        return child;
+    }
+
+    protected DLN(byte[] data, int nbits) {
+        super(data, nbits);
+    }
+
+    /**
+     * Returns a new DLN representing the next following
+     * sibling of this node.
+     *
+     * @return new sibling node id.
+     */
+    public DLN nextSibling() {
+        DLN sibling = new DLN(this);
+        sibling.incrementLevelId();
+        return sibling;
+    }
+
+    public DLN getParentId() {
+        int last = lastLevelOffset();
+        if (last == 0)
+            return null;
+        return new DLN(bits, last);
+    }
+
+    /**
+     * Write the node id to a {@link VariableByteOutputStream}.
+     *
+     * @param os
+     * @throws IOException
+     */
     public void write(VariableByteOutputStream os) throws IOException {
         os.writeByte(units());
         os.write(bits, 0, bits.length);
+    }
+
+    public static void main(String[] args) {
+        DLN id = new DLN();
+        id.setLevelId(0, 8);
+        System.out.println("ID: " + id.toBitString() + " = " + id.getLevelId(0));
+        id.setLevelId(0, 0);
+        for (int i = 0; i < 100; i++) {
+            id.incrementLevelId();
+            System.out.println("ID: " + id.toBitString() + " = " + id.getLevelId(0));
+        }
+        id.addLevelId(0);
+        System.out.println("ID: " + id.toBitString() + " = " + id.toString());
+
+        id = new DLN(new int[] {5, 87, 453});
+        System.out.println("ID: " + id.toString() + " = " + id.toBitString());
+
+        while (id != null) {
+            System.out.println(id.debug());
+            id = id.getParentId();
+        }
     }
 }

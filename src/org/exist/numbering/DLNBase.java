@@ -95,6 +95,24 @@ public class DLNBase implements Comparable {
         bitIndex = units * BITS_PER_UNIT - 1;
     }
 
+    protected DLNBase(byte[] data, int nbits) {
+        int remainder = nbits % 8;
+        int len = nbits / 8;
+        bits = new byte[len + (remainder > 0 ? 1 : 0)];
+        if (len > 0)
+            System.arraycopy(data, 0, bits, 0, len);
+        if (remainder > 0) {
+            byte b = 0;
+            for (int i = 0; i < remainder; i++) {
+                if ((data[len] & (1 << ((7 - i) & 7))) != 0) {
+                    b |= 1 << (7 - i);
+                }
+            }
+            bits[len] = b;
+        }
+        bitIndex = nbits - 1;
+    }
+
     public DLNBase(VariableByteInput is) throws IOException {
         int units = is.readByte();
         int blen = (int) Math.ceil((units * BITS_PER_UNIT) / 8.0);
@@ -113,6 +131,25 @@ public class DLNBase implements Comparable {
     public void setLevelId(int offset, int levelId) {
         bitIndex = offset - 1;
         setCurrentLevelId(levelId);
+    }
+
+    /**
+     * Adds a new level to the node id, using levelId
+     * as initial value.
+     *
+     * @param levelId initial value
+     */
+    public void addLevelId(int levelId) {
+        setCurrentLevelId(levelId);
+    }
+
+    /**
+     * Increments the last level id by one.
+     */
+    public void incrementLevelId() {
+        int last = lastLevelOffset();
+        bitIndex = last - 1;
+        setCurrentLevelId(getLevelId(last) + 1);
     }
 
     /**
@@ -188,8 +225,15 @@ public class DLNBase implements Comparable {
         return units;
     }
 
+    /**
+     * Returns the number of level in this id, which corresponds
+     * to the depth at which the node occurs within the node tree.
+     *
+     * @return the number of levels in this id
+     */
     public int getLevelCount() {
-        int bit = 0, count = 0;
+        int bit = 0;
+        int count = 0;
         while (bit > -1 && bit <= bitIndex) {
             int units = unitsUsed(bit, bits);
             bit += units;
@@ -199,6 +243,11 @@ public class DLNBase implements Comparable {
         return count;
     }
 
+    /**
+     * Return all level ids converted to int.
+     *
+     * @return all level ids in this node id.
+     */
     public int[] getLevelIds() {
         int count = getLevelCount();
         int[] ids = new int[count];
@@ -208,6 +257,23 @@ public class DLNBase implements Comparable {
             offset += getUnitsRequired(ids[i]) * BITS_PER_UNIT;
         }
         return ids;
+    }
+
+    /**
+     * Find the last level in the id and return its offset.
+     *
+     * @return start-offset of the last level id.
+     */
+    protected int lastLevelOffset() {
+        int bit = 0;
+        int lastOffset = 0;
+        while (bit > -1 && bit <= bitIndex) {
+            lastOffset = bit;
+            int units = unitsUsed(bit, bits);
+            bit += units;
+            bit += bitWidth(units);
+        }
+        return lastOffset;
     }
 
     public boolean startsWith(DLNBase other) {
