@@ -215,7 +215,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		CommentImpl comment = new CommentImpl(ch, start, length);
 		comment.setOwnerDocument(document);
 		if (stack.empty()) {
-			if (!validate)
+            comment.setNodeId(new DLN());
+            if (!validate)
 				broker.storeNode(transaction, comment, currentPath);
 			document.appendChild(comment);
 		} else {
@@ -355,7 +356,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			new ProcessingInstructionImpl(0, target, data);
 		pi.setOwnerDocument(document);
 		if (stack.isEmpty()) {
-			if (!validate)
+            pi.setNodeId(new DLN());
+            if (!validate)
 				broker.storeNode(transaction, pi, currentPath);
 			document.appendChild(pi);
 		} else {
