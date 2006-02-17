@@ -851,7 +851,7 @@ example:echo(("Hello", "World!"))
             
             <itemizedlist>
                 <listitem>expand-xincludes=yes|no</listitem>
-                <listitem>highlight-matches=elements|attributes|both</listitem>
+                <listitem>highlight-matches=elements|attributes|both|none</listitem>
                 <listitem>process-xsl-pi=yes|no</listitem>
             </itemizedlist>
             
