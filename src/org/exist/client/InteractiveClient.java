@@ -1438,7 +1438,8 @@ public class InteractiveClient {
             // unknown mime type, here prefered is to do nothing
             if(mimeType == null) {
                 upload.showMessage(file.getAbsolutePath() +
-                        " - unknown suffix in : " + MimeTable.getInstance().getSrc());
+                        " - unknown suffix. No matching mime-type found in : " + 
+                        MimeTable.getInstance().getSrc());
                 return;
                 // if some one prefers to store it as binary by default, but dangerous
                 // if (mimeType == null) mimeType = MimeType.BINARY_TYPE;
