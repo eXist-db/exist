@@ -38,10 +38,14 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.EmptySequence;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * @author wolf
@@ -68,6 +72,19 @@ public class Eval extends BasicFunction {
 				"inner expression. It will return an empty sequence if you pass a whitespace string.",
 				new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+				},
+				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
+		new FunctionSignature(
+				new QName("eval-with-context", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+				"Dynamically evaluates its string argument as an XPath/XQuery expression. " +
+				"A new execution context will be created before the expression is evaluated. Static " +
+				"context properties can be set via the XML fragment in the second parameter. The " +
+				"XML fragment should have the format: <static-context><variable name=\"qname\" " +
+				"value=\"value\"/><static-context>.",
+				new SequenceType[] {
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
 					new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
 				},
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
@@ -120,6 +137,12 @@ public class Eval extends BasicFunction {
 		if ("".equals(expr.trim()))
 		  return new EmptySequence();
 		
+		NodeValue contextInit = null;
+		if (isCalledAs("eval-with-context")) {
+			// set the context initialization param for later use
+			contextInit = (NodeValue) args[argCount++];
+		}
+		
 		// should the compiled query be cached?
 		boolean cache = false;
 		if (argCount < getArgumentCount())
@@ -139,11 +162,19 @@ public class Eval extends BasicFunction {
 		XQuery xquery = context.getBroker().getXQueryService();
 		XQueryPool pool = xquery.getXQueryPool();
 		CompiledXQuery compiled = cache ? pool.borrowCompiledXQuery(context.getBroker(), source) : null;
+		XQueryContext innerContext;
+		if (contextInit != null) {
+			// eval-with-context: initialize a new context
+			innerContext = xquery.newContext(context.getAccessContext());
+			initContext(contextInit.getNode(), innerContext);
+		} else
+			// use the existing outer context
+			innerContext = context;
 		try {
 			if(compiled == null) {
-			    compiled = xquery.compile(context, source);
+			    compiled = xquery.compile(innerContext, source);
 			} else {
-				compiled.setContext(context);
+				compiled.setContext(innerContext);
 			}
 			sequence = xquery.execute(compiled, exprContext, false);
 			return sequence;
@@ -160,4 +191,25 @@ public class Eval extends BasicFunction {
 		}
 	}
 
+	/**
+	 * Read to optional static-context fragment to initialize
+	 * the context.
+	 * 
+	 * @param root
+	 * @param innerContext
+	 * @throws XPathException
+	 */
+	private void initContext(Node root, XQueryContext innerContext) throws XPathException {
+		NodeList cl = root.getChildNodes();
+		for (int i = 0; i < cl.getLength(); i++) {
+			Node child = cl.item(i);
+			if (child.getNodeType() == Node.ELEMENT_NODE && 
+				"variable".equals(child.getLocalName())) {
+				Element elem = (Element) child;
+				String qname = elem.getAttribute("name");
+				String value = elem.getAttribute("value");
+				innerContext.declareVariable(qname, value);
+			}
+		}
+	}
 }
