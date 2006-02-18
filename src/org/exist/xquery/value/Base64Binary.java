@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import java.io.UnsupportedEncodingException;
 import java.text.Collator;
 
 import org.apache.xmlrpc.Base64;
@@ -48,9 +49,18 @@ public class Base64Binary extends AtomicValue {
     }
 
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        if (requiredType == Type.BASE64_BINARY)
-            return this;
-        throw new XPathException("cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
+    	switch (requiredType) {
+    	case Type.BASE64_BINARY: 
+    		return this;
+    	case Type.STRING: 
+    		try {
+					return new StringValue(new String(data, "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					return new StringValue(new String(data));
+				}
+    	default:
+    		throw new XPathException("cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
+    	}
     }
 
     public boolean compareTo(Collator collator, int operator, AtomicValue other)
