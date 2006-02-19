@@ -80,8 +80,8 @@ public class Eval extends BasicFunction {
 				"Dynamically evaluates its string argument as an XPath/XQuery expression. " +
 				"A new execution context will be created before the expression is evaluated. Static " +
 				"context properties can be set via the XML fragment in the second parameter. The " +
-				"XML fragment should have the format: <static-context><variable name=\"qname\" " +
-				"value=\"value\"/><static-context>.",
+				"XML fragment should have the format: <static-context><variable name=\"qname\">" +
+				"variable value</variable><static-context>.",
 				new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
@@ -207,8 +207,7 @@ public class Eval extends BasicFunction {
 				"variable".equals(child.getLocalName())) {
 				Element elem = (Element) child;
 				String qname = elem.getAttribute("name");
-				String value = elem.getAttribute("value");
-				innerContext.declareVariable(qname, value);
+				innerContext.declareVariable(qname, elem.getFirstChild());
 			}
 		}
 	}
