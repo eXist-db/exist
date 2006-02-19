@@ -110,7 +110,7 @@ public abstract class NodeImpl implements Node, QNameable {
      * @see org.w3c.dom.Node#hasAttributes()
      */
     public boolean hasAttributes() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "hasAttributes() not implemented on class " + getClass().getName());
+        return getAttributesCount() > 0;
     }
     
     public short getAttributesCount() {
@@ -147,14 +147,14 @@ public abstract class NodeImpl implements Node, QNameable {
      *@exception  DOMException  Description of the Exception
      */
     public void setNodeValue(String value) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setNodeValue(String value) not implemented on class " + getClass().getName());
+    	throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setNodeValue(String value) not implemented on class " + getClass().getName());
     }
     
     /**
      * @see org.w3c.dom.Node#hasChildNodes()
      */
     public boolean hasChildNodes() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "hasChildNodes() not implemented on class " + getClass().getName());
+        return getChildCount() > 0;
     } 
 
     /**
