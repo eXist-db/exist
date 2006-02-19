@@ -81,7 +81,7 @@ public class Eval extends BasicFunction {
 				"A new execution context will be created before the expression is evaluated. Static " +
 				"context properties can be set via the XML fragment in the second parameter. The " +
 				"XML fragment should have the format: <static-context><variable name=\"qname\">" +
-				"variable value</variable><static-context>.",
+				"variable value</variable></static-context>.",
 				new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
