@@ -60,6 +60,10 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
     public String getName() {
         return name;
     }
+    
+    public boolean hasChildNodes() {
+        return false;
+    } 
 
     public String getPublicId() {
         return publicId;
