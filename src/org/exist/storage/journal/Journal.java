@@ -34,6 +34,7 @@ import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.txn.Checkpoint;
 import org.exist.storage.txn.TransactionException;
+import org.exist.util.Configuration;
 import org.exist.util.sanity.SanityCheck;
 
 /**
@@ -145,12 +146,7 @@ public class Journal {
                         
         String logDir = (String) pool.getConfiguration().getProperty("db-connection.recovery.journal-dir");
         if (logDir != null) {
-            String dbHome = System.getProperty("exist.home");
-            File f = new File(logDir);
-            if ((!f.isAbsolute()) && dbHome != null) {
-                logDir = dbHome + File.separatorChar + logDir;
-                f = new File(logDir);
-            }
+            File f = Configuration.lookup(logDir);
             if (!f.exists()) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Output directory for journal files does not exist. Creating " + f.getAbsolutePath());

@@ -21,7 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -71,8 +70,7 @@ public class DatabaseImpl implements Database {
     
     /** Default config filename to configure an Instance */
     public final static String CONF_XML="conf.xml";
-    
-    
+
     protected boolean autoCreate = false;
     protected String configuration = null;
     protected String currentInstanceName = null;
@@ -98,20 +96,9 @@ public class DatabaseImpl implements Database {
      *@exception  XMLDBException  Description of the Exception
      */    
     private void configure(String instanceName) throws XMLDBException {        
-        String home;
-        String file = CONF_XML;     
-        if(configuration == null) {
-            home = findExistHomeFromProperties();
-        } else {
-            File f = new File(configuration);
-            if (!f.isAbsolute())
-                f = new File(new File(findExistHomeFromProperties()), configuration).getAbsoluteFile();
-            file = f.getName();
-            home = f.getParentFile().getPath();
-        }
-        System.out.println("Configuring '" + instanceName + "' using " + home + File.separatorChar + file);
+        System.out.println("Configuring '" + instanceName + "' using " + Configuration.getPath());
         try {
-            Configuration config = new Configuration(file, home);
+            Configuration config = new Configuration();
             BrokerPool.configure(instanceName, 1, 5, config);            
             if (shutdown != null)
                 BrokerPool.getInstance(instanceName).registerShutdownListener(shutdown);
@@ -121,17 +108,6 @@ public class DatabaseImpl implements Database {
         currentInstanceName = instanceName;
     }
 
-    /**
-     * @return Exist Home dir. From system Properties
-     */
-    private String findExistHomeFromProperties() {
-        String home;
-        home = System.getProperty("exist.home");
-        if (home == null)
-            home = System.getProperty("user.dir");
-        return home;
-    }    
-    
     /* @deprecated  Although part of the xmldb API, the design is somewhat inconsistent.   
      * @see org.xmldb.api.base.Database#acceptsURI(java.lang.String)
      */

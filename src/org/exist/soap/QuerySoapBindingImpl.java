@@ -99,11 +99,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
     }
     
     private void configure() throws Exception {
-        String pathSep = System.getProperty("file.separator", "/");
-        String home = System.getProperty("exist.home");
-        if (home == null)
-            home = System.getProperty("user.dir");
-        Configuration config = new Configuration(home + pathSep + "conf.xml");
+        Configuration config = new Configuration();
         BrokerPool.configure(1, 5, config);
     }
     

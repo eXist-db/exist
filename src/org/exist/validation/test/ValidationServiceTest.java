@@ -44,7 +44,6 @@ public class ValidationServiceTest  extends TestCase {
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private Collection rootCollection = null;
     private ValidationService service = null;
-    private String eXistHome = null;
     
     public ValidationServiceTest(String testName) {
         super(testName);
@@ -57,9 +56,7 @@ public class ValidationServiceTest  extends TestCase {
     
     public void setUp() {
         try {
-            System.out.println(">>> setUp");
-            eXistHome = System.getProperty("exist.home");
-            
+            System.out.println(">>> setUp");            
             Class cl = Class.forName(DRIVER);
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");

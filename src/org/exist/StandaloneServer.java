@@ -118,10 +118,6 @@ public class StandaloneServer {
     public void run(String[] args) throws Exception {
         printNotice();
         
-        String home = System.getProperty( "exist.home" );
-        if ( home == null )
-            home = System.getProperty( "user.dir" );
-        
         Properties props = new Properties(DEFAULT_PROPERTIES);
         
         configure(props);
@@ -166,9 +162,9 @@ public class StandaloneServer {
             return;
         }
         
-        System.out.println( "Loading configuration from " + home +
+        System.out.println( "Loading configuration from " + Configuration.getExistHome().getAbsolutePath() +
                 File.separatorChar + "conf.xml" );
-        Configuration config = new Configuration( "conf.xml", home );
+        Configuration config = new Configuration( "conf.xml");
         BrokerPool.configure( 1, threads, config );
         BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl());
         initXMLDB();
@@ -285,13 +281,8 @@ public class StandaloneServer {
         // try to read configuration from file. Guess the location if
         // necessary
         InputStream is = null;
-        String file = "server.xml";
-        String dbHome = System.getProperty("exist.home");
-        File f = new File(file);
-        if ((!f.isAbsolute()) && dbHome != null) {
-            file = dbHome + File.separatorChar + file;
-            f = new File(file);
-        }
+        String file = "server.xml";        
+        File f = Configuration.lookup(file);
         if (!f.canRead()) {
             is = StandaloneServer.class.getClassLoader().getResourceAsStream("org/exist/server.xml");
             if (is == null)

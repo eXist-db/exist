@@ -56,7 +56,10 @@ public class Configuration implements ErrorHandler {
     private final static Logger LOG = Logger.getLogger(Configuration.class);	//Logger
     protected DocumentBuilder builder = null;									
     protected HashMap config = new HashMap();									//Configuration						
-    protected String file = null;												//config file (conf.xml)
+    protected static String file = null;												//config file (conf.xml)
+    protected static File existHome = null;
+    protected static boolean configDetected = false;
+    
     public static final class SystemTaskConfig {
         
         private String className;
@@ -81,6 +84,9 @@ public class Configuration implements ErrorHandler {
         }
     }
     
+    public Configuration() throws DatabaseConfigurationException {
+    		this("conf.xml", null);
+    }
     //Constructor (wrapper)
     public Configuration(String file) throws DatabaseConfigurationException
 	{
@@ -108,45 +114,19 @@ public class Configuration implements ErrorHandler {
             	//Default file name
             	file = "conf.xml";
             }
-            
-            
+
             //otherise, secondly try to read configuration from file. Guess the location if necessary
-            if(is == null)
-            {
-                //try and read the config file from the specified home folder 
-            	File f = new File(file);
-                if((!f.isAbsolute()) && dbHome != null)
-                {
-                    file = dbHome + File.separatorChar + file;
-                    f = new File(file);
-                }
-                
-                //if cant read config from specified home folder
-                if(!f.canRead())
-                {
-                    LOG.info("Unable to read configuration. Trying to guess location ...");
-                    
-                    //Read from the configration file from the guessed home folder
-                    if(dbHome == null)
-                    {
-                        // try to determine exist home directory
-                        dbHome = System.getProperty("exist.home");
-                        
-                        if(dbHome == null)
-                            dbHome = System.getProperty("user.dir");
-                    }
-                    if(dbHome != null)
-                        file = dbHome + File.separatorChar + file;
-                    f = new File(file);
-                    if(!f.canRead())
-                    {
-                        LOG.warn("giving up");
-                        throw new DatabaseConfigurationException("Unable to read configuration file");
-                    }
-                    
-                }
-                this.file = file;
-                is = new FileInputStream(file);
+            if (is == null) {
+            		File eXistHome = getExistHome(dbHome);
+            		if (eXistHome == null) {
+                      throw new DatabaseConfigurationException("Unable to locate eXist home directory");
+            		}
+            		File config = lookup(file);
+            		if (!config.exists() || !config.canRead()) {
+                      throw new DatabaseConfigurationException("Unable to read configuration file at " + config);
+            		}
+                this.file = config.getAbsolutePath();
+                is = new FileInputStream(config);
             }
             
             // Create resolver
@@ -412,11 +392,7 @@ public class Configuration implements ErrorHandler {
             config.put("database", mysql);
         // directory for database files
         if (dataFiles != null) {
-            File df = new File(dataFiles);
-            if ((!df.isAbsolute()) && dbHome != null) {
-                dataFiles = dbHome + File.separatorChar + dataFiles;
-                df = new File(dataFiles);
-            }
+        		File df = lookup(dataFiles);
             if (!df.canRead())
                 throw new DatabaseConfigurationException(
                         "cannot read data directory: "
@@ -768,12 +744,7 @@ public class Configuration implements ErrorHandler {
         if (stopwords.getLength() > 0) {
             String stopwordFile = ((Element) stopwords.item(0))
             .getAttribute("file");
-            File sf = new File(stopwordFile);
-            
-            if (!sf.canRead()) {
-                stopwordFile = dbHome + File.separatorChar + stopwordFile;
-                sf = new File(stopwordFile);
-            }
+            File sf = lookup(stopwordFile);
             if (sf.canRead())
                 config.put("stopwords", stopwordFile);
         }
@@ -791,12 +762,7 @@ public class Configuration implements ErrorHandler {
             for (int i = 0; i < catalogs.getLength(); i++) {
                 String catalog = ((Element) catalogs.item(i)).getAttribute("file");
                            
-                File catalogFile=null;
-                if (dbHome == null)
-                    catalogFile = new File(catalog);
-                else
-                    catalogFile = new File(dbHome, catalog);
-                
+                File catalogFile = lookup(catalog);                
                 if (catalogFile!=null && catalogFile.exists()) {
                     LOG.info("Loading catalog '"+catalogFile.getAbsolutePath()+"'.");
                     // TODO dizzzz remove debug
@@ -832,10 +798,122 @@ public class Configuration implements ErrorHandler {
         return ((Integer) obj).intValue();
     }
     
-    public String getPath() {
+    /**
+     * Returns the absolut path to the configuration file.
+     * 
+     * @return the path to the configuration file
+     */
+    public static String getPath() {
+    		if (file == null) {
+    			File f = lookup("conf.xml");
+    			return f.getAbsolutePath();
+    		}
         return file;
     }
     
+    /**
+     * Returns a file handle for the given path, while <code>path</code> specifies
+     * the path to an eXist configuration file or directory.
+     * <br>
+     * Note that relative paths are beeing interpreted relative to <code>exist.home</code>.
+     * 
+     * @param path path to the file or directory
+     * @return the file handle
+     */
+    public static File lookup(String path) {
+    		File f = null;
+		if (path.startsWith("~") && path.length() > 1) {
+			f = new File(System.getProperty("user.home") + path.substring(1));
+		} else if (!(new File(path)).isAbsolute()) {
+			try {
+				return new File(getExistHome(), path);
+			} catch (DatabaseConfigurationException e) {
+				throw new IllegalStateException(
+					"Unable to locate " + path + " because exist home directory cannot be found!"
+				);
+			}
+		} else {
+			f = new File(path);
+		}
+		return f;
+    }
+    
+    /**
+     * Returns a file handle for eXist's home directory.
+     * <p>
+     * If either none of the directories identified by the system properties
+     * <code>exist.home</code> and <code>user.home</code> exist or none
+     * of them contain a configuration file, this method returns <code>null</code>.
+     * 
+     * @return the file handle or <code>null</code>
+     */
+    public static File getExistHome() throws DatabaseConfigurationException {
+    		return getExistHome(null);
+    }
+
+    /**
+     * Returns a file handle for eXist's home directory.
+     * <p>
+     * If either the proposed home directory does not exist, does not contain a
+     * configuration file or none of the directories identified by the system properties
+     * <code>exist.home</code> and <code>user.home</code> exist or none of
+     * them contains a configuration file, this method returns <code>null</code>.
+     * 
+     * @param path path to eXist home directory
+     * @return the file handle or <code>null</code>
+     */
+    public static File getExistHome(String path) throws DatabaseConfigurationException {
+    		if (configDetected || existHome != null)
+    			return existHome;
+    		
+    		String home = null;
+    		configDetected = true;
+    		if (path != null) {
+    			if (path.startsWith("~") && path.length() > 1) {
+    				path = System.getProperty("user.home") + path.substring(1);
+    			}
+    			home = path;
+    		} else {
+			home = System.getProperty("exist.home");
+			if (home == null) {
+				LOG.info("Environment variabe 'exist.home' not set.");
+				home = System.getProperty("user.home");
+				LOG.info("Trying home directory '" + home + "' to locate eXist configuration ...");
+			} else if (home.startsWith("~") && home.length() > 1) {
+				home = System.getProperty("user.home") + home.substring(1);
+			}
+    		}
+
+		// check if we found an existing directory
+		File homeDir = new File(home);
+		if (!homeDir.exists()) {
+			LOG.warn("Unable to find exist home directory: " + home + " does not exist!");
+			homeDir = new File(System.getProperty("user.dir"));
+			LOG.info("Trying working directory '" + homeDir + "' to locate eXist configuration ...");
+		} else if (!homeDir.isDirectory()) {
+			LOG.warn("Unable to find exist home directory: " + home + " is not a directory!");
+			homeDir = new File(System.getProperty("user.dir"));
+			LOG.info("Trying working directory '" + homeDir + "' to locate eXist configuration ...");
+		}
+		
+		// see if the config file is there...
+		File config = new File(homeDir, "conf.xml");
+		if (!config.exists()) {
+			homeDir = new File(System.getProperty("user.dir"));
+			config = new File(homeDir, "conf.xml");
+			LOG.info("Trying working directory '" + homeDir + "' to locate eXist configuration ...");
+			if (!config.exists()) {
+				LOG.warn("Unable to find exist home directory!");
+				return null;
+			}
+		}
+		
+		// done!
+		LOG.info("Configuring eXist using " + config);
+		existHome = homeDir;
+		return homeDir;
+	}
+     
     /*
      * (non-Javadoc)
      *

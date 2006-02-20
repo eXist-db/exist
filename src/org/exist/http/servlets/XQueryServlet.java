@@ -139,14 +139,7 @@ public class XQueryServlet extends HttpServlet {
 			DatabaseManager.registerDatabase(database);
 		} catch(Exception e) {
 			throw new ServletException("Failed to initialize database driver: " + e.getMessage(), e);
-		}
-		
-//		// set exist.home property if not set
-//		String homeDir = System.getProperty("exist.home");
-//		if(homeDir == null) {
-//			homeDir = config.getServletContext().getRealPath("/");
-//			System.setProperty("exist.home", homeDir);
-//		}
+		}		
 	}
 
 	/* (non-Javadoc)

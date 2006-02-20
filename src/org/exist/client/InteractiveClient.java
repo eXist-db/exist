@@ -70,6 +70,7 @@ import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.util.CollectionScanner;
+import org.exist.util.Configuration;
 import org.exist.util.DirectoryScanner;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -1551,19 +1552,7 @@ public class InteractiveClient {
     private Properties loadClientProperties(){
         
         Properties clientProps = new Properties();
-        
-        
-        String home = System.getProperty("exist.home");
-        
-        
-        File propFile;
-        if (home == null)
-            propFile = new File("client.properties");
-        else
-            propFile = new File(home
-                    + System.getProperty("file.separator", "/")
-                    + "client.properties");
-        
+        File propFile = Configuration.lookup("client.properties");
         InputStream pin = null;
         
         // Try to load from file
@@ -1954,14 +1943,13 @@ public class InteractiveClient {
      *
      * @param args arguments from main()
      */
-    public void run(String args[]) throws Exception {
-        
-        // Resolve exist.home
-        String home = System.getProperty("exist.home");
-        if (home == null)
-            home = System.getProperty("user.dir");
+    public void run(String args[]) throws Exception {        
+        if (!quiet)
+            printNotice();
 
-        
+        // Get exist home directory
+        File home = Configuration.getExistHome();
+
         // initialize with default properties, before add client properties
         properties = new Properties(defaultProps);
         
@@ -1969,7 +1957,7 @@ public class InteractiveClient {
         Class cl = Class.forName(properties.getProperty(DRIVER));
         Field CONF_XML=cl.getDeclaredField("CONF_XML");
         if (CONF_XML != null) {
-            File configuration=new File(home, (String)CONF_XML.get(new String()));
+        	   File configuration = Configuration.lookup((String)CONF_XML.get(new String()));
             properties.setProperty(CONFIGURATION, configuration.getAbsolutePath());
         }
         
@@ -1984,9 +1972,6 @@ public class InteractiveClient {
         
         // Fix "uri" property: Excalibur CLI can't parse dashes, so we need to URL encode them:
         properties.setProperty("uri", java.net.URLDecoder.decode(properties.getProperty("uri"), "UTF-8"));
-        
-        if (!quiet)
-            printNotice();
         
         // prompt for password if needed
         if (cOpt.interactive && startGUI) {
@@ -2005,9 +1990,8 @@ public class InteractiveClient {
         }
 
         
-        historyFile = new File(home + File.separatorChar + ".exist_history");
-        queryHistoryFile = new File(home + File.separatorChar
-                + ".exist_query_history");
+        historyFile = new File(home, ".exist_history");
+        queryHistoryFile = new File(home, ".exist_query_history");
         
         if (queryHistoryFile.canRead())
             readQueryHistory();
@@ -2137,7 +2121,7 @@ public class InteractiveClient {
                 qd.setLocation(100, 100);
                 qd.setVisible(true);
             } else if (!startGUI)
-                readlineInputLoop(home);
+                readlineInputLoop(home.getAbsolutePath());
             else
                 frame.displayPrompt();
         } else

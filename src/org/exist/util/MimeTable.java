@@ -47,8 +47,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * is an XML or binary resource.
  * 
  * The mime type table is read from a file "mime-types.xml",
- * which should reside in the directory identified by the system
- * property "exist.home". If no such file is found, the class tries
+ * which should reside in the directory identified in the exist home
+ * directory. If no such file is found, the class tries
  * to load the default map from the org.exist.util package via the 
  * class loader.
  * 
@@ -121,24 +121,21 @@ public class MimeTable {
     
     private void load() {
         boolean loaded = false;
-        String home = System.getProperty("exist.home");
-        if (home != null) {
-            File f = new File(home + File.separator + MIME_TYPES_XML);
-            if (f.canRead()) {
-                try {
-                    System.out.println("Loading mime table from file " + f.getAbsolutePath());
-                    loadMimeTypes(new FileInputStream(f));
-                    loaded = true;
-                    this.src=f.toURI().toString();
-                } catch (FileNotFoundException e) {
-                    System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
-                } catch (ParserConfigurationException e) {
-                    System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
-                } catch (SAXException e) {
-                    System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
-                } catch (IOException e) {
-                    System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
-                }
+        File f = Configuration.lookup(MIME_TYPES_XML);
+        if (f.canRead()) {
+            try {
+                System.out.println("Loading mime table from file " + f.getAbsolutePath());
+                loadMimeTypes(new FileInputStream(f));
+                loaded = true;
+                this.src=f.toURI().toString();
+            } catch (FileNotFoundException e) {
+                System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
+            } catch (ParserConfigurationException e) {
+                System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
+            } catch (SAXException e) {
+                System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
+            } catch (IOException e) {
+                System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
             }
         }
         if (!loaded) {

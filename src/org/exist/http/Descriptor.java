@@ -32,6 +32,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.exist.memtree.SAXAdapter;
+import org.exist.util.Configuration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -91,37 +92,13 @@ public class Descriptor implements ErrorHandler
             if(is == null)
             {
                 //try and read the Descriptor file from the specified home folder 
-            	File f = new File(file);
-                if((!f.isAbsolute()) && dbHome != null)
-                {
-                    file = dbHome + File.separatorChar + file;
-                    f = new File(file);
-                }
-                
-                //if cant read Descriptor from specified home folder
+            	   File f = Configuration.lookup(file);
                 if(!f.canRead())
                 {
-                    LOG.info("Unable to read descriptor. Trying to guess location ...");
-                    
-                    //Read from the Descriptor file from the guessed home folder
-                    if(dbHome == null)
-                    {
-                        // try to determine exist home directory
-                        dbHome = System.getProperty("exist.home");
-                        
-                        if(dbHome == null)
-                            dbHome = System.getProperty("user.dir");
-                    }
-                    if(dbHome != null)
-                        file = dbHome + File.separatorChar + file;
-                    f = new File(file);
-                    if(!f.canRead())
-                    {
-                        LOG.warn("giving up unable to read descriptor file");
-                        return;
-                    }
-                    
+                    LOG.warn("giving up unable to read descriptor file");
+                    return;
                 }
+                    
                 this.file = file;
                 is = new FileInputStream(file);
             }

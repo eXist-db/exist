@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -115,7 +116,7 @@ public class MultiDBTest extends TestCase {
     }
     
     protected void setUp() {
-        String homeDir = System.getProperty("exist.home");
+        String homeDir = Configuration.getPath();
 		if (homeDir == null)
 			homeDir = ".";
         File testDir = new File(homeDir + File.separatorChar + "test");

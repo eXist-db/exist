@@ -252,12 +252,8 @@ public class CopyCollectionTest extends TestCase {
     }
     
     protected BrokerPool startDB() {
-        String home, file = "conf.xml";
-        home = System.getProperty("exist.home");
-        if (home == null)
-            home = System.getProperty("user.dir");
         try {
-            Configuration config = new Configuration(file, home);
+            Configuration config = new Configuration();
             BrokerPool.configure(1, 5, config);
             
             // initialize driver

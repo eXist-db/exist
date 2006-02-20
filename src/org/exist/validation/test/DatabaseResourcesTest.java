@@ -32,6 +32,7 @@ import junit.framework.TestSuite;
 
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
 import org.exist.validation.internal.DatabaseResources;
@@ -66,7 +67,11 @@ public class DatabaseResourcesTest extends TestCase {
         System.out.println(">>> setUp");
         
         if(eXistHome==null){
-            eXistHome = System.getProperty("exist.home");
+        		try {
+        			eXistHome = Configuration.getExistHome().getAbsolutePath();
+        		} catch (DatabaseConfigurationException e) {
+        			throw new IllegalStateException(e.toString());
+        		}
         }
         
         if(pool==null){
@@ -102,12 +107,8 @@ public class DatabaseResourcesTest extends TestCase {
     }
     
     protected BrokerPool startDB() {
-        String home, file = "conf.xml";
-        home = System.getProperty("exist.home");
-        if (home == null)
-            home = System.getProperty("user.dir");
         try {
-            Configuration config = new Configuration(file, home);
+            Configuration config = new Configuration();
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
         } catch (Exception e) {
