@@ -21,9 +21,14 @@
  */
 package org.exist.xquery.modules.xmldiff;
 
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.custommonkey.xmlunit.Diff;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
@@ -34,9 +39,11 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.xml.sax.SAXException;
 
 /**
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
@@ -78,20 +85,39 @@ public class Compare extends Function {
 		}
 
 		Expression arg1 = getArgument(0);
-		Sequence s1 = arg1.eval(contextSequence, contextItem).toNodeSet();
-		NodeProxy node1 = (NodeProxy) s1.itemAt(0);
+		Sequence s1 = arg1.eval(contextSequence, contextItem);
+		
 		Expression arg2 = getArgument(1);
 		context.pushDocumentContext();
-		Sequence s2 = arg2.eval(contextSequence, contextItem).toNodeSet();
-		NodeProxy node2 = (NodeProxy) s2.itemAt(0);
+		Sequence s2 = arg2.eval(contextSequence, contextItem);
 		context.popDocumentContext();
-		Diff d = new Diff(node1.getDocument(), node2.getDocument());
-
-		Sequence result = new BooleanValue(d.identical());
+		
+		if (s1.getLength() == 0)
+			return BooleanValue.valueOf(s2.getLength() == 0);
+		else if (s2.getLength() == 0)
+			return BooleanValue.valueOf(s1.getLength() == 0);
+		
+		NodeValue node1 = (NodeValue) s1.itemAt(0);
+		NodeValue node2 = (NodeValue) s2.itemAt(0);
+		
+		Sequence result = null;
+		try {
+			Diff d = new Diff(serialize(node1), serialize(node2));
+			result = new BooleanValue(d.identical());
+		} catch (Exception e) {
+			throw new XPathException(getASTNode(), "An exception occurred while serializing node " +
+					"for comparison: " + e.getMessage(), e);
+		}
 
 		if (context.getProfiler().isEnabled())
 			context.getProfiler().end(this, "", result);
 
 		return result;
+	}
+	
+	private String serialize(NodeValue node) throws SAXException {
+		Serializer serializer = context.getBroker().getSerializer();
+		serializer.reset();
+		return serializer.serialize(node);
 	}
 }
