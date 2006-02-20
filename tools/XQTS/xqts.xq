@@ -37,7 +37,7 @@ declare function xqts:initialize() as empty() {
 };
 
 declare function xqts:get-query($case as element(catalog:test-case)) {
-   let $query-name := $case/catalog:query/@name
+   let $query-name := $case//catalog:query/@name
    let $path := concat( $xqts:XQTS_HOME, "Queries/XQuery/", $case/@FilePath, $query-name, ".xq" )
    let $xq-string := util:file-read($path)
    return $xq-string
@@ -72,8 +72,16 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
             let $test := xdiff:compare($expected, $result)
             return
                 xqts:print-result($case/@name, $test, $query, $result, $expected)
+        else if ($output/@compare eq "Fragment") then
+            let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath, $output/text())
+            let $xmlFrag := concat("<f>", util:file-read($filePath), "</f>")
+            let $log := util:log("DEBUG", ("Frag stored: ", $xmlFrag))
+            let $expected := doc(xdb:store("/db", "temp.xml", $xmlFrag, "text/xml")) 
+            let $test := xdiff:compare($expected, <f>{$result}</f>)
+            return
+                xqts:print-result($case/@name, $test, $query, $result, $expected)
         else
-            <error>Unknown result type</error>
+            <error test="{$case/@name}">Unknown comparison method: {$output/@compare}.</error>
 };
 
 declare function xqts:run-test-case( $case as element(catalog:test-case)) as item()* {
@@ -92,7 +100,7 @@ declare function xqts:run-test-case( $case as element(catalog:test-case)) as ite
        )
    let $context :=
        <static-context>
-           <variable name="input-context">{$input-value}</variable>
+           <variable name="{$input/@variable}">{$input-value}</variable>
        </static-context>
    let $result := 
        util:catch("org.exist.xquery.XPathException",
