@@ -44,12 +44,13 @@ declare function xqts:get-query($case as element(catalog:test-case)) {
 };
 
 declare function xqts:print-result($test-name as xs:string, $passed as xs:boolean, $query as xs:string, 
-    $result as item()*, $expected as item()*) as element() {
+    $result as item()*, $expected as item()*, $case as element(catalog:test-case)) as element() {
     <test-case name="{$test-name}" result="{if ($passed) then 'pass' else 'fail'}">
     {
         if (not($passed)) then (
             <result>{$result}</result>,
             <expected>{$expected}</expected>,
+            (: element {$case/catalog:input-file/@variable} { xqts:getInputValue($case) }, :)
             <query>{$query}</query>
         ) else ()
     }
@@ -64,14 +65,14 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                 "/", $output/text()))
             let $test := $text eq string($result[1])
             return
-                xqts:print-result($case/@name, $test, $query, $result, $text)
+                xqts:print-result($case/@name, $test, $query, $result, $text, $case)
         else if ($output/@compare eq "XML") then
             let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath,
                 $output/text())
             let $expected := doc(xdb:store("/db", "temp.xml", xs:anyURI($filePath), "text/xml"))
             let $test := xdiff:compare($expected, $result)
             return
-                xqts:print-result($case/@name, $test, $query, $result, $expected)
+                xqts:print-result($case/@name, $test, $query, $result, $expected, $case)
         else if ($output/@compare eq "Fragment") then
             let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath, $output/text())
             let $xmlFrag := concat("<f>", util:file-read($filePath), "</f>")
@@ -79,28 +80,17 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
             let $expected := doc(xdb:store("/db", "temp.xml", $xmlFrag, "text/xml")) 
             let $test := xdiff:compare($expected, <f>{$result}</f>)
             return
-                xqts:print-result($case/@name, $test, $query, $result, $expected)
+                xqts:print-result($case/@name, $test, $query, $result, $expected, $case)
         else
             <error test="{$case/@name}">Unknown comparison method: {$output/@compare}.</error>
 };
 
 declare function xqts:run-test-case( $case as element(catalog:test-case)) as item()* {
-   let $query := xqts:get-query($case)
-   let $input := $case/catalog:input-file
-   let $input-value :=
-       if ($input eq "emptydoc") then
-           ()
-       else (
-           let $source := root($case)//catalog:source[@ID = $input/text()]
-           return
-               if (empty($source)) then
-                   concat("no input found: ", $input/text()) 
-               else
-                   doc(concat("/db/XQTS/", $source/@FileName))
-       )
+   let $query := xqts:get-query($case)   
+   let $input-value := xqts:getInputValue($case)
    let $context :=
        <static-context>
-           <variable name="{$input/@variable}">{$input-value}</variable>
+           <variable name="{$case/catalog:input-file/@variable}">{$input-value}</variable>
        </static-context>
    let $result := 
        util:catch("org.exist.xquery.XPathException",
@@ -172,6 +162,21 @@ declare function xqts:test-all() as empty() {
     for $test in /catalog:test-suite/catalog:test-group
     return
         xqts:test-group($test/@name)
+};
+
+declare function xqts:getInputValue($case as element(catalog:test-case)) as item()* {
+	let $input := $case/catalog:input-file
+  	return
+       if ($input eq "emptydoc") then
+           ()
+       else (
+           let $source := root($case)//catalog:source[@ID = $input/text()]
+           return
+               if (empty($source)) then
+                   concat("no input found: ", $input/text()) 
+               else
+                   doc(concat("/db/XQTS/", $source/@FileName))
+       )
 };
 
 xqts:initialize(),
