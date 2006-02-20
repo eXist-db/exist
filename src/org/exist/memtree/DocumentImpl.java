@@ -729,11 +729,11 @@ public class DocumentImpl extends NodeImpl implements Document {
      * reference nodes.
      */
     public void expand() throws DOMException {
-        DocumentImpl newDoc = expandRefs();
+        DocumentImpl newDoc = expandRefs(null);
         copyDocContents(newDoc);
     }
-
-    private DocumentImpl expandRefs() throws DOMException {
+    
+    public DocumentImpl expandRefs(NodeImpl rootNode) throws DOMException {
         if(nextRef == 0) {
             return this;
         }
@@ -741,7 +741,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
         try {
             builder.startDocument();
-            NodeImpl node = (NodeImpl) getFirstChild();
+            NodeImpl node = rootNode == null ? (NodeImpl) getFirstChild() : rootNode;
             while(node != null) {
                 copyTo(node, receiver, true);
                 node = (NodeImpl) node.getNextSibling();
@@ -904,7 +904,7 @@ public class DocumentImpl extends NodeImpl implements Document {
             oldIds.add(new Integer(top));
             top = getNextSiblingFor(top);
         }
-        DocumentImpl expandedDoc = expandRefs();
+        DocumentImpl expandedDoc = expandRefs(null);
         org.exist.dom.DocumentImpl doc = context.storeTemporaryDoc(expandedDoc);
         org.exist.dom.ElementImpl root = (org.exist.dom.ElementImpl) doc.getDocumentElement();
         NodeList cl = root.getChildNodes();

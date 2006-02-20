@@ -163,8 +163,7 @@ public abstract class Modification extends AbstractExpression {
 						serializer.toReceiver(p);
 						item = builder.getDocument().getNode(last + 1);
 					} else {
-						((org.exist.memtree.NodeImpl)item).expand();
-//                        System.out.println(context.getBroker().getSerializer().serialize((NodeValue)item));
+						((org.exist.memtree.NodeImpl)item).deepCopy();
 					}
 				}
 				out.add(item);
