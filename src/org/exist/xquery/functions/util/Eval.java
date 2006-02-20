@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
+import org.exist.memtree.ReferenceNode;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.XQueryPool;
@@ -207,7 +208,10 @@ public class Eval extends BasicFunction {
 				"variable".equals(child.getLocalName())) {
 				Element elem = (Element) child;
 				String qname = elem.getAttribute("name");
-				innerContext.declareVariable(qname, elem.getFirstChild());
+				NodeValue value = (NodeValue) elem.getFirstChild();
+				if (value instanceof ReferenceNode)
+					value = ((ReferenceNode) value).getReference();
+				innerContext.declareVariable(qname, value);
 			}
 		}
 	}

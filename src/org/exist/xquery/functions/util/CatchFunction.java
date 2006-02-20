@@ -77,7 +77,7 @@ public class CatchFunction extends Function {
 //                context.popDocumentContext();
             }
         } catch(Exception e) {
-        	LOG.debug("Caught exception in util:catch: " + e.getMessage(), e);
+        	LOG.debug("Caught exception in util:catch: " + e.getMessage());
 //            context.popDocumentContext();
             context.getWatchDog().reset();
             for(SequenceIterator i = exceptionClasses.iterate(); i.hasNext(); ) {
@@ -93,7 +93,7 @@ public class CatchFunction extends Function {
                         return getArgument(2).eval(contextSequence, contextItem);
                     }
                 } catch (Exception e2) {
-                    LOG.warn("Exception in handler: " + e2.getMessage(), e2);
+                    LOG.warn("Exception in handler: " + e2.getMessage());
                 }
             }
             // this type of exception is not caught: throw again
