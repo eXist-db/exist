@@ -193,7 +193,6 @@ public class NodeTypeTest extends TestCase {
 			driver = Class.forName(driverName);
 			Database database = (Database)driver.newInstance();
 			database.setProperty("create-database", "true");
-//			database.setProperty("exist.home", existHome);
 			DatabaseManager.registerDatabase(database);
 			return database;
 		} catch (Exception e) {

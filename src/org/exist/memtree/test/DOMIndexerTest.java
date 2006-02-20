@@ -167,12 +167,8 @@ public class DOMIndexerTest extends TestCase {
      * @see junit.framework.TestCase#setUp()
      */
     protected void setUp() {
-        String home, file = "conf.xml";
-        home = System.getProperty("exist.home");
-        if (home == null)
-            home = System.getProperty("user.dir");
         try {
-            Configuration config = new Configuration(file, home);
+            Configuration config = new Configuration();
             BrokerPool.configure(1, 5, config);
         } catch (Exception e) {
             e.printStackTrace();

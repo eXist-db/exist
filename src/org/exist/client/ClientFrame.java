@@ -93,6 +93,7 @@ import org.exist.client.xacml.XACMLEditor;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.CollectionManagementServiceImpl;
@@ -1000,8 +1001,7 @@ public class ClientFrame extends JFrame
     
     private void uploadAction(ActionEvent ev) {
         // TODO store last file choose in properties
-        String dir = properties.getProperty("working-dir", System
-                .getProperty("exist.home"));
+        String dir = properties.getProperty("working-dir", Configuration.getPath());
         JFileChooser chooser = new JFileChooser(dir);
         chooser.setMultiSelectionEnabled(true);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);

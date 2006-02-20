@@ -17,6 +17,7 @@ import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -98,15 +99,7 @@ public class Main {
 		// read properties
 		Properties properties = new Properties();
 		try {
-			String home = System.getProperty("exist.home");
-			File propFile;
-			if (home == null)
-				propFile = new File("backup.properties");
-			else
-				propFile =
-					new File(
-						home + System.getProperty("file.separator", "/") + "backup.properties");
-
+			File propFile = Configuration.lookup("backup.properties");
 			InputStream pin;
 			if (propFile.canRead())
 				pin = new FileInputStream(propFile);

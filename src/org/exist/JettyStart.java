@@ -61,16 +61,13 @@ public class JettyStart {
 		boolean registerShutdownHook = shutdownHookOption.equals("true");
 		
 		// configure database
-		String home = System.getProperty("exist.home");
-		if (home == null)
-			home = System.getProperty("user.dir");
-		System.out.println("Configuring eXist from " + home + File.separatorChar + "conf.xml");
+		System.out.println("Configuring eXist from " + Configuration.getPath());
 		try {
 			// we register our own shutdown hook
 			BrokerPool.setRegisterShutdownHook(false);
 			
 			// configure the database instance
-			Configuration config = new Configuration("conf.xml", home);
+			Configuration config = new Configuration();
 			BrokerPool.configure(1, 5, config);
 			
 			// register the XMLDB driver

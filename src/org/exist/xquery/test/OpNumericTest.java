@@ -25,11 +25,7 @@ public class OpNumericTest extends TestCase {
 	protected void setUp() {
 		try {
 			super.setUp();
-	        String home, file = "conf.xml";
-	        home = System.getProperty("exist.home");
-	        if (home == null)
-	            home = System.getProperty("user.dir");
-	        Configuration config = new Configuration(file, home);
+	        Configuration config = new Configuration();
 	        BrokerPool.configure(1, 5, config);
 	
 	        broker = BrokerPool.getInstance().get(SecurityManager.SYSTEM_USER);
