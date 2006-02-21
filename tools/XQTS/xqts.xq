@@ -1,7 +1,7 @@
 declare namespace xqts="http://exist-db.org/xquery/xqts";
 declare namespace catalog="http://www.w3.org/2005/02/query-test-XQTSCatalog";
 
-declare namespace props="java:java.util.Properties";
+declare namespace props="java:java.io.File";
 
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
@@ -17,8 +17,8 @@ import module namespace xdiff="http://exist-db.org/xquery/xmldiff";
      
      * Make sure the XmlDiff module is registered in conf.xml
      
-     * Change the $xqts:XQTS_HOME variable below to point to the directory into
-     which you unzipped the XQTS sources. 
+     * Edit config.xml and change basedir to point to the directory into
+     which you unzipped the XQTS sources. Note: it needs to be an URI. 
      
      * Create a collection /db/XQTS in the database.
      
@@ -30,7 +30,22 @@ import module namespace xdiff="http://exist-db.org/xquery/xmldiff";
      
      * Run this script with the client.
      ------------------------------------------------------------------------------------------- :)
-declare variable $xqts:XQTS_HOME { "file:///d:/Data/XQTS/" };
+declare variable $xqts:CONFIG { xqts:initialize() };
+declare variable $xqts:XQTS_HOME { $xqts:CONFIG/basedir/text() };
+
+declare function xqts:initialize() as element() {
+    let $collection := xdb:create-collection("/db", "XQTS")
+    let $config := doc("/db/XQTS")/config
+    return
+        if ($config) then
+            $config
+        else
+            let $home := util:system-property("exist.home")
+            let $path := concat($home, "/tools/XQTS")
+            let $stored := xdb:store-files-from-pattern("/db/XQTS", $path, "*.xml", "text/xml")
+            return
+                doc("/db/XQTS/config.xml")/config
+};
 
 declare function xqts:create-collections($group as element(catalog:test-group)) as node() {
     let $rootColl := xdb:create-collection("/db/XQTS", "test-results")
