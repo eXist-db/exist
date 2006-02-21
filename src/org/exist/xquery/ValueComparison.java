@@ -70,7 +70,7 @@ public class ValueComparison extends GeneralComparison {
             Collator collator = getCollator(contextSequence);
 			return BooleanValue.valueOf(compareValues(collator, lv, rv));
 		} 
-        throw new XPathException("Type error: sequence with more than one item is not allowed here");
+        throw new XPathException(getASTNode(), "Type error: sequence with more than one item is not allowed here");
 	}
 
 	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {
@@ -82,7 +82,7 @@ public class ValueComparison extends GeneralComparison {
                 AtomicValue lv = current.atomize();
                 Sequence rs = getRight().eval(context.getNode().toSequence());
 				if (rs.getLength() != 1)
-					throw new XPathException("Type error: sequence with less or more than one item is not allowed here");
+					throw new XPathException(getASTNode(), "Type error: sequence with less or more than one item is not allowed here");
                 Collator collator = getCollator(contextSequence);
                 if (compareValues(collator, lv, rs.itemAt(0).atomize()))
 					result.add(current);
