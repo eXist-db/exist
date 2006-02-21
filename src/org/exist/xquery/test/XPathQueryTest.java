@@ -673,10 +673,10 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals( "96.94", result.getResource(0).getContent() );
 
 			result = queryResource(service, "numbers.xml", "round(sum(/test/item/price))", 1);
-			assertEquals( "97.0", result.getResource(0).getContent() );
+			assertEquals( "97", result.getResource(0).getContent() );
 
 			result = queryResource(service, "numbers.xml", "floor(sum(/test/item/stock))", 1);
-			assertEquals( "86.0", result.getResource(0).getContent());
+			assertEquals( "86", result.getResource(0).getContent());
 
 			queryResource(service, "numbers.xml", "/test/item[round(price + 3) > 60]", 1);
 

@@ -81,7 +81,7 @@ public class XQueryFunctionsTest extends TestCase {
 		String[] testvalues 	= 
 			{ "0.5", "1.5", "2.5", "3.567812E+3", "4.7564E-3", "35612.25" };
 		String[] resultvalues	= 
-			{ "0.0", "2.0", "2.0", "3567.81",     "0.0",       "35600.0"    };
+			{ "0", "2", "2", "3567.81",     "0",       "35600"    };
 		int[]	 precision      = 
 			{ 0,     0,     0,     2,             2,           -2         };
 		
@@ -196,7 +196,7 @@ public class XQueryFunctionsTest extends TestCase {
 			result 	= service.query( "declare variable $c { sum((<a>1</a>, <b>2</b>)) }; $c" );
 			r 		= (String) result.getResource(0).getContent();
 			//Any untyped atomic values in the sequence are converted to xs:double values ([MK Xpath 2.0], p. 432)
-			assertEquals( "3.0", r );	
+			assertEquals( "3", r );	
 			
 			result 	= service.query( "declare variable $c { sum((), 3) }; $c" );
 			r 		= (String) result.getResource(0).getContent();
@@ -216,18 +216,18 @@ public class XQueryFunctionsTest extends TestCase {
 		try {
 			result 	= service.query( "avg((2, 2))" );
 			r 		= (String) result.getResource(0).getContent();
-			assertEquals( "2.0", r );	
+			assertEquals( "2", r );	
 			
 			result 	= service.query( "avg((<a>2</a>, <b>2</b>))" );
 			r 		= (String) result.getResource(0).getContent();
 			//Any untyped atomic values in the resulting sequence 
 			//(typically, values extracted from nodes in a schemaless document)
 			//are converted to xs:double values ([MK Xpath 2.0], p. 301)
-			assertEquals( "2.0", r );
+			assertEquals( "2", r );
 			
 			result 	= service.query( "avg((3, 4, 5))" );
 			r 		= (String) result.getResource(0).getContent();
-			assertEquals( "4.0", r );	
+			assertEquals( "4", r );	
 			
 			result 	= service.query( "avg((xdt:yearMonthDuration('P20Y'), xdt:yearMonthDuration('P10M')))");
 			r 		= (String) result.getResource(0).getContent();
