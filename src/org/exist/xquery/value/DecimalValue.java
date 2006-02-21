@@ -219,7 +219,8 @@ public class DecimalValue extends NumericValue {
 			case Type.DECIMAL:
 				// arbitrarily set precision to 20 spots after the decimal point, since XQuery says it's "implementation-dependent"
 				// TODO: find a better algorithm for deciding the result's precision?
-				return new DecimalValue(value.divide(((DecimalValue) other).value, 20, BigDecimal.ROUND_HALF_UP));
+				//return new DecimalValue(value.divide(((DecimalValue) other).value, 20, BigDecimal.ROUND_HALF_UP));
+				return new DecimalValue(value.divide(((DecimalValue) other).value, BigDecimal.ROUND_HALF_UP));
 			case Type.INTEGER:
 				return div((ComputableValue) other.convertTo(getType()));
 			default:
