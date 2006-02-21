@@ -29,7 +29,7 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 	}
 	public void testStringFormat1() throws XPathException {
 		AbstractDateTimeValue v = new DateTimeValue("2005-10-11T10:00:00Z");
-		assertEquals("2005-10-11T10:00:00+00:00", v.getStringValue());
+		assertEquals("2005-10-11T10:00:00Z", v.getStringValue());
 	}
 	public void testStringFormat2() throws XPathException {
 		AbstractDateTimeValue v = new DateTimeValue("2005-10-11T10:00:00-01:00");
@@ -43,7 +43,7 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 	}
 	public void testStringFormat4() throws XPathException {
 		AbstractDateTimeValue v = new DateTimeValue("2005-10-11T10:00:00-00:00");
-		assertEquals("2005-10-11T10:00:00+00:00", v.getStringValue());
+		assertEquals("2005-10-11T10:00:00Z", v.getStringValue());
 	}
 	public void testStringFormat5() throws XPathException {
 		AbstractDateTimeValue v = new DateTimeValue("2005-10-11T10:00:00.5");
