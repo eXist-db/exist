@@ -49,10 +49,10 @@ declare function xqts:print-result($test-name as xs:string, $passed as xs:boolea
     {
         if (not($passed)) then (
             <result>{$result}</result>,
-            if ($expected instance of element() and count($expected/*) < 10) then
-                <expected>{$expected}</expected>
+            if ($expected instance of element() and count($expected/*) > 10) then
+            	<expected truncated="">{$expected/*[position() < 10]}</expected>
             else
-                (),
+                <expected>{$expected}</expected>,
             (: element {$case/catalog:input-file/@variable} { xqts:getInputValue($case) }, :)
             <query>{$query}</query>
         ) else ()
