@@ -1,6 +1,8 @@
 declare namespace xqts="http://exist-db.org/xquery/xqts";
 declare namespace catalog="http://www.w3.org/2005/02/query-test-XQTSCatalog";
 
+declare namespace props="java:java.util.Properties";
+
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace xdiff="http://exist-db.org/xquery/xmldiff";
@@ -163,13 +165,17 @@ declare function xqts:run-test-group($group as element(catalog:test-group)) as e
     (: Create the collection hierarchy for this group and get the results.xml doc to 
         append to. :)
     let $resultsDoc := xqts:create-collections($group)
+    let $tests := $group/catalog:test-case
     return (
         (: Execute the test cases :)
-        for $test in $group/catalog:test-case
+        for $test in $tests
         let $log := util:log("DEBUG", ("Running test case: ", string($test/@name)))
         return
             xqts:run-single-test-case($test, $resultsDoc/test-result),
-        xqts:finish($resultsDoc/test-result),
+        if ($tests) then 
+            xqts:finish($resultsDoc/test-result)
+        else
+            xdb:remove(util:collection-name($resultsDoc), util:document-name($resultsDoc)),
         (: Execute tests in child groups :)
         for $childGroup in $group/catalog:test-group
         let $log := util:log("DEBUG", ("Entering group: ", string($childGroup/@name)))
@@ -216,5 +222,5 @@ declare function xqts:get-input-value($input as element(catalog:input-file)) as 
 };
 
 (: xqts:test-single("Axes066-2") :)
-xqts:test-group("Axes")
-(: xqts:test-all(), :)
+xqts:test-group("PathExpr"),
+collection("/db/XQTS")/test-result
