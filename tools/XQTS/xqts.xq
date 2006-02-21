@@ -30,10 +30,26 @@ import module namespace xdiff="http://exist-db.org/xquery/xmldiff";
      ------------------------------------------------------------------------------------------- :)
 declare variable $xqts:XQTS_HOME { "file:///d:/Data/XQTS/" };
 
-declare function xqts:initialize() as empty() {
-    let $output-coll := xdb:create-collection("/db/XQTS", "test-results")
-    let $dummy := xdb:store("/db/XQTS/test-results", "results.xml", <test-result failed="0" passed="0"/>)
-    return ()
+declare function xqts:create-collections($group as element(catalog:test-group)) as node() {
+    let $rootColl := xdb:create-collection("/db/XQTS", "test-results")
+    let $ancestors := reverse(($group/ancestor::catalog:test-group, $group))
+    let $collection := xqts:create-collections($rootColl, $ancestors, "/db/XQTS/test-results")
+    let $results := xdb:store($collection, "results.xml", <test-result failed="0" passed="0"/>)
+    return
+        doc($results)
+};
+
+declare function xqts:create-collections($parent as object,
+    $pathElements as element()+, $currentPath as xs:string) 
+as object {
+    let $next := $pathElements[last()]
+    let $remainder := subsequence($pathElements, 1, count($pathElements) - 1)
+    let $newColl := xdb:create-collection($parent, $next/@name)
+    return
+        if ($remainder) then
+            xqts:create-collections($newColl, $remainder, concat($currentPath, "/", $next/@name))
+        else
+            $newColl
 };
 
 declare function xqts:get-query($case as element(catalog:test-case)) {
@@ -127,8 +143,7 @@ declare function xqts:run-test-case( $case as element(catalog:test-case)) as ite
    return $result
 };
 
-declare function xqts:finish() as empty() {
-    let $result := doc("/db/XQTS/test-results/results.xml")/test-result
+declare function xqts:finish($result as element()) as empty() {
     let $passed := count($result//test-case[@result = 'pass'])
     let $failed := count($result//test-case[@result = 'fail'])
     return (
@@ -138,42 +153,47 @@ declare function xqts:finish() as empty() {
 };
 
 declare function xqts:run-single-test-case($case as element(catalog:test-case),
-    $group as element()?) as empty() {
+    $resultRoot as element()?) as empty() {
     let $result := xqts:run-test-case($case)
     return
-        if ($group) then
-            update insert $result into $group
-        else
-            update insert $result into doc("/db/XQTS/test-results/results.xml")/test-result
+        update insert $result into $resultRoot
 };
 
-declare function xqts:run-test-group($group as element(catalog:test-group),
-    $parent as element()?) as empty() {
-    update insert <test-group name="{$group/@name}">{$group/catalog:GroupInfo}</test-group>
-        into $parent,
-    let $newGroup := $parent/test-group[last()]
+declare function xqts:run-test-group($group as element(catalog:test-group)) as empty() {
+    (: Create the collection hierarchy for this group and get the results.xml doc to 
+        append to. :)
+    let $resultsDoc := xqts:create-collections($group)
     return (
+        (: Execute the test cases :)
         for $test in $group/catalog:test-case
         let $log := util:log("DEBUG", ("Running test case: ", string($test/@name)))
         return
-            xqts:run-single-test-case($test, $newGroup),
+            xqts:run-single-test-case($test, $resultsDoc/test-result),
+        xqts:finish($resultsDoc/test-result),
+        (: Execute tests in child groups :)
         for $childGroup in $group/catalog:test-group
         let $log := util:log("DEBUG", ("Entering group: ", string($childGroup/@name)))
         return
-            xqts:run-test-group($childGroup, $newGroup)
+            xqts:run-test-group($childGroup)
     )
 };
 
-declare function xqts:test-single($name as xs:string) as empty() {
+declare function xqts:test-single($name as xs:string) as element() {
     let $test := //catalog:test-case[@name = $name]
     return
-        xqts:run-single-test-case($test, collection("/db/XQTS/test-results")/test-result)
+        if ($test) then
+            let $resultsDoc := xqts:create-collections($test/parent::catalog:test-group)
+            let $dummy := xqts:run-single-test-case($test, $resultsDoc/test-result)
+            return
+                $resultsDoc/test-result/test-case
+        else
+            util:log("WARN", ("Test case not found: ", $name))
 };
 
 declare function xqts:test-group($groupName as xs:string) as empty() {
     let $group := //catalog:test-group[@name = $groupName]
     return
-        xqts:run-test-group($group, collection("/db/XQTS/test-results")/test-result)
+        xqts:run-test-group($group)
 };
 
 declare function xqts:test-all() as empty() {
@@ -195,9 +215,6 @@ declare function xqts:get-input-value($input as element(catalog:input-file)) as 
    )
 };
 
-xqts:initialize(),
-(: xqts:test-single("Axes001"), :)
-xqts:test-group("MinimalConformance"),
+(: xqts:test-single("Axes066-2") :)
+xqts:test-group("Axes")
 (: xqts:test-all(), :)
-xqts:finish(),
-doc("/db/XQTS/test-results/results.xml")
