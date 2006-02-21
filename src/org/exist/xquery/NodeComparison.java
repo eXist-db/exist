@@ -45,12 +45,12 @@ public class NodeComparison extends BinaryOp {
 	public NodeComparison(XQueryContext context, Expression left, Expression right, int relation) {
 		super(context);
 		this.relation = relation;
-		add(new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, left, 
+		add(new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, left, 
                 new Error(Error.NODE_COMP_TYPE_MISMATCH)));
-		add(new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, right,
-                new Error(Error.NODE_COMP_TYPE_MISMATCH)));
+		//add(new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, right,
+        //        new Error(Error.NODE_COMP_TYPE_MISMATCH)));
 		//add(left);
-		//add(right);
+		add(right);
 	}
 
 	/* (non-Javadoc)
@@ -64,7 +64,7 @@ public class NodeComparison extends BinaryOp {
 	 * @see org.exist.xquery.AbstractExpression#getCardinality()
 	 */
 	public int getCardinality() {
-		return Cardinality.ZERO_OR_ONE;
+		return Cardinality.ZERO_OR_ONE;		
 	}
 	
 	/* (non-Javadoc)
@@ -90,37 +90,41 @@ public class NodeComparison extends BinaryOp {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
         
+		Sequence result;
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
         if(ls.getLength() == 0)
-            return Sequence.EMPTY_SEQUENCE;       
-        Sequence rs = getRight().eval(contextSequence, contextItem);		
-		if(rs.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-		
-		NodeValue sv = (NodeValue)ls.itemAt(0);
-		NodeValue rv = (NodeValue)rs.itemAt(0);
-        
-		if(sv.getImplementationType() != rv.getImplementationType()) {
-			// different implementations
-			return BooleanValue.FALSE;
-		}
-		BooleanValue result;
-		switch(relation) {
-			case Constants.IS:
-				result = sv.equals(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				break;
-			case Constants.ISNOT:
-				result = sv.equals(rv) ? BooleanValue.FALSE : BooleanValue.TRUE;
-				break;
-			case Constants.BEFORE:
-				result = sv.before(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				break;
-			case Constants.AFTER:
-				result = sv.after(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-				break;
-			default:
-				throw new XPathException("Illegal argument: unknown relation");
-		}
+            result = BooleanValue.EMPTY_SEQUENCE;
+        else {
+	        Sequence rs = getRight().eval(contextSequence, contextItem);		
+			if(rs.getLength() == 0) {
+				return BooleanValue.EMPTY_SEQUENCE;
+	        } else {		
+				NodeValue sv = (NodeValue)ls.itemAt(0);
+				NodeValue rv = (NodeValue)rs.itemAt(0);
+		        
+				if(sv.getImplementationType() != rv.getImplementationType()) {
+					// different implementations
+					return BooleanValue.FALSE;
+				}
+				
+				switch(relation) {
+					case Constants.IS:
+						result = sv.equals(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+						break;
+					case Constants.ISNOT:
+						result = sv.equals(rv) ? BooleanValue.FALSE : BooleanValue.TRUE;
+						break;
+					case Constants.BEFORE:
+						result = sv.before(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+						break;
+					case Constants.AFTER:
+						result = sv.after(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+						break;
+					default:
+						throw new XPathException("Illegal argument: unknown relation");
+				}
+	        }
+        }
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);
