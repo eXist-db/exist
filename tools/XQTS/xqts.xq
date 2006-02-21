@@ -49,7 +49,10 @@ declare function xqts:print-result($test-name as xs:string, $passed as xs:boolea
     {
         if (not($passed)) then (
             <result>{$result}</result>,
-            <expected>{$expected}</expected>,
+            if ($expected instance of element() and count($expected/*) < 10) then
+                <expected>{$expected}</expected>
+            else
+                (),
             (: element {$case/catalog:input-file/@variable} { xqts:getInputValue($case) }, :)
             <query>{$query}</query>
         ) else ()
@@ -67,12 +70,14 @@ declare function xqts:normalize-text($result as item()*) as xs:string {
 declare function xqts:check-output($query as xs:string, $result as item()*, $case as element(catalog:test-case)) {
     let $output := $case/catalog:output-file[last()]
     return
+        (: Comparison method: "Text" :)
         if ($output/@compare eq "Text") then
             let $text := util:file-read(concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath,
                 "/", $output/text()))
             let $test := xqts:normalize-text($text) eq xqts:normalize-text($result)
             return
                 xqts:print-result($case/@name, $test, $query, $result, $text, $case)
+        (: Comparison method: "XML" :)
         else if ($output/@compare eq "XML") then
             let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath,
                 $output/text())
@@ -80,14 +85,17 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
             let $test := xdiff:compare($expected, $result)
             return
                 xqts:print-result($case/@name, $test, $query, $result, $expected, $case)
+        (: Comparison method: "Fragment" :)
         else if ($output/@compare eq "Fragment") then
             let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath, $output/text())
-            let $xmlFrag := concat("<f>", util:file-read($filePath), "</f>")
+            let $expectedFrag := util:file-read($filePath)
+            let $xmlFrag := concat("<f>", $expectedFrag, "</f>")
             let $log := util:log("DEBUG", ("Frag stored: ", $xmlFrag))
             let $expected := doc(xdb:store("/db", "temp.xml", $xmlFrag, "text/xml")) 
             let $test := xdiff:compare($expected, <f>{$result}</f>)
             return
                 xqts:print-result($case/@name, $test, $query, $result, $expected, $case)
+        (: Don't know how to compare :)
         else
             <error test="{$case/@name}">Unknown comparison method: {$output/@compare}.</error>
 };
@@ -189,6 +197,7 @@ declare function xqts:get-input-value($input as element(catalog:input-file)) as 
 
 xqts:initialize(),
 (: xqts:test-single("Axes001"), :)
-xqts:test-group("SeqExpr"),
+xqts:test-group("MinimalConformance"),
+(: xqts:test-all(), :)
 xqts:finish(),
 doc("/db/XQTS/test-results/results.xml")
