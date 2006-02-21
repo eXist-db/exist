@@ -47,7 +47,12 @@ public class FloatValue extends NumericValue implements Indexable {
 
 	public FloatValue(String stringValue) throws XPathException {
 		try {
-			value = Float.parseFloat(stringValue);
+			if (stringValue.equals("INF"))
+				value = Float.POSITIVE_INFINITY;
+			else if (stringValue.equals("-INF"))
+				value = Float.NEGATIVE_INFINITY;
+			else
+				value = Float.parseFloat(stringValue);
 		} catch (NumberFormatException e) {
 			throw new XPathException(
 				"cannot convert string '" + stringValue + "' into a float");
@@ -65,6 +70,10 @@ public class FloatValue extends NumericValue implements Indexable {
 	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
+		if (value == Float.POSITIVE_INFINITY)
+			return "INF"; ;
+		if (value == Float.NEGATIVE_INFINITY)
+			return "-INF";		
 		return Float.toString(value);
 	}
 
@@ -72,6 +81,8 @@ public class FloatValue extends NumericValue implements Indexable {
 	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
+		if (isNaN())
+			return false;
 		return value != 0.0f;
 	}
 	
