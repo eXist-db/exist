@@ -57,13 +57,20 @@ declare function xqts:print-result($test-name as xs:string, $passed as xs:boolea
     </test-case>
 };
 
+declare function xqts:normalize-text($result as item()*) as xs:string {
+    let $str := string-join($result, " ")
+    return
+        (: Remove leading and trailing whitespace :)
+        replace(replace($str, "^\s+", ""), "\s+$", "")
+};
+
 declare function xqts:check-output($query as xs:string, $result as item()*, $case as element(catalog:test-case)) {
     let $output := $case/catalog:output-file[last()]
     return
         if ($output/@compare eq "Text") then
             let $text := util:file-read(concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath,
                 "/", $output/text()))
-            let $test := $text eq string($result[1])
+            let $test := xqts:normalize-text($text) eq xqts:normalize-text($result)
             return
                 xqts:print-result($case/@name, $test, $query, $result, $text, $case)
         else if ($output/@compare eq "XML") then
@@ -86,14 +93,17 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
 };
 
 declare function xqts:run-test-case( $case as element(catalog:test-case)) as item()* {
-   let $query := xqts:get-query($case)   
-   let $input-value := xqts:getInputValue($case)
+   let $query := xqts:get-query($case)
    let $context :=
        <static-context>
-           <variable name="{$case/catalog:input-file/@variable}">{$input-value}</variable>
+       {
+           for $input in $case/catalog:input-file
+           return
+               <variable name="{$input/@variable}">{xqts:get-input-value($input)}</variable>
+       }
        </static-context>
    let $result := 
-       util:catch("org.exist.xquery.XPathException",
+       util:catch("java.lang.Exception",
            let $result :=
                util:eval-with-context($query, $context, false())
            return
@@ -164,23 +174,21 @@ declare function xqts:test-all() as empty() {
         xqts:test-group($test/@name)
 };
 
-declare function xqts:getInputValue($case as element(catalog:test-case)) as item()* {
-	let $input := $case/catalog:input-file
-  	return
-       if ($input eq "emptydoc") then
-           ()
-       else (
-           let $source := root($case)//catalog:source[@ID = $input/text()]
-           return
-               if (empty($source)) then
-                   concat("no input found: ", $input/text()) 
-               else
-                   doc(concat("/db/XQTS/", $source/@FileName))
-       )
+declare function xqts:get-input-value($input as element(catalog:input-file)) as item()* {
+   if ($input eq "emptydoc") then
+       ()
+   else (
+       let $source := root($input)//catalog:source[@ID = $input/text()]
+       return
+           if (empty($source)) then
+               concat("no input found: ", $input/text()) 
+           else
+               doc(concat("/db/XQTS/", $source/@FileName))
+   )
 };
 
 xqts:initialize(),
 (: xqts:test-single("Axes001"), :)
-xqts:test-group("PathExpr"),
+xqts:test-group("SeqExpr"),
 xqts:finish(),
 doc("/db/XQTS/test-results/results.xml")
