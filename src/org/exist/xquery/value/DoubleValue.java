@@ -71,17 +71,15 @@ public class DoubleValue extends NumericValue implements Indexable {
 	//	}
 
 	public String getStringValue() {
-		if (!Double.isInfinite(value)
-			&& (value >= (double) (1L << 53) || -value >= (double) (1L << 53))) {
-			return new java.math.BigDecimal(value).toString();
-		}
-		String s = Double.toString(value);
-		int len = s.length();
-		if (s.charAt(len - 2) == '.' && s.charAt(len - 1) == '0') {
-			if (s.equals("-0.0"))
-				return "0";
-			return s;
-		}
+		if (value == Float.POSITIVE_INFINITY)
+			return "INF"; ;
+		if (value == Float.NEGATIVE_INFINITY)
+			return "-INF";		
+		String s = String.valueOf(value);
+		if (s.endsWith(".0"))
+			return s.substring(0, s.length() - 2);
+		return s;
+		/*
 		int e = s.indexOf('E');
 		if (e == Constants.STRING_NOT_FOUND) {
 			if (s.equals("Infinity")) {
@@ -118,6 +116,7 @@ public class DoubleValue extends NumericValue implements Indexable {
 				e--;
 			return sign + "0." + zeros(-1 - exp) + s.substring(0, 1) + s.substring(2, e);
 		}
+		*/
 	}
 
 	static private String zeros(int n) {

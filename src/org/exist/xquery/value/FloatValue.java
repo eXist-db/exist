@@ -25,6 +25,7 @@ package org.exist.xquery.value;
 
 import java.math.BigDecimal;
 import java.text.Collator;
+import java.text.NumberFormat;
 
 import org.exist.storage.Indexable;
 import org.exist.util.ByteConversion;
@@ -74,7 +75,10 @@ public class FloatValue extends NumericValue implements Indexable {
 			return "INF"; ;
 		if (value == Float.NEGATIVE_INFINITY)
 			return "-INF";		
-		return Float.toString(value);
+		String s = String.valueOf(value);
+		if (s.endsWith(".0"))
+			return s.substring(0, s.length() - 2);
+		return s;	
 	}
 
 	/* (non-Javadoc)
