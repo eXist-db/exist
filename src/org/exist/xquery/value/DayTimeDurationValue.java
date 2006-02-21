@@ -115,10 +115,10 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	}
 
 	public ComputableValue div(ComputableValue other) throws XPathException {
-		if (other.getType() == Type.DAY_TIME_DURATION) {
-			return
-				new DecimalValue(secondsValueSigned())
-				.div(new DecimalValue(((DayTimeDurationValue) other).secondsValueSigned()));
+		if (other.getType() == Type.DAY_TIME_DURATION) {		
+			DecimalValue a = new DecimalValue(secondsValueSigned());
+			DecimalValue b = new DecimalValue(((DayTimeDurationValue)other).secondsValueSigned());
+			return new DecimalValue(a.value.divide(b.value, 20, BigDecimal.ROUND_HALF_UP));
 		}
 		BigDecimal divisor = numberToBigDecimal(other, "Operand to div should be of xdt:dayTimeDuration or numeric type; got: ");
 		BigDecimal secondsValueSigned = secondsValueSigned();
