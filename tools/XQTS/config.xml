@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <!-- An URI that points to the base directory where you unzipped XQTS. -->
+    <basedir>file:///d:/Data/XQTS/</basedir>
+</config>
