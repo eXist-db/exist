@@ -147,6 +147,7 @@ public class StringValue extends AtomicValue implements Indexable {
 					throw new XPathException(
 						"cannot convert string '" + value + "' to boolean");
 			case Type.FLOAT :
+				return new FloatValue(value); 
 			case Type.DOUBLE :
 			case Type.NUMBER :
 				return new DoubleValue(this);
