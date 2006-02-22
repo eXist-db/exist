@@ -75,13 +75,8 @@ public class EXistServlet extends HttpServlet {
 	 */
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		String formEncoding = config.getInitParameter("form-encoding");
-		if(formEncoding == null)
-			formEncoding = DEFAULT_ENCODING;
-		String containerEncoding = config.getInitParameter("container-encoding");
-		if(containerEncoding == null)
-			containerEncoding = DEFAULT_ENCODING;
-		server = new RESTServer(formEncoding, containerEncoding);
+		
+		// Configure BrokerPool
 		try {
 			if (BrokerPool.isConfigured()) {
 				this.log("Database already started. Skipping configuration ...");
@@ -119,6 +114,15 @@ public class EXistServlet extends HttpServlet {
 		} catch (DatabaseConfigurationException e) {
 			throw new ServletException("Unable to configure database instance: " + e.getMessage(), e);
 		}
+
+		// Instantiate REST server
+		String formEncoding = config.getInitParameter("form-encoding");
+		if(formEncoding == null)
+			formEncoding = DEFAULT_ENCODING;
+		String containerEncoding = config.getInitParameter("container-encoding");
+		if(containerEncoding == null)
+			containerEncoding = DEFAULT_ENCODING;
+		server = new RESTServer(formEncoding, containerEncoding);
 	}
 
 	/* (non-Javadoc)
