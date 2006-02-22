@@ -276,6 +276,18 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	public long getGID() {
 		return gid;
 	}
+	
+	/**
+	 * Adjust the proxy's GID in response to a change in the GID of the referenced node.
+	 * This is only necessary if we want proxies to remain valid following an update,
+	 * which is not an issue with eXist's normal update mechanisms but does concern
+	 * some advanced clients.
+	 *
+	 * @param gid the new GID of the node referenced by this proxy
+	 */
+	public void setGID(long gid) {
+		this.gid = gid;
+	}
 
 	public Node getNode() {
 		if (isDocument())
