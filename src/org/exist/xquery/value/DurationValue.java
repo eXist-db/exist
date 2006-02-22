@@ -30,6 +30,7 @@ import java.text.Collator;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 /**
@@ -83,7 +84,7 @@ public class DurationValue extends ComputableValue {
 	}
 	
 	private BigInteger nullIfZero(BigInteger x) {
-		if (BigInteger.ZERO.equals(x)) x = null;
+		if (BigInteger.ZERO.compareTo(x) == Constants.EQUAL) x = null;		
 		return x;
 	}
 	
@@ -93,7 +94,7 @@ public class DurationValue extends ComputableValue {
 	}
 	
 	private BigDecimal nullIfZero(BigDecimal x) {
-		if (ZERO_DECIMAL.equals(x)) x = null;
+		if (BigDecimal.ZERO.compareTo(x) == Constants.EQUAL) x = null;
 		return x;
 	}
 	
@@ -117,10 +118,10 @@ public class DurationValue extends ComputableValue {
 //		r = rd[0].toBigInteger().divideAndRemainder(SIXTY);
 
 		// segment to be replaced:
-		BigDecimal secondsValue = secondsValue();
+		BigDecimal secondsValue = secondsValue();		
 		BigDecimal m = secondsValue.divide(SIXTY_DECIMAL, 0, BigDecimal.ROUND_DOWN);
-		seconds = nullIfZero(secondsValue.subtract(SIXTY_DECIMAL.multiply(m)));
-		r = m.toBigInteger().divideAndRemainder(SIXTY);
+		seconds = nullIfZero(secondsValue.subtract(SIXTY_DECIMAL.multiply(m)));	
+		r = m.toBigInteger().divideAndRemainder(SIXTY);		
 		
 		minutes = nullIfZero(r[1]);
 		r = r[0].divideAndRemainder(TWENTY_FOUR);
