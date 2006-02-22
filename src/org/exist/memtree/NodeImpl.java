@@ -139,8 +139,11 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
     
     public void deepCopy() throws DOMException {
     	DocumentImpl newDoc = document.expandRefs(this);
-    	this.nodeNumber = 1;
-    	this.document = newDoc;
+    	if (newDoc != document) {
+    		// we received a new document
+	    	this.nodeNumber = 1;
+	    	this.document = newDoc;
+    	}
     }
     
 	/* (non-Javadoc)
