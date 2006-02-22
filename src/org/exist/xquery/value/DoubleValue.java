@@ -76,8 +76,7 @@ public class DoubleValue extends NumericValue implements Indexable {
 		if (value == Float.NEGATIVE_INFINITY)
 			return "-INF";		
 		String s = String.valueOf(value);
-		if (s.endsWith(".0"))
-			return s.substring(0, s.length() - 2);
+		s = s.replaceAll("\\.0+$", "");		
 		return s;
 		/*
 		int e = s.indexOf('E');
