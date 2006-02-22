@@ -358,7 +358,7 @@
 
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
             <sysproperty key="exist.home" value="${basedir}" />
-				<classpath refid="classpath.core"/>
+	    <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
@@ -413,6 +413,7 @@
         <echo message="Concurrency tests"/>
         <echo message="-----------------"/>
         <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="no">
+            <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <formatter type="plain"/>
@@ -427,6 +428,7 @@
         <echo message="Recovery tests"/>
         <echo message="--------------"/>
         <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="no">
+            <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
@@ -443,6 +445,7 @@
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
         <java classname="org.exist.StandaloneServer">
+            <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
 			<!--arg value="-d"/-->
