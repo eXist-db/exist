@@ -106,7 +106,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
         (: Expected an error, but got a result :)
         if (exists($case/catalog:expected-error)) then
             <test-case name="{$case/@name}" result="fail">
-            	<result>{$result}</result>,
+            	<result>{string-join($result, " ")}</result>,
                 <expected-error>{$case/catalog:expected-error/text()}</expected-error>                
 				<query>{$query}</query>
             </test-case>
@@ -262,7 +262,7 @@ declare function xqts:overall-result() {
     let $failed := count(//test-case[@result = "fail"])
     return
         <test-result failed="{$failed}" passed="{$passed}"
-            percentage="{$passed div ($passed + $failed)}"/>
+            percentage="{if ($passed + $failed > 0) then $passed div ($passed + $failed) else "N/A"}"/>
 };
 
 (: xqts:test-single("op-subtract-dateTimes-yielding-DTD-1"), :)
