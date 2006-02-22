@@ -866,53 +866,84 @@ public class Configuration implements ErrorHandler {
     		if (configDetected || existHome != null)
     			return existHome;
     		
-    		String home = null;
-    		configDetected = true;
-    		if (path != null) {
-    			if (path.startsWith("~") && path.length() > 1) {
-    				path = System.getProperty("user.home") + path.substring(1);
-    			}
-    			home = path;
-    		} else {
-			home = System.getProperty("exist.home");
-			if (home == null) {
-				LOG.info("Environment variabe 'exist.home' not set.");
-				home = System.getProperty("user.home");
-				LOG.info("Trying home directory '" + home + "' to locate eXist configuration ...");
-			} else if (home.startsWith("~") && home.length() > 1) {
-				home = System.getProperty("user.home") + home.substring(1);
-			}
-    		}
+    		String home = path;
+    		String config = "conf.xml";
 
-		// check if we found an existing directory
-		File homeDir = new File(home);
-		if (!homeDir.exists()) {
-			LOG.warn("Unable to find exist home directory: " + home + " does not exist!");
-			homeDir = new File(System.getProperty("user.dir"));
-			LOG.info("Trying working directory '" + homeDir + "' to locate eXist configuration ...");
-		} else if (!homeDir.isDirectory()) {
-			LOG.warn("Unable to find exist home directory: " + home + " is not a directory!");
-			homeDir = new File(System.getProperty("user.dir"));
-			LOG.info("Trying working directory '" + homeDir + "' to locate eXist configuration ...");
-		}
-		
-		// see if the config file is there...
-		File config = new File(homeDir, "conf.xml");
-		if (!config.exists()) {
-			homeDir = new File(System.getProperty("user.dir"));
-			config = new File(homeDir, "conf.xml");
-			LOG.info("Trying working directory '" + homeDir + "' to locate eXist configuration ...");
-			if (!config.exists()) {
-				LOG.warn("Unable to find exist home directory!");
-				return null;
-			}
-		}
-		
+    		// try path argument
+    		if (home == null || !containsConfig(new File(home), config)) {
+    			home = resolvePath(System.getProperty("exist.home"));
+        	} else {
+        		configDetected = true;
+        	}
+
+    		// try exist.home
+    		if (!configDetected && (home == null || !containsConfig(new File(home), config))) {
+    			home = new File("WEB-INF").getPath();
+    			LOG.info("Environment variabe 'exist.home' not set. Trying webapp configuration " + home + " ...");
+        	} else {
+        		configDetected = true;
+        	}
+    			
+    		// try web-inf
+    		if (!configDetected && (home == null || !containsConfig(new File(home), config))) {
+			home = resolvePath(System.getProperty("user.home"));
+			LOG.info("Webapp configuration not found. Trying home directory " + home + " ...");
+        	} else {
+        		configDetected = true;
+        	}
+
+    		// try user.home
+    		if (!configDetected && (home == null || !containsConfig(new File(home), config))) {
+			home = resolvePath(System.getProperty("user.dir"));
+			LOG.info("No configuration file found in the home directory. Trying working directory " + home + " ...");
+        	} else {
+        		configDetected = true;
+        	}
+    		
+    		// try user.dir
+    		if (!configDetected && (home == null || !containsConfig(new File(home), config))) {
+    			LOG.info("No configuration file found in the home directory. Giving up ...");
+    			throw new DatabaseConfigurationException();
+        	} else {
+        		configDetected = true;
+        	}
+				
 		// done!
 		LOG.info("Configuring eXist using " + config);
-		existHome = homeDir;
-		return homeDir;
+		existHome = new File(home);
+		return existHome;
 	}
+    
+    /**
+     * Returns <code>true</code> if the directory <code>dir</code> contains a file
+     * named <tt>conf.xml</tt>.
+     * 
+     * @param dir the directory
+     * @return <code>true</code> if the directory contains a configuration file
+     */
+    private static boolean containsConfig(File dir, String config) {
+    		if (dir != null && dir.exists() && dir.isDirectory() && dir.canRead()) {
+    			File c = new File(dir, config);
+    			return c.exists() && c.isFile() && c.canRead();
+    		}
+    		return false;
+    }
+    
+    /**
+     * Resolves the given path by means of eventually replacing <tt>~</tt> with the users
+     * home directory, taken from the system property <code>user.home</code>.
+     * 
+     * @param path the path to resolve
+     * @return the resolved path
+     */
+    private static String resolvePath(String path) {
+    		if (path != null) {
+			if (path.startsWith("~") && path.length() > 1) {
+				path = System.getProperty("user.home") + path.substring(1);
+			}
+    		}
+		return path;
+    }
      
     /*
      * (non-Javadoc)
