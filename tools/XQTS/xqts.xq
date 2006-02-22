@@ -103,8 +103,14 @@ declare function xqts:normalize-text($result as item()*) as xs:string {
 declare function xqts:check-output($query as xs:string, $result as item()*, $case as element(catalog:test-case)) {
     let $output := $case/catalog:output-file[last()]
     return
+        (: Expected an error, but got a result :)
+        if (exists($case/catalog:expected-error)) then
+            <test-case name="{$case/@name}" result="fail">
+                   <expected-error>{$case/catalog:expected-error/text()}</expected-error>
+                   <query>{$query}</query>
+            </test-case>
         (: Comparison method: "Text" :)
-        if ($output/@compare eq "Text") then
+        else if ($output/@compare eq "Text") then
             let $text := util:file-read(concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath,
                 "/", $output/text()))
             let $test := xqts:normalize-text($text) eq xqts:normalize-text($result)
@@ -112,22 +118,36 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                 xqts:print-result($case/@name, $test, $query, $result, $text, $case)
         (: Comparison method: "XML" :)
         else if ($output/@compare eq "XML") then
-            let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath,
-                $output/text())
-            let $expected := doc(xdb:store("/db", "temp.xml", xs:anyURI($filePath), "text/xml"))
-            let $test := xdiff:compare($expected, $result)
-            return
-                xqts:print-result($case/@name, $test, $query, $result, $expected, $case)
+            util:catch("java.lang.Exception",
+                let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath,
+                    $output/text())
+                let $expected := doc(xdb:store("/db", "temp.xml", xs:anyURI($filePath), "text/xml"))
+                let $test := xdiff:compare($expected, $result)
+                return
+                    xqts:print-result($case/@name, $test, $query, $result, $expected, $case),
+                (: Handle unexpected exceptions :)
+                <test-case name="{$case/@name}" result="fail">
+                   <exception>Exception while loading expected result: {$util:exception-message}</exception>
+                   <query>{$query}</query>
+                </test-case>
+            )
         (: Comparison method: "Fragment" :)
         else if ($output/@compare eq "Fragment") then
-            let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath, $output/text())
-            let $expectedFrag := util:file-read($filePath)
-            let $xmlFrag := concat("<f>", $expectedFrag, "</f>")
-            let $log := util:log("DEBUG", ("Frag stored: ", $xmlFrag))
-            let $expected := doc(xdb:store("/db", "temp.xml", $xmlFrag, "text/xml")) 
-            let $test := xdiff:compare($expected, <f>{$result}</f>)
-            return
-                xqts:print-result($case/@name, $test, $query, $result, $expected, $case)
+            util:catch("java.lang.Exception",
+                let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath, $output/text())
+                let $expectedFrag := util:file-read($filePath)
+                let $xmlFrag := concat("<f>", $expectedFrag, "</f>")
+                let $log := util:log("DEBUG", ("Frag stored: ", $xmlFrag))
+                let $expected := doc(xdb:store("/db", "temp.xml", $xmlFrag, "text/xml")) 
+                let $test := xdiff:compare($expected, <f>{$result}</f>)
+                return
+                    xqts:print-result($case/@name, $test, $query, $result, $expected, $case),
+                (: Handle unexpected exceptions :)
+                <test-case name="{$case/@name}" result="fail">
+                   <exception>Exception while loading expected result fragment: {$util:exception-message}</exception>
+                   <query>{$query}</query>
+                </test-case>
+            )
         (: Don't know how to compare :)
         else
             <error test="{$case/@name}">Unknown comparison method: {$output/@compare}.</error>
@@ -206,9 +226,9 @@ declare function xqts:test-single($name as xs:string) as element() {
             let $resultsDoc := xqts:create-collections($test/parent::catalog:test-group)
             let $dummy := xqts:run-single-test-case($test, $resultsDoc/test-result)
             return
-                $resultsDoc/test-result/test-case
+                $resultsDoc/test-result
         else
-            util:log("WARN", ("Test case not found: ", $name))
+            <error>Test case not found: {$name}.</error>
 };
 
 declare function xqts:test-group($groupName as xs:string) as empty() {
@@ -236,6 +256,15 @@ declare function xqts:get-input-value($input as element(catalog:input-file)) as 
    )
 };
 
-(: xqts:test-single("Axes066-2") :)
-xqts:test-group("PathExpr"),
-collection("/db/XQTS")/test-result
+declare function xqts:overall-result() {
+    let $passed := count(//test-case[@result = "pass"])
+    let $failed := count(//test-case[@result = "fail"])
+    return
+        <test-result failed="{$failed}" passed="{$passed}"
+            percentage="{$passed div ($passed + $failed)}"/>
+};
+
+(: xqts:test-single("op-subtract-dateTimes-yielding-DTD-1"), :)
+xqts:test-group("Expressions"),
+collection("/db/XQTS")/test-result,
+xqts:overall-result()
