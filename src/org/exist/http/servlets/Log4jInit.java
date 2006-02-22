@@ -42,6 +42,7 @@ public class Log4jInit extends HttpServlet {
      * Initialize servlet for log4j purposes in servlet container (war file).
      */
     public void init() throws ServletException {
+ 	   System.setProperty("user.dir", getServletContext().getRealPath("/"));
         
         // We need to check how eXist is running. If eXist is started in a
         // servlet container like Tomcat, then initialization *is* needed.
@@ -78,10 +79,8 @@ public class Log4jInit extends HttpServlet {
      * @return TRUE if exist runs in servlet container.
      */
     public boolean isInWarFile(){
-        
         boolean retVal =true;
-        File core = Configuration.lookup("lib/core");
-        if (core != null && core.isDirectory()) {
+        if (new File(System.getProperty("exist.home"), "lib/core").isDirectory()) {
             retVal=false;
         }
         return retVal;
