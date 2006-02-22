@@ -94,7 +94,7 @@ public class DurationValue extends ComputableValue {
 	}
 	
 	private BigDecimal nullIfZero(BigDecimal x) {
-		if (BigDecimal.ZERO.compareTo(x) == Constants.EQUAL) x = null;
+		if (ZERO_DECIMAL.compareTo(x) == Constants.EQUAL) x = null;
 		return x;
 	}
 	
