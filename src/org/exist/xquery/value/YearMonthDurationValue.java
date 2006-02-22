@@ -23,7 +23,8 @@
 
 package org.exist.xquery.value;
 
-import java.math.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
@@ -80,6 +81,10 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 						(BigInteger) duration.getField(DatatypeConstants.MONTHS),
 						null, null, null, null
 				));
+			case Type.DOUBLE:
+				return new DoubleValue(monthsValueSigned().doubleValue());
+			case Type.DECIMAL:
+				return new DecimalValue(monthsValueSigned().doubleValue());				
 			default :
 				throw new XPathException(
 					"Type error: cannot cast xs:yearMonthDuration to "
