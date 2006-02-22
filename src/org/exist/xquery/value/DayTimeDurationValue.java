@@ -88,6 +88,10 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 						(BigInteger) duration.getField(DatatypeConstants.HOURS),
 						(BigInteger) duration.getField(DatatypeConstants.MINUTES),
 						(BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
+			case Type.DOUBLE:
+				return new DoubleValue(monthsValueSigned().doubleValue());
+			case Type.DECIMAL:
+				return new DecimalValue(monthsValueSigned().doubleValue());				
 			default:
 				throw new XPathException(
 					"Type error: cannot cast xs:dayTimeDuration to "
