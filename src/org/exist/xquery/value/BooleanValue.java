@@ -97,11 +97,11 @@ public class BooleanValue extends AtomicValue implements Indexable {
 				case Constants.LT:
 					return (!value) && otherVal;
 				case Constants.LTEQ:
-					return (!value) && otherVal;
+					return value == otherVal || (!value) && otherVal;
 				case Constants.GT:
 					return value && (!otherVal);
 				case Constants.GTEQ:
-					return value && (!otherVal);
+					return value == otherVal || value && (!otherVal);
 				default :
 					throw new XPathException("Type error: cannot apply this operator to a boolean value");
 			}
