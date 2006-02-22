@@ -26,6 +26,7 @@ package org.exist.xquery.value;
 import java.math.BigDecimal;
 import java.text.Collator;
 
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 /**
@@ -63,7 +64,14 @@ public class DecimalValue extends NumericValue {
 	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
-		return value.toString();
+		String s = value.toString();
+		while (s.length() > 0  && s.indexOf('.') != Constants.STRING_NOT_FOUND && 
+				s.charAt(s.length() - 1) == '0') {
+			s = s.substring(0, s.length() - 1);
+		}
+		if (s.length() > 0  &&  s.charAt(s.length() - 1 ) == '.')
+			s = s.substring(0, s.length() - 1);
+		return s;
 	}
 
 	/* (non-Javadoc)
