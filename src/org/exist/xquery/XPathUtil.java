@@ -26,12 +26,16 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.AVLTreeNodeSet;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
+import org.exist.storage.DBBroker;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.xmldb.LocalXMLResource;
+import org.exist.xmldb.RemoteXMLResource;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FloatValue;
@@ -45,6 +49,10 @@ import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
 public class XPathUtil {
 
@@ -77,7 +85,20 @@ public class XPathUtil {
             return new IntegerValue(((Integer) obj).intValue(), Type.INT);
         else if (obj instanceof Long)
             return new IntegerValue(((Long) obj).longValue(), Type.LONG);
-        else if (obj instanceof Node) {
+        else if (obj instanceof ResourceSet) {
+            Sequence seq = new AVLTreeNodeSet();
+            try {
+                DBBroker broker = context.getBroker();
+                for(ResourceIterator it = ((ResourceSet)obj).getIterator(); it.hasMoreResources();) {
+                    seq.add(getNode(broker, (XMLResource)it.nextResource()));
+                }
+            } catch (XMLDBException xe) {
+                throw new XPathException("Failed to convert ResourceSet to node: " + xe.getMessage());
+            }
+            return seq;
+        } else if (obj instanceof XMLResource) {
+            return getNode(context.getBroker(), (XMLResource)obj);
+        } else if (obj instanceof Node) {
             DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
             try {
                 MemTreeBuilder builder = new MemTreeBuilder(context);
@@ -175,5 +196,33 @@ public class XPathUtil {
             return Type.NODE;
         else
             return Type.JAVA_OBJECT;
+    }
+    
+    /**
+     * Converts an XMLResource into a NodeProxy.
+     * 
+     * @param broker The DBBroker to use to access the database
+     * @param xres The XMLResource to convert
+     * @return A NodeProxy for accessing the content represented by xres
+     * @throws XPathException if an XMLDBException is encountered
+     */
+    public static final NodeProxy getNode(DBBroker broker, XMLResource xres) throws XPathException {
+        if(xres instanceof LocalXMLResource) {
+            LocalXMLResource lres = (LocalXMLResource)xres;
+            try {
+                return lres.getNode();
+            } catch (XMLDBException xe) {
+                throw new XPathException("Failed to convert LocalXMLResource to node: " + xe.getMessage());
+            }
+        }
+        
+        DocumentImpl document;
+        try {
+            document = broker.getCollection(xres.getParentCollection().getName()).getDocument(broker, xres.getDocumentId());
+        } catch (XMLDBException xe) {
+            throw new XPathException("Failed to get document for RemoteXMLResource: " + xe.getMessage());
+        }
+        return new NodeProxy(document, Long.parseLong(((RemoteXMLResource)xres).getNodeId()));
+        
     }
 }

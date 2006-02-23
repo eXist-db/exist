@@ -436,7 +436,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	    return document;
 	}
 	
-	protected NodeProxy getNode() throws XMLDBException {
+	public NodeProxy getNode() throws XMLDBException {
 	    if(proxy != null)
 	        return proxy;
 	    DBBroker broker = null;
