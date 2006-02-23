@@ -42,6 +42,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.UntypedAtomicValue;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -457,7 +458,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.exist.xquery.value.Item#atomize()
 	 */
 	public AtomicValue atomize() throws XPathException {
-		return new StringValue(getStringValue());
+		return new UntypedAtomicValue(getStringValue());
+		//return new StringValue(getStringValue());
 	}
 
 	/*
