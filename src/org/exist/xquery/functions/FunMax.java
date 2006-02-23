@@ -102,7 +102,6 @@ public class FunMax extends CollatingFunction {
 		if(arg.getLength() == 0)
             result = Sequence.EMPTY_SEQUENCE;
         else {
-
         	//TODO : test if a range index is defined *iff* it is compatible with the collator
     		Collator collator = getCollator(contextSequence, contextItem, 2);
     		SequenceIterator iter = arg.unorderedIterator();
@@ -110,6 +109,8 @@ public class FunMax extends CollatingFunction {
     		while (iter.hasNext()) {
                 Item nextItem = iter.nextItem();
                 AtomicValue nextValue = nextItem.atomize();                 
+                //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
+                if (nextValue.getType() == Type.ATOMIC) nextValue = nextValue.convertTo(Type.DOUBLE);
                 if (max == null)
                     max = nextValue;
                 else {

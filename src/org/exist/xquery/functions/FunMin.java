@@ -104,10 +104,12 @@ public class FunMin extends CollatingFunction {
     		AtomicValue min = null;
     		while (iter.hasNext()) {
                 Item nextItem = iter.nextItem();
-                AtomicValue nextValue = nextItem.atomize();                 
+                AtomicValue nextValue = nextItem.atomize();
+                //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
+                if (nextValue.getType() == Type.ATOMIC) nextValue = nextValue.convertTo(Type.DOUBLE);
                 if (min == null)
                     min = nextValue;
-                else {
+                else {                	
                 	if (Type.getCommonSuperType(min.getType(), nextValue.getType()) == Type.ATOMIC) {
                 		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
                 				" and " + Type.getTypeName(nextValue.getType()));
