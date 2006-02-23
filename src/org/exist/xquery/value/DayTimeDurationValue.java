@@ -116,18 +116,27 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	
 	public ComputableValue mult(ComputableValue other) throws XPathException {
 		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
-		return new DayTimeDurationValue(duration.multiply(factor));
+		boolean isFactorNegative = factor.signum() < 0;
+		DayTimeDurationValue product = new DayTimeDurationValue(duration.multiply(factor.abs()));
+		if (isFactorNegative)
+			return product.negate();
+		return product;
+		
 	}
 
-	public ComputableValue div(ComputableValue other) throws XPathException {
+	public ComputableValue div(ComputableValue other) throws XPathException {		
 		if (other.getType() == Type.DAY_TIME_DURATION) {		
 			DecimalValue a = new DecimalValue(secondsValueSigned());
 			DecimalValue b = new DecimalValue(((DayTimeDurationValue)other).secondsValueSigned());
 			return new DecimalValue(a.value.divide(b.value, 20, BigDecimal.ROUND_HALF_UP));
-		}
+		}		
 		BigDecimal divisor = numberToBigDecimal(other, "Operand to div should be of xdt:dayTimeDuration or numeric type; got: ");
+		boolean isDivisorNegative = divisor.signum() < 0;
 		BigDecimal secondsValueSigned = secondsValueSigned();
-		return fromDecimalSeconds(secondsValueSigned.divide(divisor, Math.max(Math.max(3, secondsValueSigned.scale()), divisor.scale()), BigDecimal.ROUND_HALF_UP));
+		DayTimeDurationValue quotient = fromDecimalSeconds(secondsValueSigned.divide(divisor.abs(), Math.max(Math.max(3, secondsValueSigned.scale()), divisor.scale()), BigDecimal.ROUND_HALF_UP));
+		if (isDivisorNegative)
+			return quotient.negate();
+		return quotient;		
 	}
 
 	private DayTimeDurationValue fromDecimalSeconds(BigDecimal x) throws XPathException {

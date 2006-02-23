@@ -111,11 +111,15 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	
 	public ComputableValue mult(ComputableValue other) throws XPathException {
 		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
-		return fromDecimalMonths(
+		boolean isFactorNegative = factor.signum() < 0;		
+		YearMonthDurationValue product = fromDecimalMonths(
 			new BigDecimal(monthsValueSigned())
-			.multiply(factor)
+			.multiply(factor.abs())
 			.setScale(0, BigDecimal.ROUND_HALF_UP)
 		);
+		if (isFactorNegative)
+			return product.negate();
+		return product;
 	}
 
 	public ComputableValue div(ComputableValue other) throws XPathException {
@@ -123,10 +127,14 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 			return new IntegerValue(getValue()).div(new IntegerValue(((YearMonthDurationValue) other).getValue()));
 		}
 		BigDecimal divisor = numberToBigDecimal(other, "Operand to div should be of xdt:yearMonthDuration or numeric type; got: ");
-		return fromDecimalMonths(
+		boolean isDivisorNegative = divisor.signum() < 0;
+		YearMonthDurationValue quotient = fromDecimalMonths(
 			new BigDecimal(monthsValueSigned())
-			.divide(divisor, 0, BigDecimal.ROUND_HALF_UP)
+			.divide(divisor.abs(), 0, BigDecimal.ROUND_HALF_UP)
 		);
+		if (isDivisorNegative)
+			return quotient.negate();
+		return quotient;
 	}
 	
 	private YearMonthDurationValue fromDecimalMonths(BigDecimal x) throws XPathException {
