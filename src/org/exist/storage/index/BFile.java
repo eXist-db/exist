@@ -2368,7 +2368,12 @@ public class BFile extends BTree {
          * @see java.io.InputStream#available()
          */
         public final int available() throws IOException {
-            return pageLen < 0 ? 0 : pageLen - offset;
+        	if (pageLen < 0)
+        		return 0;
+        	int inPage = pageLen - offset;
+        	if (inPage == 0)
+        		inPage = nextPage.getPageHeader().getNextInChain() > 0 ? 1 : 0;
+        	return inPage;
         }
 
         /*
