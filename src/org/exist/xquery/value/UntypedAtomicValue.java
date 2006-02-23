@@ -79,8 +79,11 @@ public class UntypedAtomicValue extends AtomicValue {
 						"Cannot cast 'xdt:UntypeAtomic(" + value + ")' to '" + 
                         Type.getTypeName(requiredType) + "' [err:FORG0001]");
 			case Type.FLOAT :
+				return new FloatValue(value);
 			case Type.DOUBLE :
+				return new DoubleValue(this);
 			case Type.NUMBER :
+				//TODO : more complicated
 				return new DoubleValue(this);
 			case Type.DECIMAL :
 				return new DecimalValue(value);
