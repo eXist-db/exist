@@ -114,12 +114,13 @@ public class OpNumeric extends BinaryOp {
         else {
     		try {
     			// runtime type checks:
-    			if (!(lvalue instanceof ComputableValue)) lvalue = lvalue.convertTo(Type.DOUBLE);
-    			if (!(rvalue instanceof ComputableValue)) rvalue = rvalue.convertTo(Type.DOUBLE);
+    			if (!(lvalue instanceof ComputableValue)) lvalue = lvalue.convertTo(Type.NUMBER);
+    			if (!(rvalue instanceof ComputableValue)) rvalue = rvalue.convertTo(Type.NUMBER);
     
-    			int ltype = lvalue.getType();
-                int rtype = rvalue.getType();
+    			//int ltype = lvalue.getType();
+                //int rtype = rvalue.getType();
                 
+    			/*
     			if (Type.subTypeOf(ltype, Type.NUMBER) && Type.subTypeOf(rtype, Type.NUMBER)) {
     				if (ltype > rtype) {
     					rvalue = rvalue.convertTo(ltype);
@@ -131,6 +132,7 @@ public class OpNumeric extends BinaryOp {
     			} else if (Type.subTypeOf(rtype, Type.NUMBER)) {
     				lvalue = lvalue.convertTo(rtype);				
     			}
+    			*/
     
     			if (operator == Constants.IDIV) {
     				if (!(lvalue instanceof NumericValue && rvalue instanceof NumericValue))
