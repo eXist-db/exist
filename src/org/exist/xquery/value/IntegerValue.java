@@ -351,12 +351,15 @@ public class IntegerValue extends NumericValue implements Indexable {
 	 */
 	public ComputableValue div(ComputableValue other) throws XPathException {
 		if (other instanceof IntegerValue) {
-			if( ! ((IntegerValue) other).effectiveBooleanValue() ) // value == 0)
-				throw new XPathException("division by zero");
-			double od = ((IntegerValue) other).value.doubleValue();
-			double d = value.doubleValue();
-			return new DecimalValue(d / od);
+			if (((IntegerValue) other).value == BigInteger.ZERO)
+				throw new XPathException("FOAR0001 : division by zero");
+			//http://www.w3.org/TR/xpath20/#mapping : numeric; but xs:decimal if both operands are xs:integer
+			BigDecimal d = new BigDecimal(value);			 
+			BigDecimal od = new BigDecimal(((IntegerValue) other).value);
+			int scale = Math.max(18, Math.max(d.scale(), od.scale()));	
+			return new DecimalValue(d.divide(od, scale, BigDecimal.ROUND_HALF_DOWN));
 		} else
+			//TODO : review type promotion
 			return ((ComputableValue) convertTo(other.getType())).div(other);
 	}
 
