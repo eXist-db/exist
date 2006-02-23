@@ -137,7 +137,7 @@ public class DoubleValue extends NumericValue implements Indexable {
 	 * @see org.exist.xquery.value.NumericValue#isNaN()
 	 */
 	public boolean isNaN() {
-		return value == Double.NaN;
+		return Double.isNaN(value);
 	}
 
 	/* (non-Javadoc)
@@ -171,9 +171,11 @@ public class DoubleValue extends NumericValue implements Indexable {
 			case Type.UNSIGNED_SHORT :
 			case Type.UNSIGNED_BYTE :
 			case Type.POSITIVE_INTEGER :
+				if (isNaN())
+					throw new XPathException("FORG0001: can not convert xs:double('NaN') to xs:integer");
 				return new IntegerValue((long) value, requiredType);
 			case Type.BOOLEAN :
-				return (value == 0.0 || value == Double.NaN)
+				return (value == 0.0 || isNaN())
 					? BooleanValue.FALSE
 					: BooleanValue.TRUE;
 			default :
@@ -189,7 +191,7 @@ public class DoubleValue extends NumericValue implements Indexable {
 	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
-		return !( value == 0 || Double.isNaN(value) );
+		return !( value == 0 || isNaN());
 	}
 
 	/* (non-Javadoc)
