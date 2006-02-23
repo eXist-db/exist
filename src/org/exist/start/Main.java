@@ -238,8 +238,8 @@ public class Main {
                             File f = new File(file);
                             String d = f.getCanonicalPath();
                             if (!done.containsKey(d)) {
-                                done.put(d, d);
                                 if (include_subject) {
+                                    done.put(d, d);
                                     if (classpath.addComponent(d) && _debug)
                                         System.err.println("Adding single JAR: " + d);
                                 }
