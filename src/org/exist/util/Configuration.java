@@ -825,19 +825,20 @@ public class Configuration implements ErrorHandler {
      * <br>
      * Note that relative paths are beeing interpreted relative to <code>exist.home</code>.
      * 
+     * This method is also used to resolve relative paths in configuration file
+     * 
      * @param path path to the file or directory
      * @return the file handle
      */
     public static File lookup(String path, String parent) {
-    	File f = new File(path);
-		if (path.startsWith("~") && path.length() > 1) {
-			f = new File(System.getProperty("user.home"), path);
-		} else if (!f.isAbsolute() && parent != null) {
+        // resolvePath is used for things like ~user/folder 
+    	File f = new File(resolvePath(path));
+		if (!f.isAbsolute() && parent != null) {
             f = new File(parent, path);
         } else if (!f.isAbsolute()) {
 			try {
 				return new File(getExistHome(), path);
-			} catch (DatabaseConfigurationException e) {
+			} catch (DatabaseConfigurationException e) { // [FG] still useful ?
 				throw new IllegalStateException(
 					"Unable to locate " + path + " because exist home directory cannot be found!"
 				);
@@ -885,7 +886,7 @@ public class Configuration implements ErrorHandler {
         }
         // try exist.home
         if (System.getProperty("exist.home") != null) {
-            existHome = new File(System.getProperty("exist.home"));
+            existHome = new File(resolvePath(System.getProperty("exist.home")));
             if (existHome.isDirectory()) return existHome; 
         }
 
