@@ -82,7 +82,8 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 						null, null, null, null
 				));
 			case Type.DOUBLE:
-				return new DoubleValue(monthsValueSigned().doubleValue());
+				//return new DoubleValue(monthsValueSigned().doubleValue());
+				return new DoubleValue(Double.NaN);
 			case Type.DECIMAL:
 				return new DecimalValue(monthsValueSigned().doubleValue());				
 			default :
