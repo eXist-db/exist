@@ -114,8 +114,10 @@ public class OpNumeric extends BinaryOp {
         else {
     		try {
     			// runtime type checks:
-    			if (!(lvalue instanceof ComputableValue)) lvalue = lvalue.convertTo(Type.NUMBER);
-    			if (!(rvalue instanceof ComputableValue)) rvalue = rvalue.convertTo(Type.NUMBER);
+    			//if (!(lvalue instanceof ComputableValue)) lvalue = lvalue.convertTo(Type.NUMBER);
+    			//if (!(rvalue instanceof ComputableValue)) rvalue = rvalue.convertTo(Type.NUMBER);
+    			if (lvalue.getType() == Type.ATOMIC) lvalue = lvalue.convertTo(Type.NUMBER);
+    			if (rvalue.getType() == Type.ATOMIC) rvalue = rvalue.convertTo(Type.NUMBER);
     
     			//int ltype = lvalue.getType();
                 //int rtype = rvalue.getType();
@@ -134,6 +136,11 @@ public class OpNumeric extends BinaryOp {
     			}
     			*/
     
+    			if (!(lvalue instanceof ComputableValue))
+    				throw new XPathException("Not a computable value");
+    			if (!(rvalue instanceof ComputableValue))
+    				throw new XPathException("Not a computable value");
+
     			if (operator == Constants.IDIV) {
     				if (!(lvalue instanceof NumericValue && rvalue instanceof NumericValue))
     					throw new XPathException("idiv not supported for types " + Type.getTypeName(lvalue.getType()) + " and " + Type.getTypeName(rvalue.getType()));
