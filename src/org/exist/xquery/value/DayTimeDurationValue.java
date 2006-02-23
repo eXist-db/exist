@@ -79,7 +79,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 			case Type.ATOMIC:
 			case Type.DAY_TIME_DURATION:
 				return this;
-			case Type.STRING:
+			case Type.STRING:				
 				return new StringValue(getStringValue());
 			case Type.DURATION:
 				return new DurationValue(TimeUtils.getInstance().newDuration(
@@ -89,7 +89,8 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 						(BigInteger) duration.getField(DatatypeConstants.MINUTES),
 						(BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
 			case Type.DOUBLE:
-				return new DoubleValue(monthsValueSigned().doubleValue());
+				//return new DoubleValue(monthsValueSigned().doubleValue());
+				return new DoubleValue(Double.NaN);
 			case Type.DECIMAL:
 				return new DecimalValue(monthsValueSigned().doubleValue());				
 			default:
