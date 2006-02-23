@@ -117,7 +117,7 @@ public class Configuration implements ErrorHandler {
 
             //otherise, secondly try to read configuration from file. Guess the location if necessary
             if (is == null) {
-            		File eXistHome = getExistHome(dbHome);
+            		File eXistHome = (dbHome != null)?new File(dbHome):getExistHome(dbHome);
             		if (eXistHome == null) {
                       throw new DatabaseConfigurationException("Unable to locate eXist home directory");
             		}
@@ -127,7 +127,11 @@ public class Configuration implements ErrorHandler {
             		}
                 this.file = config.getAbsolutePath();
                 is = new FileInputStream(config);
+                // set dbHome to parent of the conf file found, to resolve relative path from conf file
+                dbHome=config.getParentFile().getCanonicalPath();
+                System.out.println("[Exist] Configuration from " + config);
             }
+            
             
             // Create resolver
             System.out.println("Creating CatalogResolver");
@@ -392,7 +396,7 @@ public class Configuration implements ErrorHandler {
             config.put("database", mysql);
         // directory for database files
         if (dataFiles != null) {
-        		File df = lookup(dataFiles);
+        		File df = lookup(dataFiles, dbHome);
             if (!df.canRead())
                 throw new DatabaseConfigurationException(
                         "cannot read data directory: "
@@ -744,7 +748,7 @@ public class Configuration implements ErrorHandler {
         if (stopwords.getLength() > 0) {
             String stopwordFile = ((Element) stopwords.item(0))
             .getAttribute("file");
-            File sf = lookup(stopwordFile);
+            File sf = lookup(stopwordFile, dbHome);
             if (sf.canRead())
                 config.put("stopwords", stopwordFile);
         }
@@ -762,7 +766,7 @@ public class Configuration implements ErrorHandler {
             for (int i = 0; i < catalogs.getLength(); i++) {
                 String catalog = ((Element) catalogs.item(i)).getAttribute("file");
                            
-                File catalogFile = lookup(catalog);                
+                File catalogFile = lookup(catalog, dbHome);                
                 if (catalogFile!=null && catalogFile.exists()) {
                     LOG.info("Loading catalog '"+catalogFile.getAbsolutePath()+"'.");
                     // TODO dizzzz remove debug
@@ -810,7 +814,11 @@ public class Configuration implements ErrorHandler {
     		}
         return file;
     }
-    
+   
+    public static File lookup(String path) {
+        return lookup(path, null);
+    }
+        
     /**
      * Returns a file handle for the given path, while <code>path</code> specifies
      * the path to an eXist configuration file or directory.
@@ -820,11 +828,13 @@ public class Configuration implements ErrorHandler {
      * @param path path to the file or directory
      * @return the file handle
      */
-    public static File lookup(String path) {
-    		File f = null;
+    public static File lookup(String path, String parent) {
+    	File f = new File(path);
 		if (path.startsWith("~") && path.length() > 1) {
-			f = new File(System.getProperty("user.home") + path.substring(1));
-		} else if (!(new File(path)).isAbsolute()) {
+			f = new File(System.getProperty("user.home"), path);
+		} else if (!f.isAbsolute() && parent != null) {
+            f = new File(parent, path);
+        } else if (!f.isAbsolute()) {
 			try {
 				return new File(getExistHome(), path);
 			} catch (DatabaseConfigurationException e) {
@@ -832,8 +842,6 @@ public class Configuration implements ErrorHandler {
 					"Unable to locate " + path + " because exist home directory cannot be found!"
 				);
 			}
-		} else {
-			f = new File(path);
 		}
 		return f;
     }
@@ -853,65 +861,46 @@ public class Configuration implements ErrorHandler {
 
     /**
      * Returns a file handle for eXist's home directory.
-     * <p>
-     * If either the proposed home directory does not exist, does not contain a
-     * configuration file or none of the directories identified by the system properties
-     * <code>exist.home</code> and <code>user.home</code> exist or none of
-     * them contains a configuration file, this method returns <code>null</code>.
-     * 
+     * Order of tests is designed with the idea, the more precise it is,
+     * the more the developper know what he is doing
+     * <ol>
+     *   <li>proposed path : if exists
+     *   <li>exist.home    : if exists
+     *   <li>user.home     : if exists, with a conf.xml file
+     *   <li>user.dir      : if exists, with a conf.xml file
+     * </ol>
+     *
      * @param path path to eXist home directory
      * @return the file handle or <code>null</code>
      */
     public static File getExistHome(String path) throws DatabaseConfigurationException {
-    		if (configDetected || existHome != null)
-    			return existHome;
-    		
-    		String home = path;
-    		String config = "conf.xml";
+		if (existHome != null) return existHome;
+		
+        String config = "conf.xml";
 
-    		// try path argument
-    		if (home == null || !containsConfig(new File(home), config)) {
-    			home = resolvePath(System.getProperty("exist.home"));
-        	} else {
-        		configDetected = true;
-        	}
+        // try path argument
+        if (path != null) {
+            existHome = new File(path);
+            if (existHome.isDirectory()) return existHome; 
+        }
+        // try exist.home
+        if (System.getProperty("exist.home") != null) {
+            existHome = new File(System.getProperty("exist.home"));
+            if (existHome.isDirectory()) return existHome; 
+        }
 
-    		// try exist.home
-    		if (!configDetected && (home == null || !containsConfig(new File(home), config))) {
-    			home = new File("WEB-INF").getPath();
-    			LOG.info("Environment variabe 'exist.home' not set. Trying webapp configuration " + home + " ...");
-        	} else {
-        		configDetected = true;
-        	}
-    			
-    		// try web-inf
-    		if (!configDetected && (home == null || !containsConfig(new File(home), config))) {
-			home = resolvePath(System.getProperty("user.home"));
-			LOG.info("Webapp configuration not found. Trying home directory " + home + " ...");
-        	} else {
-        		configDetected = true;
-        	}
-
-    		// try user.home
-    		if (!configDetected && (home == null || !containsConfig(new File(home), config))) {
-			home = resolvePath(System.getProperty("user.dir"));
-			LOG.info("No configuration file found in the home directory. Trying working directory " + home + " ...");
-        	} else {
-        		configDetected = true;
-        	}
-    		
-    		// try user.dir
-    		if (!configDetected && (home == null || !containsConfig(new File(home), config))) {
-    			LOG.info("No configuration file found in the home directory. Giving up ...");
-    			throw new DatabaseConfigurationException();
-        	} else {
-        		configDetected = true;
-        	}
-				
-		// done!
-		LOG.info("Configuring eXist using " + config);
-		existHome = new File(home);
-		return existHome;
+        // try user.home
+        existHome = new File(System.getProperty("user.home"));
+        if (existHome.isDirectory() && new File(existHome, config).isFile()) {
+            return existHome;
+        }
+        // try user.dir
+        existHome = new File(System.getProperty("user.dir"));
+        if (existHome.isDirectory() && new File(existHome, config).isFile()) {
+            return existHome;
+        }
+        existHome=null;
+        return existHome;
 	}
     
     /**
