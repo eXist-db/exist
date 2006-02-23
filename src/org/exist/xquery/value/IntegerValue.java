@@ -364,14 +364,8 @@ public class IntegerValue extends NumericValue implements Indexable {
 	}
 
 	public IntegerValue idiv(NumericValue other) throws XPathException {
-		if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
-			try {
-				return new IntegerValue(value.divide(((IntegerValue) other).value), Type.INTEGER);
-			} catch (ArithmeticException e) {
-				throw new XPathException("division by zero", e);
-			}
-		}
-		throw new XPathException("idiv called with incompatible argument type: " + getType() + " vs " + other.getType());
+		ComputableValue result = div(other);
+		return new IntegerValue(((IntegerValue)result.convertTo(Type.INTEGER)).getLong());		
 	}
 
 	/* (non-Javadoc)

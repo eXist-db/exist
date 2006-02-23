@@ -293,6 +293,9 @@ public class DoubleValue extends NumericValue implements Indexable {
 	}
 
 	public IntegerValue idiv(NumericValue other) throws XPathException {
+		ComputableValue result = div(other);
+		return new IntegerValue(((IntegerValue)result.convertTo(Type.INTEGER)).getLong());		
+		/*
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
 			double result = value / ((DoubleValue) other).value;
 			if (result == Double.NaN || result == Double.POSITIVE_INFINITY || result == Double.NEGATIVE_INFINITY)
@@ -300,6 +303,7 @@ public class DoubleValue extends NumericValue implements Indexable {
 			return new IntegerValue(new BigDecimal(result).toBigInteger(), Type.INTEGER);
 		}
 		throw new XPathException("idiv called with incompatible argument type: " + getType() + " vs " + other.getType());
+		*/
 	}
 
 	/* (non-Javadoc)

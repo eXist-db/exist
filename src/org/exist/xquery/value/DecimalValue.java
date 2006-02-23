@@ -237,6 +237,9 @@ public class DecimalValue extends NumericValue {
 	}
 
 	public IntegerValue idiv(NumericValue other) throws XPathException {
+		ComputableValue result = div(other);
+		return new IntegerValue(((IntegerValue)result.convertTo(Type.INTEGER)).getLong());		
+		/*
 		if (Type.subTypeOf(other.getType(), Type.DECIMAL)) {
 			try {
 				return new IntegerValue(value.divide(((DecimalValue) other).value, 0, BigDecimal.ROUND_DOWN).toBigInteger(), Type.INTEGER);
@@ -245,6 +248,7 @@ public class DecimalValue extends NumericValue {
 			}
 		}
 		throw new XPathException("idiv called with incompatible argument type: " + getType() + " vs " + other.getType());
+		*/
 	}
 
 	/* (non-Javadoc)
