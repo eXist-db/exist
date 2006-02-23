@@ -136,14 +136,18 @@ public class OpNumeric extends BinaryOp {
     			}
     			*/
     
+    			//TODO : use type hierarchy
     			if (!(lvalue instanceof ComputableValue))
-    				throw new XPathException("Not a computable value");
+    				throw new XPathException("XPTY0004: '" + lvalue + "' (" + Type.getTypeName(lvalue.getType()) + ") can not be an operand for an arithmetic operation");
     			if (!(rvalue instanceof ComputableValue))
-    				throw new XPathException("Not a computable value");
+    				throw new XPathException("XPTY0004: '" + lvalue + "' (" + Type.getTypeName(rvalue.getType()) + ") can not be an operand for an arithmetic operation");
 
     			if (operator == Constants.IDIV) {
-    				if (!(lvalue instanceof NumericValue && rvalue instanceof NumericValue))
-    					throw new XPathException("idiv not supported for types " + Type.getTypeName(lvalue.getType()) + " and " + Type.getTypeName(rvalue.getType()));
+    				//TODO : use type hierarchy
+        			if (!(lvalue instanceof NumericValue))
+        				throw new XPathException("XPTY0004: '" + lvalue + "' (" + Type.getTypeName(lvalue.getType()) + ") can not be an operand for idiv");
+        			if (!(rvalue instanceof NumericValue))
+        				throw new XPathException("XPTY0004: '" + lvalue + "' (" + Type.getTypeName(rvalue.getType()) + ") can not be an operand for idiv");
                     result = ((NumericValue) lvalue).idiv((NumericValue) rvalue);
     			} else {
                     result = applyOperator((ComputableValue) lvalue, (ComputableValue) rvalue);
