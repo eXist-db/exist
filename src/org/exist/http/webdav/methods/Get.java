@@ -17,7 +17,7 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
+ *
  *  $Id$
  */
 package org.exist.http.webdav.methods;
@@ -54,102 +54,139 @@ import org.xml.sax.SAXException;
 
 /**
  * Implements the WebDAV GET method.
- * 
+ *
  * @author wolf
  */
 public class Get extends AbstractWebDAVMethod {
-	
-	private final static String SERIALIZE_ERROR = "Error while serializing document: ";
-	
-	// We use an XQuery to list collection contents
-	private CompiledXQuery compiled = null;
-	
-	public Get(BrokerPool pool) {
-		super(pool);
-	}
-	
-	public void process(User user, HttpServletRequest request,
-			HttpServletResponse response, String path) throws ServletException, IOException {
-		DBBroker broker = null;
-		byte[] contentData = null;
-		DocumentImpl resource = null;
+    
+    private final static String SERIALIZE_ERROR
+            = "Error while serializing document: ";
+    
+    private final static String COLLECTION_XQ
+            = "org/exist/http/webdav/methods/collection.xq";
+    
+    // We use an XQuery to list collection contents
+    private CompiledXQuery compiled = null;
+    
+    public Get(BrokerPool pool) {
+        super(pool);
+    }
+    
+    public void process(User user, HttpServletRequest request,
+            HttpServletResponse response, String path)
+            throws ServletException, IOException {
+        
+        DBBroker broker = null;
+        byte[] contentData = null;
+        DocumentImpl resource = null;
         Collection collection = null;
-		try {
-			broker = pool.get();
-			resource = broker.getXMLResource(path, Lock.READ_LOCK);
-			if(resource == null) {
+        
+        try {
+            broker = pool.get(user);
+            resource = broker.getXMLResource(path, Lock.READ_LOCK);
+            
+            if(resource == null) {
                 collection = broker.openCollection(path, Lock.READ_LOCK);
-                if(collection == null)
-                	response.sendError(HttpServletResponse.SC_NOT_FOUND);
-				collectionListing(broker, collection, request, response);
-				return;
-			}
-			if(!resource.getPermissions().validate(user, Permission.READ)) {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
-				return;
-			}
-			DocumentMetadata metadata = resource.getMetadata();
-			response.setContentType(metadata.getMimeType());
-			response.addDateHeader("Last-Modified", metadata.getLastModified());
-			
-			if(resource.getResourceType() == DocumentImpl.XML_FILE) {
-				Serializer serializer = broker.getSerializer();
-				serializer.reset();
-				try {
-					serializer.setProperties(WebDAV.OUTPUT_PROPERTIES);
-					String content = serializer.serialize(resource);
-					contentData = content.getBytes("UTF-8");
-				} catch (SAXException e) {
-					throw new ServletException(SERIALIZE_ERROR + e.getMessage(), e);
-				}
-			} else
-				contentData = broker.getBinaryResource((BinaryDocument)resource);
-		} catch (EXistException e) {
-			throw new ServletException(SERIALIZE_ERROR + e.getMessage(), e);
-		} catch (PermissionDeniedException e) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
-		} finally {
-			if(resource != null)
-				resource.getUpdateLock().release(Lock.READ_LOCK);
+                if(collection == null){
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    
+                } else {
+                    collectionListing(broker, collection, request, response);
+                }
+                return;
+            }
+            
+            if(!resource.getPermissions().validate(user, Permission.READ)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, 
+                                   READ_PERMISSION_DENIED);
+                return;
+            }
+            
+            DocumentMetadata metadata = resource.getMetadata();
+            response.setContentType(metadata.getMimeType());
+            response.addDateHeader("Last-Modified", metadata.getLastModified());
+            
+            if(resource.getResourceType() == DocumentImpl.XML_FILE) {
+                Serializer serializer = broker.getSerializer();
+                serializer.reset();
+                try {
+                    serializer.setProperties(WebDAV.OUTPUT_PROPERTIES);
+                    String content = serializer.serialize(resource);
+                    contentData = content.getBytes("UTF-8");
+                    
+                } catch (SAXException e) {
+                    LOG.error(e);
+                    throw new ServletException(SERIALIZE_ERROR + e.getMessage(), e);
+                }
+                
+            } else {
+                contentData = broker.getBinaryResource((BinaryDocument)resource);
+            }
+            
+            // TODO all data is serialized here to bytearray. for large files this
+            // is far from efficient. Implement streaming, XML content already supports
+            // this.
+            
+            // Serve out content
+            if(contentData == null) {
+                LOG.debug("content data is empty. No data could be retrieved.");
+                response.sendError(HttpServletResponse.SC_NOT_FOUND); // TODO is this correct Code?
+                return;
+            }
+            response.setContentLength(contentData.length);
+            ServletOutputStream os = response.getOutputStream();
+            os.write(contentData);
+            os.flush();
+            
+        } catch (EXistException e) {
+            throw new ServletException(SERIALIZE_ERROR + e.getMessage(), e);
+            
+        } catch (PermissionDeniedException e) {
+            LOG.error(e);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
+            return;
+            
+        } finally {
+            if(resource != null)
+                resource.getUpdateLock().release(Lock.READ_LOCK);
+            
             if(collection != null)
                 collection.release();
-			pool.release(broker);
-		}
-		if(contentData == null) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND);
-			return;
-		}
-		response.setContentLength(contentData.length);
-		ServletOutputStream os = response.getOutputStream();
-		os.write(contentData);
-		os.flush();
-	}
-
+            
+            pool.release(broker);
+        }
+        
+    }
+    
     /**
      * Display a listing of the collection contents.
-     *  
+     *
      * @param collection
      * @param response
-     * @throws IOException 
+     * @throws IOException
      */
-    private void collectionListing(DBBroker broker, Collection collection, 
-    		HttpServletRequest request, HttpServletResponse response) 
-    throws ServletException, IOException {
-    	// the collection listing is generated by an XQuery
+    private void collectionListing(DBBroker broker, Collection collection,
+            HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // the collection listing is generated by an XQuery
         XQuery xquery = broker.getXQueryService();
         XQueryContext context;
         try {
-        	if(compiled == null)
-        		context = xquery.newContext(AccessContext.WEBDAV);
-        	else {
-        		compiled.reset();
-        		context = compiled.getContext();
-        	}
+            if(compiled == null)
+                context = xquery.newContext(AccessContext.WEBDAV);
+            else {
+                compiled.reset();
+                context = compiled.getContext();
+            }
+            
             context.declareVariable("collection", collection.getName());
             context.declareVariable("uri", request.getRequestURI());
-            if(compiled == null)
-            	compiled = 
-            		xquery.compile(context, new ClassLoaderSource("org/exist/http/webdav/methods/collection.xq"));
+            
+            if(compiled == null){
+                compiled = xquery.compile(
+                        context, new ClassLoaderSource(COLLECTION_XQ));
+            }
+            
             
             Sequence result = xquery.execute(compiled, null);
             Serializer serializer = broker.getSerializer();
@@ -161,11 +198,14 @@ public class Get extends AbstractWebDAVMethod {
             response.setContentType("text/html; charset=UTF-8");
             response.setContentLength(contentData.length);
             response.addDateHeader("Last-Modified", collection.getCreationTime());
+            
             ServletOutputStream os = response.getOutputStream();
             os.write(contentData);
             os.flush();
+            
         } catch (XPathException e) {
             throw new ServletException("Failed to compile xquery", e);
+            
         } catch (SAXException e) {
             throw new ServletException("Failed to serialize query results", e);
         }

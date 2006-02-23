@@ -1,7 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  Copyright (C) 2001-06 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -14,10 +13,10 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  *  $Id$
  */
 package org.exist.http.webdav;
@@ -26,11 +25,13 @@ import org.exist.http.webdav.methods.Copy;
 import org.exist.http.webdav.methods.Delete;
 import org.exist.http.webdav.methods.Get;
 import org.exist.http.webdav.methods.Head;
+import org.exist.http.webdav.methods.Lock;
 import org.exist.http.webdav.methods.Mkcol;
 import org.exist.http.webdav.methods.Move;
 import org.exist.http.webdav.methods.Options;
 import org.exist.http.webdav.methods.Propfind;
 import org.exist.http.webdav.methods.Put;
+import org.exist.http.webdav.methods.Unlock;
 import org.exist.storage.BrokerPool;
 
 
@@ -61,6 +62,10 @@ public class WebDAVMethodFactory {
             return new Move(pool);
         else if(method.equals("COPY"))
             return new Copy(pool);
+        else if(method.equals("UNLOCK"))
+            return new Unlock(pool);
+        else if(method.equals("LOCK"))
+            return new Lock(pool);
         else return null;
     }
 

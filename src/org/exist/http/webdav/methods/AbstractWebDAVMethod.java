@@ -34,9 +34,21 @@ public abstract class AbstractWebDAVMethod implements WebDAVMethod {
 	final static Logger LOG = Logger.getLogger(AbstractWebDAVMethod.class);
 	
 	// common error messages
-	final static String READ_PERMISSION_DENIED = "Not allowed to read resource";
+	final static String READ_PERMISSION_DENIED  = "Not allowed to read resource";
+        final static String WRITE_PERMISSION_DENIED = "Not allowed to write resource";
+        final static String LOCK_PERMISSION_DENIED  = "Not allowed to lock resource";
+        
 	final static String NOT_FOUND_ERR = "No resource or collection found";
-	
+        
+        
+        final static int    SC_UNLOCK_SUCCESSFULL   = 204;
+        
+        final static int    SC_PRECONDITION_FAILED  = 412;
+        final static String PRECONDITION_FAILED     = "Precondition Failed";
+        
+        final static int    SC_RESOURCE_IS_LOCKED     = 423;
+        final static String RESOURCE_IS_LOCKED        = "Locked";
+        
 	protected BrokerPool pool;
 	
 	public AbstractWebDAVMethod(BrokerPool pool) {
