@@ -1,7 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  Copyright (C) 2001-06 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -14,10 +13,10 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  *  $Id$
  */
 package org.exist.http.webdav.methods;
@@ -67,7 +66,7 @@ public class Move extends AbstractWebDAVMethod {
 			broker = pool.get(user);
 			collection = broker.openCollection(path, Lock.WRITE_LOCK);
 			if(collection == null) {
-                ///TODO : use dedicated function in XmldbURI
+                                ///TODO : use dedicated function in XmldbURI
 				int pos = path.lastIndexOf("/");
 				String collName = path.substring(0, pos);
 				String docName = path.substring(pos + 1);

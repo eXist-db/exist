@@ -1,7 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  Copyright (C) 2001-06 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -14,10 +13,10 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  *  $Id$
  */
 package org.exist.http.webdav.methods;
@@ -38,8 +37,10 @@ public class Options implements WebDAVMethod {
 	
 	public void process(User user, HttpServletRequest request,
 			HttpServletResponse response, String path) throws ServletException, IOException {
+            
+                // TODO DWES change to 2
 		response.addHeader("DAV", "1");
-		response.addHeader("Allow", "OPTIONS, GET, HEAD, PUT, PROPFIND,MKCOL");
+		response.addHeader("Allow", "OPTIONS, GET, HEAD, PUT, PROPFIND, MKCOL, LOCK, UNLOCK");
 		
 		// MS specific
 		response.addHeader("MS-Author-Via", "DAV");

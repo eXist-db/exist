@@ -1,7 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  Copyright (C) 2001-06 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -14,10 +13,10 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  *  $Id$
  */
 package org.exist.http.webdav.methods;
@@ -38,6 +37,8 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.LockToken;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -55,123 +56,167 @@ import org.xml.sax.SAXException;
  * @author wolf
  */
 public class Put extends AbstractWebDAVMethod {
-	
-	public Put(BrokerPool pool) {
-		super(pool);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.http.webdav.WebDAVMethod#process(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
-	 */
-	public void process(User user, HttpServletRequest request,
-			HttpServletResponse response, String path) throws ServletException, IOException {
-		File tempFile = saveRequestContent(request);
-		String url = tempFile.toURI().toASCIIString();
-		String contentType = request.getContentType();
-		DBBroker broker = null;
-		Collection collection = null;
-		boolean collectionLocked = true;
+    
+    public Put(BrokerPool pool) {
+        super(pool);
+    }
+    
+        /* (non-Javadoc)
+         * @see org.exist.http.webdav.WebDAVMethod#process(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
+         */
+    public void process(User user, HttpServletRequest request,
+            HttpServletResponse response, String path) throws ServletException, IOException {
+        File tempFile = saveRequestContent(request);
+        String url = tempFile.toURI().toASCIIString();
+        String contentType = request.getContentType();
+        DBBroker broker = null;
+        Collection collection = null;
+        boolean collectionLocked = true;
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
-		try {
-			broker = pool.get(user);
+        try {
+            broker = pool.get(user);
             ///TODO : use dedicated function in XmldbURI
-			if(path == null)
-				path = "";
-			if(path.endsWith("/"))
-				path = path.substring(0, path.length() - 1);
-			int p = path.lastIndexOf("/");
+            if(path == null)
+                path = "";
+            if(path.endsWith("/"))
+                path = path.substring(0, path.length() - 1);
+            int p = path.lastIndexOf("/");
             //TODO : strange test here -pb
-			if(p < 1) {
+            // "/" should be rewritten to "/db"? -dw
+//            if(p < 1) {
+//                transact.abort(txn);
+//                response.sendError(HttpServletResponse.SC_CONFLICT, "No collection specified for PUT");
+//                return;
+//            }
+            String collectionName = path.substring(0, p);
+            path = path.substring(p + 1);
+            
+            LOG.debug("collectionName='"+collectionName+"';  path="+path+"';" );
+            
+            collection = broker.openCollection(collectionName, Lock.READ_LOCK);// WRITE
+            if(collection == null) {
                 transact.abort(txn);
-				response.sendError(HttpServletResponse.SC_CONFLICT, "No collection specified for PUT");
-				return;
-			}
-			String collectionName = path.substring(0, p);
-			path = path.substring(p + 1);
-			
-			collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
-			if(collection == null) {
+                response.sendError(HttpServletResponse.SC_CONFLICT, "Parent collection " + collectionName +
+                        " not found");
+                return;
+            }
+            if(collection.hasChildCollection(path)) {
                 transact.abort(txn);
-				response.sendError(HttpServletResponse.SC_CONFLICT, "Parent collection " + collectionName +
-				" not found");
-				return;
-			}
-			if(collection.hasChildCollection(path)) {
-                transact.abort(txn);
-				response.sendError(HttpServletResponse.SC_CONFLICT, "Cannot overwrite an existing collection with a resource");
-				return;
-			}
+                response.sendError(HttpServletResponse.SC_CONFLICT, "Cannot overwrite an existing collection with a resource");
+                return;
+            }
+            
+//            // Get old lock info
+//            LockToken lockToken=null;
+//            User lockUser=null;
+////            try {
+//            DocumentImpl resource = broker.getXMLResource(path, org.exist.storage.lock.Lock.WRITE_LOCK);
+//            
+//            if(resource==null){
+////
+//                
+//            } else {
+//                lockToken = resource.getMetadata().getLockToken();
+//                lockUser = resource.getUserLock();
+////                resource.setUserLock(null);
+////                resource.getMetadata().setLockToken(null);
+//            }
+//            
+////            } catch (PermissionDeniedException ex) {
+////                LOG.debug( ex.getMessage() );
+////                response.sendError();
+////                return;
+////            }
+            
             MimeType mime;
-			if(contentType == null) {
-				mime = MimeTable.getInstance().getContentTypeFor(path);
+            if(contentType == null) {
+                mime = MimeTable.getInstance().getContentTypeFor(path);
                 if (mime != null)
                     contentType = mime.getName();
-			} else {
-			    mime = MimeTable.getInstance().getContentType(contentType);
+            } else {
+                mime = MimeTable.getInstance().getContentType(contentType);
             }
             if (mime == null)
                 mime = MimeType.BINARY_TYPE;
-			LOG.debug("storing document " + path + "; content-type = " + contentType);
+            LOG.debug("storing document " + path + "; content-type = " + contentType);
             
-			if(mime.isXMLType()) {
-				InputSource is = new InputSource(url);
-				IndexInfo info = collection.validateXMLResource(txn, broker, path, is);
+            if(mime.isXMLType()) {
+                InputSource is = new InputSource(url);
+                IndexInfo info = collection.validateXMLResource(txn, broker, path, is);
                 info.getDocument().getMetadata().setMimeType(contentType);
-				collection.release();
-				collectionLocked = false;
-				collection.store(txn, broker, info, is, false);
-			} else {
-				byte[] chunk = new byte[4096];
-				ByteArrayOutputStream os = new ByteArrayOutputStream();
-				FileInputStream is = new FileInputStream(tempFile);
-				int l;
-				while((l = is.read(chunk)) > -1) {
-					os.write(chunk, 0, l);
-				}
-				collection.addBinaryResource(txn, broker, path, os.toByteArray(), contentType);
-			}
+//                info.getDocument().getMetadata().setLockToken(lockToken);
+//                info.getDocument().setUserLock(lockUser);
+                collection.release();
+                collectionLocked = false;
+                collection.store(txn, broker, info, is, false);
+            } else {
+                byte[] chunk = new byte[4096];
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                FileInputStream is = new FileInputStream(tempFile);
+                int l;
+                while((l = is.read(chunk)) > -1) {
+                    os.write(chunk, 0, l);
+                }
+                
+                // Restore original lock information
+                DocumentImpl doc = collection.addBinaryResource(txn, broker, path, os.toByteArray(), contentType);
+//                doc.getMetadata().setLockToken(lockToken);
+//                doc.setUserLock(lockUser);
+                
+            }
             transact.commit(txn);
-		} catch (EXistException e) {
+        } catch (EXistException e) {
             transact.abort(txn);
-			throw new ServletException("Failed to store resource: " + e.getMessage(), e);
-		} catch (PermissionDeniedException e) {
+            //throw new ServletException("Failed to store resource: " + e.getMessage(), e);
+            LOG.error(e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            return;
+        } catch (PermissionDeniedException e) {
             transact.abort(txn);
-			response.sendError(HttpServletResponse.SC_FORBIDDEN);
-		} catch (TriggerException e) {
+            LOG.debug(e);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        } catch (TriggerException e) {
             transact.abort(txn);
-			response.sendError(HttpServletResponse.SC_FORBIDDEN);
-		} catch (SAXException e) {
+            LOG.debug(e);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        } catch (SAXException e) {
             transact.abort(txn);
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-		} catch (LockException e) {
+            LOG.debug(e);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        } catch (LockException e) {
             transact.abort(txn);
-			response.sendError(HttpServletResponse.SC_CONFLICT);
-		} finally {
-			if(collectionLocked && collection != null)
-				collection.release();
-			pool.release(broker);
-		}
-        tempFile.delete();
-		response.setStatus(HttpServletResponse.SC_CREATED);
-	}
-	
-	private File saveRequestContent(HttpServletRequest request) throws IOException {
-		ServletInputStream is = request.getInputStream();
-		int len = request.getContentLength();
-		// put may send a lot of data, so save it
-		// to a temporary file first.
-		File tempFile = File.createTempFile("existSRC", ".tmp");
-		OutputStream os = new FileOutputStream(tempFile);
-		byte[] buffer = new byte[4096];
-		int count, l = 0;
-		do {
-			count = is.read(buffer);
-			if (count > 0)
-				os.write(buffer, 0, count);
-			l += count;
-		} while (l < len);
-		os.close();
-		return tempFile;
-	}
+            LOG.debug(e);
+            response.sendError(HttpServletResponse.SC_CONFLICT);
+            return;
+        } finally {
+            if(collectionLocked && collection != null)
+                collection.release();
+            pool.release(broker);
+            tempFile.delete();
+        }
+        response.setStatus(HttpServletResponse.SC_CREATED);
+    }
+    
+    private File saveRequestContent(HttpServletRequest request) throws IOException {
+        ServletInputStream is = request.getInputStream();
+        int len = request.getContentLength();
+        // put may send a lot of data, so save it
+        // to a temporary file first.
+        File tempFile = File.createTempFile("existSRC", ".tmp");
+        OutputStream os = new FileOutputStream(tempFile);
+        byte[] buffer = new byte[4096];
+        int count, l = 0;
+        do {
+            count = is.read(buffer);
+            if (count > 0)
+                os.write(buffer, 0, count);
+            l += count;
+        } while (l < len);
+        os.close();
+        return tempFile;
+    }
 }
