@@ -64,7 +64,7 @@ public class Backup {
 
 	public final static Properties defaultOutputProperties = new Properties();
 	static {
-		defaultOutputProperties.setProperty(OutputKeys.INDENT, "yes");
+		defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
 		defaultOutputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
 		defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
 		
