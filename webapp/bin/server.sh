@@ -46,7 +46,7 @@ fi
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 JAVA_OPTIONS="$JAVA_OPTIONS -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS"
 
-$JAVA_HOME/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone $*
+$JAVA_HOME/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/lib/start.jar" standalone $*
 
 if [ -n "$OLD_LANG" ]; then
 	LANG="$OLD_LANG"
