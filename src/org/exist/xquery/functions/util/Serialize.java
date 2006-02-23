@@ -105,6 +105,7 @@ public class Serialize extends BasicFunction {
             sax.setOutput(writer, outputProperties);
             Serializer serializer = context.getBroker().getSerializer();
             serializer.reset();
+            serializer.setProperties(outputProperties);
             serializer.setReceiver(sax);
 
             sax.startDocument();
