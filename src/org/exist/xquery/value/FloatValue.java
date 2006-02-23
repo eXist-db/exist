@@ -23,9 +23,7 @@
 
 package org.exist.xquery.value;
 
-import java.math.BigDecimal;
 import java.text.Collator;
-import java.text.NumberFormat;
 
 import org.exist.storage.Indexable;
 import org.exist.util.ByteConversion;
@@ -221,6 +219,9 @@ public class FloatValue extends NumericValue implements Indexable {
 	}
 
 	public IntegerValue idiv(NumericValue other) throws XPathException {
+		ComputableValue result = div(other);
+		return new IntegerValue(((IntegerValue)result.convertTo(Type.INTEGER)).getLong());		
+		/*
 		if (Type.subTypeOf(other.getType(), Type.FLOAT)) {
 			float result = value / ((FloatValue) other).value;
 			if (result == Float.NaN || result == Float.POSITIVE_INFINITY || result == Float.NEGATIVE_INFINITY)
@@ -228,6 +229,7 @@ public class FloatValue extends NumericValue implements Indexable {
 			return new IntegerValue(new BigDecimal(result).toBigInteger(), Type.INTEGER);
 		}
 		throw new XPathException("idiv called with incompatible argument type: " + getType() + " vs " + other.getType());
+		*/
 	}
 
 	/* (non-Javadoc)
