@@ -250,6 +250,10 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
         }
     }
+    
+    public String getNodeId() {
+        return id == null ? "1" : id;
+    }
 
     public String getDocumentId() throws XMLDBException {
 	return documentName;
