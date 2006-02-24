@@ -51,9 +51,17 @@ declare function xqts:check-paths() as xs:string* {
     else ()
 };
 
+declare function xqts:path-to-uri($path as xs:string) as xs:string {
+        if (starts-with($path, "/")) then
+            concat("file://", $path)
+        else
+            concat("file:///", $path)
+};
+
 declare function xqts:get-query($case as element(catalog:test-case)) {
    let $query-name := $case//catalog:query/@name
-   let $path := concat( $xqts:XQTS_HOME, "Queries/XQuery/", $case/@FilePath, $query-name, ".xq" )
+   let $path := concat( xqts:path-to-uri($xqts:XQTS_HOME), "Queries/XQuery/", 
+       $case/@FilePath, $query-name, ".xq" )
    let $xq-string := util:file-read($path)
    let $tokenized := tokenize($xq-string, "\n")
    for $token in $tokenized return
@@ -150,22 +158,25 @@ declare function xqts:details($testName as xs:string) {
                     <td class="label">Description:</td>
                     <td>{$case/catalog:description/text()}</td>
                 </tr>
-                <tr>
-                    <td class="label">Specification:</td>
-                    <td>
-                    {
-                        let $spec := $case/catalog:spec-citation
-                        let $citation := /catalog:test-suite//catalog:citation-spec[@name = $spec/@spec]
-                        let $url := $citation/catalog:spec-URI/text()
-                        return 
-                            <a href="{$url}#{$spec/@section-pointer}">
+                {
+                    for $spec in $case/catalog:spec-citation
+                    return
+                        <tr>
+                            <td class="label">Specification:</td>
+                            <td>
                             {
-                                concat($spec/@spec, ': ', $spec/@section-title, ' (', $spec/@section-number, ')')
+                                let $citation := /catalog:test-suite//catalog:citation-spec[@name = $spec/@spec]
+                                let $url := $citation/catalog:spec-URI/text()
+                                return 
+                                    <a href="{$url}#{$spec/@section-pointer}">
+                                    {
+                                        concat($spec/@spec, ': ', $spec/@section-title, ' (', $spec/@section-number, ')')
+                                    }
+                                    </a>
                             }
-                            </a>
-                    }
-                    </td>
-                </tr>
+                            </td>
+                        </tr>
+                }
                 <tr>
                     <td class="label">Result:</td>
                     <td class="{$result/@result}">
