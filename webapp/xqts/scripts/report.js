@@ -198,7 +198,7 @@ ProgressDialog = function (title) {
 		'<div id="progress-dialog">' +
 		'	<h1 id="progress-title">' + title + '</h1>' +
 		'	<div id="progress-inner">' +
-		'		<table id="progress-message"></table>' +
+		'		<div id="progress-message"></div>' +
 		'	</div>' +
 		'	<button type="button" id="progress-dismiss">Close</button>' +
 		'</div>';
