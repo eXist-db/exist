@@ -37,6 +37,8 @@ var behaviourRules = {
 };
 
 var activeTab = null;
+var timer = null;
+var progress = null;
 
 function init() {
 	resize();
@@ -51,6 +53,7 @@ function displayTree() {
 			method: 'post', onComplete: treeLoaded,
 			onFailure: requestFailed
 		});
+	displayMessage('Loading test groups ...');
 }
 
 function treeLoaded(request) {
@@ -61,18 +64,20 @@ function treeLoaded(request) {
 	var rootNode = new YAHOO.widget.TextNode('Suite', treeRoot, true);
 	displayGroup(responseRoot, rootNode);
 	tree.draw();
+	clearMessages();
 }
 
 function displayGroup(node, treeNode) {
 	for (var i = 0; i < node.childNodes.length; i++) {
 		var child = node.childNodes[i];
 		if (child.nodeName == 'group') {
+			var name = child.getAttribute('name');
 			var passed = child.getAttribute('passed');
 			var failed = child.getAttribute('failed');
 			var path = child.getAttribute('collection');
 			var display = child.getAttribute('title') + ' [' + passed +
 					'/' + failed + ']';
-			var obj = { label: display, href: "javascript:loadTests('" + path + "')" };
+			var obj = { label: display, href: "javascript:loadTests('" + path + "', '" + name + "')" };
 			var childTree = new YAHOO.widget.TextNode(obj, treeNode, false);
 			if (child.hasChildNodes())
 				displayGroup(child, childTree);
@@ -80,8 +85,8 @@ function displayGroup(node, treeNode) {
 	}
 }
 
-function loadTests(collection) {
-	var params = 'group=' + collection;
+function loadTests(collection, group) {
+	var params = 'group=' + collection + '&name=' + group;
 	var ajax = new Ajax.Updater('testcases', "report.xql", {
 			method: 'post', parameters: params, 
 			onFailure: requestFailed
@@ -94,15 +99,65 @@ function details(testName) {
 			method: 'post', parameters: params, 
 			onFailure: requestFailed, onComplete: detailsLoaded
 		});
+	displayMessage('Loading test details ...');
 }
 
 function detailsLoaded(request) {
 	$('details-content').innerHTML = request.responseText;
 	activeTab = $('summary');
+	clearMessages();
+}
+
+function runTest(group) {
+	if (confirm('Launch test group: ' + group + '?')) {
+		var params = 'group=' + group;
+		var ajax = new Ajax.Request('xqts.xql', {
+				method: 'post', parameters: params, 
+				onFailure: requestFailed, 
+				onComplete: testCompleted
+			});
+		progress = new ProgressDialog('Testing ...');
+		progress.setMessage('Running ...');
+		timer = setTimeout('reportProgress()', 1000);
+	}
+}
+
+function testCompleted(request) {
+	progress.setMessage('Test completed. Updating...');
+	displayTree();
+	clearMessages();
+	if (progress)
+		progress.close();
+	if (timer) {
+		clearTimeout(timer);
+		timer = null;
+	}
+}
+
+function reportProgress() {
+	var ajax = new Ajax.Request('progress.xql', {
+			method: 'post',
+			onFailure: requestFailed, 
+			onComplete: displayProgress
+		});
+}
+
+function displayProgress(request) {
+	if (timer) clearTimeout(timer);
+	var xml = request.responseXML;
+	var responseRoot = xml.documentElement;
+	var done = responseRoot.getAttribute('done');
+	var total = responseRoot.getAttribute('total');
+	progress.setMessage('Processed ' + done + ' out of ' + total + ' tests...');
+	timer = setTimeout('reportProgress()', 1000);
 }
 
 function requestFailed(request) {
-	alert("Request to the server failed!");
+	displayMessage("Request to the server failed!");
+	if (timer) {
+		clearTimeout(timer);
+		timer = null;
+	}
 }
 
 function resize() {
@@ -115,4 +170,41 @@ function resize() {
     
     var details = $('details');
     details.style.height = (panel.offsetHeight - details.offsetTop) + 'px';
+}
+
+function displayMessage(message) {
+	var messages = $('messages');
+	messages.innerHTML = message;
+}
+
+function clearMessages() {
+	$('messages').innerHTML = '';
+}
+
+ProgressDialog = function (title) {
+	var html = 
+		'<div id="progress-dialog">' +
+		'	<h1 id="progress-title">' + title + '</h1>' +
+		'	<div id="progress-inner">' +
+		'		<div id="progress-message"></div>' +
+		'	</div>' +
+		'</div>';
+	new Insertion.Bottom(document.body, html);
+	var div = $('progress-dialog');
+	div.style.display = 'block';
+	div.style.position = 'absolute';
+	div.style.left = ((document.body.clientWidth - $('progress-dialog').offsetWidth) / 2) + 'px';
+	div.style.top = '25%';
+}
+
+ProgressDialog.prototype = {
+
+	close: function () {
+		var div = $('progress-dialog');
+		div.parentNode.removeChild(div);
+	},
+	
+	setMessage: function (html) {
+		$('progress-message').innerHTML = html;
+	}
 }

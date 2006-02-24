@@ -93,7 +93,7 @@ declare function xqts:display-page() as element() {
             </div>
             
             <div id="content">
-                <div id="errors">{xqts:check-paths()}</div>
+                <div id="messages">{xqts:check-paths()}</div>
                 <div id="navtree"></div>
                 <div id="panel-right">
                     <div id="testcases"></div>
@@ -114,20 +114,30 @@ declare function xqts:display-page() as element() {
     </html>
 };
 
-declare function xqts:print-tests($collection as xs:string) {
+declare function xqts:print-tests($collection as xs:string, $name as xs:string) {
     util:declare-option("exist:serialize", "media-type=text/xml omit-xml-declaration=no"),
-    <table class="tests">
-    {
-        for $case at $pos in xcollection($collection)//test-case
-        let $result := $case/@result
-        let $name := string($case/@name)
-        return
-            <tr class="{if ($pos mod 2 = 0) then 'even' else ''}">
-                <td><a href="#" onclick="details('{$name}')">{$name}</a></td>
-                <td class="{$result}">{string($result)}</td>
-            </tr>
-    }
-    </table>
+    let $group := /catalog:test-suite//catalog:test-group[@name = $name]
+    let $info := $group/catalog:GroupInfo
+    return
+        <div id="group-details">
+            <div class="group-heading">
+                <button type="button" onclick="runTest('{$name}')">Run Test</button>
+                <h1>{$info/catalog:title/text()}</h1>
+                <h2>{$info/catalog:description/text()}</h2>
+            </div>
+            <table class="tests">
+            {
+                for $case at $pos in xcollection($collection)//test-case
+                let $result := $case/@result
+                let $name := string($case/@name)
+                return
+                    <tr class="{if ($pos mod 2 = 0) then 'even' else ''}">
+                        <td><a href="#" onclick="details('{$name}')">{$name}</a></td>
+                        <td class="{$result}">{string($result)}</td>
+                    </tr>
+            }
+            </table>
+        </div>
 };
 
 declare function xqts:failure-details($result as element()) {
@@ -233,12 +243,13 @@ declare function xqts:tree() {
 
 let $tree := request:request-parameter("tree", ())
 let $group := request:request-parameter("group", ())
+let $name := request:request-parameter("name", ())
 let $case := request:request-parameter("case", ())
 return
     if ($case) then
         xqts:details($case)
     else if ($group) then
-        xqts:print-tests($group)
+        xqts:print-tests($group, $name)
     else if ($tree) then
         xqts:tree()
     else
