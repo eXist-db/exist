@@ -44,6 +44,11 @@ body {
     font-size: 80%;
 }
 
+#messages {
+    height: 1.5em;
+    color:blue;
+}
+
 #navtree {
     overflow: auto;
     float: left;
@@ -65,17 +70,42 @@ body {
     height: 160px;
 }
 
+#group-details {
+}
+
+#group-details .group-heading {
+    background-color: #FFE;
+    padding: 6px 5px;
+    border-bottom: 1px solid #FFB900;
+}
+
+.group-heading h1 {
+    font-size: 100%;
+}
+
+.group-heading h2 {
+    font-size: 100%;
+    font-style: italic;
+    font-weight: normal;
+}
+
+.group-heading button {
+    float: right;
+    border: 1px solid #FFB900;
+    font-size: 100%;
+}
+
 .tests {
     width: 99%;
-    font-size: 100%;
 }
 
 .tests td {
     padding-top: 3px;
+    font-size: 75%;
 }
 
 .tests .even {
-    background-color: #FFE;
+    background-color: #E0ECFF;
 }
 
 .tests .fail {
@@ -175,5 +205,32 @@ body {
 
 #summary .pass {
     color: green;
-    font-weight: green;
+    font-weight: bold;
+}
+
+#progress-dialog {
+    border: 1px solid black;
+    background-color: white;
+    font-size: 75%;
+}
+
+#progress-title {
+    background-color: #E0ECFF;
+    font-size: 100%;
+    padding: 0 0 3px 5px;
+    border-bottom: 1px solid black;
+}
+
+#progress-inner {
+    padding: 10px;
+    height: 200px;
+    width: 300px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 100%;
+}
+
+#progress-dialog img {
+    display: block;
+    margin-top: 25px;
 }
