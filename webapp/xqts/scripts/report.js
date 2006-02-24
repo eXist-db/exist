@@ -73,7 +73,7 @@ function displayGroup(node, treeNode) {
 			var display = child.getAttribute('title') + ' [' + passed +
 					'/' + failed + ']';
 			var obj = { label: display, href: "javascript:loadTests('" + path + "')" };
-			var childTree = new YAHOO.widget.TextNode(obj, treeNode, true);
+			var childTree = new YAHOO.widget.TextNode(obj, treeNode, false);
 			if (child.hasChildNodes())
 				displayGroup(child, childTree);
 		}
