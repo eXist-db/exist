@@ -24,20 +24,24 @@
 package org.exist.xquery.value;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.Collator;
 
-import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 /**
  * @author wolf
  */
 public class DecimalValue extends NumericValue {
-
+	
+	//Copied from Saxon 8.6.1
+	private static final int DIVIDE_PRECISION = 18;
+	
 	BigDecimal value;
 
 	public DecimalValue(BigDecimal decimal) {
 		this.value = decimal;
+		loseTrailingZeros();
 	}
 
 	public DecimalValue(String str) throws XPathException {
@@ -64,6 +68,7 @@ public class DecimalValue extends NumericValue {
 	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
+		/*
 		String s = value.toString();
 		while (s.length() > 0  && s.indexOf('.') != Constants.STRING_NOT_FOUND && 
 				s.charAt(s.length() - 1) == '0') {
@@ -72,6 +77,38 @@ public class DecimalValue extends NumericValue {
 		if (s.length() > 0  &&  s.charAt(s.length() - 1 ) == '.')
 			s = s.substring(0, s.length() - 1);
 		return s;
+		*/
+		
+		//Copied from Saxon 8.6.1
+        // Can't use the plain BigDecimal#toString() under JDK 1.5 because this produces values like "1E-5".
+        // JDK 1.5 offers BigDecimal#toPlainString() which might do the job directly
+        if (value.scale() <= 0) {
+            return value.toString();
+        } else {
+            boolean negative = value.signum() < 0;
+            String s = value.abs().unscaledValue().toString();
+            int len = s.length();
+            int scale = value.scale();
+            //For some reason this leads to an out of memory error
+            //FastStringBuffer sb = new FastStringBuffer(len+1);
+            StringBuffer sb = new StringBuffer();
+            if (negative) {
+                sb.append('-');
+            }
+            if (scale >= len) {
+                sb.append("0.");
+                for (int i=len; i<scale; i++) {
+                    sb.append('0');
+                }
+                sb.append(s);
+            } else {
+                sb.append(s.substring(0, len-scale));
+                sb.append('.');
+                sb.append(s.substring(len-scale));
+            }
+            return sb.toString();
+        }
+        //End of copy
 	}
 
 	/* (non-Javadoc)
@@ -223,6 +260,15 @@ public class DecimalValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#div(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue div(ComputableValue other) throws XPathException {
+		//Copied from Saxon 8.6.1	
+        int scale = Math.max(DIVIDE_PRECISION,
+                Math.max(value.scale(), ((DecimalValue)other).value.scale()));
+		//int scale = value.scale() + ((DecimalValue)other).value.scale() + DIVIDE_PRECISION;
+		BigDecimal result = value.divide(((DecimalValue)other).value, scale, BigDecimal.ROUND_HALF_DOWN);
+		return new DecimalValue(result);
+		//End of copy
+        	
+		/*
 		switch(other.getType()) {
 			case Type.DECIMAL:
 				// arbitrarily set precision to 20 spots after the decimal point, since XQuery says it's "implementation-dependent"
@@ -234,21 +280,16 @@ public class DecimalValue extends NumericValue {
 			default:
 				return ((ComputableValue) convertTo(other.getType())).div(other);
 		}
+		*/
 	}
 
 	public IntegerValue idiv(NumericValue other) throws XPathException {
-		ComputableValue result = div(other);
-		return new IntegerValue(((IntegerValue)result.convertTo(Type.INTEGER)).getLong());		
-		/*
-		if (Type.subTypeOf(other.getType(), Type.DECIMAL)) {
-			try {
-				return new IntegerValue(value.divide(((DecimalValue) other).value, 0, BigDecimal.ROUND_DOWN).toBigInteger(), Type.INTEGER);
-			} catch (ArithmeticException e) {
-				throw new XPathException("division by zero", e);
-			}
-		}
-		throw new XPathException("idiv called with incompatible argument type: " + getType() + " vs " + other.getType());
-		*/
+		//Copied from Saxon 8.6.1	
+		if (((DecimalValue)other).value.signum() == 0)
+			throw new XPathException("FOAR0001: division by zero");
+        BigInteger quot = value.divide(((DecimalValue)other).value, 0, BigDecimal.ROUND_DOWN).toBigInteger();
+        return new IntegerValue(quot);
+        //End of copy
 	}
 
 	/* (non-Javadoc)
@@ -357,4 +398,32 @@ public class DecimalValue extends NumericValue {
 				+ " to Java object of type "
 				+ target.getName());
 	}
+	
+	//Copied from Saxon 8.6.1
+    /**
+    * Remove insignificant trailing zeros (the Java BigDecimal class retains trailing zeros,
+    * but the XPath 2.0 xs:decimal type does not)
+    */
+    private void loseTrailingZeros() {
+        int scale = value.scale();
+        if (scale > 0) {
+            BigInteger i = value.unscaledValue();
+            while (true) {
+                BigInteger[] dr = i.divideAndRemainder(BigInteger.valueOf(10));
+                if (dr[1].equals(BigInteger.ZERO)) {
+                    i = dr[0];
+                    scale--;
+                    if (scale==0) {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+            if (scale != value.scale()) {
+                value = new BigDecimal(i, scale);
+            }
+        }
+    }	
+    //End of copy
 }
