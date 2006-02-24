@@ -443,7 +443,7 @@ public abstract class DBBroker extends Observable {
 	public abstract void reindexCollection(String collectionName) 
 		throws PermissionDeniedException;
 	
-    protected abstract void repair() throws PermissionDeniedException;
+    public abstract void repair() throws PermissionDeniedException;
     
 	/**
      * Saves the specified collection to storage. Collections are usually cached in
