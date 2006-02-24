@@ -93,7 +93,7 @@ body {
 #details {
     margin-top: 10px;
     border: 1px solid #BCD2E6;
-    
+    overflow: auto;
 }
 
 #tabs {
