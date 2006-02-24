@@ -22,9 +22,11 @@ package org.exist.xquery.value;
 
 import java.math.BigDecimal;
 import java.text.Collator;
+import java.util.regex.Matcher;
 
 import org.exist.storage.Indexable;
 import org.exist.util.ByteConversion;
+import org.exist.util.FastStringBuffer;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
@@ -69,8 +71,15 @@ public class DoubleValue extends NumericValue implements Indexable {
 	//	public String getStringValue() throws XPathException {
 	//		return Double.toString(value);
 	//	}
+	
+	//Copied from Saxon 8.6.1
+	static java.util.regex.Pattern nonExponentialPattern =
+        java.util.regex.Pattern.compile(
+                "(-?[0-9])([0-9]+?)(0*)\\.([0-9]*)");
+	//End of copy
 
 	public String getStringValue() {
+		/*
 		if (value == Float.POSITIVE_INFINITY)
 			return "INF"; ;
 		if (value == Float.NEGATIVE_INFINITY)
@@ -116,6 +125,88 @@ public class DoubleValue extends NumericValue implements Indexable {
 			return sign + "0." + zeros(-1 - exp) + s.substring(0, 1) + s.substring(2, e);
 		}
 		*/
+		
+		String javaString = String.valueOf(value);
+		//Copied from Saxon-B 8.6.1
+        if (value==0.0) {
+            if (javaString.charAt(0) == '-') {
+                return "-0";
+            } else {
+                return "0";
+            }
+        }
+        if (Double.isInfinite(value)) {
+            return (value > 0 ? "INF" : "-INF");
+        }
+        if (Double.isNaN(value)) {
+            return "NaN";
+        }
+        final double absval = Math.abs(value);
+        String s = javaString;
+        if (absval < 1.0e-6 || absval >= 1.0e+6) {
+            if (s.indexOf('E')<0) {
+                // need to use scientific notation, but Java isn't using it
+                // (Java's cutoff is 1.0E7, while XPath's is 1.0E6)
+                // So we have for example -2000000.0 rather than -2.0e6
+                FastStringBuffer sb = new FastStringBuffer(32);
+                Matcher matcher = nonExponentialPattern.matcher(s);
+                if (matcher.matches()) {
+                    sb.append(matcher.group(1));
+                    sb.append('.');
+                    sb.append(matcher.group(2));
+                    final String fraction = matcher.group(4);
+                    if ("0".equals(fraction)) {
+                        sb.append("E" + (matcher.group(2).length() + matcher.group(3).length()));
+                        return sb.toString();
+                    } else {
+                        sb.append(matcher.group(3));
+                        sb.append(matcher.group(4));
+                        sb.append("E" + (matcher.group(2).length() + matcher.group(3).length()));
+                        return sb.toString();
+                    }
+                } else {
+                    // fallback, this shouldn't happen
+                    return s;
+                }
+            } else {
+                return s;
+            }
+        }
+        int len = s.length();
+        if (s.endsWith("E0")) {
+            s = s.substring(0, len - 2);
+        }
+        if (s.endsWith(".0")) {
+            return s.substring(0, len - 2);
+        }
+        int e = s.indexOf('E');
+        if (e < 0) {
+            // For some reason, Double.toString() in Java can return strings such as "0.0040"
+            // so we remove any trailing zeros
+            while (s.charAt(len - 1) == '0' && s.charAt(len - 2) != '.') {
+                s = s.substring(0, --len);
+            }
+            return s;
+        }
+        int exp = Integer.parseInt(s.substring(e + 1));
+        String sign;
+        if (s.charAt(0) == '-') {
+            sign = "-";
+            s = s.substring(1);
+            --e;
+        } else {
+            sign = "";
+        }
+        int nDigits = e - 2;
+        if (exp >= nDigits) {
+            return sign + s.substring(0, 1) + s.substring(2, e) + zeros(exp - nDigits);
+        } else if (exp > 0) {
+            return sign + s.substring(0, 1) + s.substring(2, 2 + exp) + '.' + s.substring(2 + exp, e);
+        } else {
+            while (s.charAt(e-1) == '0') e--;
+            return sign + "0." + zeros(-1 - exp) + s.substring(0, 1) + s.substring(2, e);
+        }
+        //End of copy
 	}
 
 	static private String zeros(int n) {
@@ -172,17 +263,17 @@ public class DoubleValue extends NumericValue implements Indexable {
 			case Type.UNSIGNED_BYTE :
 			case Type.POSITIVE_INTEGER :
 				if (isNaN())
-					throw new XPathException("FORG0001: can not convert xs:double('NaN') to xs:integer");
+					throw new XPathException("FORG0001: can not convert xs:double('" + getStringValue() + "') to xs:integer");
+				if (Double.isInfinite(value))
+					throw new XPathException("FORG0001: can not convert xs:double('" + getStringValue() + "') to xs:integer");				
 				return new IntegerValue((long) value, requiredType);
 			case Type.BOOLEAN :
-				return (value == 0.0 || isNaN())
-					? BooleanValue.FALSE
-					: BooleanValue.TRUE;
+				return new BooleanValue(this.effectiveBooleanValue());				
 			default :
 				throw new XPathException(
-					"cannot convert double value '"
-						+ value
-						+ "' into "
+					"XPTY0004: Cannot convert xs:double('"
+						+ getStringValue()
+						+ "') into "
 						+ Type.getTypeName(requiredType));
 		}
 	}
@@ -191,7 +282,11 @@ public class DoubleValue extends NumericValue implements Indexable {
 	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
-		return !( value == 0 || isNaN());
+		if (value == 0.0)
+			return false;
+		if (isNaN())
+			return false;
+		return true;
 	}
 
 	/* (non-Javadoc)
