@@ -2797,7 +2797,7 @@ public class NativeBroker extends DBBroker {
 		.run();
 	}
 	
-    protected void repair() throws PermissionDeniedException {
+    public void repair() throws PermissionDeniedException {
         Collection root = getCollection(ROOT_COLLECTION);
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
