@@ -121,7 +121,7 @@ declare function xqts:print-tests($collection as xs:string, $name as xs:string) 
     return
         <div id="group-details">
             <div class="group-heading">
-                <button type="button" onclick="runTest('{$name}')">Run Test</button>
+                <button type="button" onclick="runTest('{$collection}', '{$name}')">Run Test</button>
                 <h1>{$info/catalog:title/text()}</h1>
                 <h2>{$info/catalog:description/text()}</h2>
             </div>

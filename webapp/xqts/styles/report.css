@@ -222,15 +222,14 @@ body {
 }
 
 #progress-inner {
-    padding: 10px;
+    padding: 35px 10px 10px 10px;
     height: 200px;
     width: 300px;
-    text-align: center;
     vertical-align: middle;
     font-size: 100%;
 }
 
-#progress-dialog img {
-    display: block;
-    margin-top: 25px;
+#progress-inner p {
+    margin-bottom: 25px;
+    margin-left: 20px;
 }

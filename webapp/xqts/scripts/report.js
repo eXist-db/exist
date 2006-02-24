@@ -39,6 +39,8 @@ var behaviourRules = {
 var activeTab = null;
 var timer = null;
 var progress = null;
+var currentCollection = null;
+var currentGroup = null;
 
 function init() {
 	resize();
@@ -108,8 +110,11 @@ function detailsLoaded(request) {
 	clearMessages();
 }
 
-function runTest(group) {
+function runTest(collection, group) {
 	if (confirm('Launch test group: ' + group + '?')) {
+		currentCollection = collection;
+		currentGroup = group;
+		
 		var params = 'group=' + group;
 		var ajax = new Ajax.Request('xqts.xql', {
 				method: 'post', parameters: params, 
@@ -123,11 +128,12 @@ function runTest(group) {
 }
 
 function testCompleted(request) {
-	progress.setMessage('Test completed. Updating...');
 	displayTree();
+	loadTests(currentCollection, currentGroup);
 	clearMessages();
-	if (progress)
-		progress.close();
+	if (progress) {
+		progress.finish();
+	}
 	if (timer) {
 		clearTimeout(timer);
 		timer = null;
@@ -148,7 +154,13 @@ function displayProgress(request) {
 	var responseRoot = xml.documentElement;
 	var done = responseRoot.getAttribute('done');
 	var total = responseRoot.getAttribute('total');
-	progress.setMessage('Processed ' + done + ' out of ' + total + ' tests...');
+	var passed = responseRoot.getAttribute('passed');
+	var failed = responseRoot.getAttribute('failed');
+	progress.setMessage(
+		'<p>Processed ' + done + ' out of ' + total + ' tests...</p>' +
+		'<p>Failed: ' + failed + '</p>' +
+		'<p>Passed: ' + passed + '</p>'
+	);
 	timer = setTimeout('reportProgress()', 1000);
 }
 
@@ -186,8 +198,9 @@ ProgressDialog = function (title) {
 		'<div id="progress-dialog">' +
 		'	<h1 id="progress-title">' + title + '</h1>' +
 		'	<div id="progress-inner">' +
-		'		<div id="progress-message"></div>' +
+		'		<table id="progress-message"></table>' +
 		'	</div>' +
+		'	<button type="button" id="progress-dismiss">Close</button>' +
 		'</div>';
 	new Insertion.Bottom(document.body, html);
 	var div = $('progress-dialog');
@@ -195,6 +208,9 @@ ProgressDialog = function (title) {
 	div.style.position = 'absolute';
 	div.style.left = ((document.body.clientWidth - $('progress-dialog').offsetWidth) / 2) + 'px';
 	div.style.top = '25%';
+	
+	$('progress-dismiss').style.visibility = 'hidden';
+	Event.observe('progress-dismiss', 'click', this.close, false);
 }
 
 ProgressDialog.prototype = {
@@ -206,5 +222,9 @@ ProgressDialog.prototype = {
 	
 	setMessage: function (html) {
 		$('progress-message').innerHTML = html;
+	},
+	
+	finish: function (html) {
+		$('progress-dismiss').style.visibility = 'visible';
 	}
 }
