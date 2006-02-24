@@ -33,10 +33,11 @@
 	<classpathentry kind="lib" path="lib/optional/cocoon-xsp-block.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-collections-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.2.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-fileupload-1.1.jar"/>
+	<classpathentry sourcepath="/home/adam/commons-fileupload-1.1-src.zip" kind="lib" path="lib/optional/commons-fileupload-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-httpclient-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-io-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-jexl-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/optional/jug-lgpl-2.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-jxpath-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-lang-2.0-20041007T2305.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-logging-1.0.4.jar"/>
