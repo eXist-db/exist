@@ -122,21 +122,21 @@ function runTest(collection, group) {
 				onComplete: testCompleted
 			});
 		progress = new ProgressDialog('Testing ...');
-		progress.setMessage('Running ...');
 		timer = setTimeout('reportProgress()', 1000);
 	}
 }
 
 function testCompleted(request) {
+	if (timer) {
+		clearTimeout(timer);
+		timer = null;
+	}
+	reportProgress();
 	displayTree();
 	loadTests(currentCollection, currentGroup);
 	clearMessages();
 	if (progress) {
 		progress.finish();
-	}
-	if (timer) {
-		clearTimeout(timer);
-		timer = null;
 	}
 }
 
@@ -156,12 +156,11 @@ function displayProgress(request) {
 	var total = responseRoot.getAttribute('total');
 	var passed = responseRoot.getAttribute('passed');
 	var failed = responseRoot.getAttribute('failed');
-	progress.setMessage(
-		'<p>Processed ' + done + ' out of ' + total + ' tests...</p>' +
-		'<p>Failed: ' + failed + '</p>' +
-		'<p>Passed: ' + passed + '</p>'
-	);
-	timer = setTimeout('reportProgress()', 1000);
+	progress.setMessage('Processed ' + done + ' out of ' + total + ' tests...');
+	progress.setFailed(failed);
+	progress.setPassed(passed);
+	if (timer)
+		timer = setTimeout('reportProgress()', 1000);
 }
 
 function requestFailed(request) {
@@ -198,7 +197,16 @@ ProgressDialog = function (title) {
 		'<div id="progress-dialog">' +
 		'	<h1 id="progress-title">' + title + '</h1>' +
 		'	<div id="progress-inner">' +
-		'		<div id="progress-message"></div>' +
+		'		<table cellspacing="20">' +
+		'			<tr>' +
+		'				<td colspan="2" id="progress-message">Starting ...</td>' +
+		'			</tr>' +
+		'				<td>Passed:</td><td id="progress-passed">0</td>' +
+		'			</tr>' +
+		'			<tr>' +
+		'				<td>Failed:</td><td id="progress-failed">0</td>' +
+		'			</tr>' +
+		'		</table>' +
 		'	</div>' +
 		'	<button type="button" id="progress-dismiss">Close</button>' +
 		'</div>';
@@ -222,6 +230,14 @@ ProgressDialog.prototype = {
 	
 	setMessage: function (html) {
 		$('progress-message').innerHTML = html;
+	},
+	
+	setPassed: function (passed) {
+		$('progress-passed').innerHTML = passed;
+	},
+	
+	setFailed: function (failed) {
+		$('progress-failed').innerHTML = failed;
 	},
 	
 	finish: function (html) {
