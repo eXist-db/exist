@@ -63,17 +63,26 @@ abstract class OrderedDurationValue extends DurationValue {
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		switch(other.getType()) {
 			case Type.DAY_TIME_DURATION: {
-				if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
+				//if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
 				Duration a = getCanonicalDuration();
 				Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
 				Duration result = createSameKind(a.add(b)).getCanonicalDuration();
+				//TODO : move instantiation to the right place
 				return new DayTimeDurationValue(result); }				
 			case Type.YEAR_MONTH_DURATION: {
-				if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
+				//if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
 				Duration a = getCanonicalDuration();
 				Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
 				Duration result = createSameKind(a.add(b)).getCanonicalDuration();
+				//TODO : move instantiation to the right place
 				return new YearMonthDurationValue(result); }
+			case Type.DURATION: {
+				//if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
+				Duration a = getCanonicalDuration();
+				Duration b = ((DurationValue) other).getCanonicalDuration();	
+				Duration result = createSameKind(a.add(b)).getCanonicalDuration();
+				//TODO : move instantiation to the right place
+				return new DurationValue(result); }
 			case Type.TIME:
 			case Type.DATE_TIME:
 			case Type.DATE:
