@@ -59,11 +59,16 @@ public class DurationValue extends ComputableValue {
 		TimeUtils.getInstance().newDuration(true, null, null, null, null, null, ZERO_DECIMAL);
 	
 	public DurationValue(Duration duration) throws XPathException {
-		this.duration = duration;
+		this.duration = duration;		
 	}
 	
 	public DurationValue(String str) throws XPathException {
 		this.duration = TimeUtils.getInstance().newDuration(str);
+	}
+	
+	protected Duration getCanonicalDuration() {
+		canonicalize();
+		return canonicalDuration;
 	}
 	
 	public int getType() {
@@ -79,7 +84,7 @@ public class DurationValue extends ComputableValue {
 	}
 
 	public String getStringValue() {
-		if (canonicalDuration == null) canonicalize();
+		canonicalize();
 		return canonicalDuration.toString();
 	}
 	
@@ -104,6 +109,9 @@ public class DurationValue extends ComputableValue {
 	}
 	
 	private void canonicalize() {
+		if (canonicalDuration != null)
+			return;
+		
 		BigInteger years, months, days, hours, minutes;
 		BigDecimal seconds;
 		BigInteger[] r;
@@ -134,7 +142,7 @@ public class DurationValue extends ComputableValue {
 			canonicalDuration = TimeUtils.getInstance().newDuration(
 					duration.getSign() >= 0,
 					years, months, days, hours, minutes, seconds);
-		}
+		}		
 	}
 
 	protected BigDecimal secondsValue() {

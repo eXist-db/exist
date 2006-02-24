@@ -29,6 +29,7 @@ import java.math.BigInteger;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 
+import org.exist.util.FastStringBuffer;
 import org.exist.xquery.XPathException;
 
 /**
@@ -45,13 +46,13 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 				duration.isSet(DatatypeConstants.DAYS) ||
 				duration.isSet(DatatypeConstants.HOURS) ||
 				duration.isSet(DatatypeConstants.MINUTES) ||
-				duration.isSet(DatatypeConstants.SECONDS)
+				duration.isSet(DatatypeConstants.SECONDS) 
 				)
 			throw new XPathException("the value '" + duration + "' is not an xdt:yearMonthDuration since it specified days, hours, minutes or seconds values");
 	}
 
 	public YearMonthDurationValue(String str) throws XPathException {
-		this(TimeUtils.getInstance().newDurationYearMonth(str));
+		this(TimeUtils.getInstance().newDurationYearMonth(str));		
 	}
 	
 	protected Duration canonicalZeroDuration() {
@@ -65,6 +66,21 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	public int getType() {
 		return Type.YEAR_MONTH_DURATION;
 	}
+	
+	public String getStringValue() {
+        FastStringBuffer sb = new FastStringBuffer(32);
+        if (getCanonicalDuration().getSign() < 0) {
+            sb.append('-');
+        }
+        sb.append('P');
+        if (getCanonicalDuration().getYears() != 0) {
+            sb.append(getCanonicalDuration().getYears() + "Y");
+        }
+        if (getCanonicalDuration().getMonths() !=0 || getCanonicalDuration().getYears() == 0) {
+            sb.append(getCanonicalDuration().getMonths() + "M");
+        }
+        return sb.toString();
+	}	
 
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
@@ -126,15 +142,14 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 		if (other.getType() == Type.YEAR_MONTH_DURATION) {
 			return new IntegerValue(getValue()).div(new IntegerValue(((YearMonthDurationValue) other).getValue()));
 		}
-		BigDecimal divisor = numberToBigDecimal(other, "Operand to div should be of xdt:yearMonthDuration or numeric type; got: ");
+		BigDecimal divisor = numberToBigDecimal(other, "Can not divide xdt:yearMonthDuration by '" + Type.getTypeName(other.getType())+ "'");
 		boolean isDivisorNegative = divisor.signum() < 0;
 		YearMonthDurationValue quotient = fromDecimalMonths(
 			new BigDecimal(monthsValueSigned())
-			.divide(divisor.abs(), 0, BigDecimal.ROUND_HALF_UP)
-		);
+			.divide(divisor.abs(), 20, BigDecimal.ROUND_HALF_EVEN));		
 		if (isDivisorNegative)
 			return quotient.negate();
-		return quotient;
+		return new YearMonthDurationValue(quotient.getCanonicalDuration());	
 	}
 	
 	private YearMonthDurationValue fromDecimalMonths(BigDecimal x) throws XPathException {

@@ -28,6 +28,7 @@ import java.math.*;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 
+import org.exist.util.FastStringBuffer;
 import org.exist.xquery.XPathException;
 
 /**
@@ -71,6 +72,61 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	
 	protected Duration canonicalZeroDuration() {
 		return CANONICAL_ZERO_DURATION;
+	}
+	
+	public String getStringValue() {
+		//canonicalize();
+		Duration canonical = getCanonicalDuration();
+		if (canonical != null)
+			return canonical.toString();
+		int d = duration.getDays();
+		int h = duration.getHours();
+		int m = duration.getMinutes();
+		int s = duration.getSeconds();
+		//TODO
+		long micros = 0;
+		
+		//Copied from Saxon 8.6.1		
+        FastStringBuffer sb = new FastStringBuffer(32);
+        if (duration.getSign() < 0) {
+            sb.append('-');
+        }
+        sb.append('P');        
+        if (d != 0) {
+            sb.append(d + "D");
+        }
+        if ( d==0 || h!=0 || m!=0 || s!=0 || micros!=0) {
+            sb.append('T');
+        }
+        if (h != 0) {
+            sb.append(h + "H");
+        }
+        if (m != 0) {
+            sb.append(m + "M");
+        }
+        if (s != 0 || micros != 0 || (d==0 && m==0 && h==0)) {
+            if (micros == 0) {
+                sb.append(s + "S");
+            } else {
+                long ms = (s * 1000000) + micros;
+                String mss = ms + "";
+                if (s == 0) {
+                    mss = "0000000" + mss;
+                    mss = mss.substring(mss.length()-7);
+                }
+                sb.append(mss.substring(0, mss.length()-6));
+                sb.append('.');
+                int lastSigDigit = mss.length()-1;
+                while (mss.charAt(lastSigDigit) == '0') {
+                    lastSigDigit--;
+                }
+                sb.append(mss.substring(mss.length()-6, lastSigDigit+1));
+                sb.append('S');
+            }
+        }
+        //End of copy        
+        return sb.toString();
+        
 	}
 	
 	public AtomicValue convertTo(int requiredType) throws XPathException {
