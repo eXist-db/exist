@@ -1,10 +1,13 @@
 package org.exist.xquery.value.test;
 
+import javax.xml.datatype.Duration;
+
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.*;
 import org.exist.xquery.value.DayTimeDurationValue;
+import org.exist.xquery.value.DecimalValue;
 import org.exist.xquery.value.DurationValue;
+import org.exist.xquery.value.Type;
 
 public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
 
@@ -38,7 +41,7 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
 	}
 	public void testStringFormat2() throws XPathException {
 		DurationValue dv = new DayTimeDurationValue("P1DT25H65M66.5S");
-		assertEquals("P2DT2H6M6.5S", dv.getStringValue());
+		assertEquals("P2DT2H6M6.5S", new DurationValue(dv.getCanonicalDuration()).getStringValue());
 	}
 	public void testStringFormat3() throws XPathException {
 		DurationValue dv = new DayTimeDurationValue("P0DT0H");
