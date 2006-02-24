@@ -36,7 +36,7 @@ import org.exist.xquery.XPathException;
  */
 public class DayTimeDurationValue extends OrderedDurationValue {
 
-	private static final Duration CANONICAL_ZERO_DURATION =
+	public static final Duration CANONICAL_ZERO_DURATION =
 		TimeUtils.getInstance().newDuration(true, null, null, null, null, null, ZERO_DECIMAL);
 	
 	DayTimeDurationValue(Duration duration) throws XPathException {
@@ -75,17 +75,11 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	}
 	
 	public String getStringValue() {
-		//canonicalize();
-		Duration canonical = getCanonicalDuration();
-		if (canonical != null)
-			return canonical.toString();
 		int d = duration.getDays();
 		int h = duration.getHours();
 		int m = duration.getMinutes();
-		int s = duration.getSeconds();
-		//TODO
-		long micros = 0;
-		
+		Number s = duration.getField(DatatypeConstants.SECONDS);
+	
 		//Copied from Saxon 8.6.1		
         FastStringBuffer sb = new FastStringBuffer(32);
         if (duration.getSign() < 0) {
@@ -95,7 +89,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         if (d != 0) {
             sb.append(d + "D");
         }
-        if ( d==0 || h!=0 || m!=0 || s!=0 || micros!=0) {
+        if ( d==0 || h!=0 || m!=0 || s.intValue() != 0) {
             sb.append('T');
         }
         if (h != 0) {
@@ -104,7 +98,9 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         if (m != 0) {
             sb.append(m + "M");
         }
-        if (s != 0 || micros != 0 || (d==0 && m==0 && h==0)) {
+        if ((s != null && s.intValue() != 0) || (d==0 && m==0 && h==0)) {
+        	sb.append(s + "S");
+        	/*
             if (micros == 0) {
                 sb.append(s + "S");
             } else {
@@ -123,6 +119,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
                 sb.append(mss.substring(mss.length()-6, lastSigDigit+1));
                 sb.append('S');
             }
+            */
         }
         //End of copy        
         return sb.toString();
@@ -160,6 +157,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 		return new DayTimeDurationValue(dur);
 	}
 	
+	/*
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		try {
 			return super.plus(other);
@@ -169,14 +167,15 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 					Type.getTypeName(other.getType()));
 		}
 	}
+	*/
 	
 	public ComputableValue mult(ComputableValue other) throws XPathException {
 		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
 		boolean isFactorNegative = factor.signum() < 0;
 		DayTimeDurationValue product = new DayTimeDurationValue(duration.multiply(factor.abs()));
 		if (isFactorNegative)
-			return product.negate();
-		return product;
+			return new DayTimeDurationValue(product.negate().getCanonicalDuration());
+		return new DayTimeDurationValue(product.getCanonicalDuration());
 		
 	}
 
@@ -191,8 +190,8 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 		BigDecimal secondsValueSigned = secondsValueSigned();
 		DayTimeDurationValue quotient = fromDecimalSeconds(secondsValueSigned.divide(divisor.abs(), Math.max(Math.max(3, secondsValueSigned.scale()), divisor.scale()), BigDecimal.ROUND_HALF_UP));
 		if (isDivisorNegative)
-			return quotient.negate();
-		return quotient;		
+			return new DayTimeDurationValue(quotient.negate().getCanonicalDuration());
+		return new DayTimeDurationValue(quotient.getCanonicalDuration());		
 	}
 
 	private DayTimeDurationValue fromDecimalSeconds(BigDecimal x) throws XPathException {
