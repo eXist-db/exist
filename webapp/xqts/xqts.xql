@@ -73,14 +73,22 @@ declare function xqts:path-to-uri($path as xs:string) as xs:string {
 };
 
 declare function xqts:create-progress-file($testCount as xs:int) as empty() {
-    let $results := xdb:store("/db/XQTS", "progress.xml", <progress total="{$testCount}" done="0"/>)
+    let $results := xdb:store("/db/XQTS", "progress.xml", 
+        <progress total="{$testCount}" done="0" failed="0" passed="0"/>)
     return ()
 };
 
-declare function xqts:report-progress() as empty() {
-    let $counter := doc("/db/XQTS/progress.xml")/progress/@done
-    return
-        update value $counter with xs:int($counter + 1)
+declare function xqts:report-progress($test-case as element()) as empty() {
+    let $result := string($test-case/@result)
+    let $progress := doc("/db/XQTS/progress.xml")/progress
+    let $counter := $progress/@done
+    return (
+        update value $counter with xs:int($counter + 1),
+        if ($result eq 'fail') then
+            update value $progress/@failed with xs:int($progress/@failed + 1)
+        else
+            update value $progress/@passed with xs:int($progress/@passed + 1)
+    )
 };
 
 declare function xqts:create-collections($group as element(catalog:test-group)) as node() {
@@ -230,7 +238,7 @@ declare function xqts:run-single-test-case($case as element(catalog:test-case),
     let $result := xqts:run-test-case($case)
     return (
         update insert $result into $resultRoot,
-        xqts:report-progress()
+        xqts:report-progress($resultRoot/test-case[@name = $case/@name])
     )
 };
 
