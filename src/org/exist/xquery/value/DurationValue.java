@@ -66,7 +66,7 @@ public class DurationValue extends ComputableValue {
 		this.duration = TimeUtils.getInstance().newDuration(str);
 	}
 	
-	protected Duration getCanonicalDuration() {
+	public Duration getCanonicalDuration() {
 		canonicalize();
 		return canonicalDuration;
 	}
