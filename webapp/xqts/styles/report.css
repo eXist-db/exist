@@ -229,7 +229,6 @@ body {
     font-size: 100%;
 }
 
-#progress-inner p {
-    margin-bottom: 25px;
-    margin-left: 20px;
+#progress-inner table {
+    font-size: 100%;
 }
