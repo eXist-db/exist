@@ -62,10 +62,18 @@ abstract class OrderedDurationValue extends DurationValue {
 
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		switch(other.getType()) {
-			case Type.DAY_TIME_DURATION:
-			case Type.YEAR_MONTH_DURATION:
+			case Type.DAY_TIME_DURATION: {
 				if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
-				return createSameKind(duration.add(((OrderedDurationValue) other).duration));
+				Duration a = getCanonicalDuration();
+				Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
+				Duration result = createSameKind(a.add(b)).getCanonicalDuration();
+				return new DayTimeDurationValue(result); }				
+			case Type.YEAR_MONTH_DURATION: {
+				if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
+				Duration a = getCanonicalDuration();
+				Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
+				Duration result = createSameKind(a.add(b)).getCanonicalDuration();
+				return new YearMonthDurationValue(result); }
 			case Type.TIME:
 			case Type.DATE_TIME:
 			case Type.DATE:
@@ -79,11 +87,38 @@ abstract class OrderedDurationValue extends DurationValue {
 	}
 
 	public ComputableValue minus(ComputableValue other) throws XPathException {
+		switch(other.getType()) {
+		case Type.DAY_TIME_DURATION: {
+			if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
+			Duration a = getCanonicalDuration();
+			Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
+			Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
+			return new DayTimeDurationValue(result); }				
+		case Type.YEAR_MONTH_DURATION: {
+			if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
+			Duration a = getCanonicalDuration();
+			Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
+			Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
+			return new YearMonthDurationValue(result); }
+		/*
+		case Type.TIME:
+		case Type.DATE_TIME:
+		case Type.DATE:
+			AbstractDateTimeValue date = (AbstractDateTimeValue) other;
+			XMLGregorianCalendar gc = (XMLGregorianCalendar) date.calendar.clone();
+			gc.substract(duration);
+			return date.createSameKind(gc);
+		*/
+		default:
+			throw new IllegalArgumentException();		// caught and converted to XPathException in subclass	
+		}
+		/*
 		if(other.getType() == getType()) {
 			return createSameKind(duration.subtract(((OrderedDurationValue)other).duration));
 		}
 		throw new XPathException("Operand to minus should be of type " + Type.getTypeName(getType()) + "; got: " +
 			Type.getTypeName(other.getType()));
+		*/
 	}
 	
 	/**
