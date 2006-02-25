@@ -83,7 +83,8 @@ public class WebDAV {
         try {
             pool = BrokerPool.getInstance(this.databaseid);
         } catch (EXistException e) {
-            throw new ServletException("Error found while initializing database: " + e.getMessage(), e);
+            throw new ServletException("Error found while initializing "
+                    + "database: " + e.getMessage(), e);
         }
         defaultAuthMethod = authenticationMethod;
         digestAuth = new DigestAuthenticator(pool);
@@ -105,23 +106,30 @@ public class WebDAV {
     public void process(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         User user = authenticate(request, response);
-        if(user == null)
+        if(user == null){
+            // TODO Return error code ?
+//            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, 
+//                        "Please Supply credentials");
             return;
+        }
+            
+        
         String path = request.getPathInfo();
         if(path == null || path.length() == 0 || path.equals("/")) {
             response.sendRedirect(request.getRequestURI() + DBBroker.ROOT_COLLECTION);
             return;
         }
+        
         if(path.endsWith("/"))
             path = path.substring(0, path.length() - 1);
         
-        LOG.debug("path='" + path + "'; method='" + request.getMethod()
-        +"'; user='"+user.getName()
-        +"'; Lock-Token='" + request.getHeader("Lock-Token")+"';");
-        
-        WebDAVMethod method = null;
-        
-        method = WebDAVMethodFactory.create(request.getMethod(), pool);
+        LOG.debug("path='" + path
+                + "'; method='" + request.getMethod()
+                + "'; user='"+user.getName()
+                + "'; Lock-Token='" + request.getHeader("Lock-Token")
+                + "'; If='"+request.getHeader("If")+"'");
+                
+        WebDAVMethod method = WebDAVMethodFactory.create(request.getMethod(), pool);
         if(method == null) {
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
                     "Method is not supported: " + request.getMethod());
@@ -140,6 +148,7 @@ public class WebDAV {
                 digestAuth.sendChallenge(request, response);
             return null;
         }
+        
         if(credentials.toUpperCase().startsWith("DIGEST")) {
             return digestAuth.authenticate(request, response);
         } else {

@@ -36,45 +36,49 @@ import org.exist.storage.BrokerPool;
 /**
  * Provides a WebDAV interface to the database. All WebDAV requests
  * are delegated to the {@link org.exist.http.webdav.WebDAV} class.
- * 
+ *
  * @author wolf
  */
 public class WebDAVServlet extends HttpServlet {
-	
-	private WebDAV webdav;
+    
+    private WebDAV webdav;
     /** id of the database registred against the BrokerPool */
     protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
-
-	
-	/* (non-Javadoc)
-	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
-	 */
-	public void init(ServletConfig config) throws ServletException {
-		super.init(config);
-        // <frederic.glorieux@ajlsm.com> to allow multi-instance webdav server, use a databaseid everywhere
+    
+    
+        /* (non-Javadoc)
+         * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
+         */
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        // <frederic.glorieux@ajlsm.com> to allow multi-instance webdav server,
+        // use a databaseid everywhere
         String id = config.getInitParameter("database-id");
         if (id != null && !"".equals(id)) this.databaseid=id;
-		int authMethod = WebDAV.DIGEST_AUTH;
-		String param = config.getInitParameter("authentication");
-		if(param != null && "basic".equalsIgnoreCase(param))
-		    authMethod = WebDAV.BASIC_AUTH;
-		webdav = new WebDAV(authMethod, this.databaseid);
-	}
-	
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
-	protected void service(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+        
+        int authMethod = WebDAV.DIGEST_AUTH;
+        String param = config.getInitParameter("authentication");
+        
+        if(param != null && "basic".equalsIgnoreCase(param))
+            authMethod = WebDAV.BASIC_AUTH;
+        
+        webdav = new WebDAV(authMethod, this.databaseid);
+    }
+    
+        /* (non-Javadoc)
+         * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+         */
+    protected void service(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
 //		dumpHeaders(request);
-		webdav.process(request, response);
-	}
-	
-	private void dumpHeaders(HttpServletRequest request) {
-		System.out.println("-------------------------------------------------------");
-		for(Enumeration e = request.getHeaderNames(); e.hasMoreElements(); ) {
-			String header = (String)e.nextElement();
-			System.out.println(header + " = " + request.getHeader(header));
-		}
-	}
+        webdav.process(request, response);
+    }
+    
+    private void dumpHeaders(HttpServletRequest request) {
+        System.out.println("-------------------------------------------------------");
+        for(Enumeration e = request.getHeaderNames(); e.hasMoreElements(); ) {
+            String header = (String)e.nextElement();
+            System.out.println(header + " = " + request.getHeader(header));
+        }
+    }
 }
