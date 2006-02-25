@@ -173,7 +173,7 @@ function requestFailed(request) {
 
 function resize() {
 	var tree = $('navtree');
-    tree.style.height = ((document.body.clientHeight - tree.offsetTop) - 15) + "px";
+    tree.style.height = ((document.body.clientHeight - tree.offsetTop) - 50) + "px";
     
     var panel = $('panel-right');
     panel.style.width = (document.body.clientWidth - 350) + 'px';
