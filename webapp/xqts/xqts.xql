@@ -238,7 +238,10 @@ declare function xqts:run-single-test-case($case as element(catalog:test-case),
     let $result := xqts:run-test-case($case)
     return (
         update insert $result into $resultRoot,
-        xqts:report-progress($resultRoot/test-case[@name = $case/@name])
+        let $added := $resultRoot/test-case[@name = $case/@name]
+        return
+            if ($added) then xqts:report-progress($added)
+            else ()
     )
 };
 
