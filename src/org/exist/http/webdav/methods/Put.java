@@ -38,7 +38,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.LockToken;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -53,7 +52,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
+ * Implements the WebDAV PUT method.
+ *
  * @author wolf
+ * @author dizzz
  */
 public class Put extends AbstractWebDAVMethod {
     
@@ -71,6 +73,7 @@ public class Put extends AbstractWebDAVMethod {
         String contentType = request.getContentType();
         DBBroker broker = null;
         Collection collection = null;
+        
         boolean collectionLocked = true;
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
@@ -79,55 +82,32 @@ public class Put extends AbstractWebDAVMethod {
             ///TODO : use dedicated function in XmldbURI
             if(path == null)
                 path = "";
+            
             if(path.endsWith("/"))
                 path = path.substring(0, path.length() - 1);
+            
             int p = path.lastIndexOf("/");
-            //TODO : strange test here -pb
-            // "/" should be rewritten to "/db"? -dw
-//            if(p < 1) {
-//                transact.abort(txn);
-//                response.sendError(HttpServletResponse.SC_CONFLICT, "No collection specified for PUT");
-//                return;
-//            }
+            
             String collectionName = path.substring(0, p);
             path = path.substring(p + 1);
             
             LOG.debug("collectionName='"+collectionName+"';  path="+path+"';" );
             
-            collection = broker.openCollection(collectionName, Lock.READ_LOCK);// WRITE
+            collection = broker.openCollection(collectionName, Lock.READ_LOCK);
+            // TODO check why not use WRITE_LOCK here?
             if(collection == null) {
                 transact.abort(txn);
-                response.sendError(HttpServletResponse.SC_CONFLICT, "Parent collection " + collectionName +
-                        " not found");
+                response.sendError(HttpServletResponse.SC_CONFLICT,
+                        "Parent collection " + collectionName + " not found");
                 return;
             }
             if(collection.hasChildCollection(path)) {
                 transact.abort(txn);
-                response.sendError(HttpServletResponse.SC_CONFLICT, "Cannot overwrite an existing collection with a resource");
+                response.sendError(HttpServletResponse.SC_CONFLICT,
+                        "Cannot overwrite an existing collection with a resource");
                 return;
             }
             
-//            // Get old lock info
-//            LockToken lockToken=null;
-//            User lockUser=null;
-////            try {
-//            DocumentImpl resource = broker.getXMLResource(path, org.exist.storage.lock.Lock.WRITE_LOCK);
-//            
-//            if(resource==null){
-////
-//                
-//            } else {
-//                lockToken = resource.getMetadata().getLockToken();
-//                lockUser = resource.getUserLock();
-////                resource.setUserLock(null);
-////                resource.getMetadata().setLockToken(null);
-//            }
-//            
-////            } catch (PermissionDeniedException ex) {
-////                LOG.debug( ex.getMessage() );
-////                response.sendError();
-////                return;
-////            }
             
             MimeType mime;
             if(contentType == null) {
@@ -137,16 +117,17 @@ public class Put extends AbstractWebDAVMethod {
             } else {
                 mime = MimeTable.getInstance().getContentType(contentType);
             }
+            
             if (mime == null)
                 mime = MimeType.BINARY_TYPE;
-            LOG.debug("storing document " + path + "; content-type = " + contentType);
+            LOG.debug("storing document " + path
+                    + "; content-type='" + contentType+"'");
             
             if(mime.isXMLType()) {
                 InputSource is = new InputSource(url);
                 IndexInfo info = collection.validateXMLResource(txn, broker, path, is);
                 info.getDocument().getMetadata().setMimeType(contentType);
-//                info.getDocument().getMetadata().setLockToken(lockToken);
-//                info.getDocument().setUserLock(lockUser);
+                
                 collection.release();
                 collectionLocked = false;
                 collection.store(txn, broker, info, is, false);
@@ -159,39 +140,42 @@ public class Put extends AbstractWebDAVMethod {
                     os.write(chunk, 0, l);
                 }
                 
-                // Restore original lock information
-                DocumentImpl doc = collection.addBinaryResource(txn, broker, path, os.toByteArray(), contentType);
-//                doc.getMetadata().setLockToken(lockToken);
-//                doc.setUserLock(lockUser);
+                DocumentImpl doc = collection.addBinaryResource(txn, broker,
+                        path, os.toByteArray(), contentType);
                 
             }
             transact.commit(txn);
         } catch (EXistException e) {
             transact.abort(txn);
-            //throw new ServletException("Failed to store resource: " + e.getMessage(), e);
             LOG.error(e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    e.getMessage());
             return;
+            
         } catch (PermissionDeniedException e) {
             transact.abort(txn);
             LOG.debug(e);
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
+            
         } catch (TriggerException e) {
             transact.abort(txn);
             LOG.debug(e);
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
+            
         } catch (SAXException e) {
             transact.abort(txn);
             LOG.debug(e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
+            
         } catch (LockException e) {
             transact.abort(txn);
             LOG.debug(e);
             response.sendError(HttpServletResponse.SC_CONFLICT);
             return;
+            
         } finally {
             if(collectionLocked && collection != null)
                 collection.release();
