@@ -94,7 +94,10 @@ declare function xqts:display-page() as element() {
             
             <div id="content">
                 <div id="messages">{xqts:check-paths()}</div>
-                <div id="navtree"></div>
+                <div id="panel-left">
+                    <h1>Test Groups</h1>
+                    <div id="navtree"></div>
+                </div>
                 <div id="panel-right">
                     <div id="testcases"></div>
                     <div id="details">

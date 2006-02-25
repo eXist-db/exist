@@ -213,8 +213,12 @@ declare function xqts:run-test-case( $case as element(catalog:test-case)) as ite
                util:eval-with-context($query, $context, false())
            return
                xqts:check-output($query, $result, $case),
-           if (exists($case/catalog:expected-error)) then
-               <test-case name="{$case/@name}" result="pass"/>
+           if ($case//catalog:expected-error) then
+               <test-case name="{$case/@name}" result="pass">
+                   <exception>{$util:exception-message}</exception>
+                   <expected-error>{$case//catalog:expected-error/text()}</expected-error>
+                   <query>{$query}</query>
+               </test-case>
            else
                <test-case name="{$case/@name}" result="fail">
                    <exception>{$util:exception-message}</exception>
