@@ -260,27 +260,18 @@ public class DecimalValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#div(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue div(ComputableValue other) throws XPathException {
-		//Copied from Saxon 8.6.1	
-        int scale = Math.max(DIVIDE_PRECISION,
-                Math.max(value.scale(), ((DecimalValue)other).value.scale()));
-		//int scale = value.scale() + ((DecimalValue)other).value.scale() + DIVIDE_PRECISION;
-		BigDecimal result = value.divide(((DecimalValue)other).value, scale, BigDecimal.ROUND_HALF_DOWN);
-		return new DecimalValue(result);
-		//End of copy
-        	
-		/*
 		switch(other.getType()) {
-			case Type.DECIMAL:
-				// arbitrarily set precision to 20 spots after the decimal point, since XQuery says it's "implementation-dependent"
-				// TODO: find a better algorithm for deciding the result's precision?
-				//return new DecimalValue(value.divide(((DecimalValue) other).value, 20, BigDecimal.ROUND_HALF_UP));
-				return new DecimalValue(value.divide(((DecimalValue) other).value, BigDecimal.ROUND_HALF_UP));
+			//case Type.DECIMAL:
+				//return new DecimalValue(value.divide(((DecimalValue) other).value, BigDecimal.ROUND_HALF_UP));
 			case Type.INTEGER:
 				return div((ComputableValue) other.convertTo(getType()));
-			default:
-				return ((ComputableValue) convertTo(other.getType())).div(other);
-		}
-		*/
+			default: 
+				//Copied from Saxon 8.6.1	
+		        int scale = Math.max(DIVIDE_PRECISION, Math.max(value.scale(), ((DecimalValue)other).value.scale()));
+				BigDecimal result = value.divide(((DecimalValue)other).value, scale, BigDecimal.ROUND_HALF_DOWN);
+				return new DecimalValue(result);
+				//End of copy				
+		}		
 	}
 
 	public IntegerValue idiv(NumericValue other) throws XPathException {
