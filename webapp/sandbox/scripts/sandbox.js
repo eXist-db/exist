@@ -332,7 +332,7 @@ function saveQuery() {
 		alert("No query to save!");
 		return;
 	}
-	var params = 'qu=' + query + '&save=' + description;
+	var params = 'qu=' + escapeQuery(query) + '&save=' + description;
 	var ajax = new Ajax.Request("sandbox.xql", {
 				method: 'post', parameters: params, 
 				onComplete: queryStored,
