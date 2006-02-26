@@ -66,12 +66,8 @@ public class DatabaseResourcesTest extends TestCase {
     protected void setUp() {
         System.out.println(">>> setUp");
         
-        if(eXistHome==null){
-        		try {
-        			eXistHome = Configuration.getExistHome().getAbsolutePath();
-        		} catch (DatabaseConfigurationException e) {
-        			throw new IllegalStateException(e.toString());
-        		}
+        if (eXistHome == null) {
+            eXistHome = Configuration.getExistHome().getAbsolutePath();
         }
         
         if(pool==null){

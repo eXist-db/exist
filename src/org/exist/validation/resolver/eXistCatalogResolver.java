@@ -64,7 +64,6 @@ public class eXistCatalogResolver implements org.xml.sax.EntityResolver,
     /** Constructor. */
     public eXistCatalogResolver() {
         logger.debug("Initializing eXistCatalogResolver");
-        System.out.println("Initializing eXistCatalogResolver");
         if(catalogResolver==null){
             catalogResolver = new CatalogResolver();
         }
@@ -77,7 +76,6 @@ public class eXistCatalogResolver implements org.xml.sax.EntityResolver,
      */
     public eXistCatalogResolver(boolean privateCatalog) {
         logger.debug("Initializing eXistCatalogResolver, privateCatalog="+privateCatalog);
-        System.out.println("Initializing eXistCatalogResolver, privateCatalog="+privateCatalog);
         if(catalogResolver==null){
             catalogResolver = new CatalogResolver();
         }
@@ -90,7 +88,6 @@ public class eXistCatalogResolver implements org.xml.sax.EntityResolver,
      */
     public eXistCatalogResolver(CatalogManager manager) {
         logger.debug("Initializing eXistCatalogResolver, with manager.");
-        System.out.println("Initializing eXistCatalogResolver, with manager.");
         if(catalogResolver==null){
             catalogResolver = new CatalogResolver(manager);
         }
@@ -103,7 +100,6 @@ public class eXistCatalogResolver implements org.xml.sax.EntityResolver,
      */
     public Catalog getCatalog() {
         logger.debug("Getting catalog from eXistCatalogResolver.");
-        System.out.println("Getting catalog from eXistCatalogResolver.");
         
         Catalog catalog = catalogResolver.getCatalog();
         
