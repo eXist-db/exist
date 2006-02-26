@@ -52,13 +52,19 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 public class Configuration implements ErrorHandler {
+	
+	/* FIXME:  It's not clear whether this class is meant to be a singleton (due to the static
+	 * file and existHome fields and static methods), or if we should allow many instances to
+	 * run around in the system.  Right now, any attempts to create multiple instances will
+	 * likely get the system confused.  Let's decide which one it should be and fix it properly.
+	 */
     
     private final static Logger LOG = Logger.getLogger(Configuration.class);	//Logger
+    protected static String file = null;												//config file (conf.xml by default)
+    protected static File existHome = null;
+
     protected DocumentBuilder builder = null;									
     protected HashMap config = new HashMap();									//Configuration						
-    protected static String file = null;												//config file (conf.xml)
-    protected static File existHome = null;
-    protected static boolean configDetected = false;
     
     public static final class SystemTaskConfig {
         
@@ -85,56 +91,47 @@ public class Configuration implements ErrorHandler {
     }
     
     public Configuration() throws DatabaseConfigurationException {
-    		this("conf.xml", null);
+        this("conf.xml", null);
     }
-    //Constructor (wrapper)
-    public Configuration(String file) throws DatabaseConfigurationException
-	{
-        this(file, null);
+
+    public Configuration(String configFilename) throws DatabaseConfigurationException {
+        this(configFilename, null);
     }
     
-    //Constructor
-    public Configuration(String file, String dbHome) throws DatabaseConfigurationException
-	{
-        try
-		{
+    public Configuration(String configFilename, String existHomeDirname) throws DatabaseConfigurationException {
+        try {
             InputStream is = null;
-        
-            //firstly, try to read the configuration from a file within the classpath
-            if(file != null)
-            {
-            	is = Configuration.class.getClassLoader().getResourceAsStream(file);
-            	if(is != null)
-            	{
-            		LOG.info("Reading configuration from classloader");
-            	}
-            }
-            else
-            {
-            	//Default file name
-            	file = "conf.xml";
+
+            // firstly, try to read the configuration from a file within the
+            // classpath
+            if (configFilename != null) {
+                is = Configuration.class.getClassLoader().getResourceAsStream(configFilename);
+                if (is != null) LOG.info("Reading configuration from classloader");
+            } else {
+                // Default file name
+                configFilename = "conf.xml";
             }
 
-            //otherise, secondly try to read configuration from file. Guess the location if necessary
+            // otherise, secondly try to read configuration from file. Guess the
+            // location if necessary
             if (is == null) {
-            		File eXistHome = (dbHome != null)?new File(dbHome):getExistHome(dbHome);
-            		if (eXistHome == null) {
-                      throw new DatabaseConfigurationException("Unable to locate eXist home directory");
-            		}
-            		File config = lookup(file);
-            		if (!config.exists() || !config.canRead()) {
-                      throw new DatabaseConfigurationException("Unable to read configuration file at " + config);
-            		}
-                this.file = config.getAbsolutePath();
-                is = new FileInputStream(config);
-                // set dbHome to parent of the conf file found, to resolve relative path from conf file
-                dbHome=config.getParentFile().getCanonicalPath();
-                System.out.println("[Exist] Configuration from " + config);
+                Configuration.existHome = (existHomeDirname != null) ? new File(existHomeDirname) : getExistHome(existHomeDirname);
+                if (Configuration.existHome == null)
+                    throw new DatabaseConfigurationException("Unable to locate eXist home directory");
+                File configFile = lookup(configFilename);
+                if (!configFile.exists() || !configFile.canRead())
+                    throw new DatabaseConfigurationException("Unable to read configuration file at " + config);
+                Configuration.file = configFile.getAbsolutePath();
+                is = new FileInputStream(configFile);
+                // set dbHome to parent of the conf file found, to resolve relative
+                // path from conf file
+                existHomeDirname = configFile.getParentFile().getCanonicalPath();
+                LOG.info("Reading configuration from file " + configFile);
             }
             
             
             // Create resolver
-            System.out.println("Creating CatalogResolver");
+            LOG.debug("Creating CatalogResolver");
             System.setProperty("xml.catalog.verbosity", "10");
             eXistCatalogResolver resolver = new eXistCatalogResolver(true);
             config.put("resolver", resolver);
@@ -158,13 +155,13 @@ public class Configuration implements ErrorHandler {
             //indexer settings
             NodeList indexer = doc.getElementsByTagName("indexer");
             if (indexer.getLength() > 0) {
-                configureIndexer(dbHome, doc, indexer);
+                configureIndexer(existHomeDirname, doc, indexer);
             }
             
             //db connection settings
             NodeList dbcon = doc.getElementsByTagName("db-connection");
             if (dbcon.getLength() > 0) {
-                configureBackend(dbHome, dbcon);
+                configureBackend(existHomeDirname, dbcon);
             }
             
             //serializer settings
@@ -204,17 +201,17 @@ public class Configuration implements ErrorHandler {
         }
         catch (SAXException e)
 		{
-            LOG.warn("error while reading config file: " + file, e);
+            LOG.warn("error while reading config file: " + configFilename, e);
             throw new DatabaseConfigurationException(e.getMessage());
         }
         catch (ParserConfigurationException cfg)
 		{
-            LOG.warn("error while reading config file: " + file, cfg);
+            LOG.warn("error while reading config file: " + configFilename, cfg);
             throw new DatabaseConfigurationException(cfg.getMessage());
         }
         catch (IOException io)
 		{
-            LOG.warn("error while reading config file: " + file, io);
+            LOG.warn("error while reading config file: " + configFilename, io);
             throw new DatabaseConfigurationException(io.getMessage());
         }
     }
@@ -823,7 +820,7 @@ public class Configuration implements ErrorHandler {
      * Returns a file handle for the given path, while <code>path</code> specifies
      * the path to an eXist configuration file or directory.
      * <br>
-     * Note that relative paths are beeing interpreted relative to <code>exist.home</code>.
+     * Note that relative paths are being interpreted relative to <code>exist.home</code>.
      * 
      * This method is also used to resolve relative paths in configuration file
      * 
@@ -833,31 +830,26 @@ public class Configuration implements ErrorHandler {
     public static File lookup(String path, String parent) {
         // resolvePath is used for things like ~user/folder 
     	File f = new File(resolvePath(path));
-		if (!f.isAbsolute() && parent != null) {
-            f = new File(parent, path);
-        } else if (!f.isAbsolute()) {
-			try {
-				return new File(getExistHome(), path);
-			} catch (DatabaseConfigurationException e) { // [FG] still useful ?
-				throw new IllegalStateException(
-					"Unable to locate " + path + " because exist home directory cannot be found!"
-				);
-			}
-		}
-		return f;
+        if (f.isAbsolute()) return f;
+        if (parent == null) {
+            File home = getExistHome();
+            if (home == null) throw new IllegalStateException("Unable to locate " + path + " because exist home directory cannot be found!");
+            parent = home.getPath();
+        }
+		return new File(parent, path);
     }
     
     /**
      * Returns a file handle for eXist's home directory.
      * <p>
      * If either none of the directories identified by the system properties
-     * <code>exist.home</code> and <code>user.home</code> exist or none
-     * of them contain a configuration file, this method returns <code>null</code>.
+     * <code>exist.home</code> and <code>user.home</code> exist or none of
+     * them contain a configuration file, this method returns <code>null</code>.
      * 
      * @return the file handle or <code>null</code>
      */
-    public static File getExistHome() throws DatabaseConfigurationException {
-    		return getExistHome(null);
+    public static File getExistHome() {
+        return getExistHome(null);
     }
 
     /**
@@ -874,7 +866,7 @@ public class Configuration implements ErrorHandler {
      * @param path path to eXist home directory
      * @return the file handle or <code>null</code>
      */
-    public static File getExistHome(String path) throws DatabaseConfigurationException {
+    public static File getExistHome(String path) {
 		if (existHome != null) return existHome;
 		
         String config = "conf.xml";
@@ -927,17 +919,15 @@ public class Configuration implements ErrorHandler {
      * @return the resolved path
      */
     private static String resolvePath(String path) {
-    		if (path != null) {
-			if (path.startsWith("~") && path.length() > 1) {
-				path = System.getProperty("user.home") + path.substring(1);
-			}
-    		}
-		return path;
+        if (path != null && path.startsWith("~") && path.length() > 1) {
+            path = System.getProperty("user.home") + path.substring(1);
+        }
+        return path;
     }
      
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
      */
     public void error(SAXParseException exception) throws SAXException {
