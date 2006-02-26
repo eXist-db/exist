@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="exist-fresh-IDE">
+    
+    <!-- (more info: http://www.netbeans.org/kb/41/freeform-config.html#debugj2se) -->
+    <import file="../build.xml"/>
+    
+    <!-- DEBUG -->
+    <target name="debug-nb">
+        <nbjpdastart addressproperty="jpda.address" name="eXist-1.0" transport="dt_socket">
+            <classpath refid="classpath.core"/>
+        </nbjpdastart>
+        
+        <java classname="org.exist.start.Main" fork="true">
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <arg value="jetty"/>
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xnoagent"/>
+            <jvmarg value="-Djava.compiler=none"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+        </java>
+    </target>
+    
+    <target name="debug-nb.single">
+        <fail unless="classname">Must set property 'classname'</fail>
+        <nbjpdastart name="${classname}" addressproperty="jpda.address" transport="dt_socket">
+            <classpath refid="classpath.core"/>
+            <!-- Optional - If source roots are properly declared in project, should
+            work without setting source path.
+            <sourcepath refid="debug.sourcepath"/> -->
+        </nbjpdastart>
+        <java classname="${classname}" fork="true">
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xnoagent"/>
+            <jvmarg value="-Djava.compiler=none"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <classpath refid="classpath.core"/>
+        </java>
+    </target>
+    
+    <!-- JUNIT -->
+    <target name="test-nb.single">
+        <fail unless="classname">Must set property 'classname'</fail>
+        <junit showoutput="true"
+            fork="true" haltonfailure="false" printsummary="yes">
+            <sysproperty key="exist.home" value="${basedir}" />
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <formatter usefile="false" type="brief"/>
+            <formatter type="xml"/>
+            <test name="${classname}"/>
+        </junit>
+    </target>
+    
+    <!-- PROFILER not working  yet....-->
+    <target name="profile-nb.single">
+        <fail unless="netbeans.home">This target can only run inside the NetBeans IDE.</fail>
+        <fail unless="classname">Must set property 'classname'</fail>
+        
+        <nbprofiledirect>
+            <classpath> 
+                <pathelement path="${classpath.core}"/>
+                <pathelement path="${classpath.jetty}"/>
+            </classpath>
+        </nbprofiledirect>
+
+        <java classname="${classname}">
+            <jvmarg value="${profiler.info.jvmargs.agent}"/>
+            <classpath refid="classpath.core"/>
+        </java>
+    </target>
+</project>
