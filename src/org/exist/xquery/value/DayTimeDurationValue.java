@@ -98,7 +98,9 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         if (m != 0) {
             sb.append(m + "M");
         }
-        if ((s != null && s.intValue() != 0) || (d==0 && m==0 && h==0)) {
+        if (s == null)
+        	s = new Integer(0);
+        if ((s.intValue() != 0) || (d==0 && m==0 && h==0)) {
         	sb.append(s + "S");
         	/*
             if (micros == 0) {
