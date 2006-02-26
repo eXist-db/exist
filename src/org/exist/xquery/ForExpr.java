@@ -97,14 +97,14 @@ public class ForExpr extends BindingExpression {
 			newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
 		    ((BindingExpression)returnExpr).analyze(newContextInfo, orderBy);
 		} else {
+			AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+			newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
 		    // analyze the order specs
 			if(orderBy != null) {
-				AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-				newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
 			    for(int i = 0; i < orderBy.length; i++)
 			        orderBy[i].analyze(newContextInfo);
 			}
-			returnExpr.analyze(contextInfo);
+			returnExpr.analyze(newContextInfo);
 		}
 		
 		// restore the local variable stack
