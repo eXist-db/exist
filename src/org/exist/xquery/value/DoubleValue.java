@@ -53,7 +53,7 @@ public class DoubleValue extends NumericValue implements Indexable {
 				value = Double.parseDouble(otherValue.getStringValue());
 		} catch (NumberFormatException e) {
 			throw new XPathException(
-				"Cannot convert '" + Type.getTypeName(otherValue.getType()) + 
+				"FORG0001: cannot convert '" + Type.getTypeName(otherValue.getType()) + 
                 "(\"" + otherValue.getStringValue() + "\")' into an xs:double");
 		}
 	}

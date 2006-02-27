@@ -114,8 +114,8 @@ public class UntypedAtomicValue extends AtomicValue {
 				return new DayTimeDurationValue(value);
 			default :
 				throw new XPathException(
-					"Cannot cast 'xdt:UntypeAtomic(" + value + ")' to '" +
-                    Type.getTypeName(requiredType) + "' [err:FORG0001]");
+					"FORG0001: cannot cast 'xdt:UntypeAtomic(" + value + ")' to '" +
+                    Type.getTypeName(requiredType) + "'");
 		}
 	}
 
