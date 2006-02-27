@@ -35,7 +35,7 @@ import java.util.TreeSet;
 
 import org.exist.EXistException;
 import org.exist.Namespaces;
-import org.exist.numbering.DLN;
+import org.exist.numbering.NodeId;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
@@ -189,7 +189,7 @@ public class ElementImpl extends NamedNode implements Element {
                         : 0;
                 signature |= 0x10;
             }
-            final int nodeIdLen = getNodeId().size();
+            final int nodeIdLen = nodeId.size();
             byte[] data =
                     ByteArrayPool.getByteArray(7
                     + Signatures.getLength(idSizeType)
@@ -200,8 +200,8 @@ public class ElementImpl extends NamedNode implements Element {
             data[next++] = signature;
             ByteConversion.intToByte(children, data, next);
             next += 4;
-            data[next++] = getNodeId().units();
-            getNodeId().serialize(data, next);
+            data[next++] = (byte) nodeId.units();
+            nodeId.serialize(data, next);
             next += nodeIdLen;
 
             ByteConversion.shortToByte(attributes, data, next);
@@ -236,7 +236,8 @@ public class ElementImpl extends NamedNode implements Element {
         boolean hasNamespace = (data[start++] & 0x10) == 0x10;
         int children = ByteConversion.byteToInt(data, start);
         start += 4;
-        DLN dln = new DLN(data[start++], data, start);
+        NodeId dln =
+                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(data[start++], data, start);
         start += dln.size();
         short attributes = ByteConversion.byteToShort(data, start);
         start += 2;
@@ -309,7 +310,7 @@ public class ElementImpl extends NamedNode implements Element {
     public void appendChildInternal(StoredNode prevNode, StoredNode child) throws DOMException {
         //TOUNDERSTAND : what are the semantics of this 0 ? -pb
         if (getGID() > 0) {
-            DLN childId;
+            NodeId childId;
             if (prevNode == null)
                 childId = getNodeId().newChild();
             else {

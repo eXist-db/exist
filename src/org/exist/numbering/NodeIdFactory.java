@@ -55,7 +55,8 @@ public interface NodeIdFactory {
     /**
      * Read a NodeId from the given byte array. Start to read at
      * startOffset. sizeHint indicates the length of the id in an
-     * implementation dependent manner.
+     * implementation dependent manner. Some implementations
+     * may require sizeHint to be specified, others not.
      *
      * @param sizeHint a hint about the expected length of the id
      * @param data the byte array to read from
@@ -63,6 +64,19 @@ public interface NodeIdFactory {
      * @return the NodeId read
      */
     NodeId createFromData(int sizeHint, byte[] data, int startOffset);
+
+    /**
+     * Returns the number of bytes occupied by the NodeId stored
+     * in the byte array at the given startOffset. This method is
+     * similar to {@link #createFromData(int, byte[], int)}, but it
+     * just returns the number of bytes.
+     *
+     * @param units
+     * @param data
+     * @param startOffset
+     * @return
+     */
+    int lengthInBytes(int units, byte[] data, int startOffset);
 
     /**
      * Returns a NodeId representing the document node of a document.

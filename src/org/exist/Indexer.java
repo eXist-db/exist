@@ -23,26 +23,8 @@
  */
 package org.exist;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Stack;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.log4j.Logger;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.CommentImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentTypeImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeObjectPool;
-import org.exist.dom.ProcessingInstructionImpl;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
-import org.exist.numbering.DLN;
+import org.exist.dom.*;
 import org.exist.storage.DBBroker;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.NodePath;
@@ -56,15 +38,15 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXParseException;
+import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Stack;
 
 /**
  * Parses a given input document via SAX, stores it to
@@ -84,7 +66,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     protected Txn transaction;
     
 	protected XMLString charBuf = new XMLString();
-	protected int currentLine = 0;
+	protected int currentLine = 0;  
 	protected NodePath currentPath = new NodePath();
 	
 	protected DocumentImpl document = null;
@@ -215,7 +197,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		CommentImpl comment = new CommentImpl(ch, start, length);
 		comment.setOwnerDocument(document);
 		if (stack.empty()) {
-            comment.setNodeId(new DLN());
+            comment.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
             if (!validate)
 				broker.storeNode(transaction, comment, currentPath);
 			document.appendChild(comment);
@@ -356,7 +338,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			new ProcessingInstructionImpl(0, target, data);
 		pi.setOwnerDocument(document);
 		if (stack.isEmpty()) {
-            pi.setNodeId(new DLN());
+            pi.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
             if (!validate)
 				broker.storeNode(transaction, pi, currentPath);
 			document.appendChild(pi);
@@ -520,7 +502,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				node = new ElementImpl(1, qn);
 			rootNode = node;
            prevNode = null;
-           node.setNodeId(new DLN());
+           node.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
 			node.setOwnerDocument(document);
 			node.setAttributes((short) attrLength);
 			if (nsMappings != null && nsMappings.size() > 0) {

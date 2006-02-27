@@ -335,6 +335,10 @@ public class DLNBase implements Comparable {
         System.arraycopy(bits, 0, data, offset, bits.length);
     }
 
+    public static int getLengthInBytes(int units, byte[] data, int startOffset) {
+        return (int) Math.ceil((units * BITS_PER_UNIT) / 8.0);
+    }
+
     public boolean equals(DLNBase other) {
         if (bitIndex != other.bitIndex)
             return false;

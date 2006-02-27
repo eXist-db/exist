@@ -5,7 +5,7 @@ import java.io.UnsupportedEncodingException;
 import org.exist.storage.Signatures;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.StringValue;
-import org.exist.numbering.DLN;
+import org.exist.numbering.NodeId;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Node;
 
@@ -55,14 +55,19 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         int nodeIdLen = nodeId.size();
         byte[] data = new byte[cd.length + nodeIdLen + 2];
         data[0] = (byte) ( Signatures.Comm << 0x5 );
-        data[1] = getNodeId().units();
+        data[1] = (byte) nodeId.units();
         nodeId.serialize(data, 2);
         System.arraycopy( cd, 0, data, 2 + nodeIdLen, cd.length );
         return data;
     }
 
-    public static StoredNode deserialize( byte[] data, int start, int len, boolean pooled ) {
-        DLN dln = new DLN(data[start + 1], data, start +2);
+    public static StoredNode deserialize(byte[] data,
+                                       int start,
+                                       int len,
+                                       DocumentImpl doc,
+                                       boolean pooled) {
+        NodeId dln =
+                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(data[start + 1], data, start +2);
         int nodeIdLen = dln.size();
 
         String cdata;

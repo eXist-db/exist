@@ -23,7 +23,7 @@ package org.exist.dom;
 
 import java.io.UnsupportedEncodingException;
 
-import org.exist.numbering.DLN;
+import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
@@ -93,7 +93,7 @@ public class AttrImpl extends NamedNode implements Attr {
             data[pos] |= 0x10;
         pos++;
         
-        data[pos++] = getNodeId().units();
+        data[pos++] = (byte) nodeId.units();
         getNodeId().serialize(data, pos);
         pos += nodeIdLen;
         
@@ -114,15 +114,16 @@ public class AttrImpl extends NamedNode implements Attr {
     }
     
     public static StoredNode deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
-    	int next = start;
+        int next = start;
         byte idSizeType = (byte) ( data[next] & 0x3 );
 		boolean hasNamespace = (data[next] & 0x10) == 0x10;
         int attrType = (int)( ( data[next++] & 0x4 ) >> 0x2);
         
-        DLN dln = new DLN(data[next++], data, next);
+        NodeId dln =
+                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(data[next++], data, next);
         next += dln.size();
-        
-		short id = (short) Signatures.read( idSizeType, data, next );
+
+        short id = (short) Signatures.read( idSizeType, data, next );
 		next += Signatures.getLength(idSizeType);
         String name = doc.getSymbols().getName( id );
         if(name == null)
@@ -157,6 +158,7 @@ public class AttrImpl extends NamedNode implements Attr {
             attr = new AttrImpl();
         attr.nodeName = doc.getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix);
         attr.value = value;
+        attr.nodeId = dln;
         attr.setType( attrType );
         return attr;
     }

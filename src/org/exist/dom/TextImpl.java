@@ -25,7 +25,7 @@ package org.exist.dom;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.UTF8;
-import org.exist.numbering.DLN;
+import org.exist.numbering.NodeId;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -60,13 +60,18 @@ public class TextImpl extends CharacterDataImpl implements Text {
         super( Node.TEXT_NODE, data, start, howmany );
     }
 
-    public static StoredNode deserialize( byte[] data, int start, int len, boolean pooled ) {
+    public static StoredNode deserialize(byte[] data,
+                                       int start,
+                                       int len,
+                                       DocumentImpl doc,
+                                       boolean pooled) {
         TextImpl text;
         if(pooled)
             text = (TextImpl)NodeObjectPool.getInstance().borrowNode(TextImpl.class);
         else
             text = new TextImpl();
-        DLN dln = new DLN(data[start + 1], data, start +2);
+        NodeId dln =
+                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(data[start + 1], data, start +2);
         text.setNodeId(dln);
         int nodeIdLen = dln.size();
         text.cdata = UTF8.decode(data, start + nodeIdLen + 2, len - nodeIdLen - 2);
@@ -102,10 +107,10 @@ public class TextImpl extends CharacterDataImpl implements Text {
     }
 
     public byte[] serialize() {
-        final int nodeIdLen = getNodeId().size();
+        final int nodeIdLen = nodeId.size();
         byte[] data = ByteArrayPool.getByteArray(cdata.UTF8Size() + nodeIdLen + 2);
         data[0] = (byte) ( Signatures.Char << 0x5 );
-        data[1] = getNodeId().units();
+        data[1] = (byte) nodeId.units();
         nodeId.serialize(data, 2);
         cdata.UTF8Encode(data, nodeIdLen + 2);
         return data;

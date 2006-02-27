@@ -21,7 +21,7 @@
  */
 package org.exist.dom;
 
-import org.exist.numbering.DLN;
+import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
@@ -43,7 +43,7 @@ public class StoredNode extends NodeImpl {
     public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
     public final static short UNKNOWN_NODE_IMPL_NODE_TYPE = -1;
 	
-    protected DLN nodeId = null;
+    protected NodeId nodeId = null;
     
     //TOUNDERSTAND : what are the semantics of this 0 ? -pb
 	private long gid = 0;
@@ -123,15 +123,15 @@ public class StoredNode extends NodeImpl {
 	    short type = Signatures.getType(data[start]);
 		switch (type) {
 			case Node.TEXT_NODE :
-				return TextImpl.deserialize(data, start, len, pooled);
+				return TextImpl.deserialize(data, start, len, doc, pooled);
 			case Node.ELEMENT_NODE :
 				return ElementImpl.deserialize(data, start, len, doc, pooled);
 			case Node.ATTRIBUTE_NODE :
 				return AttrImpl.deserialize(data, start, len, doc, pooled);
 			case Node.PROCESSING_INSTRUCTION_NODE :
-				return ProcessingInstructionImpl.deserialize(data, start, len, pooled);
+				return ProcessingInstructionImpl.deserialize(data, start, len, doc, pooled);
 			case Node.COMMENT_NODE :
-				return CommentImpl.deserialize(data, start, len, pooled);
+				return CommentImpl.deserialize(data, start, len, doc, pooled);
 			default :
                 LOG.error("Unknown node type: " + type);
 				return null;
@@ -192,11 +192,11 @@ public class StoredNode extends NodeImpl {
         this.gid = gid;
     }
 
-    public void setNodeId(DLN dln) {
+    public void setNodeId(NodeId dln) {
         this.nodeId = dln;
     }
     
-    public DLN getNodeId() {
+    public NodeId getNodeId() {
         return nodeId;
     }
     

@@ -20,30 +20,11 @@
  */
 package org.exist.storage;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.numbering.DLN;
+import org.exist.numbering.NodeId;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.NodeSetHelper;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.SymbolTable;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -57,16 +38,15 @@ import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
-import org.exist.util.ByteConversion;
-import org.exist.util.FastQSort;
-import org.exist.util.LockException;
-import org.exist.util.Occurrences;
-import org.exist.util.ProgressIndicator;
-import org.exist.util.ReadOnlyException;
+import org.exist.util.*;
 import org.exist.xquery.NodeSelector;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.util.*;
 
 /** The indexing occurs in this class. That is, during the loading of a document
  * into the database, the process of associating a long gid with each element,
@@ -607,27 +587,24 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         continue;
                     }               
                     //Process the nodes
-                    long previousGID = 0;
-                    DLN nodeId;
+                    NodeId nodeId;
                     for (int k = 0; k < gidsCount; k++) {
-                        nodeId = new DLN(is);
-                        long storedGID = 1;
+                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
                         long address = StorageAddress.read(is);
                         if (selector == null) {
-                            NodeProxy storedNode = new NodeProxy(storedDocument, storedGID, nodeType, address);
+                            NodeProxy storedNode = new NodeProxy(storedDocument, 1, nodeType, address);
                             storedNode.setNodeId(nodeId);
                             result.add(storedNode, gidsCount);                        
                         } else {
                             //Filter out the node if requested to do so
-                            NodeProxy storedNode = selector.match(storedDocument, storedGID);
+                            NodeProxy storedNode = selector.match(storedDocument, nodeId);
                             if (storedNode != null) {
                                 storedNode.setInternalAddress(address);
                                 storedNode.setNodeType(nodeType);
                                 result.add(storedNode, gidsCount);
                             } else
                             	sameDocSet = false;
-                        }
-                        previousGID = storedGID;                        
+                        }                        
                     }
                 }
             } catch (EOFException e) {

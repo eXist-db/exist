@@ -161,7 +161,7 @@ public class NativeSerializer extends Serializer {
 	        	receiver.startPrefixMapping(node.getPrefix(), ns);
         	AttrList attribs = new AttrList();
         	if ((first && showId == EXIST_ID_ELEMENT) || showId == EXIST_ID_ALL) {
-                attribs.addAttribute(ID_ATTRIB, node.getNodeId().debug());
+                attribs.addAttribute(ID_ATTRIB, node.getNodeId().toString());
             }
             if (first && showId > 0) {
             	// String src = doc.getCollection().getName() + "/" + doc.getFileName();

@@ -46,4 +46,8 @@ public class DLNFactory implements NodeIdFactory {
     public NodeId documentNodeId() {
         return DLN.DOCUMENT_NODE;
     }
+
+    public int lengthInBytes(int units, byte[] data, int startOffset) {
+        return DLN.getLengthInBytes(units, data, startOffset);
+    }
 }

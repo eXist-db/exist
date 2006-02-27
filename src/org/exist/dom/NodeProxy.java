@@ -37,7 +37,8 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.UntypedAtomicValue;
-import org.exist.numbering.DLN;
+
+import org.exist.numbering.NodeId;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
@@ -88,7 +89,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 */
 	private long gid = UNKNOWN_NODE_GID;
 
-    private DLN nodeId;
+    private NodeId nodeId;
     /**
 	 * The internal storage address of this node in the
 	 * dom.dbx file, if known.
@@ -140,13 +141,19 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	/** create a proxy to a document node */
 	public NodeProxy(DocumentImpl doc) {
         this(doc, DOCUMENT_NODE_GID, Node.DOCUMENT_NODE, UNKNOWN_NODE_ADDRESS);
-	}
+        this.nodeId = doc.getBroker().getBrokerPool().getNodeFactory().documentNodeId();
+    }
 
-    public void setNodeId(DLN id) {
+    public NodeProxy(DocumentImpl doc, NodeId nodeId) {
+        this(doc, 1, UNKNOWN_NODE_TYPE, UNKNOWN_NODE_ADDRESS);
+        this.nodeId = nodeId;
+    }
+
+    public void setNodeId(NodeId id) {
         this.nodeId = id;
     }
 
-    public DLN getNodeId() {
+    public NodeId getNodeId() {
         return nodeId;
     }
     
@@ -430,7 +437,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         }
         ContextItem next = context;
         while (next != null) {
-            if (contextId == next.getContextId() && next.getNode().gid == contextNode.gid ) {
+            if (contextId == next.getContextId() &&
+                    next.getNode().getNodeId().equals(contextNode.getNodeId())) {
                 // Ignore duplicate context nodes
                 break;
             }
@@ -859,11 +867,19 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	    return this;
 	}
 
-	/* (non-Javadoc)
-     * @see org.exist.dom.NodeSet#parentWithChild(org.exist.dom.NodeProxy, boolean, boolean, int)
-     */
+    public NodeProxy get(DocumentImpl document, NodeId nodeId) {
+        if (!this.nodeId.equals(nodeId))
+             return null;
+        if(this.doc.getDocId() != document.getDocId())
+	        return null;
+	    return this;
+    }
+
+    /* (non-Javadoc)
+    * @see org.exist.dom.NodeSet#parentWithChild(org.exist.dom.NodeProxy, boolean, boolean, int)
+    */
     public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent,
-            boolean includeSelf, int level) {
+                                     boolean includeSelf, int level) {
         return parentWithChild(proxy.getDocument(), proxy.gid, directParent, includeSelf, level);
     }
 	
@@ -874,8 +890,24 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             boolean directParent, boolean includeSelf) {
         return parentWithChild(doc, gid, directParent, includeSelf, UNKNOWN_NODE_LEVEL);
     }
-    
-	/* (non-Javadoc)
+
+    public NodeProxy parentWithChild(DocumentImpl otherDoc, NodeId otherId,
+            boolean directParent, boolean includeSelf) {
+        if(otherDoc.getDocId() != doc.getDocId())
+			return null;
+        if(includeSelf && otherId.compareTo(nodeId) == 0)
+            return this;
+		while (otherId != null) {
+			otherId = otherId.getParentId();
+			if(otherId.compareTo(nodeId) == 0)
+				return this;
+			else if (directParent)
+				return null;
+		}
+		return null;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#parentWithChild(org.exist.dom.DocumentImpl, long, boolean, boolean, int)
 	 */
 	public NodeProxy parentWithChild(DocumentImpl otherDoc,	long otherId, boolean directParent,
@@ -1132,6 +1164,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         if (attr == null)
             return NodeSet.EMPTY_SET;
         NodeProxy child = new NodeProxy(doc, attr.getGID(), Node.ATTRIBUTE_NODE, attr.getInternalAddress());
+        child.setNodeId(attr.getNodeId());
         if (Expression.NO_CONTEXT_ID != contextId)
             child.addContextNode(contextId, this);
         else
