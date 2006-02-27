@@ -1955,12 +1955,13 @@ public class InteractiveClient {
         
         // get default configuration filename from the driver class and set it in properties
         Class cl = Class.forName(properties.getProperty(DRIVER));
-        Field CONF_XML=cl.getDeclaredField("CONF_XML");
-        if (CONF_XML != null) {
+        Field CONF_XML = cl.getDeclaredField("CONF_XML");
+        File existHome = Configuration.getExistHome();
+        if (CONF_XML != null && existHome != null) {
         	   File configuration = Configuration.lookup((String)CONF_XML.get(new String()));
             properties.setProperty(CONFIGURATION, configuration.getAbsolutePath());
         }
-        
+
         properties.putAll(loadClientProperties());
         
         // parse command-line options
