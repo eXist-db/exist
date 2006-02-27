@@ -812,6 +812,16 @@ public class Configuration implements ErrorHandler {
         return file;
     }
    
+    /**
+     * Returns a file handle for the given path, while <code>path</code> specifies
+     * the path to an eXist configuration file or directory.
+     * <br>
+     * Note that relative paths are being interpreted relative to <code>exist.home</code>
+     * or the current working directory, in case <code>exist.home</code> was not set.
+     * 
+     * @param path the file path
+     * @return the file handle
+     */
     public static File lookup(String path) {
         return lookup(path, null);
     }
@@ -820,22 +830,24 @@ public class Configuration implements ErrorHandler {
      * Returns a file handle for the given path, while <code>path</code> specifies
      * the path to an eXist configuration file or directory.
      * <br>
-     * Note that relative paths are being interpreted relative to <code>exist.home</code>.
-     * 
-     * This method is also used to resolve relative paths in configuration file
+     * If <code>parent</code> is null, then relative paths are being interpreted
+     * relative to <code>exist.home</code> or the current working directory, in
+     * case <code>exist.home</code> was not set.
      * 
      * @param path path to the file or directory
+     * @param parent parent directory used to lookup <code>path</code>
      * @return the file handle
      */
     public static File lookup(String path, String parent) {
         // resolvePath is used for things like ~user/folder 
-    	File f = new File(resolvePath(path));
-        if (f.isAbsolute()) return f;
-        if (parent == null) {
+    		File f = new File(resolvePath(path));
+         if (f.isAbsolute()) return f;
+         if (parent == null) {
             File home = getExistHome();
-            if (home == null) throw new IllegalStateException("Unable to locate " + path + " because exist home directory cannot be found!");
+            if (home == null)
+                home = new File(System.getProperty("user.dir"));
             parent = home.getPath();
-        }
+         }
 		return new File(parent, path);
     }
     
@@ -881,7 +893,6 @@ public class Configuration implements ErrorHandler {
             existHome = new File(resolvePath(System.getProperty("exist.home")));
             if (existHome.isDirectory()) return existHome; 
         }
-
         // try user.home
         existHome = new File(System.getProperty("user.home"));
         if (existHome.isDirectory() && new File(existHome, config).isFile()) {
@@ -892,7 +903,8 @@ public class Configuration implements ErrorHandler {
         if (existHome.isDirectory() && new File(existHome, config).isFile()) {
             return existHome;
         }
-        existHome=null;
+
+        existHome = null;
         return existHome;
 	}
     
