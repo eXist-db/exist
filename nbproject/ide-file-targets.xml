@@ -69,4 +69,18 @@
             <classpath refid="classpath.core"/>
         </java>
     </target>
+    
+    <!-- PROFILING YourKit -->
+    <target name="profile-yourkit">
+        <!-- Add Yourkit Profiler to the class path. see 
+             product documentation "Enabling profiling manually" 
+             for details -->
+        <java classname="org.exist.start.Main" fork="true">
+            <jvmarg value="-agentlib:yjpagent"/>
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <arg value="jetty"/>
+        </java>
+    </target>
+    
 </project>
