@@ -60,7 +60,7 @@
                 </action>
                 <action name="debug">
                     <script>nbproject/ide-file-targets.xml</script>
-                    <target>debug-nb</target>
+                    <target>debug</target>
                 </action>
                 <action name="debug.single">
                     <script>nbproject/ide-file-targets.xml</script>
@@ -75,18 +75,22 @@
                         </arity>
                     </context>
                 </action>
-                <action name="profile.single">
+                <!--<action name="profile.single">
+                <script>nbproject/ide-file-targets.xml</script>
+                <target>profile-nb.single</target>
+                <context>
+                <property>classname</property>
+                <folder>src</folder>
+                <pattern>\.java$</pattern>
+                <format>java-name</format>
+                <arity>
+                <one-file-only/>
+                </arity>
+                </context>
+                </action> -->
+                <action name="profile">
                     <script>nbproject/ide-file-targets.xml</script>
-                    <target>profile-nb.single</target>
-                    <context>
-                        <property>classname</property>
-                        <folder>src</folder>
-                        <pattern>\.java$</pattern>
-                        <format>java-name</format>
-                        <arity>
-                            <one-file-only/>
-                        </arity>
-                    </context>
+                    <target>profile-yourkit</target>
                 </action>
             </ide-actions>
             <export>
@@ -123,6 +127,11 @@
                     <ide-action name="test"/>
                     <ide-action name="rebuild"/>
                     <ide-action name="debug"/>
+                    <action>
+                        <script>nbproject/ide-file-targets.xml</script>
+                        <label>Profile using "YourKit"</label>
+                        <target>profile-yourkit</target>
+                    </action>
                 </context-menu>
             </view>
             <subprojects/>
