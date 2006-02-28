@@ -1,0 +1,57 @@
+<project name="XQTS" basedir="." default="store">
+	
+	<!-- import default properties from file -->
+    <property file="build.properties"/>
+	
+	<property name="server.dir" value="../.."/>
+	
+	<path id="classpath.core">
+		<fileset dir="${server.dir}/lib/core">
+			<include name="*.jar"/>
+		</fileset>
+        <pathelement path="${server.dir}/exist.jar"/>
+        <pathelement path="${server.dir}/exist-optional.jar"/>
+	</path>
+
+	<typedef resource="org/exist/ant/antlib.xml"
+		uri="http://exist-db.org/ant">
+		<classpath refid="classpath.core"/>
+	</typedef>
+	
+	<available file="${xqts.home}" property="xqts.present"/>
+
+	<target name="store" xmlns:xmldb="http://exist-db.org/ant"
+		if="xqts.present" depends="check-files">
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS"
+			createcollection="true">
+            <fileset dir="."> 
+                <include name="config.xml"/>
+                <include name="stylesheets/*.xsl"/>
+            </fileset>
+		</xmldb:store>
+		
+		<xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS"
+			createcollection="true">
+            <fileset dir="${xqts.home}">
+                <include name="XQTSCatalog.xml"/>
+            </fileset>
+		</xmldb:store>
+		
+		<xmldb:store 
+			uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources"
+			createcollection="true">
+            <fileset dir="${xqts.home}/TestSources">
+                <include name="*"/>
+            	<exclude name="fsx.xml"/>
+            </fileset>
+		</xmldb:store>
+	</target>
+	
+	<target name="check-files" unless="xqts.present">
+		<echo>
+			The XQTS sources could not be found in directory
+			{$xqts.home}. Please edit build.properties and
+			check the path specified via the xqts.home property.
+		</echo>
+	</target>
+</project>
