@@ -62,6 +62,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class EXistServlet extends HttpServlet {
 
+	private String formEncoding = null;
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	
 	private BrokerPool pool = null;
@@ -116,7 +117,7 @@ public class EXistServlet extends HttpServlet {
 		}
 
 		// Instantiate REST server
-		String formEncoding = config.getInitParameter("form-encoding");
+		formEncoding = config.getInitParameter("form-encoding");
 		if(formEncoding == null)
 			formEncoding = DEFAULT_ENCODING;
 		String containerEncoding = config.getInitParameter("container-encoding");
@@ -280,8 +281,11 @@ public class EXistServlet extends HttpServlet {
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+	protected void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException
+	{	
+		//Wrap HttpServletRequest, for better access to POST parameters from Content and URL - deliriumsky
+		HttpServletRequestWrapper request = new HttpServletRequestWrapper(req, formEncoding);
+		
 		User user = authenticate(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN,
