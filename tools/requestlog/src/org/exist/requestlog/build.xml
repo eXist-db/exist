@@ -1,0 +1,27 @@
+<project basedir="." default="compile" name="RequestReplayer">
+	<property name="src" value="./src"/>
+    <property name="classes" value="./classes"/>
+	
+	<target name="prepare">
+    	<echo message="--------------------------------------------------"/>
+        <echo message="Compiling Request Replayer"/>
+        <echo message="--------------------------------------------------"/>
+		<mkdir dir="${classes}"/>
+	</target>
+	
+	<!-- =================================================================== -->
+    <!-- Compiles the source code                                            -->
+    <!-- =================================================================== -->
+    <target depends="prepare" name="compile">
+        <javac debug="${build.debug}" deprecation="${build.deprecation}" 
+			destdir="${classes}" encoding="UTF-8"
+			optimize="${build.optimize}" srcdir="${src}" 
+        	source="1.4">
+			<!-- jmv target="1.4" -->
+        </javac>
+    </target>
+	
+	<target name="clean">
+		<delete dir="${classes}"/>
+	</target>
+</project>
