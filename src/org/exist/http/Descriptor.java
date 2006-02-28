@@ -21,11 +21,16 @@
 
 package org.exist.http;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -42,30 +47,41 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
-/**
- * @author Adam Retter <adam.retter@devon.gov.uk>
- *
- * Class representation of an XQuery Web Application Descriptor file
+/** Webapplication Descriptor
  * 
+ * Class representation of an XQuery Web Application Descriptor file
+ * with some helper functions for performing Descriptor related actions
+ * 
+ * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @serial 2006-02-28
+ * @version 1.6
  */
 
 public class Descriptor implements ErrorHandler
 {
-	private final static Logger LOG = Logger.getLogger(Descriptor.class);	//Logger
+	private final static Logger LOG = Logger.getLogger(Descriptor.class);		//Logger
 	private String file = null;												//descriptor file (descriptor.xml)
 	
 	//Data
+	private BufferedWriter bufWriteReplayLog = null;	//Should a replay log of requests be created
 	private String allowSourceXQueryList[] = null; 	//Array of xql files to allow source to be viewed 
 	private String mapList[][] = null;	 				//Array of Mappings
 	
 	
-	//Constructor (wrapper)
+	/**
+	 * Descriptor Constructor
+	 * @param file		The descriptor file to read, defaults to descriptor.xml in the home folder
+	 */
 	public Descriptor(String file)
 	{
         this(file, null);
     }
     
-	//Constructor
+	/**
+	 * Descriptor Constructor
+	 * @param file		The descriptor file to read, defaults to descriptor.xml in the dbHome folder
+	 * @param dbHome	The home folder to find the descriptor file in, defaults to $EXIST_HOME
+	 */
     public Descriptor(String file, String dbHome)
 	{
         try
@@ -86,7 +102,6 @@ public class Descriptor implements ErrorHandler
             	//Default file name
             	file = "descriptor.xml";
             }
-                
                 
             //otherise, secondly try to read Descriptor from file. Guess the location if necessary
             if(is == null)
@@ -118,6 +133,13 @@ public class Descriptor implements ErrorHandler
             
             Document doc = adapter.getDocument();
             
+            //load <xquery-app> attribue settings
+            if(doc.getDocumentElement().getAttribute("request-replay-log").equals("true"))
+            {
+            	File logFile = new File("request-replay-log.txt");
+        		bufWriteReplayLog = new BufferedWriter(new FileWriter(logFile));
+            }
+            
             //load <allow-source> settings
             NodeList allowsourcexqueries = doc.getElementsByTagName("allow-source");
             if (allowsourcexqueries.getLength() > 0)
@@ -131,7 +153,6 @@ public class Descriptor implements ErrorHandler
             {
                 configureMaps((Element) maps.item(0));
             }
-            
         }
         catch (SAXException e)
 		{
@@ -231,11 +252,17 @@ public class Descriptor implements ErrorHandler
         }
     }
     
-    //takes a path such as that from RESTServer.doGet()
-    //if it finds a matching allowsourcexquery path then it returns true
-    //else it returns false
+    /**
+	 * Determines whether it is permissible to show the source of an XQuery.
+	 * Takes a path such as that from RESTServer.doGet() as an argument,
+	 * if it finds a matching allowsourcexquery path in the descriptor then it returns true else it returns false
+	 *   
+	 * @param path		The path of the XQuery (e.g. /db/MyCollection/query.xql)
+	 * @return			The boolean value true or false indicating whether it is permissible to show the source
+	 */
     public boolean allowSourceXQuery(String path)
     {
+    	//TODO: commit an example descriptor that allows viewing of xquery source for the demo applications
     	if(allowSourceXQueryList != null)
     	{
     		//Iterate through the xqueries that source viewing is allowed for
@@ -252,9 +279,14 @@ public class Descriptor implements ErrorHandler
     	return(false);
     }
     
-    //takes a path such as that from RESTServer.doGet()
-    //if it finds a matching map path then it returns the map view
-    //else it returns the passed in path
+    /**
+	 * Map's one XQuery or Collection path to another
+	 * Takes a path such as that from RESTServer.doGet() as an argument,
+	 * if it finds a matching map path then it returns the map view else it returns the passed in path
+	 *   
+	 * @param path		The path of the XQuery or Collection (e.g. /db/MyCollection/query.xql or /db/MyCollection) to map from
+	 * @return			The path of the XQuery or Collection (e.g. /db/MyCollection/query.xql or /db/MyCollection) to map to
+	 */
     public String mapPath(String path)
     {
     	if (mapList == null) //has a list of mappings been specified?
@@ -275,9 +307,47 @@ public class Descriptor implements ErrorHandler
     	return(path);
     }
     
-    /*
-     * (non-Javadoc)
-     *
+    /**
+	 * Log's Http Requests in a log file suitable for replaying to eXist later 
+	 * Takes a HttpServletRequest as an argument for logging.
+	 * 
+	 *   
+	 * @param request		The HttpServletRequest to log. For POST requests form data will only be logged if a HttpServletRequestWrapper is used instead of HttpServletRequest!  
+	 */
+    protected synchronized void doLogRequestInReplayLog(HttpServletRequest request)
+	{
+    	//Only log if set by the user in descriptor.xml <xquery-app request-replay-log="true">
+    	if(bufWriteReplayLog == null)
+    	{
+    		return;
+    	}
+
+    	try
+		{
+	    	//Store the date and time
+    		bufWriteReplayLog.write("Date: ");
+    		SimpleDateFormat formatter = new SimpleDateFormat ("dd/MM/yyyy HH:mm:ss");
+    		bufWriteReplayLog.write(formatter.format(new Date()));
+	    	
+	    	bufWriteReplayLog.write(System.getProperty("line.separator"));
+	    	
+	    	//Store the request string excluding the first line
+	    	bufWriteReplayLog.write(request.toString().substring(request.toString().indexOf(System.getProperty("line.separator")) + 1));
+	    	
+	    	//End of record indicator
+	    	bufWriteReplayLog.write(System.getProperty("line.separator"));
+	    	
+	    	//flush the buffer to file
+	    	bufWriteReplayLog.flush();
+		}
+    	catch(IOException ioe)
+		{
+    		LOG.warn("Could not write request replay log");
+    		return;
+    	}
+	}
+   
+    /**
      * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
      */
     public void error(SAXParseException exception) throws SAXException {
@@ -286,9 +356,7 @@ public class Descriptor implements ErrorHandler
                 + exception.getMessage());
     }
     
-    /*
-     * (non-Javadoc)
-     *
+    /**
      * @see org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException)
      */
     public void fatalError(SAXParseException exception) throws SAXException
@@ -298,9 +366,7 @@ public class Descriptor implements ErrorHandler
                 + exception.getMessage());
     }
     
-    /*
-     * (non-Javadoc)
-     *
+    /** 
      * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)
      */
     public void warning(SAXParseException exception) throws SAXException {
@@ -308,5 +374,5 @@ public class Descriptor implements ErrorHandler
                 + "[line: " + exception.getLineNumber() + "]:"
                 + exception.getMessage());
     }
-	
+		
 }
