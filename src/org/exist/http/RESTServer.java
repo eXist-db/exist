@@ -118,8 +118,7 @@ public class RESTServer {
         defaultProperties.setProperty(OutputKeys.INDENT, "yes");
         defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
         defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
-        defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES,
-                "elements");
+        defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
         defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
     }
     
@@ -150,9 +149,9 @@ public class RESTServer {
             "<body>" +
             "<h1>XQuery Error</h1>";
     
-    private String formEncoding;
+    private String formEncoding;			//TODO: we may be able to remove this eventually, in favour of HttpServletRequestWrapper being setup in EXistServlet, currently used for doPost() but perhaps could be used for other Request Methods? - deliriumsky
     private String containerEncoding;
-    private Descriptor descriptor = null;
+    private static Descriptor descriptor = null; //I am 99% sure this can be static (we only ever need one in memory) - deliriumsky
     
 
     //Constructor
@@ -268,9 +267,14 @@ public class RESTServer {
         // Process the request
         DocumentImpl resource = null;
         try {
-        	//first, see if a mapping is specified on the path
+        	        	
+        	//first, perform descriptor actions
         	if(descriptor != null)
         	{
+        		//logs the request if specified in the descriptor
+        		descriptor.doLogRequestInReplayLog(request);
+        		
+        		//map's the path if a mapping is specified in the descriptor
         		path = descriptor.mapPath(path);
         	}
         	
@@ -435,9 +439,13 @@ public class RESTServer {
         DocumentImpl resource = null;
         try {
         	
-        	//first, see if a mapping is specified on the path
+        	//first, perform descriptor actions
         	if(descriptor != null)
         	{
+        		//logs the request if specified in the descriptor
+        		descriptor.doLogRequestInReplayLog(request);
+        		
+        		//map's the path if a mapping is specified in the descriptor
         		path = descriptor.mapPath(path);
         	}
         	
@@ -473,17 +481,18 @@ public class RESTServer {
      * @throws BadRequestException
      * @throws PermissionDeniedException
      */
-    public void doPost(DBBroker broker, HttpServletRequest request,
-            HttpServletResponse response, String path)
-            throws BadRequestException, PermissionDeniedException, IOException {
-    	if (request.getCharacterEncoding() == null)
-			request.setCharacterEncoding(formEncoding);
+    public void doPost(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path) throws BadRequestException, PermissionDeniedException, IOException
+    {	
         Properties outputProperties = new Properties(defaultProperties);
         DocumentImpl resource = null;
         try {
-        	//first, see if a mapping is specified on the path
+        	//first, perform descriptor actions
         	if(descriptor != null)
         	{
+        		//logs the request if specified in the descriptor
+        		descriptor.doLogRequestInReplayLog(request);
+        		
+        		//map's the path if a mapping is specified in the descriptor
         		path = descriptor.mapPath(path);
         	}
         	
@@ -513,8 +522,8 @@ public class RESTServer {
                 resource.getUpdateLock().release(Lock.READ_LOCK);
         }
         
-        // normal POST: read the request content and check if
-        // it is an XUpdate or a query request.
+        // third, normal POST: read the request content and check if
+        // it is an XUpdate or a query request.        
         int howmany = 10;
         int start = 1;
         boolean enclose = true;
