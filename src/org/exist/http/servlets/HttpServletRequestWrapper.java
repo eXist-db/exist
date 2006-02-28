@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database Copyright (C) 2001-06 Wolfgang M.
+ * Meier meier@ifs.tu-darmstadt.de http://exist.sourceforge.net
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ * $Id$
+ */
+
 package org.exist.http.servlets;
 
 import java.io.BufferedReader;
@@ -5,11 +26,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Enumeration;
-import java.util.NoSuchElementException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Vector;
 
@@ -34,9 +55,13 @@ import javax.servlet.http.HttpSession;
  * and storing them in the private variable params for later use.
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-02-27
- * @version 1.0 
+ * @serial 2006-02-28
+ * @version 1.1
  */
+
+//TODO: check loops to make sure they only iterate as few times as needed
+//TODO: do we need to do anything with encoding strings manually?
+
 
 public class HttpServletRequestWrapper implements HttpServletRequest
 {
@@ -197,8 +222,8 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			//If there is some Content
 			if(request.getContentLength() > 0)
 			{
-				//If not a file uplodad (file upload is indicated by multipart content type)
-				if(!request.getContentType().toUpperCase().startsWith("MULTIPART/"))
+				//If a form POST and not a document POST
+				if(request.getContentType().toLowerCase().equals("application/x-www-form-urlencoded") && request.getHeader("ContentType") == null)
 				{
 					//Parse out parameters from the Content Body
 					parseContentBodyParameters();
@@ -210,8 +235,11 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	//Stores parameters from the QueryString of the request
 	private void parseURLParameters(String querystring)
 	{
-		//Parse any parameters from the URL
-		parseParameters(querystring, RequestParamater.PARAM_TYPE_URL);
+		if(querystring != null)
+		{
+			//Parse any parameters from the URL
+			parseParameters(querystring, RequestParamater.PARAM_TYPE_URL);
+		}
 	}
 	
 	//Stores parameters from the Content Body of the Request
