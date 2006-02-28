@@ -79,6 +79,8 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 		int h = duration.getHours();
 		int m = duration.getMinutes();
 		Number s = duration.getField(DatatypeConstants.SECONDS);
+        if (s == null)
+        	s = new Integer(0);
 	
 		//Copied from Saxon 8.6.1		
         FastStringBuffer sb = new FastStringBuffer(32);
@@ -98,10 +100,15 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         if (m != 0) {
             sb.append(m + "M");
         }
-        if (s == null)
-        	s = new Integer(0);
         if ((s.intValue() != 0) || (d==0 && m==0 && h==0)) {
-        	sb.append(s + "S");
+        	//TODO : ugly -> factorize
+        	sb.append(Integer.toString(s.intValue()));
+        	double ms = s.doubleValue() - s.intValue();
+        	if (ms != 0.0) {
+        		sb.append(".");
+        		sb.append(Double.toString(ms).substring(2));        		
+        	}
+        	sb.append("S");        			
         	/*
             if (micros == 0) {
                 sb.append(s + "S");
