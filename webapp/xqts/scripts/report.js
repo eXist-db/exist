@@ -41,6 +41,7 @@ var timer = null;
 var progress = null;
 var currentCollection = null;
 var currentGroup = null;
+var treeWidget = null;
 
 function init() {
 	resize();
@@ -61,15 +62,18 @@ function displayTree() {
 function treeLoaded(request) {
 	var xml = request.responseXML;
 	var responseRoot = xml.documentElement;
-	var tree = new YAHOO.widget.TreeView('navtree');
-	var treeRoot = tree.getRoot();
-	var rootNode = new YAHOO.widget.TextNode('Suite', treeRoot, true);
-	displayGroup(responseRoot, rootNode);
-	tree.draw();
+	var oldTree = null;
+	if (treeWidget)
+		oldTree = treeWidget;
+	treeWidget = new YAHOO.widget.TreeView('navtree');
+	var rootNode = new YAHOO.widget.TextNode('Suite', treeWidget.getRoot(), true);
+	displayGroup(responseRoot, rootNode, oldTree);
+
+	treeWidget.draw();
 	clearMessages();
 }
 
-function displayGroup(node, treeNode) {
+function displayGroup(node, treeNode, oldTree) {
 	for (var i = 0; i < node.childNodes.length; i++) {
 		var child = node.childNodes[i];
 		if (child.nodeName == 'group') {
@@ -79,10 +83,21 @@ function displayGroup(node, treeNode) {
 			var path = child.getAttribute('collection');
 			var display = child.getAttribute('title') + ' [' + passed +
 					'/' + failed + ']';
-			var obj = { label: display, href: "javascript:loadTests('" + path + "', '" + name + "')" };
-			var childTree = new YAHOO.widget.TextNode(obj, treeNode, false);
+			var obj = { 
+				label: display, 
+				href: "javascript:loadTests('" + path + "', '" + name + "')",
+				group: name
+			};
+			var expanded = false;
+			if (oldTree != null) {
+				var oldNode = oldTree.getNodeByProperty('group', name);
+				if (node)
+					expanded = oldNode.expanded;
+			}
+					
+			var childTree = new YAHOO.widget.TextNode(obj, treeNode, expanded);
 			if (child.hasChildNodes())
-				displayGroup(child, childTree);
+				displayGroup(child, childTree, oldTree);
 		}
 	}
 }
