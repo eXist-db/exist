@@ -34,6 +34,8 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NotificationService;
+import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
@@ -72,8 +74,9 @@ public class ExtCollection extends Function {
 	private boolean includeSubCollections = false;
 	
 	private List cachedArgs = null;
-	private Sequence cached = null;
-	
+	private NodeSet cached = null;
+    protected UpdateListener listener = null;
+    
 	/**
 	 * @param context
 	 * @param signature
@@ -147,6 +150,7 @@ public class ExtCollection extends Function {
 		}
 		cached = result;
 		cachedArgs = args;
+        registerUpdateListener();
         
         if (context.getProfiler().isEnabled())           
                context.getProfiler().end(this, "", result);
@@ -185,11 +189,43 @@ public class ExtCollection extends Function {
         return true;
     }
     
+    protected void registerUpdateListener() {
+        if (listener == null) {
+            listener = new UpdateListener() {
+                public void documentUpdated(DocumentImpl document, int event) {
+                    if (event == UpdateListener.ADD) {
+                        // clear all
+                        cached = null;
+                        cachedArgs = null;
+                    } else {
+                        if (cached != null
+                                && cached.get(document, NodeProxy.DOCUMENT_NODE_GID) != null) {
+                            cached = null;
+                            cachedArgs = null;
+                        }
+                    }
+                };
+            };
+            NotificationService service = context.getBroker().getBrokerPool()
+                    .getNotificationService();
+            service.subscribe(listener);
+        }
+    }
+    
+    protected void deregisterUpdateListener() {
+        if (listener != null) {
+            NotificationService service = context.getBroker().getBrokerPool()
+                    .getNotificationService();
+            service.unsubscribe(listener);
+        }
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#resetState()
      */
     public void resetState() {
         cached = null;
         cachedArgs = null;
+        deregisterUpdateListener();
     }
 }
