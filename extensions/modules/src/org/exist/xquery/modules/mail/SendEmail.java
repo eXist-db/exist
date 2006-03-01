@@ -1,45 +1,32 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Mail Module Extension SendEmail
+ *
+ * Released under the BSD License
+ *
+ * Copyright (c) 2006, Adam retter <adam.retter@devon.gov.uk>
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+ * 		Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ *  	Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+ *  	Neither the name of the Devon Portal Project nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ *  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ *  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ *  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ *  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ *  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  *  $Id$
  */
+
 package org.exist.xquery.modules.mail;
-
-import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.functions.util.ExistVersion;
-
-
-//send-email specific imports
-import org.apache.xmlrpc.Base64;
-import org.w3c.dom.Node;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -47,10 +34,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
 import java.net.InetAddress;
 import java.net.Socket;
-
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -64,9 +49,34 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 
+import org.exist.dom.QName;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.util.ExistVersion;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.Type;
+
+//send-email specific imports
+import org.apache.xmlrpc.Base64;
+import org.w3c.dom.Node;
 
 /**
+ * eXist Mail Module Extension SendEmail 
+ * 
+ * The email sending functionality of the eXist Mail Module Extension that
+ * allows email to be sent from XQuery using either SMTP or Sendmail.  
+ * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @serial 2006-03-01
+ * @version 1.11
+ *
+ * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
 public class SendEmail extends BasicFunction
 {
@@ -90,15 +100,23 @@ public class SendEmail extends BasicFunction
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 
 	/**
-	 * @param context
-	 * @param signature
+	 * SendEmail Constructor
+	 * 
+	 * @param context	The Context of the calling XQuery
 	 */
 	public SendEmail(XQueryContext context)
 	{
 		super(context, signature);
     }
 
-	/* (non-Javadoc)
+	/**
+	 * evaluate the call to the xquery send-email function,
+	 * it is really the main entry point of this class
+	 * 
+	 * @param args		arguments from the send-email() function call
+	 * @param contextSequence	the Context Sequence to operate on (not used here internally!)
+	 * @return		A sequence representing the result of the send-email() function call
+	 * 
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
@@ -145,8 +163,12 @@ public class SendEmail extends BasicFunction
 		}
 	}
 	
-	
-	//Sends an email using the system's sendmail binary
+	/**
+	 * Sends an email using the Operating Systems sendmail application
+	 * 
+	 * @param aMail		A mail object representing the email to send
+	 * @return		boolean value of true of false indicating success or failure to send email
+	 */
 	private boolean SendSendmail(mail aMail)
 	{
 		try
@@ -198,7 +220,13 @@ public class SendEmail extends BasicFunction
 		return(true);
 	}
 	
-	//Sends an email using an SMTP Server
+	/**
+	 * Sends an email using SMTP
+	 * 
+	 * @param aMail		A mail object representing the email to send
+	 * @param SMTPServer	The SMTP Server to send the email through
+	 * @return		boolean value of true of false indicating success or failure to send email
+	 */
 	private boolean SendSMTP(mail aMail, String SMTPServer)
 	{
 		final int TCP_PROTOCOL_SMTP = 25;									//SMTP Protocol
@@ -321,7 +349,12 @@ public class SendEmail extends BasicFunction
 	}
 	
 	
-	//Writes an email payload (Headers + Body) from a mail object
+	/**
+	 * Writes an email payload (Headers + Body) from a mail object
+	 * 
+	 * @param out		A PrintWriter to receive the email
+	 * @param aMail		A mail object representing the email to write out		
+	 */
 	private void WriteMessage(PrintWriter out, mail aMail) throws IOException
 	{
 			String Version = eXistVersion();									//Version of eXist
@@ -407,7 +440,12 @@ public class SendEmail extends BasicFunction
 	}
 	
 	
-	//Gets the eXist Version Number
+	/**
+	 * Get's the version of eXist we are running
+	 * The eXist version is used as part of the multipart separator
+	 * 
+	 * @return		The eXist Version
+	 */
 	private String eXistVersion() throws IOException
 	{
 		Properties sysProperties = new Properties();
@@ -415,26 +453,28 @@ public class SendEmail extends BasicFunction
 		return((String)sysProperties.getProperty("product-version", "unknown version"));
 	}
 	
-	//Constructs a mail object from an XML representation
+	/**
+	 * Constructs a mail Object from an XML representation of an email
+	 * 
+	 * The XML email Representation is expected to look something like this
+	 * 
+	 * <mail>
+	 * 	<from></from>
+	 * 	<to></to>
+	 * 	<cc></cc>
+	 * 	<bcc></bcc>
+	 * 	<subject></subject>
+	 * 	<message>
+	 * 		<text></text>
+	 * 		<xhtml></xhtml>
+	 * 	</message>
+	 * </mail>
+	 * 
+	 * @param message	The XML mail Node
+	 * @return		A mail Object representing the XML mail Node
+	 */
 	private mail ParseMailXML(Node message) throws TransformerException
 	{
-		//Expects message to be in the format -
-		/*
-		 * <mail>
-		 * 	<from></from>
-		 * 	<to></to>
-		 * 	<cc></cc>
-		 * 	<bcc></bcc>
-		 *	<subject></subject>
-		 *	<message>
-		 *		<text></text>
-		 *		<xhtml></xhtml>
-		 *	</message>
-		 * </mail>
-		 * 
-		 */
-		
-		
 		//New mail Object
 		mail theMail = new mail(); 
 		
@@ -509,7 +549,11 @@ public class SendEmail extends BasicFunction
 		return(theMail);
 	}
 	
-	//Returns the current date and time in an RFC822 format, suitable for an email Date Header
+	/**
+	 * Returns the current date and time in an RFC822 format, suitable for an email Date Header
+	 * 
+	 * @return		RFC822 formated date and time as a String
+	 */
 	private String getDateRFC822()
 	{
 		String dateString = new String();
@@ -686,7 +730,12 @@ public class SendEmail extends BasicFunction
 		return(dateString);
 	}
 	
-	//Base64 Encodes a string (used for message subject)
+	/**
+	 * Base64 Encodes a string (used for message subject)
+	 * 
+	 * @param str	The String to encode
+	 * @return		The encoded String
+	 */
 	private String encode64 (String str) throws java.io.UnsupportedEncodingException
 	{
         String result = new String(Base64.encode(str.getBytes(charset)));
@@ -696,7 +745,12 @@ public class SendEmail extends BasicFunction
         return(result);
 	}
 
-	//Base64 Encodes an email address
+	/**
+	 * Base64 Encodes an email address
+	 * 
+	 * @param str	The email address as a String to encode
+	 * @return		The encoded email address String
+	 */
 	private String encode64Address (String str) throws java.io.UnsupportedEncodingException
 	{
         String result;
@@ -714,6 +768,13 @@ public class SendEmail extends BasicFunction
 	}
 
 	//Class that Represents an email
+	/**
+	 * A simple data class to represent an email
+	 * doesnt do anything fancy just has private
+	 * members and get and set methods
+	 * 
+	 * @version 1.0
+	 */
 	private class mail
 	{
 		private String from = "";			//Who is the mail from
