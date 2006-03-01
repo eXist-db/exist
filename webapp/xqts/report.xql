@@ -13,13 +13,13 @@ declare variable $xqts:XQTS_HOME { $xqts:CONFIG/basedir/text() };
 
 declare function xqts:initialize() as element() {
     let $collection := xdb:create-collection("/db", "XQTS")
-    let $config := doc("/db/XQTS")/config
+    let $config := doc("/db/XQTS/config.xml")/config
     return
         if ($config) then
             $config
         else
             let $home := util:system-property("exist.home")
-            let $path := concat($home, "/tools/XQTS")
+            let $path := concat($home, "webapp/xqts")
             let $stored := xdb:store-files-from-pattern("/db/XQTS", $path, "*.xml", "text/xml")
             return
                 doc("/db/XQTS/config.xml")/config
