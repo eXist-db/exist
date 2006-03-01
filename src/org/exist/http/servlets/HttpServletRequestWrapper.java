@@ -24,6 +24,7 @@ package org.exist.http.servlets;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -276,20 +277,33 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			//Split parameter into name and value
 			String[] thePair = keyValuePairs[k].split("=");
 			
-			//Have we encountered a parameter with this name?
-			if(params.containsKey(thePair[0]))
+			//Only store parameter if it has a value
+			if(thePair.length == 2)
 			{
-				//key exists in hash map, add value and type to vector
-				Vector vecValues = (Vector)params.get(thePair[0]);
-				vecValues.add(new RequestParamater(thePair[1], type));
-				params.put(thePair[0], vecValues);
-			}
-			else
-			{
-				//not in hash map so add a vector with the initial value
-				Vector vecValues = new Vector();
-				vecValues.add(new RequestParamater(thePair[1], type));
-				params.put(thePair[0], vecValues);
+				try
+				{
+					//Have we encountered a parameter with this name?
+					if(params.containsKey(thePair[0]))
+					{
+						//key exists in hash map, add value and type to vector
+						Vector vecValues = (Vector)params.get(thePair[0]);
+						vecValues.add(new RequestParamater(thePair[1], type));
+						params.put(URLDecoder.decode(thePair[0], formEncoding), vecValues);
+					}
+					else
+					{
+						//not in hash map so add a vector with the initial value
+						Vector vecValues = new Vector();
+						vecValues.add(new RequestParamater(thePair[1], type));
+						vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : null), type));
+						params.put(URLDecoder.decode(thePair[0], formEncoding), vecValues);
+					}
+				}
+				catch(UnsupportedEncodingException uee)
+				{
+					//TODO: handle this properly
+					uee.printStackTrace();
+				}
 			}
 		}
 	}
