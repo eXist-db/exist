@@ -74,9 +74,11 @@ public class ExtCollection extends Function {
 	private boolean includeSubCollections = false;
 	
 	private List cachedArgs = null;
-	private NodeSet cached = null;
-    protected UpdateListener listener = null;
-    
+
+	private Sequence cached = null;
+	private DocumentSet cachedDocs = null;
+	private UpdateListener listener = null;
+	
 	/**
 	 * @param context
 	 * @param signature
@@ -150,6 +152,7 @@ public class ExtCollection extends Function {
 		}
 		cached = result;
 		cachedArgs = args;
+        cachedDocs = docs;
         registerUpdateListener();
         
         if (context.getProfiler().isEnabled())           
@@ -195,11 +198,13 @@ public class ExtCollection extends Function {
                 public void documentUpdated(DocumentImpl document, int event) {
                     if (event == UpdateListener.ADD) {
                         // clear all
+                        cachedDocs = null;
                         cached = null;
                         cachedArgs = null;
                     } else {
-                        if (cached != null
-                                && cached.get(document, NodeProxy.DOCUMENT_NODE_GID) != null) {
+                        if (cachedDocs != null
+                                && cachedDocs.contains(document.getDocId())) {
+                            cachedDocs = null;
                             cached = null;
                             cachedArgs = null;
                         }
@@ -211,7 +216,7 @@ public class ExtCollection extends Function {
             service.subscribe(listener);
         }
     }
-    
+
     protected void deregisterUpdateListener() {
         if (listener != null) {
             NotificationService service = context.getBroker().getBrokerPool()
@@ -225,6 +230,7 @@ public class ExtCollection extends Function {
      */
     public void resetState() {
         cached = null;
+        cachedDocs = null;
         cachedArgs = null;
         deregisterUpdateListener();
     }
