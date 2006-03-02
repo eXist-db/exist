@@ -270,40 +270,42 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	private void parseParameters(String parameters, int type)
 	{
 		//Split parameters into an array
-		String[] keyValuePairs = parameters.split("&");
+		String[] nameValuePairs = parameters.split("&");
 		
-		for (int k = 0; k < keyValuePairs.length; k++)
+		for (int k = 0; k < nameValuePairs.length; k++)
 		{
 			//Split parameter into name and value
-			String[] thePair = keyValuePairs[k].split("=");
+			String[] thePair = nameValuePairs[k].split("=");
 			
-			//Only store parameter if it has a value
-			if(thePair.length == 2)
+			try
 			{
-				try
+				//URL Decode the parameter name and value
+				thePair[0] = URLDecoder.decode(thePair[0], formEncoding);
+				if(thePair.length == 2)
 				{
-					//Have we encountered a parameter with this name?
-					if(params.containsKey(thePair[0]))
-					{
-						//key exists in hash map, add value and type to vector
-						Vector vecValues = (Vector)params.get(thePair[0]);
-						vecValues.add(new RequestParamater(thePair[1], type));
-						params.put(URLDecoder.decode(thePair[0], formEncoding), vecValues);
-					}
-					else
-					{
-						//not in hash map so add a vector with the initial value
-						Vector vecValues = new Vector();
-						vecValues.add(new RequestParamater(thePair[1], type));
-						vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : null), type));
-						params.put(URLDecoder.decode(thePair[0], formEncoding), vecValues);
-					}
+					thePair[1] = URLDecoder.decode(thePair[1], formEncoding);
 				}
-				catch(UnsupportedEncodingException uee)
-				{
-					//TODO: handle this properly
-					uee.printStackTrace();
-				}
+			}
+			catch(UnsupportedEncodingException uee)
+			{
+				//TODO: handle this properly
+				uee.printStackTrace();
+			}
+			
+			//Have we encountered a parameter with this name?
+			if(params.containsKey(thePair[0]))
+			{
+				//key exists in hash map, add value and type to vector
+				Vector vecValues = (Vector)params.get(thePair[0]);
+				vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : new String()), type));
+				params.put(thePair[0], vecValues);
+			}
+			else
+			{
+				//not in hash map so add a vector with the initial value
+				Vector vecValues = new Vector();
+				vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : new String()), type));
+				params.put(thePair[0], vecValues);
 			}
 		}
 	}
