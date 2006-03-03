@@ -12,7 +12,7 @@ public abstract class NumericValue extends ComputableValue {
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 	
 	public double getDouble() throws XPathException {
-		return ((DoubleValue)convertTo(Type.DECIMAL)).getValue();
+		return ((DoubleValue)convertTo(Type.DOUBLE)).getValue();
 	}
 	
 	public long getLong() throws XPathException {
@@ -65,11 +65,11 @@ public abstract class NumericValue extends ComputableValue {
 			double otherVal = ((NumericValue)other).getDouble();
 			double val = getDouble();
 			if(val == otherVal)
-				return 0;
+				return Constants.EQUAL;
 			else if(val > otherVal)
-				return 1;
+				return Constants.SUPERIOR;
 			else
-				return -1;
+				return Constants.INFERIOR;
 		} else {
 			throw new XPathException("cannot compare numeric value to non-numeric value");
 		}
