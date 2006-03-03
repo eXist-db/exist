@@ -1,5 +1,6 @@
 package org.exist.storage;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
 import org.exist.util.hashtable.Object2LongIdentityHashMap;
 
@@ -14,6 +15,7 @@ import org.exist.util.hashtable.Object2LongIdentityHashMap;
 public class NotificationService extends Object2LongIdentityHashMap {
 
 	private final static long DUMMY_VALUE = 0;
+	private final static Logger LOG = Logger.getLogger(NotificationService.class);
 	
 	public NotificationService() {
 		super();
@@ -34,7 +36,11 @@ public class NotificationService extends Object2LongIdentityHashMap {
 	 * @param listener
 	 */
 	public synchronized void unsubscribe(UpdateListener listener) {
-		remove(listener);
+		long value = remove(listener);
+		if (value < 0) {
+			listener.debug();
+			throw new RuntimeException("Key not found: " + value);
+		}
 	}
 
 	/**
@@ -51,6 +57,17 @@ public class NotificationService extends Object2LongIdentityHashMap {
 	            continue;
 	        listener = (UpdateListener) keys[idx];
 	        listener.documentUpdated(document, event);
+		}
+	}
+	
+	public void debug() {
+		LOG.debug("Registered UpdateListeners:");
+		UpdateListener listener;
+		for(int idx = 0; idx < tabSize; idx++) {
+	        if(keys[idx] == null || keys[idx] == REMOVED)
+	            continue;
+	        listener = (UpdateListener) keys[idx];
+	        listener.debug();
 		}
 	}
 }
