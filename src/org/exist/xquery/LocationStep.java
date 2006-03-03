@@ -772,7 +772,11 @@ public class LocationStep extends Step {
                                         .contains(document.getDocId()))
                             cached = null;
                     }
-                };
+                }
+                
+                public void debug() {
+                	LOG.debug("UpdateListener: Line: " + LocationStep.this.toString());
+                }
             };
             NotificationService service = context.getBroker().getBrokerPool()
                     .getNotificationService();
@@ -801,5 +805,4 @@ public class LocationStep extends Step {
         deregisterUpdateListener();
         listener = null;
     }
-
 }

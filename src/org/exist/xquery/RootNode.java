@@ -27,6 +27,8 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.storage.NotificationService;
+import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -41,10 +43,12 @@ import org.exist.xquery.value.Type;
  */
 public class RootNode extends Step {
 
-    private Sequence cached = null;
+    private NodeSet cached = null;
 
     private DocumentSet cachedDocs = null;
 
+    private UpdateListener listener = null;
+    
     /** Constructor for the RootNode object */
     public RootNode(XQueryContext context) {
         super(context, Constants.SELF_AXIS);
@@ -88,7 +92,6 @@ public class RootNode extends Step {
 	        }
 	        cached = result;
 	        cachedDocs = ds;            
-	        
         } catch (LockException e) {
             throw new XPathException(getASTNode(), "Failed to acquire lock on the context document set");
         } finally {
@@ -100,6 +103,7 @@ public class RootNode extends Step {
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);
         
+        registerUpdateListener();
         return result;        
     }
 
@@ -125,6 +129,42 @@ public class RootNode extends Step {
         return Type.NODE;
     }
 
+    protected void registerUpdateListener() {
+        if (listener == null) {
+            listener = new UpdateListener() {
+                public void documentUpdated(DocumentImpl document, int event) {
+                	LOG.debug("ROOT: clear: " + event);
+                    if (event == UpdateListener.ADD) {
+                        // clear all
+                        cachedDocs = null;
+                        cached = null;
+                    } else {
+                        if (cachedDocs != null
+                                && cachedDocs.contains(document.getDocId())) {
+                            cachedDocs = null;
+                            cached = null;
+                        }
+                    }
+                }
+                
+                public void debug() {
+                	LOG.debug("UpdateListener: Line: " + getASTNode().getLine() + ": " + RootNode.this.toString());                	
+                }
+            };
+            NotificationService service = context.getBroker().getBrokerPool()
+                    .getNotificationService();
+            service.subscribe(listener);
+        }
+    }
+
+    protected void deregisterUpdateListener() {
+        if (listener != null) {
+            NotificationService service = context.getBroker().getBrokerPool()
+                    .getNotificationService();
+            service.unsubscribe(listener);
+        }
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -132,6 +172,7 @@ public class RootNode extends Step {
      */
     public void resetState() {
         cached = null;
-        cachedDocs = null;        
+        cachedDocs = null;
+        deregisterUpdateListener();
     }
 }

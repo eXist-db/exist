@@ -1044,6 +1044,7 @@ public class BrokerPool {
             }
             cacheManager.checkCaches();
             sync.restart();
+            notificationService.debug();
         } else
             cacheManager.checkDistribution();
         //TODO : touch this.syncEvent and syncRequired ?
@@ -1166,6 +1167,8 @@ public class BrokerPool {
 	 * @param killed <code>true</code> when the JVM is (cleanly) exiting
 	 */
 	public synchronized void shutdown(boolean killed) {
+		notificationService.debug();
+		
 		//Notify all running tasks that we are shutting down
 		syncDaemon.shutDown();
 		//Notify all running XQueries that we are shutting down

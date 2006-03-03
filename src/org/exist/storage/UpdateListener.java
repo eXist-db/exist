@@ -24,4 +24,6 @@ public interface UpdateListener {
 	 * @param event
 	 */
 	public void documentUpdated(DocumentImpl document, int event);
+	
+	public void debug();
 }
