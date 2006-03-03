@@ -37,10 +37,10 @@ public class NotificationService extends Object2LongIdentityHashMap {
 	 */
 	public synchronized void unsubscribe(UpdateListener listener) {
 		long value = remove(listener);
-		if (value < 0) {
-			listener.debug();
-			throw new RuntimeException("Key not found: " + value);
-		}
+//		if (value < 0) {
+//			listener.debug();
+//			throw new RuntimeException("Key not found: " + value);
+//		}
 	}
 
 	/**
