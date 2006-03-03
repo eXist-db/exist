@@ -41,10 +41,10 @@ public class RangeExpression extends Function {
 		new FunctionSignature(
 			new QName("to", Function.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
-				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
+				new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE),
+				new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)
 			},
-			new SequenceType(Type.INTEGER, Cardinality.ONE_OR_MORE));
+			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_MORE));
 
 	/**
 	 * @param context
@@ -56,18 +56,24 @@ public class RangeExpression extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-		long start = ((IntegerValue)getArgument(0).eval(contextSequence, contextItem).
-			convertTo(Type.INTEGER)).getLong();
-		long end = ((IntegerValue)getArgument(1).eval(contextSequence, contextItem).
-			convertTo(Type.INTEGER)).getLong();
-		ValueSequence result = new ValueSequence();
-		for(long i = start; i <= end; i++) {
-			result.add(new IntegerValue(i));
-		}
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {		
+		Sequence result;
+		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+		if(seq.getLength() == 0)
+			result = Sequence.EMPTY_SEQUENCE;
+        else {
+        	long start = ((IntegerValue)seq.convertTo(Type.INTEGER)).getLong();
+        	seq = getArgument(1).eval(contextSequence, contextItem);
+    		if(seq.getLength() == 0)
+    			result = Sequence.EMPTY_SEQUENCE;
+    		else {
+    			long end = ((IntegerValue)seq.convertTo(Type.INTEGER)).getLong();        	
+    			result = new ValueSequence();
+    			for(long i = start; i <= end; i++) {
+    				result.add(new IntegerValue(i));
+    			}
+    		}
+        }
 		return result;
 	}
 
