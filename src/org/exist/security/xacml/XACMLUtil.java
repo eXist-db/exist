@@ -598,4 +598,8 @@ public class XACMLUtil implements UpdateListener
 			writer.write(buffer, 0, read);
 		return writer.toString();
 	}
+
+    public void debug() {
+        // left empty
+    }
 }
