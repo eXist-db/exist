@@ -133,7 +133,6 @@ public class RootNode extends Step {
         if (listener == null) {
             listener = new UpdateListener() {
                 public void documentUpdated(DocumentImpl document, int event) {
-                	LOG.debug("ROOT: clear: " + event);
                     if (event == UpdateListener.ADD) {
                         // clear all
                         cachedDocs = null;
@@ -148,7 +147,7 @@ public class RootNode extends Step {
                 }
                 
                 public void debug() {
-                	LOG.debug("UpdateListener: Line: " + getASTNode().getLine() + ": " + RootNode.this.toString());                	
+                	LOG.debug("UpdateListener: Line: " + RootNode.this.toString());                	
                 }
             };
             NotificationService service = context.getBroker().getBrokerPool()
