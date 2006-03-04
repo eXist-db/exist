@@ -64,7 +64,10 @@ public class OpAnd extends LogicalOp {
     			// TODO: optimize and return false if rl.getLength() == 0 ?
     			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
     			rr = rr.getContextNodes(contextId);
-                result = rr.intersection(rl);
+    			result = rr.intersection(rl);
+    			//TODO : replace by the following ?
+                //TODO : what to do with virtual node sets ?
+                //result = (rr.intersection(rl).getLength() == 0) ? BooleanValue.FALSE : BooleanValue.TRUE;    			
     		} else {
     			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
     			// immediately return false if the left operand is false

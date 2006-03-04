@@ -61,8 +61,11 @@ public class OpOr extends LogicalOp {
 			rl = rl.getContextNodes(contextId);
 			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
 			rr = rr.getContextNodes(contextId);
-            result = rl.union(rr);			
-		} else {
+			result = rl.union(rr);
+			//TODO : replace by the following ?
+            //TODO : what to do with virtual node sets ?
+            //result = (rl.union(rr).getLength() == 0) ? BooleanValue.FALSE : BooleanValue.TRUE;			
+        } else {
 			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
 			if (ls)
                 result= BooleanValue.TRUE;
