@@ -73,13 +73,19 @@ public class BooleanValue extends AtomicValue implements Indexable {
 			case Type.ITEM :
 				return this;
 			case Type.NUMBER :
-			case Type.INTEGER :
+			case Type.INTEGER :				
 				return new IntegerValue(value ? 1 : 0);
+			case Type.DECIMAL :
+				return new DecimalValue(value ? 1 : 0);
+			case Type.FLOAT :
+				return new FloatValue(value ? 1 : 0);
+			case Type.DOUBLE :
+				return new DoubleValue(value ? 1 : 0);
 			case Type.STRING :
 				return new StringValue(getStringValue());
 			default :
 				throw new XPathException(
-					"cannot convert boolean '" + value + "' to " + requiredType);
+					"cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(requiredType));
 		}
 	}
 
