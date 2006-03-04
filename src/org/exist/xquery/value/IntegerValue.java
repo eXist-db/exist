@@ -227,6 +227,8 @@ public class IntegerValue extends NumericValue implements Indexable {
 				return this;
 			case Type.DECIMAL :
 				return new DecimalValue(new BigDecimal(value));
+			case Type.UNTYPED_ATOMIC :
+				return new UntypedAtomicValue(getStringValue());				
 			case Type.NON_POSITIVE_INTEGER :
 			case Type.NEGATIVE_INTEGER :
 			case Type.INT :
