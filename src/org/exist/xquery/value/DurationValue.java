@@ -206,6 +206,9 @@ public class DurationValue extends ComputableValue {
 			case Type.DURATION:
 				return this;
 			case Type.YEAR_MONTH_DURATION:
+				if (duration.getField(DatatypeConstants.YEARS) == null && 
+						duration.getField(DatatypeConstants.MONTHS) == null)
+					return new YearMonthDurationValue(YearMonthDurationValue.CANONICAL_ZERO_DURATION);					
 				return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
 						duration.getSign() >= 0,
 						(BigInteger) duration.getField(DatatypeConstants.YEARS),
@@ -221,6 +224,8 @@ public class DurationValue extends ComputableValue {
 						(BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
 			case Type.STRING:
 				return new StringValue(getStringValue());
+			case Type.UNTYPED_ATOMIC :
+				return new UntypedAtomicValue(getStringValue());
 			default:
 				throw new XPathException(
 					"Type error: cannot cast xs:duration to "
