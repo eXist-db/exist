@@ -123,9 +123,13 @@ public class FloatValue extends NumericValue implements Indexable {
 			case Type.UNSIGNED_SHORT :
 			case Type.UNSIGNED_BYTE :
 			case Type.POSITIVE_INTEGER :
-				return new IntegerValue((long) value, requiredType);
+				if (!(Float.isInfinite(value) || Float.isNaN(value)))
+					return new IntegerValue((long) value, requiredType);
+				else
+					throw new XPathException("FOCA0002: cannot convert ' xs:float(\"" + getStringValue() +
+							"\")' to " + Type.getTypeName(requiredType));
 			case Type.BOOLEAN :
-				return (value == 0.0f || value == Float.NaN)
+				return (value == 0.0f || Float.isNaN(value))
 					? BooleanValue.FALSE
 					: BooleanValue.TRUE;
 			default :
