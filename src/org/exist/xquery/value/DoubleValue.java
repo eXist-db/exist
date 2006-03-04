@@ -242,9 +242,12 @@ public class DoubleValue extends NumericValue implements Indexable {
 			case Type.DOUBLE :
 				return this;
 			case Type.FLOAT :
-				if (value < Float.MIN_VALUE || value > Float.MAX_VALUE)
-					throw new XPathException("Value is out of range for type xs:float");
-				return new FloatValue((float) value);
+				//if (Float.compare(value, 0.0f) && (value < Float.MIN_VALUE || value > Float.MAX_VALUE)
+				//	throw new XPathException("Value is out of range for type xs:float");
+				//return new FloatValue((float) value);
+				return new FloatValue(new Float(value).floatValue());
+			case Type.UNTYPED_ATOMIC :
+				return new UntypedAtomicValue(getStringValue());
 			case Type.STRING :
 				return new StringValue(getStringValue());
 			case Type.DECIMAL :
