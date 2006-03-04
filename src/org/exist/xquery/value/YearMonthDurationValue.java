@@ -37,7 +37,7 @@ import org.exist.xquery.XPathException;
  */
 public class YearMonthDurationValue extends OrderedDurationValue {
 
-	private static final Duration CANONICAL_ZERO_DURATION =
+	public static final Duration CANONICAL_ZERO_DURATION =
 		TimeUtils.getInstance().newDuration(true, null, BigInteger.ZERO, null, null, null, null);
 	
 	YearMonthDurationValue(Duration duration) throws XPathException {
