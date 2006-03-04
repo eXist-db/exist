@@ -125,6 +125,8 @@ public class StringValue extends AtomicValue implements Indexable {
 			case Type.ATOMIC :
 			case Type.ITEM :
 			case Type.STRING :
+			//Not sure -pb
+			case Type.UNTYPED_ATOMIC :
 				return this;
 			case Type.NORMALIZED_STRING:
 			case Type.TOKEN:
