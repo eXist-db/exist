@@ -48,7 +48,7 @@ public class AnyNodeTest implements NodeTest {
     
     public void dump(ExpressionDumper dumper) {
         if(dumper.verbosity() > 1) {            
-            dumper.display("any-node-test[]"); 
+            dumper.display("node()"); 
         }
     }    
 
@@ -56,7 +56,7 @@ public class AnyNodeTest implements NodeTest {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return "any-node-test[]";
+		return "node()";
 	}
 
     /* (non-Javadoc)
