@@ -185,7 +185,7 @@ public class GeneralComparison extends BinaryOp {
         Sequence result = null;
         
         //Ugly workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
-        boolean invalidNodeEvaluation = !Type.subTypeOf(contextSequence.getItemType(), Type.NODE) && 
+        boolean invalidNodeEvaluation = contextSequence != null && !Type.subTypeOf(contextSequence.getItemType(), Type.NODE) && 
         	getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
         
         
