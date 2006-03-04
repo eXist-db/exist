@@ -46,6 +46,7 @@ public class DecimalValue extends NumericValue {
 
 	public DecimalValue(String str) throws XPathException {
 		try {
+			//TODO : check the string against a regular expression that prevents scientific notation
 			value = new BigDecimal(str);
 		} catch (NumberFormatException e) {
 			throw new XPathException(
