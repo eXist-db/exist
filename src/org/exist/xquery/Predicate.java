@@ -98,6 +98,12 @@ public class Predicate extends PathExpr {
             else
                 executionMode = BOOLEAN;
         // Case 2: predicate expression returns a number.
+            
+            
+            //Warning : in ((1,2,3,4,5,6,7,8,9,10,11)[(2 to 4)])
+            //the range expression has a cardinality Cardinality.EXACTLY_ONE 
+            //whereas it is obvious that we have more !        
+        	
         } else if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && inner.getCardinality() == Cardinality.EXACTLY_ONE) {
             //Just a hint : inner's cardinality may still be potential
             executionMode = POSITIONAL;
@@ -140,6 +146,10 @@ public class Predicate extends PathExpr {
                     && !(contextSequence instanceof VirtualNodeSet)) {
                 recomputedExecutionMode = BOOLEAN;
             }
+            
+            //Warning : ((1,2,3,4,5,6,7,8,9,10,11)[(2 to 4)])
+            //leads to a positional evaluation
+            //whereas we should have a boolean one (see above)
             
             //if (executionMode == POSITIONAL && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
             //&& !(contextSequence instanceof VirtualNodeSet)) {
@@ -187,10 +197,11 @@ public class Predicate extends PathExpr {
 		Sequence result = new ValueSequence();
 		int p = 0;
 		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
-			Item item = i.nextItem();
             context.setContextPosition(p); 
-            Sequence innerSeq;            
-            innerSeq = inner.eval(contextSequence, item);
+			Item item = i.nextItem();            
+            //Sequence innerSeq = inner.eval(contextSequence, item);
+			//We just test against the *current* item
+			Sequence innerSeq = inner.eval(item.toSequence());
 			if(innerSeq.effectiveBooleanValue())
 				result.add(item);
 		}
