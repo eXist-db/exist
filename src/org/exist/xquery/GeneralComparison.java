@@ -132,7 +132,13 @@ public class GeneralComparison extends BinaryOp {
 	 * @see org.exist.xquery.BinaryOp#returnsType()
 	 */
 	public int returnsType() {
-		if (inPredicate && (!Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM))) {
+
+        //Ugly workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
+        boolean invalidNodeEvaluation =  
+        	getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
+
+        
+		if (inPredicate && !invalidNodeEvaluation && (!Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM))) {
 			/* If one argument is a node set we directly
 			 * return the matching nodes from the context set. This works
 			 * only inside predicates.
@@ -177,16 +183,22 @@ public class GeneralComparison extends BinaryOp {
         }
 
         Sequence result = null;
+        
+        //Ugly workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
+        boolean invalidNodeEvaluation = !Type.subTypeOf(contextSequence.getItemType(), Type.NODE) && 
+        	getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
+        
+        
 		/* 
 		 * If we are inside a predicate and one of the arguments is a node set, 
 		 * we try to speed up the query by returning nodes from the context set.
 		 * This works only inside a predicate. The node set will always be the left 
 		 * operand.
 		 */     
-		if (inPredicate)
-		{            
+		if (inPredicate && !invalidNodeEvaluation) {
+			
 			if (!(Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM))&&
-			        Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
+					Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
                 
                 if(contextItem != null)
                     contextSequence = contextItem.toSequence();                                
