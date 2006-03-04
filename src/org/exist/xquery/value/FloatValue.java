@@ -91,7 +91,7 @@ public class FloatValue extends NumericValue implements Indexable {
 	 * @see org.exist.xquery.value.NumericValue#isNaN()
 	 */
 	public boolean isNaN() {
-		return value == Float.NaN;
+		return Float.isNaN(value);
 	}
 
 	/* (non-Javadoc)
