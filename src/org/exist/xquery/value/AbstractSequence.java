@@ -123,9 +123,8 @@ public abstract class AbstractSequence implements Sequence {
 
 		Item first = itemAt(0);
 		
-		// If operand is a sequence whose first item is a node, fn:boolean returns true.
-		int fisrtType = first.getType();
-		if ( Type.subTypeOf(fisrtType, Type.NODE ) ) {
+		// If operand is a sequence whose first item is a node, fn:boolean returns true.		
+		if (Type.subTypeOf(first.getType(), Type.NODE )) {
 			return true;
 		}
 
