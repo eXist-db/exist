@@ -128,6 +128,8 @@ public class DecimalValue extends NumericValue {
 				return new FloatValue(value.floatValue());
 			case Type.STRING :
 				return new StringValue(getStringValue());
+			case Type.UNTYPED_ATOMIC :
+				return new UntypedAtomicValue(getStringValue());
 			case Type.INTEGER :
 			case Type.NON_POSITIVE_INTEGER :
 			case Type.NEGATIVE_INTEGER :
