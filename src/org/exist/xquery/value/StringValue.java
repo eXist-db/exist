@@ -122,11 +122,12 @@ public class StringValue extends AtomicValue implements Indexable {
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
+			//Not sure -pb
+			case Type.UNTYPED_ATOMIC :
+				return new UntypedAtomicValue(value);
 			case Type.ATOMIC :
 			case Type.ITEM :
 			case Type.STRING :
-			//Not sure -pb
-			case Type.UNTYPED_ATOMIC :
 				return this;
 			case Type.NORMALIZED_STRING:
 			case Type.TOKEN:
