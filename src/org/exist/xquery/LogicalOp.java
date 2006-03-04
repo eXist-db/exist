@@ -65,14 +65,18 @@ public abstract class LogicalOp extends BinaryOp {
 		if(Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 				Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
 				(getLeft().getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
-				(getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0)
+				(getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0
+				//TODO: is this accurate ? -pb
+				&& contextInfo.getContextId() != -1)
 			optimize = true;
 		else
 			optimize = false;
 	}
 	
-	public int returnsType() {
+	public int returnsType() {		
 		return optimize ? Type.NODE : Type.BOOLEAN;
+		//TODO : should always be a boolean -pb
+		//return Type.BOOLEAN;
 	}
 	
 	/* (non-Javadoc)
