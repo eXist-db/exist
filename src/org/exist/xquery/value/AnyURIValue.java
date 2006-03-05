@@ -75,6 +75,8 @@ public class AnyURIValue extends AtomicValue {
 				return this;
 			case Type.STRING :
 				return new StringValue(uri);
+			case Type.UNTYPED_ATOMIC :
+				return new UntypedAtomicValue(getStringValue());
 			default :
 				throw new XPathException(
 					"Type error: cannot cast xs:anyURI to "
