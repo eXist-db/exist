@@ -179,9 +179,11 @@ public class StringValue extends AtomicValue implements Indexable {
 			case Type.DURATION :
 				return new DurationValue(value);
 			case Type.YEAR_MONTH_DURATION :
-				return new YearMonthDurationValue(value);
+				YearMonthDurationValue rawYMDV = new YearMonthDurationValue(value);
+				return new YearMonthDurationValue(rawYMDV.getCanonicalDuration());
 			case Type.DAY_TIME_DURATION :
-				return new DayTimeDurationValue(value);
+				DayTimeDurationValue rawDTDV = new DayTimeDurationValue(value);
+				return new DayTimeDurationValue(rawDTDV.getCanonicalDuration());
 			default :
 				throw new XPathException(
 					"cannot convert string '"
