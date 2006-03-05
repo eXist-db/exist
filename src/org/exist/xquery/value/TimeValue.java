@@ -83,6 +83,8 @@ public class TimeValue extends AbstractDateTimeValue {
 //			xs:time -> xs:dateTime conversion not defined in Funcs&Ops 17.1.5
 			case Type.STRING :
 				return new StringValue(getStringValue());
+			case Type.UNTYPED_ATOMIC :
+				return new UntypedAtomicValue(getStringValue());
 			default :
 				throw new XPathException(
 					"Type error: cannot cast xs:time to "
