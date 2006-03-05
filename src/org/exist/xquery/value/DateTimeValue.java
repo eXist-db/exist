@@ -102,6 +102,8 @@ public class DateTimeValue extends AbstractDateTimeValue implements Indexable {
 				return new TimeValue(calendar);
 			case Type.STRING :
 				return new StringValue(getStringValue());
+			case Type.UNTYPED_ATOMIC :
+				return new UntypedAtomicValue(getStringValue());				
 			default :
 				throw new XPathException(
 					"Type error: cannot cast xs:dateTime to "
