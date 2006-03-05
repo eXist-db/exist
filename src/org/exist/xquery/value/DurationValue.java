@@ -207,14 +207,19 @@ public class DurationValue extends ComputableValue {
 				return this;
 			case Type.YEAR_MONTH_DURATION:
 				if (duration.getField(DatatypeConstants.YEARS) == null && 
-						duration.getField(DatatypeConstants.MONTHS) == null)
+					duration.getField(DatatypeConstants.MONTHS) == null)
 					return new YearMonthDurationValue(YearMonthDurationValue.CANONICAL_ZERO_DURATION);					
-				return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
+				else return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
 						duration.getSign() >= 0,
 						(BigInteger) duration.getField(DatatypeConstants.YEARS),
 						(BigInteger) duration.getField(DatatypeConstants.MONTHS)));
 			case Type.DAY_TIME_DURATION:
-				return new DayTimeDurationValue(TimeUtils.getInstance().newDuration(
+				if (duration.getField(DatatypeConstants.DAYS) == null && 
+					duration.getField(DatatypeConstants.HOURS) == null && 
+					duration.getField(DatatypeConstants.MINUTES) == null && 
+					duration.getField(DatatypeConstants.SECONDS) == null)
+					return new DayTimeDurationValue(DayTimeDurationValue.CANONICAL_ZERO_DURATION);					
+				else return new DayTimeDurationValue(TimeUtils.getInstance().newDuration(
 						duration.getSign() >= 0,
 						null,
 						null,
