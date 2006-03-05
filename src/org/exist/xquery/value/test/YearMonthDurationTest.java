@@ -58,13 +58,8 @@ public class YearMonthDurationTest extends AbstractTimeRelatedTestCase {
 		assertEquals("P1Y2M", dv.getStringValue());
 	}
 	public void testConvert2() throws XPathException {
-		try {
-			YearMonthDurationValue ymdv = new YearMonthDurationValue("P1Y2M");
-			ymdv.convertTo(Type.DAY_TIME_DURATION);
-			fail();
-		} catch (XPathException e) {
-			// expected
-		}
+		YearMonthDurationValue ymdv = new YearMonthDurationValue("P1Y2M");
+		assertEquals("PT0S", ymdv.convertTo(Type.DAY_TIME_DURATION).getStringValue());
 	}
 	public void testGetPart1() throws XPathException {
 		DurationValue dv = new YearMonthDurationValue("P1Y2M");
