@@ -97,15 +97,19 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 						(BigInteger) duration.getField(DatatypeConstants.MONTHS),
 						null, null, null, null
 				));
-			case Type.DOUBLE:
+			case Type.DAY_TIME_DURATION:
+				return new DayTimeDurationValue(DayTimeDurationValue.CANONICAL_ZERO_DURATION);
+			//case Type.DOUBLE:
 				//return new DoubleValue(monthsValueSigned().doubleValue());
-				return new DoubleValue(Double.NaN);
-			case Type.DECIMAL:
-				return new DecimalValue(monthsValueSigned().doubleValue());				
+				//return new DoubleValue(Double.NaN);
+			//case Type.DECIMAL:
+				//return new DecimalValue(monthsValueSigned().doubleValue());
+			case Type.UNTYPED_ATOMIC :
+				return new UntypedAtomicValue(getStringValue());				
 			default :
 				throw new XPathException(
-					"Type error: cannot cast xs:yearMonthDuration to "
-						+ Type.getTypeName(requiredType));
+					"XPTY0004: cannot cast 'xs:yearMonthDuration(\"" + getStringValue() + 
+					"\")' to " + Type.getTypeName(requiredType));
 		}
 	}
 
