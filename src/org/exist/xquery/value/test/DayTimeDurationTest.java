@@ -57,13 +57,8 @@ public class DayTimeDurationTest extends AbstractTimeRelatedTestCase {
 		assertEquals("P3DT1H2M3S", dv.getStringValue());
 	}
 	public void testConvert2() throws XPathException {
-		try {
-			DayTimeDurationValue dtdv = new DayTimeDurationValue("P3DT1H2M3S");
-			dtdv.convertTo(Type.YEAR_MONTH_DURATION);
-			fail();
-		} catch (XPathException e) {
-			// expected
-		}
+		DayTimeDurationValue dtdv = new DayTimeDurationValue("P3DT1H2M3S");
+		assertEquals("P0M", dtdv.convertTo(Type.YEAR_MONTH_DURATION).getStringValue());
 	}
 	public void testGetPart1() throws XPathException {
 		DurationValue dv = new DayTimeDurationValue("P3DT4H5M6S");
