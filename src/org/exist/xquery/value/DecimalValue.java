@@ -26,6 +26,7 @@ package org.exist.xquery.value;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Collator;
+import java.util.regex.Pattern;
 
 import org.exist.xquery.XPathException;
 
@@ -34,8 +35,10 @@ import org.exist.xquery.XPathException;
  */
 public class DecimalValue extends NumericValue {
 	
-	//Copied from Saxon 8.6.1
+	//Copied from Saxon 8.6.1    
 	private static final int DIVIDE_PRECISION = 18;
+	//Copied from Saxon 8.7
+	private static final Pattern decimalPattern = Pattern.compile("(\\-|\\+)?((\\.[0-9]+)|([0-9]+(\\.[0-9]*)?))");
 	
 	BigDecimal value;
 
@@ -46,11 +49,14 @@ public class DecimalValue extends NumericValue {
 
 	public DecimalValue(String str) throws XPathException {
 		try {
-			//TODO : check the string against a regular expression that prevents scientific notation
+			if (!decimalPattern.matcher(str).matches()) {
+				throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
+						" from \"" + str + "\"");            
+			}
 			value = new BigDecimal(str);
 		} catch (NumberFormatException e) {
-			throw new XPathException(
-				"Type error: " + str + " cannot be cast to a decimal");
+			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
+					" from \"" + getStringValue() + "\"");					
 		}
 	}
 
