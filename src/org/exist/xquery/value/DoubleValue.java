@@ -52,9 +52,9 @@ public class DoubleValue extends NumericValue implements Indexable {
 			else					
 				value = Double.parseDouble(otherValue.getStringValue());
 		} catch (NumberFormatException e) {
-			throw new XPathException(
-				"FORG0001: cannot convert '" + Type.getTypeName(otherValue.getType()) + 
-                "(\"" + otherValue.getStringValue() + "\")' into an xs:double");
+			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
+					" from '" + Type.getTypeName(otherValue.getItemType()) + "(\"" + 
+					otherValue.getStringValue() + "\")'");					
 		}
 	}
 
@@ -273,11 +273,9 @@ public class DoubleValue extends NumericValue implements Indexable {
 			case Type.BOOLEAN :
 				return new BooleanValue(this.effectiveBooleanValue());				
 			default :
-				throw new XPathException(
-					"XPTY0004: Cannot convert xs:double('"
-						+ getStringValue()
-						+ "') into "
-						+ Type.getTypeName(requiredType));
+				throw new XPathException("FORG0001: cannot cast '" + 
+						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
+						Type.getTypeName(requiredType));
 		}
 	}
 
