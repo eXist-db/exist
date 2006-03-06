@@ -60,6 +60,7 @@ public class UntypedAtomicValue extends AtomicValue {
 		switch (requiredType) {
 			case Type.ATOMIC :
 			case Type.ITEM :
+			case Type.UNTYPED_ATOMIC :
 				return this;
 			case Type.STRING :
 				return new StringValue(value);
@@ -75,9 +76,9 @@ public class UntypedAtomicValue extends AtomicValue {
                 else if (value.equals("true"))
                     return BooleanValue.TRUE;
 				else
-					throw new XPathException(
-						"Cannot cast 'xdt:UntypeAtomic(" + value + ")' to '" + 
-                        Type.getTypeName(requiredType) + "' [err:FORG0001]");
+					throw new XPathException("FORG0001: cannot cast '" + 
+							Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
+							Type.getTypeName(requiredType));
 			case Type.FLOAT :
 				return new FloatValue(value);
 			case Type.DOUBLE :
@@ -86,7 +87,7 @@ public class UntypedAtomicValue extends AtomicValue {
 				//TODO : more complicated
 				return new DoubleValue(this);
 			case Type.DECIMAL :
-				return new DecimalValue(value);
+				return new DecimalValue(getStringValue());
 			case Type.INTEGER :
 			case Type.NON_POSITIVE_INTEGER :
 			case Type.NEGATIVE_INTEGER :
@@ -115,9 +116,9 @@ public class UntypedAtomicValue extends AtomicValue {
 				DayTimeDurationValue rawDTDV = new DayTimeDurationValue(value);
 				return new DayTimeDurationValue(rawDTDV.getCanonicalDuration());
 			default :
-				throw new XPathException(
-					"FORG0001: cannot cast 'xdt:UntypeAtomic(" + value + ")' to '" +
-                    Type.getTypeName(requiredType) + "'");
+				throw new XPathException("FORG0001: cannot cast '" + 
+						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
+						Type.getTypeName(requiredType));
 		}
 	}
 
