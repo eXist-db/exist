@@ -181,7 +181,7 @@ public class MimeTable {
         private static final String MIME_TYPE = "mime-type";
         
         private MimeType mime = null;
-        private FastStringBuffer charBuf = new FastStringBuffer(6, 15, 5);
+        private FastStringBuffer charBuf = new FastStringBuffer(64);
         
         /* (non-Javadoc)
          * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)

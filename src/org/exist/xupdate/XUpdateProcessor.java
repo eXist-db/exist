@@ -173,7 +173,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
     private List modifications = new ArrayList();
 
     /** Temporary string buffer used for collecting text chunks */
-    private FastStringBuffer charBuf = new FastStringBuffer(6, 15, 5);
+    private FastStringBuffer charBuf = new FastStringBuffer(64);
 
     // Environment
 
@@ -851,7 +851,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		this.broker = null;
 		this.documentSet = null;
 		this.modifications.clear();
-		this.charBuf = new FastStringBuffer(6, 15, 5);
+		this.charBuf = new FastStringBuffer(64);
 		this.variables.clear();
 		this.namespaces.clear();
 		this.conditionals.clear();

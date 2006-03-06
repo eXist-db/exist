@@ -161,14 +161,15 @@ public class NodePath {
     }
     
     private void init( Map namespaces, String path ) {        
-        FastStringBuffer token = new FastStringBuffer();
+    	//TODO : compute better length
+        FastStringBuffer token = new FastStringBuffer(path.length());
         int pos = 0;
         while (pos < path.length()) {
             char ch = path.charAt(pos);
             switch (ch) {
             case '/':
                 String next = token.toString();
-                token.reset();
+                token.setLength(0);
                 if (next.length() > 0)
                     addComponent(namespaces, next);
                 if (path.charAt(++pos ) == '/')
