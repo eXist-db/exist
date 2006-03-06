@@ -43,7 +43,7 @@ public class FloatValue extends NumericValue implements Indexable {
 	public FloatValue(float value) {
 		this.value = value;
 	}
-
+	
 	public FloatValue(String stringValue) throws XPathException {
 		try {
 			if (stringValue.equals("INF"))
@@ -53,8 +53,8 @@ public class FloatValue extends NumericValue implements Indexable {
 			else
 				value = Float.parseFloat(stringValue);
 		} catch (NumberFormatException e) {
-			throw new XPathException(
-				"cannot convert string '" + stringValue + "' into a float");
+			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
+					" from \"" + getStringValue() + "\"");					
 		}
 	}
 
@@ -76,6 +76,7 @@ public class FloatValue extends NumericValue implements Indexable {
 		String s = String.valueOf(value);
 		s = s.replaceAll("\\.0+$", "");		
 		return s;	
+		//TODO : use Saxon's code
 	}
 
 	/* (non-Javadoc)
@@ -132,12 +133,12 @@ public class FloatValue extends NumericValue implements Indexable {
 				return (value == 0.0f || Float.isNaN(value))
 					? BooleanValue.FALSE
 					: BooleanValue.TRUE;
+			case Type.UNTYPED_ATOMIC :
+				return new UntypedAtomicValue(getStringValue());
 			default :
-				throw new XPathException(
-					"cannot convert double value '"
-						+ value
-						+ "' into "
-						+ Type.getTypeName(requiredType));
+				throw new XPathException("FORG0001: cannot cast '" + 
+						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
+						Type.getTypeName(requiredType));
 		}
 	}
 
