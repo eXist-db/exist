@@ -122,9 +122,6 @@ public class StringValue extends AtomicValue implements Indexable {
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
-			//Not sure -pb
-			case Type.UNTYPED_ATOMIC :
-				return new UntypedAtomicValue(value);
 			case Type.ATOMIC :
 			case Type.ITEM :
 			case Type.STRING :
@@ -184,12 +181,12 @@ public class StringValue extends AtomicValue implements Indexable {
 			case Type.DAY_TIME_DURATION :
 				DayTimeDurationValue rawDTDV = new DayTimeDurationValue(value);
 				return new DayTimeDurationValue(rawDTDV.getCanonicalDuration());
+			case Type.UNTYPED_ATOMIC :
+				return new UntypedAtomicValue(getStringValue());
 			default :
-				throw new XPathException(
-					"cannot convert string '"
-						+ value
-						+ "' to "
-						+ Type.getTypeName(requiredType));
+				throw new XPathException("FORG0001: cannot cast '" + 
+						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
+						Type.getTypeName(requiredType));
 		}
 	}
 
