@@ -177,30 +177,43 @@ public class Collations {
 
     private final static boolean collationStartsWith(CollationElementIterator s0, 
             CollationElementIterator s1) {
+    	//Copied from Saxon
         while (true) {
-            int e1 = s1.next();
-            if (e1 == CollationElementIterator.NULLORDER) {
+            int e0, e1;
+            do {
+                e1 = s1.next();
+            } while (e1 == 0);
+            if (e1 == -1) {
                 return true;
             }
-            int e0 = s0.next();
+            do {
+                e0 = s0.next();
+            } while (e0 == 0);
             if (e0 != e1) {
                 return false;
             }
         }
+        //End of copy
     }
 
     private final static boolean collationContains(CollationElementIterator s0,
-            CollationElementIterator s1, int[] offsets, boolean endsWith) {
-        int e1 = s1.next();
-        if (e1 == CollationElementIterator.NULLORDER) {
+            CollationElementIterator s1, int[] offsets, boolean matchAtEnd) {
+    	//Copy from Saxon
+        int e0, e1;
+        do {
+            e1 = s1.next();
+        } while (e1 == 0);
+        if (e1 == -1) {
             return true;
         }
-        int e0 = CollationElementIterator.NULLORDER;
+        e0 = -1;
         while (true) {
             // scan the first string to find a matching character
             while (e0 != e1) {
-                e0 = s0.next();
-                if (e0 == CollationElementIterator.NULLORDER) {
+                do {
+                    e0 = s0.next();
+                } while (e0 == 0);
+                if (e0 == -1) {
                     // hit the end, no match
                     return false;
                 }
@@ -208,19 +221,21 @@ public class Collations {
             // matched first character, note the position of the possible match
             int start = s0.getOffset();
             if (collationStartsWith(s0, s1)) {
-                if (!endsWith) {
-                    if (offsets != null) {
-                        offsets[0] = start - 1;
-                        offsets[1] = s0.getOffset();
-                    }
-                    return true;
-                } else {
-                    // operation == ENDSWITH
-                    if (s0.next() == CollationElementIterator.NULLORDER) {
+                if (matchAtEnd) {
+                    do {
+                        e0 = s0.next();
+                    } while (e0 == 0);
+                    if (e0 == -1) {
                         // the match is at the end
                         return true;
                     }
                     // else ignore this match and keep looking
+                } else {
+                    if (offsets != null) {
+                        offsets[0] = start-1;
+                        offsets[1] = s0.getOffset();
+                    }
+                    return true;
                 }
             }
             // reset the position and try again
@@ -232,10 +247,13 @@ public class Collations {
                 s0.next();
             }
             s1.reset();
-            e0 = CollationElementIterator.NULLORDER;
-            e1 = s1.next();
+            e0 = -1;
+            do {
+                e1 = s1.next();
+            } while (e1 == 0);
             // loop round to try again
         }
+        //End of copy
     }
 
     /**
