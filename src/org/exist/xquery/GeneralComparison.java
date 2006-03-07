@@ -134,9 +134,10 @@ public class GeneralComparison extends BinaryOp {
 	public int returnsType() {
 
         //Ugly workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
-        boolean invalidNodeEvaluation =  
-        	getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
-
+        //boolean invalidNodeEvaluation =  
+        //	getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
+        //TODO : uncomment and improve code above to make (1)[.= 1] work...
+		boolean invalidNodeEvaluation = false;
         
 		if (inPredicate && !invalidNodeEvaluation && (!Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM))) {
 			/* If one argument is a node set we directly
@@ -185,9 +186,10 @@ public class GeneralComparison extends BinaryOp {
         Sequence result = null;
         
         //Ugly workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
-        boolean invalidNodeEvaluation = contextSequence != null && !Type.subTypeOf(contextSequence.getItemType(), Type.NODE) && 
-        	getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
-        
+        //boolean invalidNodeEvaluation = contextSequence != null && !Type.subTypeOf(contextSequence.getItemType(), Type.NODE) && 
+        //	getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
+        //TODO : uncomment and improve code above to make (1)[.= 1] work...
+        boolean invalidNodeEvaluation = false;
         
 		/* 
 		 * If we are inside a predicate and one of the arguments is a node set, 
