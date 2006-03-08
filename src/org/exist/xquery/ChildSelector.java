@@ -32,8 +32,8 @@ import org.exist.dom.NodeSet;
  */
 public class ChildSelector implements NodeSelector {
 	
-	private NodeSet context;
-	private int contextId;
+	private final NodeSet context;
+	private final int contextId;
 	
 	public ChildSelector(NodeSet contextSet, int contextId) {
 		this.context = contextSet;

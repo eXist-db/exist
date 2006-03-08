@@ -52,8 +52,8 @@ public class GrammarTooling extends BasicFunction  {
     private static final String TYPE_DTD="http://www.w3.org/TR/REC-xml";
     private static final String TYPE_XSD="http://www.w3.org/2001/XMLSchema";
     
-    private Validator validator;
-    private BrokerPool brokerPool;
+    private final Validator validator;
+    private final BrokerPool brokerPool;
     
     // Setup function signature
     public final static FunctionSignature signatures[] = {

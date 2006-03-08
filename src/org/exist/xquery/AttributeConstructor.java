@@ -37,8 +37,8 @@ import org.exist.xquery.value.StringValue;
  */
 public class AttributeConstructor extends NodeConstructor {
 
-	String qname;
-	List contents = new ArrayList(5);
+	final String qname;
+	final List contents = new ArrayList(5);
 	boolean isNamespaceDecl = false;
 	
 	public AttributeConstructor(XQueryContext context, String name) {

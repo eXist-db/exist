@@ -37,7 +37,7 @@ import org.exist.xquery.value.StringValue;
  */
 public class TextConstructor extends NodeConstructor {
 
-	private String text = null;
+	private final String text;
 	private boolean isWhitespaceOnly = true;
 	
 	public TextConstructor(XQueryContext context, String text) throws XPathException {

@@ -40,9 +40,9 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class UntypedValueCheck extends AbstractExpression {
 
-	private Expression expression;
-	private int requiredType;
-	private Error error;
+	private final Expression expression;
+	private final int requiredType;
+	private final Error error;
     
     public UntypedValueCheck(XQueryContext context, int requiredType, Expression expression) {
         this(context, requiredType, expression, new Error(Error.TYPE_MISMATCH));

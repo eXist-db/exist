@@ -41,14 +41,21 @@ public class QuantifiedExpression extends BindingExpression {
 	public final static int SOME = 0;
 	public final static int EVERY = 1;
 	
-	private int mode = SOME;
+	private final int mode;
 	
 	/**
 	 * @param context
 	 */
 	public QuantifiedExpression(XQueryContext context, int mode) {
 		super(context);
-		this.mode = mode;
+		switch (mode) {
+		case SOME:
+		case EVERY:
+			this.mode = mode;
+			break;
+		default:
+			throw new IllegalArgumentException("QuantifiedExpression");
+		}		
 	}
 
     /* (non-Javadoc)

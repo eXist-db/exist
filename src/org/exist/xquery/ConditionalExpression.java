@@ -35,9 +35,9 @@ import org.exist.xquery.value.Type;
  */
 public class ConditionalExpression extends AbstractExpression {
 
-	private Expression testExpr;
-	private Expression thenExpr;
-	private Expression elseExpr;
+	private final Expression testExpr;
+	private final Expression thenExpr;
+	private final Expression elseExpr;
 	
 	public ConditionalExpression(XQueryContext context, Expression testExpr, Expression thenExpr,
 		Expression elseExpr) {

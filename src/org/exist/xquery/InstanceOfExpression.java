@@ -38,8 +38,8 @@ import org.exist.xquery.value.Type;
  */
 public class InstanceOfExpression extends AbstractExpression {
 
-	private Expression expression;
-	private SequenceType type;
+	private final Expression expression;
+	private final SequenceType type;
 	
 	/**
 	 * @param context

@@ -41,7 +41,7 @@ import org.xml.sax.SAXException;
  */
 public class DocumentConstructor extends NodeConstructor {
 
-    private Expression content;
+    private final Expression content;
     
     /**
      * @param context

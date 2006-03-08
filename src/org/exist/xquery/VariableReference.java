@@ -35,7 +35,7 @@ import org.exist.xquery.value.Type;
  */
 public class VariableReference extends AbstractExpression {
 
-	private String qname;
+	private final String qname;
 
 	public VariableReference(XQueryContext context, String qname) {
 		super(context);

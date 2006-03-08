@@ -39,8 +39,8 @@ public class OrderSpec {
 	public static final int EMPTY_GREATEST = 0;
 	public static final int EMPTY_LEAST = 4;
 	
-	private XQueryContext context;
-	private Expression expression;
+	private final XQueryContext context;
+	private final Expression expression;
 	private int modifiers = 0;
 	private Collator collator = null;
 	

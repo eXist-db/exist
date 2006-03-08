@@ -36,9 +36,9 @@ import org.exist.xquery.value.Type;
  */
 public class CastableExpression extends AbstractExpression {
 
-	private Expression expression;
-	private int requiredType;
+	private Expression expression;	
 	private int cardinality = Cardinality.EXACTLY_ONE;
+	private final int requiredType;
 	
 	/**
 	 * @param context

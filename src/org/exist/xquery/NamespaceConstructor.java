@@ -37,7 +37,7 @@ import org.exist.xquery.value.SequenceIterator;
  */
 public class NamespaceConstructor extends NodeConstructor {
 
-    private String prefix = null;
+    final private String prefix;
     private Expression uri = null;
     
     /**

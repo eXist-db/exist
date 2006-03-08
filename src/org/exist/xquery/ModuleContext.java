@@ -16,7 +16,7 @@ import org.exist.storage.UpdateListener;
  */
 public class ModuleContext extends XQueryContext {
 
-	private XQueryContext parentContext;
+	private final XQueryContext parentContext;
 	
 	/**
 	 * @param broker

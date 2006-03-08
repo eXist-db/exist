@@ -38,7 +38,7 @@ import org.exist.xquery.value.Type;
  */
 public class OpNumeric extends BinaryOp {
 
-	protected int operator;
+	protected final int operator;
 	protected int returnType = Type.ATOMIC;
 	protected NodeSet temp = null;
 	protected DBBroker broker;

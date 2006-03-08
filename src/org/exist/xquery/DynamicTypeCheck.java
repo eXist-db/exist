@@ -39,8 +39,8 @@ import org.exist.xquery.value.Type;
  */
 public class DynamicTypeCheck extends AbstractExpression {
 
-	private Expression expression;
-	private int requiredType;
+	final private Expression expression;
+	final private int requiredType;
 	
 	public DynamicTypeCheck(XQueryContext context, int requiredType, Expression expr) {
 		super(context);
