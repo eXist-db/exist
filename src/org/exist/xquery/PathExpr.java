@@ -162,7 +162,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             }    
             if (contextDocs != null)
             	setContextDocSet(contextDocs);          
-           
+            else
+            	setContextDocSet(null);
+            
             //To prevent processing nodes after atomic values...
             //TODO : let the parser do it ? -pb
             boolean gotAtomicResult = false;            
@@ -182,6 +184,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 
                 if (contextDocs != null) 
                     expr.setContextDocSet(contextDocs);
+                else
+                	expr.setContextDocSet(null);
                 
                 if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_ITEM)) {
                     if (result == null || result.getLength() == 0) {
