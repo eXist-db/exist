@@ -115,4 +115,8 @@ public class DynamicTextConstructor extends NodeConstructor {
     	return result.toString();
     }    
 
+    public void resetState() {
+    	super.resetState();
+    	content.resetState();
+    }
 }

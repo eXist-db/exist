@@ -138,4 +138,10 @@ public class DynamicPIConstructor extends NodeConstructor {
     	result.append("} ");
     	return result.toString();
     }    
+    
+    public void resetState() {
+    	super.resetState();
+    	name.resetState();
+    	content.resetState();
+    }
 }

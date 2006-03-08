@@ -254,6 +254,7 @@ public class ElementConstructor extends NodeConstructor {
 	 */
 	public void resetState() {
 		super.resetState();
+		qnameExpr.resetState();
 		if(content != null)
 			content.resetState();
 		if(attributes != null)
