@@ -134,6 +134,7 @@ public class XACMLUtil implements UpdateListener
 		if(inPolicyCollection(document) && (event == UpdateListener.REMOVE || event == UpdateListener.UPDATE))
 			POLICY_CACHE.remove(document.getName());
 	}
+	
 	/**
 	 * Returns true if the specified document is in the policy collection.
 	 * This does not check subcollections.

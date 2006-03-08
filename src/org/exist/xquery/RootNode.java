@@ -27,7 +27,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
 import org.exist.xquery.util.ExpressionDumper;
@@ -150,17 +149,7 @@ public class RootNode extends Step {
                 	LOG.debug("UpdateListener: Line: " + RootNode.this.toString());                	
                 }
             };
-            NotificationService service = context.getBroker().getBrokerPool()
-                    .getNotificationService();
-            service.subscribe(listener);
-        }
-    }
-
-    protected void deregisterUpdateListener() {
-        if (listener != null) {
-            NotificationService service = context.getBroker().getBrokerPool()
-                    .getNotificationService();
-            service.unsubscribe(listener);
+            context.registerUpdateListener(listener);
         }
     }
     
@@ -172,6 +161,5 @@ public class RootNode extends Step {
     public void resetState() {
         cached = null;
         cachedDocs = null;
-        deregisterUpdateListener();
     }
 }

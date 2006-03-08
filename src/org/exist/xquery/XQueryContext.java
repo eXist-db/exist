@@ -54,6 +54,7 @@ import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.storage.DBBroker;
+import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
@@ -237,7 +238,10 @@ public class XQueryContext {
     
 	private AccessContext accessCtx;
     
+	private UpdateListener updateListener = null;
+	
     private XQueryContext() {}
+	
 	protected XQueryContext(AccessContext accessCtx) {
 		if(accessCtx == null)
 			throw new NullAccessContextException();
@@ -691,6 +695,7 @@ public class XQueryContext {
 			Module module = (Module)i.next();
 			module.reset();
 		}
+		clearUpdateListeners();
 	}
 	
 	/**
@@ -1482,7 +1487,7 @@ public class XQueryContext {
 			throw new XPathException(TEMP_STORE_ERROR, e);
 		}
 	}
-    
+	
 //	set an XQuery Context variable; called by context:set-var()
     public void setXQueryContextVar(String name, Object XQvar)
     {
@@ -1598,7 +1603,38 @@ public class XQueryContext {
 //				LOG.debug("Loading module " + modules[i][0]);
 				loadBuiltInModule(modules[i][0], modules[i][1]);
 			}
-		}		
+		}
+		
+	}
+	
+	public void registerUpdateListener(UpdateListener listener) {
+		if (updateListener == null) {
+			updateListener = new ContextUpdateListener();
+			broker.getBrokerPool().getNotificationService().subscribe(updateListener);
+		}
+	}
+	
+	protected void clearUpdateListeners() {
+		broker.getBrokerPool().getNotificationService().unsubscribe(updateListener);
+		updateListener = null;
+	}
+	
+	private class ContextUpdateListener implements UpdateListener {
+
+		private List listeners = new ArrayList();
+		
+		public void documentUpdated(DocumentImpl document, int event) {
+			for (int i = 0; i < listeners.size(); i++) {
+				((UpdateListener) listeners.get(i)).documentUpdated(document, event);
+			}
+		}
+
+		public void debug() {
+			LOG.debug("XQueryContext: ");
+			for (int i = 0; i < listeners.size(); i++) {
+				((UpdateListener) listeners.get(i)).debug();
+			}
+		}
 		
 	}
 }
