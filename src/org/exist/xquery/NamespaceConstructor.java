@@ -118,5 +118,10 @@ public class NamespaceConstructor extends NodeConstructor {
     	result.append(uri.toString());
     	result.append("}");
     	return result.toString();
-    }    
+    }   
+    
+    public void resetState() {
+    	super.resetState();
+    	uri.resetState();
+    }
 }
