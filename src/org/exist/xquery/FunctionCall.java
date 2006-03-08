@@ -53,6 +53,8 @@ public class FunctionCall extends Function {
 	private QName name = null;
 	private List arguments = null;
 	
+	private boolean analyzed = false;
+	
 	public FunctionCall(XQueryContext context, QName name, List arguments) {
 		super(context);
 		this.name = name;
@@ -87,8 +89,11 @@ public class FunctionCall extends Function {
 	 */
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		contextInfo.setParent(this);
-		super.analyze(contextInfo);
-		expression.analyze(contextInfo);
+		if (!analyzed) {
+			super.analyze(contextInfo);
+			expression.analyze(contextInfo);
+			analyzed = true;
+		}
 	}
 	
     /**
