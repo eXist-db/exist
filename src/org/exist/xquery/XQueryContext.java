@@ -1615,7 +1615,8 @@ public class XQueryContext {
 	}
 	
 	protected void clearUpdateListeners() {
-		broker.getBrokerPool().getNotificationService().unsubscribe(updateListener);
+		if (updateListener != null)
+			broker.getBrokerPool().getNotificationService().unsubscribe(updateListener);
 		updateListener = null;
 	}
 	
