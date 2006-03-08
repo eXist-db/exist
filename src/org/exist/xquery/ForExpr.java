@@ -162,7 +162,8 @@ public class ForExpr extends BindingExpression {
 		if(in instanceof NodeSet) {
 		    DocumentSet contextDocs = ((NodeSet)in).getDocumentSet();
 		    var.setContextDocs(contextDocs);
-		}
+		} else
+			var.setContextDocs(null);
 
 		// Check if we can speed up the processing of the "order by" clause.
 		boolean fastOrderBy = false; // checkOrderSpecs(in);
