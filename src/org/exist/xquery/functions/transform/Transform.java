@@ -109,7 +109,7 @@ public class Transform extends BasicFunction {
             new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
 
-	private Map cache = new HashMap();
+	private final Map cache = new HashMap();
 	
 	/**
 	 * @param context

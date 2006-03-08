@@ -64,7 +64,7 @@ public class Error {
 	
 	public final static String FUNC_NOT_FOUND = "S03";
      
-    private String errCode;
+    private final String errCode;
     private Object[] args = null;
     
     /**

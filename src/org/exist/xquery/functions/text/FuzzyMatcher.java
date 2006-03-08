@@ -32,16 +32,15 @@ import org.exist.storage.TermMatcher;
  */
 public class FuzzyMatcher implements TermMatcher {
 	
-	private String searchTerm;
-	private int termLength;
-	private double threshold = 0.5;
+	private final String searchTerm;
+	private final int termLength;
+	private final double threshold;
 	
 	public FuzzyMatcher(String searchTerm, double threshold) {
 		this.searchTerm = searchTerm;
 		this.termLength = searchTerm.length();
 		this.threshold = threshold;
-	}
-	
+	}	
 	
 	/* (non-Javadoc)
 	 * @see org.exist.storage.TermMatcher#matches(java.lang.String)

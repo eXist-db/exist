@@ -40,7 +40,7 @@ public class XQueryWatchDog {
      */
     private static final Logger LOG = Logger.getLogger(XQueryWatchDog.class);
 
-    private XQueryContext context;
+    private final XQueryContext context;
     
     private long timeout = Long.MAX_VALUE;
     private int maxNodesLimit = Integer.MAX_VALUE;

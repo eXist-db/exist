@@ -35,7 +35,7 @@ import org.exist.xquery.value.Sequence;
  */
 public class CDATAConstructor extends NodeConstructor {
 
-    private String cdata;
+    private final String cdata;
     
     /**
      * @param context

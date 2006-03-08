@@ -40,7 +40,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
 public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
-	private boolean errorIfAbsent;
+	private final boolean errorIfAbsent;
 	
 	public XMLDBAbstractCollectionManipulator(XQueryContext context, FunctionSignature signature) {
 		this(context, signature, true);

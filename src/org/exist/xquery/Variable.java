@@ -41,7 +41,7 @@ import org.exist.xquery.value.ValueSequence;
 public class Variable {
 
 	// the name of the variable
-	private QName qname;
+	private final QName qname;
 	
 	// the current value assigned to the variable
 	private Sequence value = null;

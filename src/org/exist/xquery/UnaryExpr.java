@@ -35,7 +35,7 @@ import org.exist.xquery.value.Type;
  */
 public class UnaryExpr extends PathExpr {
 
-	private int mode;
+	private final int mode;
 	
 	public UnaryExpr(XQueryContext context, int mode) {
 		super(context);

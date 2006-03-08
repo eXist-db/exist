@@ -36,7 +36,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class Atomize extends AbstractExpression {
 
-	private Expression expression;
+	private final Expression expression;
 	
 	public Atomize(XQueryContext context, Expression expr) {
 		super(context);

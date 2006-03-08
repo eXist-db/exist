@@ -37,13 +37,12 @@ import org.exist.xquery.value.Sequence;
  */
 public class ExternalModuleImpl implements ExternalModule {
 
-	private String mNamespaceURI;
-	private String mPrefix;
+	final private String mNamespaceURI;
+	final private String mPrefix;
 
-	private TreeMap mFunctionMap = new TreeMap();
-
-	private TreeMap mGlobalVariables = new TreeMap();
-	private TreeMap mStaticVariables = new TreeMap();
+	final private TreeMap mFunctionMap = new TreeMap();
+	final private TreeMap mGlobalVariables = new TreeMap();
+	final private TreeMap mStaticVariables = new TreeMap();
 
 	private Source mSource = null;
 	

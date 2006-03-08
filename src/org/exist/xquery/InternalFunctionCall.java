@@ -24,7 +24,7 @@ import org.exist.xquery.value.Sequence;
 */
 public class InternalFunctionCall extends Function
 {
-	private Function function;
+	private final Function function;
 	
 	public InternalFunctionCall(Function f)
 	{

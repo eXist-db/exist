@@ -31,8 +31,8 @@ import org.exist.dom.QName;
  */
 public class FunctionId implements Comparable {
 
-	private QName qname;
-	private int argCount;
+	final private QName qname;
+	final private int argCount;
 	
 	public FunctionId(QName qname, int arguments) {
 		this.qname = qname;

@@ -38,9 +38,9 @@ import org.exist.xquery.value.Type;
  */
 public class CastExpression extends AbstractExpression {
 
-	private Expression expression;
-	private int requiredType;
+	private Expression expression;	
 	private int cardinality = Cardinality.EXACTLY_ONE;
+	private final int requiredType;
 	
 	/**
 	 * Constructor. When calling {@link #eval(Sequence, Item)} 

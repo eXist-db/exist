@@ -36,7 +36,7 @@ import org.exist.xquery.value.Sequence;
  */
 public class PIConstructor extends NodeConstructor {
 
-	private String target;
+	private final String target;
 	private String data = null;
 	
 	public PIConstructor(XQueryContext context, String pi) throws XPathException {

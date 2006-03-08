@@ -49,7 +49,7 @@ public class FunctionSignature {
 		return new SequenceType[] { arg };
 	}
 	
-	private QName name;
+	private final QName name;
 	private SequenceType[] arguments;
 	private SequenceType returnType;
 	private boolean isOverloaded = false;

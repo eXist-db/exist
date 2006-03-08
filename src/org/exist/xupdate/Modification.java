@@ -300,7 +300,7 @@ public abstract class Modification {
 		while (iterator.hasNext()) {
 			doc = (DocumentImpl) iterator.next();
 			if ( ! CollectionConfiguration.isCollectionConfigDocument(doc) ) {
-				DocumentTrigger trigger = getTrigger(doc);
+				DocumentTrigger trigger = getTrigger(doc);			
 				if( trigger != null )
 					trigger.finish( // event, broker, transaction, document)
 							Trigger.UPDATE_DOCUMENT_EVENT, broker, 

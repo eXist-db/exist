@@ -36,7 +36,7 @@ import org.exist.xquery.value.Sequence;
  */
 public class SimpleStep extends Step {
 
-	private Expression expression;
+	private final Expression expression;
 	
 	/**
 	 * @param context

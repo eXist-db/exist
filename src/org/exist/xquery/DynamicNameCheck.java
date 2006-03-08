@@ -38,8 +38,8 @@ import org.w3c.dom.Node;
  */
 public class DynamicNameCheck extends AbstractExpression {
 
-	private NameTest test;
-	private Expression expression;
+	final private NameTest test;
+	final private Expression expression;
 	
 	public DynamicNameCheck(XQueryContext context, NameTest test, Expression expression) {
 		super(context);

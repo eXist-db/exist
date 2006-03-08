@@ -37,7 +37,7 @@ import org.exist.xquery.value.Type;
  */
 public class NodeComparison extends BinaryOp {
 
-	private int relation;
+	private final int relation;
 	
 	/**
 	 * @param context

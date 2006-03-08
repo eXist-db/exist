@@ -49,7 +49,7 @@ import org.exist.xquery.value.Type;
  */
 public class JavaCall extends Function {
 
-	private QName qname;
+	private final QName qname;
 	private String name;
 	private Class myClass = null;
 	private List candidateMethods = new ArrayList(5);

@@ -45,10 +45,10 @@ public abstract class AbstractInternalModule implements InternalModule {
 
 	private final static Logger LOG = Logger.getLogger(AbstractInternalModule.class);
 	
-	protected TreeMap mFunctionMap = new TreeMap();
+	protected final TreeMap mFunctionMap = new TreeMap();
 	protected FunctionDef[] mFunctions;
 	
-	protected TreeMap mGlobalVariables = new TreeMap();
+	protected final TreeMap mGlobalVariables = new TreeMap();
 	
 	public AbstractInternalModule(FunctionDef[] functions) {
 		mFunctions = functions;

@@ -27,7 +27,7 @@ import org.exist.dom.NodeSet;
 
 public class AncestorSelector implements NodeSelector {
 
-    private NodeSet ancestors;
+    private final NodeSet ancestors;
     
     public AncestorSelector(NodeSet descendants, int contextId, boolean includeSelf) {
         super();

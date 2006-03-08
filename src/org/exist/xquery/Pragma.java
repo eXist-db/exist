@@ -47,11 +47,11 @@ public class Pragma {
 	private final static String paramPattern =
 		"\\s*([\\w\\.-]+)\\s*=\\s*('[^']*'|\"[^\"]*\"|[^\\s]+)";
 	
-	private static Pattern pattern = Pattern.compile(paramPattern);
-	private static Matcher matcher = pattern.matcher("");
+	private final static Pattern pattern = Pattern.compile(paramPattern);
+	private final static Matcher matcher = pattern.matcher("");
     
-	private QName qname;
-	private String contents;
+	private final QName qname;
+	private final String contents;
 	
 	public Pragma(QName qname, String contents) {
 		this.qname = qname;

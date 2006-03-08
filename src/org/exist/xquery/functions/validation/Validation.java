@@ -49,8 +49,8 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class Validation extends BasicFunction  {
     
-    private Validator validator;
-    private BrokerPool brokerPool;
+    private final Validator validator;
+    private final BrokerPool brokerPool;
     
     // Setup function signature
     public final static FunctionSignature signatures[] = {

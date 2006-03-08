@@ -155,20 +155,27 @@ public class Profiler {
             log.debug("QUERY START");                
         }
         
-        ProfiledExpr e = new ProfiledExpr(expr);
-        stack.push(e);            
-        
         buf.setLength(0); 
+    	for (int i = 0; i < stack.size(); i++)
+    		buf.append('\t');             
+        
+        ProfiledExpr e = new ProfiledExpr(expr);
+    	stack.push(e);
+            
         buf.append("START\t");
         printPosition(e.expr);                        
         buf.append(expr.toString()); 
         log.debug(buf.toString());
 
-        if (message != null && !"".equals(message)) {
+        if (message != null && !"".equals(message)) {           
             buf.setLength(0);
+	    	for (int i = 0; i < stack.size(); i++)
+	    		buf.append('\t');	            
             buf.append("MSG\t");
-            printPosition(e.expr);
             buf.append(message);
+            buf.append("\t");
+            printPosition(e.expr);
+            buf.append(expr.toString());             
             log.debug(buf.toString());
         }         
     }
@@ -184,8 +191,9 @@ public class Profiler {
         if (!enabled)
             return;        
         
-        try {            
-			ProfiledExpr e = (ProfiledExpr) stack.pop();            
+        try {         	     	
+			ProfiledExpr e = (ProfiledExpr) stack.pop(); 
+		
 			if (e.expr != expr) {
 			    log.warn("Error: the object passed to end() does not correspond to the expression on top of the stack.");
 			    stack.clear();
@@ -194,39 +202,53 @@ public class Profiler {
             
             long elapsed = System.currentTimeMillis() - e.start;
             
-            if (message != null && !"".equals(message)) {
+            if (message != null && !"".equals(message)) {                
                 buf.setLength(0);
-                buf.append("MSG\t");
-                printPosition(e.expr);
+    	    	for (int i = 0; i < stack.size(); i++)
+    	    		buf.append('\t');	
+    	    	buf.append("MSG\t");
                 buf.append(message);
+                buf.append("\t");
+                printPosition(e.expr);
+                buf.append(expr.toString());                 
                 log.debug(buf.toString());
             } 
             
             if (verbosity > START_SEQUENCES) {
                 buf.setLength(0);
-                buf.append("RESULT\t");
-                printPosition(e.expr);    
+    	    	for (int i = 0; i < stack.size(); i++)
+    	    		buf.append('\t');	            	
+                buf.append("RESULT\t");               
                 /* if (verbosity >= SEQUENCE_DUMP) 
                     buf.append(result.toString());               
                 else if (verbosity >= SEQUENCE_PREVIEW)
                     buf.append(sequencePreview(result));
                 else*/ if (verbosity >= ITEM_COUNT) 
-                    buf.append(result.getLength() + " item(s)");                                  
+                    buf.append(result.getLength() + " item(s)");   
+                buf.append("\t");     
+                printPosition(e.expr);   
+                buf.append(expr.toString());
                 log.debug(buf.toString()); 
             }
             
-            if (verbosity >= TIME) {
+            if (verbosity >= TIME) {   
                 buf.setLength(0);
-                buf.append("TIME\t");
-                printPosition(e.expr);
+    	    	for (int i = 0; i < stack.size(); i++)
+    	    		buf.append('\t');	            	
+                buf.append("TIME\t");                
                 buf.append(elapsed + " ms"); 
+                buf.append("\t");     
+                printPosition(e.expr);   
+                buf.append(expr.toString());                
                 log.debug(buf.toString()); 
             }
 			
             buf.setLength(0);
+            for (int i = 0; i < stack.size(); i++)
+	    		buf.append('\t');	                    
             buf.append("END\t");
-            printPosition(e.expr);
-            buf.append(expr.toString());            
+            printPosition(e.expr);            
+            buf.append(expr.toString()); 
             log.debug(buf.toString());
             
             if (stack.size() == 0) {
@@ -250,19 +272,22 @@ public class Profiler {
         if (level > verbosity)
             return;
     	
-    	buf.setLength(0);    	 	
+    	buf.setLength(0);  
+    	for (int i = 0; i < stack.size() - 1; i++)
+    		buf.append('\t');
         if (title != null && !"".equals(title))
             buf.append(title);
         else
             buf.append("MSG");        
-        buf.append("\t");
-        printPosition(expr);
+        buf.append("\t");        
         /* if (verbosity >= SEQUENCE_DUMP) 
             buf.append(sequence.toString()); 
         else if (verbosity >= SEQUENCE_PREVIEW)
             buf.append(sequencePreview(sequence));
         else */ if (verbosity >= ITEM_COUNT) 
             buf.append(sequence.getLength() + " item(s)"); 
+        buf.append("\t"); 
+        buf.append(expr.toString());        
     	log.debug(buf.toString());        
     }
     
@@ -273,14 +298,19 @@ public class Profiler {
             return;        
         
         buf.setLength(0);
+    	for (int i = 0; i < stack.size() - 1; i++)
+    		buf.append('\t');        
         if (title != null && !"".equals(title))
             buf.append(title);
         else
-            buf.append("MSG");
+            buf.append("MSG");        
+        if (message != null && !"".equals(message)) {
+            buf.append("\t");
+            buf.append(message);        	
+        }
         buf.append("\t");
         printPosition(expr); 
-        if (message != null && !"".equals(message))            
-            buf.append(message);            
+        buf.append(expr.toString());         
         log.debug(buf.toString());
     }    
     

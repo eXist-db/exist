@@ -31,7 +31,7 @@ import org.exist.xquery.value.Sequence;
 
 public class CommentConstructor extends NodeConstructor {
 
-	private String data = null;
+	private final String data;
 	
 	public CommentConstructor(XQueryContext context, String data) {
 		super(context);
