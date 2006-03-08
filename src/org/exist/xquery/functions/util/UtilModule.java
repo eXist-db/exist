@@ -46,6 +46,7 @@ public class UtilModule extends AbstractInternalModule {
 		new FunctionDef(Eval.signatures[1], Eval.class),
 		new FunctionDef(Eval.signatures[2], Eval.class),
 		new FunctionDef(Eval.signatures[3], Eval.class),
+		new FunctionDef(Eval.signatures[4], Eval.class),
 		new FunctionDef(Compile.signature, Compile.class),
 		new FunctionDef(FileRead.signatures[0], FileRead.class),
 		new FunctionDef(FileRead.signatures[1], FileRead.class),
