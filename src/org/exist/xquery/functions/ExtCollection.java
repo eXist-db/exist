@@ -34,7 +34,6 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
@@ -42,7 +41,6 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.LocationStep;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -216,17 +214,7 @@ public class ExtCollection extends Function {
                 	LOG.debug("UpdateListener: Line: " + getASTNode().getLine() + ": " + ExtCollection.this.toString());                	
                 }
             };
-            NotificationService service = context.getBroker().getBrokerPool()
-                    .getNotificationService();
-            service.subscribe(listener);
-        }
-    }
-
-    protected void deregisterUpdateListener() {
-        if (listener != null) {
-            NotificationService service = context.getBroker().getBrokerPool()
-                    .getNotificationService();
-            service.unsubscribe(listener);
+            context.registerUpdateListener(listener);
         }
     }
     
@@ -237,6 +225,5 @@ public class ExtCollection extends Function {
         cached = null;
         cachedDocs = null;
         cachedArgs = null;
-        deregisterUpdateListener();
     }
 }

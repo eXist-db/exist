@@ -775,20 +775,11 @@ public class LocationStep extends Step {
                 }
                 
                 public void debug() {
-                	LOG.debug("UpdateListener: Line: " + LocationStep.this.toString());
+                	LOG.debug("UpdateListener: Line: " + LocationStep.this.toString() +
+                			"; id: " + LocationStep.this.getExpressionId());
                 }
             };
-            NotificationService service = context.getBroker().getBrokerPool()
-                    .getNotificationService();
-            service.subscribe(listener);
-        }
-    }
-
-    protected void deregisterUpdateListener() {
-        if (listener != null) {
-            NotificationService service = context.getBroker().getBrokerPool()
-                    .getNotificationService();
-            service.unsubscribe(listener);
+            context.registerUpdateListener(listener);
         }
     }
 
@@ -802,7 +793,6 @@ public class LocationStep extends Step {
         currentSet = null;
         currentDocs = null;
         cached = null;
-        deregisterUpdateListener();
         listener = null;
     }
 }

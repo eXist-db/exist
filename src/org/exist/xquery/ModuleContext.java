@@ -5,6 +5,7 @@ import java.util.Iterator;
 import org.exist.dom.DocumentSet;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.storage.DBBroker;
+import org.exist.storage.UpdateListener;
 
 
 /**
@@ -97,5 +98,13 @@ public class ModuleContext extends XQueryContext {
 	 */
 	public void popDocumentContext() {
 		parentContext.popDocumentContext();
+	}
+	
+	public void registerUpdateListener(UpdateListener listener) {
+		parentContext.registerUpdateListener(listener);
+	}
+	
+	protected void clearUpdateListeners() {
+		// will be cleared by the parent context
 	}
 }
