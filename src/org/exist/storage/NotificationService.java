@@ -1,8 +1,10 @@
 package org.exist.storage;
 
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
-import org.exist.util.hashtable.Object2LongIdentityHashMap;
 
 /**
  * Global notification service for document updates. Other classes
@@ -12,9 +14,9 @@ import org.exist.util.hashtable.Object2LongIdentityHashMap;
  * @author wolf
  *
  */
-public class NotificationService extends Object2LongIdentityHashMap {
+public class NotificationService extends IdentityHashMap {
 
-	private final static long DUMMY_VALUE = 0;
+	private final static Object DUMMY_VALUE = new Object();
 	private final static Logger LOG = Logger.getLogger(NotificationService.class);
 	
 	public NotificationService() {
@@ -27,7 +29,9 @@ public class NotificationService extends Object2LongIdentityHashMap {
 	 * @param listener
 	 */
 	public synchronized void subscribe(UpdateListener listener) {
-		put(listener, DUMMY_VALUE);
+		LOG.debug(hashCode() + " adding listener: " + listener.hashCode());
+		put(listener, new Object());
+		debug();
 	}
 	
 	/**
@@ -36,11 +40,12 @@ public class NotificationService extends Object2LongIdentityHashMap {
 	 * @param listener
 	 */
 	public synchronized void unsubscribe(UpdateListener listener) {
-		long value = remove(listener);
-//		if (value < 0) {
-//			listener.debug();
-//			throw new RuntimeException("Key not found: " + value);
-//		}
+		debug();
+		Object i = remove(listener);
+		if (i == null)
+			throw new RuntimeException(hashCode() + " listener not found: " + listener.hashCode());
+		else
+			LOG.debug("Removed listener: " + listener.hashCode());
 	}
 
 	/**
@@ -52,10 +57,8 @@ public class NotificationService extends Object2LongIdentityHashMap {
 	 */
 	public synchronized void notifyUpdate(DocumentImpl document, int event) {
 		UpdateListener listener;
-		for(int idx = 0; idx < tabSize; idx++) {
-	        if(keys[idx] == null || keys[idx] == REMOVED)
-	            continue;
-	        listener = (UpdateListener) keys[idx];
+		for (Iterator i = keySet().iterator(); i.hasNext(); ) {
+	        listener = (UpdateListener) i.next();
 	        listener.documentUpdated(document, event);
 		}
 	}
@@ -63,10 +66,8 @@ public class NotificationService extends Object2LongIdentityHashMap {
 	public void debug() {
 		LOG.debug("Registered UpdateListeners:");
 		UpdateListener listener;
-		for(int idx = 0; idx < tabSize; idx++) {
-	        if(keys[idx] == null || keys[idx] == REMOVED)
-	            continue;
-	        listener = (UpdateListener) keys[idx];
+		for (Iterator i = keySet().iterator(); i.hasNext(); ) {
+	        listener = (UpdateListener) i.next();
 	        listener.debug();
 		}
 	}
