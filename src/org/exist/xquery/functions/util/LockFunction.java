@@ -34,7 +34,7 @@ import org.exist.xquery.value.Sequence;
 
 public abstract class LockFunction extends Function {
 
-    protected boolean exclusive = false;
+    protected final boolean exclusive;
     
     protected LockFunction(XQueryContext context, FunctionSignature signature, boolean exclusive) {
         super(context, signature);

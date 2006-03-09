@@ -64,8 +64,8 @@ public abstract class Modification extends AbstractExpression {
 	protected final static Logger LOG =
 		Logger.getLogger(Modification.class);
 	
-	protected Expression select;
-	protected Expression value;
+	protected final Expression select;
+	protected final Expression value;
 	
 	protected DocumentSet lockedDocuments = null;
 	

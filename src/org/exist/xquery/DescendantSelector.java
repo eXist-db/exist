@@ -32,8 +32,8 @@ import org.exist.dom.NodeSet;
  */
 public class DescendantSelector implements NodeSelector {
 	
-	protected NodeSet context;
-	protected int contextId;
+	final protected NodeSet context;
+	final protected int contextId;
 	
 	public DescendantSelector(NodeSet contextSet, int contextId) {
 		this.context = contextSet;

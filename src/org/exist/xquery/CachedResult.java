@@ -35,9 +35,9 @@ import org.exist.xquery.value.Type;
  */
 public class CachedResult {
 
-	protected Sequence cachedResult = null;
-	protected Sequence cachedContext = null;
-	protected int timestamp = 0;
+	final protected Sequence cachedResult;
+	final protected Sequence cachedContext;
+	final protected int timestamp;
 	
 	public CachedResult(NodeSet context, Sequence result) {
 		this.cachedContext = context;

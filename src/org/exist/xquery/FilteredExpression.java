@@ -39,8 +39,8 @@ import org.exist.xquery.value.Sequence;
  */
 public class FilteredExpression extends AbstractExpression {
 
-	protected Expression expression;
-	protected List predicates = new ArrayList(2);
+	final protected Expression expression;
+	final protected List predicates = new ArrayList(2);
 
 	/**
 	 * @param context
