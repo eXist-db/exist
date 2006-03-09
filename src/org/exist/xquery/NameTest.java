@@ -8,7 +8,7 @@ import org.w3c.dom.Node;
 
 public class NameTest extends TypeTest {
 
-	protected QName nodeName;
+	protected final QName nodeName;
 
 	public NameTest(int type, QName name) {
 		super(type);

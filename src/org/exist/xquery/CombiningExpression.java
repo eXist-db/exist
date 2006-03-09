@@ -35,8 +35,8 @@ import org.exist.xquery.value.Type;
  */
 public abstract class CombiningExpression extends AbstractExpression {
 
-	protected PathExpr left;
-	protected PathExpr right;
+	final protected PathExpr left;
+	final protected PathExpr right;
 	
 	/**
 	 * @param context

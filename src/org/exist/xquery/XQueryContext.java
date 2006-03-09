@@ -101,27 +101,27 @@ public class XQueryContext {
 	protected HashMap prefixes;
 	
 	// Local prefix/namespace mappings in the current context
-	protected HashMap inScopePrefixes = new HashMap();
+	protected final HashMap inScopePrefixes = new HashMap();
 
 	// Local namespace stack
-	protected Stack namespaceStack = new Stack();
+	protected final Stack namespaceStack = new Stack();
 
 	// Known user defined functions in the local module
-	protected TreeMap declaredFunctions = new TreeMap();
+	protected final TreeMap declaredFunctions = new TreeMap();
 
 	// Globally declared variables
-	protected TreeMap globalVariables = new TreeMap();
+	protected final TreeMap globalVariables = new TreeMap();
 
 	// The last element in the linked list of local in-scope variables
 	protected LocalVariable lastVar = null;
 	
-    protected Stack contextStack = new Stack();
+    protected final Stack contextStack = new Stack();
     
 	// The current size of the variable stack
 	protected int variableStackSize = 0;
 	
 	// Unresolved references to user defined functions
-	protected Stack forwardReferences = new Stack();
+	protected final Stack forwardReferences = new Stack();
 	
 	// List of pragmas declared for this query
 	protected List pragmas = null;
@@ -137,7 +137,7 @@ public class XQueryContext {
 	/**
 	 * Loaded modules.
 	 */
-	protected HashMap modules = new HashMap();
+	protected final HashMap modules = new HashMap();
 
 	/** 
 	 * The set of statically known documents specified as

@@ -33,8 +33,8 @@ package org.exist.xquery;
  */
 public class FunctionDef {
 
-	protected FunctionSignature signature;
-	protected Class implementingClass;
+	protected final FunctionSignature signature;
+	protected final Class implementingClass;
 	
 	public FunctionDef(FunctionSignature signature, Class implementingClass) {
 		this.signature = signature;
