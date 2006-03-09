@@ -88,7 +88,7 @@ public class Validation extends BasicFunction  {
         new FunctionSignature(
                     new QName("validate-report", ValidationModule.NAMESPACE_URI, 
                                                  ValidationModule.PREFIX),
-                    "Validate document specified by $a, using grannab $b, return a simple report.",
+                    "Validate document specified by $a, using grammar $b, return a simple report.",
                     new SequenceType[]{
                         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
