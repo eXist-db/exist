@@ -57,19 +57,18 @@ import org.xml.sax.XMLReader;
 public class DocUtils {
 	
 	//TODO : improve caching mechanism
-	private static Sequence currentDocument = null;
-	private static NodeProxy cachedNode = null;
-	private static String cachedPath = null;	
+	//private static Sequence currentDocument = null;
+//	private static NodeProxy cachedNode = null;
+//	private static String cachedPath = null;	
 	
 	public static Sequence getDocument(XQueryContext context, String path) throws XPathException, PermissionDeniedException {
-		setDocumentPath(context, path);
-		return currentDocument;
+		return getDocumentByPath(context, path);
 	}
 	
 	public static boolean isDocumentAvailable(XQueryContext context, String path) throws XPathException {
 		try {
-			setDocumentPath(context, path);
-			return (currentDocument != null && currentDocument.effectiveBooleanValue());
+			Sequence seq = getDocumentByPath(context, path);
+			return (seq != null && seq.effectiveBooleanValue());
 		}
 		catch (PermissionDeniedException e) {
 			return false;
@@ -77,8 +76,8 @@ public class DocUtils {
 		
 	}	
 
-	private static void setDocumentPath(XQueryContext context, String path) throws XPathException, PermissionDeniedException {	 
-		currentDocument = Sequence.EMPTY_SEQUENCE;	
+	private static Sequence getDocumentByPath(XQueryContext context, String path) throws XPathException, PermissionDeniedException {	 
+		Sequence document = Sequence.EMPTY_SEQUENCE;	
 	  	//URLs
 		if (path.matches("^[a-z]+://.*")) {
 			try {
@@ -107,8 +106,7 @@ public class DocUtils {
 				Document doc = adapter.getDocument();
 				memtreeDoc = (org.exist.memtree.DocumentImpl)doc;
 				memtreeDoc.setContext(context);
-				cachedPath = path;
-				currentDocument = memtreeDoc;
+				document = memtreeDoc;
 			} catch (MalformedURLException e) {
 				throw new XPathException(e.getMessage(), e);					
 			} catch (ParserConfigurationException e) {				
@@ -131,18 +129,18 @@ public class DocUtils {
 
 			// if the expression occurs in a nested context, we might have cached the
 			// document set
-			if (path.equals(cachedPath) && cachedNode != null) {
-				dlock = cachedNode.getDocument().getUpdateLock();
-				try {
-					// wait for pending updates by acquiring a lock
-					dlock.acquire(Lock.READ_LOCK);
-					currentDocument =  cachedNode;
-				} catch (LockException e) {					
-					throw new XPathException("Failed to acquire lock on document " + path, e);
-				} finally {
-					dlock.release(Lock.READ_LOCK);
-				}
-			}
+//			if (path.equals(cachedPath) && cachedNode != null) {
+//				dlock = cachedNode.getDocument().getUpdateLock();
+//				try {
+//					// wait for pending updates by acquiring a lock
+//					dlock.acquire(Lock.READ_LOCK);
+//					currentDocument =  cachedNode;
+//				} catch (LockException e) {					
+//					throw new XPathException("Failed to acquire lock on document " + path, e);
+//				} finally {
+//					dlock.release(Lock.READ_LOCK);
+//				}
+//			}
 
 			DocumentImpl doc = null;
 			try {
@@ -153,14 +151,12 @@ public class DocUtils {
 						doc.getUpdateLock().release(Lock.READ_LOCK);
 						throw new PermissionDeniedException("Insufficient privileges to read resource " + path);
 					}
-					cachedPath = path;
-					cachedNode = new NodeProxy(doc);
 					
 					if (lockOnLoad) {
 						// add the document to the list of locked documents
 						context.getLockedDocuments().add(doc);
 					}
-					currentDocument = cachedNode;
+					document = new NodeProxy(doc);
 				}
 			} catch (PermissionDeniedException e) {
 				throw e;
@@ -170,6 +166,7 @@ public class DocUtils {
 					doc.getUpdateLock().release(Lock.READ_LOCK);
 			}
 		}	 	  
+		return document;
 	}
 		
 
