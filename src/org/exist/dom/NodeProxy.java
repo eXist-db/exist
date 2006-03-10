@@ -153,7 +153,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		final int diff = doc.getDocId() - other.doc.getDocId();
 		if (diff != 0)
             return diff;
-        return (int) (gid - other.gid);
+		return gid > other.gid ? 1 : (gid == other.gid ? 0 : -1);
 	}
 	
 	public int compareTo(Object other) {
