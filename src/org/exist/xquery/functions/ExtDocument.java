@@ -34,6 +34,7 @@ import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -75,6 +76,8 @@ public class ExtDocument extends Function {
 
 	private List cachedArgs = null;
 	private Sequence cached = null;
+	private DocumentSet cachedDocs = null;
+	private UpdateListener listener = null;
 	
 	/**
 	 * @param context
@@ -106,7 +109,7 @@ public class ExtDocument extends Function {
 	    if (getArgumentCount() == 0) {
 	        if(cached != null) {
 	            result = cached;
-	            docs = cached.getDocumentSet();
+	            docs = cachedDocs;
 	        } else {
 		        docs = new DocumentSet();
 		        context.getBroker().getAllXMLResources(docs);
@@ -117,8 +120,10 @@ public class ExtDocument extends Function {
 			    cacheIsValid = compareArguments(cachedArgs, args);
 			if(cacheIsValid) {
 			    result = cached;
-			    docs = cached.getDocumentSet();
+			    docs = cachedDocs;
+			    LOG.debug("Returning cached document set");
 			} else {
+				LOG.debug(hashCode() + ": cached: " + (cached != null));
 				docs = new DocumentSet();
 				for(int i = 0; i < args.size(); i++) {
 					String next = (String)args.get(i);
@@ -127,6 +132,7 @@ public class ExtDocument extends Function {
 					//TODO : use dedicated function in XmldbURI
                     if(next.charAt(0) != '/')                        
 						next = context.getBaseURI() + "/" + next;
+                    LOG.debug("Loading document: " + next);
 					try {
 						DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(next);
 						if(doc != null) {
@@ -165,6 +171,8 @@ public class ExtDocument extends Function {
                 docs.unlock(false);
 	    }
 		cached = result;
+		cachedDocs = docs;
+		registerUpdateListener();
 		return result;
 	}
 	
@@ -193,6 +201,34 @@ public class ExtDocument extends Function {
         return true;
     }
     
+    protected void registerUpdateListener() {
+        if (listener == null) {
+            listener = new UpdateListener() {
+                public void documentUpdated(DocumentImpl document, int event) {
+                	LOG.debug("Doc updated");
+                    if (event == UpdateListener.ADD) {
+                        // clear all
+                        cachedArgs = null;
+                        cached = null;
+                        cachedDocs = null;
+                    } else {
+                        if (cachedDocs != null
+                                && cachedDocs.contains(document.getDocId())) {
+                            cachedDocs = null;
+                            cached = null;
+                            cachedArgs = null;
+                        }
+                    }
+                }
+                
+                public void debug() {
+                	LOG.debug("UpdateListener: Line: " + getASTNode().getLine() + ": " + ExtDocument.this.toString());                	
+                }
+            };
+            LOG.debug("Update listener");
+            context.registerUpdateListener(listener);
+        }
+    }
     
     /* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#resetState()
@@ -201,5 +237,7 @@ public class ExtDocument extends Function {
     	super.resetState();
         cached = null;
         cachedArgs = null;
+        cachedDocs = null;
+        listener = null;
     }
 }
