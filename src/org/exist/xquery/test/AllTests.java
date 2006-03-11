@@ -50,6 +50,7 @@ public class AllTests {
         suite.addTestSuite(XMLNodeAsXQueryParameterTest.class);
         suite.addTestSuite(OpNumericTest.class);
         suite.addTestSuite(FtQueryTest.class);
+        suite.addTestSuite(DocumentUpdateTest.class);
         //		suite.addTestSuite(XQueryUseCasesTest.class);
         //$JUnit-END$
         return suite;
