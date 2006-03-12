@@ -8,6 +8,6 @@ then
 fi
 
 DOC=`basename $1`
-URL="http://localhost:8080/exist/servlet$2/$DOC"
+URL="http://localhost:8080/exist/rest$2/$DOC"
 
 curl -i --upload-file $1 $URL $3 $4 $5 $6 $7 $8 $9

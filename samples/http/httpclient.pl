@@ -25,7 +25,7 @@ GetOptions(
 
 pod2usage(1) if $HELP;
 
-$URL = "http://$USER:$PASS\@localhost:8080/exist/servlet";
+$URL = "http://$USER:$PASS\@localhost:8080/exist/rest";
 $ua = LWP::UserAgent->new();
 if($QUERY) {
     query();

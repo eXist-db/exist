@@ -263,7 +263,7 @@ declare function local:main() as node()?
             standard distribution, the servlet is configured to listen at 
             address:</para>
             
-            <synopsis>http://localhost:8080/exist/servlet/</synopsis>
+            <synopsis>http://localhost:8080/exist/rest/</synopsis>
             
             <para>Both, the stand-alone server and the servlet, rely on class 
             <classname>org.exist.http.RESTServer</classname> to do the actual
@@ -276,7 +276,7 @@ declare function local:main() as node()?
 				enter the following URL into your web-browser:</para>
 
             <synopsis>
-				http://localhost:8080/exist/servlet/db/shakespeare/plays/hamlet.xml</synopsis>
+				http://localhost:8080/exist/rest/db/shakespeare/plays/hamlet.xml</synopsis>
                 
             <para>, the server receives an HTTP GET request and tries to locate 
 				collection <filename>/db/shakespeare/plays</filename> in the 
@@ -450,7 +450,7 @@ declare function local:main() as node()?
 					<filename>/db/shakespeare</filename> with SPEAKER "Juliet". 
 					It returns 10 items from the result sequence, starting at 
 					position 1:</para>
-                <synopsis>http://localhost:8080/exist/servlet/db/shakespeare? 
+                <synopsis>http://localhost:8080/exist/rest/db/shakespeare? 
 					_query=//SPEECH[SPEAKER=%22juliet%22]&amp;_start=1&amp;_howmany=10</synopsis>
             </section>
             <section>
@@ -493,7 +493,7 @@ else:
 print doc
 print "storing document to collection %s ..." % collection
 con = httplib.HTTP('localhost:8080')
-con.putrequest('PUT', '/exist/servlet/%s/%s' % (collection, doc))
+con.putrequest('PUT', '/exist/rest/%s/%s' % (collection, doc))
 con.putheader('Content-Type', 'text/xml')
 clen = len(xml)
 con.putheader('Content-Length', `clen`)
@@ -556,7 +556,7 @@ else:
                     <programlisting><![CDATA[
 require LWP::UserAgent;
 
-$URL = 'http://localhost:8080/exist/servlet/db/';
+$URL = 'http://localhost:8080/exist/rest/db/';
 $QUERY = <<END;
 <?xml version="1.0" encoding="UTF-8"?>
 <query xmlns="http://exist.sourceforge.net/NS/exist"
