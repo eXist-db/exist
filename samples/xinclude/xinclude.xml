@@ -46,7 +46,7 @@
             a page that has been passed through XInclude, and you can see the live effect
             of all the examples below. If not, try to browse to</para>
             
-            <para><ulink url="servlet/db/xinclude/xinclude.xml">servlet/db/xinclude/xinclude.xml</ulink>
+            <para><ulink url="rest/db/xinclude/xinclude.xml">rest/db/xinclude/xinclude.xml</ulink>
             </para>
             
             <para>and continue to read there.</para>
