@@ -63,7 +63,7 @@ public class PostExample {
 	}
 	
 	private void doPost(String request) throws IOException {
-		URL url = new URL("http://localhost:8080/exist/servlet" + DBBroker.ROOT_COLLECTION + "/");
+		URL url = new URL("http://localhost:8080/exist/rest" + DBBroker.ROOT_COLLECTION + "/");
 		HttpURLConnection connect =(HttpURLConnection)url.openConnection();
 		connect.setRequestMethod("POST");
 		connect.setDoOutput(true);

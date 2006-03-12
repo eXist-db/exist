@@ -240,7 +240,7 @@ as element()* {
     return
         <tr>
             <td><input type="checkbox" name="resource" value="{$parent}/{$child}"/></td>
-            <td><a target="_new" href="../servlet/{$parent}/{$child}">{$child}</a></td>
+            <td><a target="_new" href="../rest/{$parent}/{$child}">{$child}</a></td>
             <td class="perm">{xdb:permissions-to-string(xdb:get-permissions($collection, $child))}</td>
             <td>{xdb:get-owner($collection, $child)}</td>
             <td>{xdb:get-group($collection, $child)}</td>

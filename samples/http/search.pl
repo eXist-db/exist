@@ -1,6 +1,6 @@
 require LWP::UserAgent;
 
-$URL = 'http://localhost:8080/exist/servlet/db/';
+$URL = 'http://localhost:8080/exist/rest/db/';
 $QUERY = <<END;
 <?xml version="1.0" encoding="UTF-8"?>
 <query xmlns="http://exist.sourceforge.net/NS/exist"

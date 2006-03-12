@@ -547,7 +547,7 @@ SYSTEM "play.dtd" "entities/play.dtd"
   <!-- eXist's DatabaseAdminServlet -->
   <servlet-mapping>
     <servlet-name>EXistServlet</servlet-name>
-    <url-pattern>/servlet/*</url-pattern>
+    <url-pattern>/rest/*</url-pattern>
   </servlet-mapping>
 
   <!-- XQueryServlet -->

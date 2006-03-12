@@ -8,7 +8,7 @@
 #
 # $Id$
 
-url=http://localhost:8080/exist/servlet
+url=http://localhost:8080/exist/rest
 
 usage() {
     cat << END
