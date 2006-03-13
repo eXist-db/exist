@@ -54,12 +54,7 @@ import org.xml.sax.XMLReader;
  * @author Pierrick Brihaye<pierrick.brihaye@free.fr>
  */
 //TODO : many more improvements to handle efficiently any URI
-public class DocUtils {
-	
-	//TODO : improve caching mechanism
-	//private static Sequence currentDocument = null;
-//	private static NodeProxy cachedNode = null;
-//	private static String cachedPath = null;	
+public class DocUtils {	
 	
 	public static Sequence getDocument(XQueryContext context, String path) throws XPathException, PermissionDeniedException {
 		return getDocumentByPath(context, path);
@@ -125,22 +120,6 @@ public class DocUtils {
 
 			// check if the loaded documents should remain locked
 			boolean lockOnLoad = context.lockDocumentsOnLoad();
-			Lock dlock = null;
-
-			// if the expression occurs in a nested context, we might have cached the
-			// document set
-//			if (path.equals(cachedPath) && cachedNode != null) {
-//				dlock = cachedNode.getDocument().getUpdateLock();
-//				try {
-//					// wait for pending updates by acquiring a lock
-//					dlock.acquire(Lock.READ_LOCK);
-//					currentDocument =  cachedNode;
-//				} catch (LockException e) {					
-//					throw new XPathException("Failed to acquire lock on document " + path, e);
-//				} finally {
-//					dlock.release(Lock.READ_LOCK);
-//				}
-//			}
 
 			DocumentImpl doc = null;
 			try {

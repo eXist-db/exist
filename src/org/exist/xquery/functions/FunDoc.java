@@ -22,8 +22,11 @@
  */
 package org.exist.xquery.functions;
 
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
+import org.exist.storage.UpdateListener;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -58,6 +61,10 @@ public class FunDoc extends Function {
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
 	
+	private Sequence cached = null;
+	private String cachedPath = null;
+	private UpdateListener listener = null;
+	
 	/**
 	 * @param context
 	 * @param signature
@@ -90,13 +97,25 @@ public class FunDoc extends Function {
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if (arg.getLength() == 0)
             result = Sequence.EMPTY_SEQUENCE;
-        else {		
-    		String path = arg.itemAt(0).getStringValue();	    		
+        else {
+    		String path = arg.itemAt(0).getStringValue();
+    		// check if we can return a cached sequence
+    		if (cached != null && path.equals(cachedPath)) {
+    			return cached;
+    		}
+    		
     		try {
     			result = DocUtils.getDocument(this.context, path);
     //			TODO: we still need a final decision about this. Also check base-uri.
     //			if (result == Sequence.EMPTY_SEQUENCE)
     //				throw new XPathException(getASTNode(), path + " is not an XML document");
+    			DocumentSet docs = result.getDocumentSet();
+    			if (docs != null && DocumentSet.EMPTY_DOCUMENT_SET != docs) {
+    				// only cache node sets (which have a non-empty document set)
+    				cachedPath = path;
+    				cached = result;
+    				registerUpdateListener();
+    			}
     		}
     		catch (Exception e) {
     			throw new XPathException(getASTNode(), e.getMessage());			
@@ -110,11 +129,39 @@ public class FunDoc extends Function {
 		
 	}
 
+	protected void registerUpdateListener() {
+        if (listener == null) {
+            listener = new UpdateListener() {
+                public void documentUpdated(DocumentImpl document, int event) {
+                    if (event == UpdateListener.ADD) {
+                        // clear all
+                        cachedPath = null;
+                        cached = null;
+                    } else {
+                        if (cachedPath.equals(document.getName())) {
+                            cached = null;
+                            cachedPath = null;
+                        }
+                    }
+                }
+                
+                public void debug() {
+                	LOG.debug("UpdateListener: Line: " + getASTNode().getLine() + ": " + FunDoc.this.toString());                	
+                }
+            };
+            context.registerUpdateListener(listener);
+        }
+	}
+	
 	/**
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
 		super.resetState();
+		cached = null;
+		cachedPath = null;
+		listener = null;
+		
 		getArgument(0).resetState();
 	}
 }

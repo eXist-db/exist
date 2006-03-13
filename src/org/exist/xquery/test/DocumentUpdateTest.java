@@ -1,6 +1,7 @@
 package org.exist.xquery.test;
 
 import junit.framework.TestCase;
+import junit.textui.TestRunner;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -37,11 +38,12 @@ public class DocumentUpdateTest extends TestCase {
 	    		"};\n" +
 	    		"let $col := xdb:create-collection('/db', 'testup')\n" + 
 	    		"let $path := '/db/testup/test1.xml'\n" +
+	    		"let $doc := xdb:store($col, 'test1.xml', <test><n>1</n></test>)\n" +
 	    		"let $d1 := local:get-doc($path)\n" +
-	    		"let $doc := xdb:store($col, 'test1.xml', <test><n>1</n></test>)\n" + 
+	    		"let $remove := xdb:remove('/db/testup', 'test1.xml')\n" +
 	    		"return string-join((count(local:get-doc($path)), doc-available($path)), ' ')";
 			String result = execQuery(query);
-			assertEquals(result, "1 true");
+			assertEquals(result, "0 false");
 			
 			System.out.println("-- TEST 2: document() function --");
 			query = imports +
@@ -146,4 +148,8 @@ public class DocumentUpdateTest extends TestCase {
 			fail(e.getMessage());
 		}
     }
+    
+    public static void main(String[] args) {
+		TestRunner.run(DocumentUpdateTest.class);
+	}
 }
