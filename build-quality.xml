@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<!-- 
+Test the quality of code with PMD, JDepend, ...
+Designed to be imported by main build.xml , 
+so don't worry about eclipse editor's message about target "compile".
+
+Tested with eclipse Version: 3.2.0 Build id: I20060217-1115
+$Header$
+-->
+
+<project basedir="." default="pmd" name="quality-tests">
+
+    <!-- import default properties from file -->
+    <property file="build.properties"/>
+ 
+	<!-- You must put tools/lib/jdepend-2.9.jar in the classpath,
+	sorry this an Ant problem. -->
+    <target name="jdepend" depends="compile,check-jars-present"
+    	description="jdepend" >
+    	<taskdef name="jdepend" loaderref="ant.classpath"
+    		classname="org.apache.tools.ant.taskdefs.optional.jdepend.JDependTask" >		
+    		<classpath>
+    	   		<pathelement path="tools/lib/jdepend-2.9.jar" />
+    		</classpath>
+    	</taskdef>
+    	
+        <mkdir dir="test" />
+        <jdepend outputfile="test/jdepend.xml" format="xml" >
+            <exclude name="java.*"/>
+            <exclude name="javax.*"/>
+            <classespath>
+                <pathelement location="${build.classes}" />
+            </classespath>
+        </jdepend>
+    </target>
+
+	<available file="tools/pmd-3.5.jar" property="jars-present" />
+    <target name="check-jars-present" unless="jars-present" >
+    	<get src="http://jmvanel.free.fr/jars/jdepend-2.9.jar"
+    		dest="tools/jdepend-2.9.jar" />
+
+    	<get src="http://jmvanel.free.fr/jars/pmd-3.5.jar"
+    		dest="tools/pmd-3.5.jar" />
+    	
+    	<get src="http://jmvanel.free.fr/jars/jaxen-1.1-beta-7.jar"
+    		dest="tools/jaxen-1.1-beta-7.jar" />
+	</target>
+	
+    <target name="pmd" description="PMD non severe :-)" 
+    	depends="check-jars-present" >
+
+    	<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask">
+    		<classpath><fileset dir=".">
+    			<include name="tools" />
+    			<include name="tools/lib/pmd*.jar" />
+    		</fileset></classpath>
+    	</taskdef>
+    	<pmd classpath="tools" >
+	    	<ruleset>basic</ruleset>
+    		<ruleset>codesize</ruleset>
+    		<ruleset>design</ruleset>
+    		<ruleset>unusedcode</ruleset>
+<!--    		
+    		<ruleset>imports</ruleset>
+    		<ruleset>naming</ruleset>
+    		<ruleset>scratchpad</ruleset>
+    		<ruleset>sunsecure</ruleset>
+    		<ruleset>braces</ruleset>
+    		<ruleset>javabeans</ruleset>
+    		<ruleset>logging-java</ruleset>
+    		<ruleset>logging-jakarta-commons</ruleset>
+-->    		
+    		<ruleset>optimizations</ruleset>
+    		<ruleset>strictexception</ruleset>
+    		<ruleset>clone</ruleset>
+    		<ruleset>coupling</ruleset>
+        	<ruleset>finalizers</ruleset>
+       		<ruleset>junit</ruleset>
+       		<ruleset>strings</ruleset>
+
+    		<formatter type="text" toFile="test/pmd-report.txt" 
+    			linkPrefix="src" />
+    		<fileset dir="src" >
+    			<include name="**/*.java" />
+    			<exclude name="**/parser/*.java" />
+    		</fileset>
+    	</pmd>
+    </target>
+
+</project>
