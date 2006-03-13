@@ -29,9 +29,7 @@ public class NotificationService extends IdentityHashMap {
 	 * @param listener
 	 */
 	public synchronized void subscribe(UpdateListener listener) {
-		LOG.debug(hashCode() + " adding listener: " + listener.hashCode());
 		put(listener, new Object());
-		debug();
 	}
 	
 	/**
@@ -40,12 +38,9 @@ public class NotificationService extends IdentityHashMap {
 	 * @param listener
 	 */
 	public synchronized void unsubscribe(UpdateListener listener) {
-		debug();
 		Object i = remove(listener);
 		if (i == null)
 			throw new RuntimeException(hashCode() + " listener not found: " + listener.hashCode());
-		else
-			LOG.debug("Removed listener: " + listener.hashCode());
 	}
 
 	/**
