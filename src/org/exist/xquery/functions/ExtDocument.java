@@ -205,7 +205,6 @@ public class ExtDocument extends Function {
         if (listener == null) {
             listener = new UpdateListener() {
                 public void documentUpdated(DocumentImpl document, int event) {
-                	LOG.debug("Doc updated");
                     if (event == UpdateListener.ADD) {
                         // clear all
                         cachedArgs = null;
@@ -225,7 +224,6 @@ public class ExtDocument extends Function {
                 	LOG.debug("UpdateListener: Line: " + getASTNode().getLine() + ": " + ExtDocument.this.toString());                	
                 }
             };
-            LOG.debug("Update listener");
             context.registerUpdateListener(listener);
         }
     }
