@@ -238,7 +238,7 @@ public class XQueryContext {
     
 	private AccessContext accessCtx;
     
-	private UpdateListener updateListener = null;
+	private ContextUpdateListener updateListener = null;
 	
     private XQueryContext() {}
 	
@@ -1612,6 +1612,7 @@ public class XQueryContext {
 			updateListener = new ContextUpdateListener();
 			broker.getBrokerPool().getNotificationService().subscribe(updateListener);
 		}
+		updateListener.addListener(listener);
 	}
 	
 	protected void clearUpdateListeners() {
@@ -1623,6 +1624,10 @@ public class XQueryContext {
 	private class ContextUpdateListener implements UpdateListener {
 
 		private List listeners = new ArrayList();
+		
+		public void addListener(UpdateListener listener) {
+			listeners.add(listener);
+		}
 		
 		public void documentUpdated(DocumentImpl document, int event) {
 			for (int i = 0; i < listeners.size(); i++) {
