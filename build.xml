@@ -1197,4 +1197,6 @@
         <!-- the jars are some how locked by ant (classpath.core)-->
 
     </target>
+	
+	<import file="build-quality.xml" />
 </project>
