@@ -121,9 +121,7 @@ public class ExtDocument extends Function {
 			if(cacheIsValid) {
 			    result = cached;
 			    docs = cachedDocs;
-			    LOG.debug("Returning cached document set");
 			} else {
-				LOG.debug(hashCode() + ": cached: " + (cached != null));
 				docs = new DocumentSet();
 				for(int i = 0; i < args.size(); i++) {
 					String next = (String)args.get(i);
@@ -132,7 +130,6 @@ public class ExtDocument extends Function {
 					//TODO : use dedicated function in XmldbURI
                     if(next.charAt(0) != '/')                        
 						next = context.getBaseURI() + "/" + next;
-                    LOG.debug("Loading document: " + next);
 					try {
 						DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(next);
 						if(doc != null) {
