@@ -101,4 +101,8 @@
     <banner>
         <link href="http://www.java.net"><img src="resources/javanet_button_90.gif" border="0" alt="java.net Member Button"/></link>
     </banner>
+    
+    <reference title="Tools We Use:">
+        <link href="http://www.yourkit.com"><img src="resources/yjp.gif" border="0" alt="yourkit"/></link>
+    </reference>
 </sidebar>
