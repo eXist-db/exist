@@ -56,7 +56,7 @@
                     </div>
                 </div>
                 <xsl:apply-templates select="sidebar:sidebar"/>
-                <xsl:apply-templates select="rss"/>
+                <xsl:apply-templates select="newsblock"/>
                 <xsl:apply-templates select="body"/>
             </body>
         </html>
@@ -64,7 +64,7 @@
 
     <xsl:template match="body">
         <xsl:choose>
-            <xsl:when test="../rss">
+            <xsl:when test="../newsblock/rss">
                 <div id="content"><xsl:apply-templates/></div>
             </xsl:when>
             <xsl:otherwise>
@@ -96,8 +96,8 @@
     <xsl:template match="sidebar:sidebar">
         <div id="sidebar">
             <xsl:apply-templates select="sidebar:group"/>
-            
             <xsl:apply-templates select="sidebar:banner"/>
+            <xsl:apply-templates select="sidebar:reference"/>
         </div>
     </xsl:template>
 
@@ -135,6 +135,13 @@
         </div>
     </xsl:template>
 
+	<xsl:template match="sidebar:reference">
+		<div class="reference">
+			<h3><xsl:value-of select="@title"/></h3>
+			<xsl:apply-templates/>
+		</div>
+	</xsl:template>
+	
     <xsl:template match="link|sidebar:link">
         <a href="{@href}"><xsl:apply-templates/></a>
     </xsl:template>
@@ -415,12 +422,16 @@
         </td>
     </xsl:template>
 
-    <xsl:template match="rss">
+    <xsl:template match="newsblock">
         <div id="news">
-            <div class="block">
-                <h3>News</h3>
-                <xsl:apply-templates select="channel/item[position()&lt;7]"/>
-            </div>
+            <xsl:apply-templates/>
+        </div>
+    </xsl:template>
+    
+    <xsl:template match="rss">
+        <div class="block">
+            <h3>News</h3>
+            <xsl:apply-templates select="channel/item[position()&lt;7]"/>
         </div>
     </xsl:template>
     

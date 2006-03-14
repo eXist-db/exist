@@ -1,239 +1,189 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Author: Wolfgang Meier "meier@ifs.tu-darmstadt.de" -->
 <document xmlns:xi="http://www.w3.org/2001/XInclude">
-	<!-- include header -->
-	<xi:include href="header.xml" />
-	<xi:include href="sidebar.xml" />
+    <!-- include header -->
+    <xi:include href="header.xml"/>
+    <xi:include href="sidebar.xml"/>
 
-	<xi:include href="http://wiki.exist-db.org/exec/rss?snip=start">
-		<xi:fallback></xi:fallback>
-	</xi:include>
+    <newsblock>
+        <xi:include href="http://wiki.exist-db.org/exec/rss?snip=start">
+            <xi:fallback/>
+        </xi:include>
+        <div id="quotes">
+            <a href="http://www.infoworld.com/reports/01SRtoy06.html">
+                <img src="resources/TOY2006s.jpg" border="0"/>
+            </a>
+            <blockquote>A smooth, even pleasurable introduction to the power of XQuery and XML
+                content management</blockquote>
+            <div class="source">InfoWorld</div>
+        </div>
+    </newsblock>
 
-	<body>
-		<section id="overview" title="Overview">
+    <body>
+        <section id="overview" title="Overview">
 
-			<p>
-				eXist is an Open Source native XML database featuring
-				efficient, index-based
-				<a href="http://www.w3.org/TR/xquery/">XQuery</a>
-				processing, automatic indexing, extensions for full-text
-				search,
-				<a
-					href="http://www.smb-tec.com/xmldb/xupdate/index.html">
-					XUpdate
-				</a>
-				support and tight integration with existing XML
-				development tools. The database implements the current
-				XQuery 1.0 working draft as of November, 2003 (for the
-				core syntax, some details already following later
-				versions), with the exception of the XML schema related
-				features.
-			</p>
+            <p> eXist is an Open Source native XML database featuring efficient, index-based <a
+                    href="http://www.w3.org/TR/xquery/">XQuery</a> processing, automatic indexing,
+                extensions for full-text search, <a
+                    href="http://www.smb-tec.com/xmldb/xupdate/index.html"> XUpdate </a> support and
+                tight integration with existing XML development tools. The database implements the
+                current XQuery 1.0 working draft as of November, 2003 (for the core syntax, some
+                details already following later versions), with the exception of the XML schema
+                related features. </p>
 
-			<p>
-				<a href="xquery.xml">XQuery support</a>
-				in eXist makes it possible to write entire web
-				applications with just XQuery and XSLT. XQuery files can
-				be directly passed to the database, using either the
-				XQueryServlet, the XQueryGenerator for Cocoon or the
-				REST-style API (see
-				<a href="devguide.xml">Developer's Guide</a>
-				).
-			</p>
+            <p>
+                <a href="xquery.xml">XQuery support</a> in eXist makes it possible to write entire
+                web applications with just XQuery and XSLT. XQuery files can be directly passed to
+                the database, using either the XQueryServlet, the XQueryGenerator for Cocoon or the
+                REST-style API (see <a href="devguide.xml">Developer's Guide</a> ). </p>
 
-			<p>
-				Additional features: Java binding, fulltext-search
-				functions, modules in XQuery and Java, extension modules
-				for HTTP support, database manipulation and XSL
-				transformations.
-			</p>
+            <p> Additional features: Java binding, fulltext-search functions, modules in XQuery and
+                Java, extension modules for HTTP support, database manipulation and XSL
+                transformations. </p>
 
-			<p>
-				To avoid memory-intensive document tree traversals
-				during query processing, eXist uses an efficient index
-				structure which is based on a numerical indexing scheme
-				for identifying XML nodes in the index. The database is
-				lightweight, completely written in Java and may be
-				easily deployed in a number of ways, running either as a
-				stand-alone server process, inside a servlet-engine or
-				directly embedded into an application.
-			</p>
+            <p> To avoid memory-intensive document tree traversals during query processing, eXist
+                uses an efficient index structure which is based on a numerical indexing scheme for
+                identifying XML nodes in the index. The database is lightweight, completely written
+                in Java and may be easily deployed in a number of ways, running either as a
+                stand-alone server process, inside a servlet-engine or directly embedded into an
+                application. </p>
 
 
-			<p>
-				For a summary of eXist's features please have a look at
-				the
-				<link href="facts.xml">feature sheet</link>
-				.
-			</p>
+            <p> For a summary of eXist's features please have a look at the <link href="facts.xml"
+                    >feature sheet</link> . </p>
 
-		</section>
+        </section>
 
-		<section id="download" title="Download">
-			<p>
-				eXist is released to the public under the terms of the
-				<link href="http://www.gnu.org/copyleft/lesser.html">
-					GNU LGPL
-				</link>
-				license.
-			</p>
-			<p>
-				eXist may be downloaded either as a package containing
-				the complete distribution or as a web application
-				archive (war-file). Download the war-file if you want to
-				install eXist into an existing servlet-engine or write
-				your own web application. To get started, we suggest
-				downloading the installer or the zip package. Both
-				contain a ready-to-run webserver (Jetty).
-			</p>
-			<p>
-				The distribution includes source code and all required
-				third party libraries. The current version is 1.0beta2.
-				For instructions on starting eXist, read the
-				<link href="quickstart.xml">Quick Start Guide</link>
-				.
-			</p>
+        <section id="download" title="Download">
+            <p> eXist is released to the public under the terms of the <link
+                    href="http://www.gnu.org/copyleft/lesser.html"> GNU LGPL </link> license. </p>
+            <p> eXist may be downloaded either as a package containing the complete distribution or
+                as a web application archive (war-file). Download the war-file if you want to
+                install eXist into an existing servlet-engine or write your own web application. To
+                get started, we suggest downloading the installer or the zip package. Both contain a
+                ready-to-run webserver (Jetty). </p>
+            <p> The distribution includes source code and all required third party libraries. The
+                current version is 1.0beta2. For instructions on starting eXist, read the <link
+                    href="quickstart.xml">Quick Start Guide</link> . </p>
 
-			<p>
-				<emphasis>
-					If you are updating from a previous release, please 
-					read the <a href="updating.xml">update notes</a>.
-				</emphasis>
-			</p>
+            <p>
+                <emphasis> If you are updating from a previous release, please read the <a
+                        href="updating.xml">update notes</a>. </emphasis>
+            </p>
 
-			<table cellpadding="5" cellspacing="5">
-				<tr>
-					<th align="left" colspan="2">
-						Snapshots
-					</th>
-				</tr>
-				<tr>
-				    <td>
-				    	<a href="http://prdownloads.sourceforge.net/exist/eXist-snapshot-20060313.jar">
-				    	eXist-snapshot-20060313.jar
-				    	</a>
-				   	</td>
-				   	<td>
-						Installer based on IzPack. Includes source. Run with
-						<tt>java -jar eXist-snapshot-XXXXXX.jar</tt>
-						.
-					</td>
-				</tr>
-				<tr>
-					<td colspan="2">
-						Development snapshots reflect the current state of development. They are
-						released on a regular basis whenever we think the CVS code is in a stable
-						state and important new features or bug fixes should be made available to
-						the community. The latest snapshot release can always be found on the 
-						<a href="http://sourceforge.net/project/showfiles.php?group_id=17691">
-						Sourceforge file release system</a>. Concerning installation, there's no 
-						difference to a stable release.
-					</td>
-				</tr>
-				<tr>
-				    <td colspan="2">
-				        Please note that development snapshots are not necessarily less stable than
-				        the latest "stable" release. Snapshots often contain important bug fixes 
-				        which are not yet available in the stable release. There's also a risk
-				        that new bugs or regressions were introduced. However, we try to keep
-				        the snapshots as stable as possible. New features, bugs or problems will be
-				        announced via the <link href="http://sourceforge.net/mail/?group_id=17691">mailing list
-				        </link> and the <link href="http://wiki.exist-db.org">Wiki</link>.
-				    </td>
-				</tr>
-				<tr>
-					<th align="left" colspan="2">Last "official" stable version</th>
-				</tr>
-				<tr>
-					<th colspan="2">
-						<warning>
-			                <title>Health Warning</title>
-			                <p>The 1.0 beta2 release is truly ancient now. There were
-			                lots of bug fixes and feature enhancements during the past months,
-			                so using beta2 cannot be recommended any more. Please download
-			                a newer development snapshot. Recent development snapshots can
-			                be regarded as stable. A new official "stable" release is in
-			                preparation, but as usual, we lack the
-			                time to complete the documentation. Any help will be welcome!</p>
-			            </warning>
-		            </th>
-	            </tr>
-				<tr>
-					<td>
-						<a
-							href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.jar">
-							eXist-1.0b2-build-1107.jar
-						</a>
-					</td>
-					<td>
-						Installer based on IzPack. Highly recommended.
-						Includes source. Run with
-						<tt>java -jar eXist-1.0b2.jar</tt>
-						.
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<a
-							href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.war">
-							eXist-1.0b2-build-1107.war
-						</a>
-					</td>
-					<td>
-						Web application archive, ready to be installed
-						into an existing servlet-engine like Tomcat or
-						Jetty.
-					</td>
-				</tr>
-				<tr>
-					<th align="left" colspan="2">Other tools</th>
-				</tr>
-				<tr>
-					<td>
-						<a
-							href="http://wiki.exist-db.org/space/jEditXQueryPlugin">
-							jEdit XQuery Plugin Adapter
-						</a>
-					</td>
-					<td>
-						jEdit's XQuery plugin offers a comfortable
-						interface to write and test XQueries from within
-						jEdit. The plugin provides an adapter
-						architecture to access different XQuery engines.
-						Using the adapter for eXist, you can execute
-						your XQuery directly from within jEdit. Follow
-						the link to read more.
-					</td>
-				</tr>
-			</table>
-		</section>
-		<section title="Community Support" id="mailing">
-			<p>The primary medium for asking questions, getting help or posting bug reports
-			    or fixes is the project mailing list. To subscribe/unsubscribe
-			    visit the mailing lists page on sourceforge.</p>
-			    
-			<p>
-				<link
-					href="http://sourceforge.net/mail/?group_id=17691">
-					http://sourceforge.net/mail/?group_id=17691
-				</link>
-			</p>
+            <table cellpadding="5" cellspacing="5">
+                <tr>
+                    <th align="left" colspan="2"> Snapshots </th>
+                </tr>
+                <tr>
+                    <td>
+                        <a
+                            href="http://prdownloads.sourceforge.net/exist/eXist-snapshot-20060313.jar"
+                            > eXist-snapshot-20060313.jar </a>
+                    </td>
+                    <td> Installer based on IzPack. Includes source. Run with <tt>java -jar
+                            eXist-snapshot-XXXXXX.jar</tt> . </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="http://prdownloads.sourceforge.net/exist/exist-20060313.war">
+                            exist-20060313.war </a>
+                    </td>
+                    <td> Web application archive, ready to be installed into an existing
+                        servlet-engine like Tomcat or Jetty. </td>
+                </tr>
+                <tr>
+                    <td colspan="2"> Development snapshots reflect the current state of development.
+                        They are released on a regular basis whenever we think the CVS code is in a
+                        stable state and important new features or bug fixes should be made
+                        available to the community. The latest snapshot release can always be found
+                        on the <a href="http://sourceforge.net/project/showfiles.php?group_id=17691"
+                            > Sourceforge file release system</a>. Concerning installation, there's
+                        no difference to a stable release. </td>
+                </tr>
+                <tr>
+                    <td colspan="2"> Please note that development snapshots are not necessarily less
+                        stable than the latest "stable" release. Snapshots often contain important
+                        bug fixes which are not yet available in the stable release. There's also a
+                        risk that new bugs or regressions were introduced. However, we try to keep
+                        the snapshots as stable as possible. New features, bugs or problems will be
+                        announced via the <link href="http://sourceforge.net/mail/?group_id=17691"
+                            >mailing list </link> and the <link href="http://wiki.exist-db.org"
+                        >Wiki</link>. </td>
+                </tr>
+                <tr>
+                    <th align="left" colspan="2">Last "official" stable version</th>
+                </tr>
+                <tr>
+                    <th colspan="2">
+                        <warning>
+                            <title>Health Warning</title>
+                            <p>The 1.0 beta2 release is truly ancient now. There were lots of bug
+                                fixes and feature enhancements during the past months, so using
+                                beta2 cannot be recommended any more. Please download a newer
+                                development snapshot. Recent development snapshots can be regarded
+                                as stable. A new official "stable" release is in preparation, but as
+                                usual, we lack the time to complete the documentation. Any help will
+                                be welcome!</p>
+                        </warning>
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        <a
+                            href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.jar"
+                            > eXist-1.0b2-build-1107.jar </a>
+                    </td>
+                    <td> Installer based on IzPack. Highly recommended. Includes source. Run with
+                            <tt>java -jar eXist-1.0b2.jar</tt> . </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a
+                            href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.war"
+                            > eXist-1.0b2-build-1107.war </a>
+                    </td>
+                    <td> Web application archive, ready to be installed into an existing
+                        servlet-engine like Tomcat or Jetty. </td>
+                </tr>
+                <tr>
+                    <th align="left" colspan="2">Other tools</th>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="http://wiki.exist-db.org/space/jEditXQueryPlugin"> jEdit XQuery
+                            Plugin Adapter </a>
+                    </td>
+                    <td> jEdit's XQuery plugin offers a comfortable interface to write and test
+                        XQueries from within jEdit. The plugin provides an adapter architecture to
+                        access different XQuery engines. Using the adapter for eXist, you can
+                        execute your XQuery directly from within jEdit. Follow the link to read
+                        more. </td>
+                </tr>
+            </table>
+        </section>
+        <section title="Community Support" id="mailing">
+            <p>The primary medium for asking questions, getting help or posting bug reports or fixes
+                is the project mailing list. To subscribe/unsubscribe visit the mailing lists page
+                on sourceforge.</p>
 
-			<p>
-				The <b>list archive</b> can be found on the same page. However, most people
-				find <b>Gmane</b> more convenient:</p>
-			
-			<p>
-				<link
-					href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist">
-					http://news.gmane.org/thread.php?group=gmane.text.xml.exist
-				</link>
-			</p>
+            <p>
+                <link href="http://sourceforge.net/mail/?group_id=17691">
+                    http://sourceforge.net/mail/?group_id=17691 </link>
+            </p>
 
-			<p>The project also has an <b>IRC channel</b> <link href="irc://irc.freenode.net/existdb">#existdb</link>
-			at irc.freenode.net. The channel is open for general discussions on eXist and related subjects.
-			</p>
+            <p> The <b>list archive</b> can be found on the same page. However, most people find
+                    <b>Gmane</b> more convenient:</p>
 
-		</section>
-	</body>
+            <p>
+                <link href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist">
+                    http://news.gmane.org/thread.php?group=gmane.text.xml.exist </link>
+            </p>
+
+            <p>The project also has an <b>IRC channel</b>
+                <link href="irc://irc.freenode.net/existdb">#existdb</link> at irc.freenode.net. The
+                channel is open for general discussions on eXist and related subjects. </p>
+
+        </section>
+    </body>
 </document>
