@@ -63,6 +63,8 @@ public class XMLWriter {
 	private static boolean[] textSpecialChars;
 
 	private static boolean[] attrSpecialChars;
+	
+	private String defaultNamespace = "";
 
 	static {
 		textSpecialChars = new boolean[128];
@@ -205,19 +207,28 @@ public class XMLWriter {
 		if ((nsURI == null)
 				&& (prefix == null || prefix.length() == 0))
 			return;
-		try {
+		try {						
 			if (!tagIsOpen)
 				throw new TransformerException(
 						"Found a namespace declaration outside an element");
-			writer.write(' ');
-			writer.write("xmlns");
 			if (prefix != null && prefix.length() > 0) {
+				writer.write(' ');
+				writer.write("xmlns");
 				writer.write(':');
 				writer.write(prefix);
+				writer.write("=\"");
+				writeChars(nsURI, true);
+				writer.write('"');
+			} else {
+				if (defaultNamespace.equals(nsURI))
+					return;	
+				writer.write(' ');
+				writer.write("xmlns");
+				writer.write("=\"");
+				writeChars(nsURI, true);
+				writer.write('"');
+				defaultNamespace= nsURI;				
 			}
-			writer.write("=\"");
-			writeChars(nsURI, true);
-			writer.write('"');
 		} catch (IOException e) {
 			throw new TransformerException(e.getMessage(), e);
 		}
