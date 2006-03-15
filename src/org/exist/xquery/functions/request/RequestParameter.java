@@ -48,7 +48,9 @@ public class RequestParameter extends BasicFunction {
 				RequestModule.NAMESPACE_URI,
 				RequestModule.PREFIX),
 			"Returns the HTTP request parameter identified by $a. If the parameter could not be found, " +
-			"the default value specified in $b is returned instead.",
+			"the default value specified in $b is returned instead. Note: this function will not try to expand " +
+			"predefined entities like &amp; or &lt;, so a &amp; passed through a parameter will indeed " +
+			"be treated as an &amp; character.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)},
@@ -81,9 +83,9 @@ public class RequestParameter extends BasicFunction {
 			if (values == null || values.length == 0)
 				return args[1];
 			if (values.length == 1)
-				return XPathUtil.javaObjectToXPath(values[0], null);
+				return XPathUtil.javaObjectToXPath(values[0], null, false);
 			else
-				return XPathUtil.javaObjectToXPath(values, null);
+				return XPathUtil.javaObjectToXPath(values, null, false);
 		} else
 			throw new XPathException("Variable $request is not bound to a Request object.");
 	}
