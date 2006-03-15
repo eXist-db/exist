@@ -65,15 +65,21 @@ public class XPathUtil {
      * @return
      * @throws XPathException
      */
-    public final static Sequence javaObjectToXPath(Object obj, XQueryContext context)
-            throws XPathException {
+	public final static Sequence javaObjectToXPath(Object obj, XQueryContext context)
+    throws XPathException {
+		return javaObjectToXPath(obj, context, true);
+	}
+	
+    public final static Sequence javaObjectToXPath(Object obj, XQueryContext context, 
+    		boolean expandChars) throws XPathException {
         if (obj == null)
             return Sequence.EMPTY_SEQUENCE;
         if (obj instanceof Sequence)
             return (Sequence) obj;
-        else if (obj instanceof String)
-            return new StringValue((String) obj).expand();
-        else if (obj instanceof Boolean)
+        else if (obj instanceof String) {
+            StringValue v = new StringValue((String) obj);
+            return (expandChars ? v.expand() : v);
+        } else if (obj instanceof Boolean)
             return BooleanValue.valueOf(((Boolean) obj).booleanValue());
         else if (obj instanceof Float)
             return new FloatValue(((Float) obj).floatValue());
@@ -129,7 +135,7 @@ public class XPathUtil {
             else
                 seq = new ValueSequence();
             for (Iterator i = ((List) obj).iterator(); i.hasNext();) {
-                seq.add((Item) javaObjectToXPath(i.next(), context));
+                seq.add((Item) javaObjectToXPath(i.next(), context, expandChars));
             }
             return seq;
         } else if (obj instanceof NodeList) {
@@ -171,7 +177,7 @@ public class XPathUtil {
             else
                 seq = new ValueSequence();
             for (int i = 0; i < array.length; i++) {
-                seq.add((Item) javaObjectToXPath(array[i], context));
+                seq.add((Item) javaObjectToXPath(array[i], context, expandChars));
             }
             return seq;
         } else
