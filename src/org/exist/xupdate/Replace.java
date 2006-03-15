@@ -77,7 +77,7 @@ public class Replace extends Modification {
                 if (!doc.getPermissions().validate(broker.getUser(),
                         Permission.UPDATE))
                         throw new PermissionDeniedException(
-                                "permission to update document denied");
+                        "permission to update document denied");
                 parent = (ElementImpl) node.getParentNode();
                 if (parent == null)
                     throw new EXistException("The root element of a document can not be replaced with 'xu:replace'. " +

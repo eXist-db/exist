@@ -54,6 +54,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -386,11 +387,11 @@ public abstract class Modification {
 			StoredNode n1 = (StoredNode) o1;
 			StoredNode n2 = (StoredNode) o2;
 			if (n1.getInternalAddress() == n2.getInternalAddress())
-				return 0;
-			else if (n1.getInternalAddress() < n2.getInternalAddress())
-				return -1;
+				return Constants.EQUAL;
+			if (n1.getInternalAddress() < n2.getInternalAddress())
+				return Constants.INFERIOR;
 			else
-				return 1;
+				return Constants.SUPERIOR;
 		}
 	}
 }

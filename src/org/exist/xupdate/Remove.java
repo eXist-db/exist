@@ -44,65 +44,67 @@ import org.w3c.dom.Node;
  */
 public class Remove extends Modification {
 
-    /**
-     * Constructor for Remove.
-     * 
-     * @param pool
-     * @param user
-     * @param selectStmt
-     */
-    public Remove(DBBroker broker, DocumentSet docs, String selectStmt,
-            Map namespaces, Map variables) {
-        super(broker, docs, selectStmt, namespaces, variables);
-    }
+	/**
+	 * Constructor for Remove.
+	 * 
+	 * @param pool
+	 * @param user
+	 * @param selectStmt
+	 */
+	public Remove(DBBroker broker, DocumentSet docs, String selectStmt,
+			Map namespaces, Map variables) {
+		super(broker, docs, selectStmt, namespaces, variables);
+	}
 
-    /**
-     * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
-     */
-    public long process(Txn transaction) throws PermissionDeniedException, LockException,
-            EXistException, XPathException {
-        try {
-            StoredNode[] ql = selectAndLock();
-            IndexListener listener = new IndexListener(ql);
-            NotificationService notifier = broker.getBrokerPool().getNotificationService();
-            NodeImpl node;
-            NodeImpl parent;
-            DocumentImpl doc = null;
-            DocumentSet modifiedDocs = new DocumentSet();
-            for (int i = 0; i < ql.length; i++) {
-                node = ql[i];
-                doc = (DocumentImpl) node.getOwnerDocument();
-                if (!doc.getPermissions().validate(broker.getUser(),
-                        Permission.UPDATE))
-                        throw new PermissionDeniedException(
-                                "permission to remove document denied");
-                doc.getMetadata().setIndexListener(listener);
-                modifiedDocs.add(doc);
-                parent = (NodeImpl) node.getParentNode();
-                if (parent.getNodeType() != Node.ELEMENT_NODE) {
-                    LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
-                    throw new EXistException(
-                            "you cannot remove the document element. Use update "
-                                    + "instead");
-                } else
-                    parent.removeChild(transaction, node);
-                doc.getMetadata().clearIndexListener();
-                doc.getMetadata().setLastModified(System.currentTimeMillis());
-                broker.storeXMLResource(transaction, doc);
-                notifier.notifyUpdate(doc, UpdateListener.UPDATE);
-            }
-            checkFragmentation(transaction, modifiedDocs);
-            return ql.length;
-        } finally {
-            unlockDocuments();
-        }
-    }
+	/**
+	 * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
+	 */
+	public long process(Txn transaction) throws PermissionDeniedException,
+			LockException, EXistException, XPathException {
+		try {
+			StoredNode[] ql = selectAndLock();
+			IndexListener listener = new IndexListener(ql);
+			NotificationService notifier = broker.getBrokerPool()
+					.getNotificationService();
+			NodeImpl node;
+			NodeImpl parent;
+			DocumentImpl doc = null;
+			DocumentSet modifiedDocs = new DocumentSet();
+			for (int i = 0; i < ql.length; i++) {
+				node = ql[i];
+				doc = (DocumentImpl) node.getOwnerDocument();
+				if (!doc.getPermissions().validate(broker.getUser(),
+						Permission.UPDATE))
+					throw new PermissionDeniedException(
+							"permission to update document denied");
+				doc.getMetadata().setIndexListener(listener);
+				modifiedDocs.add(doc);
+				parent = (NodeImpl) node.getParentNode();				
+				if (parent.getNodeType() != Node.ELEMENT_NODE) {
+					LOG.debug("parent = " + parent.getNodeType() + "; "
+							+ parent.getNodeName());
+					throw new EXistException(
+							"you cannot remove the document element. Use update "
+									+ "instead");
+				} else
+					parent.removeChild(transaction, node);
+				doc.getMetadata().clearIndexListener();
+				doc.getMetadata().setLastModified(System.currentTimeMillis());
+				broker.storeXMLResource(transaction, doc);
+				notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+			}
+			checkFragmentation(transaction, modifiedDocs);
+			return ql.length;
+		} finally {
+			unlockDocuments();
+		}
+	}
 
-    /**
-     * @see org.exist.xupdate.Modification#getName()
-     */
-    public String getName() {
-        return "remove";
-    }
+	/**
+	 * @see org.exist.xupdate.Modification#getName()
+	 */
+	public String getName() {
+		return "remove";
+	}
 
 }
