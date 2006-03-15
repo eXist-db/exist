@@ -93,7 +93,7 @@ public class Insert extends Modification {
                 if (!doc.getPermissions().validate(broker.getUser(),
                         Permission.UPDATE))
                         throw new PermissionDeniedException(
-                                "permission to remove document denied");
+                        "permission to update document denied");
                 modifiedDocs.add(doc);
                 parent = (NodeImpl) node.getParentNode();
                 switch (mode) {

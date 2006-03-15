@@ -83,7 +83,7 @@ public class Rename extends Modification {
                 if (!doc.getPermissions().validate(broker.getUser(),
                         Permission.UPDATE))
                         throw new PermissionDeniedException(
-                                "permission denied to update document");
+                        "permission to update document denied");
                 doc.getMetadata().setIndexListener(listener);
                 modifiedDocs.add(doc);
                 parent = (NodeImpl) node.getParentNode();
