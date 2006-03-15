@@ -202,7 +202,7 @@ public class XMLWriter {
 
 	public void namespace(String prefix, String nsURI)
 			throws TransformerException {
-		if ((nsURI == null || nsURI.length() == 0)
+		if ((nsURI == null)
 				&& (prefix == null || prefix.length() == 0))
 			return;
 		try {
