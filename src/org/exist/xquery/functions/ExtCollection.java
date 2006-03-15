@@ -195,7 +195,7 @@ public class ExtCollection extends Function {
         if (listener == null) {
             listener = new UpdateListener() {
                 public void documentUpdated(DocumentImpl document, int event) {
-                    if (event == UpdateListener.ADD || event == UpdateListener.REMOVE) {
+                    if (document == null || event == UpdateListener.ADD || event == UpdateListener.REMOVE) {
                         // clear all
                         cachedDocs = null;
                         cached = null;
