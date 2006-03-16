@@ -504,6 +504,13 @@ public class RequestReplayer extends JDialog
 										System.err.println(ioe.getMessage());
 									}
 									
+									synchronized (this) {
+										// wait 200 milliseconds before sending next request
+										try {
+											wait(200);
+										} catch (InterruptedException e) {
+										}
+									}
 									//break out of this inner while loop, i.e. next record
 									break;
 								}
