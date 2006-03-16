@@ -48,6 +48,7 @@ public class AllTests {
         suite.addTestSuite(UpdateTest.class);
         suite.addTestSuite(UpdateAttributeTest.class);
         suite.addTestSuite(UpdateRecoverTest.class);
+        suite.addTestSuite(ResourceTest.class);
         //$JUnit-END$
         return suite;
     }
