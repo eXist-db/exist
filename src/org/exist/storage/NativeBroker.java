@@ -1317,6 +1317,7 @@ public class NativeBroker extends DBBroker {
             transact.commit(transaction);
             return targetDoc;
         } catch (Exception e) {
+            LOG.debug(e);
             transact.abort(transaction);
         }
         return null;
