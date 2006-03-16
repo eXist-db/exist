@@ -110,6 +110,7 @@ public class XMLWriter {
 
 	protected void reset() {
         writer = null;
+        defaultNamespace = "";
     }
 
 	/**
@@ -122,6 +123,7 @@ public class XMLWriter {
 		tagIsOpen = false;
 		tagIsEmpty = true;
 		declarationWritten = false;
+		defaultNamespace = "";
 	}
 
 	public void startDocument() throws TransformerException {
@@ -129,6 +131,7 @@ public class XMLWriter {
 		tagIsEmpty = true;
 		declarationWritten = false;
 		doctypeWritten = false;
+		defaultNamespace = "";
 	}
 
 	public void endDocument() throws TransformerException {
