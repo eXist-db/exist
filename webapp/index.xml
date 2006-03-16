@@ -78,16 +78,16 @@
                 <tr>
                     <td>
                         <a
-                            href="http://prdownloads.sourceforge.net/exist/eXist-snapshot-20060313.jar"
-                            > eXist-snapshot-20060313.jar </a>
+                            href="http://prdownloads.sourceforge.net/exist/eXist-snapshot-20060316.jar"
+                            > eXist-snapshot-20060316.jar </a>
                     </td>
                     <td> Installer based on IzPack. Includes source. Run with <tt>java -jar
                             eXist-snapshot-XXXXXX.jar</tt> . </td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/exist-20060313.war">
-                            exist-20060313.war </a>
+                        <a href="http://prdownloads.sourceforge.net/exist/exist-20060316.war">
+                            exist-20060316.war </a>
                     </td>
                     <td> Web application archive, ready to be installed into an existing
                         servlet-engine like Tomcat or Jetty. </td>
