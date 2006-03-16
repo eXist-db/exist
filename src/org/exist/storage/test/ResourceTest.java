@@ -115,6 +115,10 @@ public class ResourceTest extends TestCase {
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             
+            TransactionManager transact = pool.getTransactionManager();            
+            Txn transaction = transact.beginTransaction();
+            System.out.println("Transaction started ...");
+            
             String docPath = TEST_COLLECTION + "/" + DOCUMENT_NAME;
             
             BinaryDocument binDoc = (BinaryDocument) broker
@@ -128,7 +132,13 @@ public class ResourceTest extends TestCase {
                 binDoc.getUpdateLock().release(Lock.READ_LOCK);
             }
             
+            Collection collection = broker.getCollection(TEST_COLLECTION);
+            collection.removeBinaryResource(transaction, broker, binDoc);
             
+            broker.saveCollection(transaction, collection);
+            
+            transact.commit(transaction);
+            System.out.println("Transaction commited ...");
         } catch (Exception ex){
             fail("Error opening document" + ex);
             
@@ -141,5 +151,55 @@ public class ResourceTest extends TestCase {
         assertEquals(0, data.length);
     }
     
+    public void testStore2() {
+    	testStore();
+    }
     
+    public void testRemoveCollection() {
+    	BrokerPool.FORCE_CORRUPTION = false;
+        BrokerPool pool = startDB();
+        
+        System.out.println("testRemoveCollection() ...\n");
+        
+        DBBroker broker = null;
+        
+        
+        byte[] data = null;
+        
+        try {
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            
+            TransactionManager transact = pool.getTransactionManager();            
+            Txn transaction = transact.beginTransaction();
+            System.out.println("Transaction started ...");
+            
+            String docPath = TEST_COLLECTION + "/" + DOCUMENT_NAME;
+            
+            BinaryDocument binDoc = (BinaryDocument) broker
+                    .getXMLResource(docPath, Lock.READ_LOCK);
+            
+            // if document is not present, null is returned
+            if(binDoc == null){
+                fail("Binary document '" + docPath + " does not exist.");
+            } else {
+                data = broker.getBinaryResource(binDoc);
+                binDoc.getUpdateLock().release(Lock.READ_LOCK);
+            }
+            
+            Collection collection = broker.getCollection(TEST_COLLECTION);
+            broker.removeCollection(transaction, collection);
+            
+            transact.commit(transaction);
+            System.out.println("Transaction commited ...");
+        } catch (Exception ex){
+            fail("Error opening document" + ex);
+            
+        } finally {
+            if(pool!=null){
+                pool.release(broker);
+            }
+        }
+        
+        assertEquals(0, data.length);
+    }
 }
