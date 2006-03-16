@@ -1022,7 +1022,9 @@ public class NativeBroker extends DBBroker {
                 new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                     public Object start() {
                         if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                            domDb.removeOverflowValue(transaction, ((BinaryDocument)doc).getPage());
+                        	long page = ((BinaryDocument)doc).getPage();
+                        	if (page > -1)
+                        		domDb.removeOverflowValue(transaction, page);
                         } else {                            
                             StoredNode node = (StoredNode)doc.getFirstChild();
                             domDb.removeAll(transaction, node.getInternalAddress());
@@ -1405,6 +1407,10 @@ public class NativeBroker extends DBBroker {
     }
     
     public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final byte[] data) {
+    	if (data.length == 0) {
+    		blob.setPage(-1);
+    		return;
+    	}
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
             public Object start() throws ReadOnlyException {
                 LOG.debug("Storing binary resource " + blob.getFileName());
@@ -1489,6 +1495,8 @@ public class NativeBroker extends DBBroker {
     }    
     
     public byte[] getBinaryResource(final BinaryDocument blob) {
+    	if (blob.getPage() < 0)
+    		return new byte[0];
         byte[] data = (byte[]) new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
             public Object start() throws ReadOnlyException {
                 return domDb.getBinary(blob.getPage());
@@ -1820,13 +1828,15 @@ public class NativeBroker extends DBBroker {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         LOG.info("removing binary resource " + blob.getDocId() + "...");
-        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-            public Object start() throws ReadOnlyException {
-                domDb.removeOverflowValue(transaction, blob.getPage());
-                return null;
-            }
+        if (blob.getPage() > -1) {
+	        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+	            public Object start() throws ReadOnlyException {
+	                domDb.removeOverflowValue(transaction, blob.getPage());
+	                return null;
+	            }
+	        }
+	        .run();
         }
-        .run();
         removeResourceMetadata(transaction, blob);
     }
 
