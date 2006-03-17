@@ -6,13 +6,16 @@ import javax.servlet.http.*;
 
 import org.apache.xmlrpc.*;
 import org.exist.EXistException;
+import org.exist.http.Descriptor;
+import org.exist.http.servlets.HttpServletRequestWrapper;
 import org.exist.storage.BrokerPool;
 
 import org.exist.util.Configuration;
 
 public class RpcServlet extends HttpServlet {
-
-    protected XmlRpcServer xmlrpc;
+	private static final long serialVersionUID = 1L;
+	
+	protected XmlRpcServer xmlrpc;
     /** id of the database registred against the BrokerPool */
     protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
 
@@ -28,6 +31,7 @@ public class RpcServlet extends HttpServlet {
     public void doPost( HttpServletRequest request,
                         HttpServletResponse response )
          throws ServletException, IOException {
+    	
         String user = "admin";
         String password = null;
         String auth = request.getHeader( "Authorization" );
@@ -38,9 +42,24 @@ public class RpcServlet extends HttpServlet {
             user = s.substring( 0, p );
             password = s.substring( p + 1 );
         }
-        byte[] result =
-            xmlrpc.execute( request.getInputStream(), user, password );
-        response.setContentType( "text/xml" );
+        
+        InputStream inputStream = request.getInputStream();
+		
+    	// Request logger
+		Descriptor descriptor = Descriptor.getDescriptorSingleton();
+    	if( descriptor.allowRequestLogging() ) {
+        	// Wrap HttpServletRequest, because both request Logger and xmlrpc 
+    		// need the request InputStream, which is consumed when read.
+    		HttpServletRequestWrapper request2 = 
+    			new HttpServletRequestWrapper(request, /*formEncoding*/ "utf-8" );
+    		descriptor.doLogRequestInReplayLog(request2);
+    		inputStream = request2.getStringBufferInputStream();
+    	}
+    	
+		byte[] result =
+            xmlrpc.execute( inputStream, user, password );
+
+		response.setContentType( "text/xml" );
         response.setContentLength( result.length );
         OutputStream output = response.getOutputStream();
         output.write( result );
@@ -56,9 +75,11 @@ public class RpcServlet extends HttpServlet {
      */
     public void init( ServletConfig config ) throws ServletException {
         super.init( config );
-        // <frederic.glorieux@ajlsm.com> to allow multi-instance xmlrpc server, use a databaseid everywhere
+        // <frederic.glorieux@ajlsm.com> to allow multi-instance xmlrpc server, 
+        // use a databaseid everywhere
         String id = config.getInitParameter("database-id");
-        if (id != null && !"".equals(id)) this.databaseid=id;
+        if (id != null && !"".equals(id))
+        	this.databaseid=id;
         if ( !BrokerPool.isConfigured(databaseid) )
             throw new ServletException( "database is not running" );
         boolean enableDebug = false;

@@ -23,6 +23,10 @@ package org.exist.http.servlets;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringBufferInputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.security.Principal;
@@ -43,6 +47,9 @@ import javax.servlet.http.HttpSession;
 
 
 /** A wrapper for HttpServletRequest
+ * - differentiates between POST parameters in the URL or Content Body
+ * - keeps content Body of the POST request, making it available many times 
+ * 		through {@link #getStringBufferInputStream()} .
  * 
  * A method of differentiating between POST parameters in the URL or Content Body of the request was needed.
  * The standard javax.servlet.http.HTTPServletRequest does not differentiate between URL or content body parameters,
@@ -66,7 +73,7 @@ import javax.servlet.http.HttpSession;
 
 public class HttpServletRequestWrapper implements HttpServletRequest
 {
-	//Simple Enumeration implementation for String's, needed for getParameterNames()
+	/** Simple Enumeration implementation for String's, needed for getParameterNames() */
 	private class StringEnumeration implements Enumeration
 	{
 		private String[] strings = null;	//Strings in the Enumeration
@@ -134,7 +141,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 		}
 	}
 	
-	//Simple class to hold the value and type of a request parameter
+	/** Simple class to hold the value and type of a request parameter */
 	private class RequestParamater
 	{
 		public final static int PARAM_TYPE_URL = 1;		//parameter from the URL of the request
@@ -176,22 +183,29 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	
 	//Members
 	private HttpServletRequest request = null;		//The Request
-	private String formEncoding = null;			//The encoding for the Request
-	private LinkedHashMap params = null;			//The Request Parameters
-	/* params LinkedHashMap
+	/** The encoding for the Request */
+	private String formEncoding = null;
+	
+	/** The Request Parameters
+	 * 
+	 * params LinkedHashMap
 	 * ====================
 	 * params keys are String
 	 * params values are Vector of RequestParameter's
 	 */
+	private LinkedHashMap params = null;			
+
+	/** the content Body of the POST request; 
+	 * it must be stored because once the Servlet input stream has been 
+	 * consumed, the content Body is no more readable. */
+	private String contentBody;
+
 	
 	/**
 	 * HttpServletRequestWrapper Constructor
 	 * @param request		The HttpServletRequest to wrap
 	 * @param formEncoding		The encoding to use
 	 */
-	
-	
-	//Constructor
 	public HttpServletRequestWrapper(HttpServletRequest request, String formEncoding) throws UnsupportedEncodingException
 	{
 		this.request = request;
@@ -223,11 +237,17 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			//If there is some Content
 			if(request.getContentLength() > 0)
 			{
-				//If a form POST and not a document POST
-				if(request.getContentType().toLowerCase().equals("application/x-www-form-urlencoded") && request.getHeader("ContentType") == null)
+				// If a form POST , and not a document POST
+				String contentType = request.getContentType().toLowerCase();
+				if( contentType.equals("application/x-www-form-urlencoded")
+						&& request.getHeader("ContentType") == null )
 				{
 					//Parse out parameters from the Content Body
 					parseContentBodyParameters();
+					
+				} else if ( contentType.equals("text/xml") ) {
+					// if an XML-RPC
+					contentBody = getContentBody();
 				}
 			}
 		}
@@ -243,30 +263,34 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 		}
 	}
 	
-	//Stores parameters from the Content Body of the Request
+	/** Stores parameters from the Content Body of the Request */
 	private void parseContentBodyParameters()
 	{
+		String content = getContentBody();
+		
+		//Parse any parameters from the Content Body
+		parseParameters( content, RequestParamater.PARAM_TYPE_CONTENT);
+	}
+
+	private String getContentBody() {
 		//Create a buffer big enough to hold the Content Body
 		char[] content = new char[request.getContentLength()];
 		
-		try
-		{
+		try	{
 			//Read the Content Body into the buffer
 			BufferedReader bufRequestBody = new BufferedReader(new java.io.InputStreamReader(request.getInputStream()));
 			bufRequestBody.read(content);
 			bufRequestBody.close();
 		}
-		catch(IOException ioe)
-		{
+		catch(IOException ioe) {
 			//TODO: handle this properly
+			System.err.println( "Error Reading the Content Body into the buffer: " + ioe );
 			ioe.printStackTrace();
 		}
-		
-		//Parse any parameters from the Content Body
-		parseParameters(new String(content), RequestParamater.PARAM_TYPE_CONTENT);
+		return new String(content);
 	}
 	
-	//Parses Parameters into param objects and stores them in a vector in params
+	/** Parses Parameters into param objects and stores them in a vector in params */
 	private void parseParameters(String parameters, int type)
 	{
 		//Split parameters into an array
@@ -567,6 +591,10 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 		return request.getInputStream();
 	}
 
+	public InputStream getStringBufferInputStream() throws IOException {
+		return new StringBufferInputStream( contentBody );
+	}
+
 	/**
 	 * get the value of a Request parameter by its name from the local parameter store
 	 * @param name		The name of the Request parameter to get the value for
@@ -815,45 +843,59 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	}
 	
 	/**
-	 * Similar to javax.servlet.http.HttpServletRequest.toString() except it includes output of the Request parameters from the Request's Content Body
+	 * Similar to javax.servlet.http.HttpServletRequest.toString() ,
+	 * except it includes output of the Request parameters from the Request's Content Body
 	 * @return		String representation of HttpServletRequestWrapper
 	 */
-	public String toString()
-	{
-		//If POST request AND there is some content AND its not a file upload
-		if((request.getMethod().toUpperCase().equals("POST")) && (request.getContentLength() > 0) && (!request.getContentType().toUpperCase().startsWith("MULTIPART/")))
-		{
-			//Also return the content parameters, these are not part of the standard HttpServletRequest.toString() output
-			StringBuffer buf = new StringBuffer(request.toString());
+	public String toString() {
+		// If POST request AND there is some content AND its not a file upload
+		// 	AND content Body has not been recorded
+		if (	    request.getMethod().toUpperCase().equals("POST")
+				&&  request.getContentLength() > 0
+				&& !request.getContentType().toUpperCase().startsWith(
+						"MULTIPART/")
+				&& contentBody == null ) {
 			
+			// Also return the content parameters, these are not part 
+			// of the standard HttpServletRequest.toString() output
+			StringBuffer buf = new StringBuffer( request.toString());
+
 			Set setParams = params.entrySet();
-			
-			for(Iterator itParams = setParams.iterator(); itParams.hasNext(); )
-			{
-				Map.Entry me = (Map.Entry)itParams.next();
-				Vector vecParamValues = (Vector)me.getValue();
-				
-				for(Iterator itParamValues = vecParamValues.iterator(); itParamValues.hasNext(); )
-				{
-					RequestParamater p = (RequestParamater)itParamValues.next();
-					
-					if(p.type == RequestParamater.PARAM_TYPE_CONTENT)
-					{
-						if(buf.charAt(buf.length() - 1) != '\n')
+
+			for (Iterator itParams = setParams.iterator(); itParams.hasNext();) {
+				Map.Entry me = (Map.Entry) itParams.next();
+				Vector vecParamValues = (Vector) me.getValue();
+
+				for (Iterator itParamValues = vecParamValues.iterator(); itParamValues
+						.hasNext();) {
+					RequestParamater p = (RequestParamater) itParamValues
+							.next();
+
+					if (p.type == RequestParamater.PARAM_TYPE_CONTENT) {
+						if (buf.charAt(buf.length() - 1) != '\n')
 							buf.append("&");
-						buf.append((String)me.getKey());
+						buf.append((String) me.getKey());
 						buf.append("=");
 						buf.append(p.getValue());
 					}
 				}
 			}
-			
-			buf.append(System.getProperty("line.separator") + System.getProperty("line.separator"));
-			
+
+			buf.append(	System.getProperty("line.separator") +
+						System.getProperty("line.separator") );
+
 			return buf.toString();
-		}
-		else
-		{
+
+		} else if (contentBody != null) {
+			// XML-RPC request or plain XML REST POST
+			StringBuffer buf = new StringBuffer( request.toString() );
+			buf.append(contentBody);
+			
+			buf.append(	System.getProperty("line.separator") +
+						System.getProperty("line.separator") );
+			return buf.toString();
+
+		} else {
 			//Return standard HttpServletRequest.toString() output
 			return request.toString();
 		}
