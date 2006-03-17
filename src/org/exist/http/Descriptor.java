@@ -58,6 +58,7 @@ import org.xml.sax.XMLReader;
 
 public class Descriptor implements ErrorHandler
 {
+	private static final String SYSTEM_LINE_SEPARATOR = System.getProperty("line.separator");
 	//References
 	private static Descriptor singletonRef;
 	private final static Logger LOG = Logger.getLogger(Descriptor.class);		//Logger
@@ -316,39 +317,40 @@ public class Descriptor implements ErrorHandler
 	 * 
 	 * Enabled by descriptor.xml <xquery-app request-replay-log="true">
 	 *   
-	 * @param request		The HttpServletRequest to log. For POST requests form data will only be logged if a HttpServletRequestWrapper is used instead of HttpServletRequest!  
+	 * @param request		The HttpServletRequest to log. For POST requests 
+	 * form data will only be logged if a HttpServletRequestWrapper is used 
+	 * instead of HttpServletRequest!  
 	 */
     public synchronized void doLogRequestInReplayLog(HttpServletRequest request)
 	{
     	//TOOD: add the facility to log HTTP PUT requests, may need changes to HttpServletRequestWrapper
     	
     	//Only log if set by the user in descriptor.xml <xquery-app request-replay-log="true">
-    	if(bufWriteReplayLog == null)
-    	{
+    	if(bufWriteReplayLog == null) {
     		return;
     	}
 
-    	try
-		{
+    	try {
 	    	//Store the date and time
     		bufWriteReplayLog.write("Date: ");
     		SimpleDateFormat formatter = new SimpleDateFormat ("dd/MM/yyyy HH:mm:ss");
     		bufWriteReplayLog.write(formatter.format(new Date()));
 	    	
-	    	bufWriteReplayLog.write(System.getProperty("line.separator"));
+	    	bufWriteReplayLog.write(SYSTEM_LINE_SEPARATOR);
 	    	
 	    	//Store the request string excluding the first line
-	    	bufWriteReplayLog.write(request.toString().substring(request.toString().indexOf(System.getProperty("line.separator")) + 1));
+	    	String requestAsString = request.toString();
+			bufWriteReplayLog.write( requestAsString.substring( 
+					requestAsString.indexOf(SYSTEM_LINE_SEPARATOR) + 1));
 	    	
 	    	//End of record indicator
-	    	bufWriteReplayLog.write(System.getProperty("line.separator"));
+	    	bufWriteReplayLog.write(SYSTEM_LINE_SEPARATOR);
 	    	
 	    	//flush the buffer to file
 	    	bufWriteReplayLog.flush();
 		}
-    	catch(IOException ioe)
-		{
-    		LOG.warn("Could not write request replay log");
+    	catch(IOException ioe) {
+    		LOG.warn("Could not write request replay log: " + ioe );
     		return;
     	}
 	}
