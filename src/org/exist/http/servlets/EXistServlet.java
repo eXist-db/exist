@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.xmlrpc.Base64;
 import org.exist.EXistException;
 import org.exist.http.BadRequestException;
+import org.exist.http.Descriptor;
 import org.exist.http.NotFoundException;
 import org.exist.http.RESTServer;
 import org.exist.security.PermissionDeniedException;
@@ -129,16 +130,30 @@ public class EXistServlet extends HttpServlet {
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpServlet#doPut(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	protected void doPut(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+	protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+	{
+		//first, adjust the path
+		String path = adjustPath(request);
+		
+		//second, perform descriptor actions
+		Descriptor descriptor = Descriptor.getDescriptorSingleton();
+    	if(descriptor != null)
+    	{
+    		//TODO: figure out a way to log PUT requests with HttpServletRequestWrapper and Descriptor.doLogRequestInReplayLog() 
+    		
+    		//map's the path if a mapping is specified in the descriptor
+    		path = descriptor.mapPath(path);
+    	}
+		
+		//third, authenticate the user
 		User user = authenticate(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN,
 					"Permission denied: unknown user or password");
 			return;
 		}
-        
-		String path = adjustPath(request);
+		
+		//fourth, process the request
 		ServletInputStream is = request.getInputStream();
 		int len = request.getContentLength();
 		// put may send a lot of data, so save it
@@ -188,6 +203,22 @@ public class EXistServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+		
+		//first, adjust the path
+		String path = adjustPath(request);
+		
+		//second, perform descriptor actions
+		Descriptor descriptor = Descriptor.getDescriptorSingleton();
+    	if(descriptor != null)
+    	{
+    		//logs the request if specified in the descriptor
+    		descriptor.doLogRequestInReplayLog(request);
+    		
+    		//map's the path if a mapping is specified in the descriptor
+    		path = descriptor.mapPath(path);
+    	}
+		
+    	//third, authenticate the user
 		User user = authenticate(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -195,7 +226,7 @@ public class EXistServlet extends HttpServlet {
 			return;
 		}
 
-		String path = adjustPath(request);
+		//fouth, process the request
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
@@ -217,15 +248,31 @@ public class EXistServlet extends HttpServlet {
 		}
 	}
 
-	protected void doHead(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doHead(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+	{
+		//first, adjust the path
+		String path = adjustPath(request);
+		
+		//second, perform descriptor actions
+		Descriptor descriptor = Descriptor.getDescriptorSingleton();
+    	if(descriptor != null)
+    	{
+    		//logs the request if specified in the descriptor
+    		descriptor.doLogRequestInReplayLog(request);
+    		
+    		//map's the path if a mapping is specified in the descriptor
+    		path = descriptor.mapPath(path);
+    	}
+    	
+		//third, authenticate the user
 		User user = authenticate(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN,
 					"Permission denied: unknown user " + "or password");
 			return;
 		}
-
-		String path = adjustPath(request);
+		
+		//fourth, process the request
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
@@ -250,8 +297,20 @@ public class EXistServlet extends HttpServlet {
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpServlet#doDelete(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	protected void doDelete(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+	protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+	{
+		//first, adjust the path
+		String path = adjustPath(request);
+		
+		//second, perform descriptor actions
+		Descriptor descriptor = Descriptor.getDescriptorSingleton();
+		if(descriptor != null)
+    	{
+			//map's the path if a mapping is specified in the descriptor
+    		path = descriptor.mapPath(path);
+    	}
+		
+		//third, authenticate the user
 		User user = authenticate(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -259,7 +318,7 @@ public class EXistServlet extends HttpServlet {
 			return;
 		}
 
-		String path = adjustPath(request);
+		//fourth, process the request
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
@@ -283,23 +342,50 @@ public class EXistServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException
 	{	
-		//Wrap HttpServletRequest, for better access to POST parameters from Content and URL - deliriumsky
-		HttpServletRequestWrapper request = new HttpServletRequestWrapper(req, formEncoding);
+		HttpServletRequest request = null;
+
+		//For POST request, If we are logging the requests we must wrap HttpServletRequest in HttpServletRequestWrapper
+		//otherwise we cannot access the POST parameters from the content body of the request!!! - deliriumsky
+		Descriptor descriptor = Descriptor.getDescriptorSingleton();
+		if(descriptor.allowRequestLogging())
+		{
+			request = new HttpServletRequestWrapper(req, formEncoding);
+		}
+		else
+		{
+			request = req;
+		}
 		
+		//first, adjust the path
+		String path = request.getPathInfo();
+		if(path == null)
+		{
+			path = "";
+		}
+		else
+		{
+            path = adjustPath(request);
+		}
+		
+		//second, perform descriptor actions
+    	if(descriptor != null)
+    	{
+    		//logs the request if specified in the descriptor
+    		descriptor.doLogRequestInReplayLog(request);
+    		
+    		//map's the path if a mapping is specified in the descriptor
+    		path = descriptor.mapPath(path);
+    	}
+		
+    	//third, authenticate the user
 		User user = authenticate(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN,
 					"Permission denied: unknown user " + "or password");
 			return;
 		}
-
-		String path = request.getPathInfo();
-		if(path == null)
-			path = "";
-		else {
-            path = adjustPath(request);
-		}
 		
+		//fouth, process the request
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
