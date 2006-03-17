@@ -34,26 +34,24 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.lang.Thread;
 import java.net.Socket;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 
@@ -68,9 +66,10 @@ import javax.swing.border.TitledBorder;
  * @serial 2006-02-28
  * @version 1.6
  */
-public class RequestReplayer extends JDialog
-{	
-	//Handle to the Request Log File
+public class RequestReplayer extends JFrame {
+	private static final long serialVersionUID = 1L;
+
+	/** Handle to the Request Log File */
 	private File requestLogFile = null;
 	
 	//Dialog Controls
@@ -89,16 +88,21 @@ public class RequestReplayer extends JDialog
 	*/
 	public static void main(String[] args)
 	{
-		//Instantiate ourself
-		RequestReplayer rr = new RequestReplayer();
+		String fileName = null;
+		if ( args.length > 0 )
+			fileName = args[0];
+		//Instantiate oursel
+		// RequestReplayer rr = 
+		new RequestReplayer(fileName);
 	}
 	
 	/**
 	 * Default Constructor
+	 * @param fileName 
 	 */
-	public RequestReplayer()
-	{
-		super();
+	public RequestReplayer(String fileName) {
+		if( fileName != null )
+			requestLogFile = new File(fileName);
 		initialize();
 	}
 	
@@ -162,12 +166,14 @@ public class RequestReplayer extends JDialog
 		panelFileGrid.setConstraints(lblLogFile, c);
 		panelFile.add(lblLogFile);
 		
-		//filename field
-		txtReplayFilename = new JTextField("/usr/local/eXist/request-replay-log.txt", 24);
+		// filename field
+		String fileNameInfield = "/usr/local/eXist/request-replay-log.txt";
+		if( requestLogFile != null )
+			fileNameInfield = requestLogFile.getAbsolutePath();
+		txtReplayFilename = new JTextField(fileNameInfield, 24);
 		txtReplayFilename.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(!txtReplayFilename.getText().equals(requestLogFile.getPath()))
-                {
+                if(!txtReplayFilename.getText().equals(requestLogFile.getPath())) {
                 	//Show a dialog to choose the log file
                 	chooseFile();
                 }
@@ -380,13 +386,16 @@ public class RequestReplayer extends JDialog
 	/**
 	 * Event for when the "Choose..." button is clicked, displays a simple
 	 * file chooser dialog 
+	 * @param  
 	 */
-	private void chooseFile()
-	{
+	private void chooseFile() {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setApproveButtonText("Open");
 		fileChooser.setApproveButtonMnemonic('O');
-		
+		if( requestLogFile != null ) {
+			fileChooser.setCurrentDirectory( requestLogFile.getParentFile() );
+			fileChooser.ensureFileIsVisible(requestLogFile);
+		}
 		int retval = fileChooser.showDialog(this, null);
 		if (retval == JFileChooser.APPROVE_OPTION)
 		{
