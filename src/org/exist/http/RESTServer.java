@@ -151,7 +151,6 @@ public class RESTServer {
     
     private String formEncoding;			//TODO: we may be able to remove this eventually, in favour of HttpServletRequestWrapper being setup in EXistServlet, currently used for doPost() but perhaps could be used for other Request Methods? - deliriumsky
     private String containerEncoding;
-    private static Descriptor descriptor = null; //I am 99% sure this can be static (we only ever need one in memory) - deliriumsky
     
 
     //Constructor
@@ -159,8 +158,6 @@ public class RESTServer {
     {
         this.formEncoding = formEncoding;
         this.containerEncoding = containerEncoding;
-    
-        descriptor = new Descriptor(null);
     }
     
     /**
@@ -267,18 +264,7 @@ public class RESTServer {
         // Process the request
         DocumentImpl resource = null;
         try {
-        	        	
-        	//first, perform descriptor actions
-        	if(descriptor != null)
-        	{
-        		//logs the request if specified in the descriptor
-        		descriptor.doLogRequestInReplayLog(request);
-        		
-        		//map's the path if a mapping is specified in the descriptor
-        		path = descriptor.mapPath(path);
-        	}
-        	
-            // second, check if path leads to an XQuery resource
+            // check if path leads to an XQuery resource
             resource = (DocumentImpl) broker.getXMLResource(path, Lock.READ_LOCK);
             if (resource != null)
             {
@@ -287,6 +273,7 @@ public class RESTServer {
                 	// found an XQuery resource
                     
                 	//Should we display the source of the XQuery or execute it
+                	Descriptor descriptor = Descriptor.getDescriptorSingleton();
                 	if(source && descriptor != null)
                 	{
                 		//show the source
@@ -438,17 +425,6 @@ public class RESTServer {
             NotFoundException, IOException {
         DocumentImpl resource = null;
         try {
-        	
-        	//first, perform descriptor actions
-        	if(descriptor != null)
-        	{
-        		//logs the request if specified in the descriptor
-        		descriptor.doLogRequestInReplayLog(request);
-        		
-        		//map's the path if a mapping is specified in the descriptor
-        		path = descriptor.mapPath(path);
-        	}
-        	
             resource = broker.getXMLResource(path, Lock.READ_LOCK);
             if(resource == null) {
                 throw new NotFoundException("Resouce " + path + " not found");
@@ -486,17 +462,7 @@ public class RESTServer {
         Properties outputProperties = new Properties(defaultProperties);
         DocumentImpl resource = null;
         try {
-        	//first, perform descriptor actions
-        	if(descriptor != null)
-        	{
-        		//logs the request if specified in the descriptor
-        		descriptor.doLogRequestInReplayLog(request);
-        		
-        		//map's the path if a mapping is specified in the descriptor
-        		path = descriptor.mapPath(path);
-        	}
-        	
-            // second, check if path leads to an XQuery resource.
+            // check if path leads to an XQuery resource.
             // if yes, the resource is loaded and the XQuery executed.
             resource = (DocumentImpl) broker.getXMLResource(path, Lock.READ_LOCK);
             if (resource != null) {
@@ -743,12 +709,6 @@ public class RESTServer {
         TransactionManager transact = broker.getBrokerPool().getTransactionManager();
         Txn transaction = transact.beginTransaction();
         try {
-        	//first, see if a mapping is specified on the docPath
-        	if(descriptor != null)
-        	{
-        		docPath = descriptor.mapPath(docPath);
-        	}
-        	
             //TODO : use dedicated function in XmldbURI
             int p = docPath.lastIndexOf("/");
             if (p == Constants.STRING_NOT_FOUND || p == docPath.length() - 1) {
@@ -836,12 +796,6 @@ public class RESTServer {
         TransactionManager transact = broker.getBrokerPool().getTransactionManager();
         Txn txn = transact.beginTransaction();
         try {
-        	//first, see if a mapping is specified on the path
-        	if(descriptor != null)
-        	{
-        		path = descriptor.mapPath(path);
-        	}
-        	
             Collection collection = broker.getCollection(path);
             if (collection != null) {
                 // remove the collection

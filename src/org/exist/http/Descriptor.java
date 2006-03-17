@@ -23,7 +23,6 @@ package org.exist.http;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +36,6 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.exist.memtree.SAXAdapter;
-import org.exist.util.Configuration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -51,72 +49,48 @@ import org.xml.sax.XMLReader;
  * 
  * Class representation of an XQuery Web Application Descriptor file
  * with some helper functions for performing Descriptor related actions
+ * Uses the Singleton design pattern.
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @serial 2006-02-28
- * @version 1.6
+ * @version 1.7
  */
 
 public class Descriptor implements ErrorHandler
 {
+	//References
+	private static Descriptor singletonRef;
 	private final static Logger LOG = Logger.getLogger(Descriptor.class);		//Logger
-	private String file = null;												//descriptor file (descriptor.xml)
+	private final static String file = "descriptor.xml";							//descriptor file (descriptor.xml)
 	
 	//Data
 	private BufferedWriter bufWriteReplayLog = null;	//Should a replay log of requests be created
 	private String allowSourceXQueryList[] = null; 	//Array of xql files to allow source to be viewed 
 	private String mapList[][] = null;	 				//Array of Mappings
-	
-	
+	  
 	/**
 	 * Descriptor Constructor
-	 * @param file		The descriptor file to read, defaults to descriptor.xml in the home folder
+	 * 
+	 * Class has a Singleton design pattern
+	 * to get an instance, call getDescriptorSingleton()
 	 */
-	public Descriptor(String file)
-	{
-        this(file, null);
-    }
-    
-	/**
-	 * Descriptor Constructor
-	 * @param file		The descriptor file to read, defaults to descriptor.xml in the dbHome folder
-	 * @param dbHome	The home folder to find the descriptor file in, defaults to $EXIST_HOME
-	 */
-    public Descriptor(String file, String dbHome)
+    private Descriptor()
 	{
         try
 		{
         	InputStream is = null;
-            
-            //firstly, try to read the Descriptor from a file within the classpath
-            if(file != null)
-            {
-            	is = Descriptor.class.getClassLoader().getResourceAsStream(file);
-            	if(is != null)
-            	{
-            		LOG.info("Reading descriptor from classloader");
-            	}
-            }
-            else
-            {
-            	//Default file name
-            	file = "descriptor.xml";
-            }
-                
-            //otherise, secondly try to read Descriptor from file. Guess the location if necessary
-            if(is == null)
-            {
-                //try and read the Descriptor file from the specified home folder 
-            	   File f = Configuration.lookup(file);
-                if(!f.canRead())
-                {
-                    LOG.warn("giving up unable to read descriptor file");
-                    return;
-                }
-                    
-                this.file = file;
-                is = new FileInputStream(file);
-            }
+        	
+            //try to read the Descriptor from a file within the classpath
+        	is = Descriptor.class.getClassLoader().getResourceAsStream(file);
+        	if(is != null)
+        	{
+        		LOG.info("Reading Descriptor from classloader");
+        	}
+        	else
+        	{
+        		LOG.warn("Giving up unable to read Descriptor.xml file");
+                return; 
+        	}
             
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
@@ -169,6 +143,16 @@ public class Descriptor implements ErrorHandler
             LOG.warn("error while reading descriptor file: " + file, io);
             return;
         }
+    }
+    
+    public static synchronized Descriptor getDescriptorSingleton()
+    {
+    	if(singletonRef == null)
+    	{
+    		singletonRef = new Descriptor();
+    	}
+    	
+    	return(singletonRef);
     }
     
     //loads <allow-source> settings from the descriptor.xml file
@@ -308,14 +292,36 @@ public class Descriptor implements ErrorHandler
     }
     
     /**
+	 * Determines whether it is permissible to Log Requests
+	 * 
+	 * Enabled by descriptor.xml <xquery-app request-replay-log="true">
+	 *   
+	 * @return			The boolean value true or false indicating whether it is permissible to Log Requests  
+	 */
+    public boolean allowRequestLogging()
+    {
+    	if(bufWriteReplayLog == null)
+    	{
+    		return(false);
+    	}
+    	else
+    	{
+    		return(true);
+    	}
+    }
+    
+    /**
 	 * Log's Http Requests in a log file suitable for replaying to eXist later 
 	 * Takes a HttpServletRequest as an argument for logging.
 	 * 
+	 * Enabled by descriptor.xml <xquery-app request-replay-log="true">
 	 *   
 	 * @param request		The HttpServletRequest to log. For POST requests form data will only be logged if a HttpServletRequestWrapper is used instead of HttpServletRequest!  
 	 */
-    protected synchronized void doLogRequestInReplayLog(HttpServletRequest request)
+    public synchronized void doLogRequestInReplayLog(HttpServletRequest request)
 	{
+    	//TOOD: add the facility to log HTTP PUT requests, may need changes to HttpServletRequestWrapper
+    	
     	//Only log if set by the user in descriptor.xml <xquery-app request-replay-log="true">
     	if(bufWriteReplayLog == null)
     	{
@@ -347,6 +353,15 @@ public class Descriptor implements ErrorHandler
     	}
 	}
    
+    /**
+     * Thows a CloneNotSupportedException as this class uses a Singleton design pattern
+     */
+    public Object clone() throws CloneNotSupportedException
+    {
+    	//Class is a Singleton, dont allow cloning
+    	throw new CloneNotSupportedException(); 
+    }
+    
     /**
      * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
      */
