@@ -22,6 +22,7 @@
 package org.exist.http.servlets;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringBufferInputStream;
@@ -44,6 +45,8 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import org.apache.tools.ant.filters.StringInputStream;
 
 
 /** A wrapper for HttpServletRequest
@@ -198,7 +201,8 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	/** the content Body of the POST request; 
 	 * it must be stored because once the Servlet input stream has been 
 	 * consumed, the content Body is no more readable. */
-	private String contentBody;
+	private String contentBodyAsString;
+	byte[] contentBody;
 
 	
 	/**
@@ -247,7 +251,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 					
 				} else if ( contentType.equals("text/xml") ) {
 					// if an XML-RPC
-					contentBody = getContentBody();
+					contentBodyAsString = getContentBody();
 				}
 			}
 		}
@@ -274,20 +278,31 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 
 	private String getContentBody() {
 		//Create a buffer big enough to hold the Content Body
-		char[] content = new char[request.getContentLength()];
+//		char[] content = new char[request.getContentLength()];
+		
+		contentBody = new byte[ request.getContentLength() ];
+		String result = "";
 		
 		try	{
+	        String encoding = request.getCharacterEncoding();
+	        if(encoding == null)
+	            encoding = "UTF-8";
+
 			//Read the Content Body into the buffer
-			BufferedReader bufRequestBody = new BufferedReader(new java.io.InputStreamReader(request.getInputStream()));
-			bufRequestBody.read(content);
-			bufRequestBody.close();
+			InputStream is = request.getInputStream();
+			is.read(contentBody);
+			result = new String(contentBody, encoding);
+			
+//			BufferedReader bufRequestBody = new BufferedReader(new java.io.InputStreamReader(request.getInputStream()));
+//			bufRequestBody.read(content);
+//			bufRequestBody.close();
 		}
 		catch(IOException ioe) {
 			//TODO: handle this properly
 			System.err.println( "Error Reading the Content Body into the buffer: " + ioe );
 			ioe.printStackTrace();
 		}
-		return new String(content);
+		return result;
 	}
 	
 	/** Parses Parameters into param objects and stores them in a vector in params */
@@ -592,7 +607,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	}
 
 	public InputStream getStringBufferInputStream() throws IOException {
-		return new StringBufferInputStream( contentBody );
+		return new StringBufferInputStream( contentBodyAsString );
 	}
 
 	/**
@@ -854,7 +869,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 				&&  request.getContentLength() > 0
 				&& !request.getContentType().toUpperCase().startsWith(
 						"MULTIPART/")
-				&& contentBody == null ) {
+				&& contentBodyAsString == null ) {
 			
 			// Also return the content parameters, these are not part 
 			// of the standard HttpServletRequest.toString() output
@@ -886,10 +901,10 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 
 			return buf.toString();
 
-		} else if (contentBody != null) {
+		} else if (contentBodyAsString != null) {
 			// XML-RPC request or plain XML REST POST
 			StringBuffer buf = new StringBuffer( request.toString() );
-			buf.append(contentBody);
+			buf.append(contentBodyAsString);
 			
 			buf.append(	System.getProperty("line.separator") +
 						System.getProperty("line.separator") );
