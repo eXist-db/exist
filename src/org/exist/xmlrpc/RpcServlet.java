@@ -32,9 +32,11 @@ public class RpcServlet extends HttpServlet {
                         HttpServletResponse response )
          throws ServletException, IOException {
     	
-        String user = "admin";
+    	String user = "admin";
         String password = null;
         String auth = request.getHeader( "Authorization" );
+        
+        
         if ( auth != null ) {
             byte[] c = Base64.decode( auth.substring( 6 ).getBytes() );
             String s = new String( c );
@@ -42,18 +44,22 @@ public class RpcServlet extends HttpServlet {
             user = s.substring( 0, p );
             password = s.substring( p + 1 );
         }
-        
-        InputStream inputStream = request.getInputStream();
-		
+    	
     	// Request logger
+
+        InputStream inputStream;		
 		Descriptor descriptor = Descriptor.getDescriptorSingleton();
     	if( descriptor.allowRequestLogging() ) {
         	// Wrap HttpServletRequest, because both request Logger and xmlrpc 
     		// need the request InputStream, which is consumed when read.
-    		HttpServletRequestWrapper request2 = 
+    		HttpServletRequestWrapper requestWrapper = 
     			new HttpServletRequestWrapper(request, /*formEncoding*/ "utf-8" );
-    		descriptor.doLogRequestInReplayLog(request2);
-    		inputStream = request2.getStringBufferInputStream();
+    		descriptor.doLogRequestInReplayLog(requestWrapper);
+    		inputStream = requestWrapper.getStringBufferInputStream();
+    	} else {
+            //- Caution : this must be called AFTER HttpServletRequestWrapper, 
+    		// otherwise Web server throws IllegalStateException
+    		inputStream = request.getInputStream();
     	}
     	
 		byte[] result =
