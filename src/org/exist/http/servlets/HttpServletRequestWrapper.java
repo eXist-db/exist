@@ -606,10 +606,14 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 		return request.getInputStream();
 	}
 
-	public InputStream getStringBufferInputStream() throws IOException {
-		return new StringBufferInputStream( contentBodyAsString );
-	}
+//	public InputStream getStringBufferInputStream() throws IOException {
+//		return new StringBufferInputStream( contentBodyAsString );
+//	}
 
+	public InputStream getContentBodyInputStream() throws IOException {
+		return new ByteArrayInputStream( contentBody );
+	}
+	
 	/**
 	 * get the value of a Request parameter by its name from the local parameter store
 	 * @param name		The name of the Request parameter to get the value for
@@ -869,7 +873,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 				&&  request.getContentLength() > 0
 				&& !request.getContentType().toUpperCase().startsWith(
 						"MULTIPART/")
-				&& contentBodyAsString == null ) {
+				&& ! contentBodyRecorded() ) {
 			
 			// Also return the content parameters, these are not part 
 			// of the standard HttpServletRequest.toString() output
@@ -901,7 +905,8 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 
 			return buf.toString();
 
-		} else if (contentBodyAsString != null) {
+		} else if ( contentBodyRecorded() ) {
+			
 			// XML-RPC request or plain XML REST POST
 			StringBuffer buf = new StringBuffer( request.toString() );
 			buf.append(contentBodyAsString);
@@ -914,6 +919,11 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			//Return standard HttpServletRequest.toString() output
 			return request.toString();
 		}
+	}
+
+	private boolean contentBodyRecorded() {
+		return contentBody != null 
+			&& contentBody.length > 0;
 	}
 
 }
