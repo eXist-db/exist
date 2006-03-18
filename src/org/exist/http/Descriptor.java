@@ -23,6 +23,7 @@ package org.exist.http;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +37,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.exist.memtree.SAXAdapter;
+import org.exist.util.Configuration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -62,7 +64,9 @@ public class Descriptor implements ErrorHandler
 	//References
 	private static Descriptor singletonRef;
 	private final static Logger LOG = Logger.getLogger(Descriptor.class);		//Logger
-	private final static String file = "descriptor.xml";							//descriptor file (descriptor.xml)
+	/** descriptor file (descriptor.xml) */
+	private final static String file = "descriptor.xml";							
+
 	
 	//Data
 	private BufferedWriter bufWriteReplayLog = null;	//Should a replay log of requests be created
@@ -80,17 +84,36 @@ public class Descriptor implements ErrorHandler
         try
 		{
         	InputStream is = null;
+
+        	// First, try to read Descriptor from file. Guess the location if necessary
+        	// from the home folder.
         	
-            //try to read the Descriptor from a file within the classpath
-        	is = Descriptor.class.getResourceAsStream(file);
-        	if(is != null) {
-        		LOG.info("Reading Descriptor from classloader in " + this.getClass().getPackage() );
-        	}
-        	else {
-        		LOG.warn("Giving up unable to read descriptor.xml file from classloader in " + this.getClass().getPackage() );
-                return; 
-        	}
-            
+        	File f = Configuration.lookup(file);
+            if( ! f.canRead()) {
+                LOG.warn("giving up unable to read descriptor file from " + f );
+            }
+            else {
+            	is = new FileInputStream(file);
+				LOG.info("Reading Descriptor from file " + f );
+            }
+        	
+        	if (is == null) {
+
+				// otherise, secondly
+				// try to read the Descriptor from a file within the classpath
+
+				is = Descriptor.class.getResourceAsStream(file);
+				if (is != null) {
+					LOG.info("Reading Descriptor from classloader in "
+							+ this.getClass().getPackage());
+				} else {
+					LOG
+							.warn("Giving up unable to read descriptor.xml file from classloader in "
+									+ this.getClass().getPackage());
+					return;
+				}
+			}
+        	
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
             // around a bug in Xerces
