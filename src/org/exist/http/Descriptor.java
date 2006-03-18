@@ -82,14 +82,12 @@ public class Descriptor implements ErrorHandler
         	InputStream is = null;
         	
             //try to read the Descriptor from a file within the classpath
-        	is = Descriptor.class.getClassLoader().getResourceAsStream(file);
-        	if(is != null)
-        	{
-        		LOG.info("Reading Descriptor from classloader");
+        	is = Descriptor.class.getResourceAsStream(file);
+        	if(is != null) {
+        		LOG.info("Reading Descriptor from classloader in " + this.getClass().getPackage() );
         	}
-        	else
-        	{
-        		LOG.warn("Giving up unable to read Descriptor.xml file");
+        	else {
+        		LOG.warn("Giving up unable to read descriptor.xml file from classloader in " + this.getClass().getPackage() );
                 return; 
         	}
             
