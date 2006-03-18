@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
 
+import org.exist.http.Descriptor;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.storage.DBBroker;
@@ -48,7 +49,6 @@ import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
@@ -84,7 +84,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class XQueryServlet extends HttpServlet {
-
+	private static final long serialVersionUID = 1L;
 	public final static String DEFAULT_USER = "guest";
 	public final static String DEFAULT_PASS = "guest";
 	public final static String DEFAULT_URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
@@ -158,11 +158,17 @@ public class XQueryServlet extends HttpServlet {
 		process(request, response);
 	}
 	
-	/* (non-Javadoc)
+	/**
 	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	protected void process(HttpServletRequest request, HttpServletResponse response)
+	protected void process( HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException {
+		
+		Descriptor descriptor = Descriptor.getDescriptorSingleton();
+    	if( descriptor.allowRequestLogging() ) {
+    		descriptor.doLogRequestInReplayLog( request );
+    	}
+    	
 		if (request.getCharacterEncoding() == null)
 			request.setCharacterEncoding(formEncoding);
 		ServletOutputStream sout = response.getOutputStream();
@@ -305,29 +311,31 @@ public class XQueryServlet extends HttpServlet {
 		out.print("</div></body></html>");
 		out.flush();
 	}
-    
-	private static final class CachedQuery {
-		
-		long lastModified;
-		String sourcePath;
-		CompiledExpression expression;
-		
-		public CachedQuery(File sourceFile, CompiledExpression expression) {
-			this.sourcePath = sourceFile.getAbsolutePath();
-			this.lastModified = sourceFile.lastModified();
-			this.expression = expression;
-		}
-		
-		public boolean isValid() {
-			File f = new File(sourcePath);
-			if(f.lastModified() > lastModified)
-				return false;
-			return true;
-		}
-		
-		public CompiledExpression getExpression() {
-			return expression;
-		}
-	}
+
+	// -jmvanel : never used locally
+	
+//	private static final class CachedQuery {
+//		
+//		long lastModified;
+//		String sourcePath;
+//		CompiledExpression expression;
+//		
+//		public CachedQuery(File sourceFile, CompiledExpression expression) {
+//			this.sourcePath = sourceFile.getAbsolutePath();
+//			this.lastModified = sourceFile.lastModified();
+//			this.expression = expression;
+//		}
+//		
+//		public boolean isValid() {
+//			File f = new File(sourcePath);
+//			if(f.lastModified() > lastModified)
+//				return false;
+//			return true;
+//		}
+//		
+//		public CompiledExpression getExpression() {
+//			return expression;
+//		}
+//	}
 
 }
