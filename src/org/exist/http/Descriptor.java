@@ -93,7 +93,7 @@ public class Descriptor implements ErrorHandler
                 LOG.warn("giving up unable to read descriptor file from " + f );
             }
             else {
-            	is = new FileInputStream(file);
+            	is = new FileInputStream(f);
 				LOG.info("Reading Descriptor from file " + f );
             }
         	
