@@ -52,6 +52,7 @@ import org.apache.excalibur.source.Source;
 import org.apache.excalibur.source.SourceValidity;
 import org.apache.excalibur.source.impl.validity.AggregatedValidity;
 import org.apache.excalibur.source.impl.validity.ExpiresValidity;
+import org.exist.http.Descriptor;
 import org.exist.source.CocoonSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -231,11 +232,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		super.recycle();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.cocoon.generation.Generator#generate()
-	 */
+	/** @see org.apache.cocoon.generation.Generator#generate() */
 	public void generate() throws IOException, SAXException,
 			ProcessingException {
 		ContentHandler includeContentHandler;
@@ -301,7 +298,9 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 
 			declareParameters(service);
 			
-			String uri = inputSource.getURI();
+			// String uri = inputSource.getURI();
+			log(request, service, this);
+			
 			ResourceSet result = service.execute(new CocoonSource(inputSource, true));
 			XMLResource resource;
 			this.contentHandler.startDocument();
@@ -371,5 +370,19 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 			return v;
 		}
 		return null;
+	}
+	
+	HttpServletRequest getRequest() {
+		return (HttpServletRequest) objectModel.get( "httprequest" );
+	}
+	
+	/** Static method to log the HTTP requests received by the {@link XQueryGenerator} */
+	private static void log(Request request, XQueryService service,
+			XQueryGenerator generator) {
+		Descriptor descriptor = Descriptor.getDescriptorSingleton();
+    	if( descriptor.allowRequestLogging() ) {
+    		HttpServletRequest servletRequest = generator.getRequest();
+    		descriptor.doLogRequestInReplayLog( servletRequest );
+    	}
 	}
 }
