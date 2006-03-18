@@ -55,7 +55,7 @@ public class RpcServlet extends HttpServlet {
     		HttpServletRequestWrapper requestWrapper = 
     			new HttpServletRequestWrapper(request, /*formEncoding*/ "utf-8" );
     		descriptor.doLogRequestInReplayLog(requestWrapper);
-    		inputStream = requestWrapper.getStringBufferInputStream();
+    		inputStream = requestWrapper.getContentBodyInputStream();
     	} else {
             //- Caution : this must be called AFTER HttpServletRequestWrapper, 
     		// otherwise Web server throws IllegalStateException
