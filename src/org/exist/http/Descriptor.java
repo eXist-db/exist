@@ -213,10 +213,10 @@ public class Descriptor implements ErrorHandler
             }
             
             //Does the path contain $EXIST_HOME?
-            if(path.startsWith("$EXIST_HOME"))
+            if(path.startsWith("{$EXIST_HOME}"))
             {
             	//Replace $EXIST_HOME with the actual path
-            	path = path.replace("$EXIST_HOME", System.getProperty("exist.home"));
+            	path = path.replace("{$EXIST_HOME}", System.getProperty("exist.home"));
             }
             
             //store the path
@@ -257,10 +257,10 @@ public class Descriptor implements ErrorHandler
             }
             
             //Does the path contain $EXIST_HOME?
-            if(path.startsWith("$EXIST_HOME"))
+            if(path.startsWith("{$EXIST_HOME}"))
             {
             	//Replace $EXIST_HOME with the actual path
-            	path = path.replace("$EXIST_HOME", System.getProperty("exist.home"));
+            	path = path.replace("{$EXIST_HOME}", System.getProperty("exist.home"));
             }
             
             //must be a view to map to
@@ -271,10 +271,10 @@ public class Descriptor implements ErrorHandler
             }
             
             //Does the view contain $EXIST_HOME?
-            if(view.startsWith("$EXIST_HOME"))
+            if(view.startsWith("{$EXIST_HOME}"))
             {
             	//Replace $EXIST_HOME with the actual path
-            	view = view.replace("$EXIST_HOME", System.getProperty("exist.home"));
+            	view = view.replace("{$EXIST_HOME}", System.getProperty("exist.home"));
             }
             
             //store what to map from
