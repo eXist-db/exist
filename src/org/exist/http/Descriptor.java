@@ -54,9 +54,12 @@ import org.xml.sax.XMLReader;
  * Uses the Singleton design pattern.
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-02-28
- * @version 1.7
+ * @serial 2006-03-19
+ * @version 1.71
  */
+
+// TODO: doLogRequestInReplayLog() - add the facility to log HTTP PUT requests, may need changes to HttpServletRequestWrapper
+// TODO: doLogRequestInReplayLog() - add the facility to log HTTP POST form file uploads, may need changes to HttpServletRequestWrapper
 
 public class Descriptor implements ErrorHandler
 {
@@ -67,7 +70,6 @@ public class Descriptor implements ErrorHandler
 	/** descriptor file (descriptor.xml) */
 	private final static String file = "descriptor.xml";							
 
-	
 	//Data
 	private BufferedWriter bufWriteReplayLog = null;	//Should a replay log of requests be created
 	private String allowSourceXQueryList[] = null; 	//Array of xql files to allow source to be viewed 
@@ -87,29 +89,29 @@ public class Descriptor implements ErrorHandler
 
         	// First, try to read Descriptor from file. Guess the location if necessary
         	// from the home folder.
-        	
         	File f = Configuration.lookup(file);
-            if( ! f.canRead()) {
-                LOG.warn("giving up unable to read descriptor file from " + f );
+            if(! f.canRead())
+            {
+                LOG.warn("Giving up unable to read descriptor file from " + f);
             }
-            else {
+            else
+            {
             	is = new FileInputStream(f);
-				LOG.info("Reading Descriptor from file " + f );
+				LOG.info("Reading Descriptor from file " + f);
             }
         	
-        	if (is == null) {
-
+        	if(is == null)
+        	{
 				// otherise, secondly
 				// try to read the Descriptor from a file within the classpath
-
 				is = Descriptor.class.getResourceAsStream(file);
-				if (is != null) {
-					LOG.info("Reading Descriptor from classloader in "
-							+ this.getClass().getPackage());
-				} else {
-					LOG
-							.warn("Giving up unable to read descriptor.xml file from classloader in "
-									+ this.getClass().getPackage());
+				if(is != null)
+				{
+					LOG.info("Reading Descriptor from classloader in " + this.getClass().getPackage());
+				}
+				else
+				{
+					LOG.warn("Giving up unable to read descriptor.xml file from classloader in " + this.getClass().getPackage());
 					return;
 				}
 			}
@@ -138,35 +140,40 @@ public class Descriptor implements ErrorHandler
             
             //load <allow-source> settings
             NodeList allowsourcexqueries = doc.getElementsByTagName("allow-source");
-            if (allowsourcexqueries.getLength() > 0)
+            if(allowsourcexqueries.getLength() > 0)
             {
                 configureAllowSourceXQuery((Element) allowsourcexqueries.item(0));
             }
             
             //load <maps> settings
             NodeList maps = doc.getElementsByTagName("maps");
-            if (maps.getLength() > 0)
+            if(maps.getLength() > 0)
             {
                 configureMaps((Element) maps.item(0));
             }
         }
-        catch (SAXException e)
+        catch(SAXException e)
 		{
-            LOG.warn("error while reading descriptor file: " + file, e);
+            LOG.warn("Error while reading descriptor file: " + file, e);
             return;
         }
-        catch (ParserConfigurationException cfg)
+        catch(ParserConfigurationException cfg)
 		{
-            LOG.warn("error while reading descriptor file: " + file, cfg);
+            LOG.warn("Error while reading descriptor file: " + file, cfg);
             return;
         }
-        catch (IOException io)
+        catch(IOException io)
 		{
-            LOG.warn("error while reading descriptor file: " + file, io);
+            LOG.warn("Error while reading descriptor file: " + file, io);
             return;
         }
     }
     
+    /**
+     * Returns a refernce to this (Descriptor) Singleton class
+     * 
+     * @return The Descriptor object reference
+     */
     public static synchronized Descriptor getDescriptorSingleton()
     {
     	if(singletonRef == null)
@@ -176,8 +183,12 @@ public class Descriptor implements ErrorHandler
     	
     	return(singletonRef);
     }
-    
-    //loads <allow-source> settings from the descriptor.xml file
+        
+    /**
+     * loads <allow-source> settings from the descriptor.xml file
+     *
+     * @param	allowsourcexqueries	The <allow-source> DOM Element from the descriptor.xml file
+     */
     private void configureAllowSourceXQuery(Element allowsourcexqueries)
     {
     	//Get the xquery element(s)
@@ -195,19 +206,22 @@ public class Descriptor implements ErrorHandler
             String path = elem.getAttribute("path");		//@path
 
             //must be a path to allow source for
-            if (path == null)
+            if(path == null)
             {
-                LOG.warn("error element 'xquery' requires an attribute 'path'");
+                LOG.warn("Error element 'xquery' requires an attribute 'path'");
             	return;
             }
             
             //store the path
             allowSourceXQueryList[i] = path;
-
         }
     }
     
-    //loads <maps> settings from the descriptor.xml file
+    /**
+     * loads <maps> settings from the descriptor.xml file
+     *
+     * @param	maps	The <maps> DOM Element from the descriptor.xml file
+     */
     private void configureMaps(Element maps)
 	{
     	//TODO: add pattern support for mappings, as an alternative to path - deliriumsky
@@ -229,15 +243,15 @@ public class Descriptor implements ErrorHandler
             String view = elem.getAttribute("view");		//@view
 
             //must be a path or a pattern to map from
-            if (path == null /*&& pattern == null*/)
+            if(path == null /*&& pattern == null*/)
             {
-                LOG.warn("error element 'map' requires an attribute 'path' or an attribute 'pattern'");
+                LOG.warn("Error element 'map' requires an attribute 'path' or an attribute 'pattern'");
             	return;
             }
             //must be a view to map to
-            if (view == null)
+            if(view == null)
             {
-            	LOG.warn("error element 'map' requires an attribute 'view'");
+            	LOG.warn("Error element 'map' requires an attribute 'view'");
             	return;
             }
             
@@ -268,7 +282,6 @@ public class Descriptor implements ErrorHandler
 	 */
     public boolean allowSourceXQuery(String path)
     {
-    	//TODO: commit an example descriptor that allows viewing of xquery source for the demo applications
     	if(allowSourceXQueryList != null)
     	{
     		//Iterate through the xqueries that source viewing is allowed for
@@ -295,7 +308,7 @@ public class Descriptor implements ErrorHandler
 	 */
     public String mapPath(String path)
     {
-    	if (mapList == null) //has a list of mappings been specified?
+    	if(mapList == null) //has a list of mappings been specified?
     		return(path);
     	
     	//Iterate through the mappings
@@ -333,36 +346,37 @@ public class Descriptor implements ErrorHandler
     }
     
     /**
-	 * Log's Http Requests in a log file suitable for replaying to eXist later 
-	 * Takes a HttpServletRequest as an argument for logging.
+	 * Logs HTTP Request's in a log file suitable for replaying to eXist later 
+	 * Takes a HttpServletRequest or a HttpServletRequestWrapper as an argument for logging.
 	 * 
 	 * Enabled by descriptor.xml <xquery-app request-replay-log="true">
 	 *   
-	 * @param request		The HttpServletRequest to log. For POST requests 
-	 * form data will only be logged if a HttpServletRequestWrapper is used 
-	 * instead of HttpServletRequest!  
+	 * @param request		The HttpServletRequest to log.
+	 * For Simple HTTP POST Requests - EXistServlet/XQueryServlet - POST parameters (e.g. form data) will only be logged if a HttpServletRequestWrapper is used instead of HttpServletRequest! POST Uploaded files are not yet supported!
+	 * For XML-RPC Requests - RpcServlet - HttpServletRequestWrapper must be used, otherwise the content of the Request will be lost!
+	 * For Cocoon Requests  -
 	 */
     public synchronized void doLogRequestInReplayLog(HttpServletRequest request)
-	{
-    	//TOOD: add the facility to log HTTP PUT requests, may need changes to HttpServletRequestWrapper
-    	
+	{	
     	//Only log if set by the user in descriptor.xml <xquery-app request-replay-log="true">
-    	if(bufWriteReplayLog == null) {
+    	if(bufWriteReplayLog == null)
+    	{
     		return;
     	}
 
-    	try {
+    	//Log the Request
+    	try
+    	{
 	    	//Store the date and time
     		bufWriteReplayLog.write("Date: ");
-    		SimpleDateFormat formatter = new SimpleDateFormat ("dd/MM/yyyy HH:mm:ss");
+    		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     		bufWriteReplayLog.write(formatter.format(new Date()));
 	    	
 	    	bufWriteReplayLog.write(SYSTEM_LINE_SEPARATOR);
 	    	
 	    	//Store the request string excluding the first line
 	    	String requestAsString = request.toString();
-			bufWriteReplayLog.write( requestAsString.substring( 
-					requestAsString.indexOf(SYSTEM_LINE_SEPARATOR) + 1));
+			bufWriteReplayLog.write(requestAsString.substring(requestAsString.indexOf(SYSTEM_LINE_SEPARATOR) + 1));
 	    	
 	    	//End of record indicator
 	    	bufWriteReplayLog.write(SYSTEM_LINE_SEPARATOR);
@@ -370,14 +384,17 @@ public class Descriptor implements ErrorHandler
 	    	//flush the buffer to file
 	    	bufWriteReplayLog.flush();
 		}
-    	catch(IOException ioe) {
-    		LOG.warn("Could not write request replay log: " + ioe );
+    	catch(IOException ioe)
+    	{
+    		LOG.warn("Could not write request replay log: " + ioe);
     		return;
     	}
 	}
    
     /**
      * Thows a CloneNotSupportedException as this class uses a Singleton design pattern
+     * 
+     * @return Will never return anything!
      */
     public Object clone() throws CloneNotSupportedException
     {
@@ -388,10 +405,9 @@ public class Descriptor implements ErrorHandler
     /**
      * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
      */
-    public void error(SAXParseException exception) throws SAXException {
-        System.err.println("error occured while reading descriptor file "
-                + "[line: " + exception.getLineNumber() + "]:"
-                + exception.getMessage());
+    public void error(SAXParseException exception) throws SAXException
+    {
+        System.err.println("Error occured while reading descriptor file [line: " + exception.getLineNumber() + "]:" + exception.getMessage());
     }
     
     /**
@@ -399,18 +415,15 @@ public class Descriptor implements ErrorHandler
      */
     public void fatalError(SAXParseException exception) throws SAXException
 	{
-        System.err.println("error occured while reading descriptor file "
-                + "[line: " + exception.getLineNumber() + "]:"
-                + exception.getMessage());
+        System.err.println("Error occured while reading descriptor file [line: " + exception.getLineNumber() + "]:" + exception.getMessage());
     }
     
     /** 
      * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)
      */
-    public void warning(SAXParseException exception) throws SAXException {
-        System.err.println("error occured while reading descriptor file "
-                + "[line: " + exception.getLineNumber() + "]:"
-                + exception.getMessage());
+    public void warning(SAXParseException exception) throws SAXException
+    {
+        System.err.println("error occured while reading descriptor file [line: " + exception.getLineNumber() + "]:" + exception.getMessage());
     }
 		
 }
