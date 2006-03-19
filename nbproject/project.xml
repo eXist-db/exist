@@ -75,18 +75,18 @@
                         </arity>
                     </context>
                 </action>
-                <!--<action name="profile.single">
-                <script>nbproject/ide-file-targets.xml</script>
-                <target>profile-nb.single</target>
-                <context>
-                <property>classname</property>
-                <folder>src</folder>
-                <pattern>\.java$</pattern>
-                <format>java-name</format>
-                <arity>
-                <one-file-only/>
-                </arity>
-                </context>
+                <!-- <action name="profile.single">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>profile-nb.single</target>
+                    <context>
+                        <property>classname</property>
+                        <folder>src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
                 </action> -->
                 <action name="profile">
                     <script>nbproject/ide-file-targets.xml</script>
@@ -129,8 +129,13 @@
                     <ide-action name="debug"/>
                     <action>
                         <script>nbproject/ide-file-targets.xml</script>
-                        <label>Profile using "YourKit"</label>
+                        <label>Profile eXist-DB using "YourKit"</label>
                         <target>profile-yourkit</target>
+                    </action>
+                    <action>
+                        <script>nbproject/ide-file-targets.xml</script>
+                        <label>Profile eXist-DB using "NetBeans"</label>
+                        <target>profile-nb</target>
                     </action>
                 </context-menu>
             </view>

@@ -5,7 +5,7 @@
     <import file="../build.xml"/>
     
     <!-- DEBUG -->
-    <target name="debug-nb">
+    <target name="debug-nb" depends="jar" description="Debug database">
         <nbjpdastart addressproperty="jpda.address" name="eXist-1.0" transport="dt_socket">
             <classpath refid="classpath.core"/>
         </nbjpdastart>
@@ -21,7 +21,7 @@
         </java>
     </target>
     
-    <target name="debug-nb.single">
+    <target name="debug-nb.single" depends="jar" description="Debug single class">
         <fail unless="classname">Must set property 'classname'</fail>
         <nbjpdastart name="${classname}" addressproperty="jpda.address" transport="dt_socket">
             <classpath refid="classpath.core"/>
@@ -52,11 +52,10 @@
         </junit>
     </target>
     
-    <!-- PROFILER not working  yet....-->
-    <target name="profile-nb.single">
+    <!-- PROFILE (NetBeans profiler) -->
+    <target name="profile-nb" depends="jar" description="Profile DB with NB profiler">
         <fail unless="netbeans.home">This target can only run inside the NetBeans IDE.</fail>
-        <fail unless="classname">Must set property 'classname'</fail>
-        
+
         <nbprofiledirect>
             <classpath> 
                 <pathelement path="${classpath.core}"/>
@@ -64,18 +63,51 @@
             </classpath>
         </nbprofiledirect>
 
-        <java classname="${classname}">
+        <java classname="org.exist.start.Main" fork="true">
             <jvmarg value="${profiler.info.jvmargs.agent}"/>
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <arg value="jetty"/>
+        </java>
+    </target>
+  
+    <target name="profile-nb.single" depends="jar" description="Profile Single with NB profiler">
+    <fail unless="netbeans.home">This target can only run inside the NetBeans IDE.</fail>
+    <fail unless="classname">Must set property 'classname'</fail>
+        
+    <nbprofiledirect>
+    <classpath> 
+    <pathelement path="${classpath.core}"/>
+    </classpath>
+    </nbprofiledirect>
+
+    <java classname="org.exist.start.Main">
+    <jvmarg value="${profiler.info.jvmargs.agent}"/>
+    <classpath refid="classpath.core"/>
+    </java>
+    </target>
+    
+    <!-- PROFILE (YourKit Profiler) -->
+    <target name="profile-yourkit" depends="jar" description="Profile DB with Yourkit profiler">
+        <!-- Add Yourkit Profiler to the class path. see 
+        product documentation "Enabling profiling manually" 
+        for details -->
+        <java classname="org.exist.start.Main" fork="true">
+            <jvmarg value="-agentlib:yjpagent"/>
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <arg value="jetty"/>
         </java>
     </target>
     
-    <!-- PROFILING YourKit -->
-    <target name="profile-yourkit">
+    <target name="profile-yourkit.single" depends="jar" description="Profile Single with NB profiler">
         <!-- Add Yourkit Profiler to the class path. see 
-             product documentation "Enabling profiling manually" 
-             for details -->
-        <java classname="org.exist.start.Main" fork="true">
+        product documentation "Enabling profiling manually" 
+        for details -->
+        <fail unless="netbeans.home">This target can only run inside the NetBeans IDE.</fail>
+        <fail unless="classname">Must set property 'classname'</fail>
+        
+        <java classname="${classname}" fork="true">
             <jvmarg value="-agentlib:yjpagent"/>
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
