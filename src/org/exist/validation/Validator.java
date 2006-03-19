@@ -59,7 +59,7 @@ public class Validator {
     private static BrokerPool brokerPool ;
     
     // Required Xerces version.
-    public final static String XERCESVERSION = "Xerces-J 2.7.1";
+    public final static String XERCESVERSION = "Xerces-J 2.8.0";
     
     // Xerces feature and property names
     final static String FEATURE_VALIDATION
