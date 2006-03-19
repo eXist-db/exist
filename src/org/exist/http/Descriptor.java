@@ -212,6 +212,13 @@ public class Descriptor implements ErrorHandler
             	return;
             }
             
+            //Does the path contain $EXIST_HOME?
+            if(path.startsWith("$EXIST_HOME"))
+            {
+            	//Replace $EXIST_HOME with the actual path
+            	path = path.replace("$EXIST_HOME", System.getProperty("exist.home"));
+            }
+            
             //store the path
             allowSourceXQueryList[i] = path;
         }
