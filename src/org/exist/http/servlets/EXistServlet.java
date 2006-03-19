@@ -347,9 +347,16 @@ public class EXistServlet extends HttpServlet {
 		//For POST request, If we are logging the requests we must wrap HttpServletRequest in HttpServletRequestWrapper
 		//otherwise we cannot access the POST parameters from the content body of the request!!! - deliriumsky
 		Descriptor descriptor = Descriptor.getDescriptorSingleton();
-		if(descriptor.allowRequestLogging())
+		if(descriptor != null)
 		{
-			request = new HttpServletRequestWrapper(req, formEncoding);
+			if(descriptor.allowRequestLogging())
+			{
+				request = new HttpServletRequestWrapper(req, formEncoding);
+			}
+			else
+			{
+				request = req;
+			}
 		}
 		else
 		{
