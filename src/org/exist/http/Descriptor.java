@@ -255,11 +255,26 @@ public class Descriptor implements ErrorHandler
                 LOG.warn("Error element 'map' requires an attribute 'path' or an attribute 'pattern'");
             	return;
             }
+            
+            //Does the path contain $EXIST_HOME?
+            if(path.startsWith("$EXIST_HOME"))
+            {
+            	//Replace $EXIST_HOME with the actual path
+            	path = path.replace("$EXIST_HOME", System.getProperty("exist.home"));
+            }
+            
             //must be a view to map to
             if(view == null)
             {
             	LOG.warn("Error element 'map' requires an attribute 'view'");
             	return;
+            }
+            
+            //Does the view contain $EXIST_HOME?
+            if(view.startsWith("$EXIST_HOME"))
+            {
+            	//Replace $EXIST_HOME with the actual path
+            	view = view.replace("$EXIST_HOME", System.getProperty("exist.home"));
             }
             
             //store what to map from
