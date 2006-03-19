@@ -68,5 +68,8 @@ declare function local:main() as node()?
             </table> 
         </form>
         { local:main() }
+        <p>
+			<small>View <a href="guess.xql?_source=yes">source code</a></small>
+		</p>
     </body>
 </html>

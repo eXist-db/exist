@@ -13,6 +13,9 @@
 				<h1>Available XQuery Functions</h1>
 				<xsl:apply-templates select="builtin-functions"/>
 			</body>
+			<p>
+				<small>View <a href="transform.xql?_source=yes">source code</a></small>
+			</p>
 		</html>
 	</xsl:template>
 

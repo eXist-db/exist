@@ -59,7 +59,9 @@ request:create-session(),
                 </tr>
             </table>
         </form>
-
         { local:do-login() }
+        <p>
+			<small>View <a href="login.xql?_source=yes">source code</a></small>
+		</p>
     </body>
 </html>
