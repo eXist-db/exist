@@ -66,5 +66,9 @@ declare function f:table-row($a, $b) {
     	<pre>seq:filter(util:function("f:remove", 1), (8, 15, 7, 19, 22, 5))</pre>
     	<p>Result:</p>
     	<p>{seq:filter(util:function("f:remove", 1), (8, 15, 7, 19, 22, 5))}</p>
+    	<br/>
+    	<p>
+    		<small>View <a href="call.xql?_source=yes">source code</a></small>
+		</p>
     </body>
 </html>
