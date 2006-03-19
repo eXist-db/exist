@@ -1,42 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-	This is the Web-application Descriptor file for the REST Server. If the database
-    is running in a servlet-context, the descriptor file will be read from
-    the WEB-INF directory of the web application. Otherwise, the descriptor
+	This is the Web-application Descriptor file.
+	If the database is running in a servlet-context, the descriptor file will
+	be read from the WEB-INF directory of the web application. Otherwise, the descriptor
     is read from the directory specified by the exist.home system property.
 -->
 
 
 <xquery-app request-replay-log="false">
 	<!--
-		request-replay-log:		Controls whether the REST Server logs incoming GET and POST requests
+		request-replay-log:		Controls whether the Server logs incoming requests
 								to the file request-replay-log.txt. This is useful for reproducing eXist behaviour and
 								can be used in combination with the eXist Request Replayer (see tools/requestlog).
 								Should be set to either true or false, most people will have no need for this.
+
+								Note - HTTP, REST, XML-RPC, Cocoon are supported, but within those HTTP PUT or HTTP POST form file uploads are not yet supported!
 	-->
 
 	<allow-source>
 		<!--
-			In this section, the path to an XQuery or collection of XQueries may be set as allowing viewable source,
+			In this section, the path to an XQuery, folder or collection of XQueries may be set as allowing viewable source,
 			this means that if you call an XQuery with the request parameter _source=yes, the query will not be executed
 			and instead the source code of the query will be shown.
+			
 			BEWARE the security consequences of enabling this for your queries!
+
+			REST XQuery paths (EXistServlet/RESTServer) start from the db location e.g. /db/mycollection/myquery.xql
+			FileSystem XQuery paths (XQueryServlet) start from the root filesystem location e.g. $EXIST/HOME/webapp/myapp/myquery.xql and end with a .xql suffix
+			Cocoon XQuery Paths (XQueryGenerator) are not yet supported!
 		-->
+
+		<!-- Allow viewing of Source for eXist XQuery examples (XQueryGenerator) -->
+		<!-- NB - Not Yet Supported -->
 		
-		<!-- Allow viewing of Source for eXist XQuery examples  -->
-		<xquery path="/exist/xquery/acronyms.xq"/>
-		<xquery path="/exist/xquery/biblio.xq"/>
-		<xquery path="/exist/xquery/call.xq"/>
-		<xquery path="/exist/xquery/fibo.xq"/>
-		<xquery path="/exist/xquery/functions.xq"/>
-		<xquery path="/exist/xquery/guess.xql"/>
-		<xquery path="/exist/xquery/hello.xq"/>
-		<xquery path="/exist/xquery/hello-plural-db.xq"/>		
-		<xquery path="/exist/xquery/login.xql"/>
-		<xquery path="/exist/xquery/session.xql"/>
-		<xquery path="/exist/xquery/table.xq"/>
-		<xquery path="/exist/xquery/transform.xql"/>
+		<!-- Allow viewing of Source for eXist XQuery examples (XQueryServlet) -->
+		<xquery path="$EXIST_HOME/webapp/xquery/guess.xql"/>
+		<xquery path="$EXIST_HOME/webapp/xquery/transform.xql"/>
+		<xquery path="$EXIST_HOME/webapp/xquery/login.xql"/>
+		<xquery path="$EXIST_HOME/webapp/xquery/session.xql"/>
+		<xquery path="$EXIST_HOME/webapp/xquery/call.xql"/>
 	</allow-source>
    
     <maps>
@@ -45,9 +48,16 @@
 			resource or collection. This can be useful for several reasons, including default xquery execution for
 			a folder accessed through REST (much like the default document functionality of a webserver)
 			or perhaps mapping an old collection path that you had publicised to a newer collection path.
+
+			Path Syntax follows the same conventions of <allow-source>
 		-->
+
+		<!-- Maps the virtual fibo.xql to fibo.xq. Here the XQueryServlet executes what would normally be executed by XQueryGenerator -->
+		<map path="$EXIST_HOME/webapp/xquery/fibo.xql" view="$EXIST_HOME/webapp/xquery/fibo.xq"/>
 		
-		<map path="/exist/examples" view="/exist/examples.xml"/>
+		<!-- <!-- Default Document like example for REST -->
+		<map path="/db/myCollection" view="/db/myCollection/index.xql"/>
+		-->
 		
     </maps>
     
