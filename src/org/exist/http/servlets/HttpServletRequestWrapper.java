@@ -277,9 +277,8 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	}
 
 	private String getContentBody() {
-		//Create a buffer big enough to hold the Content Body
-//		char[] content = new char[request.getContentLength()];
 		
+		//Create a buffer big enough to hold the Content Body		
 		contentBody = new byte[ request.getContentLength() ];
 		String result = "";
 		
@@ -290,12 +289,15 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 
 			//Read the Content Body into the buffer
 			InputStream is = request.getInputStream();
-			is.read(contentBody);
-			result = new String(contentBody, encoding);
 			
-//			BufferedReader bufRequestBody = new BufferedReader(new java.io.InputStreamReader(request.getInputStream()));
-//			bufRequestBody.read(content);
-//			bufRequestBody.close();
+			int bytes = 0;
+			int offset = 0;
+			int max = 4096;
+		    while (( bytes = is.read( contentBody, offset, max )) != -1) {
+				offset += bytes;
+		    }
+			result = new String(contentBody, encoding);
+
 		}
 		catch(IOException ioe) {
 			//TODO: handle this properly
@@ -610,6 +612,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 //		return new StringBufferInputStream( contentBodyAsString );
 //	}
 
+	/** making the content Body of the POST request available many times, for processing by , e.g. Rpc processor . */
 	public InputStream getContentBodyInputStream() throws IOException {
 		return new ByteArrayInputStream( contentBody );
 	}
