@@ -53,12 +53,14 @@ public class LDAPSecurityManager implements SecurityManager
    protected String connectionURL = getProperty("security.ldap.connection.url",null);
    
    protected String userPasswordAttr = getProperty("security.ldap.attr.userPassword", "userPassword");
+   protected String userDigestPasswordAttr = getProperty("security.ldap.attr.userDigestPassword", "digestPassword");
    protected String uidAttr = getProperty("security.ldap.attr.uid", "uid");
    protected String uidNumberAttr = getProperty("security.ldap.attr.uidNumber", "uidNumber");
    protected String gidNumberAttr = getProperty("security.ldap.attr.gidNumber", "gidNumber");
    protected String groupNameAttr = getProperty("security.ldap.attr.groupName", "cn");
    protected String groupClassName = getProperty("security.ldap.groupClass", "posixGroup");
    protected String userClassName = getProperty("security.ldap.userClass", "posixAccount");
+   protected String groupMemberName = getProperty("security.ldap.groupMemberName", "uniqueMember");
    
    protected String userBase = getProperty("security.ldap.dn.user", null);
    protected String groupBase = getProperty("security.ldap.dn.group", null);
@@ -263,24 +265,54 @@ public class LDAPSecurityManager implements SecurityManager
    {
       String username = getAttributeValue(uidAttr,attrs);
       String password = getAttributeValue(userPasswordAttr, attrs);
+      String digestPassword = getAttributeValue(userDigestPasswordAttr, attrs);
       String gid = getAttributeValue(gidNumberAttr, attrs);
       String g_dn = groupByIdPatternFormat.format(new String[] { gid });
       
       LOG.info("Searching for "+gidNumberAttr+"="+gid+" in "+groupBase);
-      String group = null;
+      String mainGroup = null;
       SearchControls constraints = new SearchControls();
 
       constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
       NamingEnumeration groups = context.search(groupBase,"("+gidNumberAttr+"="+gid+")",constraints);
-      while (groups.hasMore()) {
+      while (mainGroup==null && groups.hasMore()) {
          SearchResult result = (SearchResult)groups.next();
-         group = getAttributeValue(groupNameAttr, result.getAttributes());
+         mainGroup = getAttributeValue(groupNameAttr, result.getAttributes());
       }
 
       int uid = Integer.parseInt(getAttributeValue(uidNumberAttr, attrs));
-      LOG.info("Constructing user "+username+"/"+uid+" in group "+(group==null ? "<none>" : group));
-      User user = new User(username, password.length()==0 ? null : password, group);
+      LOG.info("Constructing user "+username+"/"+uid+" in group "+(mainGroup==null ? "<none>" : mainGroup));
+      User user = new User(username, null, mainGroup);
       user.setUID(uid);
+      if (password!=null) {
+         if (password.charAt(0)=='{') {
+            int end = password.indexOf('}');
+            String type = password.substring(0,end+1);
+            String value = password.substring(end+1);
+            LOG.info("  digest: "+type+", "+value);
+            if (!type.equals("{MD5}")) {
+               throw new IllegalStateException("User "+username+" has a non-md5 digested password: "+type);
+            }
+            user.setEncodedPassword(value);
+         } else {
+            user.setPassword(password);
+         }
+      }
+      if (digestPassword!=null) {
+         user.setPasswordDigest(digestPassword);
+      }
+      
+      LOG.info("Finding additional groups...");
+      String fullName = uidAttr+"="+username+","+userBase;
+      groups = context.search(groupBase,"("+groupMemberName+"="+fullName+")",constraints);
+      while (groups.hasMore()) {
+         SearchResult result = (SearchResult)groups.next();
+         String name = getAttributeValue(groupNameAttr, result.getAttributes());
+         if (!name.equals(mainGroup)) {
+            LOG.info("   ...adding: "+name);
+            user.addGroup(name);
+         }
+      }
       return user;
    }
       

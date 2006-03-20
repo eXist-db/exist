@@ -1290,7 +1290,7 @@ public class NativeBroker extends DBBroker {
         Txn transaction = transact.beginTransaction();
         
         user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
-        String docName = MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis())) +
+        String docName = MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()),false) +
             ".xml";
         Collection temp = openCollection(TEMP_COLLECTION, Lock.WRITE_LOCK);
         
