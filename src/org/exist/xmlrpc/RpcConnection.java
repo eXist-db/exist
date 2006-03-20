@@ -1898,7 +1898,7 @@ public class RpcConnection extends Thread {
         }
     }
     
-    public boolean setUser(User user, String name, String passwd,
+    public boolean setUser(User user, String name, String passwd, String passwdDigest,
             Vector groups, String home) throws EXistException,
             PermissionDeniedException {
         if (passwd.length() == 0)
@@ -1911,14 +1911,16 @@ public class RpcConnection extends Thread {
                 throw new PermissionDeniedException(
                         "not allowed to create user");
             u = new User(name);
-            u.setPasswordDigest(passwd);
+            u.setEncodedPassword(passwd);
+            u.setPasswordDigest(passwdDigest);
         } else {
             u = manager.getUser(name);
             if (!(u.getName().equals(user.getName()) || manager
                     .hasAdminPrivileges(user)))
                 throw new PermissionDeniedException(
                         "you are not allowed to change this user");
-            u.setPasswordDigest(passwd);
+            u.setEncodedPassword(passwd);
+            u.setPasswordDigest(passwdDigest);
         }
         String g;
         for (Iterator i = groups.iterator(); i.hasNext(); ) {

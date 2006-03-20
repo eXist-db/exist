@@ -1407,12 +1407,12 @@ public class RpcServer implements RpcAPI {
      * @exception PermissionDeniedException
      *                        Description of the Exception
      */
-    public boolean setUser(User user, String name, String password, Vector groups, String home)
+    public boolean setUser(User user, String name, String password, String digestPassword,Vector groups, String home)
             throws EXistException, PermissionDeniedException {
         RpcConnection con = null;
         try {
             con = pool.get();
-            return con.setUser(user, name, password, groups, home);
+            return con.setUser(user, name, password, digestPassword,groups, home);
         } catch (Exception e) {
             handleException(e);
             return false;
@@ -1421,9 +1421,9 @@ public class RpcServer implements RpcAPI {
         }
     }
 
-    public boolean setUser(User user, String name, String password, Vector groups)
+    public boolean setUser(User user, String name, String password, String digestPassword, Vector groups)
             throws EXistException, PermissionDeniedException {
-        return setUser(user, name, password, groups, null);
+        return setUser(user, name, password, digestPassword,groups, null);
     }
 
     /*

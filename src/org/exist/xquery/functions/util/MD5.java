@@ -65,7 +65,7 @@ public class MD5 extends Function {
 			getArgument(0)
 				.eval(contextSequence, contextItem)
 				.getStringValue();
-		String md = org.exist.security.MD5.md(arg);
+		String md = org.exist.security.MD5.md(arg,false);
 		return new StringValue(md);
 	}
 

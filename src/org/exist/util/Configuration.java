@@ -36,6 +36,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 
 import org.exist.memtree.SAXAdapter;
+import org.exist.security.User;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
@@ -450,7 +451,24 @@ public class Configuration implements ErrorHandler {
         NodeList securityConf = con.getElementsByTagName("security");
         String securityManagerClassName = "org.exist.security.XMLSecurityManager";
         if (securityConf.getLength()>0) {
-           securityManagerClassName = ((Element)securityConf.item(0)).getAttribute("class");
+           Element security = (Element)securityConf.item(0);
+           securityManagerClassName = security.getAttribute("class");
+           String encoding = security.getAttribute("password-encoding");
+           config.put("db-connection.security.password-encoding",encoding);
+           if (encoding!=null) {
+              LOG.info("Using password encoding "+encoding);
+              User.setPasswordEncoding(encoding);
+           } else {
+              LOG.info("No password encoding set, defaulting.");
+           }
+           String realm = security.getAttribute("password-realm");
+           config.put("db-connection.security.password-realm",realm);
+           if (realm!=null) {
+              LOG.info("Using password realm "+realm);
+              User.setPasswordRealm(realm);
+           } else {
+              LOG.info("No password realm set, defaulting.");
+           }
         }
         try {
            config.put("db-connection.security.class",config.getClass().forName(securityManagerClassName));

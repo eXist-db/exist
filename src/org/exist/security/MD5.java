@@ -13,15 +13,19 @@ public class MD5 {
 
     private static final Logger LOG = Logger.getLogger(MD5.class);
 
-    public static String md( String passwd ) {
+    public static String md( String passwd, boolean base64) {
         MessageDigest md5 = null;
         String digest = passwd;
         try {
             md5 = MessageDigest.getInstance( "MD5" );
             md5.update( passwd.getBytes() );
             byte[] digestData = md5.digest();
-
-            digest = byteArrayToHex( digestData );
+            
+            if (base64) {
+               digest = new String(Base64Coder.encode(digestData));
+            } else {
+               digest = byteArrayToHex( digestData );
+            }
         } catch ( NoSuchAlgorithmException e ) {
             LOG.warn( "MD5 not supported. Using plain string as password!" );
         } catch ( Exception e ) {
@@ -59,7 +63,8 @@ public class MD5 {
      */
     public static void main( String[] args ) {
         System.out.println( "input: " + args[0] );
-        System.out.println( "MD5:   " + MD5.md( args[0] ) );
+        System.out.println( "MD5:   " + MD5.md( args[0], false ) );
+        System.out.println( "MD5 (base64):   " + MD5.md( args[0], true ) );
     }
 }
 

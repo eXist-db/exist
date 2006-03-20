@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.exist.security.Base64Coder;
 
 import org.exist.security.MD5;
 import org.exist.security.SecurityManager;
@@ -63,7 +64,7 @@ public class DigestAuthenticator implements Authenticator {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User unknown");
 			return null;
 		}
-		if(!digest.check(user.getPassword())) {
+		if(!digest.check(user.getDigestPassword())) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Password check failed");
 			return null;
 		}
@@ -76,14 +77,14 @@ public class DigestAuthenticator implements Authenticator {
 				"Digest realm=\"exist\", " +
                 "nonce=\"" + createNonce(request) + "\", " +
 				"domain=\"" + request.getContextPath() + "\", " +
-				"opaque=\"" + MD5.md(Integer.toString(hashCode(), 27)) + '"');
+				"opaque=\"" + MD5.md(Integer.toString(hashCode(), 27),false) + '"');
 		response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 	}
 	
 	private String createNonce(HttpServletRequest request) {
 		return MD5.md(request.getRemoteAddr() + ':' +
 				Long.toString(System.currentTimeMillis()) +
-				':' + Integer.toString(hashCode()));
+				':' + Integer.toString(hashCode()),false);
 	}
 	
 	private static void parseCredentials(Digest digest, String credentials) {

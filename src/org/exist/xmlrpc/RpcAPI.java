@@ -707,10 +707,10 @@ public interface RpcAPI {
 	byte[] retrieve(User user, int resultId, int num, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 
-	boolean setUser(User user, String name, String passwd, Vector groups, String home)
+	boolean setUser(User user, String name, String passwd, String digestPassword,Vector groups, String home)
 		throws EXistException, PermissionDeniedException;
 
-	boolean setUser(User user, String name, String passwd, Vector groups)
+	boolean setUser(User user, String name, String passwd, String digestPassword,Vector groups)
 		throws EXistException, PermissionDeniedException;
 
 	boolean setPermissions(User user, String resource, String permissions)

@@ -32,6 +32,7 @@ public class RemoteUserManagementService implements UserManagementService {
 			Vector params = new Vector();
 			params.addElement(user.getName());
 			params.addElement(user.getPassword() == null ? "" : user.getPassword());
+			params.addElement(user.getDigestPassword() == null ? "" : user.getDigestPassword());
 			Vector groups = new Vector();
 			String[] gl = user.getGroups();
 			for (int i = 0; i < gl.length; i++)
@@ -497,6 +498,7 @@ public class RemoteUserManagementService implements UserManagementService {
 			Vector params = new Vector();
 			params.addElement(user.getName());
 			params.addElement(user.getPassword() == null ? "" : user.getPassword());
+			params.addElement(user.getDigestPassword() == null ? "" : user.getDigestPassword());
 			Vector groups = new Vector();
 			String[] gl = user.getGroups();
 			for (int i = 0; i < gl.length; i++)
