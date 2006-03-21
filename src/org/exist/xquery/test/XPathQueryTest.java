@@ -620,6 +620,9 @@ public class XPathQueryTest extends XMLTestCase {
             queryResource(service, "numbers.xml", "//item[position() gt 3]", 1);     
             queryResource(service, "numbers.xml", "//item[position() ge 3]", 2); 
             
+            // Currently fails with error XPTY0004
+//          queryResource(service, "numbers.xml", "//item[last() - 1]", 1);
+            
             String query = "for $a in (<a/>, <b/>, <c/>) return $a/position()";
             ResourceSet  result = service.queryResource("numbers.xml", query);           
             assertEquals("XPath: " + query, 3, result.getSize());            
