@@ -621,7 +621,8 @@ public class XPathQueryTest extends XMLTestCase {
             queryResource(service, "numbers.xml", "//item[position() ge 3]", 2); 
             
             // Currently fails with error XPTY0004
-//          queryResource(service, "numbers.xml", "//item[last() - 1]", 1);
+            queryResource(service, "numbers.xml", "//item[last() - 1]", 1);
+            queryResource(service, "numbers.xml", "//item[count(('a','b')) - 1]", 1);
             
             String query = "for $a in (<a/>, <b/>, <c/>) return $a/position()";
             ResourceSet  result = service.queryResource("numbers.xml", query);           

@@ -187,28 +187,33 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 else
                 	expr.setContextDocSet(null);
                 
-                if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_ITEM)) {
+                if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_POSITION)) {
                     if (result == null || result.getLength() == 0) {
                         result = expr.eval(Sequence.EMPTY_SEQUENCE, null);                    
                     } else {                        
                         Sequence values = null;
                         if (result.getLength() > 1)
-                            values = new ValueSequence();  
-                        //Restore a position which may have been modified by inner expressions 
-                        int p = context.getContextPosition();
-                        for (SequenceIterator iterInner = result.iterate(); iterInner.hasNext(); p++) {
-                            context.setContextPosition(p);
-                            Item current = iterInner.nextItem();                            
-                            if (values == null)
-                                values = expr.eval(result, current);
-                            else
-                                values.addAll(expr.eval(result, current));                           
-                        }
-                        result = values;                    
-                    }                    
-               
+                            values = new ValueSequence();   
+	                    //Restore a position which may have been modified by inner expressions 
+	                    int p = context.getContextPosition();
+	                    for (SequenceIterator iterInner = result.iterate(); iterInner.hasNext(); p++) {
+	                        context.setContextPosition(p);
+	                        Item current = iterInner.nextItem();                            
+	                        if (values == null)
+	                            values = expr.eval(result, current);
+	                        else
+	                            values.addAll(expr.eval(result, current));                           
+	                    }
+	                    result = values;  
+                   }                  
+                } else if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_ITEM)) {
+                	if (result == null || result.getLength() == 0) {
+                		result = expr.eval(Sequence.EMPTY_SEQUENCE, null);
+                    } else {
+                    	result = expr.eval(result);
+                    }
                 } else {
-                    result = expr.eval(result);
+                	result = expr.eval(result);
                 }
             
                 //TOUNDERSTAND : why did I have to write this test :-) ? -pb
