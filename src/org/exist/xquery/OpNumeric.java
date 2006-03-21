@@ -110,11 +110,11 @@ public class OpNumeric extends BinaryOp {
         if (lseq.getLength() == 0) 
             result = Sequence.EMPTY_SEQUENCE;
         else if (lseq.getLength() > 1) 
-        	throw new XPathException("XPTY0004: '" + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);
+        	throw new XPathException("XPTY0004: too many operands at the left of " + Constants.OPS[operator]);
         else if (rseq.getLength() == 0) 
             result = Sequence.EMPTY_SEQUENCE;
         else if (rseq.getLength() > 1) 
-        	throw new XPathException("XPTY0004: '" + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
+        	throw new XPathException("XPTY0004: too many operands at the right of " + Constants.OPS[operator]);
         else {
     		try {
     			// runtime type checks:
