@@ -240,16 +240,19 @@ public class DurationValue extends ComputableValue {
 
 	public boolean compareTo(Collator collator, int operator, AtomicValue other)
 		throws XPathException {
-		throw new XPathException("xs:duration values cannot be compared. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
+		throw new XPathException("xs:duration values cannot be compared with an operator. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
 	}
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-		throw new XPathException("xs:duration values cannot be compared. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
+		if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
+			throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
+		//TODO : what to do with the collator ?
+		return duration.compare(((DurationValue)other).duration);
 	}
 
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 		if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
-			throw new XPathException("Invalid operand type: " + Type.getTypeName(other.getType()));
+			throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
 		if (duration.compare(((DurationValue)other).duration) > 0)
 			return new DurationValue(getCanonicalDuration());			
 		return new DurationValue(((DurationValue)other).getCanonicalDuration());
@@ -257,7 +260,7 @@ public class DurationValue extends ComputableValue {
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
-			throw new XPathException("Invalid operand type: " + Type.getTypeName(other.getType()));
+			throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
 		if (duration.compare(((DurationValue)other).duration) < 0)			
 			return new DurationValue(getCanonicalDuration());
 		return new DurationValue(((DurationValue)other).getCanonicalDuration());
@@ -265,23 +268,24 @@ public class DurationValue extends ComputableValue {
 
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		if (!(other instanceof DurationValue)) 
-			throw new XPathException("Invalid operand type: " + Type.getTypeName(other.getType()));		
+			throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));		
 		return new DurationValue(getCanonicalDuration().add(((DurationValue)other).getCanonicalDuration()));		
 	}
 	
 	public ComputableValue minus(ComputableValue other) throws XPathException {
 		if (!(other instanceof DurationValue)) 
-			throw new XPathException("Invalid operand type: " + Type.getTypeName(other.getType()));		
+			throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));		
 		return new DurationValue(getCanonicalDuration().subtract(((DurationValue)other).getCanonicalDuration()));
 	}
 	
 	public ComputableValue mult(ComputableValue other) throws XPathException {	
-		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
+		BigDecimal factor = numberToBigDecimal(other, "FORG0006: invalid operand type: ");
 		return new DurationValue(getCanonicalDuration().multiply(factor));				
 	}
 
 	public ComputableValue div(ComputableValue other) throws XPathException {	
-		throw new XPathException("division is not supported for type xs:duration");			
+		BigDecimal factor = numberToBigDecimal(other, "FORG0006: invalid operand type: ");		
+		return new DurationValue(getCanonicalDuration().multiply(BigDecimal.valueOf(1).divide(factor)));				
 	}
 	
 	/**

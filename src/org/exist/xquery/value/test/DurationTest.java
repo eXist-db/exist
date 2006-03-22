@@ -64,6 +64,9 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
 		DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
 		assertEquals(Type.DURATION, dv.getType());
 	}
+	
+	//Removed : what should this comparison fail ? -pb
+	/*
 	public void testCompareFail1() throws XPathException {
 		try {
 			DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
@@ -73,6 +76,8 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
 			// expected
 		}
 	}
+	*/
+	
 	public void testCompareFail2() throws XPathException {
 		try {
 			DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
