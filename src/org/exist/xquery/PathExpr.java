@@ -157,17 +157,17 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             Expression expr = (Expression) steps.get(0);
             if (expr instanceof VariableReference) {
                 Variable var = ((VariableReference) expr).getVariable();
+                //TOUNDERSTAND : how null could be possible here ? -pb
                 if (var != null) 
                     contextDocs = var.getContextDocs();            
-            }    
-            if (contextDocs != null)
-            	setContextDocSet(contextDocs);          
-            else
-            	setContextDocSet(null);
+            }
+            //contextDocs == null *is* significant
+            setContextDocSet(contextDocs);
             
             //To prevent processing nodes after atomic values...
             //TODO : let the parser do it ? -pb
-            boolean gotAtomicResult = false;            
+            boolean gotAtomicResult = false;  
+            
             for (Iterator iter = steps.iterator(); iter.hasNext();) {
                 
                 expr = (Expression) iter.next();
@@ -176,49 +176,43 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if (gotAtomicResult && !Type.subTypeOf(expr.returnsType(), Type.NODE)
                         //Ugly workaround to allow preceding *text* nodes.
                         && !(expr instanceof EnclosedExpr)) {
-                    LOG.debug("Path steps:" + steps);
-                    LOG.debug("Current expression:" + expr);
                     throw new XPathException("XPTY0019: left operand of '/' must be a node. Got '" + 
                             Type.getTypeName(result.getItemType()) + Cardinality.toString(result.getCardinality()) + "'");                    
-                } 
+                }                 
                 
-                if (contextDocs != null) 
-                    expr.setContextDocSet(contextDocs);
-                else
-                	expr.setContextDocSet(null);
+                //contextDocs == null *is* significant
+                expr.setContextDocSet(contextDocs);                
                 
-                if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_POSITION)) {
-                    if (result == null || result.getLength() == 0) {
-                        result = expr.eval(Sequence.EMPTY_SEQUENCE, null);                    
-                    } else {                        
-                        Sequence values = null;
-                        if (result.getLength() > 1)
-                            values = new ValueSequence();   
-	                    //Restore a position which may have been modified by inner expressions 
-	                    int p = context.getContextPosition();
-	                    for (SequenceIterator iterInner = result.iterate(); iterInner.hasNext(); p++) {
-	                        context.setContextPosition(p);
-	                        Item current = iterInner.nextItem();                            
-	                        if (values == null)
-	                            values = expr.eval(result, current);
-	                        else
-	                            values.addAll(expr.eval(result, current));                           
-	                    }
-	                    result = values;  
-                   }                  
-                } else if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_ITEM)) {
-                	if (result == null || result.getLength() == 0) {
-                		result = expr.eval(Sequence.EMPTY_SEQUENCE, null);
-                    } else {
-                    	result = expr.eval(result);
+                //DESIGN : calling result.getLength() should be avoided -pb
+                if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_POSITION) && 
+                		result.getLength() > 0) {
+                      
+                    Sequence exprResult = Sequence.EMPTY_SEQUENCE;
+                    
+                    //Restore a position which may have been modified by inner expressions 
+                    int p = context.getContextPosition();
+                    
+                    for (SequenceIterator iterInner = result.iterate(); iterInner.hasNext(); p++) {
+                        context.setContextPosition(p);
+                        Item current = iterInner.nextItem();   
+                        //DESIGN : calling result.getLength() should be avoided -pb
+                        if (result.getLength() < 2)
+                        	exprResult = expr.eval(result, current);
+                        else {
+                        	exprResult = new ValueSequence();  
+                        	exprResult.addAll(expr.eval(result, current));
+                        }
                     }
+                    result = exprResult;  
+                                   
                 } else {
                 	result = expr.eval(result);
                 }
             
                 //TOUNDERSTAND : why did I have to write this test :-) ? -pb
                 //it looks like an empty sequence could be considered as a sub-type of Type.NODE
-                //well, no so stupid I think...                
+                //well, no so stupid I think...    
+                //DESIGN : calling result.getLength() should be avoided -pb
                 if (!Type.subTypeOf(result.getItemType(), Type.NODE) && result.getLength() > 0)
                     gotAtomicResult = true;
 
