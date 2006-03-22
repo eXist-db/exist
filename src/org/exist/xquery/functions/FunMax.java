@@ -109,8 +109,9 @@ public class FunMax extends CollatingFunction {
     		while (iter.hasNext()) {
                 Item item = iter.nextItem();
                 AtomicValue value = item.atomize();                 
-                //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
-                if (value.getType() == Type.ATOMIC) value = value.convertTo(Type.DOUBLE);
+                //Any value of type xdt:untypedAtomic is cast to xs:double
+                if (value.getType() == Type.ATOMIC) 
+                	value = value.convertTo(Type.DOUBLE);
                 if (max == null)
                     max = value;
                 else {
@@ -118,6 +119,9 @@ public class FunMax extends CollatingFunction {
                 		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(max.getType()) + 
                 				" and " + Type.getTypeName(value.getType()));
                 	}
+                    //Any value of type xdt:untypedAtomic is cast to xs:double
+                    if (value.getType() == Type.ATOMIC) 
+                    	value = value.convertTo(Type.DOUBLE);                	
                 	//Ugly test
 	                if (value instanceof NumericValue) {	                	
 	                	if (((NumericValue) value).isNaN()) {

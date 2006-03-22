@@ -105,8 +105,9 @@ public class FunMin extends CollatingFunction {
     		while (iter.hasNext()) {
                 Item item = iter.nextItem();
                 AtomicValue value = item.atomize();
-                //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
-                if (value.getType() == Type.ATOMIC) value = value.convertTo(Type.DOUBLE);
+                //Any value of type xdt:untypedAtomic is cast to xs:double
+                if (value.getType() == Type.ATOMIC) 
+                	value = value.convertTo(Type.DOUBLE); 
                 if (min == null)
                     min = value;
                 else {                	
@@ -114,6 +115,9 @@ public class FunMin extends CollatingFunction {
                 		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
                 				" and " + Type.getTypeName(value.getType()));
                 	}
+                    //Any value of type xdt:untypedAtomic is cast to xs:double
+                    if (value.getType() == Type.ATOMIC) 
+                    	value = value.convertTo(Type.DOUBLE);
                 	//Ugly test
 	                if (value instanceof NumericValue) {	                	
 	                	if (((NumericValue) value).isNaN()) {
@@ -124,8 +128,7 @@ public class FunMin extends CollatingFunction {
 	                //Ugly test
 	                if (value instanceof ComputableValue) {		                	
 	                    min = (ComputableValue) min.min(collator, value);
-                	}
-	                else {
+                	} else {
 	                	if (Collations.compare(collator, value.getStringValue(), min.getStringValue()) < 0)	               
 	                		min = value;	                	
 	                }
