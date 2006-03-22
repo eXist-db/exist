@@ -103,31 +103,31 @@ public class FunMin extends CollatingFunction {
     		SequenceIterator iter = arg.unorderedIterator();
     		AtomicValue min = null;
     		while (iter.hasNext()) {
-                Item nextItem = iter.nextItem();
-                AtomicValue nextValue = nextItem.atomize();
+                Item item = iter.nextItem();
+                AtomicValue value = item.atomize();
                 //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
-                if (nextValue.getType() == Type.ATOMIC) nextValue = nextValue.convertTo(Type.DOUBLE);
+                if (value.getType() == Type.ATOMIC) value = value.convertTo(Type.DOUBLE);
                 if (min == null)
-                    min = nextValue;
+                    min = value;
                 else {                	
-                	if (Type.getCommonSuperType(min.getType(), nextValue.getType()) == Type.ATOMIC) {
+                	if (Type.getCommonSuperType(min.getType(), value.getType()) == Type.ATOMIC) {
                 		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
-                				" and " + Type.getTypeName(nextValue.getType()));
+                				" and " + Type.getTypeName(value.getType()));
                 	}
                 	//Ugly test
-	                if (nextValue instanceof NumericValue) {	                	
-	                	if (((NumericValue) nextValue).isNaN()) {
+	                if (value instanceof NumericValue) {	                	
+	                	if (((NumericValue) value).isNaN()) {
                            result = DoubleValue.NaN;
                            break;
                        } 
 	                }
 	                //Ugly test
-	                if (nextValue instanceof ComputableValue) {		                	
-	                    min = (ComputableValue) min.min(collator, nextValue);
+	                if (value instanceof ComputableValue) {		                	
+	                    min = (ComputableValue) min.min(collator, value);
                 	}
 	                else {
-	                	if (Collations.compare(collator, nextValue.getStringValue(), min.getStringValue()) < 0)	               
-	                		min = nextValue;	                	
+	                	if (Collations.compare(collator, value.getStringValue(), min.getStringValue()) < 0)	               
+	                		min = value;	                	
 	                }
                 }
             }           

@@ -107,31 +107,31 @@ public class FunMax extends CollatingFunction {
     		SequenceIterator iter = arg.unorderedIterator();
     		AtomicValue max = null;
     		while (iter.hasNext()) {
-                Item nextItem = iter.nextItem();
-                AtomicValue nextValue = nextItem.atomize();                 
+                Item item = iter.nextItem();
+                AtomicValue value = item.atomize();                 
                 //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
-                if (nextValue.getType() == Type.ATOMIC) nextValue = nextValue.convertTo(Type.DOUBLE);
+                if (value.getType() == Type.ATOMIC) value = value.convertTo(Type.DOUBLE);
                 if (max == null)
-                    max = nextValue;
+                    max = value;
                 else {
-                	if (Type.getCommonSuperType(max.getType(), nextValue.getType()) == Type.ATOMIC) {
+                	if (Type.getCommonSuperType(max.getType(), value.getType()) == Type.ATOMIC) {
                 		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(max.getType()) + 
-                				" and " + Type.getTypeName(nextValue.getType()));
+                				" and " + Type.getTypeName(value.getType()));
                 	}
                 	//Ugly test
-	                if (nextValue instanceof NumericValue) {	                	
-	                	if (((NumericValue) nextValue).isNaN()) {
+	                if (value instanceof NumericValue) {	                	
+	                	if (((NumericValue) value).isNaN()) {
                            result = DoubleValue.NaN;
                            break;
                        } 
 	                }
 	                //Ugly test
-	                if (nextValue instanceof ComputableValue) {		                	
-	                    max = (ComputableValue) max.max(collator, nextValue);
+	                if (value instanceof ComputableValue) {		                	
+	                    max = (ComputableValue) max.max(collator, value);
                 	}
 	                else {
-	                	if (Collations.compare(collator, nextValue.getStringValue(), max.getStringValue()) > 0)	               
-	                		max = nextValue;	                	
+	                	if (Collations.compare(collator, value.getStringValue(), max.getStringValue()) > 0)	               
+	                		max = value;	                	
 	                }
                 }
             }           
