@@ -248,11 +248,19 @@ public class DurationValue extends ComputableValue {
 	}
 
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-		throw new XPathException("xs:duration values cannot be compared. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
+		if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
+			throw new XPathException("Invalid operand type: " + Type.getTypeName(other.getType()));
+		if (duration.compare(((DurationValue)other).duration) > 0)
+			return new DurationValue(getCanonicalDuration());			
+		return new DurationValue(((DurationValue)other).getCanonicalDuration());
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-		throw new XPathException("xs:duration values cannot be compared. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
+		if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
+			throw new XPathException("Invalid operand type: " + Type.getTypeName(other.getType()));
+		if (duration.compare(((DurationValue)other).duration) < 0)			
+			return new DurationValue(getCanonicalDuration());
+		return new DurationValue(((DurationValue)other).getCanonicalDuration());
 	}
 
 	public ComputableValue plus(ComputableValue other) throws XPathException {
