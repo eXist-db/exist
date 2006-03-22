@@ -255,21 +255,46 @@ public class DurationValue extends ComputableValue {
 		throw new XPathException("xs:duration values cannot be compared. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
 	}
 
-	public ComputableValue minus(ComputableValue other) throws XPathException {
-		throw new XPathException("subtraction is not supported for type xs:duration");
-	}
-
 	public ComputableValue plus(ComputableValue other) throws XPathException {
-		throw new XPathException("addition is not supported for type xs:duration");
+		if (!(other instanceof DurationValue)) 
+			throw new XPathException("Invalid operand type: " + Type.getTypeName(other.getType()));		
+		return new DurationValue(getCanonicalDuration().add(((DurationValue)other).getCanonicalDuration()));		
+	}
+	
+	public ComputableValue minus(ComputableValue other) throws XPathException {
+		if (!(other instanceof DurationValue)) 
+			throw new XPathException("Invalid operand type: " + Type.getTypeName(other.getType()));		
+		return new DurationValue(getCanonicalDuration().subtract(((DurationValue)other).getCanonicalDuration()));
+	}
+	
+	public ComputableValue mult(ComputableValue other) throws XPathException {	
+		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
+		return new DurationValue(getCanonicalDuration().multiply(factor));				
 	}
 
-	public ComputableValue mult(ComputableValue other) throws XPathException {
-		throw new XPathException("multiplication is not supported for type xs:duration");
+	public ComputableValue div(ComputableValue other) throws XPathException {	
+		throw new XPathException("division is not supported for type xs:duration");			
 	}
-
-	public ComputableValue div(ComputableValue other) throws XPathException {
-		throw new XPathException("division is not supported for type xs:duration");
-	}
+	
+	/**
+	 * Convert the given value to a big decimal if it's a number, keeping as much precision
+	 * as possible.
+	 *
+	 * @param x a value to convert to a big decimal
+	 * @param exceptionMessagePrefix the beginning of the message to throw in an exception, will be suffixed with the type of the value given
+	 * @return the big decimal equivalent of the value
+	 * @throws XPathException if the value is not of a numeric type
+	 */
+	protected BigDecimal numberToBigDecimal(ComputableValue x, String exceptionMessagePrefix) throws XPathException {
+		if (!Type.subTypeOf(x.getType(), Type.NUMBER)) {
+			throw new XPathException(exceptionMessagePrefix + Type.getTypeName(x.getType()));
+		}
+		BigDecimal val =
+			x.conversionPreference(BigDecimal.class) < Integer.MAX_VALUE
+			? (BigDecimal) x.toJavaObject(BigDecimal.class)
+			: new BigDecimal(((NumericValue) x).getDouble());
+		return val;
+	}	
 
 	public int conversionPreference(Class target) {
 		if (target.isAssignableFrom(getClass())) return 0;
