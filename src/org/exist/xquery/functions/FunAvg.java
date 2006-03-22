@@ -28,13 +28,12 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -83,15 +82,17 @@ public class FunAvg extends Function {
     		//SequenceIterator iter = inner.iterate();    		
     		ComputableValue sum = null;
     		while (iter.hasNext()) {
-    			Item nextItem = iter.nextItem();
-    			AtomicValue nextValue = nextItem.atomize();
-    			if (!Type.subTypeOf(nextValue.getType(), Type.DURATION))    			
-    				nextValue = nextValue.convertTo(Type.DOUBLE);
+    			Item item = iter.nextItem();
+    			AtomicValue value = item.atomize();
+                //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
+                if (value.getType() == Type.ATOMIC) value = value.convertTo(Type.DOUBLE);
+        		if (!(value instanceof ComputableValue))
+    				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in an average");
     			if (sum == null)
-    				sum = (ComputableValue)nextValue;
+    				sum = (ComputableValue)value;
     			else {
     				try {
-    					sum = sum.plus((ComputableValue)nextValue);
+    					sum = sum.plus((ComputableValue)value);
     				} catch(XPathException e) {
     					throw new XPathException("FORG0006: " + e.getMessage(), e);    					
     				}

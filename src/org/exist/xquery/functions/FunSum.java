@@ -31,7 +31,6 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -83,33 +82,39 @@ public class FunSum extends Function {
                         "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		Sequence inner = getArgument(0).eval(contextSequence, contextItem);
-		Sequence zero = IntegerValue.ZERO;
-		if(getSignature().getArgumentCount() == 2)
-			zero = getArgument(1).eval(contextSequence, contextItem);
-		
         Sequence result;
-		if (inner.getLength() == 0)
-            result = zero;
-        else {
-    		Item nextItem;
-    		AtomicValue nextValue;
+        
+		Sequence inner = getArgument(0).eval(contextSequence, contextItem);	
+		if (inner.getLength() == 0) {
+			Sequence zero = DoubleValue.ZERO;
+			if(getSignature().getArgumentCount() == 2)
+				zero = getArgument(1).eval(contextSequence, contextItem);
+			result = zero;
+		} else {
     		SequenceIterator iter = inner.iterate();
-    		nextItem = iter.nextItem();
-    		nextValue = nextItem.atomize();
-    		if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
-    			nextValue = nextValue.convertTo(Type.DOUBLE);
-    		ComputableValue sum = (ComputableValue) nextValue;
+    		Item item = iter.nextItem();
+    		AtomicValue value = item.atomize();
+            //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
+            if (value.getType() == Type.ATOMIC) 
+            	value = value.convertTo(Type.DOUBLE);
+    		if (!(value instanceof ComputableValue))
+				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+    		//Set the first value
+    		ComputableValue sum = (ComputableValue) value;
     		while (iter.hasNext()) {
-    			nextItem = iter.nextItem();
-    			nextValue = nextItem.atomize();
-    			if (!Type.subTypeOf(nextValue.getType(), Type.NUMBER))
-    				nextValue = nextValue.convertTo(Type.DOUBLE);
-    			if (((NumericValue)nextValue).isNaN()) {
+    			item = iter.nextItem();
+    			value = item.atomize();
+                //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
+                if (value.getType() == Type.ATOMIC) 
+                	value = value.convertTo(Type.DOUBLE);
+        		if (!(value instanceof ComputableValue))
+    				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+    			if (Type.subTypeOf(value.getType(), Type.NUMBER) && ((NumericValue)value).isNaN()) {
                     result = DoubleValue.NaN;
                     break;
                 }
-    			sum = sum.plus((NumericValue) nextValue);
+    			//Aggregate next values
+    			sum = sum.plus((ComputableValue) value);
     		}
     		result = sum;
         }
