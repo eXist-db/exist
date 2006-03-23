@@ -245,23 +245,23 @@
             </fileset>
         </copy>
         <copy file="${src}/org/exist/xquery/util/messages.properties"
-        todir="${build.classes}/org/exist/xquery/util"/>
+             todir="${build.classes}/org/exist/xquery/util"/>
         <copy file="${src}/org/exist/ant/antlib.xml"
-        todir="${build.classes}/org/exist/ant"/>
+             todir="${build.classes}/org/exist/ant"/>
         <copy file="${src}/org/exist/exist.xsl"
-        todir="${build.classes}/org/exist"/>
+             todir="${build.classes}/org/exist"/>
         <copy file="${src}/org/exist/xmldb.xsl"
-        todir="${build.classes}/org/exist"/>
+             todir="${build.classes}/org/exist"/>
         <copy file="${src}/org/exist/xmldb2.xsl"
-        todir="${build.classes}/org/exist"/>
+             todir="${build.classes}/org/exist"/>
         <copy file="${src}/org/exist/start/start.config"
-        todir="${build.classes}/org/exist/start"/>
+             todir="${build.classes}/org/exist/start"/>
         <copy file="${src}/org/exist/security/security.properties"
-        todir="${build.classes}/org/exist/security"/>
+             todir="${build.classes}/org/exist/security"/>
         <copy file="${src}/org/exist/system.properties"
-        todir="${build.classes}/org/exist" filtering="true"/>
+             todir="${build.classes}/org/exist" filtering="true"/>
         <copy file="${src}/org/exist/util/mime-types.xml"
-        todir="${build.classes}/org/exist/util"/>
+             todir="${build.classes}/org/exist/util"/>
         <copy todir="${build.classes}/org/exist/http/webdav/methods">
             <fileset dir="${src}/org/exist/http/webdav/methods">
                 <include name="**.xq"/>
