@@ -38,6 +38,23 @@
                 <action name="javadoc">
                     <target>javadocs</target>
                 </action>
+                <action name="run">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>run-nb</target>
+                </action>
+                <action name="run.single">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>run-nb.single</target>
+                    <context>
+                        <property>classname</property>
+                        <folder>src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
                 <action name="test">
                     <target>test</target>
                 </action>
@@ -76,17 +93,17 @@
                     </context>
                 </action>
                 <!-- <action name="profile.single">
-                    <script>nbproject/ide-file-targets.xml</script>
-                    <target>profile-nb.single</target>
-                    <context>
-                        <property>classname</property>
-                        <folder>src</folder>
-                        <pattern>\.java$</pattern>
-                        <format>java-name</format>
-                        <arity>
-                            <one-file-only/>
-                        </arity>
-                    </context>
+                <script>nbproject/ide-file-targets.xml</script>
+                <target>profile-nb.single</target>
+                <context>
+                <property>classname</property>
+                <folder>src</folder>
+                <pattern>\.java$</pattern>
+                <format>java-name</format>
+                <arity>
+                <one-file-only/>
+                </arity>
+                </context>
                 </action> -->
                 <action name="profile">
                     <script>nbproject/ide-file-targets.xml</script>
