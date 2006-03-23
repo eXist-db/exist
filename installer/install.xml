@@ -19,8 +19,8 @@
         <res id="HTMLInfoPanel.info" src="installer/readme.html"/>
     </resources>
 
-	<jar src="tools/izpack/clinstaller.jar" stage="install"/>
-	<jar src="lib/core/excalibur-cli-1.0.jar" stage="install"/>
+    <jar src="tools/izpack/clinstaller.jar" stage="install"/>
+    <jar src="lib/core/excalibur-cli-1.0.jar" stage="install"/>
 
     <native type="izpack" name="ShellLink.dll"/>
     <variables>
@@ -38,7 +38,7 @@
     <packs>
         <pack name="core" required="yes">
             <description>Everything needed for the database core, including
-                Jetty + Cocoon</description>
+            Jetty + Cocoon</description>
             <fileset targetdir="$INSTALL_PATH" dir=".">
                 <include name="client.properties"/>
                 <include name="backup.properties"/>
@@ -48,7 +48,8 @@
                 <include name="conf.xml"/>
                 <include name="conf.xml.tmpl"/>
                 <include name="build.xml"/>
-								<include name="build-sign.xml"/>
+                <include name="build-sign.xml"/>
+                <include name="build-quality.xml"/>
                 <include name="log4j.xml"/>
                 <include name="LICENSE"/>
                 <include name="README"/>
@@ -102,34 +103,34 @@
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/shutdown.sh"/>
-			<parsable type="shell" targetfile="$INSTALL_PATH/bin/backup.sh"/>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/backup.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/build.sh"/>
             <parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/shutdown.bat"/>
-			<parsable targetfile="$INSTALL_PATH/bin/backup.bat"/>
+            <parsable targetfile="$INSTALL_PATH/bin/backup.bat"/>
             <parsable targetfile="$INSTALL_PATH/build.bat"/>
             <singlefile src="tools/wrapper/conf/wrapper.conf.install"
-                target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"
-                override="true"/>
+            target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"
+            override="true"/>
             <parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>
             <executable targetfile="$INSTALL_PATH/bin/client.sh" stage="never"
-                os="unix"/>
+            os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/startup.sh" stage="never"
-                os="unix"/>
+            os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/server.sh" stage="never"
-                os="unix"/>
+            os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/shutdown.sh" stage="never"
-                os="unix"/>
-			<executable targetfile="$INSTALL_PATH/bin/backup.sh" stage="never"
-				os="unix"/>
+            os="unix"/>
+            <executable targetfile="$INSTALL_PATH/bin/backup.sh" stage="never"
+            os="unix"/>
             <executable targetfile="$INSTALL_PATH/build.sh" stage="never"
-                os="unix"/>
+            os="unix"/>
             <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper"
-                stage="never" os="unix"/>
+            stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh"
-                stage="never" os="unix"/>
+            stage="never" os="unix"/>
         </pack>
         <pack name="sources" required="no">
             <description>Java source files</description>
@@ -140,14 +141,14 @@
                 <exclude name=".*"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/extensions/modules/src"
-            	dir="extensions/modules/src">
-            	<exclude name="**/*~"/>
+                dir="extensions/modules/src">
+                <exclude name="**/*~"/>
                 <exclude name="**/.*"/>
                 <exclude name="**/CVS/"/>
                 <exclude name=".*"/>
             </fileset>
             <file src="extensions/modules/build.xml" 
-            	targetdir="$INSTALL_PATH/extensions/modules"/>
+            targetdir="$INSTALL_PATH/extensions/modules"/>
         </pack>
         <pack name="javadoc" required="no">
             <description>Generated Javadocs</description>
