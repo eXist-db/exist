@@ -604,22 +604,22 @@ public class GeneralComparison extends BinaryOp {
             boolean backwardsCompatible, int truncation, int relation) throws XPathException{
 		int ltype = lv.getType();
 		int rtype = rv.getType();
-		if (ltype == Type.ITEM || ltype == Type.ATOMIC) {
+		if (ltype == Type.ITEM || ltype == Type.ATOMIC || ltype == Type.UNTYPED_ATOMIC) {
 			if (Type.subTypeOf(rtype, Type.NUMBER)) {
 			    if(isEmptyString(lv))
 			        return false;
 				lv = lv.convertTo(Type.DOUBLE);
-			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
+			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC || rtype == Type.UNTYPED_ATOMIC) {
 				lv = lv.convertTo(Type.STRING);
 				rv = rv.convertTo(Type.STRING);
 			} else
 				lv = lv.convertTo(rv.getType());
-		} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
+		} else if (rtype == Type.ITEM || rtype == Type.ATOMIC || rtype == Type.UNTYPED_ATOMIC) {
 			if (Type.subTypeOf(ltype, Type.NUMBER)) {
 			    if(isEmptyString(lv))
 			        return false;
 				rv = rv.convertTo(Type.DOUBLE);
-			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
+			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC || rtype == Type.UNTYPED_ATOMIC) {
 				lv = lv.convertTo(Type.STRING);
 				rv = rv.convertTo(Type.STRING);
 			} else

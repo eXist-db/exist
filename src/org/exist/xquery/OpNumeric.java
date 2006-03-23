@@ -117,37 +117,16 @@ public class OpNumeric extends BinaryOp {
         	throw new XPathException("XPTY0004: too many operands at the right of " + Constants.OPS[operator]);
         else {
     		try {
-    			// runtime type checks:
-    			//if (!(lvalue instanceof ComputableValue)) lvalue = lvalue.convertTo(Type.NUMBER);
-    			//if (!(rvalue instanceof ComputableValue)) rvalue = rvalue.convertTo(Type.NUMBER);
-    			if (lvalue.getType() == Type.ATOMIC) lvalue = lvalue.convertTo(Type.NUMBER);
-    			if (rvalue.getType() == Type.ATOMIC) rvalue = rvalue.convertTo(Type.NUMBER);
-    
-    			//int ltype = lvalue.getType();
-                //int rtype = rvalue.getType();
-                
-    			/*
-    			if (Type.subTypeOf(ltype, Type.NUMBER) && Type.subTypeOf(rtype, Type.NUMBER)) {
-    				if (ltype > rtype) {
-    					rvalue = rvalue.convertTo(ltype);
-    				} else if (rtype > ltype) {
-    					lvalue = lvalue.convertTo(rtype);
-    				}				
-    			} else if (Type.subTypeOf(ltype, Type.NUMBER)) {
-    				rvalue = rvalue.convertTo(ltype);				
-    			} else if (Type.subTypeOf(rtype, Type.NUMBER)) {
-    				lvalue = lvalue.convertTo(rtype);				
-    			}
-    			*/
-    
-    			//TODO : use type hierarchy
+    			if (lvalue.getType() == Type.UNTYPED_ATOMIC || lvalue.getType() == Type.ATOMIC) 
+    				lvalue = lvalue.convertTo(Type.NUMBER);
+    			if (rvalue.getType() == Type.UNTYPED_ATOMIC || rvalue.getType() == Type.ATOMIC) 
+    				rvalue = rvalue.convertTo(Type.NUMBER);
     			if (!(lvalue instanceof ComputableValue))
     				throw new XPathException("XPTY0004: '" + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);
     			if (!(rvalue instanceof ComputableValue))
     				throw new XPathException("XPTY0004: '" + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
 
-    			if (operator == Constants.IDIV) {
-    				//TODO : use type hierarchy
+    			if (operator == Constants.IDIV) {    				
         			if (!(lvalue instanceof NumericValue))
         				throw new XPathException("XPTY0004: '" + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);
         			if (!(rvalue instanceof NumericValue))
@@ -156,6 +135,9 @@ public class OpNumeric extends BinaryOp {
     			} else {
                     result = applyOperator((ComputableValue) lvalue, (ComputableValue) rvalue);
     			}
+    			
+    			//TODO : type-checks on MOD operator : maybe the same ones than above -pb
+    			
     		} catch (XPathException e) {
     			e.setASTNode(getASTNode());
     			throw e;

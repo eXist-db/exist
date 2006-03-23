@@ -43,7 +43,8 @@ public class UntypedAtomicValue extends AtomicValue {
 	 * @see org.exist.xquery.value.AtomicValue#getType()
 	 */
 	public int getType() {
-		return Type.ATOMIC;
+		//return Type.ATOMIC;
+		return Type.UNTYPED_ATOMIC;
 	}
 
 	/* (non-Javadoc)
