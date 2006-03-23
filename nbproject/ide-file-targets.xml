@@ -128,7 +128,6 @@
             <jvmarg value="-agentlib:yjpagent"/>
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
-            <arg value="jetty"/>
         </java>
     </target>
     
