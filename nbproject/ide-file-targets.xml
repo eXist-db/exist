@@ -4,6 +4,23 @@
     <!-- (more info: http://www.netbeans.org/kb/41/freeform-config.html#debugj2se) -->
     <import file="../build.xml"/>
     
+    <!-- RUN -->
+    <target name="run-nb" depends="jar" description="Run database">
+        <java classname="org.exist.start.Main" fork="true">
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <arg value="jetty"/>
+        </java>
+    </target>
+   
+    <target name="run-nb.single" depends="jar" description="Run database">
+        <fail unless="classname">Must set property 'classname'</fail>
+        <java classname="${classname}" fork="true">
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+        </java>
+    </target>   
+    
     <!-- DEBUG -->
     <target name="debug-nb" depends="jar" description="Debug database">
         <nbjpdastart addressproperty="jpda.address" name="eXist-1.0" transport="dt_socket">
@@ -72,19 +89,19 @@
     </target>
   
     <target name="profile-nb.single" depends="jar" description="Profile Single with NB profiler">
-    <fail unless="netbeans.home">This target can only run inside the NetBeans IDE.</fail>
-    <fail unless="classname">Must set property 'classname'</fail>
+        <fail unless="netbeans.home">This target can only run inside the NetBeans IDE.</fail>
+        <fail unless="classname">Must set property 'classname'</fail>
         
-    <nbprofiledirect>
-    <classpath> 
-    <pathelement path="${classpath.core}"/>
-    </classpath>
-    </nbprofiledirect>
+        <nbprofiledirect>
+            <classpath> 
+                <pathelement path="${classpath.core}"/>
+            </classpath>
+        </nbprofiledirect>
 
-    <java classname="org.exist.start.Main">
-    <jvmarg value="${profiler.info.jvmargs.agent}"/>
-    <classpath refid="classpath.core"/>
-    </java>
+        <java classname="org.exist.start.Main">
+            <jvmarg value="${profiler.info.jvmargs.agent}"/>
+            <classpath refid="classpath.core"/>
+        </java>
     </target>
     
     <!-- PROFILE (YourKit Profiler) -->
