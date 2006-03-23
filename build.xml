@@ -105,12 +105,12 @@
         <filter token="version" value="${project.version}-${DSTAMP}"/>
         <filter token="database" value="native"/>
         <copy
-                file="${src.webapp}/header.xml.tmpl"
-                tofile="${src.webapp}/header.xml" filtering="true"
-                overwrite="true" />
+        file="${src.webapp}/header.xml.tmpl"
+        tofile="${src.webapp}/header.xml" filtering="true"
+        overwrite="true" />
         <copy file="${src.webapp}/header.xml.tmpl"
-                tofile="${src.webapp}/xquery/header.xml" filtering="true"
-                overwrite="true"/>
+        tofile="${src.webapp}/xquery/header.xml" filtering="true"
+        overwrite="true"/>
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true"/>
     </target>
 
@@ -121,9 +121,9 @@
         <mkdir dir="${build}"/>
         <echo message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
-                destdir="${build.classes}" encoding="UTF-8"
-                optimize="${build.optimize}" srcdir="${src}"
-                source="${build.compiler.source}" target="${build.compiler.target}">
+            destdir="${build.classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${src}"
+            source="${build.compiler.source}" target="${build.compiler.target}">
 
             <include name="org/**"/>
             <include name="org/exist/schema/**"/>
@@ -136,15 +136,15 @@
         </javac>
     </target>
 
-	<!-- =================================================================== -->
-	<!-- Compile the Tomcat realm                                            -->
+    <!-- =================================================================== -->
+    <!-- Compile the Tomcat realm                                            -->
     <!-- =================================================================== -->
     <target name="compile-tomcat-realm" if="catalina.present" description="Compile the Tomcat realm">
         <echo message="Compiling Tomcat Realm  with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>    	
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
-                destdir="${build.classes}" encoding="UTF-8"
-                optimize="${build.optimize}" srcdir="${src}"
-                source="${build.compiler.source}" target="${build.compiler.target}">
+            destdir="${build.classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${src}"
+            source="${build.compiler.source}" target="${build.compiler.target}">
             <include name="org/exist/http/realm/**"/>
             <classpath>
                 <path refid="classpath.core"/>
@@ -154,9 +154,9 @@
                 <fileset dir="${catalina.home}/server/lib">
                     <include name="*.jar"/>
                 </fileset>
-				<!--fileset dir="${catalina.home}/common/lib">
-					<include name="*.jar"/>
-				</fileset-->
+                <!--fileset dir="${catalina.home}/common/lib">
+                <include name="*.jar"/>
+                </fileset-->
             </classpath>
         </javac>
     </target>
@@ -175,21 +175,21 @@
             </fileset>
         </delete>
         <antlr target="${src}/org/exist/xquery/parser/XQuery.g"
-                outputdirectory="${src}/org/exist/xquery/parser"
-                traceparser="${antlr.traceParser}"
-                tracelexer="${antlr.traceLexer}">
+            outputdirectory="${src}/org/exist/xquery/parser"
+            traceparser="${antlr.traceParser}"
+            tracelexer="${antlr.traceLexer}">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </antlr>
         <antlr target="${src}/org/exist/xquery/parser/XQueryTree.g"
-                outputdirectory="${src}/org/exist/xquery/parser">
+            outputdirectory="${src}/org/exist/xquery/parser">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </antlr>
         <antlr target="${src}/org/exist/xquery/parser/DeclScanner.g"
-                outputdirectory="${src}/org/exist/xquery/parser">
+            outputdirectory="${src}/org/exist/xquery/parser">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -204,12 +204,12 @@
     <target depends="prepare" name="samples" description="Create samples">
         <delete failonerror="false" dir="${build}/examples"/>
         <mkdir dir="${build}/examples"/>
-    	<echo message="Compiling samples with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
+        <echo message="Compiling samples with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         <javac debug="${build.debug}"
-                deprecation="${build.deprecation}"
-                destdir="${build}/examples" srcdir="${samples}"
-                source="${build.compiler.source}" target="${build.compiler.target}"
-        	    optimize="${build.optimize}" encoding="UTF-8">
+            deprecation="${build.deprecation}"
+            destdir="${build}/examples" srcdir="${samples}"
+            source="${build.compiler.source}" target="${build.compiler.target}"
+            optimize="${build.optimize}" encoding="UTF-8">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -231,7 +231,7 @@
                 <include name="icons/**.png"/>
                 <include name="icons/**.gif"/>
                 <include name="*.xsl"/>
-				<include name="**/*.xconf"/>
+                <include name="**/*.xconf"/>
             </fileset>
         </copy>
         <copy todir="${build.classes}/org/exist/xquery/lib">
@@ -239,29 +239,29 @@
                 <include name="**.xq"/>
             </fileset>
         </copy>
-		  <copy todir="${build.classes}/org/exist/security/xacml/policies">
-			  <fileset dir="${src}/org/exist/security/xacml/policies">
-				  <include name="*.xml"/>
-			  </fileset>
+        <copy todir="${build.classes}/org/exist/security/xacml/policies">
+            <fileset dir="${src}/org/exist/security/xacml/policies">
+                <include name="*.xml"/>
+            </fileset>
         </copy>
         <copy file="${src}/org/exist/xquery/util/messages.properties"
-                todir="${build.classes}/org/exist/xquery/util"/>
+        todir="${build.classes}/org/exist/xquery/util"/>
         <copy file="${src}/org/exist/ant/antlib.xml"
-                todir="${build.classes}/org/exist/ant"/>
+        todir="${build.classes}/org/exist/ant"/>
         <copy file="${src}/org/exist/exist.xsl"
-                todir="${build.classes}/org/exist"/>
+        todir="${build.classes}/org/exist"/>
         <copy file="${src}/org/exist/xmldb.xsl"
-                todir="${build.classes}/org/exist"/>
+        todir="${build.classes}/org/exist"/>
         <copy file="${src}/org/exist/xmldb2.xsl"
-                todir="${build.classes}/org/exist"/>
+        todir="${build.classes}/org/exist"/>
         <copy file="${src}/org/exist/start/start.config"
-                todir="${build.classes}/org/exist/start"/>
+        todir="${build.classes}/org/exist/start"/>
         <copy file="${src}/org/exist/security/security.properties"
-                todir="${build.classes}/org/exist/security"/>
+        todir="${build.classes}/org/exist/security"/>
         <copy file="${src}/org/exist/system.properties"
-                todir="${build.classes}/org/exist" filtering="true"/>
+        todir="${build.classes}/org/exist" filtering="true"/>
         <copy file="${src}/org/exist/util/mime-types.xml"
-                todir="${build.classes}/org/exist/util"/>
+        todir="${build.classes}/org/exist/util"/>
         <copy todir="${build.classes}/org/exist/http/webdav/methods">
             <fileset dir="${src}/org/exist/http/webdav/methods">
                 <include name="**.xq"/>
@@ -307,17 +307,17 @@
     <!-- ================================================================== -->
     <target name="all" depends="jar,wrapper,extension-modules" description="Build all"/>
 
-	<!-- ================================================================== -->
-	<!-- Rebuild all                                                        -->
-	<!-- ================================================================== -->
+    <!-- ================================================================== -->
+    <!-- Rebuild all                                                        -->
+    <!-- ================================================================== -->
     <target name="rebuild" depends="clean,all" description="Rebuild all"/>
 
     <!-- ================================================================== -->
     <!-- Run JUnit tests                                                    -->
-	<!-- ================================================================== -->
+    <!-- ================================================================== -->
     <target name="test"
-            depends="test-prepare,test-recovery, test-local, test-jetty, test-concurrent, test-remote, test-wrapup"
-            description="Run jUnit tests"/>
+    depends="test-prepare,test-recovery, test-local, test-jetty, test-concurrent, test-remote, test-wrapup"
+    description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->
     <property name="junit.reports.dat" value="${junit.reports}/report/data"/>
@@ -358,7 +358,7 @@
 
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
             <sysproperty key="exist.home" value="${basedir}" />
-	    <classpath refid="classpath.core"/>
+            <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
@@ -366,7 +366,7 @@
             <test fork="yes" name="org.exist.xupdate.test.AllTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.test.AllTests" todir="${junit.reports.dat}"/>
             
-			<!-- Execute all other tests except those that have to be called manually.   -->
+            <!-- Execute all other tests except those that have to be called manually.   -->
             <batchtest fork="yes" todir="${junit.reports.dat}">
                 <fileset dir="${src}">
                     <include name="**/test/*Test.java"/>
@@ -382,7 +382,7 @@
         </junit>
     </target>
 	
-        <!-- Test set 2 : jetty server -->
+    <!-- Test set 2 : jetty server -->
     <target name="test-jetty">
         <echo message="------------------------------------------"/>
         <echo message="Running tests on a jetty server"/>
@@ -400,7 +400,7 @@
                     <include name="org/exist/soap/test/*Test.java"/>
                 </fileset>
             </batchtest>
-       </junit>
+        </junit>
     </target>
 
 
@@ -448,7 +448,7 @@
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
-			<!--arg value="-d"/-->
+            <!--arg value="-d"/-->
         </java>
         <echo>Server started.</echo>
     </target>
@@ -476,15 +476,15 @@
     <!-- This target must be called after all tests because it shutsdown -->
     <!-- the current Jvm -->
     <target name="test-shutdown-server">
-		<!-- Register Ant tasks for eXist -->
+        <!-- Register Ant tasks for eXist -->
         <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
             <classpath refid="classpath.core"/>
         </typedef>
 
         <echo message="Shutting down the server ..."/>
         <xmldb:shutdown xmlns:xmldb="http://exist-db.org/ant"
-                uri="xmldb:exist://localhost:8088/xmlrpc/db"
-                user="admin" password=""/>
+        uri="xmldb:exist://localhost:8088/xmlrpc/db"
+        user="admin" password=""/>
         <sleep seconds="10"/>
     </target>
 	
@@ -495,15 +495,15 @@
         <mkdir dir="${build.src}"/>
         <antcall target="copy-xapi"/>
 
-		<!--delete dir="webapp/api"/>
-		<mkdir dir="webapp/api"/-->
+        <!--delete dir="webapp/api"/>
+        <mkdir dir="webapp/api"/-->
         <echo message="Generating Javadocs ..."/>
         <echo message="XMLDB: ${xmldb.src} ${has.xmldb.src}"/>
         <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved."
-                destdir="webapp/api" doctitle="eXist Javadocs"
-                noindex="true" notree="true" access="public"
-        		maxmemory="512M"
-                source="1.4">
+            destdir="webapp/api" doctitle="eXist Javadocs"
+            noindex="true" notree="true" access="public"
+            maxmemory="512M"
+            source="1.4">
             <packageset dir="${src}">
                 <include name="org/**"/>
             </packageset>
@@ -541,7 +541,7 @@
             <fileset dir="log" includes="*"/>
             <fileset dir="tmp" includes="*"/>
             <fileset dir="${src.webapp}/WEB-INF/logs"
-                    excludes=".DO_NOT_DELETE" includes="*"/>
+            excludes=".DO_NOT_DELETE" includes="*"/>
         </delete>
         <delete dir="${junit.reports.dat}"/>
         <delete dir="${junit.reports.html}"/>
@@ -550,7 +550,7 @@
         <delete dir="${src.webapp}/WEB-INF/data/journal"/>
         <delete>
             <fileset dir="${src.webapp}/WEB-INF/data"
-                    includes="*.dbx,*.log" excludes=".DO_NOT_DELETE" />
+            includes="*.dbx,*.log" excludes=".DO_NOT_DELETE" />
         </delete>
         <delete dir="samples/classes"/>
         <delete failonerror="no" file="examples.jar"/>
@@ -562,7 +562,7 @@
         <ant antfile="build.xml" dir="extensions/modules" target="clean"/>
     </target>
 
-	<!-- ============================================================ -->
+    <!-- ============================================================ -->
     <!-- Axis SOAP                                                    -->
     <!-- ============================================================ -->
     <target name="wsdl2java">
@@ -570,12 +570,12 @@
         <delete failonerror="no" file="${build.soap}/org/exist/soap/AdminSoapBindingImpl.java"/>
         <delete failonerror="no" file="${build.soap}/org/exist/soap/QuerySoapBindingImpl.java"/>
         <wsdl2java url="${src}/org/exist/soap/query.wsdl"
-                output="${build.soap}"
-                deployscope="session"
-                serverSide="yes"
-                skeletonDeploy="yes"
-                verbose="no"
-        	    wrapArrays="yes">
+            output="${build.soap}"
+            deployscope="session"
+            serverSide="yes"
+            skeletonDeploy="yes"
+            verbose="no"
+            wrapArrays="yes">
             <mapping namespace="urn:exist" package="org.exist.soap"/>
         </wsdl2java>
         <copy todir="${src}/org/exist/soap">
@@ -584,25 +584,25 @@
                 <include name="QueryServiceLocator.java"/>
                 <include name="QuerySoapBindingSkeleton.java"/>
                 <include name="QuerySoapBindingStub.java"/>
-            	<include name="Collection.java"/>
-            	<include name="QueryResponse.java"/>
-            	<include name="QueryResponseCollection.java"/>
-            	<include name="QueryResponseDocument.java"/>
-            	<include name="QueryResponseCollections.java"/>
-            	<include name="QueryResponseDocuments.java"/>
-            	<include name="StringArray.java"/>
-            	<include name="Base64BinaryArray.java"/>
+                <include name="Collection.java"/>
+                <include name="QueryResponse.java"/>
+                <include name="QueryResponseCollection.java"/>
+                <include name="QueryResponseDocument.java"/>
+                <include name="QueryResponseCollections.java"/>
+                <include name="QueryResponseDocuments.java"/>
+                <include name="StringArray.java"/>
+                <include name="Base64BinaryArray.java"/>
             </fileset>
         </copy>
         <copy file="${build.soap}/org/exist/soap/deploy.wsdd" tofile="${src}/org/exist/soap/deployQuery.wsdd"/>
         <copy file="${build.soap}/org/exist/soap/undeploy.wsdd" tofile="${src}/org/exist/soap/undeployQuery.wsdd"/>
         <wsdl2java url="${src}/org/exist/soap/admin.wsdl"
-                output="${build.soap}"
-                deployscope="session"
-                serverSide="yes"
-                skeletonDeploy="yes"
-                verbose="no"
-        	    wrapArrays="yes">
+            output="${build.soap}"
+            deployscope="session"
+            serverSide="yes"
+            skeletonDeploy="yes"
+            verbose="no"
+            wrapArrays="yes">
             <mapping namespace="urn:exist" package="org.exist.soap"/>
         </wsdl2java>
         <copy todir="${src}/org/exist/soap">
@@ -611,18 +611,18 @@
                 <include name="AdminServiceLocator.java"/>
                 <include name="AdminSoapBindingSkeleton.java"/>
                 <include name="AdminSoapBindingStub.java"/>
-            	<include name="CollectionDesc.java"/>
-            	<include name="DocumentDesc.java"/>
-            	<include name="DocumentDescs.java"/>
-            	<include name="DocumentType.java"/>
-            	<include name="EntityPermissions.java"/>
-            	<include name="EntityPermissionsList.java"/>
-            	<include name="IndexedElement.java"/>
-            	<include name="IndexedElements.java"/>
-            	<include name="Strings.java"/>
-            	<include name="Permissions.java"/>
-            	<include name="UserDesc.java"/>
-            	<include name="UserDescs.java"/>
+                <include name="CollectionDesc.java"/>
+                <include name="DocumentDesc.java"/>
+                <include name="DocumentDescs.java"/>
+                <include name="DocumentType.java"/>
+                <include name="EntityPermissions.java"/>
+                <include name="EntityPermissionsList.java"/>
+                <include name="IndexedElement.java"/>
+                <include name="IndexedElements.java"/>
+                <include name="Strings.java"/>
+                <include name="Permissions.java"/>
+                <include name="UserDesc.java"/>
+                <include name="UserDescs.java"/>
             </fileset>
         </copy>
         <copy file="${build.soap}/org/exist/soap/deploy.wsdd" tofile="${src}/org/exist/soap/deployAdmin.wsdd"/>
@@ -631,15 +631,15 @@
 
     <target depends="jar" name="java2wsdl">
         <java2wsdl classname="org.exist.soap.Query"
-                location="http://localhost:8080/exist/services/Query"
-                output="${src}/org/exist/soap/query.wsdl"
-                namespace="urn:exist">
+            location="http://localhost:8080/exist/services/Query"
+            output="${src}/org/exist/soap/query.wsdl"
+            namespace="urn:exist">
             <mapping namespace="urn:exist" package="org.exist.soap"/>
         </java2wsdl>
         <java2wsdl classname="org.exist.soap.Admin"
-                location="http://localhost:8080/exist/services/Admin"
-                output="${src}/org/exist/soap/admin.wsdl"
-                namespace="urn:exist">
+            location="http://localhost:8080/exist/services/Admin"
+            output="${src}/org/exist/soap/admin.wsdl"
+            namespace="urn:exist">
             <mapping namespace="urn:exist" package="org.exist.soap"/>
         </java2wsdl>
     </target>
@@ -681,9 +681,9 @@
         <chmod file="webapp/bin/client.sh" perm="+x"/>
     </target>
 
-	<!-- ================================================================== -->
-	<!-- Create .war file                                                   -->
-	<!-- ================================================================== -->
+    <!-- ================================================================== -->
+    <!-- Create .war file                                                   -->
+    <!-- ================================================================== -->
     <target name="dist-war" depends="webapps" description="Create war file">
         <war destfile="${dist}/exist-${DSTAMP}.war" webxml="webapp/WEB-INF/web.xml">
                 
@@ -713,7 +713,7 @@
             <webinf dir=".">
                 <include name="client.properties"/>
                 <include name="backup.properties"/>
-            	<include name="server.xml"/>
+                <include name="server.xml"/>
             </webinf>
             
             <!-- Add files context root ('/') -->
@@ -733,8 +733,8 @@
             
             <!-- Not needed for war file -->
             <!-- <fileset dir=".">
-                <include name="start.jar"/>
-                <include name="examples.jar"/>
+            <include name="start.jar"/>
+            <include name="examples.jar"/>
             </fileset> -->
             
             <!-- Add additional information -->
@@ -781,7 +781,7 @@
         <touch file="${dist.dir}/webapp/WEB-INF/logs/.DO_NOT_DELETE"/>
         <touch file="${dist.dir}/log/.DO_NOT_DELETE"/>
 
-     <!--   <filter token="database" value="native_cluster"/>   -->
+        <!--   <filter token="database" value="native_cluster"/>   -->
         <filter token="database" value="native"/>
 
         <copy todir="${dist.dir}/" filtering="true">
@@ -867,8 +867,8 @@
                 <exclude name="test.xml"/>
             </fileset>
         </copy>
-    	<copy file="${src}/org/exist/util/mime-types.xml"
-    		todir="${dist.dir}"/>
+        <copy file="${src}/org/exist/util/mime-types.xml"
+        todir="${dist.dir}"/>
         <fixcrlf eol="crlf" includes="**/*.bat" srcdir="${dist.dir}/bin"/>
         <fixcrlf eof="remove" eol="lf" includes="**/*.sh" srcdir="${dist.dir}/bin"/>
         <fixcrlf eol="crlf" includes="build.bat" srcdir="${dist.dir}"/>
@@ -892,8 +892,8 @@
     <!-- ================================================================== -->
     <target depends="dist" name="dist-zip" description="Create dist-zip">
         <zip basedir="${dist}" compress="true"
-                excludes="${project.name}-${project.version}.zip"
-                zipfile="${dist}/${project.name}-${project.version}.zip"/>
+        excludes="${project.name}-${project.version}.zip"
+        zipfile="${dist}/${project.name}-${project.version}.zip"/>
     </target>
 	
     <!-- ================================================================== -->
@@ -908,16 +908,16 @@
         <delete file="${dist}/${dist.name}.tar"/>
     </target>
     
-	<!-- ================================================================== -->
-	<!-- Build installer                                                    -->
-	<!-- ================================================================== -->
+    <!-- ================================================================== -->
+    <!-- Build installer                                                    -->
+    <!-- ================================================================== -->
     <target name="commandline-installer">
         <ant antfile="build.xml" dir="tools/izpack"/>
     </target>
 
     <target depends="all,samples,javadocs" name="prepare-installer">
         <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
-                classname="com.izforge.izpack.ant.IzPackTask"/>
+        classname="com.izforge.izpack.ant.IzPackTask"/>
         <tstamp/>
         <delete dir="${jetty.dir}/work/Jetty__8080__exist"/>
         <touch file="webapp/WEB-INF/logs/exist.log"/>
@@ -928,24 +928,24 @@
     <target depends="prepare-installer" name="installer" description="Create installer">
         <echo message="Calling IzPack to create installer ..."/>
         <izpack input="installer/install.xml"
-                output="installer/${project.name}-${project.version}.jar"
-                basedir="." izPackDir="${izpack.dir}"
-                installerType="standard"/>
+        output="installer/${project.name}-${project.version}.jar"
+        basedir="." izPackDir="${izpack.dir}"
+        installerType="standard"/>
     </target>
 
     <target depends="prepare-installer,commandline-installer"
-            name="snapshot-installer" description="Create snapshot installer">
+        name="snapshot-installer" description="Create snapshot installer">
         <echo message="Calling IzPack to create installer ..."/>
         <property name="inst-jar" value="installer/${project.name}-snapshot-${DSTAMP}.jar"/>
         <izpack input="installer/install.xml"
-                output="installer/${project.name}-snapshot-${DSTAMP}.jar"
-                basedir="." izPackDir="${izpack.dir}"
-                installerType="standard"/>
+        output="installer/${project.name}-snapshot-${DSTAMP}.jar"
+        basedir="." izPackDir="${izpack.dir}"
+        installerType="standard"/>
 
         <mkdir dir="installer/temp"/>
         <tstamp/>
         <unjar src="installer/${project.name}-snapshot-${DSTAMP}.jar"
-                dest="installer/temp"/>
+        dest="installer/temp"/>
         <delete>
             <fileset dir="installer/temp">
                 <include name="META-INF/EXIST.*"/>
@@ -953,7 +953,7 @@
         </delete>
         <delete file="installer/${project.name}-snapshot-${DSTAMP}.jar"/>
         <jar destfile="installer/${project.name}-snapshot-${DSTAMP}.jar"
-                basedir="installer/temp" compress="yes" update="yes">
+            basedir="installer/temp" compress="yes" update="yes">
             <manifest>
                 <attribute name="Main-Class" value="org.exist.izpack.CommandLineInstaller"/>
             </manifest>
@@ -964,9 +964,9 @@
     <target depends="prepare-installer" name="cvs-build">
         <echo message="Calling IzPack to create installer ..."/>
         <izpack input="installer/install.xml"
-                output="installer/${project.name}-cvs-${DSTAMP}.jar"
-                basedir="." izPackDir="${izpack.dir}"
-                installerType="standard"/>
+        output="installer/${project.name}-cvs-${DSTAMP}.jar"
+        basedir="." izPackDir="${izpack.dir}"
+        installerType="standard"/>
     </target>
 	
     <!-- ================================================================== -->
@@ -992,7 +992,7 @@
 
         <echo message="Adjusting links ..."/>
         <replace dir="${build.docs.src}" summary="true"
-                includes="*.xml">
+            includes="*.xml">
             <replacefilter token="index.xml" value="index.html"/>
             <replacefilter token="acknowledge.xml" value="acknowledge.html"/>
             <replacefilter token="ant-tasks.xml" value="ant-tasks.html"/>
@@ -1017,7 +1017,7 @@
             <replacefilter token="xquery/acronyms.xq" value="${demo.host}/xquery/acronyms.xq"/>
             <replacefilter token="mods/" value="${demo.host}/mods/"/>
             <replacefilter token="xquery/xquery.xq" value="${demo.host}/xquery/xquery.xq"/>
-        	<replacefilter token="sandbox/sandbox.xql" value="${demo.host}/sandbox/sandbox.xql"/>
+            <replacefilter token="sandbox/sandbox.xql" value="${demo.host}/sandbox/sandbox.xql"/>
             <replacefilter token='url="xmldb/db/' value='url="${demo.host}/xmldb/db/'/>
             <replacefilter token='href="xmldb/db/' value='href="${demo.host}/xmldb/db/'/>
             <replacefilter token="admin/admin.xql" value="${demo.host}/admin/admin.xql"/>
@@ -1026,7 +1026,7 @@
             <replacefilter token='url="xquery/guess.xql' value='url="${demo.host}/xquery/guess.xql'/>
             <replacefilter token="xquery/login.xql" value="${demo.host}/xquery/login.xql"/>
             <replacefilter token="apps/applications.xml" value="${demo.host}/apps/applications.xml"/>
-        	<replacefilter token="webstart/exist.jnlp" value="${demo.host}/webstart/exist.jnlp"/>
+            <replacefilter token="webstart/exist.jnlp" value="${demo.host}/webstart/exist.jnlp"/>
         </replace>
     </target>
 
@@ -1038,15 +1038,15 @@
         <echo message="Calling Cocoon ..."/>
 
         <cocoon verbose="true"
-                classpathref="classpath.core"
-                precompile-only="false"
-                confirm-extensions="false"
-                context-dir="${build.docs.src}"
-                config-file="${build.docs.src}/WEB-INF/cocoon.xconf"
-                work-dir="${build}/work"
-                dest-dir="${build.docs.html}"
-                extension=".html"
-                accept="*/*">
+            classpathref="classpath.core"
+            precompile-only="false"
+            confirm-extensions="false"
+            context-dir="${build.docs.src}"
+            config-file="${build.docs.src}/WEB-INF/cocoon.xconf"
+            work-dir="${build}/work"
+            dest-dir="${build.docs.html}"
+            extension=".html"
+            accept="*/*">
             <logging log-kit="${build.docs.src}/WEB-INF/logkit.xconf" logger="cli" level="DEBUG" />
             <uris name="site" follow-links="false">
                 <uri type="append" src="index.xml"/>
@@ -1090,10 +1090,10 @@
         </copy>
     </target>
 
-	<!-- ============================================================================ -->
-	<!-- Build thirdparty modules (JBoss integration)                                 -->
-	<!--                                                                              -->
-	<!-- ============================================================================ -->
+    <!-- ============================================================================ -->
+    <!-- Build thirdparty modules (JBoss integration)                                 -->
+    <!--                                                                              -->
+    <!-- ============================================================================ -->
     <target name="thirdparty" depends="jar">
         <ant antfile="build.xml" dir="thirdparty/jboss"/>
     </target>
@@ -1119,7 +1119,7 @@
     <target name="demoserver">
         <echo message="Adjusting links ..."/>
         <property name="host" value="http://exist-db.org"/>
-    	<delete dir="${build.docs}" failonerror="false"/>
+        <delete dir="${build.docs}" failonerror="false"/>
         <mkdir dir="${build.docs}"/>
         <mkdir dir="${build.docs.src}"/>
 
@@ -1128,16 +1128,16 @@
             <fileset dir="${src.webapp}">
                 <include name="**/*"/>
                 <exclude name="WEB-INF/data/*"/>
-            	<exclude name="WEB-INF/logs/*"/>
+                <exclude name="WEB-INF/logs/*"/>
             </fileset>
         </copy>
     	
         <replace dir="${build.docs.src}" summary="true"
-                includes="sidebar.xml">
+            includes="sidebar.xml">
             <replacefilter token="index.xml" value="${host}/index.html"/>
-        	<replacefilter token="acknowledge.xml" value="${host}/acknowledge.html"/>
+            <replacefilter token="acknowledge.xml" value="${host}/acknowledge.html"/>
             <replacefilter token="credits.xml" value="${host}/credits.html"/>
-        	<replacefilter token="facts.xml" value="${host}/facts.html"/>
+            <replacefilter token="facts.xml" value="${host}/facts.html"/>
             <replacefilter token="quickstart.xml" value="${host}/quickstart.html"/>
             <replacefilter token="documentation.xml" value="${host}/documentation.html"/>
             <!--replacefilter token="#mailing" value="${host}/index.html#mailing"/-->
@@ -1150,7 +1150,7 @@
             <include name="library/sidebar.xml"/>
             <include name="xquery/sidebar.xml"/>
             <replacefilter token="../index.xml" value="${host}/index.html"/>
-        	<replacefilter token="../acknowledge.xml" value="${host}/acknowledge.html"/>
+            <replacefilter token="../acknowledge.xml" value="${host}/acknowledge.html"/>
             <replacefilter token="../credits.xml" value="${host}/credits.html"/>
             <replacefilter token="../quickstart.xml" value="${host}/quickstart.html"/>
             <replacefilter token="../documentation.xml" value="${host}/documentation.html"/>
@@ -1161,10 +1161,10 @@
             <include name="admin.xql"/>
             <replacefilter token='&lt;a href="..">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
         </replace>
-    	<replace dir="${build.docs.src}/sandbox" summary="true">
+        <replace dir="${build.docs.src}/sandbox" summary="true">
             <include name="sandbox.xql"/>
             <replacefilter token='&lt;a href="../index.xml">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
-    		<replacefilter token='&lt;a href="../index.xml#download">Download&lt;/a>' value='&lt;a href="${host}#download">Download&lt;/a>'/>
+            <replacefilter token='&lt;a href="../index.xml#download">Download&lt;/a>' value='&lt;a href="${host}#download">Download&lt;/a>'/>
         </replace>
         <replace dir="${build.docs.src}/mods" summary="true">
             <include name="config.xqm"/>
@@ -1175,10 +1175,10 @@
         </replace>
     </target>
     
-	<!-- ============================================================================ -->
-	<!-- Sign jar files for java webstart.                                            -->
-	<!--                                                                              -->
-	<!-- ============================================================================ -->
+    <!-- ============================================================================ -->
+    <!-- Sign jar files for java webstart.                                            -->
+    <!--                                                                              -->
+    <!-- ============================================================================ -->
     <target name="sign" if="key.store.present">
         
         <!-- Only sign if key store exists. otherwise skip signing -->
@@ -1198,5 +1198,5 @@
 
     </target>
 	
-	<import file="build-quality.xml" />
+    <import file="build-quality.xml" />
 </project>
