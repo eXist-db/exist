@@ -285,7 +285,7 @@ public class DurationValue extends ComputableValue {
 
 	public ComputableValue div(ComputableValue other) throws XPathException {	
 		BigDecimal factor = numberToBigDecimal(other, "FORG0006: invalid operand type: ");		
-		return new DurationValue(getCanonicalDuration().multiply(BigDecimal.valueOf(1).divide(factor)));				
+		return new DurationValue(getCanonicalDuration().multiply(BigDecimal.valueOf(1).divide(factor, 20, BigDecimal.ROUND_HALF_UP)));				
 	}
 	
 	/**
