@@ -110,7 +110,7 @@ public class FunMax extends CollatingFunction {
                 Item item = iter.nextItem();
                 AtomicValue value = item.atomize();                 
                 //Any value of type xdt:untypedAtomic is cast to xs:double
-                if (value.getType() == Type.ATOMIC) 
+                if (value.getType() == Type.UNTYPED_ATOMIC) 
                 	value = value.convertTo(Type.DOUBLE);
                 if (max == null)
                     max = value;
@@ -120,7 +120,7 @@ public class FunMax extends CollatingFunction {
                 				" and " + Type.getTypeName(value.getType()));
                 	}
                     //Any value of type xdt:untypedAtomic is cast to xs:double
-                    if (value.getType() == Type.ATOMIC) 
+                    if (value.getType() == Type.UNTYPED_ATOMIC) 
                     	value = value.convertTo(Type.DOUBLE);                	
                 	//Ugly test
 	                if (value instanceof NumericValue) {	                	

@@ -106,7 +106,7 @@ public class FunMin extends CollatingFunction {
                 Item item = iter.nextItem();
                 AtomicValue value = item.atomize();
                 //Any value of type xdt:untypedAtomic is cast to xs:double
-                if (value.getType() == Type.ATOMIC) 
+                if (value.getType() == Type.UNTYPED_ATOMIC) 
                 	value = value.convertTo(Type.DOUBLE); 
                 if (min == null)
                     min = value;

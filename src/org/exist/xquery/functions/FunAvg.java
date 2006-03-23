@@ -85,7 +85,7 @@ public class FunAvg extends Function {
     			Item item = iter.nextItem();
     			AtomicValue value = item.atomize();
                 //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
-                if (value.getType() == Type.ATOMIC) value = value.convertTo(Type.DOUBLE);
+                if (value.getType() == Type.UNTYPED_ATOMIC) value = value.convertTo(Type.DOUBLE);
         		if (!(value instanceof ComputableValue))
     				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in an average");
     			if (sum == null)
