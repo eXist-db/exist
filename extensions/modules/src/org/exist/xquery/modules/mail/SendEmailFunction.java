@@ -1,5 +1,5 @@
 /*
- * eXist Mail Module Extension SendEmail
+ * eXist Mail Module Extension SendEmailFunction
  *
  * Released under the BSD License
  *
@@ -23,7 +23,7 @@
  *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  *  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id$
+ *  $Id: SendEmailFunction.java,v 1.12 2006/03/01 13:52:00 deliriumsky Exp $
  */
 
 package org.exist.xquery.modules.mail;
@@ -67,7 +67,7 @@ import org.apache.xmlrpc.Base64;
 import org.w3c.dom.Node;
 
 /**
- * eXist Mail Module Extension SendEmail 
+ * eXist Mail Module Extension SendEmailFunction
  * 
  * The email sending functionality of the eXist Mail Module Extension that
  * allows email to be sent from XQuery using either SMTP or Sendmail.  
@@ -78,7 +78,7 @@ import org.w3c.dom.Node;
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
-public class SendEmail extends BasicFunction
+public class SendEmailFunction extends BasicFunction
 {
 	//TODO: Feature - Add an option to execute the function Asynchronously as Socket operations for SMTP can be slow (Sendmail seems fast enough). Will require placing the SMTP code in a thread.
 	//TODO: Feature - Add a facility for the user to add their own message headers.
@@ -104,7 +104,7 @@ public class SendEmail extends BasicFunction
 	 * 
 	 * @param context	The Context of the calling XQuery
 	 */
-	public SendEmail(XQueryContext context)
+	public SendEmailFunction(XQueryContext context)
 	{
 		super(context, signature);
     }
