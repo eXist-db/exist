@@ -51,7 +51,7 @@ public class MailModule extends AbstractInternalModule
 	public final static String PREFIX = "mail";
 	
 	private final static FunctionDef[] functions = {
-		new FunctionDef(SendEmail.signature, SendEmail.class)
+		new FunctionDef(SendEmailFunction.signature, SendEmailFunction.class)
 	};
 	
 	public MailModule()
