@@ -72,6 +72,27 @@ public class ModuleContext extends XQueryContext {
         parentContext.setBaseURI(uri);
     }
     
+
+    /**
+     * Delegate to parent context
+     * 
+     * @see org.exist.xquery.XQueryContext#setXQueryContextVar(String, Object)
+     */
+    public void setXQueryContextVar(String name, Object XQvar)
+    {
+    	parentContext.setXQueryContextVar(name, XQvar);
+    }
+
+    /**
+     * Delegate to parent context
+     * 
+     * @see org.exist.xquery.XQueryContext#getXQueryContextVar(String)
+     */
+    public Object getXQueryContextVar(String name)
+    {
+    	return(parentContext.getXQueryContextVar(name));
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.xquery.XQueryContext#getBroker()
      */
