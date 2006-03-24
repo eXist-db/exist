@@ -1048,6 +1048,9 @@ public class BrokerPool {
         } else
             cacheManager.checkDistribution();
         //TODO : touch this.syncEvent and syncRequired ?
+	
+        //After setting the SYSTEM_USER above we must change back to the DEFAULT User to prevent a security problem
+        broker.setUser(User.DEFAULT);
 	}
 	
 	/**
