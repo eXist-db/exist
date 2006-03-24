@@ -689,6 +689,12 @@ public class XQueryContext {
 		staticDocuments = null;
 		lastVar = null;
 		fragmentStack = new Stack();
+		
+		//remove the context-vars, subsequent execution of the query
+		//may generate different values for the vars based on the
+		//content of the db
+		XQueryContextVars.clear();
+		
 		watchdog.reset();
         profiler.reset();
 		for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
@@ -1488,19 +1494,38 @@ public class XQueryContext {
 		}
 	}
 	
-//	set an XQuery Context variable; called by context:set-var()
+	/**
+	 * Set an XQuery Context variable.
+	 * Used by the context extension module; called by context:set-var().
+	 * 
+	 * @param name The variable name
+	 * @param XQVar The variable value, may be of any xs: type 
+	 */
     public void setXQueryContextVar(String name, Object XQvar)
     {
     	XQueryContextVars.put(name, XQvar);
     }
     
-    //get an XQuery Context variable; called by context:get-var()
+    /**
+	 * Get an XQuery Context variable.
+	 * Used by the context extension module; called by context:get-var().
+	 * 
+	 * @param name The variable name
+	 * @return The variable value indicated by name.
+	 */
     public Object getXQueryContextVar(String name)
     {
     	return(XQueryContextVars.get(name));
     }
     
-    //set the serializer to use for output; called by context:set-serializer()
+    /**
+	 * Set the serializer to use for output
+	 * Used by the context extension module; called by context:set-serializer().
+	 * 
+	 * @param name The name of the serializer to use
+	 * @param indent Should the output be indented?
+	 * @param omitxmldeclaration Should the output omit the xml declaration?
+	 */
     public void setXQuerySerializer(String name, boolean indent, boolean omitxmldeclaration) throws XPathException
     {
     	Pragma pragma;
