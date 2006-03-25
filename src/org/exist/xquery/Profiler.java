@@ -48,26 +48,28 @@ public class Profiler {
     
     private final StringBuffer buf = new StringBuffer(64);
     
-    private long profilingThreshold = 5;
+    // never used locally
+    // private long profilingThreshold = 5;
     
     private boolean enabled = false;
     
     private int verbosity = 0;   
     
+    /** value for Verbosity property: basic profiling : just elapsed time */
     public static int TIME = 1;
-    //For optimizations
+    /** value for Verbosity property: For optimizations */
     public static int OPTIMIZATIONS = 2;
-    //For computations that will trigger further optimizations 
+    /** For computations that will trigger further optimizations */ 
     public static int OPTIMIZATION_FLAGS = 3;
-    //Indicates the dependencies of the expression
+    /** Indicates the dependencies of the expression */
     public static int DEPENDENCIES = 4;
-    //An abstract level for viewing the expression's context sequence/item
+    /** An abstract level for viewing the expression's context sequence/item */
     public static int START_SEQUENCES = 4;  
-    //Just returns the number of items in the sequence
+    /** Just returns the number of items in the sequence */
     public static int ITEM_COUNT = 5;    
-    //For a truncated string representation of then context sequence (TODO) 
+    /** For a truncated string representation of the context sequence (TODO) */ 
     public static int SEQUENCE_PREVIEW = 6;     
-    //For a full representation of the context sequence (TODO)
+    /** For a full representation of the context sequence (TODO) */
     public static int SEQUENCE_DUMP = 8;  
     
     /**
@@ -89,24 +91,32 @@ public class Profiler {
             if (params != null) {
                 if (params[0].equals("logger"))
                     log = Logger.getLogger(params[1]);
+                
                 else if (params[0].equals("enabled"))
                     enabled = params[1].equals("yes");
+                
                 else if ("verbosity".equals(params[0])) {
                     try {
                         verbosity = Integer.parseInt(params[1]);
                     } catch (NumberFormatException e) {
-//                      LOG this
+                    	log.warn( "invalid value for verbosity: " +
+                    			"should be an integer between 0 and " + 
+                    			SEQUENCE_DUMP );                   	
                     }
                 } 
-                else if("threshold".equals(params[0])) {
-                    try {
-                        profilingThreshold = Integer.parseInt(params[1]);
-                    } catch(NumberFormatException e) {
-//                      LOG this
-                    }
-                }
+                
+//                else if("threshold".equals(params[0])) {
+//                    try {
+//                        profilingThreshold = Integer.parseInt(params[1]);
+//                    } catch(NumberFormatException e) {
+//                    }
+//                }
+                
                 else {
-//                  LOG this                    
+                	log.warn(
+                			"invalid parameter for" +
+                			"  declare option exist:profiling : " +
+                			"should be enabled verbosity , or logger" );                     
                 }
             }
         }
@@ -337,6 +347,7 @@ public class Profiler {
     }
     
     //TODO : find a way to preview "abstract" sequences
+    // never used locally
     private String sequencePreview(Sequence sequence) {
         StringBuffer truncation = new StringBuffer();         
         if (sequence.getLength() == 0)
