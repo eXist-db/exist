@@ -126,6 +126,10 @@ public class XMLWriter {
 		defaultNamespace = "";
 	}
 
+	public void setDefaultNamespace(String namespace) {
+		defaultNamespace = namespace == null ? "" : namespace;
+	}
+	
 	public void startDocument() throws TransformerException {
 		tagIsOpen = false;
 		tagIsEmpty = true;
