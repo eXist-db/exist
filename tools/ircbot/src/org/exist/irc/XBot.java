@@ -386,7 +386,7 @@ public class XBot extends PircBot {
 		if (args.length < 2) {
 			System.err.println("Usage: org.exist.irc.XBot nickname password");
 		}
-		XBot bot = new XBot("irc.freenode.net", "#existdb", args[0], args[1]);
+		XBot bot = new XBot("irc.freenode.net", "#testaabb", args[0], args[1]);
 		bot.connect();
 	}
 }
