@@ -1,0 +1,180 @@
+* {
+	padding: 0;
+	margin: 0;
+}
+
+body{
+	font: 100% Arial, Helvetica, sans-serif;
+	background: #EEEEEE url(../images/logo.gif) center center no-repeat fixed;
+	margin: 15px;
+}
+
+#overlay {
+	background-image: url(../images/overlay.png);
+}
+
+* html #overlay{
+	background-color: #333;
+	back\ground-color: transparent;
+	background-image: url(images/blank.gif);
+	filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src="images/overlay.png", sizingMethod="scale");
+}
+
+a:link, a:visited {
+	color: #780074;
+	border-bottom: 1px dotted #4E4E4E;
+	text-decoration: none;
+}
+
+.irc_main {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 70%;
+}
+
+.irc_userlist {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 25%;
+	border: 1px solid #D6D6D6;
+}
+
+.irc_userlist li {
+	list-style: none;
+	margin: 5px;
+}
+
+.irc_content {
+	position: relative;
+	border: 1px solid #D6D6D6;
+}
+
+.irc_content img {
+	position: absolute;
+	left: 48%;
+	top: 48%;
+}
+
+.ircinput {
+	margin-top: 6px;
+}
+
+.ircinput textarea {
+	height: 2em;
+	background: none;
+	border: 1px solid #D6D6D6;
+}
+
+.irclog {
+	position: relative;
+	width: 100%;
+}
+
+.irc_line {
+	position: relative;
+}
+
+.nick {
+	position: absolute;
+	left: 0;
+	top: 0;
+	display: block;
+	color: #6666CC;
+	font-weight: bold;
+}
+
+.nick:before {
+	content: '<';
+	color: black;
+}
+
+.nick:after {
+	content: '>';
+	color: black;
+}
+
+.message {
+	display: block;
+	color: #990033;
+	margin-left: 150px;
+}
+
+.event {
+	color: #999999;
+}
+
+.notice {
+	color: #0033CC;
+}
+
+.window {
+	position: absolute;
+	z-index: 1;
+	font-size: .9em;
+	background: url(../images/block_bottom.gif) #fff no-repeat left bottom;
+	border: 0;
+}
+
+.window h1 {
+	height:17px;
+	font: .75em/1.2em bold Geneva, Arial, Helvetica, sans-serif;
+	color: white;
+	background-color: #63B2E4;
+	padding: 2px 3px;
+}
+
+.window_content h1 {
+	font: 1.33em/1.5em bold "Arial Unicode MS", SimSun, Verdana, sans-serif;
+	background-color: inherit;
+	color: #334d55;
+}
+
+.window_content {
+	position: relative;
+	padding: 4px;
+	overflow: hidden;
+}
+
+.window_closeButton {
+	float: right;
+	padding-right: 3px;
+}
+
+.modal {
+	padding: 10px;
+	font-size: .85em;
+}
+
+.modal fieldset {
+	margin: 5px 0;
+	border: 0;
+}
+
+.modal label {
+}
+
+.modal p {
+	margin-bottom: 15px;
+}
+
+.modal input, .modal select {
+	float: right;
+	width: 170px;
+	background: none;
+	border: 1px solid #D6D6D6;
+}
+
+.modal select {
+	width: 172px;
+}
+
+.modal_buttons {
+	margin-top: 25px;
+	text-align: center;
+}
+
+.modal_buttons button {
+	border: 1px solid #D6D6D6;
+}

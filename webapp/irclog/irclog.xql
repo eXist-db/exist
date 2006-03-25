@@ -28,6 +28,7 @@ declare function irc:display-page($channel as xs:string) as element() {
             </div>
             
             <div id="content">
+                <a id="start-chat" href="index.html">Chat in this channel!</a>
                 <div id="query-panel">
                     <input type="text" id="query"/>
                     <button type="button" id="send-query">Send</button>
@@ -149,12 +150,26 @@ declare function irc:query($query as xs:string) as element() {
         </table>
 };
 
+declare function irc:events-since($date as xs:date, $timestamp as xs:time) {
+    util:log("DEBUG", ("Time: ", $timestamp, " Date: ", $date)),
+    util:declare-option("exist:serialize", "media-type=text/xml omit-xml-declaration=no"),
+    <table>
+    {
+        for $event in /xlog[@date = $date]/*[@time > $timestamp]
+        return
+            irc:display-event($event)
+    }
+    </table>
+};
+
 let $channel := request:request-parameter("channel", "#existdb")
 let $date := request:request-parameter("date", ())
 let $query := request:request-parameter("query", ())
-let $log := util:log("DEBUG", $query)
+let $timestamp := request:request-parameter("since", ())
 return
-    if ($date) then
+    if ($timestamp) then
+        irc:events-since($date, $timestamp)
+    else if ($date) then
         irc:display-date($date, $query)
     else if ($query) then
         irc:query($query)
