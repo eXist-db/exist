@@ -78,6 +78,9 @@
                 <listitem>
                     <para><ulink href="webdav.xml">WebDAV</ulink>: how to setup your favourite webDAV enabled application.</para>
                 </listitem>
+                <listitem>
+                    <para><ulink href="developper.html">Developper Manual</ulink>: How to use the various tools; SVN, eclipse, Ant, PMD, JDepend, ... .</para>
+                </listitem>
             </unorderedlist>
             
         </section>
