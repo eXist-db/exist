@@ -44,6 +44,10 @@ body {
     font-size: 75%;
 }
 
+#start-chat {
+	float: right;
+}
+
 #query-result {
 	margin-top: 5px;
 	background-color: #FEFFAF;
