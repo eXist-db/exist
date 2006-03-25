@@ -14,6 +14,7 @@
 	<path id="classpath.xbot">
     	<pathelement path="${lib}/pircbot.jar"/>
     	<pathelement path="${server.dir}/lib/core/xmldb.jar"/>
+    	<pathelement path="${server.dir}/lib/core/javax.servlet.jar"/>
     	<pathelement path="${server.dir}/exist.jar"/>
     </path>
 	
@@ -21,7 +22,7 @@
     <!-- Compiles the source code                                            -->
     <!-- =================================================================== -->
     <target depends="prepare" name="compile">
-        <javac debug="${build.debug}" deprecation="${build.deprecation}" 
+        <javac debug="true" deprecation="${build.deprecation}" 
 			destdir="${classes}" encoding="UTF-8"
 			optimize="${build.optimize}" srcdir="${src}" 
         	source="1.4">
