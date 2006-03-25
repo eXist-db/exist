@@ -12,25 +12,8 @@
 to test eXist (developper manual)<br>
 </h1>
 <p>Jean-Marc Vanel<br>
-<script language="JavaScript">
-<!-- This script and many more are available free online at -->
-
-
-
-<!-- Begin
-var user;
-var domain;
-var suffix;
-function jemail(user, domain, suffix){
-document.write('<a href="' + 'mailto:' + user + '@' + domain + '.' +
-suffix + '">' + user + '@' + domain + '.' + suffix + '</a>');
-}
-jemail( "jmvanel", "free", "fr");
-// End --> 
-</script>
 Last update : $Header$
-<script>
- document.write(document.lastMod</script><br>
+<br>
 </p>
 <ul id="mozToc">
 <!--mozToc h1 1 h2 2 h3 3 h4 4 h5 5 h6 6--><li><a href="#mozTocId330724">How
@@ -241,8 +224,8 @@ directory all the way to the root</li>
   </li>
 </ul>
 <p> </p>
-<h3><a class="mozTocH3" name="mozTocId35002" id="mozTocId35002"></a><a
- class="mozTocH3" id="mozTocId799522"></a>With the command line</h3>
+<h3><a class="mozTocH3" name="mozTocId35002" id="mozTocId35002"></a>With
+the command line</h3>
 <p>The first time do what is told on the <a
  href="http://sourceforge.net/svn/?group_id=17691">eXist sourceforge
 page
@@ -262,8 +245,8 @@ the directory eXist-1.0 .<br>
 just install <a href="http://cygwin.com">cygwin</a>, it's very
 convenient and easy to
 install.</p>
-<h3><a class="mozTocH3" name="mozTocId636043" id="mozTocId636043"></a><a
- class="mozTocH3" id="mozTocId312184"></a>With eclipse</h3>
+<h3><a class="mozTocH3" name="mozTocId636043" id="mozTocId636043"></a>With
+eclipse</h3>
 <p>Install the subclipse plugin from<br>
 </p>
 <p><a href="http://subclipse.tigris.org/update_1.0.x">http://subclipse.tigris.org/update_1.0.x</a></p>
@@ -299,7 +282,6 @@ point to a
 different data directory :<br>
 </p>
 <pre>cd $EXIST_HOME<br>mkdir test<br>cp conf.xml client.properties test<br>cd test<br>ln -s ../samples .<br>ln -s ../src .<br>ln -s ../webapp .<br>mkdir data<br></pre>
-<p></p>
 <p>Change the location of the data directory in file test/conf.xml :<br>
 </p>
 <pre>&lt;db-connection database="native" files="data"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pageSize="4096" cacheSize="48M" free_mem_min="5"&gt;</pre>
@@ -329,17 +311,14 @@ cvs checkout, don't forget to reactivate it this way :<br>
 Then direct your browser to :<br>
 <p><a href="http://localhost:8080/exist/index.xml">http://localhost:8080/exist/index.xml</a><br>
 </p>
-<p></p>
-<p></p>
-<h2><a class="mozTocH2" name="mozTocId402345" id="mozTocId402345"></a><a
- class="mozTocH2" id="mozTocId453138"></a>Running tests</h2>
+<h2><a class="mozTocH2" name="mozTocId402345" id="mozTocId402345"></a>Running
+tests</h2>
 <h3><a class="mozTocH3" name="mozTocId840507" id="mozTocId840507"></a>Run
 a
 plain main() test</h3>
 <pre>./bin/run.sh -Dexist.home=$exist/test org/exist/xquery/test/SAXStorageTest</pre>
-<p></p>
-<h3><a class="mozTocH3" name="mozTocId297380" id="mozTocId297380"></a><a
- class="mozTocH3" id="mozTocId966324"></a>Run JUnit test with eclipse</h3>
+<h3><a class="mozTocH3" name="mozTocId297380" id="mozTocId297380"></a>Run
+JUnit test with eclipse</h3>
 <p>With eclipse 3.X and the eXist1.0 eclipse project from the eXist
 CVS, just
 create a JUnit run with the chosen test case (e.g.
@@ -431,9 +410,8 @@ to :<br>
 <pre>util:disable-profiling()</pre>
 <br>
 <br>
-<p></p>
-<h2><a class="mozTocH2" name="mozTocId772867" id="mozTocId772867"></a><a
- class="mozTocH2" id="mozTocId265096"></a>Creating new tests</h2>
+<h2><a class="mozTocH2" name="mozTocId772867" id="mozTocId772867"></a>Creating
+new tests</h2>
 <h3><a class="mozTocH3" name="mozTocId958725" id="mozTocId958725"></a>Introduction</h3>
 <p><a href="http://JUnit.org">JUnit</a> is the industry standard
 framework
@@ -600,8 +578,8 @@ the quality of code</h1>
 </p>
 <p>eXtreme Programming (XP)</p>
 <p>to complete ...............</p>
-<h2><a class="mozTocH2" name="mozTocId67272" id="mozTocId67272"></a><a
- class="mozTocH2" id="mozTocId627340"></a>The PMD code checker</h2>
+<h2><a class="mozTocH2" name="mozTocId67272" id="mozTocId67272"></a>The
+PMD code checker</h2>
 <p>I recommend the use of <a href="http://pmd.sf.net/">PMD</a> (Projet
 Meets Delay
 ;-) ).
@@ -650,7 +628,6 @@ batch by PMD, but for a restricted set of rules :</p>
 <p><a href="http://pmd.sourceforge.net/scoreboard.html">http://pmd.sourceforge.net/scoreboard.html</a></p>
 <a href="http://pmd.sourceforge.net/reports/exist_eXist-1.0.html">http://pmd.sourceforge.net/reports/exist_eXist-1.0.html</a><br>
 <br>
-<p></p>
 <h3><a class="mozTocH3" name="mozTocId116880"></a>Detecting Copied and
 Pasted with PMD - CPD</h3>
 <p>PMD also can find the Copied and Pasted parts (CPD=Copy / Paste
@@ -688,7 +665,6 @@ account names changes</li>
   <li>there are certainly duplicates of length &lt; 75 that are not
 listed</li>
 </ul>
-<p></p>
 <p>After reading more carefully the CPD report, many repeated parts
 seem to
 come from the parser fot the Xquery language, and not from the
@@ -774,6 +750,7 @@ This is about the generic profiling at the Java level of classes and
 methods . See also <a href="howto-test.html#mozTocId425023">Profiling
 XQuery</a> .<br>
 <br>
+<h2>Profiling with NetBeans</h2>
 TODO : update! Add paragraph about eclipse TPTP , etc .<br>
 Last updated 2005-05-21<br>
 <br>
@@ -806,11 +783,28 @@ level</a><br>
   <li><a
  href="../../../../mnt/redhat-hda6/home/jmv/contrat_jouve/get-index-type-profiling.png">getIndexType()</a></li>
 </ul>
+<h2>Profiling with yourkit<br>
+</h2>
+It is relatively simple to use YourKit if you have <a
+ href="#mozTocId860934">set up the eXist client or jetty server to run
+from within eclipse</a> . To run it with yourkit, you basically choose
+the same run target, but with profiling enabled (assuming that you told
+yourkit to register itself in eclipse) .&nbsp; For example, I have
+created a run profile "eXist with Jetty". After installing yourkit, I
+have another run button, and there I can choose to profile "eXist with
+Jetty".<br>
 <br>
-<ul>
-  <span style="text-decoration: underline;"><br>
-  </span>
-</ul>
-<p></p>
+Just remember NOT to use method invocation counts or object allocation
+recording. These make profiling VERY slow, and you only need them in
+very specific situations. The standard information provided by yourkit
+is generally sufficient.<br>
+<br>
+Notes:<br>
+If I remember well , TPTP works about the same . But I wouldn't
+recommend it right now , it's still a bit young .<br>
+The netbeans profiler is very good as well. However, the big advantage
+of yourkit is that you can leave it running for a while without having
+a huge performance loss.<br>
+<br>
 </body>
 </html>
