@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+
+<ruleset name="Import Statement Rules" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../etc/ruleset_xml_schema.xml">
+  <description>
+These rules deal with different problems that can occur with a class' import statements.
+  </description>
+
+  <rule name="DuplicateImports"
+        message="Avoid duplicate imports such as ''{0}''"
+        class="net.sourceforge.pmd.rules.imports.DuplicateImportsRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#DuplicateImports">
+    <description>
+    Avoid duplicate import statements.
+    </description>
+      <priority>4</priority>
+    <example>
+<![CDATA[
+import java.lang.String;
+import java.lang.*;
+public class Foo {}
+]]>
+    </example>
+    </rule>
+
+  <rule name="DontImportJavaLang"
+        message="Avoid importing anything from the package 'java.lang'"
+        class="net.sourceforge.pmd.rules.XPathRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#DontImportJavaLang">
+    <description>
+Avoid importing anything from the package 'java.lang'.  These classes are automatically imported (JLS 7.5.3).
+    </description>
+      <properties>
+          <property name="xpath">
+              <value>
+                  <![CDATA[
+//ImportDeclaration
+ [starts-with(Name/@Image, 'java.lang')]
+ [not(starts-with(Name/@Image, 'java.lang.ref'))]
+ [not(starts-with(Name/@Image, 'java.lang.reflect'))]
+ [not(starts-with(Name/@Image, 'java.lang.annotation'))]
+ [not(starts-with(Name/@Image, 'java.lang.instrument'))]
+ [not(starts-with(Name/@Image, 'java.lang.management'))]
+                ]]>
+              </value>
+          </property>
+       </properties>
+      <priority>4</priority>
+    <example>
+<![CDATA[
+// this is bad
+import java.lang.String;
+public class Foo {}
+
+// --- in another source code file...
+
+// this is bad
+import java.lang.*;
+
+public class Foo {}
+]]>
+    </example>
+    </rule>
+
+  <rule name="UnusedImports"
+        message="Avoid unused imports such as ''{0}''"
+        class="net.sourceforge.pmd.rules.imports.UnusedImportsRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports">
+    <description>
+    Avoid unused import statements.
+    </description>
+      <priority>4</priority>
+    <example>
+<![CDATA[
+// this is bad
+import java.io.File;
+public class Foo {}
+]]>
+    </example>
+    </rule>
+
+    <rule name="ImportFromSamePackage"
+         message="No need to import a type that's in the same package"
+         class="net.sourceforge.pmd.rules.imports.ImportFromSamePackageRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#ImportFromSamePackage">
+     <description>
+ No need to import a type that's in the same package.
+     </description>
+        <priority>3</priority>
+     <example>
+ <![CDATA[
+ package foo;
+ import foo.Buz; // no need for this
+ import foo.*; // or this
+ public class Bar{}
+ ]]>
+     </example>
+     </rule>
+
+</ruleset>
+
+
+
