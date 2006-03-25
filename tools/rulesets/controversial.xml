@@ -1,0 +1,393 @@
+<?xml version="1.0"?>
+
+<ruleset name="Controversial Rules" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../etc/ruleset_xml_schema.xml">
+  <description>
+The Controversial Ruleset contains rules that, for whatever reason, are considered controversial.  They
+are separated out here to allow people to include as they see fit via custom rulesets.  This ruleset was
+initially created in response to discussions over UnnecessaryConstructorRule which Tom likes but
+most people really dislike :-)
+  </description>
+
+    <rule name="UnnecessaryConstructor"
+          message="Avoid unnecessary constructors - the compiler will generate these for you"
+          class="net.sourceforge.pmd.rules.XPathRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#UnnecessaryConstructor">
+      <description>
+This rule detects when a constructor is not necessary; i.e., when there's only one constructor,
+it's public, has an empty body, and takes no arguments.
+      </description>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//ClassOrInterfaceDeclaration
+/ClassOrInterfaceBody[count(ClassOrInterfaceBodyDeclaration/ConstructorDeclaration)=1]
+/ClassOrInterfaceBodyDeclaration/ConstructorDeclaration
+[@Public='true']
+[not(FormalParameters/*)]
+[not(BlockStatement)]
+[not(NameList)]
+[count(ExplicitConstructorInvocation/Arguments/ArgumentList/Expression)=0]
+                    ]]>
+                </value>
+            </property>
+        </properties>
+        <priority>3</priority>
+      <example>
+  <![CDATA[
+public class Foo {
+ public Foo() {}
+}
+  ]]>
+      </example>
+    </rule>
+
+
+
+    <rule name="NullAssignment"
+          message="Assigning an Object to null is a code smell.  Consider refactoring."
+          class="net.sourceforge.pmd.rules.design.NullAssignmentRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#NullAssignment">
+      <description>
+ Assigning a "null" to a variable (outside of its declaration) is usually
+ bad form.  Some times, the assignment is an indication that the programmer doesn't
+ completely understand what is going on in the code.  NOTE: This sort of assignment
+ may in rare cases be useful to encourage garbage collection.  If that's what you're using
+ it for, by all means, disregard this rule :-)
+      </description>
+        <priority>3</priority>
+      <example>
+ <![CDATA[
+ public class Foo {
+   public void bar() {
+     Object x = null; // This is OK.
+     x = new Object();
+     // Big, complex piece of code here.
+     x = null; // This is BAD.
+     // Big, complex piece of code here.
+   }
+ }
+
+ ]]>
+      </example>
+    </rule>
+
+    <rule name="OnlyOneReturn"
+         message="A method should have only one exit point, and that should be the last statement in the method"
+         class="net.sourceforge.pmd.rules.design.OnlyOneReturnRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#OnlyOneReturn">
+     <description>
+A method should have only one exit point, and that should be the last statement in the method.
+     </description>
+        <priority>3</priority>
+     <example>
+ <![CDATA[
+ public class OneReturnOnly1 {
+  public void foo(int x) {
+   if (x > 0) {
+    return "hey";   // oops, multiple exit points!
+   }
+   return "hi";
+  }
+ }
+ ]]>
+     </example>
+     </rule>
+
+    <rule name="UnusedModifier"
+         message="Avoid modifiers which are implied by the context"
+         class="net.sourceforge.pmd.rules.UnusedModifier"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#UnusedModifier">
+     <description>
+ Fields in interfaces are automatically public static final, and
+ methods are public abstract.
+ Classes or interfaces nested in an interface are automatically public
+ and static (all nested interfaces are automatically static).
+ For historical reasons, modifiers which are implied by the context
+ are accepted by the compiler, but are superfluous.
+     </description>
+        <priority>3</priority>
+     <example>
+ <![CDATA[
+public interface Foo {
+ public abstract void bar(); // both abstract and public are ignored by the compiler
+ public static final int X = 0; // public, static, and final all ignored
+ public static class Bar {} // public, static ignored
+ public static interface Baz {} // ditto
+}
+public class Bar {
+ public static interface Baz {} // static ignored
+}
+ ]]>
+     </example>
+     </rule>
+
+    <rule name="AssignmentInOperand"
+      message="Avoid assigments in operands"
+      class="net.sourceforge.pmd.rules.XPathRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#AssignmentInOperand">
+  <description>
+Avoid assigments in operands; this can make code more complicated and harder to read.
+  </description>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//*[name()='WhileStatement' or name()='IfStatement']
+ [Expression//AssignmentOperator]
+                    ]]>
+                </value>
+            </property>
+         </properties>
+    <priority>3</priority>
+  <example>
+  <![CDATA[
+public class Foo {
+ public void bar() {
+  int x = 2;
+  if ((x = getX()) == 3) {
+   System.out.println("3!");
+  }
+ }
+ private int getX() {
+  return 3;
+ }
+}
+  ]]>
+  </example>
+</rule>
+
+    <rule name="AtLeastOneConstructor"
+      message="Each class should declare at least one constructor"
+      class="net.sourceforge.pmd.rules.XPathRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#AtLeastOneConstructor">
+  <description>
+Each class should declare at least one constructor.
+  </description>
+        <properties>
+            <property name="xpath">
+                <value>
+<![CDATA[
+//ClassOrInterfaceDeclaration
+ [not(ClassOrInterfaceBody/ClassOrInterfaceBodyDeclaration/ConstructorDeclaration)]
+ [@Interface='false']
+]]>
+                </value>
+            </property>
+         </properties>
+    <priority>3</priority>
+  <example>
+  <![CDATA[
+public class Foo {
+ // no constructor!  not good!
+}
+  ]]>
+  </example>
+</rule>
+
+    <rule name="DontImportSun"
+       message="Avoid importing anything from the 'sun.*' packages"
+       class="net.sourceforge.pmd.rules.XPathRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#DontImportSun">
+       <description>
+Avoid importing anything from the 'sun.*' packages.  These packages are not portable and are likely to change.
+       </description>
+       <properties>
+          <property name="xpath">
+               <value>
+<![CDATA[
+//ImportDeclaration
+[starts-with(Name/@Image, 'sun.')]
+[not(starts-with(Name/@Image, 'sun.misc.Signal'))]
+]]>
+
+               </value>
+          </property>
+       </properties>
+       <priority>4</priority>
+       <example>
+<![CDATA[
+import sun.misc.foo;
+public class Foo {}
+]]>
+       </example>
+    </rule>
+
+    <rule name="SuspiciousOctalEscape"
+       message="Suspicious decimal characters following octal escape in string literal"
+          class="net.sourceforge.pmd.rules.SuspiciousOctalEscape"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#SuspiciousOctalEscape">
+      <description>
+A suspicious octal escape sequence was found inside a String literal.
+The Java language specification (section 3.10.6) says an octal
+escape sequence inside a literal String shall consist of a backslash
+followed by:
+
+   OctalDigit | OctalDigit OctalDigit | ZeroToThree OctalDigit OctalDigit
+
+Any octal escape sequence followed by non-octal digits can be confusing,
+e.g. "\038" is interpreted as the octal escape sequence "\03" followed by
+the literal character "8".
+      </description>
+      <priority>3</priority>
+      <example>
+<![CDATA[
+public class Foo {
+ public void foo() {
+  // interpreted as octal 12, followed by character '8'
+  System.out.println("suspicious: \128");
+ }
+}
+]]>
+      </example>
+    </rule>
+
+    <rule name="CallSuperInConstructor"
+          message="It is a good practice to call super() in a constructor"
+          class="net.sourceforge.pmd.rules.XPathRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#CallSuperInConstructor">
+      <description>
+It is a good practice to call super() in a constructor. If super() is not called but
+ another constructor (such as an overloaded constructor) is called, this rule will not report it.
+      </description>
+      <properties>
+          <property name="xpath">
+              <value>
+    <![CDATA[
+//ConstructorDeclaration[
+ count(.//ExplicitConstructorInvocation)=0
+]
+    ]]>
+              </value>
+          </property>
+      </properties>
+        <priority>3</priority>
+      <example>
+<![CDATA[
+public class Foo extends Bar{
+ public Foo() {
+  // call the constructor of Bar
+  super();
+ }
+ public Foo(int code) {
+  // do something with code
+  this();
+  // no problem with this
+ }
+}
+]]>
+      </example>
+    </rule>
+
+    <rule name="UnnecessaryParentheses"
+          message="This statement may have some unnecessary parentheses"
+          class="net.sourceforge.pmd.rules.XPathRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#UnnecessaryParentheses">
+      <description>
+Sometimes expressions are wrapped in unnecessary parentheses,
+making them look like a function call.
+      </description>
+    <properties>
+        <property name="xpath">
+            <value>
+                <![CDATA[
+//ReturnStatement
+          /Expression
+           /PrimaryExpression
+            /PrimaryPrefix
+             /Expression[count(*)=1]
+              /PrimaryExpression
+              /PrimaryPrefix]]>
+            </value>
+        </property>
+    </properties>
+        <priority>3</priority>
+      <example>
+  <![CDATA[public class Foo {
+      boolean bar() {
+          return (true);
+      }
+  }]]>
+      </example>
+    </rule>
+
+    <rule name="SingularField"
+              message="Perhaps ''{0}'' could be replaced by a local variable."
+              class="net.sourceforge.pmd.rules.SingularField"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#SingularField">
+          <description>
+A field that's only used by one method could perhaps be replaced by a local variable
+          </description>
+          <priority>3</priority>
+          <example>
+<![CDATA[
+public class Foo {
+    private int x;
+    public void foo(int y) {
+     x = y + 5;
+     return x;
+    }
+}
+]]>
+          </example>
+        </rule>
+
+
+    <rule name="DefaultPackage"
+        message="Use explicit scoping instead of the default package private level"
+        class="net.sourceforge.pmd.rules.XPathRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#DefaultPackage">
+        <description>
+Use explicit scoping instead of the default package private level
+        </description>
+        <properties>
+            <property name="xpath">
+                <value><![CDATA[
+//ClassOrInterfaceDeclaration[@Interface='false']
+/ClassOrInterfaceBody
+/ClassOrInterfaceBodyDeclaration
+/FieldDeclaration[@PackagePrivate='true']
+| /MethodDeclaration[@PackagePrivate='true']
+                ]]></value>
+            </property>
+        </properties>
+        <priority>3</priority>
+    </rule>
+
+    <rule name="BooleanInversion"
+          message="Use bitwise inversion to invert boolean values"
+          class="net.sourceforge.pmd.rules.XPathRule"
+          externalInfoUrl="http://pmd.sourceforge.net/rules/controversial.html#BooleanInversion">
+      <description>
+Use bitwise inversion to invert boolean values - it's the fastest way to do this.
+See http://www.javaspecialists.co.za/archive/newsletter.do?issue=042&amp;locale=en_US for specific details
+      </description>
+      <properties>
+          <property name="xpath">
+              <value>
+    <![CDATA[
+//AssignmentOperator[@Image="="]/../Expression/UnaryExpressionNotPlusMinus[@Image="!"]
+]]>
+             </value>
+          </property>
+      </properties>
+        <priority>3</priority>
+      <example>
+  <![CDATA[
+public class Foo {
+ public void main(bar) {
+  boolean b = true;
+  b = !b; // slow
+  b ^= true; // fast
+ }
+}
+]]>
+      </example>
+    </rule>
+
+
+</ruleset>
+
+
+
