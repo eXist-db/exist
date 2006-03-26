@@ -23,14 +23,18 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
+import org.exist.http.servlets.SessionWrapper;
 import org.exist.security.User;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -64,7 +68,9 @@ public class XMLDBAuthenticate extends BasicFunction {
             "read the database collection specified in the first parameter $a, using the " +
             "supplied username in $b and password in $c. Contrary to the authenticate function," +
             "login will set the current user for the xquery script to the authenticated user. " +
-            "It returns true if the attempt succeeds, false otherwise.",
+            "It returns true if the attempt succeeds, false otherwise. If called from a HTTP context" +
+            "then the login is cached for the lifetime of the HTTP session and may be used for all XQuery" +
+            "scripts in that session.",
             new SequenceType[] {
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
@@ -96,6 +102,9 @@ public class XMLDBAuthenticate extends BasicFunction {
                 UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
                 User user = ums.getUser(userName);
                 context.getBroker().setUser(user);
+                
+                /** if there is a http session cache the user in the http session */
+                cacheUserInHttpSession(user);
             }
 			return BooleanValue.TRUE;
 		} catch (XMLDBException e) {
@@ -103,6 +112,30 @@ public class XMLDBAuthenticate extends BasicFunction {
                 LOG.debug("Failed to authenticate user '" + userName + "' on " + uri, e);
 			return BooleanValue.FALSE;
 		}
+	}
+	
+	/**
+	 * If there is a HTTP Session, then this will store the user object in the session under the key
+	 * defined by XQueryContext.HTTP_SESSIONVAR_XMLDB_USER
+	 * 
+	 * @param user	The User to cache in the session
+	 */
+	private void cacheUserInHttpSession(User user) throws XPathException
+	{
+        RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
+        Variable var = myModule.resolveVariable(RequestModule.SESSION_VAR);
+		if(var != null && var.getValue() != null)
+		{
+    		if(var.getValue().getItemType() == Type.JAVA_OBJECT)
+    		{
+        		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
+        		
+        		if(session.getObject() instanceof SessionWrapper)
+        		{
+        			((SessionWrapper)session.getObject()).setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user);
+        		}
+    		}
+    	}
 	}
 
 }

@@ -43,6 +43,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.http.servlets.SessionWrapper;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -59,10 +60,12 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -235,6 +238,8 @@ public class XQueryContext {
     
     //For holding XQuery Context variables from setXQueryContextVar() and getXQueryContextVar()
     HashMap XQueryContextVars = new HashMap();
+    public static final String XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR = "_eXist_xquery_update_error";
+    public static final String HTTP_SESSIONVAR_XMLDB_USER = "_eXist_xmldb_user";
     
 	private AccessContext accessCtx;
     
@@ -1036,8 +1041,54 @@ public class XQueryContext {
 	 * 
 	 * @return
 	 */
-	public User getUser() {
-		return broker.getUser();
+	public User getUser()
+	{
+		/* if there is a user cached in the http session use that,
+		 * otherwise return the current user */
+
+		User user = getUserFromHttpSession();
+		if(user == null)
+		{
+			user = broker.getUser();
+		}	
+		
+		return user;
+	}
+	
+	/**
+	 * If there is a HTTP Session, and a User has been stored in the session then this will
+	 * return the user object from the session
+	 * 
+	 * @return The user or null if there is no session or no user
+	 */
+	private User getUserFromHttpSession()
+	{
+        RequestModule myModule = (RequestModule)getModule(RequestModule.NAMESPACE_URI);
+		
+		Variable var = null;
+		try
+		{
+			var = myModule.resolveVariable(RequestModule.SESSION_VAR);
+		}
+		catch(XPathException xpe)
+		{
+			return null;
+		}
+		
+		if(var != null && var.getValue() != null)
+		{
+    		if(var.getValue().getItemType() == Type.JAVA_OBJECT)
+    		{
+        		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
+        		
+        		if(session.getObject() instanceof SessionWrapper)
+        		{
+        			return (User)((SessionWrapper)session.getObject()).getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
+        		}
+    		}
+    	}
+		
+		return null;
 	}
 
 	/**

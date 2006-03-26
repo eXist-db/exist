@@ -379,7 +379,15 @@ public class User {
 	 */
 	public boolean equals(Object obj) {
 		User other = (User)obj;
-		return uid == other.uid;
+		
+		if(other != null)
+		{
+			return uid == other.uid;
+		}
+		else
+		{
+			return(false);
+		}
 	}
 }
 
