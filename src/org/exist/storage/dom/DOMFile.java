@@ -1782,7 +1782,6 @@ public class DOMFile extends BTree implements Lockable {
 				foundNext = true;
 		} while (!foundNext);
 		int len = ByteConversion.byteToShort(rec.page.data, rec.offset);
-        System.out.println("Len = " + len);
         rec.offset += 2;
 		if (ItemId.isRelocated(rec.tid))
 			rec.offset += 8;
