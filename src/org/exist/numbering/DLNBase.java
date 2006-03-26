@@ -232,8 +232,8 @@ public class DLNBase implements Comparable {
      *
      * @return the number of levels in this id
      */
-    public int getLevelCount() {
-        int bit = 0;
+    public int getLevelCount(int startOffset) {
+        int bit = startOffset;
         int count = 0;
         while (bit > -1 && bit <= bitIndex) {
             int units = unitsUsed(bit, bits);
@@ -250,7 +250,7 @@ public class DLNBase implements Comparable {
      * @return all level ids in this node id.
      */
     public int[] getLevelIds() {
-        int count = getLevelCount();
+        int count = getLevelCount(0);
         int[] ids = new int[count];
         int offset = 0;
         for (int i = 0; i < count; i++) {
@@ -376,18 +376,6 @@ public class DLNBase implements Comparable {
     			return false;
     	}
     	return true;
-    }
-    
-    public int countLevelsBelow(int startOffset) {
-    	int bit = startOffset;
-        int count = 0;
-        while (bit > -1 && bit <= bitIndex) {
-            int units = unitsUsed(bit, bits);
-            bit += units;
-            bit += bitWidth(units);
-            count++;
-        }
-        return count;
     }
     
     public String debug() {
