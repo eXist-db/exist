@@ -23,7 +23,6 @@
 package org.exist.xquery.functions.request;
 
 import org.exist.dom.QName;
-import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
@@ -70,26 +69,22 @@ public class GetSessionAttribute extends Function {
 		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
 		// session object is read from global variable $session
-		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		Variable var = myModule.resolveVariable(RequestModule.SESSION_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException("Request object not found");
+			throw new XPathException("Session not set");
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException("Variable $request is not bound to an Java object.");
-		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+			throw new XPathException("Variable $session is not bound to a Java object.");
+		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
 		
 		// get attribute name parameter
 		String attrib = getArgument(0).eval(contextSequence, contextItem).getStringValue();
 		
-		if(value.getObject() instanceof RequestWrapper) {
-			RequestWrapper request = (RequestWrapper)value.getObject();
-			SessionWrapper session = request.getSession(false);
-			if(session == null)
-				return Sequence.EMPTY_SEQUENCE;
-			Object o = session.getAttribute(attrib);
+		if(session.getObject() instanceof SessionWrapper) {
+			Object o = ((SessionWrapper)session.getObject()).getAttribute(attrib);
 			if (o == null)
 				return Sequence.EMPTY_SEQUENCE;
 			return XPathUtil.javaObjectToXPath(o, context);
 		} else
-			throw new XPathException("Type error: variable $request is not bound to a request object");
+			throw new XPathException("Type error: variable $session is not bound to a session object");
 	}
 }
