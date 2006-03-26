@@ -56,7 +56,7 @@ public class DLNTest extends TestCase {
         }
     }
     
-    private final static int ITEMS_TO_TEST = 1000000;
+    private final static int ITEMS_TO_TEST = 10000;
     
     public void testSingleId() {
         long start = System.currentTimeMillis();
@@ -165,5 +165,68 @@ public class DLNTest extends TestCase {
         assertEquals("1.33.56.2.98.1.27", dln.toString());
         
         System.out.println("------- testLevelIds: PASSED --------");
+    }
+    
+    public void testRelations() {
+    	System.out.println("------ testLevelRelations ------");
+    	int[] id0 = { 1, 3 };
+    	int[] id1 = { 1, 3, 1 };
+    	int[] id2 = { 1, 3, 2, 5, 6 };
+    	int[] id3 = { 1, 4 };
+    	int[] id4 = { 1, 3, 2, 5, 6, 7777 };
+    	int[] id5 = { 1, 3, 2, 5, 6, 7777, 1 };
+    	
+    	DLN root = new DLN(id0);
+    	DLN descendant = new DLN(id1);
+    	
+    	System.out.println("Testing isDescendant: " + descendant + " -> " + root);
+    	assertTrue(descendant.isDescendantOf(root));
+    	
+    	descendant = new DLN(id1);
+    	System.out.println("Testing isDescendantOf: " + descendant + " -> " + root);
+    	assertTrue(descendant.isDescendantOf(root));
+    	
+    	descendant = new DLN(id1);
+    	System.out.println("Testing isChildOf: " + descendant + " -> " + root);
+    	assertTrue(descendant.isChildOf(root));
+    	
+    	descendant = new DLN(id2);
+    	System.out.println("Testing isDescendantOf: " + descendant + " -> " + root);
+    	assertTrue(descendant.isDescendantOf(root));
+    	
+    	descendant = new DLN(id2);
+    	System.out.println("Testing isChildOf: " + descendant + " -> " + root);
+    	assertFalse(descendant.isChildOf(root));
+    	
+    	System.out.println("Testing isDescendantOrSelf: " + descendant + " -> " + root);
+    	assertTrue(descendant.isDescendantOrSelfOf(root));
+    	
+    	descendant = new DLN(id3);
+    	System.out.println("Testing isDescendant: " + descendant + " -> " + root);
+    	assertFalse(descendant.isDescendantOf(root));
+    	
+    	descendant = new DLN(id0);
+    	System.out.println("Testing isDescendant: " + descendant + " -> " + root);
+    	assertFalse(descendant.isDescendantOf(root));
+    	
+    	System.out.println("Testing isDescendantOrSelf: " + descendant + " -> " + root);
+    	assertTrue(descendant.isDescendantOrSelfOf(root));
+    	
+    	root = new DLN(id2);
+    	descendant = new DLN(id4);
+    	System.out.println("Testing isDescendantOf: " + descendant + " -> " + root);
+    	assertTrue(descendant.isDescendantOf(root));
+    	
+    	System.out.println("Testing isChildOf: " + descendant + " -> " + root);
+    	assertTrue(descendant.isChildOf(root));
+    	
+    	descendant = new DLN(id5);
+    	System.out.println("Testing isDescendantOf: " + descendant + " -> " + root);
+    	assertTrue(descendant.isDescendantOf(root));
+    	
+    	System.out.println("Testing isChildOf: " + descendant + " -> " + root);
+    	assertFalse(descendant.isChildOf(root));
+    	
+    	System.out.println("------ testLevelRelations: PASSED ------");
     }
 }

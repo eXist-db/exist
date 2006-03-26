@@ -98,14 +98,23 @@ public class DLN extends DLNBase implements NodeId {
         return new DLN(bits, last);
     }
 
-    public boolean isDescendant(NodeId ancestor) {
-        return false;
+    public boolean isDescendantOf(NodeId ancestor) {
+    	DLN other = (DLN) ancestor;
+    	return startsWith(other) && bitIndex > other.bitIndex;
     }
 
-    public boolean isDescendantOrSelf(NodeId ancestor) {
-        return false;
+    public boolean isDescendantOrSelfOf(NodeId ancestor) {
+        return startsWith((DLN) ancestor);
     }
 
+    public boolean isChildOf(NodeId parent) {
+    	DLN other = (DLN) parent;
+    	if(!startsWith(other))
+    		return false;
+    	int levels = countLevelsBelow(other.bitIndex + 1);
+    	return levels == 1;
+    }
+    
     /**
      * Returns the level within the document tree at which
      * this node occurs.

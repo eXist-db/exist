@@ -79,9 +79,9 @@ public interface NodeId extends Comparable {
      * @param ancestor node id of the potential ancestor
      * @return true if the node id is a descendant of the given node, false otherwise
      */
-    boolean isDescendant(NodeId ancestor);
+    boolean isDescendantOf(NodeId ancestor);
 
-    boolean isDescendantOrSelf(NodeId ancestor);
+    boolean isDescendantOrSelfOf(NodeId ancestor);
 
     /**
      * Returns the level within the document tree at which

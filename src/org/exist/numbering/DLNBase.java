@@ -277,10 +277,6 @@ public class DLNBase implements Comparable {
         return lastOffset;
     }
 
-    public boolean startsWith(DLNBase other) {
-        return true;
-    }
-
     /**
      * Set (or unset) then next bit in the current sequence
      * of bits. The current position is moved forward and the
@@ -367,6 +363,33 @@ public class DLNBase implements Comparable {
         return compareTo(other);
     }
 
+    public boolean startsWith(DLNBase other) {
+    	int bytes = other.bitIndex / 8;
+    	int remaining = other.bitIndex % 8;
+    	for (int i = 0; i < bytes; i++) {
+    		if (bits[i] != other.bits[i])
+    			return false;
+    	}
+    	for (int i = 0; i < remaining; i++) {
+    		int mask = (1 << ((7 - i) & 7));
+    		if ((bits[bytes] & mask) != (other.bits[bytes] & mask))
+    			return false;
+    	}
+    	return true;
+    }
+    
+    public int countLevelsBelow(int startOffset) {
+    	int bit = startOffset;
+        int count = 0;
+        while (bit > -1 && bit <= bitIndex) {
+            int units = unitsUsed(bit, bits);
+            bit += units;
+            bit += bitWidth(units);
+            count++;
+        }
+        return count;
+    }
+    
     public String debug() {
         StringBuffer buf = new StringBuffer();
         buf.append(toString());
