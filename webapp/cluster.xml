@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5CR2//EN"
+"http://www.docbook.org/xml/4.5CR2/docbookx.dtd" >
+
 <book xmlns:ci="http://apache.org/cocoon/include/1.0">
 	<bookinfo>
 		<graphic fileref="logo.jpg"/>
@@ -55,9 +59,9 @@
                 <para>Interesting parameter are :</para>
 
                 <itemizedlist>
-                    <listitem>UDP/mcast_addr : multicast address</listitem>
-                    <listitem>UDP/bind_addr : binding address (to be configured if node has multiple address )</listitem>
-                    <listitem>UDP/mcast_port : multicast port</listitem>
+                    <listitem><para>UDP/mcast_addr : multicast address</para></listitem>
+                    <listitem><para>UDP/bind_addr : binding address (to be configured if node has multiple address )</para></listitem>
+                    <listitem><para>UDP/mcast_port : multicast port</para></listitem>
                 </itemizedlist>
 
 			</section>
@@ -74,25 +78,32 @@
 				<para>Specifies the folder where the eXist cluster node saves its journal file.</para>
                 <para>Directory is automatically created if it doesn't exist</para>
                 <para>If no journaldir is specifyed, journal is disabled.</para>
-                <para>For more information on the cluster journal behaviour see <ulink href="journal.xml">Journal cluster behaviour</ulink>.</para>
+                <para>For more information on the cluster journal behaviour see <ulink url="journal.xml">Journal cluster behaviour</ulink>.</para>
 			</section>
 			<section>
 				<title>journal configuration</title>
 				<para>Some optional parameters can be added in order to customize the journal behaviour.</para>
                 <section>
                     <title>journalMaxItem</title>
-                    Max items that the index file can hold (default = 65000). This value is the maximum number of event that a node can retrieve from master, if the node
-                    is disaligned more than this event, a manual realigment must be executed.
+                    <para>
+                    Max items that the index file can hold (default =
+                    65000). This value is the maximum number of event
+                    that a node can retrieve from master, if the node is
+                    disaligned more than this event, a manual realigment
+                    must be executed.
+                    </para>
                 </section>
                 <section>
                  <title>journalIndexShift</title>
+                 	<para>
                     Each time the JGroup cluster creates a new coordinator, the new cordinator realign its journal index adding journalIndexShift element to it.
+                	</para>
                 </section>
 			</section>
 		</section>
 		<section>
 			<title>Cluster console</title>
-			<para>It's created a link to cluster console on sidebar (<ulink href="cluster">Cluster status</ulink>)</para>
+			<para>It's created a link to cluster console on sidebar (<ulink url="cluster">Cluster status</ulink>)</para>
 		</section>
 	</chapter>
 </book>
