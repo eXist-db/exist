@@ -111,7 +111,7 @@ public class DLN extends DLNBase implements NodeId {
     	DLN other = (DLN) parent;
     	if(!startsWith(other))
     		return false;
-    	int levels = countLevelsBelow(other.bitIndex + 1);
+    	int levels = getLevelCount(other.bitIndex + 1);
     	return levels == 1;
     }
     
@@ -122,7 +122,7 @@ public class DLN extends DLNBase implements NodeId {
      * @return
      */
     public int getTreeLevel() {
-        return getLevelCount();
+        return getLevelCount(0);
     }
 
     public boolean equals(NodeId other) {
