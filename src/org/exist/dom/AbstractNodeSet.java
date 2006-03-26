@@ -236,7 +236,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param rememberContext
 	 * @return
 	 */
-	protected NodeSet hasChildrenInSet(NodeSet al, int mode, int contextId) {
+	public NodeSet hasChildrenInSet(NodeSet al, int mode, int contextId) {
 		NodeSet result = new ExtArrayNodeSet();		
 		for (Iterator i = al.iterator(); i.hasNext(); ) {
             NodeProxy node = (NodeProxy) i.next();
@@ -312,7 +312,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
 	}
 	
-	private NodeSet quickSelectParentChild(NodeSet al, int mode, int contextId) {
+	public NodeSet quickSelectParentChild(NodeSet al, int mode, int contextId) {
 	    final NodeSet result = new ExtArrayNodeSet();
 		final Iterator ia = al.iterator();
 		final Iterator ib = iterator();
@@ -322,7 +322,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		// check if one of the node sets is empty
 		if(na == null || nb == null)
 		    return result;
-		long pa, pb;
+		NodeId pa, pb;
+		int cmp;
 		while (true) {
 			// first, try to find nodes belonging to the same doc
 			if (na.getDocument().getDocId() < nb.getDocument().getDocId()) {
@@ -337,12 +338,13 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 					break;
 			} else {
 			    // same document
-			    pa = na.getGID();
-			    pb = nb.getGID();
+			    pa = na.getNodeId();
+			    pb = nb.getNodeId();
 //			    System.out.println(pa + " -> " + pb);
-				pb = NodeSetHelper.getParentId(nb.getDocument(), pb, nb.getDocument().getTreeLevel(pb));
+			    pb = pb.getParentId();
 //				System.out.println("comparing " + pa + " -> " + pb);
-				if(pa == pb) {
+			    cmp = pa.compareTo(pb);
+				if(cmp == 0) {
 				    if(mode == NodeSet.DESCENDANT) {
 				        if (Expression.NO_CONTEXT_ID != contextId)
 				            nb.addContextNode(contextId, na);
@@ -360,7 +362,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 						nb = (NodeProxy) ib.next();
 					else
 						break;
-				} else if (pa < pb) {
+				} else if (cmp < 0) {
 					if (ia.hasNext())
 						na = (NodeProxy) ia.next();
 					else

@@ -880,7 +880,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     */
     public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent,
                                      boolean includeSelf, int level) {
-        return parentWithChild(proxy.getDocument(), proxy.gid, directParent, includeSelf, level);
+        return parentWithChild(proxy.getDocument(), proxy.getNodeId(), directParent, includeSelf);
     }
 	
 	/* (non-Javadoc)

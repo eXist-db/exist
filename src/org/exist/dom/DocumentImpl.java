@@ -509,9 +509,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 					+ treeLevelStartPoints[i];
 			if(treeLevelStartPoints[i + 1] < 0 ||
                     treeLevelStartPoints[i + 1] > 0x6fffffffffffffffL) {
-				throw new EXistException("The document is too complex/irregularily structured " +
-					"to be mapped into eXist's numbering scheme. Number of children per level of the " +
-					"tree: " + printTreeLevelOrder());
+				treeLevelStartPoints[i + 1] = 1;
 			}
 		}
 	}

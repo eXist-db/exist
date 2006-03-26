@@ -158,6 +158,9 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     public byte[] serialize() {
+    	 if (nodeId == null)
+             throw new RuntimeException("nodeId = null for element: " +
+                 getQName().toString());
         try {
             byte[] prefixData = null;
             // serialize namespace prefixes declared in this element
@@ -317,7 +320,10 @@ public class ElementImpl extends NamedNode implements Element {
                 childId = prevNode.getNodeId().nextSibling();
             }
             child.setNodeId(childId);
-            child.setGID(firstChildID() + children);
+            long childGID = firstChildID();
+            if (childGID < 0)
+                childGID = 1;
+            child.setGID(childGID + children);
             if (child.getGID() == StoredNode.NODE_IMPL_UNKNOWN_GID) {
                 final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
                 final int level = owner.getTreeLevel(getGID());

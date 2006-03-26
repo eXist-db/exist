@@ -366,7 +366,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         part.getRange(result, lower, upper);
     }
 
-    protected NodeSet hasChildrenInSet(NodeSet al, int mode, int contextId) {
+    public NodeSet hasChildrenInSet(NodeSet al, int mode, int contextId) {
     	NodeSet result = new ExtArrayNodeSet();
 		NodeProxy node;
 		Part part;
