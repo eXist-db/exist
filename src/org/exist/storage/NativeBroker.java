@@ -2233,12 +2233,12 @@ public class NativeBroker extends DBBroker {
         final IndexSpec idxSpec = 
             doc.getCollection().getIdxConf(this);
 //        final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
-        final long gid = node.getGID();        
-        if (gid < 0) {
-            LOG.debug("illegal node: " + gid + "; " + node.getNodeName());
-            Thread.dumpStack();
+        long id = node.getGID();
+        if (id < 0) {
+            id = 1;
             return;
         }
+        final long gid = id;
         final short nodeType = node.getNodeType();
         final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
