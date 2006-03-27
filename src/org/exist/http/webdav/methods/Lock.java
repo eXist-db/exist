@@ -34,6 +34,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.LockToken;
 import org.exist.http.webdav.WebDAV;
@@ -42,12 +44,17 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 /**
  * Implements the WebDAV LOCK method.
@@ -65,6 +72,117 @@ public class Lock extends AbstractWebDAVMethod {
         docFactory.setNamespaceAware(true);
     }
     
+    private LockToken getDefaultToken(User user){
+        
+        // Fill in default information
+        LockToken lockToken = new LockToken();
+        lockToken.setOwner(user.getName());
+        lockToken.setType(LockToken.LOCK_TYPE_WRITE);
+        lockToken.setTimeOut(LockToken.LOCK_TIMEOUT_INFINITE);
+        lockToken.setScope(LockToken.LOCK_SCOPE_EXCLUSIVE);
+        lockToken.setDepth(LockToken.LOCK_DEPTH_0);
+        return lockToken;
+    }
+    
+    private void createNullResource(User user,
+            HttpServletRequest request, HttpServletResponse response,
+            String path){
+        
+        LOG.debug("Create NullResource for '"+path+"'.");
+        DBBroker broker =null;
+        Txn txn =null;
+        TransactionManager txManager=null;
+        
+        try {
+            broker = pool.get(user);
+            DocumentImpl resource = null;
+            
+            LockToken lockToken = getDefaultToken(user);
+            
+            String contentType = request.getContentType();
+            txManager = pool.getTransactionManager();
+            txn = txManager.beginTransaction();
+            
+            
+            if(path == null)
+                path = "/";
+            
+            if(path.endsWith("/"))
+                path = path.substring(0, path.length() - 1);
+            
+            int p = path.lastIndexOf("/");
+            
+            // Dangerous
+            String collectionName = path.substring(0, p);
+            path = path.substring(p + 1);
+            
+            MimeType mime = MimeTable.getInstance().getContentTypeFor(path);
+            if (mime == null){
+                mime = MimeType.BINARY_TYPE;
+            }
+            
+            LOG.debug("storing document '" + path + "' in collection '"+collectionName);
+            
+            Collection collection = broker.openCollection(collectionName, org.exist.storage.lock.Lock.READ_LOCK);
+            
+            if(mime.isXMLType()) {
+                LOG.debug("Storing NULL xml resource");
+                
+                IndexInfo info = collection.validateXMLResource(txn, broker, path, "<nullresource/>");
+                resource = info.getDocument();
+                info.getDocument().getMetadata().setMimeType(contentType);
+                collection.release();
+                
+                collection.store(txn, broker, info,
+                        "<nullresource/>", false);
+                
+            } else {
+                LOG.debug("Storing NULL byte binary resource.");
+                resource = collection.addBinaryResource(
+                        txn, broker, path, new byte[0], contentType);
+            }
+            
+            resource.setUserLock(user);
+
+            lockToken.setResourceType(LockToken.RESOURCE_TYPE_NULL_RESOURCE);
+            
+            resource.getMetadata().setLockToken(lockToken);
+            
+            txManager.commit(txn);
+            
+            try {  
+                lockResource(request, response, /* resource,  */ lockToken);
+            } catch (ServletException ex) {
+                LOG.error(ex);
+            } catch (IOException ex) {
+                LOG.error(ex);
+            }
+            
+            LOG.debug("NullResourceLock done.");
+            
+        } catch (PermissionDeniedException ex) {
+            LOG.error(ex);
+            txManager.abort(txn);
+        } catch (SAXException ex) {
+            LOG.error(ex);
+            txManager.abort(txn);
+        } catch (LockException ex) {
+            LOG.error(ex);
+            txManager.abort(txn);
+        } catch (TriggerException ex) {
+            LOG.error(ex);
+            txManager.abort(txn);
+        } catch (EXistException ex) {
+            LOG.error(ex);
+            txManager.abort(txn);
+        } finally{
+            if(pool!=null){
+                pool.release(broker);
+            }
+            
+        }
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.http.webdav.WebDAVMethod#process(org.exist.security.User, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
      */
@@ -75,8 +193,9 @@ public class Lock extends AbstractWebDAVMethod {
         DBBroker broker = null;
         Collection collection = null;
         DocumentImpl resource = null;
+        boolean isNullResource=false;
+        
         try {
-            // Get resource
             broker = pool.get(user);
             
             try {
@@ -89,88 +208,93 @@ public class Lock extends AbstractWebDAVMethod {
             
             if(resource == null) {
                 // No document found, maybe a collection
+                LOG.info("resource==null, document not found.");
                 collection = broker.openCollection(path, org.exist.storage.lock.Lock.READ_LOCK);
+                
                 if(collection == null){
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                            NOT_FOUND_ERR + " " + path);
+                    LOG.info("collection==null, path does not point to collection");
+                    LOG.debug("Create document as NullResource");
+                    createNullResource(user, request, response, path);
+                    isNullResource=true;
+                    
                     
                 } else {
-                    LOG.debug("Locking on collections not supported yet.");
-                    response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED,
-                            "Locking on collections not supported yet.");
+                    String txt="Locking on collections not supported yet.";
+                    LOG.debug(txt);
+                    response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, txt);
+                    return;
                 }
-                return;
+                
+            } else {
+                
+                LOG.debug("Aquire lock for existing document");
+                
+                // TODO get information from webDAV client XML
+                LockToken lockToken = getDefaultToken(user);
+//                LockToken lockToken = getLockParameters(request, response);
+//                if(lockToken==null){
+//                    // Error has been handled,skip test
+//                    LOG.debug("No Locktoken. Stopped Lock request");
+//                    pool.release(broker);
+//                    return;
+//                }
+                
+                LOG.debug("Received lock request [" + lockToken.getScope() + "] "
+                        +"for owner " + lockToken.getOwner());
+                
+                // Get current userlock
+                User lock = resource.getUserLock();
+                
+                // Check if Resource is already locked.
+                if( lock!=null && !lock.getName().equals(user.getName()) ){
+                    LOG.debug("Resource is locked.");
+                    response.sendError(SC_RESOURCE_IS_LOCKED,
+                            "Resource is locked by user "+ user.getName() +".");
+                    return;
+                }
+                
+                // Check for request fo shared lock.
+                if(lockToken.getScope() == LockToken.LOCK_SCOPE_SHARED) {
+                    LOG.debug("Shared locks are not implemented.");
+                    response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED,
+                            "Shared locks are not implemented.");
+                    return;
+                }
+                
+                // Fill new Locktoken with new UUID
+                lockToken.createOpaqueLockToken();
+                resource.getMetadata().setLockToken(lockToken);
+                resource.setUserLock(user);
+                
+                // Make token persistant
+                TransactionManager transact = pool.getTransactionManager();
+                Txn transaction = transact.beginTransaction();
+                broker.storeXMLResource(transaction, resource);
+                // ?
+                resource.getUpdateLock().release();
+                transact.commit(transaction);
+                
+                LOG.debug("Sucessfully locked '"+path+"'.");
+                
+                // Write XML response to client
+                lockResource(request, response, lockToken);
+                
             }
-            
-            
-            // TODO get information from webDAV client XML
-            //LockToken lockToken = getLockParameters(request, response);
-            
-            // Fill in default information
-            LockToken lockToken = new LockToken();
-            lockToken.setOwner(user.getName());
-            lockToken.setType(LockToken.LOCK_TYPE_WRITE);
-            lockToken.setTimeOut(LockToken.LOCK_TIMEOUT_INFINITE);
-            lockToken.setScope(LockToken.LOCK_SCOPE_EXCLUSIVE);
-            lockToken.setDepth(LockToken.LOCK_DEPTH_0);
-            
-            if(lockToken==null){
-                // Error has been handled,skip test
-                LOG.debug("No Locktoken. Stopped Lock request");
-                pool.release(broker);
-                return;
-            }
-            
-            LOG.debug("Received lock request [" + lockToken.getScope() + "] "
-                    +"for owner " + lockToken.getOwner());
-            
-            // Get current userlock
-            User lock = resource.getUserLock();
-            
-            // Check if Resource is already locked.
-            if( lock!=null && !lock.getName().equals(user.getName()) ){
-                LOG.debug("Resource is locked.");
-                response.sendError(SC_RESOURCE_IS_LOCKED,
-                        "Resource is locked by user "+ user.getName() +".");
-                return;
-            }
-            
-            // Check for request fo shared lock.
-            if(lockToken.getScope() == LockToken.LOCK_SCOPE_SHARED) {
-                LOG.debug("Shared locks are not implemented.");
-                response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED,
-                        "Shared locks are not implemented.");
-                return;
-            }
-            
-            // Fill UUID
-            lockToken.createOpaqueLockToken();
-            resource.getMetadata().setLockToken(lockToken);
-            resource.setUserLock(user);
-            
-            // Make token persistant
-            TransactionManager transact = pool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-            broker.storeXMLResource(transaction, resource);
-            transact.commit(transaction);
-            
-            LOG.debug("Sucessfully locked '"+path+"'.");
-            
-            // Write XML response to client
-            lockResource(request, response, resource, lockToken);
-            
         } catch (EXistException e) {
             LOG.error(e);
             throw new ServletException(e);
             
         } finally {
             
-            if(resource!=null){
-                resource.getUpdateLock().release();
-            }
-            
-            if(collection != null){
-                collection.release();
+            if(isNullResource){
+
+                if(resource!=null){
+                    resource.getUpdateLock().release();
+                }
+                
+                if(collection != null){
+                    collection.release();
+                }
             }
             
             if(pool != null){
@@ -190,8 +314,7 @@ public class Lock extends AbstractWebDAVMethod {
      * @return NULL if error is send to response object, or locktoken with
      *         details about scope, depth and owner
      */
-    private LockToken getLockParameters(HttpServletRequest request,
-            HttpServletResponse response)
+    private LockToken getLockParameters(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException{
         
         LockToken token = new LockToken();
@@ -265,7 +388,7 @@ public class Lock extends AbstractWebDAVMethod {
     
     // Return Lock Info
     private void lockResource(HttpServletRequest request, HttpServletResponse response,
-            DocumentImpl resource, LockToken lockToken) throws ServletException, IOException {
+           LockToken lockToken) throws ServletException, IOException {
         
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("text/xml");

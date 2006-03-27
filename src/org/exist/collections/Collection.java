@@ -1032,8 +1032,8 @@ public  class Collection extends Observable
     private void manageDocumentInformation(DBBroker broker, String name, DocumentImpl oldDoc,
             DocumentImpl document ) {
     	DocumentMetadata metadata = new DocumentMetadata();
-    	document.setMetadata(metadata);
         if (oldDoc != null) {
+            metadata = oldDoc.getMetadata();
             metadata.setCreated(oldDoc.getMetadata().getCreated());
             metadata.setLastModified(System.currentTimeMillis());
             document.setPermissions(oldDoc.getPermissions());
@@ -1043,6 +1043,7 @@ public  class Collection extends Observable
             document.getPermissions().setGroup(
                     broker.getUser().getPrimaryGroup());
         }
+        document.setMetadata(metadata);
     }
     
     /**
@@ -1167,6 +1168,7 @@ public  class Collection extends Observable
             
             broker.storeBinaryResource(transaction, blob, data);
             addDocument(transaction, broker, blob);
+            
             broker.storeXMLResource(transaction, blob);
             
             broker.closeDocument();
