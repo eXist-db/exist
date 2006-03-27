@@ -65,28 +65,26 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
 		assertEquals(Type.DURATION, dv.getType());
 	}
 	
-	//Removed : what should this comparison fail ? -pb
-	/*
+	public void testCompareSucceeds() throws XPathException {
+		try {
+			DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
+			//eq and ne comparison operators are allowed
+			dv.compareTo(null, Constants.EQ, dv);			
+		} catch (XPathException e) {
+			fail();
+		}
+	}
+	
 	public void testCompareFail1() throws XPathException {
 		try {
 			DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
-			dv.compareTo(null, dv);
+			dv.compareTo(null, Constants.LT, dv);
 			fail();
 		} catch (XPathException e) {
 			// expected
 		}
-	}
-	*/
-	
-	public void testCompareFail2() throws XPathException {
-		try {
-			DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
-			dv.compareTo(null, Constants.EQ, dv);
-			fail();
-		} catch (XPathException e) {
-			// expected
-		}
-	}
+	}	
+
 	public void testCompareFail3() throws XPathException {
 		try {
 			DurationValue dv1 = new DurationValue("P1Y2M3DT4H5M6S"), dv2 = new DayTimeDurationValue("P1D");
