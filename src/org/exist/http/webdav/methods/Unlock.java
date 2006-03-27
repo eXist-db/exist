@@ -28,7 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.LockToken;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 
@@ -36,6 +38,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
 
 /**
  * Implements the WebDAV UNLOCK method.
@@ -61,7 +64,7 @@ public class Unlock extends AbstractWebDAVMethod {
         try {
             
             broker = pool.get(user);
-           
+            
             try {
                 resource = broker.getXMLResource(path, org.exist.storage.lock.Lock.READ_LOCK);
                 
@@ -77,21 +80,23 @@ public class Unlock extends AbstractWebDAVMethod {
                 if(collection!=null){
                     LOG.info("Lock on collections not supported yet");
                     response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-                                       "Lock on collections not supported yet");
+                            "Lock on collections not supported yet");
                     
                     return;
                 } else  {
                     LOG.info(NOT_FOUND_ERR + " " + path);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                                       NOT_FOUND_ERR + " " + path);
+                            NOT_FOUND_ERR + " " + path);
                     return;
                 }
             }
-                        
+            
             User lock = resource.getUserLock();
             if(lock==null){
                 // No lock found, can not be unlocked
                 LOG.debug("No lock found");
+                
+                //clean up
                 resource.getMetadata().setLockToken(null);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
@@ -99,19 +104,48 @@ public class Unlock extends AbstractWebDAVMethod {
             } else {
                 // Resource is locked.
                 LOG.info("Unlocking resource.");
-                resource.setUserLock(null);
-                resource.getMetadata().setLockToken(null);
+                
+                boolean isNullResource=false;
+                if(resource.getMetadata().getLockToken().isNullResource() ){
+                    isNullResource=true;
+                }
+                
                 
                 // Make it persistant
                 TransactionManager transact = pool.getTransactionManager();
                 Txn transaction = transact.beginTransaction();
-                broker.storeXMLResource(transaction, resource);
+                
+                // Remove if NullResource
+                if(isNullResource){
+                    LOG.debug("Unlock NullResource");
+                    try {
+                        if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
+                            collection.removeBinaryResource(transaction, broker, resource.getFileName());
+                        else
+                            collection.removeXMLResource(transaction, broker, resource.getFileName());
+                    } catch (LockException ex) {
+                        LOG.error(ex);
+                    } catch (TriggerException ex) {
+                        LOG.error(ex);
+                    } catch (PermissionDeniedException ex) {
+                        LOG.error(ex);
+                    }
+                    
+                } else {
+                    LOG.debug("Unlock resource");
+                    resource.setUserLock(null);
+                    resource.getMetadata().setLockToken(null);
+                    broker.storeXMLResource(transaction, resource);
+                }
+                
+                resource.getUpdateLock().release();
+                
                 transact.commit(transaction);
                 
                 LOG.debug("Sucessfully unlocked '"+path+"'.");
                 
                 // Say OK
-                response.sendError(SC_UNLOCK_SUCCESSFULL, "Unlocked "+path); 
+                response.sendError(SC_UNLOCK_SUCCESSFULL, "Unlocked "+path);
             }
             
             
@@ -122,10 +156,6 @@ public class Unlock extends AbstractWebDAVMethod {
             
         } finally {
             
-            if(resource!=null){
-                resource.getUpdateLock().release();
-            }
-             
             if(collection != null){
                 collection.release();
             }
@@ -134,5 +164,5 @@ public class Unlock extends AbstractWebDAVMethod {
                 pool.release(broker);
             }
         }
-    }    
+    }
 }

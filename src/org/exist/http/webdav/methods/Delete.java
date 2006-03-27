@@ -45,78 +45,78 @@ import org.exist.util.LockException;
  * @author wolf
  */
 public class Delete extends AbstractWebDAVMethod {
-	
-	public Delete(BrokerPool pool) {
-		super(pool);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.http.webdav.WebDAVMethod#process(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
-	 */
-	public void process(User user, HttpServletRequest request,
-			HttpServletResponse response, String path) throws ServletException, IOException {
-		DBBroker broker = null;
-		Collection collection = null;
-		DocumentImpl resource = null;
+    
+    public Delete(BrokerPool pool) {
+        super(pool);
+    }
+    
+        /* (non-Javadoc)
+         * @see org.exist.http.webdav.WebDAVMethod#process(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
+         */
+    public void process(User user, HttpServletRequest request,
+            HttpServletResponse response, String path) throws ServletException, IOException {
+        DBBroker broker = null;
+        Collection collection = null;
+        DocumentImpl resource = null;
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
-		try {
-			broker = pool.get(user);
-			collection = broker.openCollection(path, Lock.WRITE_LOCK);
-			if(collection == null) {
+        try {
+            broker = pool.get(user);
+            collection = broker.openCollection(path, Lock.WRITE_LOCK);
+            if(collection == null) {
                 ///TODO : use dedicated function in XmldbURI
-				int pos = path.lastIndexOf("/");
-				String collName = path.substring(0, pos);
-				String docName = path.substring(pos + 1);
-				LOG.debug("collection = " + collName + "; doc = " + docName);
-				collection = broker.openCollection(collName, Lock.WRITE_LOCK);
-				if(collection == null) {
+                int pos = path.lastIndexOf("/");
+                String collName = path.substring(0, pos);
+                String docName = path.substring(pos + 1);
+                LOG.debug("collection = " + collName + "; doc = " + docName);
+                collection = broker.openCollection(collName, Lock.WRITE_LOCK);
+                if(collection == null) {
                     transact.abort(txn);
-					LOG.debug("No resource or collection found for path: " + path);
-					response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
-					return;
-				}
-				resource = collection.getDocument(broker, docName);
-				if(resource == null) {
-					LOG.debug("No resource found for path: " + path);
+                    LOG.debug("No resource or collection found for path: " + path);
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
+                    return;
+                }
+                resource = collection.getDocument(broker, docName);
+                if(resource == null) {
+                    LOG.debug("No resource found for path: " + path);
                     transact.abort(txn);
-					response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
-					return;
-				}
-			}
-			if(!collection.getPermissions().validate(user, Permission.READ)) {
-				LOG.debug("Permission denied to read collection");
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
+                    return;
+                }
+            }
+            if(!collection.getPermissions().validate(user, Permission.READ)) {
+                LOG.debug("Permission denied to read collection");
                 transact.abort(txn);
-				response.sendError(HttpServletResponse.SC_FORBIDDEN);
-				return;
-			}
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
             
-			if(resource == null) {
-				broker.removeCollection(txn, collection);
-			} else {
-				if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
-					collection.removeBinaryResource(txn, broker, resource.getFileName());
-				else
-					collection.removeXMLResource(txn, broker, resource.getFileName());
-			}
+            if(resource == null) {
+                broker.removeCollection(txn, collection);
+            } else {
+                if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
+                    collection.removeBinaryResource(txn, broker, resource.getFileName());
+                else
+                    collection.removeXMLResource(txn, broker, resource.getFileName());
+            }
             transact.commit(txn);
-		} catch (EXistException e) {
+        } catch (EXistException e) {
             transact.abort(txn);
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-		} catch (PermissionDeniedException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (PermissionDeniedException e) {
             transact.abort(txn);
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
-		} catch (LockException e) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+        } catch (LockException e) {
             transact.abort(txn);
-			response.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
-		} catch (TriggerException e) {
+            response.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
+        } catch (TriggerException e) {
             transact.abort(txn);
-			response.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
-		} finally {
-			if(collection != null)
-				collection.release();
-			pool.release(broker);
-		}
-		response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-	}
+            response.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
+        } finally {
+            if(collection != null)
+                collection.release();
+            pool.release(broker);
+        }
+        response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+    }
 }

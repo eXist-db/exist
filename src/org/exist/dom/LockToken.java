@@ -61,6 +61,12 @@ public class LockToken {
     // Timeout
     public final static long LOCK_TIMEOUT_INFINITE = -1L;
     
+    // Write Locks and Null Resources
+    // see http://www.webdav.org/specs/rfc2518.html#rfc.section.7.4
+    private byte resourceType = RESOURCE_TYPE_NOT_SPECIFIED;
+    public final static byte RESOURCE_TYPE_NOT_SPECIFIED = 0;
+    public final static byte RESOURCE_TYPE_NULL_RESOURCE = 1;
+    
     // Other
     private String owner = null;
     private long timeout = -1L;
@@ -93,6 +99,14 @@ public class LockToken {
     public String getOpaqueLockToken(){ return token; }
     public void setOpaqueLockToken(String token){ this.token = token; };
     
+    // 
+    public byte getResourceType(){  return resourceType;   }
+    public void setResourceType(byte type){ resourceType=type; }
+    
+    public boolean isNullResource(){
+        return (resourceType == LockToken.RESOURCE_TYPE_NULL_RESOURCE );
+    }
+    
     // Create new UUID for token
     public void createOpaqueLockToken(){
         token = LockToken.generateUUID();
@@ -110,12 +124,13 @@ public class LockToken {
         ostream.writeUTF(owner != null ? owner : "");
         ostream.writeLong(timeout);
         ostream.writeUTF(token != null ? token : "");
+        ostream.writeByte(resourceType);
     }
     
     public void read(VariableByteInput istream) throws IOException {
         type=istream.readByte();
         depth=istream.readByte();
-        scope=istream.readByte();;
+        scope=istream.readByte();
         
         owner=istream.readUTF();
         if (owner.length() == 0){
@@ -128,6 +143,8 @@ public class LockToken {
         if (token.length() == 0){
             token = null;
         }
+        
+        resourceType=istream.readByte();
     }
     
 }

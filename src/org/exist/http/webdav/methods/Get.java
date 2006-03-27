@@ -34,6 +34,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentMetadata;
+import org.exist.dom.LockToken;
 import org.exist.http.webdav.WebDAV;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -99,6 +100,13 @@ public class Get extends AbstractWebDAVMethod {
             if(!resource.getPermissions().validate(user, Permission.READ)) {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, 
                                    READ_PERMISSION_DENIED);
+                return;
+            }
+            
+            LockToken token = resource.getMetadata().getLockToken();
+            if(token!=null && token.isNullResource() ){
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, 
+                                   "Document is a Null resource and cannot be retrieved");
                 return;
             }
             

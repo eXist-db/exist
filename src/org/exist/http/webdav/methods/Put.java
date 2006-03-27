@@ -38,6 +38,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.LockToken;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -68,12 +69,14 @@ public class Put extends AbstractWebDAVMethod {
          */
     public void process(User user, HttpServletRequest request,
             HttpServletResponse response, String path) throws ServletException, IOException {
+        LOG.debug("PUT start");
         File tempFile = saveRequestContent(request);
+
         String url = tempFile.toURI().toASCIIString();
         String contentType = request.getContentType();
         DBBroker broker = null;
         Collection collection = null;
-        
+                
         boolean collectionLocked = true;
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
@@ -108,6 +111,13 @@ public class Put extends AbstractWebDAVMethod {
                 return;
             }
             
+//            MimeType mime = MimeTable.getInstance().getContentTypeFor(path);
+//            if (mime == null){
+//                mime = MimeType.BINARY_TYPE;
+//            }
+                    
+            // TODO why is content type involved here? would not like to use it,
+            // as it seems to block binary file upload by MS office.
             
             MimeType mime;
             if(contentType == null) {
@@ -120,18 +130,24 @@ public class Put extends AbstractWebDAVMethod {
             
             if (mime == null)
                 mime = MimeType.BINARY_TYPE;
+            
+            
             LOG.debug("storing document " + path
                     + "; content-type='" + contentType+"'");
             
+            DocumentImpl doc = null;
             if(mime.isXMLType()) {
+                LOG.debug("storing XML resource");
                 InputSource is = new InputSource(url);
                 IndexInfo info = collection.validateXMLResource(txn, broker, path, is);
-                info.getDocument().getMetadata().setMimeType(contentType);
-                
+                doc = info.getDocument();
+                doc.getMetadata().setMimeType(contentType);
                 collection.release();
                 collectionLocked = false;
                 collection.store(txn, broker, info, is, false);
+                LOG.debug("done");
             } else {
+                LOG.debug("storing Binary resource");
                 byte[] chunk = new byte[4096];
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
                 FileInputStream is = new FileInputStream(tempFile);
@@ -140,11 +156,23 @@ public class Put extends AbstractWebDAVMethod {
                     os.write(chunk, 0, l);
                 }
                 
-                DocumentImpl doc = collection.addBinaryResource(txn, broker,
+                doc = collection.addBinaryResource(txn, broker,
                         path, os.toByteArray(), contentType);
                 
+                LOG.debug("done");
             }
+            
+            // Remove Null Resource flag
+            LockToken token = doc.getMetadata().getLockToken();
+            if(token!=null){
+                token.setResourceType(LockToken.RESOURCE_TYPE_NOT_SPECIFIED);
+            } else {
+                LOG.debug("token==null");
+            }
+            
             transact.commit(txn);
+            
+            LOG.debug("PUT ready");
         } catch (EXistException e) {
             transact.abort(txn);
             LOG.error(e);

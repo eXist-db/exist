@@ -26,6 +26,7 @@ package org.exist.xmldb;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
@@ -39,6 +40,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.LockToken;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -466,35 +468,47 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		return listChildCollections();
 	}
 
-	public String[] listResources() throws XMLDBException {
-		Collection collection = null;
-		DBBroker broker = null;
-		try {
-			broker = brokerPool.get(user);
-			collection = broker.openCollection(path, Lock.READ_LOCK);
-			if(collection == null)
-				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-			if (!checkPermissions(collection, Permission.READ))
-				return new String[0];
-			String[] resources = new String[collection.getDocumentCount()];
-			int j = 0;
-			DocumentImpl doc;
-			for (Iterator i = collection.iterator(broker); i.hasNext(); j++) {
-				doc = (DocumentImpl) i.next();
-				resources[j] = doc.getFileName();
-			}
-			return resources;
-		} catch (EXistException e) {
-			throw new XMLDBException(
-					ErrorCodes.UNKNOWN_ERROR,
-					"error while retrieving resource: " + e.getMessage(),
-					e);
-		} finally {
-			if(collection != null)
-				collection.release();
-			brokerPool.release(broker);
-		}
-	}
+        public String[] listResources() throws XMLDBException {
+            Collection collection = null;
+            DBBroker broker = null;
+            try {
+                broker = brokerPool.get(user);
+                collection = broker.openCollection(path, Lock.READ_LOCK);
+                if(collection == null)
+                    throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+                if (!checkPermissions(collection, Permission.READ))
+                    return new String[0];
+                
+                List allresources = new ArrayList();
+                DocumentImpl doc;
+                for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
+                    doc = (DocumentImpl) i.next();
+                    
+                    // Only if Locktoken has Null resource flag set
+                    LockToken lock = doc.getMetadata().getLockToken();
+                    if(lock==null || lock.getResourceType()!=LockToken.RESOURCE_TYPE_NULL_RESOURCE){
+                        allresources.add( doc.getFileName() );
+                    }
+                }
+                
+                int j=0;
+                String[] resources = new String[allresources.size()];
+                for(Iterator i = allresources.iterator(); i.hasNext(); j++){
+                    resources[j]= (String) i.next();
+                }
+                
+                return resources;
+            } catch (EXistException e) {
+                throw new XMLDBException(
+                        ErrorCodes.UNKNOWN_ERROR,
+                        "error while retrieving resource: " + e.getMessage(),
+                        e);
+            } finally {
+                if(collection != null)
+                    collection.release();
+                brokerPool.release(broker);
+            }
+        }
 	
 	public String[] getResources() throws XMLDBException {
 		return listResources();

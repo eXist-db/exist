@@ -123,8 +123,7 @@ public class WebDAV {
         if(path.endsWith("/"))
             path = path.substring(0, path.length() - 1);
         
-        LOG.debug("path='" + path
-                + "'; method='" + request.getMethod()
+        LOG.debug("method='" + request.getMethod() + "'; path='" + path 
                 + "'; user='"+user.getName()
                 + "'; Lock-Token='" + request.getHeader("Lock-Token")
                 + "'; If='"+request.getHeader("If")+"'");
