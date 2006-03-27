@@ -24,8 +24,24 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.memtree.NodeImpl;
+import org.exist.memtree.ReferenceNode;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.GeneralComparison;
+import org.exist.xquery.Profiler;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -171,8 +187,17 @@ public class FunDeepEqual extends Function {
 	}
 	
 	private Node findNextTextOrElementNode(Node n) {
-		while (n != null && !(n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE)) {
+		if (n == null) 
+			return null;
+		if (n.getNodeType() == NodeImpl.REFERENCE_NODE) {
+			//Retrieve the actual node
+			NodeProxy p = ((ReferenceNode)n).getReference();
+			n = p.getNode();
+		}		
+		while (!(n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE)) {
 			n = n.getNextSibling();
+			if (n == null) 
+				return null;
 		}
 		return n;
 	}
