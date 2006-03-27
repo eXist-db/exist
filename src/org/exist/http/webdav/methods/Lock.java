@@ -143,15 +143,15 @@ public class Lock extends AbstractWebDAVMethod {
             }
             
             resource.setUserLock(user);
-
+            
             lockToken.setResourceType(LockToken.RESOURCE_TYPE_NULL_RESOURCE);
             
             resource.getMetadata().setLockToken(lockToken);
             
             txManager.commit(txn);
             
-            try {  
-                lockResource(request, response, /* resource,  */ lockToken);
+            try {
+                lockResource(request, response, lockToken);
             } catch (ServletException ex) {
                 LOG.error(ex);
             } catch (IOException ex) {
@@ -163,18 +163,20 @@ public class Lock extends AbstractWebDAVMethod {
         } catch (PermissionDeniedException ex) {
             LOG.error(ex);
             txManager.abort(txn);
-        } catch (SAXException ex) {
+            try {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+            } catch (IOException e) {
+                LOG.error(e);
+            }
+        } catch (Exception ex) {
             LOG.error(ex);
             txManager.abort(txn);
-        } catch (LockException ex) {
-            LOG.error(ex);
-            txManager.abort(txn);
-        } catch (TriggerException ex) {
-            LOG.error(ex);
-            txManager.abort(txn);
-        } catch (EXistException ex) {
-            LOG.error(ex);
-            txManager.abort(txn);
+            try {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+            } catch (IOException e) {
+                LOG.error(e);
+            }
+            
         } finally{
             if(pool!=null){
                 pool.release(broker);
@@ -287,7 +289,7 @@ public class Lock extends AbstractWebDAVMethod {
         } finally {
             
             if(isNullResource){
-
+                
                 if(resource!=null){
                     resource.getUpdateLock().release();
                 }
@@ -315,7 +317,7 @@ public class Lock extends AbstractWebDAVMethod {
      *         details about scope, depth and owner
      */
     private LockToken getLockParameters(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException{
+    throws ServletException, IOException{
         
         LockToken token = new LockToken();
         
@@ -388,7 +390,7 @@ public class Lock extends AbstractWebDAVMethod {
     
     // Return Lock Info
     private void lockResource(HttpServletRequest request, HttpServletResponse response,
-           LockToken lockToken) throws ServletException, IOException {
+            LockToken lockToken) throws ServletException, IOException {
         
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("text/xml");
