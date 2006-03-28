@@ -24,15 +24,14 @@ package org.exist.dom;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import org.exist.numbering.NodeId;
 import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
-import org.exist.util.Range;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
-import org.exist.numbering.NodeId;
 import org.w3c.dom.Node;
 
 /**
@@ -490,6 +489,15 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         return lastPart == null ? null : lastPart.parentWithChild(doc, nodeId, directParent, includeSelf);
     }
 
+    public String debugParts() {
+    	StringBuffer buf = new StringBuffer();
+    	for (int i = 0; i < partCount; i++) {
+    		buf.append(documentIds[i]);
+    		buf.append(' ');
+    	}
+    	return buf.toString();
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#getIndexType()
      */
@@ -669,19 +677,22 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         NodeSet getChildrenInSet(NodeSet result, NodeProxy parent, int mode, int contextId) {
             // get the range of node ids reserved for children of the parent
             // node
-            Range range = NodeSetHelper.getChildRange(parent.getDocument(), parent.getGID());
             int low = 0;
             int high = length - 1;
             int mid = 0;
+            int cmp;
             NodeProxy p;
+            NodeId parentId = parent.getNodeId();
             // do a binary search to pick some node in the range of valid child
             // ids
             while (low <= high) {
                 mid = (low + high) / 2;
                 p = array[mid];
-                if (range.inRange(p.getGID()))
-                    break; // found a node, break out
-                if (p.getGID() > range.getStart())
+                if (p.getNodeId().isChildOf(parentId))
+                	break;	// found a child node, break out.
+                
+                cmp = p.getNodeId().compareTo(parentId);
+                if (cmp > 0)
                     high = mid - 1;
                 else
                     low = mid + 1;
@@ -689,10 +700,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             if (low > high)
                 return result; // no node found
             // find the first child node in the range
-            while (mid > 0 && array[mid - 1].getGID() >= range.getStart())
+            while (mid > 0 && array[mid - 1].getNodeId().compareTo(parentId) > 0)
                 --mid;
             // walk through the range of child nodes we found
-            for (int i = mid; i < length && array[i].getGID() <= range.getEnd(); i++) {
+            for (int i = mid; i < length && array[i].getNodeId().isChildOf(parentId); i++) {
                 switch (mode) {
                     case NodeSet.DESCENDANT :
                         if (Expression.NO_CONTEXT_ID != contextId)
@@ -700,7 +711,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                         else
                             array[i].copyContext(parent);
                         array[i].addMatches(parent);
-                        result.add(array[i], range.getDistance());
+                        result.add(array[i]);
                         break;
                     case NodeSet.ANCESTOR :
                         if (Expression.NO_CONTEXT_ID != contextId)
