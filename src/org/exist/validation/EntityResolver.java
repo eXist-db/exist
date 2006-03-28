@@ -273,7 +273,7 @@ public class EntityResolver  implements XMLEntityResolver {
         
         // Get grammar from database
         logger.debug("resourcePath="+resourcePath);
-        grammar = databaseResources.getGrammar(grammarIsBinary,resourcePath);
+        grammar = databaseResources.getResource(resourcePath);
         
         if(grammar == null ){
             logger.debug("Grammar not retrieved from database.");

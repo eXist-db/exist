@@ -32,7 +32,6 @@ import junit.framework.TestSuite;
 
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
 import org.exist.validation.internal.DatabaseResources;
@@ -40,7 +39,7 @@ import org.exist.xmldb.XmldbURI;
 
 
 /**
- *  "DatabaseResources.class "jUnit tests.
+ *  "DatabaseResources.class" jUnit tests.
  *
  * @author dizzzz
  */
@@ -51,40 +50,48 @@ public class DatabaseResourcesTest extends TestCase {
     
     private final static String DBGRAMMARS="/db/grammar";
     
-    private DatabaseTools dt = null;
-    private String eXistHome = null;
-    private BrokerPool pool = null;
-    private Validator validator = null;
-    private DatabaseResources dbResources = null;
+    private static DatabaseTools dt = null;
+    private static String eXistHome = null;
+    private static BrokerPool pool = null;
+    private static Validator validator = null;
+    private static DatabaseResources dbResources = null;
     
-    private XmldbURI baseURI = null;
+    private static XmldbURI baseURI = null;
     
     public DatabaseResourcesTest(String testName) {
         super(testName);
     }
     
-    protected void setUp() {
-        System.out.println(">>> setUp");
-        
-        if (eXistHome == null) {
-            eXistHome = Configuration.getExistHome().getAbsolutePath();
+    public static Test suite() {
+        TestSuite suite = new TestSuite(DatabaseResourcesTest.class);
+        return suite;
+    }
+    
+    protected BrokerPool startDB() {
+        try {
+            Configuration config = new Configuration();
+            config.setProperty("indexer.validation","no");
+            BrokerPool.configure(1, 5, config);
+            return BrokerPool.getInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
         }
+        return null;
+    }
+    
+    
+    // ---------------------------------------------------
+    
+    
+    public void testStart() {
+        System.out.println(">>> testStart");
         
-        if(pool==null){
-            pool = startDB();
-        }
-        
-        if(validator==null){
-            validator = new Validator(pool);
-        }
-        
-        if(dbResources==null){
-            dbResources = validator.getDatabaseResources();
-        }
-        
-        if(dt==null){
-            dt = new DatabaseTools(pool);
-        }
+        eXistHome = Configuration.getExistHome().getAbsolutePath();
+        pool = startDB();
+        validator = new Validator(pool);
+        dbResources = validator.getDatabaseResources();
+        dt = new DatabaseTools(pool);
         
         try {
             baseURI = new XmldbURI("xmldb:exist:///db");
@@ -96,39 +103,14 @@ public class DatabaseResourcesTest extends TestCase {
         System.out.println("<<<\n");
     }
     
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(DatabaseResourcesTest.class);
-        return suite;
-    }
-    
-    protected BrokerPool startDB() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-        return null;
-    }
-    
-    protected void tearDown() {
-        System.out.println(">>> tearDown");
-        // TODO why o why, tell me why to leave this one out
-        //BrokerPool.stopAll(false);
-        System.out.println("<<<\n");
-    }
-    
-    
     public void testInsertXsdGrammar() {
         
-        System.out.println(">>> testInsertGrammar");
-        
+        System.out.println(">>> testInsertXsdGrammar");
+        System.out.println(eXistHome);
         File schema = new File(eXistHome , ABOOKFILES+"/addressbook.xsd");
+        
         byte grammar[] = dt.readFile(schema);
-        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/schemas/addressbook.xsd",grammar) );
+        assertTrue( dbResources.insertResource(DBGRAMMARS+"/schemas/addressbook.xsd",grammar) );
         
         System.out.println("<<<");
     }
@@ -139,18 +121,15 @@ public class DatabaseResourcesTest extends TestCase {
         
         File dtd = new File(eXistHome , DTDFILES+"/play.dtd");
         byte grammar[] = dt.readFile(dtd);
-        assertTrue( dbResources.insertGrammar(true, DBGRAMMARS+"/dtds/play.dtd",grammar) );
+        assertTrue( dbResources.insertResource(DBGRAMMARS+"/dtds/play.dtd",grammar) );
         
         File catalog = new File(eXistHome , DTDFILES+"/catalog.xml");
         grammar = dt.readFile(catalog);
         
-        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/dtds/catalog.xml",grammar)  );
+        assertTrue( dbResources.insertResource(DBGRAMMARS+"/dtds/catalog.xml",grammar)  );
         
         System.out.println("<<<");
     }
-    
-    
-    
     
     public void testInsertTestDocuments() {
         
@@ -158,27 +137,27 @@ public class DatabaseResourcesTest extends TestCase {
         
         File file = new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml");
         byte data[] = dt.readFile(file);
-        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/addressbook_valid.xml",data) );
+        assertTrue( dbResources.insertResource(DBGRAMMARS+"/addressbook_valid.xml",data) );
         
         file = new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml");
         data = dt.readFile(file);
-        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/addressbook_invalid.xml",data) );
+        assertTrue( dbResources.insertResource(DBGRAMMARS+"/addressbook_invalid.xml",data) );
         
         file = new File(eXistHome , DTDFILES+"/hamlet_valid.xml");
         data = dt.readFile(file);
-        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/hamlet_valid.xml",data) );
-
+        assertTrue( dbResources.insertResource(DBGRAMMARS+"/hamlet_valid.xml",data) );
+        
         file = new File(eXistHome , DTDFILES+"/hamlet_invalid.xml");
         data = dt.readFile(file);
-        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/hamlet_invalid.xml",data) ); 
+        assertTrue( dbResources.insertResource(DBGRAMMARS+"/hamlet_invalid.xml",data) );
         
         file = new File(eXistHome , DTDFILES+"/hamlet_nodoctype.xml");
         data = dt.readFile(file);
-        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/hamlet_nodoctype.xml",data) );  
+        assertTrue( dbResources.insertResource(DBGRAMMARS+"/hamlet_nodoctype.xml",data) );
         
         file = new File(eXistHome , DTDFILES+"/hamlet_wrongdoctype.xml");
         data = dt.readFile(file);
-        assertTrue( dbResources.insertGrammar(false, DBGRAMMARS+"/hamlet_wrongdoctype.xml",data) );  
+        assertTrue( dbResources.insertResource(DBGRAMMARS+"/hamlet_wrongdoctype.xml",data) );
         
         System.out.println("<<<");
     }
@@ -211,8 +190,10 @@ public class DatabaseResourcesTest extends TestCase {
         try {
             System.out.println(">>> testXsdValidDocument");
             
+            File file = new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml");
+            
             ValidationReport report = validator.validate(
-                    new FileInputStream(ABOOKFILES +"/addressbook_valid.xml") );
+                    new FileInputStream(file) );
             
             assertTrue( report.isValid() );
             
@@ -228,8 +209,9 @@ public class DatabaseResourcesTest extends TestCase {
         try {
             System.out.println(">>> testXsdInvalidDocument");
             
-            ValidationReport report = validator.validate(
-                    new FileInputStream(ABOOKFILES +"/addressbook_invalid.xml") );
+            File file = new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml");
+            
+            ValidationReport report = validator.validate( new FileInputStream(file) );
             
             assertFalse( report.isValid() );
             
@@ -245,10 +227,11 @@ public class DatabaseResourcesTest extends TestCase {
         try {
             System.out.println(">>> testDtdValidDocument");
             
+            File file = new File(eXistHome , DTDFILES+"/hamlet_valid.xml");
+            
             ValidationReport report = validator.validate(
-                    new FileInputStream(DTDFILES +"/hamlet_valid.xml"),
-                    "/db/grammar/dtds/catalog.xml");
-
+                    new FileInputStream(file), "/db/grammar/dtds/catalog.xml");
+            
             assertTrue( report.isValid() );
             
             System.out.println(report.toString());
@@ -263,8 +246,9 @@ public class DatabaseResourcesTest extends TestCase {
         try {
             System.out.println(">>> testDtdInvalidDocument");
             
-            ValidationReport report = validator.validate(
-                    new FileInputStream(DTDFILES +"/hamlet_invalid.xml") );
+            File file = new File(eXistHome , DTDFILES+"/hamlet_invalid.xml");
+            
+            ValidationReport report = validator.validate( new FileInputStream( file ) );
             
             assertFalse( report.isValid() );
             
@@ -274,6 +258,13 @@ public class DatabaseResourcesTest extends TestCase {
         } catch (Exception e) {
             fail(e.getMessage());
         }
+    }
+    
+    public void testShutdown() {
+        System.out.println(">>> testShutdown");
+        // TODO why o why, tell me why to leave this one out
+        //BrokerPool.stopAll(false);
+        System.out.println("<<<\n");
     }
     
 }

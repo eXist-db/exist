@@ -42,6 +42,8 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
@@ -284,17 +286,37 @@ public class DatabaseResources {
      * @param documentPath  Path to the resource.
      * @return              Byte array of resource, null if not found.
      */
-    public byte[] getGrammar(boolean isBinary, String documentPath){
+    public byte[] getResource(String documentPath){
+        
+        MimeType mime = MimeTable.getInstance().getContentTypeFor(documentPath);
+        if (mime == null){
+            mime = MimeType.BINARY_TYPE;
+        }
         
         byte[] data = null;
         
-        logger.debug("Get resource '"+documentPath + "' binary="+ isBinary);
+        logger.debug("Get resource '"+documentPath);
         
         DBBroker broker = null;
         try {
             broker = brokerPool.get(SecurityManager.SYSTEM_USER);
             
-            if(isBinary){
+            if(mime.isXMLType()){
+                DocumentImpl doc = broker
+                        .getXMLResource(documentPath, Lock.READ_LOCK);
+                
+                // if document is not present, null is returned
+                if(doc == null){
+                    logger.error("Xml document '"
+                            + documentPath + " does not exist.");
+                } else {
+                    Serializer serializer = broker.getSerializer();
+                    serializer.reset();
+                    data = serializer.serialize(doc).getBytes();
+                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                }
+                
+            } else {
                 BinaryDocument binDoc = (BinaryDocument) broker
                         .getXMLResource(documentPath, Lock.READ_LOCK);
                 
@@ -307,21 +329,6 @@ public class DatabaseResources {
                     binDoc.getUpdateLock().release(Lock.READ_LOCK);
                 }
                 
-            } else {
-                
-                DocumentImpl doc = broker
-                                    .getXMLResource(documentPath, Lock.READ_LOCK);
-                
-                // if document is not present, null is returned
-                if(doc == null){
-                    logger.error("Xml document '"
-                                + documentPath + " does not exist.");
-                } else {
-                    Serializer serializer = broker.getSerializer();
-                    serializer.reset();
-                    data = serializer.serialize(doc).getBytes();
-                    doc.getUpdateLock().release(Lock.READ_LOCK);   
-                }
             }
         } catch (PermissionDeniedException ex){
             logger.error("Error opening document", ex);
@@ -338,17 +345,7 @@ public class DatabaseResources {
         return data;
     }
     
-    
-    /**
-     *  Inser document to database. Not well tested yet.
-     *
-     * @param grammar      ByteArray containing file.
-     * @param isBinary     Indicate wether resource is binary.
-     * @param documentPath Path to the resource.
-     * @return             TRUE if successfull, FALSE if not.
-     */
-    public boolean insertGrammar(boolean isBinary, String documentPath, byte[] grammar){
-        
+    public boolean insertResource(String documentPath, byte[] grammar){
         boolean insertIsSuccesfull = false;
         
         String collectionName = DatabaseResources.getCollectionPath(documentPath);
@@ -356,6 +353,10 @@ public class DatabaseResources {
         
         DBBroker broker = null;
         try {
+            MimeType mime = MimeTable.getInstance().getContentTypeFor(documentPath);
+            if (mime == null){
+                mime = MimeType.BINARY_TYPE;
+            }
             
             broker = brokerPool.get(SecurityManager.SYSTEM_USER);
             
@@ -367,16 +368,17 @@ public class DatabaseResources {
             
             broker.saveCollection(transaction, collection);
             
-            if(isBinary){
+            if(mime.isXMLType()){
                 
-                // TODO : call mime-type stuff for goof mimetypes
-                BinaryDocument doc =
-                        collection.addBinaryResource(transaction, broker,
-                        documentName, grammar, "text/text");
-                
-            } else {
                 IndexInfo info = collection.validateXMLResource( transaction, broker, documentName , new InputSource( new ByteArrayInputStream(grammar) ) );
                 collection.store(transaction, broker, info, new InputSource( new ByteArrayInputStream(grammar) ), false);
+                
+            } else {
+                // TODO : call mime-type stuff for good mimetypes
+                BinaryDocument doc =
+                        collection.addBinaryResource(transaction, broker,
+                        documentName, grammar, mime.getName() );
+                
             }
             transact.commit(transaction);
             
@@ -392,6 +394,8 @@ public class DatabaseResources {
         return insertIsSuccesfull;
         
     }
+    
+    
     
     /**
      * Creates a new instance of DatabaseResources.
@@ -455,124 +459,7 @@ public class DatabaseResources {
         
     }
     
-//    /**
-//     * @deprecated Get rid of this code.
-//     */
-//    public boolean hasGrammar(int type, String id){
-//        return !getGrammarPath(type, id).equalsIgnoreCase("NONE");
-//    }
     
-//
-//    /**
-//     * @deprecated Get rid of this code.
-//     */
-//    public String getGrammarPath(int type, String id){
-//
-//        logger.info("Get path of '"+id+"'");
-//
-//        String result="EMPTY";
-//        String query = getGrammarQuery(type, id);
-//
-//        DBBroker broker = null;
-//        try {
-//            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
-//        } catch (EXistException ex){
-//            logger.error("Error getting DBBroker", ex);
-//        }
-//
-//        XQuery xquery = broker.getXQueryService();
-//        try{
-//            Sequence seq = xquery.execute(query, null);
-//
-//            SequenceIterator i = seq.iterate();
-//            if(i.hasNext()){
-//                result= i.nextItem().getStringValue();
-//
-//            } else {
-//                logger.debug("No xQuery result");
-//            }
-//
-//        } catch (XPathException ex){
-//            logger.error("XSD xQuery error: "+ ex.getMessage());
-//        }
-//
-//        brokerPool.release(broker);
-//
-//        return result;
-//    }
-    
-//    /**
-//     * @deprecated Get rid of this code.
-//     */
-//    public String getGrammarQuery(int type, String id){ // TODO double
-//        String query="NOQUERY";
-//        if(type==GRAMMAR_XSD){
-//            query = "let $top := collection('"+XSDBASE+"') " +
-//                    "let $schemas := $top/xs:schema[ @targetNamespace = \"" + id+ "\" ] "+
-//                    "return if($schemas) then document-uri($schemas[1]) else \""+NOGRAMMAR+"\" " ;
-//        } else if(type==GRAMMAR_DTD){
-//            query = "let $top := doc('"+DTDCATALOG+"') "+
-//                    "let $dtds := $top//public[@publicId = \""+id+"\"]/@uri " +
-//                    "return if($dtds) then $dtds[1] else \""+NOGRAMMAR+"\"" ;
-//        } else {
-//            logger.error("Unknown grammar type, not able to find query.");
-//        }
-//
-//        return query;
-//    }
-    
-//    /**
-//     *  Get GRAMMAR resource specified by DB path
-//     *
-//     * @deprecated Get rid of this code.
-//     * @param path          Path in DB to resource.
-//     * @param isBinary      Flag is resource binary?
-//     * @return              Reader to the resource.
-//     */
-//    public byte[] getGrammar(int type, String path ){
-//
-//        byte[] data = null;
-//        boolean isBinary=false;
-//
-//        if(type==GRAMMAR_DTD){
-//            isBinary=true;
-//        }
-//
-//        logger.debug("Get resource '"+path + "' binary="+ isBinary);
-//
-//        DBBroker broker = null;
-//        try {
-//
-//            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
-//
-//
-//            if(isBinary){
-//                BinaryDocument binDoc = (BinaryDocument) broker.openDocument(path, Lock.READ_LOCK);
-//                data = broker.getBinaryResourceData(binDoc);
-//                binDoc.getUpdateLock().release(Lock.READ_LOCK);
-//
-//            } else {
-//
-//                DocumentImpl doc = broker.openDocument(path, Lock.READ_LOCK);
-//                Serializer serializer = broker.getSerializer();
-//                serializer.reset();
-//                data = serializer.serialize(doc).getBytes();
-//                doc.getUpdateLock().release(Lock.READ_LOCK);
-//            }
-//        } catch (PermissionDeniedException ex){
-//            logger.error("Error opening document", ex);
-//        } catch (SAXException ex){
-//            logger.error("Error serializing document", ex);
-//        }  catch (EXistException ex){
-//            logger.error(ex);
-//        } finally {
-//            if(brokerPool!=null){
-//                brokerPool.release(broker);
-//            }
-//        }
-//
-//        return data;
-//    }
     
     
     
