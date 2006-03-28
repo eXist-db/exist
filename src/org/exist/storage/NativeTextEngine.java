@@ -1053,7 +1053,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                                 
 		                                    } else {
                                                 if (document.getDocId() != ((DocumentImpl) node.getOwnerDocument()).getDocId()
-                                                    || !nodeId.isDescendantOrSelf(node.getNodeId())) {
+                                                    || !nodeId.isDescendantOrSelfOf(node.getNodeId())) {
                                                     for (int l = 0; l < freq; l++) {
                                                         //Note that we use the existing list
                                                         storedOccurencesList.add(nodeId, is.readInt());
