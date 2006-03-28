@@ -233,6 +233,11 @@ public class DLNTest extends TestCase {
     	System.out.println("Testing isDescendantOf: " + descendant + " -> " + root);
     	assertFalse(descendant.isDescendantOf(root));
     	
+    	root = new DLN(new int[] { 1, 6, 6, 66 });
+    	descendant = new DLN(new int[] { 1, 6, 6, 65, 1 });
+    	System.out.println("Testing isChildOf: " + descendant + " -> " + root);
+    	assertFalse(descendant.isChildOf(root));
+    	
     	System.out.println("------ testLevelRelations: PASSED ------");
     }
 }

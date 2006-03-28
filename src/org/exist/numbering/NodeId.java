@@ -21,10 +21,9 @@
  */
 package org.exist.numbering;
 
-import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.dom.DocumentImpl;
-
 import java.io.IOException;
+
+import org.exist.storage.io.VariableByteOutputStream;
 
 /**
  * Represents the internal id of a node within eXist. Basically, all
@@ -83,6 +82,14 @@ public interface NodeId extends Comparable {
 
     boolean isDescendantOrSelfOf(NodeId ancestor);
 
+    /**
+     * Is the current node a child node of the specified parent?
+     * 
+     * @param parent the parent node
+     * @return
+     */
+    boolean isChildOf(NodeId parent);
+    
     /**
      * Returns the level within the document tree at which
      * this node occurs.
