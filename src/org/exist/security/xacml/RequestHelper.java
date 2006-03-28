@@ -30,6 +30,7 @@ import com.sun.xacml.ctx.RequestCtx;
 import com.sun.xacml.ctx.Subject;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -179,7 +180,7 @@ public class RequestHelper
 		addStringAttribute(resourceAttributes, XACMLConstants.MODULE_CATEGORY_ATTRIBUTE, getModuleCategory(functionModule));
 		XACMLSource moduleSrc = generateModuleSource(functionModule);
 		addSourceAttributes(resourceAttributes, moduleSrc);
-		addURIAttribute(resourceAttributes, XACMLConstants.MODULE_NS_ATTRIBUTE, namespaceURI);		
+		addValidURIAttribute(resourceAttributes, XACMLConstants.MODULE_NS_ATTRIBUTE, namespaceURI);
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, XACMLConstants.FUNCTION_RESOURCE);
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, functionName.getLocalName());
 
@@ -226,7 +227,7 @@ public class RequestHelper
 
 		Set attributes = new HashSet(4);
 		addStringAttribute(attributes, XACMLConstants.ACTION_ID_ATTRIBUTE, action);
-		addURIAttribute(attributes, XACMLConstants.ACTION_NS_ATTRIBUTE, XACMLConstants.ACTION_NS);
+		addValidURIAttribute(attributes, XACMLConstants.ACTION_NS_ATTRIBUTE, XACMLConstants.ACTION_NS);
 
 		return attributes;
 	}
@@ -253,7 +254,7 @@ public class RequestHelper
 			return null;
 
 		Set attributes = new HashSet(8);
-		addURIAttribute(attributes, XACMLConstants.SUBJECT_NS_ATTRIBUTE, module.getNamespaceURI());
+		addValidURIAttribute(attributes, XACMLConstants.SUBJECT_NS_ATTRIBUTE, module.getNamespaceURI());
 		addStringAttribute(attributes, XACMLConstants.MODULE_CATEGORY_ATTRIBUTE, getModuleCategory(module));
 		XACMLSource moduleSrc = generateModuleSource(module);
 		addSourceAttributes(attributes, moduleSrc);
@@ -383,34 +384,107 @@ public class RequestHelper
 		return XACMLSource.getInstance(((ExternalModule)module).getSource());
 	}
 
-	private static String getModuleCategory(Module module)
+	/**
+	 * Returns the module type for the given XQuery library module.  This
+	 * is either
+	 * {@link XACMLConstants#INTERNAL_LIBRARY_MODULE internal} or
+	 * {@link XACMLConstants#EXTERNAL_LIBRARY_MODULE external}
+	 * 
+	 * @param module The XQuery library module.  If it is null, this method
+	 * returns null.
+	 * @return null if module is null, the module's category (internal or external)
+	 * otherwise
+	 */
+	public static String getModuleCategory(Module module)
 	{
 		if(module == null)
 			return null;
 		return module.isInternalModule() ? XACMLConstants.INTERNAL_LIBRARY_MODULE : XACMLConstants.EXTERNAL_LIBRARY_MODULE;
 	}
 	
-	private static void addSourceAttributes(Set attributes, XACMLSource source)
+	/**
+	 * Adds new attributes to the specified <code>Set</code> of attributes
+	 * that represent the specified source.  The added attributes are the
+	 * {@link XACMLConstants#SOURCE_KEY_ATTRIBUTE source's key} and the
+	 * {@link XACMLConstants#SOURCE_TYPE_ATTRIBUTE source's type}.
+	 *   
+	 * @param attributes The <code>Set</code> to which attributes will be
+	 * added.  If null, this method does nothing.
+	 * @param source The source for which attributes will be added.  It
+	 * cannot be null.
+	 */
+	public static void addSourceAttributes(Set attributes, XACMLSource source)
 	{
+		if(source == null)
+			throw new NullPointerException("Source cannot be null");
 		addStringAttribute(attributes, XACMLConstants.SOURCE_KEY_ATTRIBUTE, source.getKey());
 		addStringAttribute(attributes, XACMLConstants.SOURCE_TYPE_ATTRIBUTE, source.getType());
 	}
 
-	//convenience methods for adding an AttributeValue to a Set of attributes
-	private static void addStringAttribute(Set attributes, URI attrID, String attrValue)
+	/**
+	 * Adds a new attribute of type string to the specified
+	 * <code>Set</code> of attributes.  The new attribute's value is
+	 * constructed from the attrValue parameter and is given the id
+	 * of the attrID parameter. 
+	 * 
+	 * @param attributes The <code>Set</code> to which the new attribute
+	 * should be added.  If it is null, this method does nothing.
+	 * @param attrID The ID of the new attribute, cannot be null
+	 * @param attrValue The value of the new attribute.  It cannot be null.
+	 */
+	public static void addStringAttribute(Set attributes, URI attrID, String attrValue)
 	{
+		if(attributes == null)
+			return;
+		if(attrID == null)
+			throw new NullPointerException("Attribute ID cannot be null");
 		if(attrValue == null)
 			throw new NullPointerException("Attribute value cannot be null");
 		AttributeValue value = new StringAttribute(attrValue);
 		Attribute attr = new Attribute(attrID, null, null, value);
 		attributes.add(attr);
 	}
-	private static void addURIAttribute(Set attributes, URI attrID, String uriString)
+	
+	/**
+	 * Adds a new attribute of type anyURI to the specified
+	 * <code>Set</code> of attributes.  The new attribute's value is
+	 * constructed from the uriString parameter and is given the id
+	 * of the attrID parameter. 
+	 * 
+	 * @param attributes The <code>Set</code> to which the new attribute
+	 * should be added.  If it is null, this method does nothing.
+	 * @param attrID The ID of the new attribute, cannot be null
+	 * @param uriString The value of the new attribute.  It must parse into a
+	 * valid URI and cannot be null.
+	 * @throws URISyntaxException if the specified attribute value is not a
+	 * valid URI.
+	 */
+	public static void addURIAttribute(Set attributes, URI attrID, String uriString) throws URISyntaxException
 	{
-		URI uri = URI.create(uriString);
+		if(attributes == null)
+			return;
+		if(attrID == null)
+			throw new NullPointerException("Attribute ID cannot be null");
+		if(uriString == null)
+			throw new NullPointerException("Attribute value cannot be null");
+		URI uri = new URI(uriString);
 		AttributeValue value = new AnyURIAttribute(uri);
 		Attribute attr = new Attribute(attrID, null, null, value);
 		attributes.add(attr);
+	}
+	
+	//wrapper for when the URI is known to be valid, such as when obtained from a source
+	//that validates the URI or from a constant
+	private static void addValidURIAttribute(Set attributes, URI attrID, String uriString)
+	{
+		try
+		{
+			addURIAttribute(attributes, attrID, uriString);
+		}
+		catch(URISyntaxException e)
+		{
+			throw new RuntimeException("URI should never be invalid", e);
+		}
 	}
 
 	RequestHelper() {}
