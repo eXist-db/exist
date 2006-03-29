@@ -20,6 +20,7 @@ import org.exist.xmldb.RemoteUserManagementService;
 import org.exist.xmldb.RemoteXPathQueryService;
 import org.exist.xmldb.RemoteXUpdateQueryService;
 import org.mortbay.util.MultiException;
+import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
@@ -182,6 +183,30 @@ public class RemoteCollectionTest extends RemoteDBTest {
         } catch (Exception e) {            
             fail(e.getMessage()); 
         }	        
+	}
+	
+	/**
+	 * Trying to access a collection where the parent collection does
+	 * not exist caused NullPointerException on DatabaseManager.getCollection() method.
+	 */ 
+	public void testParent() {
+		try {
+			Collection c = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
+			assertNull(c.getChildCollection("b"));
+			
+			System.err.println("col="+ c.getName());
+			String parentName = c.getName() + "/" + System.currentTimeMillis();
+			String colName = parentName + "/a";
+			c = DatabaseManager.getCollection(URI + parentName, "admin", null);
+			assertNull(c);
+			
+			// following fails for XmlDb 20051203
+			c = DatabaseManager.getCollection(URI + colName, "admin", null);
+			assertNull(c);
+		} catch (XMLDBException xe) {
+			System.err.println("Unexpected Exception occured: " + xe.getMessage());
+			xe.printStackTrace();
+		}
 	}
 	
     private void createResources(ArrayList names, String type) {
