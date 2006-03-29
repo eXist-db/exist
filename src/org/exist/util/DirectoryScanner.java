@@ -46,6 +46,9 @@ public class DirectoryScanner {
 	
 	private final static void scanDir(ArrayList list, File dir, String vpath, String pattern) {
 		String files[] = dir.list();
+		if (files == null) {
+			return;
+		}
 		File file;
 		String name;
 		for(int i = 0; i < files.length; i++) {
@@ -68,6 +71,10 @@ public class DirectoryScanner {
 	
 	public static void main(String args[]) {
 		File files[] = scanDir("/home/*/xml/**/*.xml");
+		for(int i = 0; i < files.length; i++)
+			System.out.println(files[i].getAbsolutePath());
+		
+		files = scanDir("/does-not-exist/*.xml");
 		for(int i = 0; i < files.length; i++)
 			System.out.println(files[i].getAbsolutePath());
 	}
