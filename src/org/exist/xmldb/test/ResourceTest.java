@@ -24,8 +24,11 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
 
 public class ResourceTest extends TestCase {
 
@@ -159,6 +162,33 @@ public class ResourceTest extends TestCase {
 		}
 	}
 
+	public void testQueryRemoveResource() {
+		Resource resource = null;
+        try {
+        	Collection testCollection = DatabaseManager.getCollection(URI + "/test");
+			assertNotNull(testCollection);
+            String resourceName = "QueryTestPerson.xml";
+            String id = "test." + System.currentTimeMillis();
+            String content = "<?xml version='1.0'?><person id=\"" + id + "\"><name>Jason</name></person>";
+            resource = testCollection.createResource(resourceName, "XMLResource");
+            resource.setContent(content);
+            testCollection.storeResource(resource);
+
+            XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet rs = service.query("/person[@id='" + id + "']");
+
+            for (ResourceIterator iterator = rs.getIterator(); iterator.hasMoreResources();) {
+                Resource r = iterator.nextResource();
+                System.err.println("Resource id=" + r.getId() + " xml=" + r.getContent());
+                testCollection.removeResource(r);
+                resource = null;
+            }
+        } catch (XMLDBException xe) {
+            System.err.println("Unexpected Exception occured: " + xe.getMessage());
+            xe.printStackTrace();
+        }
+	}
+	
 	public void testAddRemove() {
 		try {
 			final String resourceID = "addremove.xml";
@@ -263,6 +293,5 @@ public class ResourceTest extends TestCase {
 	
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(ResourceTest.class);
-		//junit.swingui.TestRunner.run(LexerTest.class);
 	}
 }
