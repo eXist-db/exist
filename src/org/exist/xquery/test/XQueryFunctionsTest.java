@@ -461,23 +461,6 @@ public class XQueryFunctionsTest extends TestCase {
 		}
 	}	
 	
-	public void testEscapeHtmlUri() {
-		ResourceSet result 		= null;
-		String		r			= "";
-		String string;
-		String expected;
-		String query;
-		try {
-			query = "escape-html-uri('$')";
-			result = service.query(query);
-			r 	= (String) result.getResource(0).getContent();
-			assertEquals("$", r);
-		} catch (XMLDBException e) {
-			System.out.println("testEscapeHtmlUri(): " + e);
-			fail(e.getMessage());
-		}
-	}
-	
 	public void testEncodeForURI() {
 		ResourceSet result 		= null;
 		String		r			= "";
@@ -531,7 +514,15 @@ public class XQueryFunctionsTest extends TestCase {
 			query = "iri-to-uri(\"" + string + "\")";
 			result = service.query(query);
 			r 	= (String) result.getResource(0).getContent();
-			assertEquals(expected, r);			
+			assertEquals(expected, r);
+
+			string = "$";
+			expected = "$";
+			query = "iri-to-uri(\"" + string + "\")";
+			result = service.query(query);
+			r 	= (String) result.getResource(0).getContent();
+			assertEquals(expected, r);
+			
 		} catch (XMLDBException e) {
 			System.out.println("testIRIToURI(): " + e);
 			fail(e.getMessage());
@@ -559,6 +550,11 @@ public class XQueryFunctionsTest extends TestCase {
 			r 	= (String) result.getResource(0).getContent();
 			assertEquals(expected, r);			
 			
+			query = "escape-html-uri('$')";
+			result = service.query(query);
+			r 	= (String) result.getResource(0).getContent();
+			assertEquals("$", r);
+
 		} catch (XMLDBException e) {
 			System.out.println("EscapeHTMLURI(): " + e);
 			fail(e.getMessage());
