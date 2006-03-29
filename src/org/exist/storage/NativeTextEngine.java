@@ -770,7 +770,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             //Create a GIDs list
             if (list == null) {
                 list = new OccurrenceList();
-                list.add(gid, token.startOffset() - text.startOffset());
+                list.add(gid, token.startOffset());
                 words[0].put(token.getText(), list);
             } else {
                 //Add node's GID to the list
