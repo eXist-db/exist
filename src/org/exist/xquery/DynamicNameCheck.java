@@ -60,11 +60,15 @@ public class DynamicNameCheck extends AbstractExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		Sequence seq = expression.eval(contextSequence, contextItem);
-		Item item;
+		Sequence seq = expression.eval(contextSequence, contextItem);		
 		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-			item = i.nextItem();
-			if(!Type.subTypeOf(item.getType(), test.getType())) {
+			Item item = i.nextItem();
+			int itemType = item.getType();
+			//If item type is "unknown", try to get it from the sequence type
+			//Should we get a kind of Type.UNKNOWN rather than Type.NODE ?
+			if (itemType == Type.NODE) 
+				itemType = seq.getItemType();
+			if(!Type.subTypeOf(itemType, test.getType())) {				
 				throw new XPathException(expression.getASTNode(), "Type error in expression" +
 					": required type is " + Type.getTypeName(test.getType()) +
 					"; got: " + Type.getTypeName(item.getType()) + ": " + item.getStringValue());
