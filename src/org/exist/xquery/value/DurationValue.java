@@ -239,9 +239,24 @@ public class DurationValue extends ComputableValue {
 	}
 
 	public boolean compareTo(Collator collator, int operator, AtomicValue other)
-		throws XPathException {
-		throw new XPathException("xs:duration values cannot be compared with an operator. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
-	}
+		throws XPathException {		
+		switch (operator) {
+		case Constants.EQ :
+			if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
+				throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));					
+			return (duration.compare(((DurationValue)other).duration) == 0);
+		case Constants.NEQ :
+			if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
+				throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));					
+			return (duration.compare(((DurationValue)other).duration) != 0);
+		case Constants.LT :			
+		case Constants.LTEQ :			
+		case Constants.GT :
+		case Constants.GTEQ :
+			throw new XPathException("XPTY0004: " + Type.getTypeName(other.getType()) + " type can not be ordered");
+		default :
+			throw new IllegalArgumentException("Unknown comparison operator");
+	}	}
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
@@ -251,62 +266,28 @@ public class DurationValue extends ComputableValue {
 	}
 
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-		if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
-			throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
-		if (duration.compare(((DurationValue)other).duration) > 0)
-			return new DurationValue(getCanonicalDuration());			
-		return new DurationValue(((DurationValue)other).getCanonicalDuration());
+		throw new XPathException("FORG0001: invalid operation on " + Type.getTypeName(this.getType()));
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-		if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
-			throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
-		if (duration.compare(((DurationValue)other).duration) < 0)			
-			return new DurationValue(getCanonicalDuration());
-		return new DurationValue(((DurationValue)other).getCanonicalDuration());
+		throw new XPathException("FORG0001: invalid operation on " + Type.getTypeName(this.getType()));
 	}
 
 	public ComputableValue plus(ComputableValue other) throws XPathException {
-		if (!(other instanceof DurationValue)) 
-			throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));		
-		return new DurationValue(getCanonicalDuration().add(((DurationValue)other).getCanonicalDuration()));		
+		throw new XPathException("FORG0001: invalid operation on " + Type.getTypeName(this.getType()));	
 	}
 	
 	public ComputableValue minus(ComputableValue other) throws XPathException {
-		if (!(other instanceof DurationValue)) 
-			throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));		
-		return new DurationValue(getCanonicalDuration().subtract(((DurationValue)other).getCanonicalDuration()));
+		throw new XPathException("FORG0001: invalid operation on " + Type.getTypeName(this.getType()));
 	}
 	
 	public ComputableValue mult(ComputableValue other) throws XPathException {	
-		BigDecimal factor = numberToBigDecimal(other, "FORG0006: invalid operand type: ");
-		return new DurationValue(getCanonicalDuration().multiply(factor));				
+		throw new XPathException("FORG0001: invalid operation on " + Type.getTypeName(this.getType()));			
 	}
 
 	public ComputableValue div(ComputableValue other) throws XPathException {	
-		BigDecimal factor = numberToBigDecimal(other, "FORG0006: invalid operand type: ");		
-		return new DurationValue(getCanonicalDuration().multiply(BigDecimal.valueOf(1).divide(factor, 20, BigDecimal.ROUND_HALF_UP)));				
+		throw new XPathException("FORG0001: invalid operation on " + Type.getTypeName(this.getType()));				
 	}
-	
-	/**
-	 * Convert the given value to a big decimal if it's a number, keeping as much precision
-	 * as possible.
-	 *
-	 * @param x a value to convert to a big decimal
-	 * @param exceptionMessagePrefix the beginning of the message to throw in an exception, will be suffixed with the type of the value given
-	 * @return the big decimal equivalent of the value
-	 * @throws XPathException if the value is not of a numeric type
-	 */
-	protected BigDecimal numberToBigDecimal(ComputableValue x, String exceptionMessagePrefix) throws XPathException {
-		if (!Type.subTypeOf(x.getType(), Type.NUMBER)) {
-			throw new XPathException(exceptionMessagePrefix + Type.getTypeName(x.getType()));
-		}
-		BigDecimal val =
-			x.conversionPreference(BigDecimal.class) < Integer.MAX_VALUE
-			? (BigDecimal) x.toJavaObject(BigDecimal.class)
-			: new BigDecimal(((NumericValue) x).getDouble());
-		return val;
-	}	
 
 	public int conversionPreference(Class target) {
 		if (target.isAssignableFrom(getClass())) return 0;
