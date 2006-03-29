@@ -119,6 +119,9 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
         // single file
         if (mime == null)
             mime = MimeTable.getInstance().getContentTypeFor(srcFile.getName());
+        if (mime == null)
+        	throw new BuildException("Cannot find mime-type for " + srcFile.getName());
+        
         resourceType = mime.isXMLType() ? "XMLResource" : "BinaryResource";
         log("Creating resource " + srcFile.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
         res = col.createResource(srcFile.getName(), resourceType);
@@ -159,6 +162,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
           }
           if (mime == null)
               currentMime = MimeTable.getInstance().getContentTypeFor(file.getName());
+          if (currentMime == null)
+        	  throw new BuildException("Cannot find mime-type for " + file.getName());
           resourceType = currentMime.isXMLType() ? "XMLResource" : "BinaryResource";
           log("Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG);
           res = col.createResource(file.getName(), resourceType);
