@@ -23,6 +23,8 @@
 package org.exist.memtree;
 
 import org.exist.dom.NodeProxy;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  * @author wolf
@@ -49,4 +51,21 @@ public class ReferenceNode extends NodeImpl {
     	result.append(" ]");  
         return result.toString();
     } 
+    
+    public String getNamespaceURI() {
+        return getReference().getNode().getNamespaceURI();
+    }  
+    
+    public String getLocalName() {
+        return getReference().getNode().getLocalName();
+    } 
+    
+    public NamedNodeMap getAttributes() {
+        return getReference().getNode().getAttributes();
+    }
+    
+    public Node getFirstChild() {
+        //TODO : how to make this node a reference as well ?
+        return getReference().getNode().getFirstChild();
+    }    
 }

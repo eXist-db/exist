@@ -23,6 +23,7 @@
 package org.exist.memtree;
 
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
 public class TextImpl extends NodeImpl implements Text {
@@ -66,6 +67,14 @@ public class TextImpl extends NodeImpl implements Text {
 	public String getNodeValue() throws DOMException {
 		return getData();
 	}
+    
+    public String getLocalName() {
+        return "";
+    }
+    
+    public Node getFirstChild() {
+        return null;
+    }    
 	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.CharacterData#substringData(int, int)

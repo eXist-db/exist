@@ -24,6 +24,7 @@ package org.exist.memtree;
 
 import org.w3c.dom.Comment;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
 
 public class CommentImpl extends NodeImpl implements Comment {
 
@@ -34,6 +35,10 @@ public class CommentImpl extends NodeImpl implements Comment {
 	public CommentImpl(DocumentImpl doc, int nodeNumber) {
 		super(doc, nodeNumber);
 	}
+    
+    public Node getFirstChild() {
+        return null;
+    } 
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.CharacterData#getData()
