@@ -632,15 +632,11 @@ public class DocumentImpl extends NodeImpl implements Document {
         while (node != null) {
             copyStartNode(node, receiver, expandRefs);
             NodeImpl nextNode;
-            //TODO : we should not have a ClassCastException there
-            //The problem occurs for persistent referenced  nodes 
-            //that are not castable to org.exist.memtree.NodeImpl
-            //Question : how to send such a persisten node to the receiver ? -pb
-            try {
-                nextNode = (NodeImpl) node.getFirstChild();
-            } catch (ClassCastException e) {
-                throw new RuntimeException("Attempt to access persistent node as a memory node", e);
-            }
+        	if (node instanceof ReferenceNode)
+        		//Nothing more to stream ?
+        		nextNode = null;
+        	else
+        		nextNode = (NodeImpl) node.getFirstChild();
             while (nextNode == null) {
                 copyEndNode(node, receiver);
                 if (top != null && top.nodeNumber == node.nodeNumber) 
@@ -802,15 +798,11 @@ public class DocumentImpl extends NodeImpl implements Document {
         while (node != null) {
             startNode(serializer, node, receiver);
             NodeImpl nextNode;
-            //TODO : we should not have a ClassCastException there
-            //The problem occurs for persistent referenced  nodes 
-            //that are not castable to org.exist.memtree.NodeImpl
-            //Question : how to send such a persisten node to the receiver ? -pb
-            try {
-                nextNode = (NodeImpl) node.getFirstChild();
-            } catch (ClassCastException e) {
-                throw new RuntimeException("Attempt to access persistent node as a memory node", e);
-            }            
+        	if (node instanceof ReferenceNode)
+        		//Nothing more to stream ?
+        		nextNode = null;
+        	else
+        		nextNode = (NodeImpl) node.getFirstChild();
             while (nextNode == null) {
                 endNode(node, receiver);
                 if (top != null && top.nodeNumber == node.nodeNumber) break;
