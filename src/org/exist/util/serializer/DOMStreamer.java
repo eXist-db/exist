@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.exist.dom.QName;
+import org.exist.memtree.ReferenceNode;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Comment;
@@ -109,6 +110,9 @@ public class DOMStreamer {
 		while (node != null) {
 			startNode(node);
 			Node nextNode = node.getFirstChild();
+			//TODO : make it happy
+			if (node instanceof ReferenceNode)
+				nextNode = null;
 			while (nextNode == null) {
 				endNode(node);
 				if (top != null && top.equals(node))
@@ -122,7 +126,7 @@ public class DOMStreamer {
 						break;
 					}
 				}
-			}
+			}			
 			node = nextNode;
 		}
         if(callDocumentEvents)
