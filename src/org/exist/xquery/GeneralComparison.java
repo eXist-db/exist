@@ -84,6 +84,8 @@ public class GeneralComparison extends BinaryOp {
 	 * of a FLWOR expression.
 	 */
 	protected boolean inWhereClause = false;
+    
+    protected boolean invalidNodeEvaluation = false;
 	
 	public GeneralComparison(XQueryContext context, int relation) {
 		this(context, relation, Constants.TRUNC_NONE);
@@ -126,19 +128,15 @@ public class GeneralComparison extends BinaryOp {
     	contextInfo.setParent(this);
         super.analyze(contextInfo);
         inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0; 
+        //Ugly workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
+        // (1)[.= 1] works...
+        invalidNodeEvaluation = getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;        
     }
     
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BinaryOp#returnsType()
 	 */
 	public int returnsType() {
-
-        //Ugly workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
-        //boolean invalidNodeEvaluation =  
-        //	getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
-        //TODO : uncomment and improve code above to make (1)[.= 1] work...
-		boolean invalidNodeEvaluation = false;
-        
 		if (inPredicate && !invalidNodeEvaluation && (!Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM))) {
 			/* If one argument is a node set we directly
 			 * return the matching nodes from the context set. This works
@@ -184,13 +182,7 @@ public class GeneralComparison extends BinaryOp {
         }
 
         Sequence result = null;
-        
-        //Ugly workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
-        //boolean invalidNodeEvaluation = contextSequence != null && !Type.subTypeOf(contextSequence.getItemType(), Type.NODE) && 
-        //	getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
-        //TODO : uncomment and improve code above to make (1)[.= 1] work...
-        boolean invalidNodeEvaluation = false;
-        
+
 		/* 
 		 * If we are inside a predicate and one of the arguments is a node set, 
 		 * we try to speed up the query by returning nodes from the context set.
@@ -749,6 +741,6 @@ public class GeneralComparison extends BinaryOp {
 		super.resetState();
 		getLeft().resetState();
 		getRight().resetState();
-		cached = null;
+		cached = null;        
 	}
 }
