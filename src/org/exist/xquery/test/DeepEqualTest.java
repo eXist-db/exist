@@ -233,6 +233,29 @@ public class DeepEqualTest extends TestCase {
 		createDocument("test", "<test><a><b/></a><a><b/>hello</a></test>");
 		assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
 	}
+
+	//Courtesy : Dizzz
+	public void testElements14() {
+		//Includes a reference node
+		String query =
+			"let $parSpecs1 := <ParameterSpecifications/> " +
+			"let $funSpecs2 := " +
+			" <FunctionSpecifications>" +
+			"  <FunctionName>Func2</FunctionName>" +
+			"  { $parSpecs1 }" +
+			" </FunctionSpecifications>" +
+			"return " +
+			" deep-equal("+
+			"  <FunctionVerifications>" +
+			"   <FunctionName>Func2</FunctionName>" +
+			"  </FunctionVerifications>" +
+			"," +
+			"  <FunctionVerifications>" +
+			"   { $funSpecs2/FunctionName }" +
+			"  </FunctionVerifications>"+
+			" )";			
+		assertQuery(true, query);
+	}
 	
 	public void testNSElements1() {
 		createDocument("test", "<test xmlns:p='urn:foo' xmlns:q='urn:foo'><p:a/><q:a/></test>");

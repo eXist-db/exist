@@ -208,8 +208,7 @@ public class FunDeepEqual extends Function {
 		if (nodeType == NodeImpl.REFERENCE_NODE) {
 			//Retrieve the actual node type
 			NodeProxy p = ((ReferenceNode)n).getReference();
-            nodeType = p.getNodeType();
-            n = p.getNode();
+            nodeType = p.getNodeType();            
 		}		
 		while (!(nodeType == Node.ELEMENT_NODE || nodeType == Node.TEXT_NODE)) {
 			n = n.getNextSibling();            
