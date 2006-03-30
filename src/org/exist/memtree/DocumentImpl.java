@@ -631,7 +631,16 @@ public class DocumentImpl extends NodeImpl implements Document {
         NodeImpl top = node;
         while (node != null) {
             copyStartNode(node, receiver, expandRefs);
-            NodeImpl nextNode = (NodeImpl) node.getFirstChild();
+            NodeImpl nextNode;
+            //TODO : we should not have a ClassCastException there
+            //The problem occurs for persistent referenced  nodes 
+            //that are not castable to org.exist.memtree.NodeImpl
+            //Question : how to send such a persisten node to the receiver ? -pb
+            try {
+                nextNode = (NodeImpl) node.getFirstChild();
+            } catch (ClassCastException e) {
+                throw new RuntimeException("Attempt to access persistent node as a memory node", e);
+            }
             while (nextNode == null) {
                 copyEndNode(node, receiver);
                 if (top != null && top.nodeNumber == node.nodeNumber) 
@@ -792,7 +801,16 @@ public class DocumentImpl extends NodeImpl implements Document {
         NodeImpl top = node;
         while (node != null) {
             startNode(serializer, node, receiver);
-            NodeImpl nextNode = (NodeImpl) node.getFirstChild();
+            NodeImpl nextNode;
+            //TODO : we should not have a ClassCastException there
+            //The problem occurs for persistent referenced  nodes 
+            //that are not castable to org.exist.memtree.NodeImpl
+            //Question : how to send such a persisten node to the receiver ? -pb
+            try {
+                nextNode = (NodeImpl) node.getFirstChild();
+            } catch (ClassCastException e) {
+                throw new RuntimeException("Attempt to access persistent node as a memory node", e);
+            }            
             while (nextNode == null) {
                 endNode(node, receiver);
                 if (top != null && top.nodeNumber == node.nodeNumber) break;

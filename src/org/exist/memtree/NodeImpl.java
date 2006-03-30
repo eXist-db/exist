@@ -246,7 +246,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#getFirstChild()
 	 */
 	public Node getFirstChild() {
-		return null;
+        //TODO : make abstract -pb
+        throw new RuntimeException("Can not call getFirstChild() from here");
 	}
 
 	/* (non-Javadoc)
@@ -276,7 +277,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#getAttributes()
 	 */
 	public NamedNodeMap getAttributes() {
-		return null;
+        //TODO : make abstract -pb
+        throw new RuntimeException("Can not call getAttributes() from here");
 	}
 
 	/* (non-Javadoc)
@@ -378,7 +380,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#getLocalName()
 	 */
 	public String getLocalName() {
-		return "";
+        //TODO : make abstract -pb
+		throw new RuntimeException("Can not call getLocalName() from here");
 	}
 
 	/* (non-Javadoc)
