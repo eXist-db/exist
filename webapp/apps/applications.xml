@@ -37,51 +37,6 @@
     </application>
 
     <application>
-        <dc:creator>Divstrat Pty Ltd</dc:creator>
-        <dc:identifier>http://www.divstrat.com.au/ds_webfiles_17/ds_Xunami.html</dc:identifier>
-        <dc:rights>(c)2004 Divstrat</dc:rights>
-        <dc:title>Xunami</dc:title>
-        <dc:subject>multimedia</dc:subject>
-        <dc:subject>indexing</dc:subject>
-        <dc:subject>retrieval</dc:subject>
-        <dc:subject>multi-lingual</dc:subject>
-        <dc:description>
-            Xunami is a web-based, multi-lingual, digital multimedia,
-            indexing and retrieval system
-        </dc:description>
-        <dc:publisher>Divstrat Pty Ltd</dc:publisher>
-        <dc:format>
-            Web application, Webstart download, CD, HTML pages
-        </dc:format>
-
-        <dev-site>http://www.divstrat.com.au/</dev-site>
-        <third-party-feature-used>
-            Quicktime for Java
-        </third-party-feature-used>
-        <third-party-feature-used>
-            Jakarta Tomcat
-        </third-party-feature-used>
-        <third-party-feature-used>JDOM</third-party-feature-used>
-        <third-party-feature-used>Jaxen</third-party-feature-used>
-        <third-party-feature-used>Alloy LNF</third-party-feature-used>
-
-        <datatype-stored targetnamespace="urn:mpeg:mpeg7:schema:2001">
-            MPEG-7
-        </datatype-stored>
-        <datatype-stored
-            targetnamespace="http://purl.org/dc/elements/1.1/">
-            Dublin Core
-        </datatype-stored>
-        <database updates="frequent" security="multi-level"></database>
-        <dev-notes>
-            Java, Servlets, JSP, Trax XSLT transforms,Swing GUI, HTML
-            GUI
-        </dev-notes>
-        <submitter>mailto:jvp@divstrat.com.au</submitter>
-    </application>
-
-
-    <application>
         <dc:creator>
             Music Techonology Group (Barcelona, SPAIN)
         </dc:creator>
@@ -108,53 +63,7 @@
         <submitter>mailto:ocelma@iua.upf.es</submitter>
     </application>
 
-    <application>
-        <dc:creator>
-            SozioNet Project, Darmstadt University of Technology, Dpt.
-            of Sociology
-        </dc:creator>
-        <dc:identifier>http://www.sozionet.org</dc:identifier>
-        <dc:title>SozioNet</dc:title>
-        <dc:subject>social science</dc:subject>
-        <dc:subject>metadata creation</dc:subject>
-        <dc:subject>metadata harvesting</dc:subject>
-        <dc:description>
-            Inspired by successful projects like MathNet or SOSIG,
-            SozioNet provides access to freely available web resources
-            with relevance to social science. It is based on a network
-            of social science institutions and scientists, to agree on
-            and establish common metadata standards, and to provide a
-            general infrastructure for metadata creation, harvesting and
-            retrieval. All SozioNet components, including the user
-            interface for metadata creation and the harvesting
-            framework, are entirely based on XML and rely on eXist as
-            storage backend.
-        </dc:description>
-        <dc:format>Web application</dc:format>
-        <feature-used>XQuery</feature-used>
-        <feature-used>Cocoon</feature-used>
-        <production-site>http://www.sozionet.org</production-site>
-        <status>production</status>
-        <third-party-feature-used>
-            Cocoon XMLForms
-        </third-party-feature-used>
-        <third-party-feature-used>
-            Apache Avalon
-        </third-party-feature-used>
-        <datatype-stored>RDF</datatype-stored>
-        <datatype-stored
-            targetnamespace="http://purl.org/dc/elements/1.1/">
-            Dublin Core
-        </datatype-stored>
-        <datatype-stored>OWL</datatype-stored>
-        <datatype-stored>MODS</datatype-stored>
-        <dev-notes>
-            The query interface served as a testbed for eXist's XQuery
-            implementation. It is itself completely written in XQuery.
-        </dev-notes>
-    </application>
-
-    <application>
+    <!--application>
         <dc:title>Weblounge</dc:title>
         <dc:identifier>http://www.o2it.ch/products/weblounge</dc:identifier>
         <dc:description>
@@ -170,7 +79,7 @@
         <dc:creator>O2 IT Engineering</dc:creator>
         <dc:rights>Copyright by O2 IT Engineering</dc:rights>
         <dev-site>http://www.o2it.ch</dev-site>
-    </application>
+    </application-->
 
     <application>
         <dc:title>MyCoRe</dc:title>
@@ -263,7 +172,7 @@
     <application>
         <dc:creator>Arnis Vuskans (ampatspell)</dc:creator>
         <dc:rights>GPL</dc:rights>
-        <dc:title>&lt;sic/&gt; XML Powered Assessment System</dc:title>
+        <dc:title>XML Powered Assessment System: &lt;sic/&gt;</dc:title>
         <dc:subject>assessment</dc:subject>
         <dc:subject>evaluation</dc:subject>
         <dc:description>
@@ -348,4 +257,117 @@
   <third-party-feature-used>Epic Editor</third-party-feature-used>
   <third-party-feature-used>Java specific modules</third-party-feature-used>  
  </application>
+ 
+        <application>
+            <demo-site>http://dynaprism.org/</demo-site>        
+            <dc:creator>Jakob Fix, Bureau Veritas (Marine Division)</dc:creator>
+            <creator-site>http://dynaprism.org/</creator-site>
+            <dc:creator>Bruno Chatel, Chadocs</dc:creator>
+            <creator-site>http://www.chadocs.com/</creator-site>
+            <dc:title>dynaprism</dc:title>       
+            <dc:format>Jetty + Cocoon + eXist</dc:format>
+            <dc:description>
+                <br/>An online application which gives access to the Bureau Veritas
+                Rules documents.  Can be run on a server, locally installed, or off a CD-ROM.
+                <br/>Has Table of Contents, List of Figures, List of Tables.
+                <br/>Supports cross-document links.
+                <br/>Has a quite powerful search facility (thanks to eXist).
+                <br/>All content fragments and all ToC/LoF/LoT fragments are served by eXist.            
+                <br/>Serves (static) PDF files for printing.  Runs in Internet Explorer or Mozilla Firefox.            
+                <br/>Makes rather heavy use of XMLHTTPRequest objects to create rich client.
+                <br/>Has a complex ant-based backend that takes output from FrameMaker+SGML
+                and converts it to XML, and prepares it for import in eXist. 
+                <br/>Wants to be a framework rather than a hard-coded application,
+                but so far no time has been found to adapt it to other documents, like the TEI P5.
+                <br/>The name is a contraction of Dyna(Web|Text) and DualPrism (well, who remembers the one or the other?).
+            </dc:description>
+            <dc:publisher>Bureau Veritas, Marine Division</dc:publisher>       
+            <status>beta</status>
+            <feature-used>XQuery</feature-used>
+            <feature-used>Cocoon</feature-used>
+            <feature-used>Jetty</feature-used>
+            <database size="30Mb" documents="3" updates="none" security='read for all' />
+            <dev-notes>Cocoon sitemaps, Javascript, XSP pages, XSLT styles, XMLHTTPRequest; runs on a server, or from CD-ROM.</dev-notes>
+            <submitter>Jakob Fix</submitter>
+        </application>    
+
+        <application>
+            <dc:creator>Thorsten Meinl</dc:creator>
+            <creator-site>http://www2.informatik.uni-erlangen.de/</creator-site>
+            <dc:identifier>http://www2.informatik.uni-erlangen.de/</dc:identifier>
+            <dc:rights>GPL</dc:rights>
+            <dc:title>FAU Erlangen-Nuremberg - Computer Science Department 2</dc:title>
+            <dc:subject>computer science</dc:subject>
+            <dc:subject>university</dc:subject>
+            <dc:description>This is the homepage of our chair. We use eXist and Cocoon to reuse most information that is already stored in the university-wide UnivIS system.</dc:description>
+            <dc:publisher>Computer Science Department 2</dc:publisher>
+            <dc:format>storage of data for lectures, publications, theses, etc. that was imported form the UnivIS system</dc:format>
+            <dev-site>http://faui20b.informatik.uni-erlangen.de/</dev-site>
+            <production-site>http://www2.informatik.uni-erlangen.de/</production-site>
+            <status>production</status>
+            <feature-used>XQuery</feature-used>
+            <feature-used>Cocoon</feature-used>
+            <database size="6Mb" documents="20" updates="frequent" security="read for all"/>
+            <dev-notes>fully integrated into Cocoon using the XMLDBTransformer</dev-notes>
+            <submitter>meinl@cs.fau.de</submitter>
+        </application>
+    <applications
+        
+        xmlns="http://exist-db.org/"
+        
+        using="http://exist-db.org/"
+        
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        
+        xmlns:html="http://www.w3.org/1999/xhtml">
+        
+        <application>
+            
+            <dc:creator>Igor Barma</dc:creator>
+            <dc:creator>Steve giraud</dc:creator>
+            
+            <creator-site>http://www.pentila.com</creator-site>
+            
+            <dc:identifier>http://www.pentila.com/produits</dc:identifier>
+            
+            <dc:rights>ZPL2.1 and GPL products</dc:rights>
+            
+            <dc:title>Metadata TK, ZOpenArchives and XMLFinder</dc:title>
+            
+            <dc:subject>Metadata creation</dc:subject>
+            
+            <dc:subject>OAI metadata harvesting</dc:subject>
+            
+            <dc:subject>Ressources finder and retrieval</dc:subject>
+            
+            <dc:description> Three Plone/Zope products that allow you to turn your eXistDB into an OAI aggregator and repository, perform eXist search from a plone site or create new metadata entries and store them. Visit our site for more informations and downloads.
+                
+            </dc:description>
+            
+            <dc:publisher> Pentila </dc:publisher>
+            
+            <dc:format>Plone or Zope products</dc:format>
+            
+            <dev-site>http://www.pentila.com/produits/</dev-site>
+            
+            <status>beta</status>
+            
+            <feature-used>XQuery</feature-used>
+            
+            <feature-used>XUpdate</feature-used>
+            <feature-used>OAI-PMH</feature-used>
+            <feature-used>XSLT</feature-used>
+            <feature-used>python</feature-used>
+            <feature-used>Plone</feature-used>
+            <feature-used>Zope</feature-used>
+            
+            <dev-notes> XQuery, XUpdate, OAI-PMH, XSLT, Plone/Zope and python </dev-notes>
+            
+            <submitter />
+            
+        </application>
+        
+    </applications>
+    
+    
 </applications>
