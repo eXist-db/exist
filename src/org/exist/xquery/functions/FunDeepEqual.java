@@ -159,18 +159,33 @@ public class FunDeepEqual extends Function {
 	}
 	
 	private boolean compareElements(Node a, Node b) {
-		return
-			compareNames(a, b)
-			&& compareAttributes(a, b)
-			&& compareContents(a, b);
+		if (!compareNames(a, b))
+            return false;
+        if (!compareAttributes(a, b))
+            return false;
+		if (!compareContents(a, b))
+            return false;
+        return true;
 	}
 	
 	private boolean compareContents(Node a, Node b) {
 		a = findNextTextOrElementNode(a.getFirstChild());
 		b = findNextTextOrElementNode(b.getFirstChild());
 		while(!(a == null || b == null)) {
-			if (a.getNodeType() != b.getNodeType()) return false;
-			switch(a.getNodeType()) {
+            int nodeTypeA = a.getNodeType();
+            if (nodeTypeA == NodeImpl.REFERENCE_NODE) {
+                //Retrieve the actual node type
+                NodeProxy p = ((ReferenceNode)a).getReference();
+                nodeTypeA = p.getNodeType();
+            }
+            int nodeTypeB = b.getNodeType();
+            if (nodeTypeB == NodeImpl.REFERENCE_NODE) {
+                //Retrieve the actual node type
+                NodeProxy p = ((ReferenceNode)b).getReference();
+                nodeTypeB = p.getNodeType();
+            }             
+			if (nodeTypeA != nodeTypeB) return false;
+			switch(nodeTypeA) {
 				case Node.TEXT_NODE:
 					if (!safeEquals(a.getNodeValue(), b.getNodeValue())) return false;
 					break;
@@ -189,15 +204,18 @@ public class FunDeepEqual extends Function {
 	private Node findNextTextOrElementNode(Node n) {
 		if (n == null) 
 			return null;
-		if (n.getNodeType() == NodeImpl.REFERENCE_NODE) {
-			//Retrieve the actual node
+        int nodeType = n.getNodeType();
+		if (nodeType == NodeImpl.REFERENCE_NODE) {
+			//Retrieve the actual node type
 			NodeProxy p = ((ReferenceNode)n).getReference();
-			n = p.getNode();
+            nodeType = p.getNodeType();
+            n = p.getNode();
 		}		
-		while (!(n.getNodeType() == Node.ELEMENT_NODE || n.getNodeType() == Node.TEXT_NODE)) {
-			n = n.getNextSibling();
+		while (!(nodeType == Node.ELEMENT_NODE || nodeType == Node.TEXT_NODE)) {
+			n = n.getNextSibling();            
 			if (n == null) 
 				return null;
+            nodeType = n.getNodeType();
 		}
 		return n;
 	}
