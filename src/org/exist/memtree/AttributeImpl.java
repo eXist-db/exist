@@ -96,6 +96,10 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 		return getQName().getPrefix();
 	}
 	
+	public Node getFirstChild() {
+		return null;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Attr#getSpecified()
 	 */
