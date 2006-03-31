@@ -773,7 +773,14 @@ public class XPathQueryTest extends XMLTestCase {
                     + "return $t//a[s='Z' and ./preceding-sibling::*[1]/s='B']";
             result = queryResource(service, "numbers.xml", query, 1);
             assertXMLEqual("<a><s>Z</s> 4 </a>", result.getResource(0)
-                    .getContent().toString());        
+                    .getContent().toString());     
+            
+            query = "let $doc := <doc><rec n='1'><a>first</a><b>second</b></rec>" +
+            	"<rec n='2'><a>first</a><b>third</b></rec></doc> " +
+            	"return $doc//rec[fn:not(b = 'second') and (./a = 'first')]";
+            result = queryResource(service, "numbers.xml", query, 1);
+            assertXMLEqual("<rec n=\"2\"><a>first</a><b>third</b></rec>", result.getResource(0)
+                    .getContent().toString());                 
             
         } catch (XMLDBException e) {
             fail(e.getMessage());
