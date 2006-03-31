@@ -258,6 +258,25 @@ public class DeepEqualTest extends TestCase {
 	}
         
         public void testElements15() {
+        
+            String query ="let $funSpecs :="+
+                    "<FunctionSpecifications>"+
+                    "<FunctionName>Func2</FunctionName>"+
+                    "</FunctionSpecifications>"+
+                    "let $funVers1 :="+
+                    "<FunctionVerifications>"+
+                    "<FunctionName>Func2</FunctionName>"+
+                    "</FunctionVerifications>"+
+                    "let $funVers2 :="+
+                    "<FunctionVerifications>"+
+                    "{$funSpecs/FunctionName}"+
+                    "</FunctionVerifications>"+
+                    "return "+
+                    "deep-equal($funVers1, $funVers2)";
+            assertQuery(true, query);
+        }
+
+        public void testElements16() {
             // [ 1462061 ] Issue with deep-equal() "DeepestEqualBug"
             String query =
                     "declare namespace ve = \"ournamespace\";"+
