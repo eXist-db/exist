@@ -130,7 +130,7 @@ public class GeneralComparison extends BinaryOp {
         inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0; 
         //Ugly workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
         // (1)[.= 1] works...
-        invalidNodeEvaluation = getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;        
+        invalidNodeEvaluation = getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
     }
     
 	/* (non-Javadoc)
@@ -191,24 +191,15 @@ public class GeneralComparison extends BinaryOp {
 		 */     
 		if (inPredicate && !invalidNodeEvaluation) {
 			
-			if (!(Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM))&&
+			if (!(Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM)) &&
 					Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
                 
                 if(contextItem != null)
                     contextSequence = contextItem.toSequence();                                
                 
-			    /*
-			     * TODO quickNodeSetCompare() is NOT being called for xqueries like -
-			     * 		collection("/db/CommunityDirectory/data")/communitygroup[validation/lastapproved/date = current-dateTime()]
-			     * 		collection("/db/CommunityDirectory/data")/communitygroup[validation/lastapproved/date = ("2005-12-20T16:39:00" cast as xs:dateTime)]
-			     * but is being called for xqueries like - 
-			     * 		collection("/db/CommunityDirectory/data")/communitygroup[validation/lastapproved/date = "2005-12-20T16:39:00"]
-			     * 		collection("/db/CommunityDirectory/data")/communitygroup[validation/lastapproved/date = "2005-12-20T16:39:00" cast as xs:dateTime]
-			     * 		- but due to the string type of the key falls back to nodeSetCompare()
-			     * 
-			     * deliriumsky 
-			     */
-				if ((getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0 /*&& (getRight().getCardinality() & Cardinality.MANY) == 0*/) //changed to allow multiple right cardinality into () - deliriumsky
+                
+                if (getRight().getDependencies() != Dependency.NO_DEPENDENCY &&
+                    !Dependency.dependsOn(getRight().getDependencies(), Dependency.CONTEXT_ITEM))
 				{
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "quickNodeSetCompare");
@@ -223,6 +214,7 @@ public class GeneralComparison extends BinaryOp {
             }            
 		}
 		
+        //TODO : better design. Should a (buggy) null previous result be returned, we would evaluate this !
         if(result == null) {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
