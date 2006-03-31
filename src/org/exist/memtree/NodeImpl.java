@@ -76,7 +76,6 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	public int getImplementationType() {
 		return NodeValue.IN_MEMORY_NODE;
 	}
-
 	
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getDocumentSet()
@@ -151,14 +150,14 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#getNodeValue()
 	 */
 	public String getNodeValue() throws DOMException {
-		return null;
+		throw new RuntimeException("Can not call getNodeValue() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#setNodeValue(java.lang.String)
 	 */
 	public void setNodeValue(String arg0) throws DOMException {
-		// TODO Auto-generated method stub
+		throw new RuntimeException("Can not call setNodeValue() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
@@ -182,6 +181,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	}
 
     public void addContextNode(int contextId, NodeValue node) {
+    	throw new RuntimeException("Can not call addContextNode() on node type " + this.getNodeType());
     }
     
 	/* (non-Javadoc)
@@ -295,8 +295,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#insertBefore(org.w3c.dom.Node, org.w3c.dom.Node)
 	 */
 	public Node insertBefore(Node arg0, Node arg1) throws DOMException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("Can not call insertBefore() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
@@ -345,8 +344,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#isSupported(java.lang.String, java.lang.String)
 	 */
 	public boolean isSupported(String arg0, String arg1) {
-		// TODO Auto-generated method stub
-		return false;
+		throw new RuntimeException("Can not call isSupported() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
@@ -455,7 +453,6 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 */
 	public AtomicValue atomize() throws XPathException {
 		return new UntypedAtomicValue(getStringValue());
-		//return new StringValue(getStringValue());
 	}
 
 	/*
@@ -466,12 +463,14 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
 	 */
 	public void add(Item item) throws XPathException {
-	}
+		throw new RuntimeException("Can not call add() on node type " + this.getNodeType());
+	}	
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#addAll(org.exist.xquery.value.Sequence)
 	 */
 	public void addAll(Sequence other) throws XPathException {
+		throw new RuntimeException("Can not call addAll() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
@@ -521,6 +520,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
+		//A node evaluates to true()
 		return true;
 	}
 
@@ -640,6 +640,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.exist.xquery.value.Sequence#setSelfAsContext(int)
 	 */
 	public void setSelfAsContext(int contextId) {
+		throw new RuntimeException("Can not call setSelfAsContext() on node type " + this.getNodeType());
 	}
 	
 	/* (non-Javadoc)
@@ -655,6 +656,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 */
 	public void setIsCached(boolean cached) {
 		// ignore
+		throw new RuntimeException("Can not call setIsCached() on node type " + this.getNodeType());
 	}
 	
 	/* (non-Javadoc)
@@ -667,95 +669,85 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	/** ? @see org.w3c.dom.Node#getBaseURI()
 	 */
 	public String getBaseURI() {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+		throw new RuntimeException("Can not call getBaseURI() on node type " + this.getNodeType());
 	}
 
 	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
 	 */
 	public short compareDocumentPosition(Node other) throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return 0;
+		throw new RuntimeException("Can not call compareDocumentPosition() on node type " + this.getNodeType());
+		//return 0;
 	}
 
 	/** ? @see org.w3c.dom.Node#getTextContent()
 	 */
 	public String getTextContent() throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+		throw new RuntimeException("Can not call getTextContent() on node type " + this.getNodeType());
 	}
 
 	/** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
 	 */
 	public void setTextContent(String textContent) throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		
+		throw new RuntimeException("Can not call setTextContent() on node type " + this.getNodeType());
 	}
 
 	/** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
 	 */
 	public boolean isSameNode(Node other) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return false;
+		throw new RuntimeException("Can not call isSameNode() on node type " + this.getNodeType());
 	}
 
 	/** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
 	 */
 	public String lookupPrefix(String namespaceURI) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+		throw new RuntimeException("Can not call lookupPrefix() on node type " + this.getNodeType());
 	}
 
 	/** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
 	 */
 	public boolean isDefaultNamespace(String namespaceURI) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return false;
+		throw new RuntimeException("Can not call isDefaultNamespace() on node type " + this.getNodeType());
 	}
 
 	/** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
 	 */
 	public String lookupNamespaceURI(String prefix) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+		throw new RuntimeException("Can not call lookupNamespaceURI() on node type " + this.getNodeType());
 	}
 
 	/** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
 	 */
 	public boolean isEqualNode(Node arg) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return false;
+		throw new RuntimeException("Can not call isEqualNode() on node type " + this.getNodeType());
 	}
 
 	/** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
 	 */
 	public Object getFeature(String feature, String version) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+		throw new RuntimeException("Can not call getFeature() on node type " + this.getNodeType());
 	}
 
 	/** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
 	 */
 	public Object setUserData(String key, Object data, UserDataHandler handler) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+		throw new RuntimeException("Can not call setUserData() on node type " + this.getNodeType());
 	}
 
 	/** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
 	 */
 	public Object getUserData(String key) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+		throw new RuntimeException("Can not call getUserData() on node type " + this.getNodeType());
 	}
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#isPersistentSet()
      */
     public boolean isPersistentSet() {
+    	//See package's name ;-)
         return false;
     }
 
 	public void clearContext(int contextId) {
-		// ignored for in-memory nodes		
+		throw new RuntimeException("Can not call clearContext() on node type " + this.getNodeType());
 	}
 }
