@@ -156,8 +156,8 @@ public class GeneralComparison extends BinaryOp {
 		// left expression returns node set
 		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 			//	and does not depend on the context item
-			(leftDeps & Dependency.CONTEXT_ITEM) == 0 &&
-			(!inWhereClause || (leftDeps & Dependency.CONTEXT_VARS) == 0))
+			!Dependency.dependsOn(leftDeps, Dependency.CONTEXT_ITEM) &&
+			(!inWhereClause || !Dependency.dependsOn(leftDeps, Dependency.CONTEXT_VARS)))
 		{
 			return Dependency.CONTEXT_SET;
 		} else { 
@@ -198,8 +198,8 @@ public class GeneralComparison extends BinaryOp {
                     contextSequence = contextItem.toSequence();                                
                 
                 
-                if (getRight().getDependencies() != Dependency.NO_DEPENDENCY &&
-                    !Dependency.dependsOn(getRight().getDependencies(), Dependency.CONTEXT_ITEM))
+                if (!Dependency.dependsOn(getRight().getDependencies(), Dependency.CONTEXT_ITEM) &&
+                        Type.subTypeOf(getRight().returnsType(), Type.NODE))
 				{
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "quickNodeSetCompare");
