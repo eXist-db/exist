@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeProxy;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -68,6 +69,10 @@ public class DynamicNameCheck extends AbstractExpression {
 			//Should we get a kind of Type.UNKNOWN rather than Type.NODE ?
 			if (itemType == Type.NODE) 
 				itemType = seq.getItemType();
+			//Last chance...
+			if (itemType == Type.NODE) 
+				if (item instanceof NodeProxy)
+					itemType = ((NodeProxy)item).getNode().getNodeType();
 			if(!Type.subTypeOf(itemType, test.getType())) {				
 				throw new XPathException(expression.getASTNode(), "Type error in expression" +
 					": required type is " + Type.getTypeName(test.getType()) +
