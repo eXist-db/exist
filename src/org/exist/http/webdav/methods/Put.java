@@ -71,12 +71,12 @@ public class Put extends AbstractWebDAVMethod {
             HttpServletResponse response, String path) throws ServletException, IOException {
         LOG.debug("PUT start");
         File tempFile = saveRequestContent(request);
-
+        
         String url = tempFile.toURI().toASCIIString();
         String contentType = request.getContentType();
         DBBroker broker = null;
         Collection collection = null;
-                
+        
         boolean collectionLocked = true;
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
@@ -115,7 +115,7 @@ public class Put extends AbstractWebDAVMethod {
 //            if (mime == null){
 //                mime = MimeType.BINARY_TYPE;
 //            }
-                    
+            
             // TODO why is content type involved here? would not like to use it,
             // as it seems to block binary file upload by MS office.
             
@@ -213,6 +213,7 @@ public class Put extends AbstractWebDAVMethod {
         response.setStatus(HttpServletResponse.SC_CREATED);
     }
     
+    
     private File saveRequestContent(HttpServletRequest request) throws IOException {
         ServletInputStream is = request.getInputStream();
         int len = request.getContentLength();
@@ -220,15 +221,19 @@ public class Put extends AbstractWebDAVMethod {
         // to a temporary file first.
         File tempFile = File.createTempFile("existSRC", ".tmp");
         OutputStream os = new FileOutputStream(tempFile);
-        byte[] buffer = new byte[4096];
-        int count, l = 0;
-        do {
-            count = is.read(buffer);
-            if (count > 0)
-                os.write(buffer, 0, count);
-            l += count;
-        } while (l < len);
-        os.close();
+        
+        if(len!=0){
+            byte[] buffer = new byte[4096];
+            int count, l = 0;
+            do {
+                count = is.read(buffer);
+                if (count > 0)
+                    os.write(buffer, 0, count);
+                l += count;
+            } while (l < len);
+            os.close();
+        }
+        
         return tempFile;
     }
 }
