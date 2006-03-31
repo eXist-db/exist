@@ -174,15 +174,17 @@ public class FunDeepEqual extends Function {
 		while(!(a == null || b == null)) {
             int nodeTypeA = a.getNodeType();
             if (nodeTypeA == NodeImpl.REFERENCE_NODE) {
-                //Retrieve the actual node type
-                NodeProxy p = ((ReferenceNode)a).getReference();
-                nodeTypeA = p.getNodeType();
+    			//Dereference...
+            	NodeProxy p = ((ReferenceNode)a).getReference();
+    			//... then retrieve the actual node, then its type            	
+                nodeTypeA = p.getNode().getNodeType();
             }
             int nodeTypeB = b.getNodeType();
             if (nodeTypeB == NodeImpl.REFERENCE_NODE) {
-                //Retrieve the actual node type
-                NodeProxy p = ((ReferenceNode)b).getReference();
-                nodeTypeB = p.getNodeType();
+    			//Dereference...
+            	NodeProxy p = ((ReferenceNode)b).getReference();
+    			//... then retrieve the actual node, then its type            	
+                nodeTypeB = p.getNode().getNodeType();
             }             
 			if (nodeTypeA != nodeTypeB) return false;
 			switch(nodeTypeA) {
@@ -206,9 +208,10 @@ public class FunDeepEqual extends Function {
 			return null;
         int nodeType = n.getNodeType();
 		if (nodeType == NodeImpl.REFERENCE_NODE) {
-			//Retrieve the actual node type
+			//Dereference...
 			NodeProxy p = ((ReferenceNode)n).getReference();
-            nodeType = p.getNodeType();            
+			//... then retrieve the actual node, then its type 
+			nodeType = p.getNode().getNodeType();
 		}		
 		while (!(nodeType == Node.ELEMENT_NODE || nodeType == Node.TEXT_NODE)) {
 			n = n.getNextSibling();            
