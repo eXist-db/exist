@@ -67,7 +67,7 @@ public abstract class LogicalOp extends BinaryOp {
 				(getLeft().getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
 				(getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0
 				//TODO: is this accurate ? -pb
-				&& contextInfo.getContextId() != -1)
+				/*&& contextInfo.getContextId() != -1*/)
 			optimize = true;
 		else
 			optimize = false;
