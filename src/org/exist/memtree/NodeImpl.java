@@ -239,30 +239,30 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#getChildNodes()
 	 */
 	public NodeList getChildNodes() {
-		return new NodeListImpl();
+		throw new RuntimeException("Can not call getChildNodes() on node type " + this.getNodeType());
+		//return new NodeListImpl();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getFirstChild()
 	 */
 	public Node getFirstChild() {
-        //TODO : make abstract -pb
-        throw new RuntimeException("Can not call getFirstChild() from here");
+		throw new RuntimeException("Can not call getFirstChild() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getLastChild()
 	 */
 	public Node getLastChild() {
-		return null;
+		throw new RuntimeException("Can not call getLastChild() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getPreviousSibling()
 	 */
 	public Node getPreviousSibling() {
-		// TODO Auto-generated method stub
-		return null;
+		//TODO : we have a getNextSibling() method !
+		throw new RuntimeException("Can not call getPreviousSibling() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
@@ -277,8 +277,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#getAttributes()
 	 */
 	public NamedNodeMap getAttributes() {
-        //TODO : make abstract -pb
-        throw new RuntimeException("Can not call getAttributes() from here");
+        throw new RuntimeException("Can not call getAttributes() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
@@ -304,47 +303,42 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
 	 */
 	public Node replaceChild(Node arg0, Node arg1) throws DOMException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        throw new RuntimeException("Can not call replaceChild() on node type " + this.getNodeType());
+    }
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#removeChild(org.w3c.dom.Node)
 	 */
 	public Node removeChild(Node arg0) throws DOMException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        throw new RuntimeException("Can not call removeChild() on node type " + this.getNodeType());	
+    }
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
 	 */
 	public Node appendChild(Node arg0) throws DOMException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        throw new RuntimeException("Can not call appendChild() on node type " + this.getNodeType());
+    }
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#hasChildNodes()
 	 */
 	public boolean hasChildNodes() {
-		return false;
+        throw new RuntimeException("Can not call hasChildNodes() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#cloneNode(boolean)
 	 */
 	public Node cloneNode(boolean arg0) {
-		// TODO Auto-generated method stub
-		return null;
+        throw new RuntimeException("Can not call cloneNode() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#normalize()
 	 */
 	public void normalize() {
-		// TODO Auto-generated method stub
-
+        throw new RuntimeException("Can not call normalize() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
@@ -359,36 +353,35 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {
-		return "";
+        throw new RuntimeException("Can not call getNamespaceURI() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getPrefix()
 	 */
 	public String getPrefix() {
-		return "";
+        throw new RuntimeException("Can not call getPrefix() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#setPrefix(java.lang.String)
 	 */
 	public void setPrefix(String arg0) throws DOMException {
-
+        throw new RuntimeException("Can not call setPrefix() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getLocalName()
 	 */
 	public String getLocalName() {
-        //TODO : make abstract -pb
-		throw new RuntimeException("Can not call getLocalName() from here");
+        throw new RuntimeException("Can not call getLocalName() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#hasAttributes()
 	 */
 	public boolean hasAttributes() {
-		return false;
+        throw new RuntimeException("Can not call hasAttributes() on node type " + this.getNodeType());
 	}
 
 	/*
