@@ -256,6 +256,24 @@ public class DeepEqualTest extends TestCase {
 			" )";			
 		assertQuery(true, query);
 	}
+        
+        public void testElements15() {
+            // [ 1462061 ] Issue with deep-equal() "DeepestEqualBug"
+            String query =
+                    "declare namespace ve = \"ournamespace\";"+
+                    "declare function ve:functionVerifications($pars as element()*) as element() {"+
+                    "<FunctionVerifications>"+
+                    "<ParameterVerifications>{$pars[Name eq \"Par1\"]}</ParameterVerifications>"+
+                    "</FunctionVerifications>"+
+                    "};"+
+                    "let $par1 := <Parameter><Name>Par1</Name></Parameter>"+
+                    "let $funVers2 := "+
+                    "<FunctionVerifications><ParameterVerifications> {$par1}"+
+                    "</ParameterVerifications></FunctionVerifications> "+
+                    "return "+
+                    "deep-equal($funVers2, ve:functionVerifications($par1))";
+            assertQuery(true,query);
+        }
 	
 	public void testNSElements1() {
 		createDocument("test", "<test xmlns:p='urn:foo' xmlns:q='urn:foo'><p:a/><q:a/></test>");
