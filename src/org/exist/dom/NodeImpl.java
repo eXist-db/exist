@@ -276,11 +276,11 @@ public abstract class NodeImpl implements Node, QNameable {
      */
     public String getPrefix() {
         QName nodeName = getQName();
-        if (nodeName != null) {
+        //if (nodeName != null) {
             final String prefix = nodeName.getPrefix();
             return prefix == null ? "" : prefix;
-        }
-        return "";
+        //}
+        //return "";
     }
     
     /**
@@ -298,31 +298,34 @@ public abstract class NodeImpl implements Node, QNameable {
     /**
      * @see org.w3c.dom.Node#getNamespaceURI()
      */
+    //TODO : remove default value
     public String getNamespaceURI() {
         QName nodeName = getQName();
-        if (nodeName != null)
+        //if (nodeName != null)
             return nodeName.getNamespaceURI();
-        return "";
+        //return "";
     }
     
     /**
      * @see org.w3c.dom.Node#getLocalName()
      */
+    //TODO : remove default value
     public String getLocalName() {
         QName nodeName = getQName();
-        if (nodeName != null)
+        //if (nodeName != null)
             return nodeName.getLocalName();
-        return "";
+        //return "";
     }    
     
     /**
      * @see org.w3c.dom.Node#getNodeName()
      */
+    //TODO : remove default value
     public String getNodeName() {
         QName nodeName = getQName();
-        if(nodeName != null)
+        //if(nodeName != null)
             return nodeName.toString();
-        return "";
+        //return "";
     }
     
 }
