@@ -23,7 +23,6 @@
 package org.exist.memtree;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
