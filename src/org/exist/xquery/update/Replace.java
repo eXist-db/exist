@@ -95,11 +95,11 @@ public class Replace extends Modification {
          */
         if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE)) 
         {
-        	//Indicate the failure to perform this update by adding it to the sequence in the context variable "_eXist_xquery_update_error"
+        	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
         	ValueSequence prevUpdateErrors = null;
         	
         	XPathException xpe = new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-        	Object ctxVarObj = context.getXQueryContextVar("_eXist_xquery_update_error");
+        	Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
         	if(ctxVarObj == null)
         	{
         		prevUpdateErrors = new ValueSequence();
@@ -109,7 +109,7 @@ public class Replace extends Modification {
         		prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
         	}
         	prevUpdateErrors.add(new StringValue(xpe.getMessage()));
-			context.setXQueryContextVar("_eXist_xquery_update_error", prevUpdateErrors);
+			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 			
         	if(inSeq.getLength() > 0)
         		throw xpe;	//TODO: should we trap this instead of throwing an exception - deliriumsky?
