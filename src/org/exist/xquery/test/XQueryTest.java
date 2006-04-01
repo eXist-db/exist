@@ -152,6 +152,32 @@ public class XQueryTest extends XMLTestCase {
 		System.out.println("tearDown PASSED");
 	}
 	
+	public void testLet() {
+		ResourceSet result;
+		String query;
+		XMLResource resu;
+		try {
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
+
+			System.out.println("testLet 1: ========" );
+			query = "/test/item[let $id := ./@id return $id]";
+			result = service.queryResource(NUMBERS_XML, query );
+			printResult(result);
+			assertEquals( "XQuery: " + query, 4, result.getSize() );
+
+			System.out.println("testLet 2: ========" );
+			query = "/test/item[let $id := ./@id return not(/test/set[@id=$id])]";
+			result = service.queryResource(NUMBERS_XML, query );
+			printResult(result);
+			assertEquals( "XQuery: " + query, 4, result.getSize() );
+			
+		} catch (XMLDBException e) {
+			System.out.println("testLet(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}
+
 	public void testFor() {
 		ResourceSet result;
 		String query;

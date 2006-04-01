@@ -101,7 +101,7 @@ public class LetExpr extends BindingExpression {
         LocalVariable mark = context.markLocalVariables(false);
         
         // evaluate input sequence
-        Sequence in = inputSequence.eval(null, null);
+        Sequence in = inputSequence.eval(contextSequence, null);
         clearContext(getExpressionId(), in);
         
         // Declare the iteration variable
