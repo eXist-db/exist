@@ -78,11 +78,17 @@ public abstract class AbstractSequence implements Sequence {
 	}
 	
 	public String toString() {
-	    try {
-            return getStringValue();
-        } catch (XPathException e) {
-            return super.toString();
-        }
+    	StringBuffer buf = new StringBuffer();
+    	buf.append("(");
+    	boolean gotOne = false;
+    	for(SequenceIterator i = iterate(); i.hasNext(); ) {
+    		if (gotOne)
+    			buf.append(", ");
+    		buf.append(i.nextItem());
+    		gotOne = true;
+    	}
+    	buf.append(")");
+    	return buf.toString();
 	}
 	
 	/* (non-Javadoc)

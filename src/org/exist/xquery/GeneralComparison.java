@@ -130,7 +130,9 @@ public class GeneralComparison extends BinaryOp {
         inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0; 
         //Ugly workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
         // (1)[.= 1] works...
-        invalidNodeEvaluation = getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
+        //invalidNodeEvaluation = getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
+        //Unfortunately, we lose the possibility to make a nodeset optimization 
+        //(we still don't know anything about the contextSequence that will be processed) 
     }
     
 	/* (non-Javadoc)

@@ -955,7 +955,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         if(document.getDocId() == doc.getDocId())
             return 1;
         else
-            return 0;
+            return Constants.NO_SIZE_HINT;
     }
     
     /* (non-Javadoc)
