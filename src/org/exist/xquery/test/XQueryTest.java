@@ -160,6 +160,7 @@ public class XQueryTest extends XMLTestCase {
 			XPathQueryService service = 
 				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 
+			//Non null context sequence
 			System.out.println("testLet 1: ========" );
 			query = "/test/item[let $id := ./@id return $id]";
 			result = service.queryResource(NUMBERS_XML, query );
@@ -219,6 +220,14 @@ public class XQueryTest extends XMLTestCase {
             printResult(result);
             resu = (XMLResource) result.getResource(0);
             assertEquals( "XQuery: " + query, "3", ((Element)resu.getContentAsDOM()).getAttribute("id") );            
+
+            //Non null context sequence
+            System.out.println("testFor 6: ========" );
+            query = "/test/item[for $id in ./@id return $id]";
+            result = service.queryResource(NUMBERS_XML, query );
+            printResult(result);
+            resu = (XMLResource) result.getResource(0);
+			assertEquals( "XQuery: " + query, 4, result.getSize() );
             
 		} catch (XMLDBException e) {
 			System.out.println("testFor(): XMLDBException: "+e);
