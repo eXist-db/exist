@@ -53,7 +53,10 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
      * @see org.exist.memtree.NodeImpl#getNodeType()
      */
     public short getNodeType() {
-    	//TODO : understand this design -pb
+    	//TOUNDERSTAND : return value
+    	//XQuery doesn't support namespace nodes
+    	//so, mapping as an attribute at *serialization tile*  makes sense
+    	//however, the Query parser should not accept them in constructors !
         return Node.ATTRIBUTE_NODE;
     }
 
@@ -68,6 +71,11 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
     	return getQName().getPrefix();
     }
 
+    public String getNamespaceURI() {
+    	//TODO: remove
+    	return getQName().getNamespaceURI();
+    }
+    
 	public boolean getSpecified() {
 		return true;
 	}
