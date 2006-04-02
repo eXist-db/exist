@@ -81,7 +81,7 @@ import org.w3c.dom.NodeList;
 public class NativeTextEngine extends TextSearchEngine implements ContentLoadingObserver {
 
     public final static byte TEXT_SECTION = 0;
-	public final static byte ATTRIBUTE_SECTION = 1;	
+	public final static byte ATTRIBUTE_SECTION = 1;
   
     /** Length limit for the tokens */
 	public final static int MAX_TOKEN_LENGTH = 2048;
@@ -808,9 +808,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     Map.Entry entry = (Map.Entry) i.next();
                     String token = (String) entry.getKey();
                     OccurrenceList occurences = (OccurrenceList) entry.getValue();
-                    int termCount = occurences.getTermCount();
                     //Don't forget this one
-                    occurences.sort();                    
+                    occurences.sort();
                     os.clear();
                     os.writeInt(this.doc.getDocId());
                     switch (currentSection) {
@@ -824,7 +823,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
                             "' (inverted index)");
                     }                    
-                    os.writeInt(termCount);
+                    os.writeInt(occurences.getTermCount());
                     //TOUNDERSTAND -pb             
                     int lenOffset = os.position();
                     os.writeFixedInt(0);
@@ -894,7 +893,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     //Compute a key for the token
                     Map.Entry entry = (Map.Entry) i.next();
                     OccurrenceList storedOccurencesList = (OccurrenceList) entry.getValue();
-                    String token = (String) entry.getKey();                        
+                    String token = (String) entry.getKey();
                     WordRef ref = new WordRef(collectionId, token);
                     OccurrenceList newOccurencesList = new OccurrenceList();
                     os.clear();
@@ -920,7 +919,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         os.writeInt(termCount);
                                         os.writeFixedInt(size);
                                         is.copyRaw(os, size);
-                                    } else {    
+                                    } else {
                                         // data are related to our section and document:
                                         // feed the new list with the GIDs
                                         long previousGID = 0;
@@ -947,7 +946,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             }                                
                             //append the data from the new list
                             if(newOccurencesList.getSize() > 0) {
-                                int termCount = newOccurencesList.getTermCount();
                                 //Don't forget this one
                                 newOccurencesList.sort();                                
                                 os.writeInt(this.doc.getDocId());                           
@@ -961,8 +959,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     default :
                                         throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
                                                 "' (inverted index)");
-                                }                                      
-                                os.writeInt(termCount);
+                                }
+                                os.writeInt(newOccurencesList.getTermCount());
                                 //TOUNDERSTAND -pb           
                                 int lenOffset = os.position();
                                 os.writeFixedInt(0);                                
@@ -1082,8 +1080,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                }
                         if (storedOccurencesList.getSize() > 0) {
                             //append the data from the new list
-                            int termCount = storedOccurencesList.getTermCount();
-                            storedOccurencesList.sort();                        
+                            storedOccurencesList.sort();
     		                os.writeInt(document.getDocId());
                             switch (currentSection) {
                                 case TEXT_SECTION :
@@ -1095,23 +1092,24 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 default :
                                     throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
                                         "' (inverted index)");
-                            }         
-    		                os.writeInt(termCount);
+                            }
+    		                os.writeInt(storedOccurencesList.getTermCount());
                             //TOUNDERSTAND -pb         
                             int lenOffset = os.position();
-    	                    os.writeFixedInt(0);                            
+    	                    os.writeFixedInt(0);
+    	                    int realCount = 0;
                             long previousGID = 0;
                             for (int m = 0; m < storedOccurencesList.getSize(); ) {
                                 long delta = storedOccurencesList.nodes[m] - previousGID;
+                                previousGID = storedOccurencesList.nodes[m];
                                 os.writeLong(delta);                            
                                 int freq = storedOccurencesList.getOccurrences(m);
                                 os.writeInt(freq);
                                 for (int n = 0; n < freq; n++) {
-                                    os.writeInt(storedOccurencesList.offsets[m + n]);
+                                    os.writeInt(storedOccurencesList.offsets[m++]);
                                 }
-                                previousGID = storedOccurencesList.nodes[m];
-                                m += freq;
-                            }		                
+                                realCount++;
+                            }
     		                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                         }
 		                //Store the data		                
