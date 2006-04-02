@@ -1111,13 +1111,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             long previousGID = 0;
                             for (int m = 0; m < storedOccurencesList.getSize(); ) {
                                 long delta = storedOccurencesList.nodes[m] - previousGID;
-                                previousGID = storedOccurencesList.nodes[m];
                                 os.writeLong(delta);                            
                                 int freq = storedOccurencesList.getOccurrences(m);
                                 os.writeInt(freq);
                                 for (int n = 0; n < freq; n++) {
-                                    os.writeInt(storedOccurencesList.offsets[m++]);
+                                    os.writeInt(storedOccurencesList.offsets[m + n]);
                                 }
+                                previousGID = storedOccurencesList.nodes[m];
+                                m += freq;
                             }
     		                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                         }
