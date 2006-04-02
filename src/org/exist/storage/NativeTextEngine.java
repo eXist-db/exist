@@ -838,18 +838,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     //TOUNDERSTAND -pb             
                     int lenOffset = os.position();
                     os.writeFixedInt(0);
-                    long previousGID = 0;
-                    for (int j = 0; j < occurences.getSize(); ) {
-                        long delta = occurences.nodes[j] - previousGID;
-                        os.writeLong(delta);                                        
-                        int freq = occurences.getOccurrences(j);
-                        os.writeInt(freq);
-                        for (int k = 0; k < freq; k++) {
-                            os.writeInt(occurences.offsets[j + k]);
-                        }  
-                        previousGID = occurences.nodes[j];        
-                        j += freq;                        
-                    }
+                    saveOccurrences(occurences);
                     os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);                    
                     flushWord(collectionId, token, os.data());
                     progress.setValue(count);
@@ -974,19 +963,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 os.writeInt(newOccurencesList.getTermCount());
                                 //TOUNDERSTAND -pb           
                                 int lenOffset = os.position();
-                                os.writeFixedInt(0);                                
-                                long previousGID = 0;
-                                for (int m = 0; m < newOccurencesList.getSize(); ) {
-                                    long delta = newOccurencesList.nodes[m] - previousGID;
-                                    os.writeLong(delta);                                
-                                    int freq = newOccurencesList.getOccurrences(m);
-                                    os.writeInt(freq);
-                                    for (int n = 0; n < freq; n++) {
-                                        os.writeInt(newOccurencesList.offsets[m + n]);
-                                    }
-                                    previousGID = newOccurencesList.nodes[m];
-                                    m += freq;
-                                }
+                                os.writeFixedInt(0);
+                                saveOccurrences(newOccurencesList);
                                 os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                             }                            
 					    }
@@ -1108,18 +1086,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             //TOUNDERSTAND -pb         
                             int lenOffset = os.position();
     	                    os.writeFixedInt(0);
-                            long previousGID = 0;
-                            for (int m = 0; m < storedOccurencesList.getSize(); ) {
-                                long delta = storedOccurencesList.nodes[m] - previousGID;
-                                os.writeLong(delta);                            
-                                int freq = storedOccurencesList.getOccurrences(m);
-                                os.writeInt(freq);
-                                for (int n = 0; n < freq; n++) {
-                                    os.writeInt(storedOccurencesList.offsets[m + n]);
-                                }
-                                previousGID = storedOccurencesList.nodes[m];
-                                m += freq;
-                            }
+                            saveOccurrences(storedOccurencesList);
     		                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                         }
 		                //Store the data		                
@@ -1148,6 +1115,21 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		        }
 		        words[currentSection].clear();
 		    }
+		}
+
+		private void saveOccurrences(OccurrenceList storedOccurencesList) {
+			long previousGID = 0;
+			for (int m = 0; m < storedOccurencesList.getSize(); ) {
+			    long delta = storedOccurencesList.nodes[m] - previousGID;
+			    os.writeLong(delta);                            
+			    int freq = storedOccurencesList.getOccurrences(m);
+			    os.writeInt(freq);
+			    for (int n = 0; n < freq; n++) {
+			        os.writeInt(storedOccurencesList.offsets[m + n]);
+			    }
+			    previousGID = storedOccurencesList.nodes[m];
+			    m += freq;
+			}
 		}
 	}
 	
