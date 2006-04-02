@@ -53,6 +53,7 @@ import org.exist.xquery.Constants;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
+import org.apache.log4j.Logger;
 
 /**
  * Implements the REST-style interface if eXist is running within
@@ -66,11 +67,16 @@ public class EXistServlet extends HttpServlet {
 	private String formEncoding = null;
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	
+        protected final static Logger LOG = Logger.getLogger(EXistServlet.class);
 	private BrokerPool pool = null;
-	private String defaultUser = SecurityManager.GUEST_USER;
-	private String defaultPass = SecurityManager.GUEST_USER;
+	private String defaultUsername = SecurityManager.GUEST_USER;
+	private String defaultPassword = SecurityManager.GUEST_USER;
 	
 	private RESTServer server;
+        
+        private Authenticator authenticator;
+        
+        private User defaultUser;
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
@@ -81,7 +87,7 @@ public class EXistServlet extends HttpServlet {
 		// Configure BrokerPool
 		try {
 			if (BrokerPool.isConfigured()) {
-				this.log("Database already started. Skipping configuration ...");
+				LOG.info("Database already started. Skipping configuration ...");
 			} else {
 				String confFile = config.getInitParameter("configuration");
 				String dbHome = config.getInitParameter("basedir");
@@ -91,11 +97,11 @@ public class EXistServlet extends HttpServlet {
 					confFile = "conf.xml";
 				dbHome = (dbHome == null) ? config.getServletContext().getRealPath(
 						".") : config.getServletContext().getRealPath(dbHome);
-				this.log("EXistServlet: exist.home=" + dbHome);
+				LOG.info("EXistServlet: exist.home=" + dbHome);
 				System.setProperty("exist.home", dbHome);
 				
 				File f = new File(dbHome + File.separator + confFile);
-				this.log("reading configuration from " + f.getAbsolutePath());
+				LOG.info("reading configuration from " + f.getAbsolutePath());
 
 				if (!f.canRead())
 					throw new ServletException("configuration file " + confFile
@@ -105,12 +111,29 @@ public class EXistServlet extends HttpServlet {
 					startup(configuration);
 			}
 			pool = BrokerPool.getInstance();
-			String option = config.getInitParameter("user");
-			if (option != null)
-				defaultUser = option;
-			option = config.getInitParameter("password");
-			if (option != null)
-				defaultPass = option;
+			String option = config.getInitParameter("use-default-user");
+                        boolean useDefaultUser = true;
+			if (option != null) {
+                           useDefaultUser = option.trim().equals("true");
+                        }
+                        if (useDefaultUser) {
+                           option = config.getInitParameter("user");
+                           if (option != null)
+                                   defaultUsername = option;
+                           option = config.getInitParameter("password");
+                           if (option != null)
+                                   defaultPassword = option;
+                           defaultUser = getDefaultUser();
+                           if (defaultUser!=null) {
+                              LOG.info("Using default user "+defaultUsername+" for all unauthorized requests.");
+                           } else {
+                              LOG.error("Default user "+defaultUsername+" cannot be found.  A BASIC AUTH challenge will be the default.");
+                           }
+                        } else {
+                           LOG.info("No default user.  All requires must be authorized or will result in a BASIC AUTH challenge.");
+                           defaultUser = null;
+                        }
+                        authenticator = new BasicAuthenticator(pool);
 		} catch (EXistException e) {
 			throw new ServletException("No database instance available");
 		} catch (DatabaseConfigurationException e) {
@@ -146,10 +169,11 @@ public class EXistServlet extends HttpServlet {
     	}
 		
 		//third, authenticate the user
-		User user = authenticate(request);
+		User user = authenticate(request,response);
 		if (user == null) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN,
-					"Permission denied: unknown user or password");
+                        // You now get a challenge if there is no user
+			//response.sendError(HttpServletResponse.SC_FORBIDDEN,
+			//		"Permission denied: unknown user or password");
 			return;
 		}
 		
@@ -219,10 +243,11 @@ public class EXistServlet extends HttpServlet {
     	}
 		
     	//third, authenticate the user
-		User user = authenticate(request);
+		User user = authenticate(request,response);
 		if (user == null) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN,
-					"Permission denied: unknown user " + "or password");
+                        // You now get a challenge if there is no user
+			//response.sendError(HttpServletResponse.SC_FORBIDDEN,
+			//		"Permission denied: unknown user " + "or password");
 			return;
 		}
 
@@ -265,10 +290,11 @@ public class EXistServlet extends HttpServlet {
     	}
     	
 		//third, authenticate the user
-		User user = authenticate(request);
+		User user = authenticate(request,response);
 		if (user == null) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN,
-					"Permission denied: unknown user " + "or password");
+                        // You now get a challenge if there is no user
+			//response.sendError(HttpServletResponse.SC_FORBIDDEN,
+			//		"Permission denied: unknown user " + "or password");
 			return;
 		}
 		
@@ -311,10 +337,11 @@ public class EXistServlet extends HttpServlet {
     	}
 		
 		//third, authenticate the user
-		User user = authenticate(request);
+		User user = authenticate(request,response);
 		if (user == null) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN,
-					"Permission denied: unknown user " + "or password");
+                        // You now get a challenge if there is no user
+			//response.sendError(HttpServletResponse.SC_FORBIDDEN,
+			//		"Permission denied: unknown user " + "or password");
 			return;
 		}
 
@@ -385,10 +412,11 @@ public class EXistServlet extends HttpServlet {
     	}
 		
     	//third, authenticate the user
-		User user = authenticate(request);
+		User user = authenticate(request,response);
 		if (user == null) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN,
-					"Permission denied: unknown user " + "or password");
+                        // You now get a challenge if there is no user
+			//response.sendError(HttpServletResponse.SC_FORBIDDEN,
+			//		"Permission denied: unknown user " + "or password");
 			return;
 		}
 		
@@ -418,7 +446,9 @@ public class EXistServlet extends HttpServlet {
         BrokerPool.stopAll(false);
     }
     
-	private User authenticate(HttpServletRequest request) {
+	private User authenticate(HttpServletRequest request,HttpServletResponse response)
+          throws java.io.IOException
+        {
 		// First try to validate the principial if passed from the servlet engine
 		Principal principal = request.getUserPrincipal();
 		
@@ -426,24 +456,26 @@ public class EXistServlet extends HttpServlet {
 			String username = ((XmldbPrincipal)principal).getName();
 			String password = ((XmldbPrincipal)principal).getPassword();
 			
-			this.log("Validating Principle: " + principal.getName());
+			LOG.info("Validating Principle: " + principal.getName());
 			User user = pool.getSecurityManager().getUser(username);
 			
 			if (user != null){
 				if (password.equalsIgnoreCase(user.getPassword())){
-					this.log("Valid User: " + user.getName());
+					LOG.info("Valid User: " + user.getName());
 					return user;
 				}else{
-					this.log( "Password invalid for user: " + username );
+					LOG.info( "Password invalid for user: " + username );
 				}
-				this.log("User not found: " + principal.getName());
+				LOG.info("User not found: " + principal.getName());
 			}	
 		}
 		
 		String auth = request.getHeader("Authorization");
-		if(auth == null) {
-			return getDefaultUser();
+		if(auth == null && defaultUser!=null) {
+                   return defaultUser;
 		}
+                return authenticator.authenticate(request,response);
+                /*
 		byte[] c = Base64.decode(auth.substring(6).getBytes());
 		String s = new String(c);
 		int p = s.indexOf(':');
@@ -459,13 +491,14 @@ public class EXistServlet extends HttpServlet {
 		if (!user.validate(password))
 			return null;
 		return user;
+                 */
 	}
 	
 	private User getDefaultUser() {
-		if (defaultUser != null) {
-			User user = pool.getSecurityManager().getUser(defaultUser);
+		if (defaultUsername != null) {
+			User user = pool.getSecurityManager().getUser(defaultUsername);
 			if (user != null) {
-				if (!user.validate(defaultPass))
+				if (!user.validate(defaultPassword))
 					return null;
 			}
 			return user;
@@ -477,7 +510,7 @@ public class EXistServlet extends HttpServlet {
 		if ( configuration == null )
 			throw new ServletException( "database has not been " +
 			"configured" );
-		this.log("configuring eXist instance");
+		LOG.info("configuring eXist instance");
 		try {
 			if ( !BrokerPool.isConfigured() )
 				BrokerPool.configure( 1, 5, configuration );
@@ -485,18 +518,18 @@ public class EXistServlet extends HttpServlet {
 			throw new ServletException( e.getMessage() );
 		}
 		try {
-			this.log("registering XMLDB driver");
+			LOG.info("registering XMLDB driver");
 			Class clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
 			Database database = (Database)clazz.newInstance();
 			DatabaseManager.registerDatabase(database);
 		} catch (ClassNotFoundException e) {
-			this.log("ERROR", e);
+			LOG.info("ERROR", e);
 		} catch (InstantiationException e) {
-			this.log("ERROR", e);
+			LOG.info("ERROR", e);
 		} catch (IllegalAccessException e) {
-			this.log("ERROR", e);
+			LOG.info("ERROR", e);
 		} catch (XMLDBException e) {
-			this.log("ERROR", e);
+			LOG.info("ERROR", e);
 		}
 	}
 }
