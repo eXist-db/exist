@@ -37,7 +37,18 @@ import java.util.regex.Pattern;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.Match;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.NodeSetHelper;
+import org.exist.dom.StoredNode;
+import org.exist.dom.TextImpl;
+import org.exist.dom.VirtualNodeSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.btree.BTreeCallback;
@@ -1097,7 +1108,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             //TOUNDERSTAND -pb         
                             int lenOffset = os.position();
     	                    os.writeFixedInt(0);
-    	                    int realCount = 0;
                             long previousGID = 0;
                             for (int m = 0; m < storedOccurencesList.getSize(); ) {
                                 long delta = storedOccurencesList.nodes[m] - previousGID;
@@ -1108,7 +1118,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 for (int n = 0; n < freq; n++) {
                                     os.writeInt(storedOccurencesList.offsets[m++]);
                                 }
-                                realCount++;
                             }
     		                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                         }
