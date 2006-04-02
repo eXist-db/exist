@@ -62,7 +62,8 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(RequestHostname.signature, RequestHostname.class),
 		new FunctionDef(UnescapeURI.signature, UnescapeURI.class),
 		new FunctionDef(SetDateHeader.signature, SetDateHeader.class),
-        new FunctionDef(StreamBinary.signature, StreamBinary.class)
+        new FunctionDef(StreamBinary.signature, StreamBinary.class),
+        new FunctionDef(SetResponseHeader.signature, SetResponseHeader.class)
 	};
 	
 	public RequestModule() throws XPathException {
