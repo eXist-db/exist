@@ -227,6 +227,18 @@ public class StandaloneServer {
         		servletHandler.addServlet("EXistServlet", path, "org.exist.http.servlets.EXistServlet");
         	restServlet.setInitParameter("form-encoding", props.getProperty("rest.form-encoding"));
         	restServlet.setInitParameter("container-encoding", props.getProperty("rest.container-encoding"));
+                String value = props.getProperty("rest.use-default-user");
+                if (value!=null) {
+                   restServlet.setInitParameter("use-default-user", value);
+                }
+                value = props.getProperty("rest.default-user-username");
+                if (value!=null) {
+                   restServlet.setInitParameter("user", value);
+                }
+                value = props.getProperty("rest.default-user-password");
+                if (value!=null) {
+                   restServlet.setInitParameter("password", value);
+                }
         }
         if (props.getProperty("webdav.enabled").equalsIgnoreCase("yes")) {
             String path = props.getProperty("webdav.context", "/webdav/*");
