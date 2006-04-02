@@ -505,7 +505,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             Match match = new Match(storedGID, token, freq);
                             readOccurrences(freq, is, match, token.length());
                             storedNode.addMatch(match);
-							result.add(storedNode, -1);							
+							result.add(storedNode, Constants.NO_SIZE_HINT);							
 						}
 						context.proceed();
                         previousGID = storedGID;                        
@@ -815,6 +815,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             final short collectionId = this.doc.getCollection().getId();
             int count = 0;
             for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
+            	//Not very necessary, but anyway...
+                switch (currentSection) {
+	                case TEXT_SECTION :
+	                case ATTRIBUTE_SECTION :
+	                	break;
+	                default :
+	                    throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
+	                    "' (inverted index)");
+	            }                    
                 for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext(); count++) {
                     Map.Entry entry = (Map.Entry) i.next();
                     String token = (String) entry.getKey();
@@ -823,17 +832,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     occurences.sort();
                     os.clear();
                     os.writeInt(this.doc.getDocId());
-                    switch (currentSection) {
-                        case TEXT_SECTION :
-                            os.writeByte(TEXT_SECTION);
-                            break;
-                        case ATTRIBUTE_SECTION :
-                            os.writeByte(ATTRIBUTE_SECTION);
-                            break;
-                        default :
-                            throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
-                            "' (inverted index)");
-                    }                    
+                    os.writeByte(currentSection);
                     os.writeInt(occurences.getTermCount());
                     //TOUNDERSTAND -pb             
                     int lenOffset = os.position();
@@ -889,6 +888,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             final short collectionId = this.doc.getCollection().getId();
             final Lock lock = dbTokens.getLock();
             for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
+            	//Not very necessary, but anyway...
+                switch (currentSection) {
+	                case TEXT_SECTION :
+	                case ATTRIBUTE_SECTION :
+	                    break;
+	                default :
+	                    throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
+	                            "' (inverted index)");
+	            }
 				for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
                     //Compute a key for the token
                     Map.Entry entry = (Map.Entry) i.next();
@@ -949,17 +957,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 //Don't forget this one
                                 newOccurencesList.sort();                                
                                 os.writeInt(this.doc.getDocId());                           
-                                switch (currentSection) {
-                                    case TEXT_SECTION :
-                                        os.writeByte(TEXT_SECTION);
-                                        break;
-                                    case ATTRIBUTE_SECTION :
-                                        os.writeByte(ATTRIBUTE_SECTION);
-                                        break;
-                                    default :
-                                        throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
-                                                "' (inverted index)");
-                                }
+                                os.writeByte(currentSection);
                                 os.writeInt(newOccurencesList.getTermCount());
                                 //TOUNDERSTAND -pb           
                                 int lenOffset = os.position();
@@ -1002,6 +1000,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             final short collectionId = document.getCollection().getId();
 		    final Lock lock = dbTokens.getLock();
             for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
+            	//Not very necessary, but anyway...
+                switch (currentSection) {
+	                case TEXT_SECTION :
+	                case ATTRIBUTE_SECTION :
+	                    break;
+	                default :
+	                    throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
+	                        "' (inverted index)");
+	            }
 		        for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {                   
                     //Compute a key for the token
                     Map.Entry entry = (Map.Entry) i.next();
@@ -1071,17 +1078,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             //append the data from the new list
                             storedOccurencesList.sort();
     		                os.writeInt(document.getDocId());
-                            switch (currentSection) {
-                                case TEXT_SECTION :
-                                    os.writeByte(TEXT_SECTION);
-                                    break;
-                                case ATTRIBUTE_SECTION :
-                                    os.writeByte(ATTRIBUTE_SECTION);
-                                    break;
-                                default :
-                                    throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
-                                        "' (inverted index)");
-                            }
+                            os.writeByte(currentSection);
     		                os.writeInt(storedOccurencesList.getTermCount());
                             //TOUNDERSTAND -pb         
                             int lenOffset = os.position();
@@ -1219,15 +1216,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             int freq = is.readInt();
                             NodeProxy storedNode;
                             switch (storedSection) {
-                                case TEXT_SECTION :
-                                    storedNode = new NodeProxy(storedDocument, storedGID, Node.TEXT_NODE);
-                                    break;
-                                case ATTRIBUTE_SECTION :
-                                    storedNode = new NodeProxy(storedDocument, storedGID, Node.ATTRIBUTE_NODE);
-                                    break;
-                                default :
-                                    throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
-                            } 
+	                            case TEXT_SECTION :
+	                                storedNode = new NodeProxy(storedDocument, storedGID, Node.TEXT_NODE);
+	                                break;
+	                            case ATTRIBUTE_SECTION :
+	                                storedNode = new NodeProxy(storedDocument, storedGID, Node.ATTRIBUTE_NODE);
+	                                break;
+	                            default :
+	                                throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
+	                        } 
 							if (contextSet != null) {
                                 NodeProxy parentNode;  
                                 switch (storedSection) {
@@ -1236,11 +1233,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         break;
                                     case ATTRIBUTE_SECTION :
                                         if (contextSet instanceof VirtualNodeSet) {
-                                        parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                                        if (parentNode != null && parentNode.getGID() != storedGID)
-                                            parentNode = null;
-                                        } else
+                                        	parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                        	if (parentNode != null && parentNode.getGID() != storedGID)
+                                        		parentNode = null;
+                                        } else {
                                             parentNode = contextSet.get(storedNode);
+                                        }
                                         break;
                                     default :
                                         throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
@@ -1257,7 +1255,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 Match match = new Match(storedGID, word.toString(), freq);
 							    readOccurrences(freq, is, match, word.length());
                                 storedNode.addMatch(match);
-							    result.add(storedNode, -1);
+							    result.add(storedNode, Constants.NO_SIZE_HINT);
                             }
                             previousGID = storedGID;
 						}
