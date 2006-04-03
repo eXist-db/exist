@@ -159,35 +159,20 @@ public class FunDeepEqual extends Function {
 	}
 	
 	private boolean compareElements(Node a, Node b) {
-		if (!compareNames(a, b))
-            return false;
-        if (!compareAttributes(a, b))
-            return false;
-		if (!compareContents(a, b))
-            return false;
-        return true;
+		return
+			compareNames(a, b)
+			&& compareAttributes(a, b)
+			&& compareContents(a, b);
 	}
 	
 	private boolean compareContents(Node a, Node b) {
 		a = findNextTextOrElementNode(a.getFirstChild());
 		b = findNextTextOrElementNode(b.getFirstChild());
-		while(!(a == null || b == null)) {
-            int nodeTypeA = a.getNodeType();
-            if (nodeTypeA == NodeImpl.REFERENCE_NODE) {
-    			//Dereference...
-            	NodeProxy p = ((ReferenceNode)a).getReference();
-    			//... then retrieve the actual node, then its type            	
-                nodeTypeA = p.getNode().getNodeType();
-            }
-            int nodeTypeB = b.getNodeType();
-            if (nodeTypeB == NodeImpl.REFERENCE_NODE) {
-    			//Dereference...
-            	NodeProxy p = ((ReferenceNode)b).getReference();
-    			//... then retrieve the actual node, then its type            	
-                nodeTypeB = p.getNode().getNodeType();
-            }             
+		while (!(a == null || b == null)) {
+			int nodeTypeA = getEffectiveNodeType(a);
+			int nodeTypeB = getEffectiveNodeType(b);
 			if (nodeTypeA != nodeTypeB) return false;
-			switch(nodeTypeA) {
+			switch (nodeTypeA) {
 				case Node.TEXT_NODE:
 					if (!safeEquals(a.getNodeValue(), b.getNodeValue())) return false;
 					break;
@@ -195,7 +180,7 @@ public class FunDeepEqual extends Function {
 					if (!compareElements(a, b)) return false;
 					break;
 				default:
-					throw new RuntimeException("unexpected node type " + a.getNodeType());
+					throw new RuntimeException("unexpected node type " + nodeTypeA);
 			}
 			a = findNextTextOrElementNode(a.getNextSibling());
 			b = findNextTextOrElementNode(b.getNextSibling());
@@ -204,22 +189,20 @@ public class FunDeepEqual extends Function {
 	}
 	
 	private Node findNextTextOrElementNode(Node n) {
-		if (n == null) 
-			return null;
-        int nodeType = n.getNodeType();
-		if (nodeType == NodeImpl.REFERENCE_NODE) {
-			//Dereference...
-			NodeProxy p = ((ReferenceNode)n).getReference();
-			//... then retrieve the actual node, then its type 
-			nodeType = p.getNode().getNodeType();
-		}		
-		while (!(nodeType == Node.ELEMENT_NODE || nodeType == Node.TEXT_NODE)) {
-			n = n.getNextSibling();            
-			if (n == null) 
-				return null;
-            nodeType = n.getNodeType();
+		for(;;) {
+			if (n == null) return null;
+			int nodeType = getEffectiveNodeType(n);
+			if (nodeType == Node.ELEMENT_NODE || nodeType == Node.TEXT_NODE) return n;
+			n = n.getNextSibling();
 		}
-		return n;
+	}
+	
+	private int getEffectiveNodeType(Node n) {
+		int nodeType = n.getNodeType();
+		if (nodeType == NodeImpl.REFERENCE_NODE) {
+			nodeType = ((ReferenceNode) n).getReference().getNode().getNodeType();
+		}
+		return nodeType;
 	}
 	
 	private boolean compareAttributes(Node a, Node b) {
