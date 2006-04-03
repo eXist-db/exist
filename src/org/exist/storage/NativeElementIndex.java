@@ -149,8 +149,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         //TODO : return if doc == null? -pb
         if (pending.size() == 0) 
             return;        
-        final ProgressIndicator progress = new ProgressIndicator(pending.size(), 5);
-        final SymbolTable symbols = broker.getSymbols(); 
+        final ProgressIndicator progress = new ProgressIndicator(pending.size(), 5);        
         final short collectionId = this.doc.getCollection().getId(); 
         final Lock lock = dbNodes.getLock();   
         int count = 0;
@@ -178,19 +177,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 previousGID = storedNode.getGID();
             }            
             os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
-            //Compute a key for the node
-            ElementValue ref;
-            if (qname.getNameType() == ElementValue.ATTRIBUTE_ID) {
-                ref = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());                
-            } else {
-                short sym = symbols.getSymbol(qname.getLocalName());
-                short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
-                ref = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);   
-            }
             try {
                 lock.acquire(Lock.WRITE_LOCK);
                 //Store the data
-                if (dbNodes.append(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                final Value key = computeKey(collectionId, qname);
+                if (dbNodes.append(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                     LOG.error("Could not put index data for node '" +  qname + "'"); 
                 }
             } catch (LockException e) {
@@ -221,28 +212,19 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     public void remove() {      
         //TODO : return if doc == null? -pb  
         if (pending.size() == 0) 
-            return;
-        final SymbolTable symbols = broker.getSymbols(); 
+            return;      
         final short collectionId = this.doc.getCollection().getId();
         final Lock lock = dbNodes.getLock();
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
-            Map.Entry entry = (Map.Entry) i.next();
-            List storedGIDList = (ArrayList) entry.getValue();
-            QName qname = (QName) entry.getKey();
-            //Compute a key for the node
-            Value searchKey;
-            if (qname.getNameType() == ElementValue.ATTRIBUTE_ID) {
-                searchKey = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());                    
-            } else {                
-                short sym = symbols.getSymbol(qname.getLocalName());
-                short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
-                searchKey = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);                    
-            }
-            List newGIDList = new ArrayList();
-            os.clear();             
+            final Map.Entry entry = (Map.Entry) i.next();
+            final List storedGIDList = (ArrayList) entry.getValue();
+            final List newGIDList = new ArrayList();
+            final QName qname = (QName) entry.getKey();            
+            final Value key = computeKey(collectionId, qname);     
+            os.clear(); 
             try {
                 lock.acquire(Lock.WRITE_LOCK);
-                Value value = dbNodes.get(searchKey);
+                Value value = dbNodes.get(key);
                 //Does the node already exist in the index ?
                 if (value != null) {
                     //Add its data to the new list                    
@@ -309,11 +291,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 }                
                 //Store the data
                 if (value == null) {
-                    if (dbNodes.put(searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                    if (dbNodes.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.error("Could not put index data for node '" +  qname + "'");  
                     }                    
                 } else {
-                    if (dbNodes.update(value.getAddress(), searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                    if (dbNodes.update(value.getAddress(), key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.error("Could not put index data for node '" +  qname + "'");  
                     }                    
                 }
@@ -334,8 +316,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.collections.Collection)
      */
     public void dropIndex(Collection collection) {        
-        final Value ref = new ElementValue(collection.getId());
-        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+        final Value searchKey = new ElementValue(collection.getId());
+        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
         final Lock lock = dbNodes.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
@@ -358,8 +340,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     //TODO : note that this is *not* this.doc -pb
     public void dropIndex(DocumentImpl document) throws ReadOnlyException {              
         final short collectionId = document.getCollection().getId();
-        final Value ref = new ElementValue(collectionId);
-        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+        final Value searchKey = new ElementValue(collectionId);
+        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
         final Lock lock = dbNodes.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
@@ -397,7 +379,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     //TODO : why not use the same construct as above :
                     //dbNodes.update(value.getAddress(), ref, os.data()) -pb
                     if (dbNodes.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not put index data for value '" +  ref + "'");
+                        LOG.error("Could not put index data for key '" +  key + "'");
                     }                    
                 }
             }
@@ -414,15 +396,13 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         }
     }
 
-
     /* (non-Javadoc)
      * @see org.exist.storage.ContentLoadingObserver#reindex(org.exist.dom.DocumentImpl, org.exist.dom.NodeImpl)
      */
     //TODO : note that this is *not* this.doc -pb
     public void reindex(DocumentImpl document, StoredNode node) {
         if (pending.size() == 0) 
-            return;         
-        final SymbolTable symbols = broker.getSymbols();
+            return;
         final short collectionId = document.getCollection().getId();
         final Lock lock = dbNodes.getLock();
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
@@ -435,16 +415,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 Map.Entry entry = (Map.Entry) i.next();
                 //TODO : NativeValueIndex uses LongLinkedLists -pb
                 List storedGIDList = (ArrayList) entry.getValue();
-                QName qname = (QName) entry.getKey();
-                Value ref;
-                if (qname.getNameType() == ElementValue.ATTRIBUTE_ID) {
-                    ref = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());                    
-                } else {
-                    short sym = symbols.getSymbol(qname.getLocalName());
-                    short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
-                    ref = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);
-                }
-                VariableByteInput is = dbNodes.getAsStream(ref);
+                final QName qname = (QName) entry.getKey();
+                final Value key = computeKey(collectionId, qname);                
+                final VariableByteInput is = dbNodes.getAsStream(key);
                 //Does the node already exist in the index ?
                 if (is != null) {
                     //Add its data to the new list
@@ -514,12 +487,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 }                
                 if (is == null) {
                     //TOUNDERSTAND : Should is be null, what will there be in os.data() ? -pb
-                    if (dbNodes.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                    if (dbNodes.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.error("Could not put index data for node '" +  qname + "'");
                     }
                 } else {
                     long address = ((BFile.PageInputStream) is).getAddress();
-                    if (dbNodes.update(address, ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                    if (dbNodes.update(address, key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.error("Could not update index data for node '" +  qname + "'");
                     }
                 }                
@@ -568,26 +541,16 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             default :
                 throw new IllegalArgumentException("Invalid type");
         }        
-        final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
-        final SymbolTable symbols = broker.getSymbols();
+        final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);        
         final Lock lock = dbNodes.getLock();
         // true if the output document set is the same as the input document set
         boolean sameDocSet = true;
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-            //Compute a key for the node
-            Collection collection = (Collection) i.next();
-            short collectionId = collection.getId();            
-            ElementValue ref;
-            if (type == ElementValue.ATTRIBUTE_ID) {
-                ref = new ElementValue((byte) type, collectionId, qname.getLocalName());
-            } else {
-                short sym = symbols.getSymbol(qname.getLocalName());
-                short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
-                ref = new ElementValue((byte) type, collectionId, sym, nsSym);
-            }
+            final short collectionId = ((Collection) i.next()).getId();            
+            final Value key = computeTypedKey((byte) type, collectionId, qname);
             try {
                 lock.acquire(Lock.READ_LOCK);
-                VariableByteInput is = dbNodes.getAsStream(ref); 
+                VariableByteInput is = dbNodes.getAsStream(key); 
                 //Does the node already has data in the index ?
                 if (is == null) {
                 	sameDocSet = false;
@@ -644,14 +607,14 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         return result;
     }
 
-    public Occurrences[] scanIndexedElements(Collection collection, boolean inclusive) 
+    public Occurrences[] scanIndexedElements(Collection collection, boolean includeDescendants) 
             throws PermissionDeniedException {
         final User user = broker.getUser();
         if (!collection.getPermissions().validate(user, Permission.READ))
             throw new PermissionDeniedException("User '" + user.getName() + 
                     "' has no permission to read collection '" + collection.getName() + "'");        
         List collections;
-        if (inclusive) 
+        if (includeDescendants) 
             collections = collection.getDescendants(broker, broker.getUser());
         else
             collections = new ArrayList();
@@ -659,11 +622,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final SymbolTable symbols = broker.getSymbols();
         final TreeMap map = new TreeMap();        
         final Lock lock = dbNodes.getLock();
-        for (Iterator i = collections.iterator(); i.hasNext();) {
-            Collection storedCollection = (Collection) i.next();
-            short storedCollectionId = storedCollection.getId();
-            ElementValue startKey = new ElementValue(ElementValue.ELEMENT, storedCollectionId);
-            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
+        for (Iterator i = collections.iterator(); i.hasNext();) {        
+            final short collectionId = ((Collection) i.next()).getId();
+            final ElementValue searchKey = new ElementValue(ElementValue.ELEMENT, collectionId);
+            final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
             try {
                 lock.acquire();
                 //TODO : NativeValueIndex uses LongLinkedLists -pb
@@ -671,8 +633,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 for (Iterator j = values.iterator(); j.hasNext();) {
                     //TOUNDERSTAND : what's in there ?
                     Value val[] = (Value[]) j.next();
-                    short sym = ByteConversion.byteToShort(val[0].getData(), 3);
-                    short nsSymbol = ByteConversion.byteToShort(val[0].getData(), 5);
+                    final short sym = ByteConversion.byteToShort(val[0].getData(), 3);
+                    final short nsSymbol = ByteConversion.byteToShort(val[0].getData(), 5);
                     String name = symbols.getName(sym);
                     String namespace;
                     if (nsSymbol == 0) {
@@ -726,8 +688,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     public void consistencyCheck(DocumentImpl document) throws EXistException {
         final SymbolTable symbols = broker.getSymbols();
         final short collectionId = document.getCollection().getId();
-        final Value ref = new ElementValue(collectionId);
-        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+        final Value searchKey = new ElementValue(collectionId);
+        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
         final StringBuffer msg = new StringBuffer();    
         final Lock lock = dbNodes.getLock();
         try {
@@ -801,6 +763,21 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             lock.release();
         }
     } 
+    
+    private Value computeKey(short collectionId, QName qname) {
+        return computeTypedKey(qname.getNameType(), collectionId, qname);        
+    }
+   
+    private Value computeTypedKey(byte type, short collectionId, QName qname) {    
+        if (type == ElementValue.ATTRIBUTE_ID) {
+            return new ElementValue(type, collectionId, qname.getLocalName());
+        } else {
+            final SymbolTable symbols = broker.getSymbols();
+            short sym = symbols.getSymbol(qname.getLocalName());
+            short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
+            return new ElementValue(type, collectionId, sym, nsSym);
+        }
+    }
     
     private final static boolean containsNode(List list, long gid) {
         for (int i = 0; i < list.size(); i++) {
