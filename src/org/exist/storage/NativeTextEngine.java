@@ -288,8 +288,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.collections.Collection)
      */
     public void dropIndex(Collection collection) {
-        final WordRef ref = new WordRef(collection.getId());
-        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);            
+        final WordRef value = new WordRef(collection.getId());
+        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);            
         final Lock lock = dbTokens.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);            
@@ -324,12 +324,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final Lock lock = dbTokens.getLock();
         for (Iterator iter = tokens.iterator(); iter.hasNext();) {
             String token = (String) iter.next();
-            WordRef ref = new WordRef(collectionId, token);
+            WordRef key = new WordRef(collectionId, token);
             try {
                 lock.acquire(Lock.WRITE_LOCK);
                 boolean changed = false;                
                 os.clear();    
-                VariableByteInput is = dbTokens.getAsStream(ref);
+                VariableByteInput is = dbTokens.getAsStream(key);
                 //Does the token already has data in the index ?
                 if (is == null)
                     continue;            
@@ -362,9 +362,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 if (changed) {
                     //Well, nothing to store : remove the existing data
                     if (os.data().size() == 0) {
-                        dbTokens.remove(ref);
+                        dbTokens.remove(key);
                     } else {                        
-                        if (dbTokens.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                             LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + "'");
                         }                    
                     }
@@ -424,14 +424,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             token = expr;
         final NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);         
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-            //Compute a key for the node
-            Collection collection = (Collection) iter.next();
-            short collectionId = collection.getId();
-            Value ref = new WordRef(collectionId, token);
-			Lock lock = dbTokens.getLock();
+            final short collectionId = ((Collection) iter.next()).getId();
+            final Value key = new WordRef(collectionId, token);
+			final Lock lock = dbTokens.getLock();
 			try {
 				lock.acquire();
-                VariableByteInput is = dbTokens.getAsStream(ref);
+                VariableByteInput is = dbTokens.getAsStream(key);
                 //Does the token already has data in the index ?
 				if (is == null)
 					continue;				
@@ -562,16 +560,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, docs); 
 		final Lock lock = dbTokens.getLock();		
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-            //Compute a key for the token
-            Collection collection = (Collection) iter.next();
-            short collectionId = collection.getId();            
-            Value ref;
+            final short collectionId = ((Collection) iter.next()).getId();        
+            //Compute a key for the token                
+            Value value;
 			if (startTerm != null && startTerm.length() > 0)
                 //TODO : case conversion should be handled by the tokenizer -pb
-				ref = new WordRef(collectionId, startTerm.toString().toLowerCase());
+				value = new WordRef(collectionId, startTerm.toString().toLowerCase());
 			else
-				ref = new WordRef(collectionId);
-			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+				value = new WordRef(collectionId);
+			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
 			try {
 				lock.acquire();	
 				dbTokens.query(query, cb);
@@ -594,11 +591,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final IndexCallback cb = new IndexCallback(null, matcher);		
 		final Lock lock = dbTokens.getLock();		
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-            //Compute a key for the token
-            Collection collection = (Collection) iter.next();
-            short collectionId = collection.getId();           
-            Value ref = new WordRef(collectionId);
-            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+            final short collectionId = ((Collection) iter.next()).getId();  
+            //Compute a key for the token                                 
+            Value value = new WordRef(collectionId);
+            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
 			try {
 				lock.acquire();
 				dbTokens.query(query, cb);
@@ -621,19 +617,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             throws PermissionDeniedException {
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
         final Lock lock = dbTokens.getLock();
-		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-            //Compute a key for the token            
-            Collection collection = (Collection) i.next();
-            short collectionId = collection.getId();
-            Value startRef;
-            Value endRef;
-            IndexQuery query;
+		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {            
+            final short collectionId = ((Collection) i.next()).getId();          
+            final IndexQuery query;
             if (end == null) {
-                startRef = new WordRef(collectionId, start.toLowerCase());
+                Value startRef = new WordRef(collectionId, start.toLowerCase());
                 query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
             } else {
-                startRef = new WordRef(collectionId,  start.toLowerCase());
-                endRef = new WordRef(collectionId, end.toLowerCase());
+                Value startRef = new WordRef(collectionId,  start.toLowerCase());
+                Value endRef = new WordRef(collectionId, end.toLowerCase());
     			query = new IndexQuery(IndexQuery.BW, startRef, endRef);
             }
 			try {
@@ -864,8 +856,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 return;
             final Lock lock = dbTokens.getLock();
             try {
-                lock.acquire(Lock.WRITE_LOCK);          
-                dbTokens.append(new WordRef(collectionId, token), data);
+                lock.acquire(Lock.WRITE_LOCK); 
+                WordRef key = new WordRef(collectionId, token);
+                dbTokens.append(key, data);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "' (inverted index)", e);
             } catch (ReadOnlyException e) {
@@ -902,12 +895,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     Map.Entry entry = (Map.Entry) i.next();
                     OccurrenceList storedOccurencesList = (OccurrenceList) entry.getValue();
                     String token = (String) entry.getKey();
-                    WordRef ref = new WordRef(collectionId, token);
+                    WordRef key = new WordRef(collectionId, token);
                     OccurrenceList newOccurencesList = new OccurrenceList();
                     os.clear();
                     try {
                         lock.acquire(Lock.WRITE_LOCK);
-                        Value value = dbTokens.get(ref);
+                        Value value = dbTokens.get(key);
                         //Does the token already has data in the index ?
 					    if (value != null) {
 					        //Add its data to the new list    
@@ -968,16 +961,16 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					    }
                         //Store the data
 					    if(os.data().size() == 0) {				    	
-							dbTokens.remove(ref);							
+							dbTokens.remove(key);							
 					    } else {                           
 					        if (value == null)
                                 //TOUNDERSTAND : is this ever called ? -pb
-					            if (dbTokens.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+					            if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                                     LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
                                         "' (inverted index)");  
                                 }                    
 					        else
-					            if (dbTokens.update(value.getAddress(), ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+					            if (dbTokens.update(value.getAddress(), key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                                     LOG.error("Could not update index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
                                         "' (inverted index)");
                                 }                    						    
@@ -1013,12 +1006,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     //Compute a key for the token
                     Map.Entry entry = (Map.Entry) i.next();
                     String token = (String) entry.getKey();                    
-                    WordRef ref = new WordRef(collectionId, token);
+                    WordRef key = new WordRef(collectionId, token);
                     OccurrenceList storedOccurencesList = (OccurrenceList) entry.getValue();
                     os.clear();                     
 		            try {
 		                lock.acquire(Lock.WRITE_LOCK);
-                        VariableByteInput is = dbTokens.getAsStream(ref);	
+                        VariableByteInput is = dbTokens.getAsStream(key);	
                         //Does the token already has data in the index ?
 		                if (is != null) {
 		                    //Add its data to the new list    
@@ -1089,13 +1082,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                //Store the data		                
 	                    if (is == null) {
                             //TOUNDERSTAND : Should is be null, what will there be in os.data() ? -pb
-	                        if (dbTokens.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+	                        if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                                 LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
                                         "' (inverted index)");
                             }
 	                    } else {  
                             long address = ((BFile.PageInputStream) is).getAddress();
-	                        if (dbTokens.update(address, ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
+	                        if (dbTokens.update(address, key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                                 LOG.error("Could not update index data for value '" +  token +  "' in '" + dbTokens.getFile().getName() + 
                                     "' (inverted index)"); 
                             }
