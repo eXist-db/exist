@@ -786,6 +786,21 @@ public class XPathQueryTest extends XMLTestCase {
             fail(e.getMessage());
         }
     }    
+    
+    
+    // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1460610&group_id=17691&atid=117691
+    public void testPredicatesBUG1460610() throws Exception {
+        String xQuery = "(1, 2, 3)[ . lt 3]";
+        
+        XQueryService service = getQueryService();
+        ResourceSet rs = service.query(xQuery);
+        
+        assertEquals("SFBUG 1460610 nr of results", 2, rs.getSize());
+        assertEquals("SFBUG 1460610 1st result", "1", 
+                                                rs.getResource(0).getContent());
+        assertEquals("SFBUG 1460610 2nd result", "2", 
+                                                rs.getResource(1).getContent());
+    }
 	
 	public void testStrings() {
 		try {
