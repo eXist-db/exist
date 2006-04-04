@@ -56,7 +56,7 @@ public class DLNTest extends TestCase {
         }
     }
     
-    private final static int ITEMS_TO_TEST = 10000;
+    private final static int ITEMS_TO_TEST = 100000;
     
     public void testSingleId() {
         long start = System.currentTimeMillis();

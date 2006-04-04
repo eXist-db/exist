@@ -1,21 +1,20 @@
 package org.exist.numbering.test;
 
 import junit.framework.TestCase;
-import org.exist.util.Configuration;
+
+import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.security.*;
-import org.exist.security.xacml.AccessContext;
-import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
+import org.exist.util.Configuration;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
-import org.w3c.dom.Node;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Text;
 /*
@@ -154,5 +153,9 @@ public class DLNStorageTest extends TestCase {
 
     protected void tearDown() {
         BrokerPool.stopAll(false);
+    }
+    
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(DLNStorageTest.class);
     }
 }

@@ -48,6 +48,15 @@ public class DLNBase implements Comparable {
      */
     public final static int BITS_PER_UNIT = 4;
 
+    public final static int[] BIT_MASK = new int[8];
+    static {
+    	BIT_MASK[0] = 0x80;
+    	for (int i = 1; i < 8; i++) {
+    		int mask = 1 << (7 - i);
+    		BIT_MASK[i] = mask + BIT_MASK[i - 1];
+    	}
+    }
+    
     /**
      * Lists the maximum number that can be encoded
      * by a given number of units. PER_COMPONENT_SIZE[0]
@@ -90,7 +99,10 @@ public class DLNBase implements Comparable {
     }
 
     public DLNBase(int units, byte[] data, int startOffset) {
-        int blen = (int) Math.ceil((units * BITS_PER_UNIT) / 8.0);
+    	int bitCnt = units * BITS_PER_UNIT;
+        int blen = bitCnt / 8;
+        if (bitCnt % 8 > 0)
+        	++blen;
         bits = new byte[blen];
         System.arraycopy(data, startOffset, bits, 0, blen);
         bitIndex = units * BITS_PER_UNIT - 1;
@@ -115,8 +127,11 @@ public class DLNBase implements Comparable {
     }
 
     public DLNBase(VariableByteInput is) throws IOException {
-        int units = is.readByte();
-        int blen = (int) Math.ceil((units * BITS_PER_UNIT) / 8.0);
+        final int units = is.readByte();
+        final int bitCnt = units * BITS_PER_UNIT;
+        int blen = bitCnt / 8;
+        if (bitCnt % 8 > 0)
+        	++blen;
         bits = new byte[blen];
         is.read(bits);
         bitIndex = units * BITS_PER_UNIT - 1;
@@ -363,19 +378,22 @@ public class DLNBase implements Comparable {
         return compareTo(other);
     }
 
+    /**
+     * Checks if the current DLN starts with the
+     * same bit sequence as other. This is used
+     * to test ancestor-descendant relationships.
+     * 
+     * @param other
+     * @return
+     */
     public boolean startsWith(DLNBase other) {
     	int bytes = other.bitIndex / 8;
-    	int remaining = other.bitIndex % 8 + 1;
+    	int remaining = other.bitIndex % 8;
     	for (int i = 0; i < bytes; i++) {
     		if (bits[i] != other.bits[i])
     			return false;
     	}
-    	for (int i = 0; i < remaining; i++) {
-    		int mask = (1 << ((7 - i) & 7));
-    		if ((bits[bytes] & mask) != (other.bits[bytes] & mask))
-    			return false;
-    	}
-    	return true;
+    	return (bits[bytes] & BIT_MASK[remaining]) == (other.bits[bytes] & BIT_MASK[remaining]);
     }
     
     public String debug() {
