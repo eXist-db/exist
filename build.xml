@@ -63,6 +63,7 @@
         </fileset>
         <pathelement path="exist.jar"/>
         <pathelement path="exist-optional.jar"/>
+        <pathelement path="exist-modules.jar"/>
         <pathelement path="start.jar"/>
         <pathelement path="${java.class.path}"/>
     </path>
@@ -377,6 +378,7 @@
                     <exclude name="**/http/test/*.java"/>
                     <exclude name="**/storage/test/*.java"/>
                     <exclude name="**/soap/test/*.java"/>
+                    <exclude name="**/numbering/test/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
@@ -983,6 +985,7 @@
             <fileset dir="${src.webapp}">
                 <include name="WEB-INF/**"/>
                 <include name="*.xml"/>
+                <include name="*.html"/>
                 <include name="sitemap.xmap"/>
                 <include name="styles/**"/>
                 <include name="stylesheets/**"/>
@@ -998,12 +1001,14 @@
             <replacefilter token="ant-tasks.xml" value="ant-tasks.html"/>
             <replacefilter token="changes.xml" value="changes.html"/>
             <replacefilter token="client.xml" value="client.html"/>
+            <replacefilter token="cluster.xml" value="cluster.html"/>
+            <replacefilter token="journal.xml" value="journal.html"/>
             <replacefilter token="configuration.xml" value="configuration.html"/>
             <replacefilter token="credits.xml" value="credits.html"/>
             <replacefilter token="deployment.xml" value="deployment.html"/>
             <replacefilter token="devguide.xml" value="devguide.html"/>
             <replacefilter token="documentation.xml" value="documentation.html"/>
-            <replacefilter token="donations.xml" value="donations.html"/>
+            <replacefilter token="indexing.xml" value="indexing.html"/>
             <replacefilter token="facts.xml" value="facts.html"/>
             <replacefilter token="howtos.xml" value="howtos.html"/>
             <replacefilter token="performance.xml" value="performance.html"/>
@@ -1011,8 +1016,15 @@
             <replacefilter token="security.xml" value="security.html"/>
             <replacefilter token="xquery.xml" value="xquery.html"/>
             <replacefilter token="updating.xml" value="updating.html"/>
+            <replacefilter token="update_ext.xml" value="update_ext.html"/>
             <replacefilter token='"xinclude.xml' value='"xinclude.html'/>
-
+            <replacefilter token="xacml.xml" value="xacml.html"/>
+            <replacefilter token="xacml-features.xml" value="xacml-features.html"/>
+            <replacefilter token="xacml-intro.xml" value="xacml-intro.html"/>
+            <replacefilter token="xacml-usage.xml" value="xacml-usage.html"/>
+            <replacefilter token="xacml-dev.xml" value="xacml-dev.html"/>
+            <replacefilter token="webdav.xml" value="webdav.html"/>
+            
             <replacefilter token="examples.xml" value="${demo.host}/examples.xml"/>
             <replacefilter token="xquery/acronyms.xq" value="${demo.host}/xquery/acronyms.xq"/>
             <replacefilter token="mods/" value="${demo.host}/mods/"/>
@@ -1050,16 +1062,19 @@
             <logging log-kit="${build.docs.src}/WEB-INF/logkit.xconf" logger="cli" level="DEBUG" />
             <uris name="site" follow-links="false">
                 <uri type="append" src="index.xml"/>
+                <uri type="append" src="acknowledge.xml"/>
                 <uri type="append" src="ant-tasks.xml"/>
                 <uri type="append" src="changes.xml"/>
                 <uri type="append" src="client.xml"/>
+                <uri type="append" src="cluster.xml"/>
+                <uri type="append" src="journal.xml"/>
                 <uri type="append" src="configuration.xml"/>
                 <uri type="append" src="credits.xml"/>
                 <uri type="append" src="deployment.xml"/>
                 <uri type="append" src="devguide.xml"/>
                 <uri type="append" src="documentation.xml"/>
-                <uri type="append" src="donations.xml"/>
                 <uri type="append" src="examples.xml"/>
+                <uri type="append" src="indexing.xml"/>
                 <uri type="append" src="facts.xml"/>
                 <uri type="append" src="howtos.xml"/>
                 <uri type="append" src="performance.xml"/>
@@ -1068,6 +1083,14 @@
                 <uri type="append" src="xquery.xml"/>
                 <uri type="append" src="xinclude.xml"/>
                 <uri type="append" src="updating.xml"/>
+                <uri type="append" src="update_ext.xml"/>
+                <uri type="append" src="xacml.xml"/>
+                <uri type="append" src="xacml-features.xml"/>
+                <uri type="append" src="xacml-intro.xml"/>
+                <uri type="append" src="xacml-usage.xml"/>
+                <uri type="append" src="xacml-dev.xml"/>
+                <uri type="append" src="webdav.xml"/>
+                <uri type="append" src="developper.html"/>
             </uris>
         </cocoon>
 
