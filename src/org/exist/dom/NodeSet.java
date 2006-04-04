@@ -121,14 +121,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 */
 	public NodeProxy get(NodeProxy p);
 	
-	/**
-	 * Get a node from this node set matching the document and node id.
-	 * 
-	 * @param doc
-	 * @param nodeId
-	 * @return
-	 */
-	public NodeProxy get(DocumentImpl doc, long nodeId);
     public NodeProxy get(DocumentImpl doc, NodeId nodeId);
 
     /**
@@ -242,20 +234,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 */
 	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf);
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf);
-
-    /**
-	 * Check if the node identified by its node id has an ancestor contained in this node set
-	 * and return the ancestor found.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 * If includeSelf is true, the method returns also true if
-	 * the node itself is contained in the node set.
-	 */
-	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf,
-		int level);
 
     /**
 	 * Check if the given node has an ancestor contained in this node set

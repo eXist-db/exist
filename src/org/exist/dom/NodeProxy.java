@@ -135,6 +135,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	public NodeProxy(NodeProxy p) {
         this(p.doc, p.gid, p.nodeType, p.internalAddress);
 		match = p.match;
+		nodeId = p.nodeId;
         //TODO : what about node's context ?		
 	}
 
@@ -170,7 +171,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		final int diff = doc.getDocId() - other.doc.getDocId();
 		if (diff != 0)
             return diff;
-        return (int) (gid - other.gid);
+		return nodeId.compareTo(other.nodeId);
 	}
 	
 	public int compareTo(Object other) {
@@ -186,10 +187,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             return false;
 		NodeProxy otherNode = (NodeProxy) other;
         if (otherNode.doc.getDocId() != doc.getDocId())
-            return false;        
-        if (otherNode.gid != gid)
             return false;
-        return true;
+        return otherNode.nodeId.equals(nodeId);
 	}
 
 	public boolean equals(NodeValue other) throws XPathException {
@@ -198,9 +197,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		NodeProxy otherNode = (NodeProxy) other;
         if (otherNode.doc.getDocId() != doc.getDocId())
             return false;
-        if(otherNode.gid != gid)
-            return false;
-        return true;
+        return otherNode.nodeId.equals(nodeId);
 	}
 
 	public boolean before(NodeValue other) throws XPathException {
@@ -854,17 +851,6 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 */
 	public NodeProxy get(NodeProxy p) {
 		return contains(p) ? this : null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.dom.NodeSet#get(org.exist.dom.DocumentImpl, long)
-	 */
-	public NodeProxy get(DocumentImpl document, long nodeId) {
-        if (this.gid != nodeId)
-            return null;
-	    if(this.doc.getDocId() != document.getDocId())
-	        return null;
-	    return this;
 	}
 
     public NodeProxy get(DocumentImpl document, NodeId nodeId) {

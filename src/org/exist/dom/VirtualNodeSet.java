@@ -71,24 +71,13 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		this.test = test;
 	}
 
-	public boolean contains(DocumentImpl doc, long nodeId) {
-		NodeProxy first = getFirstParent(new NodeProxy(doc, nodeId), null, (axis == Constants.SELF_AXIS), 0);
-		// Timo Boehme: getFirstParent returns now only real parents
-		//              therefore test if node is child of context
-        if (first != null)
-            return true;
-		if (context.get(doc, NodeSetHelper.getParentId(doc, nodeId)) != null)
-            return true;
-        return false;
-	}
-
 	public boolean contains(NodeProxy p) {
 		NodeProxy first = getFirstParent(p, null, (axis == Constants.SELF_AXIS), 0);
 		// Timo Boehme: getFirstParent returns now only real parents
 		//              therefore test if node is child of context
         if (first != null)
             return true;
-		if (context.get(p.getDocument(), NodeSetHelper.getParentId(p.getDocument(), p.getGID())) != null)
+		if (context.get(p.getDocument(), p.getNodeId().getParentId()) != null)
             return true;
         return false;           
 	}
@@ -111,15 +100,15 @@ public class VirtualNodeSet extends AbstractNodeSet {
 
 	private NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
             boolean includeSelf, boolean directParent, int recursions) {
-		
-        long pid = NodeSetHelper.getParentId(node.getDocument(), node.getGID());
+        
+        NodeId pid = node.getNodeId().getParentId();
         
         /* if the node has no parent, i.e. pid == -1, we still need to complete this method
          * to check if we have found a potential parent in one of the iterations before.
          */
 		NodeProxy parent;
 		// check if the start-node should be included, e.g. to process an
-		// expression like *[. = 'xxx'] 
+		// expression like *[. = 'xxx']
 		if (recursions == 0 && includeSelf && test.matches(node)) {
 			if (axis == Constants.CHILD_AXIS) {
 				// if we're on the child axis, test if
@@ -143,12 +132,13 @@ public class VirtualNodeSet extends AbstractNodeSet {
         // we need a parent that is actually contained in the context set. We thus
         // call the method again to complete.
         if (first == null) {
-            if (pid < 0) {
+            if (pid == NodeId.DOCUMENT_NODE) {
                 // given node was already document element -> no parent
                 return null;
             }
             //first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);
-            first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);
+            first = new NodeProxy(node.getDocument(), -1, Node.ELEMENT_NODE);
+            first.setNodeId(pid);
             if (test.getType() == Type.ATTRIBUTE)
             	return first;
             // Timo Boehme: we need a real parent (child from context)
@@ -173,7 +163,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 			}
 			// Timo Boehme: we return the ancestor which is child of context			
 			return node;
-        } else if (pid < 0) {
+        } else if (pid == NodeId.DOCUMENT_NODE) {
             // no matching node has been found in the context
             return null;
 		} else if (directParent && axis == Constants.CHILD_AXIS && recursions == 1) {
@@ -181,25 +171,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
 			return null;        
 		} else {
 			// continue for expressions like //*/n or /*//n
-			parent = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);
-            return getFirstParent(parent, first, false, false, recursions + 1);          
+			parent = new NodeProxy(node.getDocument(), -1, Node.ELEMENT_NODE);
+			parent.setNodeId(pid);
+            return getFirstParent(parent, first, false, false, recursions + 1);
 		}
-	}
-
-	public NodeProxy nodeHasParent(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf) {
-        
-		final NodeProxy p =	getFirstParent(new NodeProxy(doc, gid), null, includeSelf, directParent, 0);
-		if (p != null)
-			addInternal(p);
-		return p;
-	}
-
-	public NodeProxy nodeHasParent(NodeProxy node, boolean directParent, boolean includeSelf) {
-        
-		final NodeProxy p = getFirstParent(node, null, includeSelf, directParent, 0);
-		if (p != null)
-			addInternal(p);
-		return p;
 	}
 
 	private void addInternal(NodeProxy p) {
@@ -226,7 +201,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	}
 
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
-        return null;
+    	NodeProxy first = getFirstParent(new NodeProxy(doc, nodeId), null, includeSelf, directParent, 0);
+		if (first != null)
+			addInternal(first);
+		return first;
     }
 
     private final NodeSet getNodes() {
@@ -244,6 +222,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
                     StoredNode node = (StoredNode) cl.item(j);
     				NodeProxy docElemProxy =
     					new NodeProxy(proxy.getDocument(), node.getGID(), node.getNodeType());
+    				docElemProxy.setNodeId(node.getNodeId());
     				docElemProxy.setInternalAddress(node.getInternalAddress());
     				if (test.matches(docElemProxy)) {
     					docElemProxy.deepCopyContext(proxy);
@@ -280,7 +259,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 					domIter = proxy.getDocument().getBroker().getNodeIterator(proxy);
 					StoredNode node = (StoredNode) domIter.next();
 					node.setOwnerDocument(proxy.getDocument());
-					node.setGID(proxy.getGID());					
+					node.setGID(proxy.getGID());
+					node.setNodeId(proxy.getNodeId());
 					addChildren(proxy, result, node, domIter, 0);
 				}
 			}
@@ -302,7 +282,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				if(node.getOwnerDocument() == null)
 					LOG.debug("DOC == NULL");
 				child.setOwnerDocument(node.getOwnerDocument());
-				child.setGID(node.firstChildID() + i);
 				p = new NodeProxy((DocumentImpl)child.getOwnerDocument(), child.getGID(), child.getNodeType());
                 p.setNodeId(child.getNodeId());
                 p.setInternalAddress(child.getInternalAddress());
@@ -394,11 +373,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	public Item itemAt(int pos) {
 		realize();
 		return realSet.itemAt(pos);
-	}
-
-	public NodeProxy get(DocumentImpl doc, long gid) {
-		realize();
-		return realSet.get(doc, gid);
 	}
 
     public NodeProxy get(DocumentImpl doc, NodeId nodeId) {

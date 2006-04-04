@@ -44,6 +44,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.XMLFilenameFilter;
+import org.exist.xquery.AncestorSelector;
 import org.exist.xquery.ChildSelector;
 import org.exist.xquery.DescendantOrSelfSelector;
 import org.exist.xquery.DescendantSelector;
@@ -86,8 +87,10 @@ public class BasicNodeSetTest extends XMLTestCase {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
             
-            System.out.println("Testing ChildSelector ...");
+            DocumentSet docs = root.allDocs(broker, new DocumentSet(), true, false);
             Sequence seq = executeQuery(broker, "//SPEECH", 2628, null);
+            
+            System.out.println("Testing ChildSelector ...");
             NameTest test = new NameTest(Type.ELEMENT, new QName("LINE", ""));
             NodeSelector selector = new ChildSelector(seq.toNodeSet(), -1);
             NodeSet set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
@@ -103,6 +106,24 @@ public class BasicNodeSetTest extends XMLTestCase {
             assertEquals(2628, set.getLength());
             System.out.println("DescendantOrSelfSelector: PASS");
             
+            System.out.println("Testing AncestorSelector ...");
+            test = new NameTest(Type.ELEMENT, new QName("ACT", ""));
+            selector = new AncestorSelector(seq.toNodeSet(), -1, false);
+            set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
+            		test.getName(), selector);
+            assertEquals(15, set.getLength());
+            System.out.println("AncestorSelector: PASS");
+            
+            System.out.println("Testing AncestorSelector: self");
+            test = new NameTest(Type.ELEMENT, new QName("SPEECH", ""));
+            NodeSet ns = seq.toNodeSet();
+            System.out.println("ns = " + ns.getLength());
+            selector = new AncestorSelector(ns, -1, true);
+            set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
+            		test.getName(), selector);
+            assertEquals(2628, set.getLength());
+            System.out.println("AncestorSelector: PASS");
+            
             System.out.println("Testing DescendantSelector ...");
             seq = executeQuery(broker, "//SCENE", 72, null);
             test = new NameTest(Type.ELEMENT, new QName("SPEAKER", ""));
@@ -111,7 +132,6 @@ public class BasicNodeSetTest extends XMLTestCase {
             		test.getName(), selector);
             assertEquals(2639, set.getLength());
             System.out.println("DescendantSelector: PASS");
-            
         } catch (Exception e) {
 	        fail(e.getMessage());
         } finally {
@@ -180,6 +200,49 @@ public class BasicNodeSetTest extends XMLTestCase {
             result = ((AbstractNodeSet)outerSet).selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT, true, -1);
             assertEquals(1, result.getLength());
             System.out.println("AbstractNodeSet.selectAncestorDescendant2: PASS");
+            
+            System.out.println("Testing AbstractNodeSet.getParents ...");
+            result = ((AbstractNodeSet)largeSet).getParents(-1);
+            assertEquals(49, result.getLength());
+            System.out.println("AbstractNodeSet.getParents: PASS");
+            
+            test = new NameTest(Type.ELEMENT, new QName("SCENE", ""));
+            NodeSet scenes = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                    docs, test.getName(), null);
+            
+            System.out.println("Testing AbstractNodeSet.selectAncestors ...");
+            result = scenes.selectAncestors(largeSet.toNodeSet(), false, -1);
+            assertEquals(47, result.getLength());
+            System.out.println("AbstractNodeSet.selectAncestors: PASS");
+        } catch (Exception e) {
+        	e.printStackTrace();
+	        fail(e.getMessage());
+        } finally {
+        	if (pool != null) pool.release(broker);
+        }
+	}
+	
+	public void testVirtualNodeSet() {
+		DBBroker broker = null;
+        try {
+        	assertNotNull(pool);
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+            
+            Serializer serializer = broker.getSerializer();
+            serializer.reset();
+            
+            executeQuery(broker, "//*/LINE", 9492, null);
+            executeQuery(broker, "//*/LINE/*", 61, null);
+            executeQuery(broker, "//*/LINE/text()", 9485, null);
+            executeQuery(broker, "//SCENE/*/LINE", 9464, null);
+            executeQuery(broker, "//SCENE/*[LINE &= 'spirit']", 21, null);
+            executeQuery(broker, "//SCENE/*[LINE &= 'the']", 1005, null);
+            executeQuery(broker, "//SCENE/*/LINE[. &= 'the']", 2167, null);
+            executeQuery(broker, "//SPEECH[* &= 'the']", 1008, null);
+            executeQuery(broker, "//*[. &= 'me']", 584, null);
+            
+            executeQuery(broker, "for $s in //SCENE/*[LINE &= 'the'] return node-name($s)", 1005, null);
         } catch (Exception e) {
         	e.printStackTrace();
 	        fail(e.getMessage());

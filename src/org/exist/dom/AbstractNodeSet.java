@@ -23,7 +23,7 @@ package org.exist.dom;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.exist.util.Range;
+import org.exist.numbering.NodeId;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -32,7 +32,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
-import org.exist.numbering.NodeId;
 import org.w3c.dom.Node;
 
 /**
@@ -206,15 +205,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 */
 	public abstract NodeProxy get(NodeProxy p);
 
-	/**
-	 * Get a node from this node set matching the document and node id.
-	 * 
-	 * @param doc
-	 * @param nodeId
-	 * @return
-	 */
-	public abstract NodeProxy get(DocumentImpl doc, long nodeId);
-
 	public DocumentSet getDocumentSet() {
 		DocumentSet ds = new DocumentSet();
 		NodeProxy p;
@@ -237,13 +227,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public NodeSet hasChildrenInSet(NodeSet al, int mode, int contextId) {
-		NodeSet result = new ExtArrayNodeSet();		
-		for (Iterator i = al.iterator(); i.hasNext(); ) {
-            NodeProxy node = (NodeProxy) i.next();
-			Range range = NodeSetHelper.getChildRange(node.getDocument(), node.getGID());
-			getRange(result, node.getDocument(), range.getStart(), range.getEnd());
-		}
-		 return result;
+		// just forward to selectParentChild. Subclasses may overwrite this.
+		return selectParentChild(al, mode, contextId);
 	}
 
 	/**
@@ -426,19 +411,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeSet directSelectAttribute(QName qname, int contextId) {
         return NodeSetHelper.directSelectAttributes(this, qname, contextId);
     }
-    
-	/**
-	 * Check if the node identified by its node id has an ancestor contained in this node set
-	 * and return the ancestor found.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 */
-	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent) {
-		return parentWithChild(doc, gid, directParent, false, NodeProxy.UNKNOWN_NODE_LEVEL );
-	}
 
 	/**
 	 * Check if the node identified by its node id has an ancestor contained in this node set
@@ -452,37 +424,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * the node itself is contained in the node set.
 	 */
 	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf) {
-		return parentWithChild(doc, gid, directParent, includeSelf,	NodeProxy.UNKNOWN_NODE_LEVEL );
-	}
-
-	/**
-	 * Check if the node identified by its node id has an ancestor contained in this node set
-	 * and return the ancestor found.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 * If includeSelf is true, the method returns also true if
-	 * the node itself is contained in the node set.
-	 */
-	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf,
-	        int level) {
-		NodeProxy temp = get(doc, gid);
-		if (includeSelf && temp != null)
-			return temp;
-		if (level == NodeProxy.UNKNOWN_NODE_LEVEL)
-			level = doc.getTreeLevel(gid);
-		while (gid != NodeProxy.DOCUMENT_NODE_GID) {
-			gid = NodeSetHelper.getParentId(doc, gid, level);
-            temp = get(doc, gid);
-			if (temp != null)
-				return temp;
-			else if (directParent)
-				return null;
-			else
-				--level;
-		}
 		return null;
 	}
 
@@ -526,13 +467,16 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		NodeSet parents = new ExtArrayNodeSet();		 
 		NodeProxy parent = null;
 		for (Iterator i = iterator(); i.hasNext();) {
-            NodeProxy current = (NodeProxy) i.next();			
-            long parentID = NodeSetHelper.getParentId(current.getDocument(), current.getGID()); 
+            NodeProxy current = (NodeProxy) i.next();
+            NodeId parentID = current.getNodeId().getParentId(); 
             //Filter out the temporary nodes wrapper element 
-            if (parentID != NodeProxy.DOCUMENT_NODE_GID && 
-                    !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && current.getDocument().getCollection().isTempCollection())) {                
-				if (parent == null || parent.getDocument().getDocId() != current.getDocument().getDocId() || parentID != parent.getGID())                 
-                    parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
+            if (parentID != NodeId.DOCUMENT_NODE && 
+                    !(parentID.getTreeLevel() == 1 && current.getDocument().getCollection().isTempCollection())) {                
+				if (parent == null || parent.getDocument().getDocId() != current.getDocument().getDocId() || 
+						!parent.getNodeId().equals(parentID)) {
+                    parent = new NodeProxy(current.getDocument(), 0, Node.ELEMENT_NODE);
+                    parent.setNodeId(parentID);
+				}
 				if (Expression.NO_CONTEXT_ID != contextId)
 					parent.addContextNode(contextId, current);
 				else
@@ -552,19 +496,20 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	                current.addContextNode(contextId, current);
 	            ancestors.add(current);
 	        }
-	        long parentID = NodeSetHelper.getParentId(current.getDocument(), current.getGID());            
-	        while (parentID > 0) {
+	        NodeId parentID = current.getNodeId().getParentId();            
+	        while (parentID != null) {
 	            //Filter out the temporary nodes wrapper element 
-	            if (parentID != NodeProxy.DOCUMENT_NODE_GID && 
-	                    !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && current.getDocument().getCollection().isTempCollection())) {
-	                NodeProxy parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
+	            if (parentID != NodeId.DOCUMENT_NODE && 
+	                    !(parentID.getTreeLevel() == 1  && current.getDocument().getCollection().isTempCollection())) {
+	                NodeProxy parent = new NodeProxy(current.getDocument(), -1, Node.ELEMENT_NODE);
+	                parent.setNodeId(parentID);
 	                if (Expression.NO_CONTEXT_ID != contextId)
 	                    parent.addContextNode(contextId, current);
 	                else
 	                    parent.copyContext(current);
-	                ancestors.add(parent);
+	                ancestors.add(parent); 
 	            }
-	            parentID = NodeSetHelper.getParentId(current.getDocument(), parentID);    
+	            parentID = parentID.getParentId();    
 	        }
 	    }
         ancestors.mergeDuplicates();
@@ -831,8 +776,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         result.append("NodeSet(");
         for (int i = 0 ; i < getLength() ; i++) {
             if(i > 0)
-                result.append(", ");                
-            result.append(get(i).toString());
+                result.append(", ");
+            NodeProxy p = get(i);
+            result.append("[").append(p.getDocument().getDocId()).append(":").append(p.getNodeId()).append("]");
         }
         result.append(")");
         return result.toString();

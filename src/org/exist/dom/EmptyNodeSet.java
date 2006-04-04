@@ -94,10 +94,6 @@ public final class EmptyNodeSet extends AbstractNodeSet {
     public NodeProxy get(int pos) {
 	    return null;
     }
-    
-    public NodeProxy get(DocumentImpl doc, long nodeId) {
-	    return null;
-    }
 
     public NodeProxy get(DocumentImpl doc, NodeId nodeId) {
         return null;

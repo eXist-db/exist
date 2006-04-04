@@ -61,12 +61,6 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         return (NodeProxy)itemAt(pos);
     }
 
-    public NodeProxy get(DocumentImpl doc, NodeId nodeId) {
-        NodeProxy p = new NodeProxy(doc, 1);
-        p.setNodeId(nodeId);
-        return get(p);
-    }
-
     /* (non-Javadoc)
       * @see org.exist.dom.NodeSet#get(org.exist.dom.NodeProxy)
       */
@@ -287,15 +281,17 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         return null;
     }
 
-    public final NodeProxy get(DocumentImpl doc, long nodeId) {
+    public final NodeProxy get(DocumentImpl doc, NodeId nodeId) {
         if (root == null)
             return null;
         Node tempNode = root;
+        int cmp;
         while (tempNode != null) {
             if (tempNode.data.getDocument().getDocId() == doc.getDocId()) {
-                if (tempNode.data.getGID() == nodeId)
+            	cmp = tempNode.data.getNodeId().compareTo(nodeId);
+                if (cmp == 0)
                     return tempNode.data;
-                else if (tempNode.data.getGID() < nodeId)
+                else if (cmp < 0)
                     tempNode = tempNode.rightChild;
                 else
                     tempNode = tempNode.leftChild;
@@ -327,13 +323,6 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
       */
     public final boolean contains(NodeProxy proxy) {
         return searchData(proxy) != null;
-    }
-
-    /* (non-Javadoc)
-      * @see org.exist.dom.NodeSet#contains(org.exist.dom.DocumentImpl, long)
-      */
-    public final boolean contains(DocumentImpl doc, long nodeId) {
-        return get(doc, nodeId) != null;
     }
 
     /* (non-Javadoc)

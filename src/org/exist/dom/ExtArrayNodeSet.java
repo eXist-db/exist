@@ -69,7 +69,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     private int partCount = 0;
     
     private boolean isSorted = false;
-    private boolean isInDocumentOrder = false;
     
     protected int lastDoc = -1;
     protected Part lastPart = null;
@@ -77,8 +76,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     private int state = 0;
 
     private DocumentSet cachedDocuments = null;
-    
-    private DocumentOrderComparator docOrderComparator = new DocumentOrderComparator();
     
     //  used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
@@ -126,7 +123,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         size = 0;
         partCount = 0;
         isSorted = false;
-        isInDocumentOrder = false;
         lastPart = null;
         lastDoc = -1;
         state = 0;
@@ -167,7 +163,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         getPart(proxy.getDocument(), true, initalSize).add(proxy);
         ++size;
         isSorted = false;
-        isInDocumentOrder = false;
         setHasChanged();
         checkItemType(proxy.getType());
     }
@@ -184,7 +179,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                 proxy);
         ++size;
         isSorted = false;
-        isInDocumentOrder = false;
         setHasChanged();
         checkItemType(proxy.getType());
     }
@@ -320,17 +314,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         return part == null ? null : part.get(p.getGID());
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.exist.dom.NodeSet#get(org.exist.dom.DocumentImpl, long)
-     */
-    public NodeProxy get(DocumentImpl doc, long nodeId) {
-        sort();
-        final Part part = getPart(doc, false, 0);
-        return part == null ? null : part.get(nodeId);
-    }
-
     public NodeProxy get(DocumentImpl doc, NodeId nodeId) {
         sort();
         final Part part = getPart(doc, false, 0);
@@ -379,7 +362,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     }
 
     private boolean isSorted() {
-        return isSorted || isInDocumentOrder;
+        return isSorted;
     }
     
     /**
@@ -406,26 +389,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             size += part.removeDuplicates(mergeContexts);
         }
         isSorted = true;
-        isInDocumentOrder = false;
 //              System.out.println("sort took " + (System.currentTimeMillis() -
 //       start) + "ms.");
     }
 
     public final void sortInDocumentOrder() {
-        //      long start = System.currentTimeMillis();
-        if (isInDocumentOrder)
-            return;
-        Part part;
-        size = 0;
-        for (int i = 0; i < partCount; i++) {
-            part = parts[i];
-            part.sortInDocumentOrder();
-            size += part.removeDuplicates(false);
-        }
-        isSorted = false;
-        isInDocumentOrder = true;
-        //      System.out.println("in-document-order sort took " +
-        // (System.currentTimeMillis() - start) + "ms.");
+        sort(false);        
     }
 
     /*
@@ -636,7 +605,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         }
 
         void sortInDocumentOrder() {
-            FastQSort.sort(array, docOrderComparator, 0, length - 1);
+            sort();
         }
 
         /**

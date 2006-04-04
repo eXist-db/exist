@@ -24,6 +24,7 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
+import org.exist.numbering.NodeId;
 import org.exist.util.Range;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
@@ -252,15 +253,13 @@ public class NodeSetHelper {
             NodeProxy child, boolean directParent, boolean includeSelf,
             int level) {
         NodeSet result = new ExtArrayNodeSet(5);
-        long gid = child.getGID();
-        NodeProxy temp = ancestors.get(child.getDocument(), gid);
+        NodeId nodeId = child.getNodeId();
+        NodeProxy temp = ancestors.get(child.getDocument(), nodeId);
         if (includeSelf && temp != null)
             result.add(temp);
-        if (level == NodeProxy.UNKNOWN_NODE_LEVEL)
-            level = child.getDocument().getTreeLevel(gid);
-        while (gid > 0) {
-            gid = getParentId(child.getDocument(), gid, level);
-            temp = ancestors.get(child.getDocument(), gid);
+        while (nodeId != null) {
+        	nodeId = nodeId.getParentId();
+            temp = ancestors.get(child.getDocument(), nodeId);
             if (temp != null)
                 result.add(temp);
             else if (directParent)
