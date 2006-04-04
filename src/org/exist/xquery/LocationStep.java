@@ -509,13 +509,12 @@ public class LocationStep extends Step {
                 StoredNode currentNode = (StoredNode) current.getNode();
                 while ((currentNode = getNextSibling(currentNode)) != null) {
                     if (test.matches(currentNode)) {
-                        NodeProxy sibling = result.get(
-                                (DocumentImpl) currentNode.getOwnerDocument(),
-                                currentNode.getGID());
+                        NodeProxy sibling = result.get((DocumentImpl) currentNode.getOwnerDocument(), currentNode.getNodeId());
                         if (sibling == null) {
                             sibling = new NodeProxy((DocumentImpl) currentNode
                                     .getOwnerDocument(), currentNode.getGID(),
                                     currentNode.getInternalAddress());
+                            sibling.setNodeId(currentNode.getNodeId());
                             if (Expression.NO_CONTEXT_ID != contextId) {
                                 sibling.addContextNode(contextId, current);
                             } else
