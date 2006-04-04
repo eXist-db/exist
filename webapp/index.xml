@@ -71,6 +71,13 @@
                         href="updating.xml">update notes</a>. </emphasis>
             </p>
 
+            <script language="Javascript" type="text/javascript">
+                function warning() {
+                    return confirm("The release you selected is old and outdated. Please read the " +
+                        "health warning above first. Do you still want to continue?");
+                }
+            </script>
+            
             <table cellpadding="5" cellspacing="5">
                 <tr>
                     <th align="left" colspan="2"> Snapshots </th>
@@ -130,16 +137,16 @@
                 </tr>
                 <tr>
                     <td>
-                        <a
-                            href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.jar"
-                            > eXist-1.0b2-build-1107.jar </a>
+                        <a onclick="return warning()"
+                           href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.jar"
+                        > eXist-1.0b2-build-1107.jar </a>
                     </td>
                     <td> Installer based on IzPack. Highly recommended. Includes source. Run with
                             <tt>java -jar eXist-1.0b2.jar</tt> . </td>
                 </tr>
                 <tr>
                     <td>
-                        <a
+                        <a  onclick="return warning()"
                             href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.war"
                             > eXist-1.0b2-build-1107.war </a>
                     </td>
