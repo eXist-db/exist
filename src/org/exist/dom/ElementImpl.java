@@ -664,47 +664,104 @@ public class ElementImpl extends NamedNode implements Element {
      * @see org.w3c.dom.Element#getAttribute(java.lang.String)
      */
     public String getAttribute(String name) {
-        Attr attr = getAttributeNode(name);
-        if ( attr != null )
-        	return attr.getValue();
-    	return null;
+        Attr attr = findAttribute(name);
+        return attr != null ? attr.getValue() : "";
     }
 
     /**
      * @see org.w3c.dom.Element#getAttributeNS(java.lang.String, java.lang.String)
      */
     public String getAttributeNS(String namespaceURI, String localName) {
-        // altheim: 2003-12-02
-        long start = firstChildID();
-        for (long i = start; i < start + children; i++) {
-            Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
-            if (child == null)
-                continue;
-            if (child.getNodeType() != Node.ATTRIBUTE_NODE)
-                continue;
-            if (!child.getLocalName().equals(localName))
-                continue;
-            if (child.getNamespaceURI() == null)
-                return ((AttrImpl) child).getValue();
-            if (child.getNamespaceURI().equals(namespaceURI))
-                return ((AttrImpl) child).getValue();
-        }
-        return "";
+    	Attr attr = findAttribute(new QName(localName, namespaceURI));
+    	return attr != null ? attr.getValue() : "";
     }
 
     /**
      * @see org.w3c.dom.Element#getAttributeNode(java.lang.String)
      */
     public Attr getAttributeNode(String name) {
-        long start = firstChildID();
-        for (long i = start; i < start + children; i++) {
-            Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
-            if (child == null)
-                continue;
-            if (child.getNodeType() != Node.ATTRIBUTE_NODE)
-                continue;
-            if (child.getNodeName().equals(name))
-                return (Attr) child;
+    	return findAttribute(name);
+    }
+    
+    /**
+     * @see org.w3c.dom.Element#getAttributeNodeNS(java.lang.String, java.lang.String)
+     */
+    public Attr getAttributeNodeNS(String namespaceURI, String localName) {
+    	return findAttribute(new QName(localName, namespaceURI));
+    }
+
+    /**
+     * @see org.w3c.dom.Node#getAttributes()
+     */
+    public NamedNodeMap getAttributes() {
+        NamedNodeMapImpl map = new NamedNodeMapImpl();
+        if (getAttributesCount() > 0) {
+        	final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
+            final NodeProxy p = new NodeProxy(owner, nodeId);
+            p.setInternalAddress(getInternalAddress());
+            final Iterator iterator = getBroker().getNodeIterator(p);
+            iterator.next();
+            final int ccount = getChildCount();
+            for (int i = 0; i < ccount; i++) {
+                StoredNode next = (StoredNode) iterator.next();
+                if (next.getNodeType() != Node.ATTRIBUTE_NODE)
+                	break;
+                map.setNamedItem(next);
+            }
+        }
+        if(declaresNamespacePrefixes()) {
+            for(Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext(); ) {
+                Map.Entry entry = (Map.Entry) i.next();
+                String prefix = entry.getKey().toString();
+                String ns = entry.getValue().toString();
+                QName attrName = new QName(prefix, "http://www.w3.org/XML/1998/namespace", "xmlns");
+                AttrImpl attr = new AttrImpl(attrName, ns);
+                map.setNamedItem(attr);
+            }
+        }
+        return map;
+    }
+    
+    private AttrImpl findAttribute(String qname) {
+    	final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
+        final NodeProxy p = new NodeProxy(owner, nodeId);
+        p.setInternalAddress(getInternalAddress());
+        final Iterator iterator = getBroker().getNodeIterator(p);
+        iterator.next();
+        return findAttribute(qname, iterator, this);
+    }
+
+    private AttrImpl findAttribute(String qname, Iterator iterator, StoredNode current) {
+    	final int ccount = current.getChildCount();
+        StoredNode next;
+        for (int i = 0; i < ccount; i++) {
+            next = (StoredNode) iterator.next();
+            if (next.getNodeType() != Node.ATTRIBUTE_NODE)
+            	break;
+            if (next.getNodeName().equals(qname))
+            	return (AttrImpl) next;
+        }
+        return null;
+    }
+    
+    private AttrImpl findAttribute(QName qname) {
+    	final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
+        final NodeProxy p = new NodeProxy(owner, nodeId);
+        p.setInternalAddress(getInternalAddress());
+        final Iterator iterator = getBroker().getNodeIterator(p);
+        iterator.next();
+        return findAttribute(qname, iterator, this);
+    }
+
+    private AttrImpl findAttribute(QName qname, Iterator iterator, StoredNode current) {
+    	final int ccount = current.getChildCount();
+        StoredNode next;
+        for (int i = 0; i < ccount; i++) {
+            next = (StoredNode) iterator.next();
+            if (next.getNodeType() != Node.ATTRIBUTE_NODE)
+            	break;
+            if (next.getQName().equalsSimple(qname))
+            	return (AttrImpl) next;
         }
         return null;
     }
@@ -778,84 +835,38 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     /**
-     * @see org.w3c.dom.Element#getAttributeNodeNS(java.lang.String, java.lang.String)
-     */
-    public Attr getAttributeNodeNS(String namespaceURI, String localName) {
-        // altheim: 2003-12-02
-        long start = firstChildID();
-        NodeProxy p = new NodeProxy(((DocumentImpl)getOwnerDocument()), getGID(), getInternalAddress());
-        Iterator iter = getBroker().getNodeIterator(p);
-        iter.next();
-        for (long i = start; i < start + attributes && iter.hasNext(); i++) {
-            StoredNode child = (StoredNode) iter.next();
-            child.setGID(i);
-            if (child == null)
-                continue;
-            if (child.getNodeType() != Node.ATTRIBUTE_NODE)
-                continue;
-            if (!child.getLocalName().equals(localName))
-                continue;
-            if (child.getNamespaceURI() == null)
-                return (Attr) child;
-            if (child.getNamespaceURI().equals(namespaceURI))
-                return (Attr) child;
-        }
-        return null;
-    }
-
-    /**
-     * @see org.w3c.dom.Node#getAttributes()
-     */
-    public NamedNodeMap getAttributes() {
-        NamedNodeMapImpl map = new NamedNodeMapImpl();
-        long start = firstChildID();
-        if (getAttributesCount() > 0) {
-	        for (long i = start; i < start + children; i++) {
-	            Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
-	            if (child == null)
-                    continue;
-                if (child.getNodeType() != Node.ATTRIBUTE_NODE)
-                    continue;
-	            map.setNamedItem(child);
-	        }
-        }
-        if(declaresNamespacePrefixes()) {
-            for(Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) i.next();
-                String prefix = entry.getKey().toString();
-                String ns = entry.getValue().toString();
-                QName attrName = new QName(prefix, "http://www.w3.org/XML/1998/namespace", "xmlns");
-                AttrImpl attr = new AttrImpl(attrName, ns);
-                map.setNamedItem(attr);
-            }
-        }
-        return map;
-    }
-
-    /**
      * @see org.exist.dom.NodeImpl#getChildCount()
      */
     public int getChildCount() {
         return children;
     }
 
-    /**
-     * @see org.w3c.dom.Node#getChildNodes()
-     */
     public NodeList getChildNodes() {
-        if (children == 0)
-            return new NodeListImpl();
-        final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-        long first = firstChildID();
-        if (children == 1) {
-            NodeListImpl childList = new NodeListImpl(1);
-            childList.add(owner.getNode(first));
-            return childList;
-        }
-        NodeList result = owner.getRange(first, first + children - 1);
-        return result;
+    	final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
+        final NodeProxy p = new NodeProxy(owner, nodeId);
+        p.setInternalAddress(getInternalAddress());
+        NodeListImpl childList = new NodeListImpl(1);
+        final Iterator iterator = getBroker().getNodeIterator(p);
+        //TODO : hasNext() test ? -pb
+        iterator.next();
+        traverseChildren(nodeId, childList, iterator, this);
+        return childList;
     }
 
+    protected void traverseChildren(NodeId target, NodeListImpl nodeList, Iterator iterator, StoredNode current) {
+    	if (current.hasChildNodes()) {
+	    	final int ccount = current.getChildCount();
+	        StoredNode next;
+	        for (int i = 0; i < ccount; i++) {
+	            next = (StoredNode) iterator.next();            
+	            if (next.getNodeId().isChildOf(target) && next.getNodeType() != Node.ATTRIBUTE_NODE)
+	            	nodeList.add(next);
+	            //Recursivity helps taversing...
+	            traverseChildren(target, nodeList, iterator, next);
+	        }
+    	}
+    }
+    
     /**
      * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
      */
@@ -878,10 +889,20 @@ public class ElementImpl extends NamedNode implements Element {
     public Node getFirstChild() {
         if (!hasChildNodes() || getChildCount() == getAttributesCount())
             return null;
-        long first = firstChildID() + getAttributesCount();
-        return ((DocumentImpl)getOwnerDocument()).getNode(first);
+        final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
+        final NodeProxy p = new NodeProxy(owner, nodeId);
+        p.setInternalAddress(getInternalAddress());
+        final Iterator iterator = getBroker().getNodeIterator(p);
+        iterator.next();
+        StoredNode next;
+        for (int i = 0; i < getChildCount(); i++) {
+        	next = (StoredNode) iterator.next();
+            if (next.getNodeType() != Node.ATTRIBUTE_NODE)
+            	return next;
+        }
+        return null;
     }
-
+    
     /**
      * @see org.w3c.dom.Node#getLastChild()
      */
@@ -902,35 +923,14 @@ public class ElementImpl extends NamedNode implements Element {
      * @see org.w3c.dom.Element#hasAttribute(java.lang.String)
      */
     public boolean hasAttribute(String name) {
-        long first = firstChildID();
-        for (int i = 0; i < children; i++) {
-            Node n = ((DocumentImpl)getOwnerDocument()).getNode(first + i);
-            if (n.getNodeType() != Node.ATTRIBUTE_NODE)
-                continue;
-            if (n.getNodeName().equals(name))
-                return true;
-        }
-        return false;
+    	return findAttribute(name) != null;
     }
 
     /**
      * @see org.w3c.dom.Element#hasAttributeNS(java.lang.String, java.lang.String)
      */
     public boolean hasAttributeNS(String namespaceURI, String localName) {
-        // altheim: 2003-12-02
-        long first = firstChildID();
-        for (int i = 0; i < children; i++) {
-            Node n = ((DocumentImpl)getOwnerDocument()).getNode(first + i);
-            if (n.getNodeType() != Node.ATTRIBUTE_NODE)
-                continue;
-            if (!n.getLocalName().equals(localName))
-                continue;
-            if (n.getNamespaceURI() == null)
-                return true;
-            if (n.getNamespaceURI().equals(namespaceURI))
-                return true;
-        }
-        return false;
+    	return findAttribute(new QName(localName, namespaceURI)) != null;
     }
 
     /**
