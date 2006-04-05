@@ -139,7 +139,7 @@ public class Predicate extends PathExpr {
                 Sequence innerSeq = inner.eval(contextSequence);   
                 //Only if we have an actual *singleton* of numeric items
                 //TODO : get rid of getLength()
-                if (innerSeq.getLength() == 1)
+                if (innerSeq.hasOne())
                     recomputedExecutionMode = POSITIONAL;
             }  
             

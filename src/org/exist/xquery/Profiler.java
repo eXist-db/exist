@@ -352,8 +352,7 @@ public class Profiler {
         StringBuffer truncation = new StringBuffer();         
         if (sequence.isEmpty())
             truncation.append(sequence.toString());
-        //TODO : get rid of getLength()
-        else if (sequence.getLength() == 1) {
+        else if (sequence.hasOne()) {
             truncation.append("(");            
             if (sequence.itemAt(0).toString().length() > 20) 
                 truncation.append(sequence.itemAt(0).toString().substring(0, 20)).append("... "); 

@@ -79,8 +79,7 @@ public class InstanceOfExpression extends AbstractExpression {
             result = BooleanValue.FALSE;
         else if (seq.isEmpty() && (requiredCardinality & Cardinality.ZERO) == 0)
             result = BooleanValue.FALSE;
-		//TODO : get rid of getLength() 
-		else if (seq.getLength() > 1 && (requiredCardinality & Cardinality.MANY) == 0)
+		else if (seq.hasMany() && (requiredCardinality & Cardinality.MANY) == 0)
             result = BooleanValue.FALSE;
         else {
     		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {

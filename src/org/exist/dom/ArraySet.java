@@ -169,10 +169,19 @@ public class ArraySet extends AbstractNodeSet {
 	public boolean isEmpty() {
 		return isEmpty;
 	}
+	
+    public boolean hasOne() {
+    	return hasOne;
+    }	
 
 	public void add(NodeProxy proxy) {
 		if (proxy == null)
 			return;
+		if (hasOne)
+			hasOne = false;
+		if (isEmpty)
+			hasOne = true;
+        isEmpty = false;
 		if (counter < length)
 			nodes[counter++] = proxy;
 		else {
@@ -185,7 +194,6 @@ public class ArraySet extends AbstractNodeSet {
 		}
         sortedNaturally = false;
         sortedInDocumentOrder = false;
-        isEmpty = false;
 	}
 
 	public void addAll(NodeSet other) {

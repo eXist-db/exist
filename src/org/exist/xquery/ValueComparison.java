@@ -63,8 +63,7 @@ public class ValueComparison extends GeneralComparison {
 		Sequence rs = getRight().eval(contextSequence, contextItem);
 		if(ls.isEmpty() || rs.isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
-		//TODO : get rid of getLength()
-		if (ls.getLength() == 1 && rs.getLength() == 1) {
+		if (ls.hasOne() && rs.hasOne()) {
             AtomicValue lv, rv;
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
@@ -82,8 +81,7 @@ public class ValueComparison extends GeneralComparison {
 			do {
                 AtomicValue lv = current.atomize();
                 Sequence rs = getRight().eval(context.getNode().toSequence());
-                //TODO : get rid of getLength()
-				if (rs.isEmpty() || rs.getLength() > 1)
+				if (!rs.hasOne())
 					throw new XPathException(getASTNode(), "Type error: sequence with less or more than one item is not allowed here");
                 Collator collator = getCollator(contextSequence);
                 if (compareValues(collator, lv, rs.itemAt(0).atomize()))

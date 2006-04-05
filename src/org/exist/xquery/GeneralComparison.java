@@ -106,7 +106,6 @@ public class GeneralComparison extends BinaryOp {
 		this.relation = relation;
 		this.truncation = truncation;
 		// simplify arguments
-		//TODO : get rid of getLength()
 		if (left instanceof PathExpr && ((PathExpr) left).getLength() == 1) {
             context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
             "Simplifying left argument");
@@ -246,8 +245,7 @@ public class GeneralComparison extends BinaryOp {
 		Sequence rs = getRight().eval(contextSequence, contextItem);
 		Collator collator = getCollator(contextSequence);
 		AtomicValue lv, rv;
-		//TODO : get rid of getLength()
-		if (!ls.isEmpty() && ls.getLength() == 1 && !rs.isEmpty() && rs.getLength() == 1) {
+		if (ls.hasOne() && rs.hasOne()) {
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
 			return BooleanValue.valueOf(compareValues(collator, lv, rv));
@@ -255,7 +253,7 @@ public class GeneralComparison extends BinaryOp {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				lv = i1.nextItem().atomize();
 				//TODO : get rid of getLength
-				if (!rs.isEmpty() && rs.getLength() == 1	&& 
+				if (rs.hasOne()	&& 
                     compareValues(collator, lv, rs.itemAt(0).atomize()))
 					return BooleanValue.TRUE;
 				else {

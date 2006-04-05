@@ -461,6 +461,15 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	public boolean isEmpty() {
 		return false;
 	}
+	
+	public boolean hasOne() {
+		return true;
+	}
+	
+	public boolean hasMany() {
+		return false;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
 	 */

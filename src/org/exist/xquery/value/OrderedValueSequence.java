@@ -83,10 +83,19 @@ public class OrderedValueSequence extends AbstractSequence {
 		return isEmpty;
 	}
 
+    public boolean hasOne() {
+    	return hasOne;
+    }
+
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
 	 */
 	public void add(Item item) throws XPathException {
+		if (hasOne)
+			hasOne = false;
+		if (isEmpty)
+			hasOne = true;
+        isEmpty = false;
 		if(count == items.length) {
 			Entry newItems[] = new Entry[count * 2];
 			System.arraycopy(items, 0, newItems, 0, count);
@@ -94,23 +103,21 @@ public class OrderedValueSequence extends AbstractSequence {
 		}
 		items[count++] = new Entry(item);
 		checkItemType(item.getType());
-		isEmpty = false;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AbstractSequence#addAll(org.exist.xquery.value.Sequence)
 	 */
 	public void addAll(Sequence other) throws XPathException {
-		if(!other.isEmpty()) {
-			Item next;
-			for(SequenceIterator i = other.iterate(); i.hasNext(); ) {
-				next = i.nextItem();
+		if(other.hasOne())
+			add(other.itemAt(0));		
+		else if(!other.isEmpty()) {
+			for(SequenceIterator i = other.iterate(); i.hasNext(); ) { 
+				Item next = i.nextItem();
 				if(next != null)
 					add(next);
 			}
-		//TODO : get rid of getLength()
-		} else if(other.getLength() == 1)
-			add(other.itemAt(0));
+		} 
 	}
 	
 	public void sort() {
@@ -210,9 +217,9 @@ public class OrderedValueSequence extends AbstractSequence {
 				Sequence seq = orderSpecs[i].getSortExpression().eval(null);
 				values[i] = AtomicValue.EMPTY_VALUE;
 				//TODO : get rid of getLength()
-				if(seq.getLength() == 1) {
+				if(seq.hasOne()) {
 					values[i] = seq.itemAt(0).atomize();
-				} else if(seq.getLength() > 1)
+				} else if(seq.hasMany())
 					throw new XPathException("expected a single value for order expression " +
 						ExpressionDumper.dump(orderSpecs[i].getSortExpression()) + 
 						" ; found: " + seq.getLength());

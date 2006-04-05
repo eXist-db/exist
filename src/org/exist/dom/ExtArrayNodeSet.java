@@ -153,8 +153,16 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     	return isEmpty;
     }
     
+    public boolean hasOne() {
+    	return hasOne;
+    }   
+    
     public void add(NodeProxy proxy) {
-    	isEmpty = false;
+		if (hasOne)
+			hasOne = false;
+		if (isEmpty)
+			hasOne = true;
+        isEmpty = false;
         getPart(proxy.getDocument(), true, initalSize).add(proxy);
         ++size;
         isSorted = false;
@@ -171,7 +179,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * If the size hint is correct, no further reallocations will be required.
      */
     public void add(NodeProxy proxy, int sizeHint) {
-    	isEmpty = false;
+		if (hasOne)
+			hasOne = false;
+		if (isEmpty)
+			hasOne = true;
+        isEmpty = false;
         getPart(proxy.getDocument(), true, sizeHint != Constants.NO_SIZE_HINT ? sizeHint : initalSize).add(
                 proxy);
         ++size;

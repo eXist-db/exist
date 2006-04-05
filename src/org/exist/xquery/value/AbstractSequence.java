@@ -41,9 +41,11 @@ public abstract class AbstractSequence implements Sequence {
 	private static final boolean OLD_EXIST_VERSION_COMPATIBILITY = false;
 	
 	protected boolean isEmpty;
+	protected boolean hasOne;
 	
 	protected AbstractSequence() {
 		isEmpty = true;
+		hasOne = false;
 	}
 	
 	public abstract int getItemType();
@@ -57,13 +59,11 @@ public abstract class AbstractSequence implements Sequence {
 	public int getCardinality() {
 		if (isEmpty())
 			return Cardinality.EMPTY;
-		//TODO : get rid of getLength()
-		switch(getLength()) {
-			case 1:
-				return Cardinality.EXACTLY_ONE;
-			default:
-				return Cardinality.ONE_OR_MORE;
-		}
+		if (hasOne())
+			return Cardinality.EXACTLY_ONE;
+		if (hasMany())
+			return Cardinality.ONE_OR_MORE;
+		throw new IllegalArgumentException("Illegal argument");
 	}
 	
 	public AtomicValue convertTo(int requiredType) throws XPathException {
@@ -75,6 +75,12 @@ public abstract class AbstractSequence implements Sequence {
 	}
 
 	public abstract boolean isEmpty();
+	
+	public abstract boolean hasOne();
+	
+	public boolean hasMany() {
+		return !isEmpty() && !hasOne();
+	}
 	
 	public String getStringValue() throws XPathException {
 		if(isEmpty())
@@ -130,7 +136,7 @@ public abstract class AbstractSequence implements Sequence {
 		
 		if ( OLD_EXIST_VERSION_COMPATIBILITY )
 			//TODO : get rid of getLength()
-			if (getLength() > 1)
+			if (hasMany())
 				return true;
 
 		Item first = itemAt(0);
@@ -142,7 +148,7 @@ public abstract class AbstractSequence implements Sequence {
 
 		if ( ! OLD_EXIST_VERSION_COMPATIBILITY )
 			//TODO : get rid of getLength()
-			if (getLength() > 1)
+			if (hasMany())
 			throw new XPathException(
 				"error FORG0006: effectiveBooleanValue: first item of '" + 
                 (toString().length() < 20 ? toString() : toString().substring(0, 20)+ "...") + 

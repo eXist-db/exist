@@ -368,7 +368,12 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		return getLength() == 0;
 	}
 
-	public void add(DocumentImpl doc, long nodeId) {
+    public boolean hasOne() {
+		//TODO : fix this terrible performance gap !!!
+		return getLength() == 1;
+    }
+
+    public void add(DocumentImpl doc, long nodeId) {
 	}
 
 	public void add(Node node) {
