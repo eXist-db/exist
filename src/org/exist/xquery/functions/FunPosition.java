@@ -69,7 +69,7 @@ public class FunPosition extends Function {
         }        
         
         Sequence result;
-		if(contextSequence == null || contextSequence.getLength() == 0)
+		if(contextSequence == null || contextSequence.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else
             result = new IntegerValue(context.getContextPosition() + 1);

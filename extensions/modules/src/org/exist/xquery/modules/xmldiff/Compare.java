@@ -92,10 +92,10 @@ public class Compare extends Function {
 		Sequence s2 = arg2.eval(contextSequence, contextItem);
 		context.popDocumentContext();
 		
-		if (s1.getLength() == 0)
-			return BooleanValue.valueOf(s2.getLength() == 0);
-		else if (s2.getLength() == 0)
-			return BooleanValue.valueOf(s1.getLength() == 0);
+		if (s1.isEmpty())
+			return BooleanValue.valueOf(s2.isEmpty());
+		else if (s2.isEmpty())
+			return BooleanValue.valueOf(s1.isEmpty());
 		
 		NodeValue node1 = (NodeValue) s1.itemAt(0);
 		NodeValue node2 = (NodeValue) s2.itemAt(0);

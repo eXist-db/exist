@@ -62,7 +62,7 @@ public class AtomicToString extends AbstractExpression {
 		Item contextItem)
 		throws XPathException {
 		Sequence seq = expression.eval(contextSequence, contextItem);
-		if(seq.getLength() == 0)
+		if(seq.isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
 		Item next;
 		ValueSequence result = new ValueSequence();

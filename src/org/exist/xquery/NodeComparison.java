@@ -92,11 +92,11 @@ public class NodeComparison extends BinaryOp {
         
 		Sequence result;
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
-        if(ls.getLength() == 0)
+        if(ls.isEmpty())
             result = BooleanValue.EMPTY_SEQUENCE;
         else {
 	        Sequence rs = getRight().eval(contextSequence, contextItem);		
-			if(rs.getLength() == 0) {
+			if(rs.isEmpty()) {
 				return BooleanValue.EMPTY_SEQUENCE;
 	        } else {		
 				NodeValue sv = (NodeValue)ls.itemAt(0);

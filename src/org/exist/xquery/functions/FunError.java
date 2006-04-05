@@ -90,7 +90,7 @@ public class FunError extends BasicFunction {
 		QName errQName = DEFAULT_ERR;
 		String message = "An error has been raised by the query";
 		if (args.length > 0) {
-			if (args[0].getLength() != 0)
+			if (!args[0].isEmpty())
 				errQName = ((QNameValue) args[0].itemAt(0)).getQName();
 			if (args.length > 1)
 				message = args[1].getStringValue();

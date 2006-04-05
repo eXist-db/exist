@@ -125,7 +125,7 @@ public class FunGetDateTimeComponent extends BasicFunction {
         
         Sequence result;
 		Sequence arg = args[0];
-		if (arg.getLength() == 0)
+		if (arg.isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
         else {
     		DateTimeValue date = (DateTimeValue) arg.itemAt(0);

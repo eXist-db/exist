@@ -90,7 +90,7 @@ public class XMLDBAuthenticate extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		if(args[1].getLength() == 0)
+		if(args[1].isEmpty())
 			return BooleanValue.FALSE;
 		String uri = args[0].getStringValue();
 		String userName = args[1].getStringValue();

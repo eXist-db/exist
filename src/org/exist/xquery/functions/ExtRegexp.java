@@ -140,11 +140,12 @@ public class ExtRegexp extends Function {
 							.toNodeSet();
 				temp = evalQuery(nodes, terms);
 				result.addAll(temp);
-				LOG.debug(
-					"found "
-						+ temp.getLength()
-						+ " in "
-						+ (System.currentTimeMillis() - start));
+				if (LOG.isDebugEnabled())
+					LOG.debug(
+						"found "
+							+ temp.getLength()
+							+ " in "
+							+ (System.currentTimeMillis() - start));
 			}
 			return result;
 		}
@@ -189,7 +190,8 @@ public class ExtRegexp extends Function {
 		for(int i = 1; i < getLength(); i++) {
 			next = getArgument(i);
 			seq = next.eval(contextSequence);
-			if(seq.getLength() == 1)
+			//TODO : get rid of getLength()
+			if(!seq.isEmpty() && seq.getLength() == 1)
 			    terms.add(translateRegexp(seq.itemAt(0).getStringValue()));
 			else {
 				for(SequenceIterator it = seq.iterate(); it.hasNext(); ) {

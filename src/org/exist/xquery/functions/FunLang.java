@@ -101,7 +101,7 @@ public class FunLang extends Function {
     				}
     			}
     		}
-    		if (temp.getLength() > 0) {
+    		if (!temp.isEmpty()) {
     			result = ((NodeSet) contextSequence).selectAncestorDescendant(
     					temp, NodeSet.DESCENDANT, true, contextId);
     			for (Iterator i = ((NodeSet)result).iterator(); i.hasNext();) {

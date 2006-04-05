@@ -53,7 +53,7 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
         }
         
 		String prefix;
-		if (args[0].getLength() == 0)
+		if (args[0].isEmpty())
 			prefix = "";
 		else
 			prefix = args[0].itemAt(0).getStringValue();

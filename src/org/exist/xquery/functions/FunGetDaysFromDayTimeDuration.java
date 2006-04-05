@@ -75,7 +75,7 @@ public class FunGetDaysFromDayTimeDuration extends Function {
         
         Sequence result;
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
-		if (arg.getLength() == 0)
+		if (arg.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
     		DurationValue duration = (DurationValue) arg.itemAt(0);

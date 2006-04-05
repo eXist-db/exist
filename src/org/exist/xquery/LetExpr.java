@@ -115,7 +115,7 @@ public class LetExpr extends BindingExpression {
         if (whereExpr != null) {
             Sequence filtered = applyWhereExpression(null);
             // TODO: don't use returnsType here
-            if (filtered.getLength() == 0) {
+            if (filtered.isEmpty()) {
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);  
                 return Sequence.EMPTY_SEQUENCE; 

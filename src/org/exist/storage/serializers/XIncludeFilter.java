@@ -291,7 +291,8 @@ public class XIncludeFilter implements Receiver {
                     Sequence seq = xquery.execute(compiled, null);
                     
 					if(Type.subTypeOf(seq.getItemType(), Type.NODE)) {
-						LOG.info("xpointer found: " + seq.getLength());
+						if (LOG.isDebugEnabled())
+							LOG.debug("xpointer found: " + seq.getLength());
 						
 						NodeValue node;
 						for (SequenceIterator i = seq.iterate(); i.hasNext();) {

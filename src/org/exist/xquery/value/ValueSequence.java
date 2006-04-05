@@ -74,7 +74,12 @@ public class ValueSequence extends AbstractSequence {
 		noDuplicates = false;
 	}
 	
+    public boolean isEmpty() {
+    	return isEmpty;
+    }
+	
 	public void add(Item item) {
+		isEmpty = false;
 		++size;
 		ensureCapacity();
 		values[size] = item;

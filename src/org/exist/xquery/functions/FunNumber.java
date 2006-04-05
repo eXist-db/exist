@@ -78,7 +78,7 @@ public class FunNumber extends Function {
 		else
 			arg = contextSequence;
         
-		if(arg.getLength() == 0)
+		if(arg.isEmpty())
 			result = DoubleValue.NaN;
 		else {
             try {

@@ -82,7 +82,7 @@ public class FunBaseURI extends BasicFunction {
         Sequence result;
         if (args.length == 0)
             result = new AnyURIValue(context.getBaseURI());
-        else if (args[0].getLength() == 0)
+        else if (args[0].isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
             NodeValue node = (NodeValue) args[0].itemAt(0);

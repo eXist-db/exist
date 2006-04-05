@@ -94,7 +94,7 @@ public class QNameFunctions extends BasicFunction {
         } 
         
         Sequence result;
-		if (args[0].getLength() == 0)
+		if (args[0].isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
         else {
     		QNameValue value = (QNameValue) args[0].itemAt(0);

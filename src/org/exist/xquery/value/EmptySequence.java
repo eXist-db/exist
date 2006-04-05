@@ -57,6 +57,10 @@ public class EmptySequence extends AbstractSequence {
 		return null;
 	}
 	
+	public boolean isEmpty() {
+		return true;
+	}
+	
 	public void add(Item item) throws XPathException {
 		throw new XPathException("cannot add an item to an empty sequence");
 	}

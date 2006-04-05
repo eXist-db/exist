@@ -76,12 +76,12 @@ public class FunAdjustTimezone extends BasicFunction {
         }
         
         Sequence result;
-		if (args[0].getLength() == 0) 
+		if (args[0].isEmpty()) 
             result =Sequence.EMPTY_SEQUENCE;
         else {
     		AbstractDateTimeValue time = (AbstractDateTimeValue) args[0].itemAt(0);    		 
     		if (getSignature().getArgumentCount() == 2) {
-    			if (args[1].getLength() == 0) 
+    			if (args[1].isEmpty()) 
     			    result = time.withoutTimezone();
                 else {
                     DayTimeDurationValue offset = (DayTimeDurationValue) args[1].itemAt(0);

@@ -779,19 +779,23 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             return false;
         return true;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#addAll(org.exist.dom.NodeSet)
 	 */
 	public void addAll(NodeSet other) {
         throw new RuntimeException("Method not supported");
 	}
+	
+	public boolean isEmpty() {
+		return false;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#add(org.exist.dom.NodeProxy)
 	 */
 	public void add(NodeProxy proxy) {
-        throw new RuntimeException("Method not supported");
+		throw new RuntimeException("Method not supported");
 	}
 
 	/* (non-Javadoc)

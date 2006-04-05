@@ -62,7 +62,7 @@ public class FunStringToCodepoints extends BasicFunction {
        }    
        
         Sequence result;
-        if (args[0].getLength() == 0)
+        if (args[0].isEmpty())
 			result =  Sequence.EMPTY_SEQUENCE;
         else {
     		String s = args[0].getStringValue();

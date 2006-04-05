@@ -85,13 +85,13 @@ public class FunRoot extends Function {
         
         Item item = contextItem;
         
-        if (contextItem == null && contextSequence!= null && contextSequence.getLength() > 0){
+        if (contextItem == null && contextSequence!= null && !contextSequence.isEmpty()){
             item = contextSequence.itemAt(0);
             
         } else {
             if (getSignature().getArgumentCount() > 0) {
                 Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-                if (seq.getLength() == 0)
+                if (seq.isEmpty())
                     item = null;
                 else
                     item = seq.itemAt(0);

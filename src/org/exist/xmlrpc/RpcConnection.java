@@ -1440,7 +1440,8 @@ public class RpcConnection extends Thread {
                 return ret;
             }
             resultSeq = queryResult.result;
-            LOG.debug("found " + resultSeq.getLength());
+            if (LOG.isDebugEnabled())
+            	LOG.debug("found " + resultSeq.getLength());
             
             if (sortBy != null) {
                 SortedNodeSet sorted = new SortedNodeSet(brokerPool, user,
@@ -1515,7 +1516,8 @@ public class RpcConnection extends Thread {
                 return ret;
             }
             resultSeq = queryResult.result;
-            LOG.debug("found " + resultSeq.getLength());
+            if (LOG.isDebugEnabled())
+            	LOG.debug("found " + resultSeq.getLength());
             
             if (sortBy != null) {
                 SortedNodeSet sorted = new SortedNodeSet(brokerPool, user,

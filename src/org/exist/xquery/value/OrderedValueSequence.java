@@ -78,6 +78,10 @@ public class OrderedValueSequence extends AbstractSequence {
 	public int getLength() {
 		return (items == null) ? 0 : count;
 	}
+	
+	public boolean isEmpty() {
+		return isEmpty;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
@@ -90,19 +94,21 @@ public class OrderedValueSequence extends AbstractSequence {
 		}
 		items[count++] = new Entry(item);
 		checkItemType(item.getType());
+		isEmpty = false;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AbstractSequence#addAll(org.exist.xquery.value.Sequence)
 	 */
 	public void addAll(Sequence other) throws XPathException {
-		if(other.getLength() > 0) {
+		if(!other.isEmpty()) {
 			Item next;
 			for(SequenceIterator i = other.iterate(); i.hasNext(); ) {
 				next = i.nextItem();
 				if(next != null)
 					add(next);
 			}
+		//TODO : get rid of getLength()
 		} else if(other.getLength() == 1)
 			add(other.itemAt(0));
 	}
@@ -203,6 +209,7 @@ public class OrderedValueSequence extends AbstractSequence {
 			for(int i = 0; i < orderSpecs.length; i++) {
 				Sequence seq = orderSpecs[i].getSortExpression().eval(null);
 				values[i] = AtomicValue.EMPTY_VALUE;
+				//TODO : get rid of getLength()
 				if(seq.getLength() == 1) {
 					values[i] = seq.itemAt(0).atomize();
 				} else if(seq.getLength() > 1)

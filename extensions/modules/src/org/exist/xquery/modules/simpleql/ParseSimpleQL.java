@@ -55,7 +55,7 @@ public class ParseSimpleQL extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-        if (args[0].getLength() == 0)
+        if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
         String query = args[0].getStringValue();
         SimpleQLLexer lexer = new SimpleQLLexer(new StringReader(query));

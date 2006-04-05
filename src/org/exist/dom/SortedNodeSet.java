@@ -44,6 +44,11 @@ public class SortedNodeSet extends AbstractNodeSet {
 			throw new NullAccessContextException();
 		this.accessCtx = accessCtx;
 	}
+	
+    public boolean isEmpty() {
+    	return list.size() == 0;
+    }
+	
 
 	public void addAll(Sequence other) throws XPathException {
 		addAll(other.toNodeSet());

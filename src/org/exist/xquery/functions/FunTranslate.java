@@ -81,7 +81,7 @@ public class FunTranslate extends Function {
 		
         Sequence result;
         Sequence seq = getArgument(0).eval(contextSequence);
-		if(seq.getLength() == 0)
+		if(seq.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
     		String arg = seq.getStringValue();

@@ -71,7 +71,7 @@ public class DynamicCommentConstructor extends NodeConstructor {
         
         Sequence result;
         Sequence contentSeq = content.eval(contextSequence, contextItem);
-        if(contentSeq.getLength() == 0)
+        if(contentSeq.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {            
             MemTreeBuilder builder = context.getDocumentBuilder();

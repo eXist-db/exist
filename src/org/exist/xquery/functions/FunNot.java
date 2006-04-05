@@ -96,7 +96,7 @@ public class FunNot extends Function {
 		// the remaining set
 		if (Type.subTypeOf(arg.returnsType(), Type.NODE) &&
 			(arg.getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
-			if (contextSequence == null || contextSequence.getLength() == 0) {
+			if (contextSequence == null || contextSequence.isEmpty()) {
 				// TODO: special treatment if the context sequence is empty:
 				// within a predicate, we just return the empty sequence
 				// otherwise evaluate the argument and return a boolean result			    
@@ -106,7 +106,7 @@ public class FunNot extends Function {
                     result = evalBoolean(contextSequence, contextItem, arg);
 			} else {            
     			result = new ExtArrayNodeSet();
-    			if(contextSequence.getLength() > 0)
+    			if(!contextSequence.isEmpty())
     				result.addAll(contextSequence);
     			
     			NodeProxy current;

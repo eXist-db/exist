@@ -75,19 +75,19 @@ public class XMLDBChangeUser extends BasicFunction {
 			User user = new User(oldUser.getName());
 			if(user == null)
 				throw new XPathException(getASTNode(), "User " + userName + " not found");
-			if(args[1].getLength() > 0) {
+			if(!args[1].isEmpty()) {
 				// set password
 				user.setPassword(args[1].getStringValue());
 			} else
 				user.setPasswordDigest(oldUser.getPassword());
-			if(args[2].getLength() > 0) {
+			if(!args[2].isEmpty()) {
 				// set groups
 				for(SequenceIterator i = args[2].iterate(); i.hasNext(); ) {
 					user.addGroup(i.nextItem().getStringValue());
 				}
 			} else
 				user.setGroups(oldUser.getGroups());
-			if(args[3].getLength() > 0) {
+			if(!args[3].isEmpty()) {
 				// set home collection
 				user.setHome(args[3].getStringValue());
 			} else

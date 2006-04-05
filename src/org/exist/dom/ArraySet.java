@@ -165,6 +165,10 @@ public class ArraySet extends AbstractNodeSet {
 		while (mid <= max && items[mid].compareTo(upper) <= 0)
 			result.add(items[mid++]);
 	}
+	
+	public boolean isEmpty() {
+		return isEmpty;
+	}
 
 	public void add(NodeProxy proxy) {
 		if (proxy == null)
@@ -181,12 +185,13 @@ public class ArraySet extends AbstractNodeSet {
 		}
         sortedNaturally = false;
         sortedInDocumentOrder = false;
+        isEmpty = false;
 	}
 
 	public void addAll(NodeSet other) {
-		for (Iterator i = other.iterator(); i.hasNext();)
+		for (Iterator i = other.iterator(); i.hasNext();) {
 			add((NodeProxy) i.next());
-
+		}
 	}
 
 	public boolean contains(DocumentImpl doc, long nodeId) {		

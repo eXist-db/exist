@@ -65,7 +65,7 @@ public class MatchCount extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
         // return 0.0 if the argument sequence is empty
-		if(args[0].getLength() == 0)
+		if(args[0].isEmpty())
 			return IntegerValue.ZERO;
 		int count = 0;
 		for(SequenceIterator i = args[0].iterate(); i.hasNext(); ) {

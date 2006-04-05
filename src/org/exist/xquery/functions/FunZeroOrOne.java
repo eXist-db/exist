@@ -75,6 +75,7 @@ public class FunZeroOrOne extends Function {
         
 		Sequence result = getArgument(0).eval(contextSequence, contextItem);
         
+		//TODO : get rid of getLength()
 		if(result.getLength() > 1)
 			throw new XPathException("fn:zero-or-one called with a sequence containing " + result.getLength() + " items");
 

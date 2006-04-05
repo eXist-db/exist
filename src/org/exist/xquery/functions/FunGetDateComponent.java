@@ -99,7 +99,7 @@ public class FunGetDateComponent extends Function {
         
         Sequence result;
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
-		if (arg.getLength() == 0)
+		if (arg.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
     		DateValue date = (DateValue) arg.itemAt(0);

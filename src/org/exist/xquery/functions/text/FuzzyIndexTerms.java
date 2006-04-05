@@ -60,7 +60,7 @@ public class FuzzyIndexTerms extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		if(args[0].getLength() == 0)
+		if(args[0].isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
 		DocumentSet docs;
 		if(contextSequence instanceof NodeSet)

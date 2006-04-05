@@ -158,12 +158,12 @@ public class SequenceType {
      * @throws XPathException
      */
 	public void checkCardinality(Sequence seq) throws XPathException {
-		int items = seq.getLength();
-		if (items > 0 && cardinality == Cardinality.EMPTY)
-			throw new XPathException("Empty sequence expected; got " + items);
-		if (items == 0 && (cardinality & Cardinality.ZERO) == 0)
+		if (!seq.isEmpty() && cardinality == Cardinality.EMPTY)
+			throw new XPathException("Empty sequence expected; got " + seq.getLength());
+		if (seq.isEmpty() && (cardinality & Cardinality.ZERO) == 0)
 			throw new XPathException("Empty sequence is not allowed here");
-		else if (items > 1 && (cardinality & Cardinality.MANY) == 0)
+		//TODO : ret rig of getLength
+		else if (seq.getLength() > 1 && (cardinality & Cardinality.MANY) == 0)
 			throw new XPathException("Sequence with more than one item is not allowed here");
 	}
 

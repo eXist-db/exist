@@ -138,7 +138,7 @@ public class Variable {
             return;
         type.checkCardinality(value);
         
-        if (value.getLength() == 0)
+        if (value.isEmpty())
             return;
         
         int requiredType = type.getPrimaryType();

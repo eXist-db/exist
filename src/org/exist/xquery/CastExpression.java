@@ -81,7 +81,7 @@ public class CastExpression extends AbstractExpression {
         
         Sequence result;
 		Sequence seq = expression.eval(contextSequence, contextItem);
-		if (seq.getLength() == 0) {
+		if (seq.isEmpty()) {
 			if ((cardinality & Cardinality.ZERO) == 0)
 				throw new XPathException(getASTNode(), "Type error: empty sequence is not allowed here");
 			else

@@ -61,7 +61,7 @@ public class PrologFunctions extends BasicFunction {
 
 	private void declareNamespace(Sequence[] args) throws XPathException {
 		String prefix;
-		if (args[0].getLength() == 0)
+		if (args[0].isEmpty())
 			prefix = "";
 		else
 			prefix = args[0].getStringValue();

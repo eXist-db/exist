@@ -78,10 +78,10 @@ public class FunLocalName extends Function {
         // the context sequence
         if(getArgumentCount() > 0) {
             Sequence seq = getArgument(0).eval(contextSequence);
-            if (seq.getLength() > 0)
+            if (!seq.isEmpty())
                 item = seq.itemAt(0);
         } else {
-            if (contextSequence.getLength() > 0)
+            if (!contextSequence.isEmpty())
                 item = contextSequence.itemAt(0);
             else
                 throw new XPathException(getASTNode(), "undefined context item");

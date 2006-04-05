@@ -84,7 +84,7 @@ public class FunDocAvailable extends Function {
         
         Sequence result;
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
-		if (arg.getLength() == 0)
+		if (arg.isEmpty())
             result = BooleanValue.FALSE;
         else {		
     		String path = arg.itemAt(0).getStringValue();    		

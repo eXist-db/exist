@@ -138,6 +138,7 @@ public class Predicate extends PathExpr {
             if (executionMode == BOOLEAN && Type.subTypeOf(inner.returnsType(), Type.NUMBER)) {
                 Sequence innerSeq = inner.eval(contextSequence);   
                 //Only if we have an actual *singleton* of numeric items
+                //TODO : get rid of getLength()
                 if (innerSeq.getLength() == 1)
                     recomputedExecutionMode = POSITIONAL;
             }  
@@ -270,8 +271,8 @@ public class Predicate extends PathExpr {
 	 * @throws XPathException
 	 */
 	private Sequence selectByPosition(Sequence outerSequence, Sequence contextSequence, int mode, Expression inner) throws XPathException {
-		if(Type.subTypeOf(contextSequence.getItemType(), Type.NODE) && outerSequence != null &&
-			outerSequence.getLength() > 0) {
+		if(outerSequence != null && !outerSequence.isEmpty() && 
+				Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
 			Sequence result = new ExtArrayNodeSet(100);
 			NodeSet contextSet = contextSequence.toNodeSet();
             switch(mode) {

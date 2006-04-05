@@ -104,7 +104,7 @@ public class QNameIndexLookup extends Function {
     }
     
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (contextSequence == null || contextSequence.getLength() == 0) {
+        if (contextSequence == null || contextSequence.isEmpty()) {
             // if the context sequence is empty, we create a default context 
             RootNode rootNode = new RootNode(context);
             contextSequence = rootNode.eval(null, null);

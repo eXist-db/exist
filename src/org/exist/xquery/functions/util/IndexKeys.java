@@ -82,7 +82,7 @@ public class IndexKeys extends BasicFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-        if (args[0].getLength() == 0)
+        if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
         NodeSet nodes = args[0].toNodeSet();
         DocumentSet docs = nodes.getDocumentSet();
@@ -107,7 +107,8 @@ public class IndexKeys extends BasicFunction {
             result.addAll(call.evalFunction(contextSequence, null, params));
             data.clear();
         }
-        LOG.debug("Returning: " + result.getLength());
+        if (LOG.isDebugEnabled())
+        	LOG.debug("Returning: " + result.getLength());
         return result;
     }
 

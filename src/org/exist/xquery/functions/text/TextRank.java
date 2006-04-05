@@ -58,7 +58,7 @@ public class TextRank extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		// return 0.0 if the argument sequence is empty
-		if(args[0].getLength() == 0)
+		if(args[0].isEmpty())
 			return DoubleValue.ZERO;
 		NodeValue val = (NodeValue)args[0].itemAt(0);
 		// Ranking cannot be applied to constructed nodes

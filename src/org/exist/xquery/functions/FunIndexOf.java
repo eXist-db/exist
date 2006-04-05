@@ -94,7 +94,7 @@ public class FunIndexOf extends BasicFunction {
         }
         
         Sequence result;
-		if (args[0].getLength() == 0)
+		if (args[0].isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
         else {
     		AtomicValue srch = args[1].itemAt(0).atomize();

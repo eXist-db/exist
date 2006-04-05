@@ -94,7 +94,7 @@ public class FunSubstringAfter extends CollatingFunction {
 		Sequence seq2 = arg1.eval(contextSequence);
 		
         Sequence result;
-		if(seq1.getLength() == 0 || seq2.getLength() == 0)
+		if(seq1.isEmpty() || seq2.isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
         else {		
     		String value = seq1.getStringValue();
