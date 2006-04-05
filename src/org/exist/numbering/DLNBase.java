@@ -99,6 +99,8 @@ public class DLNBase implements Comparable {
     }
 
     public DLNBase(int units, byte[] data, int startOffset) {
+    	if (units < 0)
+    		throw new IllegalArgumentException("Negative size for DLN: " + units);
     	int bitCnt = units * BITS_PER_UNIT;
         int blen = bitCnt / 8;
         if (bitCnt % 8 > 0)
@@ -224,10 +226,10 @@ public class DLNBase implements Comparable {
     }
 
     /**
-     * Returns the size of this id by counting the bits
+     * Returns the size of this id by counting the bytes
      * used to encode it.
      *
-     * @return the size in bits
+     * @return the size in bytes
      */
     public int size() {
         return bits.length;

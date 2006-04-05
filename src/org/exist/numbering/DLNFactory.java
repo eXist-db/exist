@@ -35,6 +35,10 @@ public class DLNFactory implements NodeIdFactory {
         return new DLN();
     }
 
+    public NodeId createInstance(int id) {
+    	return new DLN(id);
+    }
+    
     public NodeId createFromStream(VariableByteInput is) throws IOException {
         return new DLN(is);
     }

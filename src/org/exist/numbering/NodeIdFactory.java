@@ -44,6 +44,15 @@ public interface NodeIdFactory {
     NodeId createInstance();
 
     /**
+     * Create a new NodeId, initialized with the given
+     * base id.
+     * 
+     * @param id
+     * @return
+     */
+    NodeId createInstance(int id);
+    
+    /**
      * Read a NodeId from the given input stream.
      *
      * @param is the input stream to read from
@@ -64,7 +73,7 @@ public interface NodeIdFactory {
      * @return the NodeId read
      */
     NodeId createFromData(int sizeHint, byte[] data, int startOffset);
-
+    
     /**
      * Returns the number of bytes occupied by the NodeId stored
      * in the byte array at the given startOffset. This method is
