@@ -58,6 +58,7 @@ import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.memtree.DOMIndexer;
+import org.exist.numbering.NodeId;
 import org.exist.security.MD5;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -2250,7 +2251,7 @@ public class NativeBroker extends DBBroker {
                     || doc.getTreeLevel(gid) > depth)
                     address = domDb.add(transaction, data);
                 else {
-                    address = domDb.put(transaction, new NodeRef(doc.getDocId(), gid), data);
+                    address = domDb.put(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), data);
                 }
                 if (address == BFile.UNKNOWN_ADDRESS)
                     LOG.warn("address is missing");
@@ -2277,7 +2278,7 @@ public class NativeBroker extends DBBroker {
                     if (internalAddress != BFile.UNKNOWN_ADDRESS)
                         domDb.update(transaction, internalAddress, data);
                     else {
-                        domDb.update(transaction, new NodeRef(doc.getDocId(), node.getGID()), data);
+                        domDb.update(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), data);
                     }
                     return null;
                 }
@@ -2311,7 +2312,7 @@ public class NativeBroker extends DBBroker {
                 if (address != BFile.UNKNOWN_ADDRESS) {
                     address = domDb.insertAfter(transaction, doc, address, data);
                 } else {
-                    NodeRef ref = new NodeRef(doc.getDocId(), previous.getGID());
+                    NodeRef ref = new NodeRef(doc.getDocId(), previous.getNodeId());
                     address = domDb.insertAfter(transaction, doc, ref, data);
                 }
                 node.setInternalAddress(address);
@@ -2385,9 +2386,9 @@ public class NativeBroker extends DBBroker {
             public Object start() {
                 final long address = node.getInternalAddress();
                 if (address != BFile.UNKNOWN_ADDRESS)
-                    domDb.remove(transaction, new NodeRef(doc.getDocId(), node.getGID()), address);
+                    domDb.remove(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), address);
                 else
-                    domDb.remove(transaction, new NodeRef(doc.getDocId(), node.getGID()));
+                    domDb.remove(transaction, new NodeRef(doc.getDocId(), node.getNodeId()));
                 return null;
             }
         }
@@ -2763,7 +2764,7 @@ public class NativeBroker extends DBBroker {
 			public Object start() {
 				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
 				if (val == null)
-					return null;				
+					return null;
 				StoredNode node = StoredNode.deserialize(val.getData(),	0, val.getLength(),	(DocumentImpl) doc);
 				node.setGID(gid);
 				node.setOwnerDocument(doc);
@@ -2937,45 +2938,24 @@ public class NativeBroker extends DBBroker {
 
 	public final static class NodeRef extends Value {
 
-        /*
-		public NodeRef() {
-			data = new byte[12];
-		}
-        */
-
         public NodeRef(int docId) {
             data = new byte[4];
             ByteConversion.intToByte(docId, data, 0);
             len = 4;
             pos = 0;
-        }        
+        }
         
-        public NodeRef(int docId, long gid) {
-			data = new byte[12];
+        public NodeRef(int docId, NodeId nodeId) {
+        	pos = 0;
+        	len = nodeId.size() + 4;
+			data = new byte[len];
 			ByteConversion.intToByte(docId, data, 0);
-			ByteConversion.longToByte(gid, data, 4);
-			len = 12;
-			pos = 0;
+			nodeId.serialize(data, 4);
 		}
 
 		int getDocId() {
 			return ByteConversion.byteToInt(data, 0);
 		}
-
-        /*
-		long getGid() {
-			return ByteConversion.byteToLong(data, 4);
-		}
-        */
-
-        /*
-		void set(int docId, long gid) {
-			ByteConversion.intToByte(docId, data, 0);
-			ByteConversion.longToByte(gid, data, 4);
-			len = 12;
-			pos = 0;
-		}
-        */
 	}
     
     private final static class RemovedNode {
@@ -3160,7 +3140,7 @@ public class NativeBroker extends DBBroker {
                 new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                     public Object start() throws ReadOnlyException {
                         try {
-                            domDb.addValue(transaction, new NodeRef(doc.getDocId(), gid), address);
+                            domDb.addValue(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), address);
                         } catch (BTreeException e) {
                             LOG.warn(EXCEPTION_DURING_REINDEX, e);
                         } catch (IOException e) {

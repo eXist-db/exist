@@ -62,6 +62,7 @@ import org.exist.util.ReadOnlyException;
 import org.exist.util.hashtable.Object2LongIdentityHashMap;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
+import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.w3c.dom.Node;
 
@@ -988,7 +989,7 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	public boolean create() throws DBException {
-		if (super.create((short) 12))
+		if (super.create((short) -1))
 			return true;
 		else
 			return false;
@@ -1040,28 +1041,21 @@ public class DOMFile extends BTree implements Lockable {
 		return cb.getValues();
 	}
 
-	private long findNode(StoredNode node, long target, Iterator iter) {
+	private long findNode(StoredNode node, NodeId target, Iterator iter) {
 		if (node.hasChildNodes()) {
-			final long firstChildId = NodeSetHelper.getFirstChildId(
-                    (DocumentImpl) node.getOwnerDocument(), node.getGID());
-			if (firstChildId < 0) {
-				LOG.error("First child not found for node : " + node.getGID());
-				return 0;
-			}
-			final long lastChildId = firstChildId + node.getChildCount();
 			long p;
-			for (long gid = firstChildId; gid < lastChildId; gid++) {
+			final int len = node.getChildCount();
+			for (int i = 0; i < len; i++) {
 				StoredNode child = (StoredNode) iter.next();
 
-				SanityCheck.ASSERT(child != null, "Next node missing. gid = "
-						+ gid + "; last = " + lastChildId + "; parent= "
+				SanityCheck.ASSERT(child != null, "Next node missing. count = "
+						+ i + "; parent= "
 						+ node.getNodeName() + "; count = "
 						+ node.getChildCount());
 
-				if (gid == target) {
+				if (child.getNodeId().equals(target)) {
 					return ((NodeIterator) iter).currentAddress();
 				}
-				child.setGID(gid);
 				if ((p = findNode(child, target, iter)) != 0)
 					return p;
 			}
@@ -1084,34 +1078,30 @@ public class DOMFile extends BTree implements Lockable {
 			BTreeException {
 		final DocumentImpl doc = (DocumentImpl) node.getDocument();
 		final NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc
-				.getDocId(), node.getGID());
+				.getDocId(), node.getNodeId());
 		// first try to find the node in the index
 		final long p = findValue(nodeRef);
 		if (p == KEY_NOT_FOUND) {
 			// node not found in index: try to find the nearest available
 			// ancestor and traverse it
-			long id = node.getGID();
+			NodeId id = node.getNodeId();
 			long parentPointer = -1;
 			do {
-				id = NodeSetHelper.getParentId(doc, id);
-				if (id < 1) {
+				id = id.getParentId();
+				if (id == NodeId.DOCUMENT_NODE) {
 					SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getGID() + " not found.");
 					throw new BTreeException("node " + node.getGID() + " not found.");
 				}
-				NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc
-						.getDocId(), id);
+				NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), id);
 				try {
 					parentPointer = findValue(parentRef);
 				} catch (BTreeException bte) {
 				}
 			} while (parentPointer == KEY_NOT_FOUND);
 
-			//final long firstChildId = XMLUtil.getFirstChildId(doc, id);
-			final Iterator iter = new NodeIterator(lock, this, node
-					.getDocument(), parentPointer);
+			final Iterator iter = new NodeIterator(lock, this, node.getDocument(), parentPointer);
 			final StoredNode n = (StoredNode) iter.next();
-			n.setGID(id);
-			final long address = findNode(n, node.getGID(), iter);
+			final long address = findNode(n, node.getNodeId(), iter);
 			if (address == 0) {
 				// if(LOG.isDebugEnabled())
 				// LOG.debug("Node data location not found for node " +
@@ -2550,11 +2540,15 @@ public class DOMFile extends BTree implements Lockable {
     }
     
 	protected void dumpValue(Writer writer, Value key) throws IOException {
-		writer.write(Short.toString(ByteConversion.byteToShort(key.data(), key
-				.start())));
+		writer.write(Integer.toString(ByteConversion.byteToInt(key.data(), key.start())));
 		writer.write(':');
-		writer.write(Long.toString(ByteConversion.byteToLong(key.data(), key
-				.start() + 4)));
+		int bytes = key.getLength() - 4;
+		try {
+			NodeId id = pool.getNodeFactory().createFromData(bytes * 8 / DLN.BITS_PER_UNIT, key.data(), key.start() + 4);
+			writer.write(id.toString());
+		} catch (Exception e) {
+			System.out.println(e.getMessage() + ": doc: " + Integer.toString(ByteConversion.byteToInt(key.data(), key.start())));
+		}
 	}
 
 	protected final static class DOMFilePageHeader extends BTreePageHeader {
