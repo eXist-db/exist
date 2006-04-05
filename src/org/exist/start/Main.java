@@ -4,22 +4,17 @@
 // ========================================================================
 
 /**
- * This is an adopted version of the corresponding classes shipped 
+ * This is an adopted version of the corresponding classes shipped
  * with Jetty.
  */
 package org.exist.start;
 
-import java.util.StringTokenizer;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.FilenameFilter;
-import java.lang.reflect.Method;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Hashtable;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.exist.storage.BrokerPool;
 
 /**
@@ -42,6 +37,18 @@ public class Main {
 
 
     private boolean _debug = Boolean.getBoolean("exist.start.debug");
+
+    // Stores the path to the "start.config" file that's used to configure
+    // the runtime classpath.
+    private String startConfigFileName = "";
+
+    // Pattern that can be used in start.config file to indicate that the
+    // latest version of a particular file should be added to the classpath.
+    // E.g., commons-fileupload-%latest%.jar would resolve to something like
+    // commons-fileupload-1.1.jar.
+    private final static Pattern latestVersionPattern = Pattern.compile(
+        "(%latest%)"
+    );
 
     public static void main(String[] args) {
         try {
@@ -104,7 +111,7 @@ public class Main {
     }
 
     public static void invokeMain(ClassLoader classloader, String classname, String[] args)
-            throws IllegalAccessException, InvocationTargetException, 
+            throws IllegalAccessException, InvocationTargetException,
             NoSuchMethodException, ClassNotFoundException {
         Class invoked_class = null;
         invoked_class = classloader.loadClass(classname);
@@ -118,6 +125,11 @@ public class Main {
     }
 
     void configureClasspath(String home, Classpath classpath, InputStream config, String[] args, String mode) {
+
+        // Any files referenced in start.config that don't exist or cannot be resolved
+        // are placed in this list.
+        List invalidJars = new ArrayList();
+
         try {
             BufferedReader cfg = new BufferedReader(new InputStreamReader(config, "ISO-8859-1"));
             Version java_version = new Version(System.getProperty("java.version"));
@@ -181,7 +193,7 @@ public class Main {
                         }
 
                         String file =
-                                subject.startsWith("/") ? 
+                                subject.startsWith("/") ?
                                 subject.replace('/', File.separatorChar)
                                 : home + File.separatorChar + subject.replace('/', File.separatorChar);
 
@@ -235,7 +247,14 @@ public class Main {
                             _classname = subject.substring(0, subject.length() - 6);
                         } else {
                             // single JAR file
-                            File f = new File(file);
+                            String resolvedFile = getResolvedFileName(file);
+
+                            File f = new File(resolvedFile);
+                            if (include_subject) {
+                                if (!f.exists()) {
+                                    invalidJars.add(f.getAbsolutePath());
+                                }
+                            }
                             String d = f.getCanonicalPath();
                             if (!done.containsKey(d)) {
                                 if (include_subject) {
@@ -256,6 +275,22 @@ public class Main {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        // Print message if any files from start.config were added
+        // to the classpath but they could not be found.
+        if (invalidJars.size() > 0) {
+            Iterator it = invalidJars.iterator();
+            StringBuffer nonexistentJars = new StringBuffer();
+            while (it.hasNext()) {
+                String invalidJar = (String) it.next();
+                nonexistentJars.append("    " + invalidJar + "\n");
+            }
+            System.err.println(
+                "\nWARN: The following JAR file entries from '"
+                + startConfigFileName + "' aren't available:\n"
+                + nonexistentJars
+            );
         }
     }
 
@@ -464,6 +499,7 @@ public class Main {
         // prefill existing paths in classpath_dirs...
         if (_debug)
             System.out.println("existing classpath = " + System.getProperty("java.class.path"));
+
         _classpath.addClasspath(System.getProperty("java.class.path"));
 
         // add JARs from ext and lib
@@ -471,20 +507,32 @@ public class Main {
 
         try {
             InputStream cpcfg = null;
+            // start.config can be found in two locations.
+            String configFilePath1 = "";
+            String configFilePath2 = "";
             try {
-                cpcfg =
-                        new java.io.FileInputStream(homeDir.getPath() + File.separatorChar + "start.config");
+                configFilePath1 = homeDir.getPath() + File.separatorChar
+                    + "start.config";
+                cpcfg = new java.io.FileInputStream(configFilePath1);
+                startConfigFileName = configFilePath1;
             } catch (java.io.FileNotFoundException e) {
                 cpcfg = null;
             }
             if (cpcfg == null) {
                 if (_debug)
                     System.err.println("Configuring classpath from default resource");
-                cpcfg =
-                        getClass().getClassLoader().getResourceAsStream("org/exist/start/start.config");
+
+                configFilePath2 = "org/exist/start/start.config";
+                cpcfg = getClass().getClassLoader()
+                    .getResourceAsStream(configFilePath2);
+                startConfigFileName = configFilePath2;
             }
             if (cpcfg == null) {
-                throw new RuntimeException("start.config not found. Bailing out.");
+                throw new RuntimeException(
+                    "start.config not found at "
+                    + configFilePath1 + " or "
+                    + configFilePath2 + ", Bailing out."
+                );
             }
             configureClasspath(homeDir.getPath(), _classpath, cpcfg, args, _mode);
             cpcfg.close();
@@ -530,4 +578,57 @@ public class Main {
     public void shutdown() {
         BrokerPool.stopAll(false);
     }
+
+    // If the passed file name contains the %latest% token
+    // find the latest version of that file, otherwise return
+    // the passed file name unmodified.
+    private String getResolvedFileName(String filename) {
+        Matcher matches = latestVersionPattern.matcher(filename);
+        if (!matches.find()) {
+            return filename;
+        }
+        String[] fileinfo = filename.split("%latest%");
+        // Path of file up to the beginning of the %latest% token.
+        String uptoToken = fileinfo[0];
+
+        // Dir that should contain our jar.
+        String containerDirName = uptoToken.substring(
+            0, uptoToken.lastIndexOf(File.separatorChar)
+        );
+
+        File containerDir = new File(containerDirName);
+
+        // 0-9 . - and _ are valid chars that can occur where the %latest% token
+        // was (maybe allow letters too?).
+        String patternString = uptoToken.substring(
+            uptoToken.lastIndexOf(File.separatorChar) + 1
+        ) + "([\\d\\.\\-_]+)" + fileinfo[1];
+        final Pattern pattern = Pattern.compile(patternString);
+
+        File[] jars = containerDir.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                Matcher matches = pattern.matcher(name);
+                return matches.find();
+            }
+        });
+        if (jars.length > 0) {
+            String actualFileName = jars[0].getAbsolutePath();
+            if (_debug) {
+                System.err.println(
+                    "Found match: " + actualFileName
+                    + " for start.config entry: " + filename
+                );
+            }
+            return actualFileName;
+        } else {
+            if (_debug) {
+                System.err.println(
+                    "WARN: No latest version found for JAR file: '"
+                    + filename + "'"
+                );
+            }
+        }
+        return filename;
+    }
+
 }
