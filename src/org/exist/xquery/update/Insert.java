@@ -123,13 +123,14 @@ public class Insert extends Modification {
         	prevUpdateErrors.add(new StringValue(xpe.getMessage()));
 			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 			
-        	if(inSeq.getLength() > 0)
+        	if(!inSeq.isEmpty())
         		throw xpe;	//TODO: should we trap this instead of throwing an exception - deliriumsky?
         }
         //END trap Insert failure
         
-        if (inSeq.getLength() > 0) { 
-            LOG.debug("Found: " + inSeq.getLength());   
+        if (!inSeq.isEmpty()) {
+        	if (LOG.isDebugEnabled())
+        		LOG.debug("Found: " + inSeq.getLength());   
             
             contentSeq = deepCopy(contentSeq);
         

@@ -75,12 +75,11 @@ public class FunLast extends Function {
         Sequence result;
 		if (contextSequence == null)
             result = Sequence.EMPTY_SEQUENCE;
-        else {
-            final int len = contextSequence.getLength();
-            if (len == 0) 
+        else {            
+            if (contextSequence.isEmpty()) 
                 result = Sequence.EMPTY_SEQUENCE;
             else
-                result = new IntegerValue(len);
+                result = new IntegerValue(contextSequence.getLength());
         }
         
         if (context.getProfiler().isEnabled()) 

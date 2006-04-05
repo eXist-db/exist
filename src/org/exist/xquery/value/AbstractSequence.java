@@ -128,10 +128,9 @@ public abstract class AbstractSequence implements Sequence {
 		if (isEmpty())
 			return false;
 		
-		int len = getLength();
-
 		if ( OLD_EXIST_VERSION_COMPATIBILITY )
-			if (len > 1)
+			//TODO : get rid of getLength()
+			if (getLength() > 1)
 				return true;
 
 		Item first = itemAt(0);
@@ -142,7 +141,8 @@ public abstract class AbstractSequence implements Sequence {
 		}
 
 		if ( ! OLD_EXIST_VERSION_COMPATIBILITY )
-			if (len > 1)
+			//TODO : get rid of getLength()
+			if (getLength() > 1)
 			throw new XPathException(
 				"error FORG0006: effectiveBooleanValue: first item of '" + 
                 (toString().length() < 20 ? toString() : toString().substring(0, 20)+ "...") + 

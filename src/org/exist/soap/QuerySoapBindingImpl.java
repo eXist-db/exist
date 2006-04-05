@@ -280,7 +280,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             Sequence seq= expr.eval(null, null);
             
             QueryResponseCollection[] collections = null;
-            if (seq.getLength() > 0 && Type.subTypeOf(seq.getItemType(), Type.NODE))
+            if (!seq.isEmpty() && Type.subTypeOf(seq.getItemType(), Type.NODE))
                 collections = collectQueryInfo(scanResults(seq));
             session.addQueryResult(seq);
             resp.setCollections(new QueryResponseCollections(collections));
