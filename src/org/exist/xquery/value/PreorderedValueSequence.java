@@ -117,7 +117,10 @@ public class PreorderedValueSequence extends AbstractSequence {
     public boolean isEmpty() {
     	return nodes.length == 0;
     }
-	
+
+    public boolean hasOne() {
+    	return nodes.length == 1;
+    }    
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AbstractSequence#add(org.exist.xquery.value.Item)

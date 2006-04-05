@@ -162,8 +162,7 @@ public class SequenceType {
 			throw new XPathException("Empty sequence expected; got " + seq.getLength());
 		if (seq.isEmpty() && (cardinality & Cardinality.ZERO) == 0)
 			throw new XPathException("Empty sequence is not allowed here");
-		//TODO : ret rig of getLength
-		else if (seq.getLength() > 1 && (cardinality & Cardinality.MANY) == 0)
+		else if (seq.hasMany() && (cardinality & Cardinality.MANY) == 0)
 			throw new XPathException("Sequence with more than one item is not allowed here");
 	}
 

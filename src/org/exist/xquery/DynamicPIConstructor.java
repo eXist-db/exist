@@ -84,7 +84,7 @@ public class DynamicPIConstructor extends NodeConstructor {
         
         Sequence nameSeq = name.eval(contextSequence, contextItem);
         //TODO : get rid of getLength()
-        if(nameSeq.isEmpty() || nameSeq.getLength() > 1)
+        if(!nameSeq.hasOne())
             throw new XPathException(getASTNode(), "The name expression should evaluate to a single value");
         
         Item nameItem = nameSeq.itemAt(0);

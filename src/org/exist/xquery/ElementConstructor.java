@@ -157,8 +157,7 @@ public class ElementConstructor extends NodeConstructor {
 		
 		// create the element
 		Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
-		//TODO : get rid of getLength
-		if(qnameSeq.isEmpty() || qnameSeq.getLength() > 1)
+		if(!qnameSeq.hasOne())
 		    throw new XPathException("Type error: the node name should evaluate to a single string");
 		QName qn = QName.parse(context, qnameSeq.getStringValue());
 		

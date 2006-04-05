@@ -195,9 +195,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     for (SequenceIterator iterInner = result.iterate(); iterInner.hasNext(); p++) {
                         context.setContextPosition(p);
                         Item current = iterInner.nextItem();   
-                        //DESIGN : calling result.getLength() should be avoided -pb
-                        //TODO : get rid of getLength()
-                        if (result.getLength() < 2)
+                        //0 or 1 item
+                        if (!result.hasMany())
                         	exprResult = expr.eval(result, current);
                         else {
                         	exprResult = new ValueSequence();  

@@ -791,6 +791,14 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		return false;
 	}
 
+	public boolean hasOne() {
+		return true;
+	}
+
+	public boolean hasMany() {
+		return false;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#add(org.exist.dom.NodeProxy)
 	 */

@@ -48,7 +48,10 @@ public class SortedNodeSet extends AbstractNodeSet {
     public boolean isEmpty() {
     	return list.size() == 0;
     }
-	
+
+    public boolean hasOne() {
+    	return list.size() == 1;
+    }    
 
 	public void addAll(Sequence other) throws XPathException {
 		addAll(other.toNodeSet());

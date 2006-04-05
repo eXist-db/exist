@@ -103,6 +103,10 @@ public interface Sequence {
 	 */
 	public boolean isEmpty();
 	
+	public boolean hasOne();
+	
+	public boolean hasMany();
+	
 	/**
 	 * Explicitely remove all duplicate nodes from this sequence.
 	 */

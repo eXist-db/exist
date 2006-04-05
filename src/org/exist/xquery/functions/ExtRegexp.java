@@ -189,9 +189,8 @@ public class ExtRegexp extends Function {
 		Sequence seq;
 		for(int i = 1; i < getLength(); i++) {
 			next = getArgument(i);
-			seq = next.eval(contextSequence);
-			//TODO : get rid of getLength()
-			if(!seq.isEmpty() && seq.getLength() == 1)
+			seq = next.eval(contextSequence);			
+			if(seq.hasOne())
 			    terms.add(translateRegexp(seq.itemAt(0).getStringValue()));
 			else {
 				for(SequenceIterator it = seq.iterate(); it.hasNext(); ) {

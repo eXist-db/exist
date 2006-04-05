@@ -78,7 +78,7 @@ public class DynamicCardinalityCheck extends AbstractExpression {
             error.addArgs(ExpressionDumper.dump(expression), Cardinality.getDescription(requiredCardinality), 
                     new Integer(seq.getLength()));
             throw new XPathException(getASTNode(), error.toString());
-        } else if(seq.getLength() > 1 && (!Cardinality.checkCardinality(requiredCardinality, Cardinality.MANY))) {
+        } else if(seq.hasMany() && (!Cardinality.checkCardinality(requiredCardinality, Cardinality.MANY))) {
             error.addArgs(ExpressionDumper.dump(expression), Cardinality.getDescription(requiredCardinality), 
                     new Integer(seq.getLength()));
             throw new XPathException(getASTNode(), error.toString());
