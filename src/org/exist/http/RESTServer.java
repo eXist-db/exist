@@ -885,7 +885,8 @@ public class RESTServer {
                 long startTime = System.currentTimeMillis();
                 Sequence resultSequence = xquery.execute(compiled, null);
                 long queryTime = System.currentTimeMillis() - startTime;
-                LOG.debug("Found " + resultSequence.getLength() + " in "
+                if (LOG.isDebugEnabled())
+                	LOG.debug("Found " + resultSequence.getLength() + " in "
                         + queryTime + "ms.");
                 return printResults(broker, resultSequence, howmany, start,
                         queryTime, outputProperties, wrap);
@@ -1088,9 +1089,9 @@ public class RESTServer {
     protected String printResults(DBBroker broker, Sequence results,
             int howmany, int start, long queryTime,
             Properties outputProperties, boolean wrap)
-            throws BadRequestException {
-        int rlen = results.getLength();
-        if (rlen > 0) {
+            throws BadRequestException {        
+        if (!results.isEmpty()) {
+        	int rlen = results.getLength();
             if ((start < 1) || (start > rlen))
                 throw new BadRequestException("Start parameter out of range");
             // FD : correct bound evaluation

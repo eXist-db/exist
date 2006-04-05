@@ -262,7 +262,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * @see org.exist.dom.NodeSet#addAll(org.exist.dom.NodeSet)
      */
     public void addAll(NodeSet other) {
-        if (other.getLength() == 0)
+        if (other.isEmpty())
             return;
         //TODO : get rid of getLength()
         if (other.getLength() == 1) {

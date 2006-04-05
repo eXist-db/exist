@@ -69,7 +69,7 @@ public class FuzzyMatchAll extends AbstractMatchFunction {
 		if (getArgumentCount() == 3) {
 			Sequence thresOpt = getArgument(2).eval(nodes);
 			//TODO : get rid of getLength()
-			if(!thresOpt.isEmpty() && thresOpt.getLength() != 1)
+			if(thresOpt.isEmpty() || thresOpt.getLength() > 1)
 				throw new XPathException(getASTNode(), "third argument to " + getName() +
 						"should be a single double value");
 			threshold = ((DoubleValue) thresOpt.convertTo(Type.DOUBLE)).getDouble();

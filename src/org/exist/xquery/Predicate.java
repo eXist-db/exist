@@ -351,7 +351,7 @@ public class Predicate extends PathExpr {
                         //break;
                         throw new IllegalArgumentException("Tested unknown axis");
                     }
-                    if (temp.getLength() > 0) {
+                    if (!temp.isEmpty()) {
                         //TODO : build a value sequence *one* time ? -pb
                         Sequence innerSeq = inner.eval(contextSequence);                        
                         for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {                    

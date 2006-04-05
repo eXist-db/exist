@@ -1302,7 +1302,7 @@ public class RpcConnection extends Thread {
     
     protected String printAll(DBBroker broker, Sequence resultSet, int howmany,
             int start, Hashtable properties, long queryTime) throws Exception {
-        if (resultSet.getLength() == 0)
+        if (resultSet.isEmpty())
             return "<?xml version=\"1.0\"?>\n"
                     + "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
                     + "hitCount=\"0\"/>";
