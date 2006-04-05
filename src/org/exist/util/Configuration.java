@@ -105,20 +105,32 @@ public class Configuration implements ErrorHandler {
 
             // firstly, try to read the configuration from a file within the
             // classpath
-            if (configFilename != null) {
-                is = Configuration.class.getClassLoader().getResourceAsStream(configFilename);
-                if (is != null) LOG.info("Reading configuration from classloader");
-            } else {
-                // Default file name
-                configFilename = "conf.xml";
-            }
+            try {
+				if (configFilename != null) {
+				    is = Configuration.class.getClassLoader().getResourceAsStream(configFilename);
+				    if (is != null) LOG.info("Reading configuration from classloader");
+				} else {
+				    // Default file name
+				    configFilename = "conf.xml";
+				}
+			} catch (Exception e) {
+				// EB: ignore and go forward, e.g. in case there is an absolute
+				// file name for configFileName
+				LOG.debug(e);
+			}
 
             // otherise, secondly try to read configuration from file. Guess the
             // location if necessary
             if (is == null) {
                 Configuration.existHome = (existHomeDirname != null) ? new File(existHomeDirname) : getExistHome(existHomeDirname);
-                if (Configuration.existHome == null)
-                    throw new DatabaseConfigurationException("Unable to locate eXist home directory");
+                if (Configuration.existHome == null) {
+                	// EB: try to create existHome based on location of config file
+                	// when config file points to absolute file location
+                	File absoluteConfigFile = new File(configFilename);
+                	if (absoluteConfigFile.isAbsolute() &&
+                			absoluteConfigFile.exists() && absoluteConfigFile.canRead())
+                		Configuration.existHome = absoluteConfigFile.getParentFile();
+                }
                 File configFile = lookup(configFilename);
                 if (!configFile.exists() || !configFile.canRead())
                     throw new DatabaseConfigurationException("Unable to read configuration file at " + config);
