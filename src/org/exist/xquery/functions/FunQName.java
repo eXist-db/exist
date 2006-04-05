@@ -75,7 +75,7 @@ public class FunQName extends BasicFunction {
         }  
         
         String namespace;
-		if (args[0].getLength() == 0)
+		if (args[0].isEmpty())
 			namespace = "";
 		else
 			namespace = args[0].getStringValue();

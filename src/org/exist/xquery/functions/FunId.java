@@ -65,7 +65,7 @@ public class FunId extends Function {
         Sequence result;
         Expression arg = getArgument(0);        
 		Sequence idval = arg.eval(contextSequence);
-		if(idval.getLength() == 0)
+		if(idval.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
     		result = new ExtArrayNodeSet();

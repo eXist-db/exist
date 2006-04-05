@@ -179,6 +179,10 @@ public abstract class AtomicValue implements Item, Sequence {
 			throw new SAXException(e);
 		}
 	}
+	
+	public boolean isEmpty() {
+		return false;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
@@ -296,6 +300,10 @@ public abstract class AtomicValue implements Item, Sequence {
     }
     
 	private final static class EmptyValue extends AtomicValue {
+		
+		public boolean isEmpty() {
+			return true;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.exist.xquery.value.AtomicValue#getStringValue()

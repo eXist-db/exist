@@ -61,7 +61,7 @@ public class FunRoundHalfToEven extends Function {
         Sequence result;
 		IntegerValue precision = new IntegerValue(0);
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if (seq.getLength() == 0)
+		if (seq.isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
         else {		
             if (contextItem != null) 

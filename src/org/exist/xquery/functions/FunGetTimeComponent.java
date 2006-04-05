@@ -101,7 +101,7 @@ public class FunGetTimeComponent extends BasicFunction {
         
         Sequence result;
         Sequence arg = args[0];
-		if (arg.getLength() == 0)
+		if (arg.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
     		TimeValue time = (TimeValue) arg.itemAt(0);

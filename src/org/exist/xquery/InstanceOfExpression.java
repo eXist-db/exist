@@ -74,13 +74,13 @@ public class InstanceOfExpression extends AbstractExpression {
         Sequence result = BooleanValue.TRUE;
 		Sequence seq = expression.eval(contextSequence, contextItem);
         
-		int items = seq.getLength();
 		int requiredCardinality = type.getCardinality();
-		if (items > 0 && requiredCardinality == Cardinality.EMPTY)
+		if (!seq.isEmpty() && requiredCardinality == Cardinality.EMPTY)
             result = BooleanValue.FALSE;
-        else if (items == 0 && (requiredCardinality & Cardinality.ZERO) == 0)
+        else if (seq.isEmpty() && (requiredCardinality & Cardinality.ZERO) == 0)
             result = BooleanValue.FALSE;
-		else if (items > 1 && (requiredCardinality & Cardinality.MANY) == 0)
+		//TODO : get rid of getLength() 
+		else if (seq.getLength() > 1 && (requiredCardinality & Cardinality.MANY) == 0)
             result = BooleanValue.FALSE;
         else {
     		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {

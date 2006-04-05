@@ -108,12 +108,12 @@ public class Delete extends Modification {
         	prevUpdateErrors.add(new StringValue(xpe.getMessage()));
 			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 			
-        	if(inSeq.getLength() > 0)
+        	if(!inSeq.isEmpty())
         		throw xpe;	//TODO: should we trap this instead of throwing an exception - deliriumsky?
         }
         //END trap Delete failure
         
-		if (inSeq.getLength() > 0) {
+		if (!inSeq.isEmpty()) {
             TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
             Txn transaction = transact.beginTransaction();
     		try {

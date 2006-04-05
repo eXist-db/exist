@@ -59,12 +59,12 @@ public class RangeExpression extends Function {
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {		
 		Sequence result;
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if(seq.getLength() == 0)
+		if(seq.isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
         else {
         	long start = ((IntegerValue)seq.convertTo(Type.INTEGER)).getLong();
         	seq = getArgument(1).eval(contextSequence, contextItem);
-    		if(seq.getLength() == 0)
+    		if(seq.isEmpty())
     			result = Sequence.EMPTY_SEQUENCE;
     		else {
     			long end = ((IntegerValue)seq.convertTo(Type.INTEGER)).getLong();        	

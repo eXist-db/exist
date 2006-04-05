@@ -123,13 +123,13 @@ public class Transform extends BasicFunction {
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		if(args[0].getLength() == 0)
+		if(args[0].isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
 		Item inputNode = args[0].itemAt(0);
 		Item stylesheetItem = args[1].itemAt(0);
 		
 		Node options = null;
-		if(args[2].getLength() > 0)
+		if(!args[2].isEmpty())
 			options = ((NodeValue)args[2].itemAt(0)).getNode();
 		
 		TransformerHandler handler = createHandler(stylesheetItem, options);

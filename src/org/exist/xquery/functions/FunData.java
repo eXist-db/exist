@@ -76,7 +76,7 @@ public class FunData extends Function {
 		Sequence arg = getArgument(0).eval(contextSequence);
         
         Sequence result;
-		if(arg.getLength() == 0)
+		if(arg.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
             result = new ValueSequence();

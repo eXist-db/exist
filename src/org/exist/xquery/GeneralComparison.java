@@ -106,12 +106,14 @@ public class GeneralComparison extends BinaryOp {
 		this.relation = relation;
 		this.truncation = truncation;
 		// simplify arguments
+		//TODO : get rid of getLength()
 		if (left instanceof PathExpr && ((PathExpr) left).getLength() == 1) {
             context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
             "Simplifying left argument");
 			left = ((PathExpr) left).getExpression(0);
 		}
 		add(left);
+		//TODO : get rid of getLength
 		if (right instanceof PathExpr && ((PathExpr) right).getLength() == 1) {
             context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
             "Simplifying right argument");
@@ -244,14 +246,16 @@ public class GeneralComparison extends BinaryOp {
 		Sequence rs = getRight().eval(contextSequence, contextItem);
 		Collator collator = getCollator(contextSequence);
 		AtomicValue lv, rv;
-		if (ls.getLength() == 1 && rs.getLength() == 1) {
+		//TODO : get rid of getLength()
+		if (!ls.isEmpty() && ls.getLength() == 1 && !rs.isEmpty() && rs.getLength() == 1) {
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
 			return BooleanValue.valueOf(compareValues(collator, lv, rv));
 		} else {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				lv = i1.nextItem().atomize();
-				if (rs.getLength() == 1	&& 
+				//TODO : get rid of getLength
+				if (!rs.isEmpty() && rs.getLength() == 1	&& 
                     compareValues(collator, lv, rs.itemAt(0).atomize()))
 					return BooleanValue.TRUE;
 				else {
@@ -361,14 +365,14 @@ public class GeneralComparison extends BinaryOp {
       
 		//get the NodeSet on the left
 		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);		
-        if(!(nodes instanceof VirtualNodeSet) && nodes.getLength() == 0) //nothing on the left, so nothing to do
+        if(!(nodes instanceof VirtualNodeSet) && nodes.isEmpty()) //nothing on the left, so nothing to do
         {
             return(Sequence.EMPTY_SEQUENCE);
         }
     
         //get the Sequence on the right
 		Sequence rightSeq = getRight().eval(contextSequence);
-		if(rightSeq.getLength() == 0)	//nothing on the right, so nothing to do
+		if(rightSeq.isEmpty())	//nothing on the right, so nothing to do
 		{
             return(Sequence.EMPTY_SEQUENCE);
 		}

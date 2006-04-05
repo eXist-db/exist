@@ -83,7 +83,8 @@ public class DynamicPIConstructor extends NodeConstructor {
         context.proceed(this, builder);
         
         Sequence nameSeq = name.eval(contextSequence, contextItem);
-        if(nameSeq.getLength() != 1)
+        //TODO : get rid of getLength()
+        if(nameSeq.isEmpty() || nameSeq.getLength() > 1)
             throw new XPathException(getASTNode(), "The name expression should evaluate to a single value");
         
         Item nameItem = nameSeq.itemAt(0);
@@ -94,7 +95,7 @@ public class DynamicPIConstructor extends NodeConstructor {
         
         String value;
         Sequence contentSeq = content.eval(contextSequence, contextItem);
-        if(contentSeq.getLength() == 0)
+        if(contentSeq.isEmpty())
             value = "";
         else {
 	        StringBuffer buf = new StringBuffer();

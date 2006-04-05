@@ -85,7 +85,7 @@ public class FunSum extends Function {
         Sequence result;
         
 		Sequence inner = getArgument(0).eval(contextSequence, contextItem);	
-		if (inner.getLength() == 0) {
+		if (inner.isEmpty()) {
 			Sequence zero = DoubleValue.ZERO;
 			if(getSignature().getArgumentCount() == 2)
 				zero = getArgument(1).eval(contextSequence, contextItem);

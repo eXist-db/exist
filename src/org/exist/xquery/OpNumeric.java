@@ -107,12 +107,14 @@ public class OpNumeric extends BinaryOp {
 		
         Sequence result;
         
-        if (lseq.getLength() == 0) 
+        if (lseq.isEmpty()) 
             result = Sequence.EMPTY_SEQUENCE;
+        //TODO : get rid of getLength()
         else if (lseq.getLength() > 1) 
         	throw new XPathException("XPTY0004: too many operands at the left of " + Constants.OPS[operator]);
-        else if (rseq.getLength() == 0) 
+        else if (rseq.isEmpty()) 
             result = Sequence.EMPTY_SEQUENCE;
+        //TODO : get rid of getLength()
         else if (rseq.getLength() > 1) 
         	throw new XPathException("XPTY0004: too many operands at the right of " + Constants.OPS[operator]);
         else {

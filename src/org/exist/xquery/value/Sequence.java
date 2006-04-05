@@ -95,6 +95,13 @@ public interface Sequence {
 	 * @return
 	 */
 	public int getLength();
+
+	/**
+	 * Returns whether the sequence is empty or not.
+	 * 
+	 * @return
+	 */
+	public boolean isEmpty();
 	
 	/**
 	 * Explicitely remove all duplicate nodes from this sequence.

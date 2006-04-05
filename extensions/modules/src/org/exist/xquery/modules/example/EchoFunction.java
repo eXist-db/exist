@@ -54,7 +54,7 @@ public class EchoFunction extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		// is argument the empty sequence?
-		if (args[0].getLength() == 0)
+		if (args[0].isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
 		// iterate through the argument sequence and echo each item
 		ValueSequence result = new ValueSequence();

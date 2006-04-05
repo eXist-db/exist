@@ -350,8 +350,9 @@ public class Profiler {
     // never used locally
     private String sequencePreview(Sequence sequence) {
         StringBuffer truncation = new StringBuffer();         
-        if (sequence.getLength() == 0)
+        if (sequence.isEmpty())
             truncation.append(sequence.toString());
+        //TODO : get rid of getLength()
         else if (sequence.getLength() == 1) {
             truncation.append("(");            
             if (sequence.itemAt(0).toString().length() > 20) 

@@ -82,7 +82,7 @@ public class Update extends Modification {
 			contextSequence = contextItem.toSequence();
         
         Sequence contentSeq = value.eval(contextSequence);
-        if (contentSeq.getLength() == 0)
+        if (contentSeq.isEmpty())
             throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         
         Sequence inSeq = select.eval(contextSequence);
@@ -112,12 +112,12 @@ public class Update extends Modification {
         	prevUpdateErrors.add(new StringValue(xpe.getMessage()));
 			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 			
-        	if(inSeq.getLength() > 0)
+        	if(!inSeq.isEmpty())
         		throw xpe;	//TODO: should we trap this instead of throwing an exception - deliriumsky?
         }
         //END trap Update failure
         
-        if (inSeq.getLength() > 0) {          
+        if (!inSeq.isEmpty()) {          
 
     		try {
     			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();

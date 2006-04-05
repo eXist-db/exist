@@ -361,7 +361,12 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	/* the following methods are normally never called in this context,
 	 * we just provide them because they are declared abstract
 	 * in the super class
-	 */
+	 */	
+
+	public boolean isEmpty() {		
+		//TODO : fix this terrible performance gap !!!
+		return getLength() == 0;
+	}
 
 	public void add(DocumentImpl doc, long nodeId) {
 	}

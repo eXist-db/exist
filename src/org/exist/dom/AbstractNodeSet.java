@@ -56,6 +56,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	private boolean isCached = false;
 	
 	protected AbstractNodeSet() {
+		isEmpty = true;
 	}
 	
 	/**
@@ -130,7 +131,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	public void add(Item item) throws XPathException {
 		if (!Type.subTypeOf(item.getType(), Type.NODE))
 			throw new XPathException("item has wrong type");
-		add((NodeProxy) item);
+		add((NodeProxy) item);		
 	}
 
 	/**
@@ -140,7 +141,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param other
 	 * @throws XPathException
 	 */
-	public void addAll(Sequence other) throws XPathException {
+	public void addAll(Sequence other) throws XPathException {		
 		if (!Type.subTypeOf(other.getItemType(), Type.NODE))
 			throw new XPathException("sequence argument is not a node sequence");
 		for (SequenceIterator i = other.iterate(); i.hasNext();) {

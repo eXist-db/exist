@@ -73,7 +73,7 @@ public class FunEscapeURI extends BasicFunction {
         }
         
         Sequence result;
-        if (args[0].getLength() == 0)
+        if (args[0].isEmpty())
             result = StringValue.EMPTY_STRING;
         else {
             String uri = args[0].getStringValue();

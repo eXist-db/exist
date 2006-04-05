@@ -51,13 +51,13 @@ public class Union extends CombiningExpression {
 		rval.removeDuplicates();
        
         Sequence result;
-        if (lval.getLength() == 0 && rval.getLength() == 0) {
+        if (lval.isEmpty() && rval.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
-        } else if(rval.getLength() == 0) {
+        } else if(rval.isEmpty()) {
             if(!Type.subTypeOf(lval.getItemType(), Type.NODE))
                 throw new XPathException(getASTNode(), "Error XPTY0004 : union operand is not a node sequence");
             result = lval;
-        } else if(lval.getLength() == 0) {
+        } else if(lval.isEmpty()) {
             if(!Type.subTypeOf(rval.getItemType(), Type.NODE))
                 throw new XPathException(getASTNode(), "Error XPTY0004 : union operand is not a node sequence");                 
             result = rval;            

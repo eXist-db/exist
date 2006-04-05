@@ -81,10 +81,10 @@ public class FunNormalizeSpace extends Function {
         
 		String value;
 		if (getSignature().getArgumentCount() == 0)
-			value = contextSequence.getLength() > 0 ? contextSequence.itemAt(0).getStringValue() : "";
+			value = !contextSequence.isEmpty() ? contextSequence.itemAt(0).getStringValue() : "";
 		else {
 			Sequence seq = getArgument(0).eval(contextSequence);
-			if (seq.getLength() == 0)
+			if (seq.isEmpty())
                 //TODO : it this the right value ? -pb
                 value = null;
             else

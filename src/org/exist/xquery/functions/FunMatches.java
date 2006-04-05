@@ -185,7 +185,7 @@ public class FunMatches extends Function {
 	    
         Sequence result;
 		Sequence input = getArgument(0).eval(contextSequence, contextItem);
-		if (input.getLength() == 0)
+		if (input.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;        
         else if (inPredicate && !Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM)) {
             if (context.isProfilingEnabled())

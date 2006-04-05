@@ -191,7 +191,8 @@ public class DatabaseResources {
             
             SequenceIterator i = sequence.iterate();
             
-            logger.debug("Query yielded "+sequence.getLength()+" hits.");
+            if (logger.isDebugEnabled())
+            	logger.debug("Query yielded "+sequence.getLength()+" hits.");
             
             while(i.hasNext()){
                 String path =  i.nextItem().getStringValue();

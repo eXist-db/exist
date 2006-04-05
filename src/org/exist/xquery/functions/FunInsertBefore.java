@@ -52,9 +52,9 @@ public class FunInsertBefore extends Function {
         Sequence result;
 		Sequence seq1 = getArgument(0).eval(contextSequence, contextItem);
 		Sequence seq2 = getArgument(2).eval(contextSequence, contextItem);
-		if (seq1.getLength() == 0)
+		if (seq1.isEmpty())
 		    result = seq2;
-        else if (seq2.getLength() == 0) 
+        else if (seq2.isEmpty()) 
             result = seq1;
         else {
     		int pos = 

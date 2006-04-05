@@ -65,7 +65,7 @@ public class FunCodepointsToString extends BasicFunction {
         }
         
         Sequence result;
-		if (args[0].getLength() == 0)
+		if (args[0].isEmpty())
 			result = StringValue.EMPTY_STRING;
         else {
     		StringBuffer buf = new StringBuffer();    		

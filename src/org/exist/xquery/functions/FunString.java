@@ -76,7 +76,7 @@ public class FunString extends Function {
 			contextSequence = getArgument(0).eval(contextSequence);
         
         Sequence result;
-		if(contextSequence.getLength() == 0)
+		if(contextSequence.isEmpty())
 			result = StringValue.EMPTY_STRING;
         else
             result = contextSequence.convertTo(Type.STRING);        

@@ -93,7 +93,7 @@ public class Insert extends Modification {
 			contextSequence = contextItem.toSequence();
 		
 		Sequence contentSeq = value.eval(contextSequence);
-		if (contentSeq.getLength() == 0)
+		if (contentSeq.isEmpty())
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         
         Sequence inSeq = select.eval(contextSequence);      

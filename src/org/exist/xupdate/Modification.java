@@ -179,10 +179,11 @@ public abstract class Modification {
 			pool.returnCompiledXQuery(source, compiled);
 		}
 
-		if (!(resultSeq.getLength() == 0 || Type.subTypeOf(resultSeq.getItemType(), Type.NODE)))
+		if (!(resultSeq.isEmpty() || Type.subTypeOf(resultSeq.getItemType(), Type.NODE)))
 			throw new EXistException("select expression should evaluate to a node-set; got " +
 			        Type.getTypeName(resultSeq.getItemType()));
-		LOG.debug("found " + resultSeq.getLength() + " for select: " + selectStmt);
+		if (LOG.isDebugEnabled())
+			LOG.debug("found " + resultSeq.getLength() + " for select: " + selectStmt);
 		return (NodeList)resultSeq.toNodeSet();
 	}
 

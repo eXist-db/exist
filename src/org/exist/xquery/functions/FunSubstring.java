@@ -95,7 +95,7 @@ public class FunSubstring extends Function {
         
         Sequence result;
 		Sequence seq = arg0.eval(contextSequence);
-		if(seq.getLength() == 0)
+		if(seq.isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
         else {
     		int start = ((DoubleValue)arg1.eval(contextSequence).itemAt(0).convertTo(Type.DOUBLE)).getInt();

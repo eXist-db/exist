@@ -44,7 +44,7 @@ public class FunRemove extends Function {
         
         Sequence result;
         Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if (seq.getLength() == 0) 
+		if (seq.isEmpty()) 
             result = Sequence.EMPTY_SEQUENCE;
         else {            
             //TODO : explain this Double conversion -pb

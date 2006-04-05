@@ -458,6 +458,9 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * Methods of interface Sequence
 	 */
 
+	public boolean isEmpty() {
+		return false;
+	}
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
 	 */

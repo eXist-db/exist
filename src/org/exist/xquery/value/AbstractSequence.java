@@ -40,7 +40,10 @@ public abstract class AbstractSequence implements Sequence {
 	 * @see http://cvs.sourceforge.net/viewcvs.py/exist/eXist-1.0/src/org/exist/xquery/value/AbstractSequence.java?r1=1.11&r2=1.12 */
 	private static final boolean OLD_EXIST_VERSION_COMPATIBILITY = false;
 	
+	protected boolean isEmpty;
+	
 	protected AbstractSequence() {
+		isEmpty = true;
 	}
 	
 	public abstract int getItemType();
@@ -52,9 +55,10 @@ public abstract class AbstractSequence implements Sequence {
 	public abstract int getLength();
 
 	public int getCardinality() {
+		if (isEmpty())
+			return Cardinality.EMPTY;
+		//TODO : get rid of getLength()
 		switch(getLength()) {
-			case 0:
-				return Cardinality.EMPTY;
 			case 1:
 				return Cardinality.EXACTLY_ONE;
 			default:
@@ -69,9 +73,11 @@ public abstract class AbstractSequence implements Sequence {
 		else
 			return new StringValue(first.getStringValue()).convertTo(requiredType);
 	}
+
+	public abstract boolean isEmpty();
 	
 	public String getStringValue() throws XPathException {
-		if(getLength() == 0)
+		if(isEmpty())
 			return "";
 		Item first = iterate().nextItem();
 		return first.getStringValue();
@@ -118,10 +124,11 @@ public abstract class AbstractSequence implements Sequence {
 	 * <a <href="http://www.w3.org/TR/xquery/#id-ebv">2.4.3 Effective Boolean Value</a>
 	 * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
 	 */
-	public boolean effectiveBooleanValue() throws XPathException {
-		int len = getLength();
-		if (len == 0)
+	public boolean effectiveBooleanValue() throws XPathException {		
+		if (isEmpty())
 			return false;
+		
+		int len = getLength();
 
 		if ( OLD_EXIST_VERSION_COMPATIBILITY )
 			if (len > 1)
@@ -168,7 +175,7 @@ public abstract class AbstractSequence implements Sequence {
 		else if(javaClass == Object.class)
 			return 20;
 		
-		if(getLength() > 0)
+		if(!isEmpty())
 			return itemAt(0).conversionPreference(javaClass);
 			
 		return Integer.MAX_VALUE;
@@ -200,7 +207,7 @@ public abstract class AbstractSequence implements Sequence {
 			return l;
 		}
 			
-		if(getLength() > 0)
+		if(!isEmpty())
 			return itemAt(0).toJavaObject(target);
 		return null;
 	}

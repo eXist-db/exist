@@ -84,7 +84,7 @@ public class FilteredExpression extends AbstractExpression {
         
         Sequence result;
 		Sequence seq = expression.eval(contextSequence, contextItem);
-		if (seq.getLength() == 0)
+		if (seq.isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
         else {            
 //    		seq.setSelfAsContext();

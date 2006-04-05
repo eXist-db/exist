@@ -80,10 +80,15 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 		}
 		return null;
 	}
+	
+	public boolean isEmpty() {
+		return isEmpty;
+	}
 
 	public final void add(NodeProxy proxy) {
 		if(proxy == null)
 			return;
+		isEmpty = false;
 		if (root == null) {
 			root = new Node(proxy);
 			++size;
@@ -116,7 +121,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 					return;
 				}
 			}
-		}
+		}		
 	}
 
 	public Node getMinNode() {

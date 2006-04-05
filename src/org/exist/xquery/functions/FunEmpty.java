@@ -78,7 +78,7 @@ public class FunEmpty extends Function {
 			contextSequence = contextItem.toSequence();
         
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		Sequence result = seq.getLength() == 0 ? BooleanValue.TRUE : BooleanValue.FALSE;
+		Sequence result = seq.isEmpty() ? BooleanValue.TRUE : BooleanValue.FALSE;
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 

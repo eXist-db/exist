@@ -63,7 +63,7 @@ public class CollectionName extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-	    if(args[0].getLength() == 0)
+	    if(args[0].isEmpty())
 	        return Sequence.EMPTY_SEQUENCE;
 		Item item = args[0].itemAt(0);
 		if(item.getType() == Type.JAVA_OBJECT) {

@@ -60,9 +60,9 @@ public class Except extends CombiningExpression {
 		rval.removeDuplicates();         
         
         Sequence result;
-        if (lval.getLength() == 0) {
+        if (lval.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
-        } else if (rval.getLength() == 0) {
+        } else if (rval.isEmpty()) {
             if(!Type.subTypeOf(lval.getItemType(), Type.NODE))
                 throw new XPathException(getASTNode(), "Error XPTY0004 : except operand is not a node sequence");               
             result = lval;                  

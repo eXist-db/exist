@@ -484,7 +484,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				if (select == null)
 					throw new SAXException("value-of requires a select attribute");
 				Sequence seq = processQuery(select);
-				LOG.debug("Found " + seq.getLength() + " items for value-of");
+				if (LOG.isDebugEnabled())
+					LOG.debug("Found " + seq.getLength() + " items for value-of");
 				Item item;
 				for (SequenceIterator i = seq.iterate(); i.hasNext();) {
 					item = i.nextItem();
@@ -721,7 +722,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		throws SAXException {
 		LOG.debug("creating variable " + name + " as " + select);
 		Sequence result = processQuery(select);
-		LOG.debug("found " + result.getLength() + " for variable " + name);
+		if (LOG.isDebugEnabled())
+			LOG.debug("found " + result.getLength() + " for variable " + name);
 		variables.put(name, result);
 	}
 	

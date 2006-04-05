@@ -76,7 +76,7 @@ public class FunStringPad extends Function {
         
         Sequence result;
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if(seq.getLength() == 0)
+		if(seq.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {        
     		String str = seq.getStringValue();

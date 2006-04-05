@@ -83,7 +83,7 @@ public class Replace extends Modification {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		Sequence inSeq = select.eval(contextSequence);
-		if (inSeq.getLength() == 0)
+		if (inSeq.isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
 				
 		//START trap Replace failure
@@ -111,13 +111,13 @@ public class Replace extends Modification {
         	prevUpdateErrors.add(new StringValue(xpe.getMessage()));
 			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 			
-        	if(inSeq.getLength() > 0)
+        	if(!inSeq.isEmpty())
         		throw xpe;	//TODO: should we trap this instead of throwing an exception - deliriumsky?
         }
         //END trap Replace failure
 		
 		Sequence contentSeq = value.eval(contextSequence);
-		if (contentSeq.getLength() == 0)
+		if (contentSeq.isEmpty())
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         contentSeq = deepCopy(contentSeq);
         

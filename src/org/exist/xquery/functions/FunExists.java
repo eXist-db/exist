@@ -78,7 +78,7 @@ public class FunExists extends Function {
 			contextSequence = contextItem.toSequence();
         
 		Sequence seq = getArgument(0).eval(contextSequence);
-		Sequence result = seq.getLength() == 0 ? BooleanValue.FALSE : BooleanValue.TRUE;
+		Sequence result = seq.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 

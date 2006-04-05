@@ -124,7 +124,7 @@ public class SendEmailFunction extends BasicFunction
 		try
 		{	
 			//get the charset parameter, default to UTF-8
-            if (args[2].getLength() > 0)
+            if (!args[2].isEmpty())
             {
                 charset =  args[2].getStringValue();
             }

@@ -46,7 +46,7 @@ public class FunReverse extends Function {
         
         Sequence result;
         Sequence seq = getArguments(contextSequence, contextItem)[0];
-		if (seq.getLength() == 0) 
+		if (seq.isEmpty()) 
             result = Sequence.EMPTY_SEQUENCE;
         else {
                 Sequence tmp = new ValueSequence();
@@ -56,7 +56,7 @@ public class FunReverse extends Function {
                     tmp.add(item);
                 }
                 result = new ValueSequence();
-                for (int i = seq.getLength()-1; i>=0; i--) {
+                for (int i = seq.getLength() - 1; i >= 0; i--) {
                     result.add(tmp.itemAt(i));
                 }
         }

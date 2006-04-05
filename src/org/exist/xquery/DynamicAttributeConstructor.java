@@ -85,14 +85,15 @@ public class DynamicAttributeConstructor extends NodeConstructor {
         context.proceed(this, builder);
         
         Sequence nameSeq = qnameExpr.eval(contextSequence, contextItem);
-        if(nameSeq.getLength() != 1)
+        //TODO : get rid of getLength
+        if(nameSeq.isEmpty() || nameSeq.getLength() > 1)
             throw new XPathException(getASTNode(), "The name expression should evaluate to a single value");
         
         QName qn = QName.parse(context, nameSeq.getStringValue(), null);
         
         String value;
         Sequence valueSeq = valueExpr.eval(contextSequence, contextItem);
-        if(valueSeq.getLength() == 0)
+        if(valueSeq.isEmpty())
             value = "";
         else {
             StringBuffer buf = new StringBuffer();

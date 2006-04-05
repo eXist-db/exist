@@ -79,7 +79,7 @@ public class DocumentConstructor extends NodeConstructor {
         MemTreeBuilder builder = context.getDocumentBuilder();
         DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
         
-        if(contentSeq.getLength() == 0)
+        if(contentSeq.isEmpty())
             return builder.getDocument();
         try {
 	        StringBuffer buf = null;

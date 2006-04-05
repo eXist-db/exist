@@ -99,7 +99,7 @@ public class FunMax extends CollatingFunction {
         
         Sequence result;
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
-		if(arg.getLength() == 0)
+		if(arg.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
         	//TODO : test if a range index is defined *iff* it is compatible with the collator

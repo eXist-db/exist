@@ -66,7 +66,7 @@ public class FunRound extends Function {
 		
         Sequence result;
         Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if (seq.getLength() == 0)
+		if (seq.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
     		NumericValue value = (NumericValue) seq.itemAt(0).convertTo(Type.NUMBER);

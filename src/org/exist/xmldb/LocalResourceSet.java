@@ -53,7 +53,7 @@ public class LocalResourceSet implements ResourceSet {
 		this.brokerPool = pool;
 		this.outputProperties = properties;
 		this.collection = col;
-		if(val.getLength() == 0)
+		if(val.isEmpty())
 			return;
 		if(Type.subTypeOf(val.getItemType(), Type.NODE) && sortExpr != null) {
 			SortedNodeSet sorted = new SortedNodeSet(brokerPool, user, sortExpr, collection.getAccessContext());

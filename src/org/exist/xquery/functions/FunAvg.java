@@ -75,7 +75,7 @@ public class FunAvg extends Function {
         
         Sequence result;
 		Sequence inner = getArgument(0).eval(contextSequence, contextItem);      
-		if (inner.getLength() == 0)
+		if (inner.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
         	SequenceIterator iter = inner.unorderedIterator();

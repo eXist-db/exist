@@ -181,11 +181,11 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 }                 
                 
                 //contextDocs == null *is* significant
-                expr.setContextDocSet(contextDocs);                
-                
-                //DESIGN : calling result.getLength() should be avoided -pb
+                expr.setContextDocSet(contextDocs);
+          
+                //DESIGN : first test the dependency then the result
                 if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_POSITION) && 
-                		result.getLength() > 0) {
+                		!result.isEmpty()) {
                       
                     Sequence exprResult = Sequence.EMPTY_SEQUENCE;
                     
@@ -196,6 +196,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         context.setContextPosition(p);
                         Item current = iterInner.nextItem();   
                         //DESIGN : calling result.getLength() should be avoided -pb
+                        //TODO : get rid of getLength()
                         if (result.getLength() < 2)
                         	exprResult = expr.eval(result, current);
                         else {
@@ -212,8 +213,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 //TOUNDERSTAND : why did I have to write this test :-) ? -pb
                 //it looks like an empty sequence could be considered as a sub-type of Type.NODE
                 //well, no so stupid I think...    
-                //DESIGN : calling result.getLength() should be avoided -pb
-                if (!Type.subTypeOf(result.getItemType(), Type.NODE) && result.getLength() > 0)
+                if (!result.isEmpty() && !Type.subTypeOf(result.getItemType(), Type.NODE))
                     gotAtomicResult = true;
 
                 if(steps.size() > 1)

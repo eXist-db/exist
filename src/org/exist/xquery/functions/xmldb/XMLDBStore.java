@@ -114,7 +114,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 	public Sequence evalWithCollection(Collection collection, Sequence args[],
 		Sequence contextSequence)
 		throws XPathException {
-		String docName = args[1].getLength() == 0 ? null : args[1].getStringValue();
+		String docName = args[1].isEmpty() ? null : args[1].getStringValue();
 		if(docName != null && docName.length() == 0)
 			docName = null;
 		

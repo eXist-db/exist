@@ -78,7 +78,7 @@ public class NamespaceConstructor extends NodeConstructor {
         
         Sequence uriSeq = uri.eval(contextSequence, contextItem);
         String value;
-        if(uriSeq.getLength() == 0)
+        if(uriSeq.isEmpty())
             value = "";
         else {
             StringBuffer buf = new StringBuffer();
