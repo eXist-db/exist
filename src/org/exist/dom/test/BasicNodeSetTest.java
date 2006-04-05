@@ -61,7 +61,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Test basic {@link org.exist.dom.NodeSet} operations to ensure that
- * the used algorithms are basically correct.
+ * the used algorithms are correct.
  *  
  * @author wolf
  *
@@ -211,7 +211,7 @@ public class BasicNodeSetTest extends XMLTestCase {
                     docs, test.getName(), null);
             
             System.out.println("Testing AbstractNodeSet.selectAncestors ...");
-            result = scenes.selectAncestors(largeSet.toNodeSet(), false, -1);
+            result = ((AbstractNodeSet)largeSet).selectAncestors(scenes.toNodeSet(), false, -1);
             assertEquals(47, result.getLength());
             System.out.println("AbstractNodeSet.selectAncestors: PASS");
         } catch (Exception e) {
