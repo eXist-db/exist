@@ -313,12 +313,13 @@ public class ArraySet extends AbstractNodeSet {
 			// valid nodes are found
 			more = getParentSet(dl, dlen);
 		}
-		LOG.debug(
-			"getAncestors found "
-				+ result.getLength()
-				+ " in "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
+        if (LOG.isDebugEnabled())
+    		LOG.debug(
+    			"getAncestors found "
+    				+ result.getLength()
+    				+ " in "
+    				+ (System.currentTimeMillis() - start)
+    				+ "ms.");
 		return result;
 	}
 

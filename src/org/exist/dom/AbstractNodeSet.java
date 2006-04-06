@@ -166,12 +166,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		throw new RuntimeException(
 			"remove not implemented for class " + getClass().getName());
 	}
-
-	/**
-	 * Return the number of nodes contained in this node set.
-	 */
-	public abstract int getLength();
-
+    
 	public void setIsCached(boolean cached) {
 		isCached = cached;
 	}
