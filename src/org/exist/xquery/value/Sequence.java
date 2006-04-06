@@ -91,20 +91,32 @@ public interface Sequence {
 	
 	/**
 	 * Returns the number of items contained in the sequence.
+     * Call this method <strong>only</strong> when necessary, 
+     * since it can be resource consuming. 
 	 * 
-	 * @return
+	 * @return The sequence's length
 	 */
 	public int getLength();
 
 	/**
 	 * Returns whether the sequence is empty or not.
 	 * 
-	 * @return
+	 * @return <code>true</code> is the sequence is empty
 	 */
 	public boolean isEmpty();
 	
+    /**
+     * Returns whether the sequence has just one item or not.
+     * 
+     * @return <code>true</code> is the sequence has just one item
+     */    
 	public boolean hasOne();
 	
+    /**
+     * Returns whether the sequence more than one item or not.
+     * 
+     * @return <code>true</code> is the sequence more than one item
+     */    
 	public boolean hasMany();
 	
 	/**

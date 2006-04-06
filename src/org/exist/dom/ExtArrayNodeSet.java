@@ -276,8 +276,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     public void addAll(NodeSet other) {
         if (other.isEmpty())
             return;
-        //TODO : get rid of getLength()
-        if (other.getLength() == 1) {
+        if (other.hasOne()) {
             add((NodeProxy) other.itemAt(0));
         } else {
             for (Iterator i = other.iterator(); i.hasNext();) {
