@@ -101,7 +101,7 @@ public class URIUtils {
 		result = result.replaceAll("%24", "\\$");
 		result = result.replaceAll("%2C", ",");		
 		result = result.replaceAll("%5B", "[");
-		result = result.replaceAll("%5D", "])");		
+		result = result.replaceAll("%5D", "]");		
 		result = result.replaceAll("%25", "%");		
 		return result;
 	}
