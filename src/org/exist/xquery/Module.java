@@ -62,9 +62,27 @@ public interface Module {
 	public final static String REQUEST_FUNCTION_NS =
 		"http://exist-db.org/xquery/request";
 	
+	/**
+	 * Namespace for the built-in session module.
+	 */
+	public final static String SESSION_FUNCTION_NS =
+		"http://exist-db.org/xquery/session";
+	
+	/**
+	 * Namespace for the built-in response module.
+	 */
+	public final static String RESPONSE_FUNCTION_NS =
+		"http://exist-db.org/xquery/response";
+	
+	/**
+	 * Namespace for the built-in transform module.
+	 */
 	public final static String TRANSFORM_FUNCTION_NS =
 		"http://exist-db.org/xquery/transform";
 	
+	/**
+	 * Namespace for the built-in text module.
+	 */
 	public final static String TEXT_FUNCTION_NS =
 		"http://exist-db.org/xquery/text";
 	
