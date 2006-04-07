@@ -62,8 +62,6 @@ import org.exist.xmldb.XQueryService;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
-import org.exist.xquery.functions.response.ResponseModule;
-import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.Sequence;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -286,10 +284,13 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 			if(!((CollectionImpl)collection).isRemoteCollection()) {
 				HttpServletRequest httpRequest = (HttpServletRequest) objectModel
 						.get(HttpEnvironment.HTTP_REQUEST_OBJECT);
-				service.declareVariable(RequestModule.PREFIX + ":request", new CocoonRequestWrapper(request, httpRequest));
-				service.declareVariable(ResponseModule.PREFIX + ":response", new CocoonResponseWrapper(response));
+				service.declareVariable(RequestModule.PREFIX + ":request",
+						new CocoonRequestWrapper(request, httpRequest));
+				service.declareVariable(RequestModule.PREFIX + ":response",
+						new CocoonResponseWrapper(response));
 				if(session != null)
-					service.declareVariable(SessionModule.PREFIX + ":session",new CocoonSessionWrapper(session));
+					service.declareVariable(RequestModule.PREFIX + ":session",
+						new CocoonSessionWrapper(session));
 				includeContentHandler = this.contentHandler;
 			} else {
 				includeContentHandler = new IncludeXMLConsumer(this.contentHandler);

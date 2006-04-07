@@ -45,8 +45,6 @@ import org.exist.xmldb.XQueryService;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
-import org.exist.xquery.functions.response.ResponseModule;
-import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
 import org.xmldb.api.DatabaseManager;
@@ -301,11 +299,13 @@ public class XQueryServlet extends HttpServlet {
 				collection.getService("XQueryService", "1.0");
 			service.setProperty("base-uri", baseURI);
 			service.setModuleLoadPath(moduleLoadPath);
+			String prefix = RequestModule.PREFIX;
 			//service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
             if(!((CollectionImpl)collection).isRemoteCollection()) {
-    			service.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, formEncoding, containerEncoding));
-    			service.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
-    			service.declareVariable(SessionModule.PREFIX + ":session", new HttpSessionWrapper(session));
+    			service.declareVariable(prefix + ":request", 
+    					new HttpRequestWrapper(request, formEncoding, containerEncoding));
+    			service.declareVariable(prefix + ":response", new HttpResponseWrapper(response));
+    			service.declareVariable(prefix + ":session", new HttpSessionWrapper(session));
             }
 
 			Source source = new FileSource(f, encoding, true);
