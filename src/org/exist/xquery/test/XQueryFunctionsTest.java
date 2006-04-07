@@ -593,6 +593,36 @@ public class XQueryFunctionsTest extends TestCase {
             fail(e.getMessage());
         }
     }
+    
+    /*
+     *  Bugfix 3070
+     *  @see http://svn.sourceforge.net/exist/?rev=3070&view=rev
+     *
+     *  seconds-from-dateTime() returned wrong value when dateTime had
+     * no millesecs available. Special value was returned.
+     */
+    public void testSecondsFromDateTime(){
+        //
+        ResourceSet result =  null;
+        String r = "";
+        String message;
+        
+        try {
+            result 	= service.query("seconds-from-dateTime(xs:dateTime(\"2005-12-22T13:35:21.000\") )");
+            r 		= (String) result.getResource(0).getContent();
+            assertEquals( "21", r );
+            
+            result 	= service.query("seconds-from-dateTime(xs:dateTime(\"2005-12-22T13:35:21\") )");
+            r 		= (String) result.getResource(0).getContent();
+            assertEquals( "21", r );
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+
+    }
+    
     //ensure the test collection is removed and call collection-exists,
     //which should return false, no exception thrown
     public void testCollectionExists1() {
