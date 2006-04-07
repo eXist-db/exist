@@ -143,13 +143,17 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
 	public int getPart(int part) {
 		switch (part) {
-			case YEAR: return calendar.getYear();
+			case YEAR: return calendar.getYear(); 
 			case MONTH: return calendar.getMonth();
 			case DAY: return calendar.getDay();
 			case HOUR: return calendar.getHour();
 			case MINUTE: return calendar.getMinute();
 			case SECOND: return calendar.getSecond();
-			case MILLISECOND: return calendar.getMillisecond();
+			case MILLISECOND: int mSec=calendar.getMillisecond();
+                                          if(mSec == DatatypeConstants.FIELD_UNDEFINED)
+                                              return 0;
+                                          else
+                                              return calendar.getMillisecond();
 			default: throw new IllegalArgumentException("Invalid argument to method getPart");
 		}
 	}
