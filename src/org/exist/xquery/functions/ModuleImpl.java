@@ -159,7 +159,6 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunTranslate.signature, FunTranslate.class),
 		new FunctionDef(FunTrueOrFalse.fnTrue, FunTrueOrFalse.class),
 		new FunctionDef(FunTrueOrFalse.fnFalse, FunTrueOrFalse.class),
-		new FunctionDef(FunUnEscapeURI.signature, FunUnEscapeURI.class),
 		new FunctionDef(FunUpperOrLowerCase.fnLowerCase, FunUpperOrLowerCase.class),
 		new FunctionDef(FunUpperOrLowerCase.fnUpperCase, FunUpperOrLowerCase.class),
 		new FunctionDef(FunZeroOrOne.signature, FunZeroOrOne.class),
