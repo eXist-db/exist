@@ -87,6 +87,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.functions.response.ResponseModule;
+import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.Sequence;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -912,8 +914,8 @@ public class RESTServer {
         ResponseWrapper respw = new HttpResponseWrapper(response);
         //context.declareNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
         context.declareVariable(RequestModule.PREFIX + ":request", reqw);
-        context.declareVariable(RequestModule.PREFIX + ":response", respw);
-        context.declareVariable(RequestModule.PREFIX + ":session", reqw.getSession());
+        context.declareVariable(ResponseModule.PREFIX + ":response", respw);
+        context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession());
     }
     
     /**
