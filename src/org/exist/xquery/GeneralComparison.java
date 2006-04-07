@@ -101,25 +101,30 @@ public class GeneralComparison extends BinaryOp {
 	}
 	
 	public GeneralComparison(XQueryContext context,	Expression left, Expression right, int relation, 
-            int truncation) {
+            int truncation) {        
 		super(context);
+        boolean didLeftSimplification = false;
+        boolean didRightSimplification = false;
 		this.relation = relation;
-		this.truncation = truncation;
-		// simplify arguments
+		this.truncation = truncation;		
 		if (left instanceof PathExpr && ((PathExpr) left).getLength() == 1) {
-            context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
-            "Simplifying left argument");
 			left = ((PathExpr) left).getExpression(0);
+            didLeftSimplification = true;            
+            
 		}
-		add(left);
-		//TODO : get rid of getLength
+		add(left);		
 		if (right instanceof PathExpr && ((PathExpr) right).getLength() == 1) {
-            context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
-            "Simplifying right argument");
-            right = ((PathExpr) right).getExpression(0);
+            right = ((PathExpr) right).getExpression(0);            
+            didRightSimplification = true;
 		}
 		add(right);
         //TODO : should we also use simplify() here ? -pb
+		if (didLeftSimplification)
+            context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
+            "Marked left argument as a child expression");
+        if (didRightSimplification)
+            context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
+            "Marked right argument as a child expression"); 
 	}
 
     /* (non-Javadoc)
@@ -154,7 +159,7 @@ public class GeneralComparison extends BinaryOp {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
-	public int getDependencies() {
+	public int getDependencies() {        
 		final int leftDeps = getLeft().getDependencies();		
 		// left expression returns node set
 		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
@@ -708,7 +713,7 @@ public class GeneralComparison extends BinaryOp {
 	/**
 	 * Possibly switch operands to simplify execution
 	 */
-	protected void simplify() {
+	protected void simplify() {        
 		//Prefer nodes at the left hand
 		if ((!Type.subTypeOf(getLeft().returnsType(), Type.NODE)) && 
               Type.subTypeOf(getRight().returnsType(), Type.NODE))
