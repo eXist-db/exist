@@ -117,8 +117,8 @@ public class NativeSerializer extends Serializer {
     	// iterate through children
     	for (int i = 0; i < children.getLength(); i++) {
     		final StoredNode n = (StoredNode) children.item(i);
-    		final NodeProxy p = new NodeProxy((DocumentImpl) n
-    				.getOwnerDocument(), n.getGID(), n.getInternalAddress());
+    		final NodeProxy p = new NodeProxy((DocumentImpl) n.getOwnerDocument(),
+    				n.getGID(), n.getNodeType(), n.getInternalAddress());
     		Iterator domIter = broker.getNodeIterator(p);
     		domIter.next();
     		serializeToReceiver(n, domIter, (DocumentImpl) n.getOwnerDocument(), n

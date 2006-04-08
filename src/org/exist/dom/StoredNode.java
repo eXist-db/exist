@@ -311,7 +311,8 @@ public class StoredNode extends NodeImpl {
 	}
     
     protected StoredNode getLastNode(StoredNode node) {        
-        final NodeProxy p = new NodeProxy(ownerDocument, node.getGID(), node.getInternalAddress());
+        final NodeProxy p = new NodeProxy(ownerDocument, node.getGID(), 
+        		node.getNodeType(), node.getInternalAddress());
         final Iterator iterator = getBroker().getNodeIterator(p);
         //TODO : hasNext() test ? -pb
         iterator.next();

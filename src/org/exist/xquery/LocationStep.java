@@ -515,7 +515,7 @@ public class LocationStep extends Step {
                         if (sibling == null) {
                             sibling = new NodeProxy((DocumentImpl) currentNode
                                     .getOwnerDocument(), currentNode.getGID(),
-                                    currentNode.getInternalAddress());
+                                    currentNode.getNodeType(), currentNode.getInternalAddress());
                             if (Expression.NO_CONTEXT_ID != contextId) {
                                 sibling.addContextNode(contextId, current);
                             } else
@@ -619,7 +619,7 @@ public class LocationStep extends Step {
                 if (axis == Constants.ANCESTOR_SELF_AXIS
                         && test.matches(current)) {
                     ancestor = new NodeProxy(current.getDocument(), current
-                            .getGID(), current.getInternalAddress());
+                            .getGID(), current.getNodeType(), current.getInternalAddress());
                     NodeProxy t = result.get(ancestor);
                     if (t == null) {
                         if (Expression.NO_CONTEXT_ID != contextId)
