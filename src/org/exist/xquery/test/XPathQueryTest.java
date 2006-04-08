@@ -432,8 +432,16 @@ public class XPathQueryTest extends XMLTestCase {
             ResourceSet result = service.queryResource("numbers.xml", query);
             assertEquals("XPath: " + query, 1, result.getSize());            
             XMLResource resource = (XMLResource)result.getResource(0);
-            assertEquals("XPath: " + query, "a", resource.getContentAsDOM().getFirstChild().getLocalName());          
+            Node node = resource.getContentAsDOM();
+            //Oh dear ! Don't tell me that *I* have written this :'( -pb
+            if (node.getNodeType() == Node.DOCUMENT_NODE)
+                node = node.getFirstChild();            
+            assertEquals("XPath: " + query, "a", node.getLocalName());
             
+            query = "let $c := (<a/>,<b/>,<c/>,<d/>,<e/>) return count($c/root())";
+            result = service.queryResource("numbers.xml", query);
+            assertEquals( "5", result.getResource(0).getContent() );
+
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
