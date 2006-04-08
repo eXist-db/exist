@@ -101,20 +101,20 @@ public class FunGetTimeComponent extends BasicFunction {
         
         Sequence result;
         Sequence arg = args[0];
-		if (arg.isEmpty())
+        if (arg.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
-    		TimeValue time = (TimeValue) arg.itemAt(0);
-    		if (isCalledAs("hours-from-time"))
+            TimeValue time = (TimeValue) arg.itemAt(0);
+            if (isCalledAs("hours-from-time"))
                 result = new IntegerValue(time.getPart(DateValue.HOUR), Type.INTEGER);
-    		else if (isCalledAs("minutes-from-time"))
+            else if (isCalledAs("minutes-from-time"))
                 result = new IntegerValue(time.getPart(DateValue.MINUTE), Type.INTEGER);
-    		else if (isCalledAs("seconds-from-time")) {
-    			long millis = time.getPart(DateValue.SECOND) * 1000 + time.getPart(DateValue.MILLISECOND);
-                result = new DecimalValue(millis / 1000);
-    		} else if (isCalledAs("timezone-from-time"))
+            else if (isCalledAs("seconds-from-time")) {
+                long millis = time.getPart(DateValue.SECOND) * 1000L + time.getPart(DateValue.MILLISECOND);
+                result = new DecimalValue(millis / 1000F);
+            } else if (isCalledAs("timezone-from-time"))
                 result = time.getTimezone();
-    		else throw new Error("can't handle function " + mySignature.getName().getLocalName());
+            else throw new Error("can't handle function " + mySignature.getName().getLocalName());
         }
         
         if (context.getProfiler().isEnabled()) 
