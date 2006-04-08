@@ -428,7 +428,8 @@ public class NativeBroker extends DBBroker {
     public void endElement(final StoredNode node, NodePath currentPath, String content, long oldAddress) {
         final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 //      tempProxy.reset(doc, node.getGID(), node.getInternalAddress());
-        final NodeProxy tempProxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
+        final NodeProxy tempProxy = new NodeProxy(doc, node.getGID(), 
+        		node.getNodeType(), node.getInternalAddress());
 //      final IndexSpec idxSpec = 
 //          doc.getCollection().getIdxConf(this);
         
@@ -1677,7 +1678,8 @@ public class NativeBroker extends DBBroker {
             n = (StoredNode) nodes.item(i);
             iterator =
                 getNodeIterator(
-                        new NodeProxy(oldDoc, n.getGID(), n.getInternalAddress()));
+                        new NodeProxy(oldDoc, n.getGID(), 
+                        		n.getNodeType(), n.getInternalAddress()));
             iterator.next();
             copyNodes(transaction, iterator, n, new NodePath(), newDoc, true);
         }
@@ -2021,12 +2023,14 @@ public class NativeBroker extends DBBroker {
                 NodeList nodes = doc.getChildNodes();                
                 for (int i = 0; i < nodes.getLength(); i++) {
                     StoredNode n = (StoredNode) nodes.item(i);
-                    iterator =  getNodeIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+                    iterator =  getNodeIterator(new NodeProxy(doc, n.getGID(), 
+                    		n.getNodeType(), n.getInternalAddress()));
                     iterator.next();
                     scanNodes(transaction, iterator, n, new NodePath(), false, false);
                 }
             } else {
-                iterator = getNodeIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
+                iterator = getNodeIterator(new NodeProxy(doc, node.getGID(), 
+                		node.getNodeType(), node.getInternalAddress()));
                 iterator.next();
                 scanNodes(transaction, iterator, node, node.getPath(), false, false);
             }
@@ -2052,7 +2056,8 @@ public class NativeBroker extends DBBroker {
         StoredNode n;
         for (int i = 0; i < nodes.getLength(); i++) {
             n = (StoredNode) nodes.item(i);
-            iterator = getNodeIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+            iterator = getNodeIterator(new NodeProxy(doc, n.getGID(), 
+            		n.getNodeType(), n.getInternalAddress()));
             iterator.next();
             scanNodes(transaction, iterator, n, new NodePath(), true, repairMode);
         }
@@ -2130,7 +2135,8 @@ public class NativeBroker extends DBBroker {
                 n = (StoredNode) nodes.item(i);
                 iterator =
                     getNodeIterator(
-                            new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+                            new NodeProxy(doc, n.getGID(), 
+                            		n.getNodeType(), n.getInternalAddress()));
                 iterator.next();
                 copyNodes(transaction, iterator, n, new NodePath(), tempDoc, false);
             }
@@ -2203,7 +2209,8 @@ public class NativeBroker extends DBBroker {
                 n = (StoredNode) nodes.item(i);
                 Iterator iterator =
                     getNodeIterator(
-                            new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+                            new NodeProxy(doc, n.getGID(), 
+                            		n.getNodeType(), n.getInternalAddress()));
                 iterator.next();
                 checkNodeTree(iterator, n);
             }
@@ -2402,7 +2409,8 @@ public class NativeBroker extends DBBroker {
             }
         }
         .run();
-        NodeProxy tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
+        NodeProxy tempProxy = new NodeProxy(doc, gid, 
+        		node.getNodeType(), node.getInternalAddress());
         QName qname;
         switch (nodeType) {
             case Node.ELEMENT_NODE :
@@ -2478,7 +2486,8 @@ public class NativeBroker extends DBBroker {
 
     public void removeAllNodes(Txn transaction, StoredNode node, NodePath currentPath) {
         Iterator iterator = 
-            getNodeIterator(new NodeProxy((DocumentImpl)node.getOwnerDocument(), node.getGID(), node.getInternalAddress()));
+            getNodeIterator(new NodeProxy((DocumentImpl)node.getOwnerDocument(), node.getGID(), 
+            		node.getNodeType(), node.getInternalAddress()));
         iterator.next();
         Stack stack = new Stack();
         collectNodesForRemoval(stack, iterator, node, currentPath);
@@ -2501,7 +2510,8 @@ public class NativeBroker extends DBBroker {
                     GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
                     RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
                     if (spec != null || qnIdx != null) {
-                        NodeProxy p = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
+                        NodeProxy p = new NodeProxy(doc, node.getGID(), 
+                        		node.getNodeType(), node.getInternalAddress());
                         content = getNodeValue(p, false);
                     }
                 }
@@ -3122,7 +3132,7 @@ public class NativeBroker extends DBBroker {
 //                  --move to-- NativeElementIndex
                     // TODO : elementIndex.storeAttribute(node, currentPath, index);
                     elementIndex.setDocument(doc);
-                    final NodeProxy tempProxy = new NodeProxy(doc, gid, address);
+                    final NodeProxy tempProxy = new NodeProxy(doc, gid, nodeType, address);
                     tempProxy.setIndexType(indexType);
                     qname.setNameType(ElementValue.ATTRIBUTE);
                     elementIndex.addNode(qname, tempProxy);

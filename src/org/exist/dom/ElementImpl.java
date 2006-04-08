@@ -756,7 +756,8 @@ public class ElementImpl extends NamedNode implements Element {
     public Attr getAttributeNodeNS(String namespaceURI, String localName) {
         // altheim: 2003-12-02
         long start = firstChildID();
-        NodeProxy p = new NodeProxy(((DocumentImpl)getOwnerDocument()), getGID(), getInternalAddress());
+        NodeProxy p = new NodeProxy(((DocumentImpl)getOwnerDocument()), getGID(), 
+        		getNodeType(), getInternalAddress());
         Iterator iter = getBroker().getNodeIterator(p);
         iter.next();
         for (long i = start; i < start + attributes && iter.hasNext(); i++) {
@@ -1302,7 +1303,8 @@ public class ElementImpl extends NamedNode implements Element {
 					GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 					RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
 					if (spec != null || qnIdx != null) {
-						NodeProxy p = new NodeProxy(owner, node.getGID(), node.getInternalAddress());
+						NodeProxy p = new NodeProxy(owner, node.getGID(), 
+								node.getNodeType(), node.getInternalAddress());
 						content = getBroker().getNodeValue(p, false);
 					}
 				}

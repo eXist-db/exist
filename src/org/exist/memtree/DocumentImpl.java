@@ -919,12 +919,14 @@ public class DocumentImpl extends NodeImpl implements Document {
         org.exist.dom.ElementImpl root = (org.exist.dom.ElementImpl) doc.getDocumentElement();
         NodeList cl = root.getChildNodes();
         storedNodes = new Int2ObjectHashMap();
-        storedNodes.put(0, new NodeProxy(doc, root.getGID(), root.getInternalAddress()));
+        storedNodes.put(0, new NodeProxy(doc, root.getGID(), 
+        		root.getNodeType(), root.getInternalAddress()));
         top = 1;
         int i = 0;
         while(top > 0 && i < cl.getLength()) {
             StoredNode node = (StoredNode) cl.item(i);
-            NodeProxy proxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
+            NodeProxy proxy = new NodeProxy(doc, node.getGID(), 
+            		node.getNodeType(), node.getInternalAddress());
             int old = ((Integer)oldIds.get(i)).intValue();
             storedNodes.put(old, proxy);
             top = expandedDoc.getNextSiblingFor(top);

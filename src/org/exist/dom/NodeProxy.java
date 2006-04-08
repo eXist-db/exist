@@ -120,7 +120,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     
     public NodeProxy(DocumentImpl doc, long gid, long address) {
         this(doc, gid, UNKNOWN_NODE_TYPE, address);
-    }    
+    }      
 
 	public NodeProxy(DocumentImpl doc, long gid, short nodeType, long address) {
 		this.doc = doc;
@@ -570,7 +570,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public String getNodeValue() {
         if (isDocument()) {         
             NodeProxy root = (NodeProxy) doc.getDocumentElement();
-            return doc.getBroker().getNodeValue(new NodeProxy(doc, root.getGID(), root.getInternalAddress()), false);
+            return doc.getBroker().getNodeValue(new NodeProxy(doc, root.getGID(), 
+            	root.getNodeType(), root.getInternalAddress()), false);
         } else {
             return doc.getBroker().getNodeValue(this, false);
         }
