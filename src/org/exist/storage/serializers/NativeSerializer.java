@@ -37,11 +37,11 @@ import org.exist.dom.DocumentTypeImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.Match;
 import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSetHelper;
 import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
+import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
@@ -90,14 +90,14 @@ public class NativeSerializer extends Serializer {
 
     protected void serializeToReceiver(NodeProxy p, boolean generateDocEvent)
     throws SAXException {
-    	if(Type.subTypeOf(p.getType(), Type.DOCUMENT) || p.getGID() == NodeProxy.DOCUMENT_NODE_GID) {
+    	if(Type.subTypeOf(p.getType(), Type.DOCUMENT) || p.getNodeId() == NodeId.DOCUMENT_NODE) {
     			serializeToReceiver(p.getDocument(), generateDocEvent);
     			return;
     	}
     	setDocument(p.getDocument());
     	if (generateDocEvent) receiver.startDocument();
         Iterator domIter = broker.getNodeIterator(p);
-        serializeToReceiver(null, domIter, p.getDocument(), p.getGID(), true, p.getMatches(), new TreeSet());
+        serializeToReceiver(null, domIter, p.getDocument(), true, p.getMatches(), new TreeSet());
         if (generateDocEvent) receiver.endDocument();
     }
     
@@ -110,8 +110,7 @@ public class NativeSerializer extends Serializer {
 		if (doc.getDoctype()!=null){
 			if (getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no").equals("yes")) {
 				final StoredNode n = (StoredNode) doc.getDoctype();
-				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), n
-						.getGID(), true, null, new TreeSet());
+				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), true, null, new TreeSet());
 			}
 		}
     	// iterate through children
@@ -121,8 +120,7 @@ public class NativeSerializer extends Serializer {
     				.getOwnerDocument(), n.getGID(), n.getInternalAddress());
     		Iterator domIter = broker.getNodeIterator(p);
     		domIter.next();
-    		serializeToReceiver(n, domIter, (DocumentImpl) n.getOwnerDocument(), n
-    				.getGID(), true, p.getMatches(), new TreeSet());
+    		serializeToReceiver(n, domIter, (DocumentImpl) n.getOwnerDocument(), true, p.getMatches(), new TreeSet());
     	}
     	DocumentImpl documentImpl = (DocumentImpl) doc;
 		LOG.debug("serializing document " + documentImpl.getDocId()
@@ -132,7 +130,7 @@ public class NativeSerializer extends Serializer {
     }
     
     protected void serializeToReceiver(StoredNode node, Iterator iter,
-            DocumentImpl doc, long gid, boolean first, Match match, Set namespaces) throws SAXException {
+            DocumentImpl doc, boolean first, Match match, Set namespaces) throws SAXException {
         if (node == null) node = (StoredNode) iter.next();
         if (node == null) return;
         // char ch[];
@@ -171,24 +169,22 @@ public class NativeSerializer extends Serializer {
             int count = 0;
             // int childLen;
             StoredNode child = null;
-            if (children > 0) gid = NodeSetHelper.getFirstChildId(doc, gid);
             while (count < children) {
                 child = (StoredNode) iter.next();
                 if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
                     if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) > 0)
-                        cdata = processAttribute(((AttrImpl) child).getValue(), gid, match);
+                        cdata = processAttribute(((AttrImpl) child).getValue(), node.getNodeId(), match);
                     else
                         cdata = ((AttrImpl) child).getValue();
                     attribs.addAttribute(child.getQName(), cdata);
                     count++;
-                    gid++;
                     child.release();
                 } else
                     break;
             }
             receiver.startElement(node.getQName(), attribs);
             while (count < children) {
-                serializeToReceiver(child, iter, doc, gid++, false, match, namespaces);
+                serializeToReceiver(child, iter, doc, false, match, namespaces);
                 if (++count < children) {
                     child = (StoredNode) iter.next();
                 } else
@@ -210,13 +206,13 @@ public class NativeSerializer extends Serializer {
         	if (first && createContainerElements) {
                 AttrList tattribs = new AttrList();
                 if (showId > 0) {
-                    tattribs.addAttribute(ID_ATTRIB, Long.toString(gid));
+                    tattribs.addAttribute(ID_ATTRIB, node.getNodeId().toString());
                     tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileName());
                 }
                 receiver.startElement(TEXT_ELEMENT, tattribs);
             }
             if ((getHighlightingMode() & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES)
-                textToReceiver((TextImpl) node, gid, match);
+                textToReceiver((TextImpl) node, match);
             else {
                 receiver.characters(((TextImpl) node).getXMLString());
             }
@@ -226,15 +222,14 @@ public class NativeSerializer extends Serializer {
             break;
         case Node.ATTRIBUTE_NODE:
             if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) == TAG_ATTRIBUTE_MATCHES)
-                cdata = processAttribute(((AttrImpl) node).getValue(), gid,
-                        match);
+                cdata = processAttribute(((AttrImpl) node).getValue(), node.getNodeId(), match);
             else
                 cdata = ((AttrImpl) node).getValue();
         	if(first) {
                 if (createContainerElements) {               
             		AttrList tattribs = new AttrList();
                     if (showId > 0) {
-                        tattribs.addAttribute(ID_ATTRIB, Long.toString(gid));
+                        tattribs.addAttribute(ID_ATTRIB, node.getNodeId().toString());
                         tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileName());
                     }
                     tattribs.addAttribute(((AttrImpl)node).getQName(), cdata);
@@ -270,13 +265,13 @@ public class NativeSerializer extends Serializer {
         }
     }
 
-    private final String processAttribute(String data, long gid, Match match) {
+    private final String processAttribute(String data, NodeId nodeId, Match match) {
         if (match == null) return data;
         // prepare a regular expression to mark match-terms
         StringBuffer expr = null;
         Match next = match;
         while (next != null) {
-            if (next.getNodeId() == gid) {
+            if (next.getNodeId().equals(nodeId)) {
                 if (expr == null) {
                     expr = new StringBuffer();
                     expr.append("\\b(");
@@ -295,14 +290,14 @@ public class NativeSerializer extends Serializer {
         return data;
     }
 
-    private final void textToReceiver(TextImpl text, long gid, Match match) throws SAXException {
+    private final void textToReceiver(TextImpl text, Match match) throws SAXException {
         if (match == null) {
             receiver.characters(text.getXMLString());
         } else {
             List offsets = null;
             Match next = match;
             while (next != null) {
-                if (next.getNodeId() == gid) {
+                if (next.getNodeId().equals(text.getNodeId())) {
                     if (offsets == null)
                         offsets = new ArrayList();
                     int freq = next.getFrequency();

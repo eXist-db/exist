@@ -479,7 +479,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                             }                               
 							if (parent != null) {
-                                Match match = new Match(1, token, freq);
+                                Match match = new Match(nodeId, token, freq);
                                 readOccurrences(freq, is, match, token.length());
                                 parent.addMatch(match);
                                 int sizeHint = contextSet.getSizeHint(storedDocument);
@@ -489,7 +489,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             }
 						// otherwise, we add all text nodes without check
 						} else {
-                            Match match = new Match(1, token, freq);
+                            Match match = new Match(nodeId, token, freq);
                             readOccurrences(freq, is, match, token.length());
                             storedNode.addMatch(match);
 							result.add(storedNode, -1);							
@@ -1241,7 +1241,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                                 }
 								if (parentNode != null) {
-                                    Match match = new Match(storedGID, word.toString(), freq);
+                                    Match match = new Match(null, word.toString(), freq);
                                     readOccurrences(freq, is, match, word.length());
                                     parentNode.addMatch(match);
                                     int sizeHint = contextSet.getSizeHint(storedDocument);
@@ -1249,7 +1249,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 								} else
                                     is.skip(freq);
 							} else {
-                                Match match = new Match(storedGID, word.toString(), freq);
+                                Match match = new Match(null, word.toString(), freq);
 							    readOccurrences(freq, is, match, word.length());
                                 storedNode.addMatch(match);
 							    result.add(storedNode, -1);

@@ -50,7 +50,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeIndexListener;
-import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.NodeSetHelper;
@@ -234,7 +233,6 @@ public class NativeBroker extends DBBroker {
         user = SecurityManager.SYSTEM_USER;            
         
 		try {
-
             // Initialize DOM storage     
             domDb = (DOMFile) config.getProperty("db-connection.dom");
 			if (domDb== null) {
@@ -2750,23 +2748,14 @@ public class NativeBroker extends DBBroker {
 			expr = expr.toLowerCase();
 		return scanNodesSequential(context, docs, relation, truncation, expr, collator);		
 	}
-
-    public NodeList getNodeRange(final Document doc, final long first, final long last) {
-		NodeListImpl result = new NodeListImpl((int) (last - first + 1));
-		for (long gid = first; gid <= last; gid++) {
-			result.add(objectWith(doc, gid));
-		}
-		return result;
-	}
     
-    public Node objectWith(final Document doc, final long gid) {    
+    public Node objectWith(final Document doc, final NodeId nodeId) {    
 		return (Node) new DOMTransaction(this, domDb) {
 			public Object start() {
-				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
+				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, nodeId));
 				if (val == null)
 					return null;
 				StoredNode node = StoredNode.deserialize(val.getData(),	0, val.getLength(),	(DocumentImpl) doc);
-				node.setGID(gid);
 				node.setOwnerDocument(doc);
 				node.setInternalAddress(val.getAddress());
 				return node;
@@ -2777,20 +2766,19 @@ public class NativeBroker extends DBBroker {
 
 	public Node objectWith(final NodeProxy p) {       
 		if (p.getInternalAddress() == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-			return objectWith(p.getDocument(), p.getGID());
+			return objectWith(p.getDocument(), p.getNodeId());
 		return (Node) new DOMTransaction(this, domDb) {
 			public Object start() {
 				Value val = domDb.get(p.getInternalAddress());
 				if (val == null) {
-					LOG.debug("Node " + p.getGID() + " not found in document " + p.getDocument().getName() +
+					LOG.debug("Node " + p.getNodeId() + " not found in document " + p.getDocument().getName() +
 							"; docId = " + p.getDocument().getDocId());
 //					LOG.debug(domDb.debugPages(p.doc, true));
 //					return null;
-					return objectWith(p.getDocument(), p.getGID()); // retry?
+					return objectWith(p.getDocument(), p.getNodeId()); // retry?
 				}
 				StoredNode node = StoredNode.deserialize(val.getData(), 0, val.getLength(), 
                         (DocumentImpl) p.getDocument());
-				node.setGID(p.getGID());
 				node.setOwnerDocument(p.getDocument());
 				node.setInternalAddress(p.getInternalAddress());
 				return node;
