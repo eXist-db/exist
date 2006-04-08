@@ -375,8 +375,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * list of each returned node (this is used to track matches for predicate evaluation)
 	 * @return
 	 */
-	public NodeSet selectAncestors(NodeSet dl, boolean includeSelf, int contextId) {
-		return NodeSetHelper.selectAncestors(this, dl, includeSelf, contextId);
+	public NodeSet selectAncestors(NodeSet descendants, boolean includeSelf, int contextId) {
+		return NodeSetHelper.selectAncestors(this, descendants, includeSelf, contextId);
 	}
 
 	public NodeSet selectFollowing(NodeSet fl) throws XPathException {

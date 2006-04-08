@@ -23,6 +23,8 @@ package org.exist.dom.test;
 import java.io.File;
 import java.util.Iterator;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.BasicConfigurator;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.collections.Collection;
@@ -55,6 +57,7 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -66,7 +69,7 @@ import org.xml.sax.SAXException;
  * @author wolf
  *
  */
-public class BasicNodeSetTest extends XMLTestCase {
+public class BasicNodeSetTest extends TestCase {
 
 	private static String directory = "samples/shakespeare";
     
@@ -209,9 +212,9 @@ public class BasicNodeSetTest extends XMLTestCase {
             test = new NameTest(Type.ELEMENT, new QName("SCENE", ""));
             NodeSet scenes = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
                     docs, test.getName(), null);
-            
+            scenes.getLength();
             System.out.println("Testing AbstractNodeSet.selectAncestors ...");
-            result = ((AbstractNodeSet)largeSet).selectAncestors(scenes.toNodeSet(), false, -1);
+            result = ((AbstractNodeSet)scenes).selectAncestors(largeSet.toNodeSet(), false, -1);
             assertEquals(47, result.getLength());
             System.out.println("AbstractNodeSet.selectAncestors: PASS");
         } catch (Exception e) {

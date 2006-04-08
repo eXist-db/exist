@@ -223,8 +223,7 @@ public class NodeSetHelper {
         NodeSet result = new ExtArrayNodeSet();
         for (Iterator i = dl.iterator(); i.hasNext();) {
             NodeProxy descendant = (NodeProxy) i.next();
-            NodeSet ancestors = ancestorsForChild(al, descendant, false,
-                    includeSelf, NodeProxy.UNKNOWN_NODE_LEVEL);
+            NodeSet ancestors = ancestorsForChild(al, descendant, false, includeSelf);
             for (Iterator j = ancestors.iterator(); j.hasNext();) {
                 NodeProxy ancestor = (NodeProxy) j.next();
                 if (ancestor != null) {
@@ -237,8 +236,9 @@ public class NodeSetHelper {
                                 ancestor.copyContext(descendant);
                         }
                         result.add(ancestor);
-                    } else if (Expression.NO_CONTEXT_ID != contextId)
+                    } else if (Expression.NO_CONTEXT_ID != contextId) {
                         temp.addContextNode(contextId, descendant);
+                    }
                 }
             }
         }
@@ -250,8 +250,7 @@ public class NodeSetHelper {
      * p.
      */
     private static NodeSet ancestorsForChild(NodeSet ancestors,
-            NodeProxy child, boolean directParent, boolean includeSelf,
-            int level) {
+            NodeProxy child, boolean directParent, boolean includeSelf) {
         NodeSet result = new ExtArrayNodeSet(5);
         NodeId nodeId = child.getNodeId();
         NodeProxy temp = ancestors.get(child.getDocument(), nodeId);
@@ -264,7 +263,6 @@ public class NodeSetHelper {
                 result.add(temp);
             else if (directParent)
                 return result;
-            --level;
         }
         return result;
     }

@@ -189,8 +189,8 @@ public interface NodeSet extends Sequence, NodeList {
 	 * will be added to each result of the of the selection. 
 	 *@return
 	 */
-	public NodeSet selectAncestors(NodeSet al, boolean includeSelf,	int contextId);
-		
+	public NodeSet selectAncestors(NodeSet descendants, boolean includeSelf,	int contextId);
+
     /**
      * Select all nodes from the passed node set, which
      * are preceding siblings of the nodes in

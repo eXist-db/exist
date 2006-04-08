@@ -311,7 +311,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      */
     public NodeProxy get(NodeProxy p) {
         final Part part = getPart(p.getDocument(), false, 0);
-        return part == null ? null : part.get(p.getGID());
+        return part == null ? null : part.get(p.getNodeId());
     }
 
     public NodeProxy get(DocumentImpl doc, NodeId nodeId) {
