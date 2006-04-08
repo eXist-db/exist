@@ -1,5 +1,4 @@
 /*
- * eXist Open Source Native XML Database Copyright (C) 2001-06, Wolfgang M.
  * Meier (wolfgang@exist-db.org)
  * 
  * This library is free software; you can redistribute it and/or modify it under
@@ -202,7 +201,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 setChanged();
                 notifyObservers(progress);
             }            
-        }        
+        }
+        //TODO : flush dbNodes ?
         progress.finish();
         setChanged();
         notifyObservers(progress);
@@ -229,7 +229,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 if (value != null) {
                     //Add its data to the new list                    
                     VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
-                    try {
+                    //try {
                         while (is.available() > 0) {
                             int storedDocId = is.readInt();
                             int gidsCount = is.readInt();
@@ -244,7 +244,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                 try {
                                     is.copyRaw(os, size);
                                 } catch(EOFException e) {
-                                    LOG.error(e.getMessage(), e);
+                                    //LOG.error(e.getMessage(), e);
                                     //TODO : data will be saved although os is probably corrupted ! -pb
                                 }
                             } else {
@@ -264,10 +264,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                 }
                             }
                         }
-                    } catch (EOFException e) {
+                    //} catch (EOFException e) {
                         //TODO : remove this block if unexpected -pb
-                        LOG.warn("REPORT ME " + e.getMessage(), e);
-                    }
+                        //LOG.warn("REPORT ME " + e.getMessage(), e);
+                    //}
                     //append the data from the new list
                     if (newGIDList.size() > 0 ) {                        
                         int gidsCount = newGIDList.size();
@@ -309,6 +309,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 lock.release();
             }
         }        
+        //TODO : flush dbNodes ?
         pending.clear();
     } 
     
@@ -321,7 +322,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final Lock lock = dbNodes.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            //TODO : flush ? -pb
             dbNodes.removeAll(query);
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
@@ -351,7 +351,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 Value key = (Value) elements.get(i);                
                 VariableByteInput is = dbNodes.getAsStream(key);
                 os.clear();  
-                try {              
+                //try {              
                     while (is.available() > 0) {
                         int storedDocId = is.readInt();
                         int gidsCount = is.readInt();
@@ -371,9 +371,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             is.skipBytes(size);
                         }
                     }
-                } catch (EOFException e) {
+                //} catch (EOFException e) {
                    //EOF is expected here 
-                }                
+                //}                
                 if (changed) {  
                     //TODO : no call to dbNodes.remove if no data ? -pb
                     //TODO : why not use the same construct as above :
@@ -421,7 +421,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 //Does the node already exist in the index ?
                 if (is != null) {
                     //Add its data to the new list
-                    try {
+                    //try {
                         while (is.available() > 0) {
                             int storedDocId = is.readInt();
                             int gidsCount = is.readInt();
@@ -457,9 +457,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                 }
                             }
                         }
-                    } catch (EOFException e) {
+                    //} catch (EOFException e) {
                         //EOFExceptions expected there
-                    }
+                    //}
                 }  
                 // TOUNDERSTAND : given what is above :-), why not rationalize ? -pb
                 // append the new list to any existing data
@@ -589,8 +589,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         previousGID = storedGID;                        
                     }
                 }
-            } catch (EOFException e) {
-                //EOFExceptions are expected here
+            //} catch (EOFException e) {
+            //    //EOFExceptions are expected here
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
             } catch (IOException e) {
@@ -652,7 +652,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         map.put(qname, oc);
                     }
                     VariableByteArrayInput is = new VariableByteArrayInput(val[1].data(), val[1].start(), val[1].getLength());
-                    try {
+                    //try {
                         while (is.available() > 0) { 
                             is.readInt();
                             int gidsCount = is.readInt();
@@ -661,10 +661,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             is.skipBytes(size);
                             oc.addOccurrences(gidsCount);
                         }                    
-                    } catch (EOFException e) {
+                    //} catch (EOFException e) {
                         //TODO : remove this block if unexpected -pb
-                        LOG.warn("REPORT ME " + e.getMessage(), e);                    
-                    }
+                        //LOG.warn("REPORT ME " + e.getMessage(), e);                    
+                    //}
                 }
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);                
@@ -704,7 +704,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 msg.setLength(0);
                 msg.append("Checking ").append(nodeName).append(": ");                
                 VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
-                try {
+                //try {
                     while (is.available() > 0) {
                         int storedDocId = is.readInt();
                         int gidsCount = is.readInt();
@@ -741,10 +741,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             }
                         }                            
                     }                
-                } catch (EOFException e) {
+                //} catch (EOFException e) {
                     //TODO : remove this block if unexpected -pb
-                    LOG.warn("REPORT ME " + e.getMessage(), e);
-                }
+                    //LOG.warn("REPORT ME " + e.getMessage(), e);
+                //}
                 LOG.debug(msg.toString());
             }
         } catch (LockException e) {
