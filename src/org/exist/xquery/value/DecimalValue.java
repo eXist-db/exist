@@ -300,7 +300,7 @@ public class DecimalValue extends NumericValue {
 			BigDecimal quotient =
 				value.divide(((DecimalValue) other).value, BigDecimal.ROUND_DOWN);
 			BigDecimal remainder =
-				value.subtract(quotient.multiply(((DecimalValue) other).value));
+				value.subtract(quotient.setScale(0, BigDecimal.ROUND_DOWN).multiply(((DecimalValue) other).value));
 			return new DecimalValue(remainder);
 		} else
 			return ((NumericValue) convertTo(other.getType())).mod(other);
