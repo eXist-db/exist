@@ -375,7 +375,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		int cmp;
 		while (next != null) {
 			cmp = next.compareTo(m);
-			if (cmp == 0 && m.getNodeId() == next.getNodeId())
+			if (cmp == 0 && m.getNodeId().equals(next.getNodeId()))
 				return;
 			else if (cmp < 0) {
 				if (next.prevMatch != null)
@@ -1159,10 +1159,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     }
     
     public String toString() {
-        if (doc.getNode(gid) != null)
-            return doc.getNode(gid).toString();
-        else
-            return "Document node for " + doc.getDocId();
+    	if (nodeId == NodeId.DOCUMENT_NODE)
+    		return "Document node for " + doc.getDocId();
+    	else
+    		return doc.getNode(nodeId).toString();
         //return ("doc: " + this.getDocument() + " gid:" + this.getGID() + " address :" + 
         //        this.getInternalAddress() + " type :" + this.getNodeType()
         //        );

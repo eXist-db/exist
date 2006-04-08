@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.numbering.NodeId;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
@@ -311,27 +312,27 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     
 	public void triggerDefrag() {
 		getMetadata().setSplitCount(broker.getFragmentationLimit());
-	}  
-    
-    public NodeList getRange(long first, long last) {
-        return broker.getNodeRange(this, first, last);
-    }
+	}
 
     public SymbolTable getSymbols() {
         return broker.getSymbols();
     }
     
-    public Node getNode(long gid) {
-        if (gid == StoredNode.NODE_IMPL_ROOT_NODE_GID)
+    public Node getNode(NodeId nodeId) {
+    	if (nodeId.getTreeLevel() == 1)
             return getDocumentElement();
-        return broker.objectWith(this, gid);
+        return broker.objectWith(this, nodeId);
     }
 
+    public Node getNode(long gid) {
+    	throw new RuntimeException("Method is deprecated");
+    }
+    
     public Node getNode(NodeProxy p) {
-        if(p.getGID() == NodeProxy.DOCUMENT_NODE_GID)
+        if(p.getNodeId().getTreeLevel() == 1)
             return getDocumentElement();
         return broker.objectWith(p);
-    }  
+    }
     
     private void resizeChildList() {
         long[] newChildList = new long[children];

@@ -64,6 +64,15 @@ public class NodeTest extends XMLTestCase {
         	cl = cl.item(0).getChildNodes();
         	assertEquals(1, cl.getLength());
         	assertEquals(cl.item(0).getNodeValue(), "abc");
+        	
+        	System.out.println("Testing getParentNode() ...");
+        	Node parent = cl.item(0).getParentNode();
+        	assertNotNull(parent);
+        	assertEquals(parent.getNodeName(), "a");
+        	
+        	parent = parent.getParentNode();
+        	assertNotNull(parent);
+        	assertEquals(parent.getNodeName(), "test");
         } catch (Exception e) {
         	e.printStackTrace();
 	        fail(e.getMessage());
@@ -94,6 +103,14 @@ public class NodeTest extends XMLTestCase {
             assertEquals(attr.getLocalName(), "a");
             assertEquals(attr.getNamespaceURI(), "http://foo.org");
             assertEquals(attr.getValue(), "1");
+            
+            Node parent = attr.getOwnerElement();
+            assertNotNull(parent);
+            assertEquals(parent.getNodeName(), "a");
+            
+            parent = attr.getParentNode();
+            assertNotNull(parent);
+            assertEquals(parent.getNodeName(), "a");
             
             attr = first.getAttributeNodeNS("http://foo.org", "a");
             assertNotNull(attr);

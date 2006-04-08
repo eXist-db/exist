@@ -258,17 +258,13 @@ public class StoredNode extends NodeImpl {
 	 * @see org.w3c.dom.Node#getParentNode()
 	 */
 	public Node getParentNode() {
-		long parentID = getParentGID();       
-		if (parentID == NODE_IMPL_UNKNOWN_GID)
+		NodeId parentId = nodeId.getParentId();       
+		if (parentId == NodeId.DOCUMENT_NODE)
             return null;
-        //Filter out the temporary nodes wrapper element 
-        if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
-                parentID == NodeProxy.DOCUMENT_ELEMENT_GID && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection()) {
-            //Is this ever called ?
-            LOG.info("Filtered out wrapper element in " + this.getClass().getName());
-            return null;    
-        }
-        return ownerDocument.getNode(parentID);
+		// Filter out the temporary nodes wrapper element
+		if (parentId.getTreeLevel() == 2 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
+			return ownerDocument;
+        return ownerDocument.getNode(parentId);
 	}      
 
 	/**
