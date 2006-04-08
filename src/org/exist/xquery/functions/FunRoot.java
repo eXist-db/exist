@@ -22,11 +22,10 @@
  */
 package org.exist.xquery.functions;
 
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.NodeImpl;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -36,6 +35,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
@@ -83,48 +83,43 @@ public class FunRoot extends Function {
         }
         
         
-        Item item = contextItem;
-        
-        if (contextItem == null && contextSequence!= null && !contextSequence.isEmpty()){
-            item = contextSequence.itemAt(0);
-            
-        } else {
-            if (getSignature().getArgumentCount() > 0) {
-                Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-                if (seq.isEmpty())
-                    item = null;
-                else
-                    item = seq.itemAt(0);
-            }
-        }
-        
+        Sequence seq;
         Sequence result;
+        Item item;
+ 
+		if (contextSequence == null || contextSequence.isEmpty()) 
+			result = Sequence.EMPTY_SEQUENCE;            
         
-        if (item == null)
-            result = Sequence.EMPTY_SEQUENCE;
-        else {
+		//If we have one argumment, we take it into account
+		if (getSignature().getArgumentCount() > 0) 
+			seq = getArgument(0).eval(contextSequence, contextItem);
+		//Otherwise, we take the context sequence and we iterate over it
+		else
+			seq = contextSequence; 
+				
+        result = new ExtArrayNodeSet(seq.getLength());
+		int j = 0;
+		for (SequenceIterator i = seq.toNodeSet().iterate(); i.hasNext(); j++) {
+			item = i.nextItem();
             if (!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException("Context item is not a node; got " 
-                                            + Type.getTypeName(item.getType()));
-            if (item instanceof NodeProxy) {
-                NodeProxy p = ((NodeProxy) item);
-                org.exist.dom.DocumentImpl doc = p.getDocument();
-                //Filter out the temporary nodes wrapper element
-                if (doc.getCollection().isTempCollection()) {
-                    //TODO check that we only have one child
-                    StoredNode trueRoot = (StoredNode)doc.getDocumentElement().getFirstChild();
-                    result = new NodeProxy(doc, trueRoot.getGID(), trueRoot.getInternalAddress());
-                } else
-                    result = new NodeProxy(((NodeProxy) item).getDocument());
+                throw new XPathException("FOTY0011: item is not a node; got '" + item + "'");			
+			NodeProxy p = ((NodeProxy) item);
+			org.exist.dom.DocumentImpl doc = p.getDocument();
+            //Filter out the temporary nodes wrapper element
+            //WARNING : currently, we assume that *all* the nodes are wrapped in the same document
+            if (doc.getCollection().isTempCollection()) {                        
+                StoredNode trueRoot = (StoredNode)doc.getDocumentElement().getChildNodes().item(j);
+                result.add(new NodeProxy(doc, trueRoot.getGID(), 
+                		trueRoot.getNodeType(), trueRoot.getInternalAddress()));
             } else
-                result = (DocumentImpl) ((NodeImpl) item).getOwnerDocument();
-        }
-        
-        if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            	result.add(new NodeProxy(((NodeProxy) item).getDocument()));
+		}
+    
+	    if (context.getProfiler().isEnabled())
+	            context.getProfiler().end(this, "", result);    
         
         return result;
         
-    }
-    
+    }	
+  
 }
