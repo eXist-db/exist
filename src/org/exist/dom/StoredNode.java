@@ -246,12 +246,12 @@ public class StoredNode extends NodeImpl {
 	 */
 	public Node getParentNode() {
 		long parentID = getParentGID();       
-		if (parentID == NodeProxy.DOCUMENT_NODE_GID)
-            return null;
-        //Filter out the temporary nodes wrapper element 
-        if (parentID == NodeProxy.DOCUMENT_ELEMENT_GID && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection()) {
-            //Is this ever called ?
-            LOG.info("Filtered out wrapper element in " + this.getClass().getName());
+		if (parentID == NodeProxy.UNKNOWN_NODE_GID)
+            return null;         
+        if (parentID == NodeProxy.DOCUMENT_NODE_GID ||
+	        	//Filter out the temporary nodes wrapper element
+	        	parentID == NodeProxy.DOCUMENT_ELEMENT_GID && 
+	        	((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection()) {
             return null;    
         }
         return ownerDocument.getNode(parentID);
