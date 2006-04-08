@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeException;
@@ -36,13 +37,13 @@ public final class DOMFileIterator implements Iterator {
 		short lastTID = -1;
 		DOMFile.DOMPage p = null;
 		long page;
-		long startAddress = NodeProxy.UNKNOWN_NODE_ADDRESS;
+		long startAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 		Object lockKey;
 
 		public DOMFileIterator(Object lock, DOMFile db, NodeProxy node)
 			throws BTreeException, IOException {
 			this.db = db;
-			if (node.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
+			if (node.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
 				startAddress = node.getInternalAddress();
 			else
 				this.node = node;
@@ -191,13 +192,13 @@ public final class DOMFileIterator implements Iterator {
 					node = null;
 				} else
 				    return false;
-			} else if (startAddress != NodeProxy.UNKNOWN_NODE_ADDRESS) {
+			} else if (startAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
 				DOMFile.RecordPos rec = db.findRecord(startAddress);
 				if(rec != null) {
 					page = rec.page.getPageNum();
 					offset = rec.offset - 2;
 					p = rec.page;
-					startAddress = NodeProxy.UNKNOWN_NODE_ADDRESS;
+					startAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 					return true;
 				} else
 				    return false;
@@ -214,7 +215,7 @@ public final class DOMFileIterator implements Iterator {
 		 *@param  node  The new to value
 		 */
 		public void setTo(NodeProxy node) {
-			if (node.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS) {
+			if (node.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
 				startAddress = node.getInternalAddress();
 			} else {
 				this.node = node;
