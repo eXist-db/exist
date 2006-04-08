@@ -84,6 +84,8 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunGetDateTimeComponent.fnMinutesFromDateTime, FunGetDateTimeComponent.class),
 		new FunctionDef(FunGetDateTimeComponent.fnSecondsFromDateTime, FunGetDateTimeComponent.class),
 		new FunctionDef(FunGetDateTimeComponent.fnTimezoneFromDateTime, FunGetDateTimeComponent.class),
+                new FunctionDef(FunGetYearsFromDayTimeDuration.signature, FunGetYearsFromDayTimeDuration.class),
+                new FunctionDef(FunGetMonthsFromDayTimeDuration.signature, FunGetMonthsFromDayTimeDuration.class),
 		new FunctionDef(FunGetDaysFromDayTimeDuration.signature, FunGetDaysFromDayTimeDuration.class),
 		new FunctionDef(FunGetHoursFromDayTimeDuration.signature, FunGetHoursFromDayTimeDuration.class),
 		new FunctionDef(FunGetMinutesFromDayTimeDuration.signature, FunGetMinutesFromDayTimeDuration.class),
