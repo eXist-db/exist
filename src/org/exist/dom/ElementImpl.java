@@ -69,7 +69,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     private short attributes = 0;
     private int children = 0;
-    private long firstChild = StoredNode.NODE_IMPL_UNKNOWN_GID;    
+    private long firstChild = NodeProxy.UNKNOWN_NODE_GID;    
     private int position = 0;
     private Map namespaceMappings = null;
     private int indexType = RangeIndexSpec.NO_INDEX;
@@ -126,7 +126,7 @@ public class ElementImpl extends NamedNode implements Element {
         super.clear();
         attributes = 0;
         children = 0;
-        firstChild = StoredNode.NODE_IMPL_UNKNOWN_GID;
+        firstChild = NodeProxy.UNKNOWN_NODE_GID;
         position = 0;
         namespaceMappings = null;
         //TODO : reset below as well ? -pb
@@ -297,7 +297,7 @@ public class ElementImpl extends NamedNode implements Element {
         //TOUNDERSTAND : what are the semantics of this 0 ? -pb
         if (getGID() > 0) {
             child.setGID(firstChildID() + children);            
-            if (child.getGID() == StoredNode.NODE_IMPL_UNKNOWN_GID) {
+            if (child.getGID() == NodeProxy.UNKNOWN_NODE_GID) {
                 final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
                 final int level = owner.getTreeLevel(getGID());
                 final int order = owner.getTreeLevelOrder(level);
@@ -319,8 +319,7 @@ public class ElementImpl extends NamedNode implements Element {
             }
         }
         else
-            //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-            child.setGID(0);
+            child.setGID(NodeProxy.UNKNOWN_NODE_GID);
         ++children;
     }
 
@@ -609,11 +608,10 @@ public class ElementImpl extends NamedNode implements Element {
      * @see org.exist.dom.NodeImpl#firstChildID()
      */
     public long firstChildID() {
-        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-        if (getGID() == 0)
-            return 0;
+        if (getGID() == NodeProxy.UNKNOWN_NODE_GID)
+            return NodeProxy.UNKNOWN_NODE_GID;
         //Return if already computed
-        if (firstChild != StoredNode.NODE_IMPL_UNKNOWN_GID)
+        if (firstChild != NodeProxy.UNKNOWN_NODE_GID)
             return firstChild;
         //Compute
         firstChild = NodeSetHelper.getFirstChildId((DocumentImpl)getOwnerDocument(), getGID());
@@ -923,7 +921,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     public long lastChildID() {
         if (!hasChildNodes())
-            return StoredNode.NODE_IMPL_UNKNOWN_GID;
+            return NodeProxy.UNKNOWN_NODE_GID;
         return firstChildID() + children - 1;
     }
     

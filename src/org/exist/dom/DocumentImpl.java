@@ -322,7 +322,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     }
     
     public Node getNode(long gid) {
-        if (gid == StoredNode.NODE_IMPL_ROOT_NODE_GID)
+        if (gid == NodeProxy.DOCUMENT_ELEMENT_GID)
             return getDocumentElement();
         return broker.objectWith(this, gid);
     }
@@ -548,8 +548,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
     /*
     public long getGID() {
-        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-        return 0;
+        return NodeProxy.UNKNOWN_NODE_GID;
     }
 
     public void setGID(long gid) {
@@ -595,9 +594,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             broker.flush();
         } else {
             broker.removeNode(transaction, oldNode, oldNode.getPath(), null);
-            broker.endRemove();
-            //TOUNDERSTAND : what are the semantics of this 0 ? -pb            
-            newNode.setGID(0);
+            broker.endRemove();                  
+            newNode.setGID(NodeProxy.UNKNOWN_NODE_GID);
             broker.insertNodeAfter(transaction, previousNode, newNode);
         }
     }
@@ -701,7 +699,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     
 	public long getFirstChildAddress() {
 		if (children == 0)
-			return NodeProxy.UNKNOWN_NODE_ADDRESS;
+			return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 		return childList[0];
 	}
     	

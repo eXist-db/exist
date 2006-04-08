@@ -2349,7 +2349,7 @@ public class NativeBroker extends DBBroker {
         storeNode(transaction, node, currentPath, index);
         if (node.getNodeType() == Node.ELEMENT_NODE)
             endElement(node, currentPath, null, oldAddress);
-        if (node.getGID() == StoredNode.NODE_IMPL_ROOT_NODE_GID) {
+        if (node.getGID() == NodeProxy.DOCUMENT_ELEMENT_GID) {
             newDoc.appendChild((StoredNode) node);
         }
         node.setOwnerDocument(doc);

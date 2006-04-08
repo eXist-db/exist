@@ -37,24 +37,20 @@ import org.w3c.dom.Node;
  */
 public class StoredNode extends NodeImpl {
     
-    public final static int NODE_IMPL_UNKNOWN_GID = -1; 
-    public final static int NODE_IMPL_ROOT_NODE_GID = 1;      
     public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
-    public final static short UNKNOWN_NODE_IMPL_NODE_TYPE = -1;
 	
-    //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-	private long gid = 0;
-	private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
     private DocumentImpl ownerDocument = null;
-	private short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;
+	private long gid = NodeProxy.UNKNOWN_NODE_GID;
+	private short nodeType = NodeProxy.UNKNOWN_NODE_TYPE;
+	private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
+    	
     
 	public StoredNode(short nodeType) {
-        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-		this(nodeType, 0);
+		this(nodeType, NodeProxy.UNKNOWN_NODE_GID);
 	}
     
     public StoredNode(long gid) {
-        this(UNKNOWN_NODE_IMPL_NODE_TYPE, gid);
+        this(NodeProxy.UNKNOWN_NODE_TYPE, gid);
     } 
     
     public StoredNode(short nodeType, long gid) {
@@ -71,7 +67,7 @@ public class StoredNode extends NodeImpl {
         this.nodeType = other.nodeType;
         this.gid = other.gid;
         this.internalAddress = other.internalAddress;
-        this.ownerDocument = other.ownerDocument;        
+        this.ownerDocument = other.ownerDocument;
     }
     
     /**
@@ -79,8 +75,7 @@ public class StoredNode extends NodeImpl {
      * parser to be able to reuse node objects.
      */
     public void clear() {
-        //TODO : what are the semantics of this 0 ? -pb     
-        this.gid = 0;
+        this.gid = NodeProxy.UNKNOWN_NODE_GID;
         this.internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
         this.ownerDocument = null;
         //this.nodeType is *immutable*         
@@ -251,11 +246,10 @@ public class StoredNode extends NodeImpl {
 	 */
 	public Node getParentNode() {
 		long parentID = getParentGID();       
-		if (parentID == NODE_IMPL_UNKNOWN_GID)
+		if (parentID == NodeProxy.DOCUMENT_NODE_GID)
             return null;
         //Filter out the temporary nodes wrapper element 
-        if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
-                parentID == NodeProxy.DOCUMENT_ELEMENT_GID && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection()) {
+        if (parentID == NodeProxy.DOCUMENT_ELEMENT_GID && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection()) {
             //Is this ever called ?
             LOG.info("Filtered out wrapper element in " + this.getClass().getName());
             return null;    
@@ -336,10 +330,10 @@ public class StoredNode extends NodeImpl {
     
     public NodePath getPath() {
         NodePath path = new NodePath();
-        if (nodeType != ATTRIBUTE_NODE)
+        if (nodeType != NodeImpl.ATTRIBUTE_NODE)
             path.addComponent(getQName());
         NodeImpl parent = (NodeImpl)getParentNode();
-        while (parent != null && parent.getNodeType() != DOCUMENT_NODE) {
+        while (parent != null && parent.getNodeType() != NodeImpl.DOCUMENT_NODE) {
             path.addComponentAtStart(parent.getQName());
             parent = (NodeImpl)parent.getParentNode();
         }

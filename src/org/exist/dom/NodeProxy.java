@@ -70,10 +70,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	public static final int UNKNOWN_NODE_GID = 0;	
 	public static final int DOCUMENT_ELEMENT_GID = 1;
 	
-	public static final int UNKNOWN_NODE_LEVEL = -1;
 	public static final short UNKNOWN_NODE_TYPE = -1;	
-	public static final int UNKNOWN_NODE_ADDRESS = -1;
 	
+	public static final int UNKNOWN_NODE_LEVEL = -1;
+
 	/**
 	 * The owner document of this node.
 	 */
@@ -92,13 +92,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * dom.dbx file, if known.
 	 * @link #UNKNOWN_NODE_ADDRESS
 	 */
-	private long internalAddress;
+	private long internalAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 	
 	/**
 	 * The type of this node (as defined by DOM), if known. 
 	 * @link #UNKNOWN_NODE_TYPE
 	 */
-	private short nodeType;
+	private short nodeType = UNKNOWN_NODE_TYPE;
 
 	/**
 	 * The first {@link Match} object associated with this node.
@@ -111,13 +111,18 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	private ContextItem context = null;
 
 	public NodeProxy(DocumentImpl doc, long gid) {
-        this(doc, gid, UNKNOWN_NODE_TYPE, UNKNOWN_NODE_ADDRESS);		
+        this(doc, gid, UNKNOWN_NODE_TYPE, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);		
 	}
 
 	public NodeProxy(DocumentImpl doc, long gid, short nodeType) {
-        this(doc, gid, nodeType, UNKNOWN_NODE_ADDRESS);
+        this(doc, gid, nodeType, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
 	}
-    
+    	
+    /** @deprecated : avoid using this constructor ; we generally know the node's type
+     * @param doc
+     * @param gid
+     * @param address
+     */
     public NodeProxy(DocumentImpl doc, long gid, long address) {
         this(doc, gid, UNKNOWN_NODE_TYPE, address);
     }      
@@ -137,7 +142,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 
 	/** create a proxy to a document node */
 	public NodeProxy(DocumentImpl doc) {
-        this(doc, DOCUMENT_NODE_GID, Node.DOCUMENT_NODE, UNKNOWN_NODE_ADDRESS);
+        this(doc, DOCUMENT_NODE_GID, Node.DOCUMENT_NODE, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
 	}
 	
 	/* (non-Javadoc)
@@ -151,9 +156,11 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * according to node gid. */
 	public int compareTo(NodeProxy other) {
 		final int diff = doc.getDocId() - other.doc.getDocId();
-		if (diff != 0)
+		if (diff != Constants.EQUAL)
             return diff;
-		return gid > other.gid ? 1 : (gid == other.gid ? 0 : -1);
+		return gid > other.gid ? 
+				Constants.SUPERIOR : 
+				(gid == other.gid ? Constants.EQUAL : Constants.INFERIOR);
 	}
 	
 	public int compareTo(Object other) {
@@ -373,7 +380,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		int cmp;
 		while (next != null) {
 			cmp = next.compareTo(m);
-			if (cmp == 0 && m.getNodeId() == next.getNodeId())
+			if (cmp == Constants.EQUAL && m.getNodeId() == next.getNodeId())
 				return;
 			else if (cmp < 0) {
 				if (next.prevMatch != null)
