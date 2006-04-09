@@ -65,7 +65,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
@@ -156,11 +156,11 @@ public class Transform extends BasicFunction {
     		context.popDocumentContext();
     		return seq;
         } else {
-            RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
-            // request object is read from global variable $request
-            Variable respVar = myModule.resolveVariable(RequestModule.RESPONSE_VAR);
+            ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
+            // response object is read from global variable $response
+            Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
             if(respVar == null)
-                throw new XPathException(getASTNode(), "No request object found in the current XQuery context.");
+                throw new XPathException(getASTNode(), "No response object found in the current XQuery context.");
             if(respVar.getValue().getItemType() != Type.JAVA_OBJECT)
                 throw new XPathException(getASTNode(), "Variable $response is not bound to an Java object.");
             JavaObjectValue respValue = (JavaObjectValue)
