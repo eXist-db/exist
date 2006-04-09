@@ -75,7 +75,8 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(PrologFunctions.signatures[1], PrologFunctions.class),
         new FunctionDef(PrologFunctions.signatures[2], PrologFunctions.class),
         new FunctionDef(SystemTime.signature, SystemTime.class),
-        new FunctionDef(RandomFunction.signature, RandomFunction.class)
+        new FunctionDef(RandomFunction.signature, RandomFunction.class),
+        new FunctionDef(FunUnEscapeURI.signature, FunUnEscapeURI.class)
 	};
 	
 	public final static QName EXCEPTION_QNAME = 
