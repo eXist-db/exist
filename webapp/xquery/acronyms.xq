@@ -24,8 +24,8 @@ as xs:string
 
 declare function a:do-query() as element()
 {
-	let $field := request:request-parameter("field", "any"),
-		$term := request:request-parameter("term", "")
+	let $field := request:get-parameter("field", "any"),
+		$term := request:get-parameter("term", "")
 	return
 		if (string-length($term) = 0) then
 			<p>Please specify one or more keywords to search for!</p>

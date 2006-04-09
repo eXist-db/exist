@@ -6,9 +6,10 @@ declare namespace details="http://exist-db.org/biblio/details";
 
 declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
 
-let $item as xs:int := request:request-parameter("item", ()),
-    $cached := request:get-session-attribute("cache")
+let $item as xs:int := request:get-parameter("item", ()),
+    $cached := session:get-attribute("cache")
 return
     if ($cached) then
         let $rec := $cached[$item]

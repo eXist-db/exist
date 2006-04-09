@@ -3,11 +3,12 @@ xquery version "1.0";
 (::pragma exist:serialize media-type="text/xml"::)
 
 import module namespace request="http://exist-db.org/xquery/request";
+import module namespace session="http://exist-db.org/xquery/session";
 
 declare namespace mods="http://www.loc.gov/mods/v3";
 
-let $resources := request:request-parameter("r", ())
-let $cached := request:get-session-attribute("cache")
+let $resources := request:get-parameter("r", ())
+let $cached := session:get-attribute("cache")
 return
     if ($cached) then
         <mods:modsCollection>

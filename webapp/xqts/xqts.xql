@@ -319,7 +319,7 @@ declare function xqts:overall-result() {
             percentage="{$passed div ($passed + $failed)}"/>
 };
 
-let $group := request:request-parameter('group', ())
+let $group := request:get-parameter('group', ())
 return
     if ($group) then
         xqts:test-group($group)

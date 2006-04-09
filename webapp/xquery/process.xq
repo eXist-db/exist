@@ -1,6 +1,7 @@
 xquery version "1.0";
 
 declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
 declare namespace util="http://exist-db.org/xquery/util";
 
 (: Namespace for the local functions in this script :)
@@ -17,8 +18,8 @@ as element()+
     if (empty($hits)) then
         <p>Nothing found! <a href="xquery.xq">Back to query form</a>.</p>
     else
-        let $howmany := request:request-parameter("howmany", "10") cast as xs:int,
-            $start := request:request-parameter("start", "1") cast as xs:int,
+        let $howmany := request:get-parameter("howmany", "10") cast as xs:int,
+            $start := request:get-parameter("start", "1") cast as xs:int,
             $end := if ($start + $howmany le $count) then $start + $howmany - 1 else $count
         return (
             <table class="display" border="0" width="100%"
@@ -40,7 +41,7 @@ as element()+
                                 {
                                     if ($current instance of element()) then
                                         <xml-source>{$current}</xml-source>
-                                    (: TODO : revisit :)
+                                    (: TODO  revisit :)
                                     else if ($current instance of attribute()) then
                                     	concat("attribute ", local-name($current), " { ", data($current), " }")
 									else if ($current instance of processing-instruction()) then
@@ -67,7 +68,7 @@ as element()+
 declare function f:navbar($start as xs:int, $end as xs:int, 
 $hitsPerPage as xs:int, $count as xs:int) as element() 
 {
-    let $uri := request:request-uri()
+    let $uri := request:get-uri()
     return
         <tr class="navbar">
             <td align="left" width="7%">
@@ -138,9 +139,9 @@ declare function f:string-list-union(
 :)
 declare function f:add-to-history($query as xs:string) as empty()
 {
-    let $history := request:get-session-attribute("history")
+    let $history := session:get-attribute("history")
     return
-        request:set-session-attribute( "history",
+        session:set-attribute( "history",
                                        f:string-list-union($history, $query) )
 };
 
@@ -165,7 +166,7 @@ declare function f:handleException() as element()+
 declare function f:eval($query as xs:string) as element()+
 {
 	let $startTime := util:system-time(),
-		$collection := request:request-parameter("collection", ())
+		$collection := request:get-parameter("collection", ())
 	return
 		util:catch("org.exist.xquery.TerminatedException",
                         util:catch("org.exist.xquery.XPathException",
@@ -177,7 +178,7 @@ declare function f:eval($query as xs:string) as element()+
                                 {seconds-from-duration($queryTime)} seconds.
                                 {if($count gt 100) then "Max. 100 will be shown." else ()}
                                 </p>,
-                                request:set-session-attribute(
+                                session:set-attribute(
                                     "results", 
                                     subsequence($result, 1, 100)
                                 ),
@@ -197,8 +198,8 @@ declare function f:eval($query as xs:string) as element()+
 :)
 declare function f:main() as element()+
 {
-    let $query := request:request-parameter("query", ()),
-        $previous := request:get-session-attribute("results") 
+    let $query := request:get-parameter("query", ()),
+        $previous := session:get-attribute("results") 
     return
         if ($query) then
            f:eval($query)

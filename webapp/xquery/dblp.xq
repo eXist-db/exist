@@ -1,6 +1,7 @@
 xquery version "1.0";
 
 declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace f="http://exist-db.org/dblp-functions";
 
@@ -40,7 +41,7 @@ as xs:string
 
 declare function f:display($hits as node()+, $count as xs:integer) as element()+
 {
-    let $start := number(request:request-parameter("start", "1")),
+    let $start := number(request:get-parameter("start", "1")),
 		$end := if ($start + 9 < $count) then $start + 9 
 			else $count
     return
@@ -54,10 +55,10 @@ declare function f:display($hits as node()+, $count as xs:integer) as element()+
 
 declare function f:query() as element()
 {
-    let $field := request:request-parameter("field", "any"),
-        $keywords := request:request-parameter("keywords", ""),
-		$type := request:request-parameter("type", "any"),
-		$previous := request:get-session-attribute("results")
+    let $field := request:get-parameter("field", "any"),
+        $keywords := request:get-parameter("keywords", ""),
+		$type := request:get-parameter("type", "any"),
+		$previous := session:get-attribute("results")
     return
         if ($keywords = "" and $type = "any") then
 			if (exists($previous)) then
@@ -67,7 +68,7 @@ declare function f:query() as element()
         else
             let $hits := util:eval(f:build-query($field, $keywords, $type)),
 				$count := count($hits),
-				$s := request:set-session-attribute("results", $hits)
+				$s := session:set-attribute("results", $hits)
 			return
 				if ($count = 0) then
 					<p>Nothing found for your query!</p>

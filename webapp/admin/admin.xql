@@ -4,6 +4,8 @@ xquery version "1.0";
     Main module of the database administration interface.
 :)
 declare namespace admin="http://exist-db.org/xquery/admin-interface";
+declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 
 import module namespace status="http://exist-db.org/xquery/admin-interface/status" at "status.xqm";
@@ -29,7 +31,7 @@ declare function admin:info-header($user as xs:string) as element() {
     Select the page to show. Every page is defined in its own module 
 :)
 declare function admin:panel($user as xs:string, $pass as xs:string?) as element() {
-    let $panel := request:request-parameter("panel", "status")
+    let $panel := request:get-parameter("panel", "status")
     return
         if($panel eq "browse") then
             browse:main($user, $pass)
@@ -67,7 +69,7 @@ declare function admin:display-login-form() as element() {
         password field empty. For testing purposes, you may also log in as
         "guest" with password "guest".</p>
 
-        <form action="{request:encode-url(request:request-uri())}">
+        <form action="{session:encode-url(request:get-uri())}">
             <table class="login" cellpadding="5">
                 <tr>
                     <th colspan="2" align="left">Please Login</th>
@@ -93,8 +95,8 @@ declare function admin:display-login-form() as element() {
     on success, an empty sequence otherwise.
 :)
 declare function admin:checkUser() as xs:string* {
-    let $user := request:get-session-attribute("user") ,
-        $pass := request:get-session-attribute("password"),
+    let $user := session:get-attribute("user") ,
+        $pass := session:get-attribute("password"),
         $login := xdb:authenticate("xmldb:exist:///db", $user, $pass)
     return
         if($login) then
@@ -109,8 +111,8 @@ declare function admin:checkUser() as xs:string* {
     valid, an empty sequence if not.
 :)
 declare function admin:doLogin($user as xs:string) as xs:string* {
-    let $pass := request:request-parameter("pass", ""),
-        $login := request:set-current-user($user, $pass)
+    let $pass := request:get-parameter("pass", ""),
+        $login := session:set-current-user($user, $pass)
     return
         if($login) then
             ($user, $pass)
@@ -122,7 +124,7 @@ declare function admin:doLogin($user as xs:string) as xs:string* {
     Authenticate the user 
 :)
 declare function admin:login() as xs:string* {
-    let $userParam := request:request-parameter("user", ())
+    let $userParam := request:get-parameter("user", ())
     return
         if($userParam) then
             admin:doLogin($userParam)
@@ -130,40 +132,46 @@ declare function admin:login() as xs:string* {
             admin:checkUser()
 };
 
-request:create-session(),
-let $logout := request:request-parameter("logout", ()),
-    $s := if($logout) then request:invalidate-session() else request:create-session(),
-    $credentials := admin:login(),
-    $user := if(exists($credentials)) then $credentials[1] else "not logged in"
-return
-<html>
-    <head>
-        <title>eXist Database Administration</title>
-        <link type="text/css" href="admin.css" rel="stylesheet"/>
-    </head>
-    <body>
-        <div class="header">
-            {admin:info-header($user)}
-            <img src="logo.jpg"/>
-        </div>
-        
-        <div class="content">
-            <div class="guide">
-                <div class="guide-title">Select a Page</div>
-                <ul>
-                    <li><a href="..">Home</a></li>
-                    <li><a href="{request:encode-url(request:request-uri())}?panel=status">System Status</a></li>
-                    <li><a href="{request:encode-url(request:request-uri())}?panel=browse">Browse Collections</a></li>
-                    <li><a href="{request:encode-url(request:request-uri())}?panel=users">Manage Users</a></li>
-                    <li><a href="{request:encode-url(request:request-uri())}?panel=setup">Examples Setup</a></li>
-                    <li><a href="{request:encode-url(request:request-uri())}?panel=shutdown">Shutdown</a></li>
-                    <li><a href="{request:encode-url(request:request-uri())}?logout=yes">Logout</a></li>
-                </ul>
-                <div class="userinfo">
-                    Logged in as: {$user}
+
+
+if(request:get-parameter("logout", ()))then
+(
+    session:invalidate()
+)
+else
+(
+    session:create(),
+    let $credentials := admin:login(),
+    $user := if(exists($credentials)) then $credentials[1] else "not logged in" return
+        <html>
+            <head>
+                <title>eXist Database Administration</title>
+                <link type="text/css" href="admin.css" rel="stylesheet"/>
+            </head>
+            <body>
+                <div class="header">
+                    {admin:info-header($user)}
+                    <img src="logo.jpg"/>
                 </div>
-            </div>
-            {admin:main($credentials)}
-        </div>
-    </body>
-</html>
+                
+                <div class="content">
+                    <div class="guide">
+                        <div class="guide-title">Select a Page</div>
+                        <ul>
+                            <li><a href="..">Home</a></li>
+                            <li><a href="{session:encode-url(request:get-uri())}?panel=status">System Status</a></li>
+                            <li><a href="{session:encode-url(request:get-uri())}?panel=browse">Browse Collections</a></li>
+                            <li><a href="{session:encode-url(request:get-uri())}?panel=users">Manage Users</a></li>
+                            <li><a href="{session:encode-url(request:get-uri())}?panel=setup">Examples Setup</a></li>
+                            <li><a href="{session:encode-url(request:get-uri())}?panel=shutdown">Shutdown</a></li>
+                            <li><a href="{session:encode-url(request:get-uri())}?logout=yes">Logout</a></li>
+                        </ul>
+                        <div class="userinfo">
+                            Logged in as: {$user}
+                        </div>
+                    </div>
+                    {admin:main($credentials)}
+                </div>
+            </body>
+        </html>
+)

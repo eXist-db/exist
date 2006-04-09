@@ -5,13 +5,14 @@ module namespace setup="http://exist-db.org/xquery/admin-interface/setup";
 
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
 declare namespace util="http://exist-db.org/xquery/util";
 
 declare function setup:main() as element() {
     <div class="panel">
         <div class="panel-head">Examples Setup</div>
         {
-            let $action := request:request-parameter("action", ())
+            let $action := request:get-parameter("action", ())
             return
                 if($action) then
                     if($action eq "Import Example Data") then
@@ -79,8 +80,8 @@ declare function setup:importFromURLs() as element()+ {
             <h3>Actions:</h3>
             <ul>
             {
-                let $includeXmlad := request:request-parameter("xmlad", ()),
-                    $includeMondial := request:request-parameter("mondial", ())
+                let $includeXmlad := request:get-parameter("xmlad", ()),
+                    $includeMondial := request:get-parameter("mondial", ())
                 return (
                     if($includeXmlad) then (
                         setup:create-collection("/db", "xmlad"),
@@ -121,7 +122,7 @@ declare function setup:create-collection($parent, $name) as element() {
 };
 
 declare function setup:page1() as element() {
-    <form action="{request:encode-url(request:request-uri())}" method="POST">
+    <form action="{session:encode-url(request:get-uri())}" method="POST">
         <p>eXist ships with a number of XQuery examples. Some of these
         require certain documents to be stored in the database. Clicking on the button 
         below will import the required data from the samples directory:</p>
@@ -131,7 +132,7 @@ declare function setup:page1() as element() {
 };
 
 declare function setup:page2() as element() {
-    <form action="{request:encode-url(request:request-uri())}" method="POST">
+    <form action="{session:encode-url(request:get-uri())}" method="POST">
         <p>The XQuery examples also use some XML data not included with the distribution.
         I can try to download the corresponding data. Do you want me to do so?</p>
         

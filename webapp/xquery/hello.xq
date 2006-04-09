@@ -3,7 +3,7 @@ xquery version "1.0";
 
 declare namespace request="http://exist-db.org/xquery/request";
 
-let $name := request:request-parameter("name", " you")
+let $name := request:get-parameter("name", " you")
 return 
 <html>
  <head>

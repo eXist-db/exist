@@ -3,7 +3,7 @@ xquery version "1.0";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
-let $name := request:request-parameter("name", "")
+let $name := request:get-parameter("name", "")
 
 (: The first time store the document holding the names :)
 let $collection := xmldb:collection("xmldb:exist:///db", "guest", "guest")

@@ -1,14 +1,16 @@
 xquery version "1.0";
 
 import module namespace request="http://exist-db.org/xquery/request";
+import module namespace response="http://exist-db.org/xquery/response";
+import module namespace session="http://exist-db.org/xquery/session";
 
 declare namespace mods="http://www.loc.gov/mods/v3";
 
-let $resources := request:request-parameter("r", ())
-let $cached := request:get-session-attribute("cache")
+let $resources := request:get-parameter("r", ())
+let $cached := session:get-attribute("cache")
 return
     if ($cached) then (
-        request:set-response-content-type("text/xml"),
+        response:set-header("Content-Type","text/xml"),
         <mods:modsCollection>
         {
             for $r as xs:integer in $resources

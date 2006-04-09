@@ -6,8 +6,7 @@ at "collections.xqm";
 (: Namespace for the local functions in this script :)
 declare namespace f="http://exist-db.org/xquery/local-functions";
 
-(: Namespace for the request module (automatically loaded) :)
-declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
 
 (:  Retrieves the names of the current collection
     and all child-collections and returns them as a list of <option>
@@ -52,7 +51,7 @@ declare function f:get-examples() as element()
 :)
 declare function f:get-query-history() as element()*
 {
-    let $history := request:get-session-attribute("history")
+    let $history := session:get-attribute("history")
     for $query in $history return
         <option value="{$query}">{substring($query, 1, 70)}</option>
 };

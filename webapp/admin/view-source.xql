@@ -1,5 +1,7 @@
 xquery version "1.0";
 
-let $source := request:request-parameter("source", ())
+declare namespace request="http://exist-db.org/xquery/request";
+
+let $source := request:get-parameter("source", ())
 return
     transform:transform(doc($source), "xml2html.xslt", ())

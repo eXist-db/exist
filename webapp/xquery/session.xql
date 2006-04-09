@@ -1,10 +1,11 @@
 xquery version "1.0";
 
-declare namespace r="http://exist-db.org/xquery/request";
+declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
 
 declare function local:show-attribute($name as xs:string, $pos as xs:integer) as element()
 {
-    let $value := r:get-session-attribute($name),
+    let $value := session:get-attribute($name),
         $color := if($pos mod 2 = 0) then "#EEEEEE"
             else "#CCCCCC"
     return
@@ -17,11 +18,11 @@ declare function local:show-attribute($name as xs:string, $pos as xs:integer) as
 
 declare function local:add-attribute() as empty()
 {
-    let $name := r:request-parameter("name", ()),
-        $value := r:request-parameter("value", ())
+    let $name := request:get-parameter("name", ()),
+        $value := request:get-parameter("value", ())
     return
         if ($name) then
-            r:set-session-attribute($name, $value)
+            session:set-attribute($name, $value)
         else
             ()
 };
@@ -46,13 +47,13 @@ local:add-attribute(),
                 <th align="left">Value</th>
             </tr>
             {
-                for $param at $pos in r:session-attributes() 
+                for $param at $pos in session:get-attribute-names() 
                 return
                     local:show-attribute($param, $pos)
             }
         </table>
 
-        <form action="{r:request-uri()}">
+        <form action="{request:get-uri()}">
             <p></p>
             <p>Add an attribute to the session:</p>
             <table border="0" cellpadding="4">

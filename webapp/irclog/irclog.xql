@@ -1,6 +1,7 @@
 xquery version "1.0";
 
 declare namespace irc="http://exist-db.org/xquery/irclog";
+declare namespace request="http://exist-db.org/xquery/request";
 
 declare function irc:display-page($channel as xs:string) as element() {
     util:declare-option("exist:serialize", "media-type=text/html method=xhtml"),
@@ -162,10 +163,10 @@ declare function irc:events-since($date as xs:date, $timestamp as xs:time) {
     </table>
 };
 
-let $channel := request:request-parameter("channel", "#existdb")
-let $date := request:request-parameter("date", ())
-let $query := request:request-parameter("query", ())
-let $timestamp := request:request-parameter("since", ())
+let $channel := request:get-parameter("channel", "#existdb")
+let $date := request:get-parameter("date", ())
+let $query := request:get-parameter("query", ())
+let $timestamp := request:get-parameter("since", ())
 return
     if ($timestamp) then
         irc:events-since($date, $timestamp)
