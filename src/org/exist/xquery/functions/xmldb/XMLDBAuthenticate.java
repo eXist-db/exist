@@ -32,7 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -122,8 +122,8 @@ public class XMLDBAuthenticate extends BasicFunction {
 	 */
 	private void cacheUserInHttpSession(User user) throws XPathException
 	{
-        RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
-        Variable var = myModule.resolveVariable(RequestModule.SESSION_VAR);
+        SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
+        Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
 		if(var != null && var.getValue() != null)
 		{
     		if(var.getValue().getItemType() == Type.JAVA_OBJECT)
