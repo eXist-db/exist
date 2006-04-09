@@ -30,7 +30,7 @@ import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 
@@ -61,12 +61,12 @@ public class HTTPUtils {
 			LOG.debug("mostRecentDocumentTime: " + mostRecentDocumentTime);
 
 			if (mostRecentDocumentTime > 0) {
-				RequestModule myModule = (RequestModule) context
-						.getModule(RequestModule.NAMESPACE_URI);
+				ResponseModule myModule = (ResponseModule) context
+						.getModule(ResponseModule.NAMESPACE_URI);
 				
 				// response servlet object is read from global variable $response
 				Variable var = myModule
-						.resolveVariable(RequestModule.RESPONSE_VAR);
+						.resolveVariable(ResponseModule.RESPONSE_VAR);
 				if (var != null) {
 					JavaObjectValue value = (JavaObjectValue) var.getValue()
 							.itemAt(0);

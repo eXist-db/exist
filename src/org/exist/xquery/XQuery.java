@@ -28,7 +28,9 @@ import java.io.IOException;
 import java.io.Reader;
 
 import org.apache.log4j.Logger;
+import org.exist.http.servlets.SessionWrapper;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.security.xacml.XACMLSource;
@@ -36,12 +38,15 @@ import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
+import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.HTTPUtils;
+import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -103,7 +108,19 @@ public class XQuery {
     }
     
     private CompiledXQuery compile(XQueryContext context, Reader reader, boolean xpointer) throws XPathException {
-        long start = System.currentTimeMillis();
+        
+    	//TODO: move XQueryContext.getUserFromHttpSession() here, have to check if servlet.jar is in the classpath
+    	//before compiling/executing that code though to avoid a dependency on servlet.jar - reflection? - deliriumsky
+    	
+    	// how about - if(XQuery.class.getResource("servlet.jar") != null) do load my class with dependency and call method?
+    	
+    	/*
+    	 	<|wolf77|> I think last time I checked, I already had problems with the call to
+    	 	<|wolf77|> HTTPUtils.addLastModifiedHeader( result, context );
+			<|wolf77|> in line 184 of XQuery.java, because it introduces another dependency on HTTP.
+    	 */
+    	
+    	long start = System.currentTimeMillis();
         XQueryLexer lexer = new XQueryLexer(context, reader);
 		XQueryParser parser = new XQueryParser(lexer);
 		XQueryTreeParser treeParser = new XQueryTreeParser(context);
@@ -196,4 +213,40 @@ public class XQuery {
 		CompiledXQuery compiled = compile(context, expression);
 		return execute(compiled, null);
     }
+	
+	/**
+	 * If there is a HTTP Session, and a User has been stored in the session then this will
+	 * return the user object from the session
+	 * 
+	 * @return The user or null if there is no session or no user
+	 */
+	private User getUserFromHttpSession(XQueryContext context)
+	{
+        SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
+		
+		Variable var = null;
+		try
+		{
+			var = myModule.resolveVariable(SessionModule.SESSION_VAR);
+		}
+		catch(XPathException xpe)
+		{
+			return null;
+		}
+		
+		if(var != null && var.getValue() != null)
+		{
+    		if(var.getValue().getItemType() == Type.JAVA_OBJECT)
+    		{
+        		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
+        		
+        		if(session.getObject() instanceof SessionWrapper)
+        		{
+        			return (User)((SessionWrapper)session.getObject()).getAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
+        		}
+    		}
+    	}
+		
+		return null;
+	}
 }

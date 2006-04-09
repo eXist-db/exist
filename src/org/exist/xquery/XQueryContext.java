@@ -60,7 +60,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
-import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
@@ -1063,12 +1063,12 @@ public class XQueryContext {
 	 */
 	private User getUserFromHttpSession()
 	{
-        RequestModule myModule = (RequestModule)getModule(RequestModule.NAMESPACE_URI);
+        SessionModule myModule = (SessionModule)getModule(SessionModule.NAMESPACE_URI);
 		
 		Variable var = null;
 		try
 		{
-			var = myModule.resolveVariable(RequestModule.SESSION_VAR);
+			var = myModule.resolveVariable(SessionModule.SESSION_VAR);
 		}
 		catch(XPathException xpe)
 		{
