@@ -734,12 +734,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return null;
 	}     
     
-    protected NodeList findElementsByTagName(StoredNode root, QName qname) {
+    protected NodeList findElementsByTagName(StoredNode node, QName qname) {
         DocumentSet docs = new DocumentSet();
         docs.add(this);
-        NodeProxy p = new NodeProxy(this, root.getGID(), 
-        		root.getNodeType(), root.getInternalAddress());
-        NodeSelector selector = new DescendantSelector(p, Expression.NO_CONTEXT_ID);
+        NodeSelector selector = new DescendantSelector(node.getProxy(), Expression.NO_CONTEXT_ID);
         return (NodeSet) broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
     } 
     

@@ -127,16 +127,14 @@ public class Replace extends Modification {
             StoredNode ql[] = selectAndLock(inSeq.toNodeSet());
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-            NodeImpl node;
             Item temp;
             TextImpl text;
             AttrImpl attribute;
-            ElementImpl parent;
-            DocumentImpl doc = null;
+            ElementImpl parent;            
             DocumentSet modifiedDocs = new DocumentSet();
             for (int i = 0; i < ql.length; i++) {
-                node = ql[i];
-                doc = (DocumentImpl) node.getOwnerDocument();
+                StoredNode node = ql[i];
+                DocumentImpl doc = node.getDocument();
                 doc.getMetadata().setIndexListener(listener);
                 modifiedDocs.add(doc);
                 if (!doc.getPermissions().validate(context.getUser(),

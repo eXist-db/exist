@@ -174,7 +174,7 @@ public class AttrImpl extends NamedNode implements Attr {
     } 
     
     public Element getOwnerElement() {
-        return (Element) ((DocumentImpl)getOwnerDocument()).getNode( getParentGID() );
+        return (Element)getDocument().getNode(getParentGID());
     }
 
     public boolean getSpecified() {
@@ -199,7 +199,7 @@ public class AttrImpl extends NamedNode implements Attr {
             result.append( "exist:id=\"" );
             result.append( getGID() );
             result.append( "\" exist:source=\"" );
-            result.append( ((DocumentImpl)getOwnerDocument()).getFileName() );
+            result.append( getDocument().getFileName());
             result.append( "\" " );
             result.append( getNodeName() );
             result.append( "=\"" );

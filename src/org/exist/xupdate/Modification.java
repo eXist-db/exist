@@ -240,11 +240,10 @@ public abstract class Modification {
 	        // during the modification
 	        lockedDocuments.lock(true);
 	        
-		    StoredNode ql[] = new StoredNode[nl.getLength()];
-		    DocumentImpl doc;
+		    StoredNode ql[] = new StoredNode[nl.getLength()];		    
 			for (int i = 0; i < ql.length; i++) {
 				ql[i] = (StoredNode)nl.item(i);
-				doc = (DocumentImpl)ql[i].getOwnerDocument();
+				DocumentImpl doc = ql[i].getDocument();
 				doc.setBroker(broker);
 				
 				// call the eventual triggers

@@ -1042,7 +1042,7 @@ public class DOMFile extends BTree implements Lockable {
 	private long findNode(StoredNode node, long target, Iterator iter) {
 		if (node.hasChildNodes()) {
 			final long firstChildId = NodeSetHelper.getFirstChildId(
-                    (DocumentImpl) node.getOwnerDocument(), node.getGID());
+                    node.getDocument(), node.getGID());
 			if (firstChildId < 0) {
 				LOG.error("First child not found for node : " + node.getGID());
 				return 0;
@@ -1081,9 +1081,9 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	protected long findValue(Object lock, NodeProxy node) throws IOException,
 			BTreeException {
-		final DocumentImpl doc = (DocumentImpl) node.getDocument();
-		final NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc
-				.getDocId(), node.getGID());
+		final DocumentImpl doc = node.getDocument();
+		final NativeBroker.NodeRef nodeRef = 
+			new NativeBroker.NodeRef(doc.getDocId(), node.getGID());
 		// first try to find the node in the index
 		final long p = findValue(nodeRef);
 		if (p == KEY_NOT_FOUND) {

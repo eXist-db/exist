@@ -22,7 +22,7 @@
  */
 package org.exist.storage;
 
-import java.io.EOFException;
+//import java.io.EOFException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -162,7 +162,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */
     //TODO : unify functionalities with storeText -pb
     public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl attr) {
-        final DocumentImpl doc = (DocumentImpl) attr.getOwnerDocument();
+        final DocumentImpl doc = attr.getDocument();
         final long gid = attr.getGID();        
         //TODO : case conversion should be handled by the tokenizer -pb
         tokenizer.setText(attr.getValue().toLowerCase());   
@@ -196,7 +196,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */
     //TODO : use an indexSpec member in order to get rid of <code>noTokenizing</code>
     public void storeText(FulltextIndexSpec indexSpec, TextImpl text, boolean noTokenizing) {
-        final DocumentImpl doc = (DocumentImpl) text.getOwnerDocument();
+        final DocumentImpl doc = text.getDocument();
         final long gid = text.getGID();
         //TODO : case conversion should be handled by the tokenizer -pb
         final XMLString t = text.getXMLString().transformToLower();        
@@ -292,16 +292,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);            
         final Lock lock = dbTokens.getLock();
         try {
-            lock.acquire(Lock.WRITE_LOCK);            
-            dbTokens.flush();
+            lock.acquire(Lock.WRITE_LOCK);
             dbTokens.removeAll(query);
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
         } catch (BTreeException e) {
             LOG.error(e.getMessage(), e);
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        } catch (DBException e) {
             LOG.error(e.getMessage(), e);
         } finally {
             lock.release(Lock.WRITE_LOCK);
@@ -317,7 +314,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final NodeList children = document.getChildNodes();        
         for (int i = 0; i < children.getLength(); i++) {
             StoredNode node = (StoredNode) children.item(i);
-            Iterator j = broker.getDOMIterator(new NodeProxy(document, node.getGID(), node.getInternalAddress()));
+            Iterator j = broker.getDOMIterator(new NodeProxy(document, node.getGID(), 
+            		node.getNodeType(), node.getInternalAddress()));
             collect(tokens, j);
         }
         final short collectionId = document.getCollection().getId();        
@@ -333,7 +331,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 //Does the token already has data in the index ?
                 if (is == null)
                     continue;            
-                try {
+                //try {
                     while (is.available() > 0) {
                         int storedDocId = is.readInt();
                         byte section = is.readByte();
@@ -355,9 +353,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             is.skipBytes(size);
                         }
                     }
-                } catch (EOFException e) {
+                //} catch (EOFException e) {
                     //EOF is expected here 
-                }
+                //}
                 //Store new data, if relevant
                 if (changed) {
                     //Well, nothing to store : remove the existing data
@@ -509,9 +507,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         previousGID = storedGID;                        
 					}
 				}
-            } catch (EOFException e) {
-                // EOF is expected here 
-                LOG.warn("REPORT ME for confirmation " + e.getMessage(), e); 
+            //} catch (EOFException e) {
+            //    // EOF is expected here 
+            //    LOG.warn("REPORT ME for confirmation " + e.getMessage(), e); 
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);              
 			} catch (IOException e) {
@@ -905,7 +903,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					    if (value != null) {
 					        //Add its data to the new list    
                             VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
-                            try {
+                            //try {
     				            while (is.available() > 0) {
                                     int storedDocId = is.readInt();
                                     byte storedSection = is.readByte();
@@ -941,10 +939,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     				                    }
     				                }                                    
     				            }
-                            } catch (EOFException e) {
+                            //} catch (EOFException e) {
                                 //Is it expected ? -pb
-                                LOG.warn("REPORT ME " + e.getMessage(), e);                            
-                            }                                
+                                //LOG.warn("REPORT ME " + e.getMessage(), e);                            
+                            //}                                
                             //append the data from the new list
                             if(newOccurencesList.getSize() > 0) {
                                 //Don't forget this one
@@ -957,23 +955,20 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 os.writeFixedInt(0);
                                 saveOccurrences(newOccurencesList);
                                 os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
-                            }                            
-					    }
-                        //Store the data
-					    if(os.data().size() == 0) {				    	
-							dbTokens.remove(key);							
-					    } else {                           
-					        if (value == null)
-                                //TOUNDERSTAND : is this ever called ? -pb
-					            if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                    LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
-                                        "' (inverted index)");  
-                                }                    
+                            }
+                            //Store the data
+    					    if(os.data().size() == 0) 		    	
+    							dbTokens.remove(key);                            
 					        else
 					            if (dbTokens.update(value.getAddress(), key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                                     LOG.error("Could not update index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
                                         "' (inverted index)");
                                 }                    						    
+					    } else {                           
+				            if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                                LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
+                                    "' (inverted index)");  
+                            }                    
 					    }
 					} catch (LockException e) {
                         LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "' (inverted index)", e);
@@ -1015,7 +1010,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         //Does the token already has data in the index ?
 		                if (is != null) {
 		                    //Add its data to the new list    
-		                    try {
+		                    //try {
 		                        while (is.available() > 0) {
                                     int storedDocId = is.readInt();
                                     byte storedSection = is.readByte();
@@ -1063,9 +1058,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                                }
 		                            }
 		                        }
-		                    } catch (EOFException e) {
+		                    //} catch (EOFException e) {
 		                        //EOF is expected here
-		                    }
+		                    //}
 		                }
                         if (storedOccurencesList.getSize() > 0) {
                             //append the data from the new list
@@ -1253,7 +1248,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             previousGID = storedGID;
 						}
 					}
-				} catch (EOFException e) {
+				//} catch (EOFException e) {
 					// EOFExceptions are normal
 				} catch (IOException e) {
                     LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);   
@@ -1352,7 +1347,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         previousGID = storedGID;
 					}
 				}
-			} catch(EOFException e) {
+			//} catch(EOFException e) {
                 //EOFExceptions are expected 
 			} catch(IOException e) {
                 LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);   

@@ -66,13 +66,11 @@ public class Remove extends Modification {
 			IndexListener listener = new IndexListener(ql);
 			NotificationService notifier = broker.getBrokerPool()
 					.getNotificationService();
-			NodeImpl node;
 			NodeImpl parent;
-			DocumentImpl doc = null;
 			DocumentSet modifiedDocs = new DocumentSet();
 			for (int i = 0; i < ql.length; i++) {
-				node = ql[i];
-				doc = (DocumentImpl) node.getOwnerDocument();
+				StoredNode node = ql[i];
+				DocumentImpl doc = node.getDocument();
 				if (!doc.getPermissions().validate(broker.getUser(),
 						Permission.UPDATE))
 					throw new PermissionDeniedException(

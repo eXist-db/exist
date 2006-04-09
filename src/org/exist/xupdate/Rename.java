@@ -70,16 +70,14 @@ public class Rename extends Modification {
         int modificationCount = 0;
         try {
             StoredNode[] ql = selectAndLock();
-            DocumentImpl doc = null;
             DocumentSet modifiedDocs = new DocumentSet();
-            NodeImpl node;
             NodeImpl parent;
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = broker.getBrokerPool().getNotificationService();
             String newName = children.item(0).getNodeValue();
             for (int i = 0; i < ql.length; i++) {
-                node = ql[i];
-                doc = (DocumentImpl) node.getOwnerDocument();
+                StoredNode node = ql[i];
+                DocumentImpl doc = node.getDocument();
                 if (!doc.getPermissions().validate(broker.getUser(),
                         Permission.UPDATE))
                         throw new PermissionDeniedException(

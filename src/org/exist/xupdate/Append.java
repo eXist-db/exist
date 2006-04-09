@@ -77,12 +77,10 @@ public class Append extends Modification {
 	        StoredNode ql[] = selectAndLock();
 			IndexListener listener = new IndexListener(ql);
 			NotificationService notifier = broker.getBrokerPool().getNotificationService();
-			DocumentImpl doc = null;
 			DocumentSet modifiedDocs = new DocumentSet();
-			NodeImpl node;
 			for(int i = 0; i < ql.length; i++) {
-				node = ql[i];
-				doc = (DocumentImpl) node.getOwnerDocument();
+				StoredNode node = ql[i];
+				DocumentImpl doc = node.getDocument();
 				doc.getMetadata().setIndexListener(listener);
 				modifiedDocs.add(doc);
 				if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))

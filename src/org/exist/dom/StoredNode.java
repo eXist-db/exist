@@ -39,9 +39,7 @@ public class StoredNode extends NodeImpl {
     
     public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
 	
-    private DocumentImpl ownerDocument = null;
-	private long gid = NodeProxy.UNKNOWN_NODE_GID;
-	private short nodeType = NodeProxy.UNKNOWN_NODE_TYPE;
+    private NodeProxy proxy;
 	private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
     	
     
@@ -49,13 +47,8 @@ public class StoredNode extends NodeImpl {
 		this(nodeType, NodeProxy.UNKNOWN_NODE_GID);
 	}
     
-    public StoredNode(long gid) {
-        this(NodeProxy.UNKNOWN_NODE_TYPE, gid);
-    } 
-    
     public StoredNode(short nodeType, long gid) {
-        this.nodeType = nodeType;
-        this.gid = gid;
+    	this.proxy = new NodeProxy(null, gid, nodeType);
     }
 
     /**
@@ -64,10 +57,8 @@ public class StoredNode extends NodeImpl {
      * @param other
      */
     public StoredNode(StoredNode other) {
-        this.nodeType = other.nodeType;
-        this.gid = other.gid;
-        this.internalAddress = other.internalAddress;
-        this.ownerDocument = other.ownerDocument;
+    	this.proxy = new NodeProxy(other.getProxy());
+        this.internalAddress = other.internalAddress;        
     }
     
     /**
@@ -75,10 +66,10 @@ public class StoredNode extends NodeImpl {
      * parser to be able to reuse node objects.
      */
     public void clear() {
-        this.gid = NodeProxy.UNKNOWN_NODE_GID;
+    	//nodeType is *immutable*
+    	proxy = new NodeProxy(null, NodeProxy.UNKNOWN_NODE_GID, 
+    			getNodeType(), UNKNOWN_NODE_IMPL_ADDRESS);
         this.internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
-        this.ownerDocument = null;
-        //this.nodeType is *immutable*         
     } 
     
     public byte[] serialize() {
@@ -132,9 +123,9 @@ public class StoredNode extends NodeImpl {
 				return null;
 		}
 	}
-
+	
 	public QName getQName() {
-		switch(nodeType) {
+		switch(getNodeType()) {
 			case Node.DOCUMENT_NODE:
 			    return QName.DOCUMENT_QNAME;
 			case Node.TEXT_NODE:
@@ -144,7 +135,7 @@ public class StoredNode extends NodeImpl {
 			case Node.DOCUMENT_TYPE_NODE:
 			    return QName.DOCTYPE_QNAME;
             default:
-                LOG.error("Unknown node type: " + nodeType); 
+                LOG.error("Unknown node type: " + getNodeType()); 
                 return null;
 		}		
 	}
@@ -166,8 +157,12 @@ public class StoredNode extends NodeImpl {
 	 * @return
 	 */
 	public DBBroker getBroker() {
-		return ownerDocument.getBroker();
+		return getDocument().getBroker();
 	}    
+	
+	public NodeProxy getProxy() {
+		return proxy;
+	}
 
 	/**
 	 *  Get the unique identifier assigned to this node.
@@ -175,7 +170,7 @@ public class StoredNode extends NodeImpl {
 	 *@return
 	 */
 	public long getGID() {
-		return gid;
+		return proxy.getGID();
 	}
     
     /**
@@ -184,7 +179,7 @@ public class StoredNode extends NodeImpl {
      *@param  gid  The new gID value
      */
     public void setGID(long gid) {
-        this.gid = gid;
+    	proxy.setGID(gid);    	
     }
 
 	/**
@@ -202,6 +197,7 @@ public class StoredNode extends NodeImpl {
      *@param  address  The new internalAddress value
      */
     public void setInternalAddress(long internalAddress) {
+    	proxy.setInternalAddress(internalAddress);
         this.internalAddress = internalAddress;
     }        
 
@@ -209,14 +205,18 @@ public class StoredNode extends NodeImpl {
 	 * @see org.w3c.dom.Node#getNodeType()
 	 */
 	public short getNodeType() {
-		return nodeType;
+		return proxy.getNodeType();
 	}
+	
+	public final DocumentImpl getDocument()  {
+        return proxy.getDocument();
+    }
 
 	/**
 	 * @see org.w3c.dom.Node#getOwnerDocument()
 	 */
 	public Document getOwnerDocument() {
-		return ownerDocument;
+		return proxy.getOwnerDocument();
 	}
 
     /**
@@ -225,7 +225,7 @@ public class StoredNode extends NodeImpl {
      *@param  doc  The new ownerDocument value
      */
     public void setOwnerDocument(Document ownerDocument) {
-        this.ownerDocument = (DocumentImpl) ownerDocument;
+   		proxy = new NodeProxy((DocumentImpl) ownerDocument, getGID(), getNodeType(), getInternalAddress());
     }
     
 	/**
@@ -234,11 +234,11 @@ public class StoredNode extends NodeImpl {
 	 *@return    The parentGID value
 	 */
 	public long getParentGID() {
-        return NodeSetHelper.getParentId(ownerDocument, getGID());
+        return NodeSetHelper.getParentId(getDocument(), getGID());
 	}
     
     public long firstChildID(){
-        return NodeSetHelper.getFirstChildId(ownerDocument, getGID());
+        return NodeSetHelper.getFirstChildId(getDocument(), getGID());
     }
 
 	/**
@@ -251,31 +251,31 @@ public class StoredNode extends NodeImpl {
         if (parentID == NodeProxy.DOCUMENT_NODE_GID ||
 	        	//Filter out the temporary nodes wrapper element
 	        	parentID == NodeProxy.DOCUMENT_ELEMENT_GID && 
-	        	((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection()) {
+	        	(getDocument().getCollection().isTempCollection())) {
             return null;    
         }
-        return ownerDocument.getNode(parentID);
+        return getDocument().getNode(parentID);
 	}      
 
 	/**
 	 * @see org.w3c.dom.Node#getPreviousSibling()
 	 */
 	public Node getPreviousSibling() {
-        int level = ownerDocument.getTreeLevel(getGID());
+        int level = getDocument().getTreeLevel(getGID());
 		if (level == 0)
-			return ownerDocument.getPreviousSibling(this);
+			return getDocument().getPreviousSibling(this);
         
-        long parentID = NodeSetHelper.getParentId(ownerDocument, getGID(), level);
+        long parentID = NodeSetHelper.getParentId(getDocument(), getGID(), level);
         
         //Filter out the temporary nodes wrapper element         
         //TODO : use level == 1 ?
         if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
-                parentID == NodeProxy.DOCUMENT_ELEMENT_GID && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
+                parentID == NodeProxy.DOCUMENT_ELEMENT_GID && getDocument().getCollection().isTempCollection())
             return null;       
         
-        long firstChildId = NodeSetHelper.getFirstChildId(ownerDocument, parentID, level - 1);
+        long firstChildId = NodeSetHelper.getFirstChildId(getDocument(), parentID, level - 1);
 		if (getGID() > firstChildId)
-			return ownerDocument.getNode(getGID() - 1);
+			return getDocument().getNode(getGID() - 1);
 		return null;
 	}
 
@@ -283,29 +283,29 @@ public class StoredNode extends NodeImpl {
 	 * @see org.w3c.dom.Node#getNextSibling()
 	 */
 	public Node getNextSibling() {
-		int level = ownerDocument.getTreeLevel(getGID());
+		int level = getDocument().getTreeLevel(getGID());
 		if (level == 0)
-			return ownerDocument.getFollowingSibling(this);
+			return getDocument().getFollowingSibling(this);
         
-        long parentID = NodeSetHelper.getParentId(ownerDocument, getGID(), level);
+        long parentID = NodeSetHelper.getParentId(getDocument(), getGID(), level);
         
         //Filter out the temporary nodes wrapper element 
         //TODO : use level == 1 ?
         if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
                 (parentID == NodeProxy.DOCUMENT_ELEMENT_GID && 
-                 ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection()))
+                 (getDocument().getCollection().isTempCollection())))
             return null;
 
-        long firstChildId = NodeSetHelper.getFirstChildId(ownerDocument, parentID, level - 1);
+        long firstChildId = NodeSetHelper.getFirstChildId(getDocument(), parentID, level - 1);
         
         //TODO : avoid using getTreeLevelOrder
-		if (getGID() < firstChildId + ownerDocument.getTreeLevelOrder(level) - 1)
-			return ownerDocument.getNode(getGID() + 1);
+		if (getGID() < firstChildId + getDocument().getTreeLevelOrder(level) - 1)
+			return getDocument().getNode(getGID() + 1);
 		return null;
 	}
     
     protected StoredNode getLastNode(StoredNode node) {        
-        final NodeProxy p = new NodeProxy(ownerDocument, node.getGID(), 
+        final NodeProxy p = new NodeProxy(getDocument(), node.getGID(), 
         		node.getNodeType(), node.getInternalAddress());
         final Iterator iterator = getBroker().getNodeIterator(p);
         //TODO : hasNext() test ? -pb
@@ -330,7 +330,7 @@ public class StoredNode extends NodeImpl {
     
     public NodePath getPath() {
         NodePath path = new NodePath();
-        if (nodeType != NodeImpl.ATTRIBUTE_NODE)
+        if (getNodeType() != NodeImpl.ATTRIBUTE_NODE)
             path.addComponent(getQName());
         NodeImpl parent = (NodeImpl)getParentNode();
         while (parent != null && parent.getNodeType() != NodeImpl.DOCUMENT_NODE) {
