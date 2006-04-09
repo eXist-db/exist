@@ -183,14 +183,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		realSet.add(p);
 		realSetIsComplete = false;
 	}
-    
-	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, 
-            boolean includeSelf, int level) {
-		NodeProxy first = getFirstParent(new NodeProxy(doc, gid), null, includeSelf, directParent, 0);
-		if (first != null)
-			addInternal(first);
-		return first;
-	}
 
 	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf,
             int level) {

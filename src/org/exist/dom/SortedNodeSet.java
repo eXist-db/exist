@@ -107,10 +107,6 @@ public class SortedNodeSet extends AbstractNodeSet {
 		addAll((NodeSet) other);
 	}
 
-	public boolean contains(DocumentImpl doc, long nodeId) {
-		return contains(new NodeProxy(doc, nodeId));
-	}
-
 	public boolean contains(NodeProxy proxy) {		
 		for (Iterator i = list.iterator(); i.hasNext();) {
             NodeProxy p = ((IteratorItem) i.next()).proxy;

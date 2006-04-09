@@ -232,7 +232,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * If includeSelf is true, the method returns also true if
 	 * the node itself is contained in the node set.
 	 */
-	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf);
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf);
 
     /**
@@ -284,18 +283,6 @@ public interface NodeSet extends Sequence, NodeList {
 	public boolean hasTextIndex();
 	
 	public boolean hasMixedContent();
-	
-	/**
-	 * Create a sub-range of this node set containing the range of nodes greater than or including
-	 * the lower node and smaller than or including the upper node. Matching nodes are added to the
-	 * given result node set.
-	 * 
-	 * @param doc
-	 * @param lower
-	 * @param upper
-	 * @return
-	 */
-	public void getRange(NodeSet result, DocumentImpl doc, long lower, long upper);
 	
 	/**
 	 * Get a hint about how many nodes in this node set belong to the 

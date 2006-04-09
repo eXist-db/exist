@@ -343,11 +343,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         setHasChanged();
     }
 
-    public void getRange(NodeSet result, DocumentImpl doc, long lower, long upper) {
-        final Part part = getPart(doc, false, 0);
-        part.getRange(result, lower, upper);
-    }
-
     public NodeSet hasChildrenInSet(NodeSet al, int mode, int contextId) {
     	NodeSet result = new ExtArrayNodeSet();
 		NodeProxy node;
@@ -691,34 +686,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                         result.add(parent, 1);
                         break;
                 }
-            }
-            return result;
-        }
-
-        NodeSet getRange(NodeSet result, long lower, long upper) {
-            int low = 0;
-            int high = length - 1;
-            int mid = 0;
-            NodeProxy p;
-            // do a binary search to pick some node in the range of valid node
-            // ids
-            while (low <= high) {
-                mid = (low + high) / 2;
-                p = array[mid];
-                if (p.getGID() >= lower && p.getGID() <= upper)
-                    break; // found a node, break out
-                if (p.getGID() > lower)
-                    high = mid - 1;
-                else
-                    low = mid + 1;
-            }
-            if (low > high)
-                return result; // no node found
-            // find the first child node in the range
-            while (mid > 0 && array[mid - 1].getGID() >= lower)
-                --mid;
-            for (int i = mid; i < length && array[i].getGID() <= upper; i++) {
-                result.add(array[i]);
             }
             return result;
         }

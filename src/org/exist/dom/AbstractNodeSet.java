@@ -412,21 +412,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return NodeSetHelper.directSelectAttributes(this, qname, contextId);
     }
 
-	/**
-	 * Check if the node identified by its node id has an ancestor contained in this node set
-	 * and return the ancestor found.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 * If includeSelf is true, the method returns also true if
-	 * the node itself is contained in the node set.
-	 */
-	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf) {
-		return null;
-	}
-
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
         NodeProxy temp = get(doc, nodeId);
 		if (includeSelf && temp != null)
@@ -514,20 +499,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	    }
         ancestors.mergeDuplicates();
 	    return ancestors;
-	}
-    
-	/**
-	 * Return a sub-range of this node set containing the range of nodes greater than or including
-	 * the lower node and smaller than or including the upper node.
-	 * 
-	 * @param doc
-	 * @param lower
-	 * @param upper
-	 * @return
-	 */
-	public void getRange(NodeSet result, DocumentImpl doc, long lower, long upper) {
-		throw new RuntimeException(
-			"getRange is not valid for class " + getClass().getName());
 	}
 
 	/**
