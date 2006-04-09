@@ -288,7 +288,8 @@ public class Main {
             }
             System.err.println(
                 "\nWARN: The following JAR file entries from '"
-                + startConfigFileName + "' aren't available:\n"
+                + startConfigFileName + "' aren't available (this may NOT be a "
+                + "problem):\n"
                 + nonexistentJars
             );
         }
