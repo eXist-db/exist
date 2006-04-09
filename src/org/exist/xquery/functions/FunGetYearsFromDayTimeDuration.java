@@ -36,6 +36,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.YearMonthDurationValue;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -49,7 +50,7 @@ public class FunGetYearsFromDayTimeDuration extends Function {
             "Returns an xs:integer representing the years component in the canonical lexical " +
             "representation of the value of $a. The result may be negative.",
             new SequenceType[] {
-        new SequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE)
+        new SequenceType(Type.YEAR_MONTH_DURATION, Cardinality.ZERO_OR_ONE)
     },
             new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
     
@@ -80,7 +81,7 @@ public class FunGetYearsFromDayTimeDuration extends Function {
         if (arg.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
-            DurationValue duration = (DurationValue) arg.itemAt(0);
+            DurationValue duration = (YearMonthDurationValue) arg.itemAt(0);
             result = new IntegerValue(duration.getPart(DurationValue.YEAR));
         }
         
