@@ -55,12 +55,18 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
+
+import jline.Completor;
+import jline.ConsoleReader;
+import jline.History;
+import jline.Terminal;
 
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
@@ -88,9 +94,6 @@ import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
-import org.gnu.readline.Readline;
-import org.gnu.readline.ReadlineCompleter;
-import org.gnu.readline.ReadlineLibrary;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -159,6 +162,8 @@ public class InteractiveClient {
     protected LinkedList queryHistory = new LinkedList();
     protected File queryHistoryFile;
     protected File historyFile;
+    
+    protected ConsoleReader console = null;
     
     protected Collection current = null;
     protected int nextInSet = 1;
@@ -690,17 +695,17 @@ public class InteractiveClient {
                     String p1;
                     String p2;
                     while (true) {
-                        p1 = Readline.readline("password: ");
-                        p2 = Readline.readline("re-enter password: ");
+                        p1 = console.readLine("password: ", new Character('*'));
+                        p2 = console.readLine("re-enter password: ", new Character('*'));
                         if (p1.equals(p2)) break;
                         System.out.println("\nentered passwords differ. Try again...");
                         
                     }
-                    String home = Readline.readline("home collection [none]: ");
+                    String home = console.readLine("home collection [none]: ");
                     User user = new User(args[1], p1);
                     if (home != null && home.length() > 0)
                         user.setHome(home);
-                    String groups = Readline.readline("enter groups: ");
+                    String groups = console.readLine("enter groups: ");
                     StringTokenizer tok = new StringTokenizer(groups, " ,");
                     String group;
                     while (tok.hasMoreTokens()) {
@@ -751,8 +756,8 @@ public class InteractiveClient {
                     String p1;
                     String p2;
                     while (true) {
-                        p1 = Readline.readline("password: ");
-                        p2 = Readline.readline("re-enter password: ");
+                        p1 = console.readLine("password: ", new Character('*'));
+                        p2 = console.readLine("re-enter password: ", new Character('*'));
                         if (p1.equals(p2)) break;
                         System.out.println("\nentered passwords differ. Try again...");
                     }
@@ -901,7 +906,7 @@ public class InteractiveClient {
                 String lastLine, command = "";
                 try {
                     while (true) {
-                        lastLine = Readline.readline("| ");
+                        lastLine = console.readLine("| ");
                         if (lastLine == null || lastLine.length() == 0)
                             break;
                         command += lastLine;
@@ -1984,8 +1989,7 @@ public class InteractiveClient {
             
         } else if (cOpt.needPasswd) {
             try {
-                properties.setProperty("password", Readline
-                        .readline("password: "));
+                properties.setProperty("password", console.readLine("password: ", new Character('*')));
             } catch (Exception e) {
             }
         }
@@ -2000,31 +2004,15 @@ public class InteractiveClient {
         if (cOpt.interactive) {
             // in gui mode we use Readline for history management
             // initialize Readline library
+            Terminal.setupTerminal();
+            console = new ConsoleReader();
+            console.addCompletor(new CollectionCompleter());
             try {
-                Readline.load(ReadlineLibrary.GnuReadline);
-                System.out
-                        .println("GNU Readline found. IMPORTANT: Don't use GNU Readline");
-                System.out
-                        .println("to work with other character encodings than ISO-8859-1.");
-            } catch (UnsatisfiedLinkError ule) {
-                if (!quiet) {
-                    System.out
-                            .println("GNU Readline not found. Using System.in.");
-                    System.out
-                            .println("If GNU Readline is available on your system,");
-                    System.out
-                            .println("add directory ./lib to your LD_LIBRARY_PATH");
-                }
+                History history = new History(historyFile);
+                console.setHistory(history);
+            } catch (Exception e) {
+                // No error handling
             }
-            Readline.setEncoding("UTF-8");
-            Readline.initReadline("exist");
-            Readline.setCompleter(new CollectionCompleter());
-            if (historyFile.canRead())
-                try {
-                    Readline.readHistoryFile(historyFile.getAbsolutePath());
-                } catch (Exception e) {
-                    // No error handling
-                }
         }
         
         // connect to the db
@@ -2173,10 +2161,9 @@ public class InteractiveClient {
     
     protected void writeQueryHistory() {
         try {
-            Readline.writeHistoryFile(historyFile.getAbsolutePath());
+            console.getHistory().flushBuffer();
         } catch (Exception e) {
         }
-        Readline.cleanup();
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(
                     queryHistoryFile));
@@ -2212,10 +2199,10 @@ public class InteractiveClient {
         while (cont)
             try {
                 if (properties.getProperty("colors").equals("true"))
-                    line = Readline.readline(ANSI_CYAN + "exist:" + path + ">"
+                    line = console.readLine(ANSI_CYAN + "exist:" + path + ">"
                             + ANSI_WHITE);
                 else
-                    line = Readline.readline("exist:" + path + ">");
+                    line = console.readLine("exist:" + path + ">");
                 if (line != null)
                     cont = process(line);
                 
@@ -2227,11 +2214,10 @@ public class InteractiveClient {
                 System.err.println(e);
             }
         try {
-            Readline.writeHistoryFile(historyFile.getAbsolutePath());
+            console.getHistory().flushBuffer();
         } catch (Exception e) {
             System.err.println("Could not write history File to " + historyFile.getAbsolutePath() );
         }
-        Readline.cleanup();
         shutdown(false);
         messageln("quit.");
     }
@@ -2318,21 +2304,27 @@ public class InteractiveClient {
         return collection.getResource(resourceName);
     }
     
-    private class CollectionCompleter implements ReadlineCompleter {
+    private class CollectionCompleter  implements Completor {
         
-        Iterator possibleValues;
-        
-        public String completer(String text, int state) {
-            if (state == 0)
-                possibleValues = completitions.tailSet(text).iterator();
-            
-            if (possibleValues.hasNext()) {
-                String nextKey = (String) possibleValues.next();
-                if (nextKey.startsWith(text))
-                    return nextKey;
+        public int complete(String buffer, int cursor, List candidates) {
+            int p = buffer.lastIndexOf(' ');
+            String toComplete;
+            if (p > -1 && ++p < buffer.length()) {
+                toComplete = buffer.substring(p);
+            } else {
+                toComplete = buffer;
+                p = 0;
             }
-            return null;
-            // we reached the last choice.
+//            System.out.println("\nbuffer: '" + toComplete + "'; cursor: " + cursor);
+            Set set = completitions.tailSet(toComplete);
+            if (set != null && set.size() > 0) {
+                for (Iterator i = completitions.tailSet(toComplete).iterator(); i.hasNext(); ) {
+                    String next = i.next().toString();
+                    if (next.startsWith(toComplete))
+                        candidates.add(next);
+                }
+            }
+            return p + 1;
         }
     }
     
