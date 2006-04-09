@@ -45,14 +45,6 @@ public class NamedNode extends StoredNode implements QNameable {
     }
 
     /**
-     * @param gid
-     */
-    public NamedNode(long gid, QName qname) {
-        super(gid);
-        this.nodeName = qname;
-    }
-
-    /**
      * @param nodeType
      * @param gid
      */

@@ -574,8 +574,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         long storedGID = previousGID + delta; 
                         long address = StorageAddress.read(is);
                         if (selector == null) {
-                            NodeProxy storedNode = new NodeProxy(storedDocument, storedGID, nodeType, address);
-                            result.add(storedNode, gidsCount);                        
+                        	//TODO : use a dedicated constructor
+                        	StoredNode storedNode = new StoredNode(nodeType, storedGID);
+                        	storedNode.setOwnerDocument(storedDocument);
+                        	storedNode.setInternalAddress(address);
+                            result.add(storedNode.getProxy(), gidsCount);                        
                         } else {
                             //Filter out the node if requested to do so
                             NodeProxy storedNode = selector.match(storedDocument, storedGID);

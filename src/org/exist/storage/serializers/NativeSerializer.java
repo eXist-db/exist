@@ -109,20 +109,18 @@ public class NativeSerializer extends Serializer {
     	if (generateDocEvent) receiver.startDocument();
 		if (doc.getDoctype()!=null){
 			if (getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no").equals("yes")) {
-				final StoredNode n = (StoredNode) doc.getDoctype();
-				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), n
-						.getGID(), true, null, new TreeSet());
+				final StoredNode node = (StoredNode) doc.getDoctype();
+				serializeToReceiver(node, null, node.getDocument(), 
+						node.getGID(), true, null, new TreeSet());
 			}
 		}
     	// iterate through children
     	for (int i = 0; i < children.getLength(); i++) {
-    		final StoredNode n = (StoredNode) children.item(i);
-    		final NodeProxy p = new NodeProxy((DocumentImpl) n.getOwnerDocument(),
-    				n.getGID(), n.getNodeType(), n.getInternalAddress());
-    		Iterator domIter = broker.getNodeIterator(p);
+    		StoredNode node = (StoredNode) children.item(i);
+    		Iterator domIter = broker.getNodeIterator(node.getProxy());
     		domIter.next();
-    		serializeToReceiver(n, domIter, (DocumentImpl) n.getOwnerDocument(), n
-    				.getGID(), true, p.getMatches(), new TreeSet());
+    		serializeToReceiver(node, domIter, node.getDocument(), 
+    				node.getGID(), true, node.getProxy().getMatches(), new TreeSet());
     	}
     	DocumentImpl documentImpl = (DocumentImpl) doc;
 		LOG.debug("serializing document " + documentImpl.getDocId()

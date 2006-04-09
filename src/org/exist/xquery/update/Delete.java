@@ -120,13 +120,11 @@ public class Delete extends Modification {
     			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
                 IndexListener listener = new IndexListener(ql);
-                NodeImpl node;
                 NodeImpl parent;
-                DocumentImpl doc = null;
                 DocumentSet modifiedDocs = new DocumentSet();
                 for (int i = 0; i < ql.length; i++) {
-                    node = ql[i];
-                    doc = (DocumentImpl) node.getOwnerDocument();
+                    StoredNode node = ql[i];
+                    DocumentImpl doc = node.getDocument();
                     if (!doc.getPermissions().validate(context.getUser(),
                             Permission.UPDATE)) {
                         transact.abort(transaction);    

@@ -78,17 +78,15 @@ public class Insert extends Modification {
         try {
             StoredNode[] ql = selectAndLock();
             IndexListener listener = new IndexListener(ql);
-            NotificationService notifier = broker.getBrokerPool().getNotificationService();
-            NodeImpl node;
-            NodeImpl parent;
-            DocumentImpl doc = null;
+            NotificationService notifier = broker.getBrokerPool().getNotificationService();       
+            NodeImpl parent;             
             DocumentSet modifiedDocs = new DocumentSet();
             int len = children.getLength();
             if (LOG.isDebugEnabled())
                 LOG.debug("found " + len + " nodes to insert");
             for (int i = 0; i < ql.length; i++) {
-                node = ql[i];
-                doc = (DocumentImpl) node.getOwnerDocument();
+                StoredNode node = ql[i];
+                DocumentImpl doc = node.getDocument();
                 doc.getMetadata().setIndexListener(listener);
                 if (!doc.getPermissions().validate(broker.getUser(),
                         Permission.UPDATE))

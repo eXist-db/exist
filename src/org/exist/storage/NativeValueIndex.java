@@ -21,7 +21,7 @@
  */
 package org.exist.storage;
 
-import java.io.EOFException;
+//import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -135,8 +135,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
      */
     public void storeElement(int xpathType, ElementImpl node, String content) {
         AtomicValue atomic = convertToAtomic(xpathType, content);
+        //Ignore if the value can't be successfully atomized
+        //(this is logged elsewhere)
         if (atomic == null)
-            //TODO : throw an exception ? -pb
             return;
         LongLinkedList buf;
         //Is this indexable value already pending ?
@@ -159,6 +160,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
      */
     public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
         AtomicValue atomic = convertToAtomic(spec.getType(), node.getValue());
+        //Ignore if the value can't be successfully atomized
+        //(this is logged elsewhere)
         if(atomic == null)
             return;
         LongLinkedList buf;
@@ -291,7 +294,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 if (value != null) {
                     //Add its data to the new list
                     VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
-                    try {                            
+                    //try {                            
                         while (is.available() > 0) {
                             int storedDocId = is.readInt();
                             int gidsCount = is.readInt();
@@ -317,10 +320,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                 }
                             }
                         }
-                    } catch (EOFException e) {
+                    //} catch (EOFException e) {
                         //Is it expected ? if not, remove the block -pb
-                        LOG.warn("REPORT ME " + e.getMessage(), e);
-                    }
+                        //LOG.warn("REPORT ME " + e.getMessage(), e);
+                    //}
                     //append the data from the new list
                     if (newGIDList.getSize() > 0) {                        
                         long[] gids = newGIDList.getData();
@@ -336,15 +339,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             previousGID = gids[j];
                         } 
                     }
-                }                
-                //Store the data
-                if (value == null) {
-                    if (dbValues.put(searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not put index data for value '" +  searchKey + "'");  
-                    }                    
-                } else {
                     if (dbValues.update(value.getAddress(), searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.error("Could not update index data for value '" +  searchKey + "'");  
+                    }                    
+                } else {
+                    if (dbValues.put(searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                        LOG.error("Could not put index data for value '" +  searchKey + "'");  
                     }                    
                 }  
             } catch (LockException e) {
@@ -469,7 +469,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 LongLinkedList newGIDList = new LongLinkedList();
                 //Does the value already has data in the index ?
                 if (is != null) {                    
-                    try {
+                    //try {
                         while (is.available() > 0) {
                             int storedDocId = is.readInt();
                             int gidsCount = is.readInt();
@@ -498,9 +498,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                 }
                             }
                         }
-                    } catch (EOFException e) {
+                    //} catch (EOFException e) {
                         //EOFException expected
-                    }
+                    //}
                 }
                 //TOUNDERSTAND (bis) : don't we lack the 2 following lines like in NativeElementIndex ? -pb
                 //if (node != null) 
@@ -819,7 +819,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 		}
                 	}
                 }
-            } catch (EOFException e) {
+            //} catch (EOFException e) {
                 // EOF is expected here
             } catch (IOException e) {                
                 LOG.error(e.getMessage(), e);
@@ -923,9 +923,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         previousGID = storedGID;
                     }
                 }
-            } catch(EOFException e) {
+            //} catch(EOFException e) {
                 //Is it expected ? -pb
-                LOG.warn("REPORT ME" + e.getMessage(), e);
+                //LOG.warn("REPORT ME" + e.getMessage(), e);
             } catch(IOException e) {
                 LOG.error(e.getMessage(), e);
             }

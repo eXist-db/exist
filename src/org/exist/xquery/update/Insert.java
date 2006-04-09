@@ -140,14 +140,12 @@ public class Insert extends Modification {
                 StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
                 NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 IndexListener listener = new IndexListener(ql);
-                NodeImpl node;
-                NodeImpl parent;
-                DocumentImpl doc = null;
+                NodeImpl parent;           
                 DocumentSet modifiedDocs = new DocumentSet();
                 NodeList contentList = seq2nodeList(contentSeq);
                 for (int i = 0; i < ql.length; i++) {
-                    node = ql[i];
-                    doc = (DocumentImpl) node.getOwnerDocument();
+                    StoredNode node = ql[i];
+                    DocumentImpl  doc = node.getDocument();
                     doc.getMetadata().setIndexListener(listener);
                     if (!doc.getPermissions().validate(context.getUser(), Permission.UPDATE))
                         throw new XPathException(getASTNode(), "permission to remove document denied");

@@ -135,15 +135,13 @@ public class Rename extends Modification {
                 TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
                 Txn transaction = transact.beginTransaction();
                 StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
-                DocumentImpl doc = null;
                 DocumentSet modifiedDocs = new DocumentSet();
-                NodeImpl node;
                 NodeImpl parent;
                 IndexListener listener = new IndexListener(ql);
                 NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 for (int i = 0; i < ql.length; i++) {
-                    node = ql[i];
-                    doc = (DocumentImpl) node.getOwnerDocument();
+                    StoredNode node = ql[i];
+                    DocumentImpl doc = node.getDocument();
                     if (!doc.getPermissions().validate(context.getUser(),
                             Permission.UPDATE))
                             throw new XPathException(getASTNode(),

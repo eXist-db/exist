@@ -133,10 +133,9 @@ public abstract class Modification extends AbstractExpression {
 	        lockedDocuments.lock(true);
 	        
 		    StoredNode ql[] = new StoredNode[nodes.getLength()];
-		    DocumentImpl doc;
 			for (int i = 0; i < ql.length; i++) {
 				ql[i] = (StoredNode)nodes.item(i);
-				doc = (DocumentImpl)ql[i].getOwnerDocument();
+				DocumentImpl doc = ql[i].getDocument();
 				doc.setBroker(context.getBroker());
 			}
 			return ql;

@@ -125,15 +125,13 @@ public class Update extends Modification {
                 Txn transaction = transact.beginTransaction();
                 StoredNode ql[] = selectAndLock(inSeq.toNodeSet());
                 IndexListener listener = new IndexListener(ql);
-                StoredNode node;
                 TextImpl text;
                 AttrImpl attribute;
                 ElementImpl parent;
-                DocumentImpl doc = null;
                 DocumentSet modifiedDocs = new DocumentSet();
                 for (int i = 0; i < ql.length; i++) {
-                    node = ql[i];
-                    doc = (DocumentImpl) node.getOwnerDocument();
+                    StoredNode node = ql[i];
+                    DocumentImpl doc = node.getDocument();
                     doc.getMetadata().setIndexListener(listener);
                     modifiedDocs.add(doc);
                     if (!doc.getPermissions().validate(context.getUser(),
