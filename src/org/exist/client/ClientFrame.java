@@ -102,7 +102,6 @@ import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.Constants;
-import org.gnu.readline.Readline;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -136,7 +135,7 @@ public class ClientFrame extends JFrame
     }
     
     private int commandStart = 0;
-    private int currentHistory = 0;
+
     private boolean gotUp = false;
     private DefaultStyledDocument doc;
     private JLabel statusbar;
@@ -167,7 +166,6 @@ public class ClientFrame extends JFrame
         });
         pack();
         
-        currentHistory = Readline.getHistorySize();
         process.start();
         shell.requestFocus();
     }
@@ -1213,8 +1211,7 @@ public class ClientFrame extends JFrame
             doc.insertString(commandStart++, "\n", defaultAttrs);
             if (command != null) {
                 process.setAction(command);
-                Readline.addToHistory(command);
-                currentHistory = Readline.getHistorySize();
+                client.console.getHistory().addToHistory(command);
             }
         } catch (BadLocationException e) {
             e.printStackTrace();
@@ -1222,9 +1219,8 @@ public class ClientFrame extends JFrame
     }
     
     private void historyBack() {
-        if (currentHistory == 0)
-            return;
-        String item = Readline.getHistoryLine(--currentHistory);
+        client.console.getHistory().previous();
+        String item = client.console.getHistory().current();
         if (item == null)
             return;
         try {
@@ -1237,9 +1233,8 @@ public class ClientFrame extends JFrame
     }
     
     private void historyForward() {
-        if (currentHistory + 1 == Readline.getHistorySize())
-            return;
-        String item = Readline.getHistoryLine(++currentHistory);
+        client.console.getHistory().next();
+        String item = client.console.getHistory().current();
         try {
             if (shell.getCaretPosition() > commandStart)
                 doc.remove(commandStart, doc.getLength() - commandStart);
