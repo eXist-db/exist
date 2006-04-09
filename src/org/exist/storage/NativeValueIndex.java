@@ -414,9 +414,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         // copy them to any existing data
                         os.writeInt(storedDocId);
                         os.writeInt(gidsCount);
+                        NodeId nodeId;
                         for (int j = 0; j < gidsCount; j++) {
-                            long delta = is.readLong();
-                            os.writeLong(delta);
+                            nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                            nodeId.write(os);
                         }
                     } else {
                         // data are related to our document:
