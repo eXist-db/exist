@@ -13,7 +13,7 @@ import module namespace date="http://exist-db.org/xquery/admin-interface/date" a
     Main function: outputs the page.
 :)
 declare function browse:main($user as xs:string, $passwd as xs:string) as element() {
-    let $colName := request:request-parameter("collection", "/db"),
+    let $colName := request:get-parameter("collection", "/db"),
         $collection := xdb:collection($colName, $user, $passwd)
     return
         <div class="panel">
@@ -58,7 +58,7 @@ declare function browse:main($user as xs:string, $passwd as xs:string) as elemen
     Process an action.
 :)
 declare function browse:process-action($collection as object) as element()* {
-    let $action := request:request-parameter("action", ())
+    let $action := request:get-parameter("action", ())
     return
         util:catch("java.lang.Exception",
             if($action eq "Remove Selected") then
@@ -82,7 +82,7 @@ declare function browse:process-action($collection as object) as element()* {
     Store uploaded content.
 :)
 declare function browse:upload($collection as object) as element() {
-    let $name := request:request-parameter("name", ()),
+    let $name := request:get-parameter("name", ()),
         $docName := 
             if($name) then $name 
             else request:get-uploaded-file-name("upload"),
@@ -107,10 +107,10 @@ declare function browse:upload($collection as object) as element() {
     as root.
 :)
 declare function browse:store($collection as object) as element() {
-    let $uri := request:request-parameter("uri", ()),
+    let $uri := request:get-parameter("uri", ()),
         $path := if(starts-with($uri, "file:")) then $uri 
             else concat("file:", $uri),
-        $docName := request:request-parameter("name", ())
+        $docName := request:get-parameter("name", ())
     return
         <div class="process">
             <h3>Actions:</h3>
@@ -127,7 +127,7 @@ declare function browse:store($collection as object) as element() {
     Remove a set of resources.
 :)
 declare function browse:remove() as element() {
-    let $resources := request:request-parameter("resource", ())
+    let $resources := request:get-parameter("resource", ())
     return
         <div class="process">
             <h3>Actions:</h3>
@@ -160,7 +160,7 @@ declare function browse:remove-resource($resource as xs:string) as element()* {
     Create a collection.
 :)
 declare function browse:create-collection($parent as object) as element() {
-    let $newcol := request:request-parameter("create", ())
+    let $newcol := request:get-parameter("create", ())
     return
         <div class="process">
             <h3>Actions:</h3>

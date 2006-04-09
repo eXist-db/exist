@@ -6,6 +6,7 @@ declare namespace bib="http://exist-db.org/bibliography";
 
 (: Load library modules :)
 declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
 declare namespace xsl="http://exist-db.org/xquery/transform";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
@@ -24,22 +25,22 @@ declare variable $bib:sort-import {
 (: Removes a document :)
 declare function bib:remove() as element()?
 {
-    let $resources := request:request-parameter("r", ())
+    let $resources := request:get-parameter("r", ())
     return
         if(empty($resources)) then
             <script>showError(&quot;Please select a resource to remove!&quot;)</script>
         else
             for $r as xs:integer in $resources
-            let $cached := request:get-session-attribute("cache"),
+            let $cached := session:get-attribute("cache"),
                 $rec := $cached[$r]
             return (
                 xdb:remove(util:collection-name($rec), util:document-name($rec)),
-                request:set-session-attribute("cache", remove($cached, $r))
+                session:set-attribute("cache", remove($cached, $r))
             )
 };
 
 declare function bib:remove-folder() as element()? {
-    let $folder := request:request-parameter("folder", ())
+    let $folder := request:get-parameter("folder", ())
     return
         if(not($folder)) then
             <script>showError(&quot;Please select a folder to remove!&quot;)</script>
@@ -48,8 +49,8 @@ declare function bib:remove-folder() as element()? {
 };
 
 declare function bib:create-folder($homeColl as xs:string) as element()? {
-    let $name := request:request-parameter("name", ()),
-         $parentParam := request:request-parameter("folder", ()),
+    let $name := request:get-parameter("name", ()),
+         $parentParam := request:get-parameter("folder", ()),
          $parent :=
              if ($parentParam) then
                  $parentParam
@@ -94,7 +95,7 @@ xs:string, $current as xs:string) as element()+ {
 
 declare function bib:operand($field, $terms) as xs:string
 {
-    let $mode := request:request-parameter("mode", "all")
+    let $mode := request:get-parameter("mode", "all")
     return
         if($mode eq "any") then
             concat($field, " |= '", $terms, "'")
@@ -108,18 +109,18 @@ declare function bib:operand($field, $terms) as xs:string
 declare function bib:createXPath($collection as xs:string, $term1 as xs:string?) 
 as xs:string
 {
-    let $field1 := request:request-parameter("field1", "any"),
+    let $field1 := request:get-parameter("field1", "any"),
         $queryPart :=
             if($term1) then
                 concat(conf:get-query-root($collection), "[", bib:operand(conf:queryField($field1), $term1))
             else
                 conf:get-query-root($collection),
         $l := util:log("debug", ("Part: ", $term1)),
-        $term2 := request:request-parameter("term2", ())
+        $term2 := request:get-parameter("term2", ())
     return
         if($term2) then
-            let $field2 := request:request-parameter("field2", "any"),
-                $op := request:request-parameter("op", "and")
+            let $field2 := request:get-parameter("field2", "any"),
+                $op := request:get-parameter("op", "and")
             return
                 concat($queryPart, " ", $op, " ", bib:operand(conf:queryField($field2), $term2), "]")
         else if($term1) then
@@ -131,10 +132,10 @@ as xs:string
 declare function bib:displayOverview($recs as item()*, $collection) as element()+
 {
     let $count := count($recs),
-        $max := request:request-parameter("howmany", "10") cast as xs:int,
-        $start := request:request-parameter("start", "1") cast as xs:int,
+        $max := request:get-parameter("howmany", "10") cast as xs:int,
+        $start := request:get-parameter("start", "1") cast as xs:int,
         $end := if ($start + $max - 1 < $count) then $start + $max - 1 else $count,
-        $expandAll := exists(request:request-parameter("expand", ())),
+        $expandAll := exists(request:get-parameter("expand", ())),
         $preload := if ($expandAll) then true() else $conf:preload
     return
         <form name="mainForm" action="biblio.xq" method="POST">
@@ -164,8 +165,8 @@ declare function bib:displayOverview($recs as item()*, $collection) as element()
 declare function bib:displayDetails($recs as item()*, $collection) as element()
 {
     let $count := count($recs),
-        $max := xs:int(request:request-parameter("howmany", "10")),
-        $start := xs:int(request:request-parameter("start", "1")),
+        $max := xs:int(request:get-parameter("howmany", "10")),
+        $start := xs:int(request:get-parameter("start", "1")),
         $hit := item-at($recs, $start)
     return
         <items hits="{$count}" start="{$start}" view="details"
@@ -179,7 +180,7 @@ declare function bib:displayDetails($recs as item()*, $collection) as element()
 
 declare function bib:display($recs as item()*, $collection) as element()+
 {
-    let $display := request:request-parameter("view", "overview")
+    let $display := request:get-parameter("view", "overview")
     return
         if($display eq "details") then
             bib:displayDetails($recs, $collection)
@@ -197,33 +198,33 @@ declare function bib:buildQuery($xpath as xs:string, $order as xs:string) as xs:
 
 declare function bib:reorder($order as xs:string, $collection as xs:string) as element()+
 {
-    let $xpath := request:get-session-attribute("query"),
+    let $xpath := session:get-attribute("query"),
         $l := util:log("debug", ("Cached: ", $xpath)),
         $recs := util:eval(bib:buildQuery($xpath, $order)),
-        $x := request:set-session-attribute("cache", $recs)
+        $x := session:set-attribute("cache", $recs)
     return
         bib:display($recs, $collection)
 };
 
 declare function bib:query($collection as xs:string) as element()+
 {
-    let $simpleQuery := request:request-parameter("query", ()),
-        $start := request:request-parameter("start", ()),
-        $cached := request:get-session-attribute("cache"),
-        $orderby := request:request-parameter("order", ""),
+    let $simpleQuery := request:get-parameter("query", ()),
+        $start := request:get-parameter("start", ()),
+        $cached := session:get-attribute("cache"),
+        $orderby := request:get-parameter("order", ""),
         $term1 :=
             if($simpleQuery) then
                 $simpleQuery
             else
-                request:request-parameter("term1", ())
+                request:get-parameter("term1", ())
     return
         (: if parameter "start" is not set, execute a new query :)
         if($term1 or $simpleQuery eq "" or empty($cached)) then
             let $xpath := bib:createXPath($collection, $term1),
                 $l := util:log("debug", ("Query: ", $xpath)),
                 $recs := util:eval(bib:buildQuery($xpath, $orderby)),
-                $x := request:set-session-attribute("query", $xpath),
-                $r := request:set-session-attribute("cache", $recs)
+                $x := session:set-attribute("query", $xpath),
+                $r := session:set-attribute("cache", $recs)
 	        return
                 bib:display($recs, $collection)
         (: redisplay previous query results :)
@@ -237,7 +238,7 @@ declare function bib:query($collection as xs:string) as element()+
 
 declare function bib:process-action($collection as xs:string,
 $homeCol as xs:string) as element()* {
-    let $action := request:request-parameter("action", "")
+    let $action := request:get-parameter("action", "")
     return (
         util:log("debug", "checking action"),
         if($action eq "Remove") then
@@ -258,7 +259,7 @@ as element()+
 };
 
 declare function bib:get-collection($user as xs:string?) as xs:string {
-    let $colParam := request:request-parameter("collection", ())
+    let $colParam := request:get-parameter("collection", ())
     return
         if($colParam) then
             let $collection :=
@@ -266,25 +267,25 @@ declare function bib:get-collection($user as xs:string?) as xs:string {
                         xdb:get-user-home($user)
                     else
                         $colParam,
-                $s := request:set-session-attribute("modscol", $collection)
+                $s := session:set-attribute("modscol", $collection)
             return
                 $collection
         else
-            if(request:get-session-attribute("modscol")) then
-                request:get-session-attribute("modscol")
+            if(session:get-attribute("modscol")) then
+                session:get-attribute("modscol")
             else
                 "/db/mods" (: fallback :)
 };
 
-let $user := request:get-session-attribute("user"),
-    $pass := request:get-session-attribute("password"),
-    $url := request:encode-url(request:request-uri()),
+let $user := session:get-attribute("user"),
+    $pass := session:get-attribute("password"),
+    $url := session:encode-url(request:get-uri()),
     $collection := bib:get-collection($user),
-    $homeSess := request:get-session-attribute("root-collection"),
+    $homeSess := session:get-attribute("root-collection"),
     $homeCol :=
         if ($homeSess) then $homeSess
         else (
-            request:set-session-attribute("root-collection", $collection),
+            session:set-attribute("root-collection", $collection),
             $collection
         )
 return
@@ -352,7 +353,7 @@ return
         <div id="content2col">
             <!-- call the main function to process the query -->
             { 
-                let $displayForm := request:request-parameter("show-form", ())
+                let $displayForm := request:get-parameter("show-form", ())
                 return
                     if($displayForm) then
                         conf:query-form($url, $collection)

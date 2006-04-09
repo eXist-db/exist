@@ -1,10 +1,11 @@
 xquery version "1.0";
 
 declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
 
-let $name := request:request-parameter("name", "")
-let $names := ( request:get-session-attribute("names"), $name )
-let $dummy := request:set-session-attribute("names", $names)
+let $name := request:get-parameter("name", "")
+let $names := ( session:get-attribute("names"), $name )
+let $dummy := session:set-attribute("names", $names)
 return 
 <html>
   <head>

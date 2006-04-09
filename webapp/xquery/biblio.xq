@@ -3,6 +3,8 @@ xquery version "1.0";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace dc="http://purl.org/dc/elements/1.1/";
 declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
 declare namespace x="http://exist.sourceforge.net/dc-ext";
 
 (: Map query field parameter to xpath selection :)
@@ -52,19 +54,19 @@ declare function local:order-expr($field as xs:string) as xs:string
 declare function local:build-query($term1 as xs:string, $orderby as xs:string) 
 as xs:string
 {
-    let $field1 := request:request-parameter("field1", "any"),
-        $mode1 := request:request-parameter("mode1", "all"),
+    let $field1 := request:get-parameter("field1", "any"),
+        $mode1 := request:get-parameter("mode1", "all"),
 		$expr1 := local:filter-expr($term1, $field1, $mode1),
-		$term2 := request:request-parameter("term2", ""),
+		$term2 := request:get-parameter("term2", ""),
 		$expr :=
 			if ($term2 = "") then $expr1
 			else
-				let $field2 := request:request-parameter("field2", "any"),
-					$mode2 := request:request-parameter("mode2", "all")
+				let $field2 := request:get-parameter("field2", "any"),
+					$mode2 := request:get-parameter("mode2", "all")
 				return
 					concat($expr1, " and ", 
 						local:filter-expr($term2, $field2, $mode2)),
-		$t := request:set-session-attribute("query", $expr)
+		$t := session:set-attribute("query", $expr)
     return
         concat("for $r in document()//rdf:Description[",
             $expr, "] order by $r/",
@@ -92,8 +94,8 @@ declare function local:display-details($hits as node()+)
 as element()
 {
     let $count := count($hits),
-        $start := xs:int(request:request-parameter("start", "1")),
-        $max := request:request-parameter("howmany", "10") cast as xs:int,
+        $start := xs:int(request:get-parameter("start", "1")),
+        $max := request:get-parameter("howmany", "10") cast as xs:int,
         $hit := item-at($hits, $start)
     return
         <query-results hits="{$count}" start="{$start}" 
@@ -107,8 +109,8 @@ declare function local:display-summary($hits as node()+)
 as element()
 {
     let $count := count($hits),
-        $max := request:request-parameter("howmany", "10") cast as xs:int,
-        $start := request:request-parameter("start", "1") cast as xs:int,
+        $max := request:get-parameter("howmany", "10") cast as xs:int,
+        $start := request:get-parameter("start", "1") cast as xs:int,
         $end := if ($start + $max - 1 < $count) then $start + $max - 1 else $count
     return
         <query-results hits="{$count}" start="{$start}" 
@@ -131,7 +133,7 @@ as element()
 declare function local:display($hits as node()+)
 as element()
 {
-    let $mode := request:request-parameter("display", "summary")
+    let $mode := request:get-parameter("display", "summary")
     return
         if ($mode = "summary") then
             local:display-summary($hits)
@@ -147,7 +149,7 @@ as element()
 					$query, "] order by $r/", local:order-expr($orderby),
 					" return $r"),
 		$hits := util:eval($expr),
-		$s := request:set-session-attribute(
+		$s := session:set-attribute(
 			"results", subsequence($hits, 1, 100)
 		)
 	return
@@ -159,10 +161,10 @@ as element()
 
 declare function local:main() as element()+
 {
-    let $term1 := request:request-parameter("term1", ""),
-        $previous := request:get-session-attribute("results"),
-		$queryOld := request:get-session-attribute("query"),
-		$orderby := request:request-parameter("order", "")
+    let $term1 := request:get-parameter("term1", ""),
+        $previous := session:get-attribute("results"),
+		$queryOld := session:get-attribute("query"),
+		$orderby := request:get-parameter("order", "")
     return
         if(string-length($term1) = 0) then
 			if ($orderby != "") then
@@ -175,7 +177,7 @@ declare function local:main() as element()+
         else
             let $query := local:build-query($term1, "creator"),
                 $hits := util:eval( $query ),
-                $s := request:set-session-attribute("results", $hits)
+                $s := session:set-attribute("results", $hits)
             return
                 if (empty($hits)) then
                     <p>Nothing found for your query!

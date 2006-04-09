@@ -24,8 +24,8 @@ as element()+ {
 	    ()
 };
 
-let $t := request:request-parameter("query", ()),
-    $collection := request:request-parameter("collection", "/db")
+let $t := request:get-parameter("query", ()),
+    $collection := request:get-parameter("collection", "/db")
 return
     <ul class="LSRes">
 	{

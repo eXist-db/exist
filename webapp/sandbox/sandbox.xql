@@ -4,6 +4,7 @@ declare namespace sandbox="http://exist-db.org/xquery/sandbox";
 
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace request="http://exist-db.org/xquery/request";
+import module namespace session="http://exist-db.org/xquery/session";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
 declare option exist:serialize "method=xhtml indent=no";
@@ -44,10 +45,10 @@ declare function sandbox:init-slots() as element()+ {
 
 (:~ Export the current query results into a new document in the database. :)
 declare function sandbox:export($docName as xs:string) as element() {
-    let $collection := request:request-parameter("collection", ())
-    let $wrapper0 := request:request-parameter("wrapper", ())
+    let $collection := request:get-parameter("collection", ())
+    let $wrapper0 := request:get-parameter("wrapper", ())
     let $wrapper := if ($wrapper0) then $wrapper0 else "exist:result"
-    let $cached := request:get-session-attribute("cached")
+    let $cached := session:get-attribute("cached")
     return
         if (empty($cached)) then
             <error>No query results to export!</error>
@@ -95,7 +96,7 @@ declare function sandbox:check-query($query as xs:string) as element() {
 (:~ Retrieve a single query result. :)
 declare function sandbox:retrieve($num as xs:integer) as element() {
     util:declare-option("exist:serialize", "media-type=text/xml omit-xml-declaration=no indent=no"),
-    let $cached := request:get-session-attribute("cached")
+    let $cached := session:get-attribute("cached")
     let $item :=
         <item num="{$num}">
             {$cached[$num]}
@@ -110,7 +111,7 @@ declare function sandbox:exec-query($qu as xs:string) as element() {
     let $results := util:eval($qu)
     let $elapsed := seconds-from-duration(util:system-time() - $startTime)
     return (
-        request:set-session-attribute("cached", $results),
+        session:set-attribute("cached", $results),
         <result hits="{count($results)}" elapsed="{$elapsed}"/>
     )
 };
@@ -215,12 +216,12 @@ declare function sandbox:display-page() as element() {
     </html>
 };
 
-request:create-session(),
-let $pos := request:request-parameter("num", ())
-let $save := request:request-parameter("save", ())
-let $query := request:request-parameter("qu", ())
-let $check := request:request-parameter("check", ())
-let $export := request:request-parameter("export", ())
+session:create(),
+let $pos := request:get-parameter("num", ())
+let $save := request:get-parameter("save", ())
+let $query := request:get-parameter("qu", ())
+let $check := request:get-parameter("check", ())
+let $export := request:get-parameter("export", ())
 return
     if ($save) then
         sandbox:save-query($query, $save)

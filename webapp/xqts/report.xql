@@ -244,10 +244,10 @@ declare function xqts:tree() {
     </groups>
 };
 
-let $tree := request:request-parameter("tree", ())
-let $group := request:request-parameter("group", ())
-let $name := request:request-parameter("name", ())
-let $case := request:request-parameter("case", ())
+let $tree := request:get-parameter("tree", ())
+let $group := request:get-parameter("group", ())
+let $name := request:get-parameter("name", ())
+let $case := request:get-parameter("case", ())
 return
     if ($case) then
         xqts:details($case)

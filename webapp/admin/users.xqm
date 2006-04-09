@@ -6,6 +6,7 @@ module namespace users="http://exist-db.org/xquery/admin-interface/users";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
 
 declare function users:main($user as xs:string, $password as xs:string) as element() {
     <div class="panel">
@@ -26,7 +27,7 @@ declare function users:main($user as xs:string, $password as xs:string) as eleme
 };
 
 declare function users:process($currentUser as xs:string) as element()* {
-    let $action := request:request-parameter("action", "")
+    let $action := request:get-parameter("action", "")
     return
         if($action eq "Create") then
             users:new-user()
@@ -39,7 +40,7 @@ declare function users:process($currentUser as xs:string) as element()* {
 };
 
 declare function users:remove-user($currentUser as xs:string) as element()* {
-    let $uid := request:request-parameter("uid", ()),
+    let $uid := request:get-parameter("uid", ()),
         $name := doc("/db/system/users.xml")//user[@uid = $uid]/@name cast as xs:string
     return
         if($name eq $currentUser) then
@@ -52,16 +53,16 @@ declare function users:remove-user($currentUser as xs:string) as element()* {
 };
 
 declare function users:new-user() as element()* {
-    let $name := request:request-parameter("name", ()),
-        $grp := request:request-parameter("groups", ()),
+    let $name := request:get-parameter("name", ()),
+        $grp := request:get-parameter("groups", ()),
         $groups :=
             if ($grp) then
                 if(contains($grp, ",")) then tokenize($grp, "\s*,\s*")
                 else $grp
             else (),
-        $pass1 := request:request-parameter("pass1", ""),
-        $pass2 := request:request-parameter("pass2", ""),
-        $home := request:request-parameter("home", ())
+        $pass1 := request:get-parameter("pass1", ""),
+        $pass2 := request:get-parameter("pass2", ""),
+        $home := request:get-parameter("home", ())
     return
         if($pass1 != $pass2) then (
             <div class="error">Passwords are not identical.</div>,
@@ -76,20 +77,20 @@ declare function users:new-user() as element()* {
 };
 
 declare function users:update-user($currentUser as xs:string) as element()* {
-    let $name := request:request-parameter("name", ()),
-        $grp := request:request-parameter("groups", ()),
+    let $name := request:get-parameter("name", ()),
+        $grp := request:get-parameter("groups", ()),
         $groups :=
             if ($grp) then
                 if(contains($grp, ",")) then tokenize($grp, "\s*,\s*")
                 else $grp
             else (),
-        $pass1 := request:request-parameter("pass1", ""),
-        $pass2 := request:request-parameter("pass2", ""),
-        $nopass := request:request-parameter("nopass", ()),
+        $pass1 := request:get-parameter("pass1", ""),
+        $pass2 := request:get-parameter("pass2", ""),
+        $nopass := request:get-parameter("nopass", ()),
         $pass :=
             if($nopass) then () else $pass1,
-        $home := request:request-parameter("home", ()),
-        $uid := request:request-parameter("uid", "")
+        $home := request:get-parameter("home", ()),
+        $uid := request:get-parameter("uid", "")
     return
         if(not($nopass) and $pass1 ne $pass2) then (
             <div class="error">Passwords are not identical.</div>,
@@ -100,7 +101,7 @@ declare function users:update-user($currentUser as xs:string) as element()* {
         ) else (
             xdb:change-user($name, $pass, $groups, $home),
             if($currentUser eq $name) then
-                request:set-session-attribute("password", $pass)
+                session:set-attribute("password", $pass)
             else
                 (),
             users:display()
@@ -108,7 +109,7 @@ declare function users:update-user($currentUser as xs:string) as element()* {
 };
 
 declare function users:display() as element() {
-    <form action="{request:encode-url(request:request-uri())}" method="GET">
+    <form action="{session:encode-url(request:get-uri())}" method="GET">
         <table cellpadding="5" id="browse">
             <tr>
                 <th/>
@@ -141,8 +142,8 @@ declare function users:display() as element() {
             </tr>
         </table>
         {
-                let $action := request:request-parameter("action", ""),
-                    $uid := request:request-parameter("uid", "")
+                let $action := request:get-parameter("action", ""),
+                    $uid := request:get-parameter("uid", "")
                 return
                     if ($action eq "Edit") then
                         let $user := doc("/db/system/users.xml")//users/user[@uid = $uid]
@@ -158,7 +159,7 @@ declare function users:display() as element() {
 };
 
 declare function users:correct-user($uid as xs:integer, $name as xs:string, $groups as xs:string, $home as xs:string?) as element() {
-    <form action="{request:encode-url(request:request-uri())}" method="GET">
+    <form action="{session:encode-url(request:get-uri())}" method="GET">
         {users:edit-user($uid, $name, $groups, $home)}
         <input type="hidden" name="panel" value="users"/>
     </form>

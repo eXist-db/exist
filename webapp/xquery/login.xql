@@ -1,6 +1,8 @@
 xquery version "1.0";
 
 declare namespace request="http://exist-db.org/xquery/request";
+declare namespace response="http://exist-db.org/xquery/response";
+declare namespace session="http://exist-db.org/xquery/session";
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 
 declare variable $database-uri as xs:string { "xmldb:exist:///db" };
@@ -8,28 +10,28 @@ declare variable $redirect-uri as xs:anyURI { xs:anyURI("session.xql") };
 
 declare function local:login($user as xs:string) as element()?
 {
-    let $pass := request:request-parameter("pass", ""),
+    let $pass := request:get-parameter("pass", ""),
         $login := xdb:authenticate($database-uri, $user, $pass)
     return
         if ($login) then (
-            request:set-session-attribute("user", $user),
-            request:set-session-attribute("password", $pass),
-            request:redirect-to(request:encode-url($redirect-uri))
+            session:set-attribute("user", $user),
+            session:set-attribute("password", $pass),
+            response:redirect-to(session:encode-url($redirect-uri))
         ) else
             <p>Login failed! Please retry.</p>
 };
 
 declare function local:do-login() as element()?
 {
-    let $user := request:request-parameter("user", ())
+    let $user := request:get-parameter("user", ())
     return
         if ($user) then
             local:login($user)
         else ()
 };
 
-request:invalidate-session(),
-request:create-session(),
+session:invalidate(),
+session:create(),
 <html>
     <head>
         <title>Login</title>
@@ -41,7 +43,7 @@ request:create-session(),
         password field empty. For testing purposes, you may also log in as
         "guest" with password "guest".</p>
 
-        <form action="{request:encode-url(request:request-uri())}">
+        <form action="{session:encode-url(request:get-uri())}">
             <table class="login" cellpadding="5">
                 <tr>
                     <th colspan="2" align="left">Please Login</th>
