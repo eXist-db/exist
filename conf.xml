@@ -134,6 +134,10 @@
                 class="org.exist.xquery.functions.xmldb.XMLDBModule"/>
             <module uri="http://exist-db.org/xquery/request"
                 class="org.exist.xquery.functions.request.RequestModule"/>
+            <module uri="http://exist-db.org/xquery/response"
+                class="org.exist.xquery.functions.response.ResponseModule"/>
+            <module uri="http://exist-db.org/xquery/session"
+                class="org.exist.xquery.functions.session.SessionModule"/>
             <module uri="http://exist-db.org/xquery/text"
                 class="org.exist.xquery.functions.text.TextModule"/>
             <module uri="http://exist-db.org/xquery/examples"
