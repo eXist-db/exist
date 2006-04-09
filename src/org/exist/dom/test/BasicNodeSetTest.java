@@ -21,17 +21,14 @@
 package org.exist.dom.test;
 
 import java.io.File;
-import java.util.Iterator;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.BasicConfigurator;
-import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.AbstractNodeSet;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.NodeSetHelper;
@@ -57,7 +54,6 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -217,6 +213,15 @@ public class BasicNodeSetTest extends TestCase {
             result = ((AbstractNodeSet)scenes).selectAncestors(largeSet.toNodeSet(), false, -1);
             assertEquals(47, result.getLength());
             System.out.println("AbstractNodeSet.selectAncestors: PASS");
+            
+            NodeProxy proxy = (NodeProxy) smallSet.itemAt(0);
+            System.out.println("Testing NodeProxy.getParents ...");
+            result = proxy.getParents(-1);
+            assertEquals(1, result.getLength());
+            System.out.println("NodeProxy.getParents: PASS");
+            
+            result = speakers.selectParentChild(proxy, NodeSet.DESCENDANT, -1);
+            assertEquals(1, result.getLength());
         } catch (Exception e) {
         	e.printStackTrace();
 	        fail(e.getMessage());
