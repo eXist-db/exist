@@ -11,7 +11,6 @@
 	<classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/javax.servlet.jar"/>
 	<classpathentry kind="lib" path="lib/core/jgroups-all.jar"/>
-	<classpathentry kind="lib" path="lib/core/libreadline-java.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-1.2.9.jar"/>
 	<classpathentry kind="lib" path="lib/core/resolver.jar"/>
 	<classpathentry kind="lib" path="lib/core/sunxacml.jar"/>
@@ -69,5 +68,6 @@
 	<classpathentry kind="lib" path="tools/lib/junit.jar"/>
 	<classpathentry kind="lib" path="tools/lib/xmlunit1.0.jar"/>
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
+	<classpathentry kind="lib" path="lib/core/jline-0_9_5.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
