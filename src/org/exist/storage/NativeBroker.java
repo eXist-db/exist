@@ -2041,14 +2041,14 @@ public class NativeBroker extends DBBroker {
         StoredNode n;
         for (int i = 0; i < nodes.getLength(); i++) {
             n = (StoredNode) nodes.item(i);
-            iterator = getNodeIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+            iterator = getNodeIterator(new NodeProxy(doc, n.getNodeId(), n.getInternalAddress()));
             iterator.next();
             scanNodes(transaction, iterator, n, new NodePath(), true, repairMode);
         }
         flush();
         if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
             doc.getCollection().setConfigEnabled(true);
-    }  
+    }
     
     public void defragXMLResource(final Txn transaction, final DocumentImpl doc) {
         //TODO : use dedicated function in XmldbURI
@@ -2608,27 +2608,15 @@ public class NativeBroker extends DBBroker {
             reindexNode(transaction, node, currentPath);
         final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
         if (node.hasChildNodes()) {
-            final long firstChildId = NodeSetHelper.getFirstChildId(doc, node.getGID());            
-            if (firstChildId < 0) {
-                LOG.fatal(
-                    "no child found: expected = "
-                        + node.getChildCount()
-                        + "; node = "
-                        + node.getNodeName()
-                        + "; gid = "
-                        + node.getGID());
-                throw new IllegalStateException("Wrong node id");
-            }
-            final long lastChildId = firstChildId + node.getChildCount();
             StoredNode child;
-            for (long gid = firstChildId; gid < lastChildId; gid++) {
+            final int count = node.getChildCount();
+            for (int i = 0; i < count; i++) {
                 child = (StoredNode) iterator.next();
                 if(child == null) {
-                    LOG.fatal("child " + gid + " not found for node: " + node.getNodeName() +
-                            "; last = " + lastChildId + "; children = " + node.getChildCount());
+                    LOG.fatal("child " + i + " not found for node: " + node.getNodeName() +
+                            "; children = " + node.getChildCount());
                     throw new IllegalStateException("Wrong node id");
                 }
-                child.setGID(gid);
                 scanNodes(transaction, iterator, child, currentPath, fullReindex, repairMode);
             }
         }

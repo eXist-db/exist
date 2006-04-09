@@ -1206,23 +1206,22 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 						if (storedDocument == null) {
 							is.skipBytes(size);
 							continue;
-						}                        
-                        long previousGID = 0;
+						}
 						for (int j = 0; j < termCount; j++) {
-                            long delta = is.readLong();
-                            long storedGID = previousGID + delta;
+                            NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
                             int freq = is.readInt();
                             NodeProxy storedNode;
                             switch (storedSection) {
                                 case TEXT_SECTION :
-                                    storedNode = new NodeProxy(storedDocument, storedGID, Node.TEXT_NODE);
+                                    storedNode = new NodeProxy(storedDocument, 1, Node.TEXT_NODE);
                                     break;
                                 case ATTRIBUTE_SECTION :
-                                    storedNode = new NodeProxy(storedDocument, storedGID, Node.ATTRIBUTE_NODE);
+                                    storedNode = new NodeProxy(storedDocument, 1, Node.ATTRIBUTE_NODE);
                                     break;
                                 default :
                                     throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                             } 
+                            storedNode.setNodeId(nodeId);
 							if (contextSet != null) {
                                 NodeProxy parentNode;  
                                 switch (storedSection) {
@@ -1232,7 +1231,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     case ATTRIBUTE_SECTION :
                                         if (contextSet instanceof VirtualNodeSet) {
                                         parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                                        if (parentNode != null && parentNode.getGID() != storedGID)
+                                        if (parentNode != null && parentNode.getNodeId().equals(nodeId))
                                             parentNode = null;
                                         } else
                                             parentNode = contextSet.get(storedNode);
@@ -1241,7 +1240,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                                 }
 								if (parentNode != null) {
-                                    Match match = new Match(null, word.toString(), freq);
+                                    Match match = new Match(nodeId, word.toString(), freq);
                                     readOccurrences(freq, is, match, word.length());
                                     parentNode.addMatch(match);
                                     int sizeHint = contextSet.getSizeHint(storedDocument);
@@ -1254,7 +1253,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 storedNode.addMatch(match);
 							    result.add(storedNode, -1);
                             }
-                            previousGID = storedGID;
 						}
 					}
 				} catch (EOFException e) {
@@ -1320,15 +1318,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 						is.skipBytes(size);
 						continue;
 					}					
-                    long previousGID = 0;
 					for (int j = 0; j < termCount; j++) {
-                        long delta = is.readLong(); 
-                        long storedGID = previousGID + delta;
+                        NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
                         int freq = is.readInt();                        
                         is.skip(freq);
 						if (contextSet != null) {
                             boolean include = false;
-                            NodeProxy parentNode = contextSet.parentWithChild(storedDocument, storedGID, false, true);                           
+                            NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
                             switch (storedSection) {
                                 case TEXT_SECTION :
                                     //TODO : also test on Node.TEXT_NODE like below ? -pb                                    
@@ -1352,8 +1348,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 }
                                 oc.addOccurrences(freq);
                             }                            
-						}						
-                        previousGID = storedGID;
+						}
 					}
 				}
 			} catch(EOFException e) {
