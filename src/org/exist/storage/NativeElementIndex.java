@@ -89,7 +89,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * @param qname The node's identity
      * @param proxy The node's proxy
      */
-    public void addNode(QName qname, NodeProxy proxy) {       
+    public void addNode(QName qname, StoredNode node) {       
         //Is this qname already pending ?
         ArrayList buf = (ArrayList) pending.get(qname);
         if (buf == null) {
@@ -98,7 +98,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             pending.put(qname, buf);
         }
         //Add node's proxy to the list
-        buf.add(proxy);
+        buf.add(node.getProxy());
     }
     
     public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
@@ -156,10 +156,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             Map.Entry entry = (Map.Entry) i.next();
             QName qname = (QName) entry.getKey();
             //TODO : NativeValueIndex uses LongLinkedLists -pb
-            ArrayList gids = (ArrayList) entry.getValue();            
-            int gidsCount = gids.size();
+            ArrayList proxies = (ArrayList) entry.getValue();            
+            int gidsCount = proxies.size();
             //Don't forget this one
-            FastQSort.sort(gids, 0, gidsCount - 1);
+            FastQSort.sort(proxies, 0, gidsCount - 1);
             os.clear();
             os.writeInt(this.doc.getDocId());
             os.writeInt(gidsCount);
@@ -169,11 +169,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             //Compute the GIDs list
             long previousGID = 0;
             for (int j = 0; j < gidsCount; j++) {
-                NodeProxy storedNode = (NodeProxy) gids.get(j);
-                long delta = storedNode.getGID() - previousGID;                
+                NodeProxy proxy = (NodeProxy) proxies.get(j);
+                long delta = proxy.getGID() - previousGID;                
                 os.writeLong(delta);
-                StorageAddress.write(storedNode.getInternalAddress(), os);
-                previousGID = storedNode.getGID();
+                StorageAddress.write(proxy.getInternalAddress(), os);
+                previousGID = proxy.getGID();
             }            
             os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
             try {
@@ -280,11 +280,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         os.writeFixedInt(0);
                         long previousGID = 0;
                         for (int j = 0; j < gidsCount; j++) {
-                            NodeProxy storedNode = (NodeProxy) newGIDList.get(j);
-                            long delta = storedNode.getGID() - previousGID;                        
+                            NodeProxy proxy = (NodeProxy) newGIDList.get(j);
+                            long delta = proxy.getGID() - previousGID;                        
                             os.writeLong(delta);
-                            StorageAddress.write(storedNode.getInternalAddress(), os);
-                            previousGID = storedNode.getGID();
+                            StorageAddress.write(proxy.getInternalAddress(), os);
+                            previousGID = proxy.getGID();
                         }                
                         os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);    
                     }
@@ -414,7 +414,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 //Compute a key for the node
                 Map.Entry entry = (Map.Entry) i.next();
                 //TODO : NativeValueIndex uses LongLinkedLists -pb
-                List storedGIDList = (ArrayList) entry.getValue();
+                List proxies = (ArrayList) entry.getValue();
                 final QName qname = (QName) entry.getKey();
                 final Value key = computeKey(collectionId, qname);                
                 final VariableByteInput is = dbNodes.getAsStream(key);
@@ -445,7 +445,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                     if (node == null) {
                                         if (document.getTreeLevel(storedGID) < document.getMetadata().reindexRequired()) {
                                             //TOUNDERSTAND : given what is below, why not use newGIDList ? -pb
-                                            storedGIDList.add(new NodeProxy(document, storedGID, address));
+                                            proxies.add(new NodeProxy(document, storedGID, address));
                                         }
                                     } else {
                                         if (!NodeSetHelper.isDescendant(document, node.getGID(), storedGID)) {
@@ -464,12 +464,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 // TOUNDERSTAND : given what is above :-), why not rationalize ? -pb
                 // append the new list to any existing data
                 if (node != null) 
-                    storedGIDList.addAll(newGIDList);
+                    proxies.addAll(newGIDList);
                 // append the data
-                if (storedGIDList.size() > 0) {
-                    int gidsCount = storedGIDList.size();
+                if (proxies.size() > 0) {
+                    int gidsCount = proxies.size();
                     //Don't forget this one
-                    FastQSort.sort(storedGIDList, 0, gidsCount - 1);               
+                    FastQSort.sort(proxies, 0, gidsCount - 1);               
                     os.writeInt(document.getDocId());
                     os.writeInt(gidsCount);
                     //TOUNDERSTAND -pb       
@@ -477,11 +477,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     os.writeFixedInt(0);
                     long previousGID = 0;
                     for (int j = 0; j < gidsCount; j++) {
-                        NodeProxy storedNode = (NodeProxy) storedGIDList.get(j);
-                        long delta = storedNode.getGID() - previousGID;                        
+                        NodeProxy proxy = (NodeProxy) proxies.get(j);
+                        long delta = proxy.getGID() - previousGID;                        
                         os.writeLong(delta);
-                        StorageAddress.write(storedNode.getInternalAddress(), os);
-                        previousGID = storedNode.getGID();
+                        StorageAddress.write(proxy.getInternalAddress(), os);
+                        previousGID = proxy.getGID();
                     }                
                     os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                 }                
