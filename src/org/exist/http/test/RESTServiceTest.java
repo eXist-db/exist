@@ -26,10 +26,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.net.Authenticator;
 import java.net.BindException;
 import java.net.HttpURLConnection;
-import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Iterator;
@@ -217,7 +215,7 @@ public class RESTServiceTest extends TestCase {
 
     public void testRequestModule() {
         try {
-            String uri = COLLECTION_URI + "?_query=request:request-uri()&_wrap=no";
+            String uri = COLLECTION_URI + "?_query=request:get-uri()&_wrap=no";
             HttpURLConnection connect = getConnection(uri);
             connect.setRequestMethod("GET");
             connect.connect();
@@ -228,7 +226,7 @@ public class RESTServiceTest extends TestCase {
             String response = readResponse(connect.getInputStream()).trim();
             assertEquals(response, DBBroker.ROOT_COLLECTION + "/test");
 
-            uri = COLLECTION_URI + "?_query=request:request-url()&_wrap=no";
+            uri = COLLECTION_URI + "?_query=request:get-url()&_wrap=no";
             connect = getConnection(uri);
             connect.setRequestMethod("GET");
             connect.connect();
