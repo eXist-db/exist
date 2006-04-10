@@ -99,11 +99,15 @@ public class FunRoot extends Function {
 				
         result = new ExtArrayNodeSet(seq.getLength());
 		int j = 0;
-		for (SequenceIterator i = seq.toNodeSet().iterate(); i.hasNext(); j++) {
+		for (SequenceIterator i = seq.iterate(); i.hasNext(); j++) {
 			item = i.nextItem();
             if (!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException("FOTY0011: item is not a node; got '" + item + "'");			
-			NodeProxy p = ((NodeProxy) item);
+                throw new XPathException("FOTY0011: item is not a node; got '" + item + "'");
+            NodeProxy p;
+            if (item instanceof NodeProxy)
+            	p = (NodeProxy) item;
+            else
+            	p = (NodeProxy) item.toSequence().toNodeSet().get(0);
 			org.exist.dom.DocumentImpl doc = p.getDocument();
             //Filter out the temporary nodes wrapper element
             //WARNING : currently, we assume that *all* the nodes are wrapped in the same document
