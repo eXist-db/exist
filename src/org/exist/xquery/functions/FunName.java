@@ -31,9 +31,11 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
@@ -74,40 +76,38 @@ public class FunName extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
-        
+        Sequence seq;
         Sequence result;
-        Item item = null;
-        // check if the node is passed as an argument or should be taken from
-        // the context sequence
-		if(getArgumentCount() > 0) {
-			Sequence seq = getArgument(0).eval(contextSequence);
-			if(!seq.isEmpty())
-				item = seq.itemAt(0);
-		} else {
-			if(!contextSequence.isEmpty())
-				item = contextSequence.itemAt(0);
-		}
-        if(item == null)
-            result = Sequence.EMPTY_SEQUENCE;
-        else {
-            if(!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException(getASTNode(), getName() + " expects an argument of type node(); got: " +
-                        Type.getTypeName(item.getType()));
-            
+        Item item;
+ 
+		if (contextSequence == null || contextSequence.isEmpty()) 
+			result = Sequence.EMPTY_SEQUENCE;            
+        
+		//If we have one argumment, we take it into account
+		if (getSignature().getArgumentCount() > 0) 
+			seq = getArgument(0).eval(contextSequence, contextItem);
+		//Otherwise, we take the context sequence and we iterate over it
+		else
+			seq = contextSequence; 
+				
+        result = new ValueSequence();
+		int j = 0;
+		for (SequenceIterator i = seq.toNodeSet().iterate(); i.hasNext(); j++) {
+			item = i.nextItem();
+            if (!Type.subTypeOf(item.getType(), Type.NODE))
+            	throw new XPathException("FOTY0011: item is not a node; got '" + item + "'");
             Node n = ((NodeValue)item).getNode();
     		switch(n.getNodeType()) {
     			case Node.ELEMENT_NODE:
     			case Node.ATTRIBUTE_NODE:
-    				result = new StringValue(n.getNodeName());
+    				result.add(new StringValue(n.getNodeName()));
     				break;
     			case Node.PROCESSING_INSTRUCTION_NODE:
-    				result = new StringValue(((ProcessingInstruction)n).getTarget());
+    				result.add(new StringValue(((ProcessingInstruction)n).getTarget()));
                     break;
                 //TODO : what kind of default do we expect here ? -pb
     			default:
-    				return new StringValue("");
+    				throw new XPathException("Unkhandled node type: '" + n.getNodeType() + "'");
     		}
         }
         
