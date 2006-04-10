@@ -9,7 +9,10 @@ import org.exist.xmldb.XmldbURI;
 
 public class XmldbURITest extends TestCase {
     
-    public void testXmldbURIConstructors() {
+	private final static String DECODED_COLL = "test[98]";
+	private final static String ENCODED_COLL = "test%5B98%5D";
+
+	public void testXmldbURIConstructors() {
         try{
             XmldbURI xmldbURI;
             //TODO : add some other instances
@@ -752,6 +755,26 @@ public class XmldbURITest extends TestCase {
             URI uri = new URI("/../../..");
             //Strange but it's like this
             assertEquals("/../../..", xmldbURI.resolveCollectionPath(uri).toString());
+        } catch (URISyntaxException e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    public void testXmldbURICollectionPathEncoding1() {
+        try{
+        	//Should return decoded path
+            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///xmlrpc/"+ENCODED_COLL);
+            assertEquals(xmldbURI.getCollectionPath(),"/xmlrpc/"+DECODED_COLL);
+        } catch (URISyntaxException e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    public void testXmldbURICollectionPathEncoding2() {
+        try{
+        	//Should return encoded path
+            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///xmlrpc/"+ENCODED_COLL);
+            assertEquals(xmldbURI.getRawCollectionPath(),"/xmlrpc/"+ENCODED_COLL);
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }

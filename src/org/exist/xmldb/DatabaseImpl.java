@@ -186,7 +186,7 @@ public class DatabaseImpl implements Database {
         }
         User u = getUser(user, password, pool);
         try {
-            Collection current = new LocalCollection(u, pool, xmldbURI.getCollectionPath(), AccessContext.XMLDB);
+            Collection current = new LocalCollection(u, pool, xmldbURI.getRawCollectionPath(), AccessContext.XMLDB);
             return (current != null) ? current : null;
         } catch (XMLDBException e) {
             switch (e.errorCode) {
@@ -221,7 +221,7 @@ public class DatabaseImpl implements Database {
         try {
             URL url = new URL("http", xmldbURI.getHost(), xmldbURI.getPort(), xmldbURI.getContext());
             XmlRpcClient rpcClient = getRpcClient(user, password, url);
-            return readCollection(xmldbURI.getCollectionPath(), rpcClient);         
+            return readCollection(xmldbURI.getRawCollectionPath(), rpcClient);         
         } catch (MalformedURLException e) {
             //Should never happen          
             throw new XMLDBException(ErrorCodes.INVALID_DATABASE, e.getMessage());  
