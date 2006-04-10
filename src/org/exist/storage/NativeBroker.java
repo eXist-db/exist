@@ -466,7 +466,7 @@ public class NativeBroker extends DBBroker {
         // TODO move_to NativeElementIndex; name change (See ContentLoadingObserver ): addRow() --> endElement()
         // save element by calling ElementIndex
         elementIndex.setDocument(doc);
-        elementIndex.addNode(node.getQName(), node.getProxy());
+        elementIndex.addNode(node.getQName(), node);
     }    
     
     /** Takes care of actually remove entries from the indices;
@@ -2387,7 +2387,7 @@ public class NativeBroker extends DBBroker {
                 qname = node.getQName();
                 qname.setNameType(ElementValue.ELEMENT);
                 elementIndex.setDocument(doc);
-                elementIndex.addNode(qname, node.getProxy());
+                elementIndex.addNode(qname, node);
                 
                 if (idxSpec != null) {
                     GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
@@ -2405,7 +2405,7 @@ public class NativeBroker extends DBBroker {
                 elementIndex.setDocument(doc);
                 qname = node.getQName();
                 qname.setNameType(ElementValue.ATTRIBUTE);
-                elementIndex.addNode(qname, node.getProxy());
+                elementIndex.addNode(qname, node);
                 
                 // check if attribute value should be fulltext-indexed
                 // by calling IndexPaths.match(path) 
@@ -2438,7 +2438,7 @@ public class NativeBroker extends DBBroker {
                 if (((AttrImpl) node).getType() == AttrImpl.ID) {
                     qname = new QName(((AttrImpl) node).getValue(), "", null);
                     qname.setNameType(ElementValue.ATTRIBUTE_ID);
-                    elementIndex.addNode(qname, node.getProxy());
+                    elementIndex.addNode(qname, node);
                 }
                 currentPath.removeLastComponent();
                 break;
@@ -3087,7 +3087,7 @@ public class NativeBroker extends DBBroker {
                     elementIndex.setDocument(node.getDocument());                    
                     node.getProxy().setIndexType(indexType);
                     qname.setNameType(ElementValue.ATTRIBUTE);
-                    elementIndex.addNode(qname, node.getProxy());
+                    elementIndex.addNode(qname, node);
                     
                     // --move to-- NativeElementIndex
                     // TODO : elementIndex.storeAttribute(node, currentPath, index);
@@ -3097,7 +3097,7 @@ public class NativeBroker extends DBBroker {
                         qname = new QName(((AttrImpl) node).getValue(), "", null);
                         //LOG.debug("found ID: " + qname.getLocalName());
                         qname.setNameType(ElementValue.ATTRIBUTE_ID);
-                        elementIndex.addNode(qname, node.getProxy());
+                        elementIndex.addNode(qname, node);
                     }
                     
 //                    // --move to-- ???
