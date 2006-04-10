@@ -754,7 +754,7 @@ public class ElementImpl extends NamedNode implements Element {
     public Attr getAttributeNodeNS(String namespaceURI, String localName) {
         // altheim: 2003-12-02
         long start = firstChildID();
-        Iterator iter = getBroker().getNodeIterator(getProxy());
+        Iterator iter = getBroker().getNodeIterator(this);
         iter.next();
         for (long i = start; i < start + attributes && iter.hasNext(); i++) {
             StoredNode child = (StoredNode) iter.next();

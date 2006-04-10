@@ -226,10 +226,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 
 	private final NodeSet getNodes() {
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
-		NodeProxy proxy;
-		Iterator domIter;
 		for (Iterator i = context.iterator(); i.hasNext();) {
-			proxy = (NodeProxy) i.next();            
+			NodeProxy proxy = (NodeProxy) i.next();            
 			if (proxy.getGID() == NodeProxy.DOCUMENT_NODE_GID) {
 				if(proxy.getDocument().getResourceType() == DocumentImpl.BINARY_FILE)
 					// skip binary resources
@@ -252,7 +250,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
                         // as context when traversing the tree.
                         NodeProxy contextNode = new NodeProxy(node.getProxy());
                         contextNode.deepCopyContext(proxy);
-    					domIter = contextNode.getDocument().getBroker().getNodeIterator(contextNode);
+                        //TODO : is this StoredNode construction necessary ?
+                        Iterator domIter = contextNode.getDocument().getBroker().getNodeIterator(new StoredNode(contextNode));
                         domIter.next();
     					contextNode.setMatches(proxy.getMatches());
     					addChildren(contextNode, result, node, domIter, 0);
@@ -269,7 +268,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 					}
 				} 
 				if (axis != Constants.SELF_AXIS) {
-					domIter = proxy.getDocument().getBroker().getNodeIterator(proxy);
+					//TODO : is this StroredNode construction necessary ?
+					Iterator domIter = proxy.getDocument().getBroker().getNodeIterator(new StoredNode(proxy));
 					StoredNode node = (StoredNode) domIter.next();
 					node.setOwnerDocument(proxy.getDocument());
 					node.setGID(proxy.getGID());					
